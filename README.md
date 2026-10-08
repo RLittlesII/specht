@@ -2,12 +2,17 @@
 
 This is a repository for a dotnet tool that will check your specification document schema against the markdown generated.  Below is the seed work for this repository.
 
-# Seed brief: the `spec-check` repository
+# Seed brief: the `specht` repository
 > Hand this to the first agent in the new repository. It carries the decided
 > requirements, what to extract from `hooked`, the draft design already
-> written, the defaults to proceed on where the owner has not yet decided, and
-> the order of work. Source material: `hooked` branch
-> `grooming/0008-specification-governance` at `a6d056f`.
+> written, the decisions taken on each open question, and the order of work.
+> Source material: `hooked` branch `refactor/ai-offering` at `6afe8ab` (PR
+> #217, open). The engine, tests, schemas and templates there are byte-identical
+> to the earlier seed at `a6d056f`; only the three draft-spec files were removed.
+> Written as `spec-check`; the product was then named `specht` (command
+> `specht`, package `Specht.Tool`, namespace `Specht`), and the brief was
+> revised to match in the second requirements session (`REQUIREMENTS.md`
+> § Revision log).
 ## 1. What this is
 A command-line tool, delivered as a `dotnet tool`, that checks a repository's
 `.spec/` specification tree against a versioned schema and reports every
@@ -22,47 +27,67 @@ approach. Three of them hand-copy `hooked`'s schema, templates and checker.
 Every improvement lands four times or drifts.
 **Personas.** The maintainer of four repositories. The agent authoring a
 specification in any of them.
-**Done means.** The tool installed in two repositories (`hooked` and one
-sibling), both checked by it, no engine code in either.
+**Done means.** The tool installed in two repositories (`hooked` and
+Transporter), both checked by it, no engine code in either. Transporter
+originated the `.spec/` model and its tree predates the schema, so "done" also
+proves the tool handles a tree it did not write.
 **Must.**
 1. One command, same verdict at three call sites: a pre-commit hook, CI, and
    an agent running it mid-write as a read-only oracle before it reverts or
    fixes a damaged draft.
-2. The schema is versioned. A repository pins a version and upgrades when it
-   chooses; lagging is deliberate, not drift.
+2. The schema is versioned. The manifest pins `schemaVersion`; the tool embeds
+   every schema version it has ever shipped and validates with the pinned one.
+   A repository upgrades when it chooses; lagging is deliberate, not drift.
 3. A specification is proven correctly written and formatted against the
    pinned version. Every violation: file, line, rule id, message.
 4. The consumer's build calls the tool. No project reference to an engine.
+6. Every violation also carries what the rule expected — the headers, the
+   grammar, the section order — so the agent repairs the document from the
+   report alone, without reading the rule catalogue or the template. (Was
+   Should; promoted in session 2. Number kept: it is cited.)
 **Should.**
 5. The schema doubles as the agent's generation contract: readable JSON Schema
    plus a manifest, as `hooked/.spec/schema/` is today.
-6. Mid-write, the agent gets everything the tool knows, machine-readable.
 7. `hooked`'s own run is unchanged by the extraction: same violations, same
    report, on the same tree (all fields but the timestamp).
+8. The schema source is configurable: the embedded schema for the pinned
+   version by default; the consumer's on-disk `.spec/schema/` files when the
+   manifest or a CLI argument says so. The manifest itself is always read from
+   disk.
 **Out of scope.** Anything Roslyn (`hooked`'s 0008-F1 claim bridge and
 0008-F2 convention analyzers stay there). Rule plugins. Spec revision history.
+Autofix: no `--fix`, and `upgrade` never rewrites a document — it touches
+`.spec/schema/` and `.spec/templates/` only; the agent migrates documents from
+the violations (Must-6).
 **Constraints.**
 | Constraint | Hard/Soft |
 | --- | --- |
 | The folder is named `.spec/` | Hard |
-| Own repository; tool and schema together | Hard |
-| Ships after `hooked` PR #217 merges (the engine lands there first) | Hard |
+| Own repository; tool and schema together. No consumer owns the schema; each holds a copy `init` wrote | Hard |
+| Engine copied from `hooked` `refactor/ai-offering` at `6afe8ab` (PR #217, open), SHA cited in the first commit | Hard |
+| `hooked` consumes the tool *instead of* merging the engine from PR #217; the engine never lands on `hooked` `main` | Hard |
 | Consumer build calls the tool, never carries the engine | Hard |
-| `dotnet tool` delivery; runtime otherwise open | Soft |
+| `dotnet tool` delivery (was Soft; everything downstream assumes it) | Hard |
+| A schema version, once shipped in the tool, is never deleted | Hard |
+| Published to GitHub Packages on `rlittlesii/specht` first; NuGet.org is the reversal | Soft |
 | Sections, grammars, markers: all reversible under schema versioning | Soft |
+| Deadline: none. Order of work (§ 8) is the only sequencing | — |
 ## 3. What to extract from `hooked`
 **The code exists on disk. Copy it; do not regenerate it.** The engine, its
 tests, the schemas and the templates are written, reviewed and passing. The
 first agent's job is to move files and rename a namespace, not to write a
 checker. Every `.cs` file below is the implementation; read it, keep it.
 Checkout on this machine: `/Users/rlittlesii/source/rlittlesii/hooked`, branch
-`grooming/0008-specification-governance`. Copy with history noted in the first
-commit message (`extracted from RLittlesII/hooked@<sha>`); do not subtree-merge.
+`refactor/ai-offering` at `6afe8ab` (PR #217, open; do not wait for it to
+merge — `hooked` consumes the tool instead). Copy with history noted in the
+first commit message (`extracted from RLittlesII/hooked@6afe8ab`); do not
+subtree-merge. The three draft-spec files under `tools/SpecGovernance/.spec/`
+were removed on that branch; take them from `a6d056f` (`git show a6d056f:<path>`).
 ```sh
 HOOKED=/Users/rlittlesii/source/rlittlesii/hooked
-# the engine (library) and its tests - verbatim, then rename Hooked.SpecGovernance
-cp -R "$HOOKED/tools/SpecGovernance"            src/SpecCheck
-cp -R "$HOOKED/test/SpecGovernance.Tests"       test/SpecCheck.Tests
+# the engine (library) and its tests - verbatim, then rename Hooked.SpecGovernance to Specht
+cp -R "$HOOKED/tools/SpecGovernance"            src/Specht
+cp -R "$HOOKED/test/SpecGovernance.Tests"       test/Specht.Tests
 # schema version 1 and the templates - verbatim, then re-home the $id URLs
 cp -R "$HOOKED/.spec/schema"                    schema/v1
 cp -R "$HOOKED/.spec/templates"                 templates/v1
@@ -77,11 +102,13 @@ cp    "$HOOKED/epics/audits/2026-10-07-spec-check-extraction-requirements.md"  d
 cp -R "$HOOKED/.skills/spec-and-traceability"                                  docs/reference/spec-and-traceability
 cp    "$HOOKED/.skills/hooked-conventions/references/specs.md"                 docs/reference/hooked-specs-conventions.md
 ```
-Remove `tools/SpecGovernance/.spec/` from the copied `src/SpecCheck` (it is the
-draft spec, already copied to `docs/reference/`), and drop the `.csproj`
+Remove `tools/SpecGovernance/.spec/` from the copied `src/Specht` if present (it
+is the draft spec, already copied to `docs/reference/`), and drop the `.csproj`
 comments that talk about `hooked`'s `Directory.Build.props`. Everything else in
 those directories is kept.
-Inventory on disk, 44 files (verify with the same `find` before copying):
+Inventory at `a6d056f`, 44 files; at `6afe8ab`, 42 — the three
+`tools/SpecGovernance/.spec/` files are gone (verify with the same `find`
+before copying):
 ```
 .spec/schema/epic.frontmatter.schema.json
 .spec/schema/feature-spec.frontmatter.schema.json
@@ -165,15 +192,19 @@ assertions on). Pin exact versions from `hooked/Directory.Packages.props`.
 Severity: all `Error` today. A manifest severity override and per-rule
 disable are part of the design (§ 5).
 ## 5. Design already drafted (0008-F3), to build on
-**CLI.** `spec-check [--root <dir>] [--report <path>] [--strict] [--json]`.
+**CLI.** `specht [--root <dir>] [--report <path>] [--strict] [--json]`.
 Stdout: one MSBuild-shaped line per violation (`path(line): error SPEC031: …`),
 then the summary lines (specification counts by layout, item count, rules
 evaluated, errors/warnings). Exit 0 clean, 1 violations (any violation under
 `--strict`), 2 missing root or manifest, 3 invalid manifest. `--json`
-replaces the stdout stream with the report document. `--report` writes the
-same JSON to a path. Never an absolute path in any output. `spec-check init`
-writes the schema set (and templates) into `<root>/.spec/` from embedded
-copies, never overwriting. `--help` from the command framework.
+replaces the stdout stream with the report document; each violation in it
+carries what the rule expected (Must-6). `--report` writes the same JSON to a
+path. `--explain SPEC031` prints the rule's full text. Never an absolute path
+in any output. `specht init` writes the schema set (and templates) into
+`<root>/.spec/` from embedded copies, never overwriting. `specht upgrade`
+moves `.spec/schema/` and `.spec/templates/` to the next version and prints
+what changed; it never touches a document. `--help` from the command
+framework.
 **Manifest-driven layout ("bring your own schema").** Everything the engine
 hardcodes moves into the manifest so rules read *roles*, not literals:
 - discovery layouts (today: legacy `epics/**/spec.md`, co-located
@@ -201,18 +232,23 @@ State it in the docs.
 layout in the manifest; no rule plugins (disable and `--strict` instead).
 Rejected: Nuke-only, a library consumers wire themselves, a plugin model, a
 Roslyn analyzer (per-compilation; the rules are repository-wide).
-## 6. Open questions, with the default to proceed on
-Proceed on the default; record each as a decision the owner can reverse.
-| Question | Default | Why |
+## 6. Open questions, decided (2026-10-07)
+Every default below was confirmed or replaced by the owner in the second
+requirements session (`REQUIREMENTS.md` § Open Questions). Each is a decision
+the owner can reverse; record a reversal as a decision, never silently.
+| Question | Decision | Why |
 | --- | --- | --- |
-| Name, package id, command | Repository `spec-check`; command `spec-check`; package `SpecCheck.Tool`; library namespace `SpecCheck` | Says what it does; no `Hooked` anywhere |
-| What a "schema version" is in the file | The manifest carries `"schemaVersion": 1`; the tool embeds every schema version it knows and validates with the pinned one; `spec-check upgrade` rewrites the manifest and schema files to the next version and prints what changed | A repository pins by editing one number; the tool, not the consumer, knows the diff between versions |
-| Install path for four repositories | Local tool manifest per repository (`dotnet tool install --local`, committed `.config/dotnet-tools.json`), package published to NuGet.org | Pins the tool version beside the schema version; CI restores it with `dotnet tool restore` |
-| Templates: in the tool or per repository | In the tool, written by `spec-check init` next to the schema, never overwritten | They are part of the generation contract (Should-5) and version with the schema |
-| Agent-facing output contract | `--json` document with a published JSON Schema in this repository: violations (rule, severity, file, line, identifier, message), counts, layouts, schema version checked against; add `--explain SPEC031` printing the rule's full text | "Any information it might need", machine-readable |
-| Where 0008-F3 lives | This repository's first epic is the tool; `hooked` keeps a small Feature "consume the tool": replace the project reference with the tool call, delete `tools/SpecGovernance` | Keeps `hooked`'s scope to consumption |
-| Schema `$id` URLs | This repository's URL, versioned path (`…/schema/v1/feature-spec.frontmatter.schema.json`) | They move with the schema |
+| Name, package id, command | Product Specht; command `specht`; package `Specht.Tool`; library namespace `Specht`. `SpecCheck` survives only as the NUKE target name and engine type names | Says what it does; no `Hooked` anywhere |
+| What a "schema version" is in the file | The manifest carries `"schemaVersion": 1`; the tool embeds every schema version it has ever shipped — none is ever deleted — and validates with the pinned one; `specht upgrade` rewrites the manifest, schema files and templates to the next version and prints what changed, and never touches a document | A repository pins by editing one number; the tool, not the consumer, knows the diff between versions; a repository pinned to v1 restores any later tool and is still checked |
+| Which schema files are authoritative at check time | The embedded schema for the pinned version by default; the consumer's on-disk `.spec/schema/` files when a manifest field or a CLI argument selects them (Should-8). Field and argument names: open, `spec-author` | Supports "bring your own schema" without making a hand-edited copy the silent default |
+| Install path for four repositories | Local tool manifest per repository (`dotnet tool install --local`, committed `.config/dotnet-tools.json`), package published to GitHub Packages on `rlittlesii/specht` first; NuGet.org later, if ever | Pins the tool version beside the schema version; CI restores it with `dotnet tool restore`. Consumers carry a `nuget.config` source and a token with package read |
+| Templates: in the tool or per repository | In the tool, written by `specht init` next to the schema, never overwritten | They are part of the generation contract (Should-5) and version with the schema |
+| Agent-facing output contract | `--json` document with a published JSON Schema in this repository: violations (rule, severity, file, line, identifier, message, **expected** — what the rule wanted to see), counts, layouts, schema version checked against; `--explain SPEC031` prints the rule's full text. Shape of `expected` per rule: open, `spec-author` | The agent repairs, and migrates between schema versions, from the report alone (Must-6) |
+| Where 0008-F3 lives | This repository's first epic (`0001`) is the tool; `hooked` keeps a small Feature "consume the tool": replace the project reference with the tool call, delete `tools/SpecGovernance`. PR #217's engine half never merges | Keeps `hooked`'s scope to consumption |
+| Schema `$id` URLs | `https://github.com/rlittlesii/specht/schema/v1/<file>` | They move with the schema |
 | Report timestamp | Drop `generatedAtUtc` from the report | Determinism; Should-7 becomes byte-identical |
+| Second install, the "done" event | Transporter. Its `.spec/` tree predates the schema | The origin of the model; proves the tool on a tree it did not write |
+| Who migrates documents across schema versions | The agent, from the violations and their `expected`. Never the tool | Autofix is out of scope |
 ## 7. The repository should eat its own cooking
 - Its own specifications live under `.spec/` in the co-located layout and
   are checked by the tool in its own CI from the first commit that can run it.
@@ -226,20 +262,23 @@ Proceed on the default; record each as a decision the owner can reverse.
    manifest, CI that builds, tests and packs. `.spec/` with the epic.
 2. **Copy the engine and its tests from disk** (§ 3 script), rename the
    namespace, nothing else. Prove the 56 tests pass. Tag the commit: this is
-   the behaviour baseline for Should-7. No file in `src/SpecCheck` is rewritten
-   in this step; a diff against `hooked` must show only the rename.
+   the behaviour baseline for Should-7. No file in `src/Specht` is rewritten
+   in this step; a diff against `hooked` at `6afe8ab` must show only the rename.
 3. **CLI.** The command, exit codes, `--json`, `--report`, `init`,
    `--help`. Pack as a tool; install it into this repository's own manifest;
    switch its CI and pre-commit to it.
-4. **Consume from `hooked`.** Replace the Nuke target's library call with the
-   tool; delete `tools/SpecGovernance` and its tests there; prove the report
-   on `hooked` is identical to the baseline. This is "installed in one".
+4. **Consume from `hooked`.** On `hooked`'s open `refactor/ai-offering`
+   branch, replace the Nuke target's library call with the tool; delete
+   `tools/SpecGovernance` and its tests there; prove the report on `hooked` is
+   identical to the baseline. This is "installed in one", and it is what
+   `hooked` merges *instead of* the engine.
 5. **Manifest roles.** Move each hardcoded literal into the manifest, one rule
    at a time, each with a test that the default manifest reproduces the
    baseline report. Discovery via `git ls-files` with the pruned-walk
    fallback.
 6. **Schema versioning.** `schemaVersion`, embedded version set, `upgrade`.
-7. **Install in a second repository.** That is "done".
+7. **Install in Transporter.** Pin v1 onto its pre-schema tree; an agent
+   repairs what the tool reports, from the report alone. That is "done".
 Each step is a pull request; each pull request's description names the
 requirement (§ 2 number) it serves.
 ## 9. Non-negotiables for the first agent
