@@ -174,3 +174,15 @@ Feature: Schema versioning
     And the root holds an epic whose frontmatter carries a title and a description
     When the check runs
     Then no frontmatter violation is reported for the epic
+
+  @B-023
+  Scenario Outline: Version 1 rejects an empty <key> on an epic
+    Given the manifest pins version 1
+    And the root holds an epic whose frontmatter carries an empty <key>
+    When the check runs
+    Then the epic is reported for a frontmatter violation of its <key>
+
+    Examples:
+      | key         |
+      | title       |
+      | description |

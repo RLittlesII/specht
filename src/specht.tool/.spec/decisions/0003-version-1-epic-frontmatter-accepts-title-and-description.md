@@ -41,6 +41,8 @@ does every consumer epic written to the prior shape.
 ## Affects
 
 - `0001-F7` § 3 B-022; § 11 OQ-4.
+- `0001-F7` § 3 B-023, added by the owner 2026-10-08: an empty `title` or
+  `description` is a violation, as `minLength: 1` says.
 - `0001-F1` § 11 OQ-1, which carried the question here.
 - `.spec/schema/epic.frontmatter.schema.json`, the live copy of version 1.
 

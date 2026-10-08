@@ -82,6 +82,7 @@ A repository's `.spec/schema/` is a copy of `hooked`'s from one day, and nothing
 | B-020 | Given `specht upgrade` under a root whose manifest is invalid, this Feature writes nothing and exits with code `3`.                                                                                                                                                                     | README § 5; `0001-F5`                          | Active |
 | B-021 | Given `specht upgrade` under a root pinned to a version the tool does not ship, this Feature names the pinned version and the versions it ships on stderr, writes nothing, and exits with code `3`, as the check does (B-003).                                                          | README § 5; B-003; OQ-5                        | Active |
 | B-022 | Given an epic file whose frontmatter carries `title` and `description` as non-empty strings, under a root pinned to version 1, the check reports no frontmatter violation for either key.                                                                                               | OQ-4; decision 0003                            | Active |
+| B-023 | Given an epic file under a root pinned to version 1 whose frontmatter carries `title` or `description` as an empty string, the check reports a frontmatter violation (`SPEC004`) for that key.                                                                                          | decision 0003; owner 2026-10-08                | Active |
 
 ## 4. Constraints
 
@@ -155,6 +156,7 @@ Pending: owned by `test-writer`.
 | B-020    | Upgrade with an invalid manifest is invalid configuration      | Missing | Missing |
 | B-021    | Upgrade from a version the tool does not ship rewrites nothing | Missing | Missing |
 | B-022    | Version 1 accepts a title and a description on an epic         | Missing | Missing |
+| B-023    | Version 1 rejects an empty <key> on an epic                    | Missing | Missing |
 
 ## 10. Lessons / Spec Deltas
 

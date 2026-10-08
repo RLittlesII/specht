@@ -41,6 +41,7 @@ claims:
   - B-020
   - B-021
   - B-022
+  - B-023
 
 created: "2026-10-08"
 updated: "2026-10-08"
@@ -84,6 +85,7 @@ acceptance_criteria:
   - "B-020 — upgrade, invalid manifest: exit 3 (0046)"
   - "B-021 — upgrade from an unshipped version writes nothing (0048)"
   - "B-022 — version 1 accepts `title` and `description` on an epic (0042)"
+  - "B-023 — an empty epic `title` or `description` is a `SPEC004` violation (0042)"
   - "§ 9 carries a row naming a test for each id above."
 
 decisions:

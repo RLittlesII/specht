@@ -24,6 +24,7 @@ claims:
   - B-004
   - B-014
   - B-022
+  - B-023
 
 created: "2026-10-08"
 updated: "2026-10-08"
@@ -44,6 +45,7 @@ acceptance_criteria:
   - "B-004 — embedded set holds every version below the newest, by test"
   - "B-014 — exactly version `n`'s rule ids evaluated"
   - "B-022 — version 1's epic schema accepts optional non-empty `title` and `description`"
+  - "B-023 — an empty epic `title` or `description` is a `SPEC004` violation"
   - "§ 9 carries a row naming a test for each id above."
 
 decisions: []
