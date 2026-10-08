@@ -4,9 +4,9 @@ title: Restore the tool from the feed in the release run
 
 status: ready-for-architecture
 
-priority: medium # DERIVED
+priority: medium
 risk: 2
-rank: 54 # DERIVED
+rank: 54
 
 parent: "0082"
 children: []

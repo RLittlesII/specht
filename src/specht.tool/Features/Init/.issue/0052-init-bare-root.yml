@@ -4,9 +4,9 @@ title: Write the eight files into a bare root
 
 status: ready-for-architecture
 
-priority: high # DERIVED
+priority: high
 risk: 3
-rank: 96 # DERIVED
+rank: 96
 
 parent: "0050"
 children: []

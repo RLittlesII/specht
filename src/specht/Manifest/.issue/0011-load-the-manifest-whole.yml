@@ -4,9 +4,9 @@ title: Load and validate the manifest whole before any rule runs
 
 status: ready-for-architecture
 
-priority: high # DERIVED
+priority: high
 risk: 3
-rank: 111 # DERIVED
+rank: 111
 
 parent: "0010"
 children: []

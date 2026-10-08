@@ -4,9 +4,9 @@ title: Merge green minor and patch updates and open each major alone
 
 status: ready-for-architecture
 
-priority: high # DERIVED
+priority: high
 risk: 3
-rank: 71 # DERIVED
+rank: 71
 
 parent: "0072"
 children: []

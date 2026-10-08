@@ -4,9 +4,9 @@ title: Report the check from SpecCheck without failing until rule settings exist
 
 status: ready-for-architecture
 
-priority: high # DERIVED
+priority: high
 risk: 2
-rank: 109 # DERIVED
+rank: 109
 
 parent: "0056"
 children: []

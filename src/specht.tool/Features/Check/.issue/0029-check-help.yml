@@ -4,9 +4,9 @@ title: Name the check's options in --help
 
 status: ready-for-architecture
 
-priority: high # DERIVED
+priority: high
 risk: 1
-rank: 97 # DERIVED
+rank: 97
 
 parent: "0025"
 children: []

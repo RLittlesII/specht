@@ -4,9 +4,9 @@ title: Prove the verdict is deterministic, relative and grid-blind
 
 status: ready-for-architecture
 
-priority: high # DERIVED
+priority: high
 risk: 3
-rank: 91 # DERIVED
+rank: 91
 
 parent: "0020"
 children: []

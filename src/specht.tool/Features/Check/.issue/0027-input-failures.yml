@@ -4,9 +4,9 @@ title: Fail a missing root or manifest with 2 and an unparseable one with 3
 
 status: ready-for-architecture
 
-priority: high # DERIVED
+priority: high
 risk: 2
-rank: 104 # DERIVED
+rank: 104
 
 parent: "0025"
 children: []

@@ -4,9 +4,9 @@ title: Write a recorded upstream schema source into absent files on init
 
 status: ready-for-architecture
 
-priority: high # DERIVED
+priority: high
 risk: 3
-rank: 71 # DERIVED
+rank: 71
 
 parent: "0050"
 children: []

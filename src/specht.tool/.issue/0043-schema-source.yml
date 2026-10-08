@@ -4,9 +4,9 @@ title: Select the embedded or on-disk schema source
 
 status: ready-for-architecture
 
-priority: high # DERIVED
+priority: high
 risk: 3
-rank: 81 # DERIVED
+rank: 81
 
 parent: "0041"
 children: []

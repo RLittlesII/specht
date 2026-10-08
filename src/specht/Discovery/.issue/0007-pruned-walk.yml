@@ -4,9 +4,9 @@ title: Walk the tree without entering an excluded directory
 
 status: ready-for-architecture
 
-priority: medium # DERIVED
+priority: medium
 risk: 2
-rank: 59 # DERIVED
+rank: 59
 
 parent: "0004"
 children: []

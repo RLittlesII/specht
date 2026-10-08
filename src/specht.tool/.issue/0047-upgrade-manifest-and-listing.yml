@@ -4,9 +4,9 @@ title: Keep manifest settings on upgrade and print what changed
 
 status: ready-for-architecture
 
-priority: high # DERIVED
+priority: high
 risk: 3
-rank: 76 # DERIVED
+rank: 76
 
 parent: "0041"
 children: []

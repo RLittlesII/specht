@@ -4,9 +4,9 @@ title: Publish the first release to GitHub Packages with a GitHub Release
 
 status: ready-for-architecture
 
-priority: medium # DERIVED
+priority: medium
 risk: 4
-rank: 58 # DERIVED
+rank: 58
 
 parent: "0082"
 children: []

@@ -4,9 +4,9 @@ title: Read frontmatter keys, edge forms and id grammars from the manifest
 
 status: ready-for-architecture
 
-priority: high # DERIVED
+priority: high
 risk: 4
-rank: 73 # DERIVED
+rank: 73
 
 parent: "0010"
 children: []

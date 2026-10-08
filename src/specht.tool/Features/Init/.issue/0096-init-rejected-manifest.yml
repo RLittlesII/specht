@@ -4,9 +4,9 @@ title: Refuse a manifest the check rejects from init with exit 3
 
 status: ready-for-architecture
 
-priority: high # DERIVED
+priority: high
 risk: 1
-rank: 77 # DERIVED
+rank: 77
 
 parent: "0050"
 children: []

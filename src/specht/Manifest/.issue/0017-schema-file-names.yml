@@ -4,9 +4,9 @@ title: Load frontmatter schemas by the manifest's file names
 
 status: ready-for-architecture
 
-priority: high # DERIVED
+priority: high
 risk: 2
-rank: 79 # DERIVED
+rank: 79
 
 parent: "0010"
 children: []

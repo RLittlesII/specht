@@ -4,10 +4,10 @@ title: Release
 
 status: ready-for-architecture
 
-priority: medium # DERIVED
+priority: medium
 value: 3
 risk: 4
-rank: 48 # DERIVED
+rank: 48
 
 parent: "0055"
 children: ["0083", "0084", "0085"]

@@ -4,9 +4,9 @@ title: Guard the baseline verdicts under the default manifest
 
 status: ready-for-architecture
 
-priority: high # DERIVED
+priority: high
 risk: 3
-rank: 86 # DERIVED
+rank: 86
 
 parent: "0010"
 children: []

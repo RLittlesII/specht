@@ -4,9 +4,9 @@ title: Check path identity only for a layout that declares it
 
 status: ready-for-architecture
 
-priority: medium # DERIVED
+priority: medium
 risk: 2
-rank: 54 # DERIVED
+rank: 54
 
 parent: "0004"
 children: []

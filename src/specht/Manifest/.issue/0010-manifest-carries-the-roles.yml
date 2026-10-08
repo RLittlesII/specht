@@ -4,10 +4,10 @@ title: The manifest carries the roles the engine hardcodes
 
 status: ready-for-architecture
 
-priority: high # DERIVED
+priority: high
 value: 4
 risk: 4
-rank: 73 # DERIVED
+rank: 73
 
 parent: "0001"
 children: ["0011", "0012", "0013", "0014", "0015", "0016", "0017", "0018", "0019"]

@@ -4,9 +4,9 @@ title: Name the manifest's values in rule messages
 
 status: ready-for-architecture
 
-priority: high # DERIVED
+priority: high
 risk: 2
-rank: 74 # DERIVED
+rank: 74
 
 parent: "0010"
 children: []

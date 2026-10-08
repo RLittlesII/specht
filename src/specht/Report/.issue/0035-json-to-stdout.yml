@@ -4,9 +4,9 @@ title: Write the document to stdout under --json
 
 status: ready-for-architecture
 
-priority: high # DERIVED
+priority: high
 risk: 1
-rank: 82 # DERIVED
+rank: 82
 
 parent: "0033"
 children: []

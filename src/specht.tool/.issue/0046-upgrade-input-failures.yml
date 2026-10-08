@@ -4,9 +4,9 @@ title: Fail upgrade on a missing root, missing manifest or invalid manifest
 
 status: ready-for-architecture
 
-priority: high # DERIVED
+priority: high
 risk: 2
-rank: 79 # DERIVED
+rank: 79
 
 parent: "0041"
 children: []

@@ -4,10 +4,10 @@ title: Package versioning
 
 status: ready-for-architecture
 
-priority: high # DERIVED
+priority: high
 value: 4
 risk: 3
-rank: 71 # DERIVED
+rank: 71
 
 parent: "0055"
 children: ["0079", "0080", "0081"]

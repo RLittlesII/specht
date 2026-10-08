@@ -4,9 +4,9 @@ title: Embed the shipping copy and keep it equal to the live copy
 
 status: ready-for-architecture
 
-priority: high # DERIVED
+priority: high
 risk: 2
-rank: 84 # DERIVED
+rank: 84
 
 parent: "0050"
 children: []

@@ -4,9 +4,9 @@ title: Commit hooked's baseline report and test the verdicts against it
 
 status: ready-for-architecture
 
-priority: high # DERIVED
+priority: high
 risk: 3
-rank: 96 # DERIVED
+rank: 96
 
 parent: "0020"
 children: []

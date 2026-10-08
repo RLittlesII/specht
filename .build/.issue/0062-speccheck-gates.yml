@@ -4,9 +4,9 @@ title: Gate the hook and SpecCheck once rule settings exist
 
 status: ready-for-architecture
 
-priority: high # DERIVED
+priority: high
 risk: 3
-rank: 96 # DERIVED
+rank: 96
 
 parent: "0056"
 children: []
