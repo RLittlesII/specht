@@ -1,0 +1,45 @@
+id: "0095"
+type: task
+title: Write a recorded upstream schema source into absent files on init
+
+status: ready-for-architecture
+
+priority: high # DERIVED
+risk: 3
+rank: 71 # DERIVED: (4 × 20) − (3 × 3) + (0 × 5); value inherited from 0050
+
+parent: "0050"
+children: []
+
+depends_on: ["0052", "0093"] # a case of 0052's write; reuses 0093's fetch and hash check
+blocks: []
+spikes: []
+
+spec: src/specht.tool/Features/Init/.spec/README.md
+
+claims:
+  - B-014
+  - B-015
+  - B-016
+
+created: "2026-10-08"
+updated: "2026-10-08"
+closed: null
+
+summary: |
+  Init's side of 0001-F7 decision 0004: an absent frontmatter schema comes
+  from the recorded upstream source, verified against its hash, and a
+  present one is never overwritten (C-1, B-002). Reuses upgrade's fetch
+  (0093). Risk 3: the network path again, now in the first command a
+  consumer runs.
+
+acceptance_criteria:
+  - "B-014 — fetched content matches: absent schema files written, present ones kept"
+  - "B-015 — fetched content mismatches the hash: stderr, nothing written, exit 3"
+  - "B-016 — source unreachable for an absent file: stderr, nothing written, exit 3"
+  - "§ 9 carries a row naming a test for each id above."
+
+decisions: []
+
+out_of_scope:
+  - "Fetching without a recorded source — 0001-F7 C-8."

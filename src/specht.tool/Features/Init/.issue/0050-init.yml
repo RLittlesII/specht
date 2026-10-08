@@ -10,7 +10,7 @@ risk: 3
 rank: 71 # DERIVED: (4 × 20) − (3 × 3) + (0 × 5)
 
 parent: "0001"
-children: ["0051", "0052", "0053", "0054"]
+children: ["0051", "0052", "0053", "0054", "0095", "0096"]
 
 depends_on: []
 blocks: []
@@ -32,6 +32,10 @@ claims:
   - B-011
   - B-012
   - B-013
+  - B-014
+  - B-015
+  - B-016
+  - B-017
 
 created: "2026-10-08"
 updated: "2026-10-08"
@@ -50,6 +54,11 @@ summary: |
   unshipped pin (B-013); 0054 carries those beside B-002 and now also waits
   on 0042 for the older versions.
 
+  B-014 to B-017 came with 0001-F7 decision 0004 and the rule that
+  every command answers a rejected manifest with 3: init fetching a
+  recorded upstream source (0095) and init refusing a rejected
+  manifest (0096).
+
 acceptance_criteria:
   - "B-001 — bare root: the eight files of the newest version; exit 0 (0052)"
   - "B-002 — an existing file left byte-for-byte (0054)"
@@ -64,6 +73,10 @@ acceptance_criteria:
   - "B-011 — partial tree: exit 0 (0053)"
   - "B-012 — older shipped pin: absent files at the pinned version (0054)"
   - "B-013 — unshipped pin: nothing written, exit 3 (0054)"
+  - "B-014 — upstream source: absent schema files fetched and written (0095)"
+  - "B-015 — upstream content mismatches the hash: exit 3 (0095)"
+  - "B-016 — upstream source unreachable: exit 3 (0095)"
+  - "B-017 — a manifest the check rejects: nothing written, exit 3 (0096)"
   - "§ 9 carries a row naming a test for each id above."
 
 decisions:
@@ -75,6 +88,11 @@ decisions:
     else. Rejected: B-002 inside 0052, which would hold the bare-root write
     behind a question about multi-version trees that do not exist until a
     second version ships.
+  - |
+    2026-10-08, Claude at the owner's request: B-014 to B-016 in one
+    item that reuses upgrade's fetch (0095 -> 0093), and B-017 alone
+    (0096). Rejected: B-017 inside 0054, which would hold B-002 and
+    the pinned-version write behind 0013 and 0092.
 
 out_of_scope:
   - "Everything in § 5 of the spec."

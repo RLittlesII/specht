@@ -6,13 +6,13 @@ status: ready-for-architecture
 
 priority: high # DERIVED
 risk: 3
-rank: 71 # DERIVED: (4 × 20) − (3 × 3) + (0 × 5); value inherited from 0041
+rank: 76 # DERIVED: (4 × 20) − (3 × 3) + (1 × 5); value inherited from 0041
 
 parent: "0041"
 children: []
 
 depends_on: ["0045"] # extends the rewrite 0045 performs
-blocks: []
+blocks: ["0094"]
 spikes: []
 
 spec: src/specht.tool/.spec/README.md

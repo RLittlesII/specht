@@ -1,0 +1,48 @@
+id: "0092"
+type: task
+title: Check under a recorded upstream schema source
+
+status: ready-for-architecture
+
+priority: high # DERIVED
+risk: 3
+rank: 81 # DERIVED: (4 × 20) − (3 × 3) + (2 × 5); value inherited from 0041
+
+parent: "0041"
+children: []
+
+depends_on: ["0043", "0013"] # a third case of 0043's source selection; rejects the contradiction through 0013's exit 3
+blocks: ["0093", "0096"]
+spikes: []
+
+spec: src/specht.tool/.spec/README.md
+
+claims:
+  - B-024
+  - B-025
+  - B-028
+  - B-032
+  - B-036
+
+created: "2026-10-08"
+updated: "2026-10-08"
+closed: null
+
+summary: |
+  The check's side of decision 0004: a manifest recording an upstream
+  schema source selects the on-disk copy, the vocabulary stays the pinned
+  embedded version's, and the check never fetches (C-8). Upgrade (0093)
+  and init (0095, 0096) read the recording this defines.
+
+acceptance_criteria:
+  - "B-024 — upstream recorded: schemas read from the local copy"
+  - "B-025 — upstream recorded: no network call from the check"
+  - "B-028 — upstream recorded: the pinned embedded version's rule ids"
+  - "B-032 — upstream recorded, no source selected: on-disk"
+  - "B-036 — upstream recorded, embedded selected: stderr, exit 3"
+  - "§ 9 carries a row naming a test for each id above."
+
+decisions: []
+
+out_of_scope:
+  - "Fetching the source — 0093, 0095."

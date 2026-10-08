@@ -1,0 +1,43 @@
+id: "0094"
+type: task
+title: Leave on-disk frontmatter schemas alone on upgrade
+
+status: ready-for-architecture
+
+priority: high # DERIVED
+risk: 2
+rank: 74 # DERIVED: (4 × 20) − (2 × 3) + (0 × 5); value inherited from 0041
+
+parent: "0041"
+children: []
+
+depends_on: ["0043", "0047"] # under 0043's on-disk selection; extends 0047's listing of what changed
+blocks: []
+spikes: []
+
+spec: src/specht.tool/.spec/README.md
+
+claims:
+  - B-029
+  - B-030
+  - B-031
+
+created: "2026-10-08"
+updated: "2026-10-08"
+closed: null
+
+summary: |
+  With the on-disk source selected, `upgrade` moves the templates and
+  leaves the consumer's frontmatter schemas as they are (C-2, OQ-8),
+  saying which it skipped and why in 0047's listing.
+
+acceptance_criteria:
+  - "B-029 — on-disk source: none of `n+1`'s frontmatter schemas written"
+  - "B-030 — each skipped schema printed with the reason"
+  - "B-031 — templates rewritten to `n+1` and listed"
+  - "§ 9 carries a row naming a test for each id above."
+
+decisions: []
+
+out_of_scope:
+  - "Overwriting a consumer's frontmatter schemas — C-2."

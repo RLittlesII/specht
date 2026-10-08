@@ -223,7 +223,7 @@ None.
 
 ## Tasks
 
-Cut 2026-10-08 into [`../.issue/`](../.issue/): `0041` (the Feature), with `0042` to `0049`.
+Cut 2026-10-08 into [`../.issue/`](../.issue/): `0041` (the Feature), with `0042` to `0049`; B-024 to B-036 cut 2026-10-08 into `0092` to `0094`.
 
 ## Scoring
 

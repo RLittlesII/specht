@@ -1,0 +1,49 @@
+id: "0093"
+type: task
+title: Fetch and verify a recorded upstream schema source on upgrade
+
+status: ready-for-architecture
+
+priority: high # DERIVED
+risk: 4
+rank: 73 # DERIVED: (4 × 20) − (4 × 3) + (1 × 5); value inherited from 0041
+
+parent: "0041"
+children: []
+
+depends_on: ["0045", "0092"] # a step of 0045's upgrade; reads the recording 0092 defines
+blocks: ["0095"]
+spikes: []
+
+spec: src/specht.tool/.spec/README.md
+
+claims:
+  - B-026
+  - B-027
+  - B-033
+  - B-034
+  - B-035
+
+created: "2026-10-08"
+updated: "2026-10-08"
+closed: null
+
+summary: |
+  The only network call the tool makes: fetch on a hash mismatch, write
+  only content matching the recorded hash (C-9), never move the recorded
+  version (C-10). Init's 0095 reuses the fetch and hash check. Risk 4: a
+  network path in a tool that is otherwise offline (C-8).
+
+acceptance_criteria:
+  - "B-026 — local hash differs, fetched content matches: written"
+  - "B-027 — fetched content mismatches the hash: stderr, nothing written, exit 3"
+  - "B-033 — local copy matches the hash: no network call"
+  - "B-034 — the recorded upstream version and hash unchanged"
+  - "B-035 — source unreachable when a fetch is needed: stderr, nothing written, exit 3"
+  - "§ 9 carries a row naming a test for each id above."
+
+decisions: []
+
+out_of_scope:
+  - "Moving the upstream version — C-10."
+  - "init's fetch — 0095."
