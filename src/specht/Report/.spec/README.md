@@ -50,7 +50,7 @@ A violation today says what is wrong and not what would be right, so the agent t
 | ID  | Assumption                                                                                                                                                                                                                    |
 | --- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | A-1 | The report's JSON Schema is published at `docs/schema/report.schema.json`. It is the tool's contract, versioned with the tool, so it lives outside `.spec/schema/` and `init` never writes it. The folder name is reversible. |
-| A-2 | The exit code for `--explain` with a rule id outside the pinned version's vocabulary is open (OQ-1); no claim fixes it. The default OQ-1 proposes is `2`, the missing-input code.                                             |
+| A-2 | The exit code for `--explain` with a rule id outside the pinned version's vocabulary is `4`, not found (OQ-1, resolved 2026-10-08; `0001-F2` decision 0003). The proposed default `2` was not chosen.                         |
 | A-3 | `--explain` is an option on the check command, as README § 5 writes it (`specht --explain SPEC031`); it prints and exits without running a check.                                                                             |
 
 ## 3. Acceptance Criteria
@@ -78,7 +78,7 @@ A violation today says what is wrong and not what would be right, so the agent t
 | B-017 | Given an edge or cycle violation (`SPEC051`, `SPEC052`), `expected` carries the edge the other Feature must declare, or the cycle as the ordered list of identities.                                                                                                                         | Must-6                                             | Active    |
 | B-018 | Given an approval violation (`SPEC060`, `SPEC061`), `expected` carries the cell or sign-off row that must change before the approved status is honest.                                                                                                                                       | Must-6                                             | Active    |
 | B-019 | Given a manifest that pins a schema version and `--explain <SPEC###>` with an id in that version's vocabulary, this Feature prints on stdout the rule's full text - what it checks, what it expects, and the schema version it belongs to - and exits with code `0` without running a check. | README § 5; A-3                                    | Active    |
-| B-020 | Given a manifest that pins a schema version and `--explain` with an id outside that version's vocabulary, this Feature names the id on stderr, writes nothing on stdout, and exits with a non-zero code.                                                                                     | README § 5; the code is OQ-1                       | Active    |
+| B-020 | Given a manifest that pins a schema version and `--explain` with an id outside that version's vocabulary, this Feature names the id on stderr, writes nothing on stdout, and exits with code `4`.                                                                                            | README § 5; `0001-F2` decision 0003 (OQ-1)         | Active    |
 | B-021 | Given the document, every path in it is relative to the root with `/` separators.                                                                                                                                                                                                            | README § 9                                         | Active    |
 | B-022 | Given `--report <path>`, this Feature writes the report document to that path.                                                                                                                                                                                                               | README § 5; decision 0002                          | Active    |
 | B-023 | Given `--report <path>` whose directories do not exist, this Feature creates them.                                                                                                                                                                                                           | README § 5; decision 0002                          | Active    |
@@ -87,6 +87,7 @@ A violation today says what is wrong and not what would be right, so the agent t
 | B-026 | Given a missing-frontmatter violation (`SPEC001`), `expected` names the schema file for that document's kind and that schema's required key list.                                                                                                                                            | Must-6                                             | Active    |
 | B-027 | Given a dependency that names no Feature (`SPEC050`), `expected` carries the Feature identities the dependency could name.                                                                                                                                                                   | Must-6                                             | Active    |
 | B-028 | Given a reused item id (`SPEC044`), `expected` carries the file of the item that first holds the id.                                                                                                                                                                                         | Must-6                                             | Active    |
+| B-029 | Given `--explain` under a root with no manifest, or with a manifest `0001-F5` rejects, this Feature prints no rule text and fails as the check does: exit `2` for no manifest (`0001-F2` B-006), exit `3` for a rejected one (`0001-F5` B-022, B-023).                                       | OQ-2                                               | Active    |
 
 ## 4. Constraints
 
@@ -138,36 +139,37 @@ Pending: owned by `test-writer`.
 
 <!-- last written by: spec-author, 2026-10-07 -->
 
-| Claim ID | Scenario                                                                                   | Test    | Status  |
-| -------- | ------------------------------------------------------------------------------------------ | ------- | ------- |
-| B-001    | JSON output replaces the diagnostic lines                                                  | Missing | Missing |
-| B-002    | A report path receives the document                                                        | Missing | Missing |
-| B-003    | Both outputs are the same document                                                         | Missing | Missing |
-| B-004    | The document form does not change the verdict                                              | Missing | Missing |
-| B-005    | The document carries the counts and the version                                            | Missing | Missing |
-| B-006    | The document carries nothing from the clock; The document carries nothing from the machine | Missing | Missing |
-| B-007    | A violation carries what the rule expected                                                 | Missing | Missing |
-| B-008    | Every document validates against the published schema                                      | Missing | Missing |
-| B-009    | A frontmatter violation says what the schema requires                                      | Missing | Missing |
-| B-010    | A section violation says the section order                                                 | Missing | Missing |
-| B-011    | A table violation says the headers                                                         | Missing | Missing |
-| B-012    | An identity violation says the identity implied                                            | Missing | Missing |
-| B-013    | A companion violation says what must resolve                                               | Missing | Missing |
-| B-014    | A claim violation says the grammar                                                         | Missing | Missing |
-| B-015    | A matrix violation says which claims need a row                                            | Missing | Missing |
-| B-016    | A child-item violation says the file shape or the next number                              | Missing | Missing |
-| B-017    | A dependency violation says the missing edge or the cycle                                  | Missing | Missing |
-| B-018    | An approval violation says what must change first                                          | Missing | Missing |
-| B-019    | Explain prints a rule's full text                                                          | Missing | Missing |
-| B-020    | Explain of an unknown rule names it and fails                                              | Missing | Missing |
-| B-021    | No path in the document is absolute                                                        | Missing | Missing |
-| B-022    | A report path receives the document                                                        | Missing | Missing |
-| B-023    | A report path in a new directory is created                                                | Missing | Missing |
-| B-024    | A report path that exists is replaced                                                      | Missing | Missing |
-| B-025    | A report path keeps the diagnostic lines on the output                                     | Missing | Missing |
-| B-026    | A missing frontmatter says what the schema requires                                        | Missing | Missing |
-| B-027    | A dependency on nothing says what it could name                                            | Missing | Missing |
-| B-028    | A reused item id names its first holder                                                    | Missing | Missing |
+| Claim ID | Scenario                                                                                                     | Test    | Status  |
+| -------- | ------------------------------------------------------------------------------------------------------------ | ------- | ------- |
+| B-001    | JSON output replaces the diagnostic lines                                                                    | Missing | Missing |
+| B-002    | A report path receives the document                                                                          | Missing | Missing |
+| B-003    | Both outputs are the same document                                                                           | Missing | Missing |
+| B-004    | The document form does not change the verdict                                                                | Missing | Missing |
+| B-005    | The document carries the counts and the version                                                              | Missing | Missing |
+| B-006    | The document carries nothing from the clock; The document carries nothing from the machine                   | Missing | Missing |
+| B-007    | A violation carries what the rule expected                                                                   | Missing | Missing |
+| B-008    | Every document validates against the published schema                                                        | Missing | Missing |
+| B-009    | A frontmatter violation says what the schema requires                                                        | Missing | Missing |
+| B-010    | A section violation says the section order                                                                   | Missing | Missing |
+| B-011    | A table violation says the headers                                                                           | Missing | Missing |
+| B-012    | An identity violation says the identity implied                                                              | Missing | Missing |
+| B-013    | A companion violation says what must resolve                                                                 | Missing | Missing |
+| B-014    | A claim violation says the grammar                                                                           | Missing | Missing |
+| B-015    | A matrix violation says which claims need a row                                                              | Missing | Missing |
+| B-016    | A child-item violation says the file shape or the next number                                                | Missing | Missing |
+| B-017    | A dependency violation says the missing edge or the cycle                                                    | Missing | Missing |
+| B-018    | An approval violation says what must change first                                                            | Missing | Missing |
+| B-019    | Explain prints a rule's full text                                                                            | Missing | Missing |
+| B-020    | Explain of an unknown rule names it and fails                                                                | Missing | Missing |
+| B-021    | No path in the document is absolute                                                                          | Missing | Missing |
+| B-022    | A report path receives the document                                                                          | Missing | Missing |
+| B-023    | A report path in a new directory is created                                                                  | Missing | Missing |
+| B-024    | A report path that exists is replaced                                                                        | Missing | Missing |
+| B-025    | A report path keeps the diagnostic lines on the output                                                       | Missing | Missing |
+| B-026    | A missing frontmatter says what the schema requires                                                          | Missing | Missing |
+| B-027    | A dependency on nothing says what it could name                                                              | Missing | Missing |
+| B-028    | A reused item id names its first holder                                                                      | Missing | Missing |
+| B-029    | Explain without a manifest fails as the check does; Explain with a rejected manifest fails as the check does | Missing | Missing |
 
 ## 10. Lessons / Spec Deltas
 
@@ -179,10 +181,10 @@ None.
 
 <!-- last written by: spec-author, 2026-10-07 -->
 
-| ID   | Question                                                                                                                                                                                                                | Blocks               | Resolution |
-| ---- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------- | ---------- |
-| OQ-1 | README § 5 fixes four exit codes and none for "the thing named does not exist". A-2 reads an unknown `--explain` id as missing input (`2`). Is that the rule, or does the code set grow a `NotFound`?                   | B-020                | Open       |
-| OQ-2 | `--explain` reads the pinned schema version from the manifest. With no manifest, or one `0001-F5` rejects, does `--explain` fail as the check does (`0001-F2` B-006, B-007), or print from the newest embedded version? | B-019, B-020 (scope) | Open       |
+| ID   | Question                                                                                                                                                                                                                | Blocks               | Resolution                                                                                                                                                                                                                                                                        |
+| ---- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| OQ-1 | README § 5 fixes four exit codes and none for "the thing named does not exist". A-2 reads an unknown `--explain` id as missing input (`2`). Is that the rule, or does the code set grow a `NotFound`?                   | B-020                | Resolved 2026-10-08 by the repository owner: the code set grows `4`, not found (`0001-F2` decision 0003). Rejected: `2`, A-2's proposed default; `3`. B-020 now names `4`.                                                                                                        |
+| OQ-2 | `--explain` reads the pinned schema version from the manifest. With no manifest, or one `0001-F5` rejects, does `--explain` fail as the check does (`0001-F2` B-006, B-007), or print from the newest embedded version? | B-019, B-020 (scope) | Resolved 2026-10-08 by the repository owner: fail as the check does - `2` with no manifest, `3` with a rejected one - and print no rule text. Rejected: printing the newest embedded version's text, which gives a lagging repository the wrong version's rule. Claimed by B-029. |
 
 ## 12. Sign-off
 

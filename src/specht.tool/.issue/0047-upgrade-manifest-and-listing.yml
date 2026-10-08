@@ -2,7 +2,7 @@ id: "0047"
 type: task
 title: Keep manifest settings on upgrade and print what changed
 
-status: blocked
+status: ready-for-architecture
 
 priority: high # DERIVED
 risk: 3
@@ -26,19 +26,22 @@ updated: "2026-10-08"
 closed: null
 
 summary: |
-  In the manifest, upgrade changes only `schemaVersion` and the keys `n+1`
-  adds (decision 0001); it prints the versions moved between and every file
-  rewritten. Blocked on two open questions, both the owner's: OQ-6, whether
-  a key `n+1` adds that the manifest already carries keeps its value, and
-  OQ-3, whether the listing also carries a diff. Set
-  ready-for-architecture once both are resolved.
+  In the manifest, upgrade changes `schemaVersion` and adds only the keys
+  `n+1` introduces that the manifest lacks; every key already present keeps
+  the consumer's value (decision 0001, OQ-6). It prints the versions moved
+  between and each file rewritten, and no diff (OQ-3).
 
 acceptance_criteria:
-  - "B-016 — only `schemaVersion` and added keys change; others keep their value (OQ-6)"
-  - "B-017 — versions from and to, and each rewritten file (OQ-3)"
+  - "B-016 — `schemaVersion` moves; absent new keys added; present keys keep their value"
+  - "B-017 — versions from and to, and each rewritten file; no diff"
   - "§ 9 carries a row naming a test for each id above."
 
-decisions: []
+decisions:
+  - |
+    2026-10-08, the repository owner: OQ-6 resolved as keeping the
+    consumer's value, over writing `n+1`'s default; OQ-3 as the version pair
+    and file list, over a diff per file. Status moved from blocked to
+    ready-for-architecture.
 
 out_of_scope:
   - "A consumer-side migration script or changelog — C-5."

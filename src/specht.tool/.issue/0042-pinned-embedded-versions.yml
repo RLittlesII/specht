@@ -6,13 +6,13 @@ status: ready-for-architecture
 
 priority: high # DERIVED
 risk: 4
-rank: 88 # DERIVED: (4 × 20) − (4 × 3) + (4 × 5); value inherited from 0041
+rank: 93 # DERIVED: (4 × 20) − (4 × 3) + (5 × 5); value inherited from 0041
 
 parent: "0041"
 children: []
 
 depends_on: ["0011", "0027", "0034", "0051"] # key via 0011; exit 3 via 0027; version field in 0034; embedded set from 0051
-blocks: ["0043", "0044", "0045", "0049"]
+blocks: ["0043", "0044", "0045", "0049", "0054"]
 spikes: []
 
 spec: src/specht.tool/.spec/README.md

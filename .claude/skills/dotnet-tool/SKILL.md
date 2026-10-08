@@ -23,9 +23,9 @@ exactly as a consumer would — never through a project reference (README § 7).
 
 One thing is decided and worth stating once:
 
-| Topic                     | Status here                                                                                                                                                                                                                                                                                               |
-| ------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| What sits below a command | A command parses its settings, calls the engine in `src/specht` (`SpecCheckRunner`), and folds the report into an exit code — `0` clean, `1` violations, `2` missing root or manifest, `3` invalid manifest. No mediator, no `LanguageExt`; the engine is one library and the command is its only caller. |
+| Topic                     | Status here                                                                                                                                                                                                                                                                                                                            |
+| ------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| What sits below a command | A command parses its settings, calls the engine in `src/specht` (`SpecCheckRunner`), and folds the report into an exit code — `0` clean, `1` violations, `2` missing root or manifest, `3` invalid manifest, `4` a named thing not found. No mediator, no `LanguageExt`; the engine is one library and the command is its only caller. |
 
 ## Index
 

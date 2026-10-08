@@ -2,7 +2,7 @@ id: "0048"
 type: task
 title: Refuse to upgrade from a version the tool does not ship
 
-status: blocked
+status: ready-for-architecture
 
 priority: high # DERIVED
 risk: 1
@@ -25,15 +25,20 @@ updated: "2026-10-08"
 closed: null
 
 summary: |
-  Under a root pinned to a version the tool does not ship, upgrade writes
-  nothing. Blocked on OQ-5, the owner's: which exit code — the check uses 3
-  for the same pin (B-003), but README does not decide it for upgrade. Set
-  ready-for-architecture once resolved.
+  Under a root pinned to a version the tool does not ship, upgrade names
+  the pinned and shipped versions on stderr, writes nothing, and exits 3 —
+  the code the check gives the same pin (B-003), so one manifest gets one
+  answer from every command.
 
 acceptance_criteria:
-  - "B-021 — unshipped pin: nothing written; exit code per OQ-5"
+  - "B-021 — unshipped pin: versions on stderr, nothing written, exit 3"
   - "§ 9 carries a row naming a test for each id above."
 
-decisions: []
+decisions:
+  - |
+    2026-10-08, the repository owner: OQ-5 resolved as exit 3, matching the
+    check, over 4, which is for what the command line names
+    (0001-F2 decision 0003). Status moved from blocked to
+    ready-for-architecture.
 
 out_of_scope: []

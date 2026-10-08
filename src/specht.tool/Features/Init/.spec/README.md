@@ -46,29 +46,31 @@ A repository adopting the model copies `hooked`'s `.spec/schema/` and `.spec/tem
 
 ### Assumptions
 
-| ID  | Assumption                                                                                                                                                                                                                         |
-| --- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| A-1 | The schema set is four files - the manifest and the three frontmatter schemas - and the templates are four: `feature.md`, `decision.md`, `adr.md`, `lesson.md`. Together, "the eight files".                                       |
-| A-2 | The shipping copy is embedded from `src/specht.tool/schema/v<n>/` and `templates/v<n>/`; the root `.spec/schema/` and `.spec/templates/` are the live copy this repository checks itself with. The two are the same bytes (B-004). |
-| A-3 | Into a bare root, `init` writes the newest version the tool ships. Writing an older version on request, and the version of a file written beside an existing older-version manifest, are OQ-1.                                     |
+| ID  | Assumption                                                                                                                                                                                                                                                         |
+| --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| A-1 | The schema set is four files - the manifest and the three frontmatter schemas - and the templates are four: `feature.md`, `decision.md`, `adr.md`, `lesson.md`. Together, "the eight files".                                                                       |
+| A-2 | The shipping copy is embedded from `src/specht.tool/schema/v<n>/` and `templates/v<n>/`; the root `.spec/schema/` and `.spec/templates/` are the live copy this repository checks itself with. The two are the same bytes (B-004).                                 |
+| A-3 | Into a bare root, `init` writes the newest version the tool ships, and takes no version argument; beside a manifest pinning an older shipped version it writes at that version (B-012), and beside an unshipped pin it refuses (B-013). OQ-1, resolved 2026-10-08. |
 
 ## 3. Acceptance Criteria
 
 <!-- last written by: spec-author, 2026-10-07 -->
 
-| ID    | Claim                                                                                                                                                                                                  | Source                      | Status |
-| ----- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------- | ------ |
-| B-001 | Given `specht init` under a root with no `.spec/schema/` and no `.spec/templates/`, this Feature writes the eight files of the newest version it ships into those two folders and exits with code `0`. | README § 5; README § 6      | Active |
-| B-002 | Given any of the eight files exists under the root, this Feature leaves it byte-for-byte as it was.                                                                                                    | README § 9; OQ-1            | Active |
-| B-003 | Given a file `init` wrote, it is byte-identical to the tool's embedded copy.                                                                                                                           | README § 6                  | Active |
-| B-004 | Given this repository at one commit, the embedded copies of the newest version equal the files under its `.spec/schema/` and `.spec/templates/`.                                                       | README § 7; AGENTS.md       | Active |
-| B-005 | Given a frontmatter schema `init` wrote, its `$id` is `https://github.com/rlittlesii/specht/schema/v<n>/<file>` for the version written.                                                               | README § 6                  | Active |
-| B-006 | Given `init` runs, stdout lists each of the eight files, relative to the root, as written or skipped.                                                                                                  | README § 9                  | Active |
-| B-007 | Given `--root` names a path that is not a directory, this Feature names that path on stderr as it was given, writes nothing, and exits with code `2`.                                                  | README § 5; C-4             | Active |
-| B-008 | Given `init` runs, no file outside `<root>/.spec/schema/` and `<root>/.spec/templates/` is created or modified.                                                                                        | README § 9                  | Active |
-| B-009 | Given `specht init` without `--root`, this Feature takes the working directory as the root.                                                                                                            | AGENTS.md § CLI; README § 5 | Active |
-| B-010 | Given some of the eight files exist under the root and others do not, and the root has no manifest or a manifest pinning the newest version the tool ships, this Feature writes each absent one.       | README § 9                  | Active |
-| B-011 | Given some of the eight files exist under the root and others do not, and the root has no manifest or a manifest pinning the newest version the tool ships, this Feature exits with code `0`.          | README § 9                  | Active |
+| ID    | Claim                                                                                                                                                                                                           | Source                                             | Status |
+| ----- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------- | ------ |
+| B-001 | Given `specht init` under a root with no `.spec/schema/` and no `.spec/templates/`, this Feature writes the eight files of the newest version it ships into those two folders and exits with code `0`.          | README § 5; README § 6                             | Active |
+| B-002 | Given any of the eight files exists under the root, this Feature leaves it byte-for-byte as it was.                                                                                                             | README § 9; C-1                                    | Active |
+| B-003 | Given a file `init` wrote, it is byte-identical to the tool's embedded copy.                                                                                                                                    | README § 6                                         | Active |
+| B-004 | Given this repository at one commit, the embedded copies of the newest version equal the files under its `.spec/schema/` and `.spec/templates/`.                                                                | README § 7; AGENTS.md                              | Active |
+| B-005 | Given a frontmatter schema `init` wrote, its `$id` is `https://github.com/rlittlesii/specht/schema/v<n>/<file>` for the version written.                                                                        | README § 6                                         | Active |
+| B-006 | Given `init` runs, stdout lists each of the eight files, relative to the root, as written or skipped.                                                                                                           | README § 9                                         | Active |
+| B-007 | Given `--root` names a path that is not a directory, this Feature names that path on stderr as it was given, writes nothing, and exits with code `2`.                                                           | README § 5; C-4                                    | Active |
+| B-008 | Given `init` runs, no file outside `<root>/.spec/schema/` and `<root>/.spec/templates/` is created or modified.                                                                                                 | README § 9                                         | Active |
+| B-009 | Given `specht init` without `--root`, this Feature takes the working directory as the root.                                                                                                                     | AGENTS.md § CLI; README § 5                        | Active |
+| B-010 | Given some of the eight files exist under the root and others do not, and the root has no manifest or a manifest pinning the newest version the tool ships, this Feature writes each absent one.                | README § 9                                         | Active |
+| B-011 | Given some of the eight files exist under the root and others do not, and the root has no manifest or a manifest pinning the newest version the tool ships, this Feature exits with code `0`.                   | README § 9                                         | Active |
+| B-012 | Given some of the eight files exist under the root and others do not, and the manifest pins an older version the tool ships, this Feature writes each absent one at the pinned version and exits with code `0`. | OQ-1 (b); `0001-F7` B-005, B-013                   | Active |
+| B-013 | Given a manifest pinning a version the tool does not ship, this Feature names the pinned version and the versions it ships on stderr, writes nothing, and exits with code `3`.                                  | OQ-1 (c); `0001-F7` B-003; `0001-F2` decision 0003 | Active |
 
 ## 4. Constraints
 
@@ -85,13 +87,14 @@ A repository adopting the model copies `hooked`'s `.spec/schema/` and `.spec/tem
 
 <!-- last written by: spec-author, 2026-10-07 -->
 
-| #   | Item                                                                      | Exclusion Reason                                               |
-| --- | ------------------------------------------------------------------------- | -------------------------------------------------------------- |
-| 1   | Moving an existing `.spec/` to a newer version                            | `0001-F7` (`upgrade`).                                         |
-| 2   | Writing the report schema                                                 | The tool's contract, not the consumer's (`0001-F3` A-1).       |
-| 3   | Writing `.config/dotnet-tools.json`, `nuget.config`, a hook or a workflow | The consumer's install (README § 6); C-3.                      |
-| 4   | Writing a specification, an epic or a record from a template              | The agent copies a template; the tool never writes a document. |
-| 5   | A `--force` or any overwrite                                              | C-1; README § 9.                                               |
+| #   | Item                                                                      | Exclusion Reason                                                     |
+| --- | ------------------------------------------------------------------------- | -------------------------------------------------------------------- |
+| 1   | Moving an existing `.spec/` to a newer version                            | `0001-F7` (`upgrade`).                                               |
+| 2   | Writing the report schema                                                 | The tool's contract, not the consumer's (`0001-F3` A-1).             |
+| 3   | Writing `.config/dotnet-tools.json`, `nuget.config`, a hook or a workflow | The consumer's install (README § 6); C-3.                            |
+| 4   | Writing a specification, an epic or a record from a template              | The agent copies a template; the tool never writes a document.       |
+| 5   | A `--force` or any overwrite                                              | C-1; README § 9.                                                     |
+| 6   | A version argument to write an older set                                  | OQ-1 (a): a consumer starts at the newest and lags by not upgrading. |
 
 ## 6. Concern Separation
 
@@ -128,6 +131,8 @@ Pending: owned by `test-writer`.
 | B-009    | Init defaults the root to the working directory             | Missing | Missing |
 | B-010    | Init writes what is missing beside an existing file         | Missing | Missing |
 | B-011    | Init succeeds when some files already exist                 | Missing | Missing |
+| B-012    | Init fills a partial tree at its pinned older version       | Missing | Missing |
+| B-013    | Init refuses a version the tool does not ship               | Missing | Missing |
 
 ## 10. Lessons / Spec Deltas
 
@@ -139,9 +144,9 @@ None.
 
 <!-- last written by: spec-author, 2026-10-07 -->
 
-| ID   | Question                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      | Blocks | Resolution |
-| ---- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------ | ---------- |
-| OQ-1 | Once the tool ships more than one version: (a) does `init` take a version argument to write an older set, or does a consumer always start at the newest and lag by not upgrading; and (b) when an existing manifest pins a version older than the newest, does `init` write the absent files at the newest (leaving files of two versions in one `.spec/` under a manifest that pins only one, which `0001-F7` B-005 and B-013 assume never happens), at the pinned version, or refuse; and (c) when an existing manifest pins a version the tool does not ship, does `init` write the absent files at the newest, or refuse? | B-002  | Open       |
+| ID   | Question                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      | Blocks | Resolution                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| ---- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| OQ-1 | Once the tool ships more than one version: (a) does `init` take a version argument to write an older set, or does a consumer always start at the newest and lag by not upgrading; and (b) when an existing manifest pins a version older than the newest, does `init` write the absent files at the newest (leaving files of two versions in one `.spec/` under a manifest that pins only one, which `0001-F7` B-005 and B-013 assume never happens), at the pinned version, or refuse; and (c) when an existing manifest pins a version the tool does not ship, does `init` write the absent files at the newest, or refuse? | B-002  | Resolved 2026-10-08 by the repository owner: (a) no version argument - a consumer starts at the newest and lags by not upgrading (§ 5 #6); (b) absent files are written at the pinned version, keeping one version in `.spec/` (B-012); (c) refuse, writing nothing, with exit `3`, as the check gives that pin (B-013). Rejected: a `--version` option; writing at the newest beside an older pin; writing at the newest beside an unshipped pin. |
 
 ## 12. Sign-off
 

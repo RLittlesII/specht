@@ -123,9 +123,12 @@ Feature: Schema versioning
     Given the tool ships schema versions 1 and 2
     And the root is pinned to version 1
     And its manifest lowers one rule to a warning, disables another and renames the claims section
+    And its manifest already carries a key version 2 introduces, set to a value of the consumer's
     When upgrade runs against it
     Then the manifest pins version 2
     And the warning, the disabled rule and the renamed section are as the consumer set them
+    And the key version 2 introduces keeps the consumer's value
+    And every other key version 2 introduces is added
 
   @B-017
   Scenario: Upgrade prints what it changed
@@ -133,6 +136,7 @@ Feature: Schema versioning
     And the root is pinned to version 1
     When upgrade runs against it
     Then the standard output names the move from 1 to 2 and each file rewritten
+    And the standard output carries no diff of any file
 
   @B-018
   Scenario: Upgrade under a missing root is a missing-input failure
@@ -161,3 +165,5 @@ Feature: Schema versioning
     And a snapshot of every file under the root
     When upgrade runs against it
     Then no file under the root has changed
+    And the standard error names version 7 and the versions the tool ships
+    And the exit code is 3

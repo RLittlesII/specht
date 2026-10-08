@@ -52,9 +52,9 @@ summary: |
   that lagging is deliberate and catching up is one command.
 
   Risk 4: every shipped version stays embedded and byte-identical forever
-  (C-1), so a mistake is permanent once published. Three open questions,
-  all the owner's, block one item each: OQ-3 and OQ-6 (0047), OQ-5 (0048).
-  OQ-1, the source option's names, is architecture's to propose in § 7.
+  (C-1), so a mistake is permanent once published. OQ-3, OQ-5 and OQ-6 were
+  resolved by the owner on 2026-10-08 (0047, 0048 unblocked). OQ-1, the
+  source option's names, is architecture's to propose in § 7.
   The embedded version set builds on init's shipping copy (0042 -> 0051),
   and init pinning the newest version waits on init's write (0049 -> 0052).
 

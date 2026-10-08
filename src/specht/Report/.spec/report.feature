@@ -185,7 +185,7 @@ Feature: The report contract
     When the tool is asked to explain SPEC999
     Then the standard error names SPEC999
     And the standard output is empty
-    And the exit code is not 0
+    And the exit code is 4
 
   @B-021
   Scenario: No path in the document is absolute
@@ -194,3 +194,17 @@ Feature: The report contract
     When the check runs with JSON output
     Then every path in the document is relative to the root
     And no path uses the platform's directory separator where it differs from a forward slash
+
+  @B-029
+  Scenario: Explain without a manifest fails as the check does
+    Given a root directory with no manifest
+    When the tool is asked to explain SPEC031
+    Then the standard output is empty
+    And the exit code is 2
+
+  @B-029
+  Scenario: Explain with a rejected manifest fails as the check does
+    Given a root directory whose manifest carries a key the tool does not know
+    When the tool is asked to explain SPEC031
+    Then the standard output is empty
+    And the exit code is 3

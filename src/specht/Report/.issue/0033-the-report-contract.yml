@@ -46,6 +46,7 @@ claims:
   - B-026
   - B-027
   - B-028
+  - B-029
 
 created: "2026-10-08"
 updated: "2026-10-08"
@@ -60,7 +61,9 @@ summary: |
   Reaches the engine through 0034 -> 0021 and the command through 0035,
   0036 and 0040 -> 0026. The document's schema version and source fields
   (B-005) are defined here and filled by 0001-F7: 0042 and 0043 -> 0034.
-  --explain (0040) is blocked on OQ-1 and OQ-2, both the owner's.
+  OQ-1 and OQ-2 were resolved by the owner on 2026-10-08: an unknown
+  `--explain` id exits 4 (0001-F2 decision 0003), and no usable manifest
+  fails as the check does (B-029), so 0040 is unblocked.
 
 acceptance_criteria:
   - "B-001 — `--json` writes the document to stdout (0035)"
@@ -90,6 +93,7 @@ acceptance_criteria:
   - "B-026 — SPEC001 expected (0037)"
   - "B-027 — SPEC050 expected (0039)"
   - "B-028 — SPEC044 reused id expected (0039)"
+  - "B-029 — `--explain` without a usable manifest fails as the check does (0040)"
   - "§ 9 carries a row naming a test for each id above."
 
 decisions:

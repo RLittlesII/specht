@@ -213,7 +213,8 @@ By purpose:
 Stdout: one MSBuild-shaped line per violation (`path(line): error SPEC031: …`),
 then the summary lines (specification counts by layout, item count, rules
 evaluated, errors/warnings). Exit 0 clean, 1 violations (any violation under
-`--strict`), 2 missing root or manifest, 3 invalid manifest. `--json`
+`--strict`), 2 missing root or manifest, 3 invalid manifest, 4 a named
+thing not found (`0001-F2` decision 0003). `--json`
 replaces the stdout stream with the report document; each violation in it
 carries what the rule expected (Must-6). `--report` writes the same JSON to a
 path. `--explain SPEC031` prints the rule's full text. Never an absolute path

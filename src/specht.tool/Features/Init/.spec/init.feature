@@ -78,3 +78,22 @@ Feature: init
     And no other schema or template file beside it
     When init runs against it
     Then the exit code is 0
+
+  @B-012
+  Scenario: Init fills a partial tree at its pinned older version
+    Given the tool ships schema versions 1 and 2
+    And a root directory whose schema folder holds a manifest pinning version 1
+    And no other schema or template file beside it
+    When init runs against it
+    Then the seven other files are written at version 1
+    And the exit code is 0
+
+  @B-013 @boundary
+  Scenario: Init refuses a version the tool does not ship
+    Given the tool ships schema version 1 only
+    And a root directory whose schema folder holds a manifest pinning version 7
+    And a snapshot of every file under the root
+    When init runs against it
+    Then no file under the root has changed
+    And the standard error names version 7 and the versions the tool ships
+    And the exit code is 3

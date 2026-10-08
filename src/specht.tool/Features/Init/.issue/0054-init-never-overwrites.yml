@@ -1,8 +1,8 @@
 id: "0054"
-type: test
-title: Prove init leaves an existing file byte-for-byte
+type: task
+title: Respect existing files and the manifest's pinned version in init
 
-status: blocked
+status: ready-for-architecture
 
 priority: high # DERIVED
 risk: 2
@@ -11,7 +11,7 @@ rank: 74 # DERIVED: (4 × 20) − (2 × 3) + (0 × 5); value inherited from 0050
 parent: "0050"
 children: []
 
-depends_on: ["0052"] # proves a property of 0052's write
+depends_on: ["0052", "0042"] # extends 0052's write; an older pin needs 0042's version set
 blocks: []
 spikes: []
 
@@ -19,24 +19,36 @@ spec: src/specht.tool/Features/Init/.spec/README.md
 
 claims:
   - B-002
+  - B-012
+  - B-013
 
 created: "2026-10-08"
 updated: "2026-10-08"
 closed: null
 
 summary: |
-  Any of the eight files that exists is left as it was. Blocked on OQ-1, the
-  owner's, which the spec names as blocking B-002: whether init takes a
-  version argument, and what it does beside a manifest pinning an older or
-  unshipped version. C-1 already forbids any overwrite in 0052 and 0053; this
-  item is the claim's proof. Set ready-for-architecture once OQ-1 is
-  resolved.
+  Init beside what already exists: an existing file is left byte-for-byte;
+  beside a manifest pinning an older shipped version, the absent files are
+  written at that version, keeping one version in `.spec/`; beside a pin the
+  tool does not ship, init writes nothing and exits 3, as the check does.
+  Depends on 0042 because writing an older version needs the embedded
+  version set.
 
 acceptance_criteria:
-  - "B-002 — an existing file left byte-for-byte (OQ-1)"
+  - "B-002 — an existing file left byte-for-byte"
+  - "B-012 — older shipped pin: absent files at the pinned version; exit 0"
+  - "B-013 — unshipped pin: versions on stderr, nothing written, exit 3"
   - "§ 9 carries a row naming a test for each id above."
 
-decisions: []
+decisions:
+  - |
+    2026-10-08, the repository owner: OQ-1 resolved — (a) no version
+    argument, (b) write absent files at the pinned version, (c) refuse with
+    exit 3. Rejected: a `--version` option; writing at the newest beside an
+    older or unshipped pin. The spec gained B-012 and B-013 for (b) and (c);
+    both land here beside B-002. Status moved from blocked to
+    ready-for-architecture.
 
 out_of_scope:
+  - "A version argument — § 5 #6."
   - "A `--force` or any overwrite — § 5 #5."
