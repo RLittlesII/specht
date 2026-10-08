@@ -1,0 +1,45 @@
+id: "0087"
+type: task
+title: Name the published package in this repository's tool manifest
+
+status: ready-for-architecture
+
+priority: high # DERIVED
+risk: 3
+rank: 91 # DERIVED: (4 × 20) − (3 × 3) + (4 × 5); value inherited from 0086
+
+parent: "0086"
+children: []
+
+depends_on: ["0084"] # names the package 0084 publishes
+blocks: ["0032", "0067", "0077", "0085"]
+spikes: []
+
+spec: .config/.spec/README.md
+
+claims:
+  - B-002
+  - B-003
+  - B-007
+
+created: "2026-10-08"
+updated: "2026-10-08"
+closed: null
+
+summary: |
+  Add the feed as a package source whose credential comes from the
+  environment (C-1) and `specht.tool` to the local tool manifest, keeping
+  the solution's own restore free of the token (OQ-2). 0001-F2's 0032
+  switches `SpecCheck` to it. Risk 3: a source that needs a token for one
+  package and none for the rest.
+
+acceptance_criteria:
+  - "B-002 — committed manifest and source: `dotnet tool restore` with a read token restores the tool"
+  - "B-003 — the manifest names `specht.tool` at a published version"
+  - "B-007 — no token: the solution restores and builds"
+  - "§ 9 carries a row naming a test for each id above."
+
+decisions: []
+
+out_of_scope:
+  - "What `SpecCheck` does with it — § 5 #5, 0001-F2 B-014 (0032)."

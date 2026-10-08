@@ -1,0 +1,59 @@
+id: "0086"
+type: feature
+title: Consuming the package
+
+status: ready-for-architecture
+
+priority: high # DERIVED
+value: 4
+risk: 3
+rank: 71 # DERIVED: (4 × 20) − (3 × 3) + (0 × 5)
+
+parent: "0055"
+children: ["0087", "0088"]
+
+depends_on: []
+blocks: []
+spikes: []
+
+spec: .config/.spec/README.md
+
+claims:
+  - B-001
+  - B-002
+  - B-003
+  - B-004
+  - B-005
+  - B-006
+  - B-007
+
+created: "2026-10-08"
+updated: "2026-10-08"
+closed: null
+
+summary: |
+  As a consumer repository, I want to install the tool from the feed
+  through a committed local tool manifest, with the steps written down, so
+  that adopting the tool is a documented, repeatable act and carries no
+  engine.
+
+acceptance_criteria:
+  - "B-001 — empty repository: documented install adds `specht.tool` (0088)"
+  - "B-002 — clone with committed manifest and source: restore works (0087)"
+  - "B-003 — this repository's manifest names a published `specht.tool` (0087)"
+  - "B-004 — document names the feed and the source entry (0088)"
+  - "B-005 — document names the token scope and the CI token (0088)"
+  - "B-006 — document names the install and restore commands (0088)"
+  - "B-007 — no token: the solution still restores and builds (0087)"
+  - "§ 9 carries a row naming a test for each id above."
+
+decisions:
+  - |
+    2026-10-08, Claude at the owner's request: sliced into this repository
+    consuming its own package (0087), which epic 0001's 0032 and the feed
+    restores in CI, release and Renovate (0067, 0085, 0077) wait on, and
+    the install section of `README.md` (0088). Both wait on the first
+    publish (0084).
+
+out_of_scope:
+  - "Everything in § 5 of the spec."

@@ -11,7 +11,7 @@ rank: 74 # DERIVED: (4 × 20) − (2 × 3) + (0 × 5); value inherited from 0072
 parent: "0072"
 children: []
 
-depends_on: ["0073"] # a step in 0073's workflow
+depends_on: ["0073", "0087"] # a step in 0073's workflow; reads the package 0087 names
 blocks: []
 spikes: []
 

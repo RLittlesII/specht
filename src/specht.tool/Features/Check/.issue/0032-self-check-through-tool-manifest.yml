@@ -11,7 +11,7 @@ rank: 91 # DERIVED: (5 × 20) − (3 × 3) + (0 × 5); value inherited from 0025
 parent: "0025"
 children: []
 
-depends_on: ["0031"] # replaces the dotnet run call 0031 wires
+depends_on: ["0031", "0087"] # replaces the dotnet run call 0031 wires, with the package 0087 names
 blocks: []
 spikes: []
 

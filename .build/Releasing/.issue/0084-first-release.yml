@@ -6,13 +6,13 @@ status: ready-for-architecture
 
 priority: medium # DERIVED
 risk: 4
-rank: 48 # DERIVED: (3 × 20) − (4 × 3) + (0 × 5); value inherited from 0082
+rank: 58 # DERIVED: (3 × 20) − (4 × 3) + (2 × 5); value inherited from 0082
 
 parent: "0082"
 children: []
 
 depends_on: ["0083", "0010", "0004"] # the push step of 0083's workflow; C-2: the first tag waits on 0001-F5; C-2: the first tag waits on 0001-F6
-blocks: []
+blocks: ["0087", "0088"]
 spikes: []
 
 spec: .build/Releasing/.spec/README.md
