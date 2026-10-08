@@ -249,6 +249,10 @@ public sealed partial class BuildSteps(IUnitTestRuntimeProvider runtime) : IDisp
         var start = new ProcessStartInfo(command.FileName)
         {
             WorkingDirectory = _root,
+
+            // A build under test never reads the terminal. NUKE waits for a key after regenerating CI
+            // configuration, which a synthetic tree always triggers, unless its input is redirected.
+            RedirectStandardInput = true,
             RedirectStandardOutput = true,
             RedirectStandardError = true,
             Environment = { ["FIXTURE_MARKERS"] = Markers, ["NO_COLOR"] = "1" },
@@ -260,6 +264,7 @@ public sealed partial class BuildSteps(IUnitTestRuntimeProvider runtime) : IDisp
         }
 
         using var process = Process.Start(start)!;
+        process.StandardInput.Close();
         var output = process.StandardOutput.ReadToEndAsync();
         var error = process.StandardError.ReadToEndAsync();
         await process.WaitForExitAsync();
