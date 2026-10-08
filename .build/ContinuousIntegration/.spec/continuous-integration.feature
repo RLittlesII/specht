@@ -14,9 +14,9 @@ Feature: Continuous integration
     Then the build runs against that commit
 
   @B-003
-  Scenario: Every run covers three operating systems
+  Scenario: Every run covers Linux and Windows
     When integration runs
-    Then the build runs on Linux, on Windows and on macOS
+    Then the build runs on Linux and on Windows
 
   @B-004
   Scenario: Every operating system runs every gate
@@ -54,7 +54,7 @@ Feature: Continuous integration
   @B-010
   Scenario: Each operating system is its own check
     When integration runs
-    Then the Linux, Windows and macOS builds each report as a separate check
+    Then the Linux and Windows builds each report as a separate check
 
   @B-011
   Scenario: A run reads the feed with its own token

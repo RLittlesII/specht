@@ -308,8 +308,12 @@ public sealed partial class BuildSteps(IUnitTestRuntimeProvider runtime) : IDisp
         File.Copy(Path.Combine(Repository, "package.json"), Path.Combine(_root, "package.json"));
         Write(".nuke/parameters.json", """{ "Solution": "fixture.slnx" }""");
 
-        // NUKE rewrites its schema into the root it is given; the committed copy makes that rewrite a no-op.
+        // NUKE rewrites its schema and the CI workflow into the root it is given, and generating the workflow needs the
+        // workflow and the entry script it names to exist there; the committed copies make both rewrites a no-op.
         File.Copy(Path.Combine(Repository, ".nuke", "build.schema.json"), Path.Combine(_root, ".nuke", "build.schema.json"));
+        File.Copy(Path.Combine(Repository, "build.cmd"), Path.Combine(_root, "build.cmd"));
+        Directory.CreateDirectory(Path.Combine(_root, ".github", "workflows"));
+        File.Copy(Path.Combine(Repository, ".github", "workflows", "ci.yml"), Path.Combine(_root, ".github", "workflows", "ci.yml"));
 
         var entries = projects.Select(static project => $"""  <Project Path="{project.Name}/{project.Name}.csproj" />""");
         Write("fixture.slnx", $"<Solution>\n{string.Join("\n", entries)}\n</Solution>\n");

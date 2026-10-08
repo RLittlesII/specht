@@ -110,8 +110,13 @@ path. The commit body opens with `Delivers <id>` — or `Specifies <feature path
 when authoring a specification — and cites the claims it satisfies. There is no
 issue for `Closes` to close.
 
+The subject is `<type>(<id>): <summary>` — the delivered item's `type`
+(`feature`, `task`, `test`, `bug`, `spike`) and its id, never a conventional-commit
+type or a component scope (`feat(ci):`). The pull-request title takes the same
+form, because a squash of more than one commit takes its subject from the title.
+
 ```
-fix: relativize the report path before writing it
+bug(0004): relativize the report path before writing it
 
 Delivers 0004. Satisfies 0001-F1 B-012. Constraints preserved: 0001-F1 C-3.
 ```
