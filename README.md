@@ -13,7 +13,7 @@ This is a repository for a dotnet tool that will check your specification docume
 > Written as `spec-check`; the product was then named `specht` (command
 > `specht`, package `specht.tool`, namespace `specht`), and the brief was
 > revised to match in the second requirements session (`REQUIREMENTS.md`
-> § Revision log).
+> § Revision log, at commit `254aabc`).
 
 ## 1. What this is
 
@@ -254,7 +254,8 @@ hardcodes moves into the manifest so rules read _roles_, not literals:
 ## 6. Open questions, decided (2026-10-07)
 
 Every default below was confirmed or replaced by the owner in the second
-requirements session (`REQUIREMENTS.md` § Open Questions). Each is a decision
+requirements session (`REQUIREMENTS.md` § Open Questions, at commit
+`254aabc`). Each is a decision
 the owner can reverse; record a reversal as a decision, never silently.
 
 | Question                                           | Decision                                                                                                                                                                                                                                                                                                                                                                                                   | Why                                                                                                                                                                          |

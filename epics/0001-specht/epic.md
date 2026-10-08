@@ -21,7 +21,7 @@ line, a rule id, a message and what the rule expected. The schema and the
 checker live here, once; every consumer pins a schema version, installs the
 tool through a local tool manifest, and carries no engine.
 
-The need is decided in `REQUIREMENTS.md` and the design direction in
+The need is decided in `REQUIREMENTS.md` (at commit `254aabc`) and the design direction in
 `README.md` § 5. This epic is the tool. `hooked` consuming it and Transporter
 installing it are the two "done" events (README § 2) and are not Features of
 this repository: each is a change in that consumer.

@@ -33,7 +33,9 @@ packs; `IsPackable=false` everywhere else.
 `README.md` is the seed brief and the design authority: requirements (§ 2), what
 was extracted from `hooked` (§ 3), the rule vocabulary (§ 4), the drafted design
 (§ 5), open questions with their defaults (§ 6), the order of work (§ 8) and the
-non-negotiables (§ 9). `REQUIREMENTS.md` is the session it condenses.
+non-negotiables (§ 9). The requirements session it condenses, `REQUIREMENTS.md`,
+was retired once the specifications absorbed it; citations pin it to commit
+`254aabc` — read it with `git show 254aabc:REQUIREMENTS.md`.
 
 ## Setup
 
@@ -334,7 +336,7 @@ Every tracked markdown file opens with YAML frontmatter. Skill and role files
 declare `name` and `description`; everything else declares `title`, `description`
 and `type`. The blanks in [`.spec/templates/`](.spec/templates/) carry the `type`
 of the file they produce, so a copy needs no frontmatter edit beyond its title and
-description. Runtime prompts, `README.md` and `REQUIREMENTS.md` are exempt.
+description. Runtime prompts and `README.md` are exempt.
 
 ## Skills
 

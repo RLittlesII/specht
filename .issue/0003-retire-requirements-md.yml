@@ -1,0 +1,50 @@
+id: "0003"
+type: task
+title: Retire REQUIREMENTS.md and pin its citations to a commit
+
+status: done
+
+priority: low # DERIVED
+value: 1
+risk: 1
+rank: 17 # DERIVED: 1×20 − 1×3 + 0×5
+
+parent: null
+children: []
+
+depends_on: []
+blocks: [] # DERIVED
+spikes: []
+
+spec: null
+
+claims: []
+
+created: "2026-10-08"
+updated: "2026-10-08"
+closed: "2026-10-08"
+
+summary: |
+  REQUIREMENTS.md is the record of the requirements sessions the seed brief
+  condenses. Every decision in it now lives in README.md § 6, the epic and the
+  Feature specifications, so a live copy only invites edits nobody reviews
+  against them. Delete it and cite the last version by commit instead: git
+  keeps it, and a pinned citation cannot drift.
+
+acceptance_criteria:
+  - REQUIREMENTS.md is deleted.
+  - Every citation of it names commit 254aabc, its last version.
+  - Each open question it carried is held elsewhere — OQ-1 in
+    src/specht.tool/.spec/README.md, the report shape in
+    src/specht/Report/.spec/ — or needs no answer for "done" (the sibling
+    repositories' names).
+
+decisions:
+  - "2026-10-08, repository owner: specifications are the source of truth, so
+    the session record is cited at a commit rather than kept live. Rejected:
+    keeping the file because citations name it."
+
+out_of_scope:
+  - The installed .claude/skills/specht-conventions/SKILL.md still lists
+    REQUIREMENTS.md; it is gitignored and reinstalled from Skillfile, so it is
+    corrected upstream, not here.
