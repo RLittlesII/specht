@@ -1,0 +1,40 @@
+id: "0030"
+type: test
+title: Prove a check writes nothing under the root
+
+status: ready-for-architecture
+
+priority: high # DERIVED
+risk: 2
+rank: 94 # DERIVED: (5 × 20) − (2 × 3) + (0 × 5); value inherited from 0025
+
+parent: "0025"
+children: []
+
+depends_on: ["0026"] # exercises the command 0026 builds
+blocks: []
+spikes: []
+
+spec: src/specht.tool/Features/Check/.spec/README.md
+
+claims:
+  - B-012
+
+created: "2026-10-08"
+updated: "2026-10-08"
+closed: null
+
+summary: |
+  A test over a synthetic root that no file is created, modified or deleted
+  by a run, through Spectre's command tester (C-7). The `--report` file is
+  the one exemption, and it is 0001-F3's to write.
+
+acceptance_criteria:
+  - "B-012 — root unchanged after a run, except the `--report` file"
+  - "§ 9 carries a row naming a test for each id above."
+
+decisions: []
+
+out_of_scope:
+  - "Writing the `--report` file — § 5 #10, 0001-F3."
+  - "Autofix — § 5 #5."

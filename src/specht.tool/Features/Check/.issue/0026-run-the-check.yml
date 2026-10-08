@@ -1,0 +1,52 @@
+id: "0026"
+type: task
+title: Run the check, print diagnostic lines and exit with the verdict
+
+status: ready-for-architecture
+
+priority: high # DERIVED
+risk: 3
+rank: 121 # DERIVED: (5 × 20) − (3 × 3) + (6 × 5); value inherited from 0025
+
+parent: "0025"
+children: []
+
+depends_on: ["0021"] # calls the copied engine's runner
+blocks: ["0014", "0027", "0028", "0029", "0030", "0031"]
+spikes: []
+
+spec: src/specht.tool/Features/Check/.spec/README.md
+
+claims:
+  - B-001
+  - B-003
+  - B-004
+  - B-009
+  - B-013
+
+created: "2026-10-08"
+updated: "2026-10-08"
+closed: null
+
+summary: |
+  The default command: resolve the root, call the runner, print each
+  violation as `<path>(<line>): <severity> SPEC###: <message>` on stdout,
+  and fold the report into exit 0 or 1, or 1 on any violation under
+  `--strict`. Exit codes are named constants returned, never thrown (C-2); a
+  command parses, runs and folds and nothing else (C-4). Every other Check
+  item hangs off this one.
+
+acceptance_criteria:
+  - "B-001 — one MSBuild-shaped line per violation, engine order"
+  - "B-003 — exit 1 on an error, 0 on none"
+  - "B-004 — `--strict`: exit 1 on any severity"
+  - "B-009 — stdout lines and summary only; tool messages on stderr"
+  - "B-013 — derived paths root-relative with `/`; typed paths echoed as given"
+  - "§ 9 carries a row naming a test for each id above."
+
+decisions: []
+
+out_of_scope:
+  - "The summary — 0028."
+  - "`--json`, `--report`, `--explain` — § 5 #1, 0001-F3."
+  - "A rule, reader or path helper inside Features/ — C-4."

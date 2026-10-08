@@ -56,9 +56,8 @@ summary: |
   for byte after every literal moves. OQ-1 (the manifest's key names) is open
   and blocks B-001 to B-011; architecture resolves it in § 7 and a decision
   record. The engine copy and baseline report (0001-F1) are the edges
-  0011 -> 0021 and 0012 -> 0022. Still waits on work no item tracks yet: the
-  CLI's exit codes (0001-F2), which 0013 needs; add that edge when its items
-  are cut. Discovery reads this manifest through 0005 -> 0011.
+  0011 -> 0021 and 0012 -> 0022; the check command (0001-F2) is 0013 -> 0027
+  and 0014 -> 0026. Discovery reads this manifest through 0005 -> 0011.
 
 acceptance_criteria:
   - "B-001 — sections by role (0015)"

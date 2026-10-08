@@ -1,0 +1,77 @@
+id: "0025"
+type: feature
+title: The check command
+
+status: ready-for-architecture
+
+priority: high # DERIVED
+value: 5
+risk: 3
+rank: 91 # DERIVED: (5 × 20) − (3 × 3) + (0 × 5)
+
+parent: "0001"
+children: ["0026", "0027", "0028", "0029", "0030", "0031", "0032"]
+
+depends_on: []
+blocks: []
+spikes: []
+
+spec: src/specht.tool/Features/Check/.spec/README.md
+
+claims:
+  - B-001
+  - B-002
+  - B-003
+  - B-004
+  - B-005
+  - B-006
+  - B-007
+  - B-008
+  - B-009
+  - B-010
+  - B-011
+  - B-012
+  - B-013
+  - B-014
+
+created: "2026-10-08"
+updated: "2026-10-08"
+closed: null
+
+summary: |
+  As a pre-commit hook, a CI build or an agent mid-write, I want one specht
+  command that prints MSBuild-shaped lines and exits with a code all three
+  understand, so that every call site gets the same verdict from a tool
+  instead of hooked's Nuke target (Must-1).
+
+  Reaches the engine through 0026 -> 0021. The summary (0028) also waits on
+  0001-F3 B-005, which has no item yet; add that edge when F3 is cut.
+
+acceptance_criteria:
+  - "B-001 — MSBuild-shaped line per violation, engine order (0026)"
+  - "B-002 — summary after the violations (0028)"
+  - "B-003 — exit 1 on an error, 0 otherwise (0026)"
+  - "B-004 — `--strict` exits 1 on any violation (0026)"
+  - "B-005 — root not a directory: stderr, exit 2 (0027)"
+  - "B-006 — no manifest: stderr, exit 2 (0027)"
+  - "B-007 — manifest does not parse: stderr, exit 3 (0027)"
+  - "B-008 — `--help` names `--root` and `--strict` (0029)"
+  - "B-009 — stdout product only; tool messages on stderr (0026)"
+  - "B-010 — shell, SpecCheck and pre-commit agree (0031)"
+  - "B-011 — `./build.sh SpecCheck` runs the command (0031)"
+  - "B-012 — nothing written but the `--report` file (0030)"
+  - "B-013 — derived paths relative; typed paths echoed (0026)"
+  - "B-014 — SpecCheck through the local tool manifest (0032)"
+  - "§ 9 carries a row naming a test for each id above."
+
+decisions:
+  - |
+    2026-10-08, Claude at the owner's request: sliced into the command's
+    core run (0026) and the pieces that hang off it — input failures, the
+    summary, help, the read-only proof — then the build wiring: call-site
+    parity and the self-check (0031), and the tool-manifest switch (0032),
+    which needs a published package. Rejected: the self-check inside 0026,
+    which would tie the command's first change to husky and Nuke wiring.
+
+out_of_scope:
+  - "Everything in § 5 of the spec."

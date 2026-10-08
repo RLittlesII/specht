@@ -11,7 +11,7 @@ rank: 74 # DERIVED: (4 × 20) − (2 × 3) + (0 × 5); value inherited from 0010
 parent: "0010"
 children: []
 
-depends_on: ["0011"] # surfaces the rejections 0011 raises
+depends_on: ["0011", "0027"] # surfaces 0011's rejections through 0027's exit 3
 blocks: []
 spikes: []
 
@@ -27,8 +27,8 @@ closed: null
 
 summary: |
   How a rejected manifest reaches the user: exit code 3, the rejection on
-  stderr, nothing on stdout. Depends on 0011 for the rejection. Also needs the
-  CLI's exit-code contract (0001-F2 B-007), which has no item yet.
+  stderr, nothing on stdout. Depends on 0011 for the rejection and on 0027,
+  which sets exit 3 for a manifest that does not parse (0001-F2 B-007).
 
 acceptance_criteria:
   - "B-022 — exit code 3"

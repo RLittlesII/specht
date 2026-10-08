@@ -1,0 +1,40 @@
+id: "0028"
+type: task
+title: Print the summary after the violations
+
+status: ready-for-architecture
+
+priority: high # DERIVED
+risk: 2
+rank: 99 # DERIVED: (5 × 20) − (2 × 3) + (1 × 5); value inherited from 0025
+
+parent: "0025"
+children: []
+
+depends_on: ["0026"] # follows the violation lines 0026 prints
+blocks: ["0005"]
+spikes: []
+
+spec: src/specht.tool/Features/Check/.spec/README.md
+
+claims:
+  - B-002
+
+created: "2026-10-08"
+updated: "2026-10-08"
+closed: null
+
+summary: |
+  After the violations: specifications per layout, items, rule ids
+  evaluated, errors and warnings, each as 0001-F3 B-005 defines it. Waits
+  also on F3, which has no item yet. Discovery's 0005 names layouts in this
+  summary by their manifest name, so it waits on this.
+
+acceptance_criteria:
+  - "B-002 — the five counts, after the violations, per 0001-F3 B-005"
+  - "§ 9 carries a row naming a test for each id above."
+
+decisions: []
+
+out_of_scope:
+  - "The summary inside the `--json` document — § 5 #1, 0001-F3."

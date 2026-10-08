@@ -1,0 +1,44 @@
+id: "0031"
+type: task
+title: Run the command from SpecCheck and pre-commit with one verdict
+
+status: ready-for-architecture
+
+priority: high # DERIVED
+risk: 3
+rank: 96 # DERIVED: (5 × 20) − (3 × 3) + (1 × 5); value inherited from 0025
+
+parent: "0025"
+children: []
+
+depends_on: ["0026"] # wires the command 0026 builds into the build and hook
+blocks: ["0032"]
+spikes: []
+
+spec: src/specht.tool/Features/Check/.spec/README.md
+
+claims:
+  - B-010
+  - B-011
+
+created: "2026-10-08"
+updated: "2026-10-08"
+closed: null
+
+summary: |
+  Point `./build.sh SpecCheck` and the pre-commit hook at the command —
+  through `dotnet run --project src/specht.tool -- --root .` until a package
+  exists (A-2) — and prove the shell, the target and the hook print the same
+  lines and exit with the same code on one root. Risk 3: Nuke and husky
+  wiring, and the one test allowed to read this repository's real tree (C-7).
+
+acceptance_criteria:
+  - "B-010 — shell, SpecCheck and pre-commit: same lines, same code"
+  - "B-011 — `./build.sh SpecCheck` runs the command on the repository root, exits with its code"
+  - "§ 9 carries a row naming a test for each id above."
+
+decisions: []
+
+out_of_scope:
+  - "Calling the tool through the local tool manifest — 0032."
+  - "hooked's Nuke target — § 5 #6."
