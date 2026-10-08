@@ -139,9 +139,10 @@ None.
 
 <!-- last written by: spec-reviewer, 2026-10-08 -->
 
-| Section | Status | Reviewer      | Note                |
-| ------- | ------ | ------------- | ------------------- |
-| 1-5     | 🟡     | spec-reviewer | Draft; not reviewed |
+| Section | Status | Reviewer      | Note                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| ------- | ------ | ------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1-5     | 🟡     | spec-reviewer | Draft; not reviewed                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| 1-5     | 🔴     | spec-reviewer | Round 1 (2026-10-08) - blocked, reviewing commit `04fdc28`. Decision 0001, OQ-1 and C-1 are stated faithfully, and C-1 agrees with `0001-F7`. Blocking (spec-author): B-001 says one commit computes the same version on any two machines, with no condition on the ref, while B-003 and B-004 give the same commit a public version from `main` and a prerelease from any other ref; state B-001 for the same commit built from the same ref. Non-blocking (spec-author): B-005 tests `0055-F1`'s `Pack` but `depends_on` is empty; decision 0001's Affects stops at B-007. |
 
 ## Tasks
 
