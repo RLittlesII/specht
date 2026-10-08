@@ -84,7 +84,8 @@ Feature: The check command
 
   @B-010
   Scenario: Three call sites get one verdict
-    Given a prepared root holding one error-severity and one warning-severity violation
+    Given the tool honours rule settings in the manifest
+    And a prepared root holding one error-severity and one warning-severity violation
     When the check runs against that root from a shell
     And the check runs against that root through the build target
     And the check runs against that root through the pre-commit hook
@@ -93,7 +94,8 @@ Feature: The check command
 
   @B-011
   Scenario: This repository checks itself with the tool
-    Given this repository's tree at one commit
+    Given the tool honours rule settings in the manifest
+    And this repository's tree at one commit
     When the build's SpecCheck target runs
     Then the check runs against this repository's root
     And the target exits with the check's exit code
