@@ -25,6 +25,7 @@
       "type": "string",
       "enum": [
         "Compile",
+        "Format",
         "Pack",
         "Restore",
         "SpecCheck",
@@ -105,6 +106,13 @@
         "Configuration": {
           "type": "string",
           "description": "Configuration to build - Default is 'Debug' (local) or 'Release' (server)"
+        },
+        "Files": {
+          "type": "array",
+          "description": "Files for Format to check, relative to the root - Default is every C# file in the solution and every Markdown file",
+          "items": {
+            "type": "string"
+          }
         },
         "Solution": {
           "type": "string",
