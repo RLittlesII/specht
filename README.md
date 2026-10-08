@@ -354,7 +354,8 @@ Plus the four role contracts in [`.claude/agents/`](./.claude/agents/README.md),
 templates in [`.spec/templates/`](./.spec/templates) and the schema set in
 [`.spec/schema/`](./.spec/schema) — the live copy this repository checks itself
 with, and the same bytes the tool embeds and writes into a consumer on
-`specht init`. The entry point for all of it is [`AGENTS.md`](./AGENTS.md).
+`specht init` for the tool-owned files, with the manifest matching on its
+tool-owned keys only (`0001-F4` B-004). The entry point for all of it is [`AGENTS.md`](./AGENTS.md).
 
 These were seeded from [`hooked`](https://github.com/RLittlesII/hooked) pull
 request #217 and rewritten for this repository: `hooked`'s product skills

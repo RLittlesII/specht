@@ -96,7 +96,10 @@ files and, in the manifest, changes only `schemaVersion` and the keys the next
 version adds, so consumer settings survive (`0001-F7` decision 0001).
 
 This repository's own `.spec/schema/` and `.spec/templates/` are that live copy
-— the same bytes as the embedded `v1`, and a test says so.
+— the same bytes as the embedded `v1` for the tool-owned files (the three
+frontmatter schemas and the templates), and the same manifest on its tool-owned
+keys, with rule settings and other consumer configuration excluded; a test says
+so (`0001-F4` B-004).
 
 ## CLI
 

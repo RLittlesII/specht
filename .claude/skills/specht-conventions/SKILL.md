@@ -70,7 +70,8 @@ epics/                         one folder per epic - ids share the items' number
 
 .spec/                         repo-wide adr/, lessons/, templates/, schema/
                                schema/ and templates/ are the live copy specht checks
-                               itself with - the same bytes as the embedded v1
+                               itself with - the same bytes as the embedded v1 for the
+                               tool-owned files; the manifest on its tool-owned keys
 .claude/agents/                the four role contracts - tracked
 .claude/skills/                these skills - tracked; the rest of .claude/ is gitignored
                                (no Skillfile is committed)
@@ -191,7 +192,8 @@ is unset and no git hook fires.
 - A package version in a `.csproj`.
 - A specification in two places at once.
 - A second copy of a schema file that can drift. `.spec/schema/` and the embedded
-  `schema/v1/` are the same bytes, and a test says so.
+  `schema/v1/` are the same bytes for the tool-owned files, and the manifest
+  matches on its tool-owned keys; a test says so (`0001-F4` B-004).
 - An absolute path in any output, report, log line or test fixture.
 - A write into a consumer's tree from anything but `init` and `upgrade`, or an
   overwrite of an existing file from either.
