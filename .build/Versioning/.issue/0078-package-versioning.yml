@@ -1,0 +1,59 @@
+id: "0078"
+type: feature
+title: Package versioning
+
+status: ready-for-architecture
+
+priority: high # DERIVED
+value: 4
+risk: 3
+rank: 71 # DERIVED: (4 × 20) − (3 × 3) + (0 × 5)
+
+parent: "0055"
+children: ["0079", "0080", "0081"]
+
+depends_on: []
+blocks: []
+spikes: []
+
+spec: .build/Versioning/.spec/README.md
+
+claims:
+  - B-001
+  - B-002
+  - B-003
+  - B-004
+  - B-005
+  - B-006
+  - B-007
+  - B-008
+
+created: "2026-10-08"
+updated: "2026-10-08"
+closed: null
+
+summary: |
+  As the maintainer, I want the package version to be a function of the
+  commit, never of a hand edit, so that a release is a tag and the version
+  it carries cannot disagree with it.
+
+acceptance_criteria:
+  - "B-001 — same commit, two machines, same version (0079)"
+  - "B-002 — later commit on `main`, higher version (0079)"
+  - "B-003 — `main` or `v*` tag: no prerelease suffix (0079)"
+  - "B-004 — other refs: prerelease suffix naming the commit (0079)"
+  - "B-005 — `Pack` carries the computed version (0080)"
+  - "B-006 — a `version.json` change moves no schema version (0081)"
+  - "B-007 — `dotnet nbgv tag` tags `v<version>` (0079)"
+  - "B-008 — first `version.json` gives `0.1.` on `main` (0079)"
+  - "§ 9 carries a row naming a test for each id above."
+
+decisions:
+  - |
+    2026-10-08, Claude at the owner's request: sliced into computing the
+    version (0079), carrying it into the package (0080), which the release
+    needs, and the independence test (0081), which needs epic 0001's schema
+    versioning and so must not hold the release back.
+
+out_of_scope:
+  - "Everything in § 5 of the spec."

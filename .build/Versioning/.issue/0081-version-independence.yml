@@ -1,0 +1,40 @@
+id: "0081"
+type: test
+title: Prove a package version change moves no schema version
+
+status: ready-for-architecture
+
+priority: high # DERIVED
+risk: 2
+rank: 74 # DERIVED: (4 × 20) − (2 × 3) + (0 × 5); value inherited from 0078
+
+parent: "0078"
+children: []
+
+depends_on: ["0079", "0049"] # changes 0079's version.json; asserts the schemaVersion 0049 makes init write
+blocks: []
+spikes: []
+
+spec: .build/Versioning/.spec/README.md
+
+claims:
+  - B-006
+
+created: "2026-10-08"
+updated: "2026-10-08"
+closed: null
+
+summary: |
+  A test that bumps `version.json` and asserts the embedded version set and
+  the `schemaVersion` `specht init` writes do not move (C-1). Waits on
+  epic 0001's 0049, which makes init write it; 0049 already waits on the
+  embedded set (0042).
+
+acceptance_criteria:
+  - "B-006 — `version.json` alone changed: embedded schema versions and `init`'s `schemaVersion` unchanged"
+  - "§ 9 carries a row naming a test for each id above."
+
+decisions: []
+
+out_of_scope:
+  - "Schema versions — § 5 #1, 0001-F7."
