@@ -1,0 +1,38 @@
+id: "0069"
+type: task
+title: Write one Cobertura report per test project
+
+status: ready-for-architecture
+
+priority: high # DERIVED
+risk: 2
+rank: 79 # DERIVED: (4 × 20) − (2 × 3) + (1 × 5); value inherited from 0068
+
+parent: "0068"
+children: []
+
+depends_on: ["0057"] # collected during 0057's Test target
+blocks: ["0070"]
+spikes: []
+
+spec: test/.spec/README.md
+
+claims:
+  - B-001
+
+created: "2026-10-08"
+updated: "2026-10-08"
+closed: null
+
+summary: |
+  Collect coverage from the tiers `Test` already runs (C-3), never a
+  separate run, and only of `src/**` (C-4).
+
+acceptance_criteria:
+  - "B-001 — `Test`: one Cobertura file per test project under `.artifacts/coverage/`"
+  - "§ 9 carries a row naming a test for each id above."
+
+decisions: []
+
+out_of_scope:
+  - "Running the tests — § 5 #3, 0055-F1."

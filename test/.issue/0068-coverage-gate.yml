@@ -1,0 +1,58 @@
+id: "0068"
+type: feature
+title: The coverage gate
+
+status: ready-for-architecture
+
+priority: high # DERIVED
+value: 4
+risk: 2
+rank: 74 # DERIVED: (4 × 20) − (2 × 3) + (0 × 5)
+
+parent: "0055"
+children: ["0069", "0070", "0071"]
+
+depends_on: []
+blocks: []
+spikes: []
+
+spec: test/.spec/README.md
+
+claims:
+  - B-001
+  - B-002
+  - B-003
+  - B-004
+  - B-005
+  - B-006
+  - B-007
+  - B-008
+
+created: "2026-10-08"
+updated: "2026-10-08"
+closed: null
+
+summary: |
+  As the maintainer, I want new code under the 80% patch target to fail
+  its pull request while the total is only reported, so that coverage
+  rises with each change and never blocks one for history.
+
+acceptance_criteria:
+  - "B-001 — one Cobertura report per test project under `.artifacts/coverage/` (0069)"
+  - "B-002 — every CI run uploads to Codecov (0070)"
+  - "B-003 — patch under 80%: status fails (0071)"
+  - "B-004 — patch at 80% or more: status passes (0071)"
+  - "B-005 — lower total: reported, passes (0071)"
+  - "B-006 — lines outside `src/` not counted (0071)"
+  - "B-007 — failed upload: warning, check not failed (0070)"
+  - "B-008 — no measured line changed: patch passes (0071)"
+  - "§ 9 carries a row naming a test for each id above."
+
+decisions:
+  - |
+    2026-10-08, Claude at the owner's request: sliced by where each claim
+    runs - the build writes the reports (0069), CI uploads them (0070),
+    Codecov's configuration decides the statuses (0071).
+
+out_of_scope:
+  - "Everything in § 5 of the spec."

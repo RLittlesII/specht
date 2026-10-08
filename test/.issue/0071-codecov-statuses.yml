@@ -1,0 +1,48 @@
+id: "0071"
+type: task
+title: Configure Codecov's patch and project statuses
+
+status: ready-for-architecture
+
+priority: high # DERIVED
+risk: 2
+rank: 74 # DERIVED: (4 × 20) − (2 × 3) + (0 × 5); value inherited from 0068
+
+parent: "0068"
+children: []
+
+depends_on: ["0070"] # statuses on 0070's uploads
+blocks: []
+spikes: []
+
+spec: test/.spec/README.md
+
+claims:
+  - B-003
+  - B-004
+  - B-005
+  - B-006
+  - B-008
+
+created: "2026-10-08"
+updated: "2026-10-08"
+closed: null
+
+summary: |
+  `.codecov.yml` carries the 80% patch target once (C-1), measures
+  `src/**` only (C-4), and makes the project status informational.
+  0055-F8's checklist requires the patch status by the name this sets.
+
+acceptance_criteria:
+  - "B-003 — changed measured lines under 80%: patch fails"
+  - "B-004 — 80% or more: patch passes"
+  - "B-005 — lower total: project reports total and change, passes"
+  - "B-006 — changes outside `src/` not counted"
+  - "B-008 — no measured line changed: patch passes"
+  - "§ 9 carries a row naming a test for each id above."
+
+decisions: []
+
+out_of_scope:
+  - "A blocking total — § 5 #1."
+  - "Requiring the status — § 5 #2, 0055-F8."
