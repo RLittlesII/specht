@@ -37,7 +37,7 @@ closed: null
 
 summary: |
   As the maintainer, I want every pull request and every push to `main` to
-  run the build on three operating systems, from a workflow NUKE
+  run the build on Linux and Windows, from a workflow NUKE
   generates, so that nothing reaches `main` that the build has not passed
   everywhere the tool runs.
 
@@ -47,7 +47,7 @@ summary: |
 acceptance_criteria:
   - "B-001 — pull request to `main`: build on its head (0064)"
   - "B-002 — push to `main`: build on the commit (0064)"
-  - "B-003 — once each on ubuntu, windows and macos (0064)"
+  - "B-003 — once each on ubuntu and windows (0064)"
   - "B-004 — `Format`, `Compile`, `Test`, `SpecCheck`, `Pack` through the entry script (0064)"
   - "B-005 — any target fails: that system's check fails (0064)"
   - "B-006 — a specification violation annotated on the diff (0066)"

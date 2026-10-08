@@ -1,0 +1,3 @@
+# Every text file is checked out with LF, the line ending .editorconfig and the Format target require, on every
+# system - including a Windows clone or CI runner whose core.autocrlf would otherwise rewrite it to CRLF (0055-F2 § 10).
+* text=auto eol=lf

@@ -38,9 +38,9 @@ public sealed class ContinuousIntegrationSteps
     public void ThenTheBuildRunsAgainstThatCommit() =>
         Jobs().Select(static job => Checkout(job)["ref"]).Should().AllBe(HeadCommit);
 
-    [Then("the build runs on Linux, on Windows and on macOS")]
-    public void ThenTheBuildRunsOnLinuxOnWindowsAndOnMacOs() =>
-        Jobs().Select(static job => Scalar(job, "runs-on")).Should().BeEquivalentTo("ubuntu-latest", "windows-latest", "macos-latest");
+    [Then("the build runs on Linux and on Windows")]
+    public void ThenTheBuildRunsOnLinuxAndOnWindows() =>
+        Jobs().Select(static job => Scalar(job, "runs-on")).Should().BeEquivalentTo("ubuntu-latest", "windows-latest");
 
     [Then("the format, compile, test, self-check and pack gates each run")]
     public void ThenTheFormatCompileTestSelfCheckAndPackGatesEachRun()
@@ -75,11 +75,11 @@ public sealed class ContinuousIntegrationSteps
         steps.Should().NotContain(static step => step.Contains("upload-artifact", StringComparison.Ordinal));
     }
 
-    [Then("the Linux, Windows and macOS builds each report as a separate check")]
-    public void ThenTheLinuxWindowsAndMacOsBuildsEachReportAsASeparateCheck()
+    [Then("the Linux and Windows builds each report as a separate check")]
+    public void ThenTheLinuxAndWindowsBuildsEachReportAsASeparateCheck()
     {
         var jobs = Jobs().ToArray();
-        jobs.Should().HaveCount(3);
+        jobs.Should().HaveCount(2);
         jobs.Select(static job => Scalar(job, "name")).Should().OnlyHaveUniqueItems();
         jobs.Should().AllSatisfy(static job => job.Children.Keys.Select(static key => key.ToString()).Should().NotContain("strategy"));
     }

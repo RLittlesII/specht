@@ -8,7 +8,6 @@ using Nuke.Common.CI.GitHubActions;
     "ci",
     GitHubActionsImage.UbuntuLatest,
     GitHubActionsImage.WindowsLatest,
-    GitHubActionsImage.MacOsLatest,
     OnPullRequestBranches = ["main"],
     OnPushBranches = ["main"],
     InvokedTargets = [nameof(Format), nameof(Compile), nameof(Test), nameof(SpecCheck), nameof(Pack)],

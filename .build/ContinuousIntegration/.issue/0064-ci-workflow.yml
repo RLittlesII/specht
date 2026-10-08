@@ -1,6 +1,6 @@
 id: "0064"
 type: task
-title: Generate the CI workflow and run the build on three systems
+title: Generate the CI workflow and run the build on Linux and Windows
 
 status: done
 
@@ -42,7 +42,7 @@ summary: |
 acceptance_criteria:
   - "B-001 — pull request to `main`: the build on its head"
   - "B-002 — push to `main`: the build on the commit"
-  - "B-003 — once each on ubuntu, windows, macos"
+  - "B-003 — once each on ubuntu and windows"
   - "B-004 — `Format`, `Compile`, `Test`, `SpecCheck`, `Pack` via the entry script"
   - "B-005 — a failing target fails that system's check"
   - "B-007 — check names stable across commits"
