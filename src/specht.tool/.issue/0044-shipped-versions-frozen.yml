@@ -4,9 +4,9 @@ title: Prove a shipped version never changes
 
 status: ready-for-architecture
 
-priority: high # DERIVED
+priority: high
 risk: 2
-rank: 74 # DERIVED: (4 × 20) − (2 × 3) + (0 × 5); value inherited from 0041
+rank: 74
 
 parent: "0041"
 children: []

@@ -4,9 +4,9 @@ title: Say what child-item, dependency and approval rules expected
 
 status: ready-for-architecture
 
-priority: high # DERIVED
+priority: high
 risk: 3
-rank: 71 # DERIVED: (4 × 20) − (3 × 3) + (0 × 5); value inherited from 0033
+rank: 71
 
 parent: "0033"
 children: []

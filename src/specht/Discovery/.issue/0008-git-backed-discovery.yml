@@ -4,9 +4,9 @@ title: List files through git inside a work tree
 
 status: ready-for-architecture
 
-priority: medium # DERIVED
+priority: medium
 risk: 4
-rank: 53 # DERIVED: (3 × 20) − (4 × 3) + (1 × 5); value inherited from 0004
+rank: 53
 
 parent: "0004"
 children: []

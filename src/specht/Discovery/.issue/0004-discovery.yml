@@ -4,10 +4,10 @@ title: Discovery reads what to find and skip from the manifest
 
 status: ready-for-architecture
 
-priority: medium # DERIVED
+priority: medium
 value: 3
 risk: 3
-rank: 56 # DERIVED: (3 × 20) − (3 × 3) + (1 × 5)
+rank: 56
 
 parent: "0001"
 children: ["0005", "0006", "0007", "0008", "0009"]

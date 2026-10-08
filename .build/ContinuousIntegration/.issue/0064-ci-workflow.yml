@@ -4,9 +4,9 @@ title: Generate the CI workflow and run the build on Linux and Windows
 
 status: done
 
-priority: high # DERIVED
+priority: high
 risk: 3
-rank: 136 # DERIVED: (5 × 20) − (3 × 3) + (9 × 5); value inherited from 0063
+rank: 136
 
 parent: "0063"
 children: []

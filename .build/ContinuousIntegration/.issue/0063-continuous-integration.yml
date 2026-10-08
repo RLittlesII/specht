@@ -4,10 +4,10 @@ title: Continuous integration
 
 status: ready-for-architecture
 
-priority: high # DERIVED
+priority: high
 value: 5
 risk: 3
-rank: 91 # DERIVED: (5 × 20) − (3 × 3) + (0 × 5)
+rank: 91
 
 parent: "0055"
 children: ["0064", "0065", "0066", "0067"]

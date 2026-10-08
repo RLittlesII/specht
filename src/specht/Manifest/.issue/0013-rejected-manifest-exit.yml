@@ -4,9 +4,9 @@ title: Exit 3 with the rejection alone on stderr
 
 status: ready-for-architecture
 
-priority: high # DERIVED
+priority: high
 risk: 2
-rank: 89 # DERIVED: (4 × 20) − (2 × 3) + (3 × 5); value inherited from 0010
+rank: 89
 
 parent: "0010"
 children: []

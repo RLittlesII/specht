@@ -4,9 +4,9 @@ title: Scaffold the NUKE build, its entry scripts and the local tool manifest
 
 status: done
 
-priority: high # DERIVED
+priority: high
 risk: 3
-rank: 126 # DERIVED: (5 × 20) − (3 × 3) + (7 × 5); value inherited from 0056
+rank: 126
 
 parent: "0056"
 children: []

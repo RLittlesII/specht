@@ -4,10 +4,10 @@ title: The check command
 
 status: ready-for-architecture
 
-priority: high # DERIVED
+priority: high
 value: 5
 risk: 3
-rank: 91 # DERIVED: (5 × 20) − (3 × 3) + (0 × 5)
+rank: 91
 
 parent: "0001"
 children: ["0026", "0027", "0028", "0029", "0030", "0031", "0032"]

@@ -4,9 +4,9 @@ title: Pack the computed version into the package
 
 status: ready-for-architecture
 
-priority: high # DERIVED
+priority: high
 risk: 1
-rank: 82 # DERIVED: (4 × 20) − (1 × 3) + (1 × 5); value inherited from 0078
+rank: 82
 
 parent: "0078"
 children: []

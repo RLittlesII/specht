@@ -5,9 +5,9 @@ title: The coverage gate
 status: ready-for-architecture
 
 priority: high # DERIVED
-value: 4
+value: 5
 risk: 2
-rank: 74 # DERIVED: (4 × 20) − (2 × 3) + (0 × 5)
+rank: 94 # DERIVED
 
 parent: "0055"
 children: ["0069", "0070", "0071"]
@@ -53,6 +53,10 @@ decisions:
     2026-10-08, Claude at the owner's request: sliced by where each claim
     runs - the build writes the reports (0069), CI uploads them (0070),
     Codecov's configuration decides the statuses (0071).
+  - |
+    2026-10-08, the owner: value raised from 4 to 5. Pull requests now
+    flow, so coverage is wanted on them as soon as possible. The ranks of
+    0068 and of its children 0069, 0070 and 0071 are recomputed from it.
 
 out_of_scope:
   - "Everything in § 5 of the spec."

@@ -4,9 +4,9 @@ title: Write the branch protection and merge settings
 
 status: ready-for-architecture
 
-priority: high # DERIVED
+priority: high
 risk: 1
-rank: 77 # DERIVED: (4 × 20) − (1 × 3) + (0 × 5); value inherited from 0089
+rank: 77
 
 parent: "0089"
 children: []

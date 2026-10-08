@@ -4,9 +4,9 @@ title: Generate the scheduled self-hosted Renovate workflow
 
 status: ready-for-architecture
 
-priority: high # DERIVED
+priority: high
 risk: 4
-rank: 93 # DERIVED: (4 × 20) − (4 × 3) + (5 × 5); value inherited from 0072
+rank: 93
 
 parent: "0072"
 children: []

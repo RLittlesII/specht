@@ -4,9 +4,9 @@ title: Generate the release workflow with its gates, dry run and tag check
 
 status: ready-for-architecture
 
-priority: high # DERIVED
+priority: high
 risk: 3
-rank: 61 # DERIVED: (3 × 20) − (3 × 3) + (2 × 5); value inherited from 0082
+rank: 61
 
 parent: "0082"
 children: []

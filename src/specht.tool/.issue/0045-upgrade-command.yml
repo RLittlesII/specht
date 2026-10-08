@@ -4,9 +4,9 @@ title: Move the schema set and templates one version with upgrade
 
 status: ready-for-architecture
 
-priority: high # DERIVED
+priority: high
 risk: 4
-rank: 83 # DERIVED: (4 × 20) − (4 × 3) + (3 × 5); value inherited from 0041
+rank: 83
 
 parent: "0041"
 children: []

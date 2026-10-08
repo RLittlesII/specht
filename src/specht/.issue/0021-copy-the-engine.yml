@@ -4,9 +4,9 @@ title: Copy the engine and its tests from hooked and tag the baseline
 
 status: done
 
-priority: high # DERIVED
+priority: high
 risk: 3
-rank: 121 # DERIVED: (5 × 20) − (3 × 3) + (6 × 5); value inherited from 0020
+rank: 121
 
 parent: "0020"
 children: []

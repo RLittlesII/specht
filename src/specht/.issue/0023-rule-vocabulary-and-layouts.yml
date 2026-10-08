@@ -4,9 +4,9 @@ title: Prove the rule vocabulary, both layouts and identity
 
 status: ready-for-architecture
 
-priority: high # DERIVED
+priority: high
 risk: 2
-rank: 94 # DERIVED: (5 × 20) − (2 × 3) + (0 × 5); value inherited from 0020
+rank: 94
 
 parent: "0020"
 children: []

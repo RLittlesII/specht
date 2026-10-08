@@ -4,9 +4,9 @@ title: Update action versions in the build project and commit the regenerated wo
 
 status: ready-for-architecture
 
-priority: high # DERIVED
+priority: high
 risk: 4
-rank: 68 # DERIVED: (4 × 20) − (4 × 3) + (0 × 5); value inherited from 0072
+rank: 68
 
 parent: "0072"
 children: []

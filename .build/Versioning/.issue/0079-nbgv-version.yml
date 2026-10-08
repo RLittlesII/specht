@@ -4,9 +4,9 @@ title: Compute the version with Nerdbank.GitVersioning from version.json
 
 status: ready-for-architecture
 
-priority: high # DERIVED
+priority: high
 risk: 3
-rank: 81 # DERIVED: (4 × 20) − (3 × 3) + (2 × 5); value inherited from 0078
+rank: 81
 
 parent: "0078"
 children: []

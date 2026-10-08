@@ -4,9 +4,9 @@ title: Fetch and verify a recorded upstream schema source on upgrade
 
 status: ready-for-architecture
 
-priority: high # DERIVED
+priority: high
 risk: 4
-rank: 73 # DERIVED: (4 × 20) − (4 × 3) + (1 × 5); value inherited from 0041
+rank: 73
 
 parent: "0041"
 children: []

@@ -4,9 +4,9 @@ title: Read sections, table headers and markers by role
 
 status: ready-for-architecture
 
-priority: high # DERIVED
+priority: high
 risk: 3
-rank: 76 # DERIVED: (4 × 20) − (3 × 3) + (1 × 5); value inherited from 0010
+rank: 76
 
 parent: "0010"
 children: []

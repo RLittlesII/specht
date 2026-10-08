@@ -4,9 +4,9 @@ title: Run the check, print diagnostic lines and exit with the verdict
 
 status: done
 
-priority: high # DERIVED
+priority: high
 risk: 3
-rank: 156 # DERIVED: (5 × 20) − (3 × 3) + (13 × 5); value inherited from 0025
+rank: 156
 
 parent: "0025"
 children: []

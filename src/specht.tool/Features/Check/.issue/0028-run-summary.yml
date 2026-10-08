@@ -4,9 +4,9 @@ title: Print the summary after the violations
 
 status: ready-for-architecture
 
-priority: high # DERIVED
+priority: high
 risk: 2
-rank: 99 # DERIVED: (5 × 20) − (2 × 3) + (1 × 5); value inherited from 0025
+rank: 99
 
 parent: "0025"
 children: []

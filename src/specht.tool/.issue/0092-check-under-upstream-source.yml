@@ -4,9 +4,9 @@ title: Check under a recorded upstream schema source
 
 status: ready-for-architecture
 
-priority: high # DERIVED
+priority: high
 risk: 3
-rank: 81 # DERIVED: (4 × 20) − (3 × 3) + (2 × 5); value inherited from 0041
+rank: 81
 
 parent: "0041"
 children: []

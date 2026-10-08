@@ -4,9 +4,9 @@ title: Read layouts, exclusions and file shapes from the manifest
 
 status: ready-for-architecture
 
-priority: high # DERIVED
+priority: high
 risk: 2
-rank: 74 # DERIVED: (3 × 20) − (2 × 3) + (4 × 5); value inherited from 0004
+rank: 74
 
 parent: "0004"
 children: []

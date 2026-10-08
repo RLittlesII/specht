@@ -4,9 +4,9 @@ title: Prove SpecCheck, the hook and a shell give one verdict once rule settings
 
 status: ready-for-architecture
 
-priority: high # DERIVED
+priority: high
 risk: 3
-rank: 91 # DERIVED: (5 × 20) − (3 × 3) + (0 × 5); value inherited from 0025
+rank: 91
 
 parent: "0025"
 children: []
