@@ -21,7 +21,8 @@ The source is `hooked`'s draft 0008-F3, C-14, at `a6d056f`
 rules for as long as `.spec/migration.md` has an unconverted row, and a
 specification never fails for being un-migrated." That file is not in this
 repository until brief § 3 copies it to `docs/reference/0008-F3-draft-spec.md`;
-this record is the citation until then.
+this record is the citation until then. (2026-10-08: it is never copied -
+`0001-F1` A-2 cites it at `hooked@a6d056f:tools/SpecGovernance/.spec/README.md`.)
 
 ## Why
 
