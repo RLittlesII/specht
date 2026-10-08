@@ -1,0 +1,151 @@
+using AwesomeAssertions;
+using Microsoft.Extensions.DependencyInjection;
+using specht.tool;
+using specht.tool.Features.Check;
+using Spectre.Console.Cli.Testing;
+using Spectre.Console.Testing;
+
+namespace specht.tests;
+
+/// <summary>
+/// The command through Spectre's command tester (<c>0001-F2</c> B-001, B-003, B-004, B-009, B-013; C-7): over a runner
+/// returning a report built in memory, and over the real runner and a synthetic tree on disk. The runner is the seam: the
+/// engine emits no warning until <c>0001-F5</c>'s rule settings exist, so a warning-only report is reachable only in memory.
+/// </summary>
+[Trait("Tier", "Integration")]
+public sealed class CheckCommandIntegrationTests
+{
+    /// <summary>Gets reports whose lines must come out one per violation, in the runner's order, unwrapped.</summary>
+    public static TheoryData<string, SpecCheckReport> Reports =>
+        new()
+        {
+            { "no violation prints nothing", new SpecCheckReportFixture() },
+            {
+                "two violations keep the runner's order, and a violation with no line has no position",
+                new SpecCheckReportFixture().WithViolations(
+                    new SpecViolationFixture().WithFile("b/spec.md").WithLine(9),
+                    new SpecViolationFixture().WithSeverity(SpecSeverity.Warning).WithLine(0))
+            },
+            {
+                "a violation wider than the 80-column console is not wrapped",
+                new SpecCheckReportFixture().WithViolations(
+                    new SpecViolationFixture().WithFile(string.Join('/', Enumerable.Repeat("a-long-directory-name", 10)) + "/spec.md"))
+            },
+        };
+
+    /// <summary>Gets the severities a report carries, the arguments, and the exit code the claim states for them.</summary>
+    public static TheoryData<SpecSeverity[], string[], int> Verdicts =>
+        new()
+        {
+            { [SpecSeverity.Error], [], 1 },
+            { [], [], 0 },
+            { [SpecSeverity.Warning], [], 0 },
+            { [SpecSeverity.Warning], ["--strict"], 1 },
+        };
+
+    /// <summary>Gets the arguments, and the root the runner must be handed for them.</summary>
+    public static TheoryData<string[], string> Roots =>
+        new()
+        {
+            { [], Directory.GetCurrentDirectory() },
+            { ["--root", "some/where"], Path.GetFullPath("some/where") },
+        };
+
+    [Theory]
+    [MemberData(nameof(Reports))]
+    public void AReport_WhenChecked_ShouldPrintOnlyOneUnwrappedLinePerViolationInTheRunnersOrder(string because, SpecCheckReport report)
+    {
+        // Given
+        var expected = string.Join('\n', report.Violations.Select(static violation => violation.ToString()));
+
+        // When
+        var result = Check(_ => report);
+
+        // Then
+        result.Output.Should().Be(expected, because);
+    }
+
+    [Theory]
+    [MemberData(nameof(Verdicts))]
+    public void AReportOfSeverities_WhenChecked_ShouldExitWithTheClaimedCode(SpecSeverity[] severities, string[] args, int expected)
+    {
+        // Given
+        SpecCheckReport report = new SpecCheckReportFixture().WithViolations(
+            [.. severities.Select(static severity => (SpecViolation)new SpecViolationFixture().WithSeverity(severity))]);
+
+        // When
+        var result = Check(_ => report, args);
+
+        // Then
+        result.ExitCode.Should().Be(expected);
+    }
+
+    [Theory]
+    [MemberData(nameof(Roots))]
+    public void ARootOption_WhenChecked_ShouldRunTheRootItResolvesTo(string[] args, string expected)
+    {
+        // Given
+        string? checkedRoot = null;
+
+        // When
+        Check(
+            root =>
+            {
+                checkedRoot = root;
+                return new SpecCheckReportFixture();
+            },
+            args);
+
+        // Then
+        checkedRoot.Should().Be(expected);
+    }
+
+    [Fact]
+    public void ATreeWithViolations_WhenChecked_ShouldPrintTheRunnersViolationsAsRootRelativeLines()
+    {
+        // Given
+        using var tree = new SpecTree();
+        tree.WriteFeature("0001", "F1", new Dictionary<string, string> { ["spec_status"] = "nearly" });
+        tree.WriteFeature("0001", "F2", sections: SpecTree.SectionsWith("3. Acceptance Criteria", TwoClaims));
+        var expected = tree.Run().Violations.Select(static violation => violation.ToString()).ToArray();
+
+        // When
+        var result = Check(SpecCheckRunner.Run, "--root", tree.Root);
+
+        // Then
+        expected.Should().HaveCountGreaterThan(1);
+        result.Output.Should().Be(string.Join('\n', expected));
+        result.Output.Should().NotContain(tree.Root).And.NotContain("\\");
+        result.ExitCode.Should().Be(1);
+    }
+
+    [Fact]
+    public void ACleanTree_WhenChecked_ShouldPrintNothingAndExitZero()
+    {
+        // Given
+        using var tree = new SpecTree();
+        tree.WriteFeature("0001", "F1");
+
+        // When
+        var result = Check(SpecCheckRunner.Run, "--root", tree.Root);
+
+        // Then
+        result.Output.Should().BeEmpty();
+        result.ExitCode.Should().Be(0);
+    }
+
+    private static CommandAppResult Check(Func<string, SpecCheckReport> run, params string[] args)
+    {
+        var services = new ServiceCollection();
+        services.AddSingleton(run);
+
+        var app = new CommandAppTester(new TypeRegistrar(services), console: new TestConsole().Width(80));
+        app.SetDefaultCommand<CheckCommand>();
+
+        return app.Run(args);
+    }
+
+    private const string TwoClaims =
+        "## 3. Acceptance Criteria\n\n| ID | Claim | Source | Status |\n| -- | ----- | ------ | ------ |\n"
+            + "| B-001 | It does the thing. | brd | Active |\n| B-002 | It does another thing. | brd | Active |\n";
+}

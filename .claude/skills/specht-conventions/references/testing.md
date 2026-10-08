@@ -32,6 +32,14 @@ outside `src/` - the build in `.build/` is the first - has the same unit tier,
 in its own `*.Tests` project that references it. Until that project exists, its
 mechanisms are `Partial` in § 9, never "no unit tier".
 
+**A test through Spectre's command tester is Integration.** `CommandAppTester`
+runs the parser, the type registrar, the settings binding and the command
+together; however small the report it is handed, that is a composition of
+components, not one unit. It goes in `<Command>.Integration.Tests.cs`. A unit
+test of a command's decision needs the decision outside the command, which is
+the implementer's design call, not a reason to label a pipeline test `Unit`.
+There is no third, "UI", tier; one is the owner's to add.
+
 **Reqnroll covers the acceptance tier only.** A green scenario does not relieve
 the mechanism beneath it of unit coverage: a rule's decision, an id grammar, a
 path relativization, a table-header match, an ordering, a file-set filter and an
@@ -54,6 +62,16 @@ empty formatter and quoted arguments - [lesson 0003](../../../../.spec/lessons/0
   not Shouldly.
 - **No mocking library.** A seam is a delegate or an injected interface. Reach
   for a delegate before reaching for a package.
+- **Rocket Surgery AutoFixtures** for test data —
+  `Rocket.Surgery.Extensions.Testing.AutoFixtures`, a source generator. A value a
+  test hands the code under test, such as a `SpecViolation` or a
+  `SpecCheckReport`, comes from an `[AutoFixture(typeof(T))]` partial named
+  `<T>Fixture`, not a hand-rolled `Report(...)` or `Violation(...)` helper. The
+  generator handles a positional record. The fixture's constructor sets only the
+  defaults that make the value valid, and a test overrides with `With*` only what
+  it asserts on. Version 10.0.6 emits its `AutoFixtureBase` without a `#nullable`
+  directive, so `specht.tests.csproj` carries `NoWarn` `CS8669`, the one
+  diagnostic only generated code raises.
 - `Microsoft.Testing.Extensions.CodeCoverage`; reports land in
   `.artifacts/coverage/*.cobertura.xml` and CI uploads them to Codecov.
 
@@ -73,6 +91,13 @@ public void ClaimCitedTwiceInMatrix_WhenChecked_ShouldReportSpec031Once()
 
 A § 9 row cites the test by name, so renaming it to suit an implementation breaks
 the citation. Rename the claim's wording instead, or accept the name.
+
+**Cases of one shape are one `[Theory]`.** Two facts that differ only in their
+data — a warning with and without `--strict`, each exit code — are one theory
+over `[MemberData]` or `[ClassData]`, a typed xunit.v3 `TheoryData<…>`, with the
+name stating the behaviour every row shares. A helper one test class calls from
+another is shared data or a fixture in the wrong place: a class owns its own
+harness, and data two classes need is a `[ClassData]` type.
 
 ## Tests live in `test/`, not beside the code
 
@@ -139,5 +164,9 @@ wall clock.
 - A `*.Tests.cs` file under `src/`.
 - A batched or wildcarded `ReqnrollFeatureFile` glob.
 - A mocking library, when a delegate seam would do.
+- A `Unit` trait on a test that runs a command through `CommandAppTester`.
+- A hand-rolled factory method for test data an AutoFixture can build.
+- Copied facts that differ only in their data, where a `[Theory]` would do.
+- A test class calling another test class's static helper.
 - `Thread.Sleep`, a retry loop, or an ambient clock read.
 - A fixture copied from a real `.spec/` tree, or an absolute path in one.
