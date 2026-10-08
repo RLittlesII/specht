@@ -1,0 +1,106 @@
+Feature: Schema versioning
+  As the maintainer of a repository on the specification model
+  I want to pin one schema version and move to the next when I choose
+  So that lagging is deliberate, catching up is one command, and only I change my documents
+
+  Background:
+    Given a repository root holding a manifest and the three frontmatter schemas
+
+  @B-001
+  Scenario: The pinned version is the one checked with
+    Given the tool ships schema versions 1 and 2
+    And the manifest pins version 1
+    And the root holds a specification valid under version 1 and invalid under version 2
+    When the check runs
+    Then no violation is reported
+
+  @B-002
+  Scenario: A manifest without a version is version 1
+    Given the manifest carries no schema version
+    When the check runs with JSON output
+    Then the document names schema version 1
+
+  @B-003
+  Scenario: A version the tool does not ship is invalid configuration
+    Given the tool ships schema version 1 only
+    And the manifest pins version 7
+    When the check runs
+    Then the standard error names version 7 and the versions the tool ships
+    And the standard output is empty
+    And the exit code is 3
+
+  @B-004 @boundary
+  Scenario: Every version ever shipped is still shipped
+    Given the tool ships schema version n
+    When its embedded versions are enumerated
+    Then every version from 1 to n is present
+
+  @B-005
+  Scenario: Upgrade moves the schema set and templates to the next version
+    Given the tool ships schema versions 1 and 2
+    And the root is pinned to version 1
+    When upgrade runs against it
+    Then the manifest pins version 2
+    And the schema files and the templates are version 2's
+    And the standard output names the move from 1 to 2 and each file rewritten
+    And the exit code is 0
+
+  @B-006
+  Scenario: Upgrade at the newest version changes nothing
+    Given the tool ships schema version 1 only
+    And the root is pinned to version 1
+    When upgrade runs against it
+    Then the standard output says the repository is current
+    And no file was rewritten
+    And the exit code is 0
+
+  @B-007 @boundary
+  Scenario: Upgrade never touches a document
+    Given the tool ships schema versions 1 and 2
+    And the root is pinned to version 1 and holds specifications, records and companions
+    And a snapshot of every file under the root
+    When upgrade runs against it
+    Then the only files changed are under the schema folder and the templates folder
+
+  @B-008
+  Scenario: Upgrade moves one version at a time
+    Given the tool ships schema versions 1, 2 and 3
+    And the root is pinned to version 1
+    When upgrade runs against it
+    Then the manifest pins version 2
+    When upgrade runs against it again
+    Then the manifest pins version 3
+
+  @B-009
+  Scenario: The on-disk source is selected by configuration
+    Given the root's on-disk Feature schema has been edited to require a key the embedded one does not
+    And the root holds a specification without that key
+    When the check runs with the on-disk source selected
+    Then the specification is reported for the missing key
+
+  @B-010 @boundary
+  Scenario: The embedded source ignores an on-disk edit
+    Given the root's on-disk Feature schema has been edited to require a key the embedded one does not
+    And the root holds a specification without that key
+    When the check runs without selecting a source
+    Then no violation is reported for that key
+
+  @B-011
+  Scenario: The report names the version and the source
+    Given the manifest pins version 1
+    When the check runs with JSON output
+    Then the document names schema version 1
+    And the document says the schemas came from the embedded set
+
+  @B-012
+  Scenario: Init pins the newest version
+    Given the tool ships schema versions 1 and 2
+    And a root directory with no schema folder
+    When init runs against it
+    Then the written manifest pins version 2
+
+  @B-013 @boundary
+  Scenario: A shipped version never changes
+    Given the embedded schema set for version 1 as a released tool shipped it
+    When a later tool's embedded schema set for version 1 is read
+    Then it is byte-identical
