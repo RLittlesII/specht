@@ -96,8 +96,16 @@ Feature: The build
   Scenario: The hook refuses unformatted staged Markdown
     Given a staged Markdown file whose formatting differs from the repository's rules
     When a commit is attempted
-    Then the commit is refused
+    Then the format gate checks the staged files
+    And the commit is refused
     And the hook names that file
+
+  @B-017
+  Scenario: Unformatted Markdown fails the format gate
+    Given a Markdown file whose formatting differs from the repository's rules
+    When the format gate runs
+    Then it fails
+    And it names that file
 
   @B-015 @boundary
   Scenario: The hook changes nothing it checks

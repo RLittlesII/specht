@@ -54,11 +54,11 @@ Feature: Dependency updates
     Then no pull request updates it
 
   @B-009 @boundary
-  Scenario: An action update leaves the generated workflow alone
+  Scenario: An action update never hand-edits a generated workflow
     Given a workflow action has a newer minor release
     When updates are proposed
     Then the pull request changes the action's version where the build declares it
-    And it changes no generated workflow file
+    And any change to a generated workflow is the build's regeneration of it
 
   @B-010
   Scenario: Updates open no issue
@@ -76,3 +76,10 @@ Feature: Dependency updates
     Given two packages each have a new major release
     When updates are proposed
     Then each is carried by a pull request of its own
+
+  @B-013
+  Scenario: An action update carries its regenerated workflow
+    Given a workflow action has a newer minor release
+    When updates are proposed
+    Then the pull request carries the changed declaration and the regenerated workflow
+    And integration's stale-workflow check passes on it
