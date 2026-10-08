@@ -7,7 +7,7 @@ using Serilog;
 using static Nuke.Common.Tools.DotNet.DotNetTasks;
 
 // Every gate is a target here (0055-F1 C-1); a target writes only under .artifacts/, bin/ and obj/ (C-5).
-internal class Build : NukeBuild
+internal partial class Build : NukeBuild
 {
     // B-001: `./build.sh` with no target name runs Compile, then Test.
     public static int Main() => Execute<Build>(static x => x.Test);
