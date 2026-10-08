@@ -25,10 +25,12 @@ Feature: init
     Then each written file is byte-identical to the tool's embedded copy
 
   @B-004
-  Scenario: The embedded copies equal this repository's live copy
+  Scenario: The embedded copies equal this repository's live copy on what the tool owns
     Given the tool is built from this repository at one commit
+    And this repository's manifest lowers one rule's severity
     When its embedded copies of the newest version are compared with the files under this repository's schema and templates folders
-    Then each embedded copy is byte-identical to its file
+    Then each embedded frontmatter schema and template is byte-identical to its file
+    And the embedded manifest equals the live manifest on every tool-owned key
 
   @B-005
   Scenario: A written schema's id names this repository and the version
@@ -96,4 +98,21 @@ Feature: init
     When init runs against it
     Then no file under the root has changed
     And the standard error names version 7 and the versions the tool ships
+    And the exit code is 3
+
+  @B-014
+  Scenario: Init writes a fetched upstream schema that matches its hash
+    Given a root whose manifest records an upstream schema source with its version and content hash
+    And the source serves content matching that hash
+    When init runs against it
+    Then the fetched schemas are written under the root's schema folder
+
+  @B-015
+  Scenario: Init refuses a fetched upstream schema that does not match its hash
+    Given a root whose manifest records an upstream schema source with its version and content hash
+    And the source serves content that does not match that hash
+    And a snapshot of every file under the root
+    When init runs against it
+    Then no file under the root has changed
+    And the standard error names the source
     And the exit code is 3

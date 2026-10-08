@@ -68,13 +68,13 @@ A consumer cannot install a package from a feed it does not know, with a credent
 
 <!-- last written by: spec-author, 2026-10-08 -->
 
-| ID  | Constraint                                                                                                                      | Rules Out                                                                                                         |
-| --- | ------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
-| C-1 | A committed package source takes its credential from the environment.                                                           | A token, password or username-and-token pair in any committed `nuget.config`, here or in the document's examples. |
-| C-2 | The documented install is local, through a committed tool manifest (`0001-F2` C-6).                                             | A global install as the documented path.                                                                          |
-| C-3 | The document describes this repository's feed and nothing a consumer's own build does with the tool.                            | Consumer build wiring, such as a NUKE target, written here as if it were this repository's to maintain.           |
-| C-4 | The install document is a section of this repository's `README.md` (owner, 2026-10-08).                                         | A second install document elsewhere in this repository while that section exists.                                 |
-| C-5 | This repository's own runs read the feed with the workflow's own token granted package read (`0055-F2` B-011, `0055-F6` B-010). | A stored read token as a repository secret for this repository's own runs.                                        |
+| ID  | Constraint                                                                                                                                                                        | Rules Out                                                                                                         |
+| --- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
+| C-1 | A committed package source takes its credential from the environment.                                                                                                             | A token, password or username-and-token pair in any committed `nuget.config`, here or in the document's examples. |
+| C-2 | The documented install is local, through a committed tool manifest (`0001-F2` C-6).                                                                                               | A global install as the documented path.                                                                          |
+| C-3 | The document describes this repository's feed and nothing a consumer's own build does with the tool.                                                                              | Consumer build wiring, such as a NUKE target, written here as if it were this repository's to maintain.           |
+| C-4 | The install document is a section of this repository's `README.md` (owner, 2026-10-08).                                                                                           | A second install document elsewhere in this repository while that section exists.                                 |
+| C-5 | This repository's own CI, release and self-check runs read the feed with the workflow's own token granted `packages: read` (owner, 2026-10-08; `0055-F2` B-011, `0055-F6` B-010). | A stored read token as a repository secret for this repository's own runs.                                        |
 
 ## 5. Out of Scope
 

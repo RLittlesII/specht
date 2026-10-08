@@ -68,7 +68,7 @@ No workflow exists, so the first pull request on GitHub would merge on the autho
 | B-008 | Given any run of this Feature, no package is pushed to any feed.                                                                                                                           | `0055-F6` C-1                              | Active  |
 | B-009 | Given a commit whose committed copy of any generated workflow - integration, release or dependency updates - differs from what the build generates from that commit, the run fails.        | OQ-1 (owner, 2026-10-08); C-1              | Amended |
 | B-010 | Given a run, each operating system's build reports as a separate check.                                                                                                                    | owner, 2026-10-08; split from B-003        | Active  |
-| B-011 | Given a run after this repository's local tool manifest names `specht.tool` (`0055-F7` B-003), the run restores the tool from the feed with the workflow's own token granted package read. | `0055-F7` A-1; `0055-F6` C-5               | Active  |
+| B-011 | Given a run after this repository's local tool manifest names `specht.tool` (`0055-F7` B-003), the run restores the tool from the feed with the workflow's own token granted package read. | owner, 2026-10-08; `0055-F7` A-1           | Active  |
 
 ## 4. Constraints
 

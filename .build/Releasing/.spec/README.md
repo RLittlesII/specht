@@ -66,7 +66,7 @@ Nothing publishes `specht.tool`: `0001-F2` § 5 row 7 hands the release workflow
 | B-007 | Given a GitHub Release this Feature creates, the package it published is attached to the Release as a file.                                                                                               | OQ-3 (owner, 2026-10-08)                | Active |
 | B-008 | Given a dry run triggered without a tag, this Feature runs every step up to the push, then pushes no package and creates no GitHub Release.                                                               | OQ-4 (owner, 2026-10-08); C-1, C-2, C-6 | Active |
 | B-009 | Given a pushed `v*` tag whose version differs from the version computed for its commit, this Feature fails the run before any push and creates no GitHub Release.                                         | OQ-5 (owner, 2026-10-08); `0055-F5` C-3 | Active |
-| B-010 | Given a release or dry run after this repository's local tool manifest names `specht.tool` (`0055-F7` B-003), the run restores the tool from the feed with the workflow's own token granted package read. | `0055-F7` A-1; C-5                      | Active |
+| B-010 | Given a release or dry run after this repository's local tool manifest names `specht.tool` (`0055-F7` B-003), the run restores the tool from the feed with the workflow's own token granted package read. | owner, 2026-10-08; `0055-F7` A-1        | Active |
 
 ## 4. Constraints
 

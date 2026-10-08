@@ -119,7 +119,7 @@ A repository's `.spec/schema/` is a copy of `hooked`'s from one day, and nothing
 | 3   | The content of schema version 2                   | Its own epic, after this Feature; nothing here says what changes.                                                                                                                                                             |
 | 4   | Versioning the report document                    | `0001-F3` C-4; the report is versioned with the tool.                                                                                                                                                                         |
 | 5   | A version pinned per specification                | Decided: the version is the repository's (README § 6); a document declares none.                                                                                                                                              |
-| 6   | `init` fetching a recorded upstream schema source | `0001-F4`; C-8 allows it, and nothing here claims it.                                                                                                                                                                         |
+| 6   | `init` fetching a recorded upstream schema source | `0001-F4` B-014 and B-015, under C-8 and C-9.                                                                                                                                                                                 |
 
 ## 6. Concern Separation
 

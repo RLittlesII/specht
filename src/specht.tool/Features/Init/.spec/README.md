@@ -4,7 +4,7 @@ description: "specht init writes the schema set and the templates of the newest 
 type: feature
 id: "F4"
 epic: "0001"
-spec_status: approved
+spec_status: in-review
 status: ready-for-architecture
 priority: high
 value: 0
@@ -54,34 +54,36 @@ A repository adopting the model copies `hooked`'s `.spec/schema/` and `.spec/tem
 
 ## 3. Acceptance Criteria
 
-<!-- last written by: spec-author, 2026-10-07 -->
+<!-- last written by: spec-author, 2026-10-08 -->
 
-| ID    | Claim                                                                                                                                                                                                           | Source                                             | Status |
-| ----- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------- | ------ |
-| B-001 | Given `specht init` under a root with no `.spec/schema/` and no `.spec/templates/`, this Feature writes the eight files of the newest version it ships into those two folders and exits with code `0`.          | README § 5; README § 6                             | Active |
-| B-002 | Given any of the eight files exists under the root, this Feature leaves it byte-for-byte as it was.                                                                                                             | README § 9; C-1                                    | Active |
-| B-003 | Given a file `init` wrote, it is byte-identical to the tool's embedded copy.                                                                                                                                    | README § 6                                         | Active |
-| B-004 | Given this repository at one commit, the embedded copies of the newest version equal the files under its `.spec/schema/` and `.spec/templates/`.                                                                | README § 7; AGENTS.md                              | Active |
-| B-005 | Given a frontmatter schema `init` wrote, its `$id` is `https://github.com/rlittlesii/specht/schema/v<n>/<file>` for the version written.                                                                        | README § 6                                         | Active |
-| B-006 | Given `init` runs, stdout lists each of the eight files, relative to the root, as written or skipped.                                                                                                           | README § 9                                         | Active |
-| B-007 | Given `--root` names a path that is not a directory, this Feature names that path on stderr as it was given, writes nothing, and exits with code `2`.                                                           | README § 5; C-4                                    | Active |
-| B-008 | Given `init` runs, no file outside `<root>/.spec/schema/` and `<root>/.spec/templates/` is created or modified.                                                                                                 | README § 9                                         | Active |
-| B-009 | Given `specht init` without `--root`, this Feature takes the working directory as the root.                                                                                                                     | AGENTS.md § CLI; README § 5                        | Active |
-| B-010 | Given some of the eight files exist under the root and others do not, and the root has no manifest or a manifest pinning the newest version the tool ships, this Feature writes each absent one.                | README § 9                                         | Active |
-| B-011 | Given some of the eight files exist under the root and others do not, and the root has no manifest or a manifest pinning the newest version the tool ships, this Feature exits with code `0`.                   | README § 9                                         | Active |
-| B-012 | Given some of the eight files exist under the root and others do not, and the manifest pins an older version the tool ships, this Feature writes each absent one at the pinned version and exits with code `0`. | OQ-1 (b); `0001-F7` B-005, B-013                   | Active |
-| B-013 | Given a manifest pinning a version the tool does not ship, this Feature names the pinned version and the versions it ships on stderr, writes nothing, and exits with code `3`.                                  | OQ-1 (c); `0001-F7` B-003; `0001-F2` decision 0003 | Active |
+| ID    | Claim                                                                                                                                                                                                                                                                                                                                                                      | Source                                                                     | Status  |
+| ----- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------- | ------- |
+| B-001 | Given `specht init` under a root with no `.spec/schema/` and no `.spec/templates/`, this Feature writes the eight files of the newest version it ships into those two folders and exits with code `0`.                                                                                                                                                                     | README § 5; README § 6                                                     | Active  |
+| B-002 | Given any of the eight files exists under the root, this Feature leaves it byte-for-byte as it was.                                                                                                                                                                                                                                                                        | README § 9; C-1                                                            | Active  |
+| B-003 | Given a file `init` wrote, it is byte-identical to the tool's embedded copy.                                                                                                                                                                                                                                                                                               | README § 6                                                                 | Active  |
+| B-004 | Given this repository at one commit, the embedded copies of the newest version's three frontmatter schemas and templates are byte-identical to the files under its `.spec/schema/` and `.spec/templates/`, and the embedded manifest equals its live manifest on every tool-owned key; rule settings and every other consumer-config key are excluded from the comparison. | README § 7; AGENTS.md; owner, 2026-10-08; `0001-F7` decision 0001          | Amended |
+| B-005 | Given a frontmatter schema `init` wrote, its `$id` is `https://github.com/rlittlesii/specht/schema/v<n>/<file>` for the version written.                                                                                                                                                                                                                                   | README § 6                                                                 | Active  |
+| B-006 | Given `init` runs, stdout lists each of the eight files, relative to the root, as written or skipped.                                                                                                                                                                                                                                                                      | README § 9                                                                 | Active  |
+| B-007 | Given `--root` names a path that is not a directory, this Feature names that path on stderr as it was given, writes nothing, and exits with code `2`.                                                                                                                                                                                                                      | README § 5; C-4                                                            | Active  |
+| B-008 | Given `init` runs, no file outside `<root>/.spec/schema/` and `<root>/.spec/templates/` is created or modified.                                                                                                                                                                                                                                                            | README § 9                                                                 | Active  |
+| B-009 | Given `specht init` without `--root`, this Feature takes the working directory as the root.                                                                                                                                                                                                                                                                                | AGENTS.md § CLI; README § 5                                                | Active  |
+| B-010 | Given some of the eight files exist under the root and others do not, and the root has no manifest or a manifest pinning the newest version the tool ships, this Feature writes each absent one.                                                                                                                                                                           | README § 9                                                                 | Active  |
+| B-011 | Given some of the eight files exist under the root and others do not, and the root has no manifest or a manifest pinning the newest version the tool ships, this Feature exits with code `0`.                                                                                                                                                                              | README § 9                                                                 | Active  |
+| B-012 | Given some of the eight files exist under the root and others do not, and the manifest pins an older version the tool ships, this Feature writes each absent one at the pinned version and exits with code `0`.                                                                                                                                                            | OQ-1 (b); `0001-F7` B-005, B-013                                           | Active  |
+| B-013 | Given a manifest pinning a version the tool does not ship, this Feature names the pinned version and the versions it ships on stderr, writes nothing, and exits with code `3`.                                                                                                                                                                                             | OQ-1 (c); `0001-F7` B-003; `0001-F2` decision 0003                         | Active  |
+| B-014 | Given a manifest that records an upstream schema source whose fetched content matches the recorded content hash, `init` writes that content into `<root>/.spec/schema/`.                                                                                                                                                                                                   | owner, 2026-10-08; `0001-F7` decision 0004, B-026, C-8, C-9                | Active  |
+| B-015 | Given a manifest that records an upstream schema source whose fetched content does not match the recorded content hash, `init` names the source on stderr, writes nothing, and exits with code `3`.                                                                                                                                                                        | owner, 2026-10-08; `0001-F7` decision 0004, B-027; `0001-F2` decision 0003 | Active  |
 
 ## 4. Constraints
 
-<!-- last written by: spec-author, 2026-10-07 -->
+<!-- last written by: spec-author, 2026-10-08 -->
 
-| ID  | Constraint                                                                                                                                              | Rules Out                                                                                      |
-| --- | ------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
-| C-1 | `init` never overwrites a file.                                                                                                                         | A `--force`; a prompt; a backup-and-replace.                                                   |
-| C-2 | The shipping copy is embedded per version under `src/specht.tool`; the root `.spec/` is the live copy, and a test asserts the newest version equals it. | A third copy; a build step that generates one from the other and hides a drift.                |
-| C-3 | `init` writes no file outside `<root>/.spec/schema/` and `<root>/.spec/templates/`; it may create those folders and `<root>/.spec/` to hold them.       | Writing a tool manifest, a `nuget.config`, a hook or a workflow into the consumer.             |
-| C-4 | Every path `init` derives and prints is relative to the root with `/` separators; the `--root` argument alone is echoed as the user gave it.            | An absolute derived path on stdout or stderr; rewriting the user's `--root` before echoing it. |
+| ID  | Constraint                                                                                                                                                                                                | Rules Out                                                                                      |
+| --- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| C-1 | `init` never overwrites a file.                                                                                                                                                                           | A `--force`; a prompt; a backup-and-replace.                                                   |
+| C-2 | The shipping copy is embedded per version under `src/specht.tool`; the root `.spec/` is the live copy, and a test asserts the newest version equals it on the tool-owned files and manifest keys (B-004). | A third copy; a build step that generates one from the other and hides a drift.                |
+| C-3 | `init` writes no file outside `<root>/.spec/schema/` and `<root>/.spec/templates/`; it may create those folders and `<root>/.spec/` to hold them.                                                         | Writing a tool manifest, a `nuget.config`, a hook or a workflow into the consumer.             |
+| C-4 | Every path `init` derives and prints is relative to the root with `/` separators; the `--root` argument alone is echoed as the user gave it.                                                              | An absolute derived path on stdout or stderr; rewriting the user's `--root` before echoing it. |
 
 ## 5. Out of Scope
 
@@ -118,21 +120,23 @@ Pending: owned by `test-writer`.
 
 <!-- last written by: spec-author, 2026-10-07 -->
 
-| Claim ID | Scenario                                                    | Test    | Status  |
-| -------- | ----------------------------------------------------------- | ------- | ------- |
-| B-001    | Init writes the defaults into a bare repository             | Missing | Missing |
-| B-002    | Init never overwrites an existing file                      | Missing | Missing |
-| B-003    | A written file equals the embedded copy                     | Missing | Missing |
-| B-004    | The embedded copies equal this repository's live copy       | Missing | Missing |
-| B-005    | A written schema's id names this repository and the version | Missing | Missing |
-| B-006    | Init lists what it wrote and what it skipped                | Missing | Missing |
-| B-007    | A root that is not a directory is a missing-input failure   | Missing | Missing |
-| B-008    | Init writes nowhere else                                    | Missing | Missing |
-| B-009    | Init defaults the root to the working directory             | Missing | Missing |
-| B-010    | Init writes what is missing beside an existing file         | Missing | Missing |
-| B-011    | Init succeeds when some files already exist                 | Missing | Missing |
-| B-012    | Init fills a partial tree at its pinned older version       | Missing | Missing |
-| B-013    | Init refuses a version the tool does not ship               | Missing | Missing |
+| Claim ID | Scenario                                                                    | Test    | Status  |
+| -------- | --------------------------------------------------------------------------- | ------- | ------- |
+| B-001    | Init writes the defaults into a bare repository                             | Missing | Missing |
+| B-002    | Init never overwrites an existing file                                      | Missing | Missing |
+| B-003    | A written file equals the embedded copy                                     | Missing | Missing |
+| B-004    | The embedded copies equal this repository's live copy on what the tool owns | Missing | Missing |
+| B-005    | A written schema's id names this repository and the version                 | Missing | Missing |
+| B-006    | Init lists what it wrote and what it skipped                                | Missing | Missing |
+| B-007    | A root that is not a directory is a missing-input failure                   | Missing | Missing |
+| B-008    | Init writes nowhere else                                                    | Missing | Missing |
+| B-009    | Init defaults the root to the working directory                             | Missing | Missing |
+| B-010    | Init writes what is missing beside an existing file                         | Missing | Missing |
+| B-011    | Init succeeds when some files already exist                                 | Missing | Missing |
+| B-012    | Init fills a partial tree at its pinned older version                       | Missing | Missing |
+| B-013    | Init refuses a version the tool does not ship                               | Missing | Missing |
+| B-014    | Init writes a fetched upstream schema that matches its hash                 | Missing | Missing |
+| B-015    | Init refuses a fetched upstream schema that does not match its hash         | Missing | Missing |
 
 ## 10. Lessons / Spec Deltas
 
