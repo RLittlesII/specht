@@ -1,0 +1,43 @@
+id: "0022"
+type: test
+title: Commit hooked's baseline report and test the verdicts against it
+
+status: ready-for-architecture
+
+priority: high # DERIVED
+risk: 3
+rank: 96 # DERIVED: (5 × 20) − (3 × 3) + (1 × 5); value inherited from 0020
+
+parent: "0020"
+children: []
+
+depends_on: ["0021"] # the verdicts compared are the copied engine's
+blocks: ["0012"]
+spikes: []
+
+spec: src/specht/.spec/README.md
+
+claims:
+  - B-004
+  - B-010
+
+created: "2026-10-08"
+updated: "2026-10-08"
+closed: null
+
+summary: |
+  Commit hooked's report at 6afe8ab, without its timestamp (decision 0003),
+  as docs/reference/hooked-6afe8ab-report.json, and a test that the copied
+  engine's verdicts on that tree equal it field for field, in order (C-9).
+  Manifest's guard 0012 reuses this report, so it lands before that.
+
+acceptance_criteria:
+  - "B-004 — rule id, severity, file, line, identifier, message, in order, equal the committed report"
+  - "B-010 — every violation carries the six fields"
+  - "§ 9 carries a row naming a test for each id above."
+
+decisions: []
+
+out_of_scope:
+  - "A new report field or the `--json` document — § 5 #2, 0001-F3."
+  - "hooked consuming the tool — § 5 #8."

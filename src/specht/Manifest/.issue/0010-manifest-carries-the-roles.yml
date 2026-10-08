@@ -55,9 +55,10 @@ summary: |
   Risk 4: the default manifest must reproduce hooked's baseline verdicts byte
   for byte after every literal moves. OQ-1 (the manifest's key names) is open
   and blocks B-001 to B-011; architecture resolves it in § 7 and a decision
-  record. Waits on work no item tracks yet: the engine copy and baseline
-  report (0001-F1) and the CLI's exit codes (0001-F2). Add those edges when
-  their items are cut. Discovery reads this manifest through 0005 -> 0011.
+  record. The engine copy and baseline report (0001-F1) are the edges
+  0011 -> 0021 and 0012 -> 0022. Still waits on work no item tracks yet: the
+  CLI's exit codes (0001-F2), which 0013 needs; add that edge when its items
+  are cut. Discovery reads this manifest through 0005 -> 0011.
 
 acceptance_criteria:
   - "B-001 — sections by role (0015)"

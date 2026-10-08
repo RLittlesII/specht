@@ -11,7 +11,7 @@ rank: 86 # DERIVED: (4 × 20) − (3 × 3) + (3 × 5); value inherited from 0010
 parent: "0010"
 children: []
 
-depends_on: []
+depends_on: ["0022"] # compares against the baseline report 0022 commits
 blocks: ["0015", "0016", "0017"]
 spikes: []
 
@@ -29,7 +29,7 @@ summary: |
   commit and compares every verdict field, in order, with the baseline report
   0001-F1 B-004 names. It passes before any literal moves, and A-2 requires
   every move in 0015, 0016 and 0017 to keep it green, so it lands before them.
-  Needs the baseline report from 0001-F1, which has no item yet.
+  Needs the baseline report 0022 commits (0001-F1 B-004).
 
 acceptance_criteria:
   - "B-016 — rule id, severity, file, line, identifier, message, in order, equal the baseline"

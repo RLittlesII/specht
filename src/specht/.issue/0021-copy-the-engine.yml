@@ -1,0 +1,46 @@
+id: "0021"
+type: task
+title: Copy the engine and its tests from hooked and tag the baseline
+
+status: ready-for-architecture
+
+priority: high # DERIVED
+risk: 3
+rank: 111 # DERIVED: (5 × 20) − (3 × 3) + (4 × 5); value inherited from 0020
+
+parent: "0020"
+children: []
+
+depends_on: []
+blocks: ["0011", "0022", "0023", "0024"]
+spikes: []
+
+spec: src/specht/.spec/README.md
+
+claims:
+  - B-005
+
+created: "2026-10-08"
+updated: "2026-10-08"
+closed: null
+
+summary: |
+  Copy hooked's SpecGovernance engine and its 56 tests from
+  refactor/ai-offering at 6afe8ab (README § 3) into src/specht and
+  test/specht.tests, rename the namespace and nothing else, prove the 56
+  tests pass, and tag the commit as the baseline with the C-2 diff recorded
+  in it (decision 0002). The draft-spec files go to docs/reference/, never
+  into src/specht (A-2). Every engine change in this epic starts here.
+
+acceptance_criteria:
+  - "B-005 — assembly and root namespace `specht`; no `Hooked`"
+  - "C-2 — the diff against 6afe8ab recorded in the baseline tag's commit"
+  - "The 56 extracted tests pass (A-1)."
+  - "§ 9 carries a row naming a test for each id above."
+
+decisions: []
+
+out_of_scope:
+  - "Any rule fix, refactor or renamed type — C-2, C-9."
+  - "The baseline report — 0022."
+  - "A command line — § 5 #1, 0001-F2."

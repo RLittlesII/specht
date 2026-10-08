@@ -41,10 +41,8 @@ summary: |
   manifest and to ask git inside a work tree, so that an ignored or excluded
   tree is never opened and a new layout needs no fork.
 
-  The dependency on the manifest (0001-F5) is the edge 0005 -> 0011. Still
-  waits on work no item tracks yet: the engine copied into src/specht
-  (0001-F1, README § 8 step 2). Add that edge when its items are cut, and
-  recompute the ranks it moves.
+  The dependency on the manifest (0001-F5) is the edge 0005 -> 0011, and
+  through it on the engine copy (0001-F1): 0011 -> 0021.
 
 acceptance_criteria:
   - "B-001 — layouts from the manifest (0005)"

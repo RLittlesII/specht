@@ -1,0 +1,45 @@
+id: "0024"
+type: test
+title: Prove the verdict is deterministic, relative and grid-blind
+
+status: ready-for-architecture
+
+priority: high # DERIVED
+risk: 3
+rank: 91 # DERIVED: (5 × 20) − (3 × 3) + (0 × 5); value inherited from 0020
+
+parent: "0020"
+children: []
+
+depends_on: ["0021"] # tests the copied engine
+blocks: []
+spikes: []
+
+spec: src/specht/.spec/README.md
+
+claims:
+  - B-006
+  - B-007
+  - B-008
+
+created: "2026-10-08"
+updated: "2026-10-08"
+closed: null
+
+summary: |
+  Tests that nothing about the machine reaches the verdict, that every path
+  is root-relative with `/`, and that a grid table reads as no table. Risk 3:
+  the spec review notes the machine name cannot be varied in a test, so
+  B-006's proof needs a seam the architecture must name without changing an
+  engine verdict (C-9).
+
+acceptance_criteria:
+  - "B-006 — clock, environment, locale, machine name, root location varied; verdict unchanged"
+  - "B-007 — root-relative, `/` separators"
+  - "B-008 — grid table: no table, no row"
+  - "§ 9 carries a row naming a test for each id above."
+
+decisions: []
+
+out_of_scope:
+  - "A grid-table reader or second Markdown parser — C-6."
