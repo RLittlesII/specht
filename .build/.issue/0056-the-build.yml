@@ -61,7 +61,10 @@ summary: |
   infrastructure lands before any 0001 work. `SpecCheck` is in three
   states (C-7): a placeholder in the scaffold (B-023), report-only once
   0001-F2's command exists (0061), and a gate once 0001-F5's rule settings
-  exist (0062, waiting on 0026 and 0014).
+  exist (0062, waiting on 0026 and 0014). Each later state supersedes the
+  claim of the one before (decision 0001), and 0001-F2's 0031 follows
+  0062, since 0001-F2 B-010 and B-011 apply only from 0001-F5's arrival
+  (0001-F2 C-8).
 
 acceptance_criteria:
   - "B-001 — `./build.sh` alone runs `Compile` then `Test` (0057)"
@@ -73,7 +76,7 @@ acceptance_criteria:
   - "B-007 — `IntegrationTest` runs the integration tier only (0058)"
   - "B-008 — `AcceptanceTest` runs every linked `.feature` (0058)"
   - "B-009 — `Pack` writes exactly one `specht.tool.<version>.nupkg` (0057)"
-  - "B-010 — `dotnet tool restore` installs every tool the build and hook call (0057)"
+  - "B-010 — `dotnet tool restore` installs every dotnet tool the build and hook call (0057)"
   - "B-011 — after `dotnet husky install`, a commit runs the hook (0060)"
   - "B-012 — hook refuses unformatted staged C#, naming it (0060)"
   - "B-013 — hook refuses an error-severity spec violation (0062)"

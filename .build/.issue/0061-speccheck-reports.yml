@@ -6,13 +6,13 @@ status: ready-for-architecture
 
 priority: high # DERIVED
 risk: 2
-rank: 99 # DERIVED: (5 × 20) − (2 × 3) + (1 × 5); value inherited from 0056
+rank: 109 # DERIVED: (5 × 20) − (2 × 3) + (3 × 5); value inherited from 0056
 
 parent: "0056"
 children: []
 
-depends_on: ["0026", "0031"] # runs the command 0026 builds; around the call 0031 wires
-blocks: ["0062"]
+depends_on: ["0026"] # runs the command 0026 builds, from the target 0057 scaffolds (0026 follows 0057 through 0021)
+blocks: ["0032", "0062", "0066"]
 spikes: []
 
 spec: .build/.spec/README.md
@@ -26,11 +26,15 @@ closed: null
 
 summary: |
   Once 0001-F2's check command exists and before 0001-F5's rule settings
-  do, `SpecCheck` prints the check's violations and exits 0 (C-7). Waits
-  on 0026 and on 0031, which points the target at the command; not on
-  0014, because B-025's precondition is that 0001-F5's settings do not yet
-  exist. 0031 and this item land together, so no run fails in between
-  (C-7).
+  do, `SpecCheck` prints the check's violations and exits 0 (C-7). This
+  item replaces 0057's placeholder: it points the target at the command,
+  through `dotnet run --project src/specht.tool -- --root .` until a
+  package exists (0001-F2 A-2), and exits 0 whatever the command reports.
+  That agrees with 0001-F2 B-010 and B-011, which apply only from
+  0001-F5's arrival (0001-F2 C-8), so it can be delivered alone. It
+  depends on 0026 and not on 0014, because B-025's precondition is that
+  0001-F5's settings do not yet exist. In the same change, B-023 is marked
+  Superseded and its test removed (decision 0001).
 
 acceptance_criteria:
   - "B-025 — check command, no rule settings: violations printed, exit 0"

@@ -57,8 +57,8 @@ acceptance_criteria:
   - "B-007 — manifest does not parse: stderr, exit 3 (0027)"
   - "B-008 — `--help` names `--root` and `--strict` (0029)"
   - "B-009 — stdout product only; tool messages on stderr (0026)"
-  - "B-010 — shell, SpecCheck and pre-commit agree (0031)"
-  - "B-011 — `./build.sh SpecCheck` runs the command (0031)"
+  - "B-010 — with rule settings: shell, SpecCheck and pre-commit agree (0031)"
+  - "B-011 — with rule settings: `./build.sh SpecCheck` exits with the command's code (0031)"
   - "B-012 — nothing written but the `--report` file (0030)"
   - "B-013 — derived paths relative; typed paths echoed (0026)"
   - "B-014 — SpecCheck through the local tool manifest (0032)"
@@ -72,6 +72,13 @@ decisions:
     parity and the self-check (0031), and the tool-manifest switch (0032),
     which needs a published package. Rejected: the self-check inside 0026,
     which would tie the command's first change to husky and Nuke wiring.
+  - |
+    2026-10-08, spec-author after spec-reviewer round 5: B-010 and B-011
+    now apply only once 0001-F5's rule settings exist (C-8, decision 0004).
+    0031 waits on 0062, which adds the hook's call and the gate, and
+    0055-F1's 0061 now points `SpecCheck` at the command. 0032 and 0066
+    therefore depend on 0061 instead of 0031. Rejected: 0031 and 0061 landing
+    together, which was prose that no edge held.
 
 out_of_scope:
   - "Everything in § 5 of the spec."

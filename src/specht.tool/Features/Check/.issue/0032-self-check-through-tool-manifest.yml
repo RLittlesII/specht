@@ -11,7 +11,7 @@ rank: 91 # DERIVED: (5 × 20) − (3 × 3) + (0 × 5); value inherited from 0025
 parent: "0025"
 children: []
 
-depends_on: ["0031", "0087"] # replaces the dotnet run call 0031 wires, with the package 0087 names
+depends_on: ["0061", "0087"] # replaces the dotnet run call 0061 wires, through the manifest entry 0087 adds
 blocks: []
 spikes: []
 
@@ -25,10 +25,10 @@ updated: "2026-10-08"
 closed: null
 
 summary: |
-  Once a specht.tool package is published, add it to the committed local
-  tool manifest and have `./build.sh SpecCheck` invoke it from there instead
-  of `dotnet run --project` (A-2, C-6). Packing is C-5. Cannot finish before
-  the first publish, which is repository tooling, not an item here.
+  Once a specht.tool package is published, have `./build.sh SpecCheck`
+  invoke it through the committed local tool manifest instead of `dotnet
+  run --project` (A-2, C-6). 0087 (0055-F7 B-003) adds the `specht` entry
+  to the manifest, and 0084 is the first publish. Packing is C-5.
 
 acceptance_criteria:
   - "B-014 — SpecCheck invokes the tool via `.config/dotnet-tools.json`"

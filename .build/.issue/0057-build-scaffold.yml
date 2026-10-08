@@ -35,9 +35,10 @@ summary: |
   the committed local tool manifest, and the targets `Compile`, `Test`,
   `Pack` and a `SpecCheck` placeholder, with every target writing only
   under `.artifacts/`, `bin/` and `obj/` (C-5) and package versions from
-  `Directory.Packages.props` (C-4). The solution names four projects that
-  do not exist yet; the scaffold makes them build, and the engine arrives
-  in 0021. Root of the backlog: depends on nothing, and every epic 0001
+  `Directory.Packages.props` (C-4). The four projects `specht.slnx` names
+  are committed as skeletons, with `src/specht.tool/Program.cs`; the
+  scaffold makes them compile and test green, so B-001 and B-018 hold
+  before the engine arrives in 0021. Root of the backlog: depends on nothing, and every epic 0001
   root item waits on it. Risk 3: NUKE's generator and three entry points
   on three operating systems.
 
@@ -46,7 +47,7 @@ acceptance_criteria:
   - "B-002 — `build.cmd <target>` runs what `./build.sh <target>` runs"
   - "B-005 — `Test` runs unit, integration and acceptance; any failure fails it"
   - "B-009 — `Pack`: exactly one `specht.tool.<version>.nupkg` under `.artifacts/nupkg/`"
-  - "B-010 — `dotnet tool restore` installs every tool the build and hook call, at the pinned versions"
+  - "B-010 — `dotnet tool restore` installs every dotnet tool the build and hook call, at the pinned versions"
   - "B-018 — default build exits non-zero on a `Compile` or `Test` failure"
   - "B-023 — `SpecCheck` with no check command: says so, exits 0"
   - "§ 9 carries a row naming a test for each id above."

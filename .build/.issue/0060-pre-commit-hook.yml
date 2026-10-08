@@ -33,8 +33,8 @@ closed: null
 summary: |
   Replace the hook copied from another repository with one that calls
   `Format` on the staged content and never rewrites or re-stages a file
-  (C-2). Epic 0001's 0031 wires `SpecCheck` into this hook, so it waits on
-  this item. Risk 3: checking staged content rather than the working tree
+  (C-2). 0062 adds the hook's `SpecCheck` call and 0031 proves it agrees
+  with a shell, so both wait on this item. Risk 3: checking staged content rather than the working tree
   (B-022) without touching the index (B-015).
 
 acceptance_criteria:
@@ -50,5 +50,5 @@ acceptance_criteria:
 decisions: []
 
 out_of_scope:
-  - "The hook's `SpecCheck` call — 0001-F2's 0031; its gate is B-013, 0062."
+  - "The hook's `SpecCheck` call and its gate — B-013, 0062."
   - "Fixing formatting — § 5 #8."

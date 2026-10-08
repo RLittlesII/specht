@@ -1,18 +1,18 @@
 id: "0031"
 type: task
-title: Run the command from SpecCheck and pre-commit with one verdict
+title: Prove SpecCheck, the hook and a shell give one verdict once rule settings exist
 
 status: ready-for-architecture
 
 priority: high # DERIVED
 risk: 3
-rank: 106 # DERIVED: (5 × 20) − (3 × 3) + (3 × 5); value inherited from 0025
+rank: 91 # DERIVED: (5 × 20) − (3 × 3) + (0 × 5); value inherited from 0025
 
 parent: "0025"
 children: []
 
-depends_on: ["0026", "0060"] # wires the command 0026 builds into the build and the hook 0060 creates
-blocks: ["0032", "0061", "0066"]
+depends_on: ["0026", "0060", "0062"] # the command 0026 builds; the hook 0060 creates; the gate 0062 adds once 0001-F5's rule settings exist (C-8)
+blocks: []
 spikes: []
 
 spec: src/specht.tool/Features/Check/.spec/README.md
@@ -26,19 +26,26 @@ updated: "2026-10-08"
 closed: null
 
 summary: |
-  Point `./build.sh SpecCheck` and the pre-commit hook at the command —
-  through `dotnet run --project src/specht.tool -- --root .` until a package
-  exists (A-2) — and prove the shell, the target and the hook print the same
-  lines and exit with the same code on one root. Risk 3: Nuke and husky
-  wiring, and the one test allowed to read this repository's real tree (C-7).
+  Once 0001-F5's rule settings exist, prove that a shell, `./build.sh
+  SpecCheck` and the pre-commit hook print the same lines and exit with the
+  same code on one root, and that the self-check exits with the command's
+  code on this repository's tree. Before then B-010 and B-011 do not apply:
+  0055-F1 B-025 and C-7 govern the exit code (C-8, decision 0004). 0061
+  points `SpecCheck` at the command — through `dotnet run --project
+  src/specht.tool -- --root .` until a package exists (A-2) — and 0062 adds
+  the hook's call and the gate, so this item waits on 0062 and builds no
+  wiring of its own. Risk 3: Nuke and husky together, and the one test
+  allowed to read this repository's real tree (C-7).
 
 acceptance_criteria:
-  - "B-010 — shell, SpecCheck and pre-commit: same lines, same code"
-  - "B-011 — `./build.sh SpecCheck` runs the command on the repository root, exits with its code"
+  - "B-010 — with rule settings: shell, SpecCheck and pre-commit give the same lines and code"
+  - "B-011 — with rule settings: `./build.sh SpecCheck` runs the command on the repository root and exits with its code"
   - "§ 9 carries a row naming a test for each id above."
 
 decisions: []
 
 out_of_scope:
+  - "The exit code before 0001-F5's rule settings exist — § 5 #11, 0055-F1 B-025 (0061)."
+  - "Wiring the hook's `SpecCheck` call and the gate — 0055-F1 B-013, C-7 (0062)."
   - "Calling the tool through the local tool manifest — 0032."
   - "hooked's Nuke target — § 5 #6."

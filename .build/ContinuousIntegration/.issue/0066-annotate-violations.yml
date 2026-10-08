@@ -11,7 +11,7 @@ rank: 94 # DERIVED: (5 × 20) − (2 × 3) + (0 × 5); value inherited from 0063
 parent: "0063"
 children: []
 
-depends_on: ["0064", "0031"] # a step in 0064's workflow; annotates what 0031's SpecCheck call prints
+depends_on: ["0064", "0061"] # a step in 0064's workflow; annotates what 0061's SpecCheck call prints
 blocks: []
 spikes: []
 
@@ -26,7 +26,7 @@ closed: null
 
 summary: |
   Turn the MSBuild-shaped lines 0001-F2's command prints through
-  `SpecCheck` (0031) into annotations on the pull request's diff
+  `SpecCheck` (0061) into annotations on the pull request's diff
   (AGENTS.md § `specht`).
 
 acceptance_criteria:
