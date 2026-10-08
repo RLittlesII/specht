@@ -1,0 +1,71 @@
+id: "0063"
+type: feature
+title: Continuous integration
+
+status: ready-for-architecture
+
+priority: high # DERIVED
+value: 5
+risk: 3
+rank: 91 # DERIVED: (5 × 20) − (3 × 3) + (0 × 5)
+
+parent: "0055"
+children: ["0064", "0065", "0066", "0067"]
+
+depends_on: []
+blocks: []
+spikes: []
+
+spec: .build/ContinuousIntegration/.spec/README.md
+
+claims:
+  - B-001
+  - B-002
+  - B-003
+  - B-004
+  - B-005
+  - B-006
+  - B-007
+  - B-008
+  - B-009
+  - B-010
+  - B-011
+
+created: "2026-10-08"
+updated: "2026-10-08"
+closed: null
+
+summary: |
+  As the maintainer, I want every pull request and every push to `main` to
+  run the build on three operating systems, from a workflow NUKE
+  generates, so that nothing reaches `main` that the build has not passed
+  everywhere the tool runs.
+
+  The workflow (0064) is, with the build scaffold (0057), the
+  infrastructure every epic 0001 root item waits on (0021, 0051).
+
+acceptance_criteria:
+  - "B-001 — pull request to `main`: build on its head (0064)"
+  - "B-002 — push to `main`: build on the commit (0064)"
+  - "B-003 — once each on ubuntu, windows and macos (0064)"
+  - "B-004 — `Format`, `Compile`, `Test`, `SpecCheck`, `Pack` through the entry script (0064)"
+  - "B-005 — any target fails: that system's check fails (0064)"
+  - "B-006 — a specification violation annotated on the diff (0066)"
+  - "B-007 — each system's check keeps its name across runs (0064)"
+  - "B-008 — no package pushed (0064)"
+  - "B-009 — stale committed workflow: the run fails (0065)"
+  - "B-010 — each system reports as a separate check (0064)"
+  - "B-011 — tool restored from the feed with the workflow's token (0067)"
+  - "§ 9 carries a row naming a test for each id above."
+
+decisions:
+  - |
+    2026-10-08, Claude at the owner's request: sliced into the workflow
+    itself (0064), which epic 0001 waits on, and three later additions that
+    it does not: the stale-workflow check (0065), annotations, which need
+    0001-F2's diagnostics (0066), and the feed restore, which needs a
+    published package (0067). Rejected: annotations in 0064, which would
+    hold CI behind the check command and close a cycle through 0021.
+
+out_of_scope:
+  - "Everything in § 5 of the spec."

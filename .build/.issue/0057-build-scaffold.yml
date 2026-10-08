@@ -6,13 +6,13 @@ status: ready-for-architecture
 
 priority: high # DERIVED
 risk: 3
-rank: 111 # DERIVED: (5 × 20) − (3 × 3) + (4 × 5); value inherited from 0056
+rank: 116 # DERIVED: (5 × 20) − (3 × 3) + (5 × 5); value inherited from 0056
 
 parent: "0056"
 children: []
 
 depends_on: []
-blocks: ["0021", "0051", "0058", "0059"]
+blocks: ["0021", "0051", "0058", "0059", "0064"]
 spikes: []
 
 spec: .build/.spec/README.md

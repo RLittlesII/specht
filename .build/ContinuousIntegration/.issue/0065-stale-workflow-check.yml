@@ -1,0 +1,39 @@
+id: "0065"
+type: task
+title: Fail a run whose committed workflow is stale
+
+status: ready-for-architecture
+
+priority: high # DERIVED
+risk: 2
+rank: 94 # DERIVED: (5 × 20) − (2 × 3) + (0 × 5); value inherited from 0063
+
+parent: "0063"
+children: []
+
+depends_on: ["0064"] # a step in 0064's workflow
+blocks: []
+spikes: []
+
+spec: .build/ContinuousIntegration/.spec/README.md
+
+claims:
+  - B-009
+
+created: "2026-10-08"
+updated: "2026-10-08"
+closed: null
+
+summary: |
+  Regenerate every workflow the build declares and fail the run on any
+  difference from the committed copy (C-1). Covers the release (0055-F6)
+  and Renovate (0055-F4) workflows as they arrive, with no change here.
+
+acceptance_criteria:
+  - "B-009 — committed integration, release or Renovate workflow differs from the generation: run fails"
+  - "§ 9 carries a row naming a test for each id above."
+
+decisions: []
+
+out_of_scope:
+  - "Hand edits to a workflow — C-1 forbids them."

@@ -1,0 +1,58 @@
+id: "0064"
+type: task
+title: Generate the CI workflow and run the build on three systems
+
+status: ready-for-architecture
+
+priority: high # DERIVED
+risk: 3
+rank: 116 # DERIVED: (5 × 20) − (3 × 3) + (5 × 5); value inherited from 0063
+
+parent: "0063"
+children: []
+
+depends_on: ["0057", "0059"] # runs 0057's targets; runs 0059's Format
+blocks: ["0021", "0051", "0065", "0066", "0067"]
+spikes: []
+
+spec: .build/ContinuousIntegration/.spec/README.md
+
+claims:
+  - B-001
+  - B-002
+  - B-003
+  - B-004
+  - B-005
+  - B-007
+  - B-008
+  - B-010
+
+created: "2026-10-08"
+updated: "2026-10-08"
+closed: null
+
+summary: |
+  Declare the integration workflow in `Build.GitHubActions.cs` and commit
+  its generation (C-1), with a full-history checkout (C-2) and no service
+  call beyond restore and the coverage upload (C-3). `SpecCheck` runs as
+  whatever state 0055-F1 has it in (C-4). Every epic 0001 root item waits
+  on this. Risk 3: the generator orders steps by dependency depth, so the
+  step order is diffed (AGENTS.md).
+
+acceptance_criteria:
+  - "B-001 — pull request to `main`: the build on its head"
+  - "B-002 — push to `main`: the build on the commit"
+  - "B-003 — once each on ubuntu, windows, macos"
+  - "B-004 — `Format`, `Compile`, `Test`, `SpecCheck`, `Pack` via the entry script"
+  - "B-005 — a failing target fails that system's check"
+  - "B-007 — check names stable across commits"
+  - "B-008 — nothing pushed to any feed"
+  - "B-010 — one check per operating system"
+  - "§ 9 carries a row naming a test for each id above."
+
+decisions: []
+
+out_of_scope:
+  - "Coverage upload — § 5 #1, 0055-F3 (0070)."
+  - "Publishing on a tag — § 5 #2, 0055-F6."
+  - "Required checks — § 5 #3, 0055-F8."

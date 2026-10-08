@@ -11,7 +11,7 @@ rank: 84 # DERIVED: (4 × 20) − (2 × 3) + (2 × 5); value inherited from 0050
 parent: "0050"
 children: []
 
-depends_on: ["0057"] # the build lands before any 0001 work
+depends_on: ["0057", "0064"] # the build and CI land before any 0001 work
 blocks: ["0042", "0052"]
 spikes: []
 
