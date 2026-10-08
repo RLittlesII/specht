@@ -40,7 +40,8 @@ manifest. Cost of rejecting: none.
 ## Affects
 
 - `0001-F2` C-2: the constant set gains `4`.
-- `0001-F3` B-020, A-2 and OQ-1.
+- `0001-F3` B-020, A-2 and OQ-1; B-030 keeps `3` for an unshipped pin under `--explain`.
+- `0001-F7` B-021 and OQ-5, and `0001-F4` B-013 and OQ-1 (c): an unshipped pin stays `3`.
 - README § 5, AGENTS.md § CLI and the `dotnet-tool` skill's exit-code line.
 
 ## Reversal

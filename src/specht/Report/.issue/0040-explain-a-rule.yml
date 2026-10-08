@@ -21,6 +21,7 @@ claims:
   - B-019
   - B-020
   - B-029
+  - B-030
 
 created: "2026-10-08"
 updated: "2026-10-08"
@@ -29,15 +30,17 @@ closed: null
 summary: |
   `specht --explain SPEC###` prints the rule's full text for the pinned
   version, held once in the engine (C-6), and exits 0 without a check. An
-  unknown id is named on stderr and exits 4, the not-found code
-  (0001-F2 decision 0003); with no manifest or a rejected one it fails as
-  the check does, 2 or 3, printing no text. The 4 constant joins C-2's set
+  unknown id under a shipped version is named on stderr and exits 4, the
+  not-found code (0001-F2 decision 0003); with no manifest it exits 2, and
+  beside any manifest the check rejects - unparseable, rejected by 0001-F5,
+  or pinning an unshipped version - it exits 3, printing no text. The 4 constant joins C-2's set
   in 0026's exit-code class.
 
 acceptance_criteria:
   - "B-019 — full text, version, stdout, exit 0, no check run"
-  - "B-020 — unknown id named on stderr, stdout empty, exit 4"
-  - "B-029 — no manifest exits 2, rejected manifest exits 3, no text"
+  - "B-020 — shipped version, unknown id: named on stderr, stdout empty, exit 4"
+  - "B-029 — no manifest: no text, exit 2"
+  - "B-030 — unparseable, rejected or unshipped-pin manifest: no text, exit 3"
   - "§ 9 carries a row naming a test for each id above."
 
 decisions:

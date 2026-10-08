@@ -20,9 +20,7 @@ public static class ExitCodes
     public const int Failure = 1;
     public const int MissingInput = 2;
     public const int InvalidConfiguration = 3;
-    public const int ExternalServiceError = 4;
-    public const int Unauthorized = 5;
-    public const int NotFound = 6;
+    public const int NotFound = 4;
 }
 ```
 
@@ -49,7 +47,11 @@ on them:
 | `0`  | clean                                                                              |
 | `1`  | violations — any violation at all under `--strict`, otherwise at least one error   |
 | `2`  | the root or the manifest (`.spec/schema/spec-structure.schema.json`) was not found |
-| `3`  | the manifest is invalid                                                            |
+| `3`  | the manifest is invalid, including a pinned version the tool does not ship         |
+| `4`  | a thing named on the command line was not found, such as an `--explain` rule id    |
+
+A new category gets a new constant and a decision record (`0001-F2` decision
+0003 added `4`); a code is never reused for a second meaning.
 
 `--json` and `--report` change what is written, never the exit code.
 

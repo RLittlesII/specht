@@ -197,14 +197,33 @@ Feature: The report contract
 
   @B-029
   Scenario: Explain without a manifest fails as the check does
-    Given a root directory with no manifest
+    Given the manifest is deleted from the root
     When the tool is asked to explain SPEC031
-    Then the standard output is empty
+    Then no rule text is printed
+    And the standard output is empty
     And the exit code is 2
 
-  @B-029
-  Scenario: Explain with a rejected manifest fails as the check does
-    Given a root directory whose manifest carries a key the tool does not know
+  @B-030
+  Scenario: Explain beside a manifest that does not parse fails as the check does
+    Given the root's manifest is replaced by a file that is not well-formed JSON
     When the tool is asked to explain SPEC031
-    Then the standard output is empty
+    Then no rule text is printed
+    And the standard output is empty
+    And the exit code is 3
+
+  @B-030
+  Scenario: Explain beside a rejected manifest fails as the check does
+    Given the root's manifest is replaced by one carrying a key the tool does not know
+    When the tool is asked to explain SPEC031
+    Then no rule text is printed
+    And the standard output is empty
+    And the exit code is 3
+
+  @B-030 @boundary
+  Scenario: Explain beside a pin the tool does not ship fails as the check does
+    Given the tool ships schema version 1 only
+    And the root's manifest is replaced by one pinning version 7
+    When the tool is asked to explain SPEC031
+    Then no rule text is printed
+    And the standard output is empty
     And the exit code is 3

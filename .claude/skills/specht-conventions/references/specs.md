@@ -112,6 +112,7 @@ specht                                 # check the current directory; MSBuild-sh
 specht --root <dir> --strict           # any violation fails
 specht --json                          # the report document on stdout instead of the line stream
 specht --report .artifacts/spec-check/spec-check.json
+specht --explain SPEC031               # a rule's full text; exit 4 for a rule id the pinned version lacks
 specht init                            # write schema and templates into <root>/.spec/, never overwriting
 ./build.sh SpecCheck                   # the same command, on this repository's own tree
 ```

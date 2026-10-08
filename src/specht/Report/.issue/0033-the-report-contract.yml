@@ -47,6 +47,7 @@ claims:
   - B-027
   - B-028
   - B-029
+  - B-030
 
 created: "2026-10-08"
 updated: "2026-10-08"
@@ -93,7 +94,8 @@ acceptance_criteria:
   - "B-026 — SPEC001 expected (0037)"
   - "B-027 — SPEC050 expected (0039)"
   - "B-028 — SPEC044 reused id expected (0039)"
-  - "B-029 — `--explain` without a usable manifest fails as the check does (0040)"
+  - "B-029 — `--explain` with no manifest exits 2 (0040)"
+  - "B-030 — `--explain` beside a manifest the check rejects exits 3 (0040)"
   - "§ 9 carries a row naming a test for each id above."
 
 decisions:
