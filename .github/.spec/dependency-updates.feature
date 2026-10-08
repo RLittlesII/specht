@@ -95,3 +95,15 @@ Feature: Dependency updates
   Scenario: Renovate runs on its schedule
     When the scheduled time for dependency updates arrives
     Then this repository's dependency-update workflow runs against this repository
+
+  @B-016
+  Scenario: Renovate can regenerate the workflows
+    When the dependency-update workflow runs
+    Then the pinned SDK is installed before any workflow is regenerated
+
+  @B-017
+  Scenario: Renovate reads the feed with its own token
+    Given this repository's tool manifest names the published checker
+    When the dependency-update workflow runs
+    Then the checker's feed is read with the run's own token
+    And no stored token is used to read it

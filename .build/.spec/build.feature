@@ -106,7 +106,7 @@ Feature: The build
 
   @B-013
   Scenario: The hook refuses a staged specification that fails
-    Given the checker's check command exists
+    Given the checker's check command and its rule settings both exist
     And a staged specification that breaks an error-severity rule
     When a commit is attempted
     Then the commit is refused
@@ -148,9 +148,18 @@ Feature: The build
 
   @B-024
   Scenario: A missing test is a warning here
-    Given an approved specification whose traceability matrix has a missing test
+    Given the checker's rule settings exist
+    And an approved specification whose traceability matrix has a missing test
     When the self-check runs
     Then the missing test is reported as a warning
+    And the self-check succeeds
+
+  @B-025
+  Scenario: The self-check reports without gating before the rule settings exist
+    Given the checker's check command exists and its rule settings do not yet
+    And a specification that breaks an error-severity rule
+    When the self-check runs
+    Then the violation is printed
     And the self-check succeeds
 
   @B-015 @boundary

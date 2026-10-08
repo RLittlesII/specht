@@ -4,7 +4,7 @@ description: "Renovate proposes updates as pull requests grouped by ecosystem - 
 type: feature
 id: "F4"
 epic: "0055"
-spec_status: approved
+spec_status: in-review
 status: needs-decomposition
 priority: high
 value: 0
@@ -73,6 +73,8 @@ Every version this repository depends on - packages, the SDK, local tools, workf
 | B-013 | Given a GitHub Actions update, the pull request carries both the changed declaration in the build project and every workflow the build regenerates from it, so `0055-F2` B-009 passes on it.            | OQ-5, OQ-6 (owner, 2026-10-08); C-7; `0055-F2` B-009; B-005 | Amended |
 | B-014 | Given a minor or patch update to the NUKE package, the pull request carries every workflow the build regenerates after the update, so `0055-F2` B-009 passes on it.                                     | C-7; `0055-F2` B-009; B-005                                 | Active  |
 | B-015 | Given the scheduled time, this repository's Renovate workflow runs Renovate against this repository.                                                                                                    | OQ-6 (owner, 2026-10-08); C-8                               | Active  |
+| B-016 | Given a Renovate run, the run installs the .NET SDK `global.json` pins before any post-upgrade task runs the build's workflow generation.                                                               | C-7; `global.json`                                          | Active  |
+| B-017 | Given a Renovate run after this repository's local tool manifest names `specht.tool` (`0055-F7` B-003), the run reads the feed with the workflow's own token granted `packages: read`.                  | owner, 2026-10-08; `0055-F7` C-5                            | Active  |
 
 ## 4. Constraints
 
@@ -140,6 +142,8 @@ Pending: owned by `test-writer`.
 | B-013    | An action update carries its regenerated workflow      | Missing | Missing |
 | B-014    | A NUKE update carries its regenerated workflows        | Missing | Missing |
 | B-015    | Renovate runs on its schedule                          | Missing | Missing |
+| B-016    | Renovate can regenerate the workflows                  | Missing | Missing |
+| B-017    | Renovate reads the feed with its own token             | Missing | Missing |
 
 ## 10. Lessons / Spec Deltas
 
