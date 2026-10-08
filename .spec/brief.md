@@ -92,7 +92,8 @@ Checkout on this machine: `/Users/rlittlesii/source/rlittlesii/hooked`, branch
 `hooked` consumes the tool instead). Copy with history noted in the
 first commit message (`extracted from RLittlesII/hooked@6afe8ab`); do not
 subtree-merge. The three draft-spec files under `tools/SpecGovernance/.spec/`
-were removed on that branch; take them from `a6d056f` (`git show a6d056f:<path>`).
+were removed on that branch; they are cited at `a6d056f`, not copied
+(`0001-F1` A-2; read one with `git show a6d056f:<path>`).
 
 ```sh
 HOOKED=/Users/rlittlesii/source/rlittlesii/hooked
@@ -105,17 +106,14 @@ cp -R "$HOOKED/.spec/templates"                 templates/v1
 # the behaviour contract the CLI must match, and the two call sites
 cp    "$HOOKED/.build/Build.SpecCheck.cs"       docs/reference/hooked-nuke-target.cs
 cp    "$HOOKED/.husky/pre-commit"               docs/reference/hooked-pre-commit.sh
-# the draft specification, the requirements session, and the prose model
-cp    "$HOOKED/tools/SpecGovernance/.spec/README.md"                           docs/reference/0008-F3-draft-spec.md
-cp    "$HOOKED/tools/SpecGovernance/.spec/spec-check-tool.feature"             docs/reference/0008-F3-draft.feature
-cp    "$HOOKED/tools/SpecGovernance/.spec/decisions/"0001-*.md                 docs/reference/
+# the requirements session and the prose model (the draft specification is cited at a6d056f, not copied)
 cp    "$HOOKED/epics/audits/2026-10-07-spec-check-extraction-requirements.md"  docs/reference/
 cp -R "$HOOKED/.skills/spec-and-traceability"                                  docs/reference/spec-and-traceability
 cp    "$HOOKED/.skills/hooked-conventions/references/specs.md"                 docs/reference/hooked-specs-conventions.md
 ```
 
 Remove `tools/SpecGovernance/.spec/` from the copied `src/specht` if present (it
-is the draft spec, already copied to `docs/reference/`), and drop the `.csproj`
+is the draft spec, cited at `a6d056f`), and drop the `.csproj`
 comments that talk about `hooked`'s `Directory.Build.props`. Everything else in
 those directories is kept.
 Inventory at `a6d056f`, 44 files; at `6afe8ab`, 42 — the three
