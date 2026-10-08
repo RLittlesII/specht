@@ -7,13 +7,13 @@ status: ready-for-architecture
 priority: medium # DERIVED
 value: 3
 risk: 3
-rank: 51 # DERIVED: (3 × 20) − (3 × 3) + (0 × 5)
+rank: 56 # DERIVED: (3 × 20) − (3 × 3) + (1 × 5)
 
 parent: "0001"
 children: ["0005", "0006", "0007", "0008", "0009"]
 
 depends_on: []
-blocks: []
+blocks: ["0084"]
 spikes: []
 
 spec: src/specht/Discovery/.spec/README.md

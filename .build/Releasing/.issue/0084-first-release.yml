@@ -1,0 +1,48 @@
+id: "0084"
+type: task
+title: Publish the first release to GitHub Packages with a GitHub Release
+
+status: ready-for-architecture
+
+priority: medium # DERIVED
+risk: 4
+rank: 48 # DERIVED: (3 × 20) − (4 × 3) + (0 × 5); value inherited from 0082
+
+parent: "0082"
+children: []
+
+depends_on: ["0083", "0010", "0004"] # the push step of 0083's workflow; C-2: the first tag waits on 0001-F5; C-2: the first tag waits on 0001-F6
+blocks: []
+spikes: []
+
+spec: .build/Releasing/.spec/README.md
+
+claims:
+  - B-003
+  - B-004
+  - B-006
+  - B-007
+
+created: "2026-10-08"
+updated: "2026-10-08"
+closed: null
+
+summary: |
+  The push, the GitHub Release and the first `v*` tag. Proven only by a
+  real publish, and the first publish freezes schema version 1 (0001-F7
+  decision 0002), so it waits on 0001-F5 (0010) and 0001-F6 (0004)
+  landing whole (C-2). Risk 4: irreversible - a published version stays
+  (§ 5 #4).
+
+acceptance_criteria:
+  - "B-003 — every target passing: `specht.tool` pushed to GitHub Packages on `rlittlesii/specht`"
+  - "B-004 — package pushed: a GitHub Release for the tag"
+  - "B-006 — Release notes generated from the pull requests since the previous `v*` tag"
+  - "B-007 — the published package attached to the Release"
+  - "§ 9 carries a row naming a test for each id above."
+
+decisions: []
+
+out_of_scope:
+  - "NuGet.org — § 5 #3, C-3."
+  - "Installing the package — § 5 #2, 0055-F7."

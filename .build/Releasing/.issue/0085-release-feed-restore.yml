@@ -1,0 +1,39 @@
+id: "0085"
+type: task
+title: Restore the tool from the feed in the release run
+
+status: ready-for-architecture
+
+priority: medium # DERIVED
+risk: 2
+rank: 54 # DERIVED: (3 × 20) − (2 × 3) + (0 × 5); value inherited from 0082
+
+parent: "0082"
+children: []
+
+depends_on: ["0083"] # a step in 0083's workflow
+blocks: []
+spikes: []
+
+spec: .build/Releasing/.spec/README.md
+
+claims:
+  - B-010
+
+created: "2026-10-08"
+updated: "2026-10-08"
+closed: null
+
+summary: |
+  Once this repository's tool manifest names `specht.tool` (0055-F7
+  B-003), the release and dry runs restore it with the workflow's own
+  token (0055-F7 C-5).
+
+acceptance_criteria:
+  - "B-010 — release or dry run restores `specht.tool` with the workflow's token, package read"
+  - "§ 9 carries a row naming a test for each id above."
+
+decisions: []
+
+out_of_scope:
+  - "A stored read token — 0055-F7 C-5."
