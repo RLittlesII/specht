@@ -6,13 +6,13 @@ status: ready-for-architecture
 
 priority: high # DERIVED
 risk: 3
-rank: 71 # DERIVED: (4 × 20) − (3 × 3) + (0 × 5); value inherited from 0010
+rank: 76 # DERIVED: (4 × 20) − (3 × 3) + (1 × 5); value inherited from 0010
 
 parent: "0010"
 children: []
 
 depends_on: ["0011", "0026"] # keys load through 0011; B-010 needs 0026's `--strict`
-blocks: []
+blocks: ["0062"]
 spikes: []
 
 spec: src/specht/Manifest/.spec/README.md

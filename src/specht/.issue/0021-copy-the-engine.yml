@@ -11,7 +11,7 @@ rank: 121 # DERIVED: (5 × 20) − (3 × 3) + (6 × 5); value inherited from 002
 parent: "0020"
 children: []
 
-depends_on: []
+depends_on: ["0057"] # the build lands before any engine work
 blocks: ["0011", "0022", "0023", "0024", "0026", "0034"]
 spikes: []
 

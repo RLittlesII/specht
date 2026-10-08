@@ -1,0 +1,54 @@
+id: "0060"
+type: task
+title: Call the formatting gate from the pre-commit hook on what is staged
+
+status: ready-for-architecture
+
+priority: high # DERIVED
+risk: 3
+rank: 101 # DERIVED: (5 × 20) − (3 × 3) + (2 × 5); value inherited from 0056
+
+parent: "0056"
+children: []
+
+depends_on: ["0059"] # calls 0059's Format with the staged files
+blocks: ["0031", "0062"]
+spikes: []
+
+spec: .build/.spec/README.md
+
+claims:
+  - B-011
+  - B-012
+  - B-014
+  - B-015
+  - B-016
+  - B-021
+  - B-022
+
+created: "2026-10-08"
+updated: "2026-10-08"
+closed: null
+
+summary: |
+  Replace the hook copied from another repository with one that calls
+  `Format` on the staged content and never rewrites or re-stages a file
+  (C-2). Epic 0001's 0031 wires `SpecCheck` into this hook, so it waits on
+  this item. Risk 3: checking staged content rather than the working tree
+  (B-022) without touching the index (B-015).
+
+acceptance_criteria:
+  - "B-011 — after `dotnet husky install`, a commit runs the hook"
+  - "B-012 — unformatted staged C#: refused, file named"
+  - "B-014 — no C#, Markdown, `.spec/` or `.feature` staged: nothing runs"
+  - "B-015 — no working-tree or index change"
+  - "B-016 — unformatted staged Markdown: refused, file named"
+  - "B-021 — formatting through `Format` with the staged files"
+  - "B-022 — the staged content is checked, not the working tree"
+  - "§ 9 carries a row naming a test for each id above."
+
+decisions: []
+
+out_of_scope:
+  - "The hook's `SpecCheck` call — 0001-F2's 0031; its gate is B-013, 0062."
+  - "Fixing formatting — § 5 #8."

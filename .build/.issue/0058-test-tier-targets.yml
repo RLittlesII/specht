@@ -1,0 +1,43 @@
+id: "0058"
+type: task
+title: Run one test tier per target
+
+status: ready-for-architecture
+
+priority: high # DERIVED
+risk: 2
+rank: 94 # DERIVED: (5 × 20) − (2 × 3) + (0 × 5); value inherited from 0056
+
+parent: "0056"
+children: []
+
+depends_on: ["0057"] # adds targets to 0057's build
+blocks: []
+spikes: []
+
+spec: .build/.spec/README.md
+
+claims:
+  - B-006
+  - B-007
+  - B-008
+
+created: "2026-10-08"
+updated: "2026-10-08"
+closed: null
+
+summary: |
+  `UnitTest`, `IntegrationTest` and `AcceptanceTest`, each filtering on the
+  one `Tier` trait every test class declares (`specht-conventions`
+  § Testing), beside the `Test` target 0057 defines.
+
+acceptance_criteria:
+  - "B-006 — `UnitTest`: unit tier trait only"
+  - "B-007 — `IntegrationTest`: integration tier trait only"
+  - "B-008 — `AcceptanceTest`: every `.feature` the acceptance project links"
+  - "§ 9 carries a row naming a test for each id above."
+
+decisions: []
+
+out_of_scope:
+  - "Coverage — § 5 #3, 0055-F3."

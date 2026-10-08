@@ -1,0 +1,42 @@
+id: "0061"
+type: task
+title: Report the check from SpecCheck without failing until rule settings exist
+
+status: ready-for-architecture
+
+priority: high # DERIVED
+risk: 2
+rank: 99 # DERIVED: (5 × 20) − (2 × 3) + (1 × 5); value inherited from 0056
+
+parent: "0056"
+children: []
+
+depends_on: ["0026", "0031"] # runs the command 0026 builds; around the call 0031 wires
+blocks: ["0062"]
+spikes: []
+
+spec: .build/.spec/README.md
+
+claims:
+  - B-025
+
+created: "2026-10-08"
+updated: "2026-10-08"
+closed: null
+
+summary: |
+  Once 0001-F2's check command exists and before 0001-F5's rule settings
+  do, `SpecCheck` prints the check's violations and exits 0 (C-7). Waits
+  on 0026 and on 0031, which points the target at the command; not on
+  0014, because B-025's precondition is that 0001-F5's settings do not yet
+  exist. 0031 and this item land together, so no run fails in between
+  (C-7).
+
+acceptance_criteria:
+  - "B-025 — check command, no rule settings: violations printed, exit 0"
+  - "§ 9 carries a row naming a test for each id above."
+
+decisions: []
+
+out_of_scope:
+  - "What the check's run does — § 5 #1, 0001-F2."

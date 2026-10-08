@@ -6,13 +6,13 @@ status: ready-for-architecture
 
 priority: high # DERIVED
 risk: 3
-rank: 96 # DERIVED: (5 × 20) − (3 × 3) + (1 × 5); value inherited from 0025
+rank: 101 # DERIVED: (5 × 20) − (3 × 3) + (2 × 5); value inherited from 0025
 
 parent: "0025"
 children: []
 
-depends_on: ["0026"] # wires the command 0026 builds into the build and hook
-blocks: ["0032"]
+depends_on: ["0026", "0060"] # wires the command 0026 builds into the build and the hook 0060 creates
+blocks: ["0032", "0061"]
 spikes: []
 
 spec: src/specht.tool/Features/Check/.spec/README.md

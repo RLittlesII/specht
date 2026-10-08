@@ -1,0 +1,43 @@
+id: "0062"
+type: task
+title: Gate the hook and SpecCheck once rule settings exist
+
+status: ready-for-architecture
+
+priority: high # DERIVED
+risk: 3
+rank: 91 # DERIVED: (5 × 20) − (3 × 3) + (0 × 5); value inherited from 0056
+
+parent: "0056"
+children: []
+
+depends_on: ["0061", "0060", "0026", "0014"] # replaces 0061's report-only state; gates 0060's hook; the check command; SPEC060 lowered to a warning through 0014's rule settings (C-6)
+blocks: []
+spikes: []
+
+spec: .build/.spec/README.md
+
+claims:
+  - B-013
+  - B-024
+
+created: "2026-10-08"
+updated: "2026-10-08"
+closed: null
+
+summary: |
+  The step C-7 names: from 0001-F5's arrival, `SpecCheck` fails on an
+  error-severity violation, and this repository's manifest lowers
+  `SPEC060` to a warning (C-6) in the same change, so no window gates on a
+  `Missing` row. Depends on 0026 and 0014, the two Features C-7 waits on.
+
+acceptance_criteria:
+  - "B-013 — staged `.spec/` or `.feature` file and an error-severity violation: commit refused"
+  - "B-024 — approved spec with a `Missing` row: `SPEC060` warning, exit 0"
+  - "§ 9 carries a row naming a test for each id above."
+
+decisions: []
+
+out_of_scope:
+  - "A change to the engine's `SPEC060` — C-6."
+  - "That shell, target and hook agree — § 5 #1, 0001-F2 B-010 (0031)."

@@ -1,0 +1,49 @@
+id: "0059"
+type: task
+title: Verify C# and Markdown formatting in the Format target
+
+status: ready-for-architecture
+
+priority: high # DERIVED
+risk: 3
+rank: 96 # DERIVED: (5 × 20) − (3 × 3) + (1 × 5); value inherited from 0056
+
+parent: "0056"
+children: []
+
+depends_on: ["0057"] # a target in 0057's build
+blocks: ["0060"]
+spikes: []
+
+spec: .build/.spec/README.md
+
+claims:
+  - B-003
+  - B-004
+  - B-017
+  - B-019
+  - B-020
+
+created: "2026-10-08"
+updated: "2026-10-08"
+closed: null
+
+summary: |
+  `Format` verifies, never fixes (C-2), both C# and Markdown (OQ-2), with
+  the Markdown formatter pinned in a committed version file (C-3), and
+  accepts a file set so the hook can scope it to what is staged. Risk 3:
+  two formatters, one verify-only contract, and a file-set argument the
+  hook relies on (0060).
+
+acceptance_criteria:
+  - "B-003 — unformatted C#: non-zero, names the file"
+  - "B-004 — creates, modifies, deletes no tracked file"
+  - "B-017 — unformatted Markdown: non-zero, names the file"
+  - "B-019 — the Markdown formatter at the committed version"
+  - "B-020 — given files, checks those and no other"
+  - "§ 9 carries a row naming a test for each id above."
+
+decisions: []
+
+out_of_scope:
+  - "Fixing formatting for the contributor — § 5 #8."
