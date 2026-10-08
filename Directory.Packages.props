@@ -1,0 +1,45 @@
+<Project>
+
+  <PropertyGroup>
+    <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+    <CentralPackageTransitivePinningEnabled>true</CentralPackageTransitivePinningEnabled>
+  </PropertyGroup>
+
+  <ItemGroup Label="Analyzers">
+    <!--
+      Analyzer-only (developmentDependency="true" in its own nuspec - never
+      flows to a consumer of a packed project). Referenced solution-wide
+      from Directory.Build.props rather than per-csproj.
+    -->
+    <PackageVersion Include="Rocket.Surgery.Airframe.CodeAnalysis" Version="0.12.1" />
+  </ItemGroup>
+
+  <ItemGroup Label="Engine">
+    <!--
+      Pinned to hooked's exact versions (hooked/Directory.Packages.props at
+      6afe8ab, README section 3). The engine is copied, not regenerated, and
+      its report is the baseline every later step is diffed against - a
+      parser upgrade here would move that baseline. Bump only once the
+      copied engine's tests pass.
+    -->
+    <PackageVersion Include="JsonSchema.Net" Version="9.4.0" />
+    <PackageVersion Include="YamlDotNet" Version="18.1.0" />
+    <PackageVersion Include="Markdig" Version="1.4.0" />
+  </ItemGroup>
+
+  <ItemGroup Label="CLI">
+    <PackageVersion Include="Spectre.Console.Cli" Version="0.57.2" />
+  </ItemGroup>
+
+  <ItemGroup Label="Testing">
+    <!--
+      xunit.v3 is a self-hosting Microsoft.Testing.Platform (MTP) runner -
+      it needs neither Microsoft.NET.Test.Sdk nor xunit.runner.visualstudio
+      under the MTP-native 'dotnet test' mode global.json opts into.
+    -->
+    <PackageVersion Include="xunit.v3" Version="4.0.1" />
+    <PackageVersion Include="Reqnroll.xunit.v3" Version="3.3.4" />
+    <PackageVersion Include="AwesomeAssertions" Version="9.6.0" />
+  </ItemGroup>
+
+</Project>

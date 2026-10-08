@@ -1,0 +1,15 @@
+<Solution>
+  <Folder Name="/.solution/">
+    <File Path="Directory.Build.props" />
+    <File Path="Directory.Packages.props" />
+    <File Path="global.json" />
+  </Folder>
+  <Folder Name="/src/">
+    <Project Path="src/Specht/Specht.csproj" />
+    <Project Path="src/Specht.Tool/Specht.Tool.csproj" />
+  </Folder>
+  <Folder Name="/test/">
+    <Project Path="test/Specht.Acceptance/Specht.Acceptance.csproj" />
+    <Project Path="test/Specht.Tests/Specht.Tests.csproj" />
+  </Folder>
+</Solution>
