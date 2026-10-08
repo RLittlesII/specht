@@ -1,6 +1,6 @@
 ---
 name: specht-conventions
-description: This repository's conventions — paths and layout, the delivery flow through GitHub issues, the test tiers, the ID schemes, section ownership, and how the tool checks its own specification tree. Use for any change in this repository, alongside the method skill the work belongs to.
+description: This repository's conventions — paths and layout, the delivery flow through local .issue/ work items, the test tiers, the ID schemes, section ownership, and how the tool checks its own specification tree. Use for any change in this repository, alongside the method skill the work belongs to.
 ---
 
 # `specht` conventions
@@ -59,7 +59,11 @@ test/
 .build/                        the NUKE build project - targets and CI generation; tooling, not product
 .nuke/                         NUKE parameters and the generated build schema
 .husky/                        git hooks - pre-commit formats staged .cs and runs specht on staged specs
-.github/                       workflows (ci, publish), labels, issue templates
+.github/                       workflows (ci, publish) - no labels or issue templates
+.issue/                        item.yml (the work-item schema), .sequence, and items
+                               belonging to no Feature; a Feature's items sit in
+                               <home>/.issue/ beside its .spec/
+epics/                         one folder per epic - ids share the items' number space
 
 .spec/                         repo-wide adr/, lessons/, templates/, schema/
                                schema/ and templates/ are the live copy specht checks
@@ -101,7 +105,7 @@ does not write there.
 | Scoring                       | derived — recompute, never hand-edit |
 
 The `.feature` file belongs to `spec-author`; its step definitions belong to
-`test-writer`. Role contracts are in [`.agents/`](../../.agents/README.md).
+`test-writer`. Role contracts are in [`.claude/agents/`](../../agents/README.md).
 
 ## ID schemes
 
@@ -112,7 +116,7 @@ The `.feature` file belongs to `spec-author`; its step definitions belong to
 | Claim         | `B-001`, `B-006b` | its Feature                                | `0001-F1 B-001`       |
 | Constraint    | `C-12`            | its Feature                                | `0001-F1 C-12`        |
 | Open question | `OQ-3`            | its Feature                                | `0001-F1 OQ-3`        |
-| Task          | `0001-11`         | its **epic**, not its Feature              | `0001-11`             |
+| Work item     | `0004`            | repository, shared with epics              | `0004`                |
 | ADR           | `ADR-0002`        | repo or Feature, by blast radius           | `ADR-0002`            |
 | `specht` rule | `SPEC031`         | the rule engine, versioned with the schema | `SPEC031`             |
 
@@ -131,22 +135,24 @@ resolve by counting rows. The template uses an explicit column; a spec written
 here always does. Never insert a § 4 row above an existing one in a spec that
 still uses ordinals.
 
-## The spec / issue split
+## The spec / item split
 
-**Delivery state is tracked in GitHub issues; content is tracked in this
-repository.** Exactly one field crosses that line in each direction, and which
-one — plus which fields are derived and must never be hand-edited — is in
-[references/delivery.md](references/delivery.md) § "What mirrors, and what never
-does". Get it wrong and `specht` says so.
+**Delivery state is tracked in `.issue/` work items; content is tracked in the
+specification.** There are no GitHub issues, labels or milestones. The item
+cites claim ids and never their text; the specification never carries an item's
+status. Which fields are authored where, and which are derived and must never be
+hand-edited, is in [references/delivery.md](references/delivery.md) § "What is
+authored, and what is derived". The item schema is
+[`.issue/item.yml`](../../../.issue/item.yml).
 
 ## The flow
 
 ```
-specification  →  grooming  →  GitHub issues  →  scenarios  →  tests  →  implementation  →  PR
+specification  →  grooming  →  .issue/ items  →  scenarios  →  tests  →  implementation  →  PR
 ```
 
-The specification exists first and stands alone; issues are cut from its § 3
-claims after agreement. A bug, spike or chore starts at the issue instead and may
+The specification exists first and stands alone; items are cut from its § 3
+claims after agreement. A bug, spike or chore starts at the item instead and may
 produce a spec delta afterwards.
 
 ## Build and test
@@ -176,7 +182,8 @@ is unset and no git hook fires.
 - A rule in `.claude/`. That tree is gitignored and reinstalled from `Skillfile`;
   a rule there cannot be reviewed in a pull request.
 - A renumbered claim, constraint, question, task or rule id.
-- A hand edit to `status` after `github_issue` is set, or to any derived field.
+- A GitHub issue, label or milestone as a tracker.
+- A hand edit to any derived field.
 - A hand edit to `.github/workflows/ci.yml`. It is NUKE-generated.
 - A package version in a `.csproj`.
 - A specification in two places at once.

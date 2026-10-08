@@ -66,9 +66,11 @@ delete its guidance comments in the copy.
 22 keys, in a fixed order, validated against
 [`.spec/schema/feature-spec.frontmatter.schema.json`](../../../.spec/schema/feature-spec.frontmatter.schema.json).
 `spec_status` is **document maturity** (`draft` → `in-review` → `approved` →
-`superseded`) and is owned by the file; `status` is **delivery lifecycle** and is
-mirrored from the issue label — see [delivery.md](delivery.md) for which fields
-mirror and which are derived.
+`superseded`) and is owned by the file; `status` is the Feature's coarse
+**delivery lifecycle**, authored in place — there is no issue label to mirror it
+from. Delivery state for the work cut from the Feature lives in its `.issue/`
+items; see [delivery.md](delivery.md) for which fields are authored where and
+which are derived. `github_issue` and `synced_at` stay `null`.
 
 ## § 9 is the gate, and `Missing` is honest
 
@@ -77,7 +79,7 @@ scenario's `@B-00n` **tag**, not the title in the Scenario column — a stale ti
 is a cleanup, not a gate failure.
 
 `Missing` in the Test column is the correct value until the test exists, and it is
-**not** a check failure: it blocks the issue reaching done, not the specification
+**not** a check failure: it blocks the item reaching done, not the specification
 reaching `approved`. `specht` only requires § 9 to be free of `Missing` once
 `spec_status: approved` (`SPEC060`).
 
