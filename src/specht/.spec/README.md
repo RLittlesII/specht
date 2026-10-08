@@ -4,7 +4,7 @@ description: "hooked's SpecGovernance rule engine copied into src/specht and ren
 type: feature
 id: "F1"
 epic: "0001"
-spec_status: in-review
+spec_status: approved
 status: ready-for-architecture
 priority: critical
 value: 0
@@ -160,6 +160,7 @@ None.
 | ------- | ------ | ------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | 1-5     | 🟢     | spec-reviewer | Approved (round 2). Round-1 blocking findings fixed. Non-blocking, routed: C-2 should name its scope (engine only, or also `test/specht.tests` with its `.csproj` edits); decision 0002 Rejected bullet conflicts with B-004 reading `hooked`'s checkout; B-006 machine name cannot be varied in a test; B-003 cites `SPEC012`; § 5 row 2 calls existing counts new; § 9 B-009 row `Missing` for a withdrawn claim (test-writer). |
 | 1-5     | 🟢     | spec-reviewer | Round 3 (2026-10-08) - approved, reviewing `acf3cff`..`f32a31d`. A-3 now includes decision 0003's optional epic `title` and `description` keys, matching `0001-F7` A-2 and decision 0003's Affects; nothing else changed. Non-blocking (spec-author): A-3 still omits the manifest keys `0001-F5` and `0001-F6` add to version 1, which `0001-F7` A-2 composes on top of it.                                                      |
+| 1-5     | 🟢     | spec-reviewer | Round 4 (2026-10-08) - approved, reviewing `01f1f73`..`9a379ce`. A-3 now adds the `0001-F5` and `0001-F6` manifest keys, agreeing with `0001-F7` A-2; the round-3 non-blocking finding is fixed.                                                                                                                                                                                                                                  |
 
 ## Tasks
 
