@@ -1,0 +1,44 @@
+id: "0053"
+type: task
+title: Fill a partial tree and fail a root that is not a directory
+
+status: ready-for-architecture
+
+priority: high # DERIVED
+risk: 2
+rank: 74 # DERIVED: (4 × 20) − (2 × 3) + (0 × 5); value inherited from 0050
+
+parent: "0050"
+children: []
+
+depends_on: ["0052"] # extends 0052's write
+blocks: []
+spikes: []
+
+spec: src/specht.tool/Features/Init/.spec/README.md
+
+claims:
+  - B-007
+  - B-010
+  - B-011
+
+created: "2026-10-08"
+updated: "2026-10-08"
+closed: null
+
+summary: |
+  With some of the eight files present and no manifest, or one pinning the
+  newest version, write each absent file and exit 0. A `--root` that is not
+  a directory is named on stderr as given, nothing is written, exit 2, with
+  the check's exit-code constants (0001-F2 C-2).
+
+acceptance_criteria:
+  - "B-007 — root not a directory: path as given on stderr, nothing written, exit 2"
+  - "B-010 — partial tree: each absent file written"
+  - "B-011 — partial tree: exit 0"
+  - "§ 9 carries a row naming a test for each id above."
+
+decisions: []
+
+out_of_scope:
+  - "A manifest pinning an older or unshipped version — OQ-1 (b), (c); 0054."

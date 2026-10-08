@@ -1,0 +1,45 @@
+id: "0051"
+type: task
+title: Embed the shipping copy and keep it equal to the live copy
+
+status: ready-for-architecture
+
+priority: high # DERIVED
+risk: 2
+rank: 84 # DERIVED: (4 × 20) − (2 × 3) + (2 × 5); value inherited from 0050
+
+parent: "0050"
+children: []
+
+depends_on: []
+blocks: ["0042", "0052"]
+spikes: []
+
+spec: src/specht.tool/Features/Init/.spec/README.md
+
+claims:
+  - B-004
+  - B-005
+
+created: "2026-10-08"
+updated: "2026-10-08"
+closed: null
+
+summary: |
+  Embed the eight files from src/specht.tool/schema/v<n>/ and templates/v<n>/
+  (A-2), with a test that the newest version equals this repository's
+  .spec/schema/ and .spec/templates/ byte for byte (C-2), and every
+  frontmatter schema's `$id` naming this repository and the version. Needs
+  only the scaffolded tool project, so it can start beside 0021. Schema
+  versioning's 0042 builds its version set on this.
+
+acceptance_criteria:
+  - "B-004 — embedded newest equals the live copy, by test"
+  - "B-005 — `$id` is `https://github.com/rlittlesii/specht/schema/v<n>/<file>`"
+  - "§ 9 carries a row naming a test for each id above."
+
+decisions: []
+
+out_of_scope:
+  - "A build step that generates one copy from the other — C-2."
+  - "The report schema — § 5 #2, 0001-F3."

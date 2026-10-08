@@ -11,7 +11,7 @@ rank: 88 # DERIVED: (4 × 20) − (4 × 3) + (4 × 5); value inherited from 0041
 parent: "0041"
 children: []
 
-depends_on: ["0011", "0027", "0034"] # key loads via 0011; exit 3 from 0027; version field from 0034
+depends_on: ["0011", "0027", "0034", "0051"] # key via 0011; exit 3 via 0027; version field in 0034; embedded set from 0051
 blocks: ["0043", "0044", "0045", "0049"]
 spikes: []
 

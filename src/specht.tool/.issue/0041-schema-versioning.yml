@@ -55,8 +55,8 @@ summary: |
   (C-1), so a mistake is permanent once published. Three open questions,
   all the owner's, block one item each: OQ-3 and OQ-6 (0047), OQ-5 (0048).
   OQ-1, the source option's names, is architecture's to propose in § 7.
-  Init pinning the newest version (0049) also waits on 0001-F4, which has
-  no item yet.
+  The embedded version set builds on init's shipping copy (0042 -> 0051),
+  and init pinning the newest version waits on init's write (0049 -> 0052).
 
 acceptance_criteria:
   - "B-001 — pinned `n` checks with `n`'s embedded frontmatter schemas (0042)"

@@ -1,0 +1,74 @@
+id: "0050"
+type: feature
+title: init
+
+status: ready-for-architecture
+
+priority: high # DERIVED
+value: 4
+risk: 3
+rank: 71 # DERIVED: (4 × 20) − (3 × 3) + (0 × 5)
+
+parent: "0001"
+children: ["0051", "0052", "0053", "0054"]
+
+depends_on: []
+blocks: []
+spikes: []
+
+spec: src/specht.tool/Features/Init/.spec/README.md
+
+claims:
+  - B-001
+  - B-002
+  - B-003
+  - B-004
+  - B-005
+  - B-006
+  - B-007
+  - B-008
+  - B-009
+  - B-010
+  - B-011
+
+created: "2026-10-08"
+updated: "2026-10-08"
+closed: null
+
+summary: |
+  As the maintainer adopting the tool, I want `specht init` to write the
+  schema set and templates from copies embedded in the tool, never
+  overwriting what exists, so that every consumer starts from the same
+  bytes as this repository and the copy is a fact of the tool version.
+
+  The embedded copy (0051) is the first thing schema versioning builds on:
+  0042 -> 0051, and init pinning the newest version is 0049 -> 0052. B-002
+  (0054) is blocked on OQ-1, the owner's; C-1 forbids an overwrite from the
+  first write regardless.
+
+acceptance_criteria:
+  - "B-001 — bare root: the eight files of the newest version; exit 0 (0052)"
+  - "B-002 — an existing file left byte-for-byte (0054)"
+  - "B-003 — written file equals the embedded copy (0052)"
+  - "B-004 — embedded newest equals this repository's live copy (0051)"
+  - "B-005 — written schema `$id` names this repository and the version (0051)"
+  - "B-006 — stdout lists each file as written or skipped (0052)"
+  - "B-007 — root not a directory: stderr, nothing written, exit 2 (0053)"
+  - "B-008 — nothing outside schema/ and templates/ (0052)"
+  - "B-009 — no `--root`: working directory (0052)"
+  - "B-010 — partial tree: absent files written (0053)"
+  - "B-011 — partial tree: exit 0 (0053)"
+  - "§ 9 carries a row naming a test for each id above."
+
+decisions:
+  - |
+    2026-10-08, Claude at the owner's request: sliced into the embedded
+    shipping copy (0051), which schema versioning also builds on, then the
+    write into a bare root (0052), then partial trees and the bad-root
+    failure (0053), and B-002 alone (0054) because OQ-1 blocks it and nothing
+    else. Rejected: B-002 inside 0052, which would hold the bare-root write
+    behind a question about multi-version trees that do not exist until a
+    second version ships.
+
+out_of_scope:
+  - "Everything in § 5 of the spec."

@@ -11,7 +11,7 @@ rank: 77 # DERIVED: (4 × 20) − (1 × 3) + (0 × 5); value inherited from 0041
 parent: "0041"
 children: []
 
-depends_on: ["0042"] # writes the newest version 0042 embeds
+depends_on: ["0042", "0052"] # the newest version 0042 embeds, in the manifest 0052 writes
 blocks: []
 spikes: []
 
@@ -26,8 +26,8 @@ closed: null
 
 summary: |
   The manifest `specht init` writes carries `schemaVersion` equal to the
-  newest version the tool embeds. Also waits on init itself (0001-F4 B-001),
-  which has no item yet; add that edge when F4 is cut.
+  newest version the tool embeds. Waits on 0042 for the version and on
+  init's bare-root write (0001-F4, 0052) for the manifest.
 
 acceptance_criteria:
   - "B-012 — init's manifest carries the newest `schemaVersion`"
