@@ -10,6 +10,7 @@
     <ReqnrollFeatureFile Include="..\..\.build\.spec\build.feature" Link="Features\build.feature" />
     <ReqnrollFeatureFile Include="..\..\.build\ContinuousIntegration\.spec\continuous-integration.feature" Link="Features\continuous-integration.feature" />
     <ReqnrollFeatureFile Include="..\..\src\specht\.spec\engine.feature" Link="Features\engine.feature" />
+    <ReqnrollFeatureFile Include="..\..\src\specht.tool\Features\Check\.spec\check.feature" Link="Features\check.feature" />
   </ItemGroup>
 
   <ItemGroup>
@@ -17,6 +18,7 @@
     <PackageReference Include="YamlDotNet" />
     <PackageReference Include="xunit.v3" />
     <PackageReference Include="AwesomeAssertions" />
+    <PackageReference Include="Spectre.Console.Cli.Testing" />
   </ItemGroup>
 
   <ItemGroup>
@@ -26,6 +28,20 @@
 
   <ItemGroup>
     <Using Include="Xunit" />
+  </ItemGroup>
+
+  <!-- The check's scenarios build their trees with the engine tests' fixture, over the live schema set it copies from the
+       output (specht-conventions § Testing: fixtures are built, not copied). -->
+  <ItemGroup>
+    <Compile Include="..\specht.tests\SpecTree.cs" Link="Check\SpecTree.cs" />
+    <!-- The fixture is hooked's, copied unchanged (0001-F1 C-2), and leans on implicit usings; these are the ones it reads. -->
+    <Using Include="System" />
+    <Using Include="System.Collections.Generic" />
+    <Using Include="System.IO" />
+    <Using Include="System.Linq" />
+    <Content Include="..\..\.spec\schema\*.json"
+             Link=".spec\schema\%(Filename)%(Extension)"
+             CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
 </Project>
