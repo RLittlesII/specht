@@ -51,20 +51,20 @@ consumer. The shipping copy is embedded in `src/specht.tool/schema/v1/` and
 
 The section titles, their order, and the table headers that gate coverage are
 written once, as data:
-[`.spec/schema/spec-structure.schema.json`](../../../.spec/schema/spec-structure.schema.json).
+[`.spec/schema/spec-structure.schema.json`](../../../../.spec/schema/spec-structure.schema.json).
 Rule `SPEC010` reads that manifest, so the list is not restated here or in C#.
 
 Exact text, exactly once each, in order. Who owns which section is in the
 [companion skill](../SKILL.md) § "Section ownership", and nowhere else. Each
 section carries a `<!-- last written by: <role>, <date> -->` stamp.
 
-Start from [`.spec/templates/feature.md`](../../../.spec/templates/feature.md) and
+Start from [`.spec/templates/feature.md`](../../../../.spec/templates/feature.md) and
 delete its guidance comments in the copy.
 
 ## Frontmatter
 
 22 keys, in a fixed order, validated against
-[`.spec/schema/feature-spec.frontmatter.schema.json`](../../../.spec/schema/feature-spec.frontmatter.schema.json).
+[`.spec/schema/feature-spec.frontmatter.schema.json`](../../../../.spec/schema/feature-spec.frontmatter.schema.json).
 `spec_status` is **document maturity** (`draft` → `in-review` → `approved` →
 `superseded`) and is owned by the file; `status` is the Feature's coarse
 **delivery lifecycle**, authored in place — there is no issue label to mirror it

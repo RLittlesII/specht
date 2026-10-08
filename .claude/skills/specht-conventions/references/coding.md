@@ -11,7 +11,7 @@ Extends [`coding-conventions`](../../coding-conventions/SKILL.md).
 ## Each rule has one home
 
 Which file owns which class of rule is written once, in
-[`AGENTS.md` § "Code conventions"](../../../AGENTS.md). Read the owner, not a
+[`AGENTS.md` § "Code conventions"](../../../../AGENTS.md). Read the owner, not a
 copy of it.
 
 ## Strictness is on, repo-wide

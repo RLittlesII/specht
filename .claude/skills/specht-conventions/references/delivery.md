@@ -14,7 +14,7 @@ There are **no GitHub issues, labels or milestones** in this workflow. A
 `<id>-<slug>.yml` work item stands in for an issue: the item owns delivery state,
 the Feature's `.spec/README.md` owns content, and neither duplicates the other.
 The schema, the status vocabulary and the rank derivation live in
-[`.issue/item.yml`](../../../../.issue/item.yml) — not restated here.
+[`.spec/templates/item.yml`](../../../../.spec/templates/item.yml) — not restated here.
 
 ```
 specification  →  grooming  →  .issue/ items  →  scenarios  →  tests  →  implementation  →  PR
@@ -77,14 +77,14 @@ authoritative.
 
 ## What is authored, and what is derived
 
-| Field                        | Where             | Rule                                                          |
-| ---------------------------- | ----------------- | ------------------------------------------------------------- |
-| `status`, `closed`           | the item          | authored; the item is the delivery record                     |
-| `value`, `risk`              | the item          | authored; `risk` is never inherited from a parent             |
-| `priority`, `rank`, `blocks` | the item          | derived — recompute per `.issue/item.yml`, never hand-edit    |
-| `claims`                     | the item          | ids only; the claim text lives in the spec's § 3              |
-| `priority`                   | the specification | authored in its frontmatter, permanently                      |
-| `github_issue`, `synced_at`  | the specification | `null` — there is no issue to link and nothing to mirror from |
+| Field                        | Where             | Rule                                                                |
+| ---------------------------- | ----------------- | ------------------------------------------------------------------- |
+| `status`, `closed`           | the item          | authored; the item is the delivery record                           |
+| `value`, `risk`              | the item          | authored; `risk` is never inherited from a parent                   |
+| `priority`, `rank`, `blocks` | the item          | derived — recompute per `.spec/templates/item.yml`, never hand-edit |
+| `claims`                     | the item          | ids only; the claim text lives in the spec's § 3                    |
+| `priority`                   | the specification | authored in its frontmatter, permanently                            |
+| `github_issue`, `synced_at`  | the specification | `null` — there is no issue to link and nothing to mirror from       |
 
 `rank` counts dependents across every Feature, so adding a `depends_on` edge
 means recomputing the dependent items too, not only the one edited.
