@@ -108,7 +108,6 @@ public sealed partial class CheckSteps
     [Then("the exit code is {int}")]
     public void ThenTheExitCodeIs(int code) => _exitCode.Should().Be(code);
 
-    // The summary joins these lines with 0028 (B-002); until then the violation lines are all stdout carries.
     [Then("the standard output holds the violation lines and the summary and nothing else")]
     public void ThenTheStandardOutputHoldsTheViolationLinesAndTheSummaryAndNothingElse() =>
         Lines(_stdout).Should().Equal(_expected);

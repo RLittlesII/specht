@@ -86,6 +86,10 @@ with a budget.
   constraint is one sentence plus what it rules out.
 - **Name the thing, not the journey to it.** The reasoning belongs in an ADR or
   a decision record, where it can be reviewed; the artifact carries the outcome.
+- **No inline comments in code.** The reason for a non-obvious choice lives in
+  the specification's technical design section, or in a decision record, and
+  the code carries only the outcome. Documentation comments on a public member
+  stay; a suppression's reason is the one inline comment allowed.
 - **Cut the hedge.** "Probably", "it may be worth", "we might want to" in a
   specification means the question is open - record it as one.
 
@@ -144,4 +148,5 @@ its companion skill names the file.
 - A generalization made before the third case appeared.
 - A configuration point nothing configures.
 - A paragraph restating the sentence above it.
+- An inline comment explaining code; the reason goes in the specification.
 - A replacement for a library or approach already in place, made without asking.

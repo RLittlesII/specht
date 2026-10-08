@@ -21,8 +21,6 @@ public sealed class CheckCommand(IAnsiConsole console, Func<string, SpecCheckRep
     {
         var report = run(Path.GetFullPath(settings.Root));
 
-        // The raw writer, not console.WriteLine: a rendered line wraps at the console width, and a wrapped diagnostic is
-        // one GitHub no longer annotates (C-3).
         foreach (var violation in report.Violations)
         {
             console.Profile.Out.Writer.WriteLine(violation);

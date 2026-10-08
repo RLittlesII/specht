@@ -32,6 +32,7 @@
     <PackageVersion Include="Reqnroll.xunit.v3" Version="3.3.4" />
     <PackageVersion Include="AwesomeAssertions" Version="9.6.0" />
     <PackageVersion Include="Spectre.Console.Cli.Testing" Version="0.57.2" />
+    <PackageVersion Include="Rocket.Surgery.Extensions.Testing.AutoFixtures" Version="10.0.6" />
   </ItemGroup>
 
 </Project>
