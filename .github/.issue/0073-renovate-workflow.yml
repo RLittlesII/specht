@@ -1,0 +1,48 @@
+id: "0073"
+type: task
+title: Generate the scheduled self-hosted Renovate workflow
+
+status: ready-for-architecture
+
+priority: high # DERIVED
+risk: 4
+rank: 88 # DERIVED: (4 × 20) − (4 × 3) + (4 × 5); value inherited from 0072
+
+parent: "0072"
+children: []
+
+depends_on: ["0064"] # generated beside 0064's workflow
+blocks: ["0074", "0075", "0076", "0077"]
+spikes: []
+
+spec: .github/.spec/README.md
+
+claims:
+  - B-010
+  - B-011
+  - B-015
+  - B-016
+
+created: "2026-10-08"
+updated: "2026-10-08"
+closed: null
+
+summary: |
+  A NUKE-generated workflow running `renovatebot/github-action` on a
+  schedule, with its committed configuration (C-2) and a token from a
+  repository secret for opening pull requests (C-8). Risk 4: a
+  self-hosted run, a stored token, and settings that must all live in the
+  repository.
+
+acceptance_criteria:
+  - "B-010 — no GitHub issue, no dashboard"
+  - "B-011 — every update pull request labelled `dependencies`"
+  - "B-015 — on the schedule, the workflow runs Renovate against this repository"
+  - "B-016 — the pinned SDK installed before any post-upgrade task"
+  - "§ 9 carries a row naming a test for each id above."
+
+decisions: []
+
+out_of_scope:
+  - "The hosted Renovate app — C-8."
+  - "Vulnerability alerts — § 5 #4."

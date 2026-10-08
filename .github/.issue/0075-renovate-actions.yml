@@ -1,0 +1,47 @@
+id: "0075"
+type: task
+title: Update action versions in the build project and commit the regenerated workflows
+
+status: ready-for-architecture
+
+priority: high # DERIVED
+risk: 4
+rank: 68 # DERIVED: (4 × 20) − (4 × 3) + (0 × 5); value inherited from 0072
+
+parent: "0072"
+children: []
+
+depends_on: ["0073", "0065"] # rules and post-upgrade tasks in 0073's configuration; must pass 0065's stale-workflow check
+blocks: []
+spikes: []
+
+spec: .github/.spec/README.md
+
+claims:
+  - B-002
+  - B-009
+  - B-013
+  - B-014
+
+created: "2026-10-08"
+updated: "2026-10-08"
+closed: null
+
+summary: |
+  A custom manager reads action versions from the build project (C-6), and
+  a post-upgrade task, allowlisted in the committed configuration, runs
+  the workflow generation and commits its output (C-7), so 0065's check
+  passes on the update. Risk 4: post-upgrade commands and two update kinds
+  that must both regenerate.
+
+acceptance_criteria:
+  - "B-002 — action minor and patch: one pull request changing the build project's declarations"
+  - "B-009 — workflow changes only by regeneration"
+  - "B-013 — action update carries declaration and regenerated workflows"
+  - "B-014 — NUKE update carries the regenerated workflows"
+  - "§ 9 carries a row naming a test for each id above."
+
+decisions: []
+
+out_of_scope:
+  - "A rule matching `.github/workflows/` — C-3."

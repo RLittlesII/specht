@@ -1,0 +1,79 @@
+id: "0072"
+type: feature
+title: Dependency updates
+
+status: ready-for-architecture
+
+priority: high # DERIVED
+value: 4
+risk: 4
+rank: 68 # DERIVED: (4 × 20) − (4 × 3) + (0 × 5)
+
+parent: "0055"
+children: ["0073", "0074", "0075", "0076", "0077"]
+
+depends_on: []
+blocks: []
+spikes: []
+
+spec: .github/.spec/README.md
+
+claims:
+  - B-001
+  - B-002
+  - B-003
+  - B-004
+  - B-005
+  - B-006
+  - B-007
+  - B-008
+  - B-009
+  - B-010
+  - B-011
+  - B-012
+  - B-013
+  - B-014
+  - B-015
+  - B-016
+  - B-017
+
+created: "2026-10-08"
+updated: "2026-10-08"
+closed: null
+
+summary: |
+  As the maintainer, I want every dependency update to arrive as a pull
+  request, with green minor and patch updates merging themselves and
+  majors waiting for me, so that dependencies stay current without a
+  person tending them and nothing breaking merges unseen.
+
+acceptance_criteria:
+  - "B-001 — NuGet minor and patch in one pull request (0074)"
+  - "B-002 — action minor and patch in one pull request, in the build project (0075)"
+  - "B-003 — SDK minor or patch in one pull request (0074)"
+  - "B-004 — tool manifest minor and patch in one pull request (0074)"
+  - "B-005 — green minor or patch merges without a person (0076)"
+  - "B-006 — failing check: stays open (0076)"
+  - "B-007 — major: proposed, never merged by itself (0076)"
+  - "B-008 — Markdig, YamlDotNet, JsonSchema.Net held (0074)"
+  - "B-009 — workflow changes are regeneration only (0075)"
+  - "B-010 — no GitHub issue (0073)"
+  - "B-011 — label `dependencies` (0073)"
+  - "B-012 — one pull request per major (0076)"
+  - "B-013 — action update carries the regenerated workflows (0075)"
+  - "B-014 — NUKE update carries the regenerated workflows (0075)"
+  - "B-015 — scheduled self-hosted Renovate run (0073)"
+  - "B-016 — SDK installed before the post-upgrade generation (0073)"
+  - "B-017 — feed read with the workflow's token (0077)"
+  - "§ 9 carries a row naming a test for each id above."
+
+decisions:
+  - |
+    2026-10-08, Claude at the owner's request: sliced into the self-hosted
+    Renovate workflow and its base configuration (0073), then three
+    independent rule sets on it - grouping and the engine hold (0074),
+    actions with the regenerated workflows (0075), merge policy (0076) -
+    and the feed read, which waits on a published package (0077).
+
+out_of_scope:
+  - "Everything in § 5 of the spec."
