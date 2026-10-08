@@ -87,8 +87,10 @@ A consumer configures the tool with one file: `.spec/schema/spec-structure.schem
 the manifest. It carries `schemaVersion` and will carry the roles above. Beside
 it sit the three frontmatter schemas (`feature-spec`, `task`, `epic`) and
 `.spec/templates/`. `specht init` writes all of them from the embedded copies;
-`specht upgrade` moves them to the next version and prints what changed. Neither
-overwrites a file that exists.
+`specht upgrade` moves them to the next version and prints what changed. `init`
+never overwrites a file that exists. `upgrade` rewrites the schema and template
+files and, in the manifest, changes only `schemaVersion` and the keys the next
+version adds, so consumer settings survive (`0001-F7` decision 0001).
 
 This repository's own `.spec/schema/` and `.spec/templates/` are that live copy
 — the same bytes as the embedded `v1`, and a test says so.
@@ -97,8 +99,8 @@ This repository's own `.spec/schema/` and `.spec/templates/` are that live copy
 
 ```
 specht [--root <dir>] [--report <path>] [--strict] [--json]
-specht init
-specht upgrade
+specht init [--root <dir>]
+specht upgrade [--root <dir>]
 specht --explain SPEC031
 ```
 
@@ -111,8 +113,8 @@ violation under `--strict`), `2` missing root or manifest, `3` invalid manifest.
 
 - **Never an absolute path** in any output, report, log line or test fixture
   (README § 9). Paths are relative to the root the tool was given.
-- **Never a write into a consumer's tree** except through `init` and `upgrade`,
-  and never an overwrite.
+- **Never a write into a consumer's tree** except through `init`, `upgrade` and
+  the caller-named `--report` file (README § 9). `init` never overwrites.
 - **Deterministic and offline.** The tool never calls GitHub; the same tree
   gives the same report. `generatedAtUtc` is not in the report for this reason.
 - **The rule vocabulary is fixed per schema version.** A new `SPEC###` is a new

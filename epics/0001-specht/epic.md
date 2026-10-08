@@ -51,7 +51,7 @@ request; a Feature is a thing the tool does, with its own invariant.
 Why these seven and not `hooked`'s one draft (`0008-F3`, 34 claims): that draft
 bundled the command, `init`, the manifest roles, discovery and the baseline in
 one Feature. Each of those has a different invariant - the command never
-writes, `init` never overwrites, the manifest never adds a rule, discovery
+writes except the report the caller names, `init` never overwrites, the manifest never adds a rule, discovery
 never opens what it excludes, the engine never changes before step 5 - and a
 Feature is cut where the invariant changes (AGENTS.md § "Feature naming
 heuristic").
@@ -68,9 +68,8 @@ placement and the `implementer` may move a specification with the code
 (`git mv`), because a specification's identity is its frontmatter `epic` and
 `id`, never its path (`SPEC012`).
 
-This epic file is not discovered by schema version 1, which reads epic files
-from `epics/**/epic.md` only. Where a co-located epic file lives is
-`0001-F6 OQ-1`.
+This epic file lives at `epics/0001-specht/epic.md`, where schema version 1's
+epic glob `epics/**/epic.md` discovers it (`0001-F6` decision 0001).
 
 ## Out of this epic
 

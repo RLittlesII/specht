@@ -7,7 +7,7 @@ type: decision
 # Decision 0001: the report carries no timestamp
 
 **Date:** 2026-10-07
-**Decided by:** the repository owner, in the first requirements session (README § 6, "Report timestamp"); recorded by spec-author
+**Decided by:** the repository owner, in the second requirements session (README § 6, "Report timestamp"; `REQUIREMENTS.md` § Revision log); recorded by spec-author
 
 ## The call
 

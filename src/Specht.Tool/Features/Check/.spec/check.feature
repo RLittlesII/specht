@@ -18,7 +18,7 @@ Feature: The check command
     Given the root holds two specifications in the legacy layout and one in the co-located layout
     When the check runs
     Then the standard output ends with the specification count per layout
-    And the item count and the count of rules evaluated
+    And the item count and the count of rule ids evaluated
     And the error count and the warning count
 
   @B-003
@@ -39,7 +39,7 @@ Feature: The check command
     When the check runs in strict mode
     Then the exit code is 1
 
-  @B-004
+  @B-003
   Scenario: A warning alone does not fail a non-strict run
     Given the root holds a specification with one warning-severity violation and no error
     When the check runs without strict mode
@@ -49,7 +49,7 @@ Feature: The check command
   Scenario: A root that is not a directory is a missing-input failure
     Given a root path that does not exist
     When the check runs against it
-    Then the standard error names that path
+    Then the standard error names that path as it was typed
     And the standard output is empty
     And the exit code is 2
 
@@ -62,33 +62,32 @@ Feature: The check command
     And the exit code is 2
 
   @B-007
-  Scenario: An invalid manifest is an invalid-configuration failure
-    Given the manifest carries a key the engine does not know
+  Scenario: A manifest that does not parse is an invalid-configuration failure
+    Given the root's manifest is not well-formed JSON
     When the check runs
-    Then the standard error names that key
+    Then the standard error names the manifest path relative to the root
     And the standard output is empty
     And the exit code is 3
 
   @B-008
-  Scenario: Help names every option and command
+  Scenario: Help names the check's options
     When the tool is asked for help
-    Then the output names the root, report, strict, json and explain options
-    And the output names the init and upgrade commands
+    Then the output names the root option and the strict option
     And the exit code is 0
 
   @B-009
   Scenario: The product goes to stdout and the tool's own messages to stderr
     Given the root holds a specification with one violation
-    When the check runs
+    When the check runs without asking for the JSON document
     Then the standard output holds the violation lines and the summary and nothing else
     And nothing about the tool itself appears on the standard output
 
   @B-010
   Scenario: Three call sites get one verdict
-    Given this repository's tree at one commit
-    When the check runs from a shell
-    And the check runs through the build target
-    And the check runs through the pre-commit hook
+    Given a prepared root holding one error-severity and one warning-severity violation
+    When the check runs against that root from a shell
+    And the check runs against that root through the build target
+    And the check runs against that root through the pre-commit hook
     Then all three print the same lines
     And all three exit with the same code
 
@@ -96,21 +95,29 @@ Feature: The check command
   Scenario: This repository checks itself with the tool
     Given this repository's tree at one commit
     When the build's SpecCheck target runs
-    Then it invokes the tool as a consumer would
-    And it exits with the tool's exit code
+    Then the check runs against this repository's root
+    And the target exits with the check's exit code
+
+  @B-014
+  Scenario: The build reaches the tool through the local tool manifest
+    Given the tool has been published as a package
+    And this repository's local tool manifest names that package
+    When the build's SpecCheck target runs
+    Then it reaches the tool through the local tool manifest
+    And it does not build the tool from this repository's source
 
   @B-012 @boundary
-  Scenario: A check never writes
+  Scenario: A check writes nothing but the named report
     Given the root holds specifications with violations
     And a snapshot of every file under the root
-    When the check runs
-    Then no file under the root was created, modified or deleted
+    When the check runs with a report path under the root
+    Then no file under the root other than the report was created, modified or deleted
 
   @B-013
-  Scenario: No output carries an absolute path
+  Scenario: No derived path in the output is absolute
     Given the root is a deeply nested directory on this machine
     And the root holds a specification with one violation
-    When the check runs
+    When the check runs from inside the root without naming it
     Then every path on the standard output is relative to the root
     And every path on the standard error is relative to the root
     And no path in either uses the platform's directory separator where it differs from a forward slash

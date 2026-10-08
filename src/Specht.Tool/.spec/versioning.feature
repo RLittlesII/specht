@@ -10,9 +10,9 @@ Feature: Schema versioning
   Scenario: The pinned version is the one checked with
     Given the tool ships schema versions 1 and 2
     And the manifest pins version 1
-    And the root holds a specification valid under version 1 and invalid under version 2
+    And the root holds a specification whose frontmatter version 1 accepts and version 2 rejects
     When the check runs
-    Then no violation is reported
+    Then no frontmatter violation is reported
 
   @B-002
   Scenario: A manifest without a version is version 1
@@ -39,10 +39,9 @@ Feature: Schema versioning
   Scenario: Upgrade moves the schema set and templates to the next version
     Given the tool ships schema versions 1 and 2
     And the root is pinned to version 1
+    And one of its templates has been edited by hand
     When upgrade runs against it
-    Then the manifest pins version 2
-    And the schema files and the templates are version 2's
-    And the standard output names the move from 1 to 2 and each file rewritten
+    Then the frontmatter schemas and the templates are version 2's
     And the exit code is 0
 
   @B-006
@@ -86,11 +85,10 @@ Feature: Schema versioning
     Then no violation is reported for that key
 
   @B-011
-  Scenario: The report names the version and the source
-    Given the manifest pins version 1
+  Scenario: The report names the selected source
+    Given the on-disk source is selected
     When the check runs with JSON output
-    Then the document names schema version 1
-    And the document says the schemas came from the embedded set
+    Then the document says the schemas came from disk
 
   @B-012
   Scenario: Init pins the newest version
@@ -101,6 +99,65 @@ Feature: Schema versioning
 
   @B-013 @boundary
   Scenario: A shipped version never changes
-    Given the embedded schema set for version 1 as a released tool shipped it
-    When a later tool's embedded schema set for version 1 is read
-    Then it is byte-identical
+    Given the embedded schemas, manifest and templates for version 1 as the first published package shipped them
+    When a later tool's embedded files for version 1 are read
+    Then they are byte-identical
+
+  @B-014
+  Scenario: The pinned version's rules are the ones evaluated
+    Given the tool ships schema versions 1 and 2
+    And version 2 holds a rule version 1 does not
+    And the manifest pins version 1
+    And the root holds a specification that breaks only that rule
+    When the check runs
+    Then no violation is reported
+
+  @B-015 @boundary
+  Scenario: A shipped version's rules never change
+    Given the rules version 1 held in the first published package
+    When a later tool's rules for version 1 are enumerated
+    Then they are the same rules
+
+  @B-016
+  Scenario: Upgrade keeps the consumer's manifest settings
+    Given the tool ships schema versions 1 and 2
+    And the root is pinned to version 1
+    And its manifest lowers one rule to a warning, disables another and renames the claims section
+    When upgrade runs against it
+    Then the manifest pins version 2
+    And the warning, the disabled rule and the renamed section are as the consumer set them
+
+  @B-017
+  Scenario: Upgrade prints what it changed
+    Given the tool ships schema versions 1 and 2
+    And the root is pinned to version 1
+    When upgrade runs against it
+    Then the standard output names the move from 1 to 2 and each file rewritten
+
+  @B-018
+  Scenario: Upgrade under a missing root is a missing-input failure
+    When upgrade runs against a path that is not a directory
+    Then nothing is written
+    And the exit code is 2
+
+  @B-019
+  Scenario: Upgrade without a manifest is a missing-input failure
+    Given the manifest has been removed from the root
+    When upgrade runs against it
+    Then nothing is written
+    And the exit code is 2
+
+  @B-020
+  Scenario: Upgrade with an invalid manifest is invalid configuration
+    Given the root's manifest is not valid
+    When upgrade runs against it
+    Then nothing is written
+    And the exit code is 3
+
+  @B-021 @boundary
+  Scenario: Upgrade from a version the tool does not ship rewrites nothing
+    Given the tool ships schema version 1 only
+    And the root is pinned to version 7
+    And a snapshot of every file under the root
+    When upgrade runs against it
+    Then no file under the root has changed

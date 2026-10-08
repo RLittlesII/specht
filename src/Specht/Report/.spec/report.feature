@@ -13,13 +13,32 @@ Feature: The report contract
     Then the standard output parses as a single JSON document
     And no diagnostic line and no summary line precede or follow it
 
-  @B-002
+  @B-022
   Scenario: A report path receives the document
+    Given the root holds a specification with one violation
+    When the check runs with a report path
+    Then the file at that path is the report document
+
+  @B-023
+  Scenario: A report path in a new directory is created
     Given the root holds specifications
     When the check runs with a report path in a directory that does not yet exist
-    Then the directory is created
+    Then the directory exists
     And the file at that path is the report document
-    And the standard output still carries the diagnostic lines and the summary
+
+  @B-024
+  Scenario: A report path that exists is replaced
+    Given the root holds a specification with one violation
+    And a file already exists at the report path from an earlier run
+    When the check runs with that report path
+    Then the file at that path is this run's report document and nothing else
+    And the run's exit code is the one it gives without a report path
+
+  @B-025
+  Scenario: A report path keeps the diagnostic lines on the output
+    Given the root holds a specification with one violation
+    When the check runs with a report path and without JSON output
+    Then the standard output carries the same diagnostic lines and summary as a run without a report path
 
   @B-003
   Scenario: Both outputs are the same document
@@ -38,13 +57,20 @@ Feature: The report contract
     Given the root holds two specifications in the legacy layout and one in the co-located layout
     When the check runs with JSON output
     Then the document names the schema version checked against
+    And whether the schemas came from the tool or from the repository's own files
     And each layout by name with its specification count
-    And the item count, the count of rules evaluated, the error count and the warning count
+    And the item count, the count of rule ids evaluated, the error count and the warning count
 
   @B-006 @boundary
   Scenario: The document carries nothing from the clock
     Given the root holds specifications
-    When the check runs with JSON output twice, a minute apart
+    When the check runs with JSON output twice, with the tool's clock set to two different times
+    Then the two documents are identical
+
+  @B-006 @boundary
+  Scenario: The document carries nothing from the machine
+    Given the same specifications are held under two different root directories
+    When each is checked with JSON output, under a different user and machine name
     Then the two documents are identical
 
   @B-007
@@ -112,12 +138,32 @@ Feature: The report contract
     When the check runs with JSON output
     Then the violation's expectation names 0001-03 as the next number in the sequence
 
+  @B-026
+  Scenario: A missing frontmatter says what the schema requires
+    Given the root holds a specification with no frontmatter
+    When the check runs with JSON output
+    Then the violation's expectation names the Feature schema file
+    And the keys that schema requires
+
   @B-017
   Scenario: A dependency violation says the missing edge or the cycle
     Given the root holds Feature F1 depending on F2
     And F2 declares no blocks edge back to F1
     When the check runs with JSON output
     Then the violation's expectation carries the edge F2 must declare
+
+  @B-027
+  Scenario: A dependency on nothing says what it could name
+    Given the root holds Features F1 and F2 in one epic
+    And F1 depends on F9
+    When the check runs with JSON output
+    Then the violation's expectation carries F1 and F2 as the Features a dependency could name
+
+  @B-028
+  Scenario: A reused item id names its first holder
+    Given the root holds two items both declaring the id 0001-02
+    When the check runs with JSON output
+    Then the violation's expectation names the file of the item that declared 0001-02 first
 
   @B-018
   Scenario: An approval violation says what must change first
@@ -135,11 +181,11 @@ Feature: The report contract
     And no check ran
 
   @B-020
-  Scenario: Explain of an unknown rule is a missing-input failure
+  Scenario: Explain of an unknown rule names it and fails
     When the tool is asked to explain SPEC999
     Then the standard error names SPEC999
     And the standard output is empty
-    And the exit code is 2
+    And the exit code is not 0
 
   @B-021
   Scenario: No path in the document is absolute

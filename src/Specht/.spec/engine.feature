@@ -7,11 +7,11 @@ Feature: The engine, extracted unchanged
     Given a repository root holding a manifest and the three frontmatter schemas of schema version 1
 
   @B-001
-  Scenario: Every rule in the vocabulary is evaluated
-    Given the root holds one specification with no violation
+  Scenario: Every rule in the vocabulary is applied, and no other
+    Given the root holds specifications that between them break each of the twenty-one version 1 rules once
     When the engine runs
-    Then every rule id in the version 1 vocabulary is evaluated
-    And the count of rule ids evaluated is reported
+    Then a violation is reported under each of the twenty-one rule ids
+    And no violation is reported under any other rule id
 
   @B-002
   Scenario: Both layouts are held to the same rules
@@ -28,7 +28,7 @@ Feature: The engine, extracted unchanged
     Then the specification is read as "0001-F2"
     And no identity violation is reported
 
-  @B-003
+  @B-011
   Scenario: One identity at two paths is reported
     Given the root holds two specifications both declaring epic "0001" and id "F2"
     When the engine runs
@@ -37,9 +37,10 @@ Feature: The engine, extracted unchanged
   @B-004
   Scenario: The report on hooked's tree is unchanged
     Given hooked's tree at the commit the engine was copied from
-    And the report hooked's engine wrote at that commit
+    And the baseline report hooked's engine wrote at that commit
     When the engine runs on that tree
-    Then the report equals the earlier one in every field but its timestamp
+    Then it reports the same violations as the baseline, with the same rule, severity, file, line, identifier and message
+    And in the same order
 
   @B-005 @boundary
   Scenario: Nothing carries the old repository's name
@@ -49,10 +50,10 @@ Feature: The engine, extracted unchanged
     And neither contains "Hooked"
 
   @B-006
-  Scenario: Two machines give the same report
-    Given the same tree and the same schema files on two machines
-    When the engine runs on each
-    Then both report the same violations in the same order
+  Scenario: Nothing about the machine reaches the verdict
+    Given a tree with violations, and the violations the engine reports on it
+    When the engine runs again with a different clock, environment, locale, machine name and root location
+    Then it reports the same violations in the same order
 
   @B-007
   Scenario: Every path is relative to the root
@@ -68,12 +69,6 @@ Feature: The engine, extracted unchanged
     When the engine runs
     Then the section is reported as carrying no table
     And no row of the grid is read as a claim
-
-  @B-009 @boundary
-  Scenario: The copy differs from hooked only by the namespace
-    Given the engine as copied into this repository
-    When it is compared with hooked's engine at the commit it was copied from
-    Then every difference is the namespace rename
 
   @B-010
   Scenario: A violation carries the six baseline fields

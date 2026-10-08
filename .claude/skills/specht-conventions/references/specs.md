@@ -11,8 +11,10 @@ Extends [`spec-and-traceability`](../../spec-and-traceability/SKILL.md).
 ## One layout here, two layouts the tool reads
 
 This repository's own specifications are **co-located**: `<area>/.spec/README.md`
-beside the code it specifies, from the first commit. There is no `epics/` tree
-here and no migration.
+beside the code it specifies, from the first commit. The only `epics/` content
+here is epic files, `epics/<epic>/epic.md`, where the version 1 epic glob finds
+them (`0001-F6` decision 0001); no specification lives there and nothing
+migrates.
 
 The tool reads both layouts, because its consumers have both:
 
@@ -125,7 +127,7 @@ this tool's.
 
 ## Never add
 
-- An `epics/` tree, or a `spec.md` anywhere, in this repository.
+- A specification under `epics/`, or a `spec.md` anywhere, in this repository.
 - A renumbered claim, constraint, question or task id.
 - A § 4 row inserted above an existing one in an un-normalized spec.
 - A `{{placeholder}}` or a template guidance comment left in a copy.

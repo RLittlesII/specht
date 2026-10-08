@@ -17,9 +17,6 @@ Feature: init
     And no other schema or template file beside it
     When init runs against it
     Then the manifest is byte-for-byte as it was
-    And the standard output reports the manifest as skipped
-    And the seven other files are written
-    And the exit code is 0
 
   @B-003
   Scenario: A written file equals the embedded copy
@@ -50,7 +47,7 @@ Feature: init
   Scenario: A root that is not a directory is a missing-input failure
     Given a root path that does not exist
     When init runs against it
-    Then the standard error names that path
+    Then the standard error names that path exactly as it was given
     And nothing is written
     And the exit code is 2
 
@@ -61,3 +58,23 @@ Feature: init
     When init runs against it
     Then the only files created are under the schema folder and the templates folder
     And no other file was modified
+
+  @B-009
+  Scenario: Init defaults the root to the working directory
+    Given a working directory with no schema folder and no templates folder
+    When init runs there without naming a root
+    Then the schema folder and the templates folder are written under the working directory
+
+  @B-010
+  Scenario: Init writes what is missing beside an existing file
+    Given a root directory whose schema folder holds a manifest pinning the newest version the tool ships
+    And no other schema or template file beside it
+    When init runs against it
+    Then the seven other files are written
+
+  @B-011
+  Scenario: Init succeeds when some files already exist
+    Given a root directory whose schema folder holds a manifest pinning the newest version the tool ships
+    And no other schema or template file beside it
+    When init runs against it
+    Then the exit code is 0

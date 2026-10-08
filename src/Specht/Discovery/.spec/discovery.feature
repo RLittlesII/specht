@@ -12,8 +12,8 @@ Feature: Discovery
     Given the manifest declares a third layout whose specification file is a differently named markdown file under a documentation folder
     And the root holds a specification at that place
     When the check runs
-    Then that specification is checked by every rule
-    And the summary counts it under the third layout's name
+    Then that specification is discovered
+    And it is checked by every rule
 
   @B-002
   Scenario: A directory name is excluded at any depth
@@ -24,17 +24,25 @@ Feature: Discovery
 
   @B-002
   Scenario: A root-relative path is excluded only at that place
-    Given the manifest excludes the root-relative path ".spec"
+    Given the manifest excludes the root-relative path "/.spec"
     And the root holds a README in its root ".spec" folder
     And the root holds a co-located specification under "src/Thing/.spec"
     When the check runs
     Then the root README is not discovered
-    And the specification under "src/Thing/.spec" is
+    And the specification under "src/Thing/.spec" is discovered
+
+  @B-002
+  Scenario: A bare directory name is not anchored to the root
+    Given the manifest excludes the directory name "generated"
+    And the root holds co-located specifications under "generated/One/.spec" and "src/generated/Two/.spec"
+    When the check runs
+    Then neither specification is discovered
 
   @B-003
   Scenario: Items, epics and companions are discovered from the manifest
     Given the manifest declares an item file shape, an epic file glob and a companion glob
-    And the root holds one item, one epic and one companion matching them beside a specification
+    And the root holds one item and one companion matching them beside a specification
+    And the root holds an epic file at "epics/0001-example/epic.md"
     When the check runs
     Then the summary counts one item
     And the epic's frontmatter is checked
@@ -52,11 +60,12 @@ Feature: Discovery
 
   @B-005
   Scenario: Discovery in a git work tree never opens an ignored directory
-    Given the root is a git work tree whose ignore file lists "node_modules"
-    And "node_modules" holds a co-located specification three levels deep
+    Given the root is a git work tree whose ignore file lists "dist"
+    And the manifest does not exclude "dist"
+    And "dist" holds a co-located specification three levels deep
     When the check runs
     Then that specification is not discovered
-    And no directory under "node_modules" is opened
+    And no directory under "dist" is opened
 
   @B-005
   Scenario: An untracked specification is discovered in a git work tree
@@ -73,6 +82,17 @@ Feature: Discovery
     Then that specification is not discovered
     And no directory under "obj" is opened
 
+  @B-010
+  Scenario: A manifest exclusion applies in a git work tree
+    Given the root is a git work tree
+    And the manifest excludes the root-relative path "/.spec" and the directory name "bin"
+    And a README in the root ".spec" folder is tracked
+    And a co-located specification under a "bin" directory is tracked
+    And a second co-located specification under a "bin" directory is neither tracked nor ignored
+    When the check runs
+    Then none of the three files is discovered
+    And git is never asked to list the root ".spec" folder or any "bin" directory
+
   @B-006
   Scenario: Discovery runs without git on the path
     Given the root is a git work tree
@@ -83,22 +103,30 @@ Feature: Discovery
 
   @B-007
   Scenario: Both discovery modes agree
-    Given this repository's tree at one commit
+    Given a clean checkout of this repository at one commit
     When specifications, items, epics and companions are discovered through git
     And they are discovered by walking the tree
     Then the two sets are equal
 
   @B-008
   Scenario: Discovered files are in one order everywhere
-    Given the root holds specifications under "src/b", "src/a" and "src/A"
+    Given the root holds specifications under "src/c", "src/a" and "src/B"
     When they are discovered through git
     And they are discovered by walking the tree
     Then both list them in the same order
-    And the order is by root-relative path, ordinally
+    And the order is by root-relative path, ordinally, so "src/B" comes before "src/a"
 
   @B-009
-  Scenario: A layout is counted by its manifest name
-    Given the manifest names its layouts "legacy" and "co-located"
-    And the root holds two legacy specifications and one co-located specification
+  Scenario: A layout is named by its manifest name
+    Given the manifest names its layouts "old-tree" and "beside-code"
+    And the root holds one specification in each layout
     When the check runs
-    Then the summary counts two under "legacy" and one under "co-located"
+    Then the summary and the report name the layouts "old-tree" and "beside-code"
+
+  @B-011
+  Scenario: A linked directory is not followed
+    Given the root holds a symbolic link to a directory outside it
+    And that directory holds a co-located specification
+    When the specifications are discovered through git
+    And they are discovered by walking the tree
+    Then neither discovers that specification

@@ -31,26 +31,30 @@ Feature: The manifest carries the roles
 
   @B-004
   Scenario: Frontmatter keys are read from the manifest
-    Given the manifest names the children key "tasks"
+    Given the frontmatter schemas are read from the root
+    And the manifest and the root's Feature schema both name the children key "tasks"
     And the root holds a specification whose "tasks" names an item that does not exist
     When the check runs
     Then the unresolved-child rule reports it
-    And the message spells the key as "tasks"
 
   @B-005
   Scenario: Identity and edge forms are read from the manifest
-    Given the manifest declares the qualified edge form with a colon between the epic and the Feature id
+    Given the frontmatter schemas are read from the root
+    And the manifest and the root's Feature schema both declare the qualified edge form with a colon between the epic and the Feature id
     And the root holds a specification whose dependency edge is written "0002:F1"
     When the check runs
     Then the edge resolves to Feature F1 of epic 0002
+    And no frontmatter violation is reported
 
   @B-006
   Scenario: Item ids follow the task grammar
-    Given the manifest's task grammar carries a three-digit sequence
+    Given the frontmatter schemas are read from the root
+    And the manifest's task grammar and the root's frontmatter schemas all carry a three-digit sequence
     And the root holds items "0001-001" and "0001-002" beside a specification
     When the check runs
     Then both items are read with epic "0001"
     And the per-epic sequence is reported contiguous
+    And no frontmatter violation is reported
 
   @B-007
   Scenario: Claim tags follow the claim grammar
@@ -63,18 +67,19 @@ Feature: The manifest carries the roles
 
   @B-008
   Scenario: Frontmatter schemas are loaded by the manifest's file names
-    Given the manifest names the Feature schema file "feature.json"
+    Given the frontmatter schemas are read from the root
+    And the manifest names the Feature schema file "feature.json"
     And the schema folder holds that file and not the default name
     When the check runs
     Then every specification's frontmatter is checked against "feature.json"
 
   @B-009
   Scenario: Messages name the manifest's values
-    Given the manifest names its layouts "old" and "new"
-    And the root holds a specification missing a section
+    Given the manifest renames the claims section to "3. Claims" in its section list and its claims role
+    And the root holds a specification with no "3. Claims" section
     When the check runs
-    Then the summary names the layouts "old" and "new"
-    And the missing-section message names the manifest at the manifest path
+    Then the missing-section message names "3. Claims"
+    And it names the manifest by its path under the root
 
   @B-010
   Scenario: A rule's severity is lowered from the manifest
@@ -121,18 +126,19 @@ Feature: The manifest carries the roles
     And the rejection names the claims role
 
   @B-016
-  Scenario: The default manifest reproduces the baseline
+  Scenario: The default manifest reproduces the baseline verdicts
     Given hooked's tree at the commit the engine was copied from
-    And the report the engine wrote at that commit
+    And the violations hooked's engine reported at that commit
     When the check runs with the default manifest
-    Then the report equals the earlier one
+    Then the same violations are reported, in the same order, each with the same rule id, severity, file, line, identifier and message
 
   @B-017 @boundary
   Scenario: A rule cannot be added from the manifest
-    Given the manifest lists a rule id the engine does not ship
+    Given the manifest declares a rule by a type name and a library file
+    And that library file exists under the root
+    And the library's rule leaves a mark under the root when it runs
     When the check runs
-    Then the manifest is rejected
-    And no rule by that id is evaluated
+    Then the mark does not exist
 
   @B-018 @boundary
   Scenario: An invalid manifest stops the run before any rule
@@ -141,3 +147,38 @@ Feature: The manifest carries the roles
     When the check runs
     Then the manifest is rejected
     And none of the three violations is reported
+
+  @B-019
+  Scenario: A key left out of the manifest takes the default
+    Given the manifest declares no missing-test cell value
+    And the root holds an approved specification with a "Missing" cell in its traceability table
+    When the check runs
+    Then the approved-with-missing-coverage rule reports that row
+
+  @B-020
+  Scenario: An annotation key is ignored
+    Given the manifest carries a "$comment" key and a "$schema" key
+    And the root holds a specification with no violations
+    When the check runs
+    Then the manifest is accepted
+    And no violation is reported
+
+  @B-021
+  Scenario: A malformed exclusion entry is invalid
+    Given the manifest's exclusion list holds the entry "build/output"
+    When the check runs
+    Then the manifest is rejected
+    And the rejection names "build/output"
+
+  @B-022
+  Scenario: A rejected manifest exits with the invalid-manifest code
+    Given the manifest's claim grammar is not a valid expression
+    When the check runs
+    Then the exit code is 3
+
+  @B-023
+  Scenario: A rejected manifest's only output is the rejection, on stderr
+    Given the manifest's claim grammar is not a valid expression
+    When the check runs
+    Then stderr carries the rejection
+    And stdout is empty

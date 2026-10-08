@@ -239,7 +239,7 @@ the owner can reverse; record a reversal as a decision, never silently.
 | Question | Decision | Why |
 | --- | --- | --- |
 | Name, package id, command | Product Specht; command `specht`; package `Specht.Tool`; library namespace `Specht`. `SpecCheck` survives only as the NUKE target name and engine type names | Says what it does; no `Hooked` anywhere |
-| What a "schema version" is in the file | The manifest carries `"schemaVersion": 1`; the tool embeds every schema version it has ever shipped — none is ever deleted — and validates with the pinned one; `specht upgrade` rewrites the manifest, schema files and templates to the next version and prints what changed, and never touches a document | A repository pins by editing one number; the tool, not the consumer, knows the diff between versions; a repository pinned to v1 restores any later tool and is still checked |
+| What a "schema version" is in the file | The manifest carries `"schemaVersion": 1`; the tool embeds every schema version it has ever shipped — none is ever deleted — and validates with the pinned one; `specht upgrade` rewrites the schema files and templates to the next version, changes only `schemaVersion` and the keys the next version adds in the manifest (`0001-F7` decision 0001), prints what changed, and never touches a document | A repository pins by editing one number; the tool, not the consumer, knows the diff between versions; a repository pinned to v1 restores any later tool and is still checked |
 | Which schema files are authoritative at check time | The embedded schema for the pinned version by default; the consumer's on-disk `.spec/schema/` files when a manifest field or a CLI argument selects them (Should-8). Field and argument names: open, `spec-author` | Supports "bring your own schema" without making a hand-edited copy the silent default |
 | Install path for four repositories | Local tool manifest per repository (`dotnet tool install --local`, committed `.config/dotnet-tools.json`), package published to GitHub Packages on `rlittlesii/specht` first; NuGet.org later, if ever | Pins the tool version beside the schema version; CI restores it with `dotnet tool restore`. Consumers carry a `nuget.config` source and a token with package read |
 | Templates: in the tool or per repository | In the tool, written by `specht init` next to the schema, never overwritten | They are part of the generation contract (Should-5) and version with the schema |
@@ -291,8 +291,12 @@ requirement (§ 2 number) it serves.
   schema versions, after step 6.
 - Repository-relative paths in every output, every report, every test
   fixture. An absolute path anywhere is a defect.
-- The tool never writes into a consumer's tree except through `init` and
-  `upgrade`, and never overwrites an existing file.
+- The tool never writes into a consumer's tree except through `init`,
+  `upgrade` and the report file the caller names with `--report`. `init`
+  never overwrites an existing file. `upgrade` rewrites the schema and
+  template files it owns and changes only `schemaVersion` and the keys the
+  next version adds in the manifest (`0001-F7` decision 0001). `--report`
+  overwrites the file it names (`0001-F3` decision 0002).
 - When a question in § 6 turns out to need the owner, stop and ask; do not
   pick a second default silently.
 
