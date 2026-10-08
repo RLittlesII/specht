@@ -1,0 +1,15 @@
+<Project>
+
+  <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))" />
+
+  <!-- xunit.v3 self-hosts on Microsoft.Testing.Platform; nothing else sets OutputType for it. -->
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+  </PropertyGroup>
+
+  <!-- The tier guard, in every *.tests project and not in specht.acceptance (specht-conventions § Testing). -->
+  <ItemGroup Condition="$(MSBuildProjectName.EndsWith('.tests', StringComparison.OrdinalIgnoreCase))">
+    <Compile Include="$(MSBuildThisFileDirectory)Shared/TestTierGovernanceTests.cs" Link="Shared/TestTierGovernanceTests.cs" />
+  </ItemGroup>
+
+</Project>

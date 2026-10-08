@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- The NUKE build (0055-F1): build.sh and build.cmd run it, and every gate is a target here. -->
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <RootNamespace></RootNamespace>
+    <NoWarn>CS0649;CS0169;CA1050;CA1822;CA2211;IDE1006</NoWarn>
+    <NukeRootDirectory>..</NukeRootDirectory>
+    <NukeScriptDirectory>..</NukeScriptDirectory>
+    <NukeTelemetryVersion>1</NukeTelemetryVersion>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Nuke.Common" />
+  </ItemGroup>
+
+</Project>

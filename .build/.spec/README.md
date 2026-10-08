@@ -5,7 +5,7 @@ type: feature
 id: "F1"
 epic: "0055"
 spec_status: approved
-status: ready-for-architecture
+status: in-progress
 priority: high
 value: 0
 risk: 0
@@ -117,53 +117,70 @@ The repository has a solution and central package versions but no build project,
 
 ## 6. Concern Separation
 
-<!-- last written by: spec-author, 2026-10-08 -->
+<!-- last written by: implementer, 2026-10-08 -->
 
-Pending: owned by `implementer`, written after agreement.
+| #   | Concern                                                       | Classification |
+| --- | ------------------------------------------------------------- | -------------- |
+| 1   | Which gates exist, and the order the default build runs them  | Both           |
+| 2   | Reaching the build from every operating system                | Technical      |
+| 3   | Pinning what the build runs: SDK, packages, dotnet tools      | Technical      |
+| 4   | What `SpecCheck` does before `0001-F2`'s check command exists | Both           |
 
 ## 7. Technical Design
 
-<!-- last written by: spec-author, 2026-10-08 -->
+<!-- last written by: implementer, 2026-10-08 -->
 
-Pending: owned by `implementer`, written after agreement.
+Delivered so far by item 0057: the scaffold. `0058` adds the per-tier targets, `0059` the `Format` target, `0060` the hook, and `0061` and `0062` replace the `SpecCheck` placeholder.
+
+- **The build project** is [`.build/.build.csproj`](../.build.csproj), NUKE's `Nuke.Common`, its version in `Directory.Packages.props` (C-4). Two packages it brings in transitively are pinned there as well: `System.Security.Cryptography.Xml` past its advisories, and `NuGet.Packaging` at the SDK's own NuGet version, because an older `NuGet.Frameworks` loaded beside the SDK's MSBuild fails to evaluate the solution. It is listed in `specht.slnx` with `Build="false"`, so a solution build and test never build it.
+- **The targets** are in [`.build/Build.cs`](../Build.cs): `Restore` (the local tool manifest, then the solution), `Compile`, `Test`, `Pack` and `SpecCheck`. `Test` is the default and depends on `Compile` (B-001). It runs `dotnet test --solution` on Microsoft.Testing.Platform, so every test project, which is every tier, runs and any failure fails it (B-005). `Pack` empties `.artifacts/nupkg/`, then packs the solution; `specht.tool` is the one packable project, so exactly one package is written (B-009). `SpecCheck` logs that the check is not yet available and succeeds (B-023, C-7).
+- **The entry scripts** `build.sh`, `build.ps1` and `build.cmd` are NUKE 10.1.0's generated scripts, with its enterprise-feed block removed. `build.cmd` is a cmd/bash polyglot that runs `build.ps1` on Windows, so both entries pass their arguments to the same build (B-002).
+- **The root** is marked by `.nuke/`: `parameters.json` names the solution, and NUKE writes `build.schema.json` from the targets and parameters; it is committed. NUKE's own log goes to the gitignored `.nuke/temp/`, which no target writes (C-5). NUKE's `--root` points the build at another tree, which is how the acceptance scenarios run it.
+- **The local tool manifest** [`.config/dotnet-tools.json`](../../.config/dotnet-tools.json) pins Husky.Net with `rollForward: false` (B-010, C-3). The build itself invokes no dotnet tool. `0087` adds `specht`.
 
 ## 8. Testing Strategy
 
-<!-- last written by: spec-author, 2026-10-08 -->
+<!-- last written by: test-writer, 2026-10-08 -->
 
-Pending: owned by `test-writer`.
+- **Acceptance.** `build.feature` is linked into `test/specht.acceptance`. [`Build/BuildSteps.cs`](../../test/specht.acceptance/Build/BuildSteps.cs) binds B-001, B-002, B-005, B-009, B-010, B-018 and B-023. Each scenario writes a synthetic tree to a temporary directory: a solution, `global.json` and `Directory.Packages.props` copied from this repository, and fixture projects. It then runs this repository's real `build.sh`, or `build.cmd` on Windows, with `--root` at that tree. No scenario runs this repository's own build, so `Test` never recurses.
+- **Unbound scenarios** report Skipped: `reqnroll.json` sets `missingOrPendingStepsOutcome` to `Ignore`, the same thing a `Missing` row says. The cost: a step whose text no longer matches its binding also skips, not fails. When binding a scenario, check that the skipped count fell; today it is 19, the 18 unbound scenarios plus B-002 off Windows.
+- **B-002** skips itself off Windows. It runs once CI has a Windows leg (`0055-F2`).
+- **B-010** restores into a tree whose only package source is NuGet's global packages folder, so the scenario never touches the network. The build's `Restore` target fills that folder first. Run alone on a cold machine, the scenario fails its restore rather than downloading.
+- **B-009** asserts that the version in the package name equals the project's evaluated `Version`. That property becomes the version `0055-F5` computes when `0079` lands, with no change to the test.
+- **The tier guard** [`test/Shared/TestTierGovernanceTests.cs`](../../test/Shared/TestTierGovernanceTests.cs) is linked into every `*.tests` project by `test/Directory.Build.props`.
+- **Verdict.** There is no unit tier for this Feature yet: the build is target wiring with no logic of its own to isolate. The scenarios add about 35 seconds to the default build. Mutating the default target to `Compile` and making `SpecCheck` fail turned B-001, B-018 and B-023 red.
 
 ## 9. Traceability Matrix
 
-<!-- last written by: spec-author, 2026-10-08 -->
+<!-- last written by: test-writer, 2026-10-08 -->
 
-| Claim ID | Scenario                                                             | Test    | Status  |
-| -------- | -------------------------------------------------------------------- | ------- | ------- |
-| B-001    | The default build compiles and tests                                 | Missing | Missing |
-| B-002    | The Windows entry runs the same target                               | Missing | Missing |
-| B-003    | Unformatted code fails the format gate                               | Missing | Missing |
-| B-004    | The format gate changes nothing                                      | Missing | Missing |
-| B-005    | The test gate runs every tier                                        | Missing | Missing |
-| B-006    | The unit tier runs alone                                             | Missing | Missing |
-| B-007    | The integration tier runs alone                                      | Missing | Missing |
-| B-008    | The acceptance tier runs the linked scenarios                        | Missing | Missing |
-| B-009    | Packing writes one tool package                                      | Missing | Missing |
-| B-010    | A fresh clone restores every tool the build needs                    | Missing | Missing |
-| B-011    | An installed hook runs on commit                                     | Missing | Missing |
-| B-012    | The hook refuses unformatted staged code                             | Missing | Missing |
-| B-013    | The hook refuses a staged specification that fails                   | Missing | Missing |
-| B-014    | The hook lets an unrelated commit through                            | Missing | Missing |
-| B-015    | The hook changes nothing it checks                                   | Missing | Missing |
-| B-016    | The hook refuses unformatted staged Markdown                         | Missing | Missing |
-| B-017    | Unformatted Markdown fails the format gate                           | Missing | Missing |
-| B-018    | A failing default build exits non-zero                               | Missing | Missing |
-| B-019    | Every clone runs the same Markdown formatter                         | Missing | Missing |
-| B-020    | The format gate checks only the files it is given                    | Missing | Missing |
-| B-021    | The hook formats through the build                                   | Missing | Missing |
-| B-022    | The hook checks what is staged, not the working tree                 | Missing | Missing |
-| B-023    | The self-check reports itself unavailable before the command exists  | Missing | Missing |
-| B-024    | A missing test is a warning here                                     | Missing | Missing |
-| B-025    | The self-check reports without gating before the rule settings exist | Missing | Missing |
+| Claim ID | Scenario                                                             | Test         | Status            |
+| -------- | -------------------------------------------------------------------- | ------------ | ----------------- |
+| B-001    | The default build compiles and tests                                 | `BuildSteps` | Covered           |
+| B-002    | The Windows entry runs the same target                               | `BuildSteps` | Covered (Windows) |
+| B-003    | Unformatted code fails the format gate                               | Missing      | Missing           |
+| B-004    | The format gate changes nothing                                      | Missing      | Missing           |
+| B-005    | The test gate runs every tier                                        | `BuildSteps` | Covered           |
+| B-006    | The unit tier runs alone                                             | Missing      | Missing           |
+| B-007    | The integration tier runs alone                                      | Missing      | Missing           |
+| B-008    | The acceptance tier runs the linked scenarios                        | Missing      | Missing           |
+| B-009    | Packing writes one tool package                                      | `BuildSteps` | Covered           |
+| B-010    | A fresh clone restores every tool the build needs                    | `BuildSteps` | Covered           |
+| B-011    | An installed hook runs on commit                                     | Missing      | Missing           |
+| B-012    | The hook refuses unformatted staged code                             | Missing      | Missing           |
+| B-013    | The hook refuses a staged specification that fails                   | Missing      | Missing           |
+| B-014    | The hook lets an unrelated commit through                            | Missing      | Missing           |
+| B-015    | The hook changes nothing it checks                                   | Missing      | Missing           |
+| B-016    | The hook refuses unformatted staged Markdown                         | Missing      | Missing           |
+| B-017    | Unformatted Markdown fails the format gate                           | Missing      | Missing           |
+| B-018    | A failing default build exits non-zero                               | `BuildSteps` | Covered           |
+| B-019    | Every clone runs the same Markdown formatter                         | Missing      | Missing           |
+| B-020    | The format gate checks only the files it is given                    | Missing      | Missing           |
+| B-021    | The hook formats through the build                                   | Missing      | Missing           |
+| B-022    | The hook checks what is staged, not the working tree                 | Missing      | Missing           |
+| B-023    | The self-check reports itself unavailable before the command exists  | `BuildSteps` | Covered           |
+| B-024    | A missing test is a warning here                                     | Missing      | Missing           |
+| B-025    | The self-check reports without gating before the rule settings exist | Missing      | Missing           |
 
 ## 10. Lessons / Spec Deltas
 

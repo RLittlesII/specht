@@ -19,6 +19,15 @@
     <PackageVersion Include="Spectre.Console.Cli" Version="0.57.2" />
   </ItemGroup>
 
+  <ItemGroup Label="Build">
+    <PackageVersion Include="Nuke.Common" Version="10.1.0" />
+    <!-- Transitive through Nuke.Common, pinned past their advisories; NuGetAudit fails the restore otherwise.
+         NuGet.Packaging also tracks the SDK's own NuGet: an older NuGet.Frameworks beside the SDK's MSBuild
+         fails to evaluate the solution, and the build's [Solution] injection with it. -->
+    <PackageVersion Include="NuGet.Packaging" Version="7.9.0" />
+    <PackageVersion Include="System.Security.Cryptography.Xml" Version="9.0.20" />
+  </ItemGroup>
+
   <ItemGroup Label="Testing">
     <PackageVersion Include="xunit.v3" Version="4.0.1" />
     <PackageVersion Include="Reqnroll.xunit.v3" Version="3.3.4" />

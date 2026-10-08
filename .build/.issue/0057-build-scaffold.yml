@@ -2,7 +2,7 @@ id: "0057"
 type: task
 title: Scaffold the NUKE build, its entry scripts and the local tool manifest
 
-status: ready-for-architecture
+status: done
 
 priority: high # DERIVED
 risk: 3
@@ -28,7 +28,7 @@ claims:
 
 created: "2026-10-08"
 updated: "2026-10-08"
-closed: null
+closed: "2026-10-08"
 
 summary: |
   brief § 8 step 1: the `.build` project, `build.sh` and `build.cmd`,

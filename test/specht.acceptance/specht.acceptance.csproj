@@ -2,7 +2,13 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
+    <ReqnrollUseIntermediateOutputPathForCodeBehind>true</ReqnrollUseIntermediateOutputPathForCodeBehind>
   </PropertyGroup>
+
+  <!-- One literal entry per linked .feature file; a batched glob silently discovers zero tests (specht-conventions § Testing). -->
+  <ItemGroup>
+    <ReqnrollFeatureFile Include="..\..\.build\.spec\build.feature" Link="Features\build.feature" />
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Reqnroll.xunit.v3" />
