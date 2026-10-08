@@ -54,8 +54,15 @@ AGENTS.md § Configuration were amended to match this decision.
 ## Affects
 
 - `0001-F7` § 3 B-005, B-016, B-017; § 11 OQ-2 (resolved), OQ-6 (raised).
+- `0001-F7` § 3 B-005 (amended), B-029 to B-031; § 4 C-2 (amended); § 11
+  OQ-8: narrowed 2026-10-08, see Reversal.
 - README § 6 ("What a schema version is in the file") and § 9; AGENTS.md § Configuration (amended by the coordinator).
 
 ## Reversal
 
-None.
+**Narrowed 2026-10-08 by the repository owner (OQ-8).** With the on-disk
+source selected and no upstream source recorded, `upgrade` does not rewrite
+the frontmatter schemas: they are the consumer's own. It prints each one it
+skipped and why, and still rewrites and lists the templates. Considered and
+not chosen: rewriting them anyway (overwrites the consumer's schemas), and
+refusing the upgrade (the templates could not move either).

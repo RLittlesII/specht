@@ -119,7 +119,9 @@ violation under `--strict`), `2` missing root or manifest, `3` invalid manifest,
   (README § 9). Paths are relative to the root the tool was given.
 - **Never a write into a consumer's tree** except through `init`, `upgrade` and
   the caller-named `--report` file (README § 9). `init` never overwrites.
-- **Deterministic and offline.** The tool never calls GitHub; the same tree
+- **Deterministic and offline.** The check never touches the network and never
+  calls GitHub; only `init` and `upgrade` may fetch, and only an upstream
+  schema source the manifest records (`0001-F7` decision 0004). The same tree
   gives the same report. `generatedAtUtc` is not in the report for this reason.
 - **The rule vocabulary is fixed per schema version.** A new `SPEC###` is a new
   schema version, after README § 8 step 6.

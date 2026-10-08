@@ -38,7 +38,7 @@ Feature: Schema versioning
   @B-005
   Scenario: Upgrade moves the schema set and templates to the next version
     Given the tool ships schema versions 1 and 2
-    And the root is pinned to version 1
+    And the root is pinned to version 1 with the embedded source
     And one of its templates has been edited by hand
     When upgrade runs against it
     Then the frontmatter schemas and the templates are version 2's
@@ -186,3 +186,65 @@ Feature: Schema versioning
       | key         |
       | title       |
       | description |
+
+  @B-024
+  Scenario: The check reads an upstream schema from the local copy
+    Given the manifest records an upstream schema source
+    And the root holds the copy of that source under its schema folder
+    When the check runs
+    Then the frontmatter is validated against the local copy
+
+  @B-025 @boundary
+  Scenario: The check makes no network call
+    Given the manifest records an upstream schema source
+    And the network is unavailable
+    When the check runs
+    Then the check completes
+    And no network call was attempted
+
+  @B-026
+  Scenario: Upgrade writes a fetched schema that matches its hash
+    Given the manifest records an upstream schema source with its version and content hash
+    And the source serves content matching that hash
+    When upgrade runs
+    Then the fetched schemas are written under the root's schema folder
+
+  @B-027
+  Scenario: Upgrade refuses a fetched schema that does not match its hash
+    Given the manifest records an upstream schema source with its version and content hash
+    And the source serves content that does not match that hash
+    And a snapshot of every file under the root
+    When upgrade runs
+    Then no file under the root has changed
+    And the standard error names the source
+    And the exit code is 3
+
+  @B-028
+  Scenario: An upstream schema does not change the rule vocabulary
+    Given the manifest pins version 1 and records an upstream schema source
+    When the check runs
+    Then exactly version 1's rule ids are evaluated
+
+  @B-029 @boundary
+  Scenario: Upgrade leaves the consumer's own schemas
+    Given the tool ships schema versions 1 and 2
+    And the root is pinned to version 1 with the on-disk source selected
+    And no upstream schema source is recorded
+    When upgrade runs against it
+    Then the frontmatter schemas under the root are unchanged
+
+  @B-030
+  Scenario: Upgrade says which schemas it skipped and why
+    Given the tool ships schema versions 1 and 2
+    And the root is pinned to version 1 with the on-disk source selected
+    When upgrade runs against it
+    Then the output names each frontmatter schema it skipped
+    And the reason it skipped them
+
+  @B-031
+  Scenario: Upgrade still rewrites the templates under the on-disk source
+    Given the tool ships schema versions 1 and 2
+    And the root is pinned to version 1 with the on-disk source selected
+    When upgrade runs against it
+    Then the templates are version 2's
+    And the output names each template it rewrote
