@@ -4,7 +4,7 @@ description: "What a repository needs from this one to install specht.tool throu
 type: feature
 id: "F7"
 epic: "0055"
-spec_status: draft
+spec_status: approved
 status: needs-decomposition
 priority: high
 value: 0
@@ -145,6 +145,7 @@ None.
 | ------- | ------ | ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | 1-5     | 🟡     | spec-reviewer | Draft; not reviewed                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
 | 1-5     | 🟡     | spec-reviewer | Round 1 (2026-10-08) - reviewed in draft, reviewing commit `04fdc28`; no blocking findings. OQ-1 and OQ-2 are claimed, C-1 keeps every credential out of tracked files, and B-003 agrees with `0001-F2` B-014 and A-2. Non-blocking (spec-author): the Business Goal has this repository install its own package the same way, but no claim here or in `0055-F2` or `0055-F6` says how this repository's own runs get the read token A-1 requires; B-007's second clause restates A-1 rather than asserting anything new; `0055-F1` B-010 is contradicted after B-003 (recorded there). Left `draft`: the spec-author has not submitted it, and epic `0055` says its eight-Feature split awaits the owner's confirmation. |
+| 1-5     | 🟢     | spec-reviewer | Round 2 (2026-10-08) - approved, reviewing `acf3cff`..`f32a31d`. C-5 states the owner's read token for this repository's own runs and agrees with `0055-F2` B-011 and `0055-F6` B-010; B-007 is one assertion; `0055-F1` B-010 now takes the token.                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
 
 ## Tasks
 

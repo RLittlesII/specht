@@ -4,7 +4,7 @@ description: "Nerdbank.GitVersioning computes the package version from version.j
 type: feature
 id: "F5"
 epic: "0055"
-spec_status: draft
+spec_status: approved
 status: needs-decomposition
 priority: high
 value: 0
@@ -143,6 +143,7 @@ None.
 | ------- | ------ | ------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | 1-5     | 🟡     | spec-reviewer | Draft; not reviewed                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
 | 1-5     | 🔴     | spec-reviewer | Round 1 (2026-10-08) - blocked, reviewing commit `04fdc28`. Decision 0001, OQ-1 and C-1 are stated faithfully, and C-1 agrees with `0001-F7`. Blocking (spec-author): B-001 says one commit computes the same version on any two machines, with no condition on the ref, while B-003 and B-004 give the same commit a public version from `main` and a prerelease from any other ref; state B-001 for the same commit built from the same ref. Non-blocking (spec-author): B-005 tests `0055-F1`'s `Pack` but `depends_on` is empty; decision 0001's Affects stops at B-007. |
+| 1-5     | 🟢     | spec-reviewer | Round 2 (2026-10-08) - approved, reviewing `acf3cff`..`f32a31d`. B-001 is now the same commit from the same ref, agreeing with B-003 and B-004; `depends_on` names `0055-F1` (B-005); decision 0001's Affects is complete.                                                                                                                                                                                                                                                                                                                                                   |
 
 ## Tasks
 
