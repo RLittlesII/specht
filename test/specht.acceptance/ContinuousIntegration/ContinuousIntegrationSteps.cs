@@ -40,30 +40,40 @@ public sealed class ContinuousIntegrationSteps
 
     [Then("the build runs on Linux and on Windows")]
     public void ThenTheBuildRunsOnLinuxAndOnWindows() =>
-        Jobs().Select(static job => Scalar(job, "runs-on")).Should().BeEquivalentTo("ubuntu-latest", "windows-latest");
+        Jobs().Should().AllSatisfy(static job =>
+        {
+            Scalar(job, "runs-on").Should().Be("${{ matrix.os }}");
+            Images(job).Should().BeEquivalentTo("ubuntu-latest", "windows-latest");
+        });
 
     [Then("the format, compile, test, self-check and pack gates each run")]
     public void ThenTheFormatCompileTestSelfCheckAndPackGatesEachRun()
     {
         foreach (var job in Jobs())
         {
-            Run(job).Should().Be("./build.cmd Format Compile Test SpecCheck Pack");
+            Runs(job).Should().AllSatisfy(static run => run.Should().StartWith("./build.cmd --target "));
+            Runs(job).Select(static run => run.Split(' ')[2]).Should().Contain(["Format", "Compile", "Test", "SpecCheck", "Pack"]);
         }
     }
 
     [Then("the Windows check fails")]
     public void ThenTheWindowsCheckFails()
     {
-        // A failing target exits the entry script non-zero (0055-F1 B-018); nothing here may swallow that.
-        var windows = Jobs().Single(static job => Scalar(job, "runs-on") == "windows-latest");
-        Run(windows).Should().Contain("Test");
-        windows.Children.Keys.Select(static key => key.ToString()).Should().NotContain(["continue-on-error", "needs"]);
-        Steps(windows).Should().AllSatisfy(static step => step.Children.Keys.Select(static key => key.ToString()).Should().NotContain("continue-on-error"));
+        // A failing target exits the entry script non-zero (0055-F1 B-018); nothing here may swallow that, and a failure
+        // on one leg never cancels the other.
+        var job = Jobs().Single(static job => Images(job).Contains("windows-latest"));
+        Runs(job).Should().Contain(static run => run.Contains("--target Test", StringComparison.Ordinal));
+        FailFast(job).Should().Be("false");
+        job.Children.Keys.Select(static key => key.ToString()).Should().NotContain(["continue-on-error", "needs"]);
+        Steps(job).Should().AllSatisfy(static step => step.Children.Keys.Select(static key => key.ToString()).Should().NotContain("continue-on-error"));
     }
 
+    // A matrix leg's check is named by its job and its image, both literals in the committed file.
     [Then("each operating system's check has the same name in both")]
     public void ThenEachOperatingSystemsCheckHasTheSameNameInBoth() =>
-        Jobs().Select(static job => Scalar(job, "name")).Should().AllSatisfy(static name => name.Should().NotContain("${{"));
+        ((YamlMappingNode)Workflow["jobs"]).Children.Keys.Select(static key => key.ToString())
+            .Concat(Jobs().SelectMany(Images))
+            .Should().AllSatisfy(static name => name.Should().NotContain("${{"));
 
     [Then("no package is pushed to any feed")]
     public void ThenNoPackageIsPushedToAnyFeed()
@@ -78,10 +88,9 @@ public sealed class ContinuousIntegrationSteps
     [Then("the Linux and Windows builds each report as a separate check")]
     public void ThenTheLinuxAndWindowsBuildsEachReportAsASeparateCheck()
     {
-        var jobs = Jobs().ToArray();
-        jobs.Should().HaveCount(2);
-        jobs.Select(static job => Scalar(job, "name")).Should().OnlyHaveUniqueItems();
-        jobs.Should().AllSatisfy(static job => job.Children.Keys.Select(static key => key.ToString()).Should().NotContain("strategy"));
+        var job = Jobs().Should().ContainSingle().Subject;
+        Images(job).Should().HaveCount(2).And.OnlyHaveUniqueItems();
+        FailFast(job).Should().Be("false");
     }
 
     private static YamlMappingNode Workflow { get; } = Load();
@@ -118,7 +127,13 @@ public sealed class ContinuousIntegrationSteps
         return ((YamlMappingNode)checkout["with"]).Children.ToDictionary(static pair => pair.Key.ToString(), static pair => pair.Value.ToString());
     }
 
-    private static string Run(YamlMappingNode job) => Steps(job).Single(static step => step.Children.ContainsKey("run"))["run"].ToString();
+    private static IEnumerable<string> Runs(YamlMappingNode job) =>
+        Steps(job).Where(static step => step.Children.ContainsKey("id")).Select(static step => step["run"].ToString().Trim());
+
+    private static IEnumerable<string> Images(YamlMappingNode job) =>
+        ((YamlSequenceNode)((YamlMappingNode)((YamlMappingNode)job["strategy"])["matrix"])["os"]).Select(static image => image.ToString());
+
+    private static string FailFast(YamlMappingNode job) => ((YamlMappingNode)job["strategy"])["fail-fast"].ToString();
 
     private const string HeadCommit = "${{ github.event.pull_request.head.sha }}";
 }

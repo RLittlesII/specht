@@ -5,7 +5,7 @@
 #
 #     - To turn off auto-generation set:
 #
-#         [IntegrationWorkflow (AutoGenerate = false)]
+#         [GitHubActionsSteps (AutoGenerate = false)]
 #
 #     - To trigger manual generation invoke:
 #
@@ -19,46 +19,67 @@ name: ci
 on:
   push:
     branches:
-      - main
+      - 'main'
   pull_request:
     branches:
-      - main
-
+      - 'main'
 permissions:
+  actions: none
+  checks: none
   contents: read
+  deployments: none
+  id-token: none
+  issues: none
+  discussions: none
+  packages: none
+  pages: none
+  pull-requests: none
+  repository-projects: none
+  security-events: none
+  statuses: none
 
 jobs:
-  ubuntu-latest:
-    name: ubuntu-latest
-    runs-on: ubuntu-latest
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.pull_request.head.sha }}
-          fetch-depth: 0
-      - name: 'Cache: .nuke/temp, ~/.nuget/packages'
-        uses: actions/cache@v4
+          clean: 'false'
+          fetch-depth: '0'
+          ref: '${{ github.event.pull_request.head.sha }}'
+      - name: Fetch all history for all tags and branches
+        run: |
+          git fetch --prune
+      - name: 🔨 Use .NET 10 SDK
+        uses: actions/setup-dotnet@v4
         with:
-          path: |
-            .nuke/temp
-            ~/.nuget/packages
-          key: ${{ runner.os }}-${{ hashFiles('**/global.json', '**/*.csproj', '**/Directory.Packages.props') }}
-      - name: 'Run: Format, Compile, Test, SpecCheck, Pack'
-        run: ./build.cmd Format Compile Test SpecCheck Pack
-  windows-latest:
-    name: windows-latest
-    runs-on: windows-latest
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          ref: ${{ github.event.pull_request.head.sha }}
-          fetch-depth: 0
-      - name: 'Cache: .nuke/temp, ~/.nuget/packages'
-        uses: actions/cache@v4
-        with:
-          path: |
-            .nuke/temp
-            ~/.nuget/packages
-          key: ${{ runner.os }}-${{ hashFiles('**/global.json', '**/*.csproj', '**/Directory.Packages.props') }}
-      - name: 'Run: Format, Compile, Test, SpecCheck, Pack'
-        run: ./build.cmd Format Compile Test SpecCheck Pack
+          dotnet-version: '10.0.401'
+      - name: 🎁 Restore
+        id: restore
+        run: |
+          ./build.cmd --target Restore
+      - name: Format
+        id: format
+        run: |
+          ./build.cmd --target Format --skip Restore
+      - name: ⚙️ Compile
+        id: compile
+        run: |
+          ./build.cmd --target Compile --skip Restore
+      - name: 💨 Test
+        id: test
+        run: |
+          ./build.cmd --target Test --skip Compile
+      - name: Spec Check
+        id: specCheck
+        run: |
+          ./build.cmd --target SpecCheck
+      - name: 📦 Pack
+        id: pack
+        run: |
+          ./build.cmd --target Pack --skip Compile

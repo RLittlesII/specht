@@ -19,6 +19,11 @@ analyzer settings, the package policy and the commands —
 - **Test the assumption before building on it.** A spike that proves a mechanism is
   cheaper than a design that assumed it.
 - **Say what is out of scope** for the change, in the change.
+- **Extend what is already in place.** A library, tool or approach the
+  repository already holds is the owner's decision, not a draft. When it misses a
+  claim, make it fit through its own extension points. Replacing it is a new
+  decision: ask before the change, and record it in the specification - never
+  only in a pull-request body.
 
 ## Design
 
@@ -139,3 +144,4 @@ its companion skill names the file.
 - A generalization made before the third case appeared.
 - A configuration point nothing configures.
 - A paragraph restating the sentence above it.
+- A replacement for a library or approach already in place, made without asking.
