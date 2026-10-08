@@ -50,3 +50,14 @@ Feature: Repository settings checklist
     When the maintainer reads the settings checklist
     Then it keeps issues enabled for outside reports
     And nothing in it makes an issue a tracked work item
+
+  @B-010
+  Scenario: The repository is public
+    When the maintainer reads the settings checklist
+    Then it makes the repository public
+
+  @B-011
+  Scenario: Required checks are the gate, not a review
+    When the maintainer reads the settings checklist
+    Then the main branch requires its checks to pass
+    And it requires no approving review

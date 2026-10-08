@@ -55,23 +55,27 @@ A `.codecov.yml` exists, but nothing produces coverage, nothing uploads it, and 
 
 <!-- last written by: spec-author, 2026-10-08 -->
 
-| ID    | Claim                                                                                                                                           | Source                         | Status |
-| ----- | ----------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------ | ------ |
-| B-001 | Given the `Test` target runs, this Feature writes one Cobertura coverage report per test project under `.artifacts/coverage/`.                  | `specht-conventions` § Testing | Active |
-| B-002 | Given a CI run on any operating system, this Feature uploads that run's coverage reports to Codecov for the run's commit.                       | owner, 2026-10-08; A-2         | Active |
-| B-003 | Given a pull request whose changed lines of measured code are less than 80% covered, the patch coverage status on its head commit fails.        | owner, 2026-10-08              | Active |
-| B-004 | Given a pull request whose changed lines of measured code are 80% covered or more, the patch coverage status on its head commit passes.         | owner, 2026-10-08              | Active |
-| B-005 | Given a pull request that lowers the total coverage of measured code, the project coverage status reports the total and the change, and passes. | owner, 2026-10-08              | Active |
+| ID    | Claim                                                                                                                                                             | Source                         | Status |
+| ----- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------ | ------ |
+| B-001 | Given the `Test` target runs, this Feature writes one Cobertura coverage report per test project under `.artifacts/coverage/`.                                    | `specht-conventions` § Testing | Active |
+| B-002 | Given a CI run on any operating system, this Feature uploads that run's coverage reports to Codecov for the run's commit.                                         | owner, 2026-10-08; A-2         | Active |
+| B-003 | Given a pull request whose changed lines of measured code are less than 80% covered, the patch coverage status on its head commit fails.                          | owner, 2026-10-08              | Active |
+| B-004 | Given a pull request whose changed lines of measured code are 80% covered or more, the patch coverage status on its head commit passes.                           | owner, 2026-10-08              | Active |
+| B-005 | Given a pull request that lowers the total coverage of measured code, the project coverage status reports the total and the change, and passes.                   | owner, 2026-10-08              | Active |
+| B-006 | Given a pull request whose only changed lines are outside `src/`, the patch coverage status counts none of them.                                                  | OQ-1 (owner, 2026-10-08); C-4  | Active |
+| B-007 | Given a CI run whose upload to Codecov fails, that operating system's check does not fail on that account and the run reports a warning naming the failed upload. | OQ-2 (owner, 2026-10-08)       | Active |
 
 ## 4. Constraints
 
 <!-- last written by: spec-author, 2026-10-08 -->
 
-| ID  | Constraint                                                                                | Rules Out                                                                                       |
-| --- | ----------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
-| C-1 | The patch target, 80%, is written once, in the Codecov configuration (owner, 2026-10-08). | A second copy of the number in the build, a workflow or a skill; a target per operating system. |
-| C-2 | The Codecov upload token is a repository secret.                                          | A token in `.codecov.yml`, a workflow, the build project or any tracked file.                   |
-| C-3 | Coverage is measured from the test tiers `0055-F1` runs, and from nothing else.           | A separate coverage-only test run; coverage from a test that runs outside the build.            |
+| ID  | Constraint                                                                                                      | Rules Out                                                                                        |
+| --- | --------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
+| C-1 | The patch target, 80%, is written once, in the Codecov configuration (owner, 2026-10-08).                       | A second copy of the number in the build, a workflow or a skill; a target per operating system.  |
+| C-2 | The Codecov upload token is a repository secret.                                                                | A token in `.codecov.yml`, a workflow, the build project or any tracked file.                    |
+| C-3 | Coverage is measured from the test tiers `0055-F1` runs, and from nothing else.                                 | A separate coverage-only test run; coverage from a test that runs outside the build.             |
+| C-4 | Measured code is `src/**` only (owner, 2026-10-08).                                                             | Test projects, `.build/` or any other path raising or lowering the patch or the project number.  |
+| C-5 | The patch gate is Codecov's patch status as Codecov reports it; nothing in CI recomputes or substitutes for it. | A CI step that fails a run on a coverage number; a run failed because the upload failed (B-007). |
 
 ## 5. Out of Scope
 
@@ -107,13 +111,15 @@ Pending: owned by `test-writer`.
 
 <!-- last written by: spec-author, 2026-10-08 -->
 
-| Claim ID | Scenario                                     | Test    | Status  |
-| -------- | -------------------------------------------- | ------- | ------- |
-| B-001    | A test run writes coverage                   | Missing | Missing |
-| B-002    | Integration uploads coverage                 | Missing | Missing |
-| B-003    | Under-tested new code fails the patch status | Missing | Missing |
-| B-004    | Tested new code passes the patch status      | Missing | Missing |
-| B-005    | A lower total is reported and does not block | Missing | Missing |
+| Claim ID | Scenario                                        | Test    | Status  |
+| -------- | ----------------------------------------------- | ------- | ------- |
+| B-001    | A test run writes coverage                      | Missing | Missing |
+| B-002    | Integration uploads coverage                    | Missing | Missing |
+| B-003    | Under-tested new code fails the patch status    | Missing | Missing |
+| B-004    | Tested new code passes the patch status         | Missing | Missing |
+| B-005    | A lower total is reported and does not block    | Missing | Missing |
+| B-006    | Changes outside the product are not measured    | Missing | Missing |
+| B-007    | A failed upload warns and does not fail the run | Missing | Missing |
 
 ## 10. Lessons / Spec Deltas
 
@@ -125,10 +131,10 @@ None.
 
 <!-- last written by: spec-author, 2026-10-08 -->
 
-| ID   | Question                                                                                                                                                                                                        | Blocks              | Resolution |
-| ---- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------- | ---------- |
-| OQ-1 | What is "measured code"? Proposed default: `src/**` only, so test projects and `.build/` neither raise nor lower either number.                                                                                 | B-003, B-004, B-005 | Open       |
-| OQ-2 | When the upload to Codecov fails (an outage, a missing token on a fork's pull request), does the operating system's CI check fail, or does the missing coverage status alone block the merge through `0055-F8`? | B-002               | Open       |
+| ID   | Question                                                                                                                                                                                                        | Blocks              | Resolution                                                                                                                                                                           |
+| ---- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| OQ-1 | What is "measured code"? Proposed default: `src/**` only, so test projects and `.build/` neither raise nor lower either number.                                                                                 | B-003, B-004, B-005 | Resolved 2026-10-08: proposed default accepted by the repository owner. C-4 and B-006 added.                                                                                         |
+| OQ-2 | When the upload to Codecov fails (an outage, a missing token on a fork's pull request), does the operating system's CI check fail, or does the missing coverage status alone block the merge through `0055-F8`? | B-002               | Resolved 2026-10-08 by the repository owner: a failed upload does not fail CI and is reported as a warning; the patch gate is Codecov's status when it reports. B-007 and C-5 added. |
 
 ## 12. Sign-off
 

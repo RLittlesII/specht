@@ -32,3 +32,16 @@ Feature: The coverage gate
     When its coverage is reported
     Then the project coverage status shows the total and the change
     And the project coverage status passes
+
+  @B-006 @boundary
+  Scenario: Changes outside the product are not measured
+    Given a pull request that changes only test code
+    When its coverage is reported
+    Then none of its changed lines count toward the patch coverage
+
+  @B-007
+  Scenario: A failed upload warns and does not fail the run
+    Given the coverage service cannot be reached
+    When integration runs and every gate passes
+    Then each operating system's check passes
+    And the run reports a warning that the coverage upload failed

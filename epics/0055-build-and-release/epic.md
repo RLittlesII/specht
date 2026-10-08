@@ -63,7 +63,7 @@ invariant, and the cut is made where the invariant changes.
 | `0055-F3` | The coverage gate             | `test/.spec/README.md`                         | New code under the patch target fails the pull request; the total never does |
 | `0055-F4` | Dependency updates            | `.github/.spec/README.md`                      | An update is a pull request; only a green minor or patch merges itself       |
 | `0055-F5` | Package versioning            | `.build/Versioning/.spec/README.md`            | The package version is a function of the commit, never of a hand edit        |
-| `0055-F6` | Release                       | `.build/Release/.spec/README.md`               | Only a `v*` tag publishes, and only after the full build passes              |
+| `0055-F6` | Release                       | `.build/Releasing/.spec/README.md`             | Only a `v*` tag publishes, and only after the full build passes              |
 | `0055-F7` | Consuming the package         | `.config/.spec/README.md`                      | A repository installs the tool from the feed through its local tool manifest |
 | `0055-F8` | Repository settings checklist | `.github/settings/.spec/README.md`             | The settings that make a check binding are written down and applied by hand  |
 
@@ -99,6 +99,8 @@ homes that have no obvious code folder:
 - **A generated file is specified beside its generator.** `.github/workflows/`
   holds NUKE's output, never its source (`0055-F2` C-1), so CI and release are
   specified under `.build/`, where `Build.GitHubActions.cs` will declare them.
+  The release folder is `Releasing/`, because `.gitignore` ignores every
+  directory named `Release/` as build output.
 - **Hand-written GitHub configuration is specified under `.github/`.**
   `0055-F4` sits beside `.github/renovate.json`; `0055-F8` beside the checklist
   it specifies.
@@ -115,7 +117,7 @@ homes that have no obvious code folder:
 | -------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Before the first push      | `0055-F1` the build, tool manifest and hook; `0055-F2` the CI workflow; `0055-F3` the coverage configuration; `0055-F4` the Renovate configuration; `0055-F5` the version file; `0055-F6` the release workflow; `0055-F7` the feed configuration and install document; `0055-F8` the checklist |
 | Once, after the first push | The checklist applied by hand (`0055-F8`), and the Renovate and Codecov installations it names                                                                                                                                                                                                 |
-| The first publish          | The first `v*` tag (`0055-F6`). A later, deliberate act: schema version 1 freezes at it (`0001-F7` decision 0002), so it waits for `0001-F5` and `0001-F6` to land and for `0001-F7` OQ-4 to be answered                                                                                       |
+| The first publish          | The first `v*` tag (`0055-F6`). A later, deliberate act: schema version 1 freezes at it (`0001-F7` decision 0002), so it waits for `0001-F5` and `0001-F6` to land; the release path is proven before it by a dry run (`0055-F6` B-008)                                                        |
 | After the first publish    | This repository's own manifest names the published package (`0055-F7`; `0001-F2` B-014)                                                                                                                                                                                                        |
 
 Nothing in the first two rows publishes a package.

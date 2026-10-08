@@ -45,3 +45,9 @@ Feature: Package versioning
     Given a commit on the main branch
     When the maintainer creates its release tag with the versioning tool
     Then a version tag naming that commit's computed version points at it
+
+  @B-008
+  Scenario: The first version line is 0.1
+    Given the version file as first committed
+    When a commit on the main branch computes its package version
+    Then the version begins 0.1

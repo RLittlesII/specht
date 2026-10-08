@@ -52,3 +52,27 @@ Feature: Dependency updates
     And one of the engine's three dependencies has a newer release
     When updates are proposed
     Then no pull request updates it
+
+  @B-009 @boundary
+  Scenario: An action update leaves the generated workflow alone
+    Given a workflow action has a newer minor release
+    When updates are proposed
+    Then the pull request changes the action's version where the build declares it
+    And it changes no generated workflow file
+
+  @B-010
+  Scenario: Updates open no issue
+    Given updates are available in every ecosystem
+    When updates are proposed
+    Then no issue is opened
+
+  @B-011
+  Scenario: Update pull requests are labelled
+    When an update pull request is opened
+    Then it carries the dependencies label
+
+  @B-012
+  Scenario: Each major update is reviewed alone
+    Given two packages each have a new major release
+    When updates are proposed
+    Then each is carried by a pull request of its own

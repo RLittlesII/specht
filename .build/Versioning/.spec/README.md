@@ -64,6 +64,7 @@ Nothing sets the package's version, so every `Pack` would produce the same defau
 | B-005 | Given the `Pack` target, the version inside the package equals the version computed for the commit.                                                                                  | owner, 2026-10-08; `0055-F1` B-009      | Active |
 | B-006 | Given a commit that changes the version in `version.json` and nothing else, the schema versions the tool embeds and the `schemaVersion` `specht init` writes are unchanged.          | owner, 2026-10-08; `0001-F7` B-012; C-1 | Active |
 | B-007 | Given a fresh clone after the local tools are restored, `dotnet nbgv tag` on a commit of `main` creates the tag `v<version>` at that commit, `<version>` being its computed version. | owner, 2026-10-08; A-1                  | Active |
+| B-008 | Given `version.json` as first committed, the version computed for a commit of `main` begins `0.1.`.                                                                                  | OQ-1 (owner, 2026-10-08)                | Active |
 
 ## 4. Constraints
 
@@ -118,6 +119,7 @@ Pending: owned by `test-writer`.
 | B-005    | The package carries the computed version           | Missing | Missing |
 | B-006    | A package version change leaves the schema version | Missing | Missing |
 | B-007    | The release tag is made from the computed version  | Missing | Missing |
+| B-008    | The first version line is 0.1                      | Missing | Missing |
 
 ## 10. Lessons / Spec Deltas
 
@@ -129,9 +131,9 @@ None.
 
 <!-- last written by: spec-author, 2026-10-08 -->
 
-| ID   | Question                                                                                                                                                                                                           | Blocks       | Resolution |
-| ---- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------ | ---------- |
-| OQ-1 | What version does `version.json` start at? The first publish freezes schema version 1 (`0001-F7` decision 0002) whatever the package version is (C-1); whether that publish is `0.x` or `1.0` is the owner's call. | B-002, B-007 | Open       |
+| ID   | Question                                                                                                                                                                                                           | Blocks       | Resolution                                                       |
+| ---- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------ | ---------------------------------------------------------------- |
+| OQ-1 | What version does `version.json` start at? The first publish freezes schema version 1 (`0001-F7` decision 0002) whatever the package version is (C-1); whether that publish is `0.x` or `1.0` is the owner's call. | B-002, B-007 | Resolved 2026-10-08 by the repository owner: `0.1`. B-008 added. |
 
 ## 12. Sign-off
 

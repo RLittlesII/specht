@@ -59,7 +59,10 @@ test/
 .build/                        the NUKE build project - targets and CI generation; tooling, not product
 .nuke/                         NUKE parameters and the generated build schema
 .husky/                        git hooks - pre-commit formats staged .cs and runs specht on staged specs
-.github/                       workflows (ci, publish) - no labels or issue templates
+.github/                       workflows (ci, publish), renovate.json, settings checklist; issue
+                               templates for outside reports only - github_mode stays false and a
+                               maintainer turns a report into a .issue/ item; the only label is
+                               Renovate's `dependencies` on update pull requests (epic 0055)
 .issue/                        item.yml (the work-item schema), .sequence, and items
                                belonging to no Feature; a Feature's items sit in
                                <home>/.issue/ beside its .spec/

@@ -45,3 +45,9 @@ Feature: Continuous integration
   Scenario: Integration never publishes
     When integration runs on a pull request or on the main branch
     Then no package is pushed to any feed
+
+  @B-009
+  Scenario: A stale workflow fails the run
+    Given a commit whose build declares a step its committed workflow lacks
+    When integration runs
+    Then the run fails

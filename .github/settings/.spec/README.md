@@ -66,6 +66,8 @@ A workflow that runs is not a gate until the repository requires it: without bra
 | B-007 | Given the checklist and the committed workflows, every secret a workflow reads is named in the checklist with the workflow that reads it.                    | owner, 2026-10-08                                   | Active |
 | B-008 | Given the checklist, it names the Renovate and Codecov installations on the repository.                                                                      | `0055-F3`; `0055-F4` A-2                            | Active |
 | B-009 | Given the checklist, it keeps GitHub issues enabled, for outside reports through the issue templates.                                                        | owner, 2026-10-08; A-2                              | Active |
+| B-010 | Given the checklist, it sets the repository's visibility to public.                                                                                          | OQ-1 (owner, 2026-10-08)                            | Active |
+| B-011 | Given the checklist, its protection of `main` requires no approving review; the required checks are the gate.                                                | OQ-2 (owner, 2026-10-08)                            | Active |
 
 ## 4. Constraints
 
@@ -122,6 +124,8 @@ Pending: owned by `test-writer`.
 | B-007    | Every secret a workflow reads is listed           | Missing | Missing |
 | B-008    | The service installations are listed              | Missing | Missing |
 | B-009    | Outside reports can still be filed                | Missing | Missing |
+| B-010    | The repository is public                          | Missing | Missing |
+| B-011    | Required checks are the gate, not a review        | Missing | Missing |
 
 ## 10. Lessons / Spec Deltas
 
@@ -133,10 +137,10 @@ None.
 
 <!-- last written by: spec-author, 2026-10-08 -->
 
-| ID   | Question                                                                                                                                                                                                  | Blocks       | Resolution |
-| ---- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------ | ---------- |
-| OQ-1 | Is the repository public or private? It decides whether Codecov needs a token for pull requests from forks, whether outside reports are possible at all, and what reading the published package requires. | B-007, B-009 | Open       |
-| OQ-2 | Does branch protection require an approving review? With one maintainer, a required review blocks self-merging, and a dependency update merged without a person (`0055-F4` B-005) must be exempt.         | B-001, B-006 | Open       |
+| ID   | Question                                                                                                                                                                                                  | Blocks       | Resolution                                                                                                       |
+| ---- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------ | ---------------------------------------------------------------------------------------------------------------- |
+| OQ-1 | Is the repository public or private? It decides whether Codecov needs a token for pull requests from forks, whether outside reports are possible at all, and what reading the published package requires. | B-007, B-009 | Resolved 2026-10-08 by the repository owner: public. B-010 added.                                                |
+| OQ-2 | Does branch protection require an approving review? With one maintainer, a required review blocks self-merging, and a dependency update merged without a person (`0055-F4` B-005) must be exempt.         | B-001, B-006 | Resolved 2026-10-08 by the repository owner: no approving review; the required checks are the gate. B-011 added. |
 
 ## 12. Sign-off
 

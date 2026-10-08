@@ -87,10 +87,17 @@ Feature: The build
 
   @B-014
   Scenario: The hook lets an unrelated commit through
-    Given a commit that stages neither source code nor a specification
+    Given a commit that stages no source code, no Markdown and no specification
     When the commit is attempted
-    Then neither check runs
+    Then none of the hook's checks runs
     And the commit is made
+
+  @B-016
+  Scenario: The hook refuses unformatted staged Markdown
+    Given a staged Markdown file whose formatting differs from the repository's rules
+    When a commit is attempted
+    Then the commit is refused
+    And the hook names that file
 
   @B-015 @boundary
   Scenario: The hook changes nothing it checks

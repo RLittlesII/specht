@@ -40,3 +40,10 @@ Feature: Consuming the package
     When a consumer reads the install document
     Then it names the command that installs the tool locally
     And the command that restores it in a clone
+
+  @B-007
+  Scenario: A contributor without a token can build
+    Given a clone of this repository after the first publish
+    And no token for the package feed
+    When the solution is restored and built
+    Then the build succeeds

@@ -40,7 +40,8 @@ From README § 2, § 5 and § 6, as of 2026-10-07:
   `hooked` is consumer one.
 - **Delivered as a `dotnet tool`**, package `specht.tool`, command `specht`,
   installed per repository through a local tool manifest and published to
-  NuGet.org. The consumer's build calls the tool; no consumer carries the
+  GitHub Packages on `rlittlesii/specht` first; NuGet.org is the reversal
+  (README § 2, § 6). The consumer's build calls the tool; no consumer carries the
   engine.
 - **A schema version is the manifest's `schemaVersion`.** A repository pins by
   editing one number; the tool embeds every version it knows and validates with

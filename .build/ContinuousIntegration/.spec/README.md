@@ -66,6 +66,7 @@ No workflow exists, so the first pull request on GitHub would merge on the autho
 | B-006 | Given a pull request whose tree has a specification violation, this Feature annotates the violation's file and line in the pull request's diff.          | AGENTS.md § `specht`; `0001-F2` B-001 | Active |
 | B-007 | Given two runs on different commits, each operating system's check carries the same name in both.                                                        | `0055-F8` B-002                       | Active |
 | B-008 | Given any run of this Feature, no package is pushed to any feed.                                                                                         | `0055-F6` C-1                         | Active |
+| B-009 | Given a commit whose committed workflow file differs from the workflow the build generates from that commit, the run fails.                              | OQ-1 (owner, 2026-10-08); C-1         | Active |
 
 ## 4. Constraints
 
@@ -123,6 +124,7 @@ Pending: owned by `test-writer`.
 | B-006    | A specification violation is shown on the diff    | Missing | Missing |
 | B-007    | Check names do not change between runs            | Missing | Missing |
 | B-008    | Integration never publishes                       | Missing | Missing |
+| B-009    | A stale workflow fails the run                    | Missing | Missing |
 
 ## 10. Lessons / Spec Deltas
 
@@ -134,9 +136,9 @@ None.
 
 <!-- last written by: spec-author, 2026-10-08 -->
 
-| ID   | Question                                                                                                                                                                                                          | Blocks | Resolution |
-| ---- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------ | ---------- |
-| OQ-1 | C-1 says the workflow is generated, but nothing yet fails when the committed copy is stale. Does a run fail when the committed workflow differs from what the build generates? Proposed default: yes, as a claim. | C-1    | Open       |
+| ID   | Question                                                                                                                                                                                                          | Blocks | Resolution                                                                           |
+| ---- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------ | ------------------------------------------------------------------------------------ |
+| OQ-1 | C-1 says the workflow is generated, but nothing yet fails when the committed copy is stale. Does a run fail when the committed workflow differs from what the build generates? Proposed default: yes, as a claim. | C-1    | Resolved 2026-10-08: proposed default accepted by the repository owner. B-009 added. |
 
 ## 12. Sign-off
 

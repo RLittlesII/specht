@@ -62,6 +62,7 @@ A consumer cannot install a package from a feed it does not know, with a credent
 | B-004 | Given the install document, it names the feed's address and the package source entry a consumer commits.                                                                                   | owner, 2026-10-08             | Active |
 | B-005 | Given the install document, it names the token scope a consumer needs and how a CI run supplies the token.                                                                                 | owner, 2026-10-08; README § 6 | Active |
 | B-006 | Given the install document, it names the commands that install the tool locally and restore it in a clone.                                                                                 | owner, 2026-10-08             | Active |
+| B-007 | Given a clone and no GitHub token, the solution restores and builds; only restoring the tool needs a token.                                                                                | OQ-2 (owner, 2026-10-08)      | Active |
 
 ## 4. Constraints
 
@@ -72,19 +73,21 @@ A consumer cannot install a package from a feed it does not know, with a credent
 | C-1 | A committed package source takes its credential from the environment.                                | A token, password or username-and-token pair in any committed `nuget.config`, here or in the document's examples. |
 | C-2 | The documented install is local, through a committed tool manifest (`0001-F2` C-6).                  | A global install as the documented path.                                                                          |
 | C-3 | The document describes this repository's feed and nothing a consumer's own build does with the tool. | Consumer build wiring, such as a NUKE target, written here as if it were this repository's to maintain.           |
+| C-4 | The install document is a section of this repository's `README.md` (owner, 2026-10-08).              | A second install document elsewhere in this repository while that section exists.                                 |
 
 ## 5. Out of Scope
 
 <!-- last written by: spec-author, 2026-10-08 -->
 
-| #   | Item                                                           | Exclusion Reason                            |
-| --- | -------------------------------------------------------------- | ------------------------------------------- |
-| 1   | `hooked` adopting the tool                                     | Tracked in `hooked` (owner, 2026-10-08).    |
-| 2   | Transporter installing the tool                                | Tracked in Transporter (owner, 2026-10-08). |
-| 3   | Publishing the package                                         | `0055-F6`.                                  |
-| 4   | Writing the schema and templates into a consumer after install | `specht init`, `0001-F4`.                   |
-| 5   | What `SpecCheck` does once the manifest names the tool         | `0001-F2` B-014.                            |
-| 6   | Installing from NuGet.org                                      | Not published there (`0055-F6` C-3).        |
+| #   | Item                                                           | Exclusion Reason                                                                |
+| --- | -------------------------------------------------------------- | ------------------------------------------------------------------------------- |
+| 1   | `hooked` adopting the tool                                     | Tracked in `hooked` (owner, 2026-10-08).                                        |
+| 2   | Transporter installing the tool                                | Tracked in Transporter (owner, 2026-10-08).                                     |
+| 3   | Publishing the package                                         | `0055-F6`.                                                                      |
+| 4   | Writing the schema and templates into a consumer after install | `specht init`, `0001-F4`.                                                       |
+| 5   | What `SpecCheck` does once the manifest names the tool         | `0001-F2` B-014.                                                                |
+| 6   | Installing from NuGet.org                                      | Not published there (`0055-F6` C-3).                                            |
+| 7   | Moving the install document into `docs/`                       | Later, under epic `0002`, which owns usage documentation; C-4 holds until then. |
 
 ## 6. Concern Separation
 
@@ -116,6 +119,7 @@ Pending: owned by `test-writer`.
 | B-004    | The document names the feed and the source entry    | Missing | Missing |
 | B-005    | The document names the token and how CI supplies it | Missing | Missing |
 | B-006    | The document names the install and restore commands | Missing | Missing |
+| B-007    | A contributor without a token can build             | Missing | Missing |
 
 ## 10. Lessons / Spec Deltas
 
@@ -127,10 +131,10 @@ None.
 
 <!-- last written by: spec-author, 2026-10-08 -->
 
-| ID   | Question                                                                                                                                                                                                                            | Blocks              | Resolution |
-| ---- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------- | ---------- |
-| OQ-1 | Where does the install document live: this repository's `README.md`, or a page under `docs/`, where `0002-F1` places usage documentation?                                                                                           | B-004, B-005, B-006 | Open       |
-| OQ-2 | Once this repository's own sources include the authenticated feed (B-003), can a contributor without a GitHub token still restore and build the solution, with only the tool restore needing it? Proposed default: yes, as a claim. | B-003               | Open       |
+| ID   | Question                                                                                                                                                                                                                            | Blocks              | Resolution                                                                                                                                     |
+| ---- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| OQ-1 | Where does the install document live: this repository's `README.md`, or a page under `docs/`, where `0002-F1` places usage documentation?                                                                                           | B-004, B-005, B-006 | Resolved 2026-10-08 by the repository owner: a section of `README.md`, moving into epic `0002`'s documentation later. C-4 and § 5 row 7 added. |
+| OQ-2 | Once this repository's own sources include the authenticated feed (B-003), can a contributor without a GitHub token still restore and build the solution, with only the tool restore needing it? Proposed default: yes, as a claim. | B-003               | Resolved 2026-10-08: proposed default accepted by the repository owner. B-007 added.                                                           |
 
 ## 12. Sign-off
 
