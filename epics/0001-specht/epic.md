@@ -83,7 +83,7 @@ epic glob `epics/**/epic.md` discovers it (`0001-F6` decision 0001).
 
 | Item                                                   | Where it lives instead                                           |
 | ------------------------------------------------------ | ---------------------------------------------------------------- |
-| `hooked` replacing its engine with the tool            | `hooked`, a Feature of its own on `refactor/ai-offering`         |
+| `hooked` replacing its engine with the tool            | `hooked`, a Feature of its own                                   |
 | Installing in Transporter and repairing its tree       | Transporter; the repair is the agent's, from the report (Must-6) |
 | The claim bridge and the convention analyzers (Roslyn) | `hooked` `0008-F1`, `0008-F2`                                    |
 | Rule plugins                                           | Rejected: `0001-F2` decision 0001                                |

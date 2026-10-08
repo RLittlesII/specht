@@ -25,6 +25,9 @@ type: decision
    step 5, no edit changes a violation's rule id, severity, file, line,
    identifier, message or order. `0001-F3` may reshape the report around them at
    step 3 (drop `generatedAtUtc`, add `expected`).
+4. **The tag is `baseline/hooked-6afe8ab`** (added 2026-10-08), on the commit
+   that lands the copy on `main` - item 0021's merge commit, not a branch
+   commit a squash merge discards. Item 0022 places it.
 
 ## Why
 

@@ -1,6 +1,10 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-  <!-- The rule engine, copied from hooked's tools/SpecGovernance (brief section 3). -->
+  <PropertyGroup>
+    <RootNamespace>specht</RootNamespace>
+    <AssemblyName>specht</AssemblyName>
+  </PropertyGroup>
+
   <ItemGroup>
     <PackageReference Include="JsonSchema.Net" />
     <PackageReference Include="YamlDotNet" />

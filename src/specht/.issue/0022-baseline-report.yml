@@ -35,6 +35,7 @@ acceptance_criteria:
   - "B-004 — rule id, severity, file, line, identifier, message, in order, equal the committed report"
   - "B-010 — every violation carries the six fields"
   - "§ 9 carries a row naming a test for each id above."
+  - "Tag `baseline/hooked-6afe8ab` on 0021's merge commit on main, where C-9 starts (decision 0002)."
 
 decisions: []
 

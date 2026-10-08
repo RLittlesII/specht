@@ -2,7 +2,7 @@ id: "0021"
 type: task
 title: Copy the engine and its tests from hooked and tag the baseline
 
-status: ready-for-architecture
+status: done
 
 priority: high # DERIVED
 risk: 3
@@ -22,15 +22,15 @@ claims:
 
 created: "2026-10-08"
 updated: "2026-10-08"
-closed: null
+closed: "2026-10-08"
 
 summary: |
   Copy hooked's SpecGovernance engine and its 56 tests from
-  refactor/ai-offering at 6afe8ab (brief § 3) into src/specht and
+  salvage/spec-check-engine at 6afe8ab (brief § 3) into src/specht and
   test/specht.tests, rename the namespace and nothing else, prove the 56
   tests pass, and tag the commit as the baseline with the C-2 diff recorded
-  in it (decision 0002). The draft-spec files go to docs/reference/, never
-  into src/specht (A-2). Every engine change in this epic starts here.
+  in it (decision 0002). The draft-spec files are cited at hooked@a6d056f,
+  never copied (A-2). Every engine change in this epic starts here.
 
 acceptance_criteria:
   - "B-005 — assembly and root namespace `specht`; no `Hooked`"

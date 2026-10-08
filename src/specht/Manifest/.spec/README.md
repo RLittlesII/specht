@@ -124,7 +124,7 @@ Pending: owned by `implementer`, written after agreement.
 
 <!-- last written by: spec-author, 2026-10-07 -->
 
-Pending: owned by `implementer`, written after agreement. The literal each claim moves is cited by file and line in `hooked`'s draft `0008-F3` § 3 (`docs/reference/0008-F3-draft-spec.md`, brief § 3).
+Pending: owned by `implementer`, written after agreement. The literal each claim moves is cited by file and line in `hooked`'s draft `0008-F3` § 3 (`hooked@a6d056f:tools/SpecGovernance/.spec/README.md`, `0001-F1` A-2).
 
 ## 8. Testing Strategy
 

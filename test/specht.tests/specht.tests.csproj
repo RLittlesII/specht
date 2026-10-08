@@ -18,4 +18,12 @@
     <Using Include="Xunit" />
   </ItemGroup>
 
+  <!-- The live schema set, copied into the output as hooked's test project did: the tests run against the contract the
+       rules enforce, not a fixture copy of it. -->
+  <ItemGroup>
+    <Content Include="..\..\.spec\schema\*.json"
+             Link=".spec\schema\%(Filename)%(Extension)"
+             CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
 </Project>
