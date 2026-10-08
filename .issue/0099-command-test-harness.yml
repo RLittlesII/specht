@@ -1,0 +1,63 @@
+id: "0099"
+type: spike
+title: Decide how a test builds and runs a specht command
+
+status: ready
+
+priority: medium # DERIVED
+value: 3
+risk: 2
+rank: 54 # DERIVED: 3×20 − 2×3 + 0×5
+
+parent: null
+children: []
+
+depends_on: []
+blocks: [] # DERIVED
+spikes: []
+
+spec: null
+
+claims: []
+
+created: "2026-10-08"
+updated: "2026-10-08"
+closed: null
+
+summary: |
+  0026's command tests (test/specht.tests/CheckCommand.Integration.Tests.cs)
+  each run the command through a private static Check(run, args) helper: it
+  fills a ServiceCollection with the runner delegate, wraps it in
+  TypeRegistrar, builds a CommandAppTester over an 80-column TestConsole,
+  sets CheckCommand as the default command and runs it. The acceptance steps
+  (test/specht.acceptance/Check/CheckSteps.cs) repeat the same wiring. The
+  owner rejected that approach on PR #4 (review comment r4225019006: "I'm
+  not a fan of this approach") and asked for it to be tracked here rather
+  than redone inside 0026.
+
+  The question: how does a test compose and run a specht command? It has to
+  hold for every command after check (init 0001-F4, upgrade 0001-F7,
+  --explain 0001-F3), and for both the integration and acceptance tiers.
+  Candidates to weigh, none chosen:
+  - Tests reuse the production composition root (Program.cs's registrations)
+    and replace only the seam they need, so a test cannot drift from what
+    ships.
+  - A shared fixture type (an xunit class or collection fixture, or a Rocket
+    Surgery AutoFixture) that owns the registrar, the console and the tester.
+  - A test host from Rocket Surgery's testing packages, if one fits
+    Spectre.Console.Cli.
+  - Constructing the command directly, with its settings and a TestConsole,
+    and leaving Spectre's parser to the acceptance tier.
+  0027, 0028, 0029 and 0040 add command tests next; the sooner this is
+  decided, the fewer tests copy the helper.
+
+acceptance_criteria:
+  - "A decision record names the chosen harness, the rejected candidates with their costs, and the owner as decider."
+  - "CheckCommand's integration tests and CheckSteps use the chosen harness; the private Check helper is gone."
+  - "specht-conventions references/testing.md states the rule, with its Never-add item."
+
+decisions: []
+
+out_of_scope:
+  - "Changing what the check command does - 0001-F2 owns that."
+  - "The test tiers themselves; a 'ui' tier is a separate owner decision."
