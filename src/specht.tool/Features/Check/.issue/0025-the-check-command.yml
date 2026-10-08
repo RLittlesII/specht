@@ -44,8 +44,8 @@ summary: |
   understand, so that every call site gets the same verdict from a tool
   instead of hooked's Nuke target (Must-1).
 
-  Reaches the engine through 0026 -> 0021. The summary (0028) also waits on
-  0001-F3 B-005, which has no item yet; add that edge when F3 is cut.
+  Reaches the engine through 0026 -> 0021. The summary (0028) takes its
+  counts from the report document: 0028 -> 0034 (0001-F3 B-005).
 
 acceptance_criteria:
   - "B-001 — MSBuild-shaped line per violation, engine order (0026)"

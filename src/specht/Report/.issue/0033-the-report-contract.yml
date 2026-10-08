@@ -1,0 +1,107 @@
+id: "0033"
+type: feature
+title: The report contract
+
+status: ready-for-architecture
+
+priority: high # DERIVED
+value: 4
+risk: 3
+rank: 71 # DERIVED: (4 × 20) − (3 × 3) + (0 × 5)
+
+parent: "0001"
+children: ["0034", "0035", "0036", "0037", "0038", "0039", "0040"]
+
+depends_on: []
+blocks: []
+spikes: []
+
+spec: src/specht/Report/.spec/README.md
+
+claims:
+  - B-001
+  - B-003
+  - B-004
+  - B-005
+  - B-006
+  - B-007
+  - B-008
+  - B-009
+  - B-010
+  - B-011
+  - B-012
+  - B-013
+  - B-014
+  - B-015
+  - B-016
+  - B-017
+  - B-018
+  - B-019
+  - B-020
+  - B-021
+  - B-022
+  - B-023
+  - B-024
+  - B-025
+  - B-026
+  - B-027
+  - B-028
+
+created: "2026-10-08"
+updated: "2026-10-08"
+closed: null
+
+summary: |
+  As the agent repairing or migrating a specification, I want one JSON
+  report with a published schema in which every violation carries what the
+  rule expected, and `--explain` for a rule's full text, so that I repair a
+  document from the report alone (Must-6).
+
+  Reaches the engine through 0034 -> 0021 and the command through 0035,
+  0036 and 0040 -> 0026. The document's schema version and schema source
+  (B-005) come from 0001-F7, which has no item yet; add that edge when F7 is
+  cut. --explain (0040) is blocked on OQ-1 and OQ-2, both the owner's.
+
+acceptance_criteria:
+  - "B-001 — `--json` writes the document to stdout (0035)"
+  - "B-003 — `--json` and `--report` documents identical (0036)"
+  - "B-004 — exit code unchanged by either option (0036)"
+  - "B-005 — version, source, layout counts, items, rules, errors, warnings, violations (0034)"
+  - "B-006 — no clock, machine or environment field (0034)"
+  - "B-007 — violation fields plus `expected` (0034)"
+  - "B-008 — validates against the published schema (0034)"
+  - "B-009 — SPEC002-SPEC004 expected (0037)"
+  - "B-010 — SPEC010 expected (0037)"
+  - "B-011 — SPEC013 expected (0037)"
+  - "B-012 — SPEC011, SPEC012, SPEC043 expected (0038)"
+  - "B-013 — SPEC020, SPEC021 expected (0038)"
+  - "B-014 — SPEC030 expected (0038)"
+  - "B-015 — SPEC031 expected (0038)"
+  - "B-016 — SPEC040, SPEC041, SPEC044 expected (0039)"
+  - "B-017 — SPEC051, SPEC052 expected (0039)"
+  - "B-018 — SPEC060, SPEC061 expected (0039)"
+  - "B-019 — `--explain` prints a rule's full text (0040)"
+  - "B-020 — `--explain` of an unknown id fails (0040)"
+  - "B-021 — every path relative (0034)"
+  - "B-022 — `--report` writes the document (0036)"
+  - "B-023 — missing directories created (0036)"
+  - "B-024 — existing file replaced (0036)"
+  - "B-025 — stdout keeps the line stream (0036)"
+  - "B-026 — SPEC001 expected (0037)"
+  - "B-027 — SPEC050 expected (0039)"
+  - "B-028 — SPEC044 reused id expected (0039)"
+  - "§ 9 carries a row naming a test for each id above."
+
+decisions:
+  - |
+    2026-10-08, Claude at the owner's request: sliced into the document and
+    its schema (0034) first, then the two ways it is written (0035 stdout,
+    0036 file, with the claims spanning both in 0036), then `expected` in
+    three items by rule family so each lands on a document whose shape is
+    already fixed, and `--explain` alone because two open questions block
+    it. Rejected: one `expected` item per rule, eighteen items for one
+    pattern applied eighteen times.
+
+out_of_scope:
+  - "Everything in § 5 of the spec."
+  - "B-002 — withdrawn, split into B-022-B-025 (decision 0002), carried by 0036."

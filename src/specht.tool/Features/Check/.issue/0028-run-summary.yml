@@ -11,7 +11,7 @@ rank: 99 # DERIVED: (5 × 20) − (2 × 3) + (1 × 5); value inherited from 0025
 parent: "0025"
 children: []
 
-depends_on: ["0026"] # follows the violation lines 0026 prints
+depends_on: ["0026", "0034"] # follows 0026's lines; prints 0034's counts
 blocks: ["0005"]
 spikes: []
 
@@ -26,8 +26,8 @@ closed: null
 
 summary: |
   After the violations: specifications per layout, items, rule ids
-  evaluated, errors and warnings, each as 0001-F3 B-005 defines it. Waits
-  also on F3, which has no item yet. Discovery's 0005 names layouts in this
+  evaluated, errors and warnings, each as 0001-F3 B-005 defines it, so it
+  waits on 0034, which defines them. Discovery's 0005 names layouts in this
   summary by their manifest name, so it waits on this.
 
 acceptance_criteria:

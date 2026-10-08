@@ -1,0 +1,48 @@
+id: "0039"
+type: task
+title: Say what child-item, dependency and approval rules expected
+
+status: ready-for-architecture
+
+priority: high # DERIVED
+risk: 3
+rank: 71 # DERIVED: (4 × 20) − (3 × 3) + (0 × 5); value inherited from 0033
+
+parent: "0033"
+children: []
+
+depends_on: ["0034"] # fills the `expected` member 0034 defines
+blocks: []
+spikes: []
+
+spec: src/specht/Report/.spec/README.md
+
+claims:
+  - B-016
+  - B-017
+  - B-018
+  - B-027
+  - B-028
+
+created: "2026-10-08"
+updated: "2026-10-08"
+closed: null
+
+summary: |
+  `expected` as structured data (C-2) for the item, graph and approval
+  rules: SPEC040, SPEC041 and SPEC044 the file shape, next number or first
+  holder, SPEC050-SPEC052 the possible targets, missing edge or cycle,
+  SPEC060 and SPEC061 the cell or sign-off row to change.
+
+acceptance_criteria:
+  - "B-016 — SPEC040, SPEC041, SPEC044: file-name shape; next number for a gap"
+  - "B-028 — SPEC044 reused id: file of the first holder"
+  - "B-027 — SPEC050: Feature identities the dependency could name"
+  - "B-017 — SPEC051, SPEC052: missing edge, or the cycle in order"
+  - "B-018 — SPEC060, SPEC061: the cell or sign-off row to change"
+  - "§ 9 carries a row naming a test for each id above."
+
+decisions: []
+
+out_of_scope:
+  - "Applying `expected` to the document — § 5 #1."

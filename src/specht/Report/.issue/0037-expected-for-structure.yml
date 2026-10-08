@@ -1,0 +1,46 @@
+id: "0037"
+type: task
+title: Say what frontmatter, section and table rules expected
+
+status: ready-for-architecture
+
+priority: high # DERIVED
+risk: 3
+rank: 71 # DERIVED: (4 × 20) − (3 × 3) + (0 × 5); value inherited from 0033
+
+parent: "0033"
+children: []
+
+depends_on: ["0034"] # fills the `expected` member 0034 defines
+blocks: []
+spikes: []
+
+spec: src/specht/Report/.spec/README.md
+
+claims:
+  - B-009
+  - B-010
+  - B-011
+  - B-026
+
+created: "2026-10-08"
+updated: "2026-10-08"
+closed: null
+
+summary: |
+  `expected` as structured data (C-2) for the document-structure rules:
+  SPEC001-SPEC004 name the schema file and the constraint at fault, SPEC010
+  the section order, SPEC013 the header list. Each shape is added to the
+  report schema, by addition only (C-4).
+
+acceptance_criteria:
+  - "B-026 — SPEC001: schema file for the kind, its required keys"
+  - "B-009 — SPEC002-SPEC004: schema file, key, constraint"
+  - "B-010 — SPEC010: ordered section titles"
+  - "B-011 — SPEC013: ordered headers for the section"
+  - "§ 9 carries a row naming a test for each id above."
+
+decisions: []
+
+out_of_scope:
+  - "Applying `expected` to the document — § 5 #1."

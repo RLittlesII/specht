@@ -1,0 +1,52 @@
+id: "0036"
+type: task
+title: Write the document to the --report path
+
+status: ready-for-architecture
+
+priority: high # DERIVED
+risk: 2
+rank: 74 # DERIVED: (4 × 20) − (2 × 3) + (0 × 5); value inherited from 0033
+
+parent: "0033"
+children: []
+
+depends_on: ["0034", "0026", "0035"] # B-003 compares with 0035's stdout document
+blocks: []
+spikes: []
+
+spec: src/specht/Report/.spec/README.md
+
+claims:
+  - B-003
+  - B-004
+  - B-022
+  - B-023
+  - B-024
+  - B-025
+
+created: "2026-10-08"
+updated: "2026-10-08"
+closed: null
+
+summary: |
+  `--report <path>` writes the document to that path, creating directories
+  and replacing an existing file (decision 0002), as the one write a check
+  makes (C-7), while stdout keeps the line stream. Also carries the claims
+  that span both options — identical documents and an unchanged exit code —
+  so it waits on 0035.
+
+acceptance_criteria:
+  - "B-003 — `--json` and `--report` documents identical"
+  - "B-004 — exit code unchanged under either option"
+  - "B-022 — document written to the path"
+  - "B-023 — missing directories created"
+  - "B-024 — existing file replaced"
+  - "B-025 — stdout keeps the lines and summary"
+  - "§ 9 carries a row naming a test for each id above."
+
+decisions: []
+
+out_of_scope:
+  - "Refusing, appending to or backing up an existing file — § 5 #7."
+  - "Any write but this file — C-7, 0001-F2 B-012 (0030)."

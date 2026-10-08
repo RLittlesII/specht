@@ -1,0 +1,51 @@
+id: "0034"
+type: task
+title: Define the report document and publish its schema
+
+status: ready-for-architecture
+
+priority: high # DERIVED
+risk: 3
+rank: 101 # DERIVED: (4 × 20) − (3 × 3) + (6 × 5); value inherited from 0033
+
+parent: "0033"
+children: []
+
+depends_on: ["0021"] # the document is built from the copied engine's report
+blocks: ["0028", "0035", "0036", "0037", "0038", "0039"]
+spikes: []
+
+spec: src/specht/Report/.spec/README.md
+
+claims:
+  - B-005
+  - B-006
+  - B-007
+  - B-008
+  - B-021
+
+created: "2026-10-08"
+updated: "2026-10-08"
+closed: null
+
+summary: |
+  The document's shape, written once as docs/schema/report.schema.json (A-1,
+  C-1), and the engine producing it: the summary counts, the violations with
+  an `expected` member, no timestamp, every path relative, and a test that a
+  produced document validates. Each rule family's `expected` content is
+  0037-0039. F2's summary (0028) prints the counts defined here. The schema
+  version and source in B-005 come from 0001-F7, which has no item yet.
+
+acceptance_criteria:
+  - "B-005 — version, source, layout counts, items, rules evaluated, errors, warnings, violations"
+  - "B-006 — no clock, machine or environment field"
+  - "B-007 — rule id, severity, file, line, identifier, message, `expected`"
+  - "B-008 — every document validates against the published schema, by test"
+  - "B-021 — every path root-relative with `/`"
+  - "§ 9 carries a row naming a test for each id above."
+
+decisions: []
+
+out_of_scope:
+  - "What `expected` holds for each rule — 0037, 0038, 0039."
+  - "A second output format — § 5 #3."

@@ -1,0 +1,44 @@
+id: "0040"
+type: task
+title: Print a rule's full text with --explain
+
+status: blocked
+
+priority: high # DERIVED
+risk: 3
+rank: 71 # DERIVED: (4 × 20) − (3 × 3) + (0 × 5); value inherited from 0033
+
+parent: "0033"
+children: []
+
+depends_on: ["0026"] # an option on the check command
+blocks: []
+spikes: []
+
+spec: src/specht/Report/.spec/README.md
+
+claims:
+  - B-019
+  - B-020
+
+created: "2026-10-08"
+updated: "2026-10-08"
+closed: null
+
+summary: |
+  `specht --explain SPEC###` prints the rule's full text for the pinned
+  version, held once in the engine (C-6), and exits 0 without a check; an
+  unknown id is named on stderr with a non-zero exit. Blocked on two open
+  questions, both the owner's: OQ-1, the exit code for an unknown id (A-2
+  proposes 2), and OQ-2, what --explain does with no manifest or a rejected
+  one. Set ready-for-architecture once both are resolved.
+
+acceptance_criteria:
+  - "B-019 — full text, version, stdout, exit 0, no check run"
+  - "B-020 — unknown id named on stderr, stdout empty, non-zero exit (code per OQ-1)"
+  - "§ 9 carries a row naming a test for each id above."
+
+decisions: []
+
+out_of_scope:
+  - "Changing a rule's text between versions — § 5 #5, 0001-F7."

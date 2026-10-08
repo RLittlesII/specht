@@ -1,0 +1,46 @@
+id: "0038"
+type: task
+title: Say what identity, companion, claim and matrix rules expected
+
+status: ready-for-architecture
+
+priority: high # DERIVED
+risk: 3
+rank: 71 # DERIVED: (4 × 20) − (3 × 3) + (0 × 5); value inherited from 0033
+
+parent: "0033"
+children: []
+
+depends_on: ["0034"] # fills the `expected` member 0034 defines
+blocks: []
+spikes: []
+
+spec: src/specht/Report/.spec/README.md
+
+claims:
+  - B-012
+  - B-013
+  - B-014
+  - B-015
+
+created: "2026-10-08"
+updated: "2026-10-08"
+closed: null
+
+summary: |
+  `expected` as structured data (C-2) for the identity and traceability
+  rules: SPEC011, SPEC012 and SPEC043 the implied identity, SPEC020 and
+  SPEC021 the companion count or declared claim ids, SPEC030 the claim
+  grammar and first declaration, SPEC031 each claim's row count.
+
+acceptance_criteria:
+  - "B-012 — SPEC011, SPEC012, SPEC043: identity form and implied value"
+  - "B-013 — SPEC020, SPEC021: companion count or declared claim ids"
+  - "B-014 — SPEC030: claim grammar; first declaration's line for a duplicate"
+  - "B-015 — SPEC031: claim ids needing one row, rows each has"
+  - "§ 9 carries a row naming a test for each id above."
+
+decisions: []
+
+out_of_scope:
+  - "Applying `expected` to the document — § 5 #1."
