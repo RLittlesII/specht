@@ -1,6 +1,6 @@
 ---
 title: "Decision 0002: the copy is checked once at the baseline tag, and the verdicts hold until manifest roles"
-description: "B-009's diff becomes a one-time C-2 check recorded at the baseline tag, scoped to the copied files and listing the permitted .csproj edits; C-9 freezes verdicts, not files, until README § 8 step 5"
+description: "B-009's diff becomes a one-time C-2 check recorded at the baseline tag, scoped to the copied files and listing the permitted .csproj edits; C-9 freezes verdicts, not files, until brief § 8 step 5"
 type: decision
 ---
 
@@ -13,15 +13,15 @@ type: decision
 
 1. **B-009 is withdrawn.** "A diff against `hooked` shows the namespace rename
    and nothing else" is a one-time comparison with another repository; no test
-   in this suite can fail it. It becomes C-2, checked once at the README § 8
+   in this suite can fail it. It becomes C-2, checked once at the brief § 8
    step 2 tag, with the diff recorded in that commit.
 2. **C-2 names what the copy may differ by:** the namespace rename in each
    copied `*.cs` file; `AssemblyName` and `RootNamespace` set to `specht` and
    the comments about `hooked`'s `Directory.Build.props` dropped in the copied
-   `.csproj`; the copied `.spec/` removed. These are README § 3's own edits and
+   `.csproj`; the copied `.spec/` removed. These are brief § 3's own edits and
    B-005's rename. `src/specht/.spec/`, which holds this specification, is not
    part of the copy.
-3. **C-9 freezes verdicts, not files.** From the baseline tag to README § 8
+3. **C-9 freezes verdicts, not files.** From the baseline tag to brief § 8
    step 5, no edit changes a violation's rule id, severity, file, line,
    identifier, message or order. `0001-F3` may reshape the report around them at
    step 3 (drop `generatedAtUtc`, add `expected`).
@@ -29,7 +29,7 @@ type: decision
 ## Why
 
 - The earlier C-2 said "before step 5 the only edit to a copied file is the
-  namespace". That was false three ways: README § 3 drops `.csproj` comments
+  namespace". That was false three ways: brief § 3 drops `.csproj` comments
   and removes the copied `.spec/`; B-005 renames the assembly, a `.csproj`
   edit; and `0001-F3` edits the report and violation types at step 3, two
   steps before step 5.

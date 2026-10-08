@@ -7,16 +7,16 @@ type: decision
 # Decision 0003: the baseline is hooked's report without its timestamp
 
 **Date:** 2026-10-07
-**Decided by:** the repository owner (README § 6, "Report timestamp"); settled across `0001-F1` and `0001-F5` by the coordinator (S7); recorded by spec-author
+**Decided by:** the repository owner (brief § 6, "Report timestamp"); settled across `0001-F1` and `0001-F5` by the coordinator (S7); recorded by spec-author
 
 ## The call
 
 The baseline report is the report `hooked`'s engine writes on `hooked`'s tree
 at `6afe8ab`, with `generatedAtUtc` removed. It is committed at
-`docs/reference/hooked-6afe8ab-report.json` in the README § 8 step 2 commit.
+`docs/reference/hooked-6afe8ab-report.json` in the brief § 8 step 2 commit.
 B-004 compares **verdicts** against it, not whole reports: each violation's
 rule id, severity, file, line, identifier and message, and their order (the
-C-9 field list). `generatedAtUtc` and every field `0001-F3` adds at README § 8
+C-9 field list). `generatedAtUtc` and every field `0001-F3` adds at brief § 8
 step 3 (`expected`, counts, layouts, schema source) are outside the
 comparison. `0001-F5` B-016 compares the default manifest's verdicts with the
 same file on the same definition (settlement S9).

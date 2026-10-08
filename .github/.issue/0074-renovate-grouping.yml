@@ -29,7 +29,7 @@ closed: null
 
 summary: |
   Group by ecosystem, change versions only where they are declared once
-  (C-4), and exclude the engine's three dependencies until README § 8 step
+  (C-4), and exclude the engine's three dependencies until brief § 8 step
   2's baseline tag (C-1).
 
 acceptance_criteria:

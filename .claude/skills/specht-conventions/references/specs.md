@@ -123,7 +123,7 @@ specht init                            # write schema and templates into <root>/
 Rules are `SPEC###`, grouped: `SPEC00x` frontmatter schema, `SPEC01x` structure
 and layout, `SPEC02x` the `.feature` companion, `SPEC03x` claims and traceability,
 `SPEC04x` children and tasks, `SPEC05x` the dependency graph, `SPEC06x` approval
-consistency. The full vocabulary is README § 4; it is fixed per schema version
+consistency. The full vocabulary is brief § 4; it is fixed per schema version
 and is not restated here. Diagnostics are MSBuild-shaped —
 `<path>(<line>): error SPEC031: …` — so GitHub annotates them on the diff.
 

@@ -1,0 +1,50 @@
+id: "0097"
+type: task
+title: Move the seed brief to .spec/brief.md and rewrite README.md as the front page
+
+status: done
+
+priority: low # DERIVED
+value: 1
+risk: 1
+rank: 17 # DERIVED: 1×20 − 1×3 + 0×5
+
+parent: null
+children: []
+
+depends_on: []
+blocks: [] # DERIVED
+spikes: []
+
+spec: null
+
+claims: []
+
+created: "2026-10-08"
+updated: "2026-10-08"
+closed: "2026-10-08"
+
+summary: |
+  README.md was the seed brief, written for the first agent. The repository's
+  front page should say what the tool is, why it exists, who it is for, its
+  status, where its parts live and how to use it. The brief is still the live
+  design authority - its order of work and non-negotiables still govern - so
+  it moves verbatim to .spec/brief.md with its section numbers unchanged, and
+  every "README § N" citation becomes "brief § N".
+
+acceptance_criteria:
+  - .spec/brief.md holds README.md's former brief, sections 1 to 9, unchanged
+    but for frontmatter and one stray "~~~~".
+  - No tracked file cites "README § N"; each cites "brief § N" instead.
+  - README.md covers what, why, who, when, where and how, with no contributor
+    guide, and an install section left for 0088.
+  - README.md's agent-skills section is folded into AGENTS.md § Skills.
+
+decisions:
+  - "2026-10-08, repository owner: move the brief rather than retire it,
+    because brief § 8 and § 9 still govern work; the install section stays a
+    placeholder until 0088 writes it after the first publish."
+
+out_of_scope:
+  - The real install section - 0088.
+  - Contribution guidelines - the owner is not seeking contributors.

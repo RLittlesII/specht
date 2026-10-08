@@ -38,7 +38,7 @@ summary: |
   As the maintainer of four repositories, I want hooked's rule engine moved
   into this repository as the library specht without its verdict moving, so
   that the extraction is provably a move and every later Feature has a
-  baseline to prove itself against (README § 8 step 2).
+  baseline to prove itself against (brief § 8 step 2).
 
   Every Discovery and Manifest item waits on this one through 0021 (the copy)
   and 0022 (the baseline report).

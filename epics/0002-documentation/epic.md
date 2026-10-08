@@ -49,7 +49,7 @@ to rot.
 
 Without it, the public surface ships undocumented by convention. Usage docs, if
 written at all, live wherever their author put them, with nothing keeping them
-in step with the command they describe. README § 3 already expects the
+in step with the command they describe. brief § 3 already expects the
 specification model's prose to "become the tool's user documentation", and no
 Feature owns that today.
 
@@ -65,7 +65,7 @@ framework out, because the framework is `0002-F2` OQ-2.
 
 ## Placement
 
-Both specifications sit under `docs/`, where the documentation and the README
+Both specifications sit under `docs/`, where the documentation and the brief
 § 3 reference copies will live. `0002-F1` touches `Directory.Build.props`,
 `.build/` and every command folder, so no single code folder owns it. The
 `implementer` may `git mv` either specification with the code, because a
@@ -111,10 +111,10 @@ specification makes that claim.
 
 ## Out of this epic
 
-| Item                                                                                          | Where it lives instead                                                                                                                  |
-| --------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
-| `--help` text                                                                                 | `0001-F2`                                                                                                                               |
-| `--explain` rule text and the report's JSON Schema                                            | `0001-F3`                                                                                                                               |
-| `hooked`'s own documentation                                                                  | `hooked`, its Documentation epic (PR #212)                                                                                              |
-| Rewriting `.spec/**` documents as usage docs                                                  | Rejected: a specification is the agreement                                                                                              |
-| Turning the specification-model and rule-catalogue prose into user documentation (README § 3) | Unowned. Neither `0002` Feature claims it; the owner decides whether it is a `0002-F1` claim once OQ-2 settles, or a Feature of its own |
+| Item                                                                                         | Where it lives instead                                                                                                                  |
+| -------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| `--help` text                                                                                | `0001-F2`                                                                                                                               |
+| `--explain` rule text and the report's JSON Schema                                           | `0001-F3`                                                                                                                               |
+| `hooked`'s own documentation                                                                 | `hooked`, its Documentation epic (PR #212)                                                                                              |
+| Rewriting `.spec/**` documents as usage docs                                                 | Rejected: a specification is the agreement                                                                                              |
+| Turning the specification-model and rule-catalogue prose into user documentation (brief § 3) | Unowned. Neither `0002` Feature claims it; the owner decides whether it is a `0002-F1` claim once OQ-2 settles, or a Feature of its own |

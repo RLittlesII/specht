@@ -16,7 +16,7 @@ is specific to being a packed tool; everything else comes from the root:
   in `Directory.Build.props` in this one project.
 - `EmbeddedResource` for `schema/v1/**` and `templates/v1/**` — the versioned
   shipping copies that `specht init` writes into a consumer's `.spec/` and that
-  the checker validates against (README § 3, § 6). The tool embeds every schema
+  the checker validates against (brief § 3, § 6). The tool embeds every schema
   version it knows.
 - A `ProjectReference` to `src/specht`, the engine library.
 - The framework, nullability and strictness properties the template below
@@ -108,7 +108,7 @@ for all `PackAsTool` projects from a shared `Directory.Build.targets`:
 </ItemGroup>
 ```
 
-Nothing Roslyn is in scope for this tool (README § 2); the pattern is kept as
+Nothing Roslyn is in scope for this tool (brief § 2); the pattern is kept as
 the generic recipe only.
 
 ## Versioning

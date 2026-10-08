@@ -1,6 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-  <!-- The rule engine, copied from hooked's tools/SpecGovernance (README section 3). -->
+  <!-- The rule engine, copied from hooked's tools/SpecGovernance (brief section 3). -->
   <ItemGroup>
     <PackageReference Include="JsonSchema.Net" />
     <PackageReference Include="YamlDotNet" />

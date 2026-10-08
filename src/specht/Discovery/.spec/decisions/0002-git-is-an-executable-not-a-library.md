@@ -7,7 +7,7 @@ type: decision
 # Decision 0002: git is an executable, not a library
 
 **Date:** 2026-10-07
-**Decided by:** spec-author, from README § 3 (the engine's three dependencies) and README § 5 "Discovery cost" (`git ls-files`); raised by spec-reviewer finding 10
+**Decided by:** spec-author, from brief § 3 (the engine's three dependencies) and brief § 5 "Discovery cost" (`git ls-files`); raised by spec-reviewer finding 10
 
 ## The call
 
@@ -16,10 +16,10 @@ process. No git library enters the package set.
 
 ## Why
 
-- README § 3 names the engine's dependencies as exactly three - Markdig,
+- brief § 3 names the engine's dependencies as exactly three - Markdig,
   YamlDotNet, JsonSchema.Net - pinned to `hooked`'s versions. A fourth is a
   change to that list, not a detail of discovery.
-- README § 5 drafts discovery as `git ls-files`, which is the executable's
+- brief § 5 drafts discovery as `git ls-files`, which is the executable's
   command, with its ignore handling (`--exclude-standard`) exactly as the
   developer's own git applies it.
 - Without git on `PATH` the tool still runs, by walking (B-006), so the

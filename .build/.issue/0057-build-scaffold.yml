@@ -31,7 +31,7 @@ updated: "2026-10-08"
 closed: null
 
 summary: |
-  README § 8 step 1: the `.build` project, `build.sh` and `build.cmd`,
+  brief § 8 step 1: the `.build` project, `build.sh` and `build.cmd`,
   the committed local tool manifest, and the targets `Compile`, `Test`,
   `Pack` and a `SpecCheck` placeholder, with every target writing only
   under `.artifacts/`, `bin/` and `obj/` (C-5) and package versions from

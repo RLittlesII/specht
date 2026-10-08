@@ -24,11 +24,11 @@ checker live here, once; every consumer pins a schema version, installs the
 tool through a local tool manifest, and carries no engine.
 
 The need is decided in `REQUIREMENTS.md` (at commit `254aabc`) and the design direction in
-`README.md` § 5. This epic is the tool. `hooked` consuming it and Transporter
-installing it are the two "done" events (README § 2) and are not Features of
+brief § 5. This epic is the tool. `hooked` consuming it and Transporter
+installing it are the two "done" events (brief § 2) and are not Features of
 this repository: each is a change in that consumer.
 
-The infrastructure in README § 8 steps 1 and 3 - the build, CI, coverage,
+The infrastructure in brief § 8 steps 1 and 3 - the build, CI, coverage,
 dependency updates, versioning and the release that publishes the package -
 is epic `0055`. Steps 4 and 7 are tracked in `hooked` and Transporter, not
 here (owner, 2026-10-08).
@@ -43,18 +43,18 @@ any of them has the same read-only oracle and the same generation contract.
 
 ## Features
 
-Decomposed by capability dimension, not by README § 8 step. A step is a pull
+Decomposed by capability dimension, not by brief § 8 step. A step is a pull
 request; a Feature is a thing the tool does, with its own invariant.
 
-| Feature   | Name                            | Specification                                    | README § 8 step |
-| --------- | ------------------------------- | ------------------------------------------------ | --------------- |
-| `0001-F1` | The engine, extracted unchanged | `src/specht/.spec/README.md`                     | 2               |
-| `0001-F2` | The check command               | `src/specht.tool/Features/Check/.spec/README.md` | 3               |
-| `0001-F3` | The report contract             | `src/specht/Report/.spec/README.md`              | 3               |
-| `0001-F4` | `init`                          | `src/specht.tool/Features/Init/.spec/README.md`  | 3               |
-| `0001-F5` | The manifest carries the roles  | `src/specht/Manifest/.spec/README.md`            | 5               |
-| `0001-F6` | Discovery                       | `src/specht/Discovery/.spec/README.md`           | 5               |
-| `0001-F7` | Schema versioning               | `src/specht.tool/.spec/README.md`                | 6               |
+| Feature   | Name                            | Specification                                    | brief § 8 step |
+| --------- | ------------------------------- | ------------------------------------------------ | -------------- |
+| `0001-F1` | The engine, extracted unchanged | `src/specht/.spec/README.md`                     | 2              |
+| `0001-F2` | The check command               | `src/specht.tool/Features/Check/.spec/README.md` | 3              |
+| `0001-F3` | The report contract             | `src/specht/Report/.spec/README.md`              | 3              |
+| `0001-F4` | `init`                          | `src/specht.tool/Features/Init/.spec/README.md`  | 3              |
+| `0001-F5` | The manifest carries the roles  | `src/specht/Manifest/.spec/README.md`            | 5              |
+| `0001-F6` | Discovery                       | `src/specht/Discovery/.spec/README.md`           | 5              |
+| `0001-F7` | Schema versioning               | `src/specht.tool/.spec/README.md`                | 6              |
 
 Why these seven and not `hooked`'s one draft (`0008-F3`, 34 claims): that draft
 bundled the command, `init`, the manifest roles, discovery and the baseline in
@@ -65,7 +65,7 @@ Feature is cut where the invariant changes (AGENTS.md § "Feature naming
 heuristic").
 
 Dependencies are declared in each Feature's frontmatter and checked by the tool
-(`SPEC050`-`SPEC052`). The order they imply is README § 8's.
+(`SPEC050`-`SPEC052`). The order they imply is brief § 8's.
 
 ## Placement
 
@@ -87,5 +87,5 @@ epic glob `epics/**/epic.md` discovers it (`0001-F6` decision 0001).
 | Installing in Transporter and repairing its tree       | Transporter; the repair is the agent's, from the report (Must-6) |
 | The claim bridge and the convention analyzers (Roslyn) | `hooked` `0008-F1`, `0008-F2`                                    |
 | Rule plugins                                           | Rejected: `0001-F2` decision 0001                                |
-| Autofix: `--fix`, or `upgrade` rewriting a document    | Out of scope (README § 2)                                        |
+| Autofix: `--fix`, or `upgrade` rewriting a document    | Out of scope (brief § 2)                                         |
 | A second schema version's content                      | After `0001-F7`, as its own epic                                 |

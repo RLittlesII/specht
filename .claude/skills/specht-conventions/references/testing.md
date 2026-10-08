@@ -24,7 +24,7 @@ The line between the first two tiers is the file system: a unit test exercises
 one rule or one reader over documents built in memory; an integration test runs
 `SpecCheckRunner` over a `SpecTree` written to a temporary directory and asserts
 the report. The 56 tests extracted from `hooked` already draw it this way
-(README § 3); follow them.
+(brief § 3); follow them.
 
 **Reqnroll covers the acceptance tier only.** A green scenario does not relieve
 the mechanism beneath it of unit coverage: a rule's decision, an id grammar, a
@@ -112,7 +112,7 @@ in `test/specht.tests` constructs the files a test needs — frontmatter, sectio
 tables, a companion `.feature`, child items — and writes them to a temporary
 root the test owns. Every path inside a fixture, and every path in an expected
 report, is relative to that root; an absolute path in either is the defect
-README § 9 names.
+brief § 9 names.
 
 Never a copy of a real repository's `.spec/` tree, this one's included: a copied
 tree carries every rule's happy path at once and pins the test to whatever that

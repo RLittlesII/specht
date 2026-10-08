@@ -9,6 +9,7 @@
     <File Path="global.json" />
     <File Path="LICENSE.md" />
     <File Path="README.md" />
+    <File Path=".spec/brief.md" />
   </Folder>
   <Folder Name="/src/">
     <Project Path="src/specht/specht.csproj" />

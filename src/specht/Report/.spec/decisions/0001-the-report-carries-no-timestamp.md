@@ -7,7 +7,7 @@ type: decision
 # Decision 0001: the report carries no timestamp
 
 **Date:** 2026-10-07
-**Decided by:** the repository owner, in the second requirements session (README § 6, "Report timestamp"; `REQUIREMENTS.md` § Revision log, at commit `254aabc`); recorded by spec-author
+**Decided by:** the repository owner, in the second requirements session (brief § 6, "Report timestamp"; `REQUIREMENTS.md` § Revision log, at commit `254aabc`); recorded by spec-author
 
 ## The call
 
@@ -20,7 +20,7 @@ same manifest and the same tool version produce identical documents.
 - Should-7 asks that `hooked`'s run be unchanged by the extraction. With the
   stamp gone the comparison is byte equality instead of "every field but one",
   and the test that proves it has no exclusion list to maintain.
-- The tool is deterministic and offline by design (README § 9). A stamp is the
+- The tool is deterministic and offline by design (brief § 9). A stamp is the
   one field that contradicted that, and nothing consumed it: `hooked`'s target
   logged the report path, not the time.
 - A committed report with a stamp is a diff on every run. The reports are

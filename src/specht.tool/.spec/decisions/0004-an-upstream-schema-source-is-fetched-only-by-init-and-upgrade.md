@@ -22,7 +22,7 @@ binds specht's own embedded set; a consumer's upstream schema carries its own
 `$id`. The field names are OQ-1's.
 
 This amends the "offline" invariant on purpose. The check is offline. `init`
-and `upgrade` may fetch, and only a source the manifest records (README § 9;
+and `upgrade` may fetch, and only a source the manifest records (brief § 9;
 AGENTS.md § Invariants).
 
 ## Why
@@ -62,12 +62,12 @@ recorded source relates to the source selection and to `schemaVersion`:
 ## Rejected
 
 **A path outside the root.** It breaks root-relative paths in every output
-(README § 9), and a CI checkout does not have the other path. Cost of
+(brief § 9), and a CI checkout does not have the other path. Cost of
 rejecting: a consumer wanting a shared local folder fetches it through a
 recorded source instead.
 
 **A fork of the tool carrying the consumer's schema.** It is the drift the
-repository exists to remove (README § 2). Cost of rejecting: none.
+repository exists to remove (brief § 2). Cost of rejecting: none.
 
 **The check fetching the source itself.** It breaks determinism and the
 offline check. Cost of rejecting: a consumer runs `upgrade` to pick up a new
@@ -84,7 +84,7 @@ on-disk source, B-009). Both a URL and a NuGet schema package were taken.
 - By the addendum: `0001-F7` § 3 B-001, B-005, B-006, B-010, B-011, B-024,
   B-026, B-029, B-032 (amended), B-033 to B-036; § 4 C-10; `0001-F3` B-005,
   B-030.
-- README § 9; AGENTS.md § Invariants ("Deterministic and offline").
+- brief § 9; AGENTS.md § Invariants ("Deterministic and offline").
 
 ## Reversal
 

@@ -20,7 +20,7 @@ to another role.
 
 ## Read first
 
-- `README.md` — the seed brief and design authority: what the tool is, the
+- `.spec/brief.md` — the seed brief and design authority, cited as `brief § N`: what the tool is, the
   requirements as decided, the rule vocabulary, the drafted design, and the open
   questions with the default each proceeds on.
 - `AGENTS.md` — the artifact chain, the four non-discretionary rules, the ID

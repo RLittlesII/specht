@@ -19,7 +19,8 @@ method skill your work belongs to _and_ this one.
 
 ## Read before starting
 
-- `README.md` — the seed brief and the project-level design authority: what the
+- `.spec/brief.md` — the seed brief and the project-level design authority,
+  cited as `brief § N`: what the
   tool is (§ 1), the requirements as decided (§ 2), what was extracted from
   `hooked` and why it is never regenerated (§ 3, § 9), the rule vocabulary
   (§ 4), the drafted design (§ 5), the open questions and their defaults (§ 6),
@@ -30,9 +31,9 @@ method skill your work belongs to _and_ this one.
 
 ## Layout
 
-The target layout. README § 8 step 1 creates the scaffold; until it lands, a
-path below that does not exist yet is a plan, not a fact. README § 3 names the
-engine project `src/SpecCheck`; the decided name is `specht` (README § 6, first
+The target layout. brief § 8 step 1 creates the scaffold; until it lands, a
+path below that does not exist yet is a plan, not a fact. brief § 3 names the
+engine project `src/SpecCheck`; the decided name is `specht` (brief § 6, first
 row).
 
 ```
@@ -45,7 +46,7 @@ build.sh / build.cmd           entry to the NUKE build
 
 src/
   specht/                      specht - the rule engine: discovery, readers, schema loader,
-                               rules, runner, report. Copied from hooked (README § 3).
+                               rules, runner, report. Copied from hooked (brief § 3).
     .spec/                     this Feature's specification, .feature and records (epic 0001)
   specht.tool/                 specht.tool - the CLI host; PackAsTool, command `specht`
     Features/<Command>/        one folder per Spectre command - dotnet-tool owns the inside
@@ -68,7 +69,8 @@ test/
                                <home>/.issue/ beside its .spec/
 epics/                         one folder per epic - ids share the items' number space
 
-.spec/                         repo-wide adr/, lessons/, templates/, schema/
+.spec/                         repo-wide adr/, lessons/, templates/, schema/, and
+                               brief.md - the seed brief and design authority (brief § N)
                                schema/ and templates/ are the live copy specht checks
                                itself with - the same bytes as the embedded v1 for the
                                tool-owned files; the manifest on its tool-owned keys
@@ -76,8 +78,7 @@ epics/                         one folder per epic - ids share the items' number
 .claude/skills/                these skills - tracked; the rest of .claude/ is gitignored
                                (no Skillfile is committed)
 AGENTS.md                      the entry point for agents
-README.md                      the seed brief and design authority
-REQUIREMENTS.md                the requirements-gathering session the brief condenses
+README.md                      the public front page - what, why, status, usage
 ```
 
 **Everything below `src/specht.tool/Features/` is
@@ -130,8 +131,8 @@ Always carry the prefix in prose — several sequences have a twelfth member.
 in every past commit, review, issue and sibling specification. A dropped claim
 leaves its number retired.
 
-The rule vocabulary is fixed per schema version (README § 4). A new `SPEC###` is
-a new schema version, after README § 8 step 6 — never a quiet addition.
+The rule vocabulary is fixed per schema version (brief § 4). A new `SPEC###` is
+a new schema version, after brief § 8 step 6 — never a quiet addition.
 
 Known gap in the model the tool checks: § 4's ID column is an explicit `C-nn` in
 only some consumers' specs; the rest carry a bare ordinal, so those citations
@@ -172,7 +173,7 @@ produce a spec delta afterwards.
 ```
 
 `SpecCheck` runs `specht` exactly as a consumer would — through the local tool
-manifest, never through a project reference (README § 7). Until the first
+manifest, never through a project reference (brief § 7). Until the first
 package is published it runs `dotnet run --project src/specht.tool -- --root .`
 instead; the manifest replaces that the moment a package exists. Pre-commit
 calls the same thing when a staged file is under a `.spec/` directory or is a

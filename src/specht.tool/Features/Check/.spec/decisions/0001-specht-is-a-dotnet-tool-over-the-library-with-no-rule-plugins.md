@@ -7,7 +7,7 @@ type: decision
 # Decision 0001: specht ships as a dotnet tool over the library, with the layout in the manifest and no rule plugins
 
 **Date:** 2026-10-07
-**Decided by:** the repository owner, raised during the review of `hooked` PR #217; recorded by spec-author there as `0008-F3` decision 0001 and carried across here with the names decided since (README § 6)
+**Decided by:** the repository owner, raised during the review of `hooked` PR #217; recorded by spec-author there as `0008-F3` decision 0001 and carried across here with the names decided since (brief § 6)
 
 ## The call
 

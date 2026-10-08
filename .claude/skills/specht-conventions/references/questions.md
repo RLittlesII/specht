@@ -10,28 +10,28 @@ Extends [`clarify-requirements`](../../clarify-requirements/SKILL.md).
 
 ## Look here first, in this order
 
-1. **`README.md` § 6** — the open questions the owner has already given a
+1. **`.spec/brief.md` § 6** — the open questions the owner has already given a
    default for. Proceed on the default and record it as a decision the owner
    can reverse; do not re-ask it, and do not pick a second default silently
-   (README § 9).
+   (brief § 9).
 2. **The Feature's specification** — § 3 claims, § 4 constraints, § 5 out of
    scope, § 11 open questions. A question the project knows it has not decided is
    already an `OQ-n`.
 3. **Sibling Features' § 5.** Most apparent gaps are another Feature's stated
    scope.
-4. **`README.md`** § 2, § 5 and § 9 — the requirements, the drafted design and
+4. **`.spec/brief.md`** § 2, § 5 and § 9 — the requirements, the drafted design and
    the non-negotiables.
 5. **`AGENTS.md`** — the chain, the four rules, the ID schemes.
 6. **Decision records** beside the Feature, and ADRs in its `adr/` and in
    `.spec/adr/`. An accepted ADR is a rule.
 7. **Lessons** — the Feature's `lessons/` and the repo-wide `.spec/lessons/`.
 8. **The code and the tests.** The extracted tests say what the engine
-   promises; read them before the engine (README § 9). Once code exists, the
+   promises; read them before the engine (brief § 9). Once code exists, the
    compiler is the authority on a signature.
 
 ## Already settled — do not re-ask
 
-From README § 2, § 5 and § 6, as of 2026-10-07:
+From brief § 2, § 5 and § 6, as of 2026-10-07:
 
 - **The folder is named `.spec/`.** The one hard constraint on the model.
   Everything else about it — sections, grammars, markers — is reversible under
@@ -41,7 +41,7 @@ From README § 2, § 5 and § 6, as of 2026-10-07:
 - **Delivered as a `dotnet tool`**, package `specht.tool`, command `specht`,
   installed per repository through a local tool manifest and published to
   GitHub Packages on `rlittlesii/specht` first; NuGet.org is the reversal
-  (README § 2, § 6). The consumer's build calls the tool; no consumer carries the
+  (brief § 2, § 6). The consumer's build calls the tool; no consumer carries the
   engine.
 - **A schema version is the manifest's `schemaVersion`.** A repository pins by
   editing one number; the tool embeds every version it knows and validates with
@@ -60,7 +60,7 @@ From README § 2, § 5 and § 6, as of 2026-10-07:
 - **No rule plugins.** Per-rule disable and `--strict` instead. No Roslyn: the
   claim bridge and the convention analyzers stay in `hooked`.
 - **The engine is copied from `hooked`, never regenerated**, and the rule
-  vocabulary is not widened before schema versioning exists (README § 8 step 6).
+  vocabulary is not widened before schema versioning exists (brief § 8 step 6).
 - **`generatedAtUtc` is dropped from the report**, so `hooked`'s run is
   byte-identical before and after the extraction.
 - **Pipe tables only.** A grid table is "no table" (`SPEC013`).
@@ -80,8 +80,8 @@ guarantee the design makes — ask **one** question carrying: the evidence you
 already have, two concrete readings, what each costs, and the smallest decision
 that unblocks you. Ask what rule the answer follows, not only which option wins.
 
-A README § 6 question that turns out to need the owner after all is the one case
-where stopping is the rule: do not pick a second default (README § 9).
+A brief § 6 question that turns out to need the owner after all is the one case
+where stopping is the rule: do not pick a second default (brief § 9).
 
 ## Write the answer back
 
@@ -94,9 +94,9 @@ An answer that exists only in conversation was never recorded.
 
 ## Never add
 
-- A question the specification or README § 6 already answers.
+- A question the specification or brief § 6 already answers.
 - An assumption standing in for a material decision.
-- A second default for a README § 6 question, chosen silently.
+- A second default for a brief § 6 question, chosen silently.
 - A decision recorded without its rejected alternative.
 - An exploratory comment treated as ratified.
 - A claim about what is undesigned, written without opening the section.

@@ -45,7 +45,7 @@ replaced by this run's document, without a prompt and without an error.
 
 **Write no file; `--json` to stdout only.** Let the caller redirect.
 
-- README § 5 fixes `--report` as part of the command, and a redirect loses the
+- brief § 5 fixes `--report` as part of the command, and a redirect loses the
   line stream that `--report` keeps on stdout for the log.
 - Cost of rejecting: one write path in the tool. Taken.
 
@@ -53,7 +53,7 @@ replaced by this run's document, without a prompt and without an error.
 
 - `0001-F3` § 3 B-002 (withdrawn), B-022, B-023, B-024, B-025; § 4 C-7; § 5 row 7.
 - `0001-F2` § 3 B-012: no run writes under the root except this file.
-- README § 9, `AGENTS.md`, the epic's "never writes" sentence: amended to
+- brief § 9, `AGENTS.md`, the epic's "never writes" sentence: amended to
   name this exception.
 
 ## Reversal

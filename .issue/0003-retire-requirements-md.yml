@@ -26,7 +26,7 @@ closed: "2026-10-08"
 
 summary: |
   REQUIREMENTS.md is the record of the requirements sessions the seed brief
-  condenses. Every decision in it now lives in README.md § 6, the epic and the
+  condenses. Every decision in it now lives in brief § 6, the epic and the
   Feature specifications, so a live copy only invites edits nobody reviews
   against them. Delete it and cite the last version by commit instead: git
   keeps it, and a pinned citation cannot drift.

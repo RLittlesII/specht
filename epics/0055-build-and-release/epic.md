@@ -35,7 +35,7 @@ GitHub repository settings that make the checks binding.
 
 The need is the owner's (2026-10-08): everything a pull request needs must be
 in place **before** the repository is first pushed to GitHub, so that the
-first push leaves no infrastructure work behind. README § 8 steps 1 and 3 name
+first push leaves no infrastructure work behind. brief § 8 steps 1 and 3 name
 this work and no specification owned it; `0001-F2` § 5 row 7 hands the release
 workflow to "repository tooling", which this epic is. Approved claims already
 assume it: `0001-F2` B-010, B-011 and B-014 (the `SpecCheck` target, the
@@ -126,12 +126,12 @@ Nothing in the first two rows publishes a package.
 
 ## Out of this epic
 
-| Item                                                                    | Where it lives instead                                                                 |
-| ----------------------------------------------------------------------- | -------------------------------------------------------------------------------------- |
-| `hooked` adopting the tool (README § 8 step 4)                          | `hooked`, tracked in that repository (owner, 2026-10-08)                               |
-| Transporter installing the tool (README § 8 step 7)                     | Transporter, tracked in that repository (owner, 2026-10-08)                            |
-| What the `SpecCheck` target's run does, and its three-call-site verdict | `0001-F2` B-010, B-011, B-014                                                          |
-| Schema versions and `schemaVersion`                                     | `0001-F7`; the package version is independent of it (`0055-F5` B-006)                  |
-| Publishing to NuGet.org                                                 | README § 2 constraint (Soft): NuGet.org is the reversal of GitHub Packages, not a plan |
-| The documentation site's publish pipeline                               | `0002-F2`                                                                              |
-| GitHub issues, labels and milestones as a tracker                       | Not used: `github_mode: false` (AGENTS.md § SDLC); `0055-F8` § 5                       |
+| Item                                                                    | Where it lives instead                                                                |
+| ----------------------------------------------------------------------- | ------------------------------------------------------------------------------------- |
+| `hooked` adopting the tool (brief § 8 step 4)                           | `hooked`, tracked in that repository (owner, 2026-10-08)                              |
+| Transporter installing the tool (brief § 8 step 7)                      | Transporter, tracked in that repository (owner, 2026-10-08)                           |
+| What the `SpecCheck` target's run does, and its three-call-site verdict | `0001-F2` B-010, B-011, B-014                                                         |
+| Schema versions and `schemaVersion`                                     | `0001-F7`; the package version is independent of it (`0055-F5` B-006)                 |
+| Publishing to NuGet.org                                                 | brief § 2 constraint (Soft): NuGet.org is the reversal of GitHub Packages, not a plan |
+| The documentation site's publish pipeline                               | `0002-F2`                                                                             |
+| GitHub issues, labels and milestones as a tracker                       | Not used: `github_mode: false` (AGENTS.md § SDLC); `0055-F8` § 5                      |

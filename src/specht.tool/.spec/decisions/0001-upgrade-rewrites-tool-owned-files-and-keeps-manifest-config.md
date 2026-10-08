@@ -28,7 +28,7 @@ type: decision
   discards that configuration on every upgrade, which makes upgrading a
   reason to lose work.
 - The frontmatter schemas and templates are the generation contract of one
-  version (README § 6). A consumer who wants a different schema selects the
+  version (brief § 6). A consumer who wants a different schema selects the
   on-disk source deliberately (B-009); the copy under `.spec/schema/` is not a
   place to keep a fork across versions.
 - Printing every rewritten file makes an overwritten hand edit visible in the
@@ -47,8 +47,8 @@ tool-owned schema is lost, recoverable from version control. Taken.
 **Refuse the whole upgrade when any file was hand-edited.** Makes the on-disk
 fork a lock against upgrading. Cost of rejecting: as above. Taken.
 
-**Never overwrite any existing file** (the earlier README § 9 wording). Makes
-`upgrade` a no-op on every initialised root. Rejected; README § 9 and
+**Never overwrite any existing file** (the earlier brief § 9 wording). Makes
+`upgrade` a no-op on every initialised root. Rejected; brief § 9 and
 AGENTS.md § Configuration were amended to match this decision.
 
 ## Affects
@@ -56,7 +56,7 @@ AGENTS.md § Configuration were amended to match this decision.
 - `0001-F7` § 3 B-005, B-016, B-017; § 11 OQ-2 (resolved), OQ-6 (raised).
 - `0001-F7` § 3 B-005 (amended), B-029 to B-031; § 4 C-2 (amended); § 11
   OQ-8: narrowed 2026-10-08, see Reversal.
-- README § 6 ("What a schema version is in the file") and § 9; AGENTS.md § Configuration (amended by the coordinator).
+- brief § 6 ("What a schema version is in the file") and § 9; AGENTS.md § Configuration (amended by the coordinator).
 
 ## Reversal
 

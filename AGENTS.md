@@ -31,7 +31,9 @@ Distribution is the NuGet package `specht.tool`, command `specht`, installed per
 consumer through a local tool manifest. `src/specht.tool` is the one project that
 packs; `IsPackable=false` everywhere else.
 
-`README.md` is the seed brief and the design authority: requirements (§ 2), what
+`README.md` is the public front page: what the tool is, why, its status, and how
+to use it. The design authority is the seed brief,
+[`.spec/brief.md`](.spec/brief.md), cited as `brief § N`: requirements (§ 2), what
 was extracted from `hooked` (§ 3), the rule vocabulary (§ 4), the drafted design
 (§ 5), open questions with their defaults (§ 6), the order of work (§ 8) and the
 non-negotiables (§ 9). The requirements session it condenses, `REQUIREMENTS.md`,
@@ -66,7 +68,7 @@ Every target, the tier filters, and what CI actually runs:
 
 Two projects, one direction of dependency:
 
-- **`src/specht`** — the rule engine, copied from `hooked` (README § 3). A
+- **`src/specht`** — the rule engine, copied from `hooked` (brief § 3). A
   pipeline: `SpecDiscovery` finds specifications (co-located `**/.spec/README.md`
   and consumers' legacy `epics/**/spec.md`) → `FrontmatterReader` reads YAML
   through YamlDotNet's representation model, so dates stay strings →
@@ -78,7 +80,7 @@ Two projects, one direction of dependency:
   a command parses, calls the runner, and folds the report into an exit code.
   Nothing else lives in a command.
 
-The design direction (README § 5) moves every literal the engine hardcodes —
+The design direction (brief § 5) moves every literal the engine hardcodes —
 layouts, section roles, table headers, markers, frontmatter key roles, id
 grammars, per-rule severity — into the manifest, one rule at a time, each with a
 test that the default manifest reproduces `hooked`'s baseline report. Until that
@@ -119,20 +121,20 @@ violation under `--strict`), `2` missing root or manifest, `3` invalid manifest,
 ## Invariants
 
 - **Never an absolute path** in any output, report, log line, or test fixture
-  (README § 9). Paths are relative to the root the tool was given.
+  (brief § 9). Paths are relative to the root the tool was given.
 - **Never a write into a consumer's tree** except through `init`, `upgrade` and
-  the caller-named `--report` file (README § 9). `init` never overwrites.
+  the caller-named `--report` file (brief § 9). `init` never overwrites.
 - **Deterministic and offline.** The check never touches the network and never
   calls GitHub; only `init` and `upgrade` may fetch, and only an upstream
   schema source the manifest records (`0001-F7` decision 0004). The same tree
   gives the same report. `generatedAtUtc` is not in the report for this reason.
 - **The rule vocabulary is fixed per schema version.** A new `SPEC###` is a new
-  schema version, after README § 8 step 6.
+  schema version, after brief § 8 step 6.
 
 ## Specification-Driven Development
 
 This repo is specification-driven: the specification is the artifact of record,
-and code is downstream of it. It also eats its own cooking (README § 7): its
+and code is downstream of it. It also eats its own cooking (brief § 7): its
 specifications are written with the template it ships, checked by the tool it
 ships, in its own CI.
 
@@ -236,7 +238,7 @@ exactly as a consumer would. It validates frontmatter against `.spec/schema/`, t
 twelve sections and their order, claim-id uniqueness, every `@B-00n` tag
 resolving to a claim, § 9 carrying exactly one row per § 3 claim,
 `children`/`depends_on` resolving to real files, and dependency symmetry. Rules
-are `SPEC###` (README § 4) and diagnostics are MSBuild-shaped, so GitHub
+are `SPEC###` (brief § 4) and diagnostics are MSBuild-shaped, so GitHub
 annotates them on the diff. It is deterministic and offline — it never calls
 GitHub.
 
@@ -304,7 +306,7 @@ Each class of rule has one home. Read the owner, not a copy of it:
 
 | What                                                      | Where it is written                                                      |
 | --------------------------------------------------------- | ------------------------------------------------------------------------ |
-| Naming, modifier order, braces, line length, suppressions | `.editorconfig` — the compiler reads it (scaffold, README § 8 step 1)    |
+| Naming, modifier order, braces, line length, suppressions | `.editorconfig` — the compiler reads it (scaffold, brief § 8 step 1)     |
 | Framework, nullability, strictness, packability           | `Directory.Build.props`                                                  |
 | Package versions                                          | `Directory.Packages.props`                                               |
 | Build targets, CI generation                              | `.build/Build.cs`, `.build/Build.GitHubActions.cs`                       |
@@ -393,6 +395,26 @@ load-bearing is copied into `.claude/skills/` and rewritten for this repository,
 with the parts that do not apply marked as such rather than deleted. A
 `Skillfile` keeps only what is genuinely incidental.
 
+The tracked skills were seeded from [`hooked`](https://github.com/RLittlesII/hooked)
+pull request #217 and rewritten for this repository: `hooked`'s product skills
+(webhooks, the event store, the two-host slice layout) were dropped, and
+everything that said "not this repository's path" about shipping a `dotnet tool`
+now says the opposite.
+
+**The optional installed set.** Eighteen library and tooling skills (`xunit`,
+`reqnroll`, `rocket-surgery-testing-autofixtures`, `central-package-management`,
+`nuke`, `msbuild`, `dotnet-build`, `github-actions`, `logging`, the git and
+GitHub operations set, `code-evidence`, `code-reader`, `engram`, `neo4j`), plus
+six agents, come from `littlestechnology/.agents` through a `Skillfile` pinned in
+`Skillfile.lock` — neither committed here — installed with the
+[`skillfile`](https://github.com/anthropics/skillfile) CLI by `skillfile install`
+from the repository root, into the gitignored part of `.claude/`. That
+repository is **private**: without access, the install fails and none of those
+skills land. Everything in `.claude/skills/`, `.claude/agents/` and `.spec/`
+still works, and so do `./build.sh` and `./build.sh SpecCheck`. What is lost is
+the general guide to xUnit, Reqnroll or NUKE; this repository's own traps for
+those surfaces live in `specht-conventions`, which is tracked.
+
 Repo-specific traps about a library live in `specht-conventions`, not in a
 second copy of the library's own skill.
 
@@ -442,7 +464,7 @@ schema, the status vocabulary and the rank derivation are in
 - Branch `<id>/<short-description>` from the item id, or `spec/<feature-slug>`
   when authoring a specification, which has no item to take an id from.
 
-Each step of README § 8 is one pull request naming the § 2 requirement it serves.
+Each step of brief § 8 is one pull request naming the § 2 requirement it serves.
 
 ```yaml
 sdlc:

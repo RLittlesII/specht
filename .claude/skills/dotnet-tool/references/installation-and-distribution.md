@@ -13,11 +13,11 @@ installs it **per repository** through a local tool manifest: a committed
 `.config/dotnet-tools.json` pins the tool version beside the schema version the
 repository has chosen, and `dotnet tool restore` in CI brings it back. Nothing
 is installed globally, and no consumer carries the engine as a project reference
-(README § 2 Must-4, § 6).
+(brief § 2 Must-4, § 6).
 
 This repository is its own first consumer. Its build and its pre-commit hook run
 `dotnet specht` from its own manifest — the same call site every other
-repository uses (README § 7). Until the first package is published, the
+repository uses (brief § 7). Until the first package is published, the
 self-check runs the project directly (`dotnet run --project src/specht.tool --
 --root .`); the moment a package exists, the manifest replaces that.
 

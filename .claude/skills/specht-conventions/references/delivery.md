@@ -42,10 +42,10 @@ number and write it back in the same commit that adds the item. **Claim after
 rebasing** — an id is taken the moment someone else merges it. Ids are never
 reused, and a closed item stays as permanent history.
 
-## Each step of README § 8 is a pull request
+## Each step of brief § 8 is a pull request
 
 The order of work is fixed and each step is one pull request whose description
-names the README § 2 requirement it serves. Step 2 — copying the engine — is
+names the brief § 2 requirement it serves. Step 2 — copying the engine — is
 tagged when it merges: that commit is the behaviour baseline every later step
 is measured against (Should-7), and a diff of `src/specht` against `hooked` at
 that tag must show only the namespace rename.
@@ -170,7 +170,7 @@ act on is answered with why, and left open for the reviewer to close.
 - A deleted item — a closed one stays as history.
 - A claim citation that exists only in the pull-request body.
 - A merge commit.
-- A pull request that spans two steps of README § 8, or one whose description
+- A pull request that spans two steps of brief § 8, or one whose description
   names no § 2 requirement.
 - A review thread resolved before its commit is pushed, or with a reply that is
   not `addressed: <sha>`.

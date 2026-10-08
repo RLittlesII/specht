@@ -31,38 +31,38 @@ synced_at: null
 
 <!-- last written by: spec-author, 2026-10-08 -->
 
-A consumer cannot install a package from a feed it does not know, with a credential nobody told it to create, and README § 6 only says that consumers "carry a `nuget.config` source and a token with package read". So `hooked`, Transporter and this repository's own self-check (`0001-F2` B-014) would each work out the feed, the source entry and the token on their own, differently. This Feature removes that failure state: one document says what a repository commits and what it supplies at run time to install `specht.tool` through its local tool manifest, and this repository installs its own published package the same way.
+A consumer cannot install a package from a feed it does not know, with a credential nobody told it to create, and brief § 6 only says that consumers "carry a `nuget.config` source and a token with package read". So `hooked`, Transporter and this repository's own self-check (`0001-F2` B-014) would each work out the feed, the source entry and the token on their own, differently. This Feature removes that failure state: one document says what a repository commits and what it supplies at run time to install `specht.tool` through its local tool manifest, and this repository installs its own published package the same way.
 
 ## 2. User Needs
 
 <!-- last written by: spec-author, 2026-10-08 -->
 
-| #   | Persona                                 | Need                                                                 | Pain Point Today               |
-| --- | --------------------------------------- | -------------------------------------------------------------------- | ------------------------------ |
-| 1   | The maintainer of a consumer repository | The feed, the source entry, the token and the commands, in one place | Only README § 6's one sentence |
-| 2   | A consumer's CI                         | To restore the tool with a token it is given, not one committed      | Nothing says how               |
-| 3   | `0001-F2`                               | This repository's manifest naming the published package, for B-014   | N/A (internal dependency)      |
+| #   | Persona                                 | Need                                                                 | Pain Point Today              |
+| --- | --------------------------------------- | -------------------------------------------------------------------- | ----------------------------- |
+| 1   | The maintainer of a consumer repository | The feed, the source entry, the token and the commands, in one place | Only brief § 6's one sentence |
+| 2   | A consumer's CI                         | To restore the tool with a token it is given, not one committed      | Nothing says how              |
+| 3   | `0001-F2`                               | This repository's manifest naming the published package, for B-014   | N/A (internal dependency)     |
 
 ### Assumptions
 
-| ID  | Assumption                                                                                                                                                                                   |
-| --- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| A-1 | Reading a NuGet package from GitHub Packages requires an authenticated token even when the package is public, so every consumer, this repository included, supplies one (README § 6).        |
-| A-2 | A consumer's adoption work - `hooked` (README § 8 step 4) and Transporter (step 7) - is tracked in that repository; this Feature supplies only what they need from here (owner, 2026-10-08). |
+| ID  | Assumption                                                                                                                                                                                  |
+| --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| A-1 | Reading a NuGet package from GitHub Packages requires an authenticated token even when the package is public, so every consumer, this repository included, supplies one (brief § 6).        |
+| A-2 | A consumer's adoption work - `hooked` (brief § 8 step 4) and Transporter (step 7) - is tracked in that repository; this Feature supplies only what they need from here (owner, 2026-10-08). |
 
 ## 3. Acceptance Criteria
 
 <!-- last written by: spec-author, 2026-10-08 -->
 
-| ID    | Claim                                                                                                                                                                                      | Source                        | Status  |
-| ----- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------- | ------- |
-| B-001 | Given an empty repository that adds the documented package source and supplies a token with package read, the documented install command adds `specht.tool` to its local tool manifest.    | README § 6; owner, 2026-10-08 | Active  |
-| B-002 | Given a clone whose committed local tool manifest names `specht.tool` and whose committed package source is the documented one, `dotnet tool restore` with a read token restores the tool. | README § 6; `0001-F2` C-6     | Active  |
-| B-003 | Given the first package has been published, this repository's committed local tool manifest names `specht.tool` at a published version.                                                    | `0001-F2` B-014; README § 7   | Active  |
-| B-004 | Given the install document, it names the feed's address and the package source entry a consumer commits.                                                                                   | owner, 2026-10-08             | Active  |
-| B-005 | Given the install document, it names the token scope a consumer needs and how a CI run supplies the token.                                                                                 | owner, 2026-10-08; README § 6 | Active  |
-| B-006 | Given the install document, it names the commands that install the tool locally and restore it in a clone.                                                                                 | owner, 2026-10-08             | Active  |
-| B-007 | Given a clone and no GitHub token, the solution restores and builds.                                                                                                                       | OQ-2 (owner, 2026-10-08)      | Amended |
+| ID    | Claim                                                                                                                                                                                      | Source                       | Status  |
+| ----- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------- | ------- |
+| B-001 | Given an empty repository that adds the documented package source and supplies a token with package read, the documented install command adds `specht.tool` to its local tool manifest.    | brief § 6; owner, 2026-10-08 | Active  |
+| B-002 | Given a clone whose committed local tool manifest names `specht.tool` and whose committed package source is the documented one, `dotnet tool restore` with a read token restores the tool. | brief § 6; `0001-F2` C-6     | Active  |
+| B-003 | Given the first package has been published, this repository's committed local tool manifest names `specht.tool` at a published version.                                                    | `0001-F2` B-014; brief § 7   | Active  |
+| B-004 | Given the install document, it names the feed's address and the package source entry a consumer commits.                                                                                   | owner, 2026-10-08            | Active  |
+| B-005 | Given the install document, it names the token scope a consumer needs and how a CI run supplies the token.                                                                                 | owner, 2026-10-08; brief § 6 | Active  |
+| B-006 | Given the install document, it names the commands that install the tool locally and restore it in a clone.                                                                                 | owner, 2026-10-08            | Active  |
+| B-007 | Given a clone and no GitHub token, the solution restores and builds.                                                                                                                       | OQ-2 (owner, 2026-10-08)     | Amended |
 
 ## 4. Constraints
 

@@ -26,7 +26,7 @@ closed: null
 
 summary: |
   Copy hooked's SpecGovernance engine and its 56 tests from
-  refactor/ai-offering at 6afe8ab (README § 3) into src/specht and
+  refactor/ai-offering at 6afe8ab (brief § 3) into src/specht and
   test/specht.tests, rename the namespace and nothing else, prove the 56
   tests pass, and tag the commit as the baseline with the C-2 diff recorded
   in it (decision 0002). The draft-spec files go to docs/reference/, never

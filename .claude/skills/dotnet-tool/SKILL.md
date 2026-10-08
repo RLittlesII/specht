@@ -19,7 +19,7 @@ All of it. `specht` **is** a packed dotnet tool: `src/specht.tool` carries
 produces the package, and a consumer installs it through a local tool manifest
 (`.config/dotnet-tools.json`, restored by `dotnet tool restore`). This repository
 installs itself the same way, so its own build and pre-commit hook call the tool
-exactly as a consumer would — never through a project reference (README § 7).
+exactly as a consumer would — never through a project reference (brief § 7).
 
 One thing is decided and worth stating once:
 
@@ -117,4 +117,4 @@ public sealed class IssueListCommand : AsyncCommand<IssueListCommand.Settings>
 - **ALWAYS** implement `Validate()` on `CommandSettings` when options have cross-field constraints.
 - **USE** `AsyncCommand<TSettings>` as the base for every command — synchronous commands are not permitted.
 - **RETURN** semantic exit codes — `0` for success, non-zero constants for each error category.
-- **NEVER** write an absolute path to stdout, stderr, a report or a log line. Every path the tool emits is relative to the root it was given (README § 9).
+- **NEVER** write an absolute path to stdout, stderr, a report or a log line. Every path the tool emits is relative to the root it was given (brief § 9).

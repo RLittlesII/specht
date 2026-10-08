@@ -7,7 +7,7 @@ type: decision
 # Decision 0002: the command line is built on Spectre.Console.Cli
 
 **Date:** 2026-10-07
-**Decided by:** the repository's chosen stack (README § "Agent skills", `spectre-cli`; AGENTS.md names `src/specht.tool` the Spectre.Console.Cli host); recorded by spec-author after the 2026-10-07 review found it stated as `0001-F2` C-1
+**Decided by:** the repository's chosen stack (brief § "Agent skills", `spectre-cli`; AGENTS.md names `src/specht.tool` the Spectre.Console.Cli host); recorded by spec-author after the 2026-10-07 review found it stated as `0001-F2` C-1
 
 ## The call
 

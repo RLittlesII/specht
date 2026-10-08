@@ -7,7 +7,7 @@ type: decision
 # Decision 0001: A renamed key is renamed in the manifest and the schema
 
 **Date:** 2026-10-07
-**Decided by:** spec-author, on spec-reviewer's finding 3 (2026-10-07), reading README §§ 5-6
+**Decided by:** spec-author, on spec-reviewer's finding 3 (2026-10-07), reading brief §§ 5-6
 
 ## The call
 
@@ -22,12 +22,12 @@ schema.
 
 ## Why
 
-README § 6 already makes the consumer's on-disk `.spec/schema/` files the way
+brief § 6 already makes the consumer's on-disk `.spec/schema/` files the way
 to bring your own schema, selected by a manifest field or a CLI argument
 (Should-8). The schema files are the agent's generation contract (Should-5), so
 they have to say what the tree is held to; a schema rewritten at run time would
 hold the tree to a contract nobody can read. Keeping the two files separate and
-both in the consumer's hands is the only reading where README § 5 ("every
+both in the consumer's hands is the only reading where brief § 5 ("every
 literal moves into the manifest") and § 6 ("on-disk schemas when selected")
 both hold.
 

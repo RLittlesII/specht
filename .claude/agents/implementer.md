@@ -29,7 +29,7 @@ Writes no claims, no scenarios, and no tests.
   technology skills for the surface being built —
   [`dotnet-tool`](../skills/dotnet-tool/SKILL.md) and
   [`spectre-cli`](../skills/spectre-cli/SKILL.md).
-- README § 3 and § 9. The engine was copied from `hooked`, not written here; a
+- brief § 3 and § 9. The engine was copied from `hooked`, not written here; a
   file that looks like it should be rewritten is a later step with a test.
 - Accepted ADRs. An accepted ADR is a rule, not a suggestion.
 
@@ -70,7 +70,7 @@ Writes no claims, no scenarios, and no tests.
 - Writing into a consumer's tree outside `init` and `upgrade`, or overwriting an
   existing file from either.
 - Widening the rule vocabulary (`SPEC###`) before schema versioning exists. A new
-  rule is a schema version — README § 8 step 6, § 9.
+  rule is a schema version — brief § 8 step 6, § 9.
 - Regenerating a file copied from `hooked`'s engine instead of changing it under
   a test.
 - An abstraction with one implementation, or a configuration point nothing

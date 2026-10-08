@@ -16,7 +16,7 @@ copy of it.
 
 ## Strictness is on, repo-wide
 
-`Directory.Build.props` (scaffold, README § 8 step 1): `net10.0`,
+`Directory.Build.props` (scaffold, brief § 8 step 1): `net10.0`,
 `LangVersion latest`, `Nullable enable`, `ImplicitUsings enable`,
 `TreatWarningsAsErrors true`, `EnforceCodeStyleInBuild true`,
 `IsPackable false`. `Rocket.Surgery.Airframe.CodeAnalysis` is wired
@@ -25,7 +25,7 @@ solution-wide from day one.
 `IsPackable=false` is the **default**, not the rule: `src/specht.tool` overrides
 it to `true` with `PackAsTool`, because the tool is the product and the package
 is how it ships. No other project packs — the engine library `src/specht` is
-consumed through the tool, never as a package of its own (README § 2 Must-4).
+consumed through the tool, never as a package of its own (brief § 2 Must-4).
 
 `EnforceCodeStyleInBuild` is what makes the `.editorconfig` `:warning` severities
 real build warnings — and with `TreatWarningsAsErrors`, real failures — instead of
@@ -38,11 +38,11 @@ orchestrator itself from compiling. Product code gets no such exemption.
 ## The engine is copied, not written
 
 `src/specht` arrives from `hooked` by `cp` with a namespace rename and nothing
-else (README § 3, § 8 step 2). The tests that come with it are the behaviour
+else (brief § 3, § 8 step 2). The tests that come with it are the behaviour
 baseline: `hooked`'s report must stay identical through every later step
-(README § 2 Should-7). A file in `src/specht` that looks like it should be
+(brief § 2 Should-7). A file in `src/specht` that looks like it should be
 rewritten is a later step with a test, never a fresh draft — and the first
-rewrite is the manifest-roles work in README § 8 step 5, one rule at a time.
+rewrite is the manifest-roles work in brief § 8 step 5, one rule at a time.
 
 ## Analyzer rules
 
@@ -68,7 +68,7 @@ attribute in any `.csproj`.** A new dependency lands as a `PackageVersion` in th
 file and a versionless `PackageReference` in the project, in the same change.
 
 The engine's three dependencies — Markdig, YamlDotNet, JsonSchema.Net — are
-pinned to the exact versions `hooked` uses (README § 3), because Should-7 is a
+pinned to the exact versions `hooked` uses (brief § 3), because Should-7 is a
 byte-identical report. A pin with a reason carries the reason **in
 `Directory.Packages.props`**, beside the pin, not in a skill. Read it before
 bumping anything.
@@ -78,7 +78,7 @@ bumping anything.
 Every path the tool writes — a diagnostic, the `--json` document, the `--report`
 file, a log line — is relative to the root it was given. The same rule holds
 for every test fixture and every expected report committed here. An absolute
-path anywhere is a defect (README § 9), and the review looks for it.
+path anywhere is a defect (brief § 9), and the review looks for it.
 
 ## Generated and never hand-edited
 

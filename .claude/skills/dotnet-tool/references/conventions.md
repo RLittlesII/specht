@@ -39,7 +39,7 @@ public override async Task<int> ExecuteAsync(CommandContext context, Settings se
 }
 ```
 
-`specht`'s codes are decided (README § 5) and the pre-commit hook and CI depend
+`specht`'s codes are decided (brief § 5) and the pre-commit hook and CI depend
 on them:
 
 | Code | Means                                                                              |
@@ -88,7 +88,7 @@ Document required environment variables in the command `[Description]` string.
 
 Every path the tool emits — a diagnostic line, a `--json` document, a `--report`
 file, a log line, an exception message — is relative to the root it was given.
-An absolute path anywhere is a defect (README § 9): it differs per machine, so a
+An absolute path anywhere is a defect (brief § 9): it differs per machine, so a
 report is not reproducible and a test fixture is not portable. Resolve to
 absolute paths internally if you must; relativize before anything leaves the
 process.
