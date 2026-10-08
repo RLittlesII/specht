@@ -91,10 +91,11 @@ A repository's `.spec/schema/` is a copy of `hooked`'s from one day, and nothing
 | B-029 | Given `specht upgrade` under a root pinned to `n` where the tool ships `n+1`, with the on-disk source selected (B-009 or B-032), this Feature writes none of version `n+1`'s embedded frontmatter schemas.                                                                              | OQ-8 (owner, 2026-10-08); decision 0004; C-2                     | Amended |
 | B-030 | Given the upgrade of B-029, this Feature prints each frontmatter schema it skipped and the reason.                                                                                                                                                                                      | OQ-8 (owner, 2026-10-08); B-017                                  | Active  |
 | B-031 | Given the upgrade of B-029, this Feature rewrites the templates with version `n+1`'s and lists each one it rewrote.                                                                                                                                                                     | OQ-8 (owner, 2026-10-08); B-017                                  | Active  |
-| B-032 | Given a manifest that records an upstream schema source, this Feature selects the on-disk source.                                                                                                                                                                                       | owner, 2026-10-08; decision 0004                                 | Active  |
+| B-032 | Given a manifest that records an upstream schema source and selects no source explicitly, this Feature selects the on-disk source.                                                                                                                                                      | owner, 2026-10-08; decision 0004                                 | Amended |
 | B-033 | Given `specht upgrade` under a manifest that records an upstream schema source and a local copy whose content hash matches the recorded one, this Feature makes no network call.                                                                                                        | owner, 2026-10-08; decision 0004; C-8                            | Active  |
 | B-034 | Given `specht upgrade` under a manifest that records an upstream schema source, the upstream version and content hash the manifest records are unchanged.                                                                                                                               | owner, 2026-10-08; decision 0004; C-10                           | Active  |
 | B-035 | Given `specht upgrade` under a manifest that records an upstream schema source it must fetch (B-026) and a source that cannot be reached, this Feature names the source on stderr, writes nothing, and exits with code `3`.                                                             | owner, 2026-10-08; decision 0004; B-027; `0001-F2` decision 0003 | Active  |
+| B-036 | Given a manifest that records an upstream schema source and explicitly selects the embedded source, the check names the contradiction on stderr, writes nothing on stdout, and exits with code `3`.                                                                                     | owner, 2026-10-08; decision 0004; `0001-F2` decision 0003        | Active  |
 
 ## 4. Constraints
 
@@ -185,6 +186,7 @@ Pending: owned by `test-writer`.
 | B-033    | Upgrade does not fetch a local copy that matches its hash         | Missing | Missing |
 | B-034    | Upgrade leaves the recorded upstream version alone                | Missing | Missing |
 | B-035    | Upgrade refuses an upstream source it cannot reach                | Missing | Missing |
+| B-036    | An upstream source with the embedded source selected is rejected  | Missing | Missing |
 
 ## 10. Lessons / Spec Deltas
 

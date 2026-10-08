@@ -282,3 +282,12 @@ Feature: Schema versioning
     Then no file under the root has changed
     And the standard error names the source
     And the exit code is 3
+
+  @B-036
+  Scenario: An upstream source with the embedded source selected is rejected
+    Given the manifest records an upstream schema source
+    And the manifest explicitly selects the embedded source
+    When the check runs
+    Then the standard error names the contradiction
+    And the standard output is empty
+    And the exit code is 3

@@ -52,6 +52,12 @@ recorded source relates to the source selection and to `schemaVersion`:
 - A source that cannot be reached when a fetch is needed is refused like a
   hash mismatch: the command names the source, writes nothing and exits `3`
   (B-035; `0001-F4` B-016).
+- A manifest that records an upstream source **and** explicitly selects the
+  embedded source contradicts itself and is rejected. The check names the
+  contradiction on stderr, writes nothing on stdout and exits `3`, as for any
+  rejected manifest (B-036; `0001-F2` decision 0003). `init`, `upgrade` and
+  `--explain` reject it the same way (`0001-F3` B-030). Recording a source
+  selects disk only when no source is selected explicitly (B-032).
 
 ## Rejected
 
@@ -76,7 +82,8 @@ on-disk source, B-009). Both a URL and a NuGet schema package were taken.
   § 11 OQ-1 (scope extended), OQ-7 (resolved).
 - `0001-F4` B-014 to B-016: `init` fetches a recorded source (C-8).
 - By the addendum: `0001-F7` § 3 B-001, B-005, B-006, B-010, B-011, B-024,
-  B-026, B-029 (amended), B-032 to B-035; § 4 C-10; `0001-F3` B-005.
+  B-026, B-029, B-032 (amended), B-033 to B-036; § 4 C-10; `0001-F3` B-005,
+  B-030.
 - README § 9; AGENTS.md § Invariants ("Deterministic and offline").
 
 ## Reversal

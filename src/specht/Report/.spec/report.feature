@@ -219,6 +219,14 @@ Feature: The report contract
     And the standard output is empty
     And the exit code is 3
 
+  @B-030
+  Scenario: Explain beside a contradictory schema source fails as the check does
+    Given the root's manifest records an upstream schema source and explicitly selects the embedded source
+    When the tool is asked to explain SPEC031
+    Then no rule text is printed
+    And the standard output is empty
+    And the exit code is 3
+
   @B-030 @boundary
   Scenario: Explain beside a pin the tool does not ship fails as the check does
     Given the tool ships schema version 1 only
