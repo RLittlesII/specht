@@ -4,7 +4,7 @@ description: "specht, the default command: one verdict on a repository's .spec/ 
 type: feature
 id: "F2"
 epic: "0001"
-spec_status: approved
+spec_status: in-review
 status: ready-for-architecture
 priority: critical
 value: 0
@@ -90,7 +90,7 @@ The gate runs only as `hooked`'s Nuke target, so a pre-commit hook, a CI step an
 
 ## 5. Out of Scope
 
-<!-- last written by: spec-author, 2026-10-07 -->
+<!-- last written by: spec-author, 2026-10-08 -->
 
 | #   | Item                                                                                                                   | Exclusion Reason                                                                                                             |
 | --- | ---------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
@@ -100,7 +100,7 @@ The gate runs only as `hooked`'s Nuke target, so a pre-commit hook, a CI step an
 | 4   | Rejecting a well-formed manifest - an unknown key, rule id, grammar, role or exclusion form - and the exit code for it | `0001-F5` (README § 8 step 5); this Feature's exit code `3` covers only a manifest that does not parse (B-007).              |
 | 5   | Autofix of any kind                                                                                                    | README § 2; B-012 is the boundary.                                                                                           |
 | 6   | `hooked`'s Nuke target calling the tool                                                                                | A Feature of `hooked`.                                                                                                       |
-| 7   | The release workflow that publishes `specht.tool` to GitHub Packages                                                   | Repository tooling (README § 8 step 1 and 3), not a behaviour of the command.                                                |
+| 7   | The release workflow that publishes `specht.tool` to GitHub Packages                                                   | `0055-F6`; not a behaviour of the command.                                                                                   |
 | 8   | A rule plugin model                                                                                                    | Rejected in decision 0001.                                                                                                   |
 | 9   | A watch mode, an editor or language-server surface                                                                     | A command for a shell and a CI step; an editor surface is a different product.                                               |
 | 10  | Writing the `--report` file, the one write under the root a run may make                                               | `0001-F3` B-022 writes it, B-024 overwrites it and C-7 makes it the only write; exempt from B-012 (`0001-F3` decision 0002). |

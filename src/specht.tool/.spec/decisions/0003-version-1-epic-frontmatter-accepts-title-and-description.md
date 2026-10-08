@@ -22,9 +22,9 @@ because version 1 is open until first publish (decision 0002). Resolves OQ-4.
   every tracked markdown file, and version 1 rejected both on an epic file, so
   the rule and the schema could not both hold.
 - No package is published yet, so changing version 1 breaks no consumer pin.
-- "Accepts", not "requires": the two existing epic files,
-  `epics/0001-specht/epic.md` and `epics/0002-documentation/epic.md`, carry
-  neither key and keep passing.
+- "Accepts", not "requires": on the date of this decision the two existing
+  epic files, `epics/0001-specht/epic.md` and `epics/0002-documentation/epic.md`,
+  carried neither key, and they keep passing.
 
 ## Rejected
 
@@ -43,7 +43,9 @@ does every consumer epic written to the prior shape.
 - `0001-F7` § 3 B-022; § 11 OQ-4.
 - `0001-F7` § 3 B-023, added by the owner 2026-10-08: an empty `title` or
   `description` is a violation, as `minLength: 1` says.
-- `0001-F1` § 11 OQ-1, which carried the question here.
+- `0001-F1` § 11 OQ-1, which carried the question here; `0001-F1` § 2 A-3,
+  whose version 1 set now includes the two keys.
+- `0001-F7` § 2 A-2, which defines version 1 to include them.
 - `.spec/schema/epic.frontmatter.schema.json`, the live copy of version 1.
 
 ## Reversal
