@@ -2,7 +2,7 @@ id: "0064"
 type: task
 title: Generate the CI workflow and run the build on three systems
 
-status: ready-for-architecture
+status: done
 
 priority: high # DERIVED
 risk: 3
@@ -29,7 +29,7 @@ claims:
 
 created: "2026-10-08"
 updated: "2026-10-08"
-closed: null
+closed: "2026-10-08"
 
 summary: |
   Declare the integration workflow in `Build.GitHubActions.cs` and commit

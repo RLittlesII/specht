@@ -8,10 +8,12 @@
   <!-- One literal entry per linked .feature file; a batched glob silently discovers zero tests (specht-conventions § Testing). -->
   <ItemGroup>
     <ReqnrollFeatureFile Include="..\..\.build\.spec\build.feature" Link="Features\build.feature" />
+    <ReqnrollFeatureFile Include="..\..\.build\ContinuousIntegration\.spec\continuous-integration.feature" Link="Features\continuous-integration.feature" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Reqnroll.xunit.v3" />
+    <PackageReference Include="YamlDotNet" />
     <PackageReference Include="xunit.v3" />
     <PackageReference Include="AwesomeAssertions" />
   </ItemGroup>

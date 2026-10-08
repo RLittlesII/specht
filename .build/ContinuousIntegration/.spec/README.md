@@ -97,39 +97,57 @@ No workflow exists, so the first pull request on GitHub would merge on the autho
 
 ## 6. Concern Separation
 
-<!-- last written by: spec-author, 2026-10-08 -->
+<!-- last written by: implementer, 2026-10-08 -->
 
-Pending: owned by `implementer`, written after agreement.
+| #   | Concern                                                        | Classification |
+| --- | -------------------------------------------------------------- | -------------- |
+| 1   | Which events run the build, and which commit they build        | Both           |
+| 2   | Which operating systems run it, and how each reports           | Both           |
+| 3   | Which gates a run executes, and through what entry             | Both           |
+| 4   | Generating the workflow from the build rather than by hand     | Technical      |
+| 5   | What a run may write or push: no feed, no artifact, read token | Both           |
 
 ## 7. Technical Design
 
-<!-- last written by: spec-author, 2026-10-08 -->
+<!-- last written by: implementer, 2026-10-08 -->
 
-Pending: owned by `implementer`, written after agreement.
+Delivered so far by item 0064.
+
+- **The declaration** is [`.build/Build.GitHubActions.cs`](../../Build.GitHubActions.cs): NUKE's own GitHub Actions generator, named `ci`, writing [`.github/workflows/ci.yml`](../../../.github/workflows/ci.yml) with `AutoGenerate` on, so any build run regenerates it and the regeneration is committed with the build change (C-1). B-009's check that the committed copy is current is `0065`.
+- **Triggers.** `pull_request` and `push`, each limited to `main` (B-001, B-002, A-2).
+- **One job per image** - `ubuntu-latest`, `windows-latest`, `macos-latest` - not a matrix, so each operating system is its own check (B-003, B-010), named by its image and nothing computed from the commit (B-007). The jobs share no `needs`, so one failing does not cancel another.
+- **One step runs the gates**: `./build.cmd Format Compile Test SpecCheck Pack`. `build.cmd` is the entry script on every system - a cmd/bash polyglot that hands off to `build.sh` off Windows - so every gate runs through it (B-004), and a failing target exits it non-zero and fails that job (B-005, `0055-F1` B-018). With one step, the generator's ordering of steps by dependency depth (AGENTS.md) does not arise; NUKE orders the targets.
+- **The checkout** is the one change to NUKE's generator: [`IntegrationWorkflowAttribute`](../../IntegrationWorkflowAttribute.cs) replaces its checkout step with `actions/checkout` at `ref: ${{ github.event.pull_request.head.sha }}` and `fetch-depth: 0`. A pull request builds its head commit rather than the merge GitHub synthesises (B-001), and a push, where the expression is empty, builds the pushed commit (B-002); either way with full history (C-2).
+- **Nothing leaves a run** (B-008, C-3): no target in the list pushes, `PublishArtifacts` is off so `Pack`'s output is not kept (§ 5 #7), and the token is `contents: read` only. The only other step caches `~/.nuget/packages` and `.nuke/temp`.
+- **Not used:** Rocket.Surgery.Nuke's `GitHubActionsSteps` generator, which the build project references. It emits no triggers, installs `Nuke.GlobalTool` globally (`0055-F1` C-3), runs the compiled build assembly instead of the entry script (B-004), and needs middleware for the rest.
 
 ## 8. Testing Strategy
 
-<!-- last written by: spec-author, 2026-10-08 -->
+<!-- last written by: test-writer, 2026-10-08 -->
 
-Pending: owned by `test-writer`.
+- **Acceptance.** `continuous-integration.feature` is linked into `test/specht.acceptance`. [`ContinuousIntegration/ContinuousIntegrationSteps.cs`](../../../test/specht.acceptance/ContinuousIntegration/ContinuousIntegrationSteps.cs) binds B-001 to B-005, B-007, B-008 and B-010 by reading the committed `ci.yml` with YamlDotNet - the file GitHub runs - and never calls GitHub (C-3).
+- **What the tests cannot see** is a runner. B-005 is proven structurally - the Windows job runs `Test` through the entry script, and nothing in it sets `continue-on-error` or `needs` - with the exit code itself proven by `0055-F1` B-018. The first live run is observed on the pull request that delivers 0064.
+- **Mutations.** Moving the `push` trigger to another branch turned B-002 red; dropping `Pack` from the Windows step turned B-004 red.
+- **The build's own scenarios** copy `ci.yml` and `build.cmd` into each synthetic tree: with `AutoGenerate` on, every build regenerates the workflow into the root it is given, and generation fails without them. The copies make that rewrite produce the same bytes, which `0055-F1` B-004's snapshot checks.
+- **Unbound:** B-006 (`0066`), B-009 (`0065`) and B-011 (`0067`) report Skipped.
 
 ## 9. Traceability Matrix
 
-<!-- last written by: spec-author, 2026-10-08 -->
+<!-- last written by: test-writer, 2026-10-08 -->
 
-| Claim ID | Scenario                                          | Test    | Status  |
-| -------- | ------------------------------------------------- | ------- | ------- |
-| B-001    | A pull request is built                           | Missing | Missing |
-| B-002    | A push to main is built                           | Missing | Missing |
-| B-003    | Every run covers three operating systems          | Missing | Missing |
-| B-004    | Every operating system runs every gate            | Missing | Missing |
-| B-005    | A failing gate fails its operating system's check | Missing | Missing |
-| B-006    | A specification violation is shown on the diff    | Missing | Missing |
-| B-007    | Check names do not change between runs            | Missing | Missing |
-| B-008    | Integration never publishes                       | Missing | Missing |
-| B-009    | A stale workflow fails the run                    | Missing | Missing |
-| B-010    | Each operating system is its own check            | Missing | Missing |
-| B-011    | A run reads the feed with its own token           | Missing | Missing |
+| Claim ID | Scenario                                          | Test                         | Status  |
+| -------- | ------------------------------------------------- | ---------------------------- | ------- |
+| B-001    | A pull request is built                           | `ContinuousIntegrationSteps` | Covered |
+| B-002    | A push to main is built                           | `ContinuousIntegrationSteps` | Covered |
+| B-003    | Every run covers three operating systems          | `ContinuousIntegrationSteps` | Covered |
+| B-004    | Every operating system runs every gate            | `ContinuousIntegrationSteps` | Covered |
+| B-005    | A failing gate fails its operating system's check | `ContinuousIntegrationSteps` | Covered |
+| B-006    | A specification violation is shown on the diff    | Missing                      | Missing |
+| B-007    | Check names do not change between runs            | `ContinuousIntegrationSteps` | Covered |
+| B-008    | Integration never publishes                       | `ContinuousIntegrationSteps` | Covered |
+| B-009    | A stale workflow fails the run                    | Missing                      | Missing |
+| B-010    | Each operating system is its own check            | `ContinuousIntegrationSteps` | Covered |
+| B-011    | A run reads the feed with its own token           | Missing                      | Missing |
 
 ## 10. Lessons / Spec Deltas
 
