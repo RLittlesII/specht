@@ -1,0 +1,52 @@
+id: "0042"
+type: task
+title: Pin schemaVersion and check with the embedded version set
+
+status: ready-for-architecture
+
+priority: high # DERIVED
+risk: 4
+rank: 88 # DERIVED: (4 × 20) − (4 × 3) + (4 × 5); value inherited from 0041
+
+parent: "0041"
+children: []
+
+depends_on: ["0011", "0027", "0034"] # key loads via 0011; exit 3 from 0027; version field from 0034
+blocks: ["0043", "0044", "0045", "0049"]
+spikes: []
+
+spec: src/specht.tool/.spec/README.md
+
+claims:
+  - B-001
+  - B-002
+  - B-003
+  - B-004
+  - B-014
+
+created: "2026-10-08"
+updated: "2026-10-08"
+closed: null
+
+summary: |
+  Embed every shipped version's frontmatter schemas and rule vocabulary,
+  read `schemaVersion` from the manifest (absent means 1), check with that
+  version's schemas and rules, and reject an unshipped pin with exit 3. The
+  manifest itself is always the on-disk one (C-4). Every other F7 item
+  reads the version this selects. Depends on 0011 to load the key, on 0027
+  for exit 3, and on 0034, whose version field it fills.
+
+acceptance_criteria:
+  - "B-001 — pinned `n` validates with `n`'s embedded frontmatter schemas"
+  - "B-002 — no `schemaVersion` checks as 1; report names 1"
+  - "B-003 — unshipped pin: pinned and shipped versions on stderr, stdout empty, exit 3"
+  - "B-004 — embedded set holds every version below the newest, by test"
+  - "B-014 — exactly version `n`'s rule ids evaluated"
+  - "§ 9 carries a row naming a test for each id above."
+
+decisions: []
+
+out_of_scope:
+  - "The schema source switch — 0043."
+  - "A version pinned per specification — § 5 #5."
+  - "An embedded manifest read in place of the on-disk one — C-4."

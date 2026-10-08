@@ -1,0 +1,43 @@
+id: "0046"
+type: task
+title: Fail upgrade on a missing root, missing manifest or invalid manifest
+
+status: ready-for-architecture
+
+priority: high # DERIVED
+risk: 2
+rank: 79 # DERIVED: (4 × 20) − (2 × 3) + (1 × 5); value inherited from 0041
+
+parent: "0041"
+children: []
+
+depends_on: ["0045", "0013"] # guards 0045's command; exit 3 as 0013 gives the check
+blocks: ["0048"]
+spikes: []
+
+spec: src/specht.tool/.spec/README.md
+
+claims:
+  - B-018
+  - B-019
+  - B-020
+
+created: "2026-10-08"
+updated: "2026-10-08"
+closed: null
+
+summary: |
+  `upgrade` writes nothing and exits 2 for a root that is not a directory or
+  has no manifest, and 3 for a manifest 0001-F5 rejects — the same codes the
+  check uses (0027, 0013).
+
+acceptance_criteria:
+  - "B-018 — root not a directory: nothing written, exit 2"
+  - "B-019 — no manifest: nothing written, exit 2"
+  - "B-020 — invalid manifest: nothing written, exit 3"
+  - "§ 9 carries a row naming a test for each id above."
+
+decisions: []
+
+out_of_scope:
+  - "An unshipped pinned version — 0048, pending OQ-5."

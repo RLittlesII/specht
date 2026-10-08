@@ -6,13 +6,13 @@ status: ready-for-architecture
 
 priority: high # DERIVED
 risk: 3
-rank: 101 # DERIVED: (4 × 20) − (3 × 3) + (6 × 5); value inherited from 0033
+rank: 106 # DERIVED: (4 × 20) − (3 × 3) + (7 × 5); value inherited from 0033
 
 parent: "0033"
 children: []
 
 depends_on: ["0021"] # the document is built from the copied engine's report
-blocks: ["0028", "0035", "0036", "0037", "0038", "0039"]
+blocks: ["0028", "0035", "0036", "0037", "0038", "0039", "0042"]
 spikes: []
 
 spec: src/specht/Report/.spec/README.md
@@ -33,8 +33,10 @@ summary: |
   C-1), and the engine producing it: the summary counts, the violations with
   an `expected` member, no timestamp, every path relative, and a test that a
   produced document validates. Each rule family's `expected` content is
-  0037-0039. F2's summary (0028) prints the counts defined here. The schema
-  version and source in B-005 come from 0001-F7, which has no item yet.
+  0037-0039. F2's summary (0028) prints the counts defined here. This item
+  defines the schema version and source fields in B-005; 0001-F7 fills them
+  with their selected values (0042, 0043), which wait on this, not the
+  reverse. Until then they read version 1 from the on-disk files.
 
 acceptance_criteria:
   - "B-005 — version, source, layout counts, items, rules evaluated, errors, warnings, violations"

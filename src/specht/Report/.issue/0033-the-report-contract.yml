@@ -58,9 +58,9 @@ summary: |
   document from the report alone (Must-6).
 
   Reaches the engine through 0034 -> 0021 and the command through 0035,
-  0036 and 0040 -> 0026. The document's schema version and schema source
-  (B-005) come from 0001-F7, which has no item yet; add that edge when F7 is
-  cut. --explain (0040) is blocked on OQ-1 and OQ-2, both the owner's.
+  0036 and 0040 -> 0026. The document's schema version and source fields
+  (B-005) are defined here and filled by 0001-F7: 0042 and 0043 -> 0034.
+  --explain (0040) is blocked on OQ-1 and OQ-2, both the owner's.
 
 acceptance_criteria:
   - "B-001 — `--json` writes the document to stdout (0035)"

@@ -1,0 +1,43 @@
+id: "0044"
+type: test
+title: Prove a shipped version never changes
+
+status: ready-for-architecture
+
+priority: high # DERIVED
+risk: 2
+rank: 74 # DERIVED: (4 × 20) − (2 × 3) + (0 × 5); value inherited from 0041
+
+parent: "0041"
+children: []
+
+depends_on: ["0042"] # guards the embedded set 0042 builds
+blocks: []
+spikes: []
+
+spec: src/specht.tool/.spec/README.md
+
+claims:
+  - B-013
+  - B-015
+
+created: "2026-10-08"
+updated: "2026-10-08"
+closed: null
+
+summary: |
+  A test that every shipped version's embedded schema, manifest and
+  template files are byte-identical, and its rule vocabulary unchanged, in
+  this tool (C-1, decision 0002). Version 1 freezes at first publish (A-2),
+  so it must hold the keys Manifest and Discovery add — the spec review
+  notes F7 omits F6 from its dependencies for this reason.
+
+acceptance_criteria:
+  - "B-013 — shipped schema, manifest and template files byte-identical"
+  - "B-015 — shipped vocabulary's rule ids unchanged"
+  - "§ 9 carries a row naming a test for each id above."
+
+decisions: []
+
+out_of_scope:
+  - "The content of schema version 2 — § 5 #3."

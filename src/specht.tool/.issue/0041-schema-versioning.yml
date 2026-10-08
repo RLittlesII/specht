@@ -1,0 +1,102 @@
+id: "0041"
+type: feature
+title: Schema versioning
+
+status: ready-for-architecture
+
+priority: high # DERIVED
+value: 4
+risk: 4
+rank: 68 # DERIVED: (4 × 20) − (4 × 3) + (0 × 5)
+
+parent: "0001"
+children: ["0042", "0043", "0044", "0045", "0046", "0047", "0048", "0049"]
+
+depends_on: []
+blocks: []
+spikes: []
+
+spec: src/specht.tool/.spec/README.md
+
+claims:
+  - B-001
+  - B-002
+  - B-003
+  - B-004
+  - B-005
+  - B-006
+  - B-007
+  - B-008
+  - B-009
+  - B-010
+  - B-011
+  - B-012
+  - B-013
+  - B-014
+  - B-015
+  - B-016
+  - B-017
+  - B-018
+  - B-019
+  - B-020
+  - B-021
+
+created: "2026-10-08"
+updated: "2026-10-08"
+closed: null
+
+summary: |
+  As the maintainer of a lagging repository, I want the manifest to pin a
+  schema version the tool still checks, and `specht upgrade` to move the
+  schema set and templates one version forward and say what changed, so
+  that lagging is deliberate and catching up is one command.
+
+  Risk 4: every shipped version stays embedded and byte-identical forever
+  (C-1), so a mistake is permanent once published. Three open questions,
+  all the owner's, block one item each: OQ-3 and OQ-6 (0047), OQ-5 (0048).
+  OQ-1, the source option's names, is architecture's to propose in § 7.
+  Init pinning the newest version (0049) also waits on 0001-F4, which has
+  no item yet.
+
+acceptance_criteria:
+  - "B-001 — pinned `n` checks with `n`'s embedded frontmatter schemas (0042)"
+  - "B-002 — no key is version 1 (0042)"
+  - "B-003 — unshipped pin: stderr, exit 3 (0042)"
+  - "B-004 — every lower version still shipped, by test (0042)"
+  - "B-005 — upgrade rewrites schemas and templates to `n+1` (0045)"
+  - "B-006 — upgrade at newest: current, nothing rewritten (0045)"
+  - "B-007 — upgrade writes only under schema/ and templates/ (0045)"
+  - "B-008 — upgrade moves one version at a time (0045)"
+  - "B-009 — on-disk source by configuration (0043)"
+  - "B-010 — embedded source ignores an on-disk edit (0043)"
+  - "B-011 — report names the selected source (0043)"
+  - "B-012 — init writes `schemaVersion` as the newest (0049)"
+  - "B-013 — shipped files byte-identical in later tools (0044)"
+  - "B-014 — pinned version's rule vocabulary evaluated (0042)"
+  - "B-015 — shipped vocabulary never changes (0044)"
+  - "B-016 — upgrade changes only `schemaVersion` and added keys (0047)"
+  - "B-017 — upgrade prints versions and rewritten files (0047)"
+  - "B-018 — upgrade, root not a directory: exit 2 (0046)"
+  - "B-019 — upgrade, no manifest: exit 2 (0046)"
+  - "B-020 — upgrade, invalid manifest: exit 3 (0046)"
+  - "B-021 — upgrade from an unshipped version writes nothing (0048)"
+  - "§ 9 carries a row naming a test for each id above."
+
+decisions:
+  - |
+    2026-10-08, Claude at the owner's request: sliced into the pinned,
+    embedded version set (0042) that everything reads, then the source switch
+    and the freeze test beside it, then `upgrade` as its core move (0045)
+    with its failures (0046) apart, and each claim an open question blocks
+    in its own item (0047, 0048) so the rest can proceed. Rejected: upgrade
+    as one item, which would sit blocked on three questions for claims that
+    need none.
+  - |
+    2026-10-08, Claude: the report's version and source fields are defined
+    by Report's 0034 and filled with their true values here (0042, 0043),
+    not the reverse — 0034 waiting on this Feature while 0043 waits on 0034
+    would be a cycle.
+
+out_of_scope:
+  - "Everything in § 5 of the spec."
+  - "OQ-4, the version 1 epic schema's `title` and `description` — no claim yet."

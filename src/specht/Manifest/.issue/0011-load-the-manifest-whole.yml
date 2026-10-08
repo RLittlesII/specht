@@ -6,13 +6,13 @@ status: ready-for-architecture
 
 priority: high # DERIVED
 risk: 3
-rank: 106 # DERIVED: (4 × 20) − (3 × 3) + (7 × 5); value inherited from 0010
+rank: 111 # DERIVED: (4 × 20) − (3 × 3) + (8 × 5); value inherited from 0010
 
 parent: "0010"
 children: []
 
 depends_on: ["0021"] # the loader is written into the copied engine
-blocks: ["0005", "0013", "0014", "0015", "0016", "0017", "0019"]
+blocks: ["0005", "0013", "0014", "0015", "0016", "0017", "0019", "0042"]
 spikes: []
 
 spec: src/specht/Manifest/.spec/README.md
