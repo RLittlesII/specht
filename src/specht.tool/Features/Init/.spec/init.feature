@@ -131,3 +131,30 @@ Feature: init
     Then no file under the root has changed
     And the standard error names the source
     And the exit code is 3
+
+  @B-017
+  Scenario: Init beside a manifest that does not parse fails as the check does
+    Given a root directory whose schema folder holds a manifest that is not well-formed JSON
+    And a snapshot of every file under the root
+    When init runs against it
+    Then no file under the root has changed
+    And the standard error names the reason
+    And the exit code is 3
+
+  @B-017
+  Scenario: Init beside a rejected manifest fails as the check does
+    Given a root directory whose schema folder holds a manifest carrying a key the tool does not know
+    And a snapshot of every file under the root
+    When init runs against it
+    Then no file under the root has changed
+    And the standard error names the reason
+    And the exit code is 3
+
+  @B-017
+  Scenario: Init beside a contradictory schema source fails as the check does
+    Given a root directory whose manifest records an upstream schema source and explicitly selects the embedded source
+    And a snapshot of every file under the root
+    When init runs against it
+    Then no file under the root has changed
+    And the standard error names the contradiction
+    And the exit code is 3

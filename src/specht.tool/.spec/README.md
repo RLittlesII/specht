@@ -149,44 +149,44 @@ Pending: owned by `test-writer`.
 
 <!-- last written by: spec-author, 2026-10-08 -->
 
-| Claim ID | Scenario                                                          | Test    | Status  |
-| -------- | ----------------------------------------------------------------- | ------- | ------- |
-| B-001    | The pinned version is the one checked with                        | Missing | Missing |
-| B-002    | A manifest without a version is version 1                         | Missing | Missing |
-| B-003    | A version the tool does not ship is invalid configuration         | Missing | Missing |
-| B-004    | Every version ever shipped is still shipped                       | Missing | Missing |
-| B-005    | Upgrade moves the schema set and templates to the next version    | Missing | Missing |
-| B-006    | Upgrade at the newest version changes nothing                     | Missing | Missing |
-| B-007    | Upgrade never touches a document                                  | Missing | Missing |
-| B-008    | Upgrade moves one version at a time                               | Missing | Missing |
-| B-009    | The on-disk source is selected by configuration                   | Missing | Missing |
-| B-010    | The embedded source ignores an on-disk edit                       | Missing | Missing |
-| B-011    | The report names the selected source                              | Missing | Missing |
-| B-012    | Init pins the newest version                                      | Missing | Missing |
-| B-013    | A shipped version never changes                                   | Missing | Missing |
-| B-014    | The pinned version's rules are the ones evaluated                 | Missing | Missing |
-| B-015    | A shipped version's rules never change                            | Missing | Missing |
-| B-016    | Upgrade keeps the consumer's manifest settings                    | Missing | Missing |
-| B-017    | Upgrade prints what it changed                                    | Missing | Missing |
-| B-018    | Upgrade under a missing root is a missing-input failure           | Missing | Missing |
-| B-019    | Upgrade without a manifest is a missing-input failure             | Missing | Missing |
-| B-020    | Upgrade with an invalid manifest is invalid configuration         | Missing | Missing |
-| B-021    | Upgrade from a version the tool does not ship rewrites nothing    | Missing | Missing |
-| B-022    | Version 1 accepts a title and a description on an epic            | Missing | Missing |
-| B-023    | Version 1 rejects an empty <key> on an epic                       | Missing | Missing |
-| B-024    | The check reads an upstream schema from the local copy            | Missing | Missing |
-| B-025    | The check makes no network call                                   | Missing | Missing |
-| B-026    | Upgrade writes a fetched schema that matches its hash             | Missing | Missing |
-| B-027    | Upgrade refuses a fetched schema that does not match its hash     | Missing | Missing |
-| B-028    | An upstream schema does not change the rule vocabulary            | Missing | Missing |
-| B-029    | Upgrade never writes the embedded schemas over the on-disk source | Missing | Missing |
-| B-030    | Upgrade says which schemas it skipped and why                     | Missing | Missing |
-| B-031    | Upgrade still rewrites the templates under the on-disk source     | Missing | Missing |
-| B-032    | Recording an upstream source selects the on-disk source           | Missing | Missing |
-| B-033    | Upgrade does not fetch a local copy that matches its hash         | Missing | Missing |
-| B-034    | Upgrade leaves the recorded upstream version alone                | Missing | Missing |
-| B-035    | Upgrade refuses an upstream source it cannot reach                | Missing | Missing |
-| B-036    | An upstream source with the embedded source selected is rejected  | Missing | Missing |
+| Claim ID | Scenario                                                                                                                         | Test    | Status  |
+| -------- | -------------------------------------------------------------------------------------------------------------------------------- | ------- | ------- |
+| B-001    | The pinned version is the one checked with                                                                                       | Missing | Missing |
+| B-002    | A manifest without a version is version 1                                                                                        | Missing | Missing |
+| B-003    | A version the tool does not ship is invalid configuration                                                                        | Missing | Missing |
+| B-004    | Every version ever shipped is still shipped                                                                                      | Missing | Missing |
+| B-005    | Upgrade moves the schema set and templates to the next version                                                                   | Missing | Missing |
+| B-006    | Upgrade at the newest version changes nothing                                                                                    | Missing | Missing |
+| B-007    | Upgrade never touches a document                                                                                                 | Missing | Missing |
+| B-008    | Upgrade moves one version at a time                                                                                              | Missing | Missing |
+| B-009    | The on-disk source is selected by configuration                                                                                  | Missing | Missing |
+| B-010    | The embedded source ignores an on-disk edit                                                                                      | Missing | Missing |
+| B-011    | The report names the selected source                                                                                             | Missing | Missing |
+| B-012    | Init pins the newest version                                                                                                     | Missing | Missing |
+| B-013    | A shipped version never changes                                                                                                  | Missing | Missing |
+| B-014    | The pinned version's rules are the ones evaluated                                                                                | Missing | Missing |
+| B-015    | A shipped version's rules never change                                                                                           | Missing | Missing |
+| B-016    | Upgrade keeps the consumer's manifest settings                                                                                   | Missing | Missing |
+| B-017    | Upgrade prints what it changed                                                                                                   | Missing | Missing |
+| B-018    | Upgrade under a missing root is a missing-input failure                                                                          | Missing | Missing |
+| B-019    | Upgrade without a manifest is a missing-input failure                                                                            | Missing | Missing |
+| B-020    | Upgrade with an invalid manifest is invalid configuration; Upgrade beside a contradictory schema source is invalid configuration | Missing | Missing |
+| B-021    | Upgrade from a version the tool does not ship rewrites nothing                                                                   | Missing | Missing |
+| B-022    | Version 1 accepts a title and a description on an epic                                                                           | Missing | Missing |
+| B-023    | Version 1 rejects an empty <key> on an epic                                                                                      | Missing | Missing |
+| B-024    | The check reads an upstream schema from the local copy                                                                           | Missing | Missing |
+| B-025    | The check makes no network call                                                                                                  | Missing | Missing |
+| B-026    | Upgrade writes a fetched schema that matches its hash                                                                            | Missing | Missing |
+| B-027    | Upgrade refuses a fetched schema that does not match its hash                                                                    | Missing | Missing |
+| B-028    | An upstream schema does not change the rule vocabulary                                                                           | Missing | Missing |
+| B-029    | Upgrade never writes the embedded schemas over the on-disk source                                                                | Missing | Missing |
+| B-030    | Upgrade says which schemas it skipped and why                                                                                    | Missing | Missing |
+| B-031    | Upgrade still rewrites the templates under the on-disk source                                                                    | Missing | Missing |
+| B-032    | Recording an upstream source selects the on-disk source                                                                          | Missing | Missing |
+| B-033    | Upgrade does not fetch a local copy that matches its hash                                                                        | Missing | Missing |
+| B-034    | Upgrade leaves the recorded upstream version alone                                                                               | Missing | Missing |
+| B-035    | Upgrade refuses an upstream source it cannot reach                                                                               | Missing | Missing |
+| B-036    | An upstream source with the embedded source selected is rejected                                                                 | Missing | Missing |
 
 ## 10. Lessons / Spec Deltas
 

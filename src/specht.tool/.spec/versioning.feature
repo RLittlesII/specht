@@ -160,6 +160,13 @@ Feature: Schema versioning
     Then nothing is written
     And the exit code is 3
 
+  @B-020
+  Scenario: Upgrade beside a contradictory schema source is invalid configuration
+    Given the root's manifest records an upstream schema source and explicitly selects the embedded source
+    When upgrade runs against it
+    Then nothing is written
+    And the exit code is 3
+
   @B-021 @boundary
   Scenario: Upgrade from a version the tool does not ship rewrites nothing
     Given the tool ships schema version 1 only
