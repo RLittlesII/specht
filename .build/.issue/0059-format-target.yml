@@ -2,7 +2,7 @@ id: "0059"
 type: task
 title: Verify C# and Markdown formatting in the Format target
 
-status: ready-for-architecture
+status: done
 
 priority: high # DERIVED
 risk: 3
@@ -26,7 +26,7 @@ claims:
 
 created: "2026-10-08"
 updated: "2026-10-08"
-closed: null
+closed: "2026-10-08"
 
 summary: |
   `Format` verifies, never fixes (C-2), both C# and Markdown (OQ-2), with

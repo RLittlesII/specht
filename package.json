@@ -1,0 +1,7 @@
+{
+  "private": true,
+  "description": "Pins the Markdown formatter the Format target and the pre-commit hook run (0055-F1 C-3). Nothing here is installed; the build runs it through npx at this exact version.",
+  "devDependencies": {
+    "prettier": "3.9.9"
+  }
+}

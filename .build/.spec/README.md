@@ -130,12 +130,14 @@ The repository has a solution and central package versions but no build project,
 
 <!-- last written by: implementer, 2026-10-08 -->
 
-Delivered so far by item 0057: the scaffold. `0058` adds the per-tier targets, `0059` the `Format` target, `0060` the hook, and `0061` and `0062` replace the `SpecCheck` placeholder.
+Delivered so far by items 0057, the scaffold, and 0059, the `Format` target. `0058` adds the per-tier targets, `0060` the hook, and `0061` and `0062` replace the `SpecCheck` placeholder.
 
 - **The build project** is [`.build/.build.csproj`](../.build.csproj), NUKE's `Nuke.Common`, its version in `Directory.Packages.props` (C-4). Two packages it brings in transitively are pinned there as well: `System.Security.Cryptography.Xml` past its advisories, and `NuGet.Packaging` at the SDK's own NuGet version, because an older `NuGet.Frameworks` loaded beside the SDK's MSBuild fails to evaluate the solution. It is listed in `specht.slnx` with `Build="false"`, so a solution build and test never build it.
-- **The targets** are in [`.build/Build.cs`](../Build.cs): `Restore` (the local tool manifest, then the solution), `Compile`, `Test`, `Pack` and `SpecCheck`. `Test` is the default and depends on `Compile` (B-001). It runs `dotnet test --solution` on Microsoft.Testing.Platform, so every test project, which is every tier, runs and any failure fails it (B-005). `Pack` empties `.artifacts/nupkg/`, then packs the solution; `specht.tool` is the one packable project, so exactly one package is written (B-009). `SpecCheck` logs that the check is not yet available and succeeds (B-023, C-7).
+- **The targets** are in [`.build/Build.cs`](../Build.cs): `Restore` (the local tool manifest, then the solution), `Compile`, `Format`, `Test`, `Pack` and `SpecCheck`. `Test` is the default and depends on `Compile` (B-001). It runs `dotnet test --solution` on Microsoft.Testing.Platform, so every test project, which is every tier, runs and any failure fails it (B-005). `Pack` empties `.artifacts/nupkg/`, then packs the solution; `specht.tool` is the one packable project, so exactly one package is written (B-009). `SpecCheck` logs that the check is not yet available and succeeds (B-023, C-7).
 - **The entry scripts** `build.sh`, `build.ps1` and `build.cmd` are NUKE 10.1.0's generated scripts, with its enterprise-feed block removed. `build.cmd` is a cmd/bash polyglot that runs `build.ps1` on Windows, so both entries pass their arguments to the same build (B-002).
 - **The root** is marked by `.nuke/`: `parameters.json` names the solution, and NUKE writes `build.schema.json` from the targets and parameters; it is committed. NUKE's own log goes to the gitignored `.nuke/temp/`, which no target writes (C-5). NUKE's `--root` points the build at another tree, which is how the acceptance scenarios run it.
+- **`Format`** depends on `Restore` and runs two checks, both before it fails, so one formatter's failure never hides the other's files. C# goes through `dotnet format <solution> --verify-no-changes --no-restore`, which reports and writes nothing, so no analyzer code fix applies (B-003, B-004, C-2). Markdown goes through `prettier --check` (B-017). Given `--files`, the `.cs` files go to `dotnet format --include` and the `.md` files to `prettier`, and a formatter given none of its kind does not run (B-020); without it, the whole solution and `**/*.md`, which `prettier` narrows by `.gitignore`. Each formatter prints the paths it rejects, and the target fails naming which formatter rejected them.
+- **The Markdown formatter pin** is the root [`package.json`](../../package.json): `prettier` as an exact `devDependencies` version (C-3). Nothing installs it; `Format` reads the version and runs `npx --yes prettier@<version>`, which caches the package outside the tree (C-5), and logs `Markdown formatter: prettier <version>` from the binary that ran (B-019). An exact version, never a range, is what makes two machines resolve the same formatter. Rocket.Surgery.Nuke's `ICanLint`, `ICanDotNetFormat` and `ICanPrettier` are not used: they write fixes and re-stage them, which C-2 rules out.
 - **The local tool manifest** [`.config/dotnet-tools.json`](../../.config/dotnet-tools.json) pins Husky.Net with `rollForward: false` (B-010, C-3). The build itself invokes no dotnet tool. `0087` adds `specht`.
 
 ## 8. Testing Strategy
@@ -143,9 +145,10 @@ Delivered so far by item 0057: the scaffold. `0058` adds the per-tier targets, `
 <!-- last written by: test-writer, 2026-10-08 -->
 
 - **Acceptance.** `build.feature` is linked into `test/specht.acceptance`. [`Build/BuildSteps.cs`](../../test/specht.acceptance/Build/BuildSteps.cs) binds B-001, B-002, B-005, B-009, B-010, B-018 and B-023. Each scenario writes a synthetic tree to a temporary directory: a solution, `global.json` and `Directory.Packages.props` copied from this repository, and fixture projects. It then runs this repository's real `build.sh`, or `build.cmd` on Windows, with `--root` at that tree. No scenario runs this repository's own build, so `Test` never recurses.
-- **Unbound scenarios** report Skipped: `reqnroll.json` sets `missingOrPendingStepsOutcome` to `Ignore`, the same thing a `Missing` row says. The cost: a step whose text no longer matches its binding also skips, not fails. When binding a scenario, check that the skipped count fell; today it is 19, the 18 unbound scenarios plus B-002 off Windows.
+- **Unbound scenarios** report Skipped: `reqnroll.json` sets `missingOrPendingStepsOutcome` to `Ignore`, the same thing a `Missing` row says. The cost: a step whose text no longer matches its binding also skips, not fails. When binding a scenario, check that the skipped count fell; today it is 14, the 13 unbound scenarios plus B-002 off Windows.
 - **B-002** skips itself off Windows. It runs once CI has a Windows leg (`0055-F2`).
 - **B-010** restores into a tree whose only package source is NuGet's global packages folder, so the scenario never touches the network. The build's `Restore` target fills that folder first. Run alone on a cold machine, the scenario fails its restore rather than downloading.
+- **The format scenarios** (B-003, B-004, B-017, B-019, B-020) write unformatted C# into a class library, or unformatted Markdown, in the synthetic tree, and copy this repository's `package.json` and `.nuke/build.schema.json` into it, so NUKE's own schema rewrite changes nothing. B-004 hashes every file outside `bin/`, `obj/` and `.nuke/temp/` before and after a failing `Format`. B-020 uses two C# files in one project, because `dotnet format` loads the whole project and is the formatter a file set must narrow. B-019 checks that the committed version is exact and that the run reports that version from the binary it ran; its hook half holds once `0060` makes the hook call `Format` (B-021). The first run on a machine fetches the formatter once into npm's cache, so it needs the network. Removing `--verify-no-changes` turned B-004 red; ignoring `--files` turned B-020 red.
 - **B-009** asserts that the version in the package name equals the project's evaluated `Version`. That property becomes the version `0055-F5` computes when `0079` lands, with no change to the test.
 - **The tier guard** [`test/Shared/TestTierGovernanceTests.cs`](../../test/Shared/TestTierGovernanceTests.cs) is linked into every `*.tests` project by `test/Directory.Build.props`.
 - **Verdict.** There is no unit tier for this Feature yet: the build is target wiring with no logic of its own to isolate. The scenarios add about 35 seconds to the default build. Mutating the default target to `Compile` and making `SpecCheck` fail turned B-001, B-018 and B-023 red.
@@ -158,8 +161,8 @@ Delivered so far by item 0057: the scaffold. `0058` adds the per-tier targets, `
 | -------- | -------------------------------------------------------------------- | ------------ | ----------------- |
 | B-001    | The default build compiles and tests                                 | `BuildSteps` | Covered           |
 | B-002    | The Windows entry runs the same target                               | `BuildSteps` | Covered (Windows) |
-| B-003    | Unformatted code fails the format gate                               | Missing      | Missing           |
-| B-004    | The format gate changes nothing                                      | Missing      | Missing           |
+| B-003    | Unformatted code fails the format gate                               | `BuildSteps` | Covered           |
+| B-004    | The format gate changes nothing                                      | `BuildSteps` | Covered           |
 | B-005    | The test gate runs every tier                                        | `BuildSteps` | Covered           |
 | B-006    | The unit tier runs alone                                             | Missing      | Missing           |
 | B-007    | The integration tier runs alone                                      | Missing      | Missing           |
@@ -172,10 +175,10 @@ Delivered so far by item 0057: the scaffold. `0058` adds the per-tier targets, `
 | B-014    | The hook lets an unrelated commit through                            | Missing      | Missing           |
 | B-015    | The hook changes nothing it checks                                   | Missing      | Missing           |
 | B-016    | The hook refuses unformatted staged Markdown                         | Missing      | Missing           |
-| B-017    | Unformatted Markdown fails the format gate                           | Missing      | Missing           |
+| B-017    | Unformatted Markdown fails the format gate                           | `BuildSteps` | Covered           |
 | B-018    | A failing default build exits non-zero                               | `BuildSteps` | Covered           |
-| B-019    | Every clone runs the same Markdown formatter                         | Missing      | Missing           |
-| B-020    | The format gate checks only the files it is given                    | Missing      | Missing           |
+| B-019    | Every clone runs the same Markdown formatter                         | `BuildSteps` | Covered           |
+| B-020    | The format gate checks only the files it is given                    | `BuildSteps` | Covered           |
 | B-021    | The hook formats through the build                                   | Missing      | Missing           |
 | B-022    | The hook checks what is staged, not the working tree                 | Missing      | Missing           |
 | B-023    | The self-check reports itself unavailable before the command exists  | `BuildSteps` | Covered           |

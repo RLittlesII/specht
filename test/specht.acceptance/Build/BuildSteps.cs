@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Security.Cryptography;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -90,6 +91,40 @@ public sealed partial class BuildSteps(IUnitTestRuntimeProvider runtime) : IDisp
     [Given("the checker's check command does not exist yet")]
     public void GivenTheCheckersCheckCommandDoesNotExistYet() => WriteTree();
 
+    [Given("a source file whose formatting differs from the repository's rules")]
+    public void GivenASourceFileWhoseFormattingDiffersFromTheRepositorysRules()
+    {
+        WriteTree(("fixture.lib", ClassLibrary));
+        _unformatted.Add(WriteUnformattedSource("Unformatted"));
+    }
+
+    [Given("a Markdown file whose formatting differs from the repository's rules")]
+    public void GivenAMarkdownFileWhoseFormattingDiffersFromTheRepositorysRules()
+    {
+        WriteTree();
+        Write("docs/Unformatted.md", "#   Unformatted\n*  item\n");
+        _unformatted.Add("docs/Unformatted.md");
+    }
+
+    [Given("two files whose formatting differs from the repository's rules")]
+    public void GivenTwoFilesWhoseFormattingDiffersFromTheRepositorysRules()
+    {
+        // Two C# files in one project: dotnet format loads the whole project, so this is the case a file set must narrow.
+        WriteTree(("fixture.lib", ClassLibrary));
+        _unformatted.Add(WriteUnformattedSource("Named"));
+        _unformatted.Add(WriteUnformattedSource("Other"));
+    }
+
+    [Given("a snapshot of every file in the clone")]
+    public void GivenASnapshotOfEveryFileInTheClone() => _snapshot = Snapshot();
+
+    [Given("two clones on different machines")]
+    public void GivenTwoClonesOnDifferentMachines()
+    {
+        WriteTree();
+        Write("README.md", "# Formatted\n");
+    }
+
     [When("the build runs with no target named")]
     public async Task WhenTheBuildRunsWithNoTargetNamed() => await RunAsync(UnixEntry());
 
@@ -112,6 +147,13 @@ public sealed partial class BuildSteps(IUnitTestRuntimeProvider runtime) : IDisp
 
     [When("the self-check runs")]
     public async Task WhenTheSelfCheckRuns() => await RunAsync(UnixEntry("SpecCheck"));
+
+    [When("the format gate runs")]
+    [When("each runs the format gate")]
+    public async Task WhenTheFormatGateRuns() => await RunAsync(UnixEntry("Format"));
+
+    [When("the format gate runs on one of them")]
+    public async Task WhenTheFormatGateRunsOnOneOfThem() => await RunAsync(UnixEntry("Format", "--files", _unformatted[0]));
 
     [Then("the solution is compiled")]
     public void ThenTheSolutionIsCompiled() => Summary().Should().ContainInOrder("Restore Succeeded", "Compile Succeeded");
@@ -178,6 +220,37 @@ public sealed partial class BuildSteps(IUnitTestRuntimeProvider runtime) : IDisp
     [Then("it succeeds")]
     public void ThenItSucceeds() => _exitCode.Should().Be(0, _output);
 
+    [Then("it fails")]
+    public void ThenItFails()
+    {
+        _exitCode.Should().NotBe(0, _output);
+        Summary().Should().Contain("Format Failed");
+    }
+
+    [Then("it names that file")]
+    public void ThenItNamesThatFile() => Named(_unformatted[0]).Should().BeTrue(_output);
+
+    [Then("it does not name the other")]
+    public void ThenItDoesNotNameTheOther() => Named(_unformatted[1]).Should().BeFalse(_output);
+
+    [Then("no tracked file was created, modified or deleted")]
+    public void ThenNoTrackedFileWasCreatedModifiedOrDeleted()
+    {
+        _exitCode.Should().NotBe(0, "the gate must have found the unformatted file it was given\n" + _output);
+        Snapshot().Should().Equal(_snapshot);
+    }
+
+    [Then("both run the Markdown formatter at the version committed in the repository")]
+    public void ThenBothRunTheMarkdownFormatterAtTheVersionCommittedInTheRepository()
+    {
+        _exitCode.Should().Be(0, _output);
+
+        // An exact version, never a range, is what makes a second machine resolve the same formatter.
+        var committed = PrettierVersion();
+        committed.Should().MatchRegex(@"^\d+\.\d+\.\d+$");
+        _output.Should().Contain($"Markdown formatter: prettier {committed}");
+    }
+
     private static string Repository { get; } = FindRepository(AppContext.BaseDirectory);
 
     private string Markers => Path.Combine(_root, ".markers");
@@ -199,6 +272,12 @@ public sealed partial class BuildSteps(IUnitTestRuntimeProvider runtime) : IDisp
     private static string GlobalPackagesFolder() =>
         Environment.GetEnvironmentVariable("NUGET_PACKAGES")
         ?? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".nuget", "packages");
+
+    private static string PrettierVersion()
+    {
+        using var package = JsonDocument.Parse(File.ReadAllText(Path.Combine(Repository, "package.json")));
+        return package.RootElement.GetProperty("devDependencies").GetProperty("prettier").GetString()!;
+    }
 
     private static string UnitTestSource(string name, string tier, bool passes) => $$"""
         public sealed class {{tier}}Tests
@@ -226,7 +305,11 @@ public sealed partial class BuildSteps(IUnitTestRuntimeProvider runtime) : IDisp
         Directory.CreateDirectory(Markers);
         File.Copy(Path.Combine(Repository, "global.json"), Path.Combine(_root, "global.json"));
         File.Copy(Path.Combine(Repository, "Directory.Packages.props"), Path.Combine(_root, "Directory.Packages.props"));
+        File.Copy(Path.Combine(Repository, "package.json"), Path.Combine(_root, "package.json"));
         Write(".nuke/parameters.json", """{ "Solution": "fixture.slnx" }""");
+
+        // NUKE rewrites its schema into the root it is given; the committed copy makes that rewrite a no-op.
+        File.Copy(Path.Combine(Repository, ".nuke", "build.schema.json"), Path.Combine(_root, ".nuke", "build.schema.json"));
 
         var entries = projects.Select(static project => $"""  <Project Path="{project.Name}/{project.Name}.csproj" />""");
         Write("fixture.slnx", $"<Solution>\n{string.Join("\n", entries)}\n</Solution>\n");
@@ -242,6 +325,28 @@ public sealed partial class BuildSteps(IUnitTestRuntimeProvider runtime) : IDisp
         var full = Path.Combine(_root, path);
         Directory.CreateDirectory(Path.GetDirectoryName(full)!);
         File.WriteAllText(full, content);
+    }
+
+    private string WriteUnformattedSource(string name)
+    {
+        var path = $"fixture.lib/{name}.cs";
+        Write(path, $"public class   {name}{{  }}\n");
+        return path;
+    }
+
+    /// <summary>Whether the run's output names a root-relative path; dotnet format prints it absolute, with the OS separator.</summary>
+    private bool Named(string path) => _output.Replace('\\', '/').Contains(path, StringComparison.Ordinal);
+
+    /// <summary>Every file in the tree and a hash of its content, outside the build's own bin/, obj/ and .nuke/temp/.</summary>
+    private SortedDictionary<string, string> Snapshot()
+    {
+        var files = Directory.EnumerateFiles(_root, "*", SearchOption.AllDirectories)
+            .Select(file => Path.GetRelativePath(_root, file).Replace('\\', '/'))
+            .Where(static file => !file.Split('/').Any(static part => part is "bin" or "obj") && !file.StartsWith(".nuke/temp/", StringComparison.Ordinal));
+
+        return new SortedDictionary<string, string>(
+            files.ToDictionary(static file => file, file => Convert.ToHexString(SHA256.HashData(File.ReadAllBytes(Path.Combine(_root, file))))),
+            StringComparer.Ordinal);
     }
 
     private async Task RunAsync((string FileName, string[] Arguments) command)
@@ -323,6 +428,10 @@ public sealed partial class BuildSteps(IUnitTestRuntimeProvider runtime) : IDisp
         """;
 
     private readonly string _root = Directory.CreateTempSubdirectory("specht-build-").FullName;
+
+    private readonly List<string> _unformatted = [];
+
+    private SortedDictionary<string, string> _snapshot = [];
 
     private string _output = string.Empty;
 
