@@ -146,7 +146,7 @@ cites claim ids and never their text; the specification never carries an item's
 status. Which fields are authored where, and which are derived and must never be
 hand-edited, is in [references/delivery.md](references/delivery.md) § "What is
 authored, and what is derived". The item schema is
-[`.issue/item.yml`](../../../.issue/item.yml).
+[`.spec/templates/item.yml`](../../../.spec/templates/item.yml).
 
 ## The flow
 
