@@ -151,7 +151,12 @@ Delivered so far by items 0057, the scaffold, and 0059, the `Format` target. `00
 - **The format scenarios** (B-003, B-004, B-017, B-019, B-020) write unformatted C# into a class library, or unformatted Markdown, in the synthetic tree, and copy this repository's `package.json`, `.nuke/build.schema.json`, `build.cmd` and `.github/workflows/ci.yml` into it, so NUKE's own rewrite of its schema and the workflow (`0055-F2`) changes nothing. B-004 hashes every file outside `bin/`, `obj/` and `.nuke/temp/` before and after a failing `Format`. B-020 uses two C# files in one project, because `dotnet format` loads the whole project and is the formatter a file set must narrow. B-019 checks that the committed version is exact and that the run reports that version from the binary it ran; its hook half holds once `0060` makes the hook call `Format` (B-021). The first run on a machine fetches the formatter once into npm's cache, so it needs the network. Removing `--verify-no-changes` turned B-004 red; ignoring `--files` turned B-020 red.
 - **B-009** asserts that the version in the package name equals the project's evaluated `Version`. That property becomes the version `0055-F5` computes when `0079` lands, with no change to the test.
 - **The tier guard** [`test/Shared/TestTierGovernanceTests.cs`](../../test/Shared/TestTierGovernanceTests.cs) is linked into every `*.tests` project by `test/Directory.Build.props`.
-- **Verdict.** There is no unit tier for this Feature yet: the build is target wiring with no logic of its own to isolate. The scenarios add about 35 seconds to the default build. Mutating the default target to `Compile` and making `SpecCheck` fail turned B-001, B-018 and B-023 red.
+- **Mechanisms, per bound claim.** Read in [`Build.cs`](../Build.cs).
+  - B-003, B-017: `Format` splits `Files` into `.cs` and `.md` without regard to case, skips a formatter whose share is empty, runs both before it fails, and names the failing formatters. That is decision and ordering; no unit test - `Partial`.
+  - B-019: `PrettierVersion` reads `devDependencies.prettier` from `package.json`. That is a derivation; no unit test - `Partial`.
+  - B-020: the same split, plus `Include` and `Quote`, which turn the file set into `--include "a" "b"` and Prettier's operands, or nothing when `Files` is unset. That is a derivation; no unit test - `Partial`.
+  - B-001, B-002, B-004, B-005, B-009, B-010, B-018, B-023: no mechanism of their own. `Main`'s default target, `build.cmd`, the literal `--verify-no-changes`, one `dotnet test --solution`, `Pack`'s output directory, the `DotNetToolRestore` call, NUKE's exit code and `SpecCheck`'s log line are each a declaration the scenario observes directly.
+- **Verdict.** The mechanisms above have no unit test because no `*.Tests` project references the build; `0098` gives it one. Until then those rows are `Partial`, not `Covered` ([lesson 0003](../../.spec/lessons/0003-the-unit-tier-had-no-home.md)). The scenarios add about 35 seconds to the default build. Mutating the default target to `Compile` and making `SpecCheck` fail turned B-001, B-018 and B-023 red.
 
 ## 9. Traceability Matrix
 
@@ -161,7 +166,7 @@ Delivered so far by items 0057, the scaffold, and 0059, the `Format` target. `00
 | -------- | -------------------------------------------------------------------- | ------------ | ----------------- |
 | B-001    | The default build compiles and tests                                 | `BuildSteps` | Covered           |
 | B-002    | The Windows entry runs the same target                               | `BuildSteps` | Covered (Windows) |
-| B-003    | Unformatted code fails the format gate                               | `BuildSteps` | Covered           |
+| B-003    | Unformatted code fails the format gate                               | `BuildSteps` | Partial           |
 | B-004    | The format gate changes nothing                                      | `BuildSteps` | Covered           |
 | B-005    | The test gate runs every tier                                        | `BuildSteps` | Covered           |
 | B-006    | The unit tier runs alone                                             | Missing      | Missing           |
@@ -175,10 +180,10 @@ Delivered so far by items 0057, the scaffold, and 0059, the `Format` target. `00
 | B-014    | The hook lets an unrelated commit through                            | Missing      | Missing           |
 | B-015    | The hook changes nothing it checks                                   | Missing      | Missing           |
 | B-016    | The hook refuses unformatted staged Markdown                         | Missing      | Missing           |
-| B-017    | Unformatted Markdown fails the format gate                           | `BuildSteps` | Covered           |
+| B-017    | Unformatted Markdown fails the format gate                           | `BuildSteps` | Partial           |
 | B-018    | A failing default build exits non-zero                               | `BuildSteps` | Covered           |
-| B-019    | Every clone runs the same Markdown formatter                         | `BuildSteps` | Covered           |
-| B-020    | The format gate checks only the files it is given                    | `BuildSteps` | Covered           |
+| B-019    | Every clone runs the same Markdown formatter                         | `BuildSteps` | Partial           |
+| B-020    | The format gate checks only the files it is given                    | `BuildSteps` | Partial           |
 | B-021    | The hook formats through the build                                   | Missing      | Missing           |
 | B-022    | The hook checks what is staged, not the working tree                 | Missing      | Missing           |
 | B-023    | The self-check reports itself unavailable before the command exists  | `BuildSteps` | Covered           |

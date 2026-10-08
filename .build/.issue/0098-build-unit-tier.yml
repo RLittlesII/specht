@@ -1,0 +1,52 @@
+id: "0098"
+type: test
+title: Give the build a unit tier and pin its mechanisms
+
+status: ready
+
+priority: high # DERIVED
+risk: 2
+rank: 94 # DERIVED: (5 × 20) − (2 × 3) + (0 × 5); value inherited from 0056
+
+parent: "0056"
+children: []
+
+depends_on: []
+blocks: []
+spikes: []
+
+spec: .build/.spec/README.md
+
+claims:
+  - B-003
+  - B-017
+  - B-019
+  - B-020
+
+created: "2026-10-08"
+updated: "2026-10-08"
+closed: null
+
+summary: |
+  The build's scenarios pass, but the decisions beneath them have no unit
+  test, because no `*.Tests` project references the build (lesson 0003).
+  Add one - a project ending `.Tests`, so it gets the tier filters and the
+  tier guard - and unit-test what § 8 names: `Format`'s split of `Files` by
+  extension, its skip of an empty share and its run-both-then-fail order;
+  `Include` and `Quote`; `PrettierVersion`. `0055-F2` B-004's rewrite of run
+  steps in `ContinuousIntegrationMiddleware` rides along, because the same
+  project serves it. Where a member is private or needs a NUKE host to run,
+  the testability gap goes to implementer; extracting a pure function is
+  the expected answer. Risk 2: tests over code that already works.
+
+acceptance_criteria:
+  - "B-003, B-017 — the split by extension, the empty-share skip, both run before failing"
+  - "B-019 — the version read from package.json"
+  - "B-020 — the file set to --include and Prettier operands, nothing when unset"
+  - "0055-F2 B-004 — a --target run step becomes ./build.cmd; restore steps removed"
+  - "§ 9 names the unit test beside the step class for each id above, and each row reads Covered."
+
+decisions: []
+
+out_of_scope:
+  - "New behaviour in the build - this item adds tests, not claims."
