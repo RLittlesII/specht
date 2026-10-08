@@ -6,7 +6,7 @@ status: ready-for-architecture
 
 priority: high # DERIVED
 risk: 2
-rank: 89 # DERIVED: (4 × 20) − (2 × 3) + (3 × 5); value inherited from 0010
+rank: 89 # DERIVED
 
 parent: "0010"
 children: []

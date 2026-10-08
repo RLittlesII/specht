@@ -6,7 +6,7 @@ status: done
 
 priority: high # DERIVED
 risk: 3
-rank: 101 # DERIVED: (5 × 20) − (3 × 3) + (2 × 5); value inherited from 0056
+rank: 101 # DERIVED
 
 parent: "0056"
 children: []

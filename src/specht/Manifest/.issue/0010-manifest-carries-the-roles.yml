@@ -7,7 +7,7 @@ status: ready-for-architecture
 priority: high # DERIVED
 value: 4
 risk: 4
-rank: 73 # DERIVED: (4 × 20) − (4 × 3) + (1 × 5)
+rank: 73 # DERIVED
 
 parent: "0001"
 children: ["0011", "0012", "0013", "0014", "0015", "0016", "0017", "0018", "0019"]

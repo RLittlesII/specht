@@ -55,7 +55,8 @@ status: ready
 # ids `blocks` lists below — counted across EVERY Feature. So cutting an item
 # in one Feature that waits on an item in another moves that item's rank with
 # no change to its value or risk. Recompute rather than read, and recompute the
-# dependents too when a `depends_on` edge is added.
+# dependents too when a `depends_on` edge is added. The formula lives here
+# only: an item carries the number and `# DERIVED`, never the arithmetic.
 priority: high # DERIVED — see above
 value: 4 # 1-5. Optional on a child: omit to inherit the parent's
 risk: 3 # 1-5. REQUIRED, and never inherited
