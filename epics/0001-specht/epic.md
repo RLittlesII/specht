@@ -28,6 +28,11 @@ The need is decided in `REQUIREMENTS.md` (at commit `254aabc`) and the design di
 installing it are the two "done" events (README § 2) and are not Features of
 this repository: each is a change in that consumer.
 
+The infrastructure in README § 8 steps 1 and 3 - the build, CI, coverage,
+dependency updates, versioning and the release that publishes the package -
+is epic `0055`. Steps 4 and 7 are tracked in `hooked` and Transporter, not
+here (owner, 2026-10-08).
+
 ## Business Value
 
 Four repositories are written in parallel on one `.spec/` model, and three of
