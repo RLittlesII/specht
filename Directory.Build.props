@@ -10,6 +10,12 @@
         <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
     </PropertyGroup>
 
+    <!-- The engine and its tests are hooked's, copied unchanged (0001-F1 C-2), and hooked builds with implicit usings;
+         turning them on here, for those two projects only, keeps the copied files byte-for-byte. -->
+    <PropertyGroup Condition="'$(MSBuildProjectName)' == 'specht' or '$(MSBuildProjectName)' == 'specht.tests'">
+        <ImplicitUsings>enable</ImplicitUsings>
+    </PropertyGroup>
+
     <ItemGroup>
         <PackageReference Include="Rocket.Surgery.Airframe.CodeAnalysis" PrivateAssets="all"/>
     </ItemGroup>

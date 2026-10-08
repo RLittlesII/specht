@@ -49,7 +49,7 @@ The rule engine exists only inside `hooked`, as a project reference from its bui
 | ID  | Assumption                                                                                                                                                                                                                                                                                                                             |
 | --- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | A-1 | The 56 tests extracted with the engine are its behaviour contract; a claim here is one the tests already prove or one the baseline report proves (B-004).                                                                                                                                                                              |
-| A-2 | The source is `hooked` `refactor/ai-offering` at `6afe8ab` (brief § 3). The three draft-spec files removed on that branch go to `docs/reference/`, never into `src/specht`.                                                                                                                                                            |
+| A-2 | The source is `hooked` `salvage/spec-check-engine` at `6afe8ab` (brief § 3). The three draft-spec files removed on that branch go to `docs/reference/`, never into `src/specht`.                                                                                                                                                       |
 | A-3 | Schema version 1 is the four files under `.spec/schema/` and the four templates under `.spec/templates/` as `hooked` holds them at `6afe8ab`, with only the `$id` URLs re-homed, the optional epic `title` and `description` keys added by `0001-F7` decision 0003, and the manifest keys `0001-F5` and `0001-F6` add (`0001-F7` A-2). |
 
 ## 3. Acceptance Criteria
@@ -110,33 +110,41 @@ Pending: owned by `implementer`, written after agreement.
 
 ## 7. Technical Design
 
-<!-- last written by: spec-author, 2026-10-07 -->
+<!-- last written by: implementer, 2026-10-08 -->
 
-Pending: owned by `implementer`, written after agreement. The design input is brief § 3: the files to copy, by purpose.
+Delivered so far by item 0021.
+
+- **The copy.** `hooked`'s `tools/SpecGovernance` (28 `.cs` files and its `.csproj`) is `src/specht`, and `test/SpecGovernance.Tests` (four `.cs` files) is in `test/specht.tests`, exported from `6afe8ab` with `git archive` (A-2). The draft-spec `.spec/` was already gone at that commit, so nothing was removed.
+- **The C-2 edits, and only those.** Each copied `.cs` file differs by its `namespace` line: `Hooked.SpecGovernance` becomes `specht`, `.Rules` stays a sub-namespace, and the tests' `Hooked.SpecGovernance.Tests` becomes `specht.tests`. The engine's `.csproj` sets `RootNamespace` and `AssemblyName` to `specht` and drops its comment about `hooked`'s `Directory.Build.props` (B-005).
+- **The test project is this repository's**, not the copied one: `test/specht.tests/specht.tests.csproj` was scaffolded before the copy, and keeps its packages and references. It gains `hooked`'s one load-bearing item: the live `.spec/schema/*.json` linked into the output, so the tests run against the schema set the rules enforce (A-3).
+- **Implicit usings.** `hooked` builds with `ImplicitUsings` on; this repository turns them off. The root `Directory.Build.props` turns them on for the `specht` and `specht.tests` projects only, so the copied files compile unchanged (C-2) and every other project keeps the repository's setting.
+- **Dependencies** are the three C-7 names in `Directory.Packages.props`, at `hooked`'s versions.
 
 ## 8. Testing Strategy
 
-<!-- last written by: spec-author, 2026-10-07 -->
+<!-- last written by: test-writer, 2026-10-08 -->
 
-Pending: owned by `test-writer`. The 56 extracted tests are the starting point (A-1).
+- **The extracted tests** (A-1): 55 engine tests in `test/specht.tests`, plus the shared tier guard, 56 in all, as `hooked` ran them; all pass on the copy.
+- **Acceptance.** `engine.feature` is linked into `test/specht.acceptance`. [`Engine/EngineSteps.cs`](../../../test/specht.acceptance/Engine/EngineSteps.cs) binds the Background (a temp root holding the live schema set) and B-005, which reads the built assembly's name and the namespace of every type it declares. Adding a type in a `Hooked.SpecGovernance` namespace turned B-005 red.
+- **Unbound:** every other scenario reports Skipped until its item binds it.
 
 ## 9. Traceability Matrix
 
 <!-- last written by: spec-author, 2026-10-07 -->
 
-| Claim ID | Scenario                                              | Test    | Status  |
-| -------- | ----------------------------------------------------- | ------- | ------- |
-| B-001    | Every rule in the vocabulary is applied, and no other | Missing | Missing |
-| B-002    | Both layouts are held to the same rules               | Missing | Missing |
-| B-003    | Identity comes from the frontmatter, not the path     | Missing | Missing |
-| B-004    | The report on hooked's tree is unchanged              | Missing | Missing |
-| B-005    | Nothing carries the old repository's name             | Missing | Missing |
-| B-006    | Nothing about the machine reaches the verdict         | Missing | Missing |
-| B-007    | Every path is relative to the root                    | Missing | Missing |
-| B-008    | A grid table is read as no table                      | Missing | Missing |
-| B-009    | The copy differs from hooked only by the namespace    | Missing | Missing |
-| B-010    | A violation carries the six baseline fields           | Missing | Missing |
-| B-011    | One identity at two paths is reported                 | Missing | Missing |
+| Claim ID | Scenario                                              | Test          | Status  |
+| -------- | ----------------------------------------------------- | ------------- | ------- |
+| B-001    | Every rule in the vocabulary is applied, and no other | Missing       | Missing |
+| B-002    | Both layouts are held to the same rules               | Missing       | Missing |
+| B-003    | Identity comes from the frontmatter, not the path     | Missing       | Missing |
+| B-004    | The report on hooked's tree is unchanged              | Missing       | Missing |
+| B-005    | Nothing carries the old repository's name             | `EngineSteps` | Covered |
+| B-006    | Nothing about the machine reaches the verdict         | Missing       | Missing |
+| B-007    | Every path is relative to the root                    | Missing       | Missing |
+| B-008    | A grid table is read as no table                      | Missing       | Missing |
+| B-009    | The copy differs from hooked only by the namespace    | Missing       | Missing |
+| B-010    | A violation carries the six baseline fields           | Missing       | Missing |
+| B-011    | One identity at two paths is reported                 | Missing       | Missing |
 
 ## 10. Lessons / Spec Deltas
 

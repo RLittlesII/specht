@@ -9,8 +9,8 @@ type: reference
 > Hand this to the first agent in the new repository. It carries the decided
 > requirements, what to extract from `hooked`, the draft design already
 > written, the decisions taken on each open question, and the order of work.
-> Source material: `hooked` branch `refactor/ai-offering` at `6afe8ab` (PR
-> #217, open). The engine, tests, schemas, and templates there are byte-identical
+> Source material: `hooked` branch `salvage/spec-check-engine` at `6afe8ab`
+> (PR #217 merged without the engine; the branch keeps the commit). The engine, tests, schemas, and templates there are byte-identical
 > to the earlier seed at `a6d056f`; only the three draft-spec files were removed.
 > Written as `spec-check`; the product was then named `specht` (command
 > `specht`, package `specht.tool`, namespace `specht`), and the brief was
@@ -72,7 +72,7 @@ proves the tool handles a tree it did not write.
    | ------------------------------------------------------------------------------------------------------------------ | --------- |
    | The folder is named `.spec/`                                                                                       | Hard      |
    | Own repository; tool and schema together. No consumer owns the schema; each holds a copy `init` wrote              | Hard      |
-   | Engine copied from `hooked` `refactor/ai-offering` at `6afe8ab` (PR #217, open), SHA cited in the first commit     | Hard      |
+   | Engine copied from `hooked` `salvage/spec-check-engine` at `6afe8ab`, SHA cited in the first commit                | Hard      |
    | `hooked` consumes the tool _instead of_ merging the engine from PR #217; the engine never lands on `hooked` `main` | Hard      |
    | Consumer build calls the tool, never carries the engine                                                            | Hard      |
    | `dotnet tool` delivery (was Soft; everything downstream assumes it)                                                | Hard      |
@@ -88,8 +88,8 @@ tests, the schemas, and the templates are written, reviewed, and passing. The
 first agent's job is to move files and rename a namespace, not to write a
 checker. Every `.cs` file below is the implementation; read it, keep it.
 Checkout on this machine: `/Users/rlittlesii/source/rlittlesii/hooked`, branch
-`refactor/ai-offering` at `6afe8ab` (PR #217, open; do not wait for it to
-merge — `hooked` consumes the tool instead). Copy with history noted in the
+`salvage/spec-check-engine` at `6afe8ab` (PR #217 merged without it;
+`hooked` consumes the tool instead). Copy with history noted in the
 first commit message (`extracted from RLittlesII/hooked@6afe8ab`); do not
 subtree-merge. The three draft-spec files under `tools/SpecGovernance/.spec/`
 were removed on that branch; take them from `a6d056f` (`git show a6d056f:<path>`).
@@ -296,8 +296,7 @@ the owner can reverse; record a reversal as a decision, never silently.
 3. **CLI.** The command, exit codes, `--json`, `--report`, `init`,
    `--help`. Pack as a tool; install it into this repository's own manifest;
    switch its CI and pre-commit to it.
-4. **Consume from `hooked`.** On `hooked`'s open `refactor/ai-offering`
-   branch, replace the Nuke target's library call with the tool; delete
+4. **Consume from `hooked`.** In `hooked`, replace the Nuke target's library call with the tool; delete
    `tools/SpecGovernance` and its tests there; prove the report on `hooked` is
    identical to the baseline. This is "installed in one", and it is what
    `hooked` merges _instead of_ the engine.

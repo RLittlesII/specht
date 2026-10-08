@@ -9,6 +9,7 @@
   <ItemGroup>
     <ReqnrollFeatureFile Include="..\..\.build\.spec\build.feature" Link="Features\build.feature" />
     <ReqnrollFeatureFile Include="..\..\.build\ContinuousIntegration\.spec\continuous-integration.feature" Link="Features\continuous-integration.feature" />
+    <ReqnrollFeatureFile Include="..\..\src\specht\.spec\engine.feature" Link="Features\engine.feature" />
   </ItemGroup>
 
   <ItemGroup>
@@ -19,6 +20,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\src\specht\specht.csproj" />
     <ProjectReference Include="..\..\src\specht.tool\specht.tool.csproj" />
   </ItemGroup>
 
