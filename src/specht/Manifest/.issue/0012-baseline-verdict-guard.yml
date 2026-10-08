@@ -1,0 +1,41 @@
+id: "0012"
+type: test
+title: Guard the baseline verdicts under the default manifest
+
+status: ready-for-architecture
+
+priority: high # DERIVED
+risk: 3
+rank: 86 # DERIVED: (4 × 20) − (3 × 3) + (3 × 5); value inherited from 0010
+
+parent: "0010"
+children: []
+
+depends_on: []
+blocks: ["0015", "0016", "0017"]
+spikes: []
+
+spec: src/specht/Manifest/.spec/README.md
+
+claims:
+  - B-016
+
+created: "2026-10-08"
+updated: "2026-10-08"
+closed: null
+
+summary: |
+  A test that runs the default manifest over hooked's tree at the baseline
+  commit and compares every verdict field, in order, with the baseline report
+  0001-F1 B-004 names. It passes before any literal moves, and A-2 requires
+  every move in 0015, 0016 and 0017 to keep it green, so it lands before them.
+  Needs the baseline report from 0001-F1, which has no item yet.
+
+acceptance_criteria:
+  - "B-016 — rule id, severity, file, line, identifier, message, in order, equal the baseline"
+  - "§ 9 carries a row naming a test for each id above."
+
+decisions: []
+
+out_of_scope:
+  - "Producing the baseline report itself — 0001-F1."

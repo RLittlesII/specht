@@ -1,0 +1,104 @@
+id: "0010"
+type: feature
+title: The manifest carries the roles the engine hardcodes
+
+status: ready-for-architecture
+
+priority: high # DERIVED
+value: 4
+risk: 4
+rank: 68 # DERIVED: (4 × 20) − (4 × 3) + (0 × 5)
+
+parent: "0001"
+children: ["0011", "0012", "0013", "0014", "0015", "0016", "0017", "0018", "0019"]
+
+depends_on: []
+blocks: []
+spikes: []
+
+spec: src/specht/Manifest/.spec/README.md
+
+claims:
+  - B-001
+  - B-002
+  - B-003
+  - B-004
+  - B-005
+  - B-006
+  - B-007
+  - B-008
+  - B-009
+  - B-010
+  - B-011
+  - B-012
+  - B-013
+  - B-014
+  - B-015
+  - B-016
+  - B-017
+  - B-018
+  - B-019
+  - B-020
+  - B-021
+  - B-022
+  - B-023
+
+created: "2026-10-08"
+updated: "2026-10-08"
+closed: null
+
+summary: |
+  As the maintainer of a sibling repository, I want every literal the engine
+  hardcodes about the model read from the manifest, so that I can bring my
+  own schema, tune rules my tree cannot yet pass, and hooked notices nothing.
+
+  Risk 4: the default manifest must reproduce hooked's baseline verdicts byte
+  for byte after every literal moves. OQ-1 (the manifest's key names) is open
+  and blocks B-001 to B-011; architecture resolves it in § 7 and a decision
+  record. Waits on work no item tracks yet: the engine copy and baseline
+  report (0001-F1) and the CLI's exit codes (0001-F2). Add those edges when
+  their items are cut. Discovery reads this manifest through 0005 -> 0011.
+
+acceptance_criteria:
+  - "B-001 — sections by role (0015)"
+  - "B-002 — table headers by role (0015)"
+  - "B-003 — markers and approved value (0015)"
+  - "B-004 — frontmatter key names (0016)"
+  - "B-005 — identity and edge forms (0016)"
+  - "B-006 — task grammar named groups (0016)"
+  - "B-007 — claim grammar for tags (0016)"
+  - "B-008 — schema files by manifest name (0017)"
+  - "B-009 — messages name manifest values (0018)"
+  - "B-010 — severity lowered to warning (0014)"
+  - "B-011 — rule disabled (0014)"
+  - "B-012 — unknown key rejected (0011)"
+  - "B-013 — unknown rule id rejected (0014)"
+  - "B-014 — non-compiling grammar rejected (0016)"
+  - "B-015 — role naming absent section rejected (0015)"
+  - "B-016 — default manifest reproduces baseline verdicts (0012)"
+  - "B-017 — no rule loaded from the manifest (0014)"
+  - "B-018 — invalid manifest stops the run before any rule (0011)"
+  - "B-019 — omitted value takes the default (0011)"
+  - "B-020 — `$` annotation ignored (0011)"
+  - "B-021 — malformed exclusion entry rejected (0019)"
+  - "B-022 — rejection exits 3 (0013)"
+  - "B-023 — rejection is the only output, on stderr (0013)"
+  - "§ 9 carries a row naming a test for each id above."
+
+decisions:
+  - |
+    2026-10-08, Claude at the owner's request: sliced into a whole-manifest
+    loader (0011) and a baseline guard (0012) first, then one item per family
+    of literal — rule settings, section roles, keys and grammars, schema file
+    names, messages — each family's rejection claim travelling with the keys
+    it validates. The baseline guard comes first, not last, because A-2
+    requires every move to keep it green. Rejected: the baseline proof as the
+    final item, which would let a move land unguarded.
+  - |
+    2026-10-08, Claude: B-021 is its own item (0019) because the exclusion
+    list it validates is declared by Discovery's 0005, which itself needs
+    this Feature's loader; folding B-021 into 0011 would make 0005 and 0011
+    wait on each other.
+
+out_of_scope:
+  - "Everything in § 5 of the spec."

@@ -1,0 +1,41 @@
+id: "0013"
+type: task
+title: Exit 3 with the rejection alone on stderr
+
+status: ready-for-architecture
+
+priority: high # DERIVED
+risk: 2
+rank: 74 # DERIVED: (4 × 20) − (2 × 3) + (0 × 5); value inherited from 0010
+
+parent: "0010"
+children: []
+
+depends_on: ["0011"] # surfaces the rejections 0011 raises
+blocks: []
+spikes: []
+
+spec: src/specht/Manifest/.spec/README.md
+
+claims:
+  - B-022
+  - B-023
+
+created: "2026-10-08"
+updated: "2026-10-08"
+closed: null
+
+summary: |
+  How a rejected manifest reaches the user: exit code 3, the rejection on
+  stderr, nothing on stdout. Depends on 0011 for the rejection. Also needs the
+  CLI's exit-code contract (0001-F2 B-007), which has no item yet.
+
+acceptance_criteria:
+  - "B-022 — exit code 3"
+  - "B-023 — rejection only, on stderr; stdout empty"
+  - "§ 9 carries a row naming a test for each id above."
+
+decisions: []
+
+out_of_scope:
+  - "Exit codes for anything but a rejected manifest — 0001-F2."

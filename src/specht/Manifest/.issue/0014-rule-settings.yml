@@ -1,0 +1,47 @@
+id: "0014"
+type: task
+title: Lower or disable a rule from the manifest
+
+status: ready-for-architecture
+
+priority: high # DERIVED
+risk: 3
+rank: 71 # DERIVED: (4 × 20) − (3 × 3) + (0 × 5); value inherited from 0010
+
+parent: "0010"
+children: []
+
+depends_on: ["0011"] # rule settings are manifest keys the loader validates
+blocks: []
+spikes: []
+
+spec: src/specht/Manifest/.spec/README.md
+
+claims:
+  - B-010
+  - B-011
+  - B-013
+  - B-017
+
+created: "2026-10-08"
+updated: "2026-10-08"
+closed: null
+
+summary: |
+  Per-rule severity and disable, limited to the pinned vocabulary: a rule id
+  outside it is rejected, and nothing named in the manifest is loaded or run.
+  The default manifest sets nothing, so the baseline is untouched. Key names
+  wait on OQ-1.
+
+acceptance_criteria:
+  - "B-010 — warning severity: printed, counted, fails only under `--strict`"
+  - "B-011 — disabled: nothing reported, not counted as evaluated"
+  - "B-013 — rule id outside the vocabulary rejected, naming it"
+  - "B-017 — no rule type, library or body loaded (C-3)"
+  - "§ 9 carries a row naming a test for each id above."
+
+decisions: []
+
+out_of_scope:
+  - "A rule plugin model — § 5 #1."
+  - "What `--strict` does beyond warnings — 0001-F2."

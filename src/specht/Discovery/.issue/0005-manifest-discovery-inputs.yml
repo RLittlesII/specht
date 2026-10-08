@@ -6,13 +6,13 @@ status: ready-for-architecture
 
 priority: high # DERIVED
 risk: 2
-rank: 69 # DERIVED: (3 × 20) − (2 × 3) + (3 × 5); value inherited from 0004
+rank: 74 # DERIVED: (3 × 20) − (2 × 3) + (4 × 5); value inherited from 0004
 
 parent: "0004"
 children: []
 
-depends_on: []
-blocks: ["0006", "0007", "0008"]
+depends_on: ["0011"] # its keys load through the Manifest loader
+blocks: ["0006", "0007", "0008", "0019"]
 spikes: []
 
 spec: src/specht/Discovery/.spec/README.md
@@ -31,7 +31,9 @@ summary: |
   The input contract both discovery modes share: each layout (name and glob),
   the exclusion list, and the item, epic and companion shapes come from the
   manifest, and the default manifest reproduces today's literals. Every other
-  Discovery item reads what this one declares, so it goes first.
+  Discovery item reads what this one declares, so it goes first. Its keys
+  load and validate through 0011 (0001-F5), and 0019 validates the exclusion
+  list it declares.
 
 acceptance_criteria:
   - "B-001 — layouts from the manifest; a third layout needs no code change"

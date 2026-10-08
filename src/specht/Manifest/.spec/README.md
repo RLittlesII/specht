@@ -5,7 +5,7 @@ type: feature
 id: "F5"
 epic: "0001"
 spec_status: approved
-status: needs-decomposition
+status: ready-for-architecture
 priority: high
 value: 0
 risk: 0
@@ -20,7 +20,7 @@ depends_on: ["F1", "F2"]
 blocks: ["F6", "F7"]
 spikes: []
 created: "2026-10-07"
-updated: "2026-10-07"
+updated: "2026-10-08"
 github_issue: null
 synced_at: null
 ---
@@ -186,7 +186,7 @@ None.
 
 ## Tasks
 
-None yet. Cut from § 3 after agreement.
+Cut 2026-10-08 into [`../.issue/`](../.issue/): `0010` (the Feature), with `0011` to `0019`.
 
 ## Scoring
 

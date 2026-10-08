@@ -1,0 +1,39 @@
+id: "0018"
+type: task
+title: Name the manifest's values in rule messages
+
+status: ready-for-architecture
+
+priority: high # DERIVED
+risk: 2
+rank: 74 # DERIVED: (4 × 20) − (2 × 3) + (0 × 5); value inherited from 0010
+
+parent: "0010"
+children: []
+
+depends_on: ["0015", "0016", "0017"] # a message can only spell a value once it is read
+blocks: []
+spikes: []
+
+spec: src/specht/Manifest/.spec/README.md
+
+claims:
+  - B-009
+
+created: "2026-10-08"
+updated: "2026-10-08"
+closed: null
+
+summary: |
+  A message naming a section, a key or the manifest's path spells it as the
+  manifest does. Depends on 0015, 0016 and 0017, which make those values
+  readable; 0012 stays green because the default values equal hooked's.
+
+acceptance_criteria:
+  - "B-009 — section, key and manifest path named by the manifest's value"
+  - "§ 9 carries a row naming a test for each id above."
+
+decisions: []
+
+out_of_scope:
+  - "Layout names in messages — § 5 #2, 0001-F6 B-009 (Discovery 0005)."
