@@ -109,42 +109,60 @@ The gate runs only as `hooked`'s Nuke target, so a pre-commit hook, a CI step an
 
 ## 6. Concern Separation
 
-<!-- last written by: spec-author, 2026-10-07 -->
+<!-- last written by: implementer, 2026-10-08 -->
 
-Pending: owned by `implementer`, written after agreement.
+| Concern                                                          | Lives in                                     |
+| ---------------------------------------------------------------- | -------------------------------------------- |
+| Parsing `--root` and `--strict`; folding a report into a code    | `Features/Check/CheckCommand.cs` (C-4)       |
+| The exit codes                                                   | `ExitCodes.cs`, the one static class (C-2)   |
+| Which commands exist and what they are handed                    | `Program.cs`, a hand-written list            |
+| Discovery, rules, ordering, the line format, root-relative paths | `src/specht`: the runner and `SpecViolation` |
 
 ## 7. Technical Design
 
-<!-- last written by: spec-author, 2026-10-07 -->
+<!-- last written by: implementer, 2026-10-08 -->
 
-Pending: owned by `implementer`, written after agreement. The slice layout is `dotnet-tool` § Vertical Slice.
+Delivered so far by item 0026. The slice layout is `dotnet-tool` § Vertical Slice.
+
+- **The command.** `CheckCommand` is an `AsyncCommand` with its `Settings` nested (decision 0002): `--root <DIR>`, defaulting to `.`, and `--strict`. It resolves the root with `Path.GetFullPath`, calls the runner, writes each violation's `ToString()` - the engine's MSBuild-shaped line, in the engine's order - and returns `ExitCodes.Violations` on an error, or on any violation under `--strict`, and `ExitCodes.Success` otherwise (B-001, B-003, B-004).
+- **The raw writer.** Lines go to the injected console's `Profile.Out.Writer`, not through `IAnsiConsole.WriteLine`: Spectre renders a line to the console's width, and a redirected console is 80 columns wide, so a rendered diagnostic wraps and GitHub no longer annotates it (C-3).
+- **The runner is injected** as a `Func<string, SpecCheckReport>`, `SpecCheckRunner.Run` outside a test. It is the seam the warning path needs: the engine emits no warning until `0001-F5`'s rule settings exist, so B-004 is reachable only through a substituted runner.
+- **The composition root.** `Program.cs` registers the runner in a `ServiceCollection`, hands it to Spectre through `TypeRegistrar`/`TypeResolver`, and sets `CheckCommand` as the default command (A-1).
+- **Paths** are the engine's: every violation's file is root-relative with `/` already (`0001-F1` B-007), and the command prints nothing else, so nothing absolute reaches stdout (B-013).
+- **Exit codes** hold `0` and `1` today; 0027 adds `2` and `3` with the exception handler that maps to them, and 0040 adds `4`.
 
 ## 8. Testing Strategy
 
-<!-- last written by: spec-author, 2026-10-07 -->
+<!-- last written by: test-writer, 2026-10-08 -->
 
-Pending: owned by `test-writer`.
+- **Integration** (`test/specht.tests/CheckCommand.Integration.Tests.cs`), every test through Spectre's command tester on an 80-column console, so none of them is a unit test:
+  - over a runner returning a report built with the `SpecCheckReportFixture` and `SpecViolationFixture` AutoFixtures, one `[Theory]` per shape: stdout is exactly one line per violation in the runner's order - none for no violation, and a line wider than the console unwrapped; the exit code is `1` on an error, `0` on none, `0` on a warning alone and `1` on a warning under `--strict`; and the runner gets the working directory, or `--root` resolved;
+  - over the real runner and a `SpecTree` on disk: the printed lines equal the report's, root-relative with `/`, and a clean tree prints nothing and exits `0` (C-7).
+- **Unit: none, and the design is why.** The fold from a report to lines and a code lives in `CheckCommand.ExecuteAsync`, reachable only through Spectre's pipeline; a unit test of the decision would need it outside the command, which is the implementer's call (C-4).
+- **Acceptance.** `check.feature` is linked into `test/specht.acceptance`; [`Check/CheckSteps.cs`](../../../../../test/specht.acceptance/Check/CheckSteps.cs) builds its trees with `SpecTree`, linked from `test/specht.tests`, and runs the command through the tester. B-013's run from inside the root launches the built tool with the root as its working directory, because the working directory belongs to the process. B-009's step holds stdout to the violation lines alone until 0028 adds the summary.
+- **Mutations.** Writing through `IAnsiConsole.WriteLine`, dropping `--strict`, and prefixing the root to each line each turned tests red; after the move to the integration tier, `IAnsiConsole.WriteLine` failed the unwrapped row and the real-runner lines, and dropping `--strict` failed the strict row.
+- **Waiting on `0001-F5`:** the two warning scenarios (B-004, and B-003's warning-alone case) stay unbound, because no tree yields a warning until rule settings exist; B-004 is proved at the integration tier, over a report built in memory, until then. Every other unbound scenario reports Skipped until its item binds it.
 
 ## 9. Traceability Matrix
 
-<!-- last written by: spec-author, 2026-10-07 -->
+<!-- last written by: test-writer, 2026-10-08 -->
 
-| Claim ID | Scenario                                                           | Test    | Status  |
-| -------- | ------------------------------------------------------------------ | ------- | ------- |
-| B-001    | A run prints every violation as a diagnostic line                  | Missing | Missing |
-| B-002    | A run ends with the summary                                        | Missing | Missing |
-| B-003    | An error-severity violation fails the run                          | Missing | Missing |
-| B-004    | Strict mode fails the run on a warning                             | Missing | Missing |
-| B-005    | A root that is not a directory is a missing-input failure          | Missing | Missing |
-| B-006    | A root without a manifest is a missing-input failure               | Missing | Missing |
-| B-007    | A manifest that does not parse is an invalid-configuration failure | Missing | Missing |
-| B-008    | Help names the check's options                                     | Missing | Missing |
-| B-009    | The product goes to stdout and the tool's own messages to stderr   | Missing | Missing |
-| B-010    | Three call sites get one verdict                                   | Missing | Missing |
-| B-011    | This repository checks itself with the tool                        | Missing | Missing |
-| B-012    | A check writes nothing but the named report                        | Missing | Missing |
-| B-013    | No derived path in the output is absolute                          | Missing | Missing |
-| B-014    | The build reaches the tool through the local tool manifest         | Missing | Missing |
+| Claim ID | Scenario                                                           | Test                                                                                                                                                                                                                                                                                                                                  | Status  |
+| -------- | ------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------- |
+| B-001    | A run prints every violation as a diagnostic line                  | `CheckSteps`; `CheckCommandIntegrationTests.AReport_WhenChecked_ShouldPrintOnlyOneUnwrappedLinePerViolationInTheRunnersOrder`; `CheckCommandIntegrationTests.ARootOption_WhenChecked_ShouldRunTheRootItResolvesTo`; `CheckCommandIntegrationTests.ATreeWithViolations_WhenChecked_ShouldPrintTheRunnersViolationsAsRootRelativeLines` | Covered |
+| B-002    | A run ends with the summary                                        | Missing                                                                                                                                                                                                                                                                                                                               | Missing |
+| B-003    | An error-severity violation fails the run                          | `CheckSteps`; `CheckCommandIntegrationTests.AReportOfSeverities_WhenChecked_ShouldExitWithTheClaimedCode`; `CheckCommandIntegrationTests.ACleanTree_WhenChecked_ShouldPrintNothingAndExitZero`                                                                                                                                        | Covered |
+| B-004    | Strict mode fails the run on a warning                             | `CheckCommandIntegrationTests.AReportOfSeverities_WhenChecked_ShouldExitWithTheClaimedCode`                                                                                                                                                                                                                                           | Covered |
+| B-005    | A root that is not a directory is a missing-input failure          | Missing                                                                                                                                                                                                                                                                                                                               | Missing |
+| B-006    | A root without a manifest is a missing-input failure               | Missing                                                                                                                                                                                                                                                                                                                               | Missing |
+| B-007    | A manifest that does not parse is an invalid-configuration failure | Missing                                                                                                                                                                                                                                                                                                                               | Missing |
+| B-008    | Help names the check's options                                     | Missing                                                                                                                                                                                                                                                                                                                               | Missing |
+| B-009    | The product goes to stdout and the tool's own messages to stderr   | `CheckSteps`; `CheckCommandIntegrationTests.AReport_WhenChecked_ShouldPrintOnlyOneUnwrappedLinePerViolationInTheRunnersOrder`                                                                                                                                                                                                         | Covered |
+| B-010    | Three call sites get one verdict                                   | Missing                                                                                                                                                                                                                                                                                                                               | Missing |
+| B-011    | This repository checks itself with the tool                        | Missing                                                                                                                                                                                                                                                                                                                               | Missing |
+| B-012    | A check writes nothing but the named report                        | Missing                                                                                                                                                                                                                                                                                                                               | Missing |
+| B-013    | No derived path in the output is absolute                          | `CheckSteps`; `CheckCommandIntegrationTests.ATreeWithViolations_WhenChecked_ShouldPrintTheRunnersViolationsAsRootRelativeLines`                                                                                                                                                                                                       | Covered |
+| B-014    | The build reaches the tool through the local tool manifest         | Missing                                                                                                                                                                                                                                                                                                                               | Missing |
 
 ## 10. Lessons / Spec Deltas
 

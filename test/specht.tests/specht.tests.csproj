@@ -2,11 +2,17 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
+    <!-- CS8669: AutoFixtures 10.0.6 emits AutoFixtureBase.g.cs with nullable annotations and no #nullable directive. Only
+         generated code raises it, an .editorconfig section does not reach a generated tree, and only the package can fix
+         it; drop this when it does. -->
+    <NoWarn>$(NoWarn);CS8669</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="xunit.v3" />
     <PackageReference Include="AwesomeAssertions" />
+    <PackageReference Include="Spectre.Console.Cli.Testing" />
+    <PackageReference Include="Rocket.Surgery.Extensions.Testing.AutoFixtures" />
   </ItemGroup>
 
   <ItemGroup>
