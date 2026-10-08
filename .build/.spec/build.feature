@@ -9,7 +9,12 @@ Feature: The build
     When the build runs with no target named
     Then the solution is compiled
     And the tests run after it
-    And the build fails when either step fails
+
+  @B-018
+  Scenario: A failing default build exits non-zero
+    Given a clone whose tests fail
+    When the build runs with no target named
+    Then the build fails
 
   @B-002
   Scenario: The Windows entry runs the same target
@@ -29,7 +34,7 @@ Feature: The build
     Given a source file whose formatting differs from the repository's rules
     And a snapshot of every file in the clone
     When the format gate runs
-    Then no file was created, modified or deleted
+    Then no tracked file was created, modified or deleted
 
   @B-005
   Scenario: The test gate runs every tier
@@ -62,9 +67,16 @@ Feature: The build
   @B-010
   Scenario: A fresh clone restores every tool the build needs
     Given a fresh clone on a machine with no tools installed
+    And a token allowed to read packages once the tool manifest names the checker
     When the local tools are restored
-    Then every tool the build and the hook invoke is available
+    Then every dotnet tool the build and the hook invoke is available
     And each at the version the committed tool manifest pins
+
+  @B-019
+  Scenario: Every clone runs the same Markdown formatter
+    Given two clones on different machines
+    When each runs the format gate
+    Then both run the Markdown formatter at the version committed in the repository
 
   @B-011
   Scenario: An installed hook runs on commit
@@ -74,14 +86,28 @@ Feature: The build
 
   @B-012
   Scenario: The hook refuses unformatted staged code
-    Given a staged source file whose formatting differs from the repository's rules
+    Given a staged source file whose staged content differs from the repository's rules
     When a commit is attempted
     Then the commit is refused
     And the hook names that file
 
+  @B-021
+  Scenario: The hook formats through the build
+    Given a staged source file and a staged Markdown file
+    When a commit is attempted
+    Then the hook runs the format gate with exactly the staged files
+
+  @B-022
+  Scenario: The hook checks what is staged, not the working tree
+    Given a file whose staged content is unformatted
+    And whose working-tree copy has since been formatted
+    When a commit is attempted
+    Then the commit is refused
+
   @B-013
   Scenario: The hook refuses a staged specification that fails
-    Given a staged specification that breaks an error-severity rule
+    Given the checker's check command exists
+    And a staged specification that breaks an error-severity rule
     When a commit is attempted
     Then the commit is refused
 
@@ -94,10 +120,9 @@ Feature: The build
 
   @B-016
   Scenario: The hook refuses unformatted staged Markdown
-    Given a staged Markdown file whose formatting differs from the repository's rules
+    Given a staged Markdown file whose staged content differs from the repository's rules
     When a commit is attempted
-    Then the format gate checks the staged files
-    And the commit is refused
+    Then the commit is refused
     And the hook names that file
 
   @B-017
@@ -106,6 +131,27 @@ Feature: The build
     When the format gate runs
     Then it fails
     And it names that file
+
+  @B-020
+  Scenario: The format gate checks only the files it is given
+    Given two files whose formatting differs from the repository's rules
+    When the format gate runs on one of them
+    Then it names that file
+    And it does not name the other
+
+  @B-023
+  Scenario: The self-check reports itself unavailable before the command exists
+    Given the checker's check command does not exist yet
+    When the self-check runs
+    Then it reports that the check is not yet available
+    And it succeeds
+
+  @B-024
+  Scenario: A missing test is a warning here
+    Given an approved specification whose traceability matrix has a missing test
+    When the self-check runs
+    Then the missing test is reported as a warning
+    And the self-check succeeds
 
   @B-015 @boundary
   Scenario: The hook changes nothing it checks

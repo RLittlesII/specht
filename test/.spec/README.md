@@ -55,15 +55,16 @@ A `.codecov.yml` exists, but nothing produces coverage, nothing uploads it, and 
 
 <!-- last written by: spec-author, 2026-10-08 -->
 
-| ID    | Claim                                                                                                                                                             | Source                         | Status |
-| ----- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------ | ------ |
-| B-001 | Given the `Test` target runs, this Feature writes one Cobertura coverage report per test project under `.artifacts/coverage/`.                                    | `specht-conventions` § Testing | Active |
-| B-002 | Given a CI run on any operating system, this Feature uploads that run's coverage reports to Codecov for the run's commit.                                         | owner, 2026-10-08; A-2         | Active |
-| B-003 | Given a pull request whose changed lines of measured code are less than 80% covered, the patch coverage status on its head commit fails.                          | owner, 2026-10-08              | Active |
-| B-004 | Given a pull request whose changed lines of measured code are 80% covered or more, the patch coverage status on its head commit passes.                           | owner, 2026-10-08              | Active |
-| B-005 | Given a pull request that lowers the total coverage of measured code, the project coverage status reports the total and the change, and passes.                   | owner, 2026-10-08              | Active |
-| B-006 | Given a pull request whose only changed lines are outside `src/`, the patch coverage status counts none of them.                                                  | OQ-1 (owner, 2026-10-08); C-4  | Active |
-| B-007 | Given a CI run whose upload to Codecov fails, that operating system's check does not fail on that account and the run reports a warning naming the failed upload. | OQ-2 (owner, 2026-10-08)       | Active |
+| ID    | Claim                                                                                                                                                             | Source                                | Status |
+| ----- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------- | ------ |
+| B-001 | Given the `Test` target runs, this Feature writes one Cobertura coverage report per test project under `.artifacts/coverage/`.                                    | `specht-conventions` § Testing        | Active |
+| B-002 | Given a CI run on any operating system, this Feature uploads that run's coverage reports to Codecov for the run's commit.                                         | owner, 2026-10-08; A-2                | Active |
+| B-003 | Given a pull request whose changed lines of measured code are less than 80% covered, the patch coverage status on its head commit fails.                          | owner, 2026-10-08                     | Active |
+| B-004 | Given a pull request whose changed lines of measured code are 80% covered or more, the patch coverage status on its head commit passes.                           | owner, 2026-10-08                     | Active |
+| B-005 | Given a pull request that lowers the total coverage of measured code, the project coverage status reports the total and the change, and passes.                   | owner, 2026-10-08                     | Active |
+| B-006 | Given a pull request whose only changed lines are outside `src/`, the patch coverage status counts none of them.                                                  | OQ-1 (owner, 2026-10-08); C-4         | Active |
+| B-007 | Given a CI run whose upload to Codecov fails, that operating system's check does not fail on that account and the run reports a warning naming the failed upload. | OQ-2 (owner, 2026-10-08)              | Active |
+| B-008 | Given a pull request in which no line of measured code changed, the patch coverage status passes.                                                                 | C-4; `0055-F4` B-005; `0055-F8` B-003 | Active |
 
 ## 4. Constraints
 
@@ -111,15 +112,16 @@ Pending: owned by `test-writer`.
 
 <!-- last written by: spec-author, 2026-10-08 -->
 
-| Claim ID | Scenario                                        | Test    | Status  |
-| -------- | ----------------------------------------------- | ------- | ------- |
-| B-001    | A test run writes coverage                      | Missing | Missing |
-| B-002    | Integration uploads coverage                    | Missing | Missing |
-| B-003    | Under-tested new code fails the patch status    | Missing | Missing |
-| B-004    | Tested new code passes the patch status         | Missing | Missing |
-| B-005    | A lower total is reported and does not block    | Missing | Missing |
-| B-006    | Changes outside the product are not measured    | Missing | Missing |
-| B-007    | A failed upload warns and does not fail the run | Missing | Missing |
+| Claim ID | Scenario                                                | Test    | Status  |
+| -------- | ------------------------------------------------------- | ------- | ------- |
+| B-001    | A test run writes coverage                              | Missing | Missing |
+| B-002    | Integration uploads coverage                            | Missing | Missing |
+| B-003    | Under-tested new code fails the patch status            | Missing | Missing |
+| B-004    | Tested new code passes the patch status                 | Missing | Missing |
+| B-005    | A lower total is reported and does not block            | Missing | Missing |
+| B-006    | Changes outside the product are not measured            | Missing | Missing |
+| B-007    | A failed upload warns and does not fail the run         | Missing | Missing |
+| B-008    | A change with no measured lines passes the patch status | Missing | Missing |
 
 ## 10. Lessons / Spec Deltas
 

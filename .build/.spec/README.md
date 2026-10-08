@@ -17,7 +17,7 @@ author: "spec-author"
 milestone: null
 children: []
 depends_on: []
-blocks: ["F2", "F3", "F6"]
+blocks: ["F2", "F3", "F4", "F5", "F6"]
 spikes: []
 created: "2026-10-08"
 updated: "2026-10-08"
@@ -37,58 +37,67 @@ The repository has a solution and central package versions but no build project,
 
 <!-- last written by: spec-author, 2026-10-08 -->
 
-| #   | Persona                         | Need                                                                         | Pain Point Today                                                      |
-| --- | ------------------------------- | ---------------------------------------------------------------------------- | --------------------------------------------------------------------- |
-| 1   | The maintainer, before a commit | One command that says whether a change passes, the same one CI runs          | No build project and no entry script exist                            |
-| 2   | The agent delivering an item    | A gate per concern - format, a test tier, the self-check - it can run alone  | Each check is a hand-typed `dotnet` invocation, differing per session |
-| 3   | The maintainer's commit         | A hook that refuses a commit whose staged code or specification fails a gate | The hook present names another repository's solution                  |
-| 4   | `0055-F2`, `0055-F3`, `0055-F6` | Targets to call by name                                                      | N/A (internal dependency)                                             |
-| 5   | `0001-F2`                       | A `SpecCheck` target and a pre-commit call site for B-010, B-011 and B-014   | N/A (internal dependency)                                             |
+| #   | Persona                         | Need                                                                         | Pain Point Today                                                                                                                          |
+| --- | ------------------------------- | ---------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | The maintainer, before a commit | One command that says whether a change passes, the same one CI runs          | No build project and no entry script exist                                                                                                |
+| 2   | The agent delivering an item    | A gate per concern - format, a test tier, the self-check - it can run alone  | Each check is a hand-typed `dotnet` invocation, differing per session                                                                     |
+| 3   | The maintainer's commit         | A hook that refuses a commit whose staged code or specification fails a gate | The hook at `857f00d` calls `dotnet format` and the Markdown formatter directly, not the build's targets, and runs no specification check |
+| 4   | `0055-F2`, `0055-F3`, `0055-F6` | Targets to call by name                                                      | N/A (internal dependency)                                                                                                                 |
+| 5   | `0001-F2`                       | A `SpecCheck` target and a pre-commit call site for B-010, B-011 and B-014   | N/A (internal dependency)                                                                                                                 |
 
 ### Assumptions
 
-| ID  | Assumption                                                                                                                                                                                  |
-| --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| A-1 | `Test` runs the unit, integration and acceptance tiers; `UnitTest`, `IntegrationTest` and `AcceptanceTest` run one tier each (`specht-conventions` § Build and test).                       |
-| A-2 | Until the first package is published, `SpecCheck` runs `dotnet run --project src/specht.tool -- --root .` (`0001-F2` A-2).                                                                  |
-| A-3 | The `.husky/pre-commit` committed today was copied from another repository - it names another solution and runs a Markdown formatter - and is replaced by this Feature's hook, not amended. |
-| A-4 | The hook checks only what is staged, so a commit is never refused for drift in a file it does not touch; CI checks the whole tree (`0055-F2`).                                              |
+| ID  | Assumption                                                                                                                                                                                                                                                                                                                                              |
+| --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| A-1 | `Test` runs the unit, integration and acceptance tiers; `UnitTest`, `IntegrationTest` and `AcceptanceTest` run one tier each (`specht-conventions` § Build and test).                                                                                                                                                                                   |
+| A-2 | Until the first package is published, `SpecCheck` runs `dotnet run --project src/specht.tool -- --root .` (`0001-F2` A-2).                                                                                                                                                                                                                              |
+| A-3 | The `.husky/pre-commit` at `857f00d` checks staged C# with `dotnet format --verify-no-changes` and staged Markdown with `prettier --check`, each called directly on the working-tree copy of the staged files, and runs no specification check; this Feature's hook replaces those calls with the build's targets (C-1, B-021).                         |
+| A-4 | The hook's formatting checks cover only the staged files, so a commit is never refused for formatting drift in a file it does not touch; its specification check covers the whole tree, because a specification's rules span files and the hook prints what a shell prints (`0001-F2` B-010). CI checks the whole tree (`0055-F2`). Amended 2026-10-08. |
 
 ## 3. Acceptance Criteria
 
 <!-- last written by: spec-author, 2026-10-08 -->
 
-| ID    | Claim                                                                                                                                                                                                                | Source                                                           | Status  |
-| ----- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------- | ------- |
-| B-001 | Given a clone with the SDK `global.json` pins, `./build.sh` with no target name runs `Compile` and then `Test`, and exits non-zero when either fails.                                                                | AGENTS.md § Build and test; README § 8 step 1                    | Active  |
-| B-002 | Given any target name, `build.cmd` on Windows runs the same target as `./build.sh` given that name.                                                                                                                  | `specht-conventions` § Layout; owner, 2026-10-08                 | Active  |
-| B-003 | Given a C# file whose formatting differs from the repository's formatting rules, the `Format` target exits non-zero and names that file.                                                                             | AGENTS.md § Build and test; C-2                                  | Active  |
-| B-004 | Given any tree, the `Format` target creates, modifies and deletes no file.                                                                                                                                           | AGENTS.md § Build and test; C-2                                  | Active  |
-| B-005 | Given the `Test` target, the unit, integration and acceptance tiers each run, and a failure in any one fails the target.                                                                                             | A-1                                                              | Active  |
-| B-006 | Given the `UnitTest` target, only tests carrying the unit tier trait run.                                                                                                                                            | `specht-conventions` § Testing                                   | Active  |
-| B-007 | Given the `IntegrationTest` target, only tests carrying the integration tier trait run.                                                                                                                              | `specht-conventions` § Testing                                   | Active  |
-| B-008 | Given the `AcceptanceTest` target, the scenarios of every `.feature` file the acceptance project links run.                                                                                                          | `specht-conventions` § Testing                                   | Active  |
-| B-009 | Given the `Pack` target, exactly one package, `specht.tool.<version>.nupkg`, is written under `.artifacts/nupkg/`, where `<version>` is the version `0055-F5` computes.                                              | AGENTS.md § Build and test; `0001-F2` C-5                        | Active  |
-| B-010 | Given a fresh clone, `dotnet tool restore` installs every tool the build and the hook invoke, at the versions the committed local tool manifest pins.                                                                | README § 8 step 1; AGENTS.md § Setup                             | Active  |
-| B-011 | Given `dotnet husky install` has run in a clone, a commit runs the pre-commit hook.                                                                                                                                  | AGENTS.md § Setup; owner, 2026-10-08                             | Active  |
-| B-012 | Given a staged C# file whose formatting differs from the repository's formatting rules, the hook refuses the commit and names that file.                                                                             | owner, 2026-10-08; A-4                                           | Active  |
-| B-013 | Given a staged file under a `.spec/` directory, or a staged `.feature` file, and the check reports an error-severity violation on the tree, the hook refuses the commit.                                             | owner, 2026-10-08; Must-1; `specht-conventions` § Build and test | Active  |
-| B-014 | Given a commit staging no C# file, no Markdown file, no file under a `.spec/` directory and no `.feature` file, the hook runs none of its checks and lets the commit through.                                        | `specht-conventions` § Build and test; A-4; OQ-1                 | Amended |
-| B-015 | Given any commit, the hook modifies no file in the working tree and no entry in the index.                                                                                                                           | C-2; A-3                                                         | Active  |
-| B-016 | Given a staged Markdown file whose formatting differs from the repository's Markdown formatting rules, the hook runs the `Format` gate's Markdown check on the staged files, refuses the commit and names that file. | OQ-1, OQ-2 (owner, 2026-10-08); C-1; C-2; A-4                    | Amended |
-| B-017 | Given a Markdown file whose formatting differs from the repository's Markdown formatting rules, the `Format` target exits non-zero and names that file.                                                              | OQ-2 (owner, 2026-10-08); C-1; C-2                               | Active  |
+| ID    | Claim                                                                                                                                                                                                                                          | Source                                               | Status  |
+| ----- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------- | ------- |
+| B-001 | Given a clone with the SDK `global.json` pins, `./build.sh` with no target name runs `Compile` and then `Test`.                                                                                                                                | AGENTS.md § Build and test; README § 8 step 1        | Amended |
+| B-002 | Given any target name, `build.cmd` on Windows runs the same target as `./build.sh` given that name.                                                                                                                                            | `specht-conventions` § Layout; owner, 2026-10-08     | Active  |
+| B-003 | Given a C# file whose formatting differs from the repository's formatting rules, the `Format` target exits non-zero and names that file.                                                                                                       | AGENTS.md § Build and test; C-2                      | Active  |
+| B-004 | Given any tree, the `Format` target creates, modifies and deletes no tracked file.                                                                                                                                                             | AGENTS.md § Build and test; C-2; C-5                 | Amended |
+| B-005 | Given the `Test` target, the unit, integration and acceptance tiers each run, and a failure in any one fails the target.                                                                                                                       | A-1                                                  | Active  |
+| B-006 | Given the `UnitTest` target, only tests carrying the unit tier trait run.                                                                                                                                                                      | `specht-conventions` § Testing                       | Active  |
+| B-007 | Given the `IntegrationTest` target, only tests carrying the integration tier trait run.                                                                                                                                                        | `specht-conventions` § Testing                       | Active  |
+| B-008 | Given the `AcceptanceTest` target, the scenarios of every `.feature` file the acceptance project links run.                                                                                                                                    | `specht-conventions` § Testing                       | Active  |
+| B-009 | Given the `Pack` target, exactly one package, `specht.tool.<version>.nupkg`, is written under `.artifacts/nupkg/`, where `<version>` is the version the build computes for the commit.                                                         | AGENTS.md § Build and test; `0001-F2` C-5            | Amended |
+| B-010 | Given a fresh clone, and a token with package read once the local tool manifest names `specht.tool` (`0055-F7` B-003, A-1), `dotnet tool restore` installs every dotnet tool the build and the hook invoke, at the versions the manifest pins. | README § 8 step 1; AGENTS.md § Setup; C-3            | Amended |
+| B-011 | Given `dotnet husky install` has run in a clone, a commit runs the pre-commit hook.                                                                                                                                                            | AGENTS.md § Setup; owner, 2026-10-08                 | Active  |
+| B-012 | Given a staged C# file whose staged content differs from the repository's formatting rules, the hook refuses the commit and names that file.                                                                                                   | owner, 2026-10-08; A-4; B-021                        | Amended |
+| B-013 | Given `0001-F2`'s check command exists, a staged file under a `.spec/` directory or a staged `.feature` file, and an error-severity violation reported on the tree, the hook refuses the commit.                                               | owner, 2026-10-08; Must-1; A-4; C-7; `0001-F2` B-010 | Amended |
+| B-014 | Given a commit staging no C# file, no Markdown file, no file under a `.spec/` directory and no `.feature` file, the hook runs none of its checks and lets the commit through.                                                                  | `specht-conventions` § Build and test; A-4; OQ-1     | Amended |
+| B-015 | Given any commit, the hook modifies no file in the working tree and no entry in the index.                                                                                                                                                     | C-2; A-3                                             | Active  |
+| B-016 | Given a staged Markdown file whose staged content differs from the repository's Markdown formatting rules, the hook refuses the commit and names that file.                                                                                    | OQ-1, OQ-2 (owner, 2026-10-08); C-2; A-4; B-021      | Amended |
+| B-017 | Given a Markdown file whose formatting differs from the repository's Markdown formatting rules, the `Format` target exits non-zero and names that file.                                                                                        | OQ-2 (owner, 2026-10-08); C-1; C-2                   | Active  |
+| B-018 | Given `./build.sh` with no target name, and `Compile` or `Test` fails, the build exits non-zero.                                                                                                                                               | AGENTS.md § Build and test; split from B-001         | Active  |
+| B-019 | Given two clones on different machines, the `Format` target and the hook run the Markdown formatter at the version committed in the repository.                                                                                                | C-3                                                  | Active  |
+| B-020 | Given the `Format` target invoked with a set of files, it checks those files and no other.                                                                                                                                                     | OQ-2 (owner, 2026-10-08); C-1                        | Active  |
+| B-021 | Given a commit, the hook runs its formatting checks by invoking the `Format` target with the staged files.                                                                                                                                     | OQ-2 (owner, 2026-10-08); C-1                        | Active  |
+| B-022 | Given a staged file whose staged content is unformatted and whose working-tree copy is formatted, the hook refuses the commit.                                                                                                                 | A-4; B-021                                           | Active  |
+| B-023 | Given `0001-F2`'s check command does not yet exist, the `SpecCheck` target reports that the check is not yet available and exits successfully.                                                                                                 | owner, 2026-10-08; C-7                               | Active  |
+| B-024 | Given an approved specification in this repository whose traceability matrix has a `Missing` row, the `SpecCheck` target reports `SPEC060` at warning severity and exits successfully.                                                         | owner, 2026-10-08; AGENTS.md § `specht`; C-6         | Active  |
 
 ## 4. Constraints
 
 <!-- last written by: spec-author, 2026-10-08 -->
 
-| ID  | Constraint                                                                                                                                                           | Rules Out                                                                                                                                          |
-| --- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
-| C-1 | Every gate is a NUKE target; the hook and every workflow invoke targets by name.                                                                                     | A `dotnet test`, `dotnet format` or `dotnet run` line in a workflow or the hook that no target runs; a gate CI has and the build lacks.            |
-| C-2 | Formatting is verified, never fixed, by the build and by the hook.                                                                                                   | Applying analyzer code fixes in `Format` or the hook; a hook that formats and re-stages files.                                                     |
-| C-3 | A tool the build or the hook invokes is pinned at a committed version: a dotnet tool in the local tool manifest, the Markdown formatter in a committed version file. | A global tool install as a prerequisite; an unpinned tool fetched at run time, such as the formatter fetched at its latest version on each commit. |
-| C-4 | The build project takes its package versions from `Directory.Packages.props`.                                                                                        | A version in `.build`'s project file.                                                                                                              |
-| C-5 | Everything a target writes lands under `.artifacts/`, which is git-ignored.                                                                                          | A report, package or coverage file written into a tracked path; a committed generated report.                                                      |
+| ID  | Constraint                                                                                                                                                                                                 | Rules Out                                                                                                                                          |
+| --- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
+| C-1 | Every gate is a NUKE target; the hook and every workflow invoke targets by name.                                                                                                                           | A `dotnet test`, `dotnet format` or `dotnet run` line in a workflow or the hook that no target runs; a gate CI has and the build lacks.            |
+| C-2 | Formatting is verified, never fixed, by the build and by the hook.                                                                                                                                         | Applying analyzer code fixes in `Format` or the hook; a hook that formats and re-stages files.                                                     |
+| C-3 | A tool the build or the hook invokes is pinned at a committed version: a dotnet tool in the local tool manifest, the Markdown formatter in a committed version file.                                       | A global tool install as a prerequisite; an unpinned tool fetched at run time, such as the formatter fetched at its latest version on each commit. |
+| C-4 | The build project takes its package versions from `Directory.Packages.props`.                                                                                                                              | A version in `.build`'s project file.                                                                                                              |
+| C-5 | A target writes only under `.artifacts/` and the git-ignored `bin/` and `obj/` directories.                                                                                                                | A report, package or coverage file written into a tracked path; a committed generated report.                                                      |
+| C-6 | `SPEC060` is a warning in this repository through its manifest's rule settings (`0001-F5` B-010), so a `Missing` row is not a failure (AGENTS.md § `specht`); this waits on `0001-F5` (owner, 2026-10-08). | A change to the engine's `SPEC060`; a filter in the build, the hook or CI that drops `SPEC060` lines; a commit or run failed for a `Missing` row.  |
+| C-7 | `SpecCheck` gates the hook and CI only once `0001-F2`'s check command lands; until then it is a target that reports itself unavailable (B-023). A dependency on `0001-F2` (owner, 2026-10-08).             | A `SpecCheck` failure because the command does not exist yet; a gate removed from the hook or CI and re-added by hand when `0001-F2` lands.        |
 
 ## 5. Out of Scope
 
@@ -127,25 +136,32 @@ Pending: owned by `test-writer`.
 
 <!-- last written by: spec-author, 2026-10-08 -->
 
-| Claim ID | Scenario                                           | Test    | Status  |
-| -------- | -------------------------------------------------- | ------- | ------- |
-| B-001    | The default build compiles and tests               | Missing | Missing |
-| B-002    | The Windows entry runs the same target             | Missing | Missing |
-| B-003    | Unformatted code fails the format gate             | Missing | Missing |
-| B-004    | The format gate changes nothing                    | Missing | Missing |
-| B-005    | The test gate runs every tier                      | Missing | Missing |
-| B-006    | The unit tier runs alone                           | Missing | Missing |
-| B-007    | The integration tier runs alone                    | Missing | Missing |
-| B-008    | The acceptance tier runs the linked scenarios      | Missing | Missing |
-| B-009    | Packing writes one tool package                    | Missing | Missing |
-| B-010    | A fresh clone restores every tool the build needs  | Missing | Missing |
-| B-011    | An installed hook runs on commit                   | Missing | Missing |
-| B-012    | The hook refuses unformatted staged code           | Missing | Missing |
-| B-013    | The hook refuses a staged specification that fails | Missing | Missing |
-| B-014    | The hook lets an unrelated commit through          | Missing | Missing |
-| B-015    | The hook changes nothing it checks                 | Missing | Missing |
-| B-016    | The hook refuses unformatted staged Markdown       | Missing | Missing |
-| B-017    | Unformatted Markdown fails the format gate         | Missing | Missing |
+| Claim ID | Scenario                                                            | Test    | Status  |
+| -------- | ------------------------------------------------------------------- | ------- | ------- |
+| B-001    | The default build compiles and tests                                | Missing | Missing |
+| B-002    | The Windows entry runs the same target                              | Missing | Missing |
+| B-003    | Unformatted code fails the format gate                              | Missing | Missing |
+| B-004    | The format gate changes nothing                                     | Missing | Missing |
+| B-005    | The test gate runs every tier                                       | Missing | Missing |
+| B-006    | The unit tier runs alone                                            | Missing | Missing |
+| B-007    | The integration tier runs alone                                     | Missing | Missing |
+| B-008    | The acceptance tier runs the linked scenarios                       | Missing | Missing |
+| B-009    | Packing writes one tool package                                     | Missing | Missing |
+| B-010    | A fresh clone restores every tool the build needs                   | Missing | Missing |
+| B-011    | An installed hook runs on commit                                    | Missing | Missing |
+| B-012    | The hook refuses unformatted staged code                            | Missing | Missing |
+| B-013    | The hook refuses a staged specification that fails                  | Missing | Missing |
+| B-014    | The hook lets an unrelated commit through                           | Missing | Missing |
+| B-015    | The hook changes nothing it checks                                  | Missing | Missing |
+| B-016    | The hook refuses unformatted staged Markdown                        | Missing | Missing |
+| B-017    | Unformatted Markdown fails the format gate                          | Missing | Missing |
+| B-018    | A failing default build exits non-zero                              | Missing | Missing |
+| B-019    | Every clone runs the same Markdown formatter                        | Missing | Missing |
+| B-020    | The format gate checks only the files it is given                   | Missing | Missing |
+| B-021    | The hook formats through the build                                  | Missing | Missing |
+| B-022    | The hook checks what is staged, not the working tree                | Missing | Missing |
+| B-023    | The self-check reports itself unavailable before the command exists | Missing | Missing |
+| B-024    | A missing test is a warning here                                    | Missing | Missing |
 
 ## 10. Lessons / Spec Deltas
 

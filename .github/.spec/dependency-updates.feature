@@ -83,3 +83,15 @@ Feature: Dependency updates
     When updates are proposed
     Then the pull request carries the changed declaration and the regenerated workflow
     And integration's stale-workflow check passes on it
+
+  @B-014
+  Scenario: A NUKE update carries its regenerated workflows
+    Given the build tool package has a newer minor release
+    When updates are proposed
+    Then the pull request carries the regenerated workflows
+    And integration's stale-workflow check passes on it
+
+  @B-015
+  Scenario: Renovate runs on its schedule
+    When the scheduled time for dependency updates arrives
+    Then this repository's dependency-update workflow runs against this repository

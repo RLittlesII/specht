@@ -17,7 +17,6 @@ Feature: Continuous integration
   Scenario: Every run covers three operating systems
     When integration runs
     Then the build runs on Linux, on Windows and on macOS
-    And each reports as a check of its own
 
   @B-004
   Scenario: Every operating system runs every gate
@@ -48,6 +47,18 @@ Feature: Continuous integration
 
   @B-009
   Scenario: A stale workflow fails the run
-    Given a commit whose build declares a step its committed workflow lacks
+    Given a commit whose build declares a step one of its committed workflows lacks
     When integration runs
     Then the run fails
+
+  @B-010
+  Scenario: Each operating system is its own check
+    When integration runs
+    Then the Linux, Windows and macOS builds each report as a separate check
+
+  @B-011
+  Scenario: A run reads the feed with its own token
+    Given this repository's tool manifest names the published checker
+    When integration runs
+    Then the checker is restored with the run's own token
+    And no stored token is read

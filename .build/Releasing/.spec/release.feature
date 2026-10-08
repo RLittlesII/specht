@@ -57,3 +57,10 @@ Feature: Release
     Then the run fails
     And no package is published
     And no release is created
+
+  @B-010
+  Scenario: A release reads the feed with its own token
+    Given this repository's tool manifest names the published checker
+    When a version tag is pushed
+    Then the checker is restored with the run's own token
+    And no stored token is read

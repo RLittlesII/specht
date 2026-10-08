@@ -56,27 +56,30 @@ No workflow exists, so the first pull request on GitHub would merge on the autho
 
 <!-- last written by: spec-author, 2026-10-08 -->
 
-| ID    | Claim                                                                                                                                                    | Source                                | Status |
-| ----- | -------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------- | ------ |
-| B-001 | Given a pull request targeting `main` is opened or updated, this Feature runs the build against the pull request's head.                                 | owner, 2026-10-08; A-2                | Active |
-| B-002 | Given a push to `main`, this Feature runs the build against the pushed commit.                                                                           | owner, 2026-10-08                     | Active |
-| B-003 | Given a run, this Feature runs the build once on each of ubuntu, windows and macos, each reported as a separate check.                                   | owner, 2026-10-08; README § 9         | Active |
-| B-004 | Given a run on one operating system, this Feature runs the `Format`, `Compile`, `Test`, `SpecCheck` and `Pack` targets through the build's entry script. | README § 8 step 1; `0055-F1` C-1; A-1 | Active |
-| B-005 | Given any target fails on one operating system, that operating system's check fails.                                                                     | README § 8 step 1                     | Active |
-| B-006 | Given a pull request whose tree has a specification violation, this Feature annotates the violation's file and line in the pull request's diff.          | AGENTS.md § `specht`; `0001-F2` B-001 | Active |
-| B-007 | Given two runs on different commits, each operating system's check carries the same name in both.                                                        | `0055-F8` B-002                       | Active |
-| B-008 | Given any run of this Feature, no package is pushed to any feed.                                                                                         | `0055-F6` C-1                         | Active |
-| B-009 | Given a commit whose committed workflow file differs from the workflow the build generates from that commit, the run fails.                              | OQ-1 (owner, 2026-10-08); C-1         | Active |
+| ID    | Claim                                                                                                                                                                                      | Source                                     | Status  |
+| ----- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------ | ------- |
+| B-001 | Given a pull request targeting `main` is opened or updated, this Feature runs the build against the pull request's head.                                                                   | owner, 2026-10-08; A-2                     | Active  |
+| B-002 | Given a push to `main`, this Feature runs the build against the pushed commit.                                                                                                             | owner, 2026-10-08                          | Active  |
+| B-003 | Given a run, this Feature runs the build once on each of ubuntu, windows and macos.                                                                                                        | owner, 2026-10-08; README § 9              | Amended |
+| B-004 | Given a run on one operating system, this Feature runs the `Format`, `Compile`, `Test`, `SpecCheck` and `Pack` targets through the build's entry script.                                   | README § 8 step 1; `0055-F1` C-1; A-1; C-4 | Active  |
+| B-005 | Given any target fails on one operating system, that operating system's check fails.                                                                                                       | README § 8 step 1; C-4                     | Active  |
+| B-006 | Given a pull request whose tree has a specification violation, this Feature annotates the violation's file and line in the pull request's diff.                                            | AGENTS.md § `specht`; `0001-F2` B-001      | Active  |
+| B-007 | Given two runs on different commits, each operating system's check carries the same name in both.                                                                                          | `0055-F8` B-002                            | Active  |
+| B-008 | Given any run of this Feature, no package is pushed to any feed.                                                                                                                           | `0055-F6` C-1                              | Active  |
+| B-009 | Given a commit whose committed copy of any generated workflow - integration, release or dependency updates - differs from what the build generates from that commit, the run fails.        | OQ-1 (owner, 2026-10-08); C-1              | Amended |
+| B-010 | Given a run, each operating system's build reports as a separate check.                                                                                                                    | owner, 2026-10-08; split from B-003        | Active  |
+| B-011 | Given a run after this repository's local tool manifest names `specht.tool` (`0055-F7` B-003), the run restores the tool from the feed with the workflow's own token granted package read. | `0055-F7` A-1; `0055-F6` C-5               | Active  |
 
 ## 4. Constraints
 
 <!-- last written by: spec-author, 2026-10-08 -->
 
-| ID  | Constraint                                                                                                                                                     | Rules Out                                                                                             |
-| --- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
-| C-1 | The workflow file is generated by the NUKE build; a change to it is a change to the build project plus the committed regeneration, with its step order diffed. | A hand edit to `.github/workflows/ci.yml`; a committed workflow the build would not generate.         |
-| C-2 | A run checks out the commit with its full history.                                                                                                             | A shallow checkout, which changes the git height `0055-F5` computes the version from (`0055-F5` C-2). |
-| C-3 | A run is offline beyond restoring packages and tools and uploading coverage.                                                                                   | A test or a gate that calls GitHub or another service (AGENTS.md § Invariants).                       |
+| ID  | Constraint                                                                                                                                                                                                                        | Rules Out                                                                                              |
+| --- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
+| C-1 | Every workflow file - integration, release and dependency updates - is generated by the NUKE build; a change to one is a change to the build project plus the committed regeneration, with its step order diffed.                 | A hand edit to any file under `.github/workflows/`; a committed workflow the build would not generate. |
+| C-2 | A run checks out the commit with its full history.                                                                                                                                                                                | A shallow checkout, which changes the git height `0055-F5` computes the version from (`0055-F5` C-2).  |
+| C-3 | A run is offline beyond restoring packages and tools and uploading coverage.                                                                                                                                                      | A test or a gate that calls GitHub or another service (AGENTS.md § Invariants).                        |
+| C-4 | `SpecCheck` gates a run only from `0001-F2`'s check command landing; until then its step reports itself unavailable and passes, and `SPEC060` is a warning here throughout (`0055-F1` B-023, B-024, C-6, C-7; owner, 2026-10-08). | A run failed because the check command does not exist yet, or for a `Missing` traceability row.        |
 
 ## 5. Out of Scope
 
@@ -125,6 +128,8 @@ Pending: owned by `test-writer`.
 | B-007    | Check names do not change between runs            | Missing | Missing |
 | B-008    | Integration never publishes                       | Missing | Missing |
 | B-009    | A stale workflow fails the run                    | Missing | Missing |
+| B-010    | Each operating system is its own check            | Missing | Missing |
+| B-011    | A run reads the feed with its own token           | Missing | Missing |
 
 ## 10. Lessons / Spec Deltas
 

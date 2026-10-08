@@ -16,7 +16,7 @@ domain: "Build and release"
 author: "spec-author"
 milestone: null
 children: []
-depends_on: []
+depends_on: ["F1"]
 blocks: ["F6"]
 spikes: []
 created: "2026-10-08"
@@ -55,16 +55,16 @@ Nothing sets the package's version, so every `Pack` would produce the same defau
 
 <!-- last written by: spec-author, 2026-10-08 -->
 
-| ID    | Claim                                                                                                                                                                                | Source                                  | Status |
-| ----- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------- | ------ |
-| B-001 | Given one commit checked out with its full history on any two machines, the build computes the same package version on both.                                                         | owner, 2026-10-08; decision 0001        | Active |
-| B-002 | Given two commits on `main` where the second follows the first and `version.json` is unchanged, the second's computed version is higher than the first's.                            | owner, 2026-10-08; decision 0001        | Active |
-| B-003 | Given a commit built from `main` or from a `v*` tag, the computed version carries no prerelease suffix.                                                                              | owner, 2026-10-08; A-2                  | Active |
-| B-004 | Given a commit built from any other ref, the computed version carries a prerelease suffix naming the commit.                                                                         | owner, 2026-10-08; A-2                  | Active |
-| B-005 | Given the `Pack` target, the version inside the package equals the version computed for the commit.                                                                                  | owner, 2026-10-08; `0055-F1` B-009      | Active |
-| B-006 | Given a commit that changes the version in `version.json` and nothing else, the schema versions the tool embeds and the `schemaVersion` `specht init` writes are unchanged.          | owner, 2026-10-08; `0001-F7` B-012; C-1 | Active |
-| B-007 | Given a fresh clone after the local tools are restored, `dotnet nbgv tag` on a commit of `main` creates the tag `v<version>` at that commit, `<version>` being its computed version. | owner, 2026-10-08; A-1                  | Active |
-| B-008 | Given `version.json` as first committed, the version computed for a commit of `main` begins `0.1.`.                                                                                  | OQ-1 (owner, 2026-10-08)                | Active |
+| ID    | Claim                                                                                                                                                                                | Source                                         | Status  |
+| ----- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------- | ------- |
+| B-001 | Given one commit built from the same ref, with its full history, on any two machines, the build computes the same package version on both.                                           | owner, 2026-10-08; decision 0001; B-003; B-004 | Amended |
+| B-002 | Given two commits on `main` where the second follows the first and `version.json` is unchanged, the second's computed version is higher than the first's.                            | owner, 2026-10-08; decision 0001               | Active  |
+| B-003 | Given a commit built from `main` or from a `v*` tag, the computed version carries no prerelease suffix.                                                                              | owner, 2026-10-08; A-2                         | Active  |
+| B-004 | Given a commit built from any other ref, the computed version carries a prerelease suffix naming the commit.                                                                         | owner, 2026-10-08; A-2                         | Active  |
+| B-005 | Given the `Pack` target, the version inside the package equals the version computed for the commit.                                                                                  | owner, 2026-10-08; `0055-F1` B-009             | Active  |
+| B-006 | Given a commit that changes the version in `version.json` and nothing else, the schema versions the tool embeds and the `schemaVersion` `specht init` writes are unchanged.          | owner, 2026-10-08; `0001-F7` B-012; C-1        | Active  |
+| B-007 | Given a fresh clone after the local tools are restored, `dotnet nbgv tag` on a commit of `main` creates the tag `v<version>` at that commit, `<version>` being its computed version. | owner, 2026-10-08; A-1                         | Active  |
+| B-008 | Given `version.json` as first committed, the version computed for a commit of `main` begins `0.1.`.                                                                                  | OQ-1 (owner, 2026-10-08)                       | Active  |
 
 ## 4. Constraints
 

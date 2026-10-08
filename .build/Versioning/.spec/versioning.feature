@@ -5,7 +5,7 @@ Feature: Package versioning
 
   @B-001
   Scenario: One commit has one version everywhere
-    Given one commit checked out with its full history on two machines
+    Given one commit built from the same ref, with its full history, on two machines
     When each computes the package version
     Then both versions are the same
 

@@ -45,3 +45,9 @@ Feature: The coverage gate
     When integration runs and every gate passes
     Then each operating system's check passes
     And the run reports a warning that the coverage upload failed
+
+  @B-008
+  Scenario: A change with no measured lines passes the patch status
+    Given a pull request that changes no product line
+    When its coverage is reported
+    Then the patch coverage status passes

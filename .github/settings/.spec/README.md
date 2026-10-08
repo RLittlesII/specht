@@ -16,7 +16,7 @@ domain: "Build and release"
 author: "spec-author"
 milestone: null
 children: []
-depends_on: ["F2", "F3"]
+depends_on: ["F2", "F3", "F4"]
 blocks: []
 spikes: []
 created: "2026-10-08"
@@ -55,19 +55,19 @@ A workflow that runs is not a gate until the repository requires it: without bra
 
 <!-- last written by: spec-author, 2026-10-08 -->
 
-| ID    | Claim                                                                                                                                                        | Source                                              | Status |
-| ----- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------- | ------ |
-| B-001 | Given the checklist, it requires a pull request before any change reaches `main`.                                                                            | owner, 2026-10-08                                   | Active |
-| B-002 | Given the checklist and the CI workflow, the status checks the checklist requires from CI are exactly the per-operating-system checks the workflow produces. | owner, 2026-10-08; `0055-F2` B-003, B-007           | Active |
-| B-003 | Given the checklist, it requires the patch coverage status and does not require the project coverage status.                                                 | owner, 2026-10-08; `0055-F3` B-003, B-005           | Active |
-| B-004 | Given the checklist, it enables squash merging with the commit messages as the squashed body.                                                                | AGENTS.md § Specification-Driven Development rule 3 | Active |
-| B-005 | Given the checklist, it enables rebase merging and disables merge commits.                                                                                   | AGENTS.md rule 3; `specht-conventions` § Delivery   | Active |
-| B-006 | Given the checklist, it enables merging a pull request automatically once its required checks pass.                                                          | owner, 2026-10-08; `0055-F4` B-005                  | Active |
-| B-007 | Given the checklist and the committed workflows, every secret a workflow reads is named in the checklist with the workflow that reads it.                    | owner, 2026-10-08                                   | Active |
-| B-008 | Given the checklist, it names the Renovate and Codecov installations on the repository.                                                                      | `0055-F3`; `0055-F4` A-2                            | Active |
-| B-009 | Given the checklist, it keeps GitHub issues enabled, for outside reports through the issue templates.                                                        | owner, 2026-10-08; A-2                              | Active |
-| B-010 | Given the checklist, it sets the repository's visibility to public.                                                                                          | OQ-1 (owner, 2026-10-08)                            | Active |
-| B-011 | Given the checklist, its protection of `main` requires no approving review; the required checks are the gate.                                                | OQ-2 (owner, 2026-10-08)                            | Active |
+| ID    | Claim                                                                                                                                                                                                        | Source                                              | Status  |
+| ----- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------- | ------- |
+| B-001 | Given the checklist, it requires a pull request before any change reaches `main`.                                                                                                                            | owner, 2026-10-08                                   | Active  |
+| B-002 | Given the checklist and the CI workflow, the status checks the checklist requires from CI are exactly the per-operating-system checks the workflow produces.                                                 | owner, 2026-10-08; `0055-F2` B-003, B-007           | Active  |
+| B-003 | Given the checklist, it requires the patch coverage status and does not require the project coverage status.                                                                                                 | owner, 2026-10-08; `0055-F3` B-003, B-005           | Active  |
+| B-004 | Given the checklist, it enables squash merging with the commit messages as the squashed body.                                                                                                                | AGENTS.md § Specification-Driven Development rule 3 | Active  |
+| B-005 | Given the checklist, it enables rebase merging and disables merge commits.                                                                                                                                   | AGENTS.md rule 3; `specht-conventions` § Delivery   | Active  |
+| B-006 | Given the checklist, it enables merging a pull request automatically once its required checks pass.                                                                                                          | owner, 2026-10-08; `0055-F4` B-005                  | Active  |
+| B-007 | Given the checklist and the committed workflows, every secret a workflow reads - the Codecov token and the Renovate workflow's token among them - is named in the checklist with the workflow that reads it. | owner, 2026-10-08; `0055-F3` C-2; `0055-F4` C-8     | Amended |
+| B-008 | Given the checklist, it names the Codecov installation and no Renovate app installation, because Renovate runs as this repository's own workflow.                                                            | `0055-F3`; `0055-F4` OQ-6 (owner, 2026-10-08)       | Amended |
+| B-009 | Given the checklist, it keeps GitHub issues enabled, for outside reports through the issue templates.                                                                                                        | owner, 2026-10-08; A-2                              | Active  |
+| B-010 | Given the checklist, it sets the repository's visibility to public.                                                                                                                                          | OQ-1 (owner, 2026-10-08)                            | Active  |
+| B-011 | Given the checklist, its protection of `main` requires no approving review; the required checks are the gate.                                                                                                | OQ-2 (owner, 2026-10-08)                            | Active  |
 
 ## 4. Constraints
 

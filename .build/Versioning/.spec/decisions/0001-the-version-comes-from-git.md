@@ -40,7 +40,7 @@ meaningful version, and nothing stops a tag that disagrees with the commit.
 
 ## Affects
 
-- `0055-F5` § 2 A-1, A-2; § 3 B-001 to B-007; § 4 C-1, C-3.
+- `0055-F5` § 2 A-1, A-2; § 3 B-001 to B-008; § 4 C-1 to C-3.
 - `0055-F6`: the tag it publishes on is created this way.
 
 ## Reversal

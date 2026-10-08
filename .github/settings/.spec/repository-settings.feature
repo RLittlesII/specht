@@ -43,7 +43,8 @@ Feature: Repository settings checklist
   @B-008
   Scenario: The service installations are listed
     When the maintainer reads the settings checklist
-    Then it names the dependency-update and coverage service installations
+    Then it names the coverage service installation
+    And it names no dependency-update app installation
 
   @B-009 @boundary
   Scenario: Outside reports can still be filed
