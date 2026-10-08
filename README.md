@@ -256,3 +256,79 @@ requirement (§ 2 number) it serves.
   `upgrade`, and never overwrites an existing file.
 - When a question in § 6 turns out to need the owner, stop and ask; do not
   pick a second default silently.
+
+## Agent skills: what is in the repository, and what is installed
+
+Instructions for AI agents come from two places, and the split is deliberate.
+
+**Tracked here, in [`.skills/`](./.skills) — needed to deliver, so a clone has
+it.** Eight skills, reviewable in a pull request like any other file:
+
+| Kind | Skill | Covers |
+| ---- | ----- | ------ |
+| method | [`deliver-change`](./.skills/deliver-change/SKILL.md) | issue to branch to specification to pull request |
+| method | [`coding-conventions`](./.skills/coding-conventions/SKILL.md) | orient, keep the design direct, say it once |
+| method | [`test-from-scenarios`](./.skills/test-from-scenarios/SKILL.md) | a claim first, injected time, synthetic fixtures, both tiers |
+| method | [`clarify-requirements`](./.skills/clarify-requirements/SKILL.md) | when to ask versus decide, and writing the answer back |
+| method | [`spec-and-traceability`](./.skills/spec-and-traceability/SKILL.md) | the specification model, claims, records, blast radius |
+| companion | [`specht-conventions`](./.skills/specht-conventions/SKILL.md) | this repository: paths, section ownership, ID schemes, tiers, commands, the self-check |
+| technology | [`spectre-cli`](./.skills/spectre-cli/SKILL.md) | the CLI framework the tool is built on |
+| technology | [`dotnet-tool`](./.skills/dotnet-tool/SKILL.md) | the tool's shape: project setup, command folders, packing, the local tool manifest |
+
+Plus the four role contracts in [`.agents/`](./.agents/README.md), the
+templates in [`.spec/templates/`](./.spec/templates) and the schema set in
+[`.spec/schema/`](./.spec/schema) — the live copy this repository checks itself
+with, and the same bytes the tool embeds and writes into a consumer on
+`specht init`. The entry point for all of it is [`AGENTS.md`](./AGENTS.md).
+
+These were seeded from [`hooked`](https://github.com/RLittlesII/hooked) pull
+request #217 and rewritten for this repository: `hooked`'s product skills
+(webhooks, the event store, the two-host slice layout) were dropped, and
+everything that said "not this repository's path" about shipping a `dotnet tool`
+now says the opposite.
+
+**Installed from [`Skillfile`](./Skillfile) — convenience, not a dependency.**
+Eighteen library and tooling skills (`xunit`, `reqnroll`,
+`rocket-surgery-testing-autofixtures`, `central-package-management`, `nuke`,
+`msbuild`, `dotnet-build`, `github-actions`, `logging`, the git and GitHub
+operations set, `code-evidence`, `code-reader`, `engram`, `neo4j`), plus six
+agents, pulled from `littlestechnology/.agents` and pinned in
+[`Skillfile.lock`](./Skillfile.lock).
+
+### The gap, stated plainly
+
+`littlestechnology/.agents` is **private**. Without access to it, `skillfile
+install` fails and none of those eighteen skills land. Everything in `.skills/`,
+`.agents/` and `.spec/` still works, and so does the build — `./build.sh` and
+`./build.sh SpecCheck` have no dependency on any of it.
+
+What is lost is library-level guidance an agent would otherwise read before
+touching xUnit, Reqnroll or NUKE. The repository's own conventions for those
+surfaces are **not** in the missing skills: the traps live in
+[`specht-conventions`](./.skills/specht-conventions/SKILL.md) and its
+references, which are tracked. So a contributor without access can still follow
+this repository's rules; they just do not get the general guide to the library
+underneath.
+
+The rule is in [AGENTS.md](./AGENTS.md) § Skills: **a skill needed to deliver a
+feature belongs in `.skills/`, not in `Skillfile`.** `spectre-cli` and
+`dotnet-tool` are in `.skills/` for exactly that reason. If something in the
+installed set becomes load-bearing, it gets copied in and rewritten for this
+repository rather than relied on from outside.
+
+### Installing the optional set
+
+Declared in [`Skillfile`](./Skillfile), pinned in
+[`Skillfile.lock`](./Skillfile.lock), pulled via the
+[`skillfile`](https://github.com/anthropics/skillfile) CLI.
+
+1. Install the `skillfile` CLI and make sure it's on your `PATH`.
+2. From the repo root, install everything declared in `Skillfile`:
+
+   ```bash
+   skillfile install
+   ```
+
+   This reads `Skillfile`, resolves `Skillfile.lock`, and installs each
+   listed agent and skill for Claude Code locally, into the gitignored
+   `.claude/`.

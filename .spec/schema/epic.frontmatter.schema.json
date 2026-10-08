@@ -1,0 +1,85 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/rlittlesii/specht/schema/v1/epic.frontmatter.schema.json",
+  "title": "Epic frontmatter",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "id",
+    "type",
+    "status",
+    "priority",
+    "milestone",
+    "children",
+    "created",
+    "updated",
+    "github_issue"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^[0-9]{4}$"
+    },
+    "type": {
+      "const": "epic"
+    },
+    "status": {
+      "enum": [
+        "needs-decomposition",
+        "ready-for-architecture",
+        "ready-for-implementation",
+        "ready",
+        "in-progress",
+        "in-review",
+        "blocked",
+        "deferred",
+        "done"
+      ]
+    },
+    "priority": {
+      "enum": [
+        "critical",
+        "high",
+        "med",
+        "low"
+      ]
+    },
+    "milestone": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "children": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^([0-9]{4}-)?F[0-9]+[a-z]?$"
+      },
+      "description": "Feature ids, written in the qualified <epic>-F<n> form."
+    },
+    "created": {
+      "type": "string",
+      "format": "date"
+    },
+    "updated": {
+      "type": "string",
+      "format": "date"
+    },
+    "github_issue": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "minimum": 1
+    },
+    "synced_at": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date-time"
+    }
+  }
+}

@@ -433,7 +433,11 @@ FodyWeavers.xsd
 
 # macOS
 .DS_Store
-.claude/
+
+# Claude
+.claude/*
+!.claude/agents/
+!.claude/skills/
 
 # Jet Brains
 .idea/

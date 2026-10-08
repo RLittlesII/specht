@@ -1,0 +1,188 @@
+---
+name: specht-conventions
+description: This repository's conventions — paths and layout, the delivery flow through GitHub issues, the test tiers, the ID schemes, section ownership, and how the tool checks its own specification tree. Use for any change in this repository, alongside the method skill the work belongs to.
+---
+
+# `specht` conventions
+
+The companion skill: **the only skill that names this repository.** Each method
+skill states a portable rule; this one says where that rule lands here. Read the
+method skill your work belongs to *and* this one.
+
+| Area      | Extends                                                       | Detail                                      |
+| --------- | ------------------------------------------------------------- | ------------------------------------------- |
+| Coding    | [`coding-conventions`](../coding-conventions/SKILL.md)         | [references/coding.md](references/coding.md) |
+| Delivery  | [`deliver-change`](../deliver-change/SKILL.md)                 | [references/delivery.md](references/delivery.md) |
+| Testing   | [`test-from-scenarios`](../test-from-scenarios/SKILL.md)       | [references/testing.md](references/testing.md) |
+| Questions | [`clarify-requirements`](../clarify-requirements/SKILL.md)     | [references/questions.md](references/questions.md) |
+| Specs     | [`spec-and-traceability`](../spec-and-traceability/SKILL.md)   | [references/specs.md](references/specs.md)  |
+
+## Read before starting
+
+- `README.md` — the seed brief and the project-level design authority: what the
+  tool is (§ 1), the requirements as decided (§ 2), what was extracted from
+  `hooked` and why it is never regenerated (§ 3, § 9), the rule vocabulary
+  (§ 4), the drafted design (§ 5), the open questions and their defaults (§ 6),
+  and the order of work (§ 8).
+- `AGENTS.md` — the artifact chain and the four non-discretionary rules.
+- The Feature's specification, its `.feature` file, and its `lessons/`.
+- The repo-wide lessons in `.spec/lessons/`, once any exist.
+
+## Layout
+
+The target layout. README § 8 step 1 creates the scaffold; until it lands, a
+path below that does not exist yet is a plan, not a fact. README § 3 names the
+engine project `src/SpecCheck`; the decided name is `Specht` (README § 6, first
+row).
+
+```
+Specht.slnx                    the solution - a project not listed here is not built
+Directory.Build.props          repo-wide MSBuild: nullable, warnings as errors, IsPackable=false
+Directory.Packages.props       central package versions - the only place a version is written
+global.json                    the pinned SDK and the Microsoft.Testing.Platform runner
+.config/dotnet-tools.json      local tools: husky, nuke, and specht itself once published
+build.sh / build.cmd           entry to the NUKE build
+
+src/
+  Specht/                      Specht - the rule engine: discovery, readers, schema loader,
+                               rules, runner, report. Copied from hooked (README § 3).
+    .spec/                     this Feature's specification, .feature and records (epic 0001)
+  Specht.Tool/                 Specht.Tool - the CLI host; PackAsTool, command `specht`
+    Features/<Command>/        one folder per Spectre command - dotnet-tool owns the inside
+    schema/v1/                 embedded shipping copy of the schema set
+    templates/v1/              embedded shipping copy of the templates
+
+test/
+  Specht.Tests/                Specht.Tests - unit and integration tests; SpecTree builder
+  Specht.Acceptance/           Specht.Acceptance - Reqnroll over src/**/.spec/*.feature
+
+.build/                        the NUKE build project - targets and CI generation; tooling, not product
+.nuke/                         NUKE parameters and the generated build schema
+.husky/                        git hooks - pre-commit formats staged .cs and runs specht on staged specs
+.github/                       workflows (ci, publish), labels, issue templates
+
+.spec/                         repo-wide adr/, lessons/, templates/, schema/
+                               schema/ and templates/ are the live copy specht checks
+                               itself with - the same bytes as the embedded v1
+.agents/                       the four role contracts
+.skills/                       these skills
+Skillfile / Skillfile.lock     externally-owned skills and agents; nothing load-bearing
+AGENTS.md                      the entry point for agents
+README.md                      the seed brief and design authority
+REQUIREMENTS.md                the requirements-gathering session the brief condenses
+```
+
+**Everything below `src/Specht.Tool/Features/` is
+[`dotnet-tool` § Vertical Slice](../dotnet-tool/references/vertical-slice.md)** —
+how a command folder is laid out, how it joins `Program.cs`, and what belongs in
+the engine instead. Not restated here.
+
+## Section ownership
+
+The one place this is written. Each section of a Feature's specification has
+exactly one owning role; a role that needs another's section changed escalates and
+does not write there.
+
+| Section                        | Owner           |
+| ------------------------------ | --------------- |
+| 1. Business Goal               | `spec-author`   |
+| 2. User Needs (+ Assumptions)  | `spec-author`   |
+| 3. Acceptance Criteria         | `spec-author`   |
+| 4. Constraints                 | `spec-author`   |
+| 5. Out of Scope                | `spec-author`   |
+| 6. Concern Separation          | `implementer`   |
+| 7. Technical Design            | `implementer`   |
+| 8. Testing Strategy            | `test-writer`   |
+| 9. Traceability Matrix         | `test-writer`   |
+| 10. Lessons / Spec Deltas      | `spec-author`   |
+| 11. Open Questions             | whoever is blocked |
+| 12. Sign-off                   | `spec-reviewer` |
+| Tasks                          | `spec-author`, after agreement |
+| Scoring                        | derived — recompute, never hand-edit |
+
+The `.feature` file belongs to `spec-author`; its step definitions belong to
+`test-writer`. Role contracts are in [`.agents/`](../../.agents/README.md).
+
+## ID schemes
+
+| Scheme  | Form                | Scope            | Cited from outside as   |
+| ------- | ------------------- | ---------------- | ----------------------- |
+| Epic    | `0001`              | repository       | `0001`                  |
+| Feature | `F1`, `F5b`         | its epic         | `0001-F1`               |
+| Claim   | `B-001`, `B-006b`   | its Feature      | `0001-F1 B-001`         |
+| Constraint | `C-12`           | its Feature      | `0001-F1 C-12`          |
+| Open question | `OQ-3`        | its Feature      | `0001-F1 OQ-3`          |
+| Task    | `0001-11`           | its **epic**, not its Feature | `0001-11` |
+| ADR     | `ADR-0002`          | repo or Feature, by blast radius | `ADR-0002` |
+| `specht` rule | `SPEC031`     | the rule engine, versioned with the schema | `SPEC031` |
+
+Always carry the prefix in prose — several sequences have a twelfth member.
+
+**Ids are never reused and never renumbered.** Renumbering breaks every citation
+in every past commit, review, issue and sibling specification. A dropped claim
+leaves its number retired.
+
+The rule vocabulary is fixed per schema version (README § 4). A new `SPEC###` is
+a new schema version, after README § 8 step 6 — never a quiet addition.
+
+Known gap in the model the tool checks: § 4's ID column is an explicit `C-nn` in
+only some consumers' specs; the rest carry a bare ordinal, so those citations
+resolve by counting rows. The template uses an explicit column; a spec written
+here always does. Never insert a § 4 row above an existing one in a spec that
+still uses ordinals.
+
+## The spec / issue split
+
+**Delivery state is tracked in GitHub issues; content is tracked in this
+repository.** Exactly one field crosses that line in each direction, and which
+one — plus which fields are derived and must never be hand-edited — is in
+[references/delivery.md](references/delivery.md) § "What mirrors, and what never
+does". Get it wrong and `specht` says so.
+
+## The flow
+
+```
+specification  →  grooming  →  GitHub issues  →  scenarios  →  tests  →  implementation  →  PR
+```
+
+The specification exists first and stands alone; issues are cut from its § 3
+claims after agreement. A bug, spike or chore starts at the issue instead and may
+produce a spec delta afterwards.
+
+## Build and test
+
+```sh
+./build.sh                  # Default = Compile + Test
+./build.sh Format           # dotnet format --verify-no-changes
+./build.sh UnitTest         # --filter Tier=Unit
+./build.sh IntegrationTest  # --filter Tier=Integration
+./build.sh AcceptanceTest   # test/Specht.Acceptance, Reqnroll, no filter
+./build.sh Pack             # Specht.Tool.<version>.nupkg into .artifacts/nupkg
+./build.sh SpecCheck        # the tool checking this repository's own .spec/ tree
+```
+
+`SpecCheck` runs `specht` exactly as a consumer would — through the local tool
+manifest, never through a project reference (README § 7). Until the first
+package is published it runs `dotnet run --project src/Specht.Tool -- --root .`
+instead; the manifest replaces that the moment a package exists. Pre-commit
+calls the same thing when a staged file is under a `.spec/` directory or is a
+`.feature`.
+
+`dotnet tool restore && dotnet husky install` once per clone, or `core.hooksPath`
+is unset and no git hook fires.
+
+## Never add
+
+- A rule in `.claude/`. That tree is gitignored and reinstalled from `Skillfile`;
+  a rule there cannot be reviewed in a pull request.
+- A renumbered claim, constraint, question, task or rule id.
+- A hand edit to `status` after `github_issue` is set, or to any derived field.
+- A hand edit to `.github/workflows/ci.yml`. It is NUKE-generated.
+- A package version in a `.csproj`.
+- A specification in two places at once.
+- A second copy of a schema file that can drift. `.spec/schema/` and the embedded
+  `schema/v1/` are the same bytes, and a test says so.
+- An absolute path in any output, report, log line or test fixture.
+- A write into a consumer's tree from anything but `init` and `upgrade`, or an
+  overwrite of an existing file from either.
+- A second index of anything this skill already indexes.
