@@ -64,7 +64,7 @@ runner.
 
 - Every adopter writes the same thirty lines - root, report, strict, exit code
   - and gets them slightly different; the diagnostic form and the exit codes
-  stop being one contract.
+    stop being one contract.
 - Still needs the layout in the manifest to be usable at all, so it is this
   decision minus the command.
 - Cost of rejecting: nothing - the library is still the thing the tool wraps.

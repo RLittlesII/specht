@@ -53,10 +53,10 @@ Feature owns that today.
 
 ## Features
 
-| Feature   | Name                          | Specification                  | Status                      |
-| --------- | ----------------------------- | ------------------------------ | --------------------------- |
-| `0002-F1` | Docs as first-class citizen   | `docs/.spec/README.md`         | `needs-decomposition`, high |
-| `0002-F2` | Documentation site            | `docs/site/.spec/README.md`    | `blocked` on `0002-F1`, med |
+| Feature   | Name                        | Specification               | Status                      |
+| --------- | --------------------------- | --------------------------- | --------------------------- |
+| `0002-F1` | Docs as first-class citizen | `docs/.spec/README.md`      | `needs-decomposition`, high |
+| `0002-F2` | Documentation site          | `docs/site/.spec/README.md` | `blocked` on `0002-F1`, med |
 
 `hooked` names its F2 "Astro Documentation Site". Here the name leaves the
 framework out, because the framework is `0002-F2` OQ-2.
@@ -78,14 +78,14 @@ Not filed. Tasks are GitHub issues, cut from § 3 after agreement, and this
 repository has no remote yet. The ids are reserved in epic order and mirror
 `hooked`'s 0008-01..06:
 
-| Task      | Feature   | Summary                                                                              | Claims         |
-| --------- | --------- | ------------------------------------------------------------------------------------ | -------------- |
-| `0002-01` | `0002-F1` | XML doc-comment enforcement: `CS1591` as an error, scoped to the public surface        | B-001; C-3     |
-| `0002-02` | `0002-F1` | API-reference generation: a NUKE target writing under `.artifacts/`                    | B-002, B-004   |
-| `0002-03` | `0002-F1` | Usage-doc co-location convention, applied to every command folder                      | B-003; C-5     |
-| `0002-04` | `0002-F1` | Build verification: the default build runs both and fails on an undocumented member    | B-001, B-005   |
-| `0002-05` | `0002-F2` | Site scaffold over `0002-F1`'s output, after the framework ADR                         | B-001          |
-| `0002-06` | `0002-F2` | CI publish pipeline to a stable public URL                                             | B-002          |
+| Task      | Feature   | Summary                                                                             | Claims       |
+| --------- | --------- | ----------------------------------------------------------------------------------- | ------------ |
+| `0002-01` | `0002-F1` | XML doc-comment enforcement: `CS1591` as an error, scoped to the public surface     | B-001; C-3   |
+| `0002-02` | `0002-F1` | API-reference generation: a NUKE target writing under `.artifacts/`                 | B-002, B-004 |
+| `0002-03` | `0002-F1` | Usage-doc co-location convention, applied to every command folder                   | B-003; C-5   |
+| `0002-04` | `0002-F1` | Build verification: the default build runs both and fails on an undocumented member | B-001, B-005 |
+| `0002-05` | `0002-F2` | Site scaffold over `0002-F1`'s output, after the framework ADR                      | B-001        |
+| `0002-06` | `0002-F2` | CI publish pipeline to a stable public URL                                          | B-002        |
 
 `0002-05` and `0002-06` are not cut until the deferral is lifted (`0002-F2`
 B-003).
@@ -109,10 +109,10 @@ specification makes that claim.
 
 ## Out of this epic
 
-| Item                                                       | Where it lives instead                       |
-| ---------------------------------------------------------- | -------------------------------------------- |
-| `--help` text                                              | `0001-F2`                                    |
-| `--explain` rule text and the report's JSON Schema         | `0001-F3`                                    |
-| `hooked`'s own documentation                               | `hooked`, its Documentation epic (PR #212)   |
-| Rewriting `.spec/**` documents as usage docs               | Rejected: a specification is the agreement   |
+| Item                                                                                          | Where it lives instead                                                                                                                  |
+| --------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| `--help` text                                                                                 | `0001-F2`                                                                                                                               |
+| `--explain` rule text and the report's JSON Schema                                            | `0001-F3`                                                                                                                               |
+| `hooked`'s own documentation                                                                  | `hooked`, its Documentation epic (PR #212)                                                                                              |
+| Rewriting `.spec/**` documents as usage docs                                                  | Rejected: a specification is the agreement                                                                                              |
 | Turning the specification-model and rule-catalogue prose into user documentation (README § 3) | Unowned. Neither `0002` Feature claims it; the owner decides whether it is a `0002-F1` claim once OQ-2 settles, or a Feature of its own |

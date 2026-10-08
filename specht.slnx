@@ -1,8 +1,14 @@
 <Solution>
   <Folder Name="/.solution/">
+    <File Path=".codecov.yml" />
+    <File Path=".editorconfig" />
+    <File Path=".gitignore" />
+    <File Path="AGENTS.md" />
     <File Path="Directory.Build.props" />
     <File Path="Directory.Packages.props" />
     <File Path="global.json" />
+    <File Path="LICENSE.md" />
+    <File Path="README.md" />
   </Folder>
   <Folder Name="/src/">
     <Project Path="src/specht/specht.csproj" />

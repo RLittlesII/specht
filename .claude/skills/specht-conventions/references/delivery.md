@@ -37,15 +37,15 @@ that tag must show only the namespace rename.
 branch, before the worktree, and before the first edit**, and never pick up an
 issue that already carries it.
 
-| Label                              | Means                                                     |
-| ---------------------------------- | --------------------------------------------------------- |
-| `status:needs-decomposition`       | Epic or Feature not yet split into single-responsibility children |
-| `status:ready-for-architecture`    | child issue exists, single-responsibility, awaiting design |
-| `status:ready-for-implementation`  | design and scaffold in place, safe to implement            |
-| `status:ready`                     | dependencies resolved, pick-up-able                        |
-| `status:in-progress`               | taken                                                      |
-| `status:in-review`                 | PR open, awaiting a reviewer                                |
-| `status:blocked`                   | a blocker must be resolved first                            |
+| Label                             | Means                                                             |
+| --------------------------------- | ----------------------------------------------------------------- |
+| `status:needs-decomposition`      | Epic or Feature not yet split into single-responsibility children |
+| `status:ready-for-architecture`   | child issue exists, single-responsibility, awaiting design        |
+| `status:ready-for-implementation` | design and scaffold in place, safe to implement                   |
+| `status:ready`                    | dependencies resolved, pick-up-able                               |
+| `status:in-progress`              | taken                                                             |
+| `status:in-review`                | PR open, awaiting a reviewer                                      |
+| `status:blocked`                  | a blocker must be resolved first                                  |
 
 The design sections are owned by [`implementer`](../../../.agents/implementer.md);
 a label description that names any other role is historical text, and the role
@@ -56,12 +56,12 @@ frontmatter, permanently, and nothing mirrors it.
 
 ## What mirrors, and what never does
 
-| Field          | Source                               | Rule                                        |
-| -------------- | ------------------------------------ | ------------------------------------------- |
-| `status`       | the issue's `status:*` label          | mirrored once `github_issue` is set; never hand-edited after |
-| `synced_at`    | the mirror run                        | set whenever `status` is mirrored            |
-| `priority`     | the specification's frontmatter        | authored here, permanently                   |
-| `rank`, `blocks` | `value`, `risk`, the dependency graph | derived — recompute, never hand-edit       |
+| Field            | Source                                | Rule                                                         |
+| ---------------- | ------------------------------------- | ------------------------------------------------------------ |
+| `status`         | the issue's `status:*` label          | mirrored once `github_issue` is set; never hand-edited after |
+| `synced_at`      | the mirror run                        | set whenever `status` is mirrored                            |
+| `priority`       | the specification's frontmatter       | authored here, permanently                                   |
+| `rank`, `blocks` | `value`, `risk`, the dependency graph | derived — recompute, never hand-edit                         |
 
 A set `github_issue` with no `synced_at` is a `specht` error (`SPEC005`).
 

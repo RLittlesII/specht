@@ -18,10 +18,10 @@ migrates.
 
 The tool reads both layouts, because its consumers have both:
 
-| Layout      | Path                                      | Here                     |
-| ----------- | ----------------------------------------- | ------------------------ |
-| co-located  | `<area>/.spec/README.md`                   | the only one             |
-| legacy      | `epics/<epic>/<feature>/spec.md`           | never; read for consumers |
+| Layout     | Path                             | Here                      |
+| ---------- | -------------------------------- | ------------------------- |
+| co-located | `<area>/.spec/README.md`         | the only one              |
+| legacy     | `epics/<epic>/<feature>/spec.md` | never; read for consumers |
 
 The same rules apply to each. A spec's identity is `(epic, id)` from its
 frontmatter, not its path; the same `(epic, id)` discovered at two locations is

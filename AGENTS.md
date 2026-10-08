@@ -11,14 +11,14 @@ Instructions for anyone working in this repository — a person or an agent.
 **This file is tracked and authoritative.** `.claude/` is gitignored and
 reinstalled from `Skillfile`, so nothing there can be reviewed in a pull request:
 a rule never lives in `.claude/`. Repo-owned instructions live in this file,
-[`.agents/`](.agents/README.md), [`.skills/`](.skills/specht-conventions/SKILL.md)
-and [`.spec/`](.spec/templates/).
+[`agents/`](.claude/agents/README.md), [`.skills/`](.claude/skills/specht-conventions/SKILL.md)
+and [`.spec/`](.spec/templates).
 
 ## Project
 
 `specht` — a command-line tool, delivered as a `dotnet tool`, that checks a
 repository's `.spec/` specification tree against a versioned schema and reports
-every violation with a file, a line and a rule id. One schema and one checker
+every violation with a file, a line, and a rule id. One schema and one checker
 shared by every repository in the owner's ecosystem, replacing hand-copied
 implementations. This repository holds **both the tool and the schema**; no
 consumer owns the schema, and `hooked` is consumer one.
@@ -111,7 +111,7 @@ violation under `--strict`), `2` missing root or manifest, `3` invalid manifest.
 
 ## Invariants
 
-- **Never an absolute path** in any output, report, log line or test fixture
+- **Never an absolute path** in any output, report, log line, or test fixture
   (README § 9). Paths are relative to the root the tool was given.
 - **Never a write into a consumer's tree** except through `init`, `upgrade` and
   the caller-named `--report` file (README § 9). `init` never overwrites.
@@ -145,7 +145,7 @@ Never skip upstream. If a change needs behaviour no scenario states, the scenari
 is the first edit, not the last.
 
 A **Feature begins with its specification**, authored with no issue in existence —
-the specification is the agreement that issues are later cut from. A bug, spike or
+the specification is the agreement that issues are later cut from. A bug, spike, or
 chore begins at the issue instead, and may produce a spec delta afterwards.
 
 ### Four non-discretionary rules
@@ -160,7 +160,7 @@ chore begins at the issue instead, and may produce a spec delta afterwards.
    and does not persist to the next session or the next agent.
 
 3. **The specification delta is the change.** A pull request that changes behaviour
-   cites the upstream specification it satisfies (epic, feature, claim or
+   cites the upstream specification it satisfies (epic, feature, claim, or
    constraint ID) **in its commit message** — this repo squash-merges with
    `COMMIT_MESSAGES` and also allows rebase merges, so a citation living only in
    the PR body does not survive either merge path.
@@ -202,7 +202,7 @@ Identifiers are the citation mechanism that makes the chain navigable:
 - Rules: `SPEC031`, fixed per schema version.
 
 IDs are **never reused and never renumbered** — not to tidy a sequence.
-Renumbering breaks every citation in every past commit, review, issue and
+Renumbering breaks every citation in every past commit, review, issue, and
 decision record. A dropped constraint leaves its number retired.
 
 ### `specht`
@@ -242,12 +242,12 @@ Four documented role contracts own the chain, each trusting only the artifact th
 role before it produced — never a chat summary of it. They live in
 [`.agents/`](.agents/README.md):
 
-| Role                                       | Turns              | Into                                    |
-| ------------------------------------------ | ------------------ | --------------------------------------- |
-| [`spec-author`](.agents/spec-author.md)     | a decided need      | the agreement, and the `.feature` file   |
-| [`test-writer`](.agents/test-writer.md)     | a claim             | a failing scenario and failing tests     |
-| [`implementer`](.agents/implementer.md)     | a failing test      | production code, and the design that explains it |
-| [`spec-reviewer`](.agents/spec-reviewer.md) | a diff              | a sign-off, or findings                  |
+| Role                                        | Turns          | Into                                             |
+| ------------------------------------------- | -------------- | ------------------------------------------------ |
+| [`spec-author`](.agents/spec-author.md)     | a decided need | the agreement, and the `.feature` file           |
+| [`test-writer`](.agents/test-writer.md)     | a claim        | a failing scenario and failing tests             |
+| [`implementer`](.agents/implementer.md)     | a failing test | production code, and the design that explains it |
+| [`spec-reviewer`](.agents/spec-reviewer.md) | a diff         | a sign-off, or findings                          |
 
 Which role owns which section is written in exactly one place:
 [`specht-conventions`](.skills/specht-conventions/SKILL.md) § "Section ownership".
@@ -284,16 +284,16 @@ Apply it at Feature-naming time during decomposition and during grooming passes.
 
 Each class of rule has one home. Read the owner, not a copy of it:
 
-| What                                                       | Where it is written                         |
-| ---------------------------------------------------------- | ------------------------------------------- |
-| Naming, modifier order, braces, line length, suppressions  | `.editorconfig` — the compiler reads it (scaffold, README § 8 step 1) |
-| Framework, nullability, strictness, packability             | `Directory.Build.props` |
-| Package versions                                            | `Directory.Packages.props` |
-| Build targets, CI generation                                | `.build/Build.cs`, `.build/Build.GitHubActions.cs` |
-| Project layout, test conventions, commands, ID schemes      | [`specht-conventions`](.skills/specht-conventions/SKILL.md) |
-| Command layout, packaging, what sits below a command         | [`dotnet-tool`](.skills/dotnet-tool/SKILL.md) |
-| When an abstraction is earned, and how terse to be           | [`coding-conventions`](.skills/coding-conventions/SKILL.md) |
-| The specification model, claims, records, blast radius       | [`spec-and-traceability`](.skills/spec-and-traceability/SKILL.md) |
+| What                                                      | Where it is written                                                   |
+| --------------------------------------------------------- | --------------------------------------------------------------------- |
+| Naming, modifier order, braces, line length, suppressions | `.editorconfig` — the compiler reads it (scaffold, README § 8 step 1) |
+| Framework, nullability, strictness, packability           | `Directory.Build.props`                                               |
+| Package versions                                          | `Directory.Packages.props`                                            |
+| Build targets, CI generation                              | `.build/Build.cs`, `.build/Build.GitHubActions.cs`                    |
+| Project layout, test conventions, commands, ID schemes    | [`specht-conventions`](.skills/specht-conventions/SKILL.md)           |
+| Command layout, packaging, what sits below a command      | [`dotnet-tool`](.skills/dotnet-tool/SKILL.md)                         |
+| When an abstraction is earned, and how terse to be        | [`coding-conventions`](.skills/coding-conventions/SKILL.md)           |
+| The specification model, claims, records, blast radius    | [`spec-and-traceability`](.skills/spec-and-traceability/SKILL.md)     |
 
 A skill that needs a fact another skill owns **links it**. The role contracts in
 `.agents/` name what a role produces and refuses; they are not where a rule is
@@ -336,36 +336,36 @@ description. Runtime prompts, `README.md` and `REQUIREMENTS.md` are exempt.
 ## Skills
 
 **Project skills live in [`.skills/`](.skills/)**, one directory per skill, each a
-`SKILL.md` declaring `name` and `description`. A skill holds the rule, the trap and
+`SKILL.md` declaring `name` and `description`. A skill holds the rule, the trap, and
 the `Never add` list; facts live where they are authoritative and the skill links
 them.
 
 Skills come in three kinds, and a skill is never a mixture of them.
 
-**Method** — portable to another repository; names no path, command or provider.
+**Method** — portable to another repository; names no path, command, or provider.
 Each one's **Project rules** preamble points at the companion:
 
-| Skill                                                              | Covers                                                               |
-| ------------------------------------------------------------------ | -------------------------------------------------------------------- |
-| [`deliver-change`](.skills/deliver-change/SKILL.md)                 | issue → branch → specification → build → pull request                 |
-| [`coding-conventions`](.skills/coding-conventions/SKILL.md)         | orient, stop on a gap, keep the design direct, put a rule where it runs |
-| [`test-from-scenarios`](.skills/test-from-scenarios/SKILL.md)       | a claim first, an injected clock, synthetic fixtures, both tiers        |
-| [`clarify-requirements`](.skills/clarify-requirements/SKILL.md)     | when to ask versus decide, and writing the answer back                 |
-| [`spec-and-traceability`](.skills/spec-and-traceability/SKILL.md)   | the specification model; claims, records and blast radius               |
+| Skill                                                             | Covers                                                                  |
+| ----------------------------------------------------------------- | ----------------------------------------------------------------------- |
+| [`deliver-change`](.skills/deliver-change/SKILL.md)               | issue → branch → specification → build → pull request                   |
+| [`coding-conventions`](.skills/coding-conventions/SKILL.md)       | orient, stop on a gap, keep the design direct, put a rule where it runs |
+| [`test-from-scenarios`](.skills/test-from-scenarios/SKILL.md)     | a claim first, an injected clock, synthetic fixtures, both tiers        |
+| [`clarify-requirements`](.skills/clarify-requirements/SKILL.md)   | when to ask versus decide, and writing the answer back                  |
+| [`spec-and-traceability`](.skills/spec-and-traceability/SKILL.md) | the specification model; claims, records and blast radius               |
 
 **Companion** — the only skill that names this repository:
 
-| Skill                                                            | Covers                                                                                                   |
-| ---------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
-| [`specht-conventions`](.skills/specht-conventions/SKILL.md)       | paths and layout, section ownership, the ID schemes, the spec/issue mirror, the tiers, the commands, the self-check |
+| Skill                                                       | Covers                                                                                                              |
+| ----------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
+| [`specht-conventions`](.skills/specht-conventions/SKILL.md) | paths and layout, section ownership, the ID schemes, the spec/issue mirror, the tiers, the commands, the self-check |
 
 **Technology** — about a library this tool is built on, with the repository's
 own decisions marked where they apply:
 
-| Skill                                                           | Covers                                                                        |
-| --------------------------------------------------------------- | ----------------------------------------------------------------------------- |
-| [`spectre-cli`](.skills/spectre-cli/SKILL.md)                    | commands and settings, branching, help, async and exit codes, DI, testing, the execution pipeline |
-| [`dotnet-tool`](.skills/dotnet-tool/SKILL.md)                    | the tool's shape — project setup, command folders, conventions, packing and the local tool manifest |
+| Skill                                         | Covers                                                                                              |
+| --------------------------------------------- | --------------------------------------------------------------------------------------------------- |
+| [`spectre-cli`](.skills/spectre-cli/SKILL.md) | commands and settings, branching, help, async and exit codes, DI, testing, the execution pipeline   |
+| [`dotnet-tool`](.skills/dotnet-tool/SKILL.md) | the tool's shape — project setup, command folders, conventions, packing and the local tool manifest |
 
 **A skill needed to deliver a feature lives here, not in `Skillfile`.** That
 manifest pulls from a private repository, so a clone without access to it must

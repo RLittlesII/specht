@@ -9,12 +9,12 @@ description: The four documented role contracts that own the specification chain
 code is downstream of it. Four roles own that chain, and each is a **documented
 contract** — for whoever takes the role, a person or an agent.
 
-| Role                                  | Turns                              | Into                                      |
-| ------------------------------------- | ---------------------------------- | ----------------------------------------- |
-| [`spec-author`](spec-author.md)       | a decided need                     | the agreement, and the `.feature` file    |
-| [`test-writer`](test-writer.md)       | a claim                            | a failing scenario and failing tests      |
-| [`implementer`](implementer.md)       | a failing test                     | production code, and the design that explains it |
-| [`spec-reviewer`](spec-reviewer.md)   | a diff                             | a sign-off, or findings                   |
+| Role                                | Turns          | Into                                             |
+| ----------------------------------- | -------------- | ------------------------------------------------ |
+| [`spec-author`](spec-author.md)     | a decided need | the agreement, and the `.feature` file           |
+| [`test-writer`](test-writer.md)     | a claim        | a failing scenario and failing tests             |
+| [`implementer`](implementer.md)     | a failing test | production code, and the design that explains it |
+| [`spec-reviewer`](spec-reviewer.md) | a diff         | a sign-off, or findings                          |
 
 ## Sequential trust
 

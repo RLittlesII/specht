@@ -4,7 +4,8 @@ type: epic
 status: ready-for-architecture
 priority: high
 milestone: null
-children: ["0001-F1", "0001-F2", "0001-F3", "0001-F4", "0001-F5", "0001-F6", "0001-F7"]
+children:
+  ["0001-F1", "0001-F2", "0001-F3", "0001-F4", "0001-F5", "0001-F6", "0001-F7"]
 created: "2026-10-07"
 updated: "2026-10-07"
 github_issue: null
@@ -38,15 +39,15 @@ any of them has the same read-only oracle and the same generation contract.
 Decomposed by capability dimension, not by README § 8 step. A step is a pull
 request; a Feature is a thing the tool does, with its own invariant.
 
-| Feature   | Name                                     | Specification                                   | README § 8 step |
-| --------- | ---------------------------------------- | ----------------------------------------------- | --------------- |
-| `0001-F1` | The engine, extracted unchanged          | `src/specht/.spec/README.md`                    | 2               |
-| `0001-F2` | The check command                        | `src/specht.tool/Features/Check/.spec/README.md` | 3              |
-| `0001-F3` | The report contract                      | `src/specht/Report/.spec/README.md`             | 3               |
-| `0001-F4` | `init`                                   | `src/specht.tool/Features/Init/.spec/README.md`  | 3              |
-| `0001-F5` | The manifest carries the roles           | `src/specht/Manifest/.spec/README.md`           | 5               |
-| `0001-F6` | Discovery                                | `src/specht/Discovery/.spec/README.md`          | 5               |
-| `0001-F7` | Schema versioning                        | `src/specht.tool/.spec/README.md`               | 6               |
+| Feature   | Name                            | Specification                                    | README § 8 step |
+| --------- | ------------------------------- | ------------------------------------------------ | --------------- |
+| `0001-F1` | The engine, extracted unchanged | `src/specht/.spec/README.md`                     | 2               |
+| `0001-F2` | The check command               | `src/specht.tool/Features/Check/.spec/README.md` | 3               |
+| `0001-F3` | The report contract             | `src/specht/Report/.spec/README.md`              | 3               |
+| `0001-F4` | `init`                          | `src/specht.tool/Features/Init/.spec/README.md`  | 3               |
+| `0001-F5` | The manifest carries the roles  | `src/specht/Manifest/.spec/README.md`            | 5               |
+| `0001-F6` | Discovery                       | `src/specht/Discovery/.spec/README.md`           | 5               |
+| `0001-F7` | Schema versioning               | `src/specht.tool/.spec/README.md`                | 6               |
 
 Why these seven and not `hooked`'s one draft (`0008-F3`, 34 claims): that draft
 bundled the command, `init`, the manifest roles, discovery and the baseline in
@@ -73,11 +74,11 @@ epic glob `epics/**/epic.md` discovers it (`0001-F6` decision 0001).
 
 ## Out of this epic
 
-| Item                                                        | Where it lives instead                                        |
-| ----------------------------------------------------------- | ------------------------------------------------------------- |
-| `hooked` replacing its engine with the tool                 | `hooked`, a Feature of its own on `refactor/ai-offering`       |
-| Installing in Transporter and repairing its tree            | Transporter; the repair is the agent's, from the report (Must-6) |
-| The claim bridge and the convention analyzers (Roslyn)      | `hooked` `0008-F1`, `0008-F2`                                  |
-| Rule plugins                                                | Rejected: `0001-F2` decision 0001                               |
-| Autofix: `--fix`, or `upgrade` rewriting a document          | Out of scope (README § 2)                                       |
-| A second schema version's content                           | After `0001-F7`, as its own epic                                |
+| Item                                                   | Where it lives instead                                           |
+| ------------------------------------------------------ | ---------------------------------------------------------------- |
+| `hooked` replacing its engine with the tool            | `hooked`, a Feature of its own on `refactor/ai-offering`         |
+| Installing in Transporter and repairing its tree       | Transporter; the repair is the agent's, from the report (Must-6) |
+| The claim bridge and the convention analyzers (Roslyn) | `hooked` `0008-F1`, `0008-F2`                                    |
+| Rule plugins                                           | Rejected: `0001-F2` decision 0001                                |
+| Autofix: `--fix`, or `upgrade` rewriting a document    | Out of scope (README § 2)                                        |
+| A second schema version's content                      | After `0001-F7`, as its own epic                                 |

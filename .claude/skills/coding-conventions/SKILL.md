@@ -102,11 +102,11 @@ trap that is not obvious. Compression stops where a reader would guess wrong.
 
 A skill is one of three kinds, and never a mixture:
 
-| Kind       | About                                              | May name a path or command |
-| ---------- | -------------------------------------------------- | -------------------------- |
-| method     | how work is done, portable to another repository    | no                         |
-| companion  | this repository                                     | yes — it is the only one   |
-| technology | a library or tool, silent about the product         | the library's own surface  |
+| Kind       | About                                            | May name a path or command |
+| ---------- | ------------------------------------------------ | -------------------------- |
+| method     | how work is done, portable to another repository | no                         |
+| companion  | this repository                                  | yes — it is the only one   |
+| technology | a library or tool, silent about the product      | the library's own surface  |
 
 A skill holds **the rule, the trap, and the `Never add` list**. Facts live where
 they are authoritative and the skill links them. Restating a fact in a skill

@@ -37,84 +37,84 @@ A violation today says what is wrong and not what would be right, so the agent t
 
 <!-- last written by: spec-author, 2026-10-07 -->
 
-| #   | Persona                                       | Need                                                                                                  | Pain Point Today                                                                          |
-| --- | --------------------------------------------- | ----------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------- |
-| 1   | The agent repairing a specification           | Each violation says what the rule wanted - the headers, the grammar, the section order - in data       | A message in prose; the expectation lives in the rule's code, the template or the schema  |
-| 2   | The agent migrating a pre-schema tree         | The same, on Transporter's tree, for every rule at once                                               | Nothing says what a pre-schema document is missing, only that it fails                     |
-| 3   | A CI step or a script parsing the result      | One JSON document on stdout, or at a path, that validates against a schema it can pin                  | `hooked` writes an anonymous object; its shape is whatever the code says this week          |
-| 4   | The maintainer reading a rule                 | The rule's full text from the tool that enforces it, for the version pinned                           | Prose in a skill file, in another repository                                                |
-| 5   | `0001-F7`                                     | A report that names the schema version it checked against and where the schemas came from              | N/A (internal dependency)                                                                 |
+| #   | Persona                                  | Need                                                                                             | Pain Point Today                                                                         |
+| --- | ---------------------------------------- | ------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------- |
+| 1   | The agent repairing a specification      | Each violation says what the rule wanted - the headers, the grammar, the section order - in data | A message in prose; the expectation lives in the rule's code, the template or the schema |
+| 2   | The agent migrating a pre-schema tree    | The same, on Transporter's tree, for every rule at once                                          | Nothing says what a pre-schema document is missing, only that it fails                   |
+| 3   | A CI step or a script parsing the result | One JSON document on stdout, or at a path, that validates against a schema it can pin            | `hooked` writes an anonymous object; its shape is whatever the code says this week       |
+| 4   | The maintainer reading a rule            | The rule's full text from the tool that enforces it, for the version pinned                      | Prose in a skill file, in another repository                                             |
+| 5   | `0001-F7`                                | A report that names the schema version it checked against and where the schemas came from        | N/A (internal dependency)                                                                |
 
 ### Assumptions
 
-| ID  | Assumption                                                                                                                                                                                                                       |
-| --- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| A-1 | The report's JSON Schema is published at `docs/schema/report.schema.json`. It is the tool's contract, versioned with the tool, so it lives outside `.spec/schema/` and `init` never writes it. The folder name is reversible.    |
-| A-2 | The exit code for `--explain` with a rule id outside the pinned version's vocabulary is open (OQ-1); no claim fixes it. The default OQ-1 proposes is `2`, the missing-input code.                                                 |
-| A-3 | `--explain` is an option on the check command, as README § 5 writes it (`specht --explain SPEC031`); it prints and exits without running a check.                                                                                 |
+| ID  | Assumption                                                                                                                                                                                                                    |
+| --- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| A-1 | The report's JSON Schema is published at `docs/schema/report.schema.json`. It is the tool's contract, versioned with the tool, so it lives outside `.spec/schema/` and `init` never writes it. The folder name is reversible. |
+| A-2 | The exit code for `--explain` with a rule id outside the pinned version's vocabulary is open (OQ-1); no claim fixes it. The default OQ-1 proposes is `2`, the missing-input code.                                             |
+| A-3 | `--explain` is an option on the check command, as README § 5 writes it (`specht --explain SPEC031`); it prints and exits without running a check.                                                                             |
 
 ## 3. Acceptance Criteria
 
 <!-- last written by: spec-author, 2026-10-07 -->
 
-| ID    | Claim                                                                                                                                                                                                                                      | Source                       | Status |
-| ----- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------- | ------ |
-| B-001 | Given `--json`, this Feature writes the report document to stdout in place of the violation lines and the summary, so stdout parses as one JSON document.                                                                                 | README § 5                   | Active |
-| B-002 | Given `--report <path>`, this Feature writes the same document to that path, creating the directories above it, and stdout keeps the line stream.                                                                                         | README § 5; split into B-022-B-025 (decision 0002) | Withdrawn |
-| B-003 | Given both `--json` and `--report`, the document on stdout and the document at the path are identical.                                                                                                                                     | README § 5                   | Active |
-| B-004 | Given `--json` or `--report`, the exit code is the one the same run gives without them.                                                                                                                                                   | `dotnet-tool` § Exit codes   | Active |
-| B-005 | Given the document, it carries the schema version checked against, whether the schemas came from the embedded set or from the on-disk files, each layout's name and specification count, the item count, the count of rule ids evaluated, the error and warning counts, and the violations. | README § 6; Should-8         | Active |
-| B-006 | Given the document, it carries no timestamp and no field derived from the clock, the machine or the environment.                                                                                                                          | decision 0001                | Active |
-| B-007 | Given a violation in the document, it carries the rule id, the severity, the file, the line, the identifier where the rule has one, the message, and `expected`.                                                                          | README § 6; Must-6           | Active |
-| B-008 | Given any document the tool writes, it validates against the report schema published in this repository, and a test proves it.                                                                                                             | README § 6; C-1              | Active |
-| B-009 | Given a frontmatter schema violation (`SPEC002`-`SPEC004`), `expected` names the schema file, the key at fault and the schema's constraint on that key - the required list, the enum, the pattern or the format.                                  | Must-6                       | Active |
-| B-010 | Given a section violation (`SPEC010`), `expected` carries the ordered list of section titles of the pinned schema version.                                                                                                                | Must-6                       | Active |
-| B-011 | Given a table violation (`SPEC013`), `expected` carries the ordered header list for that section.                                                                                                                                         | Must-6                       | Active |
-| B-012 | Given an identity violation (`SPEC011`, `SPEC012`, `SPEC043`), `expected` carries the identity form and the value the path, the parent or the first declaration implies.                                                                  | Must-6                       | Active |
-| B-013 | Given a companion violation (`SPEC020`, `SPEC021`), `expected` carries the companion count the rule requires or the claim ids the specification declares.                                                                                | Must-6                       | Active |
-| B-014 | Given a claim violation (`SPEC030`), `expected` carries the claim grammar and, for a duplicate, the line of the first declaration.                                                                                                        | Must-6                       | Active |
-| B-015 | Given a matrix violation (`SPEC031`), `expected` carries the claim ids that need exactly one row and the number of rows each has.                                                                                                         | Must-6                       | Active |
-| B-016 | Given a child-item violation (`SPEC040`, `SPEC041`, `SPEC044`), `expected` carries the file-name shape the item must have and, for a gap, the next number in the epic's sequence.                                                          | Must-6                       | Active |
-| B-017 | Given an edge or cycle violation (`SPEC051`, `SPEC052`), `expected` carries the edge the other Feature must declare, or the cycle as the ordered list of identities.                                                                       | Must-6                       | Active |
-| B-018 | Given an approval violation (`SPEC060`, `SPEC061`), `expected` carries the cell or sign-off row that must change before the approved status is honest.                                                                                    | Must-6                       | Active |
-| B-019 | Given a manifest that pins a schema version and `--explain <SPEC###>` with an id in that version's vocabulary, this Feature prints on stdout the rule's full text - what it checks, what it expects, and the schema version it belongs to - and exits with code `0` without running a check. | README § 5; A-3      | Active |
-| B-020 | Given a manifest that pins a schema version and `--explain` with an id outside that version's vocabulary, this Feature names the id on stderr, writes nothing on stdout, and exits with a non-zero code. | README § 5; the code is OQ-1 | Active |
-| B-021 | Given the document, every path in it is relative to the root with `/` separators.                                                                                                                                                         | README § 9                   | Active |
-| B-022 | Given `--report <path>`, this Feature writes the report document to that path.                                                                                                                                                             | README § 5; decision 0002    | Active |
-| B-023 | Given `--report <path>` whose directories do not exist, this Feature creates them.                                                                                                                                                        | README § 5; decision 0002    | Active |
-| B-024 | Given `--report <path>` naming a file that exists, this Feature replaces its content with this run's document.                                                                                                                             | decision 0002                | Active |
-| B-025 | Given `--report <path>` without `--json`, stdout carries the same violation lines and summary the run prints without `--report`.                                                                                                          | README § 5                   | Active |
-| B-026 | Given a missing-frontmatter violation (`SPEC001`), `expected` names the schema file for that document's kind and that schema's required key list.                                                                                         | Must-6                       | Active |
-| B-027 | Given a dependency that names no Feature (`SPEC050`), `expected` carries the Feature identities the dependency could name.                                                                                                               | Must-6                       | Active |
-| B-028 | Given a reused item id (`SPEC044`), `expected` carries the file of the item that first holds the id.                                                                                                                                       | Must-6                       | Active |
+| ID    | Claim                                                                                                                                                                                                                                                                                        | Source                                             | Status    |
+| ----- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------- | --------- |
+| B-001 | Given `--json`, this Feature writes the report document to stdout in place of the violation lines and the summary, so stdout parses as one JSON document.                                                                                                                                    | README § 5                                         | Active    |
+| B-002 | Given `--report <path>`, this Feature writes the same document to that path, creating the directories above it, and stdout keeps the line stream.                                                                                                                                            | README § 5; split into B-022-B-025 (decision 0002) | Withdrawn |
+| B-003 | Given both `--json` and `--report`, the document on stdout and the document at the path are identical.                                                                                                                                                                                       | README § 5                                         | Active    |
+| B-004 | Given `--json` or `--report`, the exit code is the one the same run gives without them.                                                                                                                                                                                                      | `dotnet-tool` § Exit codes                         | Active    |
+| B-005 | Given the document, it carries the schema version checked against, whether the schemas came from the embedded set or from the on-disk files, each layout's name and specification count, the item count, the count of rule ids evaluated, the error and warning counts, and the violations.  | README § 6; Should-8                               | Active    |
+| B-006 | Given the document, it carries no timestamp and no field derived from the clock, the machine or the environment.                                                                                                                                                                             | decision 0001                                      | Active    |
+| B-007 | Given a violation in the document, it carries the rule id, the severity, the file, the line, the identifier where the rule has one, the message, and `expected`.                                                                                                                             | README § 6; Must-6                                 | Active    |
+| B-008 | Given any document the tool writes, it validates against the report schema published in this repository, and a test proves it.                                                                                                                                                               | README § 6; C-1                                    | Active    |
+| B-009 | Given a frontmatter schema violation (`SPEC002`-`SPEC004`), `expected` names the schema file, the key at fault and the schema's constraint on that key - the required list, the enum, the pattern or the format.                                                                             | Must-6                                             | Active    |
+| B-010 | Given a section violation (`SPEC010`), `expected` carries the ordered list of section titles of the pinned schema version.                                                                                                                                                                   | Must-6                                             | Active    |
+| B-011 | Given a table violation (`SPEC013`), `expected` carries the ordered header list for that section.                                                                                                                                                                                            | Must-6                                             | Active    |
+| B-012 | Given an identity violation (`SPEC011`, `SPEC012`, `SPEC043`), `expected` carries the identity form and the value the path, the parent or the first declaration implies.                                                                                                                     | Must-6                                             | Active    |
+| B-013 | Given a companion violation (`SPEC020`, `SPEC021`), `expected` carries the companion count the rule requires or the claim ids the specification declares.                                                                                                                                    | Must-6                                             | Active    |
+| B-014 | Given a claim violation (`SPEC030`), `expected` carries the claim grammar and, for a duplicate, the line of the first declaration.                                                                                                                                                           | Must-6                                             | Active    |
+| B-015 | Given a matrix violation (`SPEC031`), `expected` carries the claim ids that need exactly one row and the number of rows each has.                                                                                                                                                            | Must-6                                             | Active    |
+| B-016 | Given a child-item violation (`SPEC040`, `SPEC041`, `SPEC044`), `expected` carries the file-name shape the item must have and, for a gap, the next number in the epic's sequence.                                                                                                            | Must-6                                             | Active    |
+| B-017 | Given an edge or cycle violation (`SPEC051`, `SPEC052`), `expected` carries the edge the other Feature must declare, or the cycle as the ordered list of identities.                                                                                                                         | Must-6                                             | Active    |
+| B-018 | Given an approval violation (`SPEC060`, `SPEC061`), `expected` carries the cell or sign-off row that must change before the approved status is honest.                                                                                                                                       | Must-6                                             | Active    |
+| B-019 | Given a manifest that pins a schema version and `--explain <SPEC###>` with an id in that version's vocabulary, this Feature prints on stdout the rule's full text - what it checks, what it expects, and the schema version it belongs to - and exits with code `0` without running a check. | README § 5; A-3                                    | Active    |
+| B-020 | Given a manifest that pins a schema version and `--explain` with an id outside that version's vocabulary, this Feature names the id on stderr, writes nothing on stdout, and exits with a non-zero code.                                                                                     | README § 5; the code is OQ-1                       | Active    |
+| B-021 | Given the document, every path in it is relative to the root with `/` separators.                                                                                                                                                                                                            | README § 9                                         | Active    |
+| B-022 | Given `--report <path>`, this Feature writes the report document to that path.                                                                                                                                                                                                               | README § 5; decision 0002                          | Active    |
+| B-023 | Given `--report <path>` whose directories do not exist, this Feature creates them.                                                                                                                                                                                                           | README § 5; decision 0002                          | Active    |
+| B-024 | Given `--report <path>` naming a file that exists, this Feature replaces its content with this run's document.                                                                                                                                                                               | decision 0002                                      | Active    |
+| B-025 | Given `--report <path>` without `--json`, stdout carries the same violation lines and summary the run prints without `--report`.                                                                                                                                                             | README § 5                                         | Active    |
+| B-026 | Given a missing-frontmatter violation (`SPEC001`), `expected` names the schema file for that document's kind and that schema's required key list.                                                                                                                                            | Must-6                                             | Active    |
+| B-027 | Given a dependency that names no Feature (`SPEC050`), `expected` carries the Feature identities the dependency could name.                                                                                                                                                                   | Must-6                                             | Active    |
+| B-028 | Given a reused item id (`SPEC044`), `expected` carries the file of the item that first holds the id.                                                                                                                                                                                         | Must-6                                             | Active    |
 
 ## 4. Constraints
 
 <!-- last written by: spec-author, 2026-10-07 -->
 
-| ID   | Constraint                                                                                                                                                | Rules Out                                                                                               |
-| ---- | --------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------- |
-| C-1  | The report's shape is written once, as a JSON Schema in this repository, and a test validates a produced report against it.                              | An anonymous object as the only definition; a field the schema does not name.                            |
-| C-2  | `expected` is structured data an agent can act on without the catalogue: an object with named members per rule family, never a sentence alone.           | `expected: "the right headers"`; the message repeated under another name.                                |
-| C-3  | The document is a function of the tree, the manifest and the tool version.                                                                               | A timestamp; a machine name; an absolute path; a locale-dependent string.                                |
-| C-4  | Within a tool major version the document changes only by addition.                                                                                        | Renaming or removing a field; changing a field's type.                                                   |
-| C-5  | `--json` and `--report` change what is written, never the verdict.                                                                                        | A different exit code under `--json`; a violation that appears in one form and not the other.             |
-| C-6  | A rule's full text lives once, in the engine, versioned with the schema; `--explain` prints it and README § 4 only summarises it.                          | A second catalogue in a skill or a wiki that `--explain` does not read.                                   |
-| C-7  | The file `--report` names is the only file a check run writes, and it holds exactly one report document.                                                  | A temporary or backup file left beside it; appending a second document; any other write under the root.  |
+| ID  | Constraint                                                                                                                                     | Rules Out                                                                                               |
+| --- | ---------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------- |
+| C-1 | The report's shape is written once, as a JSON Schema in this repository, and a test validates a produced report against it.                    | An anonymous object as the only definition; a field the schema does not name.                           |
+| C-2 | `expected` is structured data an agent can act on without the catalogue: an object with named members per rule family, never a sentence alone. | `expected: "the right headers"`; the message repeated under another name.                               |
+| C-3 | The document is a function of the tree, the manifest and the tool version.                                                                     | A timestamp; a machine name; an absolute path; a locale-dependent string.                               |
+| C-4 | Within a tool major version the document changes only by addition.                                                                             | Renaming or removing a field; changing a field's type.                                                  |
+| C-5 | `--json` and `--report` change what is written, never the verdict.                                                                             | A different exit code under `--json`; a violation that appears in one form and not the other.           |
+| C-6 | A rule's full text lives once, in the engine, versioned with the schema; `--explain` prints it and README § 4 only summarises it.              | A second catalogue in a skill or a wiki that `--explain` does not read.                                 |
+| C-7 | The file `--report` names is the only file a check run writes, and it holds exactly one report document.                                       | A temporary or backup file left beside it; appending a second document; any other write under the root. |
 
 ## 5. Out of Scope
 
 <!-- last written by: spec-author, 2026-10-07 -->
 
-| #   | Item                                                                     | Exclusion Reason                                                                                     |
-| --- | ------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------- |
-| 1   | Autofix: applying `expected` to the document                             | README § 2; the agent repairs, the tool never writes a specification.                                 |
-| 2   | The verdict, the line stream, the exit codes                              | `0001-F2`.                                                                                           |
-| 3   | A second output format (SARIF, HTML, JUnit)                               | One document with one schema; a converter can be written over it.                                     |
-| 4   | Output from `init` and `upgrade`                                          | Each prints its own file list (`0001-F4`, `0001-F7`); neither writes this document.                    |
-| 5   | Changing a rule's text between schema versions                            | The text is part of the version (C-6); a changed text is `0001-F7`'s next version.                    |
-| 6   | Colour, markup or a table rendering of the report                          | stdout is plain text (`0001-F2` C-3).                                                                 |
-| 7   | Refusing, appending to or backing up an existing report file              | Decision 0002: the report file is replaced on every run.                                              |
+| #   | Item                                                         | Exclusion Reason                                                                    |
+| --- | ------------------------------------------------------------ | ----------------------------------------------------------------------------------- |
+| 1   | Autofix: applying `expected` to the document                 | README § 2; the agent repairs, the tool never writes a specification.               |
+| 2   | The verdict, the line stream, the exit codes                 | `0001-F2`.                                                                          |
+| 3   | A second output format (SARIF, HTML, JUnit)                  | One document with one schema; a converter can be written over it.                   |
+| 4   | Output from `init` and `upgrade`                             | Each prints its own file list (`0001-F4`, `0001-F7`); neither writes this document. |
+| 5   | Changing a rule's text between schema versions               | The text is part of the version (C-6); a changed text is `0001-F7`'s next version.  |
+| 6   | Colour, markup or a table rendering of the report            | stdout is plain text (`0001-F2` C-3).                                               |
+| 7   | Refusing, appending to or backing up an existing report file | Decision 0002: the report file is replaced on every run.                            |
 
 ## 6. Concern Separation
 
@@ -138,36 +138,36 @@ Pending: owned by `test-writer`.
 
 <!-- last written by: spec-author, 2026-10-07 -->
 
-| Claim ID | Scenario                                                             | Test    | Status  |
-| -------- | -------------------------------------------------------------------- | ------- | ------- |
-| B-001    | JSON output replaces the diagnostic lines                            | Missing | Missing |
-| B-002    | A report path receives the document                                  | Missing | Missing |
-| B-003    | Both outputs are the same document                                   | Missing | Missing |
-| B-004    | The document form does not change the verdict                        | Missing | Missing |
-| B-005    | The document carries the counts and the version                      | Missing | Missing |
+| Claim ID | Scenario                                                                                   | Test    | Status  |
+| -------- | ------------------------------------------------------------------------------------------ | ------- | ------- |
+| B-001    | JSON output replaces the diagnostic lines                                                  | Missing | Missing |
+| B-002    | A report path receives the document                                                        | Missing | Missing |
+| B-003    | Both outputs are the same document                                                         | Missing | Missing |
+| B-004    | The document form does not change the verdict                                              | Missing | Missing |
+| B-005    | The document carries the counts and the version                                            | Missing | Missing |
 | B-006    | The document carries nothing from the clock; The document carries nothing from the machine | Missing | Missing |
-| B-007    | A violation carries what the rule expected                           | Missing | Missing |
-| B-008    | Every document validates against the published schema                | Missing | Missing |
-| B-009    | A frontmatter violation says what the schema requires                | Missing | Missing |
-| B-010    | A section violation says the section order                           | Missing | Missing |
-| B-011    | A table violation says the headers                                   | Missing | Missing |
-| B-012    | An identity violation says the identity implied                      | Missing | Missing |
-| B-013    | A companion violation says what must resolve                         | Missing | Missing |
-| B-014    | A claim violation says the grammar                                   | Missing | Missing |
-| B-015    | A matrix violation says which claims need a row                      | Missing | Missing |
-| B-016    | A child-item violation says the file shape or the next number        | Missing | Missing |
-| B-017    | A dependency violation says the missing edge or the cycle            | Missing | Missing |
-| B-018    | An approval violation says what must change first                    | Missing | Missing |
-| B-019    | Explain prints a rule's full text                                    | Missing | Missing |
-| B-020    | Explain of an unknown rule names it and fails                        | Missing | Missing |
-| B-021    | No path in the document is absolute                                  | Missing | Missing |
-| B-022    | A report path receives the document                                  | Missing | Missing |
-| B-023    | A report path in a new directory is created                          | Missing | Missing |
-| B-024    | A report path that exists is replaced                                | Missing | Missing |
-| B-025    | A report path keeps the diagnostic lines on the output               | Missing | Missing |
-| B-026    | A missing frontmatter says what the schema requires                  | Missing | Missing |
-| B-027    | A dependency on nothing says what it could name                      | Missing | Missing |
-| B-028    | A reused item id names its first holder                              | Missing | Missing |
+| B-007    | A violation carries what the rule expected                                                 | Missing | Missing |
+| B-008    | Every document validates against the published schema                                      | Missing | Missing |
+| B-009    | A frontmatter violation says what the schema requires                                      | Missing | Missing |
+| B-010    | A section violation says the section order                                                 | Missing | Missing |
+| B-011    | A table violation says the headers                                                         | Missing | Missing |
+| B-012    | An identity violation says the identity implied                                            | Missing | Missing |
+| B-013    | A companion violation says what must resolve                                               | Missing | Missing |
+| B-014    | A claim violation says the grammar                                                         | Missing | Missing |
+| B-015    | A matrix violation says which claims need a row                                            | Missing | Missing |
+| B-016    | A child-item violation says the file shape or the next number                              | Missing | Missing |
+| B-017    | A dependency violation says the missing edge or the cycle                                  | Missing | Missing |
+| B-018    | An approval violation says what must change first                                          | Missing | Missing |
+| B-019    | Explain prints a rule's full text                                                          | Missing | Missing |
+| B-020    | Explain of an unknown rule names it and fails                                              | Missing | Missing |
+| B-021    | No path in the document is absolute                                                        | Missing | Missing |
+| B-022    | A report path receives the document                                                        | Missing | Missing |
+| B-023    | A report path in a new directory is created                                                | Missing | Missing |
+| B-024    | A report path that exists is replaced                                                      | Missing | Missing |
+| B-025    | A report path keeps the diagnostic lines on the output                                     | Missing | Missing |
+| B-026    | A missing frontmatter says what the schema requires                                        | Missing | Missing |
+| B-027    | A dependency on nothing says what it could name                                            | Missing | Missing |
+| B-028    | A reused item id names its first holder                                                    | Missing | Missing |
 
 ## 10. Lessons / Spec Deltas
 
@@ -179,17 +179,17 @@ None.
 
 <!-- last written by: spec-author, 2026-10-07 -->
 
-| ID   | Question                                                                                                                                                                                                          | Blocks | Resolution |
-| ---- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------ | ---------- |
-| OQ-1 | README § 5 fixes four exit codes and none for "the thing named does not exist". A-2 reads an unknown `--explain` id as missing input (`2`). Is that the rule, or does the code set grow a `NotFound`?             | B-020  | Open       |
-| OQ-2 | `--explain` reads the pinned schema version from the manifest. With no manifest, or one `0001-F5` rejects, does `--explain` fail as the check does (`0001-F2` B-006, B-007), or print from the newest embedded version? | B-019, B-020 (scope) | Open |
+| ID   | Question                                                                                                                                                                                                                | Blocks               | Resolution |
+| ---- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------- | ---------- |
+| OQ-1 | README § 5 fixes four exit codes and none for "the thing named does not exist". A-2 reads an unknown `--explain` id as missing input (`2`). Is that the rule, or does the code set grow a `NotFound`?                   | B-020                | Open       |
+| OQ-2 | `--explain` reads the pinned schema version from the manifest. With no manifest, or one `0001-F5` rejects, does `--explain` fail as the check does (`0001-F2` B-006, B-007), or print from the newest embedded version? | B-019, B-020 (scope) | Open       |
 
 ## 12. Sign-off
 
 <!-- last written by: spec-reviewer, 2026-10-07 -->
 
-| Section | Status | Reviewer      | Note                                                                                                                                                                                                                                              |
-| ------- | ------ | ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Section | Status | Reviewer      | Note                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
+| ------- | ------ | ------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | 1-5     | 🟢     | spec-reviewer | Approved (round 2). Round-1 blocks cleared: B-002 withdrawn into B-022-B-025 under decision 0002 and C-7; B-020 leaves the code to OQ-1; B-026 (`SPEC001`) and B-027 (`SPEC050`) define `expected`; B-005 carries the schema source. Non-blocking: § 9 B-002 row should read Withdrawn, not Missing (test-writer); B-024's scenario also asserts B-004's exit code (spec-author); decision 0001 Affects still describes `0001-F1` B-004 as naming the field (spec-author). |
 
 ## Tasks

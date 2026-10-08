@@ -10,11 +10,11 @@ Extends [`test-from-scenarios`](../../test-from-scenarios/SKILL.md).
 
 ## Three tiers
 
-| Tier        | Where                                                  | Selected by                         |
-| ----------- | ------------------------------------------------------ | ----------------------------------- |
-| Unit        | `test/specht.tests/**/<Thing>.Unit.Tests.cs`           | `[Trait("Tier","Unit")]`            |
-| Integration | `test/specht.tests/**/<Thing>.Integration.Tests.cs`    | `[Trait("Tier","Integration")]`     |
-| Acceptance  | `test/specht.acceptance`, Reqnroll over the `.feature` files | the project, no filter        |
+| Tier        | Where                                                        | Selected by                     |
+| ----------- | ------------------------------------------------------------ | ------------------------------- |
+| Unit        | `test/specht.tests/**/<Thing>.Unit.Tests.cs`                 | `[Trait("Tier","Unit")]`        |
+| Integration | `test/specht.tests/**/<Thing>.Integration.Tests.cs`          | `[Trait("Tier","Integration")]` |
+| Acceptance  | `test/specht.acceptance`, Reqnroll over the `.feature` files | the project, no filter          |
 
 `./build.sh UnitTest` and `IntegrationTest` run `--filter Tier=<X>` over every
 project whose name ends `.Tests`. `AcceptanceTest` runs `test/specht.acceptance`
@@ -73,7 +73,7 @@ files back out of the product.
 That dance is why co-location is not introduced casually: `hooked` once scoped
 its re-include glob to one folder, and a `*.Tests.cs` dropped anywhere else was
 removed from production by the unconditional exclude and never linked into the
-test project — it *silently compiled nowhere and no test ran*, while the solution
+test project — it _silently compiled nowhere and no test ran_, while the solution
 built green and `dotnet test` reported success. A separate project cannot fail
 that way. If co-location is ever proposed, that incident is the cost to weigh.
 

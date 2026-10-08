@@ -1,0 +1,134 @@
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+indent_style = space
+
+[*.cs]
+indent_size = 4
+
+# RSA1XXX — Usage
+dotnet_diagnostic.RSA1001.severity = warning      # Use expression lambda overload for a property
+dotnet_diagnostic.RSA1002.severity = error        # Provide a well-formed lambda expression
+dotnet_diagnostic.RSA1003.severity = error        # Use the out parameter overload
+dotnet_diagnostic.RSA1004.severity = error        # Provide a well-formed lambda expression (missing member access prefix)
+dotnet_diagnostic.RSA1005.severity = suggestion   # Specify a scheduler for better control over execution timing
+dotnet_diagnostic.RSA1006.severity = warning   # SubscribeOn only supports a single use per pipeline
+dotnet_diagnostic.RSA1007.severity = warning      # Use Invoke() instead of parentheses for function calls
+
+# RSA2XXX — Design
+dotnet_diagnostic.RSA2001.severity = error      # Constructors should appear before other members
+dotnet_diagnostic.RSA2002.severity = error      # Private members should appear after non-private members
+dotnet_diagnostic.RSA2003.severity = warning      # Members should be ordered by kind
+dotnet_diagnostic.RSA2004.severity = warning      # Members should be ordered by access
+dotnet_diagnostic.RSA2005.severity = warning      # Static members should appear before instance members
+dotnet_diagnostic.RSA2006.severity = warning      # Constant fields should appear before non-constant fields
+dotnet_diagnostic.RSA2007.severity = warning      # Readonly fields should appear before mutable fields
+dotnet_diagnostic.RSA2008.severity = none      # File should contain a single type
+dotnet_diagnostic.RSA2009.severity = none      # File name should match the first type name
+dotnet_diagnostic.RSA2010.severity = error      # Do not use regions
+dotnet_diagnostic.RSA2011.severity = warning      # Declare accessibility explicitly
+dotnet_diagnostic.RSA2012.severity = error      # Conditional compilation should not span member declarations
+dotnet_diagnostic.RSA2013.severity = error      # Line exceeds the maximum length
+
+# RSA3XXX — Performance
+dotnet_diagnostic.RSA3001.severity = warning      # Subscription not disposed; consider DisposeWith
+dotnet_diagnostic.RSA3002.severity = warning      # Lambda expression can be made static
+
+# RSA2013's line-length margin — see "RSA2013 and chop line"
+max_line_length = 160
+
+
+# New line preferences
+csharp_new_line_before_open_brace = all
+csharp_new_line_before_else = true
+csharp_new_line_before_catch = true
+csharp_new_line_before_finally = true
+csharp_new_line_between_query_expression_clauses = true
+
+# Namespace and using directives
+csharp_style_namespace_declarations = file_scoped:warning
+dotnet_sort_system_directives_first = true
+dotnet_separate_import_directive_groups = false
+
+# var preferences
+csharp_style_var_for_built_in_types = true:suggestion
+csharp_style_var_when_type_is_apparent = true:suggestion
+csharp_style_var_elsewhere = true:suggestion
+
+# Expression-bodied members
+csharp_style_expression_bodied_methods = when_on_single_line:suggestion
+csharp_style_expression_bodied_properties = true:suggestion
+
+# Modifier preferences
+dotnet_style_require_accessibility_modifiers = for_non_interface_members:warning
+csharp_preferred_modifier_order = public,private,protected,internal,static,extern,new,virtual,abstract,sealed,override,readonly,unsafe,volatile,async
+
+# Nullable
+csharp_style_prefer_null_check_over_type_check = true:suggestion
+
+# Rocket.Surgery.Airframe.CodeAnalysis (RSA) default severities, pinned
+# explicitly rather than left to the analyzer's own built-in defaults - so a
+# future package upgrade that changes a default can't silently change what
+# this repo enforces, and so a reader can see the intended severity here
+# instead of having to check the analyzer's source. Sourced from the
+# package's own documented defaults (src/CodeAnalysis/README.md in
+# RocketSurgeonsGuild/Airframe).
+#
+# Only RSA2XXX (Design - member layout, file structure, documentation) is
+# included. RSA1XXX (Usage) and RSA3XXX (Performance) are both, by the
+# package's own description, specific to MVVM/ReactiveUI usage - RSA1XXX
+# checks ReactiveUI-only APIs (InvokeCommand, BindTo, ToProperty,
+# WhenAnyValue, SubscribeOn), and RSA3XXX checks Rx subscription lifetime and
+# allocation (subscription disposal, static lambdas for Rx pipelines). This
+# repo (ASP.NET minimal-API + CLI hosts) has no ReactiveUI or System.Reactive
+# dependency and no IObservable/IScheduler usage anywhere (confirmed by
+# search) - those rule families structurally cannot fire here, so declaring
+# severities for them would just be dead configuration. Revisit if/when this
+# repo actually takes a dependency on ReactiveUI or System.Reactive.
+dotnet_diagnostic.RSA2001.severity = warning
+dotnet_diagnostic.RSA2002.severity = warning
+dotnet_diagnostic.RSA2003.severity = warning
+dotnet_diagnostic.RSA2004.severity = warning
+dotnet_diagnostic.RSA2005.severity = warning
+dotnet_diagnostic.RSA2006.severity = warning
+dotnet_diagnostic.RSA2007.severity = warning
+dotnet_diagnostic.RSA2008.severity = warning
+# RSA2009 (file name must match declared type) is overridden to `none` below
+# for the co-located test-tier file shapes - see that section's own comment.
+dotnet_diagnostic.RSA2009.severity = warning
+dotnet_diagnostic.RSA2010.severity = warning
+dotnet_diagnostic.RSA2011.severity = warning
+dotnet_diagnostic.RSA2012.severity = warning
+# RSA2013 (line too long) reads its threshold from the standard
+# max_line_length key, not a diagnostic-specific one - set to the package's
+# own documented companion value so the rule fires at the length Airframe
+# actually intends, not editorconfig's unrelated 120-column default.
+dotnet_diagnostic.RSA2013.severity = warning
+max_line_length = 160
+dotnet_diagnostic.RSA2014.severity = warning
+dotnet_diagnostic.RSA2015.severity = warning
+
+[*.{xml,csproj,props,targets,slnx}]
+indent_size = 2
+
+[*.json]
+indent_size = 2
+
+[*.md]
+trim_trailing_whitespace = false
+
+# RSA2009 (Rocket.Surgery.Airframe.CodeAnalysis: file name must match the
+# first type declared in it) conflicts with the ratified co-located
+# test-tier naming convention from issue #17: Thing.Unit.Tests.cs /
+# Thing.Integration.Tests.cs, whose type is ThingUnitTests /
+# ThingIntegrationTests. The rule's own documented exceptions (generic
+# arity, partial suffix) don't cover a tier suffix, and the dotted file
+# name can't be a literal C# identifier, so renaming either side isn't an
+# option - suppressed for exactly these two file shapes rather than
+# reworking a deliberate, already-ratified layout decision.
+[*.{Unit.Tests.cs,Integration.Tests.cs}]
+dotnet_diagnostic.RSA2009.severity = none

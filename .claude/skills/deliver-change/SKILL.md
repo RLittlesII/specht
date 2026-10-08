@@ -13,7 +13,7 @@ branch and worktree conventions, the build commands and the merge strategy —
 
 1. **A Feature starts at its specification.** Items are cut from its claims after
    agreement, not before. A bug, spike or chore starts at the item instead.
-2. **Take exactly one item.** Signal that you have it in the tracker *before* the
+2. **Take exactly one item.** Signal that you have it in the tracker _before_ the
    branch, before the worktree, and before the first edit. An item already
    signalled as taken is never picked up — that signal is the only thing stopping
    two people building the same thing.

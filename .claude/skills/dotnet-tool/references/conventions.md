@@ -44,12 +44,12 @@ public override async Task<int> ExecuteAsync(CommandContext context, Settings se
 `specht`'s codes are decided (README § 5) and the pre-commit hook and CI depend
 on them:
 
-| Code | Means |
-| ---- | ----- |
-| `0`  | clean |
-| `1`  | violations — any violation at all under `--strict`, otherwise at least one error |
+| Code | Means                                                                              |
+| ---- | ---------------------------------------------------------------------------------- |
+| `0`  | clean                                                                              |
+| `1`  | violations — any violation at all under `--strict`, otherwise at least one error   |
 | `2`  | the root or the manifest (`.spec/schema/spec-structure.schema.json`) was not found |
-| `3`  | the manifest is invalid |
+| `3`  | the manifest is invalid                                                            |
 
 `--json` and `--report` change what is written, never the exit code.
 

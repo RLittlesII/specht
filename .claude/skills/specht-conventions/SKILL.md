@@ -7,15 +7,15 @@ description: This repository's conventions — paths and layout, the delivery fl
 
 The companion skill: **the only skill that names this repository.** Each method
 skill states a portable rule; this one says where that rule lands here. Read the
-method skill your work belongs to *and* this one.
+method skill your work belongs to _and_ this one.
 
-| Area      | Extends                                                       | Detail                                      |
-| --------- | ------------------------------------------------------------- | ------------------------------------------- |
-| Coding    | [`coding-conventions`](../coding-conventions/SKILL.md)         | [references/coding.md](references/coding.md) |
-| Delivery  | [`deliver-change`](../deliver-change/SKILL.md)                 | [references/delivery.md](references/delivery.md) |
-| Testing   | [`test-from-scenarios`](../test-from-scenarios/SKILL.md)       | [references/testing.md](references/testing.md) |
-| Questions | [`clarify-requirements`](../clarify-requirements/SKILL.md)     | [references/questions.md](references/questions.md) |
-| Specs     | [`spec-and-traceability`](../spec-and-traceability/SKILL.md)   | [references/specs.md](references/specs.md)  |
+| Area      | Extends                                                      | Detail                                             |
+| --------- | ------------------------------------------------------------ | -------------------------------------------------- |
+| Coding    | [`coding-conventions`](../coding-conventions/SKILL.md)       | [references/coding.md](references/coding.md)       |
+| Delivery  | [`deliver-change`](../deliver-change/SKILL.md)               | [references/delivery.md](references/delivery.md)   |
+| Testing   | [`test-from-scenarios`](../test-from-scenarios/SKILL.md)     | [references/testing.md](references/testing.md)     |
+| Questions | [`clarify-requirements`](../clarify-requirements/SKILL.md)   | [references/questions.md](references/questions.md) |
+| Specs     | [`spec-and-traceability`](../spec-and-traceability/SKILL.md) | [references/specs.md](references/specs.md)         |
 
 ## Read before starting
 
@@ -83,38 +83,38 @@ The one place this is written. Each section of a Feature's specification has
 exactly one owning role; a role that needs another's section changed escalates and
 does not write there.
 
-| Section                        | Owner           |
-| ------------------------------ | --------------- |
-| 1. Business Goal               | `spec-author`   |
-| 2. User Needs (+ Assumptions)  | `spec-author`   |
-| 3. Acceptance Criteria         | `spec-author`   |
-| 4. Constraints                 | `spec-author`   |
-| 5. Out of Scope                | `spec-author`   |
-| 6. Concern Separation          | `implementer`   |
-| 7. Technical Design            | `implementer`   |
-| 8. Testing Strategy            | `test-writer`   |
-| 9. Traceability Matrix         | `test-writer`   |
-| 10. Lessons / Spec Deltas      | `spec-author`   |
-| 11. Open Questions             | whoever is blocked |
-| 12. Sign-off                   | `spec-reviewer` |
-| Tasks                          | `spec-author`, after agreement |
-| Scoring                        | derived — recompute, never hand-edit |
+| Section                       | Owner                                |
+| ----------------------------- | ------------------------------------ |
+| 1. Business Goal              | `spec-author`                        |
+| 2. User Needs (+ Assumptions) | `spec-author`                        |
+| 3. Acceptance Criteria        | `spec-author`                        |
+| 4. Constraints                | `spec-author`                        |
+| 5. Out of Scope               | `spec-author`                        |
+| 6. Concern Separation         | `implementer`                        |
+| 7. Technical Design           | `implementer`                        |
+| 8. Testing Strategy           | `test-writer`                        |
+| 9. Traceability Matrix        | `test-writer`                        |
+| 10. Lessons / Spec Deltas     | `spec-author`                        |
+| 11. Open Questions            | whoever is blocked                   |
+| 12. Sign-off                  | `spec-reviewer`                      |
+| Tasks                         | `spec-author`, after agreement       |
+| Scoring                       | derived — recompute, never hand-edit |
 
 The `.feature` file belongs to `spec-author`; its step definitions belong to
 `test-writer`. Role contracts are in [`.agents/`](../../.agents/README.md).
 
 ## ID schemes
 
-| Scheme  | Form                | Scope            | Cited from outside as   |
-| ------- | ------------------- | ---------------- | ----------------------- |
-| Epic    | `0001`              | repository       | `0001`                  |
-| Feature | `F1`, `F5b`         | its epic         | `0001-F1`               |
-| Claim   | `B-001`, `B-006b`   | its Feature      | `0001-F1 B-001`         |
-| Constraint | `C-12`           | its Feature      | `0001-F1 C-12`          |
-| Open question | `OQ-3`        | its Feature      | `0001-F1 OQ-3`          |
-| Task    | `0001-11`           | its **epic**, not its Feature | `0001-11` |
-| ADR     | `ADR-0002`          | repo or Feature, by blast radius | `ADR-0002` |
-| `specht` rule | `SPEC031`     | the rule engine, versioned with the schema | `SPEC031` |
+| Scheme        | Form              | Scope                                      | Cited from outside as |
+| ------------- | ----------------- | ------------------------------------------ | --------------------- |
+| Epic          | `0001`            | repository                                 | `0001`                |
+| Feature       | `F1`, `F5b`       | its epic                                   | `0001-F1`             |
+| Claim         | `B-001`, `B-006b` | its Feature                                | `0001-F1 B-001`       |
+| Constraint    | `C-12`            | its Feature                                | `0001-F1 C-12`        |
+| Open question | `OQ-3`            | its Feature                                | `0001-F1 OQ-3`        |
+| Task          | `0001-11`         | its **epic**, not its Feature              | `0001-11`             |
+| ADR           | `ADR-0002`        | repo or Feature, by blast radius           | `ADR-0002`            |
+| `specht` rule | `SPEC031`         | the rule engine, versioned with the schema | `SPEC031`             |
 
 Always carry the prefix in prose — several sequences have a twelfth member.
 

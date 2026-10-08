@@ -41,6 +41,7 @@ synced_at: null
      never hand-edit.
 
      Delete this comment and every <!-- Owner: --> guidance comment from the
+
      copy. Guidance lives in the template; a copy carries content only. -->
 
 # Specification: {{feature_title}}
@@ -58,18 +59,18 @@ synced_at: null
 
 <!-- last written by: spec-author, {{date}} -->
 
-| #   | Persona       | Need       | Pain Point Today |
-| --- | ------------- | ---------- | ---------------- |
-| 1   | {{persona}}   | {{need}}   | {{pain}}         |
+| #   | Persona     | Need     | Pain Point Today |
+| --- | ----------- | -------- | ---------------- |
+| 1   | {{persona}} | {{need}} | {{pain}}         |
 
 <!-- Owner: spec-author. A sibling Feature is a legitimate persona — say so and
      mark its Pain Point "N/A (internal dependency)". -->
 
 ### Assumptions
 
-| ID  | Assumption       |
-| --- | ---------------- |
-| A-1 | {{assumption}}   |
+| ID  | Assumption     |
+| --- | -------------- |
+| A-1 | {{assumption}} |
 
 <!-- Owner: spec-author. An assumption that later gets decided is marked
      RESOLVED in place with the date and the OQ it answered, and the decided
@@ -79,9 +80,9 @@ synced_at: null
 
 <!-- last written by: spec-author, {{date}} -->
 
-| ID    | Claim        | Source       | Status |
-| ----- | ------------ | ------------ | ------ |
-| B-001 | {{claim}}    | {{source}}   | Active |
+| ID    | Claim     | Source     | Status |
+| ----- | --------- | ---------- | ------ |
+| B-001 | {{claim}} | {{source}} | Active |
 
 <!-- Owner: spec-author. Each claim is one falsifiable statement in
      Given/this Feature form, scoped to this Feature. Claim ids are permanent
@@ -93,9 +94,9 @@ synced_at: null
 
 <!-- last written by: spec-author, {{date}} -->
 
-| ID   | Constraint       | Rules Out       |
-| ---- | ---------------- | --------------- |
-| C-1  | {{constraint}}   | {{what_it_rules_out}} |
+| ID  | Constraint     | Rules Out             |
+| --- | -------------- | --------------------- |
+| C-1 | {{constraint}} | {{what_it_rules_out}} |
 
 <!-- Owner: spec-author. A constraint states what it rules out, or a designer
      cannot act on it. Cited from outside this Feature as `<epic>-F<n> C-<n>`.
@@ -105,9 +106,9 @@ synced_at: null
 
 <!-- last written by: spec-author, {{date}} -->
 
-| #   | Item       | Exclusion Reason |
-| --- | ---------- | ---------------- |
-| 1   | {{item}}   | {{reason}}       |
+| #   | Item     | Exclusion Reason |
+| --- | -------- | ---------------- |
+| 1   | {{item}} | {{reason}}       |
 
 <!-- Owner: spec-author. A specification that states only the target invites
      over-delivery. Where an exclusion clarifies a scenario, add an
@@ -117,9 +118,9 @@ synced_at: null
 
 <!-- last written by: implementer, {{date}} -->
 
-| #   | Concern       | Classification        |
-| --- | ------------- | --------------------- |
-| 1   | {{concern}}   | Business \| Technical \| Both |
+| #   | Concern     | Classification                |
+| --- | ----------- | ----------------------------- |
+| 1   | {{concern}} | Business \| Technical \| Both |
 
 <!-- Owner: implementer. -->
 
@@ -149,9 +150,9 @@ synced_at: null
 
 <!-- last written by: test-writer, {{date}} -->
 
-| Claim ID | Scenario       | Test       | Status  |
-| -------- | -------------- | ---------- | ------- |
-| B-001    | {{scenario}}   | Missing    | Missing |
+| Claim ID | Scenario     | Test    | Status  |
+| -------- | ------------ | ------- | ------- |
+| B-001    | {{scenario}} | Missing | Missing |
 
 <!-- Owner: test-writer. Every ID in § 3 appears here exactly once. The row is
      anchored to the scenario's `@B-00n` TAG, not to the title in the Scenario
@@ -163,9 +164,9 @@ synced_at: null
 
 <!-- last written by: spec-author, {{date}} -->
 
-| Lesson       | Delta       | Claim       |
-| ------------ | ----------- | ----------- |
-| {{lesson}}   | {{delta}}   | {{claim_id}} |
+| Lesson     | Delta     | Claim        |
+| ---------- | --------- | ------------ |
+| {{lesson}} | {{delta}} | {{claim_id}} |
 
 <!-- Owner: spec-author. One row per lesson in this Feature's lessons/ folder.
      A repo-wide lesson lives in the root .spec/lessons/ and has no row here,
@@ -175,9 +176,9 @@ synced_at: null
 
 <!-- last written by: spec-author, {{date}} -->
 
-| ID   | Question       | Blocks       | Resolution |
-| ---- | -------------- | ------------ | ---------- |
-| OQ-1 | {{question}}   | {{claim_id}} | Open       |
+| ID   | Question     | Blocks       | Resolution |
+| ---- | ------------ | ------------ | ---------- |
+| OQ-1 | {{question}} | {{claim_id}} | Open       |
 
 <!-- Owner: whoever is blocked. Resolved in place with the date and the
      decision, never deleted. "None." is a valid body. -->
@@ -186,9 +187,9 @@ synced_at: null
 
 <!-- last written by: spec-reviewer, {{date}} -->
 
-| Section       | Status | Reviewer       | Note       |
-| ------------- | ------ | -------------- | ---------- |
-| 1-5           | 🟡     | spec-reviewer  | {{note}}   |
+| Section | Status | Reviewer      | Note     |
+| ------- | ------ | ------------- | -------- |
+| 1-5     | 🟡     | spec-reviewer | {{note}} |
 
 <!-- Owner: spec-reviewer. 🟡 Draft, 🟢 Approved, 🔴 Blocked with a reason.
      Flip the frontmatter spec_status to approved only when every row is 🟢. -->
@@ -201,10 +202,10 @@ synced_at: null
 
 ## Scoring
 
-| Field  | Value | Basis       |
-| ------ | ----- | ----------- |
-| value  | 0     | {{basis}}   |
-| risk   | 0     | {{basis}}   |
+| Field | Value | Basis     |
+| ----- | ----- | --------- |
+| value | 0     | {{basis}} |
+| risk  | 0     | {{basis}} |
 
 <!-- priority and rank are derived from value and risk — recompute, never
      hand-edit. -->

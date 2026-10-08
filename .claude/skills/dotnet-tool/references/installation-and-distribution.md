@@ -163,8 +163,8 @@ git push --tags
 A consumer's CI needs only:
 
 ```yaml
-      - run: dotnet tool restore
-      - run: dotnet specht --strict
+- run: dotnet tool restore
+- run: dotnet specht --strict
 ```
 
 ## Verify Installed Tools

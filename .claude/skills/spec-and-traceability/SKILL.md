@@ -21,10 +21,10 @@ specification delta afterwards.
 
 ## Two records, one authority each
 
-| Record            | Authority over                                        |
-| ----------------- | ----------------------------------------------------- |
+| Record            | Authority over                                                      |
+| ----------------- | ------------------------------------------------------------------- |
 | The specification | content — goal, needs, claims, constraints, scope, design, coverage |
-| The work item     | delivery — who has it, what state it is in, when it closed |
+| The work item     | delivery — who has it, what state it is in, when it closed          |
 
 Neither restates the other. The item names its specification; **the
 specification never names an item** beyond the Tasks list it cuts, because a
@@ -96,11 +96,11 @@ is written in one place — the companion — and nowhere else.
 Three kinds of record sit beside a specification, and the distinction is what they
 are about:
 
-| Record     | About                                            |
-| ---------- | ------------------------------------------------ |
-| decision   | the product — what will and will not be built     |
-| ADR        | the code's structure — a durable technical rule    |
-| lesson     | an incident and what it changed                    |
+| Record   | About                                           |
+| -------- | ----------------------------------------------- |
+| decision | the product — what will and will not be built   |
+| ADR      | the code's structure — a durable technical rule |
+| lesson   | an incident and what it changed                 |
 
 Location is chosen by **blast radius**, not by who made the call: a record binding
 one Feature sits beside that Feature's specification; a record binding the whole
