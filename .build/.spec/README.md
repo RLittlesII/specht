@@ -104,16 +104,16 @@ The repository has a solution and central package versions but no build project,
 
 <!-- last written by: spec-author, 2026-10-08 -->
 
-| #   | Item                                                                                    | Exclusion Reason                                                                   |
-| --- | --------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------- |
-| 1   | What the `SpecCheck` target's run does, and that the hook, the target and a shell agree | `0001-F2` B-010, B-011, B-014; this Feature provides the target and the call site. |
-| 2   | The CI workflow and its generation                                                      | `0055-F2`.                                                                         |
-| 3   | Collecting coverage during `Test`                                                       | `0055-F3`.                                                                         |
-| 4   | How the package version is computed                                                     | `0055-F5`; `Pack` uses it (B-009).                                                 |
-| 5   | Publishing the package                                                                  | `0055-F6`; `Pack` writes a file and pushes nothing.                                |
-| 6   | The `specht` entry in the local tool manifest, and the feed it restores from            | `0055-F7`.                                                                         |
-| 7   | Generating the API reference                                                            | `0002-F1`.                                                                         |
-| 8   | Fixing formatting for the contributor                                                   | C-2; the contributor runs `dotnet format` themselves.                              |
+| #   | Item                                                                                                              | Exclusion Reason                                                                                                                                |
+| --- | ----------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | From `0001-F5`'s arrival, what the `SpecCheck` target's run does, and that the hook, the target and a shell agree | `0001-F2` B-010, B-011, B-014; this Feature provides the target and the call site, and before `0001-F5` owns the run itself (B-025, item 0061). |
+| 2   | The CI workflow and its generation                                                                                | `0055-F2`.                                                                                                                                      |
+| 3   | Collecting coverage during `Test`                                                                                 | `0055-F3`.                                                                                                                                      |
+| 4   | How the package version is computed                                                                               | `0055-F5`; `Pack` uses it (B-009).                                                                                                              |
+| 5   | Publishing the package                                                                                            | `0055-F6`; `Pack` writes a file and pushes nothing.                                                                                             |
+| 6   | The `specht` entry in the local tool manifest, and the feed it restores from                                      | `0055-F7`.                                                                                                                                      |
+| 7   | Generating the API reference                                                                                      | `0002-F1`.                                                                                                                                      |
+| 8   | Fixing formatting for the contributor                                                                             | C-2; the contributor runs `dotnet format` themselves.                                                                                           |
 
 ## 6. Concern Separation
 

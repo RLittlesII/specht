@@ -1,6 +1,6 @@
 ---
 title: "Decision 0004: SpecCheck and the hook gate from 0001-F5's arrival"
-description: "B-010 and B-011 hold once 0001-F5's rule settings exist; before then this repository's SpecCheck target and pre-commit hook report and never fail, as 0055-F1 C-7 and B-025 decide"
+description: "B-010 and B-011 hold once 0001-F5's rule settings exist; before then this repository's SpecCheck target reports and never fails and the pre-commit hook does not run the check, as 0055-F1 C-7, B-013 and B-025 decide"
 type: decision
 ---
 
@@ -14,9 +14,10 @@ answering spec-reviewer's round 5 finding
 ## The call
 
 B-010 and B-011 apply only once `0001-F5`'s rule settings exist. Before then,
-this repository's `SpecCheck` target and pre-commit hook run the command and
-exit 0 whatever it reports (`0055-F1` B-025). From `0001-F5`'s arrival they exit
-with the command's code (C-8).
+this repository's `SpecCheck` target runs the command and exits 0 whatever it
+reports (`0055-F1` B-025), and the pre-commit hook does not run the check
+(`0055-F1` B-013). From `0001-F5`'s arrival both exit with the command's code
+(C-8).
 
 ## Why
 

@@ -1,6 +1,6 @@
 ---
 title: "Decision 0001: SpecCheck's interim claims are superseded when the next state lands"
-description: "B-023 and B-025 describe SpecCheck before 0001-F2's command and before 0001-F5's rule settings; each is tested while its Given holds on this repository, then marked Superseded and its test removed by the item that lands the next state"
+description: "B-023 and B-025 describe SpecCheck before 0001-F2's command and before 0001-F5's rule settings; each is tested until the item that lands the next state, which marks it Superseded and removes its test and its scenario"
 type: decision
 ---
 
@@ -12,10 +12,11 @@ it follows from the owner's C-7, and the owner may reverse it
 
 ## The call
 
-B-023 and B-025 describe interim states of `SpecCheck` (C-7). Each is tested
-on this repository while its Given holds. The item that lands the next state
-marks the claim `Superseded` in § 3 and § 9 and removes its test in the same
-change:
+B-023 and B-025 describe interim states of `SpecCheck` (C-7). Each claim's
+test runs on this repository until its superseding item lands. That item marks
+the claim `Superseded` in § 3 and § 9 and, in the same change, removes its test
+and its `@B-023` or `@B-025` scenario, as `0001-F1` B-009 and `0001-F3` B-002
+were withdrawn:
 
 - B-023 (no check command yet) is superseded by B-025 when `0061` points
   `SpecCheck` at the command.
@@ -45,6 +46,7 @@ while they are live. Cost of rejecting: two claims change status later.
 ## Affects
 
 - B-023 and B-025: the Source column cites this decision.
+- The `@B-023` and `@B-025` scenarios, removed with their tests.
 - Items `0061` and `0062`, which carry the supersession.
 
 ## Reversal
