@@ -146,11 +146,11 @@ None.
 
 ## 11. Open Questions
 
-<!-- last written by: spec-author, 2026-10-07 -->
+<!-- last written by: spec-author, 2026-10-08 -->
 
-| ID   | Question                                                                                                                                                                                                                                                          | Blocks | Resolution                                                                                                                                                    |
-| ---- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| OQ-1 | The version 1 epic frontmatter schema sets `additionalProperties: false` and lists no `title` or `description`, while AGENTS.md § "Documentation structure" requires both on every tracked markdown file. Which gives way, and is that a schema version 2 change? | —      | Moved 2026-10-07 to `0001-F7` OQ-4: it blocks no claim here, and its answer is a schema version 2 change, which `0001-F7` owns. Not answered in this Feature. |
+| ID   | Question                                                                                                                                                                                                                                                          | Blocks | Resolution                                                                                                                                                                                                                                                                        |
+| ---- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| OQ-1 | The version 1 epic frontmatter schema sets `additionalProperties: false` and lists no `title` or `description`, while AGENTS.md § "Documentation structure" requires both on every tracked markdown file. Which gives way, and is that a schema version 2 change? | —      | Moved 2026-10-07 to `0001-F7` OQ-4: it blocks no claim here, and its answer is a schema version 2 change, which `0001-F7` owns. Not answered in this Feature. `0001-F7` OQ-4 was resolved 2026-10-08 (`0001-F7` decision 0003): version 1 accepts both keys on an epic, optional. |
 
 ## 12. Sign-off
 

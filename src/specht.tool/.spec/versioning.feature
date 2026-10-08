@@ -167,3 +167,10 @@ Feature: Schema versioning
     Then no file under the root has changed
     And the standard error names version 7 and the versions the tool ships
     And the exit code is 3
+
+  @B-022
+  Scenario: Version 1 accepts a title and a description on an epic
+    Given the manifest pins version 1
+    And the root holds an epic whose frontmatter carries a title and a description
+    When the check runs
+    Then no frontmatter violation is reported for the epic
