@@ -21,6 +21,7 @@ Feature: init
   @B-003
   Scenario: A written file equals the embedded copy
     Given a root directory with no schema folder and no templates folder
+    And no upstream schema source is recorded
     When init runs against it
     Then each written file is byte-identical to the tool's embedded copy
 
@@ -35,6 +36,7 @@ Feature: init
   @B-005
   Scenario: A written schema's id names this repository and the version
     Given a root directory with no schema folder
+    And no upstream schema source is recorded
     When init runs against it
     Then each frontmatter schema written carries an id under this repository's schema address for the version written
 
@@ -103,14 +105,27 @@ Feature: init
   @B-014
   Scenario: Init writes a fetched upstream schema that matches its hash
     Given a root whose manifest records an upstream schema source with its version and content hash
+    And one frontmatter schema file is present under the root's schema folder and the others are absent
     And the source serves content matching that hash
     When init runs against it
-    Then the fetched schemas are written under the root's schema folder
+    Then the fetched content is written to each absent schema file
+    And the present schema file is unchanged
 
   @B-015
   Scenario: Init refuses a fetched upstream schema that does not match its hash
     Given a root whose manifest records an upstream schema source with its version and content hash
     And the source serves content that does not match that hash
+    And a snapshot of every file under the root
+    When init runs against it
+    Then no file under the root has changed
+    And the standard error names the source
+    And the exit code is 3
+
+  @B-016
+  Scenario: Init refuses an upstream source it cannot reach
+    Given a root whose manifest records an upstream schema source with its version and content hash
+    And no frontmatter schema file under the root's schema folder
+    And the source cannot be reached
     And a snapshot of every file under the root
     When init runs against it
     Then no file under the root has changed

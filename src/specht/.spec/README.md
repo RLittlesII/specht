@@ -4,7 +4,7 @@ description: "hooked's SpecGovernance rule engine copied into src/specht and ren
 type: feature
 id: "F1"
 epic: "0001"
-spec_status: approved
+spec_status: in-review
 status: ready-for-architecture
 priority: critical
 value: 0
@@ -46,11 +46,11 @@ The rule engine exists only inside `hooked`, as a project reference from its bui
 
 ### Assumptions
 
-| ID  | Assumption                                                                                                                                                                                                                                                             |
-| --- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| A-1 | The 56 tests extracted with the engine are its behaviour contract; a claim here is one the tests already prove or one the baseline report proves (B-004).                                                                                                              |
-| A-2 | The source is `hooked` `refactor/ai-offering` at `6afe8ab` (README § 3). The three draft-spec files removed on that branch go to `docs/reference/`, never into `src/specht`.                                                                                           |
-| A-3 | Schema version 1 is the four files under `.spec/schema/` and the four templates under `.spec/templates/` as `hooked` holds them at `6afe8ab`, with only the `$id` URLs re-homed and the optional epic `title` and `description` keys added by `0001-F7` decision 0003. |
+| ID  | Assumption                                                                                                                                                                                                                                                                                                                             |
+| --- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| A-1 | The 56 tests extracted with the engine are its behaviour contract; a claim here is one the tests already prove or one the baseline report proves (B-004).                                                                                                                                                                              |
+| A-2 | The source is `hooked` `refactor/ai-offering` at `6afe8ab` (README § 3). The three draft-spec files removed on that branch go to `docs/reference/`, never into `src/specht`.                                                                                                                                                           |
+| A-3 | Schema version 1 is the four files under `.spec/schema/` and the four templates under `.spec/templates/` as `hooked` holds them at `6afe8ab`, with only the `$id` URLs re-homed, the optional epic `title` and `description` keys added by `0001-F7` decision 0003, and the manifest keys `0001-F5` and `0001-F6` add (`0001-F7` A-2). |
 
 ## 3. Acceptance Criteria
 

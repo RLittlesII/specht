@@ -35,6 +35,24 @@ AGENTS.md § Invariants).
 - A version and a content hash make the fetch reproducible and the content
   verifiable.
 
+## Addendum - 2026-10-08
+
+Added by the repository owner after spec-reviewer round 5, answering how a
+recorded source relates to the source selection and to `schemaVersion`:
+
+- Recording an upstream source **selects the on-disk source**: the fetched
+  copy is the schema (B-032).
+- The upstream version and hash are **independent of `schemaVersion`**.
+  `schemaVersion` still pins the rule vocabulary and the templates (C-10).
+- `upgrade` moves `schemaVersion` and rewrites the templates. It skips the
+  frontmatter schemas, since disk is selected (B-029). It fetches the recorded
+  upstream version only when the local copy's hash differs from the recorded
+  one (B-026, B-033). Moving the upstream version is a manifest edit by the
+  consumer (B-034).
+- A source that cannot be reached when a fetch is needed is refused like a
+  hash mismatch: the command names the source, writes nothing and exits `3`
+  (B-035; `0001-F4` B-016).
+
 ## Rejected
 
 **A path outside the root.** It breaks root-relative paths in every output
@@ -56,7 +74,9 @@ on-disk source, B-009). Both a URL and a NuGet schema package were taken.
 
 - `0001-F7` § 3 B-024 to B-028; § 4 C-6 (amended), C-8, C-9; § 5 row 6;
   § 11 OQ-1 (scope extended), OQ-7 (resolved).
-- `0001-F4`: `init` may fetch a recorded source (C-8); no claim there yet.
+- `0001-F4` B-014 to B-016: `init` fetches a recorded source (C-8).
+- By the addendum: `0001-F7` § 3 B-001, B-005, B-006, B-010, B-011, B-024,
+  B-026, B-029 (amended), B-032 to B-035; § 4 C-10; `0001-F3` B-005.
 - README § 9; AGENTS.md § Invariants ("Deterministic and offline").
 
 ## Reversal

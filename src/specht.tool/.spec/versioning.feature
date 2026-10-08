@@ -9,7 +9,7 @@ Feature: Schema versioning
   @B-001
   Scenario: The pinned version is the one checked with
     Given the tool ships schema versions 1 and 2
-    And the manifest pins version 1
+    And the manifest pins version 1 and records no upstream schema source
     And the root holds a specification whose frontmatter version 1 accepts and version 2 rejects
     When the check runs
     Then no frontmatter violation is reported
@@ -38,7 +38,7 @@ Feature: Schema versioning
   @B-005
   Scenario: Upgrade moves the schema set and templates to the next version
     Given the tool ships schema versions 1 and 2
-    And the root is pinned to version 1 with the embedded source
+    And the root is pinned to version 1 with the embedded source and no upstream schema source
     And one of its templates has been edited by hand
     When upgrade runs against it
     Then the frontmatter schemas and the templates are version 2's
@@ -47,7 +47,7 @@ Feature: Schema versioning
   @B-006
   Scenario: Upgrade at the newest version changes nothing
     Given the tool ships schema version 1 only
-    And the root is pinned to version 1
+    And the root is pinned to version 1 and records no upstream schema source
     When upgrade runs against it
     Then the standard output says the repository is current
     And no file was rewritten
@@ -73,6 +73,7 @@ Feature: Schema versioning
   @B-009
   Scenario: The on-disk source is selected by configuration
     Given the root's on-disk Feature schema has been edited to require a key the embedded one does not
+    And the manifest records no upstream schema source
     And the root holds a specification without that key
     When the check runs with the on-disk source selected
     Then the specification is reported for the missing key
@@ -80,6 +81,7 @@ Feature: Schema versioning
   @B-010 @boundary
   Scenario: The embedded source ignores an on-disk edit
     Given the root's on-disk Feature schema has been edited to require a key the embedded one does not
+    And the manifest records no upstream schema source
     And the root holds a specification without that key
     When the check runs without selecting a source
     Then no violation is reported for that key
@@ -189,7 +191,7 @@ Feature: Schema versioning
 
   @B-024
   Scenario: The check reads an upstream schema from the local copy
-    Given the manifest records an upstream schema source
+    Given the manifest records an upstream schema source and selects no source
     And the root holds the copy of that source under its schema folder
     When the check runs
     Then the frontmatter is validated against the local copy
@@ -205,6 +207,7 @@ Feature: Schema versioning
   @B-026
   Scenario: Upgrade writes a fetched schema that matches its hash
     Given the manifest records an upstream schema source with its version and content hash
+    And the root's local copy does not match that hash
     And the source serves content matching that hash
     When upgrade runs
     Then the fetched schemas are written under the root's schema folder
@@ -226,12 +229,11 @@ Feature: Schema versioning
     Then exactly version 1's rule ids are evaluated
 
   @B-029 @boundary
-  Scenario: Upgrade leaves the consumer's own schemas
+  Scenario: Upgrade never writes the embedded schemas over the on-disk source
     Given the tool ships schema versions 1 and 2
     And the root is pinned to version 1 with the on-disk source selected
-    And no upstream schema source is recorded
     When upgrade runs against it
-    Then the frontmatter schemas under the root are unchanged
+    Then no frontmatter schema under the root is version 2's embedded schema
 
   @B-030
   Scenario: Upgrade says which schemas it skipped and why
@@ -248,3 +250,35 @@ Feature: Schema versioning
     When upgrade runs against it
     Then the templates are version 2's
     And the output names each template it rewrote
+
+  @B-032
+  Scenario: Recording an upstream source selects the on-disk source
+    Given the manifest records an upstream schema source and selects no source
+    When the check runs with JSON output
+    Then the document says the schemas came from the upstream copy
+
+  @B-033 @boundary
+  Scenario: Upgrade does not fetch a local copy that matches its hash
+    Given the manifest records an upstream schema source with its version and content hash
+    And the root's local copy matches that hash
+    And the network is unavailable
+    When upgrade runs
+    Then no network call was attempted
+
+  @B-034
+  Scenario: Upgrade leaves the recorded upstream version alone
+    Given the tool ships schema versions 1 and 2
+    And the root is pinned to version 1 and records an upstream schema source at version 3
+    When upgrade runs against it
+    Then the manifest still records the upstream source at version 3 with the same content hash
+
+  @B-035
+  Scenario: Upgrade refuses an upstream source it cannot reach
+    Given the manifest records an upstream schema source with its version and content hash
+    And the root's local copy does not match that hash
+    And the source cannot be reached
+    And a snapshot of every file under the root
+    When upgrade runs
+    Then no file under the root has changed
+    And the standard error names the source
+    And the exit code is 3
