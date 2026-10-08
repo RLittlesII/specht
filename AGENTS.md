@@ -209,6 +209,13 @@ IDs are **never reused and never renumbered** — not to tidy a sequence.
 Renumbering breaks every citation in every past commit, review, issue, and
 decision record. A dropped constraint leaves its number retired.
 
+A file is not an id: git keeps every version of it. A record the
+specifications have absorbed — a requirements session, a seed draft — is
+retired, not kept: delete it and cite it at its last commit
+(`` `REQUIREMENTS.md` at commit `254aabc` ``). A citation pins a file to a
+commit; it is never a reason to keep the file live
+([lesson 0001](.spec/lessons/0001-cite-a-superseded-record-at-a-commit.md)).
+
 ### `specht`
 
 Traceability is checked deterministically, not by memory:

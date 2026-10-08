@@ -4,11 +4,11 @@ This is a repository for a dotnet tool that will check your specification docume
 
 # Seed brief: the `specht` repository
 
-> Hand this to the first agent in the new repository. It carries the decided
+> Hand this to the first agent in the new repository. It carries the decided~~~~
 > requirements, what to extract from `hooked`, the draft design already
 > written, the decisions taken on each open question, and the order of work.
 > Source material: `hooked` branch `refactor/ai-offering` at `6afe8ab` (PR
-> #217, open). The engine, tests, schemas and templates there are byte-identical
+> #217, open). The engine, tests, schemas, and templates there are byte-identical
 > to the earlier seed at `a6d056f`; only the three draft-spec files were removed.
 > Written as `spec-check`; the product was then named `specht` (command
 > `specht`, package `specht.tool`, namespace `specht`), and the brief was
@@ -19,7 +19,7 @@ This is a repository for a dotnet tool that will check your specification docume
 
 A command-line tool, delivered as a `dotnet tool`, that checks a repository's
 `.spec/` specification tree against a versioned schema and reports every
-violation with a file, a line and a rule id. One schema and one checker shared
+violation with a file, a line, and a rule id. One schema and one checker shared
 by every repository in the owner's ecosystem, replacing three hand-copied
 implementations in four repositories.
 The repository holds **both the tool and the schema**. No consumer repository
@@ -28,7 +28,7 @@ owns the schema; `hooked` is consumer one.
 ## 2. Requirements, as decided (2026-10-07)
 
 **Problem.** Four repositories are written in parallel on the same `.spec/`
-approach. Three of them hand-copy `hooked`'s schema, templates and checker.
+approach. Three of them hand-copy `hooked`'s schema, templates, and checker.
 Every improvement lands four times or drifts.
 **Personas.** The maintainer of four repositories. The agent authoring a
 specification in any of them.
@@ -82,7 +82,7 @@ proves the tool handles a tree it did not write.
 ## 3. What to extract from `hooked`
 
 **The code exists on disk. Copy it; do not regenerate it.** The engine, its
-tests, the schemas and the templates are written, reviewed and passing. The
+tests, the schemas, and the templates are written, reviewed, and passing. The
 first agent's job is to move files and rename a namespace, not to write a
 checker. Every `.cs` file below is the implementation; read it, keep it.
 Checkout on this machine: `/Users/rlittlesii/source/rlittlesii/hooked`, branch
@@ -285,7 +285,7 @@ the owner can reverse; record a reversal as a decision, never silently.
 
 1. **Scaffold.** Repository, `.slnx`, `Directory.Build.props` with
    `TreatWarningsAsErrors`, central package versions, the local tool
-   manifest, CI that builds, tests and packs. `.spec/` with the epic.
+   manifest, CI that builds, tests, and packs. `.spec/` with the epic.
 2. **Copy the engine and its tests from disk** (§ 3 script), rename the
    namespace, nothing else. Prove the 56 tests pass. Tag the commit: this is
    the behaviour baseline for Should-7. No file in `src/specht` is rewritten
@@ -332,19 +332,19 @@ the owner can reverse; record a reversal as a decision, never silently.
 
 Instructions for AI agents come from two places, and the split is deliberate.
 
-**Tracked here, in [`.skills/`](./.skills) — needed to deliver, so a clone has
+**Tracked here, in [`.skills/`](.claude/skills) — needed to deliver, so a clone has
 it.** Eight skills, reviewable in a pull request like any other file:
 
-| Kind       | Skill                                                               | Covers                                                                                 |
-| ---------- | ------------------------------------------------------------------- | -------------------------------------------------------------------------------------- |
-| method     | [`deliver-change`](./.skills/deliver-change/SKILL.md)               | issue to branch to specification to pull request                                       |
-| method     | [`coding-conventions`](./.skills/coding-conventions/SKILL.md)       | orient, keep the design direct, say it once                                            |
-| method     | [`test-from-scenarios`](./.skills/test-from-scenarios/SKILL.md)     | a claim first, injected time, synthetic fixtures, both tiers                           |
-| method     | [`clarify-requirements`](./.skills/clarify-requirements/SKILL.md)   | when to ask versus decide, and writing the answer back                                 |
-| method     | [`spec-and-traceability`](./.skills/spec-and-traceability/SKILL.md) | the specification model, claims, records, blast radius                                 |
-| companion  | [`specht-conventions`](./.skills/specht-conventions/SKILL.md)       | this repository: paths, section ownership, ID schemes, tiers, commands, the self-check |
-| technology | [`spectre-cli`](./.skills/spectre-cli/SKILL.md)                     | the CLI framework the tool is built on                                                 |
-| technology | [`dotnet-tool`](./.skills/dotnet-tool/SKILL.md)                     | the tool's shape: project setup, command folders, packing, the local tool manifest     |
+| Kind       | Skill                                                                    | Covers                                                                                 |
+| ---------- | ------------------------------------------------------------------------ | -------------------------------------------------------------------------------------- |
+| method     | [`deliver-change`](.claude/skills/deliver-change/SKILL.md)               | issue to branch to specification to pull request                                       |
+| method     | [`coding-conventions`](.claude/skills/coding-conventions/SKILL.md)       | orient, keep the design direct, say it once                                            |
+| method     | [`test-from-scenarios`](.claude/skills/test-from-scenarios/SKILL.md)     | a claim first, injected time, synthetic fixtures, both tiers                           |
+| method     | [`clarify-requirements`](.claude/skills/clarify-requirements/SKILL.md)   | when to ask versus decide, and writing the answer back                                 |
+| method     | [`spec-and-traceability`](.claude/skills/spec-and-traceability/SKILL.md) | the specification model, claims, records, blast radius                                 |
+| companion  | [`specht-conventions`](.claude/skills/specht-conventions/SKILL.md)       | this repository: paths, section ownership, ID schemes, tiers, commands, the self-check |
+| technology | [`spectre-cli`](.claude/skills/spectre-cli/SKILL.md)                     | the CLI framework the tool is built on                                                 |
+| technology | [`dotnet-tool`](.claude/skills/dotnet-tool/SKILL.md)                     | the tool's shape: project setup, command folders, packing, the local tool manifest     |
 
 Plus the four role contracts in [`.agents/`](./.agents/README.md), the
 templates in [`.spec/templates/`](./.spec/templates) and the schema set in
@@ -374,7 +374,7 @@ install` fails and none of those eighteen skills land. Everything in `.skills/`,
 `./build.sh SpecCheck` have no dependency on any of it.
 
 What is lost is library-level guidance an agent would otherwise read before
-touching xUnit, Reqnroll or NUKE. The repository's own conventions for those
+touching xUnit, Reqnroll, or NUKE. The repository's own conventions for those
 surfaces are **not** in the missing skills: the traps live in
 [`specht-conventions`](./.skills/specht-conventions/SKILL.md) and its
 references, which are tracked. So a contributor without access can still follow
