@@ -33,7 +33,7 @@ does not quietly supply the gap.
 ## Where ownership is written
 
 Which role owns which section is written in exactly one place:
-[`specht-conventions`](../.skills/specht-conventions/SKILL.md)
+[`specht-conventions`](../skills/specht-conventions/SKILL.md)
 § "Section ownership". It is not restated here, and not restated in the role
 files — a second copy is a second thing to drift.
 
@@ -48,9 +48,10 @@ files — a second copy is a second thing to drift.
 - **Every role writes less than it wants to.** Enough code to turn the test
   green; no abstraction without a second caller that exists today; one statement
   per fact. The rule is in
-  [`coding-conventions`](../.skills/coding-conventions/SKILL.md) §§ "Design" and
+  [`coding-conventions`](../skills/coding-conventions/SKILL.md) §§ "Design" and
   "Say it once, and briefly" - each role file names only what that means for the
   artifact it owns.
-- **These are contracts, not loadable agents.** The directory is `.agents/`, not
-  `.claude/agents/`. `.claude/` is gitignored and reinstallable; a rule placed
-  there cannot be reviewed in a pull request, so no rule lives there.
+- **These are contracts, not loadable agents.** The directory is
+  `.claude/agents/`, which `.gitignore` excepts from ignoring `.claude/`, so
+  they are tracked; a rule placed anywhere else under `.claude/` cannot be
+  reviewed in a pull request, so no rule lives there.

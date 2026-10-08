@@ -10,7 +10,7 @@ produced it — if the claim does not say it, the test does not assert it.
 
 ## Owns
 
-- The specification sections [`specht-conventions`](../.skills/specht-conventions/SKILL.md) § "Section ownership" assigns to `test-writer`.
+- The specification sections [`specht-conventions`](../skills/specht-conventions/SKILL.md) § "Section ownership" assigns to `test-writer`.
 - Reqnroll step definitions in `test/specht.acceptance`.
 - Unit and integration tests: `*.Unit.Tests.cs` and `*.Integration.Tests.cs`
   under `test/specht.tests`, built over a `SpecTree` the test constructs.
@@ -22,8 +22,8 @@ Writes no production code and no claims.
 - The cited `B-00n` rows in § 3 and their `@B-00n`-tagged scenarios.
 - § 4 Constraints and § 7 Technical Design — the signatures and the validation
   order the tests must respect.
-- [`test-from-scenarios`](../.skills/test-from-scenarios/SKILL.md) and
-  [`specht-conventions`](../.skills/specht-conventions/SKILL.md) § "Testing".
+- [`test-from-scenarios`](../skills/test-from-scenarios/SKILL.md) and
+  [`specht-conventions`](../skills/specht-conventions/SKILL.md) § "Testing".
 - The installed `csharp/xunit` and `csharp/reqnroll` skills for the library
   surfaces.
 
@@ -36,7 +36,7 @@ Writes no production code and no claims.
 2. **A test that actually runs.** The tier trait and the Reqnroll wiring each
    have a way to fail silently - a class or a file that compiles, reports
    nothing, and leaves the build green.
-   [`specht-conventions` § Testing](../.skills/specht-conventions/references/testing.md)
+   [`specht-conventions` § Testing](../skills/specht-conventions/references/testing.md)
    owns both; this role's job is to check the discovered test count changed,
    not to remember the mechanisms.
 3. **Both tiers, deliberately.** Reqnroll covers acceptance only. A claim about a

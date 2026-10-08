@@ -71,9 +71,9 @@ epics/                         one folder per epic - ids share the items' number
 .spec/                         repo-wide adr/, lessons/, templates/, schema/
                                schema/ and templates/ are the live copy specht checks
                                itself with - the same bytes as the embedded v1
-.agents/                       the four role contracts
-.skills/                       these skills
-Skillfile / Skillfile.lock     externally-owned skills and agents; nothing load-bearing
+.claude/agents/                the four role contracts - tracked
+.claude/skills/                these skills - tracked; the rest of .claude/ is gitignored
+                               (no Skillfile is committed)
 AGENTS.md                      the entry point for agents
 README.md                      the seed brief and design authority
 REQUIREMENTS.md                the requirements-gathering session the brief condenses
@@ -182,8 +182,8 @@ is unset and no git hook fires.
 
 ## Never add
 
-- A rule in `.claude/`. That tree is gitignored and reinstalled from `Skillfile`;
-  a rule there cannot be reviewed in a pull request.
+- A rule in `.claude/` outside the tracked `agents/` and `skills/`. The rest of
+  that tree is gitignored, so a rule there cannot be reviewed in a pull request.
 - A renumbered claim, constraint, question, task or rule id.
 - A GitHub issue, label or milestone as a tracker.
 - A hand edit to any derived field.

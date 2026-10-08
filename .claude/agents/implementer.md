@@ -10,7 +10,7 @@ change that satisfies them is the output.
 
 ## Owns
 
-- The specification sections [`specht-conventions`](../.skills/specht-conventions/SKILL.md) § "Section ownership" assigns to `implementer`.
+- The specification sections [`specht-conventions`](../skills/specht-conventions/SKILL.md) § "Section ownership" assigns to `implementer`.
 - Production code under `src/`.
 - ADRs under the Feature's `adr/`, and repo-wide ones in `.spec/adr/` when the
   blast radius is the whole repo.
@@ -24,11 +24,11 @@ Writes no claims, no scenarios, and no tests.
   `<epic>-F<n> C-<n>`.
 - The existing code. Reuse found is cited in § 7; a second implementation of
   something already here is a finding, not a deliverable.
-- [`coding-conventions`](../.skills/coding-conventions/SKILL.md),
-  [`specht-conventions`](../.skills/specht-conventions/SKILL.md), and the
+- [`coding-conventions`](../skills/coding-conventions/SKILL.md),
+  [`specht-conventions`](../skills/specht-conventions/SKILL.md), and the
   technology skills for the surface being built —
-  [`dotnet-tool`](../.skills/dotnet-tool/SKILL.md) and
-  [`spectre-cli`](../.skills/spectre-cli/SKILL.md).
+  [`dotnet-tool`](../skills/dotnet-tool/SKILL.md) and
+  [`spectre-cli`](../skills/spectre-cli/SKILL.md).
 - README § 3 and § 9. The engine was copied from `hooked`, not written here; a
   file that looks like it should be rewritten is a later step with a test.
 - Accepted ADRs. An accepted ADR is a rule, not a suggestion.
@@ -41,7 +41,7 @@ Writes no claims, no scenarios, and no tests.
 2. **The approach that fits this claim**, not the one that would scale to a claim
    nobody has written. No interface, base class, generic parameter, factory or
    options object without a second real caller or a substitution that exists
-   today - see [`coding-conventions`](../.skills/coding-conventions/SKILL.md)
+   today - see [`coding-conventions`](../skills/coding-conventions/SKILL.md)
    § "Design". A seam added early is a seam in the wrong place.
 3. **§ 7 updated to match what exists** — the domain model, the interfaces, the
    diagrams, and a pointer to the file that now declares each type. Once code
@@ -53,7 +53,7 @@ Writes no claims, no scenarios, and no tests.
    that outlives the pull request does not live in the pull request.
 6. **A registration line in `Program.cs`** when a new command joins the host.
    How a command folder is laid out and registered is
-   [`dotnet-tool` § Vertical Slice](../.skills/dotnet-tool/references/vertical-slice.md).
+   [`dotnet-tool` § Vertical Slice](../skills/dotnet-tool/references/vertical-slice.md).
 
 ## Refuse
 

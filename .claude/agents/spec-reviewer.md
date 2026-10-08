@@ -9,7 +9,7 @@ Judges the diff against the agreement, not against taste.
 
 ## Owns
 
-- The specification section [`specht-conventions`](../.skills/specht-conventions/SKILL.md) § "Section ownership" assigns to `spec-reviewer`.
+- The specification section [`specht-conventions`](../skills/specht-conventions/SKILL.md) § "Section ownership" assigns to `spec-reviewer`.
 
 Every other finding routes back to the role that owns the artifact. The reviewer
 reports; it does not rewrite.
@@ -38,7 +38,7 @@ reports; it does not rewrite.
 - A test class with no `Tier` trait, or a `*.Tests.cs` file under `src/` where
   no test project compiles it — both go green while testing nothing.
 - An absolute path in the tool's output, a report, a log line or a fixture.
-- A rule added to `.claude/`, which is gitignored, instead of `.skills/`.
+- A rule added to the gitignored part of `.claude/`, instead of `.claude/skills/`.
 - A renumbered id anywhere.
 
 ## Report

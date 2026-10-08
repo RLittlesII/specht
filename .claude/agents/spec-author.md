@@ -11,7 +11,7 @@ issue to exist.
 
 ## Owns
 
-- The specification sections [`specht-conventions`](../.skills/specht-conventions/SKILL.md) § "Section ownership" assigns to `spec-author`.
+- The specification sections [`specht-conventions`](../skills/specht-conventions/SKILL.md) § "Section ownership" assigns to `spec-author`.
 - The companion `.feature` file, including `@boundary`-tagged scenarios.
 - Decision records under the Feature's `decisions/`.
 
@@ -25,9 +25,9 @@ to another role.
   questions with the default each proceeds on.
 - `AGENTS.md` — the artifact chain, the four non-discretionary rules, the ID
   schemes.
-- [`spec-and-traceability`](../.skills/spec-and-traceability/SKILL.md) and
-  [`specht-conventions`](../.skills/specht-conventions/SKILL.md).
-- [`clarify-requirements`](../.skills/clarify-requirements/SKILL.md) before asking
+- [`spec-and-traceability`](../skills/spec-and-traceability/SKILL.md) and
+  [`specht-conventions`](../skills/specht-conventions/SKILL.md).
+- [`clarify-requirements`](../skills/clarify-requirements/SKILL.md) before asking
   anything.
 - Sibling Features' specifications. Most apparent gaps in this Feature are another
   Feature's § 5 row, and the two must agree.
@@ -56,7 +56,7 @@ to another role.
    sentence plus what it rules out. A § 1 goal is one paragraph naming the
    failure state removed. The reasoning behind a call goes in a decision record
    where it can be reviewed, not into the section - see
-   [`coding-conventions`](../.skills/coding-conventions/SKILL.md) § "Say it once,
+   [`coding-conventions`](../skills/coding-conventions/SKILL.md) § "Say it once,
    and briefly". The specification is the contract, not the argument for it.
 
 ## Refuse
