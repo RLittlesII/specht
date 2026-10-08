@@ -16,5 +16,6 @@
     <ItemGroup>
         <Content Include="**\.spec\*.feature"/>
         <Content Include="**\.spec\**\*.md"/>
+        <Content Include="**\.issue\**\*.yml"/>
     </ItemGroup>
 </Project>

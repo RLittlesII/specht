@@ -200,7 +200,7 @@ Identifiers are the citation mechanism that makes the chain navigable:
   deleted.
 - Work items: `0003`, four digits, repository-wide from `.issue/.sequence`, in
   the same number space as the epics — so the first item is `0003`. The schema
-  is [`.issue/item.yml`](.issue/item.yml). The consumer schema's `000X-NN` task
+  is [`.spec/templates/item.yml`](.spec/templates/item.yml). The consumer schema's `000X-NN` task
   id is not used in this repository.
 - ADRs: `ADR-0002`, numbered repo-wide in `.spec/adr/` or per Feature in that
   Feature's `adr/`, chosen by blast radius.
@@ -414,7 +414,7 @@ claude.ai/code/artifacts.
 issue, and there are **no issues, labels or milestones** in this workflow. The
 item owns delivery state; the Feature's `.spec/README.md` owns content. The
 schema, the status vocabulary and the rank derivation are in
-[`.issue/item.yml`](.issue/item.yml).
+[`.spec/templates/item.yml`](.spec/templates/item.yml).
 
 - **An item sits beside the specification it was cut from**: `<home>/.issue/`,
   a sibling of that Feature's `.spec/`. An item that belongs to no Feature — a
