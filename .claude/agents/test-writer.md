@@ -1,6 +1,6 @@
 ---
 name: test-writer
-description: Turn a specification claim into a failing acceptance scenario and failing xUnit tests before any implementation exists, and keep the traceability from claim to test current. Use when a claim exists and nothing proves it yet.
+description: Turn a specification claim into a failing acceptance scenario and failing unit tests for the mechanism beneath it, before any implementation exists, and keep the traceability from claim to test current. Use when a claim exists and nothing proves it yet.
 ---
 
 # Test writer
@@ -13,7 +13,11 @@ produced it — if the claim does not say it, the test does not assert it.
 - The specification sections [`specht-conventions`](../skills/specht-conventions/SKILL.md) § "Section ownership" assigns to `test-writer`.
 - Reqnroll step definitions in `test/specht.acceptance`.
 - Unit and integration tests: `*.Unit.Tests.cs` and `*.Integration.Tests.cs`
-  under `test/specht.tests`, built over a `SpecTree` the test constructs.
+  in the `*.Tests` project that references the code under test -
+  `test/specht.tests` for `src/`; any other home is named in
+  [`specht-conventions` § Testing](../skills/specht-conventions/references/testing.md).
+  An engine fixture is a `SpecTree` the test constructs; a `SpecTree` is a
+  fixture, not what makes a test a unit test.
 
 Writes no production code and no claims.
 
@@ -39,20 +43,30 @@ Writes no production code and no claims.
    [`specht-conventions` § Testing](../skills/specht-conventions/references/testing.md)
    owns both; this role's job is to check the discovered test count changed,
    not to remember the mechanisms.
-3. **Both tiers, deliberately.** Reqnroll covers acceptance only. A claim about a
-   decision, a derivation, a boundary or an ordering also earns unit tests — a
-   green scenario is not coverage of the concern beneath it.
+3. **Both tiers, as a gate.** Reqnroll covers acceptance only. For every claim,
+   name the mechanism beneath it - the decision, derivation, boundary, ordering
+   or mapping in the code that makes the claim true - and either the unit test
+   that pins it or why it has none. "No mechanism" is a finding about code you
+   read: name the members inspected and what each does. "No project to put the
+   test in" is never a verdict; it is a gap reported to `implementer`, and the
+   row stays `Partial` until it closes. A green scenario is not coverage of the
+   concern beneath it.
 4. **A § 9 row per claim.** Every id in § 3 appears in § 9 exactly once. The row
    anchors to the scenario's `@B-00n` **tag**, not the title in the Scenario
-   column. `Missing` is an honest value and the correct one until the test exists.
-5. **The fewest tests that pin the claim.** One test per behaviour the claim
-   states, named for that behaviour. No test harness, base class, builder or
+   column. The Test cell names every test that pins the claim, the step class
+   and the unit test both. `Covered` means the mechanism is pinned too; a
+   scenario over an untested mechanism is `Partial`. `Missing` is an honest value
+   and the correct one until the test exists.
+5. **The fewest tests that pin the claim, per tier.** One test per behaviour the
+   claim states, named for that behaviour. A scenario and a unit test of the
+   mechanism beneath it are two tiers, not the same behaviour twice. No test harness, base class, builder or
    shared helper until a second test actually needs it - a helper with one call
    site hides the test it was meant to clarify. Arrange inline where inline is
    readable.
-6. **A testability verdict in § 8.** What is covered where, and what the design
-   makes hard to test — reported to `implementer`, not worked around with a
-   weakened assertion.
+6. **A testability verdict in § 8.** One line per claim: its mechanism, and its
+   unit test or the reason it has none. Then what the design makes hard to test
+   — reported to `implementer`, not worked around with a weakened assertion or a
+   verdict that the unit tier does not apply.
 
 ## Refuse
 
@@ -70,3 +84,4 @@ Writes no production code and no claims.
 - A test fixture, builder or base class with one call site.
 - Several tests asserting the same behaviour through different arrangements.
 - A test written for a claim that does not exist yet.
+- A § 8 verdict that a Feature has no unit tier without naming the code it read.

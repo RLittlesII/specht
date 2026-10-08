@@ -21,10 +21,16 @@ project whose name ends `.Tests`. `AcceptanceTest` runs `test/specht.acceptance`
 with no filter.
 
 The line between the first two tiers is the file system: a unit test exercises
-one rule or one reader over documents built in memory; an integration test runs
-`SpecCheckRunner` over a `SpecTree` written to a temporary directory and asserts
-the report. The 56 tests extracted from `hooked` already draw it this way
-(brief § 3); follow them.
+one decision, derivation or mapping in memory; an integration test touches the
+disk or a process. In the engine, a unit test runs one rule or one reader over
+documents built in memory, and an integration test runs `SpecCheckRunner` over
+a `SpecTree` written to a temporary directory and asserts the report. The 56
+tests extracted from `hooked` already draw it this way (brief § 3); follow them.
+
+The tiers are defined by what is under test, not by where it lives. Code
+outside `src/` - the build in `.build/` is the first - has the same unit tier,
+in its own `*.Tests` project that references it. Until that project exists, its
+mechanisms are `Partial` in § 9, never "no unit tier".
 
 **A test through Spectre's command tester is Integration.** `CommandAppTester`
 runs the parser, the type registrar, the settings binding and the command
@@ -36,8 +42,13 @@ There is no third, "UI", tier; one is the owner's to add.
 
 **Reqnroll covers the acceptance tier only.** A green scenario does not relieve
 the mechanism beneath it of unit coverage: a rule's decision, an id grammar, a
-path relativization, a table-header match and an ordering each earn a unit test
-at the level they live at.
+path relativization, a table-header match, an ordering, a file-set filter and an
+argument a target builds each earn a unit test at the level they live at.
+
+**Acceptance-only is the failure mode, not a tier choice.** Epic `0055` shipped
+its build and CI with scenarios alone and a § 8 verdict that the build had "no
+logic of its own", while `Build.cs` partitioned files by extension, skipped an
+empty formatter and quoted arguments - [lesson 0003](../../../../.spec/lessons/0003-the-unit-tier-had-no-home.md).
 
 ## The stack
 
@@ -148,6 +159,8 @@ wall clock.
 
 - A test project whose name does not end `.Tests`.
 - A test class with no `Tier` trait, or with both.
+- A claim marked `Covered` by a scenario alone while the mechanism beneath it
+  has no unit test, or a "no unit tier" verdict that names no code read.
 - A `*.Tests.cs` file under `src/`.
 - A batched or wildcarded `ReqnrollFeatureFile` glob.
 - A mocking library, when a delegate seam would do.

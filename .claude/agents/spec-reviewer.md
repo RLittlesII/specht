@@ -35,6 +35,12 @@ reports; it does not rewrite.
   fixed; a prose excuse is not an exemption.
 - A specification that was not updated alongside a design change.
 - A test weakened, deleted, or made to assert structure instead of behaviour.
+- A decision, derivation, boundary, ordering or mapping in the diff that no unit
+  test pins, or a § 9 row `Covered` by a scenario alone over such a mechanism —
+  it is `Partial`. A § 8 verdict that a Feature has "no unit tier", or that a
+  claim has no mechanism, without naming the code read is the same finding;
+  route it to `test-writer`. This is not asking for tests beyond the claims: the
+  mechanism is how the claim is true.
 - A test class with no `Tier` trait, or a `*.Tests.cs` file under `src/` where
   no test project compiles it — both go green while testing nothing.
 - An absolute path in the tool's output, a report, a log line or a fixture.

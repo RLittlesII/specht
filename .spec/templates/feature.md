@@ -144,7 +144,10 @@ synced_at: null
 <!-- Owner: test-writer. Which claims are covered by an acceptance scenario and
      which by unit tests, the testability verdict, and anything the design makes
      hard to test. Reqnroll runs the acceptance tier only — unit tests still
-     cover the concerns. -->
+     cover the concerns. One line per claim: the mechanism beneath it (the
+     decision, derivation, boundary, ordering or mapping that makes it true) and
+     its unit test, or the reason it has none, naming the code read. "No unit
+     tier" is never a Feature-wide verdict. -->
 
 ## 9. Traceability Matrix
 
@@ -157,7 +160,11 @@ synced_at: null
 <!-- Owner: test-writer. Every ID in § 3 appears here exactly once. The row is
      anchored to the scenario's `@B-00n` TAG, not to the title in the Scenario
      column — that title is a human-reading courtesy and a stale one is a
-     cleanup, not a gate failure. A `Missing` row blocks the item reaching done;
+     cleanup, not a gate failure. The Test cell names every test that pins the
+     claim, step class and unit test both. `Covered` means the mechanism is
+     pinned too; a scenario over a mechanism with no unit test is `Partial`,
+     unless § 8 records the claim as having no mechanism of its own.
+     A `Missing` row blocks the item reaching done;
      it does not block spec_status reaching approved. -->
 
 ## 10. Lessons / Spec Deltas

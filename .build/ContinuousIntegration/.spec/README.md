@@ -131,6 +131,10 @@ Delivered so far by item 0064.
 - **Mutations.** Moving the `push` trigger to another branch turned B-002 red; dropping `Pack` from the gate steps turned B-004 red.
 - **The build's own scenarios** copy `ci.yml` and `build.cmd` into each synthetic tree: with `AutoGenerate` on, every build regenerates the workflow into the root it is given, and generation fails without them. The copies make that rewrite produce the same bytes, which `0055-F1` B-004's snapshot checks.
 - **Unbound:** B-006 (`0066`), B-009 (`0065`) and B-011 (`0067`) report Skipped.
+- **Mechanisms, per bound claim.** Read in [`Build.GitHubActions.cs`](../../Build.GitHubActions.cs).
+  - B-004: `ContinuousIntegrationMiddleware` removes the generator's tool-install and tool-restore steps, then rewrites every run step that names `--target ` into `./build.cmd` plus the text from `--target ` on. That is a derivation; no unit test - `Partial`.
+  - B-001, B-002, B-003, B-005, B-007, B-008, B-010: no mechanism of their own. The trigger branches, the two images, `FailFast = false`, the job name and the read-only permissions are each a literal setting the scenario reads back from `ci.yml`.
+- **Verdict.** B-004's rewrite has no unit test because no `*.Tests` project references the build; `0098` gives it one ([lesson 0003](../../../.spec/lessons/0003-the-unit-tier-had-no-home.md)).
 
 ## 9. Traceability Matrix
 
@@ -141,7 +145,7 @@ Delivered so far by item 0064.
 | B-001    | A pull request is built                           | `ContinuousIntegrationSteps` | Covered |
 | B-002    | A push to main is built                           | `ContinuousIntegrationSteps` | Covered |
 | B-003    | Every run covers Linux and Windows                | `ContinuousIntegrationSteps` | Covered |
-| B-004    | Every operating system runs every gate            | `ContinuousIntegrationSteps` | Covered |
+| B-004    | Every operating system runs every gate            | `ContinuousIntegrationSteps` | Partial |
 | B-005    | A failing gate fails its operating system's check | `ContinuousIntegrationSteps` | Covered |
 | B-006    | A specification violation is shown on the diff    | Missing                      | Missing |
 | B-007    | Check names do not change between runs            | `ContinuousIntegrationSteps` | Covered |
