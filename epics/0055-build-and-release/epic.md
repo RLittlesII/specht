@@ -3,7 +3,7 @@ title: "Epic 0055: Build, versioning, release and consumption"
 description: "The infrastructure that lets this repository ship from its first push: the NUKE build, the pre-commit hook, CI on three operating systems, the coverage gate, dependency updates, versioning, the release to GitHub Packages, consumer install and the repository settings"
 id: "0055"
 type: epic
-status: needs-decomposition
+status: ready-for-architecture
 priority: high
 milestone: null
 children:

@@ -1,0 +1,50 @@
+id: "0090"
+type: task
+title: Write the branch protection and merge settings
+
+status: ready-for-architecture
+
+priority: high # DERIVED
+risk: 1
+rank: 77 # DERIVED: (4 × 20) − (1 × 3) + (0 × 5); value inherited from 0089
+
+parent: "0089"
+children: []
+
+depends_on: ["0064", "0071"] # requires 0064's check names; requires 0071's patch status
+blocks: []
+spikes: []
+
+spec: .github/settings/.spec/README.md
+
+claims:
+  - B-001
+  - B-002
+  - B-003
+  - B-004
+  - B-005
+  - B-006
+  - B-011
+
+created: "2026-10-08"
+updated: "2026-10-08"
+closed: null
+
+summary: |
+  The protection and merge half of the checked-in checklist (C-1, C-3),
+  naming the checks exactly as 0064 and 0071 produce them.
+
+acceptance_criteria:
+  - "B-001 — a pull request before any change reaches `main`"
+  - "B-002 — required CI checks equal the workflow's per-system checks"
+  - "B-003 — patch coverage required, project coverage not"
+  - "B-004 — squash merging, commit messages as the body"
+  - "B-005 — rebase merging on, merge commits off"
+  - "B-006 — auto-merge on"
+  - "B-011 — no approving review required"
+  - "§ 9 carries a row naming a test for each id above."
+
+decisions: []
+
+out_of_scope:
+  - "Verifying the live settings — § 5 #4."

@@ -5,7 +5,7 @@ type: feature
 id: "F8"
 epic: "0055"
 spec_status: approved
-status: needs-decomposition
+status: ready-for-architecture
 priority: high
 value: 0
 risk: 0
@@ -154,7 +154,7 @@ None.
 
 ## Tasks
 
-None cut. Items are cut from § 3 after agreement.
+Cut 2026-10-08 into [`../.issue/`](../.issue/): `0089` (the Feature), with `0090` to `0091`.
 
 ## Scoring
 
