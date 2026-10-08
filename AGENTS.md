@@ -135,7 +135,7 @@ Every change flows in one direction:
 need (epic / issue)
   → scenario           the Feature's <feature-name>.feature
   → specification      the Feature's spec (twelve sections + frontmatter)
-  → work items         GitHub issues, cut from § 3 claims after agreement
+  → work items         .issue/ items, cut from § 3 claims after agreement
   → tests              test/specht.acceptance step definitions, and
                        test/specht.tests/**/*.{Unit,Integration}.Tests.cs
   → code               src/**
@@ -195,8 +195,10 @@ Identifiers are the citation mechanism that makes the chain navigable:
 - Constraints inside a feature: `C-12`, cited from outside as `0001-F1 C-12`.
 - Open questions: `OQ-3`, resolved in place with the date and the decision, never
   deleted.
-- Tasks: `000X-NN`, sequential per epic (not per feature) — e.g. F3's tasks in
-  epic `0001` start at `0001-11`.
+- Work items: `0003`, four digits, repository-wide from `.issue/.sequence`, in
+  the same number space as the epics — so the first item is `0003`. The schema
+  is [`.issue/item.yml`](.issue/item.yml). The consumer schema's `000X-NN` task
+  id is not used in this repository.
 - ADRs: `ADR-0002`, numbered repo-wide in `.spec/adr/` or per Feature in that
   Feature's `adr/`, chosen by blast radius.
 - Rules: `SPEC031`, fixed per schema version.
@@ -311,9 +313,10 @@ none of them changes:
 - **Never pin a package version in a `.csproj`.** Versions are central. The
   engine's three dependencies are pinned to `hooked`'s exact versions for a
   reason that is written beside them.
-- **`status` is mirrored from the issue's `status:*` label** once `github_issue` is
-  set, and `priority`/`rank`/`blocks` are derived. Never hand-edit them after that
-  point. There is no `priority:*` label.
+- **An item's `priority`, `rank` and `blocks` are derived**, from `value`,
+  `risk` and every other item's `depends_on`. Recompute them — and the
+  dependents' — when an edge changes; never hand-edit them.
+  `status: in-progress` is the only signal an item is taken.
 - **Never commit a generated report.** `format.json` is `dotnet format`'s output
   and `.artifacts/spec-check/*.json` is the tool's; both carry machine-specific
   or already-stale content and both are gitignored.
@@ -397,15 +400,36 @@ claude.ai/code/artifacts.
 
 ## SDLC
 
-Delivery is tracked in **GitHub issues**; the specification is tracked in this
-repository. The labels, what mirrors from them, and the branch and pull-request
-conventions are in
-[`specht-conventions` § Delivery](.skills/specht-conventions/references/delivery.md).
+**Work is tracked locally.** A `<id>-<slug>.yml` item stands in for a GitHub
+issue, and there are **no issues, labels or milestones** in this workflow. The
+item owns delivery state; the Feature's `.spec/README.md` owns content. The
+schema, the status vocabulary and the rank derivation are in
+[`.issue/item.yml`](.issue/item.yml).
+
+- **An item sits beside the specification it was cut from**: `<home>/.issue/`,
+  a sibling of that Feature's `.spec/`. An item that belongs to no Feature — a
+  bug, a spike, a chore — goes in the repository-root `.issue/`, the same blast
+  radius split `.spec/adr/` and `.spec/lessons/` use. Ids stay repository-wide
+  from one `.issue/.sequence`, which holds the last id claimed; find one with
+  `**/.issue/<id>-*.yml`.
+- `status: in-progress` marks an item taken, and `in-review` once the pull
+  request opens. Bump `updated:` on every edit.
+- **`done` and the `closed:` date are written by the pull request that delivers
+  the item, before it is opened** — after the merge nobody is present to flip
+  them. A pull request closes every item its work finishes, not only the one it
+  was cut for.
+- The commit message body opens with `Delivers <id>`, or
+  `Specifies <feature path>` when authoring a specification — the commit, not
+  only the pull request, carries the citation (rule 3 above). There is no issue
+  for `Closes` to close.
+- Branch `<id>/<short-description>` from the item id, or `spec/<feature-slug>`
+  when authoring a specification, which has no item to take an id from.
+
 Each step of README § 8 is one pull request naming the § 2 requirement it serves.
 
 ```yaml
 sdlc:
-  github_mode: true
+  github_mode: false
 ```
 
 ## graphify

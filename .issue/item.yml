@@ -1,0 +1,122 @@
+# WHICH .issue/ DIRECTORY:
+#   - <home>/.issue/<id>-<slug>.yml, beside the specification this item was
+#     cut from — a sibling of that Feature's .spec/, where <home> is the
+#     directory holding both (specifications are co-located from the first
+#     commit, so <home> already exists: src/specht/Discovery/.issue/). Every
+#     `type: feature` item, and any task, test or bug delivering its claims.
+#   - .issue/<id>-<slug>.yml at the repository root, for an item that belongs
+#     to no Feature: a bug, spike or chore with `spec: null`. Same blast-radius
+#     split .spec/adr/ and .spec/lessons/ use.
+# Ids are REPOSITORY-WIDE either way, and share one number space with the
+# epics under epics/, so a bare id in `depends_on` or `parent` resolves from
+# anywhere; find an item with **/.issue/<id>-*.yml.
+#
+# This file is the schema for a work item — the local stand-in for a GitHub
+# issue. It owns DELIVERY STATE; a Feature's .spec/README.md owns CONTENT.
+# Neither duplicates the other. It is this repository's tracker only: specht
+# does not ship it, so it lives here and not in .spec/templates/, whose files
+# are the embedded v1 copy (0001-F7 B-004).
+#
+# A FEATURE ITEM IS CUT FROM AN EXISTING SPEC, never the reverse: the spec is
+# the agreement, this file is a slice of delivering it. So a `type: feature`
+# item REQUIRES `spec:` and the `claims:` it delivers. A bug, spike or chore
+# starts here instead — its trigger is an observation, not an agreement — and
+# leaves `spec:` null until one is written.
+#
+# The whole file is YAML, with the prose fields as block scalars. .issue/.sequence
+# at the repository root holds the last id claimed: take the next number and
+# write it back in the same commit. Claim the id AFTER rebasing: it is taken
+# the moment someone else merges it.
+
+id: "0003" # string, so leading zeros survive. Never reused.
+type: feature # epic | feature | task | test | bug | spike
+title: Read specification layouts from the manifest
+
+# ready-for-architecture -> ready-for-implementation -> in-progress ->
+# in-review -> done, with needs-decomposition before an epic or feature is
+# split, ready once dependencies are resolved, and blocked at any point work
+# bounces back.
+#
+# in-progress is the ONLY signal an item is taken: never pick up an item that
+# already carries it, and set it before the worktree, the branch, or the first
+# edit.
+status: ready
+
+# `value` and `risk` are AUTHORED; `priority` and `rank` are DERIVED from them
+# and recomputed, never hand-edited. The derivation:
+#
+#   rank = (value × 20) − (risk × 3) + (unblocks × 5)
+#
+#   priority = high   when rank is 60 or above
+#              medium when rank is 40 to 59
+#              low    when rank is below 40
+#
+# `unblocks` is the count of items whose `depends_on` names this one — the same
+# ids `blocks` lists below — counted across EVERY Feature. So cutting an item
+# in one Feature that waits on an item in another moves that item's rank with
+# no change to its value or risk. Recompute rather than read, and recompute the
+# dependents too when a `depends_on` edge is added.
+priority: high # DERIVED — see above
+value: 4 # 1-5. Optional on a child: omit to inherit the parent's
+risk: 3 # 1-5. REQUIRED, and never inherited
+rank: 71 # DERIVED — see above. Orders items inside one priority bucket
+
+parent: "0001" # id of the epic or feature this hangs under
+children: [] # ids carved out of this item, so its own scope shrank
+
+# HARD prerequisites, by id: this cannot be built or verified until those
+# land. Not "touches similar code" — that is no relation at all. Say why in
+# the summary.
+depends_on: []
+blocks: [] # DERIVED: the inverse of other items' depends_on
+spikes: [] # ids of investigations this waits on
+
+# REQUIRED for type: feature — the spec this item was cut from. null for a
+# bug, spike or chore, which may produce a spec delta later.
+spec: src/specht/Discovery/.spec/README.md # <home>/.spec/README.md
+
+# The § 3 claims this item delivers — ids ONLY, never the claim text, or the
+# two records disagree. They already exist: the spec was written first.
+claims:
+  - B-001
+  - B-002
+
+created: "2026-10-08"
+updated: "2026-10-08" # bump on every edit
+closed: null # the date it went done. A closed item STAYS: permanent history.
+
+# User-story shaped for a feature. For a task, test or bug, plain prose is
+# fine — do not force a story onto a chore. Name any depends_on reason here.
+summary: |
+  As a <persona> I want <capability> so that <outcome>.
+
+# CITE claim ids; do not restate them. § 3 of the spec is the one place a
+# claim's text lives, and a paraphrase with the SHALL stripped off is the form
+# that drifts from it. The shape is the id plus a FEW WORDS to locate the
+# claim — not a sentence. Where the item's hazard is worth naming, name the
+# hazard; if a row needs a sentence to be understood, the sentence belongs in
+# § 3 and this row cites it.
+#
+# Every id in `claims:` above appears here, and the last row is the gate:
+# § 9 carries a row naming a test for each of them. A criterion that reads as
+# satisfied is not coverage.
+#
+# A bug or chore with `spec: null` states its criteria in prose here, and cites
+# claim ids once a spec delta adds them.
+acceptance_criteria:
+  - "B-001 — layouts from the manifest"
+  - "B-002 — exclusions from the manifest"
+  - "§ 9 carries a row naming a test for each id above."
+
+# Appended as the work proceeds: each decision, who made it, the date, and the
+# rejected option where there was one. A decision recorded only in chat is not
+# recorded. A decision that changes behavior also belongs in the
+# specification — a § 3 claim is spec-author's to write.
+decisions: []
+
+# What this item will not do, so the next reader does not assume it did.
+# CITE and ROUTE: name the thing, cite the spec's § 5 row that excludes it, and
+# say which sibling item or Feature owns it where one does. Do not re-explain
+# the exclusion reason — § 5 is where that lives, and a second copy of it
+# drifts. "Everything in § 5 of the spec" is a valid whole-section cite.
+out_of_scope: []
