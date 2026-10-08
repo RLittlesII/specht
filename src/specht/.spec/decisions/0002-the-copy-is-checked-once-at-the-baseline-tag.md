@@ -16,10 +16,10 @@ type: decision
    in this suite can fail it. It becomes C-2, checked once at the README § 8
    step 2 tag, with the diff recorded in that commit.
 2. **C-2 names what the copy may differ by:** the namespace rename in each
-   copied `*.cs` file; `AssemblyName` and `RootNamespace` set to `Specht` and
+   copied `*.cs` file; `AssemblyName` and `RootNamespace` set to `specht` and
    the comments about `hooked`'s `Directory.Build.props` dropped in the copied
    `.csproj`; the copied `.spec/` removed. These are README § 3's own edits and
-   B-005's rename. `src/Specht/.spec/`, which holds this specification, is not
+   B-005's rename. `src/specht/.spec/`, which holds this specification, is not
    part of the copy.
 3. **C-9 freezes verdicts, not files.** From the baseline tag to README § 8
    step 5, no edit changes a violation's rule id, severity, file, line,

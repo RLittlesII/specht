@@ -1,6 +1,6 @@
 ---
 title: Installation & Distribution
-description: How Specht.Tool is packed, installed through a local tool manifest, published to NuGet.org, and restored by a consumer's CI.
+description: How specht.tool is packed, installed through a local tool manifest, published to NuGet.org, and restored by a consumer's CI.
 type: reference
 ---
 
@@ -8,7 +8,7 @@ type: reference
 
 ## This repository's path
 
-`specht` ships as `Specht.Tool` on NuGet.org, command `specht`. A consumer
+`specht` ships as `specht.tool` on NuGet.org, command `specht`. A consumer
 installs it **per repository** through a local tool manifest: a committed
 `.config/dotnet-tools.json` pins the tool version beside the schema version the
 repository has chosen, and `dotnet tool restore` in CI brings it back. Nothing
@@ -18,14 +18,14 @@ is installed globally, and no consumer carries the engine as a project reference
 This repository is its own first consumer. Its build and its pre-commit hook run
 `dotnet specht` from its own manifest — the same call site every other
 repository uses (README § 7). Until the first package is published, the
-self-check runs the project directly (`dotnet run --project src/Specht.Tool --
+self-check runs the project directly (`dotnet run --project src/specht.tool --
 --root .`); the moment a package exists, the manifest replaces that.
 
 ## Pack
 
 ```bash
 ./build.sh Pack
-# Output: .artifacts/nupkg/Specht.Tool.<version>.nupkg
+# Output: .artifacts/nupkg/specht.tool.<version>.nupkg
 ```
 
 `dotnet pack -c Release` does the same thing without the build's version
@@ -36,17 +36,17 @@ inference.
 Install directly from the local nupkg directory for rapid iteration:
 
 ```bash
-dotnet tool install -g Specht.Tool --add-source .artifacts/nupkg
+dotnet tool install -g specht.tool --add-source .artifacts/nupkg
 specht --help
 
 # Uninstall when done iterating
-dotnet tool uninstall -g Specht.Tool
+dotnet tool uninstall -g specht.tool
 ```
 
 ## Global Install (Workstation)
 
 ```bash
-dotnet tool install -g Specht.Tool
+dotnet tool install -g specht.tool
 ```
 
 Installs to `~/.dotnet/tools` (Linux/macOS) or `%USERPROFILE%\.dotnet\tools` (Windows).
@@ -62,7 +62,7 @@ adopted it. Not how a consumer repository pins it.
 dotnet new tool-manifest
 
 # Install into the manifest
-dotnet tool install Specht.Tool --version 1.0.0
+dotnet tool install specht.tool --version 1.0.0
 
 # Restore from manifest (CI, teammates)
 dotnet tool restore
@@ -94,7 +94,7 @@ drift.
 ## Publish to NuGet.org
 
 ```bash
-dotnet nuget push .artifacts/nupkg/Specht.Tool.1.0.0.nupkg \
+dotnet nuget push .artifacts/nupkg/specht.tool.1.0.0.nupkg \
   --api-key $NUGET_API_KEY \
   --source https://api.nuget.org/v3/index.json
 ```
@@ -106,7 +106,7 @@ NuGet.org needs no feed configuration on their side. Kept because the command is
 the same shape:
 
 ```bash
-dotnet nuget push .artifacts/nupkg/Specht.Tool.1.0.0.nupkg \
+dotnet nuget push .artifacts/nupkg/specht.tool.1.0.0.nupkg \
   --api-key $GITHUB_TOKEN \
   --source https://nuget.pkg.github.com/YOUR_ORG/index.json
 ```

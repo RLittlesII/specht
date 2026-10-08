@@ -8,10 +8,10 @@ type: reference
 
 ## In this repository
 
-There is one host, `src/Specht.Tool`, and one slice per Spectre command:
+There is one host, `src/specht.tool`, and one slice per Spectre command:
 
 ```
-src/Specht.Tool/
+src/specht.tool/
   Program.cs                    the composition root - a hand-written list, nothing else
   Features/
     Check/                      `specht [--root] [--report] [--strict] [--json]` - the default command
@@ -26,13 +26,13 @@ src/Specht.Tool/
 
 The engine — discovery, the frontmatter reader, the schema loader, the Markdig
 document model, the rules, the runner and the report — is the shared concern
-beneath every command and lives in `src/Specht`, not in a slice. A command
+beneath every command and lives in `src/specht`, not in a slice. A command
 parses, calls `SpecCheckRunner`, folds the report into an exit code, and that is
 the whole command. `--explain SPEC031` lives in `Check/` until a second caller
 earns it a folder.
 
-Tests are **not** co-located here: they live in `test/Specht.Tests` and
-`test/Specht.Acceptance`. Why, and the tiers, are in
+Tests are **not** co-located here: they live in `test/specht.tests` and
+`test/specht.acceptance`. Why, and the tiers, are in
 [`specht-conventions` § Testing](../../specht-conventions/references/testing.md).
 
 ### The rules that make it hold
@@ -123,7 +123,7 @@ it promotes ad-hoc `IXxxService` abstractions that answer to nothing.
 3. **`Settings/` at the feature group level is for shared types only** — base classes and mixin interfaces used across multiple commands. It is not a dumping ground for every settings class.
 4. **Commands dispatch; they do not compute.** A command parses, hands the work
    to whatever sits below it, and folds the result into an exit code. Here, what
-   sits below is the engine in `src/Specht`.
+   sits below is the engine in `src/specht`.
 5. **No `Services/` folder.** A grab-bag `IFooService` is the smell this layout
    exists to prevent. Name the behaviour, put it in the slice that owns it, and
    add an abstraction only when a second caller or a substitution exists today -

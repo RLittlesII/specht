@@ -40,13 +40,13 @@ request; a Feature is a thing the tool does, with its own invariant.
 
 | Feature   | Name                                     | Specification                                   | README § 8 step |
 | --------- | ---------------------------------------- | ----------------------------------------------- | --------------- |
-| `0001-F1` | The engine, extracted unchanged          | `src/Specht/.spec/README.md`                    | 2               |
-| `0001-F2` | The check command                        | `src/Specht.Tool/Features/Check/.spec/README.md` | 3              |
-| `0001-F3` | The report contract                      | `src/Specht/Report/.spec/README.md`             | 3               |
-| `0001-F4` | `init`                                   | `src/Specht.Tool/Features/Init/.spec/README.md`  | 3              |
-| `0001-F5` | The manifest carries the roles           | `src/Specht/Manifest/.spec/README.md`           | 5               |
-| `0001-F6` | Discovery                                | `src/Specht/Discovery/.spec/README.md`          | 5               |
-| `0001-F7` | Schema versioning                        | `src/Specht.Tool/.spec/README.md`               | 6               |
+| `0001-F1` | The engine, extracted unchanged          | `src/specht/.spec/README.md`                    | 2               |
+| `0001-F2` | The check command                        | `src/specht.tool/Features/Check/.spec/README.md` | 3              |
+| `0001-F3` | The report contract                      | `src/specht/Report/.spec/README.md`             | 3               |
+| `0001-F4` | `init`                                   | `src/specht.tool/Features/Init/.spec/README.md`  | 3              |
+| `0001-F5` | The manifest carries the roles           | `src/specht/Manifest/.spec/README.md`           | 5               |
+| `0001-F6` | Discovery                                | `src/specht/Discovery/.spec/README.md`          | 5               |
+| `0001-F7` | Schema versioning                        | `src/specht.tool/.spec/README.md`               | 6               |
 
 Why these seven and not `hooked`'s one draft (`0008-F3`, 34 claims): that draft
 bundled the command, `init`, the manifest roles, discovery and the baseline in
@@ -63,7 +63,7 @@ Dependencies are declared in each Feature's frontmatter and checked by the tool
 
 A Feature's specification sits beside the code it specifies (AGENTS.md § "Where
 a specification lives"). The engine folders `Report/`, `Manifest/` and
-`Discovery/` under `src/Specht` do not exist yet; they are the spec-author's
+`Discovery/` under `src/specht` do not exist yet; they are the spec-author's
 placement and the `implementer` may move a specification with the code
 (`git mv`), because a specification's identity is its frontmatter `epic` and
 `id`, never its path (`SPEC012`).

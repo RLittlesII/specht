@@ -22,9 +22,9 @@ copy of it.
 `IsPackable false`. `Rocket.Surgery.Airframe.CodeAnalysis` is wired
 solution-wide from day one.
 
-`IsPackable=false` is the **default**, not the rule: `src/Specht.Tool` overrides
+`IsPackable=false` is the **default**, not the rule: `src/specht.tool` overrides
 it to `true` with `PackAsTool`, because the tool is the product and the package
-is how it ships. No other project packs — the engine library `src/Specht` is
+is how it ships. No other project packs — the engine library `src/specht` is
 consumed through the tool, never as a package of its own (README § 2 Must-4).
 
 `EnforceCodeStyleInBuild` is what makes the `.editorconfig` `:warning` severities
@@ -37,10 +37,10 @@ orchestrator itself from compiling. Product code gets no such exemption.
 
 ## The engine is copied, not written
 
-`src/Specht` arrives from `hooked` by `cp` with a namespace rename and nothing
+`src/specht` arrives from `hooked` by `cp` with a namespace rename and nothing
 else (README § 3, § 8 step 2). The tests that come with it are the behaviour
 baseline: `hooked`'s report must stay identical through every later step
-(README § 2 Should-7). A file in `src/Specht` that looks like it should be
+(README § 2 Should-7). A file in `src/specht` that looks like it should be
 rewritten is a later step with a test, never a fresh draft — and the first
 rewrite is the manifest-roles work in README § 8 step 5, one rule at a time.
 
@@ -94,7 +94,7 @@ path anywhere is a defect (README § 9), and the review looks for it.
 
 ## Formatting
 
-`.husky/pre-commit` **fixes** staged `.cs` files (`dotnet format "Specht.slnx"
+`.husky/pre-commit` **fixes** staged `.cs` files (`dotnet format "specht.slnx"
 --include …`, then re-stages them). CI **verifies** (`./build.sh Format` runs
 `--verify-no-changes`). So formatting is not something to argue about in review —
 but a build-file change made without running `Format` can still fail CI first.
@@ -102,7 +102,7 @@ but a build-file change made without running `Format` can still fail CI first.
 ## Never add
 
 - A package version in a `.csproj`.
-- `IsPackable=true` or `PackAsTool` anywhere but `src/Specht.Tool`.
+- `IsPackable=true` or `PackAsTool` anywhere but `src/specht.tool`.
 - A hand edit to `ci.yml` or a commit of `format.json`.
 - A suppression without its reason on the adjacent line.
 - A `#region`, or a `#if` spanning a member declaration.

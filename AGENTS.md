@@ -26,8 +26,8 @@ consumer owns the schema, and `hooked` is consumer one.
 One-line goal: _"A repository pins a schema version, its build calls the tool,
 and no repository carries the engine."_
 
-Distribution is the NuGet package `Specht.Tool`, command `specht`, installed per
-consumer through a local tool manifest. `src/Specht.Tool` is the one project that
+Distribution is the NuGet package `specht.tool`, command `specht`, installed per
+consumer through a local tool manifest. `src/specht.tool` is the one project that
 packs; `IsPackable=false` everywhere else.
 
 `README.md` is the seed brief and the design authority: requirements (§ 2), what
@@ -47,12 +47,12 @@ hook nor the self-check fires. The .NET SDK is pinned in `global.json`
 
 ## Build and test
 
-NUKE drives everything. `Specht.slnx` is the solution.
+NUKE drives everything. `specht.slnx` is the solution.
 
 ```sh
 ./build.sh             # Default = Compile + Test
 ./build.sh Format      # verify-only - fails on a diff
-./build.sh Pack        # Specht.Tool.<version>.nupkg
+./build.sh Pack        # specht.tool.<version>.nupkg
 ./build.sh SpecCheck   # specht, on this repository's own .spec/ tree
 ```
 
@@ -63,7 +63,7 @@ Every target, the tier filters, and what CI actually runs:
 
 Two projects, one direction of dependency:
 
-- **`src/Specht`** — the rule engine, copied from `hooked` (README § 3). A
+- **`src/specht`** — the rule engine, copied from `hooked` (README § 3). A
   pipeline: `SpecDiscovery` finds specifications (co-located `**/.spec/README.md`
   and consumers' legacy `epics/**/spec.md`) → `FrontmatterReader` reads YAML
   through YamlDotNet's representation model, so dates stay strings →
@@ -71,7 +71,7 @@ Two projects, one direction of dependency:
   → `SpecDocument`/`SpecStructure` model the Markdown with Markdig, pipe tables
   only → the `ISpecRule`s run → `SpecCheckRunner` collects → `SpecCheckReport`
   carries violations and counts.
-- **`src/Specht.Tool`** — the Spectre.Console.Cli host. One folder per command;
+- **`src/specht.tool`** — the Spectre.Console.Cli host. One folder per command;
   a command parses, calls the runner, and folds the report into an exit code.
   Nothing else lives in a command.
 
@@ -136,8 +136,8 @@ need (epic / issue)
   → scenario           the Feature's <feature-name>.feature
   → specification      the Feature's spec (twelve sections + frontmatter)
   → work items         GitHub issues, cut from § 3 claims after agreement
-  → tests              test/Specht.Acceptance step definitions, and
-                       test/Specht.Tests/**/*.{Unit,Integration}.Tests.cs
+  → tests              test/specht.acceptance step definitions, and
+                       test/specht.tests/**/*.{Unit,Integration}.Tests.cs
   → code               src/**
 ```
 
@@ -230,7 +230,7 @@ specification reaching `approved`.
 Co-located, from the first commit: `<area>/.spec/README.md` beside the code it
 specifies, with its `.feature`, `decisions/`, `adr/` and `lessons/` in the same
 folder. The tool is epic `0001`; its specification lives at
-`src/Specht/.spec/`. Repo-wide records go to the root `.spec/adr/` and
+`src/specht/.spec/`. Repo-wide records go to the root `.spec/adr/` and
 `.spec/lessons/`.
 
 The tool also reads the legacy `epics/<epic>/<feature>/spec.md` layout, because

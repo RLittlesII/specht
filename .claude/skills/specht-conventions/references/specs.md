@@ -44,7 +44,7 @@ both numbered repo-wide from `0001`. `.spec/templates/` holds the blanks and
 
 The root `.spec/schema/` and `.spec/templates/` are **the live copy this
 repository checks itself with** — exactly what `specht init` writes into a
-consumer. The shipping copy is embedded in `src/Specht.Tool/schema/v1/` and
+consumer. The shipping copy is embedded in `src/specht.tool/schema/v1/` and
 `templates/v1/`; the two are the same bytes, and a test says so.
 
 ## The twelve sections

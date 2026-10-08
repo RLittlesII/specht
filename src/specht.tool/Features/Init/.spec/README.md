@@ -49,7 +49,7 @@ A repository adopting the model copies `hooked`'s `.spec/schema/` and `.spec/tem
 | ID  | Assumption                                                                                                                                                                                                                        |
 | --- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | A-1 | The schema set is four files - the manifest and the three frontmatter schemas - and the templates are four: `feature.md`, `decision.md`, `adr.md`, `lesson.md`. Together, "the eight files".                                      |
-| A-2 | The shipping copy is embedded from `src/Specht.Tool/schema/v<n>/` and `templates/v<n>/`; the root `.spec/schema/` and `.spec/templates/` are the live copy this repository checks itself with. The two are the same bytes (B-004). |
+| A-2 | The shipping copy is embedded from `src/specht.tool/schema/v<n>/` and `templates/v<n>/`; the root `.spec/schema/` and `.spec/templates/` are the live copy this repository checks itself with. The two are the same bytes (B-004). |
 | A-3 | Into a bare root, `init` writes the newest version the tool ships. Writing an older version on request, and the version of a file written beside an existing older-version manifest, are OQ-1.                                    |
 
 ## 3. Acceptance Criteria
@@ -77,7 +77,7 @@ A repository adopting the model copies `hooked`'s `.spec/schema/` and `.spec/tem
 | ID   | Constraint                                                                                                                                                 | Rules Out                                                                                  |
 | ---- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------ |
 | C-1  | `init` never overwrites a file.                                                                                                                            | A `--force`; a prompt; a backup-and-replace.                                               |
-| C-2  | The shipping copy is embedded per version under `src/Specht.Tool`; the root `.spec/` is the live copy, and a test asserts the newest version equals it.     | A third copy; a build step that generates one from the other and hides a drift.            |
+| C-2  | The shipping copy is embedded per version under `src/specht.tool`; the root `.spec/` is the live copy, and a test asserts the newest version equals it.     | A third copy; a build step that generates one from the other and hides a drift.            |
 | C-3  | `init` writes no file outside `<root>/.spec/schema/` and `<root>/.spec/templates/`; it may create those folders and `<root>/.spec/` to hold them.          | Writing a tool manifest, a `nuget.config`, a hook or a workflow into the consumer.          |
 | C-4  | Every path `init` derives and prints is relative to the root with `/` separators; the `--root` argument alone is echoed as the user gave it.                | An absolute derived path on stdout or stderr; rewriting the user's `--root` before echoing it. |
 

@@ -11,7 +11,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Specht.Tool\Specht.Tool.csproj" />
+    <ProjectReference Include="..\..\src\specht.tool\specht.tool.csproj" />
   </ItemGroup>
 
   <ItemGroup>

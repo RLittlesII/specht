@@ -38,7 +38,7 @@ From README § 2, § 5 and § 6, as of 2026-10-07:
   schema versioning.
 - **One repository, tool and schema together.** No consumer owns the schema;
   `hooked` is consumer one.
-- **Delivered as a `dotnet tool`**, package `Specht.Tool`, command `specht`,
+- **Delivered as a `dotnet tool`**, package `specht.tool`, command `specht`,
   installed per repository through a local tool manifest and published to
   NuGet.org. The consumer's build calls the tool; no consumer carries the
   engine.

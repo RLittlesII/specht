@@ -1,6 +1,6 @@
 ---
 title: Project Setup
-description: Configuring a .NET console app as a packaged dotnet tool, and what src/Specht.Tool sets versus what the repository root already sets.
+description: Configuring a .NET console app as a packaged dotnet tool, and what src/specht.tool sets versus what the repository root already sets.
 type: reference
 ---
 
@@ -8,17 +8,17 @@ type: reference
 
 ## In this repository
 
-`src/Specht.Tool/Specht.Tool.csproj` is the tool project. It sets **only** what
+`src/specht.tool/specht.tool.csproj` is the tool project. It sets **only** what
 is specific to being a packed tool; everything else comes from the root:
 
-- `PackAsTool`, `ToolCommandName=specht`, `PackageId=Specht.Tool`, and
+- `PackAsTool`, `ToolCommandName=specht`, `PackageId=specht.tool`, and
   `IsPackable=true` — overriding the repository-wide `IsPackable=false` default
   in `Directory.Build.props` in this one project.
 - `EmbeddedResource` for `schema/v1/**` and `templates/v1/**` — the versioned
   shipping copies that `specht init` writes into a consumer's `.spec/` and that
   the checker validates against (README § 3, § 6). The tool embeds every schema
   version it knows.
-- A `ProjectReference` to `src/Specht`, the engine library.
+- A `ProjectReference` to `src/specht`, the engine library.
 - The framework, nullability and strictness properties the template below
   repeats are already set once in `Directory.Build.props`. A `.csproj` here sets
   only what is specific to that project.
@@ -28,7 +28,7 @@ is specific to being a packed tool; everything else comes from the root:
 
 Adding `Spectre.Console.Cli` therefore means one `PackageVersion` entry in
 `Directory.Packages.props` and one versionless `PackageReference` in
-`Specht.Tool.csproj`.
+`specht.tool.csproj`.
 
 ## Required `.csproj` Properties
 
@@ -37,7 +37,7 @@ Three properties are mandatory to turn a console app into a dotnet tool:
 ```xml
 <PackAsTool>true</PackAsTool>
 <ToolCommandName>specht</ToolCommandName>
-<PackageId>Specht.Tool</PackageId>
+<PackageId>specht.tool</PackageId>
 ```
 
 | Property          | Purpose                                                       |

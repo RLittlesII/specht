@@ -6,7 +6,7 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-    <!-- Only src/Specht.Tool packs; it opts back in. -->
+    <!-- Only src/specht.tool packs; it opts back in. -->
     <IsPackable>false</IsPackable>
     <!-- Makes the .editorconfig ":warning" severities real build warnings
          (promoted to errors by TreatWarningsAsErrors above) instead of

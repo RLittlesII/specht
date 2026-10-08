@@ -28,7 +28,7 @@ README § 8 step 1).
 The order of work is fixed and each step is one pull request whose description
 names the README § 2 requirement it serves. Step 2 — copying the engine — is
 tagged when it merges: that commit is the behaviour baseline every later step
-is measured against (Should-7), and a diff of `src/Specht` against `hooked` at
+is measured against (Should-7), and a diff of `src/specht` against `hooked` at
 that tag must show only the namespace rename.
 
 ## Status labels

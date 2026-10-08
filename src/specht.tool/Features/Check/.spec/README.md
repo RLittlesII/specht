@@ -50,7 +50,7 @@ The gate runs only as `hooked`'s Nuke target, so a pre-commit hook, a CI step an
 | ID  | Assumption                                                                                                                                                                           |
 | --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | A-1 | `check` is the default command: `specht` with no command name runs it. `init` and `upgrade` are sibling commands (`dotnet-tool` § Vertical Slice).                                   |
-| A-2 | Until the first package is published, this repository's `SpecCheck` target runs `dotnet run --project src/Specht.Tool -- --root .`; the local tool manifest replaces that the moment a package exists (`specht-conventions` § Build and test). B-011 holds either way; B-014 holds from the first published package. |
+| A-2 | Until the first package is published, this repository's `SpecCheck` target runs `dotnet run --project src/specht.tool -- --root .`; the local tool manifest replaces that the moment a package exists (`specht-conventions` § Build and test). B-011 holds either way; B-014 holds from the first published package. |
 | A-3 | The manifest path is `<root>/.spec/schema/spec-structure.schema.json`, the name `hooked` uses; renaming it is not this Feature's.                                                      |
 
 ## 3. Acceptance Criteria
@@ -72,7 +72,7 @@ The gate runs only as `hooked`'s Nuke target, so a pre-commit hook, a CI step an
 | B-011 | Given this repository's own tree, `./build.sh SpecCheck` runs the `specht` command against the repository root and exits with the command's code. | README § 7; A-2 | Active |
 | B-012 | Given any run, no file under the root is created, modified or deleted except the file `--report` names. | README § 9; `0001-F3` B-022, B-024, C-7 and its decision 0002; § 5 row 10 | Active |
 | B-013 | Given any output on stdout or stderr, every path the tool derives is relative to the root with `/` separators, and the only path that may be absolute is one typed on the command line (`--root`, `--report`), echoed as given. | README § 9 | Active |
-| B-014 | Given a published `Specht.Tool` package, `./build.sh SpecCheck` invokes the tool through this repository's committed local tool manifest, not through `dotnet run --project`. | README § 7; C-6; A-2 | Active |
+| B-014 | Given a published `specht.tool` package, `./build.sh SpecCheck` invokes the tool through this repository's committed local tool manifest, not through `dotnet run --project`. | README § 7; C-6; A-2 | Active |
 
 ## 4. Constraints
 
@@ -84,8 +84,8 @@ The gate runs only as `hooked`'s Nuke target, so a pre-commit hook, a CI step an
 | C-2  | Exit codes are named constants in one static class and are returned, never thrown: `0`, `1`, `2`, `3` as README § 5 defines them; an exception is mapped through the exception handler.       | A magic number at a return site; an exception crossing the command boundary to Spectre's `-1`.                                 |
 | C-3  | stdout carries the product only, as plain text an MSBuild log parser reads; everything about the tool itself goes to stderr.                                                                  | A banner, a progress line, colour markup or a tool error on stdout; a violation line on stderr.                                 |
 | C-4  | A command parses, calls the runner and folds the report into an exit code; nothing else lives in a command.                                                                                   | A rule, a reader or a path helper inside `Features/`.                                                                           |
-| C-5  | Only `src/Specht.Tool` packs: `PackAsTool`, `ToolCommandName` `specht`, `PackageId` `Specht.Tool`; `IsPackable=false` everywhere else; versions central.                                       | Flipping `IsPackable` repo-wide; a `Version=` on a `PackageReference`; a second packable project.                               |
-| C-6  | A consumer installs the tool through a committed local tool manifest, and its build calls the tool, never the engine.                                                                         | A global install as the documented path; a project reference from a consumer's `.build/` to `src/Specht`.                       |
+| C-5  | Only `src/specht.tool` packs: `PackAsTool`, `ToolCommandName` `specht`, `PackageId` `specht.tool`; `IsPackable=false` everywhere else; versions central.                                       | Flipping `IsPackable` repo-wide; a `Version=` on a `PackageReference`; a second packable project.                               |
+| C-6  | A consumer installs the tool through a committed local tool manifest, and its build calls the tool, never the engine.                                                                         | A global install as the documented path; a project reference from a consumer's `.build/` to `src/specht`.                       |
 | C-7  | The command is tested through Spectre's command tester against synthetic trees under a temporary root; the one test that reads this repository's real tree is the self-check (B-011, B-014).          | A unit test over the repository's real specifications; a unit-tier test that shells out to an installed tool.                   |
 
 ## 5. Out of Scope
@@ -100,7 +100,7 @@ The gate runs only as `hooked`'s Nuke target, so a pre-commit hook, a CI step an
 | 4   | Rejecting a well-formed manifest - an unknown key, rule id, grammar, role or exclusion form - and the exit code for it | `0001-F5` (README § 8 step 5); this Feature's exit code `3` covers only a manifest that does not parse (B-007). |
 | 5   | Autofix of any kind                                                        | README § 2; B-012 is the boundary.                                                                             |
 | 6   | `hooked`'s Nuke target calling the tool                                    | A Feature of `hooked`.                                                                                         |
-| 7   | The release workflow that publishes `Specht.Tool` to GitHub Packages       | Repository tooling (README § 8 step 1 and 3), not a behaviour of the command.                                   |
+| 7   | The release workflow that publishes `specht.tool` to GitHub Packages       | Repository tooling (README § 8 step 1 and 3), not a behaviour of the command.                                   |
 | 8   | A rule plugin model                                                        | Rejected in decision 0001.                                                                                     |
 | 9   | A watch mode, an editor or language-server surface                         | A command for a shell and a CI step; an editor surface is a different product.                                  |
 | 10  | Writing the `--report` file, the one write under the root a run may make     | `0001-F3` B-022 writes it, B-024 overwrites it and C-7 makes it the only write; exempt from B-012 (`0001-F3` decision 0002). |

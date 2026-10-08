@@ -5,11 +5,11 @@
     <File Path="global.json" />
   </Folder>
   <Folder Name="/src/">
-    <Project Path="src/Specht/Specht.csproj" />
-    <Project Path="src/Specht.Tool/Specht.Tool.csproj" />
+    <Project Path="src/specht/specht.csproj" />
+    <Project Path="src/specht.tool/specht.tool.csproj" />
   </Folder>
   <Folder Name="/test/">
-    <Project Path="test/Specht.Acceptance/Specht.Acceptance.csproj" />
-    <Project Path="test/Specht.Tests/Specht.Tests.csproj" />
+    <Project Path="test/specht.acceptance/specht.acceptance.csproj" />
+    <Project Path="test/specht.tests/specht.tests.csproj" />
   </Folder>
 </Solution>

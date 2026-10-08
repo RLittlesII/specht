@@ -10,7 +10,7 @@ This is a repository for a dotnet tool that will check your specification docume
 > #217, open). The engine, tests, schemas and templates there are byte-identical
 > to the earlier seed at `a6d056f`; only the three draft-spec files were removed.
 > Written as `spec-check`; the product was then named `specht` (command
-> `specht`, package `Specht.Tool`, namespace `Specht`), and the brief was
+> `specht`, package `specht.tool`, namespace `specht`), and the brief was
 > revised to match in the second requirements session (`REQUIREMENTS.md`
 > § Revision log).
 ## 1. What this is
@@ -85,9 +85,9 @@ subtree-merge. The three draft-spec files under `tools/SpecGovernance/.spec/`
 were removed on that branch; take them from `a6d056f` (`git show a6d056f:<path>`).
 ```sh
 HOOKED=/Users/rlittlesii/source/rlittlesii/hooked
-# the engine (library) and its tests - verbatim, then rename Hooked.SpecGovernance to Specht
-cp -R "$HOOKED/tools/SpecGovernance"            src/Specht
-cp -R "$HOOKED/test/SpecGovernance.Tests"       test/Specht.Tests
+# the engine (library) and its tests - verbatim, then rename Hooked.SpecGovernance to specht
+cp -R "$HOOKED/tools/SpecGovernance"            src/specht
+cp -R "$HOOKED/test/SpecGovernance.Tests"       test/specht.tests
 # schema version 1 and the templates - verbatim, then re-home the $id URLs
 cp -R "$HOOKED/.spec/schema"                    schema/v1
 cp -R "$HOOKED/.spec/templates"                 templates/v1
@@ -102,7 +102,7 @@ cp    "$HOOKED/epics/audits/2026-10-07-spec-check-extraction-requirements.md"  d
 cp -R "$HOOKED/.skills/spec-and-traceability"                                  docs/reference/spec-and-traceability
 cp    "$HOOKED/.skills/hooked-conventions/references/specs.md"                 docs/reference/hooked-specs-conventions.md
 ```
-Remove `tools/SpecGovernance/.spec/` from the copied `src/Specht` if present (it
+Remove `tools/SpecGovernance/.spec/` from the copied `src/specht` if present (it
 is the draft spec, already copied to `docs/reference/`), and drop the `.csproj`
 comments that talk about `hooked`'s `Directory.Build.props`. Everything else in
 those directories is kept.
@@ -238,7 +238,7 @@ requirements session (`REQUIREMENTS.md` § Open Questions). Each is a decision
 the owner can reverse; record a reversal as a decision, never silently.
 | Question | Decision | Why |
 | --- | --- | --- |
-| Name, package id, command | Product Specht; command `specht`; package `Specht.Tool`; library namespace `Specht`. `SpecCheck` survives only as the NUKE target name and engine type names | Says what it does; no `Hooked` anywhere |
+| Name, package id, command | Product Specht; command `specht`; package `specht.tool`; library namespace `specht`. `SpecCheck` survives only as the NUKE target name and engine type names | Says what it does; no `Hooked` anywhere |
 | What a "schema version" is in the file | The manifest carries `"schemaVersion": 1`; the tool embeds every schema version it has ever shipped — none is ever deleted — and validates with the pinned one; `specht upgrade` rewrites the schema files and templates to the next version, changes only `schemaVersion` and the keys the next version adds in the manifest (`0001-F7` decision 0001), prints what changed, and never touches a document | A repository pins by editing one number; the tool, not the consumer, knows the diff between versions; a repository pinned to v1 restores any later tool and is still checked |
 | Which schema files are authoritative at check time | The embedded schema for the pinned version by default; the consumer's on-disk `.spec/schema/` files when a manifest field or a CLI argument selects them (Should-8). Field and argument names: open, `spec-author` | Supports "bring your own schema" without making a hand-edited copy the silent default |
 | Install path for four repositories | Local tool manifest per repository (`dotnet tool install --local`, committed `.config/dotnet-tools.json`), package published to GitHub Packages on `rlittlesii/specht` first; NuGet.org later, if ever | Pins the tool version beside the schema version; CI restores it with `dotnet tool restore`. Consumers carry a `nuget.config` source and a token with package read |
@@ -262,7 +262,7 @@ the owner can reverse; record a reversal as a decision, never silently.
    manifest, CI that builds, tests and packs. `.spec/` with the epic.
 2. **Copy the engine and its tests from disk** (§ 3 script), rename the
    namespace, nothing else. Prove the 56 tests pass. Tag the commit: this is
-   the behaviour baseline for Should-7. No file in `src/Specht` is rewritten
+   the behaviour baseline for Should-7. No file in `src/specht` is rewritten
    in this step; a diff against `hooked` at `6afe8ab` must show only the rename.
 3. **CLI.** The command, exit codes, `--json`, `--report`, `init`,
    `--help`. Pack as a tool; install it into this repository's own manifest;

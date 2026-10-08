@@ -1,12 +1,12 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-  <!-- The one project that packs: NuGet package Specht.Tool, command specht. -->
+  <!-- The one project that packs: NuGet package specht.tool, command specht. -->
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <IsPackable>true</IsPackable>
     <PackAsTool>true</PackAsTool>
     <ToolCommandName>specht</ToolCommandName>
-    <PackageId>Specht.Tool</PackageId>
+    <PackageId>specht.tool</PackageId>
   </PropertyGroup>
 
   <ItemGroup>
@@ -14,7 +14,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Specht\Specht.csproj" />
+    <ProjectReference Include="..\specht\specht.csproj" />
   </ItemGroup>
 
 </Project>

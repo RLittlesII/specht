@@ -53,7 +53,7 @@ No Feature of epic `0001` names documentation as something it owns. Nothing requ
 | A-2 | .NET's XML documentation comment (`///`) is the doc-comment convention; no third-party syntax is introduced.                                                                                                                 |
 | A-3 | The generated reference is a build artifact under `.artifacts/`, consumed later by `0002-F2`; this Feature publishes it nowhere.                                                                                             |
 | A-4 | A "usage doc" is narrative documentation of a command - what it does and how a consumer runs it - distinct from the command's `.spec/README.md`, which is the agreement and stays the agreement.                              |
-| A-5 | The public surface is the public types and members of `src/Specht` and `src/Specht.Tool`. `src/Specht` is not packable, but its public surface is the engine's contract with the tool and with every contributor who reads it. |
+| A-5 | The public surface is the public types and members of `src/specht` and `src/specht.tool`. `src/specht` is not packable, but its public surface is the engine's contract with the tool and with every contributor who reads it. |
 
 ## 3. Acceptance Criteria
 
@@ -61,9 +61,9 @@ No Feature of epic `0001` names documentation as something it owns. Nothing requ
 
 | ID    | Claim                                                                                                                                                                                                       | Source                           | Status |
 | ----- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------- | ------ |
-| B-001 | Given a public type or public member in `src/Specht` or `src/Specht.Tool` with no XML doc comment, this Feature fails the build with `CS1591` reported as an error.                                          | hooked PR #212 | Active |
+| B-001 | Given a public type or public member in `src/specht` or `src/specht.tool` with no XML doc comment, this Feature fails the build with `CS1591` reported as an error.                                          | hooked PR #212 | Active |
 | B-002 | Given the build's documentation target runs, this Feature writes an API reference generated from the XML doc comments of the current public surface under `.artifacts/`, and no hand-maintained copy of it exists in the repository. | hooked PR #212 | Active |
-| B-003 | Given a command under `src/Specht.Tool/Features/<Command>/`, this Feature places that command's usage doc in that folder, at the location the convention names (OQ-2), distinct from the command's `.spec/README.md`. | hooked PR #212 | Active |
+| B-003 | Given a command under `src/specht.tool/Features/<Command>/`, this Feature places that command's usage doc in that folder, at the location the convention names (OQ-2), distinct from the command's `.spec/README.md`. | hooked PR #212 | Active |
 | B-004 | Given this Feature is delivered, no hosted site, publish step or site framework exists in the repository or its CI.                                                                                         | hooked PR #212 | Active |
 | B-005 | Given `./build.sh` runs its default target, the documentation enforcement (B-001) and generation (B-002) run as part of it, with no separate manual step.                                                    | hooked PR #212 | Active |
 

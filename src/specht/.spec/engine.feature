@@ -46,7 +46,7 @@ Feature: The engine, extracted unchanged
   Scenario: Nothing carries the old repository's name
     Given the library is built
     When its assembly name and root namespace are read
-    Then both are "Specht"
+    Then both are "specht"
     And neither contains "Hooked"
 
   @B-006

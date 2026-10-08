@@ -12,12 +12,12 @@ Extends [`test-from-scenarios`](../../test-from-scenarios/SKILL.md).
 
 | Tier        | Where                                                  | Selected by                         |
 | ----------- | ------------------------------------------------------ | ----------------------------------- |
-| Unit        | `test/Specht.Tests/**/<Thing>.Unit.Tests.cs`           | `[Trait("Tier","Unit")]`            |
-| Integration | `test/Specht.Tests/**/<Thing>.Integration.Tests.cs`    | `[Trait("Tier","Integration")]`     |
-| Acceptance  | `test/Specht.Acceptance`, Reqnroll over the `.feature` files | the project, no filter        |
+| Unit        | `test/specht.tests/**/<Thing>.Unit.Tests.cs`           | `[Trait("Tier","Unit")]`            |
+| Integration | `test/specht.tests/**/<Thing>.Integration.Tests.cs`    | `[Trait("Tier","Integration")]`     |
+| Acceptance  | `test/specht.acceptance`, Reqnroll over the `.feature` files | the project, no filter        |
 
 `./build.sh UnitTest` and `IntegrationTest` run `--filter Tier=<X>` over every
-project whose name ends `.Tests`. `AcceptanceTest` runs `test/Specht.Acceptance`
+project whose name ends `.Tests`. `AcceptanceTest` runs `test/specht.acceptance`
 with no filter.
 
 The line between the first two tiers is the file system: a unit test exercises
@@ -65,8 +65,8 @@ the citation. Rename the claim's wording instead, or accept the name.
 
 ## Tests live in `test/`, not beside the code
 
-Tests are **not** co-located with production code here. `src/Specht` is one
-assembly with one caller; a separate `test/Specht.Tests` project references it
+Tests are **not** co-located with production code here. `src/specht` is one
+assembly with one caller; a separate `test/specht.tests` project references it
 directly and needs no `Compile Remove` / `Compile Include` dance to pull test
 files back out of the product.
 
@@ -86,7 +86,7 @@ every class carrying a `[Fact]` or `[Theory]` declares exactly one
 
 Without it, a class that forgets the trait drops out of **both** filtered tiers
 while an unfiltered run still reports it passing. It is not linked into
-`Specht.Acceptance` — Reqnroll-generated scenario classes do not use the
+`specht.acceptance` — Reqnroll-generated scenario classes do not use the
 convention.
 
 A new test project must end in `.Tests`, or it gets neither the tier filters nor
@@ -95,7 +95,7 @@ the guard.
 ## Reqnroll wiring, and why it is literal
 
 `.feature` files live in `src/**/.spec/` beside the specification they belong
-to, and are linked into `test/Specht.Acceptance` by a **literal
+to, and are linked into `test/specht.acceptance` by a **literal
 `ReqnrollFeatureFile` glob** with a `Link=` path, plus
 `ReqnrollUseIntermediateOutputPathForCodeBehind=true`.
 
@@ -108,7 +108,7 @@ changed.
 ## Fixtures
 
 A fixture is a specification tree, and it is **built, not copied**: `SpecTree`
-in `test/Specht.Tests` constructs the files a test needs — frontmatter, sections,
+in `test/specht.tests` constructs the files a test needs — frontmatter, sections,
 tables, a companion `.feature`, child items — and writes them to a temporary
 root the test owns. Every path inside a fixture, and every path in an expected
 report, is relative to that root; an absolute path in either is the defect

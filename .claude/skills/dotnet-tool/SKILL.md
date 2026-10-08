@@ -14,8 +14,8 @@ vertical-slice folder organization, and packaging and distribution.
 
 ## What applies to `specht`
 
-All of it. `specht` **is** a packed dotnet tool: `src/Specht.Tool` carries
-`PackAsTool`, `ToolCommandName=specht` and `PackageId=Specht.Tool`, `./build.sh Pack`
+All of it. `specht` **is** a packed dotnet tool: `src/specht.tool` carries
+`PackAsTool`, `ToolCommandName=specht` and `PackageId=specht.tool`, `./build.sh Pack`
 produces the package, and a consumer installs it through a local tool manifest
 (`.config/dotnet-tools.json`, restored by `dotnet tool restore`). This repository
 installs itself the same way, so its own build and pre-commit hook call the tool
@@ -25,7 +25,7 @@ One thing is decided and worth stating once:
 
 | Topic | Status here |
 | ----- | ----------- |
-| What sits below a command | A command parses its settings, calls the engine in `src/Specht` (`SpecCheckRunner`), and folds the report into an exit code — `0` clean, `1` violations, `2` missing root or manifest, `3` invalid manifest. No mediator, no `LanguageExt`; the engine is one library and the command is its only caller. |
+| What sits below a command | A command parses its settings, calls the engine in `src/specht` (`SpecCheckRunner`), and folds the report into an exit code — `0` clean, `1` violations, `2` missing root or manifest, `3` invalid manifest. No mediator, no `LanguageExt`; the engine is one library and the command is its only caller. |
 
 ## Index
 
@@ -110,8 +110,8 @@ public sealed class IssueListCommand : AsyncCommand<IssueListCommand.Settings>
 
 - **USE** `Spectre.Console.Cli` for all CLI parsing — not `System.CommandLine`, `McMaster.Extensions.CommandLineUtils`, or manual `args` parsing.
 - **INJECT** `IAnsiConsole` rather than calling static `AnsiConsole.*` — that is what makes output assertable from a test. Several examples in this skill use the static form for brevity; prefer the injected one in real commands.
-- **ORGANIZE** by feature/domain (vertical slice) — never create top-level `Commands/`, `Settings/`, or `Services/` folders. In this repository a slice is `src/Specht.Tool/Features/<Command>/`; [Vertical Slice](references/vertical-slice.md) owns that rule.
-- **PACK** the tool. `PackAsTool=true` in `src/Specht.Tool`; `./build.sh Pack` produces `Specht.Tool.<version>.nupkg`; consumers install it from NuGet.org through a local tool manifest. The repository-wide `IsPackable=false` default is overridden in that one project and nowhere else.
+- **ORGANIZE** by feature/domain (vertical slice) — never create top-level `Commands/`, `Settings/`, or `Services/` folders. In this repository a slice is `src/specht.tool/Features/<Command>/`; [Vertical Slice](references/vertical-slice.md) owns that rule.
+- **PACK** the tool. `PackAsTool=true` in `src/specht.tool`; `./build.sh Pack` produces `specht.tool.<version>.nupkg`; consumers install it from NuGet.org through a local tool manifest. The repository-wide `IsPackable=false` default is overridden in that one project and nowhere else.
 - **KEEP** commands as entry points — parse, dispatch, fold a result into an exit code. Business logic does not live in a command.
 - **NEVER** accept a secret as a `--flag` option — it lands in shell history and process lists. This tool needs none; see [Conventions](references/conventions.md) § "Secrets".
 - **ALWAYS** implement `Validate()` on `CommandSettings` when options have cross-field constraints.

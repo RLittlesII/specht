@@ -11,8 +11,8 @@ type: decision
 
 ## The call
 
-The engine is shipped as a `dotnet tool`: package `Specht.Tool`, command
-`specht`, built over the engine library `Specht`, which stays a library with no
+The engine is shipped as a `dotnet tool`: package `specht.tool`, command
+`specht`, built over the engine library `specht`, which stays a library with no
 entry point. A consumer installs it through a committed local tool manifest and
 its build calls the tool; no consumer carries the engine.
 

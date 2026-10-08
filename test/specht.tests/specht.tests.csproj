@@ -10,8 +10,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Specht\Specht.csproj" />
-    <ProjectReference Include="..\..\src\Specht.Tool\Specht.Tool.csproj" />
+    <ProjectReference Include="..\..\src\specht\specht.csproj" />
+    <ProjectReference Include="..\..\src\specht.tool\specht.tool.csproj" />
   </ItemGroup>
 
   <ItemGroup>

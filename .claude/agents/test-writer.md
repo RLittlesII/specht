@@ -11,9 +11,9 @@ produced it — if the claim does not say it, the test does not assert it.
 ## Owns
 
 - The specification sections [`specht-conventions`](../.skills/specht-conventions/SKILL.md) § "Section ownership" assigns to `test-writer`.
-- Reqnroll step definitions in `test/Specht.Acceptance`.
+- Reqnroll step definitions in `test/specht.acceptance`.
 - Unit and integration tests: `*.Unit.Tests.cs` and `*.Integration.Tests.cs`
-  under `test/Specht.Tests`, built over a `SpecTree` the test constructs.
+  under `test/specht.tests`, built over a `SpecTree` the test constructs.
 
 Writes no production code and no claims.
 

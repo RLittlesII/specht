@@ -1,6 +1,6 @@
 ---
 title: "Specification: The engine, extracted unchanged"
-description: "hooked's SpecGovernance rule engine copied into src/Specht and renamed, with the same verdict on the same tree, as the baseline every later Feature is measured against"
+description: "hooked's SpecGovernance rule engine copied into src/specht and renamed, with the same verdict on the same tree, as the baseline every later Feature is measured against"
 type: feature
 id: "F1"
 epic: "0001"
@@ -31,7 +31,7 @@ synced_at: null
 
 <!-- last written by: spec-author, 2026-10-07 -->
 
-The rule engine exists only inside `hooked`, as a project reference from its build, under a namespace that names that repository. Every other repository on the model copies it or goes without a gate. This Feature removes that failure state by moving the engine into this repository as the library `Specht`, with no behaviour change: the same twenty-one rule ids, the same violations in the same order on the same tree. It is the baseline every later Feature proves itself against (README § 8 step 2).
+The rule engine exists only inside `hooked`, as a project reference from its build, under a namespace that names that repository. Every other repository on the model copies it or goes without a gate. This Feature removes that failure state by moving the engine into this repository as the library `specht`, with no behaviour change: the same twenty-one rule ids, the same violations in the same order on the same tree. It is the baseline every later Feature proves itself against (README § 8 step 2).
 
 ## 2. User Needs
 
@@ -49,7 +49,7 @@ The rule engine exists only inside `hooked`, as a project reference from its bui
 | ID  | Assumption                                                                                                                                                                      |
 | --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | A-1 | The 56 tests extracted with the engine are its behaviour contract; a claim here is one the tests already prove or one the baseline report proves (B-004).                       |
-| A-2 | The source is `hooked` `refactor/ai-offering` at `6afe8ab` (README § 3). The three draft-spec files removed on that branch go to `docs/reference/`, never into `src/Specht`.      |
+| A-2 | The source is `hooked` `refactor/ai-offering` at `6afe8ab` (README § 3). The three draft-spec files removed on that branch go to `docs/reference/`, never into `src/specht`.      |
 | A-3 | Schema version 1 is the four files under `.spec/schema/` and the four templates under `.spec/templates/` as `hooked` holds them at `6afe8ab`, with only the `$id` URLs re-homed. |
 
 ## 3. Acceptance Criteria
@@ -62,11 +62,11 @@ The rule engine exists only inside `hooked`, as a project reference from its bui
 | B-002 | Given a specification in the legacy layout and one in the co-located layout, this Feature applies every rule except `SPEC011` (legacy layout only) to both and reports neither for the layout it is in.         | README § 4, § 5; decision 0001            | Active    |
 | B-003 | Given a specification in the co-located layout, this Feature takes its identity from its frontmatter `epic` and `id`, so the same specification moved to another path keeps its identity.                       | `SPEC012`; README § 4                     | Active    |
 | B-004 | Given `hooked`'s tree at `6afe8ab`, this Feature's verdicts - each violation's rule id, severity, file, line, identifier and message, in order (C-9) - equal those in the baseline report committed at `docs/reference/hooked-6afe8ab-report.json`. | Should-7; README § 8 step 2; C-9; decision 0003 | Active    |
-| B-005 | Given the built library, its assembly name and root namespace are `Specht` and neither carries `Hooked`.                                                                                                        | README § 6                                | Active    |
+| B-005 | Given the built library, its assembly name and root namespace are `specht` and neither carries `Hooked`.                                                                                                        | README § 6                                | Active    |
 | B-006 | Given the same tree and the same schema files, this Feature's violations and their order are unchanged when the clock, an environment variable, the locale, the machine name or the root's location changes.     | README § 9; C-3; C-4                      | Active    |
 | B-007 | Given any violation, its file is relative to the root with `/` separators.                                                                                                                                       | README § 9; C-4                           | Active    |
 | B-008 | Given a contracted section whose table is a grid table, this Feature reads the section as carrying no table and parses no row from the grid.                                                                      | README § 5; C-6                           | Active    |
-| B-009 | Given the engine as copied, a diff of `src/Specht` against `hooked` at `6afe8ab` shows the namespace rename and nothing else.                                                                                     | Withdrawn 2026-10-07: a one-time diff against another repository no test can fail; it is now the check C-2 records at the baseline tag (decision 0002). | Withdrawn |
+| B-009 | Given the engine as copied, a diff of `src/specht` against `hooked` at `6afe8ab` shows the namespace rename and nothing else.                                                                                     | Withdrawn 2026-10-07: a one-time diff against another repository no test can fail; it is now the check C-2 records at the baseline tag (decision 0002). | Withdrawn |
 | B-010 | Given a violation, it carries a rule id, a severity, a file, a line, an identifier where the rule has one, and a message.                                                                                         | `hooked` report shape                     | Active    |
 | B-011 | Given two specifications declaring the same frontmatter `epic` and `id`, this Feature reports the duplicate identity once.                                                                                        | `SPEC012`; README § 4                     | Active    |
 
@@ -76,8 +76,8 @@ The rule engine exists only inside `hooked`, as a project reference from its bui
 
 | ID   | Constraint                                                                                                                              | Rules Out                                                                                              |
 | ---- | --------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
-| C-1  | The engine is a library with no entry point.                                                                                            | `OutputType=Exe` on `src/Specht`; a console write anywhere in the engine.                              |
-| C-2  | The engine is copied, not regenerated: at the baseline tag (README § 8 step 2) a diff against `hooked` at `6afe8ab` shows only the namespace rename in each copied `*.cs` file, `AssemblyName` and `RootNamespace` set to `Specht` and the `Directory.Build.props` comments dropped in the copied `.csproj`, and the copied `.spec/` removed (README § 3); the diff is recorded in that tag's commit. `src/Specht/.spec/`, this specification, is not part of the copy. | A fresh draft of any rule; a refactor "while we are here"; a renamed type; any other `.csproj` edit, such as a package version or `OutputType`. |
+| C-1  | The engine is a library with no entry point.                                                                                            | `OutputType=Exe` on `src/specht`; a console write anywhere in the engine.                              |
+| C-2  | The engine is copied, not regenerated: at the baseline tag (README § 8 step 2) a diff against `hooked` at `6afe8ab` shows only the namespace rename in each copied `*.cs` file, `AssemblyName` and `RootNamespace` set to `specht` and the `Directory.Build.props` comments dropped in the copied `.csproj`, and the copied `.spec/` removed (README § 3); the diff is recorded in that tag's commit. `src/specht/.spec/`, this specification, is not part of the copy. | A fresh draft of any rule; a refactor "while we are here"; a renamed type; any other `.csproj` edit, such as a package version or `OutputType`. |
 | C-3  | Deterministic and offline: the verdict is a function of the tree and the schema files.                                                 | A network call; a clock, environment variable, locale or machine name reaching the output.              |
 | C-4  | Every path the engine emits is repository-relative with `/` separators.                                                                | An absolute path in a violation, a report or a test fixture; an OS separator in output.                 |
 | C-5  | The rule vocabulary is fixed per schema version.                                                                                        | A new `SPEC###` id before `0001-F7`; a rule renamed or renumbered.                                      |
@@ -158,7 +158,7 @@ None.
 
 | Section | Status | Reviewer      | Note                                                                                                                                                                                                                  |
 | ------- | ------ | ------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 1-5     | 🟢     | spec-reviewer | Approved (round 2). Round-1 blocking findings fixed. Non-blocking, routed: C-2 should name its scope (engine only, or also `test/Specht.Tests` with its `.csproj` edits); decision 0002 Rejected bullet conflicts with B-004 reading `hooked`'s checkout; B-006 machine name cannot be varied in a test; B-003 cites `SPEC012`; § 5 row 2 calls existing counts new; § 9 B-009 row `Missing` for a withdrawn claim (test-writer). |
+| 1-5     | 🟢     | spec-reviewer | Approved (round 2). Round-1 blocking findings fixed. Non-blocking, routed: C-2 should name its scope (engine only, or also `test/specht.tests` with its `.csproj` edits); decision 0002 Rejected bullet conflicts with B-004 reading `hooked`'s checkout; B-006 machine name cannot be varied in a test; B-003 cites `SPEC012`; § 5 row 2 calls existing counts new; § 9 B-009 row `Missing` for a withdrawn claim (test-writer). |
 
 ## Tasks
 

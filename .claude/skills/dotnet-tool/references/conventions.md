@@ -144,7 +144,7 @@ than suggestions. All code compiles with zero warnings. A suppression carries
 its reason on the adjacent line.
 
 `.build/.build.csproj` is the single exemption, so a Nuke or SDK bump cannot
-block the build orchestrator from compiling. `src/Specht` and `src/Specht.Tool`
+block the build orchestrator from compiling. `src/specht` and `src/specht.tool`
 get no such exemption.
 
 ## Secrets Never in Source

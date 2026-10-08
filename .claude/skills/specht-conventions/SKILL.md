@@ -32,11 +32,11 @@ method skill your work belongs to *and* this one.
 
 The target layout. README § 8 step 1 creates the scaffold; until it lands, a
 path below that does not exist yet is a plan, not a fact. README § 3 names the
-engine project `src/SpecCheck`; the decided name is `Specht` (README § 6, first
+engine project `src/SpecCheck`; the decided name is `specht` (README § 6, first
 row).
 
 ```
-Specht.slnx                    the solution - a project not listed here is not built
+specht.slnx                    the solution - a project not listed here is not built
 Directory.Build.props          repo-wide MSBuild: nullable, warnings as errors, IsPackable=false
 Directory.Packages.props       central package versions - the only place a version is written
 global.json                    the pinned SDK and the Microsoft.Testing.Platform runner
@@ -44,17 +44,17 @@ global.json                    the pinned SDK and the Microsoft.Testing.Platform
 build.sh / build.cmd           entry to the NUKE build
 
 src/
-  Specht/                      Specht - the rule engine: discovery, readers, schema loader,
+  specht/                      specht - the rule engine: discovery, readers, schema loader,
                                rules, runner, report. Copied from hooked (README § 3).
     .spec/                     this Feature's specification, .feature and records (epic 0001)
-  Specht.Tool/                 Specht.Tool - the CLI host; PackAsTool, command `specht`
+  specht.tool/                 specht.tool - the CLI host; PackAsTool, command `specht`
     Features/<Command>/        one folder per Spectre command - dotnet-tool owns the inside
     schema/v1/                 embedded shipping copy of the schema set
     templates/v1/              embedded shipping copy of the templates
 
 test/
-  Specht.Tests/                Specht.Tests - unit and integration tests; SpecTree builder
-  Specht.Acceptance/           Specht.Acceptance - Reqnroll over src/**/.spec/*.feature
+  specht.tests/                specht.tests - unit and integration tests; SpecTree builder
+  specht.acceptance/           specht.acceptance - Reqnroll over src/**/.spec/*.feature
 
 .build/                        the NUKE build project - targets and CI generation; tooling, not product
 .nuke/                         NUKE parameters and the generated build schema
@@ -72,7 +72,7 @@ README.md                      the seed brief and design authority
 REQUIREMENTS.md                the requirements-gathering session the brief condenses
 ```
 
-**Everything below `src/Specht.Tool/Features/` is
+**Everything below `src/specht.tool/Features/` is
 [`dotnet-tool` § Vertical Slice](../dotnet-tool/references/vertical-slice.md)** —
 how a command folder is laid out, how it joins `Program.cs`, and what belongs in
 the engine instead. Not restated here.
@@ -156,14 +156,14 @@ produce a spec delta afterwards.
 ./build.sh Format           # dotnet format --verify-no-changes
 ./build.sh UnitTest         # --filter Tier=Unit
 ./build.sh IntegrationTest  # --filter Tier=Integration
-./build.sh AcceptanceTest   # test/Specht.Acceptance, Reqnroll, no filter
-./build.sh Pack             # Specht.Tool.<version>.nupkg into .artifacts/nupkg
+./build.sh AcceptanceTest   # test/specht.acceptance, Reqnroll, no filter
+./build.sh Pack             # specht.tool.<version>.nupkg into .artifacts/nupkg
 ./build.sh SpecCheck        # the tool checking this repository's own .spec/ tree
 ```
 
 `SpecCheck` runs `specht` exactly as a consumer would — through the local tool
 manifest, never through a project reference (README § 7). Until the first
-package is published it runs `dotnet run --project src/Specht.Tool -- --root .`
+package is published it runs `dotnet run --project src/specht.tool -- --root .`
 instead; the manifest replaces that the moment a package exists. Pre-commit
 calls the same thing when a staged file is under a `.spec/` directory or is a
 `.feature`.
