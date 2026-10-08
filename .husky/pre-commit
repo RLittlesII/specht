@@ -7,11 +7,40 @@
 ## check cannot silently skip the ones after it. Do not rewrite these `if !`
 ## guards into bare invocations -- `if` conditions are the only reason errexit
 ## is not already terminating this script.
+
+## Verify staged Markdown with prettier. Check, never write: like the C# check
+## below, this hook never changes a file or the index (0055-F1 B-016). Scoped to
+## staged files for the same reason, and split on newline alone for the same
+## filename-safety reasons given below.
 prettier_status=0
-npx --yes prettier --write "**/*.md" || prettier_status=$?
+staged_md=$(git -c core.quotePath=false diff --cached --name-only --diff-filter=AMR -- '*.md')
+
+if [ -n "$staged_md" ]; then
+    saved_ifs=$IFS
+    IFS='
+'
+    set -f
+    set -- $staged_md
+    set +f
+    IFS=$saved_ifs
+
+    if ! npx --yes prettier --check "$@"; then
+        prettier_status=1
+        echo
+        echo "pre-commit: these staged Markdown files are not formatted:"
+        echo
+        printf '    %s\n' "$@"
+        echo
+        echo "Fix with:"
+        echo
+        echo "    npx prettier --write \$(git diff --cached --name-only --diff-filter=AMR -- '*.md')"
+        echo
+        echo "Bypass with: git commit --no-verify"
+    fi
+fi
 
 ## Verify staged C# files against the same formatting CI enforces
-## (VerifyFormat in .build/Build.cs, run by api.continuous.integration.yml).
+## (the Format target in .build/Build.cs, run by ci.yml).
 ##
 ## Verify, never fix. --verify-no-changes puts dotnet format in report mode, so
 ## analyzer code fixes never fire here -- notably xUnit1026, which strips an
@@ -24,11 +53,11 @@ npx --yes prettier --write "**/*.md" || prettier_status=$?
 ## files it does not touch. That is deliberately narrower than CI, which checks
 ## the whole solution -- a commit that stages no .cs file but edits
 ## Directory.Build.props or .editorconfig checks nothing here and can still
-## redden VerifyFormat. Passing this hook is not a guarantee of a green CI
+## redden the Format target. Passing this hook is not a guarantee of a green CI
 ## format gate, only of the far more common case.
 ##
 ## Restore is left on: a developer's obj/ may be stale, unlike CI, where
-## VerifyFormat depends on the Restore target.
+## Format depends on the Restore target.
 ##
 ## Splitting on newline alone (IFS + set -f) keeps filenames containing spaces
 ## intact, and core.quotePath=false keeps non-ASCII paths literal rather than
@@ -47,7 +76,7 @@ if [ -n "$staged_cs" ]; then
     set +f
     IFS=$saved_ifs
 
-    if ! dotnet format Kronos.slnx --verify-no-changes --include "$@"; then
+    if ! dotnet format specht.slnx --verify-no-changes --include "$@"; then
         format_status=1
         echo
         echo "pre-commit: these staged C# files are not formatted:"
@@ -56,7 +85,7 @@ if [ -n "$staged_cs" ]; then
         echo
         echo "Fix with:"
         echo
-        echo "    dotnet format Kronos.slnx --include \$(git diff --cached --name-only --diff-filter=AMR -- '*.cs')"
+        echo "    dotnet format specht.slnx --include \$(git diff --cached --name-only --diff-filter=AMR -- '*.cs')"
         echo
         echo "That command DOES apply analyzer code fixes. If the diff it produces"
         echo "removes a [Theory] parameter, that is xUnit1026 -- make the parameter"
@@ -64,11 +93,6 @@ if [ -n "$staged_cs" ]; then
         echo
         echo "Bypass with: git commit --no-verify"
     fi
-fi
-
-if [ "$prettier_status" -ne 0 ]; then
-    echo
-    echo "pre-commit: prettier exited $prettier_status."
 fi
 
 if [ "$prettier_status" -ne 0 ] || [ "$format_status" -ne 0 ]; then
