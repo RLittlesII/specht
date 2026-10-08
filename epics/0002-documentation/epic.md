@@ -1,4 +1,6 @@
 ---
+title: "Epic 0002: Documentation"
+description: "Documentation as a first-class deliverable of every change: generated and checked inside the build now, published as a static site once specht is built"
 id: "0002"
 type: epic
 status: needs-decomposition
@@ -6,7 +8,7 @@ priority: med
 milestone: null
 children: ["0002-F1", "0002-F2"]
 created: "2026-10-07"
-updated: "2026-10-07"
+updated: "2026-10-08"
 github_issue: null
 ---
 

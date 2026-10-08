@@ -1,4 +1,6 @@
 ---
+title: "Epic 0001: specht, the specification checker as a dotnet tool"
+description: "One command, delivered as a dotnet tool, that checks a repository's .spec/ tree against a versioned schema and reports every violation with a file, a line and a rule id, so each consumer pins a version and carries no engine"
 id: "0001"
 type: epic
 status: ready-for-architecture
@@ -7,7 +9,7 @@ milestone: null
 children:
   ["0001-F1", "0001-F2", "0001-F3", "0001-F4", "0001-F5", "0001-F6", "0001-F7"]
 created: "2026-10-07"
-updated: "2026-10-07"
+updated: "2026-10-08"
 github_issue: null
 ---
 
