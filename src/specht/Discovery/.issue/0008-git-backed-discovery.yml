@@ -1,0 +1,45 @@
+id: "0008"
+type: task
+title: List files through git inside a work tree
+
+status: ready-for-architecture
+
+priority: medium # DERIVED
+risk: 4
+rank: 53 # DERIVED: (3 × 20) − (4 × 3) + (1 × 5); value inherited from 0004
+
+parent: "0004"
+children: []
+
+depends_on: ["0005"] # its pathspecs are the globs and exclusions 0005 reads
+blocks: ["0009"]
+spikes: []
+
+spec: src/specht/Discovery/.spec/README.md
+
+claims:
+  - B-005
+  - B-010
+
+created: "2026-10-08"
+updated: "2026-10-08"
+closed: null
+
+summary: |
+  Inside a work tree with git on PATH, ask the git executable (decision 0002)
+  for tracked and untracked-not-ignored files matching the manifest's globs,
+  with the manifest's exclusions passed as exclude pathspecs. Risk 4: a child
+  process, pathspec translation of both exclusion forms, and an open failure
+  case (OQ-2). Depends on 0005 for every pathspec it passes.
+
+acceptance_criteria:
+  - "B-005 — tracked plus untracked-not-ignored; ignored directory never opened"
+  - "B-010 — exclusions as exclude pathspecs; tracked and untracked file under `bin` both absent"
+  - "§ 9 carries a row naming a test for each id above."
+
+decisions: []
+
+out_of_scope:
+  - "git ls-files failing inside a work tree — OQ-2, open; resolve it and add a claim before building that path."
+  - "Submodules — § 5 #4."
+  - "Any git call beyond the file list — C-2."

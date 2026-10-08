@@ -1,0 +1,75 @@
+id: "0004"
+type: feature
+title: Discovery reads what to find and skip from the manifest
+
+status: ready-for-architecture
+
+priority: medium # DERIVED
+value: 3
+risk: 3
+rank: 51 # DERIVED: (3 × 20) − (3 × 3) + (0 × 5)
+
+parent: "0001"
+children: ["0005", "0006", "0007", "0008", "0009"]
+
+depends_on: []
+blocks: []
+spikes: []
+
+spec: src/specht/Discovery/.spec/README.md
+
+claims:
+  - B-001
+  - B-002
+  - B-003
+  - B-004
+  - B-005
+  - B-006
+  - B-007
+  - B-008
+  - B-009
+  - B-010
+  - B-011
+
+created: "2026-10-08"
+updated: "2026-10-08"
+closed: null
+
+summary: |
+  As the maintainer of a repository with a large tree or its own layout, I
+  want discovery to read its layouts, exclusions and file shapes from the
+  manifest and to ask git inside a work tree, so that an ignored or excluded
+  tree is never opened and a new layout needs no fork.
+
+  Waits on work no item tracks yet: the engine copied into src/specht
+  (0001-F1, README § 8 step 2) and the manifest roles discovery reads
+  (0001-F5). Add those depends_on edges when their items are cut, and
+  recompute this rank and theirs.
+
+acceptance_criteria:
+  - "B-001 — layouts from the manifest (0005)"
+  - "B-002 — exclusions from the manifest (0005)"
+  - "B-003 — item, epic and companion shapes from the manifest (0005)"
+  - "B-004 — SPEC011 path identity per layout (0006)"
+  - "B-005 — git mode never opens an ignored directory (0008)"
+  - "B-006 — walk mode never enters an excluded directory (0007)"
+  - "B-007 — both modes yield the same set (0009)"
+  - "B-008 — ordinal root-relative order (0009)"
+  - "B-009 — layout named by its manifest name (0005)"
+  - "B-010 — exclusions as git exclude pathspecs (0008)"
+  - "B-011 — linked directory not followed, either mode (0009)"
+  - "§ 9 carries a row naming a test for each id above."
+
+decisions:
+  - |
+    2026-10-08, Claude at the owner's request: sliced by discovery input and
+    discovery mode — manifest inputs, path identity, walk, git, then parity —
+    so the two modes are built against one input contract and proven equal
+    last. Rejected: one item per claim, which would split B-005 from B-010
+    and B-007 from B-008 although each pair is one piece of code and one
+    proof.
+
+out_of_scope:
+  - "Everything in § 5 of the spec."
+  - "A git listing that fails inside a work tree — OQ-2, open; no claim exists to deliver yet."
+  - "Proving B-007 on hooked's tree — § 5 #6, pending OQ-3."

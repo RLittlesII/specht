@@ -1,0 +1,39 @@
+id: "0006"
+type: task
+title: Check path identity only for a layout that declares it
+
+status: ready-for-architecture
+
+priority: medium # DERIVED
+risk: 2
+rank: 54 # DERIVED: (3 × 20) − (2 × 3) + (0 × 5); value inherited from 0004
+
+parent: "0004"
+children: []
+
+depends_on: ["0005"] # the layout declaration it reads comes from 0005
+blocks: []
+spikes: []
+
+spec: src/specht/Discovery/.spec/README.md
+
+claims:
+  - B-004
+
+created: "2026-10-08"
+updated: "2026-10-08"
+closed: null
+
+summary: |
+  SPEC011 takes the epic and Feature id segments from the layout instead of
+  from code, and is silent for a layout that declares none. Depends on 0005
+  because the layout it reads is declared there.
+
+acceptance_criteria:
+  - "B-004 — SPEC011 against declared segments; silent when none declared"
+  - "§ 9 carries a row naming a test for each id above."
+
+decisions: []
+
+out_of_scope:
+  - "Any other rule's handling of a discovered file — § 5 #5, 0001-F1 and 0001-F5."

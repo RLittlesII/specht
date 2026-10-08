@@ -1,0 +1,47 @@
+id: "0005"
+type: task
+title: Read layouts, exclusions and file shapes from the manifest
+
+status: ready-for-architecture
+
+priority: high # DERIVED
+risk: 2
+rank: 69 # DERIVED: (3 × 20) − (2 × 3) + (3 × 5); value inherited from 0004
+
+parent: "0004"
+children: []
+
+depends_on: []
+blocks: ["0006", "0007", "0008"]
+spikes: []
+
+spec: src/specht/Discovery/.spec/README.md
+
+claims:
+  - B-001
+  - B-002
+  - B-003
+  - B-009
+
+created: "2026-10-08"
+updated: "2026-10-08"
+closed: null
+
+summary: |
+  The input contract both discovery modes share: each layout (name and glob),
+  the exclusion list, and the item, epic and companion shapes come from the
+  manifest, and the default manifest reproduces today's literals. Every other
+  Discovery item reads what this one declares, so it goes first.
+
+acceptance_criteria:
+  - "B-001 — layouts from the manifest; a third layout needs no code change"
+  - "B-002 — exclusions from the manifest; bare name vs leading `/`"
+  - "B-003 — item, epic and companion shapes from the manifest"
+  - "B-009 — summary and report name a layout by its manifest name"
+  - "§ 9 carries a row naming a test for each id above."
+
+decisions: []
+
+out_of_scope:
+  - "Walking or listing files with these inputs — 0007 and 0008."
+  - "Reading `.gitignore` — § 5 #2."

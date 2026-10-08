@@ -1,0 +1,41 @@
+id: "0007"
+type: task
+title: Walk the tree without entering an excluded directory
+
+status: ready-for-architecture
+
+priority: medium # DERIVED
+risk: 2
+rank: 59 # DERIVED: (3 × 20) − (2 × 3) + (1 × 5); value inherited from 0004
+
+parent: "0004"
+children: []
+
+depends_on: ["0005"] # prunes on the manifest exclusions 0005 reads
+blocks: ["0009"]
+spikes: []
+
+spec: src/specht/Discovery/.spec/README.md
+
+claims:
+  - B-006
+
+created: "2026-10-08"
+updated: "2026-10-08"
+closed: null
+
+summary: |
+  The mode used outside a git work tree or with no git on PATH: a walk that
+  prunes on the manifest's exclusions, so no child of an excluded directory is
+  ever enumerated. Replaces today's full walk followed by a filter. Depends on
+  0005 for the exclusion list it prunes on.
+
+acceptance_criteria:
+  - "B-006 — no child of an excluded directory enumerated (C-1: no enumerate-then-filter)"
+  - "§ 9 carries a row naming a test for each id above."
+
+decisions: []
+
+out_of_scope:
+  - "Following symbolic links — § 5 #1; the B-011 proof across both modes is 0009."
+  - "Reading `.gitignore` — § 5 #2."

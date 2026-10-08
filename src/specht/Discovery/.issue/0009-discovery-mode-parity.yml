@@ -1,0 +1,45 @@
+id: "0009"
+type: test
+title: Prove both discovery modes find the same files in the same order
+
+status: ready-for-architecture
+
+priority: medium # DERIVED
+risk: 3
+rank: 51 # DERIVED: (3 × 20) − (3 × 3) + (0 × 5); value inherited from 0004
+
+parent: "0004"
+children: []
+
+depends_on: ["0007", "0008"] # compares the two modes, so both must exist
+blocks: []
+spikes: []
+
+spec: src/specht/Discovery/.spec/README.md
+
+claims:
+  - B-007
+  - B-008
+  - B-011
+
+created: "2026-10-08"
+updated: "2026-10-08"
+closed: null
+
+summary: |
+  The C-3 contract: on a clean checkout, the walk and the git listing yield
+  the same specifications, items, epics and companions, ordered ordinally by
+  root-relative path, and neither follows a linked directory. Needs both
+  modes, so it depends on 0007 and 0008.
+
+acceptance_criteria:
+  - "B-007 — same set from both modes on this repository's checkout"
+  - "B-008 — ordinal root-relative order, both modes"
+  - "B-011 — linked directory not followed, both modes"
+  - "§ 9 carries a row naming a test for each id above."
+
+decisions: []
+
+out_of_scope:
+  - "Parity on hooked's tree — § 5 #6, pending OQ-3."
+  - "A tree holding a submodule — § 5 #4; C-3 does not cover it."
