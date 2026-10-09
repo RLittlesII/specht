@@ -193,7 +193,7 @@ Delivered so far by item 0021.
 
 ## Tasks
 
-Cut 2026-10-08 into [`../.issue/`](../.issue/): `0020` (the Feature), with `0021` to `0024`; `0103` (the violation-order seam) cut 2026-10-08 from `0022`'s review.
+Cut 2026-10-08 into [`../.issue/`](../.issue/): `0020` (the Feature), with `0021` to `0024`; `0103` (the violation-order seam) cut 2026-10-08 from `0022`'s review; `0104` to `0107`, ADR-0001's migration stages A to D, cut 2026-10-08 on its acceptance.
 
 ## Scoring
 
