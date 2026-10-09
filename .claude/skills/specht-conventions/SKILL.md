@@ -187,7 +187,7 @@ or is a `.feature`.
 is unset and no git hook fires.
 
 `dotnet nbgv get-version` prints the version a commit computes: public on `main`
-and `v*` tags, a `-g<commit>` prerelease everywhere else, and different in a
+and `v*` tags, a `-g<commit>` prerelease everywhere else, and a failure in a
 shallow clone (`0055-F5` C-2). A release tag is never typed: `dotnet nbgv tag` on
 a commit of `main` creates `v<version>` (`0055-F5` A-1, B-007).
 
