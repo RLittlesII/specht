@@ -107,15 +107,35 @@ Every version this repository depends on - packages, the SDK, local tools, workf
 
 ## 6. Concern Separation
 
-<!-- last written by: spec-author, 2026-10-08 -->
+<!-- last written by: implementer, 2026-10-09 -->
 
-Pending: owned by `implementer`, written after agreement.
+| #   | Concern                                                                       | Classification |
+| --- | ----------------------------------------------------------------------------- | -------------- |
+| 1   | When Renovate runs, and against which repository                              | Both           |
+| 2   | Which credential opens the pull requests, and what the run's own token may do | Both           |
+| 3   | Where Renovate runs, and how the SDK reaches its post-upgrade tasks           | Technical      |
+| 4   | Generating the workflow from the build rather than by hand                    | Technical      |
+| 5   | Where the self-hosted run's settings live                                     | Both           |
+| 6   | What Renovate proposes, how it groups and labels it, and what it never opens  | Business       |
+| 7   | Which pull requests merge without a person                                    | Business       |
+| 8   | Keeping a generated workflow the build's generation after an update           | Technical      |
 
 ## 7. Technical Design
 
-<!-- last written by: spec-author, 2026-10-08 -->
+<!-- last written by: implementer, 2026-10-09 -->
 
-Pending: owned by `implementer`, written after agreement.
+Delivered so far by item 0073. Grouping and the engine exclusion (0074), action updates and the post-upgrade regeneration (0075), the merge policy (0076) and reading the feed (0077) are not built yet.
+
+- **The declaration** is [`.build/Build.Renovate.cs`](../../.build/Build.Renovate.cs): a second Rocket.Surgery.Nuke `[GitHubActionsSteps]` beside `ci`, named `renovate`, on `ubuntu-latest`, writing [`.github/workflows/renovate.yml`](../workflows/renovate.yml) with `AutoGenerate` on, so any build run regenerates it and the regeneration is committed with the build change (C-8, `0055-F2` C-1). `InvokedTargets` is empty, so the generator emits no `--target` step. Its `RenovateMiddleware` enhancement shapes the rest; the generator keeps the configuration object it passed in, so the middleware changes it in place. The job keeps the generator's name, `build`.
+- **The schedule** (B-015) is `OnCronSchedule = "0 10 * * 1"`: 10:00 UTC on Monday, which is 5am CDT and 4am CST, inside Renovate's own `before 6am on monday` window in America/Chicago (A-1). Renovate's `schedule` in [`.github/renovate.json`](../renovate.json) still decides when a branch is created; the cron only starts the run. `RENOVATE_REPOSITORIES: ${{ github.repository }}` points the run at this repository and nothing else.
+- **The manual trigger** (decision 0001, § 5 row 6) is a detailed `workflow_dispatch` trigger the middleware adds to `DetailedTriggers`. The attribute's `On` is not used: setting it switches the generator to short triggers and drops the schedule.
+- **The job's steps** are replaced wholesale by the middleware, which also drops the generator's `dotnet tool restore` and global NUKE install; the run needs neither. They are `actions/checkout@v4`; a bash step that writes `DOTNET_SDK_VERSION=$(jq -r .sdk.version global.json)` to `$GITHUB_ENV`; and `renovatebot/github-action@v46.3.7`, whose default `renovate-version` at that tag is `44`. The SDK version is read from `global.json` when the run starts, never baked into the workflow at generation, so an SDK update (B-003) needs no regeneration.
+- **The credential** (C-8, decision 0001) is `token: ${{ secrets.RENOVATE_TOKEN }}`, so the pull requests Renovate opens start the workflow runs they wait on. The workflow's own token is cut to `contents: read` and nothing else; B-017's `packages: read` is 0077's.
+- **The SDK before any post-upgrade task** (B-016). The action runs Renovate as the `ghcr.io/renovatebot/renovate` container on the hosted runner, where Docker is preinstalled (decision 0001), so an SDK set up on the runner would not reach a post-upgrade task inside the container. The action instead starts the container as `root` (`docker-user`) with [`.github/renovate-entrypoint.sh`](../renovate-entrypoint.sh) as its command (`docker-cmd-file`) and passes `DOTNET_SDK_VERSION` in (`additional-env-list`). The script runs containerbase's `install-tool dotnet "$DOTNET_SDK_VERSION"`, then `runuser -u ubuntu renovate` - the action's documented pattern for this - so the SDK `global.json` pins is installed before Renovate starts, and therefore before any post-upgrade task.
+- **The self-hosted run's settings** (C-2) are committed in [`.github/renovate-global.json`](../renovate-global.json), passed as `configurationFile`: `platform: github`, `onboarding: false` and `requireConfig: required`, so the run reads this repository's `.github/renovate.json` and opens no onboarding pull request. `allowedPostUpgradeCommands` is not there yet; it is 0075's (C-7).
+- **No issue** (B-010, C-5): `.github/renovate.json` sets `dependencyDashboard: false`. The NuGet major rule whose only setting was `dependencyDashboardApproval` is removed, because that approval lives in the dashboard issue C-5 forbids; a major waiting as an open pull request is 0076's B-007. **The label** (B-011) is the existing `labels: ["dependencies"]`, kept.
+- **Interim state until 0074 and 0075 land.** `.github/renovate.json` neither excludes the engine's three dependencies (B-008, C-1) nor stops the `github-actions` manager matching files under `.github/workflows/` (C-3). The run is inert until the owner creates the `RENOVATE_TOKEN` secret: without it the action has no token and opens nothing. Creating the secret before 0074 and 0075 land would let a run propose exactly what C-1 and C-3 rule out.
+- **Verified** when 0073 was delivered: `./build.sh Compile` regenerated `renovate.yml` alone, leaving `ci.yml` unchanged; `renovate-config-validator --strict` at Renovate 44 accepted both JSON files; `Format` and `Test` passed. No run has been observed on GitHub yet, and nothing here has a test (§ 8).
 
 ## 8. Testing Strategy
 

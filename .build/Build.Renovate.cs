@@ -4,8 +4,6 @@ using System.Linq;
 using Nuke.Common.CI.GitHubActions;
 using Rocket.Surgery.Nuke.GithubActions;
 
-// 0055-F4: the self-hosted Renovate run, generated into .github/workflows/renovate.yml and committed (C-8; 0055-F2 C-1).
-// B-015: before 6am on Monday, America/Chicago (A-1) - 10:00 UTC - and on demand.
 [GitHubActionsSteps(
     "renovate",
     GitHubActionsImage.UbuntuLatest,
@@ -26,9 +24,6 @@ internal sealed partial class Build
 
         var job = configuration.Jobs.OfType<RocketSurgeonsGithubActionsJob>().Single();
 
-        // B-016: Renovate runs in a container on the runner, so the SDK global.json pins is installed inside it, by
-        // the entrypoint, before Renovate starts and so before any post-upgrade task.
-        // C-8: pull requests are opened with the stored token, so they start the checks they wait on.
         job.Steps =
         [
             new CheckoutStep("Checkout"),
