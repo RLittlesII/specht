@@ -1,0 +1,68 @@
+id: "0108"
+type: task
+title: Add the benchmarker role and the benchmarkdotnet skill
+
+status: done
+
+priority: medium # DERIVED
+value: 3
+risk: 1
+rank: 57 # DERIVED
+
+parent: null
+children: []
+
+depends_on: []
+blocks: [] # DERIVED
+spikes: []
+
+spec: null
+
+claims: []
+
+created: "2026-10-09"
+updated: "2026-10-09"
+closed: "2026-10-09"
+
+summary: |
+  A process chore, raised by the owner on 2026-10-09 while planning a
+  benchmark epic: "Need a benchmark agent, a benchmarker. its purpose is to
+  verify performance and architecture concerns, similar to how the test writer
+  is supposed to expose business concerns", and "Agent likely needs a skill for
+  .NET benchmarking and performance."
+
+  Scope:
+  - .claude/agents/benchmarker.md - a fifth role contract. It turns a § 4
+    constraint, an accepted ADR's consequence, or a § 7 design choice into a
+    BenchmarkDotNet benchmark, and records the measured finding.
+  - .claude/skills/benchmarkdotnet/ - a technology skill for the library and
+    .NET measurement traps, with this repository's decisions marked.
+  - .claude/skills/specht-conventions - the section-ownership row for § 8
+    `### Performance`, and references/benchmarking.md for the repository's
+    benchmark traps.
+  - .claude/agents/README.md and AGENTS.md - the role and skill tables.
+
+  The benchmark project itself, its NUKE target and its CI step are the
+  benchmark epic's, specified after this item lands.
+
+acceptance_criteria:
+  - "`.claude/agents/benchmarker.md` states what the role turns into what, what it owns, reads, produces and refuses, in the shape of the other four role files."
+  - "§ 8 `### Performance` has exactly one owner, `benchmarker`, written only in specht-conventions § \"Section ownership\"."
+  - "`.claude/skills/benchmarkdotnet/SKILL.md` is a technology skill: library surface and traps sourced from benchmarkdotnet.org, with repository decisions marked where they apply."
+  - "AGENTS.md, `.claude/agents/README.md` and specht-conventions name five roles and list the new skill; no other file restates section ownership."
+  - "The commit message carries the exemption: No .feature change needed: process documentation - a role contract and a skill; no behaviour of the tool changes. Constraints preserved: 0001-F1 C-5, 0001-F1 C-9."
+  - "./build.sh and ./build.sh SpecCheck are green."
+
+decisions:
+  - "2026-10-09, repository owner: the benchmarker's verdict lives in a `### Performance` subsection of § 8, owned by benchmarker - not a new top-level section (the twelve sections are fixed per schema version) and not a separate record folder. Rejected: a Feature `benchmarks/` folder; findings with no recorded verdict."
+  - "2026-10-09, repository owner: benchmarks report and never gate - no timing threshold fails a build. Shared CI runners are too noisy for a timing assertion."
+  - "2026-10-09, repository owner: the role ships in its own pull request, before the benchmark epic is specified."
+  - "2026-10-09, repository owner: the benchmark project lives at `.performance/specht.benchmarks`, outside `test/` and its tier governance."
+  - "2026-10-09, repository owner: allocation is in the benchmark scope with engine stages, end-to-end scaling and cold start, so the memory diagnoser is on for every benchmark."
+  - "2026-10-09, spec-reviewer finding: a contradicted ADR consequence escalates to `implementer`, which owns ADRs here - not `the-architect`, which is not a role in this repository."
+
+out_of_scope:
+  - "`.spec/templates/feature.md` - it is the embedded v1 copy shipped to consumers (0001-F4 B-004); a `### Performance` heading there would change what `specht init` writes. The benchmarker adds the subsection to a Feature when it first records a finding."
+  - "The benchmark project, its BenchmarkDotNet package reference, the `Benchmark` NUKE target and the CI step - the benchmark epic owns them."
+  - "Any benchmark. The role has nothing to measure until the harness exists."
+  - "A CI regression gate on timings - excluded by the owner's decision above."

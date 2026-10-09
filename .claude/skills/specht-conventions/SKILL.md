@@ -9,13 +9,14 @@ The companion skill: **the only skill that names this repository.** Each method
 skill states a portable rule; this one says where that rule lands here. Read the
 method skill your work belongs to _and_ this one.
 
-| Area      | Extends                                                      | Detail                                             |
-| --------- | ------------------------------------------------------------ | -------------------------------------------------- |
-| Coding    | [`coding-conventions`](../coding-conventions/SKILL.md)       | [references/coding.md](references/coding.md)       |
-| Delivery  | [`deliver-change`](../deliver-change/SKILL.md)               | [references/delivery.md](references/delivery.md)   |
-| Testing   | [`test-from-scenarios`](../test-from-scenarios/SKILL.md)     | [references/testing.md](references/testing.md)     |
-| Questions | [`clarify-requirements`](../clarify-requirements/SKILL.md)   | [references/questions.md](references/questions.md) |
-| Specs     | [`spec-and-traceability`](../spec-and-traceability/SKILL.md) | [references/specs.md](references/specs.md)         |
+| Area         | Extends                                                      | Detail                                                   |
+| ------------ | ------------------------------------------------------------ | -------------------------------------------------------- |
+| Coding       | [`coding-conventions`](../coding-conventions/SKILL.md)       | [references/coding.md](references/coding.md)             |
+| Delivery     | [`deliver-change`](../deliver-change/SKILL.md)               | [references/delivery.md](references/delivery.md)         |
+| Testing      | [`test-from-scenarios`](../test-from-scenarios/SKILL.md)     | [references/testing.md](references/testing.md)           |
+| Questions    | [`clarify-requirements`](../clarify-requirements/SKILL.md)   | [references/questions.md](references/questions.md)       |
+| Specs        | [`spec-and-traceability`](../spec-and-traceability/SKILL.md) | [references/specs.md](references/specs.md)               |
+| Benchmarking | [`benchmarkdotnet`](../benchmarkdotnet/SKILL.md)             | [references/benchmarking.md](references/benchmarking.md) |
 
 ## Read before starting
 
@@ -74,7 +75,7 @@ epics/                         one folder per epic - ids share the items' number
                                schema/ and templates/ are the live copy specht checks
                                itself with - the same bytes as the embedded v1 for the
                                tool-owned files; the manifest on its tool-owned keys
-.claude/agents/                the four role contracts - tracked
+.claude/agents/                the five role contracts - tracked
 .claude/skills/                these skills - tracked; the rest of .claude/ is gitignored
                                (no Skillfile is committed)
 AGENTS.md                      the entry point for agents
@@ -92,22 +93,23 @@ The one place this is written. Each section of a Feature's specification has
 exactly one owning role; a role that needs another's section changed escalates and
 does not write there.
 
-| Section                       | Owner                                |
-| ----------------------------- | ------------------------------------ |
-| 1. Business Goal              | `spec-author`                        |
-| 2. User Needs (+ Assumptions) | `spec-author`                        |
-| 3. Acceptance Criteria        | `spec-author`                        |
-| 4. Constraints                | `spec-author`                        |
-| 5. Out of Scope               | `spec-author`                        |
-| 6. Concern Separation         | `implementer`                        |
-| 7. Technical Design           | `implementer`                        |
-| 8. Testing Strategy           | `test-writer`                        |
-| 9. Traceability Matrix        | `test-writer`                        |
-| 10. Lessons / Spec Deltas     | `spec-author`                        |
-| 11. Open Questions            | whoever is blocked                   |
-| 12. Sign-off                  | `spec-reviewer`                      |
-| Tasks                         | `spec-author`, after agreement       |
-| Scoring                       | derived — recompute, never hand-edit |
+| Section                                 | Owner                                   |
+| --------------------------------------- | --------------------------------------- |
+| 1. Business Goal                        | `spec-author`                           |
+| 2. User Needs (+ Assumptions)           | `spec-author`                           |
+| 3. Acceptance Criteria                  | `spec-author`                           |
+| 4. Constraints                          | `spec-author`                           |
+| 5. Out of Scope                         | `spec-author`                           |
+| 6. Concern Separation                   | `implementer`                           |
+| 7. Technical Design                     | `implementer`                           |
+| 8. Testing Strategy                     | `test-writer`, except `### Performance` |
+| 8. Testing Strategy — `### Performance` | `benchmarker`                           |
+| 9. Traceability Matrix                  | `test-writer`                           |
+| 10. Lessons / Spec Deltas               | `spec-author`                           |
+| 11. Open Questions                      | whoever is blocked                      |
+| 12. Sign-off                            | `spec-reviewer`                         |
+| Tasks                                   | `spec-author`, after agreement          |
+| Scoring                                 | derived — recompute, never hand-edit    |
 
 The `.feature` file belongs to `spec-author`; its step definitions belong to
 `test-writer`. Role contracts are in [`.claude/agents/`](../../agents/README.md).
