@@ -1,4 +1,5 @@
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using AwesomeAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using specht.Report;
@@ -11,7 +12,7 @@ namespace specht.tests;
 
 /// <summary>
 /// The command through Spectre's command tester (<c>0001-F2</c> B-001, B-002, B-003, B-004, B-005, B-006, B-007, B-008, B-009, B-013;
-/// C-7; <c>0001-F5</c> B-022, B-023): over a runner returning a report built in memory, and over the real runner and a
+/// C-7; <c>0001-F5</c> B-022, B-023; <c>0001-F7</c> B-003): over a runner returning a report built in memory, and over the real runner and a
 /// synthetic tree on disk. The runner is the seam: the engine emits no warning until <c>0001-F5</c>'s rule settings exist,
 /// so a warning-only report is reachable only in memory. The tester captures stdout alone, so an input failure's stderr
 /// message is the acceptance tier's to pin.
@@ -120,6 +121,18 @@ public sealed class CheckCommandIntegrationTests
                 static tree =>
                 {
                     tree.WriteRaw(SpecManifest.RelativePath, "{ \"glossary\": \"synthetic\" }");
+                    return tree.Root;
+                },
+                3
+            },
+            {
+                "a manifest pinning a schema version the tool does not ship (0001-F7 B-003)",
+                static tree =>
+                {
+                    var path = Path.Combine(tree.Root, SpecManifest.RelativePath);
+                    var manifest = JsonNode.Parse(File.ReadAllText(path))!.AsObject();
+                    manifest["schemaVersion"] = SchemaVersions.Embedded.Versions.Max(static version => version.Number) + 1;
+                    File.WriteAllText(path, manifest.ToJsonString());
                     return tree.Root;
                 },
                 3

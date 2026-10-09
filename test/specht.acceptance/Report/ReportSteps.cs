@@ -96,7 +96,7 @@ public sealed class ReportSteps
 
     [Then("whether the schemas came from the tool or from the repository's own files")]
     public void ThenWhetherTheSchemasCameFromTheToolOrFromTheRepositorysOwnFiles() =>
-        Document.SchemaSource.Should().Be(SpecSchemaSource.Disk);
+        Document.SchemaSource.Should().Be(SpecSchemaSource.Embedded);
 
     [Then("each layout by name with its specification count")]
     public void ThenEachLayoutByNameWithItsSpecificationCount() =>
