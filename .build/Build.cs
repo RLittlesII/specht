@@ -127,8 +127,12 @@ internal partial class Build : NukeBuild
         .DependsOn(Test)
         .Executes(() =>
         {
-            var clean = Run(DotNetPath, "run --project src/specht.tool -- --root .", out var output);
-            AnnotateChangedFiles(output);
+            var clean = true;
+            AnnotateChangedFiles(DotNet(
+                "run --project src/specht.tool -- --root .",
+                RootDirectory,
+                logger: ProcessTasks.DefaultLogger,
+                exitHandler: process => clean = process.ExitCode == 0));
             Log.Information("SpecCheck: {Verdict}; the check does not gate until 0001-F5's rule settings exist", clean ? "clean" : "violations reported");
         });
 
@@ -160,13 +164,10 @@ internal partial class Build : NukeBuild
     private IReadOnlyCollection<Output> Npx(string arguments) =>
         ProcessTasks.StartProcess(NpxPath, arguments, RootDirectory, logOutput: false).AssertZeroExitCode().Output;
 
-    private bool Run(string tool, string arguments) => Run(tool, arguments, out _);
-
-    private bool Run(string tool, string arguments, out IReadOnlyCollection<Output> output)
+    private bool Run(string tool, string arguments)
     {
         using var process = ProcessTasks.StartProcess(tool, arguments, RootDirectory);
         process.WaitForExit();
-        output = process.Output;
         return process.ExitCode == 0;
     }
 

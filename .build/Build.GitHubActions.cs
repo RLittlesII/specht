@@ -9,6 +9,7 @@ using Nuke.Common.Tooling;
 using Rocket.Surgery.Nuke.ContinuousIntegration;
 using Rocket.Surgery.Nuke.DotNetCore;
 using Rocket.Surgery.Nuke.GithubActions;
+using static Nuke.Common.Tools.Git.GitTasks;
 
 // 0055-F2: the integration workflow, generated into .github/workflows/ci.yml and committed (C-1).
 // B-001, B-002: a pull request to main and a push to main. B-004: every gate, each through the entry script.
@@ -285,18 +286,8 @@ internal sealed partial class Build
             return;
         }
 
-        using var diff = ProcessTasks.StartProcess(
-            ToolPathResolver.GetPathExecutable("git"),
-            $"diff --name-only --no-renames {baseSha}...{headSha}",
-            RootDirectory,
-            logOutput: false);
-        diff.WaitForExit();
-        if (diff.ExitCode != 0)
-        {
-            return;
-        }
-
-        var changed = diff.Output.Where(static line => line.Type == OutputType.Std).Select(static line => line.Text).ToHashSet(StringComparer.Ordinal);
+        var changed = Git($"diff --name-only --no-renames {baseSha}...{headSha}", RootDirectory, logOutput: false, exitHandler: static _ => null)
+            .Where(static line => line.Type == OutputType.Std).Select(static line => line.Text).ToHashSet(StringComparer.Ordinal);
         var violations = output
             .Where(static line => line.Type == OutputType.Std)
             .Select(static line => Diagnostic().Match(line.Text))
