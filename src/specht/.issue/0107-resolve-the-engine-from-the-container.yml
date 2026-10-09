@@ -1,0 +1,67 @@
+id: "0107"
+type: task
+title: Resolve the engine from the container through AddSpechtEngine
+
+status: ready-for-implementation
+
+priority: high # DERIVED
+value: 3
+risk: 4
+rank: 63 # DERIVED
+
+parent: "0020"
+children: []
+
+depends_on: ["0106", "0099"] # registers 0106's rule list; host composition follows 0099's harness decision
+blocks: ["0007", "0008", "0016"] # DERIVED
+spikes: []
+
+spec: src/specht/.spec/README.md
+
+claims:
+  - B-004
+  - B-010
+
+created: "2026-10-08"
+updated: "2026-10-08"
+closed: null
+
+summary: |
+  ADR-0001 (accepted 2026-10-08), stage D; the host half is ADR-0003's.
+  The readers, the parser's caller, the discovery walk and the loader
+  become sealed instance classes taking IFileSystem by constructor, with
+  no interface per reader. One hand-written IServiceCollection extension,
+  AddSpechtEngine(), registers every engine type as a singleton, each rule
+  by name; Program.cs calls it once. The engine references
+  Microsoft.Extensions.DependencyInjection.Abstractions only, pinned in the
+  Engine item group of Directory.Packages.props. The two SpecCheckRunner
+  Unit files move to Integration with the § 9 rows that name them (B-004,
+  B-010). No verdict changes (C-9).
+
+  Depends on 0106 for the rule list it registers and on 0099 for how tests
+  compose the host. Also waits on the C-7 amendment on branch
+  spec/adr-0001-owed-edits, which must merge first: the new package is a
+  fifth engine dependency against C-7, and that amendment has no item id
+  to put in depends_on. Discovery's interface and git-listing seam
+  (ADR-0001 stage E) are not here: they land inside 0007 and 0008, which
+  wait on this, as does 0016.
+
+acceptance_criteria:
+  - "B-004 — the golden-report test green, field for field, in order"
+  - "B-010 — § 9 row re-pointed at the re-tiered Integration class"
+  - "C-9 — no verdict changes; 0012 green"
+  - "C-7 — amended (spec/adr-0001-owed-edits) before this merges"
+  - "ADR-0001 stage D proof — MockFileSystem unit tests per reader and for the loader"
+  - "§ 9 carries a row naming a test for each id above."
+
+decisions:
+  - |
+    2026-10-08, cut by spec-author on the owner's acceptance of ADR-0001
+    and ADR-0003, one item per migration stage.
+
+out_of_scope:
+  - "ISpecDiscovery and the git-listing seam — ADR-0001 stage E, inside 0007 and 0008."
+  - "How tests compose the host — 0099."
+  - "A decorator or chain around ISpecRule — ADR-0002."
+  - "A clock or environment seam — 0035 (0001-F3 B-006)."
+  - "Everything else in § 5 of the spec."
