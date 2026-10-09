@@ -1,0 +1,47 @@
+id: "0116"
+type: task
+title: Bring README.md § Layout in line with the repository, alphabetised
+
+status: done
+
+priority: low # DERIVED
+value: 1
+risk: 1
+rank: 17 # DERIVED
+
+parent: null
+children: []
+
+depends_on: []
+blocks: [] # DERIVED
+spikes: []
+
+spec: null
+
+claims: []
+
+created: "2026-10-09"
+updated: "2026-10-09"
+closed: "2026-10-09"
+
+summary: |
+  The README.md § Layout tree had drifted from the repository. It omitted
+  `.issue/`, `.performance/`, `docs/`, `.spec/adr/` and `.spec/lessons/`,
+  and it never showed that a Feature's `.spec/` is co-located beside the
+  code it covers.
+
+acceptance_criteria:
+  - The tree lists only folders that exist.
+  - The tree is alphabetical at every level, with dot-folders first.
+  - The tree shows no `epics/` and no `brief.md`.
+  - README.md states where a Feature's `.spec/` and `.issue/` sit.
+  - No tool behaviour changes.
+
+decisions:
+  - "2026-10-09, repository owner: drop epics/ and brief.md from the
+    layout - the brief is transient and goes once epics and specs absorb
+    it; alphabetise the folders."
+
+out_of_scope:
+  - Other README.md sections, including the Status link to brief § 8.
+  - Retiring brief.md itself.

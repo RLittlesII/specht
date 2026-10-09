@@ -104,20 +104,26 @@ global install is not the documented path.
 
 ```text
 specht/
-├── src/
-│   ├── specht/            # engine: discovery, frontmatter, schemas, document model, rules, report
-│   └── specht.tool/       # the specht command, one folder per command
-├── test/
-│   ├── specht.tests/      # unit and integration tiers
-│   └── specht.acceptance/ # Reqnroll scenarios
+├── .build/                 # NUKE build
+├── .issue/                 # work items with no Feature; ids from .issue/.sequence
+├── .performance/           # BenchmarkDotNet benchmarks
 ├── .spec/
-│   ├── brief.md           # design authority
-│   ├── schema/            # schema v1, the same files specht init writes
-│   └── templates/         # blanks for specifications and records
-└── .build/                # NUKE build
+│   ├── adr/                # repo-wide decision records
+│   ├── lessons/            # repo-wide lessons
+│   ├── schema/             # schema v1, the same files specht init writes
+│   └── templates/          # blanks for specifications, records and work items
+├── docs/                   # report schema and documentation site
+├── src/
+│   ├── specht/             # engine: discovery, frontmatter, schemas, document model, rules, report
+│   └── specht.tool/        # the specht command, one folder per command under Features/
+└── test/
+    ├── specht.acceptance/  # Reqnroll scenarios
+    └── specht.tests/       # unit and integration tiers
 ```
 
-Each part is specified in the `.spec/README.md` beside its code.
+Every Feature is specified in a `.spec/README.md` beside the code it covers, such
+as `src/specht/Rules/Form/.spec/`, with its `.feature` file. Its work items sit in
+a `.issue/` beside that `.spec/`.
 
 ## Build
 
