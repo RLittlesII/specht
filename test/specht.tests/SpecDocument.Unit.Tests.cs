@@ -9,6 +9,23 @@ namespace specht.tests;
 [Trait("Tier", "Unit")]
 public sealed class SpecDocumentUnitTests
 {
+    /// <summary>Gets each section of <see cref="Specification"/> with its heading's one-based line.</summary>
+    public static TheoryData<string, int> SectionLines { get; } = new()
+    {
+        { "1. Business Goal", 8 },
+        { "3. Acceptance Criteria", 12 },
+    };
+
+    /// <summary>
+    /// Gets each section of <see cref="Specification"/> with the header cells, body rows and one-based row lines of the
+    /// table it opens with: empty for the section with no table.
+    /// </summary>
+    public static TheoryData<string, string[], string[][], int[]> SectionTables { get; } = new()
+    {
+        { "1. Business Goal", [], [], [] },
+        { "3. Acceptance Criteria", ["ID", "Claim"], [["B-001", "First."], ["B-002", "Second."]], [16, 17] },
+    };
+
     [Fact]
     public void ASpecificationHeldAsText_WhenParsed_ShouldCarryTheRelativePathAndTheFrontmatterWithTheLineOfEachKey()
     {
@@ -28,8 +45,7 @@ public sealed class SpecDocumentUnitTests
     }
 
     [Theory]
-    [InlineData("1. Business Goal", 8)]
-    [InlineData("3. Acceptance Criteria", 12)]
+    [MemberData(nameof(SectionLines))]
     public void ASpecificationHeldAsText_WhenParsed_ShouldCarryTheSectionAtItsHeadingsOneBasedLine(string title, int line)
     {
         // Given
@@ -42,36 +58,24 @@ public sealed class SpecDocumentUnitTests
         document.Section(title).Should().NotBeNull().And.Subject.As<SpecSection>().Line.Should().Be(line);
     }
 
-    [Fact]
-    public void ASectionOpeningWithAPipeTable_WhenParsed_ShouldCarryItsHeadersRowsAndOneBasedRowLines()
+    [Theory]
+    [MemberData(nameof(SectionTables))]
+    public void ASection_WhenParsed_ShouldCarryTheHeadersRowsAndOneBasedRowLinesOfTheTableItOpensWith(
+        string title,
+        string[] headers,
+        string[][] rows,
+        int[] rowLines)
     {
         // Given
         var text = Specification;
 
         // When
-        var section = SpecDocument.Parse(text, RelativePath).Section("3. Acceptance Criteria")!;
+        var section = SpecDocument.Parse(text, RelativePath).Section(title)!;
 
         // Then
-        section.Headers.Should().Equal("ID", "Claim");
-        section.Rows.Should().HaveCount(2);
-        section.Rows[0].Should().Equal("B-001", "First.");
-        section.Rows[1].Should().Equal("B-002", "Second.");
-        section.RowLines.Should().Equal(16, 17);
-    }
-
-    [Fact]
-    public void ASectionWithNoTable_WhenParsed_ShouldCarryNoHeadersAndNoRows()
-    {
-        // Given
-        var text = Specification;
-
-        // When
-        var section = SpecDocument.Parse(text, RelativePath).Section("1. Business Goal")!;
-
-        // Then
-        section.Headers.Should().BeEmpty();
-        section.Rows.Should().BeEmpty();
-        section.RowLines.Should().BeEmpty();
+        section.Headers.Should().Equal(headers);
+        section.Rows.Should().BeEquivalentTo(rows, static options => options.WithStrictOrdering());
+        section.RowLines.Should().Equal(rowLines);
     }
 
     private const string RelativePath = "src/sample/.spec/README.md";

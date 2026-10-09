@@ -1,4 +1,4 @@
-using System.IO.Abstractions.TestingHelpers;
+using System.Text.Json.Nodes;
 using AwesomeAssertions;
 using specht.Rules;
 
@@ -14,7 +14,7 @@ public sealed class SpecModelUnitTests
     public static TheoryData<string[]> CompanionCountsOtherThanOne { get; } = new()
     {
         Array.Empty<string>(),
-        new[] { "src/sample/.spec/first.feature", "src/sample/.spec/second.feature" },
+        new[] { "repo/src/sample/.spec/first.feature", "repo/src/sample/.spec/second.feature" },
     };
 
     [Theory]
@@ -23,31 +23,14 @@ public sealed class SpecModelUnitTests
         string[] featureFiles)
     {
         // Given
-        var document = SpecDocument.Parse(
-            """
-            ---
-            epic: "0009"
-            id: F1
-            ---
-
-            ## 3. Acceptance Criteria
-
-            | ID    | Claim  |
-            | ----- | ------ |
-            | B-001 | First. |
-            """,
-            RelativePath);
-        var schemas = SpecSchemas.Load(
-            new MockFileSystem(new Dictionary<string, MockFileData>
-            {
-                [Path.Combine(Root, ".spec", "schema", "spec-structure.schema.json")] = new("{}"),
-                [Path.Combine(Root, ".spec", "schema", "feature-spec.frontmatter.schema.json")] = new("{}"),
-                [Path.Combine(Root, ".spec", "schema", "task.frontmatter.schema.json")] = new("{}"),
-                [Path.Combine(Root, ".spec", "schema", "epic.frontmatter.schema.json")] = new("{}"),
-            }),
-            Root);
-        var location = new SpecLocation(Path.Combine(Root, RelativePath), RelativePath, SpecLayout.CoLocated, "src/sample/.spec");
-        var model = new SpecModel(Root, [new FeatureSpec(location, document, featureFiles)], [], [], schemas);
+        const string relativePath = "src/area/.spec/README.md";
+        FeatureSpec feature = new FeatureSpecFixture()
+            .WithLocation(new SpecLocationFixture().WithRelativePath(relativePath))
+            .WithDocument(
+                new SpecDocumentFixture().WithFrontmatter(
+                    new FrontmatterFixture().WithNode(new JsonObject { ["epic"] = "0009", ["id"] = "F1" })))
+            .WithFeatureFiles(featureFiles);
+        SpecModel model = new SpecModelFixture().WithFeatures(feature);
 
         // When
         var violations = new FeatureFileRule().Evaluate(model).ToList();
@@ -57,13 +40,9 @@ public sealed class SpecModelUnitTests
             new SpecViolation(
                 "SPEC020",
                 SpecSeverity.Error,
-                RelativePath,
+                relativePath,
                 0,
                 "0009-F1",
                 $"found {featureFiles.Length} '.feature' files beside this specification - expected exactly one companion"));
     }
-
-    private const string RelativePath = "src/sample/.spec/README.md";
-
-    private const string Root = "repo";
 }

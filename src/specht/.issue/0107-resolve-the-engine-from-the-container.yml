@@ -28,8 +28,9 @@ closed: null
 
 summary: |
   ADR-0001 (accepted 2026-10-08), stage D; the host half is ADR-0003's.
-  The readers, the parser's caller, the discovery walk and the loader
-  become sealed instance classes taking IFileSystem by constructor, with
+  The readers other than FrontmatterReader (delivered by 0104), the
+  parser's caller, the discovery walk and the loader become sealed
+  instance classes taking IFileSystem by constructor, with
   no interface per reader. One hand-written IServiceCollection extension,
   AddSpechtEngine(), registers every engine type as a singleton, each rule
   by name; Program.cs calls it once. The engine references
@@ -60,7 +61,7 @@ acceptance_criteria:
   - "B-010 — § 9 row re-pointed at the re-tiered Integration class"
   - "C-9 — no verdict changes; 0012 green"
   - "C-7 — amended (spec/adr-0001-owed-edits) before this merges"
-  - "ADR-0001 stage D proof — MockFileSystem unit tests per reader and for the loader"
+  - "ADR-0001 stage D proof — MockFileSystem unit tests per remaining reader and for the loader"
   - "ADR-0005 (a) — the manifest loader class, named; the path mapping in its own type, named, and no rule calls SpecDiscovery; the model loader named"
   - "§ 9 carries a row naming a test for each id above."
 
@@ -75,6 +76,11 @@ decisions:
     Both loaders stay concrete, with no interface (ADR-0005 (d)). The
     fault-isolation wrapper around ISpecRule is not here: it is its own
     item, cut from 0001-F1 B-012 to B-016 once those claims are agreed.
+  - |
+    2026-10-09, spec-author on the owner's review of pull request #29
+    (review 5471216465): scope shrinks by FrontmatterReader, delivered by
+    0104 as a sealed instance class over IFileSystem. AddSpechtEngine()
+    registers it with the rest; no edge changes.
 
 out_of_scope:
   - "ISpecDiscovery and the git-listing seam — ADR-0001 stage E, inside 0007 and 0008."
