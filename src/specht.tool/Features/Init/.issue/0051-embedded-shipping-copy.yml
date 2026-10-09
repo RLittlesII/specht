@@ -2,7 +2,7 @@ id: "0051"
 type: task
 title: Embed the shipping copy and keep it equal to the live copy
 
-status: ready-for-architecture
+status: in-progress
 
 priority: high
 risk: 2
@@ -22,7 +22,7 @@ claims:
   - B-005
 
 created: "2026-10-08"
-updated: "2026-10-08"
+updated: "2026-10-09"
 closed: null
 
 summary: |
