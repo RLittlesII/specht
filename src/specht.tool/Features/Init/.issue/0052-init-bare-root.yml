@@ -2,7 +2,7 @@ id: "0052"
 type: task
 title: Write the eight files into a bare root
 
-status: in-progress
+status: done
 
 priority: high
 risk: 3
@@ -26,7 +26,7 @@ claims:
 
 created: "2026-10-08"
 updated: "2026-10-09"
-closed: null
+closed: "2026-10-09"
 
 summary: |
   `specht init [--root <dir>]`: write the newest version's eight files into
