@@ -82,8 +82,7 @@ jobs:
         uses: codecov/codecov-action@v5
         with:
           token: '${{ secrets.CODECOV_TOKEN }}'
-          files: '.artifacts/coverage/**/*.cobertura.xml'
-          disable_search: 'true'
+          directory: '.artifacts/coverage'
           override_commit: '${{ github.event.pull_request.head.sha || github.sha }}'
           fail_ci_if_error: 'true'
       - name: Warn on a failed coverage upload

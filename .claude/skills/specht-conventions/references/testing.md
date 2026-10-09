@@ -72,8 +72,12 @@ empty formatter and quoted arguments - [lesson 0003](../../../../.spec/lessons/0
   it asserts on. Version 10.0.6 emits its `AutoFixtureBase` without a `#nullable`
   directive, so `specht.tests.csproj` carries `NoWarn` `CS8669`, the one
   diagnostic only generated code raises.
-- `Microsoft.Testing.Extensions.CodeCoverage`; reports land in
-  `.artifacts/coverage/*.cobertura.xml` and CI uploads them to Codecov.
+- `Microsoft.Testing.Extensions.CodeCoverage`; each test project writes one
+  report, `.artifacts/coverage/<project>.coverage.cobertura.xml`, named by
+  `TestingPlatformCommandLineArguments` in `test/Directory.Build.props`, and CI
+  uploads the folder to Codecov. Keep `coverage` in the name: the uploader finds
+  reports by its default name patterns, and a glob in its `files` input breaks
+  on Windows (`0055-F3` § 7).
 
 One behaviour worth carrying from `hooked`: an MTP test project that discovers
 **zero** tests exits `8` and fails its tier. A new test project needs at least

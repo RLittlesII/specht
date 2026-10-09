@@ -188,8 +188,7 @@ internal sealed partial class Build
             With = new Dictionary<string, string>
             {
                 ["token"] = "${{ secrets.CODECOV_TOKEN }}",
-                ["files"] = ".artifacts/coverage/**/*.cobertura.xml",
-                ["disable_search"] = "true",
+                ["directory"] = ".artifacts/coverage",
                 ["override_commit"] = "${{ github.event.pull_request.head.sha || github.sha }}",
                 ["fail_ci_if_error"] = "true",
             },
