@@ -102,9 +102,18 @@ A repository adopting the model copies `hooked`'s `.spec/schema/` and `.spec/tem
 
 ## 6. Concern Separation
 
-<!-- last written by: spec-author, 2026-10-07 -->
+<!-- last written by: implementer, 2026-10-09 -->
 
-Pending: owned by `implementer`, written after agreement.
+| Concern                                                                                         | Classification | Where                                                 |
+| ----------------------------------------------------------------------------------------------- | -------------- | ----------------------------------------------------- |
+| Parsing `--root`; folding the listing, or a root that is not a directory, into a code and lines | Both           | `Features/Init/InitCommand.cs`                        |
+| Which shipped version is written (the highest `<n>`) and the eight files it holds (B-001, A-1)  | Business       | `Features/Init/InitWriter.cs`                         |
+| The map from an embedded name to its path under `<root>/.spec/` (B-001, B-008, C-3)             | Business       | `Features/Init/InitWriter.cs`                         |
+| Written or skipped: never overwrite (B-006, C-1)                                                | Business       | `Features/Init/InitWriter.cs`                         |
+| Reading the embedded resources; writing through `IFileSystem`                                   | Technical      | `Features/Init/InitWriter.cs`                         |
+| The embedded logical names `schema/v<n>/<file>`, `templates/v<n>/<file>`                        | Technical      | `specht.tool.csproj`                                  |
+| Which commands exist and what they are handed                                                   | Technical      | `Program.cs`, a hand-written list                     |
+| The exit codes                                                                                  | Business       | `ExitCodes.cs`, shared with the check (`0001-F2` C-2) |
 
 ## 7. Technical Design
 
@@ -112,7 +121,18 @@ Pending: owned by `implementer`, written after agreement.
 
 **The shipping copy (B-004, B-005, C-2).** `src/specht.tool/schema/v<n>/` holds the four schema files (`spec-structure.schema.json` and the three frontmatter schemas) and `src/specht.tool/templates/v<n>/` the four templates (`feature.md`, `decision.md`, `adr.md`, `lesson.md`); `item.yml` is not shipped. `specht.tool.csproj` embeds them under the logical names `schema/v<n>/<file>` and `templates/v<n>/<file>`, `/`-separated on every OS. The newest version is the highest `<n>`. `v1` is a byte copy of the live `.spec/`.
 
-No reader type exists yet; `init` earns one.
+**The writer (B-001, B-003, B-006, B-008; C-1, C-3, C-4).** `InitWriter` (`Features/Init/InitWriter.cs`) takes the shipping copy as a name-to-bytes map and an `IFileSystem`. `InitWriter.ShippingCopy(Assembly)` builds the map from the resources whose names match `^(schema|templates)/v<n>/<file>$`; other resources are ignored. `Write(root, cancellationToken)`:
+
+- throws `SpechtRootNotFoundException`, the engine's, before touching anything when the root is not a directory, so `init` never creates the root itself (C-3);
+- keeps the entries with the highest `<n>`, compared as integers so `v10` outranks `v2`, and maps each to `.spec/<folder>/<file>`, dropping the version (B-001);
+- for each, in ordinal order of that relative path: an existing file is listed skipped and not opened (C-1); an absent one has its folder created (with `.spec/` if absent, C-3) and is written with `FileMode.CreateNew`, so a file created between the check and the write fails the run rather than being overwritten, then listed written;
+- writes the bytes as embedded, with no transformation (B-003).
+
+It returns `(Path, Written)` pairs whose paths are already root-relative with `/`, so nothing absolute reaches stdout (C-4). The map, not the `Assembly`, is the constructor argument, so a unit test hands it two versions before a second one ships.
+
+**The command.** `InitCommand` (`Features/Init/InitCommand.cs`) is an `AsyncCommand` with nested `Settings`: `--root <DIR>`, defaulting to `.` (B-009). It resolves the root with `Path.GetFullPath`, as `CheckCommand` does, calls the writer, and writes one line per file, `written <path>` or `skipped <path>`, through the console's raw `Profile.Out.Writer` so a line is never wrapped. It returns `ExitCodes.Success`. A root that is not a directory is folded into `ExitCodes.MissingInput` with `specht: '<root as typed>' is not a directory.` on stderr; this is the minimum that keeps C-3 and C-4 when the root is missing, and B-007's proof is `0053`'s. A manifest beside the files is not read: pin handling (B-012, B-013) and rejected manifests (B-017) are `0053`, `0054`, `0049` and `0096`.
+
+**The composition root.** `Program.cs` registers `InitWriter` as a singleton built from `InitWriter.ShippingCopy(typeof(InitWriter).Assembly)` and `new FileSystem()`, and adds `init` with `AddCommand` beside the default `CheckCommand`, so `specht --root <dir>` still reaches the check. `TestableIO.System.IO.Abstractions.Wrappers` reaches the tool through its reference to the engine; no package is added.
 
 The engine's default manifest (`src/specht/specht.csproj`, `specht.default-manifest.json`) stays a link to the live `.spec/schema/spec-structure.schema.json`, not a third copy (C-2). Drift between the shipping copy and the live copy is caught by the B-004 tests, not by a build step that generates one from the other (C-2).
 
