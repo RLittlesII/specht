@@ -2,7 +2,7 @@ id: "0073"
 type: task
 title: Generate the scheduled self-hosted Renovate workflow
 
-status: in-progress
+status: done
 
 priority: high
 risk: 4
@@ -25,7 +25,7 @@ claims:
 
 created: "2026-10-08"
 updated: "2026-10-09"
-closed: null
+closed: "2026-10-09"
 
 summary: |
   A NUKE-generated workflow running `renovatebot/github-action` on a
@@ -41,7 +41,26 @@ acceptance_criteria:
   - "B-016 — the pinned SDK installed before any post-upgrade task"
   - "§ 9 carries a row naming a test for each id above."
 
-decisions: []
+decisions:
+  - |
+    2026-10-09, owner: the Renovate workflow also starts by hand through
+    workflow_dispatch beside its schedule, opens its pull requests with
+    the repository secret RENOVATE_TOKEN, and runs on GitHub's hosted
+    ubuntu-latest runner, where renovatebot/github-action runs Renovate's
+    container. Decision 0001; A-2 and C-8 amended, § 5 #6 and #7 added.
+    Rejected: a self-hosted runner; the Renovate npm CLI on the runner
+    without the action, which would amend OQ-6's resolution.
+  - |
+    2026-10-08, owner: the CI workflow's mechanisms carry no tests
+    (0055-F2 § 8), and that decision applies to this workflow too, so the
+    criterion "§ 9 carries a row naming a test for each id above" is
+    superseded; 0055-F4 § 8 says so.
+  - |
+    2026-10-09: interim state until 0074 and 0075 land. The committed
+    configuration neither excludes the engine's three dependencies
+    (B-008, C-1) nor stops the github-actions manager matching generated
+    workflows (C-3), so RENOVATE_TOKEN is not to be created before 0074
+    and 0075 land; until it exists the run opens nothing.
 
 out_of_scope:
   - "The hosted Renovate app — C-8."
