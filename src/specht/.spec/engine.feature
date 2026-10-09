@@ -75,3 +75,38 @@ Feature: The engine, extracted unchanged
     Given the root holds a specification whose claim B-002 has no traceability row
     When the engine runs
     Then the violation carries a rule id, a severity, a file, a line, an identifier and a message
+
+  @B-012
+  Scenario: A rule that fails does not stop the others
+    Given the root holds specifications that break several rules
+    And one rule fails while it is evaluated
+    When the engine runs
+    Then every other rule's violations are reported as they are when no rule fails
+
+  @B-013
+  Scenario: A rule that fails is reported under its own id
+    Given one rule fails while it is evaluated
+    When the engine runs
+    Then exactly one violation is reported under that rule's id, as an error
+    And it points at the manifest as a whole, with no identifier
+
+  @B-014 @boundary
+  Scenario: Nothing a rule found before it failed is reported
+    Given one rule finds two violations and then fails
+    When the engine runs
+    Then neither of the two violations is reported
+    And only the rule's failure is reported under its id
+
+  @B-015 @boundary
+  Scenario: Lowering a rule's severity does not lower its failure
+    Given the manifest sets one rule to warning severity
+    And that rule fails while it is evaluated
+    When the engine runs
+    Then the rule's failure is reported as an error
+
+  @B-016
+  Scenario: A rule's failure carries nothing from the machine
+    Given one rule fails with an error whose text holds an absolute path on this machine
+    When the engine runs
+    Then the failure's message names the rule and the kind of error
+    And it carries none of the error's own text

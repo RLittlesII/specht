@@ -20,7 +20,7 @@ depends_on: ["F1"]
 blocks: ["F3", "F4", "F5"]
 spikes: []
 created: "2026-10-07"
-updated: "2026-10-08"
+updated: "2026-10-09"
 github_issue: null
 synced_at: null
 ---
@@ -55,7 +55,7 @@ The gate runs only as `hooked`'s Nuke target, so a pre-commit hook, a CI step an
 
 ## 3. Acceptance Criteria
 
-<!-- last written by: spec-author, 2026-10-08 -->
+<!-- last written by: spec-author, 2026-10-09 (B-015 added for ADR-0005 (c)) -->
 
 | ID    | Claim                                                                                                                                                                                                                                                                | Source                                                                       | Status  |
 | ----- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------- | ------- |
@@ -73,6 +73,7 @@ The gate runs only as `hooked`'s Nuke target, so a pre-commit hook, a CI step an
 | B-012 | Given any run, no file under the root is created, modified or deleted except the file `--report` names.                                                                                                                                                              | brief § 9; `0001-F3` B-022, B-024, C-7 and its decision 0002; § 5 row 10     | Active  |
 | B-013 | Given any output on stdout or stderr, every path the tool derives is relative to the root with `/` separators, and the only path that may be absolute is one typed on the command line (`--root`, `--report`), echoed as given.                                      | brief § 9                                                                    | Active  |
 | B-014 | Given a published `specht.tool` package, `./build.sh SpecCheck` invokes the tool through this repository's committed local tool manifest, not through `dotnet run --project`.                                                                                        | brief § 7; C-6; A-2                                                          | Active  |
+| B-015 | Given a rule that throws during a run, this Feature exits with code `1`.                                                                                                                                                                                             | C-2; `0001-F1` B-013; ADR-0005 (c)                                           | Active  |
 
 ## 4. Constraints
 
@@ -178,9 +179,10 @@ Delivered so far by items 0026 and 0027. The slice layout is `dotnet-tool` § Ve
 
 ## 10. Lessons / Spec Deltas
 
-<!-- last written by: spec-author, 2026-10-08 -->
+<!-- last written by: spec-author, 2026-10-09 (B-015) -->
 
 - 2026-10-08, C-2 reworded in place during 0027: it named an exception handler as the mechanism, and the command now catches the engine's input failures itself (§ 7). The rule and what it rules out are unchanged.
+- 2026-10-09, B-015 added on the owner's acceptance of [ADR-0005](../../../../../.spec/adr/0005-typed-injected-stages-not-a-chain.md) (c): a rule that throws reached Spectre and returned `-1`, the anti-pattern C-2 rules out. B-003 does not cover it, because its Given is a completed run; B-015 holds the command to `1` once `0001-F1` B-013 reports the fault as an error. C-2 is unchanged.
 
 ## 11. Open Questions
 

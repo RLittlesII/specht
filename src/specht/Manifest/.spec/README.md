@@ -20,7 +20,7 @@ depends_on: ["F1", "F2"]
 blocks: ["F6", "F7", "0101/F1", "0101/F2", "0101/F3", "0101/F4"]
 spikes: []
 created: "2026-10-07"
-updated: "2026-10-08"
+updated: "2026-10-09"
 github_issue: null
 synced_at: null
 ---
@@ -103,7 +103,7 @@ Half of the model's contract is not in the schema files: which section holds the
 
 ## 5. Out of Scope
 
-<!-- last written by: spec-author, 2026-10-07 -->
+<!-- last written by: spec-author, 2026-10-09 (row 7 added for ADR-0005 (c)) -->
 
 | #   | Item                                                                                    | Exclusion Reason                                                                                                                                                                                    |
 | --- | --------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -113,6 +113,7 @@ Half of the model's contract is not in the schema files: which section holds the
 | 4   | Renaming the manifest file                                                              | A-1; every skill and hook names the current name, and nothing here needs the rename.                                                                                                                |
 | 5   | A manifest key that changes a rule's logic                                              | C-7; a data-driven rule body is the plugin model by another route.                                                                                                                                  |
 | 6   | Moving the literals in one change                                                       | A-2; one rule at a time, each with its baseline test.                                                                                                                                               |
+| 7   | The severity of a rule's fault violation, reported when the rule throws                 | `0001-F1` B-013 and B-015: fixed at error, and outside B-010's re-grade (ADR-0005 (c)).                                                                                                             |
 
 ## 6. Concern Separation
 
@@ -203,10 +204,11 @@ The literal each claim moves is cited by file and line in `hooked`'s draft `0008
 
 ## 10. Lessons / Spec Deltas
 
-<!-- last written by: spec-author, 2026-10-08 (ADR-0004's § 7 revision) -->
+<!-- last written by: spec-author, 2026-10-09 (§ 5 row 7) -->
 
 - 2026-10-08, B-016 amended following `0001-F1` decision 0004 (the owner): its input is `0001-F1`'s synthetic baseline tree and its expected verdicts are the golden report `0001-F1` B-004 names, not `hooked`'s tree and report. The claim's id and its verdict field list are unchanged.
 - 2026-10-08, § 7 "Where rule settings apply" revised following [ADR-0004](../../../../.spec/adr/0004-per-rule-settings-are-selection-and-a-map.md): after ADR-0002 it read "every rule still evaluates" and "one step over the collected violations", and both are withdrawn, because a rule that runs and is then discarded has still been evaluated, against a tree whose manifest may hold no roles for it (`0101-F1` decision 0001's version gate; C-5). Item `0014` is now selection plus a severity map inside `Evaluate`. No claim, constraint or scenario changed.
+- 2026-10-09, § 5 row 7 added on the owner's acceptance of [ADR-0005](../../../../.spec/adr/0005-typed-injected-stages-not-a-chain.md) (c): `0001-F1` B-015 fixes a rule's fault violation at error, so B-010's re-grade reaches that rule's findings and not its failure. B-010's text is unchanged.
 
 ## 11. Open Questions
 

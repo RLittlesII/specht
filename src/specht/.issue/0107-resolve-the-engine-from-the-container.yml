@@ -23,7 +23,7 @@ claims:
   - B-010
 
 created: "2026-10-08"
-updated: "2026-10-08"
+updated: "2026-10-09"
 closed: null
 
 summary: |
@@ -46,22 +46,39 @@ summary: |
   (ADR-0001 stage E) are not here: they land inside 0007 and 0008, which
   wait on this, as does 0016.
 
+  ADR-0005 (a) adds two pieces stage D did not name. The manifest stage
+  becomes a sealed instance class, SpecSchemasLoader (placeholder name),
+  around SpecSchemas.Load(IFileSystem, root). The pure root-relative path
+  mapping, SpecDiscovery.Relative, which FeatureFileRule calls from inside
+  a rule (FeatureFileRule.cs:39), moves to a static type of its own, so no
+  rule reaches into the discovery stage. The model loader, SpecModelLoader
+  (placeholder name), is sealed and concrete. SpecCheckRunner keeps its
+  name.
+
 acceptance_criteria:
   - "B-004 — the golden-report test green, field for field, in order"
   - "B-010 — § 9 row re-pointed at the re-tiered Integration class"
   - "C-9 — no verdict changes; 0012 green"
   - "C-7 — amended (spec/adr-0001-owed-edits) before this merges"
   - "ADR-0001 stage D proof — MockFileSystem unit tests per reader and for the loader"
+  - "ADR-0005 (a) — the manifest loader class, named; the path mapping in its own type, named, and no rule calls SpecDiscovery; the model loader named"
   - "§ 9 carries a row naming a test for each id above."
 
 decisions:
   - |
     2026-10-08, cut by spec-author on the owner's acceptance of ADR-0001
     and ADR-0003, one item per migration stage.
+  - |
+    2026-10-09, spec-author on the owner's acceptance of ADR-0005: scope
+    grows by ADR-0005 (a)'s two pieces, the manifest loader class and the
+    path mapping's own type, and this item names both and the model loader.
+    Both loaders stay concrete, with no interface (ADR-0005 (d)). The
+    fault-isolation wrapper around ISpecRule is not here: it is its own
+    item, cut from 0001-F1 B-012 to B-016 once those claims are agreed.
 
 out_of_scope:
   - "ISpecDiscovery and the git-listing seam — ADR-0001 stage E, inside 0007 and 0008."
   - "How tests compose the host — 0099."
-  - "A decorator or chain around ISpecRule — ADR-0002."
+  - "A decorator or chain around ISpecRule — ADR-0005 (c): the fault-isolation wrapper is its own item, to be cut from 0001-F1 B-012 to B-016."
   - "A clock or environment seam — 0035 (0001-F3 B-006)."
   - "Everything else in § 5 of the spec."

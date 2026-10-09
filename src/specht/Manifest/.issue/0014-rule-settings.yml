@@ -11,7 +11,7 @@ rank: 76
 parent: "0010"
 children: []
 
-depends_on: ["0011", "0026", "0105"] # keys load through 0011; B-010 needs 0026's `--strict`; the per-rule step sits in 0105's Evaluate (ADR-0001 stage B)
+depends_on: ["0011", "0026", "0103", "0105"] # keys load through 0011; B-010 needs 0026's `--strict`; the severity map runs before 0103's order function; selection and the map sit in 0105's Evaluate (ADR-0001 stage B, ADR-0004)
 blocks: ["0062"]
 spikes: []
 
@@ -24,7 +24,7 @@ claims:
   - B-017
 
 created: "2026-10-08"
-updated: "2026-10-08"
+updated: "2026-10-09"
 closed: null
 
 summary: |
@@ -35,9 +35,10 @@ summary: |
 
 acceptance_criteria:
   - "B-010 — warning severity: printed, counted, fails only under `--strict`"
-  - "B-011 — disabled: nothing reported, not counted as evaluated"
+  - "B-011 — disabled: not evaluated at all, so not counted"
   - "B-013 — rule id outside the vocabulary rejected, naming it"
   - "B-017 — no rule type, library or body loaded (C-3)"
+  - "The severity map skips fault violations — 0001-F1 B-015 (ADR-0005 (c))"
   - "§ 9 carries a row naming a test for each id above."
 
 decisions:
@@ -48,8 +49,20 @@ decisions:
     No chain of handlers, no decorator, no context object (ADR-0002, option
     1). A chain around `ISpecRule` waits on a third per-rule behaviour and a
     superseding ADR.
+  - |
+    2026-10-09, spec-author on the owner's acceptance of ADR-0004,
+    superseding the 2026-10-08 entry: disable and re-grade are two
+    functions inside `SpecCheckRunner.Evaluate(SpecModel)` (0105), both
+    reading the settings from `model.Schemas.Structure`. Selection runs over
+    the rule set before evaluation, so a disabled rule is never evaluated and
+    leaves the count (B-011); the severity map runs over the violations
+    before 0103's order function, because that function sorts by severity
+    first (B-010). The map skips fault violations (ADR-0005 (c)). No chain,
+    decorator, stage list, rule-set filter or context object, however many
+    per-rule settings accumulate. `DefaultSeverity` and
+    `MinimumSchemaVersion` are cut with epic 0101's first item, not here.
 
 out_of_scope:
   - "A rule plugin model — § 5 #1."
   - "What `--strict` does beyond warnings — 0001-F2."
-  - "A chain of handlers around ISpecRule — ADR-0002."
+  - "A chain of handlers around ISpecRule — ADR-0002, ADR-0004: rejected for per-rule settings, not deferred."
