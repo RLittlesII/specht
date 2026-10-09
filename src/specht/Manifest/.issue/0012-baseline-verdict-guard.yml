@@ -6,13 +6,13 @@ status: ready-for-architecture
 
 priority: high
 risk: 3
-rank: 86
+rank: 91
 
 parent: "0010"
 children: []
 
 depends_on: ["0022"] # compares against the golden report 0022 commits
-blocks: ["0015", "0016", "0017"]
+blocks: ["0015", "0016", "0017", "0104"]
 spikes: []
 
 spec: src/specht/Manifest/.spec/README.md
