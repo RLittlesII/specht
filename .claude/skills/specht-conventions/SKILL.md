@@ -13,6 +13,7 @@ method skill your work belongs to _and_ this one.
 | ------------ | ------------------------------------------------------------ | -------------------------------------------------------- |
 | Coding       | [`coding-conventions`](../coding-conventions/SKILL.md)       | [references/coding.md](references/coding.md)             |
 | Delivery     | [`deliver-change`](../deliver-change/SKILL.md)               | [references/delivery.md](references/delivery.md)         |
+| Next item    | [`next`](../next/SKILL.md)                                   | [references/delivery.md](references/delivery.md)         |
 | Testing      | [`test-from-scenarios`](../test-from-scenarios/SKILL.md)     | [references/testing.md](references/testing.md)           |
 | Questions    | [`clarify-requirements`](../clarify-requirements/SKILL.md)   | [references/questions.md](references/questions.md)       |
 | Specs        | [`spec-and-traceability`](../spec-and-traceability/SKILL.md) | [references/specs.md](references/specs.md)               |
