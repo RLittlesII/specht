@@ -23,6 +23,8 @@ internal partial class Build : NukeBuild
 
     private AbsolutePath PackageDirectory => ArtifactsDirectory / "nupkg";
 
+    private AbsolutePath CoverageDirectory => ArtifactsDirectory / "coverage";
+
     // B-019, C-3: the Markdown formatter runs at the exact version package.json pins, never a version fetched as latest.
     private string PrettierVersion
     {
@@ -49,11 +51,18 @@ internal partial class Build : NukeBuild
             .EnableNoRestore()));
 
     // B-005: every test project in the solution - the unit, integration and acceptance tiers.
+    // 0055-F3 B-001, C-3: the same run writes one Cobertura report per test project; the directory is emptied first so
+    // no earlier run's report is counted or uploaded.
     private Target Test => _ => _
         .DependsOn(Compile)
-        .Executes(() => DotNet(
-            $"test --solution {Solution.Path} --configuration {Configuration} --no-build",
-            workingDirectory: RootDirectory));
+        .Executes(() =>
+        {
+            CoverageDirectory.CreateOrCleanDirectory();
+            DotNet(
+                $"test --solution {Solution.Path} --configuration {Configuration} --no-build " +
+                $"--coverage --coverage-output-format cobertura --results-directory {CoverageDirectory}",
+                workingDirectory: RootDirectory);
+        });
 
     // B-003, B-017: C# and Markdown, verified and never fixed (C-2, B-004); B-020: given --files, those and no other.
     // Both checks run before the target fails, so one formatter's failure never hides the other's files.

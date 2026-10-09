@@ -92,25 +92,46 @@ A `.codecov.yml` exists, but nothing produces coverage, nothing uploads it, and 
 
 ## 6. Concern Separation
 
-<!-- last written by: spec-author, 2026-10-08 -->
+<!-- last written by: implementer, 2026-10-08 -->
 
-Pending: owned by `implementer`, written after agreement.
+| #   | Concern                                                            | Classification |
+| --- | ------------------------------------------------------------------ | -------------- |
+| 1   | Coverage written by the run that tests, and by no other run        | Both           |
+| 2   | Which code is measured: `src/**`, never tests or the build         | Both           |
+| 3   | The coverage collector, its instrumentation and the report format  | Technical      |
+| 4   | Where the reports land, and that no earlier run's report survives  | Technical      |
+| 5   | Uploading the reports to Codecov, and a failed upload only warning | Both           |
+| 6   | The patch and project statuses, and the 80% target                 | Business       |
 
 ## 7. Technical Design
 
-<!-- last written by: spec-author, 2026-10-08 -->
+<!-- last written by: implementer, 2026-10-08 -->
 
-Pending: owned by `implementer`, written after agreement.
+Delivered so far by item 0069, the reports. `0070` adds the upload (B-002, B-007), and `0071` the patch and project statuses (B-003 to B-006, B-008).
+
+- **The collector** is `Microsoft.Testing.Extensions.CodeCoverage`, its version in [`Directory.Packages.props`](../../Directory.Packages.props). It runs on the Microsoft.Testing.Platform runner that `global.json` selects. [`test/Directory.Build.props`](../Directory.Build.props) references it from every test project, because `Test` asks every project for coverage and a project without the extension rejects `--coverage`.
+- **The run** is `0055-F1`'s `Test` target in [`.build/Build.cs`](../../.build/Build.cs), extended rather than duplicated (C-3). It empties `CoverageDirectory`, `.artifacts/coverage/`, then runs the same single `dotnet test --solution` with `--coverage --coverage-output-format cobertura --results-directory` at that folder. Each test project writes one `<guid>.cobertura.xml` (B-001). Emptying the folder first means no report from an earlier run is counted or uploaded.
+- **Measured code is `src/**` with no filter** (C-4). The extension skips test assemblies, and `.build/` is never loaded into a test process, so both reports name only files under `src/specht/` and `src/specht.tool/`.
+- **Instrumentation is static.** Dynamic-only instrumentation (`EnableStaticManagedInstrumentation=False`) wrote an empty report on macOS arm64. Static instrumentation rewrites the test project's `bin/` copy of each `src` assembly during the run and restores it afterward. `src/*/bin/` is never touched, so `Pack`, which runs with `--no-build`, ships uninstrumented assemblies.
+- **Report names are the extension's GUIDs.** A name per project would need a `TestingPlatformCommandLineArguments` property in each project. No claim needs the name: the upload step, `AddCodecovUpload` in [`.build/Build.GitHubActions.cs`](../../.build/Build.GitHubActions.cs), globs `.artifacts/coverage/**/*.cobertura.xml`, and `specht-conventions` documents `.artifacts/coverage/*.cobertura.xml`.
+- **Not adopted:** Rocket.Surgery.Nuke's `ICanTestWithDotNetCore` and `ITriggerCodeCoverageReports`. `Build` never used RSN's test target, and RSN collects coverage the VSTest way, while `global.json` runs Microsoft.Testing.Platform.
 
 ## 8. Testing Strategy
 
-<!-- last written by: spec-author, 2026-10-08 -->
+<!-- last written by: test-writer, 2026-10-08 -->
 
-Pending: owned by `test-writer`.
+- **No claim here gets a test (owner, 2026-10-08).** "I don't think we need ReqnRoll (or any tests) for the build. Keep what we have, in case I change my mind, don't wire them into CI." Every claim in § 3 is about the build's `Test` target, the CI workflow or Codecov's configuration. So `coverage-gate.feature` is not linked into `test/specht.acceptance`, no step class binds it, and every § 9 row stays `Missing`.
+- **B-001, verified by hand.** A full `./build.sh` on macOS arm64 on 2026-10-08 left exactly two files in `.artifacts/coverage/`: `6a4b2f98-8600-482b-ae92-c4419c869313.cobertura.xml` and `33b4d035-3586-431f-a846-c50206f46250.cobertura.xml`. That is one report for each of `test/specht.tests` and `test/specht.acceptance`. Each is Cobertura version 1.9 and holds two packages, `specht` and `specht.tool`. Each names 69 source files, 63 under `src/specht/` and 6 under `src/specht.tool/`, and no file under `test/` or `.build/`. Both count 1147 valid lines: one reports 97.2% line coverage, the other 54.2%. Re-running `test/specht.acceptance` alone with the same options wrote one report with the same 63 and 6 files. A check by hand pins nothing for the next change, so the row stays `Missing`.
+- **Coverage instruments the library in place, and one scenario had to change.** Microsoft code coverage instruments `specht.dll` statically: dynamic-only instrumentation produced an empty report on macOS arm64. While the run lasts, the copy in the test project's `bin/` grows from 103936 to 144384 bytes and gains the type `Microsoft.CodeCoverage.Instrumentation.Static.Tracker`. The original is restored afterward. The library's own output in `src/specht/bin/` is not touched. `0001-F1` B-005 checks the namespaces of the built library, so `EngineSteps` now reads those type definitions from `src/specht/bin/<configuration>/<framework>/specht.dll` with `System.Reflection.Metadata`, not from the loaded assembly. The assertion did not change. With and without `--coverage`, the scenario passes.
+- **Mechanisms, per claim.** Read in [`Build.cs`](../../.build/Build.cs), [`test/Directory.Build.props`](../Directory.Build.props) and [`.codecov.yml`](../../.codecov.yml). None has a test, by the owner's decision above.
+  - B-001: `Test` empties `.artifacts/coverage/` with `CreateOrCleanDirectory`, then runs one `dotnet test --solution` with `--coverage --coverage-output-format cobertura --results-directory` at that folder. `test/Directory.Build.props` references `Microsoft.Testing.Extensions.CodeCoverage` in every test project, because a project without the extension rejects the option. This is a declaration and an ordering: the folder is cleaned before the run.
+  - B-002, B-007: the upload step and the handling of a failed upload belong to the CI workflow (`0070`). Not built yet.
+  - B-003 to B-006, B-008: the patch and project statuses and the `src/**` path set belong to `.codecov.yml` and Codecov (`0071`, C-4, C-5). Not built yet. A Codecov status can be observed only on a live pull request.
+- **Verdict.** The B-001 mechanism is a literal argument string inside a NUKE target. It would need a seam to be unit tested, for example a static member that builds the arguments. The owner's decision makes that seam unnecessary for now.
 
 ## 9. Traceability Matrix
 
-<!-- last written by: spec-author, 2026-10-08 -->
+<!-- last written by: test-writer, 2026-10-08 -->
 
 | Claim ID | Scenario                                                | Test    | Status  |
 | -------- | ------------------------------------------------------- | ------- | ------- |

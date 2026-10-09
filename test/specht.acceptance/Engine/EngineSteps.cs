@@ -2,6 +2,8 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Reflection.Metadata;
+using System.Reflection.PortableExecutable;
 using AwesomeAssertions;
 using Reqnroll;
 using specht;
@@ -10,7 +12,9 @@ namespace specht.acceptance.Engine;
 
 /// <summary>
 /// Steps for <c>src/specht/.spec/engine.feature</c> (0001-F1). B-005 reads the built library itself: its assembly name,
-/// and the namespace of every type it declares, which is where a root namespace shows once compiled.
+/// and the namespace of every type it declares, which is where a root namespace shows once compiled. It reads the file
+/// <c>src/specht</c> builds, from its metadata, and never the loaded assembly: a coverage run instruments the copy the
+/// test process loads (0055-F3 B-001) and adds a type of its own to it.
 /// </summary>
 [Binding]
 public sealed class EngineSteps
@@ -28,15 +32,33 @@ public sealed class EngineSteps
     }
 
     [Given("the library is built")]
-    public void GivenTheLibraryIsBuilt() => _library = typeof(SpecCheckRunner).Assembly;
+    public void GivenTheLibraryIsBuilt()
+    {
+        var output = AppContext.BaseDirectory.TrimEnd(Path.DirectorySeparatorChar);
+        var configuration = typeof(EngineSteps).Assembly.GetCustomAttribute<AssemblyConfigurationAttribute>()?.Configuration
+            ?? throw new InvalidOperationException("The test assembly names no configuration.");
+        _library = Path.Combine(
+            FindRepository(output),
+            "src",
+            "specht",
+            "bin",
+            configuration,
+            Path.GetFileName(output),
+            Path.GetFileName(typeof(SpecCheckRunner).Assembly.Location));
+        File.Exists(_library).Should().BeTrue(_library);
+    }
 
     [When("its assembly name and root namespace are read")]
     public void WhenItsAssemblyNameAndRootNamespaceAreRead()
     {
-        _assemblyName = Library.GetName().Name;
-        _namespaces = Library.GetTypes()
-            .Where(static type => type.Namespace is not null && !type.IsDefined(typeof(System.Runtime.CompilerServices.CompilerGeneratedAttribute)))
-            .Select(static type => type.Namespace!)
+        using var file = new PEReader(File.OpenRead(Library));
+        var metadata = file.GetMetadataReader();
+        _assemblyName = metadata.GetString(metadata.GetAssemblyDefinition().Name);
+        _namespaces = metadata.TypeDefinitions
+            .Select(metadata.GetTypeDefinition)
+            .Where(type => !IsCompilerGenerated(metadata, type))
+            .Select(type => NamespaceOf(metadata, type))
+            .Where(static ns => ns.Length > 0)
             .Distinct(StringComparer.Ordinal)
             .ToArray();
     }
@@ -64,7 +86,38 @@ public sealed class EngineSteps
         }
     }
 
-    private Assembly Library => _library ?? throw new InvalidOperationException("No library was built.");
+    private string Library => _library ?? throw new InvalidOperationException("No library was built.");
+
+    private static string NamespaceOf(MetadataReader metadata, TypeDefinition type) =>
+        type.GetDeclaringType().IsNil
+            ? metadata.GetString(type.Namespace)
+            : NamespaceOf(metadata, metadata.GetTypeDefinition(type.GetDeclaringType()));
+
+    private static bool IsCompilerGenerated(MetadataReader metadata, TypeDefinition type) =>
+        type.GetCustomAttributes()
+            .Select(metadata.GetCustomAttribute)
+            .Any(attribute => AttributeTypeName(metadata, attribute) == typeof(System.Runtime.CompilerServices.CompilerGeneratedAttribute).FullName);
+
+    private static string? AttributeTypeName(MetadataReader metadata, CustomAttribute attribute)
+    {
+        var parent = attribute.Constructor.Kind switch
+        {
+            HandleKind.MemberReference => metadata.GetMemberReference((MemberReferenceHandle)attribute.Constructor).Parent,
+            HandleKind.MethodDefinition => metadata.GetMethodDefinition((MethodDefinitionHandle)attribute.Constructor).GetDeclaringType(),
+            _ => default(EntityHandle),
+        };
+
+        return parent.Kind switch
+        {
+            HandleKind.TypeReference => metadata.GetTypeReference((TypeReferenceHandle)parent) is var reference
+                ? $"{metadata.GetString(reference.Namespace)}.{metadata.GetString(reference.Name)}"
+                : null,
+            HandleKind.TypeDefinition => metadata.GetTypeDefinition((TypeDefinitionHandle)parent) is var definition
+                ? $"{metadata.GetString(definition.Namespace)}.{metadata.GetString(definition.Name)}"
+                : null,
+            _ => null,
+        };
+    }
 
     private static string FindRepository(string directory) =>
         File.Exists(Path.Combine(directory, "build.sh")) && Directory.Exists(Path.Combine(directory, ".nuke"))
@@ -73,7 +126,7 @@ public sealed class EngineSteps
                 ?? throw new InvalidOperationException("No repository root above the test assembly."));
 
     private readonly string _root = Path.Combine(Path.GetTempPath(), "specht-engine", Guid.NewGuid().ToString("N"));
-    private Assembly? _library;
+    private string? _library;
     private string? _assemblyName;
     private string[] _namespaces = [];
 }

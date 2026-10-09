@@ -7,6 +7,11 @@
     <OutputType>Exe</OutputType>
   </PropertyGroup>
 
+  <!-- The Test target asks every test project for coverage (0055-F3 B-001); a project without the extension rejects the option. -->
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Testing.Extensions.CodeCoverage" />
+  </ItemGroup>
+
   <!-- The tier guard, in every *.tests project and not in specht.acceptance (specht-conventions § Testing). -->
   <ItemGroup Condition="$(MSBuildProjectName.EndsWith('.tests', StringComparison.OrdinalIgnoreCase))">
     <Compile Include="$(MSBuildThisFileDirectory)Shared/TestTierGovernanceTests.cs" Link="Shared/TestTierGovernanceTests.cs" />
