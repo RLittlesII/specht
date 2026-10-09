@@ -1,6 +1,6 @@
 ---
 title: "Specification: init"
-description: "specht init writes the schema set and the templates of the newest version the tool ships into a repository's .spec/, from embedded copies that are the same bytes this repository checks itself with, and never overwrites a file"
+description: "specht init writes the schema set and the templates of the newest version the tool ships into a repository's .spec/, from embedded copies that match the live copy this repository checks itself with on every tool-owned file and manifest key, and never overwrites a file"
 type: feature
 id: "F4"
 epic: "0001"
@@ -20,7 +20,7 @@ depends_on: ["F2"]
 blocks: ["F7"]
 spikes: []
 created: "2026-10-07"
-updated: "2026-10-08"
+updated: "2026-10-09"
 github_issue: null
 synced_at: null
 ---
@@ -35,7 +35,7 @@ A repository adopting the model copies `hooked`'s `.spec/schema/` and `.spec/tem
 
 ## 2. User Needs
 
-<!-- last written by: spec-author, 2026-10-07 -->
+<!-- last written by: spec-author, 2026-10-09 -->
 
 | #   | Persona                             | Need                                                                                    | Pain Point Today                                        |
 | --- | ----------------------------------- | --------------------------------------------------------------------------------------- | ------------------------------------------------------- |
@@ -46,22 +46,22 @@ A repository adopting the model copies `hooked`'s `.spec/schema/` and `.spec/tem
 
 ### Assumptions
 
-| ID  | Assumption                                                                                                                                                                                                                                                         |
-| --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| A-1 | The schema set is four files - the manifest and the three frontmatter schemas - and the templates are four: `feature.md`, `decision.md`, `adr.md`, `lesson.md`. Together, "the eight files".                                                                       |
-| A-2 | The shipping copy is embedded from `src/specht.tool/schema/v<n>/` and `templates/v<n>/`; the root `.spec/schema/` and `.spec/templates/` are the live copy this repository checks itself with. The two are the same bytes (B-004).                                 |
-| A-3 | Into a bare root, `init` writes the newest version the tool ships, and takes no version argument; beside a manifest pinning an older shipped version it writes at that version (B-012), and beside an unshipped pin it refuses (B-013). OQ-1, resolved 2026-10-08. |
+| ID  | Assumption                                                                                                                                                                                                                                                                                                                           |
+| --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| A-1 | The schema set is four files - the manifest and the three frontmatter schemas - and the templates are four: `feature.md`, `decision.md`, `adr.md`, `lesson.md`. Together, "the eight files".                                                                                                                                         |
+| A-2 | The shipping copy is embedded from `src/specht.tool/schema/v<n>/` and `templates/v<n>/`; the root `.spec/schema/` and `.spec/templates/` are the live copy this repository checks itself with. They are the same bytes for the frontmatter schemas and templates, and equal manifests on the tool-owned keys (B-004; decision 0001). |
+| A-3 | Into a bare root, `init` writes the newest version the tool ships, and takes no version argument; beside a manifest pinning an older shipped version it writes at that version (B-012), and beside an unshipped pin it refuses (B-013). OQ-1, resolved 2026-10-08.                                                                   |
 
 ## 3. Acceptance Criteria
 
-<!-- last written by: spec-author, 2026-10-08 -->
+<!-- last written by: spec-author, 2026-10-09 -->
 
 | ID    | Claim                                                                                                                                                                                                                                                                                                                                                                      | Source                                                                                                                            | Status  |
 | ----- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- | ------- |
 | B-001 | Given `specht init` under a root with no `.spec/schema/` and no `.spec/templates/`, this Feature writes the eight files of the newest version it ships into those two folders and exits with code `0`.                                                                                                                                                                     | brief § 5; brief § 6                                                                                                              | Active  |
 | B-002 | Given any of the eight files exists under the root, this Feature leaves it byte-for-byte as it was.                                                                                                                                                                                                                                                                        | brief § 9; C-1                                                                                                                    | Active  |
 | B-003 | Given a root that records no upstream schema source, a file `init` wrote is byte-identical to the tool's embedded copy.                                                                                                                                                                                                                                                    | brief § 6; `0001-F7` decision 0004                                                                                                | Amended |
-| B-004 | Given this repository at one commit, the embedded copies of the newest version's three frontmatter schemas and templates are byte-identical to the files under its `.spec/schema/` and `.spec/templates/`, and the embedded manifest equals its live manifest on every tool-owned key; rule settings and every other consumer-config key are excluded from the comparison. | brief § 7; AGENTS.md; owner, 2026-10-08; `0001-F7` decision 0001                                                                  | Amended |
+| B-004 | Given this repository at one commit, the embedded copies of the newest version's three frontmatter schemas and templates are byte-identical to the files under its `.spec/schema/` and `.spec/templates/`, and the embedded manifest equals its live manifest on every tool-owned key; rule settings and every other consumer-config key are excluded from the comparison. | brief § 7; AGENTS.md; owner, 2026-10-08; `0001-F7` decision 0001; decision 0001                                                   | Amended |
 | B-005 | Given a root that records no upstream schema source, a frontmatter schema `init` wrote has the `$id` `https://github.com/rlittlesii/specht/schema/v<n>/<file>` for the version written.                                                                                                                                                                                    | brief § 6; `0001-F7` C-6                                                                                                          | Amended |
 | B-006 | Given `init` runs, stdout lists each of the eight files, relative to the root, as written or skipped.                                                                                                                                                                                                                                                                      | brief § 9                                                                                                                         | Active  |
 | B-007 | Given `--root` names a path that is not a directory, this Feature names that path on stderr as it was given, writes nothing, and exits with code `2`.                                                                                                                                                                                                                      | brief § 5; C-4                                                                                                                    | Active  |
