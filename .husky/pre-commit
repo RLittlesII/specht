@@ -1,100 +1,75 @@
 #!/bin/sh
 . "$(dirname "$0")/_/husky.sh"
-## IMPORTANT: husky re-execs this whole file as `sh -e "$0" "$@"`
-## (.husky/_/husky.sh:24), so everything below runs under errexit. A bare
-## command that fails aborts the hook on the spot. Each check therefore captures
-## its own exit status and the script decides at the end, so that one failing
-## check cannot silently skip the ones after it. Do not rewrite these `if !`
-## guards into bare invocations -- `if` conditions are the only reason errexit
-## is not already terminating this script.
 
-## Verify staged Markdown with prettier. Check, never write: like the C# check
-## below, this hook never changes a file or the index (0055-F1 B-016). Scoped to
-## staged files for the same reason, and split on newline alone for the same
-## filename-safety reasons given below.
-prettier_status=0
-staged_md=$(git -c core.quotePath=false diff --cached --name-only --diff-filter=AMR -- '*.md')
+staged=$(git -c core.quotePath=false diff --cached --name-only --diff-filter=AMR -- '*.cs' '*.md')
 
-if [ -n "$staged_md" ]; then
-    saved_ifs=$IFS
-    IFS='
+if [ -z "$staged" ]; then
+    exit 0
+fi
+
+saved_ifs=$IFS
+IFS='
 '
-    set -f
-    set -- $staged_md
-    set +f
-    IFS=$saved_ifs
+set -f
+set -- $staged
+set +f
+IFS=$saved_ifs
 
-    if ! npx --yes prettier --check "$@"; then
-        prettier_status=1
-        echo
-        echo "pre-commit: these staged Markdown files are not formatted:"
-        echo
-        printf '    %s\n' "$@"
-        echo
-        echo "Fix with:"
-        echo
-        echo "    npx prettier --write \$(git diff --cached --name-only --diff-filter=AMR -- '*.md')"
-        echo
-        echo "Bypass with: git commit --no-verify"
-    fi
+for file in "$@"; do
+    case "$file" in
+        \"*)
+            echo "pre-commit: git quotes this staged name, so Format cannot match it: $file"
+            echo "Rename it without a double quote, a backslash or a control character."
+            echo
+            echo "Bypass with: git commit --no-verify"
+            exit 1
+            ;;
+    esac
+done
+
+top=$(git rev-parse --show-toplevel)
+tmp=$(mktemp -d "${TMPDIR:-/tmp}/specht-pre-commit.XXXXXX")
+trap 'rm -rf "$tmp"' EXIT
+trap 'exit 130' INT
+trap 'exit 143' TERM
+trap 'exit 129' HUP
+tmp=$(cd "$tmp" && pwd -P)
+
+git checkout-index -a --prefix="$tmp/"
+
+if "$top/build.sh" Format --root "$tmp" --files "$@"; then
+    exit 0
 fi
 
-## Verify staged C# files against the same formatting CI enforces
-## (the Format target in .build/Build.cs, run by ci.yml).
-##
-## Verify, never fix. --verify-no-changes puts dotnet format in report mode, so
-## analyzer code fixes never fire here -- notably xUnit1026, which strips an
-## unused [Theory] parameter but leaves its data column, breaking arity at run
-## time. The alternative design, format-then-`git add`, would additionally fold
-## unstaged hunks of a partially staged file into the commit; this hook never
-## touches the index at all.
-##
-## Scoped to staged files, so a commit is never blocked by pre-existing drift in
-## files it does not touch. That is deliberately narrower than CI, which checks
-## the whole solution -- a commit that stages no .cs file but edits
-## Directory.Build.props or .editorconfig checks nothing here and can still
-## redden the Format target. Passing this hook is not a guarantee of a green CI
-## format gate, only of the far more common case.
-##
-## Restore is left on: a developer's obj/ may be stale, unlike CI, where
-## Format depends on the Restore target.
-##
-## Splitting on newline alone (IFS + set -f) keeps filenames containing spaces
-## intact, and core.quotePath=false keeps non-ASCII paths literal rather than
-## C-quoted. Both matter more than they look: `dotnet format` exits 0 on an
-## --include pattern that matches nothing, so a mis-split path does not error,
-## it fails open and lets an unformatted commit through.
-format_status=0
-staged_cs=$(git -c core.quotePath=false diff --cached --name-only --diff-filter=AMR -- '*.cs')
+prettier_version=$(sed -n 's/.*"prettier"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' "$tmp/package.json")
+cs_files=""
+md_files=""
+for file in "$@"; do
+    case "$file" in
+        *.[cC][sS]) cs_files="$cs_files \"$file\"" ;;
+        *) md_files="$md_files \"$file\"" ;;
+    esac
+done
 
-if [ -n "$staged_cs" ]; then
-    saved_ifs=$IFS
-    IFS='
-'
-    set -f
-    set -- $staged_cs
-    set +f
-    IFS=$saved_ifs
-
-    if ! dotnet format specht.slnx --verify-no-changes --include "$@"; then
-        format_status=1
-        echo
-        echo "pre-commit: these staged C# files are not formatted:"
-        echo
-        printf '    %s\n' "$@"
-        echo
-        echo "Fix with:"
-        echo
-        echo "    dotnet format specht.slnx --include \$(git diff --cached --name-only --diff-filter=AMR -- '*.cs')"
-        echo
-        echo "That command DOES apply analyzer code fixes. If the diff it produces"
-        echo "removes a [Theory] parameter, that is xUnit1026 -- make the parameter"
-        echo "genuinely used rather than deleting it, or its data column is orphaned."
-        echo
-        echo "Bypass with: git commit --no-verify"
-    fi
+echo
+echo "pre-commit: Format rejected the staged content. The staged files it checked:"
+echo
+printf '    %s\n' "$@"
+echo
+echo "Paths in the log above are a temporary copy of the index; the files are the ones listed here."
+echo
+echo "Fix the working copy, then stage it again:"
+echo
+if [ -n "$cs_files" ]; then
+    echo "    dotnet format specht.slnx --include$cs_files"
 fi
-
-if [ "$prettier_status" -ne 0 ] || [ "$format_status" -ne 0 ]; then
-    exit 1
+if [ -n "$md_files" ]; then
+    echo "    npx --yes prettier@$prettier_version --write$md_files"
 fi
+echo
+echo "dotnet format without --verify-no-changes applies analyzer code fixes. If its diff"
+echo "removes a [Theory] parameter, that is xUnit1026 - make the parameter used rather than"
+echo "deleting it, or its data column is orphaned."
+echo
+echo "Bypass with: git commit --no-verify"
+exit 1

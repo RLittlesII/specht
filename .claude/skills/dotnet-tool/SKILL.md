@@ -18,8 +18,8 @@ All of it. `specht` **is** a packed dotnet tool: `src/specht.tool` carries
 `PackAsTool`, `ToolCommandName=specht` and `PackageId=specht.tool`, `./build.sh Pack`
 produces the package, and a consumer installs it through a local tool manifest
 (`.config/dotnet-tools.json`, restored by `dotnet tool restore`). This repository
-installs itself the same way, so its own build and pre-commit hook call the tool
-exactly as a consumer would — never through a project reference (brief § 7).
+installs itself the same way, so its own build and, from 0062, its pre-commit
+hook call the tool exactly as a consumer would — never through a project reference (brief § 7).
 
 One thing is decided and worth stating once:
 

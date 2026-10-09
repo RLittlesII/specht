@@ -158,6 +158,6 @@ Feature: The build
   @B-015 @boundary
   Scenario: The hook changes nothing it checks
     Given a staged source file whose formatting differs from the repository's rules
-    And a snapshot of the working tree and the staged changes
+    And a snapshot of every tracked file and the staged changes
     When a commit is attempted
-    Then the working tree and the staged changes are unchanged
+    Then no tracked file and no staged change was modified

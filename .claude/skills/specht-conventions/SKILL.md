@@ -60,7 +60,7 @@ test/
 
 .build/                        the NUKE build project - targets and CI generation; tooling, not product
 .nuke/                         NUKE parameters and the generated build schema
-.husky/                        git hooks - pre-commit formats staged .cs and runs specht on staged specs
+.husky/                        git hooks - pre-commit verifies staged .cs and .md through Format; specht from 0062
 .github/                       workflows (ci, publish), renovate.json, settings checklist; issue
                                templates for outside reports only - github_mode stays false and a
                                maintainer turns a report into a .issue/ item; the only label is
@@ -177,9 +177,9 @@ produce a spec delta afterwards.
 `SpecCheck` runs `specht` exactly as a consumer would — through the local tool
 manifest, never through a project reference (brief § 7). Until the first
 package is published it runs `dotnet run --project src/specht.tool -- --root .`
-instead; the manifest replaces that the moment a package exists. Pre-commit
-calls the same thing when a staged file is under a `.spec/` directory or is a
-`.feature`.
+instead; the manifest replaces that the moment a package exists. From 0062,
+pre-commit calls the same thing when a staged file is under a `.spec/` directory
+or is a `.feature`.
 
 `dotnet tool restore && dotnet husky install` once per clone, or `core.hooksPath`
 is unset and no git hook fires.
