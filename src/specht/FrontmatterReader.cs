@@ -21,9 +21,12 @@ namespace specht;
 public static class FrontmatterReader
 {
     /// <summary>Reads the frontmatter of the document at <paramref name="path"/>.</summary>
-    public static Frontmatter Read(string path)
+    public static Frontmatter Read(string path) => Parse(File.ReadAllText(path));
+
+    /// <summary>Reads the frontmatter of <paramref name="text"/>, a whole document.</summary>
+    public static Frontmatter Parse(string text)
     {
-        var lines = File.ReadAllLines(path);
+        var lines = Lines(text);
 
         if (lines.Length == 0 || lines[0].TrimEnd() != Delimiter)
         {
@@ -68,6 +71,19 @@ public static class FrontmatterReader
     }
 
     private static Frontmatter None => new(null, 1, new Dictionary<string, int>(StringComparer.Ordinal));
+
+    private static string[] Lines(string text)
+    {
+        var lines = new List<string>();
+        using var reader = new StringReader(text);
+
+        while (reader.ReadLine() is { } line)
+        {
+            lines.Add(line);
+        }
+
+        return [.. lines];
+    }
 
     private static JsonNode? Convert(YamlNode node) => node switch
     {

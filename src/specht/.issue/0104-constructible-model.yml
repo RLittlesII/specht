@@ -2,7 +2,7 @@ id: "0104"
 type: task
 title: Make the engine's model constructible in memory
 
-status: ready-for-implementation
+status: done
 
 priority: medium # DERIVED
 value: 3
@@ -22,8 +22,8 @@ claims:
   - B-004
 
 created: "2026-10-08"
-updated: "2026-10-08"
-closed: null
+updated: "2026-10-09"
+closed: "2026-10-09"
 
 summary: |
   ADR-0001 (accepted 2026-10-08), stage A. SpecModel, SpecDocument,

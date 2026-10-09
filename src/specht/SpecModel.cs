@@ -5,7 +5,8 @@ namespace specht;
 /// <summary>The whole specification tree, resolved once and evaluated by every rule.</summary>
 public sealed class SpecModel
 {
-    private SpecModel(
+    /// <summary>A model over what a caller already holds, such as documents built in memory.</summary>
+    public SpecModel(
         string root,
         IReadOnlyList<FeatureSpec> features,
         IReadOnlyList<ChildItem> items,
@@ -55,7 +56,7 @@ public sealed class SpecModel
         {
             features.Add(new FeatureSpec(
                 location,
-                SpecDocument.Parse(location.AbsolutePath, location.RelativePath),
+                SpecDocument.Parse(File.ReadAllText(location.AbsolutePath), location.RelativePath),
                 Directory.EnumerateFiles(location.Directory, "*.feature").Order(StringComparer.Ordinal).ToList()));
         }
 
