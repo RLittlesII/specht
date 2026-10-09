@@ -82,6 +82,14 @@ specht --explain SPEC031
 One file configures it: `.spec/schema/spec-structure.schema.json`, which pins
 `schemaVersion`.
 
+The schema is per repository however the tool is installed. `specht` reads the
+manifest from the root it is given, embeds every schema version it ships, and
+checks with the pinned one, so one install can check a v1 repository and a v2
+one. A pin the tool does not ship exits `3`, naming the pin and the versions it
+ships. Install through the local tool manifest anyway: it pins the tool's
+version beside `schemaVersion`, so CI and every clone run the same release. A
+global install is not the documented path.
+
 ## Exit codes
 
 | Exit | Meaning                                                               |

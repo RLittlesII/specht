@@ -1,0 +1,50 @@
+id: "0111"
+type: task
+title: Say in README.md how the schema stays per repository under a global install
+
+status: done
+
+priority: low # DERIVED
+value: 1
+risk: 1
+rank: 17 # DERIVED
+
+parent: null
+children: []
+
+depends_on: []
+blocks: [] # DERIVED
+spikes: []
+
+spec: null
+
+claims: []
+
+created: "2026-10-09"
+updated: "2026-10-09"
+closed: "2026-10-09"
+
+summary: |
+  The owner asked how per-repository schema is managed when the tool is
+  installed with `dotnet tool install specht.tool --global`. The answer was
+  already specified: the manifest is read from the root the tool is given,
+  every shipped schema version is embedded, the pinned version is selected,
+  and a pin the tool does not ship exits 3. README.md § Usage did not say so,
+  nor why the local tool manifest stays the documented install.
+
+acceptance_criteria:
+  - README.md § Usage states the schema is per repository under any install.
+  - README.md § Usage states a pin the tool does not ship exits 3.
+  - README.md § Usage states the local tool manifest is the documented
+    install, and why.
+  - No tool behaviour changes.
+
+decisions:
+  - "2026-10-09, repository owner: answer the global-install question in
+    README.md § Usage; keep the local tool manifest as the documented
+    install."
+
+out_of_scope:
+  - Changing any claim or constraint.
+  - Documenting a global install as a supported path.
+  - The real install section - 0088.
