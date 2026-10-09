@@ -2,7 +2,7 @@ id: "0103"
 type: task
 title: Expose the violation order as a function a unit test can reach
 
-status: ready-for-architecture
+status: ready-for-implementation
 
 priority: high # DERIVED
 value: 3
@@ -41,6 +41,17 @@ decisions:
   - |
     2026-10-08, cut by spec-author on spec-reviewer's non-blocking finding
     in 0022's review round 1: the order has no unit-tier proof.
+  - |
+    2026-10-09, implementer's architecture pass: the order becomes
+    `public static IReadOnlyList<SpecViolation> Order(IEnumerable<SpecViolation>)`
+    on `SpecCheckRunner`, the inline LINQ chain moved verbatim, and `Run`
+    calls it. LINQ stays because its sort is stable, and ties on all four
+    keys keep collection order (C-9). No `IComparer` (no second caller;
+    invites the unstable `List.Sort`) and no new type. Static under ADR-0001
+    "The statics that stay": a pure function with no I/O, kept static at
+    stage D. 0105's `Evaluate` calls it once; 0014's severity map runs
+    before it; ADR-0005's `Order(graded)` is this function. Design in
+    0001-F1 § 6, § 7.
 
 out_of_scope:
   - "Changing the order or any verdict — C-9; 0001-F5 at brief § 8 step 5."
