@@ -35,7 +35,14 @@ acceptance_criteria:
   - "B-023 — rejection only, on stderr; stdout empty"
   - "§ 9 carries a row naming a test for each id above."
 
-decisions: []
+decisions:
+  - |
+    2026-10-09, spec-author recording the owner's direction: the B-022 and
+    B-023 scenarios trigger the rejection with an unknown key (B-012), not
+    a claim grammar that does not compile (B-014, item 0016, not built), so
+    this item ships without waiting on 0016. The host's exit-3 handling
+    covers any manifest rejection, so 0014-0016 and 0019 reuse it.
+    Rejected: adding 0016 as a dependency.
 
 out_of_scope:
   - "Exit codes for anything but a rejected manifest — 0001-F2."

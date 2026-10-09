@@ -172,13 +172,13 @@ Feature: The manifest carries the roles
 
   @B-022
   Scenario: A rejected manifest exits with the invalid-manifest code
-    Given the manifest's claim grammar is not a valid expression
-    When the check runs
+    Given the manifest carries a key the engine does not know
+    When the tool runs as a command on the root
     Then the exit code is 3
 
   @B-023
   Scenario: A rejected manifest's only output is the rejection, on stderr
-    Given the manifest's claim grammar is not a valid expression
-    When the check runs
-    Then stderr carries the rejection
-    And stdout is empty
+    Given the manifest carries a key the engine does not know
+    When the tool runs as a command on the root
+    Then the standard error carries the rejection, naming that key
+    And the standard output is empty
