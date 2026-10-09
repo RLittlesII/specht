@@ -11,7 +11,7 @@ rank: 68
 parent: "0072"
 children: []
 
-depends_on: ["0073", "0065"] # rules and post-upgrade tasks in 0073's configuration; must pass 0065's stale-workflow check
+depends_on: ["0073"] # rules and post-upgrade tasks in 0073's configuration
 blocks: []
 spikes: []
 
@@ -24,15 +24,15 @@ claims:
   - B-014
 
 created: "2026-10-08"
-updated: "2026-10-08"
+updated: "2026-10-09"
 closed: null
 
 summary: |
   A custom manager reads action versions from the build project (C-6), and
   a post-upgrade task, allowlisted in the committed configuration, runs
-  the workflow generation and commits its output (C-7), so 0065's check
-  passes on the update. Risk 4: post-upgrade commands and two update kinds
-  that must both regenerate.
+  the workflow generation and commits its output (C-7), so the committed
+  workflows stay the build's generation (0055-F2 C-1). Risk 4: post-upgrade
+  commands and two update kinds that must both regenerate.
 
 acceptance_criteria:
   - "B-002 — action minor and patch: one pull request changing the build project's declarations"
