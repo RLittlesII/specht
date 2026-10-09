@@ -5,7 +5,7 @@ using AwesomeAssertions;
 namespace specht.tests;
 
 /// <summary>
-/// The manifest loader over an in-memory file system (0001-F5 B-012, B-019, B-020; 0001-F2 B-005, B-006, B-007): what it
+/// The manifest loader over an in-memory file system (0001-F5 B-008, B-012, B-019, B-020; 0001-F2 B-005, B-006, B-007): what it
 /// rejects and as which failure, what it ignores, and what it fills from the default manifest.
 /// </summary>
 [Trait("Tier", "Unit")]
@@ -19,6 +19,22 @@ public sealed class SpecManifestUnitTests
         { "task", "^[0-9]{4}-[0-9]{2}$" },
         { "feature", "^F[0-9]+[a-z]?$" },
         { "epic", "^[0-9]{4}$" },
+    };
+
+    /// <summary>Gets each frontmatter schema kind and the file name the default manifest gives it (decision 0003).</summary>
+    public static TheoryData<string, string> DefaultFrontmatterSchemas { get; } = new()
+    {
+        { "feature", "feature-spec.frontmatter.schema.json" },
+        { "task", "task.frontmatter.schema.json" },
+        { "epic", "epic.frontmatter.schema.json" },
+    };
+
+    /// <summary>Gets each frontmatter schema kind and a file name a manifest declares for it in place of the default.</summary>
+    public static TheoryData<string, string> DeclaredFrontmatterSchemas { get; } = new()
+    {
+        { "feature", "feature.json" },
+        { "task", "item.json" },
+        { "epic", "epic.json" },
     };
 
     public static TheoryData<string, MockFileSystem> RootsThatAreNotDirectories =>
@@ -187,6 +203,50 @@ public sealed class SpecManifestUnitTests
     }
 
     [Theory]
+    [MemberData(nameof(DefaultFrontmatterSchemas))]
+    public void AManifestLeavingOutAFrontmatterSchemaKind_WhenLoaded_ShouldReadTheDefaultManifestsFileName(string kind, string name)
+    {
+        // Given
+        var manifest = DefaultManifest();
+        var declared = new JsonObject
+        {
+            ["feature"] = "feature.json",
+            ["task"] = "item.json",
+            ["epic"] = "epic.json",
+        };
+        declared.Remove(kind);
+        manifest["frontmatterSchemas"] = declared;
+        var fileSystem = Holding(manifest);
+
+        // When
+        var structure = SpecManifest.Load(fileSystem, Root);
+
+        // Then
+        structure.FrontmatterSchemas.Should().ContainKey(kind).WhoseValue.Should().Be(name);
+    }
+
+    [Theory]
+    [MemberData(nameof(DeclaredFrontmatterSchemas))]
+    public void AManifestDeclaringAFrontmatterSchemaFileName_WhenLoaded_ShouldReadItAsWritten(string kind, string name)
+    {
+        // Given
+        var manifest = DefaultManifest();
+        manifest["frontmatterSchemas"] = new JsonObject
+        {
+            ["feature"] = "feature.json",
+            ["task"] = "item.json",
+            ["epic"] = "epic.json",
+        };
+        var fileSystem = Holding(manifest);
+
+        // When
+        var structure = SpecManifest.Load(fileSystem, Root);
+
+        // Then
+        structure.FrontmatterSchemas.Should().ContainKey(kind).WhoseValue.Should().Be(name);
+    }
+
+    [Theory]
     [InlineData("sections")]
     [InlineData("tables")]
     public void AManifestLeavingOutAWholeValue_WhenLoaded_ShouldReadItAsTheDefaultManifests(string key)
@@ -257,6 +317,11 @@ public sealed class SpecManifestUnitTests
                 "task": "^[0-9]{4}-[0-9]{2}$",
                 "feature": "^F[0-9]+[a-z]?$",
                 "epic": "^[0-9]{4}$"
+              },
+              "frontmatterSchemas": {
+                "feature": "feature-spec.frontmatter.schema.json",
+                "task": "task.frontmatter.schema.json",
+                "epic": "epic.frontmatter.schema.json"
               }
             }
             """)!.AsObject();

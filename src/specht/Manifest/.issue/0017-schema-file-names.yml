@@ -2,7 +2,7 @@ id: "0017"
 type: task
 title: Load frontmatter schemas by the manifest's file names
 
-status: ready-for-architecture
+status: done
 
 priority: high
 risk: 2
@@ -21,8 +21,8 @@ claims:
   - B-008
 
 created: "2026-10-08"
-updated: "2026-10-08"
-closed: null
+updated: "2026-10-09"
+closed: "2026-10-09"
 
 summary: |
   SPEC001-SPEC004 load the Feature, item and epic frontmatter schemas from
