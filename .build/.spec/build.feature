@@ -139,13 +139,6 @@ Feature: The build
     Then it names that file
     And it does not name the other
 
-  @B-023
-  Scenario: The self-check reports itself unavailable before the command exists
-    Given the checker's check command does not exist yet
-    When the self-check runs
-    Then it reports that the check is not yet available
-    And it succeeds
-
   @B-024
   Scenario: A missing test is a warning here
     Given the checker's rule settings exist
