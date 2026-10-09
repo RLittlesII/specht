@@ -2,7 +2,7 @@ id: "0011"
 type: task
 title: Load and validate the manifest whole before any rule runs
 
-status: ready-for-architecture
+status: in-progress
 
 priority: high
 risk: 3
