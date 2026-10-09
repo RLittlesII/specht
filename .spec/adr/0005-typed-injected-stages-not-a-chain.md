@@ -27,7 +27,7 @@ Relation to earlier records, each stated in full under Decision:
   first-handler-wins, now with the code that shows why. Decision (c) carries
   out its Decision bullet 4
   (`.spec/adr/0002-no-chain-of-responsibility-for-the-check.md:104-107`).
-- **ADR-0004** (proposed, pull request #24): re-affirmed whole, option 8's
+- **ADR-0004** (proposed; on `main` since pull request #24): re-affirmed whole, option 8's
   rejection included. Decision (c) is the trigger it re-cut
   (`.spec/adr/0004-per-rule-settings-are-selection-and-a-map.md:191-195`).
   Disable and re-grade stay its two functions inside `Evaluate`; its severity
