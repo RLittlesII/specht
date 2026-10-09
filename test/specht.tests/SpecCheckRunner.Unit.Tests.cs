@@ -10,6 +10,25 @@ namespace specht.tests;
 public sealed class SpecCheckRunnerUnitTests
 {
     [Fact]
+    public void EveryRuleInTheEngine_WhenItsReportedIdsAreRead_ShouldNameExactlyTheTwentyOneVersion1RuleIds()
+    {
+        // Given
+        var rules = typeof(ISpecRule).Assembly
+            .GetTypes()
+            .Where(static type => typeof(ISpecRule).IsAssignableFrom(type) && type is { IsAbstract: false, IsInterface: false })
+            .Select(static type => (ISpecRule)Activator.CreateInstance(type)!)
+            .ToList();
+
+        // When
+        var ids = rules.SelectMany(static rule => rule.ReportedIds).Distinct(StringComparer.Ordinal).ToList();
+
+        // Then
+        ids.Should().BeEquivalentTo(
+            "SPEC001", "SPEC002", "SPEC003", "SPEC004", "SPEC010", "SPEC011", "SPEC012", "SPEC013", "SPEC020", "SPEC021", "SPEC030",
+            "SPEC031", "SPEC040", "SPEC041", "SPEC043", "SPEC044", "SPEC050", "SPEC051", "SPEC052", "SPEC060", "SPEC061");
+    }
+
+    [Fact]
     public void ATreeWithOneValidSpecification_WhenChecked_ShouldReportNoViolations()
     {
         // Given
