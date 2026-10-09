@@ -123,3 +123,10 @@ Feature: The check command
     Then every path on the standard output is relative to the root
     And every path on the standard error is relative to the root
     And no path in either uses the platform's directory separator where it differs from a forward slash
+
+  @B-015
+  Scenario: A rule that throws exits 1, not -1
+    Given the root holds a specification
+    And one rule fails while it is evaluated
+    When the check runs
+    Then the exit code is 1

@@ -4,16 +4,16 @@ title: Expose the violation order as a function a unit test can reach
 
 status: ready-for-architecture
 
-priority: medium # DERIVED
+priority: high # DERIVED
 value: 3
 risk: 2
-rank: 59 # DERIVED
+rank: 64 # DERIVED
 
 parent: "0020"
 children: []
 
 depends_on: []
-blocks: ["0105"] # DERIVED
+blocks: ["0014", "0105"] # DERIVED
 spikes: []
 
 spec: src/specht/.spec/README.md
@@ -22,7 +22,7 @@ claims:
   - B-004
 
 created: "2026-10-08"
-updated: "2026-10-08"
+updated: "2026-10-09"
 closed: null
 
 summary: |

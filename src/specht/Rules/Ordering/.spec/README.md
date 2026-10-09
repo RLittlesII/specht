@@ -20,7 +20,7 @@ depends_on: ["0001/F5", "0001/F7"]
 blocks: ["F5"]
 spikes: []
 created: "2026-10-08"
-updated: "2026-10-08"
+updated: "2026-10-09"
 github_issue: null
 synced_at: null
 ---
@@ -74,16 +74,16 @@ A specification's claims, constraints and open questions are appended as they ar
 
 ## 4. Constraints
 
-<!-- last written by: spec-author, 2026-10-08 -->
+<!-- last written by: spec-author, 2026-10-09 (C-6 amended for ADR-0004) -->
 
-| ID  | Constraint                                                                                                                          | Rules Out                                                                                           |
-| --- | ----------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
-| C-1 | Order is ascending by the id's number, then by its letter, with no letter first.                                                    | A text sort that puts `C-10` before `C-2`; ordering by any other column.                            |
-| C-2 | A row's status never moves it: a withdrawn or superseded row keeps its numeric slot.                                                | Grouping retired rows at the end; a separate order for active rows.                                 |
-| C-3 | Order is judged only over first cells that match the manifest's grammar for the table; a cell that does not is `0101-F3`'s finding. | Guessing a number out of a malformed id; a second id grammar in C# (`0001-F5` C-2).                 |
-| C-4 | The rule reports; it never rewrites a file.                                                                                         | A fix applied by the check; a `--fix` option; any write from a check run (`0101-F5` decision 0001). |
-| C-5 | The rule belongs to schema version 2 and later; version 1's vocabulary is frozen.                                                   | Reporting under a version 1 manifest; adding the rule to version 1 (brief § 9; `0001-F1` C-5).      |
-| C-6 | The default severity is warning, set through `0001-F5`'s rule settings.                                                             | Error by default; a lint-only switch outside the manifest's rule settings.                          |
+| ID  | Constraint                                                                                                                                                                            | Rules Out                                                                                                                                      |
+| --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| C-1 | Order is ascending by the id's number, then by its letter, with no letter first.                                                                                                      | A text sort that puts `C-10` before `C-2`; ordering by any other column.                                                                       |
+| C-2 | A row's status never moves it: a withdrawn or superseded row keeps its numeric slot.                                                                                                  | Grouping retired rows at the end; a separate order for active rows.                                                                            |
+| C-3 | Order is judged only over first cells that match the manifest's grammar for the table; a cell that does not is `0101-F3`'s finding.                                                   | Guessing a number out of a malformed id; a second id grammar in C# (`0001-F5` C-2).                                                            |
+| C-4 | The rule reports; it never rewrites a file.                                                                                                                                           | A fix applied by the check; a `--fix` option; any write from a check run (`0101-F5` decision 0001).                                            |
+| C-5 | The rule belongs to schema version 2 and later; version 1's vocabulary is frozen.                                                                                                     | Reporting under a version 1 manifest; adding the rule to version 1 (brief § 9; `0001-F1` C-5).                                                 |
+| C-6 | The default severity is warning, declared by the rule's own `DefaultSeverity`, an `ISpecRule` member that lands with epic `0101`'s first item; `0001-F5`'s rule settings override it. | Error by default; the default kept in the manifest instead of on the rule (ADR-0004); a lint-only switch outside the manifest's rule settings. |
 
 ## 5. Out of Scope
 
@@ -139,9 +139,9 @@ Pending: owned by `test-writer`, written after agreement.
 
 ## 10. Lessons / Spec Deltas
 
-<!-- last written by: spec-author, 2026-10-08 -->
+<!-- last written by: spec-author, 2026-10-09 (C-6) -->
 
-None.
+- 2026-10-09, C-6 amended in place on the owner's acceptance of [ADR-0004](../../../../../.spec/adr/0004-per-rule-settings-are-selection-and-a-map.md): it read "set through `0001-F5`'s rule settings", and the default is now the rule's own `DefaultSeverity`, which the manifest's rule settings override. Decision 0001 is preserved: a member is a fact about the rule, not a switch, and this rule adds no switch of its own. C-6 keeps its id; no claim or scenario changed.
 
 ## 11. Open Questions
 
