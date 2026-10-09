@@ -8,9 +8,10 @@ type: adr
 
 ## Status
 
-proposed - raised by the owner on pull request #13
+accepted - 2026-10-08, by the owner: option 1, with option 3 the named move
+when a third per-rule behaviour appears. Raised by the owner on pull request #13
 ([review comment](https://github.com/RLittlesII/specht/pull/13#discussion_r4226016028),
-on `src/specht/SpecCheckRunner.cs`). Acceptance is the owner's.
+on `src/specht/SpecCheckRunner.cs`).
 
 ## Context
 
