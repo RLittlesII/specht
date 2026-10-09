@@ -1,5 +1,6 @@
 using AwesomeAssertions;
 using Microsoft.Extensions.DependencyInjection;
+using specht.Report;
 using specht.tool;
 using specht.tool.Features.Check;
 using Spectre.Console.Cli.Testing;
@@ -8,7 +9,7 @@ using Spectre.Console.Testing;
 namespace specht.tests;
 
 /// <summary>
-/// The command through Spectre's command tester (<c>0001-F2</c> B-001, B-003, B-004, B-005, B-006, B-007, B-009, B-013;
+/// The command through Spectre's command tester (<c>0001-F2</c> B-001, B-002, B-003, B-004, B-005, B-006, B-007, B-009, B-013;
 /// C-7): over a runner returning a report built in memory, and over the real runner and a synthetic tree on disk. The runner
 /// is the seam: the engine emits no warning until <c>0001-F5</c>'s rule settings exist, so a warning-only report is
 /// reachable only in memory. The tester captures stdout alone, so an input failure's stderr message is the acceptance
@@ -17,11 +18,11 @@ namespace specht.tests;
 [Trait("Tier", "Integration")]
 public sealed class CheckCommandIntegrationTests
 {
-    /// <summary>Gets reports whose lines must come out one per violation, in the runner's order, unwrapped.</summary>
+    /// <summary>Gets reports whose lines must come out one per violation, in the runner's order, unwrapped, then the summary.</summary>
     public static TheoryData<string, SpecCheckReport> Reports =>
         new()
         {
-            { "no violation prints nothing", new SpecCheckReportFixture() },
+            { "no violation prints the summary alone", new SpecCheckReportFixture() },
             {
                 "two violations keep the runner's order, and a violation with no line has no position",
                 new SpecCheckReportFixture().WithViolations(
@@ -117,10 +118,12 @@ public sealed class CheckCommandIntegrationTests
 
     [Theory]
     [MemberData(nameof(Reports))]
-    public void AReport_WhenChecked_ShouldPrintOnlyOneUnwrappedLinePerViolationInTheRunnersOrder(string because, SpecCheckReport report)
+    public void AReport_WhenChecked_ShouldPrintOneUnwrappedLinePerViolationInTheRunnersOrderThenTheSummary(string because, SpecCheckReport report)
     {
         // Given
-        var expected = string.Join('\n', report.Violations.Select(static violation => violation.ToString()));
+        var expected = string.Join(
+            '\n',
+            report.Violations.Select(static violation => violation.ToString()).Concat(SpecReportDocument.From(report).SummaryLines()));
 
         // When
         var result = Check(_ => report);
@@ -171,30 +174,33 @@ public sealed class CheckCommandIntegrationTests
         using var tree = new SpecTree();
         tree.WriteFeature("0001", "F1", new Dictionary<string, string> { ["spec_status"] = "nearly" });
         tree.WriteFeature("0001", "F2", sections: SpecTree.SectionsWith("3. Acceptance Criteria", TwoClaims));
-        var expected = tree.Run().Violations.Select(static violation => violation.ToString()).ToArray();
+        var report = tree.Run();
+        var violations = report.Violations.Select(static violation => violation.ToString()).ToArray();
 
         // When
         var result = Check(SpecCheckRunner.Run, "--root", tree.Root);
 
         // Then
-        expected.Should().HaveCountGreaterThan(1);
-        result.Output.Should().Be(string.Join('\n', expected));
+        violations.Should().HaveCountGreaterThan(1);
+        result.Output.Should().Be(string.Join('\n', violations.Concat(SpecReportDocument.From(report).SummaryLines())));
         result.Output.Should().NotContain(tree.Root).And.NotContain("\\");
         result.ExitCode.Should().Be(1);
     }
 
     [Fact]
-    public void ACleanTree_WhenChecked_ShouldPrintNothingAndExitZero()
+    public void ACleanTree_WhenChecked_ShouldPrintOnlyTheSummaryAndExitZero()
     {
         // Given
         using var tree = new SpecTree();
         tree.WriteFeature("0001", "F1");
+        var report = tree.Run();
 
         // When
         var result = Check(SpecCheckRunner.Run, "--root", tree.Root);
 
         // Then
-        result.Output.Should().BeEmpty();
+        report.Violations.Should().BeEmpty();
+        result.Output.Should().Be(string.Join('\n', SpecReportDocument.From(report).SummaryLines()));
         result.ExitCode.Should().Be(0);
     }
 
