@@ -88,9 +88,6 @@ public sealed partial class BuildSteps(IUnitTestRuntimeProvider runtime) : IDisp
             "specht.tool",
             "until 0087 names the checker the restore needs no token; 0087 supplies one here");
 
-    [Given("the checker's check command does not exist yet")]
-    public void GivenTheCheckersCheckCommandDoesNotExistYet() => WriteTree();
-
     [Given("a source file whose formatting differs from the repository's rules")]
     public void GivenASourceFileWhoseFormattingDiffersFromTheRepositorysRules()
     {
@@ -213,9 +210,6 @@ public sealed partial class BuildSteps(IUnitTestRuntimeProvider runtime) : IDisp
     [Then("each at the version the committed tool manifest pins")]
     public void ThenEachAtTheVersionTheCommittedToolManifestPins() =>
         ListedTools().Should().BeEquivalentTo(ManifestTools());
-
-    [Then("it reports that the check is not yet available")]
-    public void ThenItReportsThatTheCheckIsNotYetAvailable() => _output.Should().Contain("the check is not yet available");
 
     [Then("it succeeds")]
     public void ThenItSucceeds() => _exitCode.Should().Be(0, _output);

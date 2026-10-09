@@ -105,10 +105,14 @@ internal partial class Build : NukeBuild
                 .EnableNoBuild());
         });
 
-    // B-023: until 0001-F2's check command exists, there is nothing to run (C-7, decision 0001).
+    // B-025: until 0001-F5's rule settings exist, the check's violations print and never fail the target (C-7, 0001-F2 A-2).
     private Target SpecCheck => definition => definition
         .DependsOn(Test)
-        .Executes(static () => Log.Information("SpecCheck: the check is not yet available; 0001-F2's check command does not exist yet"));
+        .Executes(() =>
+        {
+            var clean = Run(DotNetPath, "run --project src/specht.tool -- --root .");
+            Log.Information("SpecCheck: {Verdict}; the check does not gate until 0001-F5's rule settings exist", clean ? "clean" : "violations reported");
+        });
 
     private static string Include(string[]? files) => files is null ? string.Empty : $"--include {Quote(files)}";
 
