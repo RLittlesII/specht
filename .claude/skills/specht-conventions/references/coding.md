@@ -113,9 +113,10 @@ path anywhere is a defect (brief § 9), and the review looks for it.
 
 ## Formatting
 
-`.husky/pre-commit` **fixes** staged `.cs` files (`dotnet format "specht.slnx"
---include …`, then re-stages them). CI **verifies** (`./build.sh Format` runs
-`--verify-no-changes`). So formatting is not something to argue about in review —
+`.husky/pre-commit` **verifies** staged `.cs` and `.md` files, never fixing them:
+it runs `./build.sh Format --files …` on an export of the index, so the staged
+content is what is checked. CI **verifies** the whole tree with the same target
+(`--verify-no-changes`). So formatting is not something to argue about in review —
 but a build-file change made without running `Format` can still fail CI first.
 
 ## Never add

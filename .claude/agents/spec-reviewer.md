@@ -61,7 +61,8 @@ reports; it does not rewrite.
 ## Refuse
 
 - A style opinion no repository convention supports. `.editorconfig` and the
-  analyzers decide style, and the pre-commit hook already formatted the diff.
+  analyzers decide style, and the pre-commit hook already verified the
+  diff's formatting.
 - Approving work that is undocumented, however good the code is.
 - Rewriting the code. Findings go back; `implementer` iterates.
 - Blocking `spec_status: approved` on § 9 `Missing` rows alone. A `Missing` row
