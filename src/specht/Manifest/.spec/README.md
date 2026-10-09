@@ -120,14 +120,15 @@ Half of the model's contract is not in the schema files: which section holds the
 
 Item `0011` builds the loader; the families of keys (`0014`-`0019`) extend this table.
 
-| Concern                                                                                             | Classification | Where                                                            |
-| --------------------------------------------------------------------------------------------------- | -------------- | ---------------------------------------------------------------- |
-| Which top-level keys a manifest may carry; a `$` key is an annotation (B-012, B-020, decision 0002) | Business       | `SpecManifest.KnownKeys` and the `$` test in `SpecManifest.Load` |
-| An omitted value reads as the default manifest's (B-019, A-4)                                       | Business       | `SpecManifest.Load`, over the embedded default manifest          |
-| The whole manifest is checked before any rule runs (B-018, C-5)                                     | Both           | `SpecModel.Load` loads `SpecSchemas` (and so the manifest) first |
-| The manifest is read from `<root>/.spec/schema/` and nowhere else (C-6)                             | Both           | `SpecManifest.Load`; the embedded copy fills keys, never a file  |
-| File-system access behind `System.IO.Abstractions` (owner direction 2026-10-08)                     | Technical      | `SpecManifest.Load` and `SpecSchemas.Load` take an `IFileSystem` |
-| The rejection's exit code and stream (B-022, B-023)                                                 | Business       | Not here: item `0013`, in the host                               |
+| Concern                                                                                             | Classification | Where                                                                                     |
+| --------------------------------------------------------------------------------------------------- | -------------- | ----------------------------------------------------------------------------------------- |
+| Which top-level keys a manifest may carry; a `$` key is an annotation (B-012, B-020, decision 0002) | Business       | `SpecManifest.KnownKeys` and the `$` test in `SpecManifest.Load`                          |
+| An omitted value reads as the default manifest's (B-019, A-4)                                       | Business       | `SpecManifest.Load`, over the embedded default manifest                                   |
+| The whole manifest is checked before any rule runs (B-018, C-5)                                     | Both           | `SpecModel.Load` loads `SpecSchemas` (and so the manifest) first                          |
+| The manifest is read from `<root>/.spec/schema/` and nowhere else (C-6)                             | Both           | `SpecManifest.Load`; the embedded copy fills keys, never a file                           |
+| File-system access behind `System.IO.Abstractions` (owner direction 2026-10-08)                     | Technical      | `SpecManifest.Load` and `SpecSchemas.Load` take an `IFileSystem`                          |
+| The rejection's exit code and stream (B-022, B-023)                                                 | Business       | Not here: item `0013`, in the host                                                        |
+| Where rule settings apply: disable and re-grade (B-010, B-011, ADR-0002)                            | Business       | Item `0014`: one step in `SpecCheckRunner` over the collected violations, before the sort |
 
 ## 7. Technical Design
 
@@ -149,6 +150,8 @@ The literal each claim moves is cited by file and line in `hooked`'s draft `0008
 - The host registers no `IFileSystem`: no command consumes one today. `0013`, which maps `SpechtManifestException` to exit `3` and stderr, is where the host first meets the loader.
 
 **What 0011 does not reject.** A manifest that does not parse, or a known key of the wrong shape, still fails as it did before, with the library's exception; the rejections each family owns (rule ids, grammars, roles, exclusion entries) are `0014`-`0016` and `0019`.
+
+**Where rule settings apply (item `0014`, [ADR-0002](../../../../.spec/adr/0002-no-chain-of-responsibility-for-the-check.md)).** The stages stay the fixed, typed sequence in `SpecCheckRunner.Run`, and every rule still evaluates. One step over the collected violations drops a disabled rule's violations and its id from the count of rules evaluated (B-011) and rewrites a re-graded rule's severity (B-010); then the one sort runs, so the report stays independent of evaluation order (`0001-F1` C-9). No chain of handlers, decorator or context object; a chain around `ISpecRule` waits on a third per-rule behaviour and a superseding ADR. The key names still wait on OQ-1.
 
 ## 8. Testing Strategy
 
