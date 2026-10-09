@@ -17,6 +17,12 @@ public sealed class SpecModelUnitTests
         new[] { "repo/src/sample/.spec/first.feature", "repo/src/sample/.spec/second.feature" },
     };
 
+    public static TheoryData<SpecLayout, string[]> IdentityViolationsByLayout { get; } = new()
+    {
+        { SpecLayout.Legacy, ["SPEC011", "SPEC011"] },
+        { SpecLayout.CoLocated, [] },
+    };
+
     [Theory]
     [MemberData(nameof(CompanionCountsOtherThanOne))]
     public void AFeatureBuiltInMemoryWithoutExactlyOneCompanion_WhenTheFeatureFileRuleEvaluatesTheModel_ShouldReportSpec020(
@@ -44,5 +50,53 @@ public sealed class SpecModelUnitTests
                 0,
                 "0009-F1",
                 $"found {featureFiles.Length} '.feature' files beside this specification - expected exactly one companion"));
+    }
+
+    [Theory]
+    [MemberData(nameof(IdentityViolationsByLayout))]
+    public void AFeatureUnderFoldersItsIdentityDoesNotName_WhenTheIdentityRuleEvaluatesTheModel_ShouldReportSpec011InTheLegacyLayoutOnly(
+        SpecLayout layout,
+        string[] expected)
+    {
+        // Given
+        FeatureSpec feature = new FeatureSpecFixture()
+            .WithLocation(new SpecLocationFixture().WithRelativePath("src/area/.spec/README.md").WithLayout(layout))
+            .WithDocument(
+                new SpecDocumentFixture().WithFrontmatter(
+                    new FrontmatterFixture().WithNode(new JsonObject { ["epic"] = "0001", ["id"] = "F2" })));
+        SpecModel model = new SpecModelFixture().WithFeatures(feature);
+
+        // When
+        var violations = new IdentityRule().Evaluate(model).ToList();
+
+        // Then
+        violations.Select(static violation => violation.RuleId).Should().Equal(expected);
+    }
+
+    [Fact]
+    public void TwoFeaturesDeclaringOneEpicAndId_WhenTheIdentityRuleEvaluatesTheModel_ShouldReportSpec012OnceOnEachUnderTheIdentityNamingBothPaths()
+    {
+        // Given
+        string[] paths = ["src/first/.spec/README.md", "src/second/.spec/README.md"];
+        SpecModel model = new SpecModelFixture().WithFeatures(
+            [
+                .. paths.Select(static path => (FeatureSpec)new FeatureSpecFixture()
+                    .WithLocation(new SpecLocationFixture().WithRelativePath(path))
+                    .WithDocument(
+                        new SpecDocumentFixture().WithFrontmatter(
+                            new FrontmatterFixture().WithNode(new JsonObject { ["epic"] = "0001", ["id"] = "F2" })))),
+            ]);
+
+        // When
+        var violations = new IdentityRule().Evaluate(model).ToList();
+
+        // Then
+        violations.Should().AllSatisfy(violation =>
+        {
+            violation.RuleId.Should().Be("SPEC012");
+            violation.Identifier.Should().Be("0001-F2");
+            violation.Message.Should().Contain(paths[0]).And.Contain(paths[1]);
+        });
+        violations.Select(static violation => violation.File).Should().BeEquivalentTo(paths);
     }
 }

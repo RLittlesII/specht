@@ -8,7 +8,7 @@ Feature: The engine, extracted unchanged
 
   @B-001
   Scenario: Every rule in the vocabulary is applied, and no other
-    Given the root holds specifications that between them break each of the twenty-one version 1 rules once
+    Given the baseline tree the tests build, which breaks each of the twenty-one version 1 rules in each layout the rule applies to
     When the engine runs
     Then a violation is reported under each of the twenty-one rule ids
     And no violation is reported under any other rule id
@@ -32,7 +32,8 @@ Feature: The engine, extracted unchanged
   Scenario: One identity at two paths is reported
     Given the root holds two specifications both declaring epic "0001" and id "F2"
     When the engine runs
-    Then the duplicate identity is reported once
+    Then the duplicate identity is reported once on each specification, under one identifier
+    And each report names both paths
 
   @B-004
   Scenario: The verdicts on the baseline tree match the golden report
