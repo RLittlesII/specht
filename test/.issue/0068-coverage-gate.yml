@@ -2,7 +2,7 @@ id: "0068"
 type: feature
 title: The coverage gate
 
-status: ready-for-architecture
+status: done
 
 priority: high # DERIVED
 value: 5
@@ -30,7 +30,7 @@ claims:
 
 created: "2026-10-08"
 updated: "2026-10-08"
-closed: null
+closed: "2026-10-08"
 
 summary: |
   As the maintainer, I want new code under the 80% patch target to fail
