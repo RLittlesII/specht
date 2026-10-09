@@ -64,22 +64,27 @@ internal partial class Build : NukeBuild
                 workingDirectory: RootDirectory);
         });
 
-    // B-006: the classes trait-tagged Tier=Unit in every *.tests project.
+    // B-006: the classes trait-tagged Tier=Unit in every *.tests project; 0055-F3 B-001, C-7.
     private Target UnitTest => definition => definition
         .DependsOn(Compile)
         .Executes(() => TestTier("Unit"));
 
-    // B-007: the classes trait-tagged Tier=Integration in every *.tests project.
+    // B-007: the classes trait-tagged Tier=Integration in every *.tests project; 0055-F3 B-001, C-7.
     private Target IntegrationTest => definition => definition
         .DependsOn(Compile)
         .Executes(() => TestTier("Integration"));
 
-    // B-008: every scenario the acceptance project links, unfiltered.
+    // B-008: every scenario the acceptance project links, unfiltered; 0055-F3 B-001, C-7.
     private Target AcceptanceTest => definition => definition
         .DependsOn(Compile)
-        .Executes(() => DotNet(
-            $"test --project {RootDirectory / "test" / "specht.acceptance" / "specht.acceptance.csproj"} --configuration {Configuration} --no-build",
-            workingDirectory: RootDirectory));
+        .Executes(() =>
+        {
+            var coverage = TierCoverageDirectory("Acceptance");
+            DotNet(
+                $"test --project {RootDirectory / "test" / "specht.acceptance" / "specht.acceptance.csproj"} --configuration {Configuration} --no-build " +
+                $"--coverage --coverage-output-format cobertura --results-directory {coverage}",
+                workingDirectory: RootDirectory);
+        });
 
     // B-003, B-017: C# and Markdown, verified and never fixed (C-2, B-004); B-020: given --files, those and no other.
     // Both checks run before the target fails, so one formatter's failure never hides the other's files.
@@ -140,12 +145,21 @@ internal partial class Build : NukeBuild
 
     private static string Quote(IEnumerable<string> files) => string.Join(' ', files.Select(static file => $"\"{file}\""));
 
+    private AbsolutePath TierCoverageDirectory(string tier)
+    {
+        var directory = CoverageDirectory / tier.ToLowerInvariant();
+        directory.CreateOrCleanDirectory();
+        return directory;
+    }
+
     private void TestTier(string tier)
     {
+        var coverage = TierCoverageDirectory(tier);
         foreach (var project in Solution.AllProjects.Where(static project => project.Name.EndsWith(".tests", StringComparison.OrdinalIgnoreCase)))
         {
             DotNet(
-                $"test --project {project.Path} --configuration {Configuration} --no-build --filter-trait \"Tier={tier}\"",
+                $"test --project {project.Path} --configuration {Configuration} --no-build --filter-trait \"Tier={tier}\" " +
+                $"--coverage --coverage-output-format cobertura --results-directory {coverage}",
                 workingDirectory: RootDirectory);
         }
     }

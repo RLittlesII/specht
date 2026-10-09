@@ -91,11 +91,21 @@ jobs:
         if: ${{ steps.changes.outputs.build == 'true' }}
         run: |
           ./build.cmd --target Compile --skip Restore
-      - name: 💨 Test
-        id: test
+      - name: 💨 Unit Test
+        id: unitTest
         if: ${{ steps.changes.outputs.build == 'true' }}
         run: |
-          ./build.cmd --target Test --skip Compile
+          ./build.cmd --target UnitTest --skip Compile
+      - name: 💨 Integration Test
+        id: integrationTest
+        if: ${{ steps.changes.outputs.build == 'true' }}
+        run: |
+          ./build.cmd --target IntegrationTest --skip Compile
+      - name: 💨 Acceptance Test
+        id: acceptanceTest
+        if: ${{ steps.changes.outputs.build == 'true' }}
+        run: |
+          ./build.cmd --target AcceptanceTest --skip Compile
       - name: Upload coverage to Codecov
         id: codecov
         if: ${{ (!cancelled() && matrix.os == 'ubuntu-latest') && steps.changes.outputs.build == 'true' }}
@@ -124,4 +134,4 @@ jobs:
         id: continuousIntegration
         if: ${{ steps.changes.outputs.build == 'true' }}
         run: |
-          ./build.cmd --target ContinuousIntegration --skip Format Compile Test SpecCheck
+          ./build.cmd --target ContinuousIntegration --skip Format Compile UnitTest IntegrationTest AcceptanceTest SpecCheck Test
