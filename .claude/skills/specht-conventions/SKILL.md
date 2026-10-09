@@ -196,6 +196,8 @@ is unset and no git hook fires.
   `schema/v1/` are the same bytes for the tool-owned files, and the manifest
   matches on its tool-owned keys; a test says so (`0001-F4` B-004).
 - An absolute path in any output, report, log line or test fixture.
-- A write into a consumer's tree from anything but `init` and `upgrade`, or an
-  overwrite of an existing file from either.
+- A write into a consumer's tree from anything but `init`, `upgrade`, the
+  caller-named `--report` file and, from epic `0101`, `format`, which only
+  moves whole table rows and frontmatter keys (brief § 9); or an overwrite of
+  an existing file from `init`.
 - A second index of anything this skill already indexes.

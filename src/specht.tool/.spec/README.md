@@ -17,7 +17,7 @@ author: "spec-author"
 milestone: null
 children: []
 depends_on: ["F3", "F4", "F5"]
-blocks: []
+blocks: ["0101/F1", "0101/F2", "0101/F3", "0101/F4", "0101/F5"]
 spikes: []
 created: "2026-10-07"
 updated: "2026-10-08"
@@ -122,7 +122,7 @@ A repository's `.spec/schema/` is a copy of `hooked`'s from one day, and nothing
 | --- | ------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | 1   | Migrating documents between versions              | brief § 2; the agent, from the violations and their `expected` (`0001-F3`).                                                                                                                                                   |
 | 2   | A `downgrade` command                             | A repository pins by editing one number. `init` takes no version argument (`0001-F4` OQ-1, resolved 2026-10-08), so moving the files back is not a supported path; a consumer starts at the newest and lags by not upgrading. |
-| 3   | The content of schema version 2                   | Its own epic, after this Feature; nothing here says what changes.                                                                                                                                                             |
+| 3   | The content of schema version 2                   | Its own epic, after this Feature; nothing here says what changes. Its first content is epic `0101`, the linting rules (`0101-F1` decision 0001).                                                                              |
 | 4   | Versioning the report document                    | `0001-F3` C-4; the report is versioned with the tool.                                                                                                                                                                         |
 | 5   | A version pinned per specification                | Decided: the version is the repository's (brief § 6); a document declares none.                                                                                                                                               |
 | 6   | `init` fetching a recorded upstream schema source | `0001-F4` B-014 and B-015, under C-8 and C-9.                                                                                                                                                                                 |
