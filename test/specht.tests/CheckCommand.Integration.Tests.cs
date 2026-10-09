@@ -1,3 +1,4 @@
+using System.Text.Json;
 using AwesomeAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using specht.Report;
@@ -202,6 +203,43 @@ public sealed class CheckCommandIntegrationTests
         report.Violations.Should().BeEmpty();
         result.Output.Should().Be(string.Join('\n', SpecReportDocument.From(report).SummaryLines()));
         result.ExitCode.Should().Be(0);
+    }
+
+    [Theory]
+    [MemberData(nameof(Reports))]
+    public void AReport_WhenCheckedWithJson_ShouldPrintOnlyItsDocument(string because, SpecCheckReport report)
+    {
+        // Given
+        var expected = SpecReportDocument.From(report).ToJson();
+
+        // When
+        var result = Check(_ => report, "--json");
+
+        // Then
+        result.Output.Should().Be(expected, because);
+        result.Invoking(static parsed => JsonDocument.Parse(parsed.Output).Dispose()).Should().NotThrow(because);
+    }
+
+    [Fact]
+    public void ATreeWithViolations_WhenCheckedWithJson_ShouldPrintTheDocumentAndNoLine()
+    {
+        // Given
+        using var tree = new SpecTree();
+        tree.WriteFeature("0001", "F1", new Dictionary<string, string> { ["spec_status"] = "nearly" });
+        tree.WriteFeature("0001", "F2", sections: SpecTree.SectionsWith("3. Acceptance Criteria", TwoClaims));
+        var report = tree.Run();
+        var document = SpecReportDocument.From(report);
+
+        // When
+        var result = Check(SpecCheckRunner.Run, "--root", tree.Root, "--json");
+
+        // Then
+        report.Violations.Should().HaveCountGreaterThan(1);
+        result.Output.Should().Be(document.ToJson());
+        foreach (var line in report.Violations.Select(static violation => violation.ToString()).Concat(document.SummaryLines()))
+        {
+            result.Output.Should().NotContain(line);
+        }
     }
 
     [Theory]
