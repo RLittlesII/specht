@@ -39,8 +39,12 @@ analyzer settings, the package policy and the commands —
   caller or a substitution that exists today**. "We will need it later" is not a
   need; the later change is cheaper than the wrong seam. One implementation
   behind an interface is a rename waiting to happen.
-- **An interface at a seam, not at every class.** A seam is where something is
-  substituted: a test double, a second provider, a second host.
+- **An interface at a seam, not at every class.** A seam is a boundary a test
+  cannot cross unaided: the file system, a child process, a second provider, a
+  second host. A test double does not count as the second implementation. It
+  earns an interface only at such a seam where no substitution exists yet - not
+  where an abstraction already in place (the file system's) or an argument the
+  test can construct already supplies one.
 - **Delete rather than generalize.** When two things nearly rhyme, leave them
   duplicated until the third appears and the shape is obvious. Premature
   deduplication couples two callers that were free to diverge.
