@@ -33,4 +33,12 @@
              CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
+  <!-- The published report schema (0001-F3 A-1), copied the same way: a produced document is validated against the file
+       this repository publishes (B-008). A wildcard, so its absence fails the test that reads it, not the build. -->
+  <ItemGroup>
+    <Content Include="..\..\docs\schema\*.json"
+             Link="docs\schema\%(Filename)%(Extension)"
+             CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
 </Project>
