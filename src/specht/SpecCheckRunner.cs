@@ -20,21 +20,29 @@ public static class SpecCheckRunner
             violations.AddRange(rule.Evaluate(model));
         }
 
-        var ordered = violations
-            .OrderByDescending(static violation => violation.Severity)
-            .ThenBy(static violation => violation.File, StringComparer.Ordinal)
-            .ThenBy(static violation => violation.Line)
-            .ThenBy(static violation => violation.RuleId, StringComparer.Ordinal)
-            .ToList();
-
         return new SpecCheckReport(
             model.Features.Count,
             model.LegacyCount,
             model.CoLocatedCount,
             model.Items.Count,
             rules.Sum(static rule => rule.ReportedIds.Count),
-            ordered);
+            Order(violations));
     }
+
+    /// <summary>
+    /// Orders <paramref name="violations"/> as the report carries them (<c>0001-F1</c> B-004, C-9): severity
+    /// descending, then file, line and rule id, file and rule id compared ordinally, and violations equal on all
+    /// four keys kept in the order they were given.
+    /// </summary>
+    /// <param name="violations">The violations to order.</param>
+    /// <returns>The violations, ordered.</returns>
+    public static IReadOnlyList<SpecViolation> Order(IEnumerable<SpecViolation> violations) =>
+        violations
+            .OrderByDescending(static violation => violation.Severity)
+            .ThenBy(static violation => violation.File, StringComparer.Ordinal)
+            .ThenBy(static violation => violation.Line)
+            .ThenBy(static violation => violation.RuleId, StringComparer.Ordinal)
+            .ToList();
 
     /// <summary>Writes <paramref name="report"/> to <paramref name="path"/> as the report document (<c>0001-F3</c> B-008).</summary>
     /// <param name="report">The run's report.</param>
