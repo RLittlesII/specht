@@ -122,7 +122,7 @@ A violation today says what is wrong and not what would be right, so the agent t
 
 <!-- last written by: implementer, 2026-10-09 -->
 
-Item `0034` builds the document and its schema; `0035`-`0039` and `0042`-`0043` extend this table.
+Item `0034` builds the document and its schema, and `0035` writes it under `--json`; `0036`-`0039` and `0042`-`0043` extend this table.
 
 | Concern                                                                                           | Classification | Where                                                                     |
 | ------------------------------------------------------------------------------------------------- | -------------- | ------------------------------------------------------------------------- |
@@ -135,7 +135,8 @@ Item `0034` builds the document and its schema; `0035`-`0039` and `0042`-`0043` 
 | Root-relative paths with `/` (B-021)                                                              | Technical      | `SpecDiscovery.Relative`, the one member every engine path passes through |
 | The selected schema version and source (B-005)                                                    | Business       | Not here: fixed at `1` and `disk` until `0042`, `0043`                    |
 | Each rule family's `expected` members (B-009-B-018, B-026-B-028)                                  | Business       | Not here: `0037`-`0039`; `From` writes an empty object                    |
-| `--json`, `--report` and the file written (B-001-B-004, B-022-B-025, C-5, C-7)                    | Business       | Not here: `0035`, `0036`, in the host                                     |
+| `--json` writes the document in place of the lines and the summary (B-001, C-5)                   | Business       | `CheckCommand.ExecuteAsync`                                               |
+| `--report` and the file written (B-003, B-004, B-022-B-025, C-7)                                  | Business       | Not here: `0036`, in the host                                             |
 
 ## 7. Technical Design
 
@@ -178,6 +179,8 @@ Item `0034` builds the document and its schema; `0035`-`0039` and `0042`-`0043` 
 **One writer, one shape.** [`SpecCheckRunner.WriteReport`](../../SpecCheckRunner.cs) wrote its own anonymous object, `generatedAtUtc` from `DateTimeOffset.UtcNow` among it, which no command calls today. It now writes `SpecReportDocument.From(report).ToJson()`, so the only document the engine can write carries no timestamp and validates (B-006, B-008). Where `--report` writes, and how it replaces a file, is `0036`'s.
 
 **Root-relative paths (B-021).** The engine had three copies of `Path.GetRelativePath(root, path).Replace(Path.DirectorySeparatorChar, '/')`: in `SpecDiscovery`, in `SpecModel` and inline in `FeatureFileRule.Evaluate`. They are now one public member, [`SpecDiscovery.Relative`](../../SpecDiscovery.cs), which the other two call; every path a violation carries passes through it, and the output is unchanged. Being public, it is the seam a unit test of the mapping can call (§ 8).
+
+**`--json` (item `0035`).** [`CheckCommand.ExecuteAsync`](../../../specht.tool/Features/Check/CheckCommand.cs) branches once on `--json`: it makes `SpecReportDocument.From(report)` once, the same document the summary is drawn from, and writes either `ToJson()` or the violation lines and `SummaryLines()`. The document goes whole through `console.Profile.Out.Writer`, the raw writer, so no markup parsing or line wrapping touches it and stdout parses as one JSON document (B-001). The verdict fold after the branch is unchanged, so `--json` never moves the exit code (C-5), and a missing root or an unreadable manifest still returns before anything reaches stdout.
 
 ## 8. Testing Strategy
 

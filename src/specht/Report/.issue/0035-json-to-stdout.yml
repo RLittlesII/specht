@@ -2,7 +2,7 @@ id: "0035"
 type: task
 title: Write the document to stdout under --json
 
-status: in-progress
+status: done
 
 priority: high
 risk: 1
@@ -22,7 +22,7 @@ claims:
 
 created: "2026-10-08"
 updated: "2026-10-09"
-closed: null
+closed: "2026-10-09"
 
 summary: |
   `--json` replaces the violation lines and summary with the report
