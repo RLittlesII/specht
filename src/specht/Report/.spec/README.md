@@ -120,7 +120,7 @@ A violation today says what is wrong and not what would be right, so the agent t
 
 ## 6. Concern Separation
 
-<!-- last written by: implementer, 2026-10-08 -->
+<!-- last written by: implementer, 2026-10-09 -->
 
 Item `0034` builds the document and its schema; `0035`-`0039` and `0042`-`0043` extend this table.
 
@@ -128,6 +128,7 @@ Item `0034` builds the document and its schema; `0035`-`0039` and `0042`-`0043` 
 | ------------------------------------------------------------------------------------------------- | -------------- | ------------------------------------------------------------------------- |
 | What the document carries: version, source, layout counts, item, rule and severity counts (B-005) | Business       | `SpecReportDocument.From`                                                 |
 | What a violation carries, `expected` always an object (B-007, C-2)                                | Business       | `SpecReportDocument.From`, onto `SpecReportViolation`                     |
+| The run summary's lines, from the same counts (`0001-F2` B-002)                                   | Business       | `SpecReportDocument.SummaryLines`                                         |
 | The shape written once and validated by test (B-008, C-1, A-1)                                    | Both           | `docs/schema/report.schema.json`                                          |
 | Changes only by addition; `expected` open to added members (C-4)                                  | Both           | `report.schema.json`: closed objects everywhere except `expected`         |
 | Nothing from the clock, the machine or the environment (B-006, C-3)                               | Technical      | `From` reads only the report; `ToJson` fixes the newline to `\n`          |
@@ -138,7 +139,7 @@ Item `0034` builds the document and its schema; `0035`-`0039` and `0042`-`0043` 
 
 ## 7. Technical Design
 
-<!-- last written by: implementer, 2026-10-08 -->
+<!-- last written by: implementer, 2026-10-09 -->
 
 **The document (item `0034`).** [`SpecReportDocument`](../SpecReportDocument.cs) is a record made by `From(SpecCheckReport)` and nothing else, so its only input is the report (B-006, C-3). `From` maps each `SpecViolation` field by field onto a [`SpecReportViolation`](../SpecReportViolation.cs), keeping the report's order, and lists both [`SpecLayout`](../../SpecLayout.cs) values in declaration order with their counts, a layout with no specification included at `0`. `SchemaVersion` is `1` and [`SpecSchemaSource`](../SpecSchemaSource.cs) is `Disk` for every run: the engine reads `<root>/.spec/schema/` and no selection exists yet; `0042` and `0043` replace both with the selected values. `Expected` is an empty `JsonObject` until `0037`-`0039` fill it per rule family.
 
@@ -169,6 +170,8 @@ Item `0034` builds the document and its schema; `0035`-`0039` and `0042`-`0043` 
   ]
 }
 ```
+
+**The run summary (`0001-F2` B-002, item `0028`).** `SummaryLines()` formats the four lines the check prints after its violations - the specification count per layout, the item count, the rules evaluated, and the error and warning counts - from the document's own B-005 members, so the summary and the JSON cannot count differently. A layout is named as the JSON spells it, `JsonNamingPolicy.CamelCase` over `SpecLayout` (`legacy 2, coLocated 1`), and the layouts keep the document's order.
 
 **The published schema (A-1, C-1).** [`docs/schema/report.schema.json`](../../../../docs/schema/report.schema.json), draft 2020-12, names every member above. The document, each layout entry and each violation are closed (`additionalProperties: false`), so a field the schema does not name fails validation; `expected` is `type: object` and nothing more, so a rule family adds members to it without a schema change (C-2, C-4). A violation's `file` rejects a leading `/`, a drive letter and any `\` (B-021). The schema carries no `$id`: JsonSchema.Net registers a schema by its `$id` in a process-wide registry and refuses a second registration, which every caller loading the file twice in one process would hit. Both test projects copy `docs/schema/*.json` into their output and validate a produced document against that one file (B-008).
 

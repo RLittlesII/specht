@@ -1,16 +1,17 @@
 using System.Globalization;
 using System.Text.Json.Nodes;
+using System.Text.RegularExpressions;
 using AwesomeAssertions;
 using specht.Report;
 
 namespace specht.tests;
 
 /// <summary>
-/// The report document made from a report built in memory (<c>0001-F3</c> B-005, B-006, B-007): what it counts, what a
-/// violation carries, and that nothing in it comes from the clock or the machine.
+/// The report document made from a report built in memory (<c>0001-F3</c> B-005, B-006, B-007; <c>0001-F2</c> B-002): what
+/// it counts, what a violation carries, that nothing in it comes from the clock or the machine, and the run summary it makes.
 /// </summary>
 [Trait("Tier", "Unit")]
-public sealed class SpecReportDocumentUnitTests
+public sealed partial class SpecReportDocumentUnitTests
 {
     /// <summary>Gets violations of each shape a rule reports: with and without an identifier and a line.</summary>
     public static TheoryData<string, SpecViolation> Violations =>
@@ -100,6 +101,52 @@ public sealed class SpecReportDocumentUnitTests
         values.Where(value => machine.Any(source => source.Length > 0 && value.Contains(source, StringComparison.OrdinalIgnoreCase)))
             .Should().BeEmpty("no value in the document is read from the machine or the environment");
     }
+
+    [Fact]
+    public void AReport_WhenSummarized_ShouldPrintEachLayoutsCountThenTheItemsThenTheRulesEvaluatedThenTheSeverityCounts()
+    {
+        // Given
+        SpecCheckReport report = new SpecCheckReportFixture()
+            .WithSpecificationCount(3)
+            .WithLegacyCount(2)
+            .WithCoLocatedCount(1)
+            .WithItemCount(4)
+            .WithRulesEvaluated(9)
+            .WithViolations(
+                new SpecViolationFixture(),
+                new SpecViolationFixture().WithLine(2),
+                new SpecViolationFixture().WithSeverity(SpecSeverity.Warning));
+
+        // When
+        var summary = SpecReportDocument.From(report).SummaryLines();
+
+        // Then
+        summary.Should().Equal(
+            "specifications: legacy 2, coLocated 1",
+            "items: 4",
+            "rules evaluated: 9",
+            "errors: 2, warnings: 1");
+    }
+
+    [Fact]
+    public void AReportWithViolations_WhenSummarized_ShouldPrintNoLineInTheDiagnosticShape()
+    {
+        // Given
+        SpecCheckReport report = new SpecCheckReportFixture()
+            .WithSpecificationCount(1)
+            .WithLegacyCount(1)
+            .WithRulesEvaluated(1)
+            .WithViolations(new SpecViolationFixture(), new SpecViolationFixture().WithSeverity(SpecSeverity.Warning));
+
+        // When
+        var summary = SpecReportDocument.From(report).SummaryLines();
+
+        // Then
+        summary.Should().NotBeEmpty().And.AllSatisfy(static line => Diagnostic().IsMatch(line).Should().BeFalse(line));
+    }
+
+    [GeneratedRegex(@"^(?<file>[^\s(:][^(:]*)(\((?<line>\d+)\))?: (?<severity>error|warning) (?<rule>SPEC\d{3}): \S.*$")]
+    private static partial Regex Diagnostic();
 
     private static IEnumerable<string> Strings(JsonNode? node) =>
         node switch

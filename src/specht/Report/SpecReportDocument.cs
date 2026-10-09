@@ -50,9 +50,22 @@ public sealed record SpecReportDocument(
                     new JsonObject()))
                 .ToList());
 
+    /// <summary>Makes the run summary the check prints after the violation lines (<c>0001-F2</c> B-002).</summary>
+    /// <returns>The summary lines.</returns>
+    public IReadOnlyList<string> SummaryLines() =>
+    [
+        $"specifications: {string.Join(", ", Layouts.Select(Count))}",
+        FormattableString.Invariant($"items: {ItemCount}"),
+        FormattableString.Invariant($"rules evaluated: {RulesEvaluated}"),
+        FormattableString.Invariant($"errors: {ErrorCount}, warnings: {WarningCount}"),
+    ];
+
     /// <summary>Serializes the document as the JSON the published report schema describes.</summary>
     /// <returns>The JSON text.</returns>
     public string ToJson() => JsonSerializer.Serialize(this, Options);
+
+    private static string Count(SpecReportLayout layout) =>
+        FormattableString.Invariant($"{JsonNamingPolicy.CamelCase.ConvertName(layout.Layout.ToString())} {layout.SpecificationCount}");
 
     private static readonly JsonSerializerOptions Options = new()
     {
