@@ -2,7 +2,7 @@ id: "0114"
 type: task
 title: Run each test tier as its own CI step
 
-status: ready-for-architecture
+status: done
 
 priority: high
 risk: 3
@@ -19,10 +19,12 @@ spec: .build/ContinuousIntegration/.spec/README.md
 
 claims:
   - B-004
+  - 0055-F3 B-001 # cross-Feature: the outside citation form (AGENTS.md § Stable IDs)
+  - 0055-F3 C-7
 
 created: "2026-10-09"
 updated: "2026-10-09"
-closed: null
+closed: "2026-10-09"
 
 summary: |
   Run `UnitTest`, `IntegrationTest` and `AcceptanceTest` in CI in place of
@@ -59,7 +61,7 @@ summary: |
 acceptance_criteria:
   - "B-004 — amended first: the three tier targets through the entry script, in place of `Test`"
   - "`0055-F3` B-001 — amended first: coverage from the tier targets"
-  - "Coverage from every tier reaches Codecov from the ubuntu-latest leg; no report overwrites or deletes another"
+  - "`0055-F3` C-7 — coverage from every tier reaches Codecov from the ubuntu-latest leg; no report overwrites or deletes another"
   - "Each tier is its own step on both legs; B-007 names, the B-012 skip and the Codecov upload unchanged"
   - "§ 9 keeps a row for B-004; `Missing` stands under the owner's no-tests decision (`0055-F2` § 8, as `0055-F1` § 8)."
 

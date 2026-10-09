@@ -33,7 +33,7 @@ public sealed class SpecReportDocumentIntegrationTests
         };
 
     [Fact]
-    public void ATreeWhoseManifestPinsNoVersion_WhenItsDocumentIsMade_ShouldNameSchemaVersion1FromTheOnDiskFiles()
+    public void ATreeWhoseManifestPinsNoVersion_WhenItsDocumentIsMade_ShouldNameSchemaVersion1FromTheEmbeddedSet()
     {
         // Given
         using var tree = new SpecTree();
@@ -44,7 +44,7 @@ public sealed class SpecReportDocumentIntegrationTests
 
         // Then
         document.SchemaVersion.Should().Be(1);
-        document.SchemaSource.Should().Be(SpecSchemaSource.Disk);
+        document.SchemaSource.Should().Be(SpecSchemaSource.Embedded);
     }
 
     [Fact]

@@ -7,7 +7,7 @@
     <OutputType>Exe</OutputType>
   </PropertyGroup>
 
-  <!-- The Test target asks every test project for coverage (0055-F3 B-001); a project without the extension rejects the option. -->
+  <!-- The test targets ask every test project for coverage (0055-F3 B-001); a project without the extension rejects the option. -->
   <ItemGroup>
     <PackageReference Include="Microsoft.Testing.Extensions.CodeCoverage" />
   </ItemGroup>
