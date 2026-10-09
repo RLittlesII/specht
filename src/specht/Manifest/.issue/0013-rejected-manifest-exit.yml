@@ -2,7 +2,7 @@ id: "0013"
 type: task
 title: Exit 3 with the rejection alone on stderr
 
-status: in-progress
+status: done
 
 priority: high
 risk: 2
@@ -23,7 +23,7 @@ claims:
 
 created: "2026-10-08"
 updated: "2026-10-09"
-closed: null
+closed: "2026-10-09"
 
 summary: |
   How a rejected manifest reaches the user: exit code 3, the rejection on
