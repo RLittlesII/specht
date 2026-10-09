@@ -9,6 +9,7 @@
   <ItemGroup>
     <ReqnrollFeatureFile Include="..\..\src\specht\.spec\engine.feature" Link="Features\engine.feature" />
     <ReqnrollFeatureFile Include="..\..\src\specht.tool\Features\Check\.spec\check.feature" Link="Features\check.feature" />
+    <ReqnrollFeatureFile Include="..\..\src\specht.tool\Features\Init\.spec\init.feature" Link="Features\init.feature" />
     <ReqnrollFeatureFile Include="..\..\src\specht\Manifest\.spec\manifest.feature" Link="Features\manifest.feature" />
     <ReqnrollFeatureFile Include="..\..\src\specht\Report\.spec\report.feature" Link="Features\report.feature" />
   </ItemGroup>
@@ -49,6 +50,9 @@
     <Using Include="System.Linq" />
     <Content Include="..\..\.spec\schema\*.json"
              Link=".spec\schema\%(Filename)%(Extension)"
+             CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="..\..\.spec\templates\feature.md;..\..\.spec\templates\decision.md;..\..\.spec\templates\adr.md;..\..\.spec\templates\lesson.md"
+             Link=".spec\templates\%(Filename)%(Extension)"
              CopyToOutputDirectory="PreserveNewest" />
     <Content Include="..\..\docs\schema\*.json"
              Link="docs\schema\%(Filename)%(Extension)"

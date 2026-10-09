@@ -1,3 +1,4 @@
+using System.Text.Json;
 using AwesomeAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using specht.Report;
@@ -9,7 +10,7 @@ using Spectre.Console.Testing;
 namespace specht.tests;
 
 /// <summary>
-/// The command through Spectre's command tester (<c>0001-F2</c> B-001, B-002, B-003, B-004, B-005, B-006, B-007, B-009, B-013;
+/// The command through Spectre's command tester (<c>0001-F2</c> B-001, B-002, B-003, B-004, B-005, B-006, B-007, B-008, B-009, B-013;
 /// C-7): over a runner returning a report built in memory, and over the real runner and a synthetic tree on disk. The runner
 /// is the seam: the engine emits no warning until <c>0001-F5</c>'s rule settings exist, so a warning-only report is
 /// reachable only in memory. The tester captures stdout alone, so an input failure's stderr message is the acceptance
@@ -205,6 +206,43 @@ public sealed class CheckCommandIntegrationTests
     }
 
     [Theory]
+    [MemberData(nameof(Reports))]
+    public void AReport_WhenCheckedWithJson_ShouldPrintOnlyItsDocument(string because, SpecCheckReport report)
+    {
+        // Given
+        var expected = SpecReportDocument.From(report).ToJson();
+
+        // When
+        var result = Check(_ => report, "--json");
+
+        // Then
+        result.Output.Should().Be(expected, because);
+        result.Invoking(static parsed => JsonDocument.Parse(parsed.Output).Dispose()).Should().NotThrow(because);
+    }
+
+    [Fact]
+    public void ATreeWithViolations_WhenCheckedWithJson_ShouldPrintTheDocumentAndNoLine()
+    {
+        // Given
+        using var tree = new SpecTree();
+        tree.WriteFeature("0001", "F1", new Dictionary<string, string> { ["spec_status"] = "nearly" });
+        tree.WriteFeature("0001", "F2", sections: SpecTree.SectionsWith("3. Acceptance Criteria", TwoClaims));
+        var report = tree.Run();
+        var document = SpecReportDocument.From(report);
+
+        // When
+        var result = Check(SpecCheckRunner.Run, "--root", tree.Root, "--json");
+
+        // Then
+        report.Violations.Should().HaveCountGreaterThan(1);
+        result.Output.Should().Be(document.ToJson());
+        foreach (var line in report.Violations.Select(static violation => violation.ToString()).Concat(document.SummaryLines()))
+        {
+            result.Output.Should().NotContain(line);
+        }
+    }
+
+    [Theory]
     [MemberData(nameof(InputFailures))]
     public void AnInputFailure_WhenChecked_ShouldPrintNothingOnStdoutAndExitWithTheClaimedCode(
         string because,
@@ -222,6 +260,20 @@ public sealed class CheckCommandIntegrationTests
         // Then
         result.Output.Should().BeEmpty(because);
         result.ExitCode.Should().Be(expected, because);
+    }
+
+    [Fact]
+    public void AHelpRequest_WhenChecked_ShouldNameTheRootAndStrictOptionsAndExitZero()
+    {
+        // Given
+        SpecCheckReport report = new SpecCheckReportFixture();
+
+        // When
+        var result = Check(_ => report, "--help");
+
+        // Then
+        result.Output.Should().Contain("--root").And.Contain("--strict");
+        result.ExitCode.Should().Be(0);
     }
 
     private static CommandAppResult Check(Func<string, SpecCheckReport> run, params string[] args)

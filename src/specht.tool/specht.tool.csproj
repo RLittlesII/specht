@@ -18,4 +18,12 @@
     <ProjectReference Include="..\specht\specht.csproj" />
   </ItemGroup>
 
+  <!-- The shipping copy (0001-F4 C-2), one folder per schema version, named schema/v<n>/<file> and templates/v<n>/<file>. -->
+  <ItemGroup>
+    <EmbeddedResource Include="schema\v*\*.json"
+                      LogicalName="schema/$([MSBuild]::ValueOrDefault('%(RecursiveDir)', '').Replace('\', '/'))%(Filename)%(Extension)" />
+    <EmbeddedResource Include="templates\v*\*.md"
+                      LogicalName="templates/$([MSBuild]::ValueOrDefault('%(RecursiveDir)', '').Replace('\', '/'))%(Filename)%(Extension)" />
+  </ItemGroup>
+
 </Project>
