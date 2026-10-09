@@ -329,8 +329,9 @@ none of them changes:
 - **Every test class declares exactly one `Tier` trait.** Why is in
   [`specht-conventions` § Testing](.claude/skills/specht-conventions/references/testing.md).
 - **Never pin a package version in a `.csproj`.** Versions are central. The
-  engine's three dependencies are pinned to `hooked`'s exact versions for a
-  reason that is written beside them.
+  engine's three `hooked` dependencies are pinned to `hooked`'s exact versions
+  for a reason that is written beside them; its fourth, System.IO.Abstractions,
+  is not.
 - **An item's `priority`, `rank` and `blocks` are derived**, from `value`,
   `risk` and every other item's `depends_on`. Recompute them — and the
   dependents' — when an edge changes; never hand-edit them.

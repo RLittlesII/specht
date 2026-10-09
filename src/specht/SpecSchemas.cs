@@ -1,4 +1,4 @@
-using System.Text.Json;
+using System.IO.Abstractions;
 using Json.Schema;
 
 namespace specht;
@@ -41,60 +41,27 @@ public sealed class SpecSchemas
     /// <summary>The ordered section contract and id grammars.</summary>
     public SpecStructure Structure { get; }
 
-    /// <summary>Loads every schema from <paramref name="root"/>'s <c>.spec/schema/</c>.</summary>
+    /// <summary>Loads every schema from <paramref name="root"/>'s <c>.spec/schema/</c>, the manifest first.</summary>
     /// <remarks>
     /// Each load gets its own <see cref="SchemaRegistry"/>. The library's
     /// default registry is process-wide and refuses to re-register a
     /// <c>$id</c>, so a second load in one process - two roots in one test
     /// run, say - would throw rather than simply reading the schemas again.
     /// </remarks>
-    public static SpecSchemas Load(string root)
+    /// <exception cref="SpechtManifestException">The manifest is rejected; no frontmatter schema is read.</exception>
+    public static SpecSchemas Load(IFileSystem fileSystem, string root)
     {
-        var directory = Path.Combine(root, ".spec", "schema");
+        var structure = SpecManifest.Load(fileSystem, root);
+        var directory = fileSystem.Path.Combine(root, ".spec", "schema");
         var options = new BuildOptions { SchemaRegistry = new SchemaRegistry() };
 
         return new SpecSchemas(
-            Read(directory, "feature-spec.frontmatter.schema.json", options),
-            Read(directory, "task.frontmatter.schema.json", options),
-            Read(directory, "epic.frontmatter.schema.json", options),
-            ReadStructure(Path.Combine(directory, "spec-structure.schema.json")));
+            Read(fileSystem, directory, "feature-spec.frontmatter.schema.json", options),
+            Read(fileSystem, directory, "task.frontmatter.schema.json", options),
+            Read(fileSystem, directory, "epic.frontmatter.schema.json", options),
+            structure);
     }
 
-    private static JsonSchema Read(string directory, string name, BuildOptions options) =>
-        JsonSchema.FromText(File.ReadAllText(Path.Combine(directory, name)), options);
-
-    private static SpecStructure ReadStructure(string path)
-    {
-        using var document = JsonDocument.Parse(File.ReadAllText(path));
-        var root = document.RootElement;
-        var sections = new List<string>();
-
-        foreach (var element in root.GetProperty("sections").EnumerateArray())
-        {
-            sections.Add(element.GetString()!);
-        }
-
-        var tables = new Dictionary<string, IReadOnlyList<string>>(StringComparer.Ordinal);
-
-        foreach (var entry in root.GetProperty("tables").EnumerateObject())
-        {
-            var headers = new List<string>();
-
-            foreach (var element in entry.Value.EnumerateArray())
-            {
-                headers.Add(element.GetString()!);
-            }
-
-            tables[entry.Name] = headers;
-        }
-
-        var identifiers = new Dictionary<string, string>(StringComparer.Ordinal);
-
-        foreach (var entry in root.GetProperty("identifiers").EnumerateObject())
-        {
-            identifiers[entry.Name] = entry.Value.GetString()!;
-        }
-
-        return new SpecStructure(sections, tables, identifiers);
-    }
+    private static JsonSchema Read(IFileSystem fileSystem, string directory, string name, BuildOptions options) =>
+        JsonSchema.FromText(fileSystem.File.ReadAllText(fileSystem.Path.Combine(directory, name)), options);
 }

@@ -62,6 +62,12 @@ empty formatter and quoted arguments - [lesson 0003](../../../../.spec/lessons/0
   not Shouldly.
 - **No mocking library.** A seam is a delegate or an injected interface. Reach
   for a delegate before reaching for a package.
+- **`MockFileSystem`** from `TestableIO.System.IO.Abstractions.TestingHelpers`
+  is the file-system fake for code that takes an injected
+  `System.IO.Abstractions.IFileSystem` (the owner's direction, 2026-10-08; the
+  manifest loader is the first, `0001-F5` § 8). It is a fake of an injected
+  interface, not a mocking library. A test over it touches no disk, so it is
+  `Unit`; give it repository-relative paths, as any fixture.
 - **Rocket Surgery AutoFixtures** for test data —
   `Rocket.Surgery.Extensions.Testing.AutoFixtures`, a source generator. A value a
   test hands the code under test, such as a `SpecViolation` or a
@@ -168,6 +174,8 @@ wall clock.
 - A `*.Tests.cs` file under `src/`.
 - A batched or wildcarded `ReqnrollFeatureFile` glob.
 - A mocking library, when a delegate seam would do.
+- A hand-rolled file-system fake for code that takes an `IFileSystem`;
+  `MockFileSystem` does it.
 - A `Unit` trait on a test that runs a command through `CommandAppTester`.
 - A hand-rolled factory method for test data an AutoFixture can build.
 - Copied facts that differ only in their data, where a `[Theory]` would do.

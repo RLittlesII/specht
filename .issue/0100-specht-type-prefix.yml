@@ -1,0 +1,75 @@
+id: "0100"
+type: task
+title: Prefix the engine's types with Specht rather than Spec
+
+status: ready
+
+priority: low # DERIVED
+value: 2
+risk: 2
+rank: 34 # DERIVED
+
+parent: null
+children: []
+
+depends_on: []
+blocks: [] # DERIVED
+spikes: []
+
+spec: null
+
+claims: []
+
+created: "2026-10-08"
+updated: "2026-10-08"
+closed: null
+
+summary: |
+  A rename chore, raised by the owner on PR #11 (review comment on
+  src/specht/SpecManifest.cs: "Likely a tech debt for later. Add an item that
+  brings all these types consistent with `Specht` rather than `Spec`"). The
+  same pull request renamed SpecManifestException to SpechtManifestException;
+  that is the pattern every other `Spec`-prefixed type follows.
+
+  Scope, as of this item's cutting:
+  - src/specht: ISpecRule, SpecCheckReport, SpecCheckRunner, SpecDiscovery,
+    SpecDocument, SpecLayout, SpecLocation, SpecManifest, SpecModel,
+    SpecSchemas, SpecSection, SpecSeverity, SpecStructure, SpecViolation -
+    each type, and its file name with it (ISpecRule becomes ISpechtRule).
+  - test/specht.tests: the fixtures SpecTree, SpecCheckReportFixture and
+    SpecViolationFixture, and the test classes and files named after a
+    renamed type (SpecCheckRunner.*.Tests.cs, SpecManifest.*.Tests.cs).
+  - Every reference: src/specht/Rules/*, src/specht.tool (Program.cs,
+    Features/Check/CheckCommand.cs), test/specht.acceptance step definitions,
+    and any `Spec`-prefixed type a later item adds before this one is taken.
+  - Every document that names a renamed type or test file: the § 7 and § 9
+    rows and design prose of src/specht/.spec, src/specht/Manifest/.spec and
+    src/specht.tool/Features/Check/.spec, their decision records where a
+    record is not an accepted ADR, and the skills under .claude/skills/ that
+    name a type or a test file.
+
+  It is a pure rename, so it claims the refactor/rename exemption in its
+  commit message, citing the constraints listed in the acceptance criteria.
+  No item is a hard prerequisite: SpecManifest and SpechtManifestException
+  land with 0011 in the same pull request that cuts this item. It touches
+  every engine file, though, so take it when no engine item (0001-F1, -F3,
+  -F5, Discovery) is in-progress, or it collides with that item's diff.
+
+acceptance_criteria:
+  - "No type, file, test class or fixture in src/ or test/ carries a bare `Spec` prefix; each named in the summary is `Specht`-prefixed, its file renamed with it."
+  - "Every § 9 row and § 7 reference that named a renamed type or test file names the new one, in the same change - a § 9 row citing a test that no longer exists is the breakage this item must not leave."
+  - "Unchanged: the SPEC### rule ids, every `.spec/` path and file name, the SpecCheck NUKE target and generated CI step, the manifest's keys and `$comment`, the report document's fields, and every violation message."
+  - "The commit message carries the exemption: No .feature change needed: rename; the report and every verdict are unchanged. Constraints preserved: 0001-F1 C-3, 0001-F1 C-4, 0001-F1 C-5, 0001-F1 C-9, 0001-F3 C-3, 0001-F3 C-4, 0001-F5 C-3, 0001-F2 C-4."
+  - "./build.sh and ./build.sh SpecCheck are green, and SpecCheck's report on this repository equals the report before the rename."
+
+decisions:
+  - "2026-10-08, repository owner (PR #11 review): engine types take the `Specht` prefix; SpechtManifestException is the precedent. Cut as an item rather than done inside 0011. Recorded by spec-author."
+
+out_of_scope:
+  - "The `SPEC###` rule ids - fixed per schema version (0001-F1 C-5)."
+  - "`.spec/` directories, spec-structure.schema.json and every other schema or template file name - consumer-facing paths, not type names."
+  - "The SpecCheck build target and its CI step - a build target name, owned by .build/.spec (0055-F1)."
+  - "Types where `Spec` is not a prefix (FeatureSpec) and the `*Rule` classes, which carry no prefix."
+  - "The namespace and assembly `specht`, already lowercase per the repository's naming."
+  - "Accepted ADRs - immutable; they keep the old names and are not edited."
+  - "The baseline diff against `hooked` (0001-F1 C-2) - recorded at the baseline tag by 0021; this rename lands after it and does not reopen it."

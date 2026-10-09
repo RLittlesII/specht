@@ -2,7 +2,7 @@ id: "0011"
 type: task
 title: Load and validate the manifest whole before any rule runs
 
-status: ready-for-architecture
+status: done
 
 priority: high
 risk: 3
@@ -25,7 +25,7 @@ claims:
 
 created: "2026-10-08"
 updated: "2026-10-08"
-closed: null
+closed: "2026-10-08"
 
 summary: |
   The loader every other manifest read goes through: read the manifest from
@@ -41,9 +41,17 @@ acceptance_criteria:
   - "B-020 — `$`-prefixed key ignored"
   - "§ 9 carries a row naming a test for each id above."
 
-decisions: []
+decisions:
+  - |
+    2026-10-08, spec-author recording the owner's direction: file-system
+    access goes through System.IO.Abstractions — an `IFileSystem` in
+    production, a `MockFileSystem` in tests. The seam reaches
+    `SpecManifest` and `SpecSchemas` only; the rest of the engine is
+    deferred, each part to the item that first needs a test double there
+    (0001-F5 § 7). Rejected: threading `IFileSystem` through the whole
+    copied engine in this item, which no claim asks for.
 
 out_of_scope:
   - "The exit code and stream of a rejection — 0013."
   - "Each family's own rejection (rule id, grammar, role, exclusion entry) — 0014, 0016, 0015, 0019."
-  - "An embedded manifest fallback — C-6."
+  - "An embedded manifest standing in for a missing file — C-6."

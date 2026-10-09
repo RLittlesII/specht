@@ -13,6 +13,7 @@
     <PackageReference Include="AwesomeAssertions" />
     <PackageReference Include="Spectre.Console.Cli.Testing" />
     <PackageReference Include="Rocket.Surgery.Extensions.Testing.AutoFixtures" />
+    <PackageReference Include="TestableIO.System.IO.Abstractions.TestingHelpers" />
   </ItemGroup>
 
   <ItemGroup>

@@ -9,6 +9,15 @@
     <PackageReference Include="JsonSchema.Net" />
     <PackageReference Include="YamlDotNet" />
     <PackageReference Include="Markdig" />
+    <PackageReference Include="TestableIO.System.IO.Abstractions.Wrappers" />
+  </ItemGroup>
+
+  <!-- The default manifest (0001-F5 A-4) is this repository's own manifest, embedded from that one file so it cannot
+       drift from the copy the repository checks itself with. -->
+  <ItemGroup>
+    <EmbeddedResource Include="..\..\.spec\schema\spec-structure.schema.json"
+                      Link=".spec\schema\spec-structure.schema.json"
+                      LogicalName="specht.default-manifest.json" />
   </ItemGroup>
 
 </Project>
