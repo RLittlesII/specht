@@ -51,6 +51,7 @@ small check; OQ-2 asks whether a host baseline is wanted beside it.
 
 - `0109-F4` B-001 to B-003; C-3, C-4, C-6.
 - `0109-F1` B-013.
+- Later: the owner answered OQ-2 on 2026-10-09 - `specht --help` is now measured as a host row beside the check, against a generated empty tool as the baseline; see decision 0002. This decision's call is unchanged.
 
 ## Reversal
 
