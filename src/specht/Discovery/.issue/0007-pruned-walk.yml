@@ -11,7 +11,7 @@ rank: 59
 parent: "0004"
 children: []
 
-depends_on: ["0005"] # prunes on the manifest exclusions 0005 reads
+depends_on: ["0005", "0107"] # prunes on the manifest exclusions 0005 reads; ISpecDiscovery (ADR-0001 stage E) lands here on 0107's instance classes
 blocks: ["0009"]
 spikes: []
 

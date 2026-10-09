@@ -7,13 +7,13 @@ status: ready-for-architecture
 priority: medium # DERIVED
 value: 3
 risk: 2
-rank: 54 # DERIVED
+rank: 59 # DERIVED
 
 parent: "0020"
 children: []
 
 depends_on: []
-blocks: []
+blocks: ["0105"] # DERIVED
 spikes: []
 
 spec: src/specht/.spec/README.md
