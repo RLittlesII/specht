@@ -33,7 +33,13 @@ acceptance_criteria:
   - "B-008 — schema per kind by manifest file name, on-disk source"
   - "§ 9 carries a row naming a test for each id above."
 
-decisions: []
+decisions:
+  - |
+    2026-10-09, the repository owner, during planning; recorded by
+    spec-author as Manifest decision 0003: the file names live under one
+    manifest key, `frontmatterSchemas`, keyed `feature`, `task` and `epic`,
+    filled per kind from the default manifest and shipped as a tool-owned
+    key. Rejected: `item` as the kind name; `schemas` as the key name.
 
 out_of_scope:
   - "The embedded source and choosing between sources — § 5 #3, 0001-F7."

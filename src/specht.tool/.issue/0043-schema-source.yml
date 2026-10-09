@@ -23,7 +23,7 @@ claims:
   - B-011
 
 created: "2026-10-08"
-updated: "2026-10-08"
+updated: "2026-10-09"
 closed: null
 
 summary: |
@@ -38,6 +38,10 @@ acceptance_criteria:
   - "B-009 — manifest or argument selects on-disk frontmatter schemas"
   - "B-010 — embedded default ignores an on-disk edit"
   - "B-011 — report names the source selected"
+  - "0001-F5 B-008 rebind — once the runner selects the on-disk source
+    (B-009), the @B-008 'the check runs' step in
+    test/specht.acceptance/Manifest/ManifestSteps.cs goes through that
+    runner entry, and Manifest § 9's B-008 row moves Partial to Covered"
   - "§ 9 carries a row naming a test for each id above."
 
 decisions: []
