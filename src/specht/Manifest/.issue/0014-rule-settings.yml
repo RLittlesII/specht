@@ -40,8 +40,16 @@ acceptance_criteria:
   - "B-017 — no rule type, library or body loaded (C-3)"
   - "§ 9 carries a row naming a test for each id above."
 
-decisions: []
+decisions:
+  - |
+    2026-10-08, implementer at the owner's request: disable (B-011) and
+    re-grade (B-010) are one step in `SpecCheckRunner` over each rule's
+    collected violations, read from the manifest, before the single sort.
+    No chain of handlers, no decorator, no context object (ADR-0002, option
+    1). A chain around `ISpecRule` waits on a third per-rule behaviour and a
+    superseding ADR.
 
 out_of_scope:
   - "A rule plugin model — § 5 #1."
   - "What `--strict` does beyond warnings — 0001-F2."
+  - "A chain of handlers around ISpecRule — ADR-0002."

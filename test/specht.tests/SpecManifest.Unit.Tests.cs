@@ -5,8 +5,8 @@ using AwesomeAssertions;
 namespace specht.tests;
 
 /// <summary>
-/// The manifest loader over an in-memory file system (0001-F5 B-012, B-019, B-020): what it rejects, what it ignores, and
-/// what it fills from the default manifest.
+/// The manifest loader over an in-memory file system (0001-F5 B-012, B-019, B-020; 0001-F2 B-005, B-006, B-007): what it
+/// rejects and as which failure, what it ignores, and what it fills from the default manifest.
 /// </summary>
 [Trait("Tier", "Unit")]
 public sealed class SpecManifestUnitTests
@@ -20,6 +20,66 @@ public sealed class SpecManifestUnitTests
         { "feature", "^F[0-9]+[a-z]?$" },
         { "epic", "^[0-9]{4}$" },
     };
+
+    public static TheoryData<string, MockFileSystem> RootsThatAreNotDirectories =>
+        new()
+        {
+            { "no root at all", new MockFileSystem() },
+            { "a root that is a file", new MockFileSystem(new Dictionary<string, MockFileData> { [Root] = new(string.Empty) }) },
+        };
+
+    public static TheoryData<string> UnreadableManifests { get; } = new()
+    {
+        "{ \"sections\": ",
+        "[]",
+        "{ \"sections\": [1, 2] }",
+        "null",
+        "{ \"sections\": [null] }",
+    };
+
+    [Theory]
+    [MemberData(nameof(RootsThatAreNotDirectories))]
+    public void ARootThatIsNotADirectory_WhenLoaded_ShouldThrowRootNotFound(string because, MockFileSystem fileSystem)
+    {
+        // Given
+        var root = Root;
+
+        // When
+        var load = () => SpecManifest.Load(fileSystem, root);
+
+        // Then
+        load.Should().ThrowExactly<SpechtRootNotFoundException>(because);
+    }
+
+    [Fact]
+    public void ARootWithoutAManifest_WhenLoaded_ShouldThrowManifestNotFoundNamingTheManifestPath()
+    {
+        // Given
+        var fileSystem = new MockFileSystem();
+        fileSystem.AddDirectory(Root);
+
+        // When
+        var load = () => SpecManifest.Load(fileSystem, Root);
+
+        // Then
+        load.Should().ThrowExactly<SpechtManifestNotFoundException>().Which.Message.Should().Contain(SpecManifest.RelativePath);
+    }
+
+    [Theory]
+    [MemberData(nameof(UnreadableManifests))]
+    public void AManifestThatDoesNotParseIntoTheManifestShape_WhenLoaded_ShouldThrowUnreadableNamingOnlyTheRelativePath(string text)
+    {
+        // Given
+        var fileSystem = Holding(text);
+
+        // When
+        var load = () => SpecManifest.Load(fileSystem, Root);
+
+        // Then
+        var thrown = load.Should().ThrowExactly<SpechtManifestUnreadableException>().Which;
+        thrown.Message.Should().Contain(SpecManifest.RelativePath).And.NotContain(Root + "/");
+        thrown.InnerException.Should().NotBeNull();
+    }
 
     [Theory]
     [InlineData("sectons")]
@@ -35,7 +95,7 @@ public sealed class SpecManifestUnitTests
         var load = () => SpecManifest.Load(fileSystem, Root);
 
         // Then
-        load.Should().Throw<SpechtManifestException>().Which.Message.Should().Contain(key);
+        load.Should().ThrowExactly<SpechtManifestException>().Which.Message.Should().Contain(key);
     }
 
     [Theory]
@@ -105,10 +165,12 @@ public sealed class SpecManifestUnitTests
         structure.Tables.Should().ContainKey("9. Traceability Matrix").WhoseValue.Should().Equal("Claim ID", "Proof");
     }
 
-    private static MockFileSystem Holding(JsonObject manifest) =>
+    private static MockFileSystem Holding(JsonObject manifest) => Holding(manifest.ToJsonString());
+
+    private static MockFileSystem Holding(string manifest) =>
         new(new Dictionary<string, MockFileData>
         {
-            [Path.Combine(Root, ".spec", "schema", "spec-structure.schema.json")] = new(manifest.ToJsonString()),
+            [Path.Combine(Root, ".spec", "schema", "spec-structure.schema.json")] = new(manifest),
         });
 
     private static JsonObject DefaultManifest() =>

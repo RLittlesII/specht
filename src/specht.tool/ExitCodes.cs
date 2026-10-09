@@ -11,4 +11,10 @@ public static class ExitCodes
 
     /// <summary>An error-severity violation, or any violation under <c>--strict</c>.</summary>
     public const int Violations = 1;
+
+    /// <summary>The root is not a directory, or it has no manifest.</summary>
+    public const int MissingInput = 2;
+
+    /// <summary>The manifest is not well-formed JSON or not the manifest's shape.</summary>
+    public const int InvalidManifest = 3;
 }
