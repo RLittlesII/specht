@@ -25,6 +25,12 @@
     <Using Include="Xunit" />
   </ItemGroup>
 
+  <!-- The acceptance tier's launcher, linked rather than copied: an init test reads the process's stdout as a shell does,
+       since no seam beneath the command exists yet (0001-F4 § 8). -->
+  <ItemGroup>
+    <Compile Include="..\specht.acceptance\Tool.cs" Link="Tool.cs" />
+  </ItemGroup>
+
   <!-- The live schema set, copied into the output as hooked's test project did: the tests run against the contract the
        rules enforce, not a fixture copy of it. -->
   <ItemGroup>
