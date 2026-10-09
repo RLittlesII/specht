@@ -1,13 +1,20 @@
+using System.IO.Abstractions.TestingHelpers;
 using AwesomeAssertions;
+using Microsoft.Extensions.DependencyInjection;
 using specht.acceptance;
+using specht.tool;
+using specht.tool.Features.Init;
+using Spectre.Console.Cli.Testing;
+using Spectre.Console.Testing;
 
 namespace specht.tests;
 
 /// <summary>
-/// <c>specht init</c> through the built tool (<c>0001-F4</c> B-006, C-4): with any one of the eight files already under the
-/// root, stdout names each of the eight once, relative to the root with <c>/</c> separators, that one as skipped and every
-/// other as written. The scenario holds the feature template alone; this pins the decision for each file. The tool is
-/// launched as a process because no seam beneath the command exists yet (§ 8).
+/// <c>specht init</c> (<c>0001-F4</c> B-006, B-009, C-4). Through the built tool: with any one of the eight files already
+/// under the root, stdout names each of the eight once, relative to the root with <c>/</c> separators, that one as skipped
+/// and every other as written; the scenario holds the feature template alone, this holds every file, over the composition
+/// root and the real shipping copy. Through Spectre's command tester over an in-memory file system: with no
+/// <c>--root</c>, the writer is handed the working directory.
 /// </summary>
 [Trait("Tier", "Integration")]
 public sealed class InitCommandIntegrationTests : IDisposable
@@ -41,6 +48,27 @@ public sealed class InitCommandIntegrationTests : IDisposable
         }
 
         stdout.Should().NotContain(_sandbox).And.NotContain("\\");
+    }
+
+    [Fact]
+    public void NoRootOption_WhenInitRuns_ShouldWriteUnderTheWorkingDirectory()
+    {
+        // Given
+        var workingDirectory = Directory.GetCurrentDirectory();
+        var fileSystem = new MockFileSystem();
+        fileSystem.AddDirectory(workingDirectory);
+        var shippingCopy = new Dictionary<string, byte[]> { ["templates/v1/feature.md"] = "# Shipped\n"u8.ToArray() };
+        var services = new ServiceCollection();
+        services.AddSingleton(new InitWriter(shippingCopy, fileSystem));
+        var app = new CommandAppTester(new TypeRegistrar(services), console: new TestConsole().Width(80));
+        app.Configure(static config => config.AddCommand<InitCommand>("init"));
+
+        // When
+        var result = app.Run("init");
+
+        // Then
+        result.ExitCode.Should().Be(0, result.Output);
+        fileSystem.File.Exists(Path.Combine(workingDirectory, ".spec", "templates", "feature.md")).Should().BeTrue(result.Output);
     }
 
     public void Dispose()
