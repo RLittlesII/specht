@@ -2,7 +2,7 @@ id: "0061"
 type: task
 title: Report the check from SpecCheck without failing until rule settings exist
 
-status: in-progress
+status: done
 
 priority: high
 risk: 2
@@ -22,7 +22,7 @@ claims:
 
 created: "2026-10-08"
 updated: "2026-10-08"
-closed: null
+closed: "2026-10-08"
 
 summary: |
   Once 0001-F2's check command exists and before 0001-F5's rule settings
