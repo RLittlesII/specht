@@ -2,7 +2,7 @@ id: "0074"
 type: task
 title: Group minor and patch updates and hold the engine's three
 
-status: ready-for-architecture
+status: done
 
 priority: high
 risk: 2
@@ -25,7 +25,7 @@ claims:
 
 created: "2026-10-08"
 updated: "2026-10-09"
-closed: null
+closed: "2026-10-09"
 
 summary: |
   Group by ecosystem, change versions only where they are declared once
@@ -39,7 +39,13 @@ acceptance_criteria:
   - "B-008 — no update to Markdig, YamlDotNet or JsonSchema.Net while C-1 holds"
   - "§ 9 carries a row naming a test for each id above."
 
-decisions: []
+decisions:
+  - |
+    2026-10-08, owner: the build's mechanisms carry no tests (0055-F2
+    § 8), and the Renovate configuration is the build's, so the
+    criterion "§ 9 carries a row naming a test for each id above" is
+    superseded; B-001, B-003, B-004 and B-008 stay Missing in § 9, and
+    0055-F4 § 8 says so.
 
 out_of_scope:
   - "Lifting the engine hold — § 5 #3, under C-1."
