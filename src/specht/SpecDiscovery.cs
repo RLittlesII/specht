@@ -85,6 +85,13 @@ public static class SpecDiscovery
             && span[7] == '-';
     }
 
+    /// <summary>Gets <paramref name="path"/> relative to <paramref name="root"/>, with <c>/</c> separators (<c>0001-F3</c> B-021).</summary>
+    /// <param name="root">The root the tool was given.</param>
+    /// <param name="path">A path under it.</param>
+    /// <returns>The root-relative path.</returns>
+    public static string Relative(string root, string path) =>
+        Path.GetRelativePath(root, path).Replace(Path.DirectorySeparatorChar, '/');
+
     private static IEnumerable<string> SpecDirectories(string root)
     {
         var rootSpec = Path.Combine(root, ".spec");
@@ -112,9 +119,6 @@ public static class SpecDiscovery
 
     private static SpecLocation Location(string root, string path, SpecLayout layout) =>
         new(path, Relative(root, path), layout, Path.GetDirectoryName(path)!);
-
-    private static string Relative(string root, string path) =>
-        Path.GetRelativePath(root, path).Replace(Path.DirectorySeparatorChar, '/');
 
     private static readonly string[] ExcludedDirectories =
         [".git", ".artifacts", ".skillfile", ".claude", "graphify-out", "bin", "obj", "node_modules"];

@@ -1,0 +1,116 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "specht report",
+  "description": "The document specht writes for --json and --report (0001-F3). Within a tool major version it changes only by addition (C-4).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "schemaSource",
+    "layouts",
+    "itemCount",
+    "rulesEvaluated",
+    "errorCount",
+    "warningCount",
+    "violations"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "description": "The schema version the tree was checked against.",
+      "type": "integer",
+      "minimum": 1
+    },
+    "schemaSource": {
+      "description": "Where the schemas the check used came from: the set embedded in the tool, the repository's own files, or the on-disk copy of a recorded upstream source.",
+      "enum": ["embedded", "disk", "upstream"]
+    },
+    "layouts": {
+      "description": "Each layout, with how many specifications were discovered in it.",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["layout", "specificationCount"],
+        "properties": {
+          "layout": {
+            "description": "legacy is epics/<epic>/<feature>/spec.md; coLocated is <area>/.spec/README.md.",
+            "enum": ["legacy", "coLocated"]
+          },
+          "specificationCount": {
+            "type": "integer",
+            "minimum": 0
+          }
+        }
+      }
+    },
+    "itemCount": {
+      "description": "How many task, test, bug and spike files sit beside the specifications.",
+      "type": "integer",
+      "minimum": 0
+    },
+    "rulesEvaluated": {
+      "description": "How many SPEC### rule ids were evaluated.",
+      "type": "integer",
+      "minimum": 0
+    },
+    "errorCount": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "warningCount": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "violations": {
+      "description": "Every violation, errors first, then by file, line and rule id.",
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/violation"
+      }
+    }
+  },
+  "$defs": {
+    "violation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["ruleId", "severity", "file", "line", "message", "expected"],
+      "properties": {
+        "ruleId": {
+          "type": "string",
+          "pattern": "^SPEC[0-9]{3}$"
+        },
+        "severity": {
+          "enum": ["error", "warning"]
+        },
+        "file": {
+          "description": "Relative to the root the tool was given, with / separators; never absolute.",
+          "type": "string",
+          "minLength": 1,
+          "not": {
+            "anyOf": [
+              { "pattern": "^/" },
+              { "pattern": "^[A-Za-z]:" },
+              { "pattern": "\\\\" }
+            ]
+          }
+        },
+        "line": {
+          "description": "One-based line, or 0 when the file as a whole is at fault.",
+          "type": "integer",
+          "minimum": 0
+        },
+        "identifier": {
+          "description": "The identifier at fault; absent when the rule has none.",
+          "type": "string"
+        },
+        "message": {
+          "type": "string"
+        },
+        "expected": {
+          "description": "What the rule expected, as named members per rule family. Open: a rule family adds members, never removes or renames one (C-2, C-4).",
+          "type": "object"
+        }
+      }
+    }
+  }
+}

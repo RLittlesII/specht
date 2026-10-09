@@ -1,5 +1,4 @@
-using System.Text.Json;
-using System.Text.Json.Serialization;
+using specht.Report;
 
 namespace specht;
 
@@ -37,37 +36,13 @@ public static class SpecCheckRunner
             ordered);
     }
 
-    /// <summary>
-    /// Writes <paramref name="report"/> as JSON to <paramref name="path"/>.
-    /// </summary>
-    /// <remarks>
-    /// Every path in the payload is repository-relative. A report carrying
-    /// absolute paths is useless on another checkout and harmful if it is ever
-    /// committed - which is the lesson <c>format.json</c> already taught here.
-    /// </remarks>
+    /// <summary>Writes <paramref name="report"/> to <paramref name="path"/> as the report document (<c>0001-F3</c> B-008).</summary>
+    /// <param name="report">The run's report.</param>
+    /// <param name="path">Where the document is written.</param>
     public static void WriteReport(SpecCheckReport report, string path)
     {
-        var payload = new
-        {
-            generatedAtUtc = DateTimeOffset.UtcNow.ToString("O"),
-            specificationCount = report.SpecificationCount,
-            legacyCount = report.LegacyCount,
-            coLocatedCount = report.CoLocatedCount,
-            itemCount = report.ItemCount,
-            rulesEvaluated = report.RulesEvaluated,
-            violations = report.Violations.Select(static violation => new
-            {
-                ruleId = violation.RuleId,
-                severity = violation.Severity.ToString().ToLowerInvariant(),
-                file = violation.File,
-                line = violation.Line,
-                identifier = violation.Identifier,
-                message = violation.Message,
-            }),
-        };
-
         Directory.CreateDirectory(Path.GetDirectoryName(path)!);
-        File.WriteAllText(path, JsonSerializer.Serialize(payload, ReportOptions));
+        File.WriteAllText(path, SpecReportDocument.From(report).ToJson());
     }
 
     /// <summary>
@@ -81,10 +56,4 @@ public static class SpecCheckRunner
             .Select(static type => (ISpecRule)Activator.CreateInstance(type)!)
             .OrderBy(static rule => rule.Id, StringComparer.Ordinal)
             .ToList();
-
-    private static readonly JsonSerializerOptions ReportOptions = new()
-    {
-        WriteIndented = true,
-        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
-    };
 }

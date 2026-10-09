@@ -61,7 +61,7 @@ public sealed class SpecModel
         foreach (var path in SpecDiscovery.FindChildItems(locations))
         {
             items.Add(new ChildItem(
-                Relative(root, path),
+                SpecDiscovery.Relative(root, path),
                 Path.GetFileName(path),
                 FrontmatterReader.Read(path),
                 Path.GetDirectoryName(path)!));
@@ -76,13 +76,10 @@ public sealed class SpecModel
 
             foreach (var path in paths.Order(StringComparer.Ordinal))
             {
-                epics.Add(new EpicFile(Relative(root, path), FrontmatterReader.Read(path)));
+                epics.Add(new EpicFile(SpecDiscovery.Relative(root, path), FrontmatterReader.Read(path)));
             }
         }
 
         return new SpecModel(root, features, items, epics, schemas);
     }
-
-    private static string Relative(string root, string path) =>
-        Path.GetRelativePath(root, path).Replace(Path.DirectorySeparatorChar, '/');
 }
