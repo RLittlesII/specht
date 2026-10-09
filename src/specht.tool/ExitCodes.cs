@@ -15,6 +15,6 @@ public static class ExitCodes
     /// <summary>The root is not a directory, or it has no manifest.</summary>
     public const int MissingInput = 2;
 
-    /// <summary>The manifest is not well-formed JSON or not the manifest's shape.</summary>
+    /// <summary>The manifest is not well-formed JSON, not the manifest's shape, or a manifest the engine rejects.</summary>
     public const int InvalidManifest = 3;
 }

@@ -39,6 +39,10 @@ public sealed class CheckCommand(IAnsiConsole console, Func<string, SpecCheckRep
         {
             return Fail(ExitCodes.InvalidManifest, $"specht: {exception.Message}");
         }
+        catch (SpechtManifestException exception)
+        {
+            return Fail(ExitCodes.InvalidManifest, $"specht: {exception.Message}");
+        }
 
         var document = SpecReportDocument.From(report);
 
