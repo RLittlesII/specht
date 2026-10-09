@@ -48,7 +48,7 @@ public sealed class SpecSchemas
     /// <c>$id</c>, so a second load in one process - two roots in one test
     /// run, say - would throw rather than simply reading the schemas again.
     /// </remarks>
-    /// <exception cref="SpecManifestException">The manifest is rejected; no frontmatter schema is read.</exception>
+    /// <exception cref="SpechtManifestException">The manifest is rejected; no frontmatter schema is read.</exception>
     public static SpecSchemas Load(IFileSystem fileSystem, string root)
     {
         var structure = SpecManifest.Load(fileSystem, root);

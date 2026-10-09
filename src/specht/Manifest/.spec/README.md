@@ -135,7 +135,7 @@ Item `0011` builds the loader; the families of keys (`0014`-`0019`) extend this 
 
 The literal each claim moves is cited by file and line in `hooked`'s draft `0008-F3` § 3 (`hooked@a6d056f:tools/SpecGovernance/.spec/README.md`, `0001-F1` A-2).
 
-**The loader (item `0011`).** [`SpecManifest`](../../SpecManifest.cs) is the one reader of the manifest. `Load(IFileSystem, root)` reads `<root>/.spec/schema/spec-structure.schema.json` as a `JsonObject`, collects every top-level key that neither begins with `$` nor is one the engine knows (`sections`, `tables`, `identifiers`), and throws [`SpecManifestException`](../../SpecManifestException.cs) naming all of them, with the manifest's repository-relative path, before it builds anything. It then returns the [`SpecStructure`](../../SpecStructure.cs) the rules already read, so no rule changed.
+**The loader (item `0011`).** [`SpecManifest`](../../SpecManifest.cs) is the one reader of the manifest. `Load(IFileSystem, root)` reads `<root>/.spec/schema/spec-structure.schema.json` as a `JsonObject`, collects every top-level key that neither begins with `$` nor is one the engine knows (`sections`, `tables`, `identifiers`), and throws [`SpechtManifestException`](../../SpechtManifestException.cs) naming all of them, with the manifest's repository-relative path, before it builds anything. It then returns the [`SpecStructure`](../../SpecStructure.cs) the rules already read, so no rule changed.
 
 **Filling an omitted value (B-019).** A top-level key the manifest leaves out reads as the default manifest's value. Inside `identifiers` the fill is per grammar: a grammar is read by name, so a manifest declaring some grammars gets the default for the rest. `sections` and each `tables` entry are replaced whole, because a section list or a header row is one value, not a set of defaults to merge into. Later families choose their own granularity as they add their keys.
 
@@ -146,7 +146,7 @@ The literal each claim moves is cited by file and line in `hooked`'s draft `0008
 **The `IFileSystem` seam (owner direction 2026-10-08).** File access goes through `System.IO.Abstractions` (`TestableIO.System.IO.Abstractions.Wrappers`). `SpecManifest.Load` and `SpecSchemas.Load` take the `IFileSystem`; `SpecModel.Load` passes `new FileSystem()`. Deferred, each to the item that first needs a test double there:
 
 - `SpecCheckRunner.Run`, `SpecModel.Load`, `SpecDiscovery`, `SpecDocument.Parse`, `FeatureFileReader` and `FrontmatterReader` still read through `File` and `Directory`. Threading the abstraction through them is a change across the copied engine with no claim asking for it; an overload of `Run` taking an `IFileSystem` that only the manifest honoured would be a seam that lies.
-- The host registers no `IFileSystem`: no command consumes one today. `0013`, which maps `SpecManifestException` to exit `3` and stderr, is where the host first meets the loader.
+- The host registers no `IFileSystem`: no command consumes one today. `0013`, which maps `SpechtManifestException` to exit `3` and stderr, is where the host first meets the loader.
 
 **What 0011 does not reject.** A manifest that does not parse, or a known key of the wrong shape, still fails as it did before, with the library's exception; the rejections each family owns (rule ids, grammars, roles, exclusion entries) are `0014`-`0016` and `0019`.
 
@@ -154,7 +154,7 @@ The literal each claim moves is cited by file and line in `hooked`'s draft `0008
 
 <!-- last written by: test-writer, 2026-10-08 -->
 
-- **The seam** (item `0011`): `SpecManifest.Load(IFileSystem, root)` reads `<root>/.spec/schema/spec-structure.schema.json` (C-6) and returns the `SpecStructure`, or throws `SpecManifestException` whose message names what it rejects. A unit test hands it a `MockFileSystem` holding a synthetic manifest under the relative root `repo`, so it touches no disk.
+- **The seam** (item `0011`): `SpecManifest.Load(IFileSystem, root)` reads `<root>/.spec/schema/spec-structure.schema.json` (C-6) and returns the `SpecStructure`, or throws `SpechtManifestException` whose message names what it rejects. A unit test hands it a `MockFileSystem` holding a synthetic manifest under the relative root `repo`, so it touches no disk.
 - **Unit** (`test/specht.tests/SpecManifest.Unit.Tests.cs`):
   - B-012 - mechanism: the loader's check of each top-level key against the keys it knows. `AManifestWithAKeyTheEngineDoesNotKnow_WhenLoaded_ShouldRejectItNamingTheKey`, over a misspelt key and an annotation written without its `$`.
   - B-018 - mechanism: that check, made in `Load` and not deferred to a reader, so the rejection exists before the runner holds a structure. Pinned by the B-012 unit test; the ordering against the rules is the integration test below.

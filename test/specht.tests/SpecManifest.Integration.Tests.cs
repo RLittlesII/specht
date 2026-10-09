@@ -35,6 +35,6 @@ public sealed class SpecManifestIntegrationTests
         var run = () => tree.Run();
 
         // Then
-        run.Should().Throw<SpecManifestException>().Which.Message.Should().Contain("glossary");
+        run.Should().Throw<SpechtManifestException>().Which.Message.Should().Contain("glossary");
     }
 }

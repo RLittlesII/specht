@@ -21,7 +21,7 @@ public static class SpecManifest
     /// <param name="fileSystem">The file system the manifest is read through.</param>
     /// <param name="root">The repository root.</param>
     /// <returns>The section contract and id grammars, every omitted value read as the default manifest's.</returns>
-    /// <exception cref="SpecManifestException">The manifest carries a key the engine does not know.</exception>
+    /// <exception cref="SpechtManifestException">The manifest carries a key the engine does not know.</exception>
     public static SpecStructure Load(IFileSystem fileSystem, string root)
     {
         var path = fileSystem.Path.Combine(root, ".spec", "schema", "spec-structure.schema.json");
@@ -34,7 +34,7 @@ public static class SpecManifest
 
         if (unknown.Count > 0)
         {
-            throw new SpecManifestException(
+            throw new SpechtManifestException(
                 $"{RelativePath}: the engine does not know the key {string.Join(", ", unknown)}.");
         }
 

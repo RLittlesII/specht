@@ -86,7 +86,7 @@ public sealed class ManifestSteps
         {
             _report = SpecCheckRunner.Run(Tree.Root);
         }
-        catch (SpecManifestException rejection)
+        catch (SpechtManifestException rejection)
         {
             _rejection = rejection;
         }
@@ -132,6 +132,6 @@ public sealed class ManifestSteps
     private SpecTree? _tree;
     private JsonObject? _manifest;
     private SpecCheckReport? _report;
-    private SpecManifestException? _rejection;
+    private SpechtManifestException? _rejection;
     private string? _defaultClaimGrammar;
 }

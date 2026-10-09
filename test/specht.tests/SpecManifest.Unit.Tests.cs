@@ -35,7 +35,7 @@ public sealed class SpecManifestUnitTests
         var load = () => SpecManifest.Load(fileSystem, Root);
 
         // Then
-        load.Should().Throw<SpecManifestException>().Which.Message.Should().Contain(key);
+        load.Should().Throw<SpechtManifestException>().Which.Message.Should().Contain(key);
     }
 
     [Theory]
