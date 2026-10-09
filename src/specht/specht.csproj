@@ -20,4 +20,12 @@
                       LogicalName="specht.default-manifest.json" />
   </ItemGroup>
 
+  <!-- Every shipped version's frontmatter schemas (0001-F7 B-004), linked from the tool's shipping copy, not copied,
+       under the same schema/v<n>/<file> names. -->
+  <ItemGroup>
+    <EmbeddedResource Include="..\specht.tool\schema\v*\*.frontmatter.schema.json"
+                      Link="schema\%(RecursiveDir)%(Filename)%(Extension)"
+                      LogicalName="schema/$([MSBuild]::ValueOrDefault('%(RecursiveDir)', '').Replace('\', '/'))%(Filename)%(Extension)" />
+  </ItemGroup>
+
 </Project>

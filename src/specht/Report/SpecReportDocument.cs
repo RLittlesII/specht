@@ -32,8 +32,8 @@ public sealed record SpecReportDocument(
     /// <returns>The document.</returns>
     public static SpecReportDocument From(SpecCheckReport report) =>
         new(
-            1,
-            SpecSchemaSource.Disk,
+            report.SchemaVersion,
+            SpecSchemaSource.Embedded,
             [new SpecReportLayout(SpecLayout.Legacy, report.LegacyCount), new SpecReportLayout(SpecLayout.CoLocated, report.CoLocatedCount)],
             report.ItemCount,
             report.RulesEvaluated,

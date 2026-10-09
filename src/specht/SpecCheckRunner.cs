@@ -8,24 +8,33 @@ namespace specht;
 /// </summary>
 public static class SpecCheckRunner
 {
-    /// <summary>Loads the tree under <paramref name="root"/> and evaluates every rule.</summary>
-    public static SpecCheckReport Run(string root)
+    /// <summary>Loads the tree under <paramref name="root"/> and evaluates its rules with the embedded version set.</summary>
+    public static SpecCheckReport Run(string root) => Run(root, SchemaVersions.Embedded);
+
+    /// <summary>
+    /// Loads the tree under <paramref name="root"/> and evaluates the rules of the version its manifest pins from
+    /// <paramref name="versions"/>: a rule outside that version's vocabulary is not evaluated and a violation it would
+    /// report is dropped (<c>0001-F7</c> B-014).
+    /// </summary>
+    public static SpecCheckReport Run(string root, SchemaVersions versions)
     {
-        var model = SpecModel.Load(root);
-        var rules = Discover();
+        var model = SpecModel.Load(root, versions);
+        var version = versions.Select(model.Schemas.Structure.SchemaVersion);
+        var rules = Discover().Where(rule => rule.ReportedIds.Any(version.RuleIds.Contains)).ToList();
         var violations = new List<SpecViolation>();
 
         foreach (var rule in rules)
         {
-            violations.AddRange(rule.Evaluate(model));
+            violations.AddRange(rule.Evaluate(model).Where(violation => version.RuleIds.Contains(violation.RuleId)));
         }
 
         return new SpecCheckReport(
+            version.Number,
             model.Features.Count,
             model.LegacyCount,
             model.CoLocatedCount,
             model.Items.Count,
-            rules.Sum(static rule => rule.ReportedIds.Count),
+            rules.SelectMany(static rule => rule.ReportedIds).Count(version.RuleIds.Contains),
             Order(violations));
     }
 

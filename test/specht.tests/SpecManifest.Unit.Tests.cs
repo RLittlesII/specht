@@ -37,6 +37,59 @@ public sealed class SpecManifestUnitTests
         "{ \"sections\": [null] }",
     };
 
+    /// <summary>Gets a manifest's <c>schemaVersion</c>, absent when null, and the version the loader must read (<c>0001-F7</c> B-002, B-003).</summary>
+    public static TheoryData<string, int?, int> Pins { get; } = new()
+    {
+        { "a manifest with no schemaVersion is version 1", null, 1 },
+        { "a manifest pinning 1", 1, 1 },
+        { "a pin the tool does not ship still loads; the version set rejects it", 7, 7 },
+    };
+
+    /// <summary>Gets <c>schemaVersion</c> values that are not an integer of at least 1, as JSON.</summary>
+    public static TheoryData<string> RejectedPins { get; } = new()
+    {
+        "0",
+        "-1",
+        "1.5",
+        "\"1\"",
+        "true",
+        "null",
+        "[1]",
+    };
+
+    [Theory]
+    [MemberData(nameof(Pins))]
+    public void AManifestsSchemaVersion_WhenLoaded_ShouldBeTheVersionItPins(string because, int? pinned, int expected)
+    {
+        // Given
+        var manifest = DefaultManifest();
+        if (pinned is { } version)
+        {
+            manifest["schemaVersion"] = version;
+        }
+
+        // When
+        var structure = SpecManifest.Load(Holding(manifest), Root);
+
+        // Then
+        structure.SchemaVersion.Should().Be(expected, because);
+    }
+
+    [Theory]
+    [MemberData(nameof(RejectedPins))]
+    public void AManifestWhoseSchemaVersionIsNotAnIntegerOfAtLeastOne_WhenLoaded_ShouldRejectIt(string pinned)
+    {
+        // Given
+        var fileSystem = Holding($"{{ \"schemaVersion\": {pinned}, {DefaultManifest().ToJsonString()[1..]}");
+
+        // When
+        var load = () => SpecManifest.Load(fileSystem, Root);
+
+        // Then
+        load.Should().Throw<Exception>().Which.Should().Match<Exception>(static thrown =>
+            thrown is SpechtManifestException || thrown is SpechtManifestUnreadableException);
+    }
+
     [Theory]
     [MemberData(nameof(RootsThatAreNotDirectories))]
     public void ARootThatIsNotADirectory_WhenLoaded_ShouldThrowRootNotFound(string because, MockFileSystem fileSystem)
