@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Nuke.Common;
 using Nuke.Common.CI.GitHubActions;
@@ -16,7 +17,7 @@ using Rocket.Surgery.Nuke.GithubActions;
     AutoGenerate = true,
     OnPullRequestBranches = ["main"],
     OnPushBranches = ["main"],
-    InvokedTargets = [nameof(Format), nameof(Compile), nameof(Test), nameof(SpecCheck), nameof(Pack)],
+    InvokedTargets = [nameof(ContinuousIntegration)],
     NonEntryTargets =
     [
         nameof(ICIEnvironment.CIEnvironment),
@@ -32,8 +33,16 @@ using Rocket.Surgery.Nuke.GithubActions;
     ],
     Enhancements = [nameof(ContinuousIntegrationMiddleware)]
 )]
+[SuppressMessage("Design", "RSA2002:Private members should appear after non-private members", Justification = "Build")]
 internal sealed partial class Build
 {
+    private Target ContinuousIntegration => _ => _
+        .OnlyWhenStatic(GitHubActionsTasks.IsRunningOnGitHubActions)
+        .DependsOn(Format)
+        .DependsOn(Compile)
+        .DependsOn(Test)
+        .DependsOn(SpecCheck);
+
     public static RocketSurgeonGitHubActionsConfiguration ContinuousIntegrationMiddleware(
         RocketSurgeonGitHubActionsConfiguration configuration)
     {
@@ -152,13 +161,13 @@ internal sealed partial class Build
         /// A function that evaluates whether this build is running on GitHub Actions.
         /// </summary>
         public static Func<bool> IsRunningOnGitHubActions => static ()
-            => NukeBuild.Host is GitHubActions || Environment.GetEnvironmentVariable("GITHUB_ACTIONS") == true.ToString();
+            => Host is GitHubActions || Environment.GetEnvironmentVariable("GITHUB_ACTIONS") == true.ToString();
 
         /// <summary>
         /// A function that evaluates whether this build is running on GitHub Actions.
         /// </summary>
         public static Func<bool> IsNotRunningOnGitHubActions => static ()
-            => !(NukeBuild.Host is GitHubActions ||
+            => !(Host is GitHubActions ||
                  Environment.GetEnvironmentVariable("GITHUB_ACTIONS") == true.ToString());
     }
 

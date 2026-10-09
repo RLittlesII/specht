@@ -126,33 +126,32 @@ Delivered so far by item 0064.
 
 <!-- last written by: test-writer, 2026-10-08 -->
 
-- **Acceptance.** `continuous-integration.feature` is linked into `test/specht.acceptance`. [`ContinuousIntegration/ContinuousIntegrationSteps.cs`](../../../test/specht.acceptance/ContinuousIntegration/ContinuousIntegrationSteps.cs) binds B-001 to B-005, B-007, B-008 and B-010 by reading the committed `ci.yml` with YamlDotNet - the file GitHub runs - and never calls GitHub (C-3).
-- **What the tests cannot see** is a runner. B-005 is proven structurally - the Windows leg runs `Test` through the entry script, `fail-fast` is off, and nothing sets `continue-on-error` or `needs` - with the exit code itself proven by `0055-F1` B-018. The first live run is observed on the pull request that delivers 0064.
-- **Mutations.** Moving the `push` trigger to another branch turned B-002 red; dropping `Pack` from the gate steps turned B-004 red.
-- **The build's own scenarios** copy `ci.yml` and `build.cmd` into each synthetic tree: with `AutoGenerate` on, every build regenerates the workflow into the root it is given, and generation fails without them. The copies make that rewrite produce the same bytes, which `0055-F1` B-004's snapshot checks.
-- **Unbound:** B-006 (`0066`), B-009 (`0065`) and B-011 (`0067`) report Skipped.
-- **Mechanisms, per bound claim.** Read in [`Build.GitHubActions.cs`](../../Build.GitHubActions.cs).
-  - B-004: `ContinuousIntegrationMiddleware` removes the generator's tool-install and tool-restore steps, then rewrites every run step that names `--target ` into `./build.cmd` plus the text from `--target ` on. That is a derivation; no unit test - `Partial`.
-  - B-001, B-002, B-003, B-005, B-007, B-008, B-010: no mechanism of their own. The trigger branches, the two images, `FailFast = false`, the job name and the read-only permissions are each a literal setting the scenario reads back from `ci.yml`.
-- **Verdict.** B-004's rewrite has no unit test because no `*.Tests` project references the build; `0098` gives it one ([lesson 0003](../../../.spec/lessons/0003-the-unit-tier-had-no-home.md)).
+- **CI has no tests (owner, 2026-10-08).** "I don't think we need ReqnRoll (or any tests) for the build. Keep what we have, in case I change my mind, don't wire them into CI." `continuous-integration.feature` is no longer linked into `test/specht.acceptance`, so none of its scenarios is discovered or run. [`ContinuousIntegration/ContinuousIntegrationSteps.cs`](../../../test/specht.acceptance/ContinuousIntegration/ContinuousIntegrationSteps.cs) stays in the tree and compiles, bound to no linked feature. Every § 9 row is therefore `Missing`: a step class that never runs pins nothing.
+- **To restore the tier**, relink `continuous-integration.feature` in `test/specht.acceptance/specht.acceptance.csproj` with its literal `ReqnrollFeatureFile` entry, then check that the discovered test count rose.
+- **What the unlinked scenarios did, while they ran.** `ContinuousIntegrationSteps` bound B-001 to B-005, B-007, B-008 and B-010. It read the committed `ci.yml` with YamlDotNet and never called GitHub (C-3). Moving the `push` trigger to another branch turned B-002 red. Dropping `Pack` from the gate steps turned B-004 red. Those results describe the workflow as it was then. Nothing re-checks them now. A runner was never under test: the first live run is the one observed on the pull request that delivered 0064.
+- **Mechanisms, per claim.** Read in [`Build.GitHubActions.cs`](../../Build.GitHubActions.cs). None has a test, by the owner's decision above.
+  - B-004: `ContinuousIntegrationMiddleware` removes the generator's tool-install and tool-restore steps. It then rewrites every run step that names `--target ` into `./build.cmd`, followed by the text from `--target ` onward. This is a derivation.
+  - B-001, B-002, B-003, B-005, B-007, B-008, B-010: no mechanism of their own. The trigger branches, the two images, `FailFast = false`, the job name and the read-only permissions are each a literal setting in `ci.yml`.
+  - B-006 (`0066`), B-009 (`0065`), B-011 (`0067`): not built yet.
+- **Verdict.** B-004's rewrite is testable as it stands, given the generated step list. It has no test because the owner decided CI needs none, not because the design prevents it.
 
 ## 9. Traceability Matrix
 
 <!-- last written by: test-writer, 2026-10-08 -->
 
-| Claim ID | Scenario                                          | Test                         | Status  |
-| -------- | ------------------------------------------------- | ---------------------------- | ------- |
-| B-001    | A pull request is built                           | `ContinuousIntegrationSteps` | Covered |
-| B-002    | A push to main is built                           | `ContinuousIntegrationSteps` | Covered |
-| B-003    | Every run covers Linux and Windows                | `ContinuousIntegrationSteps` | Covered |
-| B-004    | Every operating system runs every gate            | `ContinuousIntegrationSteps` | Partial |
-| B-005    | A failing gate fails its operating system's check | `ContinuousIntegrationSteps` | Covered |
-| B-006    | A specification violation is shown on the diff    | Missing                      | Missing |
-| B-007    | Check names do not change between runs            | `ContinuousIntegrationSteps` | Covered |
-| B-008    | Integration never publishes                       | `ContinuousIntegrationSteps` | Covered |
-| B-009    | A stale workflow fails the run                    | Missing                      | Missing |
-| B-010    | Each operating system is its own check            | `ContinuousIntegrationSteps` | Covered |
-| B-011    | A run reads the feed with its own token           | Missing                      | Missing |
+| Claim ID | Scenario                                          | Test    | Status  |
+| -------- | ------------------------------------------------- | ------- | ------- |
+| B-001    | A pull request is built                           | Missing | Missing |
+| B-002    | A push to main is built                           | Missing | Missing |
+| B-003    | Every run covers Linux and Windows                | Missing | Missing |
+| B-004    | Every operating system runs every gate            | Missing | Missing |
+| B-005    | A failing gate fails its operating system's check | Missing | Missing |
+| B-006    | A specification violation is shown on the diff    | Missing | Missing |
+| B-007    | Check names do not change between runs            | Missing | Missing |
+| B-008    | Integration never publishes                       | Missing | Missing |
+| B-009    | A stale workflow fails the run                    | Missing | Missing |
+| B-010    | Each operating system is its own check            | Missing | Missing |
+| B-011    | A run reads the feed with its own token           | Missing | Missing |
 
 ## 10. Lessons / Spec Deltas
 

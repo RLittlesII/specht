@@ -7,8 +7,6 @@
 
   <!-- One literal entry per linked .feature file; a batched glob silently discovers zero tests (specht-conventions § Testing). -->
   <ItemGroup>
-    <ReqnrollFeatureFile Include="..\..\.build\.spec\build.feature" Link="Features\build.feature" />
-    <ReqnrollFeatureFile Include="..\..\.build\ContinuousIntegration\.spec\continuous-integration.feature" Link="Features\continuous-integration.feature" />
     <ReqnrollFeatureFile Include="..\..\src\specht\.spec\engine.feature" Link="Features\engine.feature" />
     <ReqnrollFeatureFile Include="..\..\src\specht.tool\Features\Check\.spec\check.feature" Link="Features\check.feature" />
   </ItemGroup>

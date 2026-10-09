@@ -23,6 +23,8 @@ internal partial class Build : NukeBuild
 
     private AbsolutePath PackageDirectory => ArtifactsDirectory / "nupkg";
 
+    private AbsolutePath CoverageDirectory => ArtifactsDirectory / "coverage";
+
     // B-019, C-3: the Markdown formatter runs at the exact version package.json pins, never a version fetched as latest.
     private string PrettierVersion
     {
@@ -33,7 +35,7 @@ internal partial class Build : NukeBuild
         }
     }
 
-    private Target Restore => _ => _
+    private Target Restore => definition => definition
         .Executes(() =>
         {
             // B-010: the tools the build and the hook invoke, at the versions the local tool manifest pins.
@@ -41,7 +43,7 @@ internal partial class Build : NukeBuild
             DotNetRestore(s => s.SetProjectFile(Solution));
         });
 
-    private Target Compile => _ => _
+    private Target Compile => definition => definition
         .DependsOn(Restore)
         .Executes(() => DotNetBuild(s => s
             .SetProjectFile(Solution)
@@ -49,15 +51,22 @@ internal partial class Build : NukeBuild
             .EnableNoRestore()));
 
     // B-005: every test project in the solution - the unit, integration and acceptance tiers.
-    private Target Test => _ => _
+    // 0055-F3 B-001, C-3: the same run writes one Cobertura report per test project; the directory is emptied first so
+    // no earlier run's report is counted or uploaded.
+    private Target Test => definition => definition
         .DependsOn(Compile)
-        .Executes(() => DotNet(
-            $"test --solution {Solution.Path} --configuration {Configuration} --no-build",
-            workingDirectory: RootDirectory));
+        .Executes(() =>
+        {
+            CoverageDirectory.CreateOrCleanDirectory();
+            DotNet(
+                $"test --solution {Solution.Path} --configuration {Configuration} --no-build " +
+                $"--coverage --coverage-output-format cobertura --results-directory {CoverageDirectory}",
+                workingDirectory: RootDirectory);
+        });
 
     // B-003, B-017: C# and Markdown, verified and never fixed (C-2, B-004); B-020: given --files, those and no other.
     // Both checks run before the target fails, so one formatter's failure never hides the other's files.
-    private Target Format => _ => _
+    private Target Format => definition => definition
         .DependsOn(Restore)
         .Executes(() =>
         {
@@ -83,7 +92,7 @@ internal partial class Build : NukeBuild
         });
 
     // B-009: exactly one specht.tool.<version>.nupkg under .artifacts/nupkg/.
-    private Target Pack => _ => _
+    private Target Pack => definition => definition
         .DependsOn(Compile)
         .Produces(PackageDirectory / "*.nupkg")
         .Executes(() =>
@@ -96,8 +105,9 @@ internal partial class Build : NukeBuild
                 .EnableNoBuild());
         });
 
-    // B-023: until 0001-F2's check command exists there is nothing to run (C-7, decision 0001).
-    private Target SpecCheck => static _ => _
+    // B-023: until 0001-F2's check command exists, there is nothing to run (C-7, decision 0001).
+    private Target SpecCheck => definition => definition
+        .DependsOn(Test)
         .Executes(static () => Log.Information("SpecCheck: the check is not yet available; 0001-F2's check command does not exist yet"));
 
     private static string Include(string[]? files) => files is null ? string.Empty : $"--include {Quote(files)}";
@@ -106,7 +116,7 @@ internal partial class Build : NukeBuild
 
     // --verify-no-changes reports and writes nothing, so analyzer code fixes never apply (C-2).
     private bool CheckCSharp(string[]? files) =>
-        Run(DotNetTasks.DotNetPath, $"format {Solution.Path} --verify-no-changes --no-restore {Include(files)}");
+        Run(DotNetPath, $"format {Solution.Path} --verify-no-changes --no-restore {Include(files)}");
 
     private bool CheckMarkdown(string[]? files)
     {

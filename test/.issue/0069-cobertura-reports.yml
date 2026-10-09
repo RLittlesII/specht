@@ -2,7 +2,7 @@ id: "0069"
 type: task
 title: Write one Cobertura report per test project
 
-status: ready-for-architecture
+status: done
 
 priority: high # DERIVED
 risk: 2
@@ -22,7 +22,7 @@ claims:
 
 created: "2026-10-08"
 updated: "2026-10-08"
-closed: null
+closed: "2026-10-08"
 
 summary: |
   Collect coverage from the tiers `Test` already runs (C-3), never a
@@ -32,7 +32,24 @@ acceptance_criteria:
   - "B-001 — `Test`: one Cobertura file per test project under `.artifacts/coverage/`"
   - "§ 9 carries a row naming a test for each id above."
 
-decisions: []
+decisions:
+  - |
+    2026-10-08, implementer: each report keeps the coverage extension's
+    GUID name, `<guid>.cobertura.xml`. Naming it per project would need a
+    `TestingPlatformCommandLineArguments` property in each test project.
+    No claim needs the name: the upload step in
+    `.build/Build.GitHubActions.cs` globs
+    `.artifacts/coverage/**/*.cobertura.xml`, and `specht-conventions`
+    documents `.artifacts/coverage/*.cobertura.xml`.
+  - |
+    2026-10-08, implementer: B-001's § 9 row stays `Missing`. The owner
+    decided: "I don't think we need ReqnRoll (or any tests) for the build.
+    Keep what we have, in case I change my mind, don't wire them into CI."
+    B-001 was verified by hand: a full `./build.sh` wrote two reports, one
+    each for `specht.tests` and `specht.acceptance`, naming only files
+    under `src/specht/` and `src/specht.tool/` (C-4). That check pins
+    nothing for the next change, so the second acceptance criterion is
+    left unmet by the owner's decision, not by an omission.
 
 out_of_scope:
   - "Running the tests — § 5 #3, 0055-F1."
