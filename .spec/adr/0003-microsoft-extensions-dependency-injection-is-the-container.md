@@ -8,9 +8,9 @@ type: adr
 
 ## Status
 
-proposed - asked for by the owner on 2026-10-08 ("There should be an ADR for
-using MSFT DI"), as a record separate from ADR-0001. Acceptance is the
-owner's.
+accepted - 2026-10-08, by the owner. Asked for by the owner on 2026-10-08
+("There should be an ADR for using MSFT DI"), as a record separate from
+ADR-0001, and proposed on pull request #18.
 
 ## Context
 
