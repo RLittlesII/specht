@@ -1,0 +1,71 @@
+id: "0114"
+type: task
+title: Run each test tier as its own CI step
+
+status: ready-for-architecture
+
+priority: high
+risk: 3
+rank: 91
+
+parent: "0063"
+children: []
+
+depends_on: ["0058"] # calls 0058's UnitTest, IntegrationTest and AcceptanceTest targets
+blocks: []
+spikes: []
+
+spec: .build/ContinuousIntegration/.spec/README.md
+
+claims:
+  - B-004
+
+created: "2026-10-09"
+updated: "2026-10-09"
+closed: null
+
+summary: |
+  Run `UnitTest`, `IntegrationTest` and `AcceptanceTest` in CI in place of
+  `Test`, so a failing tier shows as its own step (owner, 2026-10-09).
+
+  The specification delta comes first. Before any code, spec-author amends
+  `0055-F2` B-004 to name `UnitTest`, `IntegrationTest` and `AcceptanceTest`
+  in place of `Test`, and `0055-F3` B-001 (test/.spec/README.md), which
+  names `Test`, to say coverage comes from the tier targets.
+
+  Traps, found by reading the code:
+  1. Coverage moves. CI uploads `.artifacts/coverage/` to Codecov from the
+     ubuntu-latest leg only (0112), and only `Test` writes coverage there.
+     The tier targets must write coverage when CI runs them, or Codecov
+     receives nothing.
+  2. Reports collide. `test/Directory.Build.props` names each report
+     `$(MSBuildProjectName).coverage.cobertura.xml`; `UnitTest` and
+     `IntegrationTest` both run `specht.tests`, so the second report
+     overwrites the first and silently halves coverage. The name needs the
+     tier. Likewise `Test` empties `.artifacts/coverage/` before it runs;
+     a tier target that does the same deletes the reports of the tiers
+     before it.
+  3. `ci.yml` is generated (C-1): regenerate it with `./build.sh Compile`,
+     commit the regeneration, and diff the step order; `Format` stays ahead
+     of `Compile` through the middleware.
+  4. Each operating system's check keeps its name (B-007); the docs-only
+     skip (B-012) and the Codecov upload step must still gate and run.
+  5. Cost: three `dotnet test` runs per leg in place of one. Not measured.
+
+  Risk 3: the workflow is generated (C-1), and the change moves coverage
+  across two Features (`0055-F2`, `0055-F3`), where a wrong report name
+  loses coverage without failing anything.
+
+acceptance_criteria:
+  - "B-004 — amended first: the three tier targets through the entry script, in place of `Test`"
+  - "`0055-F3` B-001 — amended first: coverage from the tier targets"
+  - "Coverage from every tier reaches Codecov from the ubuntu-latest leg; no report overwrites or deletes another"
+  - "Each tier is its own step on both legs; B-007 names, the B-012 skip and the Codecov upload unchanged"
+  - "§ 9 keeps a row for B-004; `Missing` stands under the owner's no-tests decision (`0055-F2` § 8, as `0055-F1` § 8)."
+
+decisions: []
+
+out_of_scope:
+  - "What each tier target does — `0055-F1` B-006 to B-008, item 0058."
+  - "Changing `Test` for a local run — `0055-F1` B-005."
+  - "Which checks branch protection requires — § 5 #3, `0055-F8`."
