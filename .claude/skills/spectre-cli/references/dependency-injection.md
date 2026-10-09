@@ -57,6 +57,9 @@ var app = new CommandApp(new TypeRegistrar(services));
 
 - **NEVER** call `services.BuildServiceProvider()` more than once — `TypeRegistrar.Build()` is the
   single place that happens.
+- **NEVER** hand one `ServiceCollection` to a second `CommandApp`. On each run Spectre registers
+  its configuration, every command and settings type and the console into it through the
+  registrar, so the collection is single-use. _This repository's decision: ADR-0003._
 
 > What a command injects is a `dotnet-tool` concern, not a `spectre-cli` one — see
 > [dotnet-tool](../../dotnet-tool/SKILL.md). This skill only covers the generic

@@ -2,7 +2,8 @@ namespace specht;
 
 /// <summary>
 /// One specification rule. Implementations are discovered by reflection over
-/// this assembly, so adding a rule means adding a file and nothing else.
+/// this assembly until ADR-0001 replaces that with an explicit list. A new
+/// rule is a new schema version (brief § 4), not just a new file.
 /// </summary>
 public interface ISpecRule
 {
