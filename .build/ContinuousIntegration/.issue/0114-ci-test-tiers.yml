@@ -2,7 +2,7 @@ id: "0114"
 type: task
 title: Run each test tier as its own CI step
 
-status: ready-for-architecture
+status: in-progress
 
 priority: high
 risk: 3
