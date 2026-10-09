@@ -2,7 +2,7 @@ id: "0079"
 type: task
 title: Compute the version with Nerdbank.GitVersioning from version.json
 
-status: ready-for-architecture
+status: in-progress
 
 priority: high
 risk: 3
@@ -26,7 +26,7 @@ claims:
   - B-008
 
 created: "2026-10-08"
-updated: "2026-10-08"
+updated: "2026-10-09"
 closed: null
 
 summary: |
