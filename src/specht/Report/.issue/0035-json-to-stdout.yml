@@ -2,7 +2,7 @@ id: "0035"
 type: task
 title: Write the document to stdout under --json
 
-status: ready-for-architecture
+status: in-progress
 
 priority: high
 risk: 1
@@ -21,7 +21,7 @@ claims:
   - B-001
 
 created: "2026-10-08"
-updated: "2026-10-08"
+updated: "2026-10-09"
 closed: null
 
 summary: |
