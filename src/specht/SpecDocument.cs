@@ -16,7 +16,8 @@ namespace specht;
 /// </remarks>
 public sealed class SpecDocument
 {
-    private SpecDocument(string relativePath, Frontmatter frontmatter, IReadOnlyList<SpecSection> sections)
+    /// <summary>A document from its parts, as <see cref="Parse"/> gives them.</summary>
+    public SpecDocument(string relativePath, Frontmatter frontmatter, IReadOnlyList<SpecSection> sections)
     {
         RelativePath = relativePath;
         Frontmatter = frontmatter;
@@ -32,10 +33,10 @@ public sealed class SpecDocument
     /// <summary>Top-level (<c>## </c>) sections, in document order.</summary>
     public IReadOnlyList<SpecSection> Sections { get; }
 
-    /// <summary>Parses the document at <paramref name="absolutePath"/>.</summary>
-    public static SpecDocument Parse(string absolutePath, string relativePath)
+    /// <summary>Parses <paramref name="text"/>, the document at <paramref name="relativePath"/>.</summary>
+    public static SpecDocument Parse(string text, string relativePath)
     {
-        var document = Markdown.Parse(File.ReadAllText(absolutePath), Pipeline);
+        var document = Markdown.Parse(text, Pipeline);
         var sections = new List<SpecSection>();
 
         for (var index = 0; index < document.Count; index++)
@@ -55,7 +56,7 @@ public sealed class SpecDocument
                 table is null ? [] : BodyRowLines(table)));
         }
 
-        return new SpecDocument(relativePath, FrontmatterReader.Read(absolutePath), sections);
+        return new SpecDocument(relativePath, FrontmatterReader.Parse(text), sections);
     }
 
     /// <summary>The section titled <paramref name="title"/>, or <c>null</c>.</summary>

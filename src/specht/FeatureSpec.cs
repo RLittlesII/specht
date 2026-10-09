@@ -5,7 +5,8 @@ namespace specht;
 /// <summary>A Feature's specification, resolved against what sits beside it.</summary>
 public sealed class FeatureSpec
 {
-    internal FeatureSpec(SpecLocation location, SpecDocument document, IReadOnlyList<string> featureFiles)
+    /// <summary>A Feature's specification from its parts.</summary>
+    public FeatureSpec(SpecLocation location, SpecDocument document, IReadOnlyList<string> featureFiles)
     {
         Location = location;
         Document = document;

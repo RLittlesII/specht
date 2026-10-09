@@ -2,7 +2,7 @@ id: "0104"
 type: task
 title: Make the engine's model constructible in memory
 
-status: ready-for-implementation
+status: done
 
 priority: medium # DERIVED
 value: 3
@@ -22,8 +22,8 @@ claims:
   - B-004
 
 created: "2026-10-08"
-updated: "2026-10-08"
-closed: null
+updated: "2026-10-09"
+closed: "2026-10-09"
 
 summary: |
   ADR-0001 (accepted 2026-10-08), stage A. SpecModel, SpecDocument,
@@ -33,21 +33,33 @@ summary: |
   overloading it; the loader reads the text and passes it in. No container,
   no package, no InternalsVisibleTo (ADR-0001 Decision). No verdict changes
   (C-9). Depends on 0012: the stage's proof includes the default-manifest
-  guard, and ADR-0001 accepts no substitute proof.
+  guard, and ADR-0001 accepts no substitute proof. FrontmatterReader
+  becomes a sealed instance class taking IFileSystem by constructor, with
+  no interface of its own, pulled forward from stage D (decision
+  2026-10-09).
 
 acceptance_criteria:
   - "B-004 — the golden-report test green against engine-e7dba24.json, field for field, in order"
   - "C-9 — no verdict changes; 0012 green"
   - "ADR-0001 stage A proof — new in-memory unit tests build a model; the 50 SpecTree facts stay green"
+  - "ADR-0001 stage A proof — MockFileSystem unit tests for FrontmatterReader"
   - "§ 9 carries a row naming a test for each id above."
 
 decisions:
   - |
     2026-10-08, cut by spec-author on the owner's acceptance of ADR-0001
     and ADR-0003, one item per migration stage.
+  - |
+    2026-10-09, spec-author on the owner's review of pull request #29
+    (review 5471216465, comment 4231043583 on FrontmatterReader.cs):
+    FrontmatterReader is pulled forward from stage D into this item as a
+    sealed instance class taking IFileSystem by constructor, with no
+    interface of its own. No new public static surface. No other reader,
+    the walk or the loader is converted, and no AddSpechtEngine or DI
+    package lands here; those stay 0107.
 
 out_of_scope:
   - "Splitting the runner — 0105 (ADR-0001 stage B)."
-  - "Instance classes, IFileSystem and the container — 0107 (stage D)."
+  - "Every other instance class, IFileSystem through the other readers, the walk and the loader, and the container — 0107 (stage D)."
   - "Re-tiering the SpecCheckRunner Unit files — 0107 (stage D)."
   - "Everything else in § 5 of the spec."

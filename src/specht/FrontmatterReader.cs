@@ -1,3 +1,4 @@
+using System.IO.Abstractions;
 using System.Text.Json.Nodes;
 using YamlDotNet.Core;
 using YamlDotNet.RepresentationModel;
@@ -18,12 +19,15 @@ namespace specht;
 /// when it is unambiguously null, boolean or integral. Dates therefore stay
 /// strings, whichever way they were written.
 /// </remarks>
-public static class FrontmatterReader
+/// <param name="fileSystem">The file system the documents are read from.</param>
+public sealed class FrontmatterReader(IFileSystem fileSystem)
 {
     /// <summary>Reads the frontmatter of the document at <paramref name="path"/>.</summary>
-    public static Frontmatter Read(string path)
+    public Frontmatter Read(string path) => Parse(fileSystem.File.ReadAllText(path));
+
+    internal static Frontmatter Parse(string text)
     {
-        var lines = File.ReadAllLines(path);
+        var lines = Lines(text);
 
         if (lines.Length == 0 || lines[0].TrimEnd() != Delimiter)
         {
@@ -68,6 +72,19 @@ public static class FrontmatterReader
     }
 
     private static Frontmatter None => new(null, 1, new Dictionary<string, int>(StringComparer.Ordinal));
+
+    private static string[] Lines(string text)
+    {
+        var lines = new List<string>();
+        using var reader = new StringReader(text);
+
+        while (reader.ReadLine() is { } line)
+        {
+            lines.Add(line);
+        }
+
+        return [.. lines];
+    }
 
     private static JsonNode? Convert(YamlNode node) => node switch
     {

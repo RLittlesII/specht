@@ -3,7 +3,8 @@ namespace specht;
 /// <summary>A task, test, bug or spike file beside a specification.</summary>
 public sealed class ChildItem
 {
-    internal ChildItem(string relativePath, string fileName, Frontmatter frontmatter, string parentDirectory)
+    /// <summary>An item from its parts.</summary>
+    public ChildItem(string relativePath, string fileName, Frontmatter frontmatter, string parentDirectory)
     {
         RelativePath = relativePath;
         FileName = fileName;

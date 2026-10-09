@@ -5,7 +5,8 @@ namespace specht;
 /// <summary>The whole specification tree, resolved once and evaluated by every rule.</summary>
 public sealed class SpecModel
 {
-    private SpecModel(
+    /// <summary>A model over what a caller already holds, such as documents built in memory.</summary>
+    public SpecModel(
         string root,
         IReadOnlyList<FeatureSpec> features,
         IReadOnlyList<ChildItem> items,
@@ -47,7 +48,9 @@ public sealed class SpecModel
     /// <exception cref="SpechtManifestException">The manifest is rejected; nothing in the tree is read.</exception>
     public static SpecModel Load(string root)
     {
-        var schemas = SpecSchemas.Load(new FileSystem(), root);
+        var fileSystem = new FileSystem();
+        var schemas = SpecSchemas.Load(fileSystem, root);
+        var frontmatter = new FrontmatterReader(fileSystem);
         var locations = SpecDiscovery.FindSpecifications(root);
         var features = new List<FeatureSpec>();
 
@@ -55,7 +58,7 @@ public sealed class SpecModel
         {
             features.Add(new FeatureSpec(
                 location,
-                SpecDocument.Parse(location.AbsolutePath, location.RelativePath),
+                SpecDocument.Parse(File.ReadAllText(location.AbsolutePath), location.RelativePath),
                 Directory.EnumerateFiles(location.Directory, "*.feature").Order(StringComparer.Ordinal).ToList()));
         }
 
@@ -66,7 +69,7 @@ public sealed class SpecModel
             items.Add(new ChildItem(
                 SpecDiscovery.Relative(root, path),
                 Path.GetFileName(path),
-                FrontmatterReader.Read(path),
+                frontmatter.Read(path),
                 Path.GetDirectoryName(path)!));
         }
 
@@ -79,7 +82,7 @@ public sealed class SpecModel
 
             foreach (var path in paths.Order(StringComparer.Ordinal))
             {
-                epics.Add(new EpicFile(SpecDiscovery.Relative(root, path), FrontmatterReader.Read(path)));
+                epics.Add(new EpicFile(SpecDiscovery.Relative(root, path), frontmatter.Read(path)));
             }
         }
 
