@@ -49,13 +49,19 @@ Tests are **not** co-located here: they live in `test/specht.tests` and
   engine if two commands need it.
 - **Shared types sit at the `Features/` root only once a second slice uses
   them.** A `Features/`-root type with one consumer belongs in that consumer.
-- **The composition root is a hand-written list.** `Program.cs` registers each
-  command with `AddCommand`/`AddBranch` and each engine service explicitly, in
-  plain `Microsoft.Extensions.DependencyInjection` through Spectre's
-  `TypeRegistrar`. There is no assembly scanning and no third-party container.
-  Adding a command means adding one line there — that is the whole cost, and it
-  is deliberate: the root is readable, ordering is explicit, and a command
-  cannot join the host by accident of being in the assembly.
+- **The composition root is a hand-written list.** `Program.cs` registers
+  services explicitly, in plain `Microsoft.Extensions.DependencyInjection`
+  through Spectre's `TypeRegistrar`. Commands are not in that list: they are
+  configured on Spectre's `IConfigurator` with `AddCommand`/`AddBranch` (or
+  `SetDefaultCommand`), and Spectre registers each command and settings type
+  through the registrar when it runs. There is no assembly scanning and no
+  third-party container (ADR-0003). Once ADR-0001's stage D lands, the
+  engine's services arrive through one `AddSpechtEngine()` call in that list,
+  in place of a line per engine service — owner-approved under lesson 0002.
+  Adding a command means adding one line to the configuration — that is the
+  whole cost, and it is deliberate: the root is readable, ordering is
+  explicit, and a command cannot join the host by accident of being in the
+  assembly.
 - **The slice's README slot is the specification.** A Feature's `.spec/README.md`
   is the twelve-section specification, sitting beside the code it specifies. Do
   not add a second, informal `README.md` beside it.

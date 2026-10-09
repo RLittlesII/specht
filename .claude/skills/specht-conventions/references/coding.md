@@ -67,22 +67,30 @@ interfaces, `_camelCase` private fields, file-scoped namespaces.
 attribute in any `.csproj`.** A new dependency lands as a `PackageVersion` in that
 file and a versionless `PackageReference` in the project, in the same change.
 
-The engine's three dependencies — Markdig, YamlDotNet, JsonSchema.Net — are
-pinned to the exact versions `hooked` uses (brief § 3), because Should-7 is a
+The engine has five dependencies, named by `0001-F1` C-7, each versioned in the
+`Engine` item group. Three — Markdig, YamlDotNet, JsonSchema.Net — are pinned to
+the exact versions `hooked` uses (brief § 3), because Should-7 is a
 byte-identical report. A pin with a reason carries the reason **in
 `Directory.Packages.props`**, beside the pin, not in a skill. Read it before
 bumping anything.
 
-The engine's fourth dependency, `TestableIO.System.IO.Abstractions.Wrappers`,
-is not one of `hooked`'s and is not pinned to it: it is the file-system seam,
-added by owner direction (2026-10-08, `0001-F5` § 7).
+The other two are not `hooked`'s and are not pinned to it.
+`TestableIO.System.IO.Abstractions.Wrappers` is the file-system seam, added by
+owner direction (2026-10-08, `0001-F5` § 7).
+`Microsoft.Extensions.DependencyInjection.Abstractions` carries
+`AddSpechtEngine()` (ADR-0001); its version moves with the container
+implementation package's, and transitive pinning applies it graph-wide
+(ADR-0003). It lands at ADR-0001's stage D. No sixth engine dependency joins
+without an ADR.
 
 ## File access goes through `IFileSystem`
 
 Engine code that reads the file system takes an injected `IFileSystem`; it does
 not add a new static `File` or `Directory` call. Production passes
 `new FileSystem()`, a test a `MockFileSystem`. The copied engine's existing
-static calls migrate as later items touch them, not in a sweep.
+static calls migrate as later items touch them, not in a sweep. The one
+recorded exception is ADR-0001's staged migration (items `0104`-`0107`), which
+the owner's acceptance authorizes.
 
 ## Paths are repository-relative
 

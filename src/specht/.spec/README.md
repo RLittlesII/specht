@@ -113,7 +113,7 @@ Pending: owned by `implementer`, written after agreement.
 
 ## 7. Technical Design
 
-<!-- last written by: implementer, 2026-10-08 -->
+<!-- last written by: implementer, 2026-10-08 (ADR-0001's owed edits) -->
 
 Delivered so far by item 0021.
 
@@ -121,7 +121,8 @@ Delivered so far by item 0021.
 - **The C-2 edits, and only those.** Each copied `.cs` file differs by its `namespace` line: `Hooked.SpecGovernance` becomes `specht`, `.Rules` stays a sub-namespace, and the tests' `Hooked.SpecGovernance.Tests` becomes `specht.tests`. The engine's `.csproj` sets `RootNamespace` and `AssemblyName` to `specht` and drops its comment about `hooked`'s `Directory.Build.props` (B-005).
 - **The test project is this repository's**, not the copied one: `test/specht.tests/specht.tests.csproj` was scaffolded before the copy, and keeps its packages and references. It gains `hooked`'s one load-bearing item: the live `.spec/schema/*.json` linked into the output, so the tests run against the schema set the rules enforce (A-3).
 - **Implicit usings.** `hooked` builds with `ImplicitUsings` on; this repository turns them off. The root `Directory.Build.props` turns them on for the `specht` and `specht.tests` projects only, so the copied files compile unchanged (C-2) and every other project keeps the repository's setting.
-- **Dependencies** are the three C-7 names in `Directory.Packages.props`, at `hooked`'s versions.
+- **Dependencies.** The engine references four of C-7's five, each versioned in the `Engine` item group of `Directory.Packages.props`: Markdig, YamlDotNet and JsonSchema.Net at `hooked`'s versions, and `TestableIO.System.IO.Abstractions.Wrappers` (`0001-F5`, item `0011`). The fifth, `Microsoft.Extensions.DependencyInjection.Abstractions`, pinned to the container implementation package's version, arrives with its pin at [ADR-0001](../../../.spec/adr/0001-resolve-the-engine-from-the-container.md)'s stage D, the first stage that needs `AddSpechtEngine()` ([ADR-0003](../../../.spec/adr/0003-microsoft-extensions-dependency-injection-is-the-container.md)).
+- **The pipeline is described as it is today**: static stages composed with `new`, rules found by reflection. ADR-0001 redraws it as resolved types at stage D, when the engine's classes become instances registered by `AddSpechtEngine()`.
 
 ## 8. Testing Strategy
 
