@@ -24,13 +24,16 @@
     "ExecutableTarget": {
       "type": "string",
       "enum": [
+        "AcceptanceTest",
         "Compile",
         "ContinuousIntegration",
         "Format",
+        "IntegrationTest",
         "Pack",
         "Restore",
         "SpecCheck",
-        "Test"
+        "Test",
+        "UnitTest"
       ]
     },
     "Verbosity": {
