@@ -2,7 +2,7 @@ id: "0058"
 type: task
 title: Run one test tier per target
 
-status: ready-for-architecture
+status: done
 
 priority: high
 risk: 2
@@ -24,7 +24,7 @@ claims:
 
 created: "2026-10-08"
 updated: "2026-10-09"
-closed: null
+closed: "2026-10-09"
 
 summary: |
   `UnitTest`, `IntegrationTest` and `AcceptanceTest`, each filtering on the
@@ -37,7 +37,8 @@ acceptance_criteria:
   - "B-008 — `AcceptanceTest`: every `.feature` the acceptance project links"
   - "§ 9 carries a row naming a test for each id above."
 
-decisions: []
+decisions:
+  - "No tests - owner, 2026-10-08 (0055-F1 § 8) and 2026-10-09 (0098 closed): the build has no tests, so B-006, B-007 and B-008 stay Missing in § 9 and were verified by hand, recorded in the commit body."
 
 out_of_scope:
   - "Coverage — § 5 #3, 0055-F3."
