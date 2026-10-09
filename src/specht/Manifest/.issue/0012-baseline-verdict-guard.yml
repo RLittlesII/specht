@@ -5,14 +5,14 @@ title: Guard the baseline verdicts under the default manifest
 status: done
 
 priority: high
-risk: 3
-rank: 86
+risk: 2
+rank: 94
 
 parent: "0010"
 children: []
 
 depends_on: ["0022"] # compares against the golden report 0022 commits
-blocks: ["0015", "0016", "0017"]
+blocks: ["0015", "0016", "0017", "0104"]
 spikes: []
 
 spec: src/specht/Manifest/.spec/README.md
@@ -36,7 +36,26 @@ acceptance_criteria:
   - "B-016 — rule id, severity, file, line, identifier, message, in order, equal the baseline"
   - "§ 9 carries a row naming a test for each id above."
 
-decisions: []
+decisions:
+  - |
+    2026-10-08, the owner, on the-architect's assessment: risk 3 -> 2. No
+    production diff; one test file and four step bindings; the failure
+    mode is loud.
+  - |
+    2026-10-08, the owner: the guard proves both paths - the manifest as
+    shipped, and keys omitted and filled from the embedded defaults - as
+    one theory with two rows.
+  - |
+    2026-10-08, the owner: no production change. SpecManifest.Defaults
+    stays non-public; a direct embedded-vs-live check belongs to a
+    0001-F7 B-004 item, not this one.
+  - |
+    2026-10-08, the owner: the omission row's fixture literal is
+    {"$comment": "..."}, keeping B-020's $-prefix exemption in play.
+  - |
+    2026-10-08, the owner: the guard couples only to tree.Run(),
+    SpecManifest.RelativePath and GoldenReport.Of, so it survives ADR-0001
+    stages A-D (0104-0107).
 
 out_of_scope:
   - "Producing the baseline tree or the golden report itself — 0001-F1."

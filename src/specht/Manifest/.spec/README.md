@@ -116,23 +116,23 @@ Half of the model's contract is not in the schema files: which section holds the
 
 ## 6. Concern Separation
 
-<!-- last written by: implementer, 2026-10-08 -->
+<!-- last written by: implementer, 2026-10-08 (ADR-0001's owed edits; ADR-0004) -->
 
 Item `0011` builds the loader; the families of keys (`0014`-`0019`) extend this table.
 
-| Concern                                                                                             | Classification | Where                                                                                     |
-| --------------------------------------------------------------------------------------------------- | -------------- | ----------------------------------------------------------------------------------------- |
-| Which top-level keys a manifest may carry; a `$` key is an annotation (B-012, B-020, decision 0002) | Business       | `SpecManifest.KnownKeys` and the `$` test in `SpecManifest.Load`                          |
-| An omitted value reads as the default manifest's (B-019, A-4)                                       | Business       | `SpecManifest.Load`, over the embedded default manifest                                   |
-| The whole manifest is checked before any rule runs (B-018, C-5)                                     | Both           | `SpecModel.Load` loads `SpecSchemas` (and so the manifest) first                          |
-| The manifest is read from `<root>/.spec/schema/` and nowhere else (C-6)                             | Both           | `SpecManifest.Load`; the embedded copy fills keys, never a file                           |
-| File-system access behind `System.IO.Abstractions` (owner direction 2026-10-08)                     | Technical      | `SpecManifest.Load` and `SpecSchemas.Load` take an `IFileSystem`                          |
-| The rejection's exit code and stream (B-022, B-023)                                                 | Business       | Not here: item `0013`, in the host                                                        |
-| Where rule settings apply: disable and re-grade (B-010, B-011, ADR-0002)                            | Business       | Item `0014`: one step in `SpecCheckRunner` over the collected violations, before the sort |
+| Concern                                                                                             | Classification | Where                                                                                                                                                                                                                                                                |
+| --------------------------------------------------------------------------------------------------- | -------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Which top-level keys a manifest may carry; a `$` key is an annotation (B-012, B-020, decision 0002) | Business       | `SpecManifest.KnownKeys` and the `$` test in `SpecManifest.Load`                                                                                                                                                                                                     |
+| An omitted value reads as the default manifest's (B-019, A-4)                                       | Business       | `SpecManifest.Load`, over the embedded default manifest                                                                                                                                                                                                              |
+| The whole manifest is checked before any rule runs (B-018, C-5)                                     | Both           | `SpecModel.Load` loads `SpecSchemas` (and so the manifest) first                                                                                                                                                                                                     |
+| The manifest is read from `<root>/.spec/schema/` and nowhere else (C-6)                             | Both           | `SpecManifest.Load`; the embedded copy fills keys, never a file                                                                                                                                                                                                      |
+| File-system access behind `System.IO.Abstractions` (owner direction 2026-10-08; ADR-0001)           | Technical      | Today `SpecManifest.Load` and `SpecSchemas.Load` take an `IFileSystem`; ADR-0001 stage D threads it through the readers, the parser's caller, the walk and the loader                                                                                                |
+| The rejection's exit code and stream (B-022, B-023)                                                 | Business       | Not here: item `0013`, in the host                                                                                                                                                                                                                                   |
+| Where rule settings apply: disable and re-grade (B-010, B-011, ADR-0002, ADR-0004)                  | Business       | Item `0014`, inside `SpecCheckRunner.Evaluate(SpecModel)` (ADR-0001 stage B, item `0105`): selection over the rule set before evaluation, and a map over the violations that runs before item `0103`'s order function, because that function sorts by severity first |
 
 ## 7. Technical Design
 
-<!-- last written by: implementer, 2026-10-08 -->
+<!-- last written by: implementer, 2026-10-08 (ADR-0001's owed edits; ADR-0004) -->
 
 The literal each claim moves is cited by file and line in `hooked`'s draft `0008-F3` § 3 (`hooked@a6d056f:tools/SpecGovernance/.spec/README.md`, `0001-F1` A-2).
 
@@ -144,14 +144,14 @@ The literal each claim moves is cited by file and line in `hooked`'s draft `0008
 
 **Validation before any rule (B-018, C-5).** [`SpecSchemas.Load`](../../SpecSchemas.cs) calls `SpecManifest.Load` before it reads a frontmatter schema, and [`SpecModel.Load`](../../SpecModel.cs) loads `SpecSchemas` before it discovers or parses the tree. A rejected manifest therefore leaves `SpecCheckRunner.Run` before any discovery, parse or rule, and no report exists. Against an accepted manifest the model, the rules and the report are unchanged; only the order of the reads moved.
 
-**The `IFileSystem` seam (owner direction 2026-10-08).** File access goes through `System.IO.Abstractions` (`TestableIO.System.IO.Abstractions.Wrappers`). `SpecManifest.Load` and `SpecSchemas.Load` take the `IFileSystem`; `SpecModel.Load` passes `new FileSystem()`. Deferred, each to the item that first needs a test double there:
+**The `IFileSystem` seam (owner direction 2026-10-08; [ADR-0001](../../../../.spec/adr/0001-resolve-the-engine-from-the-container.md)).** File access goes through `System.IO.Abstractions` (`TestableIO.System.IO.Abstractions.Wrappers`). `SpecManifest.Load` and `SpecSchemas.Load` take the `IFileSystem`; `SpecModel.Load` passes `new FileSystem()`. Item `0011` deferred the rest, each to the item that first needs a test double there:
 
-- `SpecCheckRunner.Run`, `SpecModel.Load`, `SpecDiscovery`, `SpecDocument.Parse`, `FeatureFileReader` and `FrontmatterReader` still read through `File` and `Directory`. Threading the abstraction through them is a change across the copied engine with no claim asking for it; an overload of `Run` taking an `IFileSystem` that only the manifest honoured would be a seam that lies.
-- The host registers no `IFileSystem`: no command consumes one today. `0013`, which maps `SpechtManifestException` to exit `3` and stderr, is where the host first meets the loader.
+- `SpecCheckRunner.Run`, `SpecModel.Load`, `SpecDiscovery`, `SpecDocument.Parse`, `FeatureFileReader` and `FrontmatterReader` still read through `File` and `Directory`. Item `0011` held that threading the abstraction through them was a change across the copied engine with no claim asking for it, and that an overload of `Run` taking an `IFileSystem` only the manifest honoured would be a seam that lies. ADR-0001 supersedes that deferral: it is the ask, and its stage D threads `IFileSystem` through the readers, the parser's caller, the walk and the loader, proven against the baseline (`0001-F1` C-9).
+- The host registers no `IFileSystem`: no command consumes one today. That stays true until stage D, whose `AddSpechtEngine()` registers the readers and the loader that take an `IFileSystem` by constructor. `0013`, which maps `SpechtManifestException` to exit `3` and stderr, is where the host first meets the loader.
 
 **What 0011 does not reject.** A manifest that does not parse, or a known key of the wrong shape, still fails as it did before, with the library's exception; the rejections each family owns (rule ids, grammars, roles, exclusion entries) are `0014`-`0016` and `0019`.
 
-**Where rule settings apply (item `0014`, [ADR-0002](../../../../.spec/adr/0002-no-chain-of-responsibility-for-the-check.md)).** The stages stay the fixed, typed sequence in `SpecCheckRunner.Run`, and every rule still evaluates. One step over the collected violations drops a disabled rule's violations and its id from the count of rules evaluated (B-011) and rewrites a re-graded rule's severity (B-010); then the one sort runs, so the report stays independent of evaluation order (`0001-F1` C-9). No chain of handlers, decorator or context object; a chain around `ISpecRule` waits on a third per-rule behaviour and a superseding ADR. The key names still wait on OQ-1.
+**Where rule settings apply (item `0014`, [ADR-0002](../../../../.spec/adr/0002-no-chain-of-responsibility-for-the-check.md), [ADR-0004](../../../../.spec/adr/0004-per-rule-settings-are-selection-and-a-map.md)).** The stages stay the fixed, typed sequence ADR-0002 kept. Item `0014` is two functions inside `SpecCheckRunner.Evaluate(SpecModel)`, the split ADR-0001 stage B makes (item `0105`). Both read the settings from `model.Schemas.Structure` ([`SpecSchemas.Structure`](../../SpecSchemas.cs)), which item `0014` extends with the rule settings; `Evaluate` takes no second parameter and reads no static. Selection runs over the rule set before evaluation: a disabled rule is not evaluated at all, and the count of rules evaluated is summed over the selected set, so its id leaves the count (B-011). Severity resolution is a map over the violations that runs before item `0103`'s order function, because that function sorts by severity first: a re-graded rule's violations carry the manifest's severity (B-010). The sort still runs once, so the report stays independent of evaluation order (`0001-F1` C-9). Per-rule settings are selection and a map however many accumulate: no chain of handlers, decorator, stage list, rule-set filter or context object (ADR-0004). A rule's default severity and first schema version become `ISpecRule` members with epic `0101`'s first item, not before; the member is a fact about the rule, not a switch (`0101-F1` decision 0001), and the manifest's rule settings override it, which `0101-F1` C-6's wording is owed (ADR-0004). The key names still wait on OQ-1.
 
 ## 8. Testing Strategy
 
@@ -203,9 +203,10 @@ The literal each claim moves is cited by file and line in `hooked`'s draft `0008
 
 ## 10. Lessons / Spec Deltas
 
-<!-- last written by: spec-author, 2026-10-08 -->
+<!-- last written by: spec-author, 2026-10-08 (ADR-0004's § 7 revision) -->
 
 - 2026-10-08, B-016 amended following `0001-F1` decision 0004 (the owner): its input is `0001-F1`'s synthetic baseline tree and its expected verdicts are the golden report `0001-F1` B-004 names, not `hooked`'s tree and report. The claim's id and its verdict field list are unchanged.
+- 2026-10-08, § 7 "Where rule settings apply" revised following [ADR-0004](../../../../.spec/adr/0004-per-rule-settings-are-selection-and-a-map.md): after ADR-0002 it read "every rule still evaluates" and "one step over the collected violations", and both are withdrawn, because a rule that runs and is then discarded has still been evaluated, against a tree whose manifest may hold no roles for it (`0101-F1` decision 0001's version gate; C-5). Item `0014` is now selection plus a severity map inside `Evaluate`. No claim, constraint or scenario changed.
 
 ## 11. Open Questions
 

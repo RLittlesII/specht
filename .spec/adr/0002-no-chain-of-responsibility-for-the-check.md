@@ -13,6 +13,8 @@ when a third per-rule behaviour appears. Raised by the owner on pull request #13
 ([review comment](https://github.com/RLittlesII/specht/pull/13#discussion_r4226016028),
 on `src/specht/SpecCheckRunner.cs`).
 
+Partially superseded by [ADR-0004](0004-per-rule-settings-are-selection-and-a-map.md), 2026-10-08: the trigger clause for option 3, and item `0014`'s shape. The rest stands.
+
 ## Context
 
 The owner's comment: "I am also wondering if we should create a chain of
