@@ -46,10 +46,10 @@ A `.codecov.yml` exists, but nothing produces coverage, nothing uploads it, and 
 
 ### Assumptions
 
-| ID  | Assumption                                                                                                                                                                                           |
-| --- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| A-1 | `.codecov.yml` today sets the project status with no target and therefore blocking, and the patch status with no target; this Feature replaces both settings. Its other keys are not this Feature's. |
-| A-2 | Every operating system's coverage is uploaded and Codecov merges the uploads for one commit, so a line covered only on Windows counts as covered.                                                    |
+| ID  | Assumption                                                                                                                                                                                                                                                                                                                                                             |
+| --- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| A-1 | `.codecov.yml` today sets the project status with no target and therefore blocking, and the patch status with no target; this Feature replaces both settings. It also rewrites the invalid `comment.branch` as `comment.branches: [main]` (owner, 2026-10-08), because the file must validate for either status to apply (C-6). Its other keys are not this Feature's. |
+| A-2 | Every operating system's coverage is uploaded and Codecov merges the uploads for one commit, so a line covered only on Windows counts as covered.                                                                                                                                                                                                                      |
 
 ## 3. Acceptance Criteria
 
@@ -70,25 +70,26 @@ A `.codecov.yml` exists, but nothing produces coverage, nothing uploads it, and 
 
 <!-- last written by: spec-author, 2026-10-08 -->
 
-| ID  | Constraint                                                                                                      | Rules Out                                                                                        |
-| --- | --------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
-| C-1 | The patch target, 80%, is written once, in the Codecov configuration (owner, 2026-10-08).                       | A second copy of the number in the build, a workflow or a skill; a target per operating system.  |
-| C-2 | The Codecov upload token is a repository secret.                                                                | A token in `.codecov.yml`, a workflow, the build project or any tracked file.                    |
-| C-3 | Coverage is measured from the test tiers `0055-F1` runs, and from nothing else.                                 | A separate coverage-only test run; coverage from a test that runs outside the build.             |
-| C-4 | Measured code is `src/**` only (owner, 2026-10-08).                                                             | Test projects, `.build/` or any other path raising or lowering the patch or the project number.  |
-| C-5 | The patch gate is Codecov's patch status as Codecov reports it; nothing in CI recomputes or substitutes for it. | A CI step that fails a run on a coverage number; a run failed because the upload failed (B-007). |
+| ID  | Constraint                                                                                                      | Rules Out                                                                                                                    |
+| --- | --------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| C-1 | The patch target, 80%, is written once, in the Codecov configuration (owner, 2026-10-08).                       | A second copy of the number in the build, a workflow or a skill; a target per operating system.                              |
+| C-2 | The Codecov upload token is a repository secret.                                                                | A token in `.codecov.yml`, a workflow, the build project or any tracked file.                                                |
+| C-3 | Coverage is measured from the test tiers `0055-F1` runs, and from nothing else.                                 | A separate coverage-only test run; coverage from a test that runs outside the build.                                         |
+| C-4 | Measured code is `src/**` only (owner, 2026-10-08).                                                             | Test projects, `.build/` or any other path raising or lowering the patch or the project number.                              |
+| C-5 | The patch gate is Codecov's patch status as Codecov reports it; nothing in CI recomputes or substitutes for it. | A CI step that fails a run on a coverage number; a run failed because the upload failed (B-007).                             |
+| C-6 | `.codecov.yml` passes Codecov's validator (owner, 2026-10-08).                                                  | A key Codecov does not recognise; a setting that relies on Codecov reading a file it rejects and replaces with its defaults. |
 
 ## 5. Out of Scope
 
 <!-- last written by: spec-author, 2026-10-08 -->
 
-| #   | Item                                                  | Exclusion Reason                                              |
-| --- | ----------------------------------------------------- | ------------------------------------------------------------- |
-| 1   | A target for the total that blocks                    | Owner, 2026-10-08: the total is reported, not a gate (B-005). |
-| 2   | Requiring the patch status before a merge             | `0055-F8`; this Feature produces the status.                  |
-| 3   | Running the tests                                     | `0055-F1`.                                                    |
-| 4   | Codecov's pull-request comment and its other settings | Not a gate; left as configured (A-1).                         |
-| 5   | Coverage of mutation, branch or path kinds as a gate  | Not asked for; the gate is line coverage of changed lines.    |
+| #   | Item                                                  | Exclusion Reason                                                                                                                  |
+| --- | ----------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | A target for the total that blocks                    | Owner, 2026-10-08: the total is reported, not a gate (B-005).                                                                     |
+| 2   | Requiring the patch status before a merge             | `0055-F8`; this Feature produces the status.                                                                                      |
+| 3   | Running the tests                                     | `0055-F1`.                                                                                                                        |
+| 4   | Codecov's pull-request comment and its other settings | Not a gate; left as configured, except `comment.branch` rewritten as `comment.branches: [main]` so the file validates (A-1, C-6). |
+| 5   | Coverage of mutation, branch or path kinds as a gate  | Not asked for; the gate is line coverage of changed lines.                                                                        |
 
 ## 6. Concern Separation
 
@@ -109,7 +110,7 @@ A `.codecov.yml` exists, but nothing produces coverage, nothing uploads it, and 
 
 <!-- last written by: implementer, 2026-10-08 -->
 
-Delivered so far: the reports (item `0069`, B-001) and the upload (item `0070`, B-002, B-007). `0071` adds the patch and project statuses (B-003 to B-006, B-008).
+Delivered so far: the reports (item `0069`, B-001) and the upload (item `0070`, B-002, B-007). `0071` sets the patch and project statuses in `.codecov.yml` (B-003 to B-006, B-008), and makes the file validate (C-6).
 
 - **The collector** is `Microsoft.Testing.Extensions.CodeCoverage`, its version in [`Directory.Packages.props`](../../Directory.Packages.props). It runs on the Microsoft.Testing.Platform runner that `global.json` selects. [`test/Directory.Build.props`](../Directory.Build.props) references it from every test project, because `Test` asks every project for coverage and a project without the extension rejects `--coverage`.
 - **The run** is `0055-F1`'s `Test` target in [`.build/Build.cs`](../../.build/Build.cs), extended rather than duplicated (C-3). It empties `CoverageDirectory`, `.artifacts/coverage/`, then runs the same single `dotnet test --solution` with `--coverage --coverage-output-format cobertura --results-directory` at that folder. Each test project writes one `<project>.coverage.cobertura.xml` (B-001). Emptying the folder first means no report from an earlier run is counted or uploaded.
@@ -121,6 +122,12 @@ Delivered so far: the reports (item `0069`, B-001) and the upload (item `0070`, 
 - **The commit** is passed as `override_commit: ${{ github.event.pull_request.head.sha || github.sha }}`, the same expression the checkout uses through `0055-F2` C-2. On a pull request GitHub's `GITHUB_SHA` is the merge commit, and the uploader recognises the merge commit only from a checked-out merge, which this workflow does not check out. Without the override the upload would land on the merge commit, not the pull request's head, where the patch status (`0071`) has to appear. On a push the expression is the pushed commit.
 - **A failed upload warns and passes** (B-007, C-5). The upload step sets `fail_ci_if_error: true`, so any failure (an outage, a missing token on a fork's pull request) fails the step and sets its outcome to `failure`; `continue-on-error: true` stops that outcome failing the job. The next step, `if: ${{ !cancelled() && steps.codecov.outcome == 'failure' }}`, writes a `::warning` annotation titled "Codecov upload failed" onto the run. `fail_ci_if_error: false` was rejected: the action then swallows the error, the step succeeds, and nothing warns.
 - **The upload runs unless the run is cancelled** (`if: ${{ !cancelled() }}`), so a leg whose tests fail still sends the coverage it wrote. That leg's check fails on the test failure, never on the upload.
+- **The patch status** is `coverage.status.patch.default` in [`.codecov.yml`](../../.codecov.yml): `target: 80%` and `paths: ["src/"]` (B-003, B-004). That line is the only place 80% is written (C-1). `informational` is left at Codecov's default, `false`, so the status fails below the target. `threshold` is left at its default, `0`, so 79.99% fails and 80% passes.
+- **The project status** is `coverage.status.project.default`: `informational: true` and `paths: ["src/"]` (B-005). No `target` is set, so Codecov compares against the base commit (`auto`) and the status description carries the total and the change. `informational: true` makes it pass whatever that change is.
+- **Measured code is `src/` through each status's `paths`** (B-006, C-4). Codecov reads `src/` as the pattern `^src/.*`, so a changed line under `test/`, `.build/` or anywhere else is outside both statuses. No top-level `ignore` was added. The reports name only files under `src/` (§ 8), so an `ignore` for `test/` and `.build/` would remove nothing today. If a report ever names a file outside `src/`, the status `paths` still keep it out of both gates.
+- **No setting for B-008.** When no changed line is a measured line, Codecov reports the patch status as `success` with "Coverage not affected", which PR #9 and `main`'s `bd4468a` both show. A change outside `src/` and a change to non-executable lines in `src/` both land there. Codecov's `if_not_found: success`, the default, covers a commit with no report at all. Setting it explicitly would only restate the default.
+- **No `fixes` for path mapping.** Each report's `filename` is the runner's absolute path, `/home/runner/work/specht/specht/src/...` on Linux and `D:\a\specht\specht\src\...` on Windows. The reports carry no `<sources>` element. Codecov's uploader sends the repository's file list with each upload, and Codecov resolves each report path to the repository file it ends with. Both legs therefore name the same `src/...` files and merge for one commit (A-2). A `fixes` entry per runner root would be a second copy of a mapping Codecov already makes. The sign that it is needed is the first pull request that changes a `src/` line. If its patch status reads "Coverage not affected", or its Codecov commit page lists files outside `src/` or Windows paths unresolved, add `fixes` for the root that did not resolve.
+- **The file validates** (C-6). Codecov ignores a file it rejects and uses its defaults, so neither status above would take effect in a rejected file. `.codecov.yml` at `bd4468a` was rejected with `Error at ['comment', 'branch']: unknown field`. As A-1 records, `comment.branch: main` is rewritten as `comment.branches: [main]`, the key Codecov recognises. No other comment setting changed. This was checked by hand with Codecov's validator, `curl -sS --data-binary @.codecov.yml https://api.codecov.io/validate`, on 2026-10-08. It answered `Valid!` and read the patch status as `target: 80.0` with `paths: ["^src/.*"]`, the project status as `informational: true` with the same `paths`, and `comment.branches` as `["^main$"]`. No test runs the validator, by the owner's decision in § 8.
 - **Not adopted:** Rocket.Surgery.Nuke's `ICanTestWithDotNetCore` and `ITriggerCodeCoverageReports`. `Build` never used RSN's test target, and RSN collects coverage the VSTest way, while `global.json` runs Microsoft.Testing.Platform.
 
 ## 8. Testing Strategy
@@ -135,7 +142,13 @@ Delivered so far: the reports (item `0069`, B-001) and the upload (item `0070`, 
   - B-001: `Test` empties `.artifacts/coverage/` with `CreateOrCleanDirectory`, then runs one `dotnet test --solution` with `--coverage --coverage-output-format cobertura --results-directory` at that folder. `test/Directory.Build.props` references `Microsoft.Testing.Extensions.CodeCoverage` in every test project, because a project without the extension rejects the option, and appends `--coverage-output $(MSBuildProjectName).coverage.cobertura.xml` through `TestingPlatformCommandLineArguments`, so each report is named for its project. This is a declaration and an ordering: the folder is cleaned before the run.
   - B-002, B-007: `AddCodecovUpload` inserts two steps into the generated `ci.yml` directly after `test`, on every matrix leg. The upload step, `id: codecov`, runs `codecov/codecov-action@v5` unless the run is cancelled, with `directory: .artifacts/coverage` and `override_commit` set to the pull request's head or the pushed commit. `fail_ci_if_error: true` turns any upload failure into a step outcome of `failure`, and `continue-on-error: true` keeps that outcome off the job. The warning step runs only when `steps.codecov.outcome == 'failure'` and writes the `::warning` "Codecov upload failed". This is a declaration in the generated workflow, observable only on a live GitHub Actions run.
   - B-002, B-007, observed on PR #9's run 37865464297, before the `directory` fix. Ubuntu uploaded both reports to commit `8abfe18`, and the `codecov/patch` and `codecov/project` statuses appeared on it. Windows failed on the shell-expanded `files` glob, the warning step fired, and the check passed: B-007 observed. The next run is what shows B-002 on both legs.
-  - B-003 to B-006, B-008: the patch and project statuses and the `src/**` path set belong to `.codecov.yml` and Codecov (`0071`, C-4, C-5). Not built yet. A Codecov status can be observed only on a live pull request.
+  - B-003, B-004: `coverage.status.patch.default` in `.codecov.yml`, `target: 80%` with `paths: ["src/"]`. A boundary: below 80% fails, 80% passes, at the default `threshold: 0`. This is a declaration Codecov evaluates.
+  - B-005: `coverage.status.project.default`, `informational: true` with `paths: ["src/"]`. A declaration: the status reports the total and the change against the base commit, and always passes.
+  - B-006: the `paths: ["src/"]` of both statuses, which Codecov reads as `^src/.*`. A mapping from changed file to measured or not.
+  - B-008: no setting. It is Codecov's default, a patch status of "Coverage not affected" when no measured line changed, observed on PR #9 (head `37cbbad`) and on `main` at `bd4468a`.
+  - A Codecov status can be observed only on a live pull request, so none of B-003 to B-006 or B-008 can have a test in this repository.
+  - C-6, checked by hand. On 2026-10-08, `curl -sS --data-binary @.codecov.yml https://api.codecov.io/validate` returned `Valid!`, with patch target 80.0 on `^src/.*`, project informational on `^src/.*`, and comment branches `^main$`. `main` at `bd4468a` failed the same validator with `Error at ['comment', 'branch']: unknown field`. A check by hand pins nothing for the next change.
+  - Unobserved: B-003 and B-004 need a later pull request that changes `src/` lines covered below 80% and at or above it. B-005 needs one that lowers the total. This pull request changes no `src/` line, so its patch status should read "Coverage not affected" (B-008).
 - **Verdict.** The B-001 mechanism is a literal argument string inside a NUKE target. It would need a seam to be unit tested, for example a static member that builds the arguments. The owner's decision makes that seam unnecessary for now.
 
 ## 9. Traceability Matrix
@@ -157,7 +170,7 @@ Delivered so far: the reports (item `0069`, B-001) and the upload (item `0070`, 
 
 <!-- last written by: spec-author, 2026-10-08 -->
 
-None.
+- 2026-10-08, found by the implementer on `0071`. Symptom: Codecov's validator rejected `.codecov.yml` with `Error at ['comment', 'branch']: unknown field`, so Codecov would ignore the file and B-003, B-004 and B-005 could not hold. Root cause: `comment.branch` predates this Feature (`main` at `bd4468a` fails the same way), and A-1 assumed the keys it left alone were valid. Delta: A-1 and § 5 #4 now give this Feature the rewrite to `comment.branches: [main]` (owner, 2026-10-08), and C-6 requires the file to pass the validator. Proof: the validator returns `Valid!` for the file `0071` delivers; no test runs it, by the owner's decision in § 8.
 
 ## 11. Open Questions
 

@@ -2,7 +2,7 @@ id: "0071"
 type: task
 title: Configure Codecov's patch and project statuses
 
-status: ready-for-architecture
+status: done
 
 priority: high # DERIVED
 risk: 2
@@ -26,7 +26,7 @@ claims:
 
 created: "2026-10-08"
 updated: "2026-10-08"
-closed: null
+closed: "2026-10-08"
 
 summary: |
   `.codecov.yml` carries the 80% patch target once (C-1), measures
