@@ -2,7 +2,7 @@ id: "0023"
 type: test
 title: Prove the rule vocabulary, both layouts and identity
 
-status: ready-for-architecture
+status: done
 
 priority: high
 risk: 2
@@ -24,21 +24,22 @@ claims:
   - B-011
 
 created: "2026-10-08"
-updated: "2026-10-08"
-closed: null
+updated: "2026-10-09"
+closed: "2026-10-09"
 
 summary: |
   Scenarios and tests, over synthetic trees, that the copied engine applies
-  exactly the twenty-one rules, holds both layouts to them (SPEC011 legacy
-  only, decision 0001), and takes a co-located specification's identity from
-  its frontmatter. Start from the 56 extracted tests (A-1); add only what
-  they leave unproven. No engine change (C-9).
+  exactly the twenty-one rules, holds both layouts to them (SPEC011 and
+  SPEC004 legacy only, decision 0001), takes a co-located specification's
+  identity from its frontmatter, and reports a duplicate identity on each
+  specification declaring it. Start from the 56 extracted tests (A-1); add
+  only what they leave unproven. No engine change (C-9).
 
 acceptance_criteria:
-  - "B-001 — one violation per rule, exactly SPEC001-SPEC061"
-  - "B-002 — both layouts; SPEC011 legacy only"
+  - "B-001 — on the baseline tree, every rule broken at least once in each layout it applies to; reported ids exactly SPEC001-SPEC061"
+  - "B-002 — both layouts held to every rule; SPEC011 and SPEC004 legacy only"
   - "B-003 — identity survives a move"
-  - "B-011 — same `epic` and `id` twice, reported once"
+  - "B-011 — same `epic` and `id` twice, reported once on each specification under that identity, each naming both paths"
   - "§ 9 carries a row naming a test for each id above."
 
 decisions: []

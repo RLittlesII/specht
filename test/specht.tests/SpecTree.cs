@@ -117,12 +117,13 @@ public sealed class SpecTree : IDisposable
         return path;
     }
 
-    /// <summary>Writes a Feature specification in the co-located layout, under <paramref name="area"/>.</summary>
+    /// <summary>Writes a co-located Feature specification under <paramref name="area"/>, with optional frontmatter and section overrides.</summary>
     public string WriteCoLocatedFeature(
         string area,
         string epic,
         string id,
-        IReadOnlyDictionary<string, string>? frontmatter = null)
+        IReadOnlyDictionary<string, string>? frontmatter = null,
+        IReadOnlyList<string>? sections = null)
     {
         var directory = Path.Combine(Root, area.Replace('/', Path.DirectorySeparatorChar), ".spec");
 
@@ -132,7 +133,7 @@ public sealed class SpecTree : IDisposable
 
         body.Append(Frontmatter(epic, id, frontmatter));
         body.Append($"# Specification: {id}\n\n");
-        body.Append(string.Join('\n', Sections));
+        body.Append(string.Join('\n', sections ?? Sections));
 
         var path = Path.Combine(directory, "README.md");
 

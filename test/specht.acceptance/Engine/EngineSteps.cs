@@ -14,8 +14,10 @@ namespace specht.acceptance.Engine;
 
 /// <summary>
 /// Steps for <c>src/specht/.spec/engine.feature</c> (0001-F1). The Background is a <see cref="SpecTree"/> holding the live
-/// version 1 schema set (A-3). B-004 builds the baseline tree on it and holds the engine to the golden report; B-010 reads
-/// the one violation a missing traceability row gives. B-005 reads the built library itself: its assembly name,
+/// version 1 schema set (A-3). B-001 builds the baseline tree on it and reads the rule ids the engine reports; B-004 holds
+/// the engine to the golden report on the same tree; B-010 reads the one violation a missing traceability row gives.
+/// B-002 writes one specification in each layout without its traceability section, B-003 one co-located specification
+/// under a folder its identity does not name, and B-011 two co-located specifications of one identity. B-005 reads the built library itself: its assembly name,
 /// and the namespace of every type it declares, which is where a root namespace shows once compiled. It reads the file
 /// <c>src/specht</c> builds, from its metadata, and never the loaded assembly: a coverage run instruments the copy the
 /// test process loads (0055-F3 B-001) and adds a type of its own to it.
@@ -47,9 +49,68 @@ public sealed class EngineSteps
                 "## 3. Acceptance Criteria\n\n| ID | Claim | Source | Status |\n| -- | ----- | ------ | ------ |\n"
                     + $"| B-001 | It does the thing. | brd | Active |\n| {claim} | It does another. | brd | Active |\n"));
 
+    [Given("the root holds one specification in the legacy layout missing its traceability section")]
+    public void GivenTheRootHoldsOneSpecificationInTheLegacyLayoutMissingItsTraceabilitySection() =>
+        _specifications.Add(SpecDiscovery.Relative(Tree.Root, Tree.WriteFeature("0001", "F1", sections: WithoutTraceability)));
+
+    [Given("one specification in the co-located layout missing its traceability section")]
+    public void GivenOneSpecificationInTheCoLocatedLayoutMissingItsTraceabilitySection() =>
+        _specifications.Add(
+            SpecDiscovery.Relative(Tree.Root, Tree.WriteCoLocatedFeature("src/area", "0002", "F1", sections: WithoutTraceability)));
+
+    [Given("the root holds a co-located specification declaring epic {string} and id {string} under a folder named nothing like it")]
+    public void GivenTheRootHoldsACoLocatedSpecificationUnderAFolderNamedNothingLikeIt(string epic, string id) =>
+        _specifications.Add(SpecDiscovery.Relative(Tree.Root, Tree.WriteCoLocatedFeature("src/unrelated/area", epic, id)));
+
+    [Given("the root holds two specifications both declaring epic {string} and id {string}")]
+    public void GivenTheRootHoldsTwoSpecificationsBothDeclaring(string epic, string id)
+    {
+        _identity = $"{epic}-{id}";
+        _specifications.Add(SpecDiscovery.Relative(Tree.Root, Tree.WriteCoLocatedFeature("src/first", epic, id)));
+        _specifications.Add(SpecDiscovery.Relative(Tree.Root, Tree.WriteCoLocatedFeature("src/second", epic, id)));
+    }
+
     [When("the engine runs")]
     [When("the engine runs on that tree")]
     public void WhenTheEngineRuns() => _report = Tree.Run();
+
+    [Then("a violation is reported under each of the twenty-one rule ids")]
+    public void ThenAViolationIsReportedUnderEachOfTheTwentyOneRuleIds() =>
+        Report.Violations.Select(static violation => violation.RuleId).Should().Contain(Vocabulary);
+
+    [Then("no violation is reported under any other rule id")]
+    public void ThenNoViolationIsReportedUnderAnyOtherRuleId() =>
+        Report.Violations.Should().OnlyContain(static violation => Vocabulary.Contains(violation.RuleId));
+
+    [Then("each specification is reported for the missing section")]
+    public void ThenEachSpecificationIsReportedForTheMissingSection() =>
+        _specifications.Should().HaveCount(2).And.AllSatisfy(path => Report.Violations.Should().Contain(violation =>
+            violation.RuleId == "SPEC010" && violation.File == path && violation.Identifier == Traceability));
+
+    [Then("neither is reported for the layout it is in")]
+    public void ThenNeitherIsReportedForTheLayoutItIsIn() =>
+        Report.Violations.Should().NotContain(violation => violation.RuleId == "SPEC011" && _specifications.Contains(violation.File));
+
+    [Then("the specification is read as {string}")]
+    public void ThenTheSpecificationIsReadAs(string identity) =>
+        SpecModel.Load(Tree.Root).Features.Should().ContainSingle().Which.Identity.Should().Be(identity);
+
+    [Then("no identity violation is reported")]
+    public void ThenNoIdentityViolationIsReported() =>
+        Report.Violations.Should().NotContain(static violation => violation.RuleId == "SPEC011" || violation.RuleId == "SPEC012");
+
+    [Then("the duplicate identity is reported once on each specification, under one identifier")]
+    public void ThenTheDuplicateIdentityIsReportedOnceOnEachSpecificationUnderOneIdentifier()
+    {
+        var duplicates = Report.Violations.Where(static violation => violation.RuleId == "SPEC012").ToList();
+        duplicates.Select(static violation => violation.File).Should().BeEquivalentTo(_specifications);
+        duplicates.Should().AllSatisfy(violation => violation.Identifier.Should().Be(_identity));
+    }
+
+    [Then("each report names both paths")]
+    public void ThenEachReportNamesBothPaths() =>
+        Report.Violations.Where(static violation => violation.RuleId == "SPEC012").Should().HaveCount(2).And.AllSatisfy(violation =>
+            _specifications.Should().AllSatisfy(path => violation.Message.Should().Contain(path)));
 
     [Then("it reports the same violations as the golden report, with the same rule, severity, file, line, identifier and message")]
     public void ThenItReportsTheSameViolationsAsTheGoldenReport() => GoldenReport.Of(Report).Should().BeEquivalentTo(Golden);
@@ -163,10 +224,23 @@ public sealed class EngineSteps
             : FindRepository(Path.GetDirectoryName(directory.TrimEnd(Path.DirectorySeparatorChar))
                 ?? throw new InvalidOperationException("No repository root above the test assembly."));
 
+    private const string Traceability = "9. Traceability Matrix";
+
+    private static readonly string[] Vocabulary =
+    [
+        "SPEC001", "SPEC002", "SPEC003", "SPEC004", "SPEC010", "SPEC011", "SPEC012", "SPEC013", "SPEC020", "SPEC021", "SPEC030",
+        "SPEC031", "SPEC040", "SPEC041", "SPEC043", "SPEC044", "SPEC050", "SPEC051", "SPEC052", "SPEC060", "SPEC061",
+    ];
+
+    private static readonly IReadOnlyList<string> WithoutTraceability =
+        [.. SpecTree.Sections.Where(static section => !section.StartsWith($"## {Traceability}\n", StringComparison.Ordinal))];
+
+    private readonly List<string> _specifications = [];
     private SpecTree? _tree;
     private SpecCheckReport? _report;
     private IReadOnlyList<GoldenReport.Verdict>? _golden;
     private string? _library;
     private string? _assemblyName;
     private string[] _namespaces = [];
+    private string? _identity;
 }
