@@ -8,8 +8,8 @@ type: adr
 
 ## Status
 
-proposed - 2026-10-08. Raised by the owner on 2026-10-08: "Given we are now
-inverting control, maybe this leads us to a different approach?"
+accepted - 2026-10-09, by the owner. Raised by the owner on 2026-10-08: "Given we are now
+inverting control, maybe this leads us to a different approach?", and proposed on pull request #24.
 
 Supersedes [ADR-0002](0002-no-chain-of-responsibility-for-the-check.md) in
 part:
@@ -227,7 +227,7 @@ Costs:
     default is the rule's `DefaultSeverity`, overridden by the manifest's rule
     settings, with a `0101-F1` § 10 delta recording why.
   - ADR-0001's cost bullet about item `0014`
-    (`.spec/adr/0001-resolve-the-engine-from-the-container.md:279-282`): both
+    (`.spec/adr/0001-resolve-the-engine-from-the-container.md:282-285`): both
     halves are superseded - "one step in the runner over the collected
     violations" and "a decorator around `ISpecRule` stays deferred until
     ADR-0002 names it earned". ADR-0001 is accepted, so it is owed a

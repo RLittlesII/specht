@@ -8,14 +8,14 @@ type: adr
 
 ## Status
 
-proposed - 2026-10-09. Asked for by the owner, who found that ADR-0002 and
+accepted - 2026-10-09, by the owner. Asked for by the owner, who found that ADR-0002 and
 ADR-0004 rejected chain of responsibility without showing why against the
 code. Revised the same day against the-architect's assessment and four owner
 decisions of 2026-10-09, each recorded under Decision as decided: a test fake
 is not the second implementation ((a), (d)); the fault violation's id and
 severity ((c)); a generic stage interface is a convention judgement, not
 chosen (option 8); the coordinator keeps the name `SpecCheckRunner` ((a)).
-Acceptance is the owner's.
+Proposed on pull request #26.
 
 Relation to earlier records, each stated in full under Decision:
 
@@ -27,7 +27,7 @@ Relation to earlier records, each stated in full under Decision:
   first-handler-wins, now with the code that shows why. Decision (c) carries
   out its Decision bullet 4
   (`.spec/adr/0002-no-chain-of-responsibility-for-the-check.md:104-107`).
-- **ADR-0004** (proposed; on `main` since pull request #24): re-affirmed whole, option 8's
+- **ADR-0004** (accepted 2026-10-09; on `main` since pull request #24): re-affirmed whole, option 8's
   rejection included. Decision (c) is the trigger it re-cut
   (`.spec/adr/0004-per-rule-settings-are-selection-and-a-map.md:191-195`).
   Disable and re-grade stay its two functions inside `Evaluate`; its severity
