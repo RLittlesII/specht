@@ -201,9 +201,10 @@ The literal each claim moves is cited by file and line in `hooked`'s draft `0008
 
 ## 10. Lessons / Spec Deltas
 
-<!-- last written by: spec-author, 2026-10-08 -->
+<!-- last written by: spec-author, 2026-10-08 (ADR-0004's § 7 revision) -->
 
 - 2026-10-08, B-016 amended following `0001-F1` decision 0004 (the owner): its input is `0001-F1`'s synthetic baseline tree and its expected verdicts are the golden report `0001-F1` B-004 names, not `hooked`'s tree and report. The claim's id and its verdict field list are unchanged.
+- 2026-10-08, § 7 "Where rule settings apply" revised following [ADR-0004](../../../../.spec/adr/0004-per-rule-settings-are-selection-and-a-map.md): after ADR-0002 it read "every rule still evaluates" and "one step over the collected violations", and both are withdrawn, because a rule that runs and is then discarded has still been evaluated, against a tree whose manifest may hold no roles for it (`0101-F1` decision 0001's version gate; C-5). Item `0014` is now selection plus a severity map inside `Evaluate`. No claim, constraint or scenario changed.
 
 ## 11. Open Questions
 
