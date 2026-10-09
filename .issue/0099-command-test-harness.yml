@@ -2,7 +2,7 @@ id: "0099"
 type: spike
 title: Decide how a test builds and runs a specht command
 
-status: ready
+status: in-progress
 
 priority: medium # DERIVED
 value: 3
@@ -21,7 +21,7 @@ spec: null
 claims: []
 
 created: "2026-10-08"
-updated: "2026-10-08"
+updated: "2026-10-09"
 closed: null
 
 summary: |
@@ -56,7 +56,24 @@ acceptance_criteria:
   - "CheckCommand's integration tests and CheckSteps use the chosen harness; the private Check helper is gone."
   - "specht-conventions references/testing.md states the rule, with its Never-add item."
 
-decisions: []
+decisions:
+  - |
+    2026-10-09, test-writer, spike findings: ADR-0006
+    (.spec/adr/0006-a-test-runs-a-command-through-the-production-composition.md)
+    is proposed, with the owner as decider. It proposes that a command test
+    builds its CommandAppTester from one hand-written AutoFixtureBase<T>
+    fixture over the host's own composition, which moves out of Program.cs
+    into one public type, and replaces only the seam the test names. The
+    acceptance tier keeps launching the built tool. Rejected, with their
+    costs in the record: the hand-wired helper per class, a shared xunit
+    fixture (a collection grew 1 -> 18 -> 35 registrations over two runs),
+    the generated [AutoFixture] over the tester (it emits
+    Substitute.For<ITypeRegistrar>() and needs NSubstitute), a Rocket
+    Surgery test host (none exists for Spectre.Console.Cli), constructing the
+    command directly (against 0001-F2 C-7), and invoking Program.cs's entry
+    point. Correction to the summary: CheckSteps has launched the built tool
+    since 0027 and composes no registrar. The second and third acceptance
+    criteria wait on the owner's acceptance of ADR-0006.
 
 out_of_scope:
   - "Changing what the check command does - 0001-F2 owns that."
