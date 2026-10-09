@@ -10,7 +10,7 @@ risk: 3
 rank: 91
 
 parent: "0055"
-children: ["0064", "0065", "0066", "0067", "0102"]
+children: ["0064", "0066", "0067", "0102"]
 
 depends_on: []
 blocks: []
@@ -27,7 +27,6 @@ claims:
   - B-006
   - B-007
   - B-008
-  - B-009
   - B-010
   - B-011
   - B-012
@@ -35,7 +34,7 @@ claims:
   - B-014
 
 created: "2026-10-08"
-updated: "2026-10-08"
+updated: "2026-10-09"
 closed: null
 
 summary: |
@@ -56,7 +55,6 @@ acceptance_criteria:
   - "B-006 — a specification violation annotated on the diff (0066)"
   - "B-007 — each system's check keeps its name across runs (0064)"
   - "B-008 — no package pushed (0064)"
-  - "B-009 — stale committed workflow: the run fails (0065)"
   - "B-010 — each system reports as a separate check (0064)"
   - "B-011 — tool restored from the feed with the workflow's token (0067)"
   - "B-012 — Markdown-only pull request: no target runs (0102)"
@@ -72,6 +70,12 @@ decisions:
     0001-F2's diagnostics (0066), and the feed restore, which needs a
     published package (0067). Rejected: annotations in 0064, which would
     hold CI behind the check command and close a cycle through 0021.
+  - |
+    2026-10-09, the repository owner: B-009 withdrawn; committing the
+    regeneration with the build change is the author's responsibility under
+    C-1 (decision 0001). The stale-workflow check (0065) is not built; 0065
+    is retired at `92890af`.
 
 out_of_scope:
   - "Everything in § 5 of the spec."
+  - "B-009 — withdrawn 2026-10-09 (decision 0001); 0065 retired at 92890af."

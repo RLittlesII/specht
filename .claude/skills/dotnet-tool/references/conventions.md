@@ -39,8 +39,8 @@ public override async Task<int> ExecuteAsync(CommandContext context, Settings se
 }
 ```
 
-`specht`'s codes are decided (brief § 5) and the pre-commit hook and CI depend
-on them:
+`specht`'s codes are decided (brief § 5) and CI and, from 0062, the pre-commit
+hook depend on them:
 
 | Code | Means                                                                              |
 | ---- | ---------------------------------------------------------------------------------- |

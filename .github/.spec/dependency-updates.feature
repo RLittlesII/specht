@@ -82,14 +82,14 @@ Feature: Dependency updates
     Given a workflow action has a newer minor release
     When updates are proposed
     Then the pull request carries the changed declaration and the regenerated workflow
-    And integration's stale-workflow check passes on it
+    And every workflow it commits is the build's own generation
 
   @B-014
   Scenario: A NUKE update carries its regenerated workflows
     Given the build tool package has a newer minor release
     When updates are proposed
     Then the pull request carries the regenerated workflows
-    And integration's stale-workflow check passes on it
+    And every workflow it commits is the build's own generation
 
   @B-015
   Scenario: Renovate runs on its schedule

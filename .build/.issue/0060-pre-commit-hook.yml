@@ -2,7 +2,7 @@ id: "0060"
 type: task
 title: Call the formatting gate from the pre-commit hook on what is staged
 
-status: ready-for-architecture
+status: done
 
 priority: high
 risk: 3
@@ -27,8 +27,8 @@ claims:
   - B-022
 
 created: "2026-10-08"
-updated: "2026-10-08"
-closed: null
+updated: "2026-10-09"
+closed: "2026-10-09"
 
 summary: |
   Replace the hook copied from another repository with one that calls
@@ -45,9 +45,14 @@ acceptance_criteria:
   - "B-016 — unformatted staged Markdown: refused, file named"
   - "B-021 — formatting through `Format` with the staged files"
   - "B-022 — the staged content is checked, not the working tree"
-  - "§ 9 carries a row naming a test for each id above."
+  - "No tests: § 9 stays `Missing` for each id above (§ 8; owner, 2026-10-09); verified by hand, recorded in the pull request."
 
-decisions: []
+decisions:
+  - |
+    2026-10-09, owner: no tests for this item, per § 8. § 9 rows for
+    B-011, B-012, B-014, B-015, B-016, B-021 and B-022 stay `Missing`;
+    verification is manual and recorded in the pull request. Rejected: a
+    § 9 row naming a test for each claim.
 
 out_of_scope:
   - "The hook's `SpecCheck` call and its gate — B-013, 0062."
