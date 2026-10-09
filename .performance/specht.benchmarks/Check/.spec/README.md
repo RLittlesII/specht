@@ -54,12 +54,12 @@ The check runs at three call sites, one a pre-commit hook a person waits on (bri
 
 <!-- last written by: spec-author, 2026-10-09 -->
 
-| ID    | Claim                                                                                                            | Source                 | Status |
-| ----- | ---------------------------------------------------------------------------------------------------------------- | ---------------------- | ------ |
-| B-001 | Given generated trees of 1, 10, 100 and 1000 specifications, this Feature measures one whole check of each.      | owner, 2026-10-09; C-1 | Active |
-| B-002 | Given a measured check at any size, the report it returns counts every specification generated for that size.    | C-2                    | Active |
-| B-003 | Given a measured check, the tree it reads lays every specification out co-located, beside the code it specifies. | OQ-1                   | Active |
-| B-004 | Given a result, it names the number of specifications it was measured over.                                      | C-1                    | Active |
+| ID    | Claim                                                                                                                                      | Source                 | Status |
+| ----- | ------------------------------------------------------------------------------------------------------------------------------------------ | ---------------------- | ------ |
+| B-001 | Given generated trees of 1, 10, 100 and 1000 specifications, this Feature measures one whole check of each.                                | owner, 2026-10-09; C-1 | Active |
+| B-002 | Given a measured check at any size, this Feature's measured call returns a report that counts every specification generated for that size. | C-2                    | Active |
+| B-003 | Given a measured check, this Feature measures it over a tree that lays every specification out co-located, beside the code it specifies.   | OQ-1                   | Active |
+| B-004 | Given a result, this Feature names in it the number of specifications it was measured over.                                                | C-1                    | Active |
 
 ## 4. Constraints
 
@@ -69,7 +69,7 @@ The check runs at three call sites, one a pre-commit hook a person waits on (bri
 | --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
 | C-1 | A whole check's time and allocation is a reported finding against the number of specifications in the tree, stated as a growth shape - constant, linear or worse - never a threshold. | A gate on it, or on its growth; a single-size measurement; a finding of "fast" or "slow".                                 |
 | C-2 | The measured call is the engine's whole run from a root on disk - manifest load, discovery, model build, evaluation and the report - and nothing of the host.                         | Measuring the command, the process, argument parsing or output formatting (`0109-F4`); a run cut short before the report. |
-| C-3 | The tree is on disk, and the finding says the number includes the file system and its cache.                                                                                          | Reading the tree into memory before the measurement, which is `0109-F2` B-007's evaluation, not a check.                  |
+| C-3 | The tree is on disk, and the finding says the number includes the file system and its cache.                                                                                          | Reading the tree into memory before the measurement; a measured check that skips the disk is not a check.                 |
 | C-4 | Each size's tree is generated once, before its measurements, and reused across them.                                                                                                  | Generating or deleting a tree inside the measurement.                                                                     |
 
 ## 5. Out of Scope
@@ -118,7 +118,7 @@ Pending: owned by `test-writer`, written after agreement.
 
 <!-- last written by: spec-author, 2026-10-09 -->
 
-None.
+- 2026-10-09, spec-reviewer finding on commit `4b23e76`: B-002 to B-004 restated with this Feature as subject. C-3's exclusion no longer calls `0109-F2` B-007's evaluation in-memory; it reads `.feature` files from disk too.
 
 ## 11. Open Questions
 

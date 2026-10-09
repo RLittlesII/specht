@@ -62,9 +62,9 @@ The starting hypothesis was confirmed unchanged. Where it was tested:
   it is a property of the harness's shared configuration (`0109-F1` B-007,
   C-4), which every other Feature inherits. A Feature of its own would have no
   input and no benchmark that is not already another Feature's.
-- **Stages and the end-to-end check: split.** A stage benchmark holds the input
-  fixed and isolates one call, mostly in memory; the scaling benchmark varies
-  the tree and measures the engine's whole run against the disk. Each survives
+- **Stages and the end-to-end check: split.** A stage benchmark isolates one
+  stage's call, its setup outside the measurement; the scaling benchmark
+  measures the engine's whole run from a root on disk. Each survives
   the other being cut, and they answer different questions - where the time
   goes, and how it grows.
 - **Cold start: split from the end-to-end check.** It needs the packed
@@ -77,13 +77,13 @@ The starting hypothesis was confirmed unchanged. Where it was tested:
 
 `0109-F2`, `0109-F3` and `0109-F4` depend on `0109-F1`. `0109-F1` depends on
 `0055-F1` (the build it adds a target to, whose `Pack` `0109-F4` measures) and
-`0055-F2` (the CI workflow it adds a step to). `0109-F2` also depends on
-`0001-F1`, whose item `0107` registers the engine in its container
-(ADR-0005); `0109-F2` B-008 measures that resolution. Only the edges inside
-this epic are in the Features' `depends_on`: the three cross-epic edges join
-the frontmatter in the same change that adds `0109/F1` to the `blocks` of
-`0055-F1` and `0055-F2` and `0109/F2` to that of `0001-F1`, so that `SPEC051`'s
-symmetry holds.
+`0055-F2` (the CI workflow it adds a step to). `0109-F2` measures the stages
+ADR-0005 names through whatever entry points `0001-F1`'s items have landed
+(`0109-F2` A-1), so it waits on no item. Only the edges inside this epic are
+in the Features' `depends_on`: the two cross-epic edges join `0109-F1`'s
+frontmatter in the same change that adds `0109/F1` to the `blocks` of
+`0055-F1` and `0055-F2`, so that `SPEC051`'s symmetry holds. That change is
+the owner's to make.
 
 ## Placement
 
@@ -113,5 +113,5 @@ design.
 | Comparing a run against a stored baseline                 | A later epic, if asked for (`0109-F1` OQ-4)                                        |
 | Profiling and tracing - where inside a call the time goes | Not asked for; a finding names a cost, not its cause                               |
 | The optimisation work a finding prompts                   | The `implementer`, through a claim or an ADR; never inside a benchmark             |
-| Benchmarking a consumer's tree, or any captured tree      | Never: fixtures are synthetic (`0109-F1` C-7; brief § 9)                           |
+| Benchmarking a consumer's tree, or any captured tree      | Never: fixtures are synthetic (`0109-F1` C-7; owner, item `0108`)                  |
 | What each existing build target and CI step does          | `0055-F1`, `0055-F2`; this epic adds one target and one step                       |

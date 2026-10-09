@@ -33,20 +33,17 @@ Feature: Engine stage benchmarks
 
   @B-006
   Scenario: Every rule is measured at every tree size
+    Given a model of each tree built before the measurement
     When the stage benchmarks run
     Then each rule the engine runs has a result for each tree size
+    And each rule that reads a file reads it from the generated tree
 
   @B-007
-  Scenario: Evaluating a model in memory is measured
+  Scenario: Evaluating a model is measured at every tree size
     Given a model of each tree built before the measurement
     When the stage benchmarks run
     Then evaluating the model has a result for each tree size
-
-  @B-008
-  Scenario: Resolving the engine is measured apart from running it
-    When the stage benchmarks run
-    Then resolving the engine from its container has a result of its own
-    And no other stage's result includes that resolution
+    And the companion scenario files it reads come from the generated tree
 
   @B-009
   Scenario: A new rule is measured without a new benchmark

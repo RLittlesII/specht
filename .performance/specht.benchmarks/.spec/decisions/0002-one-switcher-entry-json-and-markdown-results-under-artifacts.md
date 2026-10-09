@@ -17,6 +17,9 @@ listed as not decided; the owner may reverse it
   passes them through: a filter, as the library's `--filter` glob, every
   benchmark when absent (B-003, B-004); and a job, as the library's `--job`,
   the library's default job when absent (B-005, B-006).
+- **Packing.** The target packs the tool only when the selection includes a
+  cold-start benchmark (`0109-F4`), before any benchmark runs (B-013); a
+  run that selects none packs nothing (B-021).
 - **Exporters.** The GitHub-flavoured Markdown summary for a person (B-009) and
   the full JSON result for a machine (B-010), one each per benchmark class.
 - **Results folder.** `.artifacts/benchmarks/`, passed as the library's
@@ -38,6 +41,10 @@ listed as not decided; the owner may reverse it
 
 ## Rejected
 
+**Packing on every run.** Simple, and it makes a filtered stage-only run pay
+for a package nothing in it uses. Cost of rejecting: the target reads its
+own selection to decide.
+
 **`BenchmarkRunner.Run<T>()` per class.** No selection from the command line;
 each new class edits the entry point. Cost of rejecting: none.
 
@@ -51,7 +58,7 @@ chart builds it from the JSON.
 
 ## Affects
 
-- `0109-F1` B-003 to B-006, B-008 to B-010; C-5.
+- `0109-F1` B-003 to B-006, B-008 to B-010, B-013, B-021; C-5.
 
 ## Reversal
 
