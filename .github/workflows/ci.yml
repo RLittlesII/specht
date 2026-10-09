@@ -55,29 +55,50 @@ jobs:
       - name: Fetch all history for all tags and branches
         run: |
           git fetch --prune
+      - name: Decide whether the change needs a build
+        id: changes
+        env:
+          EVENT_NAME: '${{ github.event_name }}'
+          BASE_SHA: '${{ github.event.pull_request.base.sha }}'
+          HEAD_SHA: '${{ github.event.pull_request.head.sha }}'
+        shell: bash
+        run: |
+          build=true
+          if [ "$EVENT_NAME" = "pull_request" ] && files="$(git diff --name-only --no-renames "$BASE_SHA...$HEAD_SHA")" && [ -n "$files" ]; then
+          if ! grep -Evq '\.md$' <<< "$files" && ! grep -Eq '(^|/)\.spec/' <<< "$files"; then
+          build=false
+          echo "::notice title=Build skipped::Every changed file is Markdown outside any .spec/ folder."
+          fi
+          fi
+          echo "build=$build" >> "$GITHUB_OUTPUT"
       - name: 🔨 Use .NET 10 SDK
+        if: ${{ steps.changes.outputs.build == 'true' }}
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '10.0.401'
       - name: 🎁 Restore
         id: restore
+        if: ${{ steps.changes.outputs.build == 'true' }}
         run: |
           ./build.cmd --target Restore
       - name: Format
         id: format
+        if: ${{ steps.changes.outputs.build == 'true' }}
         run: |
           ./build.cmd --target Format --skip Restore
       - name: ⚙️ Compile
         id: compile
+        if: ${{ steps.changes.outputs.build == 'true' }}
         run: |
           ./build.cmd --target Compile --skip Restore
       - name: 💨 Test
         id: test
+        if: ${{ steps.changes.outputs.build == 'true' }}
         run: |
           ./build.cmd --target Test --skip Compile
       - name: Upload coverage to Codecov
         id: codecov
-        if: ${{ !cancelled() }}
+        if: ${{ (!cancelled()) && steps.changes.outputs.build == 'true' }}
         continue-on-error: true
         uses: codecov/codecov-action@v5
         with:
@@ -86,14 +107,16 @@ jobs:
           override_commit: '${{ github.event.pull_request.head.sha || github.sha }}'
           fail_ci_if_error: 'true'
       - name: Warn on a failed coverage upload
-        if: ${{ !cancelled() && steps.codecov.outcome == 'failure' }}
+        if: ${{ (!cancelled() && steps.codecov.outcome == 'failure') && steps.changes.outputs.build == 'true' }}
         run: |
           echo "::warning title=Codecov upload failed::The coverage upload to Codecov failed; this check is not failed on that account."
       - name: Spec Check
         id: specCheck
+        if: ${{ steps.changes.outputs.build == 'true' }}
         run: |
           ./build.cmd --target SpecCheck --skip Test
       - name: Continuous Integration
         id: continuousIntegration
+        if: ${{ steps.changes.outputs.build == 'true' }}
         run: |
           ./build.cmd --target ContinuousIntegration --skip Format Compile Test SpecCheck

@@ -14,10 +14,9 @@ Feature: Repository settings checklist
     Then the checks the checklist requires from integration are exactly the checks integration produces
 
   @B-003
-  Scenario: The patch status is required and the total is not
+  Scenario: No coverage status is required
     When the maintainer reads the settings checklist
-    Then it requires the patch coverage status
-    And it does not require the project coverage status
+    Then it requires no coverage status
 
   @B-004
   Scenario: A squash keeps the commit messages

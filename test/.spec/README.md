@@ -31,7 +31,7 @@ synced_at: null
 
 <!-- last written by: spec-author, 2026-10-08 -->
 
-A `.codecov.yml` exists, but nothing produces coverage, nothing uploads it, and the file it holds would block a pull request on the repository's total while setting no target for the code the pull request adds. So a change can arrive with its new code untested and pass, while an unrelated drop in the total blocks a change that is fully tested. This Feature removes that failure state: every test run writes coverage, CI uploads it, the code a pull request changes must be at least 80% covered, and the total is reported for the reviewer without ever blocking.
+A `.codecov.yml` exists, but nothing produces coverage, nothing uploads it, and the file it holds would block a pull request on the repository's total while setting no target for the code the pull request adds. So a change can arrive with its new code untested and pass, while an unrelated drop in the total blocks a change that is fully tested. This Feature removes that failure state: every test run writes coverage, CI uploads it, the code a pull request changes is held to 80% by a patch status reported on it, and the total is reported for the reviewer without ever blocking.
 
 ## 2. User Needs
 
@@ -55,16 +55,16 @@ A `.codecov.yml` exists, but nothing produces coverage, nothing uploads it, and 
 
 <!-- last written by: spec-author, 2026-10-08 -->
 
-| ID    | Claim                                                                                                                                                             | Source                                          | Status  |
-| ----- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------- | ------- |
-| B-001 | Given the `Test` target runs, each test project runs once and this Feature writes one Cobertura coverage report per test project under `.artifacts/coverage/`.    | `specht-conventions` § Testing; `0055-F1` B-005 | Amended |
-| B-002 | Given a CI run on any operating system, this Feature uploads that run's coverage reports to Codecov for the run's commit.                                         | owner, 2026-10-08; A-2                          | Active  |
-| B-003 | Given a pull request whose changed lines of measured code are less than 80% covered, the patch coverage status on its head commit fails.                          | owner, 2026-10-08                               | Active  |
-| B-004 | Given a pull request whose changed lines of measured code are 80% covered or more, the patch coverage status on its head commit passes.                           | owner, 2026-10-08                               | Active  |
-| B-005 | Given a pull request that lowers the total coverage of measured code, the project coverage status reports the total and the change, and passes.                   | owner, 2026-10-08                               | Active  |
-| B-006 | Given a pull request whose only changed lines are outside `src/`, the patch coverage status counts none of them.                                                  | OQ-1 (owner, 2026-10-08); C-4                   | Active  |
-| B-007 | Given a CI run whose upload to Codecov fails, that operating system's check does not fail on that account and the run reports a warning naming the failed upload. | OQ-2 (owner, 2026-10-08)                        | Active  |
-| B-008 | Given a pull request in which no line of measured code changed, the patch coverage status passes.                                                                 | C-4; `0055-F4` B-005; `0055-F8` B-003           | Active  |
+| ID    | Claim                                                                                                                                                             | Source                                                                           | Status  |
+| ----- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------- | ------- |
+| B-001 | Given the `Test` target runs, each test project runs once and this Feature writes one Cobertura coverage report per test project under `.artifacts/coverage/`.    | `specht-conventions` § Testing; `0055-F1` B-005                                  | Amended |
+| B-002 | Given a CI run that runs the build's targets on any operating system, this Feature uploads that run's coverage reports to Codecov for the run's commit.           | owner, 2026-10-08; A-2; `0055-F2` B-012, OQ-2 (owner, 2026-10-08)                | Amended |
+| B-003 | Given a pull request whose changed lines of measured code are less than 80% covered, the patch coverage status on its head commit fails.                          | owner, 2026-10-08                                                                | Active  |
+| B-004 | Given a pull request whose changed lines of measured code are 80% covered or more, the patch coverage status on its head commit passes.                           | owner, 2026-10-08                                                                | Active  |
+| B-005 | Given a pull request that lowers the total coverage of measured code, the project coverage status reports the total and the change, and passes.                   | owner, 2026-10-08                                                                | Active  |
+| B-006 | Given a pull request whose only changed lines are outside `src/`, the patch coverage status counts none of them.                                                  | OQ-1 (owner, 2026-10-08); C-4                                                    | Active  |
+| B-007 | Given a CI run whose upload to Codecov fails, that operating system's check does not fail on that account and the run reports a warning naming the failed upload. | OQ-2 (owner, 2026-10-08)                                                         | Active  |
+| B-008 | Given a pull request whose CI run runs the build's targets and in which no line of measured code changed, the patch coverage status passes.                       | C-4; `0055-F4` B-005; `0055-F8` B-003; `0055-F2` B-012, OQ-2 (owner, 2026-10-08) | Amended |
 
 ## 4. Constraints
 
@@ -86,7 +86,7 @@ A `.codecov.yml` exists, but nothing produces coverage, nothing uploads it, and 
 | #   | Item                                                  | Exclusion Reason                                                                                                                  |
 | --- | ----------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
 | 1   | A target for the total that blocks                    | Owner, 2026-10-08: the total is reported, not a gate (B-005).                                                                     |
-| 2   | Requiring the patch status before a merge             | `0055-F8`; this Feature produces the status.                                                                                      |
+| 2   | Requiring the patch status before a merge             | Owner, 2026-10-08 (`0055-F2` OQ-2): the status is reported, not required (`0055-F8` B-003).                                       |
 | 3   | Running the tests                                     | `0055-F1`.                                                                                                                        |
 | 4   | Codecov's pull-request comment and its other settings | Not a gate; left as configured, except `comment.branch` rewritten as `comment.branches: [main]` so the file validates (A-1, C-6). |
 | 5   | Coverage of mutation, branch or path kinds as a gate  | Not asked for; the gate is line coverage of changed lines.                                                                        |
@@ -171,6 +171,7 @@ Delivered so far: the reports (item `0069`, B-001) and the upload (item `0070`, 
 <!-- last written by: spec-author, 2026-10-08 -->
 
 - 2026-10-08, found by the implementer on `0071`. Symptom: Codecov's validator rejected `.codecov.yml` with `Error at ['comment', 'branch']: unknown field`, so Codecov would ignore the file and B-003, B-004 and B-005 could not hold. Root cause: `comment.branch` predates this Feature (`main` at `bd4468a` fails the same way), and A-1 assumed the keys it left alone were valid. Delta: A-1 and § 5 #4 now give this Feature the rewrite to `comment.branches: [main]` (owner, 2026-10-08), and C-6 requires the file to pass the validator. Proof: the validator returns `Valid!` for the file `0071` delivers; no test runs it, by the owner's decision in § 8.
+- 2026-10-08, B-002 and B-008 narrowed to runs that run the build: `0055-F2` B-012 runs no target, so no upload, on a pull request that changes only Markdown outside `.spec/`. The owner kept the patch status reported but not required (`0055-F2` OQ-2), so such a pull request merges without one.
 
 ## 11. Open Questions
 
@@ -180,6 +181,7 @@ Delivered so far: the reports (item `0069`, B-001) and the upload (item `0070`, 
 | ---- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | OQ-1 | What is "measured code"? Proposed default: `src/**` only, so test projects and `.build/` neither raise nor lower either number.                                                                                 | B-003, B-004, B-005 | Resolved 2026-10-08: proposed default accepted by the repository owner. C-4 and B-006 added.                                                                                         |
 | OQ-2 | When the upload to Codecov fails (an outage, a missing token on a fork's pull request), does the operating system's CI check fail, or does the missing coverage status alone block the merge through `0055-F8`? | B-002               | Resolved 2026-10-08 by the repository owner: a failed upload does not fail CI and is reported as a warning; the patch gate is Codecov's status when it reports. B-007 and C-5 added. |
+| OQ-3 | `0055-F2` B-012 runs no target, so no upload, on a pull request that changes only Markdown outside `.spec/`; B-002 and B-008 do not hold for it. Asked and answered once, as `0055-F2` OQ-2.                    | B-002, B-008        | Resolved 2026-10-08 by the repository owner (`0055-F2` OQ-2): the patch status is reported, not required. B-002 and B-008 narrowed to runs that run the build; § 5 #2 updated.       |
 
 ## 12. Sign-off
 

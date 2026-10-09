@@ -85,6 +85,7 @@ internal sealed partial class Build
         buildJob.FailFast = false;
 
         AddCodecovUpload(buildJob);
+        GateOnChangedFiles(buildJob);
 
         return configuration;
     }
@@ -200,5 +201,48 @@ internal sealed partial class Build
         };
 
         buildJob.Steps.InsertRange(buildJob.Steps.IndexOf(testStep) + 1, [uploadStep, warningStep]);
+    }
+
+    /// <summary>
+    /// Decides inside each leg whether the run builds, and runs every later step only when it does.
+    /// </summary>
+    private static void GateOnChangedFiles(RocketSurgeonsGithubActionsJob buildJob)
+    {
+        // B-012, B-014, C-5: a pull request whose changed files are all Markdown outside any .spec/ folder skips;
+        // a push, no changed files, or a failed diff builds.
+        const string gate = "steps.changes.outputs.build == 'true'";
+        var fetchStep = buildJob.Steps.OfType<RunStep>().Single(static z => z.Run == "git fetch --prune");
+        var decisionStep = new RunStep("Decide whether the change needs a build")
+        {
+            Id = "changes",
+            Shell = GithubActionShell.Bash,
+            Environment = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["EVENT_NAME"] = "${{ github.event_name }}",
+                ["BASE_SHA"] = "${{ github.event.pull_request.base.sha }}",
+                ["HEAD_SHA"] = "${{ github.event.pull_request.head.sha }}",
+            },
+            Run = """
+                build=true
+                if [ "$EVENT_NAME" = "pull_request" ] && files="$(git diff --name-only --no-renames "$BASE_SHA...$HEAD_SHA")" && [ -n "$files" ]; then
+                if ! grep -Evq '\.md$' <<< "$files" && ! grep -Eq '(^|/)\.spec/' <<< "$files"; then
+                build=false
+                echo "::notice title=Build skipped::Every changed file is Markdown outside any .spec/ folder."
+                fi
+                fi
+                echo "build=$build" >> "$GITHUB_OUTPUT"
+                """,
+        };
+
+        var decisionIndex = buildJob.Steps.IndexOf(fetchStep) + 1;
+        buildJob.Steps.Insert(decisionIndex, decisionStep);
+
+        foreach (var step in buildJob.Steps.Skip(decisionIndex + 1).Cast<BaseGitHubActionsStep>())
+        {
+            var condition = step.If?.ToString().Trim();
+            step.If = string.IsNullOrEmpty(condition)
+                ? $"${{{{ {gate} }}}}"
+                : $"${{{{ ({condition.TrimStart('$').Trim('{', '}').Trim()}) && {gate} }}}}";
+        }
     }
 }

@@ -6,13 +6,13 @@ status: done
 
 priority: high # DERIVED
 risk: 2
-rank: 99 # DERIVED
+rank: 94 # DERIVED
 
 parent: "0068"
 children: []
 
 depends_on: ["0070"] # statuses on 0070's uploads
-blocks: ["0090"]
+blocks: []
 spikes: []
 
 spec: test/.spec/README.md
@@ -31,14 +31,14 @@ closed: "2026-10-08"
 summary: |
   `.codecov.yml` carries the 80% patch target once (C-1), measures
   `src/**` only (C-4), and makes the project status informational.
-  0055-F8's checklist requires the patch status by the name this sets.
+  The patch status is reported, not required (0055-F8 B-003).
 
 acceptance_criteria:
   - "B-003 — changed measured lines under 80%: patch fails"
   - "B-004 — 80% or more: patch passes"
   - "B-005 — lower total: project reports total and change, passes"
   - "B-006 — changes outside `src/` not counted"
-  - "B-008 — no measured line changed: patch passes"
+  - "B-008 — built, and no measured line changed: patch passes"
   - "§ 9 carries a row naming a test for each id above."
 
 decisions: []
