@@ -34,6 +34,12 @@
        output (specht-conventions § Testing: fixtures are built, not copied). -->
   <ItemGroup>
     <Compile Include="..\specht.tests\SpecTree.cs" Link="Check\SpecTree.cs" />
+    <!-- The baseline tree and its golden report (0001-F1 B-004, C-10), the same files the engine tests read. -->
+    <Compile Include="..\specht.tests\Baseline\BaselineTree.cs" Link="Engine\BaselineTree.cs" />
+    <Compile Include="..\specht.tests\Baseline\GoldenReport.cs" Link="Engine\GoldenReport.cs" />
+    <Content Include="..\specht.tests\Baseline\engine-e7dba24.json"
+             Link="Baseline\engine-e7dba24.json"
+             CopyToOutputDirectory="PreserveNewest" />
     <!-- The fixture is hooked's, copied unchanged (0001-F1 C-2), and leans on implicit usings; these are the ones it reads. -->
     <Using Include="System" />
     <Using Include="System.Collections.Generic" />

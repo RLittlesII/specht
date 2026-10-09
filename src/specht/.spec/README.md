@@ -125,29 +125,39 @@ Delivered so far by item 0021.
 
 ## 8. Testing Strategy
 
-<!-- last written by: test-writer, 2026-10-08 -->
+<!-- last written by: test-writer, 2026-10-08 (item 0022) -->
 
-- **The extracted tests** (A-1): 55 engine tests in `test/specht.tests`, plus the shared tier guard, 56 in all, as `hooked` ran them; all pass on the copy.
-- **Acceptance.** `engine.feature` is linked into `test/specht.acceptance`. [`Engine/EngineSteps.cs`](../../../test/specht.acceptance/Engine/EngineSteps.cs) binds the Background (a temp root holding the live schema set) and B-005, which reads the built assembly's name and the namespace of every type it declares. Adding a type in a `Hooked.SpecGovernance` namespace turned B-005 red.
+- **The extracted tests** (A-1): 55 engine tests in `test/specht.tests`, plus the shared tier guard, 56 in all, as `hooked` ran them; all pass on the copy. They carry `hooked`'s tier traits, so a test marked `Unit` there still writes a `SpecTree` to disk.
+- **The baseline tree** (C-10, decision 0004). [`BaselineTree`](../../../test/specht.tests/Baseline/BaselineTree.cs) writes, into a `SpecTree`, every rule broken in each layout it applies to: the legacy layout under epic `0001` in `epics/`, the co-located layout under epic `0002` in `src/<case>/.spec/`, one Feature per break, with every form of message a rule gives. `SPEC011` is broken in the legacy layout only (decision 0001), and so is `SPEC004`, because an `epic.md` is read from `epics/` whichever layout its Features are in. Its content is fixed, so the same tree is written every time; items 0023 (B-001) and 0012 (`0001-F5` B-016) reuse it.
+- **The golden report.** [`engine-e7dba24.json`](../../../test/specht.tests/Baseline/engine-e7dba24.json) is the engine's output on that tree at commit `e7dba24`, produced in a worktree of that commit by the same builder and committed as test data: 82 violations under all twenty-one ids, each as rule id, severity, file, line, identifier and message, in order. The engine at this specification's commit gives the identical list. [`GoldenReport`](../../../test/specht.tests/Baseline/GoldenReport.cs) reads it from the test output, where both test projects copy it; nothing in the repository writes it, so a later engine cannot regenerate it (C-10).
+- **B-004.** `SpecCheckRunnerBaselineIntegrationTests` holds the engine's verdicts on the tree to the golden report with an ordered, field-for-field comparison, and a theory checks the tree breaks each rule in each layout it applies to. Changing one golden message turned the test red at index 4, and swapping the first two rows turned it red at index 0.
+- **B-010.** The same class checks that the one violation a missing § 9 row gives carries all six fields, and that every violation on the baseline tree carries a rule id, a severity, a root-relative file, a line and a message, with an identifier that is absent or not blank.
+- **Acceptance.** `engine.feature` is linked into `test/specht.acceptance`. [`Engine/EngineSteps.cs`](../../../test/specht.acceptance/Engine/EngineSteps.cs) is scoped to this Feature. It binds the Background to a `SpecTree` that holds the live schema set, binds B-004 to the baseline tree and the golden report, both linked from `test/specht.tests`, and binds B-010 to a tree with one claim and no § 9 row. B-005 reads the built assembly's name and the namespace of every type it declares. Adding a type in a `Hooked.SpecGovernance` namespace turned B-005 red, and the golden-report mutation turned B-004 red.
 - **Unbound:** every other scenario reports Skipped until its item binds it.
+
+### Testability verdict
+
+- **B-004:** the mechanism is each rule's decision, pinned rule by rule by `SpecCheckRunnerUnitTests` and `SpecCheckRunnerViolationsUnitTests`, plus the order `SpecCheckRunner.Run` sorts violations into (severity descending, then file, line and rule id, ordinally). No unit test pins that order. The sort is inline in `Run`, which can only reach rules through `SpecModel.Load(root)` on a disk tree, because `SpecModel`'s constructor is private. Only the golden-report comparison pins the order, and it is an integration test. Reported to `implementer`: the order needs a seam a unit test can reach, such as a function over a list of violations. The row stays `Partial` until it has one.
+- **B-010:** the mechanism is the positional `SpecViolation` record, which no rule can construct without all six fields, and the identifier each rule passes. `SpecCheckRunnerViolationsUnitTests` pins the identifier for `SPEC003`, `SPEC004`, `SPEC010`, `SPEC030`, `SPEC031` and `SPEC041`, and the golden report pins it for every rule.
+- **Hard to test:** a rule cannot run over a `SpecModel` built in memory, so every rule-level test writes to disk whatever its trait says (the same `SpecModel` seam).
 
 ## 9. Traceability Matrix
 
-<!-- last written by: test-writer, 2026-10-08 -->
+<!-- last written by: test-writer, 2026-10-08 (item 0022) -->
 
-| Claim ID | Scenario                                                  | Test          | Status  |
-| -------- | --------------------------------------------------------- | ------------- | ------- |
-| B-001    | Every rule in the vocabulary is applied, and no other     | Missing       | Missing |
-| B-002    | Both layouts are held to the same rules                   | Missing       | Missing |
-| B-003    | Identity comes from the frontmatter, not the path         | Missing       | Missing |
-| B-004    | The verdicts on the baseline tree match the golden report | Missing       | Missing |
-| B-005    | Nothing carries the old repository's name                 | `EngineSteps` | Covered |
-| B-006    | Nothing about the machine reaches the verdict             | Missing       | Missing |
-| B-007    | Every path is relative to the root                        | Missing       | Missing |
-| B-008    | A grid table is read as no table                          | Missing       | Missing |
-| B-009    | The copy differs from hooked only by the namespace        | Missing       | Missing |
-| B-010    | A violation carries the six baseline fields               | Missing       | Missing |
-| B-011    | One identity at two paths is reported                     | Missing       | Missing |
+| Claim ID | Scenario                                                  | Test                                                                                                                                                                                                                                                                                  | Status  |
+| -------- | --------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------- |
+| B-001    | Every rule in the vocabulary is applied, and no other     | Missing                                                                                                                                                                                                                                                                               | Missing |
+| B-002    | Both layouts are held to the same rules                   | Missing                                                                                                                                                                                                                                                                               | Missing |
+| B-003    | Identity comes from the frontmatter, not the path         | Missing                                                                                                                                                                                                                                                                               | Missing |
+| B-004    | The verdicts on the baseline tree match the golden report | `EngineSteps`; `SpecCheckRunnerBaselineIntegrationTests.TheBaselineTree_WhenChecked_ShouldGiveTheGoldenReportsVerdictsFieldForFieldInOrder`, `TheBaselineTree_WhenChecked_ShouldBreakTheRuleInTheLayout`; `SpecCheckRunnerViolationsUnitTests`                                        | Partial |
+| B-005    | Nothing carries the old repository's name                 | `EngineSteps`                                                                                                                                                                                                                                                                         | Covered |
+| B-006    | Nothing about the machine reaches the verdict             | Missing                                                                                                                                                                                                                                                                               | Missing |
+| B-007    | Every path is relative to the root                        | Missing                                                                                                                                                                                                                                                                               | Missing |
+| B-008    | A grid table is read as no table                          | Missing                                                                                                                                                                                                                                                                               | Missing |
+| B-009    | The copy differs from hooked only by the namespace        | Missing                                                                                                                                                                                                                                                                               | Missing |
+| B-010    | A violation carries the six baseline fields               | `EngineSteps`; `SpecCheckRunnerBaselineIntegrationTests.AClaimWithNoTraceabilityRow_WhenChecked_ShouldCarryARuleSeverityFileLineIdentifierAndMessage`, `EveryViolationOnTheBaselineTree_WhenChecked_ShouldCarryARuleSeverityFileLineAndMessage`; `SpecCheckRunnerViolationsUnitTests` | Covered |
+| B-011    | One identity at two paths is reported                     | Missing                                                                                                                                                                                                                                                                               | Missing |
 
 ## 10. Lessons / Spec Deltas
 
