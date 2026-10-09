@@ -2,7 +2,7 @@ id: "0098"
 type: test
 title: Give the build a unit tier and pin its mechanisms
 
-status: ready
+status: done
 
 priority: high
 risk: 2
@@ -24,8 +24,8 @@ claims:
   - B-020
 
 created: "2026-10-08"
-updated: "2026-10-08"
-closed: null
+updated: "2026-10-09"
+closed: "2026-10-09"
 
 summary: |
   The build's scenarios pass, but the decisions beneath them have no unit
@@ -46,7 +46,8 @@ acceptance_criteria:
   - "0055-F2 B-004 — a --target run step becomes ./build.cmd; restore steps removed"
   - "§ 9 names the unit test beside the step class for each id above, and each row reads Covered."
 
-decisions: []
+decisions:
+  - "Closed without delivery - owner, 2026-10-09. The build has no tests, by the owner's decision in 0055-F1 § 8 (e0c6d95), and a unit tier is no exception. Rejected: a unit tier wired into Test and CI; a unit tier run by hand only. B-003, B-017, B-019, B-020 and 0055-F2 B-004 stay Missing in § 9."
 
 out_of_scope:
   - "New behaviour in the build - this item adds tests, not claims."

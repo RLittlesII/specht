@@ -2,7 +2,7 @@ id: "0103"
 type: task
 title: Expose the violation order as a function a unit test can reach
 
-status: ready-for-implementation
+status: done
 
 priority: high # DERIVED
 value: 3
@@ -23,7 +23,7 @@ claims:
 
 created: "2026-10-08"
 updated: "2026-10-09"
-closed: null
+closed: "2026-10-09"
 
 summary: |
   The order the engine reports violations in (severity descending, then
