@@ -11,7 +11,7 @@ rank: 76
 parent: "0010"
 children: []
 
-depends_on: ["0011", "0026"] # keys load through 0011; B-010 needs 0026's `--strict`
+depends_on: ["0011", "0026", "0105"] # keys load through 0011; B-010 needs 0026's `--strict`; the per-rule step sits in 0105's Evaluate (ADR-0001 stage B)
 blocks: ["0062"]
 spikes: []
 

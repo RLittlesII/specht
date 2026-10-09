@@ -1,0 +1,52 @@
+id: "0106"
+type: task
+title: Replace reflection rule discovery with a hand-written rule list
+
+status: ready-for-implementation
+
+priority: medium # DERIVED
+value: 3
+risk: 2
+rank: 59 # DERIVED
+
+parent: "0020"
+children: []
+
+depends_on: ["0105"] # the list is what 0105's Evaluate(SpecModel) iterates
+blocks: ["0107"] # DERIVED
+spikes: []
+
+spec: src/specht/.spec/README.md
+
+claims:
+  - B-004
+
+created: "2026-10-08"
+updated: "2026-10-08"
+closed: null
+
+summary: |
+  ADR-0001 (accepted 2026-10-08), stage C. A hand-written list of the
+  eight ISpecRules replaces discovery by reflection and
+  Activator.CreateInstance (SpecCheckRunner.cs:52-58), with a unit test
+  that every ISpecRule in the assembly is on the list. The rules that run
+  are the ones named, which serves C-5, 0001-F5 C-3 and 0001-F5 B-017;
+  ISpecRule's summary that says otherwise is rewritten. No verdict changes
+  (C-9). Depends on 0105: the list is what Evaluate iterates.
+
+acceptance_criteria:
+  - "B-004 — the golden-report test green, field for field, in order"
+  - "C-9 — no verdict changes; 0012 green"
+  - "C-5 — the rule-id set and the ReportedIds sum unchanged"
+  - "ADR-0001 stage C proof — the assembly-coverage test fails for an ISpecRule left off the list"
+  - "§ 9 carries a row naming a test for each id above."
+
+decisions:
+  - |
+    2026-10-08, cut by spec-author on the owner's acceptance of ADR-0001
+    and ADR-0003, one item per migration stage.
+
+out_of_scope:
+  - "Registering the rules in the container — 0107 (ADR-0001 stage D)."
+  - "A new rule id — a new schema version (C-5; brief § 4)."
+  - "Everything else in § 5 of the spec."
