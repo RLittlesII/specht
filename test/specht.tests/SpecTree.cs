@@ -13,9 +13,12 @@ namespace specht.tests;
 /// </remarks>
 public sealed class SpecTree : IDisposable
 {
-    public SpecTree()
+    /// <summary>A tree whose root is a fresh temporary directory, or <paramref name="nesting"/> below one.</summary>
+    /// <param name="nesting">Folders between the temporary directory and the root, outermost first; none by default.</param>
+    public SpecTree(IReadOnlyList<string>? nesting = null)
     {
-        Root = Path.Combine(Path.GetTempPath(), "hooked-specgov-" + Guid.NewGuid().ToString("N"));
+        _temporary = Path.Combine(Path.GetTempPath(), "hooked-specgov-" + Guid.NewGuid().ToString("N"));
+        Root = Path.Combine([_temporary, .. nesting ?? []]);
 
         var schema = Path.Combine(Root, ".spec", "schema");
 
@@ -79,9 +82,9 @@ public sealed class SpecTree : IDisposable
     /// <inheritdoc />
     public void Dispose()
     {
-        if (Directory.Exists(Root))
+        if (Directory.Exists(_temporary))
         {
-            Directory.Delete(Root, recursive: true);
+            Directory.Delete(_temporary, recursive: true);
         }
     }
 
@@ -270,4 +273,6 @@ public sealed class SpecTree : IDisposable
 
         return text.Append("---\n\n").ToString();
     }
+
+    private readonly string _temporary;
 }

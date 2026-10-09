@@ -2,7 +2,7 @@ id: "0020"
 type: feature
 title: The engine, extracted unchanged
 
-status: ready-for-architecture
+status: done
 
 priority: high
 value: 5
@@ -31,8 +31,8 @@ claims:
   - B-011
 
 created: "2026-10-08"
-updated: "2026-10-08"
-closed: null
+updated: "2026-10-09"
+closed: "2026-10-09"
 
 summary: |
   As the maintainer of four repositories, I want hooked's rule engine moved
@@ -49,7 +49,7 @@ acceptance_criteria:
   - "B-003 — co-located identity from frontmatter (0023)"
   - "B-004 — verdicts equal the committed baseline report (0022)"
   - "B-005 — assembly and namespace `specht`, no `Hooked` (0021)"
-  - "B-006 — clock, environment, locale, machine, root location do not reach the verdict (0024)"
+  - "B-006 — clock, environment, locale, machine, root location do not reach the verdict (0024; decision 0006)"
   - "B-007 — root-relative `/` paths (0024)"
   - "B-008 — grid table read as no table (0024)"
   - "B-010 — the six violation fields (0022)"
@@ -64,6 +64,12 @@ decisions:
     copy is alone so commit e7dba24, where C-9 starts, is a pure move
     (C-2). Rejected: the copy and the baseline in one item, which would put
     new test code into the commit C-2 requires to be the rename alone.
+  - |
+    2026-10-09, closed with item 0024, its last open child (0021, 0022,
+    0023 and 0103 done). Every criterion has a § 9 row naming a test.
+    B-002 is Partial: the mechanisms its unit tests still lack, the layout
+    SpecDiscovery assigns and SPEC004's legacy-only reach, wait on the
+    static file access item 0107 removes, and 0107 owns that remainder.
 
 out_of_scope:
   - "Everything in § 5 of the spec."

@@ -101,4 +101,36 @@ public sealed class SpecCheckRunnerIntegrationTests
         report.Violations.Should().BeEmpty();
         report.ItemCount.Should().Be(1);
     }
+
+    [Fact]
+    public void ATraceabilitySectionHoldingAGridTable_WhenChecked_ShouldReportNoTableAndReadNoRowAsAClaim()
+    {
+        // Given
+        using var tree = new SpecTree();
+        var path = SpecDiscovery.Relative(
+            tree.Root,
+            tree.WriteFeature(
+                "0001",
+                "F1",
+                sections: SpecTree.SectionsWith(
+                    "9. Traceability Matrix",
+                    "## 9. Traceability Matrix\n\n"
+                        + "+----------+-------------------+---------+---------+\n"
+                        + "| Claim ID | Scenario          | Test    | Status  |\n"
+                        + "+==========+===================+=========+=========+\n"
+                        + "| B-001    | It does the thing | Missing | Missing |\n"
+                        + "+----------+-------------------+---------+---------+\n"
+                        + "| B-999    | A grid-only row   | Missing | Missing |\n"
+                        + "+----------+-------------------+---------+---------+\n")));
+
+        // When
+        var violations = tree.Run().Violations;
+
+        // Then
+        violations.Should().ContainSingle(static violation => violation.RuleId == "SPEC013")
+            .Which.Should().Match<SpecViolation>(violation => violation.File == path && violation.Identifier == "9. Traceability Matrix");
+        violations.Should().ContainSingle(static violation => violation.RuleId == "SPEC031")
+            .Which.Identifier.Should().Be("B-001");
+        violations.Should().NotContain(static violation => violation.Identifier == "B-999");
+    }
 }

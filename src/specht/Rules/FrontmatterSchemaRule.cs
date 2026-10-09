@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Text.Json;
 using Json.Schema;
 
@@ -65,7 +66,7 @@ public sealed class FrontmatterSchemaRule : ISpecRule
         }
 
         var instance = JsonSerializer.SerializeToElement(frontmatter.Node);
-        var result = schema.Evaluate(instance, SpecSchemas.Options);
+        var result = EvaluateInvariant(schema, instance);
 
         if (result.IsValid)
         {
@@ -83,6 +84,22 @@ public sealed class FrontmatterSchemaRule : ISpecRule
                 frontmatter.LineOf(key),
                 key,
                 Describe(detail, key));
+        }
+    }
+
+    private static EvaluationResults EvaluateInvariant(JsonSchema schema, JsonElement instance)
+    {
+        var culture = CultureInfo.CurrentCulture;
+
+        try
+        {
+            CultureInfo.CurrentCulture = CultureInfo.InvariantCulture;
+
+            return schema.Evaluate(instance, SpecSchemas.Options);
+        }
+        finally
+        {
+            CultureInfo.CurrentCulture = culture;
         }
     }
 

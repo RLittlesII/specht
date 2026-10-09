@@ -37,6 +37,8 @@
     <!-- The baseline tree and its golden report (0001-F1 B-004, C-10), the same files the engine tests read. -->
     <Compile Include="..\specht.tests\Baseline\BaselineTree.cs" Link="Engine\BaselineTree.cs" />
     <Compile Include="..\specht.tests\Baseline\GoldenReport.cs" Link="Engine\GoldenReport.cs" />
+    <!-- The engine's built library and the references that would let the machine reach a verdict (B-005, B-006). -->
+    <Compile Include="..\specht.tests\EngineAssembly.cs" Link="Engine\EngineAssembly.cs" />
     <Content Include="..\specht.tests\Baseline\engine-e7dba24.json"
              Link="Baseline\engine-e7dba24.json"
              CopyToOutputDirectory="PreserveNewest" />
