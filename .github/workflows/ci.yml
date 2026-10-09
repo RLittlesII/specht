@@ -78,8 +78,8 @@ jobs:
       - name: Spec Check
         id: specCheck
         run: |
-          ./build.cmd --target SpecCheck
-      - name: 📦 Pack
-        id: pack
+          ./build.cmd --target SpecCheck --skip Test
+      - name: Continuous Integration
+        id: continuousIntegration
         run: |
-          ./build.cmd --target Pack --skip Compile
+          ./build.cmd --target ContinuousIntegration --skip Format Compile Test SpecCheck
