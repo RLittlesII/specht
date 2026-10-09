@@ -13,6 +13,8 @@ accepted - 2026-10-08, by the owner. Raised by the owner on pull request #13
 on `src/specht/SpecCheckRunner.cs`), and revised against the-architect's
 assessment on pull request #20.
 
+Partially superseded by [ADR-0004](0004-per-rule-settings-are-selection-and-a-map.md), 2026-10-09: the Consequences cost bullet on item `0014` (per-rule settings are selection and a severity map inside `Evaluate`, not one step over collected violations). Stage D's shape is made concrete by [ADR-0005](0005-typed-injected-stages-not-a-chain.md). The rest stands.
+
 ## Context
 
 The owner's comment: "All these classes are starting to feel like they should
