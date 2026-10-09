@@ -6,13 +6,13 @@ status: ready-for-architecture
 
 priority: high
 risk: 2
-rank: 74
+rank: 79
 
 parent: "0072"
 children: []
 
 depends_on: ["0073"] # rules in 0073's configuration
-blocks: []
+blocks: ["0091"]
 spikes: []
 
 spec: .github/.spec/README.md
@@ -24,7 +24,7 @@ claims:
   - B-008
 
 created: "2026-10-08"
-updated: "2026-10-08"
+updated: "2026-10-09"
 closed: null
 
 summary: |
