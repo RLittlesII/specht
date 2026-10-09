@@ -52,12 +52,15 @@ The `test-writer` contract made acceptance-only coverage the easiest legal outco
 - `spec-reviewer`: an unpinned mechanism, or a "no unit tier" verdict that names
   no code, is a finding.
 - `0055-F1` B-003, B-017, B-019 and B-020, and `0055-F2` B-004, are now
-  `Partial`. Item `0098` gives the build a unit tier.
+  `Partial`. Item `0098` gives the build a unit tier. Amended 2026-10-09: the
+  owner closed `0098` without delivery, keeping `0055-F1` § 8's decision that
+  the build has no tests; those claims stay `Missing`, not `Partial`.
 
 ## Claim
 
 - `0055-F1` B-020 — the unit test `0098` adds for `Include`, `Quote` and the
-  extension split, cited in § 9 beside `BuildSteps`
+  extension split, cited in § 9 beside `BuildSteps`. Amended 2026-10-09: no
+  test proves it; the owner closed `0098` without delivery.
 
 ## Skill
 

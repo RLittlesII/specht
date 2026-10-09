@@ -20,7 +20,7 @@ depends_on: []
 blocks: ["F2", "F3", "F4", "F5", "F6"]
 spikes: []
 created: "2026-10-08"
-updated: "2026-10-08"
+updated: "2026-10-09"
 github_issue: null
 synced_at: null
 ---
@@ -142,10 +142,10 @@ Delivered so far by items 0057, the scaffold, 0059, the `Format` target, and 006
 
 ## 8. Testing Strategy
 
-<!-- last written by: test-writer, 2026-10-08 -->
+<!-- last written by: test-writer, 2026-10-09 -->
 
 - **The build has no tests (owner, 2026-10-08).** "I don't think we need ReqnRoll (or any tests) for the build. Keep what we have, in case I change my mind, don't wire them into CI." `build.feature` is no longer linked into `test/specht.acceptance`, so none of its scenarios is discovered or run. [`Build/BuildSteps.cs`](../../test/specht.acceptance/Build/BuildSteps.cs) stays in the tree and compiles, bound to no linked feature. Every § 9 row is therefore `Missing`: a step class that never runs pins nothing.
-- **To restore the tier**, relink `build.feature` in `test/specht.acceptance/specht.acceptance.csproj` with its literal `ReqnrollFeatureFile` entry, then check that the discovered test count rose. Until then, `0098`'s unit tier contradicts the decision; it is the owner's to keep or close.
+- **To restore the tier**, relink `build.feature` in `test/specht.acceptance/specht.acceptance.csproj` with its literal `ReqnrollFeatureFile` entry, then check that the discovered test count rose. The owner closed `0098` on 2026-10-09 without delivery, keeping this decision: the build has no unit tier either.
 - **What the unlinked scenarios did, while they ran.** `BuildSteps` bound B-001, B-002, B-003, B-004, B-005, B-009, B-010, B-017, B-018, B-019, B-020 and B-023, whose scenario and bindings left with it when B-025 superseded it (decision 0001). Each wrote a synthetic tree to a temporary directory and ran this repository's real `build.sh`, or `build.cmd` on Windows, with `--root` at that tree, so `Test` never recursed. Removing `--verify-no-changes` turned B-004 red. Ignoring `--files` turned B-020 red. Changing the default target to `Compile` and making `SpecCheck` fail turned B-001, B-018 and B-023 red. Those results describe the code as it was then. Nothing re-checks them now.
 - **The tier guard** [`test/Shared/TestTierGovernanceTests.cs`](../../test/Shared/TestTierGovernanceTests.cs) is linked into every `*.tests` project by `test/Directory.Build.props`. It is not a test of the build.
 - **Mechanisms, per claim.** Read in [`Build.cs`](../Build.cs). None has a test, by the owner's decision above.
