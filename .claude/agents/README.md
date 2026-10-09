@@ -1,12 +1,12 @@
 ---
 name: role-agents
-description: The four documented role contracts that own the specification chain in this repository, and the rule that each role trusts only the artifact of the role before it
+description: The five documented role contracts that own the specification chain in this repository, and the rule that each role trusts only the artifact of the role before it
 ---
 
 # Role agents
 
 `specht` is specification-driven: the specification is the artifact of record and
-code is downstream of it. Four roles own that chain, and each is a **documented
+code is downstream of it. Five roles own that chain, and each is a **documented
 contract** — for whoever takes the role, a person or an agent.
 
 | Role                                | Turns          | Into                                             |
@@ -14,6 +14,7 @@ contract** — for whoever takes the role, a person or an agent.
 | [`spec-author`](spec-author.md)     | a decided need | the agreement, and the `.feature` file           |
 | [`test-writer`](test-writer.md)     | a claim        | a failing scenario and failing tests             |
 | [`implementer`](implementer.md)     | a failing test | production code, and the design that explains it |
+| [`benchmarker`](benchmarker.md)     | a concern      | a benchmark, and the finding it measured         |
 | [`spec-reviewer`](spec-reviewer.md) | a diff         | a sign-off, or findings                          |
 
 ## Sequential trust
@@ -21,7 +22,10 @@ contract** — for whoever takes the role, a person or an agent.
 **Each role trusts only the artifact the preceding role produced — never a chat
 summary of it.** The test writer works from the claim, not from the conversation
 that produced the claim. The implementer works from the failing test and the
-claim it cites, not from a description of what the test is getting at. A
+claim it cites, not from a description of what the test is getting at. The
+benchmarker works from the constraint, ADR or design text that states a
+performance or architecture concern, against code the implementer has built -
+beside the test writer, not before it. A
 conversational handoff leaves no artifact and does not survive to the next
 session or the next agent.
 
@@ -40,7 +44,7 @@ files — a second copy is a second thing to drift.
 ## Standing notes
 
 - **No role is mandatory for a small change; the ordering is.** A one-line fix
-  does not need four handoffs. It still may not reach code before the claim it
+  does not need five handoffs. It still may not reach code before the claim it
   satisfies exists.
 - **Scenarios execute.** `test/specht.acceptance` runs the `.feature` files
   through Reqnroll. Unit tests still cover the concerns — a passing acceptance scenario

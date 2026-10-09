@@ -260,7 +260,7 @@ its consumers have it. This repository never will.
 
 ### Roles
 
-Four documented role contracts own the chain, each trusting only the artifact the
+Five documented role contracts own the chain, each trusting only the artifact the
 role before it produced — never a chat summary of it. They live in
 [`.claude/agents/`](.claude/agents/README.md):
 
@@ -269,6 +269,7 @@ role before it produced — never a chat summary of it. They live in
 | [`spec-author`](.claude/agents/spec-author.md)     | a decided need | the agreement, and the `.feature` file           |
 | [`test-writer`](.claude/agents/test-writer.md)     | a claim        | a failing scenario and failing tests             |
 | [`implementer`](.claude/agents/implementer.md)     | a failing test | production code, and the design that explains it |
+| [`benchmarker`](.claude/agents/benchmarker.md)     | a concern      | a benchmark, and the finding it measured         |
 | [`spec-reviewer`](.claude/agents/spec-reviewer.md) | a diff         | a sign-off, or findings                          |
 
 Which role owns which section is written in exactly one place:
@@ -386,10 +387,11 @@ Each one's **Project rules** preamble points at the companion:
 **Technology** — about a library this tool is built on, with the repository's
 own decisions marked where they apply:
 
-| Skill                                                | Covers                                                                                              |
-| ---------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
-| [`spectre-cli`](.claude/skills/spectre-cli/SKILL.md) | commands and settings, branching, help, async and exit codes, DI, testing, the execution pipeline   |
-| [`dotnet-tool`](.claude/skills/dotnet-tool/SKILL.md) | the tool's shape — project setup, command folders, conventions, packing and the local tool manifest |
+| Skill                                                        | Covers                                                                                                                                       |
+| ------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| [`spectre-cli`](.claude/skills/spectre-cli/SKILL.md)         | commands and settings, branching, help, async and exit codes, DI, testing, the execution pipeline                                            |
+| [`dotnet-tool`](.claude/skills/dotnet-tool/SKILL.md)         | the tool's shape — project setup, command folders, conventions, packing and the local tool manifest                                          |
+| [`benchmarkdotnet`](.claude/skills/benchmarkdotnet/SKILL.md) | measuring .NET code — benchmark classes, parameters, setup, toolchains, the memory diagnoser, reading the summary, and the measurement traps |
 
 **A skill needed to deliver a feature lives here, not in a `Skillfile`.** Such
 a manifest pulls from a private repository (none is committed today), so a
