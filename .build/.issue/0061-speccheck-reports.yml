@@ -2,7 +2,7 @@ id: "0061"
 type: task
 title: Report the check from SpecCheck without failing until rule settings exist
 
-status: ready-for-architecture
+status: in-progress
 
 priority: high
 risk: 2
