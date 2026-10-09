@@ -36,7 +36,7 @@ public sealed class FeatureFileRule : ISpecRule
 
             var claims = ClaimIds(feature, grammar);
             var path = feature.FeatureFiles[0];
-            var relative = Path.GetRelativePath(model.Root, path).Replace(Path.DirectorySeparatorChar, '/');
+            var relative = SpecDiscovery.Relative(model.Root, path);
 
             foreach (var tag in FeatureFileReader.ReadTags(path))
             {
