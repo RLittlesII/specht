@@ -1,0 +1,239 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/rlittlesii/specht/schema/v1/feature-spec.frontmatter.schema.json",
+  "title": "Feature specification frontmatter",
+  "description": "The frontmatter of a Feature specification - <area>/.spec/README.md in the co-located layout, or epics/<epic>/<feature>/spec.md in the legacy layout.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "id",
+    "epic",
+    "type",
+    "spec_status",
+    "status",
+    "priority",
+    "value",
+    "risk",
+    "rank",
+    "scored_by",
+    "scored_on",
+    "domain",
+    "author",
+    "milestone",
+    "children",
+    "depends_on",
+    "blocks",
+    "spikes",
+    "created",
+    "updated",
+    "github_issue",
+    "synced_at"
+  ],
+  "properties": {
+    "title": {
+      "type": "string",
+      "description": "Document title, as every template under .spec/templates/ writes it. Optional: the legacy specifications carry none."
+    },
+    "description": {
+      "type": "string",
+      "description": "One-line summary, as every template under .spec/templates/ writes it. Optional, like title."
+    },
+    "id": {
+      "type": "string",
+      "pattern": "^F[0-9]+[a-z]?$",
+      "description": "Feature id, scoped to its epic. Permanent."
+    },
+    "epic": {
+      "type": "string",
+      "pattern": "^[0-9]{4}$"
+    },
+    "type": {
+      "const": "feature"
+    },
+    "spec_status": {
+      "enum": [
+        "draft",
+        "in-review",
+        "approved",
+        "superseded"
+      ],
+      "description": "Document maturity. Owned by this file."
+    },
+    "status": {
+      "enum": [
+        "needs-decomposition",
+        "ready-for-architecture",
+        "ready-for-implementation",
+        "ready",
+        "in-progress",
+        "in-review",
+        "blocked",
+        "deferred",
+        "done"
+      ],
+      "description": "Delivery lifecycle. Mirrored from the issue's status:* label once github_issue is set."
+    },
+    "priority": {
+      "enum": [
+        "critical",
+        "high",
+        "med",
+        "low"
+      ],
+      "description": "Authored here permanently - there is no priority:* label to mirror."
+    },
+    "value": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 5,
+      "description": "Business value 1-5 once scored. 0 is the template's value and means not yet scored; it is only allowed while scored_by is null."
+    },
+    "risk": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 5,
+      "description": "Delivery risk 1-5 once scored. 0 is the template's value and means not yet scored; it is only allowed while scored_by is null."
+    },
+    "rank": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Derived from value, risk and dependency depth - the scale is not 0-100; observed values exceed it. Recompute, never hand-edit."
+    },
+    "scored_by": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "scored_on": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date"
+    },
+    "domain": {
+      "type": "string",
+      "minLength": 1
+    },
+    "author": {
+      "type": "string",
+      "minLength": 1
+    },
+    "milestone": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "children": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^[0-9]{4}-[0-9]{2}$"
+      }
+    },
+    "depends_on": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^([0-9]{4}/)?F[0-9]+[a-z]?$"
+      }
+    },
+    "blocks": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^([0-9]{4}/)?F[0-9]+[a-z]?$"
+      },
+      "description": "Derived from the dependency graph."
+    },
+    "spikes": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^[0-9]{4}-[0-9]{2}$"
+      }
+    },
+    "created": {
+      "type": "string",
+      "format": "date"
+    },
+    "updated": {
+      "type": "string",
+      "format": "date"
+    },
+    "github_issue": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "minimum": 1
+    },
+    "synced_at": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date-time"
+    },
+    "alignment_rejections": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "How many times the Feature's implementation PR was rejected for drifting from this specification. Optional: only specs that have been through review carry it; absent means zero."
+    }
+  },
+  "allOf": [
+    {
+      "title": "SPEC006 - a scored spec has value and risk in 1-5",
+      "if": {
+        "properties": {
+          "scored_by": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "scored_by"
+        ]
+      },
+      "then": {
+        "properties": {
+          "value": {
+            "minimum": 1
+          },
+          "risk": {
+            "minimum": 1
+          }
+        }
+      }
+    },
+    {
+      "title": "SPEC005 - a linked spec records when it last mirrored",
+      "if": {
+        "properties": {
+          "github_issue": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "github_issue"
+        ]
+      },
+      "then": {
+        "properties": {
+          "synced_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "synced_at"
+        ]
+      }
+    }
+  ]
+}

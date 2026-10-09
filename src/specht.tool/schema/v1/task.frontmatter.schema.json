@@ -1,0 +1,132 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/rlittlesii/specht/schema/v1/task.frontmatter.schema.json",
+  "title": "Task, test or spike frontmatter",
+  "description": "A child item of a Feature. Numbered per EPIC, not per Feature.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "id",
+    "parent",
+    "type",
+    "status",
+    "priority",
+    "created",
+    "updated",
+    "github_issue"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}$"
+    },
+    "parent": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-F[0-9]+[a-z]?$"
+    },
+    "epic": {
+      "type": "string",
+      "pattern": "^[0-9]{4}$"
+    },
+    "type": {
+      "enum": [
+        "task",
+        "test",
+        "spike",
+        "bug"
+      ]
+    },
+    "status": {
+      "enum": [
+        "needs-decomposition",
+        "ready-for-architecture",
+        "ready-for-implementation",
+        "ready",
+        "in-progress",
+        "in-review",
+        "blocked",
+        "deferred",
+        "done"
+      ]
+    },
+    "priority": {
+      "enum": [
+        "critical",
+        "high",
+        "med",
+        "low"
+      ]
+    },
+    "value": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 5
+    },
+    "risk": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 5
+    },
+    "rank": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "scored_by": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "scored_on": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date"
+    },
+    "depends_on": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string"
+      }
+    },
+    "blocks": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string"
+      }
+    },
+    "spikes": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^[0-9]{4}-[0-9]{2}$"
+      }
+    },
+    "created": {
+      "type": "string",
+      "format": "date"
+    },
+    "updated": {
+      "type": "string",
+      "format": "date"
+    },
+    "github_issue": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "minimum": 1
+    },
+    "synced_at": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date-time"
+    }
+  }
+}

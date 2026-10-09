@@ -108,9 +108,13 @@ Pending: owned by `implementer`, written after agreement.
 
 ## 7. Technical Design
 
-<!-- last written by: spec-author, 2026-10-07 -->
+<!-- last written by: implementer, 2026-10-09 -->
 
-Pending: owned by `implementer`, written after agreement.
+**The shipping copy (B-004, B-005, C-2).** `src/specht.tool/schema/v<n>/` holds the four schema files (`spec-structure.schema.json` and the three frontmatter schemas) and `src/specht.tool/templates/v<n>/` the four templates (`feature.md`, `decision.md`, `adr.md`, `lesson.md`); `item.yml` is not shipped. `specht.tool.csproj` embeds them under the logical names `schema/v<n>/<file>` and `templates/v<n>/<file>`, `/`-separated on every OS. The newest version is the highest `<n>`. `v1` is a byte copy of the live `.spec/`.
+
+No reader type exists yet; `init` earns one.
+
+The engine's default manifest (`src/specht/specht.csproj`, `specht.default-manifest.json`) stays a link to the live `.spec/schema/spec-structure.schema.json`, not a third copy (C-2). Drift between the shipping copy and the live copy is caught by the B-004 tests, not by a build step that generates one from the other (C-2).
 
 ## 8. Testing Strategy
 
