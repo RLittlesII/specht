@@ -2,7 +2,7 @@ id: "0042"
 type: task
 title: Pin schemaVersion and check with the embedded version set
 
-status: in-progress
+status: done
 
 priority: high
 risk: 4
@@ -28,7 +28,7 @@ claims:
 
 created: "2026-10-08"
 updated: "2026-10-09"
-closed: null
+closed: "2026-10-09"
 
 summary: |
   Embed every shipped version's frontmatter schemas and rule vocabulary,
