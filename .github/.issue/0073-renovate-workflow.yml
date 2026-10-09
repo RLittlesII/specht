@@ -2,7 +2,7 @@ id: "0073"
 type: task
 title: Generate the scheduled self-hosted Renovate workflow
 
-status: ready-for-architecture
+status: in-progress
 
 priority: high
 risk: 4
@@ -24,7 +24,7 @@ claims:
   - B-016
 
 created: "2026-10-08"
-updated: "2026-10-08"
+updated: "2026-10-09"
 closed: null
 
 summary: |
