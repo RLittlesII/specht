@@ -1,84 +1,66 @@
-# specht
+<p align="center">
+  <img src=".assets/logos/specht-book-logo.svg" width="180" alt="specht" />
+</p>
 
-A `dotnet tool` that checks a repository's `.spec/` specification tree against a
-versioned schema, and reports every violation with a file, a line, and a rule id.
+<h1 align="center">specht</h1>
+
+<p align="center">
+  A <code>dotnet tool</code> that checks a repository's <code>.spec/</code> tree against a versioned schema.
+</p>
+
+<p align="center">
+  <a href="https://github.com/RLittlesII/specht/actions/workflows/ci.yml"><img src="https://github.com/RLittlesII/specht/actions/workflows/ci.yml/badge.svg" alt="ci" /></a>
+  <img src="https://img.shields.io/badge/.NET-10-512BD4?style=flat&logo=dotnet&logoColor=white" alt=".NET 10" />
+  <img src="https://img.shields.io/badge/schema-v1-1e1e1e?style=flat" alt="schema v1" />
+  <img src="https://img.shields.io/badge/status-pre--release-orange?style=flat" alt="pre-release" />
+  <a href="LICENSE.md"><img src="https://img.shields.io/badge/license-MIT-blue?style=flat" alt="MIT" /></a>
+</p>
+
+<p align="center">
+  <a href="#quick-start">Quick start</a> •
+  <a href="#usage">Usage</a> •
+  <a href="#exit-codes">Exit codes</a> •
+  <a href="#layout">Layout</a> •
+  <a href="#build">Build</a> •
+  <a href="#status">Status</a> •
+  <a href="#license">License</a>
+</p>
+
+---
+
+Every violation comes back with a file, a line and a rule id.
 
 ```text
 src/specht/.spec/README.md(214): error SPEC031: § 9 has no row for claim B-007
 ```
 
-## What
+`specht` checks frontmatter against JSON Schema, the contracted sections and
+their order, claim ids, one traceability row per claim, `.feature` tags that
+resolve to claims, and dependency edges that agree from both ends. Rules are
+`SPEC001`–`SPEC061`
+([brief § 4](.spec/brief.md#4-the-rule-vocabulary-fixed-versioned-with-the-schema)),
+and each finding says what the rule expected.
 
-`specht` reads the Markdown specifications under a repository's `.spec/`
-folders and proves each one is written and formatted the way the pinned schema
-says: YAML frontmatter that validates against its JSON Schema, the contracted
-sections in order, well-formed claim ids, a traceability matrix with exactly one
-row per claim, `.feature` scenario tags that resolve to claims, and dependency
-edges that resolve and agree from both ends.
+Deterministic and offline: the same tree gives the same report, and every path
+is relative to the root.
 
-Every finding is a fixed rule id — `SPEC001` through `SPEC061` — listed in
-[brief § 4](.spec/brief.md#4-the-rule-vocabulary-fixed-versioned-with-the-schema).
-Each violation also says what the rule expected, so the document can be
-repaired from the report alone.
+**Why:** one schema and one checker, not a hand-copied set per repository. A
+repository pins `schemaVersion`, its build calls the tool, and it upgrades when
+it chooses.
 
-The check is deterministic and offline: the same tree gives the same report,
-and the check never touches the network. Paths in every output are relative to
-the root it was given.
+---
 
-## Why
+## Quick start
 
-Several repositories are written on the same `.spec/` approach, and each was
-carrying a hand-copied schema, set of templates, and checker. Every improvement
-had to land in each copy or drift.
+> Not published yet. Install steps land with the first release.
 
-`specht` is the one schema and the one checker. A repository pins a
-`schemaVersion`, its build calls the tool, and no repository carries the engine.
-Every schema version the tool has shipped stays embedded in it, so a repository
-upgrades when it chooses — lagging is deliberate, not drift.
+```sh
+dotnet tool install specht.tool   # into the repository's local tool manifest
+specht init                       # write .spec/schema and .spec/templates
+specht                            # check the tree
+```
 
-## Who
-
-Written and maintained by Rodney Littles II for his own repositories. `hooked` is
-the first consumer; Transporter, whose tree predates the schema, is the second.
-
-This is a personal project. It is published openly, but issues and pull requests
-are not being sought.
-
-## When
-
-**Pre-release. Nothing is published yet.** Work follows the order in
-[brief § 8](.spec/brief.md#8-order-of-work):
-
-1. Scaffold — solution, central package versions, NUKE build, CI. _In progress._
-2. Copy the rule engine and its tests from `hooked`, renamed and otherwise unchanged.
-3. The command line — exit codes, `--json`, `--report`, `init`; pack and self-host.
-4. `hooked` consumes the tool in place of its own engine.
-5. Move every hardcoded literal into the manifest, one rule at a time.
-6. Schema versioning and `specht upgrade`.
-7. Install in Transporter — "done".
-
-## Where
-
-- **Package:** `specht.tool`, on GitHub Packages under `rlittlesii/specht`, once
-  the first version is published.
-- **Engine:** [`src/specht`](src/specht) — discovery, frontmatter, schemas, the
-  document model, the rules, the report.
-- **Command line:** [`src/specht.tool`](src/specht.tool) — the `specht` command.
-- **Schema version 1 and templates:** [`.spec/schema`](.spec/schema) and
-  [`.spec/templates`](.spec/templates) — this repository's own copy, the same
-  files `specht init` writes into a consumer.
-- **Design:** [`.spec/brief.md`](.spec/brief.md) is the design authority; each
-  part of the tool is specified in the `.spec/README.md` beside its code.
-
-## How
-
-### Install
-
-Not yet available: the package has not been published. Install instructions —
-the package source, the read token, and the local tool manifest commands — are
-added here with the first release.
-
-### Use
+## Usage
 
 ```sh
 specht [--root <dir>] [--report <path>] [--strict] [--json]
@@ -87,15 +69,20 @@ specht upgrade [--root <dir>]
 specht --explain SPEC031
 ```
 
-| Command                 | Does                                                                                                                       |
-| ----------------------- | -------------------------------------------------------------------------------------------------------------------------- |
-| `specht`                | Checks the tree. One MSBuild-shaped line per violation, then a summary.                                                    |
-| `--json`                | Replaces the output with the report document, including what each rule expected.                                           |
-| `--report <path>`       | Also writes the JSON report to a path.                                                                                     |
-| `--strict`              | Any violation, of any severity, fails the run.                                                                             |
-| `specht init`           | Writes the schema set and templates into `<root>/.spec/`. Never overwrites a file.                                         |
-| `specht upgrade`        | Moves `.spec/schema/` and `.spec/templates/` to the next schema version and prints what changed. Never touches a document. |
-| `specht --explain <id>` | Prints a rule's full text.                                                                                                 |
+| Command                 | Does                                                                             |
+| ----------------------- | -------------------------------------------------------------------------------- |
+| `specht`                | Check the tree. One MSBuild-shaped line per violation, then a summary.           |
+| `--json`                | Print the report document instead, with what each rule expected.                 |
+| `--report <path>`       | Also write the JSON report to a path.                                            |
+| `--strict`              | Fail on any violation, of any severity.                                          |
+| `specht init`           | Write the schema set and templates into `<root>/.spec/`. Never overwrites.       |
+| `specht upgrade`        | Move `.spec/schema/` and `.spec/templates/` to the next version; print the diff. |
+| `specht --explain <id>` | Print a rule's full text.                                                        |
+
+One file configures it: `.spec/schema/spec-structure.schema.json`, which pins
+`schemaVersion`.
+
+## Exit codes
 
 | Exit | Meaning                                                               |
 | ---- | --------------------------------------------------------------------- |
@@ -105,10 +92,26 @@ specht --explain SPEC031
 | `3`  | Invalid manifest                                                      |
 | `4`  | Something named on the command line, such as a rule id, was not found |
 
-A consumer configures the tool with one file,
-`.spec/schema/spec-structure.schema.json`, which pins `schemaVersion`.
+## Layout
 
-### Build from source
+```text
+specht/
+├── src/
+│   ├── specht/            # engine: discovery, frontmatter, schemas, document model, rules, report
+│   └── specht.tool/       # the specht command, one folder per command
+├── test/
+│   ├── specht.tests/      # unit and integration tiers
+│   └── specht.acceptance/ # Reqnroll scenarios
+├── .spec/
+│   ├── brief.md           # design authority
+│   ├── schema/            # schema v1, the same files specht init writes
+│   └── templates/         # blanks for specifications and records
+└── .build/                # NUKE build
+```
+
+Each part is specified in the `.spec/README.md` beside its code.
+
+## Build
 
 Requires the .NET SDK pinned in [`global.json`](global.json).
 
@@ -119,6 +122,19 @@ dotnet tool restore
 ./build.sh SpecCheck   # run specht on this repository's own specifications
 ```
 
+## Status
+
+**Pre-release.** Work follows [brief § 8](.spec/brief.md#8-order-of-work):
+
+1. ✅ Scaffold — solution, central package versions, NUKE, CI.
+2. ✅ Copy the rule engine and its tests from `hooked`.
+3. 🚧 Command line — `specht` with `--root` and `--strict` ships; `init`, `--json`, `--report` and `--explain` next.
+4. `hooked` consumes the tool.
+5. Move every hardcoded literal into the manifest.
+6. Schema versioning and `specht upgrade`.
+7. Install in Transporter — done.
+
 ## License
 
-[MIT](LICENSE.md) © 2026 Rodney Littles, II
+[MIT](LICENSE.md) © 2026 Rodney Littles, II. A personal project, published
+openly; issues and pull requests are not being sought.
