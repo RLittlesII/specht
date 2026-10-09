@@ -6,13 +6,13 @@ status: done
 
 priority: high # DERIVED
 risk: 2
-rank: 104 # DERIVED
+rank: 109 # DERIVED
 
 parent: "0068"
 children: []
 
 depends_on: ["0069", "0064"] # uploads 0069's reports; a step in 0064's workflow
-blocks: ["0071", "0091"]
+blocks: ["0071", "0091", "0112"]
 spikes: []
 
 spec: test/.spec/README.md
@@ -22,7 +22,7 @@ claims:
   - B-007
 
 created: "2026-10-08"
-updated: "2026-10-08"
+updated: "2026-10-09"
 closed: "2026-10-08"
 
 summary: |
