@@ -10,8 +10,14 @@ Feature: The coverage gate
 
   @B-002
   Scenario: Integration uploads coverage
-    When integration runs the build's gates on any operating system
-    Then that run's coverage is sent to the coverage service for its commit
+    When integration runs the build's gates
+    Then the Linux run's coverage is sent to the coverage service for its commit
+
+  @B-002 @boundary
+  Scenario: The Windows run uploads no coverage
+    When integration runs the build's gates
+    Then the Windows run's tests run
+    And none of the Windows run's coverage is sent to the coverage service
 
   @B-002 @boundary
   Scenario: A documentation-only pull request uploads no coverage

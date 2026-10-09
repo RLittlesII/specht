@@ -10,7 +10,7 @@ risk: 2
 rank: 94 # DERIVED
 
 parent: "0055"
-children: ["0069", "0070", "0071"]
+children: ["0069", "0070", "0071", "0112"]
 
 depends_on: []
 blocks: []
@@ -29,7 +29,7 @@ claims:
   - B-008
 
 created: "2026-10-08"
-updated: "2026-10-08"
+updated: "2026-10-09"
 closed: "2026-10-08"
 
 summary: |
@@ -39,7 +39,7 @@ summary: |
 
 acceptance_criteria:
   - "B-001 — one Cobertura report per test project under `.artifacts/coverage/` (0069)"
-  - "B-002 — every CI run uploads to Codecov (0070)"
+  - "B-002 — the ubuntu-latest leg uploads to Codecov, the windows-latest leg none (0070, 0112)"
   - "B-003 — patch under 80%: status fails (0071)"
   - "B-004 — patch at 80% or more: status passes (0071)"
   - "B-005 — lower total: reported, passes (0071)"

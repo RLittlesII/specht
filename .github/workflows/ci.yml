@@ -98,7 +98,7 @@ jobs:
           ./build.cmd --target Test --skip Compile
       - name: Upload coverage to Codecov
         id: codecov
-        if: ${{ (!cancelled()) && steps.changes.outputs.build == 'true' }}
+        if: ${{ (!cancelled() && matrix.os == 'ubuntu-latest') && steps.changes.outputs.build == 'true' }}
         continue-on-error: true
         uses: codecov/codecov-action@v5
         with:
