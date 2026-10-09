@@ -90,21 +90,52 @@ Nothing sets the package's version, so every `Pack` would produce the same defau
 
 ## 6. Concern Separation
 
-<!-- last written by: spec-author, 2026-10-08 -->
+<!-- last written by: implementer, 2026-10-09 -->
 
-Pending: owned by `implementer`, written after agreement.
+| #   | Concern                                                                 | Classification |
+| --- | ----------------------------------------------------------------------- | -------------- |
+| 1   | Which version line the package is on                                    | Business       |
+| 2   | Which refs build a public version, and which build a prerelease         | Business       |
+| 3   | Computing the version from the commit and its height                    | Technical      |
+| 4   | Giving every build the full history the height is counted from          | Technical      |
+| 5   | Cutting the release tag from the computed version                       | Both           |
+| 6   | Keeping one source of the version                                       | Both           |
+| 7   | Getting the `nbgv` tool onto a fresh clone, and keeping its pin current | Technical      |
 
 ## 7. Technical Design
 
-<!-- last written by: spec-author, 2026-10-08 -->
+<!-- last written by: implementer, 2026-10-09 -->
 
-Pending: owned by `implementer`, written after agreement.
+Delivered so far by item 0079. Stamping the computed version into the assemblies and the package with the Nerdbank.GitVersioning MSBuild package (B-005) is 0080; the schema version staying put when `version.json` moves (B-006) is 0081. Until 0080 lands, `Pack` still carries the SDK's default version, and the version below is what `dotnet nbgv get-version` reports.
+
+- **The source** is [`version.json`](../../../version.json) at the repository root: `version` `0.1` (OQ-1), `publicReleaseRefSpec` `^refs/heads/main$` and `^refs/tags/v\d+(?:\.\d+)*$` (A-2), and `release.tagName` `v{version}`. It carries no comments; the reasons live here.
+- **The tool** is `nbgv` 3.10.94 in the local tool manifest, [`.config/dotnet-tools.json`](../../../.config/dotnet-tools.json), `rollForward: false`. The build's `Restore` target restores it with `DotNetToolRestore` (item 0057), so a fresh clone has it after `./build.sh` or `dotnet tool restore`. Renovate keeps the pin current through the manifest.
+- **The version** is `<version>.<height>`, the height counting commits since `version.json`'s `version` last changed. The commit that introduces `version.json` is therefore `0.1.1` (B-008), and each later commit on `main` is one higher (B-002).
+- **Public or prerelease** is the ref matched against `publicReleaseRefSpec`. Locally `nbgv` reads the checked-out branch. On GitHub Actions it reads `GITHUB_REF`, so a push to `main` (`refs/heads/main`) or a `v*` tag builds a public version (B-003), and a pull request (`refs/pull/<n>/merge`, built detached on the head commit) builds a prerelease such as `0.1.1-g7a88c23105`, the suffix being `g` and the commit id (B-004).
+- **One commit, one version** (B-001): the same commit from the same ref with full history computes the same version on any machine. CI has that history without a workflow change: [`.build/Build.GitHubActions.cs`](../../Build.GitHubActions.cs) `Middleware` sets the checkout's `FetchDepth = 0` and adds a `git fetch --prune` step, so the generated [`ci.yml`](../../../.github/workflows/ci.yml) checks out with `fetch-depth: 0` (C-2). A shallow clone counts a different height and so a different version, which is what C-2 rules out.
+- **The release tag** (A-1, B-007): `dotnet nbgv tag` on a commit of `main` creates `v<version>` at that commit from `release.tagName`. It creates the tag locally only; pushing it is the maintainer's step, and publishing on the tag is `0055-F6`.
+- **One source** (C-3): no `<Version>` is set in `Directory.Build.props` or any project file, and no workflow passes one in.
+- **Verified by hand** when 0079 was built, 2026-10-09. Nothing here has a test yet (§ 8).
 
 ## 8. Testing Strategy
 
-<!-- last written by: spec-author, 2026-10-08 -->
+<!-- last written by: test-writer, 2026-10-09 -->
 
-Pending: owned by `test-writer`.
+- **The build has no tests (owner, 2026-10-08), and versioning is the build's.** That decision is recorded in [`0055-F2` § 8](../../ContinuousIntegration/.spec/README.md) and applies here unchanged. `versioning.feature` is not linked into `test/specht.acceptance`, and no step class or unit test exists for it. Every § 9 row is therefore `Missing`: nothing pins these claims.
+- **Mechanisms, per claim.** Read in [`version.json`](../../../version.json) and [`.config/dotnet-tools.json`](../../../.config/dotnet-tools.json). None has a test, by the owner's decision above.
+  - B-001, B-002: no mechanism of their own. Nerdbank.GitVersioning derives the version from `version.json`'s `version` and the git height of the commit, so both follow from the tool, not from code here.
+  - B-003, B-004: a literal setting. `publicReleaseRefSpec` names `^refs/heads/main$` and `^refs/tags/v\d+(?:\.\d+)*$` and nothing else; every other ref gets the `-g<commit>` suffix.
+  - B-007: a literal setting. `release.tagName` is `v{version}`, and the local tool manifest pins `nbgv` 3.10.94 with `rollForward: false`.
+  - B-008: a literal setting. `version` is `0.1`.
+  - B-005 and B-006: items 0080 and 0081; not verified here.
+- **Verified by hand on 2026-10-09, for 0079.**
+  - B-004, B-008: on branch `0079/nbgv-version`, `dotnet nbgv get-version` gave NuGetPackageVersion `0.1.1-g7a88c23105`.
+  - B-003: with `GITHUB_ACTIONS=true` and `GITHUB_REF=refs/heads/main`, and again with `refs/tags/v0.1.1`, it gave `0.1.1`. With `refs/pull/9/merge` and `refs/heads/feature/x` it gave `0.1.1-g7a88c23105`.
+  - B-001: two fresh full clones of the branch both gave `0.1.1-g7a88c23105` at `7a88c23`.
+  - B-002: in a throwaway clone, an empty commit on a local `main` took the version from `0.1.1` to `0.1.2`.
+  - B-007: `dotnet nbgv tag` there created `v0.1.2` at HEAD, equal to the computed SimpleVersion. The clone was deleted and nothing was pushed.
+  - Those results describe the code as it was then. Nothing re-checks them.
+- **Verdict.** Every claim built here rests on a literal setting in `version.json` or on Nerdbank.GitVersioning itself; there is no code in this repository beneath them to unit-test. Each is testable as it stands, the way the hand checks ran: a temporary git repository with `version.json` committed, `dotnet nbgv get-version` run under a set `GITHUB_REF`. No claim has a test because the owner decided the build needs none, not because the design prevents it.
 
 ## 9. Traceability Matrix
 
