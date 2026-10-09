@@ -1,6 +1,6 @@
 ---
 title: "Specification: Continuous integration"
-description: "Every pull request and every push to main runs the build's gates on ubuntu and windows, from a workflow NUKE generates, each operating system a stable check of its own, with spec violations annotated on the diff and nothing published"
+description: "Every push to main, and every pull request that changes more than documentation, runs the build's gates on ubuntu and windows, from a workflow NUKE generates, each operating system a stable check of its own, with spec violations annotated on the diff and nothing published"
 type: feature
 id: "F2"
 epic: "0055"
@@ -31,7 +31,7 @@ synced_at: null
 
 <!-- last written by: spec-author, 2026-10-08 -->
 
-No workflow exists, so the first pull request on GitHub would merge on the author's word, and the invariants brief § 9 makes non-negotiable - no absolute path, `/` separators in every output - would be proven only on the one operating system a contributor happens to use. This Feature removes that failure state: every pull request and every push to `main` runs the build's gates on ubuntu and windows, each operating system reports as a check of its own under a name that does not change, and a specification violation is annotated on the line of the diff that caused it.
+No workflow exists, so the first pull request on GitHub would merge on the author's word, and the invariants brief § 9 makes non-negotiable - no absolute path, `/` separators in every output - would be proven only on the one operating system a contributor happens to use. This Feature removes that failure state: every push to `main`, and every pull request that changes more than documentation, runs the build's gates on ubuntu and windows, each operating system reports as a check of its own under a name that does not change, and a specification violation is annotated on the line of the diff that caused it.
 
 ## 2. User Needs
 
@@ -44,6 +44,7 @@ No workflow exists, so the first pull request on GitHub would merge on the autho
 | 3   | The author of a specification change | The violation shown on the line that caused it, in the diff            | A log to search                                   |
 | 4   | `0055-F8`                            | Check names stable enough to require in branch protection              | N/A (internal dependency)                         |
 | 5   | `0055-F3`, `0055-F4`                 | A run whose coverage can be uploaded, and checks an update can wait on | N/A (internal dependency)                         |
+| 6   | The author of a documentation change | Green checks without a full build on two runners                       | Every Markdown edit runs every gate twice         |
 
 ### Assumptions
 
@@ -56,45 +57,52 @@ No workflow exists, so the first pull request on GitHub would merge on the autho
 
 <!-- last written by: spec-author, 2026-10-08 -->
 
-| ID    | Claim                                                                                                                                                                                      | Source                                                                        | Status  |
-| ----- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------- | ------- |
-| B-001 | Given a pull request targeting `main` is opened or updated, this Feature runs the build against the pull request's head.                                                                   | owner, 2026-10-08; A-2                                                        | Active  |
-| B-002 | Given a push to `main`, this Feature runs the build against the pushed commit.                                                                                                             | owner, 2026-10-08                                                             | Active  |
-| B-003 | Given a run, this Feature runs the build once on each of ubuntu and windows.                                                                                                               | owner, 2026-10-08; brief § 9; macOS dropped by the owner, 2026-10-08 (§ 5 #8) | Amended |
-| B-004 | Given a run on one operating system, this Feature runs the `Format`, `Compile`, `Test`, `SpecCheck` and `Pack` targets through the build's entry script.                                   | brief § 8 step 1; `0055-F1` C-1; A-1; C-4                                     | Active  |
-| B-005 | Given any target fails on one operating system, that operating system's check fails.                                                                                                       | brief § 8 step 1; C-4                                                         | Active  |
-| B-006 | Given a pull request whose tree has a specification violation, this Feature annotates the violation's file and line in the pull request's diff.                                            | AGENTS.md § `specht`; `0001-F2` B-001                                         | Active  |
-| B-007 | Given two runs on different commits, each operating system's check carries the same name in both.                                                                                          | `0055-F8` B-002                                                               | Active  |
-| B-008 | Given any run of this Feature, no package is pushed to any feed.                                                                                                                           | `0055-F6` C-1                                                                 | Active  |
-| B-009 | Given a commit whose committed copy of any generated workflow - integration, release or dependency updates - differs from what the build generates from that commit, the run fails.        | OQ-1 (owner, 2026-10-08); C-1                                                 | Amended |
-| B-010 | Given a run, each operating system's build reports as a separate check.                                                                                                                    | owner, 2026-10-08; split from B-003                                           | Active  |
-| B-011 | Given a run after this repository's local tool manifest names `specht.tool` (`0055-F7` B-003), the run restores the tool from the feed with the workflow's own token granted package read. | owner, 2026-10-08; `0055-F7` A-1                                              | Active  |
+| ID    | Claim                                                                                                                                                                                      | Source                                                                                                   | Status  |
+| ----- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------- | ------- |
+| B-001 | Given a pull request targeting `main` is opened or updated, and B-012 does not apply to it, this Feature runs the build against the pull request's head.                                   | owner, 2026-10-08; A-2; B-012 (owner, 2026-10-08)                                                        | Amended |
+| B-002 | Given a push to `main`, this Feature runs the build against the pushed commit.                                                                                                             | owner, 2026-10-08                                                                                        | Active  |
+| B-003 | Given a run, this Feature runs once on each of ubuntu and windows.                                                                                                                         | owner, 2026-10-08; brief § 9; macOS dropped by the owner, 2026-10-08 (§ 5 #8); B-012 (owner, 2026-10-08) | Amended |
+| B-004 | Given a run on one operating system that B-012 does not apply to, this Feature runs the `Format`, `Compile`, `Test`, `SpecCheck` and `Pack` targets through the build's entry script.      | brief § 8 step 1; `0055-F1` C-1; A-1; C-4; B-012 (owner, 2026-10-08)                                     | Amended |
+| B-005 | Given any target fails on one operating system, that operating system's check fails.                                                                                                       | brief § 8 step 1; C-4                                                                                    | Active  |
+| B-006 | Given a pull request whose tree has a specification violation, this Feature annotates the violation's file and line in the pull request's diff.                                            | AGENTS.md § `specht`; `0001-F2` B-001                                                                    | Active  |
+| B-007 | Given two runs on different commits, each operating system's check carries the same name in both.                                                                                          | `0055-F8` B-002                                                                                          | Active  |
+| B-008 | Given any run of this Feature, no package is pushed to any feed.                                                                                                                           | `0055-F6` C-1                                                                                            | Active  |
+| B-009 | Given a commit whose committed copy of any generated workflow - integration, release or dependency updates - differs from what the build generates from that commit, the run fails.        | OQ-1 (owner, 2026-10-08); C-1                                                                            | Amended |
+| B-010 | Given a run, each operating system's build reports as a separate check.                                                                                                                    | owner, 2026-10-08; split from B-003                                                                      | Active  |
+| B-011 | Given a run after this repository's local tool manifest names `specht.tool` (`0055-F7` B-003), the run restores the tool from the feed with the workflow's own token granted package read. | owner, 2026-10-08; `0055-F7` A-1                                                                         | Active  |
+| B-012 | Given a pull request targeting `main` with one or more changed files, each a `*.md` file outside any `.spec/` folder, this Feature runs none of the build's targets.                       | owner, 2026-10-08; C-5                                                                                   | Active  |
+| B-013 | Given a pull request B-012 applies to, each operating system's check passes.                                                                                                               | owner, 2026-10-08; `0055-F8` B-002, B-011; B-007                                                         | Active  |
+| B-014 | Given a pull request targeting `main` whose changed files are none or cannot be determined, this Feature runs the build against the pull request's head.                                   | owner, 2026-10-08                                                                                        | Active  |
 
 ## 4. Constraints
 
 <!-- last written by: spec-author, 2026-10-08 -->
 
-| ID  | Constraint                                                                                                                                                                                                                                                                            | Rules Out                                                                                              |
-| --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
-| C-1 | Every workflow file - integration, release and dependency updates - is generated by the NUKE build; a change to one is a change to the build project plus the committed regeneration, with its step order diffed.                                                                     | A hand edit to any file under `.github/workflows/`; a committed workflow the build would not generate. |
-| C-2 | A run checks out the commit with its full history.                                                                                                                                                                                                                                    | A shallow checkout, which changes the git height `0055-F5` computes the version from (`0055-F5` C-2).  |
-| C-3 | A run is offline beyond restoring packages and tools and uploading coverage.                                                                                                                                                                                                          | A test or a gate that calls GitHub or another service (AGENTS.md § Invariants).                        |
-| C-4 | `SpecCheck` gates a run only once both `0001-F2`'s check command and `0001-F5`'s rule settings exist - from `0001-F5`'s arrival; until then its step reports and passes, so no run is gated while `SPEC060` is an error (`0055-F1` B-023, B-024, B-025, C-6, C-7; owner, 2026-10-08). | A run failed before `0001-F5` lands, or for a `Missing` traceability row.                              |
+| ID  | Constraint                                                                                                                                                                                                                                                                            | Rules Out                                                                                                                                                                        |
+| --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| C-1 | Every workflow file - integration, release and dependency updates - is generated by the NUKE build; a change to one is a change to the build project plus the committed regeneration, with its step order diffed.                                                                     | A hand edit to any file under `.github/workflows/`; a committed workflow the build would not generate.                                                                           |
+| C-2 | A run checks out the commit with its full history.                                                                                                                                                                                                                                    | A shallow checkout, which changes the git height `0055-F5` computes the version from (`0055-F5` C-2).                                                                            |
+| C-3 | A run is offline beyond restoring packages and tools and uploading coverage.                                                                                                                                                                                                          | A test or a gate that calls GitHub or another service (AGENTS.md § Invariants).                                                                                                  |
+| C-4 | `SpecCheck` gates a run only once both `0001-F2`'s check command and `0001-F5`'s rule settings exist - from `0001-F5`'s arrival; until then its step reports and passes, so no run is gated while `SPEC060` is an error (`0055-F1` B-023, B-024, B-025, C-6, C-7; owner, 2026-10-08). | A run failed before `0001-F5` lands, or for a `Missing` traceability row.                                                                                                        |
+| C-5 | Whether B-012 applies is decided inside each operating system's run, so both checks still report under the names B-007 keeps (owner, 2026-10-08).                                                                                                                                     | A workflow-level path filter or a job-level condition, either of which leaves the per-operating-system checks `0055-F8` B-002 requires pending and the pull request unmergeable. |
 
 ## 5. Out of Scope
 
 <!-- last written by: spec-author, 2026-10-08 -->
 
-| #   | Item                                         | Exclusion Reason                                                                                                                                                                                |
-| --- | -------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 1   | Uploading coverage and the coverage statuses | `0055-F3`.                                                                                                                                                                                      |
-| 2   | Building and publishing on a version tag     | `0055-F6`; B-008 is the boundary.                                                                                                                                                               |
-| 3   | Which checks branch protection requires      | `0055-F8`; this Feature makes the names stable (B-007).                                                                                                                                         |
-| 4   | Opening update pull requests                 | `0055-F4`.                                                                                                                                                                                      |
-| 5   | What each target does                        | `0055-F1`; this Feature only runs them.                                                                                                                                                         |
-| 6   | Scheduled or nightly runs                    | Not asked for; a run follows a pull request or a push.                                                                                                                                          |
-| 7   | Keeping the packed package as a run artifact | Not asked for; only a release keeps a package (`0055-F6`).                                                                                                                                      |
-| 8   | Running the build on macOS                   | Owner, 2026-10-08: a macOS runner is billed at ten times the Linux rate on a private repository, and its Unix behaviour is Linux's; Windows is the leg that proves the path invariants (B-003). |
+| #   | Item                                                            | Exclusion Reason                                                                                                                                                                                |
+| --- | --------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | Uploading coverage and the coverage statuses                    | `0055-F3`.                                                                                                                                                                                      |
+| 2   | Building and publishing on a version tag                        | `0055-F6`; B-008 is the boundary.                                                                                                                                                               |
+| 3   | Which checks branch protection requires                         | `0055-F8`; this Feature makes the names stable (B-007).                                                                                                                                         |
+| 4   | Opening update pull requests                                    | `0055-F4`.                                                                                                                                                                                      |
+| 5   | What each target does                                           | `0055-F1`; this Feature only runs them.                                                                                                                                                         |
+| 6   | Scheduled or nightly runs                                       | Not asked for; a run follows a pull request or a push.                                                                                                                                          |
+| 7   | Keeping the packed package as a run artifact                    | Not asked for; only a release keeps a package (`0055-F6`).                                                                                                                                      |
+| 8   | Running the build on macOS                                      | Owner, 2026-10-08: a macOS runner is billed at ten times the Linux rate on a private repository, and its Unix behaviour is Linux's; Windows is the leg that proves the path invariants (B-003). |
+| 9   | Skipping the build on a push to `main`                          | Owner, 2026-10-08: every push builds (B-002), so Codecov's project baseline on `main` has no gap.                                                                                               |
+| 10  | Checking Markdown formatting on a pull request B-012 applies to | Owner, 2026-10-08: B-012 skips every target, `Format` included; the pre-commit hook (`0055-F1` B-016) is the guard.                                                                             |
+| 11  | A configurable list of paths or file kinds that skip the build  | Not asked for; B-012 fixes the one rule, and a `.feature`, `.yml`, `.json` or anything under `.spec/` changes what the build checks.                                                            |
 
 ## 6. Concern Separation
 
@@ -139,19 +147,22 @@ Delivered so far by item 0064.
 
 <!-- last written by: test-writer, 2026-10-08 -->
 
-| Claim ID | Scenario                                          | Test    | Status  |
-| -------- | ------------------------------------------------- | ------- | ------- |
-| B-001    | A pull request is built                           | Missing | Missing |
-| B-002    | A push to main is built                           | Missing | Missing |
-| B-003    | Every run covers Linux and Windows                | Missing | Missing |
-| B-004    | Every operating system runs every gate            | Missing | Missing |
-| B-005    | A failing gate fails its operating system's check | Missing | Missing |
-| B-006    | A specification violation is shown on the diff    | Missing | Missing |
-| B-007    | Check names do not change between runs            | Missing | Missing |
-| B-008    | Integration never publishes                       | Missing | Missing |
-| B-009    | A stale workflow fails the run                    | Missing | Missing |
-| B-010    | Each operating system is its own check            | Missing | Missing |
-| B-011    | A run reads the feed with its own token           | Missing | Missing |
+| Claim ID | Scenario                                            | Test    | Status  |
+| -------- | --------------------------------------------------- | ------- | ------- |
+| B-001    | A pull request is built                             | Missing | Missing |
+| B-002    | A push to main is built                             | Missing | Missing |
+| B-003    | Every run covers Linux and Windows                  | Missing | Missing |
+| B-004    | Every operating system runs every gate              | Missing | Missing |
+| B-005    | A failing gate fails its operating system's check   | Missing | Missing |
+| B-006    | A specification violation is shown on the diff      | Missing | Missing |
+| B-007    | Check names do not change between runs              | Missing | Missing |
+| B-008    | Integration never publishes                         | Missing | Missing |
+| B-009    | A stale workflow fails the run                      | Missing | Missing |
+| B-010    | Each operating system is its own check              | Missing | Missing |
+| B-011    | A run reads the feed with its own token             | Missing | Missing |
+| B-012    | A documentation-only pull request skips the gates   | Missing | Missing |
+| B-013    | A documentation-only pull request passes its checks | Missing | Missing |
+| B-014    | A pull request with no known changed files is built | Missing | Missing |
 
 ## 10. Lessons / Spec Deltas
 
@@ -160,14 +171,16 @@ Delivered so far by item 0064.
 - 2026-10-08, B-003 amended from ubuntu, windows and macos to ubuntu and windows by the owner while 0064 was in review: a run proves the tests on each runtime, and macOS added cost without a failure mode Linux and Windows do not already exercise. § 5 #8 records the boundary.
 - 2026-10-08, the first run of 0064's workflow failed on Windows only: the runner's `core.autocrlf` checked every file out with CRLF, and `Format` rejected each C# file against `.editorconfig`'s `end_of_line = lf`. A root `.gitattributes` (`* text=auto eol=lf`) now checks out LF on every system. The Windows leg found what Linux and macOS cannot - the reason B-003 keeps it.
 - 2026-10-08, 0064 first replaced the owner's Rocket.Surgery.Nuke declaration with NUKE's own generator, without asking; the owner had it redone on Rocket.Surgery.Nuke, whose attribute settings and middleware cover every claim. No claim changed. Process lesson: [`.spec/lessons/0002`](../../../.spec/lessons/0002-extend-what-the-owner-put-in-place.md).
+- 2026-10-08, the owner decided a pull request that changes only Markdown outside any `.spec/` folder runs no gates. B-012 to B-014 added; B-001, B-003 and B-004 amended to except it; C-5 and § 5 #9 to #11 added; OQ-2 raised on the coverage status such a pull request no longer gets, and resolved the same day: the patch status is not required (`0055-F8` B-003). § 7's trigger bullet describes the workflow before item 0102.
 
 ## 11. Open Questions
 
 <!-- last written by: spec-author, 2026-10-08 -->
 
-| ID   | Question                                                                                                                                                                                                          | Blocks | Resolution                                                                           |
-| ---- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------ | ------------------------------------------------------------------------------------ |
-| OQ-1 | C-1 says the workflow is generated, but nothing yet fails when the committed copy is stale. Does a run fail when the committed workflow differs from what the build generates? Proposed default: yes, as a claim. | C-1    | Resolved 2026-10-08: proposed default accepted by the repository owner. B-009 added. |
+| ID   | Question                                                                                                                                                                                                                                                                                                                                                                                                                        | Blocks                                  | Resolution                                                                                                                                                                                                                                                           |
+| ---- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| OQ-1 | C-1 says the workflow is generated, but nothing yet fails when the committed copy is stale. Does a run fail when the committed workflow differs from what the build generates? Proposed default: yes, as a claim.                                                                                                                                                                                                               | C-1                                     | Resolved 2026-10-08: proposed default accepted by the repository owner. B-009 added.                                                                                                                                                                                 |
+| OQ-2 | A run B-012 applies to uploads no coverage, so Codecov posts no patch status on that pull request: `0055-F3` B-002 and B-008 do not hold for it, and once `0055-F8` B-003 requires the patch status, it can never merge. Which gives way - the patch status stays unrequired, B-012 is withdrawn, or `0055-F3` names another source of that status? No default is proposed: each option gives up something the owner asked for. | `0055-F3` B-002, B-008; `0055-F8` B-003 | Resolved 2026-10-08 by the repository owner: the patch status stays reported but is not a required check, so a pull request B-012 applies to merges on the two build checks. `0055-F8` B-003 amended; `0055-F3` B-002 and B-008 narrowed to runs that run the build. |
 
 ## 12. Sign-off
 
@@ -184,7 +197,7 @@ Delivered so far by item 0064.
 
 ## Tasks
 
-Cut 2026-10-08 into [`../.issue/`](../.issue/): `0063` (the Feature), with `0064` to `0067`.
+Cut 2026-10-08 into [`../.issue/`](../.issue/): `0063` (the Feature), with `0064` to `0067`. `0102` cut 2026-10-08 from B-012 to B-014.
 
 ## Scoring
 

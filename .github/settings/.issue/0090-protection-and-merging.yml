@@ -11,7 +11,7 @@ rank: 77
 parent: "0089"
 children: []
 
-depends_on: ["0064", "0071"] # requires 0064's check names; requires 0071's patch status
+depends_on: ["0064"] # requires 0064's check names
 blocks: []
 spikes: []
 
@@ -32,12 +32,12 @@ closed: null
 
 summary: |
   The protection and merge half of the checked-in checklist (C-1, C-3),
-  naming the checks exactly as 0064 and 0071 produce them.
+  naming the checks exactly as 0064 produces them.
 
 acceptance_criteria:
   - "B-001 — a pull request before any change reaches `main`"
   - "B-002 — required CI checks equal the workflow's per-system checks"
-  - "B-003 — patch coverage required, project coverage not"
+  - "B-003 — no coverage status required"
   - "B-004 — squash merging, commit messages as the body"
   - "B-005 — rebase merging on, merge commits off"
   - "B-006 — auto-merge on"

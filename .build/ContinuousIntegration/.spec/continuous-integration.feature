@@ -5,7 +5,20 @@ Feature: Continuous integration
 
   @B-001
   Scenario: A pull request is built
-    When a pull request targeting the main branch is opened
+    Given a pull request targeting the main branch that changes code
+    When it is opened
+    Then the build runs against the pull request's head
+
+  @B-001 @boundary
+  Scenario: A documentation change inside a specification folder is built
+    Given a pull request that changes only Markdown inside a specification folder
+    When integration runs
+    Then the build runs against the pull request's head
+
+  @B-001 @boundary
+  Scenario: Documentation changed alongside code is built
+    Given a pull request that changes documentation and code together
+    When integration runs
     Then the build runs against the pull request's head
 
   @B-002
@@ -13,13 +26,20 @@ Feature: Continuous integration
     When a commit is pushed to the main branch
     Then the build runs against that commit
 
+  @B-002 @boundary
+  Scenario: A documentation-only push to main is built
+    Given a commit that changes only documentation outside any specification folder
+    When it is pushed to the main branch
+    Then the build runs against that commit
+
   @B-003
   Scenario: Every run covers Linux and Windows
     When integration runs
-    Then the build runs on Linux and on Windows
+    Then integration runs on Linux and on Windows
 
   @B-004
   Scenario: Every operating system runs every gate
+    Given a pull request that changes code
     When integration runs on one operating system
     Then the format, compile, test, self-check and pack gates each run
 
@@ -62,3 +82,27 @@ Feature: Continuous integration
     When integration runs
     Then the checker is restored with the run's own token
     And no stored token is read
+
+  @B-012
+  Scenario: A documentation-only pull request skips the gates
+    Given a pull request that changes only documentation outside any specification folder
+    When integration runs
+    Then none of the build's gates runs
+
+  @B-013
+  Scenario: A documentation-only pull request passes its checks
+    Given a pull request that changes only documentation outside any specification folder
+    When integration runs
+    Then the Linux and Windows checks each pass
+
+  @B-014
+  Scenario: A pull request with no known changed files is built
+    Given a pull request whose changed files cannot be determined
+    When integration runs
+    Then the build runs against the pull request's head
+
+  @B-014 @boundary
+  Scenario: A pull request that changes no file is built
+    Given a pull request that changes no file
+    When integration runs
+    Then the build runs against the pull request's head

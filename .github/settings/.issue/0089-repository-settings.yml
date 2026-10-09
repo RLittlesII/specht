@@ -43,7 +43,7 @@ summary: |
 acceptance_criteria:
   - "B-001 — a pull request required before `main` (0090)"
   - "B-002 — required CI checks are exactly the per-system checks (0090)"
-  - "B-003 — patch coverage required, project not (0090)"
+  - "B-003 — no coverage status required (0090)"
   - "B-004 — squash merging with commit messages (0090)"
   - "B-005 — rebase merging on, merge commits off (0090)"
   - "B-006 — auto-merge enabled (0090)"

@@ -1,7 +1,7 @@
 Feature: The coverage gate
   As the reviewer of a pull request
   I want the code a change adds to be held to a coverage target
-  So that untested code cannot merge, and a change is never blocked for code it did not touch
+  So that untested new code is flagged on the pull request, and a change is never blocked for code it did not touch
 
   @B-001
   Scenario: A test run writes coverage
@@ -10,8 +10,14 @@ Feature: The coverage gate
 
   @B-002
   Scenario: Integration uploads coverage
-    When integration runs on any operating system
+    When integration runs the build's gates on any operating system
     Then that run's coverage is sent to the coverage service for its commit
+
+  @B-002 @boundary
+  Scenario: A documentation-only pull request uploads no coverage
+    Given a pull request whose integration run skips the build's gates
+    When integration runs
+    Then no coverage is sent to the coverage service
 
   @B-003
   Scenario: Under-tested new code fails the patch status
@@ -49,5 +55,6 @@ Feature: The coverage gate
   @B-008
   Scenario: A change with no measured lines passes the patch status
     Given a pull request that changes no product line
+    And integration runs the build's gates on it
     When its coverage is reported
     Then the patch coverage status passes

@@ -10,7 +10,7 @@ risk: 3
 rank: 91
 
 parent: "0055"
-children: ["0064", "0065", "0066", "0067"]
+children: ["0064", "0065", "0066", "0067", "0102"]
 
 depends_on: []
 blocks: []
@@ -30,6 +30,9 @@ claims:
   - B-009
   - B-010
   - B-011
+  - B-012
+  - B-013
+  - B-014
 
 created: "2026-10-08"
 updated: "2026-10-08"
@@ -45,7 +48,7 @@ summary: |
   infrastructure every epic 0001 root item waits on (0021, 0051).
 
 acceptance_criteria:
-  - "B-001 — pull request to `main`: build on its head (0064)"
+  - "B-001 — pull request to `main`: build on its head (0064; the B-012 exception, 0102)"
   - "B-002 — push to `main`: build on the commit (0064)"
   - "B-003 — once each on ubuntu and windows (0064)"
   - "B-004 — `Format`, `Compile`, `Test`, `SpecCheck`, `Pack` through the entry script (0064)"
@@ -56,6 +59,9 @@ acceptance_criteria:
   - "B-009 — stale committed workflow: the run fails (0065)"
   - "B-010 — each system reports as a separate check (0064)"
   - "B-011 — tool restored from the feed with the workflow's token (0067)"
+  - "B-012 — Markdown-only pull request: no target runs (0102)"
+  - "B-013 — a skipped pull request's checks pass (0102)"
+  - "B-014 — no changed files, or none determinable: the build runs (0102)"
   - "§ 9 carries a row naming a test for each id above."
 
 decisions:

@@ -55,19 +55,19 @@ A workflow that runs is not a gate until the repository requires it: without bra
 
 <!-- last written by: spec-author, 2026-10-08 -->
 
-| ID    | Claim                                                                                                                                                                                                        | Source                                              | Status  |
-| ----- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------- | ------- |
-| B-001 | Given the checklist, it requires a pull request before any change reaches `main`.                                                                                                                            | owner, 2026-10-08                                   | Active  |
-| B-002 | Given the checklist and the CI workflow, the status checks the checklist requires from CI are exactly the per-operating-system checks the workflow produces.                                                 | owner, 2026-10-08; `0055-F2` B-003, B-007           | Active  |
-| B-003 | Given the checklist, it requires the patch coverage status and does not require the project coverage status.                                                                                                 | owner, 2026-10-08; `0055-F3` B-003, B-005           | Active  |
-| B-004 | Given the checklist, it enables squash merging with the commit messages as the squashed body.                                                                                                                | AGENTS.md § Specification-Driven Development rule 3 | Active  |
-| B-005 | Given the checklist, it enables rebase merging and disables merge commits.                                                                                                                                   | AGENTS.md rule 3; `specht-conventions` § Delivery   | Active  |
-| B-006 | Given the checklist, it enables merging a pull request automatically once its required checks pass.                                                                                                          | owner, 2026-10-08; `0055-F4` B-005                  | Active  |
-| B-007 | Given the checklist and the committed workflows, every secret a workflow reads - the Codecov token and the Renovate workflow's token among them - is named in the checklist with the workflow that reads it. | owner, 2026-10-08; `0055-F3` C-2; `0055-F4` C-8     | Amended |
-| B-008 | Given the checklist, it names the Codecov installation and no Renovate app installation, because Renovate runs as this repository's own workflow.                                                            | `0055-F3`; `0055-F4` OQ-6 (owner, 2026-10-08)       | Amended |
-| B-009 | Given the checklist, it keeps GitHub issues enabled, for outside reports through the issue templates.                                                                                                        | owner, 2026-10-08; A-2                              | Active  |
-| B-010 | Given the checklist, it sets the repository's visibility to public.                                                                                                                                          | OQ-1 (owner, 2026-10-08)                            | Active  |
-| B-011 | Given the checklist, its protection of `main` requires no approving review; the required checks are the gate.                                                                                                | OQ-2 (owner, 2026-10-08)                            | Active  |
+| ID    | Claim                                                                                                                                                                                                        | Source                                                                        | Status  |
+| ----- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------- | ------- |
+| B-001 | Given the checklist, it requires a pull request before any change reaches `main`.                                                                                                                            | owner, 2026-10-08                                                             | Active  |
+| B-002 | Given the checklist and the CI workflow, the status checks the checklist requires from CI are exactly the per-operating-system checks the workflow produces.                                                 | owner, 2026-10-08; `0055-F2` B-003, B-007                                     | Active  |
+| B-003 | Given the checklist, it requires no coverage status, neither the patch status nor the project status.                                                                                                        | owner, 2026-10-08; `0055-F2` OQ-2 (owner, 2026-10-08); `0055-F3` B-003, B-005 | Amended |
+| B-004 | Given the checklist, it enables squash merging with the commit messages as the squashed body.                                                                                                                | AGENTS.md § Specification-Driven Development rule 3                           | Active  |
+| B-005 | Given the checklist, it enables rebase merging and disables merge commits.                                                                                                                                   | AGENTS.md rule 3; `specht-conventions` § Delivery                             | Active  |
+| B-006 | Given the checklist, it enables merging a pull request automatically once its required checks pass.                                                                                                          | owner, 2026-10-08; `0055-F4` B-005                                            | Active  |
+| B-007 | Given the checklist and the committed workflows, every secret a workflow reads - the Codecov token and the Renovate workflow's token among them - is named in the checklist with the workflow that reads it. | owner, 2026-10-08; `0055-F3` C-2; `0055-F4` C-8                               | Amended |
+| B-008 | Given the checklist, it names the Codecov installation and no Renovate app installation, because Renovate runs as this repository's own workflow.                                                            | `0055-F3`; `0055-F4` OQ-6 (owner, 2026-10-08)                                 | Amended |
+| B-009 | Given the checklist, it keeps GitHub issues enabled, for outside reports through the issue templates.                                                                                                        | owner, 2026-10-08; A-2                                                        | Active  |
+| B-010 | Given the checklist, it sets the repository's visibility to public.                                                                                                                                          | OQ-1 (owner, 2026-10-08)                                                      | Active  |
+| B-011 | Given the checklist, its protection of `main` requires no approving review; the required checks are the gate.                                                                                                | OQ-2 (owner, 2026-10-08)                                                      | Active  |
 
 ## 4. Constraints
 
@@ -113,34 +113,35 @@ Pending: owned by `test-writer`.
 
 <!-- last written by: spec-author, 2026-10-08 -->
 
-| Claim ID | Scenario                                          | Test    | Status  |
-| -------- | ------------------------------------------------- | ------- | ------- |
-| B-001    | Main accepts changes only through pull requests   | Missing | Missing |
-| B-002    | The required checks are the checks CI produces    | Missing | Missing |
-| B-003    | The patch status is required and the total is not | Missing | Missing |
-| B-004    | A squash keeps the commit messages                | Missing | Missing |
-| B-005    | Rebase is allowed and merge commits are not       | Missing | Missing |
-| B-006    | A green pull request can merge itself             | Missing | Missing |
-| B-007    | Every secret a workflow reads is listed           | Missing | Missing |
-| B-008    | The service installations are listed              | Missing | Missing |
-| B-009    | Outside reports can still be filed                | Missing | Missing |
-| B-010    | The repository is public                          | Missing | Missing |
-| B-011    | Required checks are the gate, not a review        | Missing | Missing |
+| Claim ID | Scenario                                        | Test    | Status  |
+| -------- | ----------------------------------------------- | ------- | ------- |
+| B-001    | Main accepts changes only through pull requests | Missing | Missing |
+| B-002    | The required checks are the checks CI produces  | Missing | Missing |
+| B-003    | No coverage status is required                  | Missing | Missing |
+| B-004    | A squash keeps the commit messages              | Missing | Missing |
+| B-005    | Rebase is allowed and merge commits are not     | Missing | Missing |
+| B-006    | A green pull request can merge itself           | Missing | Missing |
+| B-007    | Every secret a workflow reads is listed         | Missing | Missing |
+| B-008    | The service installations are listed            | Missing | Missing |
+| B-009    | Outside reports can still be filed              | Missing | Missing |
+| B-010    | The repository is public                        | Missing | Missing |
+| B-011    | Required checks are the gate, not a review      | Missing | Missing |
 
 ## 10. Lessons / Spec Deltas
 
 <!-- last written by: spec-author, 2026-10-08 -->
 
-None.
+- 2026-10-08, B-003 amended from requiring the patch coverage status to requiring no coverage status (`0055-F2` OQ-2, owner): a pull request `0055-F2` B-012 skips uploads no coverage, so a required patch status would never report on it. The patch status is still reported (`0055-F3` B-003, B-004).
 
 ## 11. Open Questions
 
 <!-- last written by: spec-author, 2026-10-08 -->
 
-| ID   | Question                                                                                                                                                                                                  | Blocks       | Resolution                                                                                                       |
-| ---- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------ | ---------------------------------------------------------------------------------------------------------------- |
-| OQ-1 | Is the repository public or private? It decides whether Codecov needs a token for pull requests from forks, whether outside reports are possible at all, and what reading the published package requires. | B-007, B-009 | Resolved 2026-10-08 by the repository owner: public. B-010 added.                                                |
-| OQ-2 | Does branch protection require an approving review? With one maintainer, a required review blocks self-merging, and a dependency update merged without a person (`0055-F4` B-005) must be exempt.         | B-001, B-006 | Resolved 2026-10-08 by the repository owner: no approving review; the required checks are the gate. B-011 added. |
+| ID   | Question                                                                                                                                                                                                      | Blocks       | Resolution                                                                                                       |
+| ---- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------ | ---------------------------------------------------------------------------------------------------------------- |
+| OQ-1 | Is the repository public or private? It decides whether Codecov needs a token for pull requests from forks, whether outside reports are possible at all, and what reading the published package requires.     | B-007, B-009 | Resolved 2026-10-08 by the repository owner: public. B-010 added.                                                |
+| OQ-2 | Does branch protection require an approving review? With one maintainer, a required review blocks self-merging, and a dependency update merged without a person (`0055-F4` B-005) must be exempt.             | B-001, B-006 | Resolved 2026-10-08 by the repository owner: no approving review; the required checks are the gate. B-011 added. |
+| OQ-3 | `0055-F2` B-012 skips the coverage upload on a pull request that changes only Markdown outside `.spec/`, so the patch status B-003 requires never reports on one. Asked and answered once, as `0055-F2` OQ-2. | B-003        | Resolved 2026-10-08 by the repository owner (`0055-F2` OQ-2): the patch status is not required. B-003 amended.   |
 
 ## 12. Sign-off
 
