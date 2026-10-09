@@ -1,3 +1,7 @@
+using System.Text.Json;
+using System.Text.Json.Nodes;
+using System.Text.Json.Serialization;
+
 namespace specht.Report;
 
 /// <summary>
@@ -27,9 +31,35 @@ public sealed record SpecReportDocument(
     /// <param name="report">The run's report.</param>
     /// <returns>The document.</returns>
     public static SpecReportDocument From(SpecCheckReport report) =>
-        throw new NotImplementedException("0034: the report document is not built yet.");
+        new(
+            1,
+            SpecSchemaSource.Disk,
+            [new SpecReportLayout(SpecLayout.Legacy, report.LegacyCount), new SpecReportLayout(SpecLayout.CoLocated, report.CoLocatedCount)],
+            report.ItemCount,
+            report.RulesEvaluated,
+            report.ErrorCount,
+            report.WarningCount,
+            report.Violations
+                .Select(static violation => new SpecReportViolation(
+                    violation.RuleId,
+                    violation.Severity,
+                    violation.File,
+                    violation.Line,
+                    violation.Identifier,
+                    violation.Message,
+                    new JsonObject()))
+                .ToList());
 
     /// <summary>Serializes the document as the JSON the published report schema describes.</summary>
     /// <returns>The JSON text.</returns>
-    public string ToJson() => throw new NotImplementedException("0034: the report document is not serialized yet.");
+    public string ToJson() => JsonSerializer.Serialize(this, Options);
+
+    private static readonly JsonSerializerOptions Options = new()
+    {
+        WriteIndented = true,
+        NewLine = "\n",
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+        Converters = { new JsonStringEnumConverter(JsonNamingPolicy.CamelCase) },
+    };
 }

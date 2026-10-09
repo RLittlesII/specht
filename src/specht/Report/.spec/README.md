@@ -120,15 +120,61 @@ A violation today says what is wrong and not what would be right, so the agent t
 
 ## 6. Concern Separation
 
-<!-- last written by: spec-author, 2026-10-07 -->
+<!-- last written by: implementer, 2026-10-08 -->
 
-Pending: owned by `implementer`, written after agreement.
+Item `0034` builds the document and its schema; `0035`-`0039` and `0042`-`0043` extend this table.
+
+| Concern                                                                                           | Classification | Where                                                                     |
+| ------------------------------------------------------------------------------------------------- | -------------- | ------------------------------------------------------------------------- |
+| What the document carries: version, source, layout counts, item, rule and severity counts (B-005) | Business       | `SpecReportDocument.From`                                                 |
+| What a violation carries, `expected` always an object (B-007, C-2)                                | Business       | `SpecReportDocument.From`, onto `SpecReportViolation`                     |
+| The shape written once and validated by test (B-008, C-1, A-1)                                    | Both           | `docs/schema/report.schema.json`                                          |
+| Changes only by addition; `expected` open to added members (C-4)                                  | Both           | `report.schema.json`: closed objects everywhere except `expected`         |
+| Nothing from the clock, the machine or the environment (B-006, C-3)                               | Technical      | `From` reads only the report; `ToJson` fixes the newline to `\n`          |
+| Root-relative paths with `/` (B-021)                                                              | Technical      | `SpecDiscovery.Relative`, the one member every engine path passes through |
+| The selected schema version and source (B-005)                                                    | Business       | Not here: fixed at `1` and `disk` until `0042`, `0043`                    |
+| Each rule family's `expected` members (B-009-B-018, B-026-B-028)                                  | Business       | Not here: `0037`-`0039`; `From` writes an empty object                    |
+| `--json`, `--report` and the file written (B-001-B-004, B-022-B-025, C-5, C-7)                    | Business       | Not here: `0035`, `0036`, in the host                                     |
 
 ## 7. Technical Design
 
-<!-- last written by: spec-author, 2026-10-07 -->
+<!-- last written by: implementer, 2026-10-08 -->
 
-Pending: owned by `implementer`, written after agreement.
+**The document (item `0034`).** [`SpecReportDocument`](../SpecReportDocument.cs) is a record made by `From(SpecCheckReport)` and nothing else, so its only input is the report (B-006, C-3). `From` maps each `SpecViolation` field by field onto a [`SpecReportViolation`](../SpecReportViolation.cs), keeping the report's order, and lists both [`SpecLayout`](../../SpecLayout.cs) values in declaration order with their counts, a layout with no specification included at `0`. `SchemaVersion` is `1` and [`SpecSchemaSource`](../SpecSchemaSource.cs) is `Disk` for every run: the engine reads `<root>/.spec/schema/` and no selection exists yet; `0042` and `0043` replace both with the selected values. `Expected` is an empty `JsonObject` until `0037`-`0039` fill it per rule family.
+
+**The JSON.** `ToJson()` serializes the record itself with `System.Text.Json`: camelCase members in declaration order, enums as camelCase strings (`disk`, `legacy`, `coLocated`, `error`, `warning`), indented with `\n` whatever the platform, and an absent `identifier` omitted rather than written as `null` - the conventions the engine's earlier anonymous report already used, so a reader of that output meets the same names. No member is computed at serialization time.
+
+```json
+{
+  "schemaVersion": 1,
+  "schemaSource": "disk",
+  "layouts": [
+    { "layout": "legacy", "specificationCount": 2 },
+    { "layout": "coLocated", "specificationCount": 1 }
+  ],
+  "itemCount": 0,
+  "rulesEvaluated": 21,
+  "errorCount": 1,
+  "warningCount": 0,
+  "violations": [
+    {
+      "ruleId": "SPEC031",
+      "severity": "error",
+      "file": "epics/0001-epic/F1-feature/spec.md",
+      "line": 0,
+      "identifier": "B-002",
+      "message": "...",
+      "expected": {}
+    }
+  ]
+}
+```
+
+**The published schema (A-1, C-1).** [`docs/schema/report.schema.json`](../../../../docs/schema/report.schema.json), draft 2020-12, names every member above. The document, each layout entry and each violation are closed (`additionalProperties: false`), so a field the schema does not name fails validation; `expected` is `type: object` and nothing more, so a rule family adds members to it without a schema change (C-2, C-4). A violation's `file` rejects a leading `/`, a drive letter and any `\` (B-021). The schema carries no `$id`: JsonSchema.Net registers a schema by its `$id` in a process-wide registry and refuses a second registration, which every caller loading the file twice in one process would hit. Both test projects copy `docs/schema/*.json` into their output and validate a produced document against that one file (B-008).
+
+**One writer, one shape.** [`SpecCheckRunner.WriteReport`](../../SpecCheckRunner.cs) wrote its own anonymous object, `generatedAtUtc` from `DateTimeOffset.UtcNow` among it, which no command calls today. It now writes `SpecReportDocument.From(report).ToJson()`, so the only document the engine can write carries no timestamp and validates (B-006, B-008). Where `--report` writes, and how it replaces a file, is `0036`'s.
+
+**Root-relative paths (B-021).** The engine had three copies of `Path.GetRelativePath(root, path).Replace(Path.DirectorySeparatorChar, '/')`: in `SpecDiscovery`, in `SpecModel` and inline in `FeatureFileRule.Evaluate`. They are now one public member, [`SpecDiscovery.Relative`](../../SpecDiscovery.cs), which the other two call; every path a violation carries passes through it, and the output is unchanged. Being public, it is the seam a unit test of the mapping can call (§ 8).
 
 ## 8. Testing Strategy
 
