@@ -191,7 +191,7 @@ Delivered so far by item 0021.
 
 ## Tasks
 
-Cut 2026-10-08 into [`../.issue/`](../.issue/): `0020` (the Feature), with `0021` to `0024`.
+Cut 2026-10-08 into [`../.issue/`](../.issue/): `0020` (the Feature), with `0021` to `0024`; `0103` (the violation-order seam) cut 2026-10-08 from `0022`'s review.
 
 ## Scoring
 

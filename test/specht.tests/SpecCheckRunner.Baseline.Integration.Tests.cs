@@ -101,7 +101,8 @@ public sealed class SpecCheckRunnerBaselineIntegrationTests
         {
             violation.RuleId.Should().MatchRegex("^SPEC[0-9]{3}$");
             violation.Severity.Should().BeDefined();
-            violation.File.Should().NotBeNullOrWhiteSpace();
+            violation.File.Should().NotBeNullOrWhiteSpace().And.NotStartWith("/").And.NotContain("\\");
+            Path.IsPathRooted(violation.File).Should().BeFalse(violation.File);
             violation.Line.Should().BeGreaterThanOrEqualTo(0);
             violation.Message.Should().NotBeNullOrWhiteSpace();
             (violation.Identifier is null || violation.Identifier.Trim().Length > 0).Should().BeTrue(violation.ToString());

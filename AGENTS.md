@@ -83,8 +83,8 @@ Two projects, one direction of dependency:
 The design direction (brief § 5) moves every literal the engine hardcodes —
 layouts, section roles, table headers, markers, frontmatter key roles, id
 grammars, per-rule severity — into the manifest, one rule at a time, each with a
-test that the default manifest reproduces `hooked`'s baseline report. Until that
-step the engine is exactly `hooked`'s, renamed.
+test that the default manifest reproduces the golden baseline report (`0001-F1`
+B-004, decision 0004). Until that step the engine is exactly `hooked`'s, renamed.
 
 ## Configuration
 
