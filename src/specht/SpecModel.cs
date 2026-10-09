@@ -1,3 +1,5 @@
+using System.IO.Abstractions;
+
 namespace specht;
 
 /// <summary>The whole specification tree, resolved once and evaluated by every rule.</summary>
@@ -38,9 +40,11 @@ public sealed class SpecModel
     /// <summary>How many specifications have been migrated.</summary>
     public int CoLocatedCount => Features.Count(static feature => feature.Location.Layout == SpecLayout.CoLocated);
 
-    /// <summary>Loads the model rooted at <paramref name="root"/>.</summary>
+    /// <summary>Loads the model rooted at <paramref name="root"/>, the schemas and manifest before the tree.</summary>
+    /// <exception cref="SpecManifestException">The manifest is rejected; nothing in the tree is read.</exception>
     public static SpecModel Load(string root)
     {
+        var schemas = SpecSchemas.Load(new FileSystem(), root);
         var locations = SpecDiscovery.FindSpecifications(root);
         var features = new List<FeatureSpec>();
 
@@ -76,7 +80,7 @@ public sealed class SpecModel
             }
         }
 
-        return new SpecModel(root, features, items, epics, SpecSchemas.Load(root));
+        return new SpecModel(root, features, items, epics, schemas);
     }
 
     private static string Relative(string root, string path) =>

@@ -150,10 +150,10 @@ Feature: The manifest carries the roles
 
   @B-019
   Scenario: A key left out of the manifest takes the default
-    Given the manifest declares no missing-test cell value
-    And the root holds an approved specification with a "Missing" cell in its traceability table
+    Given the manifest declares no claim grammar
+    And the root holds a specification declaring claim "B-0001"
     When the check runs
-    Then the approved-with-missing-coverage rule reports that row
+    Then the malformed-claim-id rule reports "B-0001" against the default claim grammar
 
   @B-020
   Scenario: An annotation key is ignored

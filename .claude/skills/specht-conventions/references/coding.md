@@ -73,6 +73,17 @@ byte-identical report. A pin with a reason carries the reason **in
 `Directory.Packages.props`**, beside the pin, not in a skill. Read it before
 bumping anything.
 
+The engine's fourth dependency, `TestableIO.System.IO.Abstractions.Wrappers`,
+is not one of `hooked`'s and is not pinned to it: it is the file-system seam,
+added by owner direction (2026-10-08, `0001-F5` § 7).
+
+## File access goes through `IFileSystem`
+
+Engine code that reads the file system takes an injected `IFileSystem`; it does
+not add a new static `File` or `Directory` call. Production passes
+`new FileSystem()`, a test a `MockFileSystem`. The copied engine's existing
+static calls migrate as later items touch them, not in a sweep.
+
 ## Paths are repository-relative
 
 Every path the tool writes — a diagnostic, the `--json` document, the `--report`
@@ -107,5 +118,6 @@ but a build-file change made without running `Format` can still fail CI first.
 - A suppression without its reason on the adjacent line.
 - A `#region`, or a `#if` spanning a member declaration.
 - An `Async` suffix.
+- A new static `File` or `Directory` call in engine code.
 - An absolute path in anything the tool, a test or a fixture writes.
 - A rule stated only in prose when `.editorconfig` or an analyzer could fail it.
