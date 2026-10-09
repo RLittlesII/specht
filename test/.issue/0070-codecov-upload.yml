@@ -2,7 +2,7 @@ id: "0070"
 type: task
 title: Upload coverage to Codecov from every CI run
 
-status: ready-for-architecture
+status: done
 
 priority: high # DERIVED
 risk: 2
@@ -23,7 +23,7 @@ claims:
 
 created: "2026-10-08"
 updated: "2026-10-08"
-closed: null
+closed: "2026-10-08"
 
 summary: |
   Upload with the token from a repository secret (C-2); a failed upload

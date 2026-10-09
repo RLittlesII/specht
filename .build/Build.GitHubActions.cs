@@ -84,6 +84,8 @@ internal sealed partial class Build
         // the other, so each operating system reports its own result.
         buildJob.FailFast = false;
 
+        AddCodecovUpload(buildJob);
+
         return configuration;
     }
 
@@ -172,32 +174,31 @@ internal sealed partial class Build
     }
 
     /// <summary>
-    /// Uploads the cobertura files produced by the Test target to Codecov.
-    /// Every workflow whose invoked target depends on Test (ci, publish) collects
-    /// coverage, so the upload belongs in the shared middleware. Workflows without
-    /// a test step (deploy) are left untouched.
+    /// Uploads the Cobertura reports the Test target writes to Codecov, and warns when the upload fails.
     /// </summary>
     private static void AddCodecovUpload(RocketSurgeonsGithubActionsJob buildJob)
     {
-        var testStep = buildJob.Steps.Cast<BaseGitHubActionsStep>().SingleOrDefault(static z => z.Id == "test");
-        if (testStep is null)
+        var testStep = buildJob.Steps.Cast<BaseGitHubActionsStep>().Single(static z => z.Id == "test");
+        var uploadStep = new UsingStep("Upload coverage to Codecov")
         {
-            return;
-        }
-
-        buildJob.Steps.Insert(
-            buildJob.Steps.IndexOf(testStep) + 1,
-            new UsingStep("☂️ Upload coverage to Codecov")
+            Id = "codecov",
+            If = "${{ !cancelled() }}",
+            ContinueOnError = true,
+            Uses = "codecov/codecov-action@v5",
+            With = new Dictionary<string, string>
             {
-                If = "always()",
-                Uses = "codecov/codecov-action@v5",
-                With = new Dictionary<string, string>
-                {
-                    ["token"] = "${{ secrets.CODECOV_TOKEN }}",
-                    ["files"] = ".artifacts/coverage/**/*.cobertura.xml",
-                    ["fail_ci_if_error"] = "false"
-                }
-            }
-        );
+                ["token"] = "${{ secrets.CODECOV_TOKEN }}",
+                ["directory"] = ".artifacts/coverage",
+                ["override_commit"] = "${{ github.event.pull_request.head.sha || github.sha }}",
+                ["fail_ci_if_error"] = "true",
+            },
+        };
+        var warningStep = new RunStep("Warn on a failed coverage upload")
+        {
+            If = "${{ !cancelled() && steps.codecov.outcome == 'failure' }}",
+            Run = "echo \"::warning title=Codecov upload failed::The coverage upload to Codecov failed; this check is not failed on that account.\"",
+        };
+
+        buildJob.Steps.InsertRange(buildJob.Steps.IndexOf(testStep) + 1, [uploadStep, warningStep]);
     }
 }

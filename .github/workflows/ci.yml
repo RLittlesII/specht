@@ -75,6 +75,20 @@ jobs:
         id: test
         run: |
           ./build.cmd --target Test --skip Compile
+      - name: Upload coverage to Codecov
+        id: codecov
+        if: ${{ !cancelled() }}
+        continue-on-error: true
+        uses: codecov/codecov-action@v5
+        with:
+          token: '${{ secrets.CODECOV_TOKEN }}'
+          directory: '.artifacts/coverage'
+          override_commit: '${{ github.event.pull_request.head.sha || github.sha }}'
+          fail_ci_if_error: 'true'
+      - name: Warn on a failed coverage upload
+        if: ${{ !cancelled() && steps.codecov.outcome == 'failure' }}
+        run: |
+          echo "::warning title=Codecov upload failed::The coverage upload to Codecov failed; this check is not failed on that account."
       - name: Spec Check
         id: specCheck
         run: |
