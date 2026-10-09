@@ -41,15 +41,27 @@ public sealed class SpecModel
     /// <summary>How many specifications have been migrated.</summary>
     public int CoLocatedCount => Features.Count(static feature => feature.Location.Layout == SpecLayout.CoLocated);
 
-    /// <summary>Loads the model rooted at <paramref name="root"/>, the schemas and manifest before the tree.</summary>
+    /// <summary>Loads the model rooted at <paramref name="root"/> with the embedded version set.</summary>
     /// <exception cref="SpechtRootNotFoundException"><paramref name="root"/> is not a directory; nothing in the tree is read.</exception>
     /// <exception cref="SpechtManifestNotFoundException">There is no manifest; nothing in the tree is read.</exception>
     /// <exception cref="SpechtManifestUnreadableException">The manifest does not parse; nothing in the tree is read.</exception>
     /// <exception cref="SpechtManifestException">The manifest is rejected; nothing in the tree is read.</exception>
-    public static SpecModel Load(string root)
+    public static SpecModel Load(string root) => Load(root, SchemaVersions.Embedded);
+
+    /// <summary>
+    /// Loads the model rooted at <paramref name="root"/>, the manifest and the pinned version's schemas from
+    /// <paramref name="versions"/> before the tree.
+    /// </summary>
+    /// <exception cref="SpechtRootNotFoundException"><paramref name="root"/> is not a directory; nothing in the tree is read.</exception>
+    /// <exception cref="SpechtManifestNotFoundException">There is no manifest; nothing in the tree is read.</exception>
+    /// <exception cref="SpechtManifestUnreadableException">The manifest does not parse; nothing in the tree is read.</exception>
+    /// <exception cref="SpechtManifestException">
+    /// The manifest is rejected, or pins a version <paramref name="versions"/> does not hold; nothing in the tree is read.
+    /// </exception>
+    public static SpecModel Load(string root, SchemaVersions versions)
     {
         var fileSystem = new FileSystem();
-        var schemas = SpecSchemas.Load(fileSystem, root);
+        var schemas = SpecSchemas.Load(fileSystem, root, versions);
         var frontmatter = new FrontmatterReader(fileSystem);
         var locations = SpecDiscovery.FindSpecifications(root);
         var features = new List<FeatureSpec>();

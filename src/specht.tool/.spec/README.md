@@ -129,15 +129,41 @@ A repository's `.spec/schema/` is a copy of `hooked`'s from one day, and nothing
 
 ## 6. Concern Separation
 
-<!-- last written by: spec-author, 2026-10-07 -->
+<!-- last written by: implementer, 2026-10-09 (item 0042: the pinned embedded version set) -->
 
-Pending: owned by `implementer`, written after agreement.
+Item `0042` builds the version set and the pin; the schema source (`0043`), the frozen-version proof (`0044`), `upgrade` (`0045`-`0048`) and `init`'s pin (`0049`) extend this table.
+
+| Concern                                                                                             | Classification | Where                                                                                                                                                      |
+| --------------------------------------------------------------------------------------------------- | -------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| A manifest pins one version; no key is version 1; a pin is an integer of at least 1 (B-002)         | Business       | `SpecManifest.Load`, onto `SpecStructure.SchemaVersion`                                                                                                    |
+| Which versions the tool ships, every one from 1 to the newest (B-004, C-1)                          | Business       | `SchemaVersions.Embedded`, read from the engine's `schema/v<n>/` resources                                                                                 |
+| An unshipped pin is a rejected manifest naming the pin and the shipped set (B-003)                  | Business       | `SchemaVersions.Select`, throwing `SpechtManifestException`; `CheckCommand`'s existing catch folds it to stderr and exit `3`                               |
+| The pinned version's frontmatter schemas validate the tree; the manifest stays on disk (B-001, C-4) | Both           | `SpecSchemas.Load(IFileSystem, string, SchemaVersions)`: the manifest from `<root>/.spec/schema/`, the three frontmatter schemas from the selected version |
+| Each version's rule vocabulary (B-014, brief § 4)                                                   | Business       | `SchemaVersions`' hand-written vocabulary per version, until item `0106`                                                                                   |
+| Only the pinned vocabulary is evaluated, counted and reported (B-014)                               | Business       | `SpecCheckRunner.Run(string, SchemaVersions)`: a rule runs when one of its ids is in the vocabulary, and a violation outside it is dropped                 |
+| Version 1's epic `title` and `description` (B-022, B-023, decision 0003)                            | Business       | `src/specht.tool/schema/v1/epic.frontmatter.schema.json`, embedded into the engine; `FrontmatterSchemaRule` already maps an epic failure to `SPEC004`      |
+| The report names the version and the embedded source (B-002, `0001-F3` B-005)                       | Business       | `SpecCheckReport.SchemaVersion`; `SpecReportDocument.From`                                                                                                 |
+| Embedding the shipping copy into the engine without a second copy                                   | Technical      | `src/specht/specht.csproj` links `src/specht.tool/schema/v*/*.frontmatter.schema.json` as `EmbeddedResource`                                               |
 
 ## 7. Technical Design
 
-<!-- last written by: spec-author, 2026-10-07 -->
+<!-- last written by: implementer, 2026-10-09 (item 0042: the pinned embedded version set) -->
 
-Pending: owned by `implementer`, written after agreement.
+**A version is data (item `0042`).** [`SchemaVersion`](../../specht/SchemaVersion.cs) is one shipped version: its number, the text of its three frontmatter schemas, and the rule ids its vocabulary holds. [`SchemaVersions`](../../specht/SchemaVersions.cs) is a set of them, ascending by number. `Select(n)` returns version `n` or throws [`SpechtManifestException`](../../specht/SpechtManifestException.cs) with the manifest's repository-relative path, the pinned number and every shipped number (B-003) - the same exception a rejected manifest key throws, so `CheckCommand`'s existing catch already writes it to stderr, leaves stdout empty and exits `3`; no command changed. The set takes its versions by constructor, so a test builds version 2 in memory from version 1 rather than shipping a second schema file.
+
+**The embedded set (B-004).** `SchemaVersions.Embedded` reads the engine's manifest resources named `schema/v<n>/<file>`, one version per distinct `n`, and fills each version's slots from `feature-spec`, `task` and `epic.frontmatter.schema.json`. The resources come from the tool's shipping copy (`0001-F4` C-2, item `0051`): `src/specht/specht.csproj` includes `..\specht.tool\schema\v*\*.frontmatter.schema.json` as `EmbeddedResource` under the logical name `schema/v<n>/<file>`, the scheme `src/specht.tool/specht.tool.csproj` already uses. Owner decision, 2026-10-09: the engine **links** those files. Moving them into the engine would move `0051`'s shipping copy out from under `init`; copying them would be a second copy to drift; having the tool inject them into the engine would put a seam with one caller in front of the check. The manifest under `schema/v1/` is not linked: the check reads only the on-disk manifest (C-4).
+
+**The rule vocabulary is written per version.** Version 1's twenty-one ids (brief § 4) are a hand-written list inside `SchemaVersions`, keyed by version number; an embedded `schema/v<n>/` with no list fails on first read rather than checking with an empty vocabulary. Rule discovery is still reflection over the assembly. Item `0106` replaces it with an explicit rule list, and that is where each rule can say which version introduced it; until then the vocabulary stands beside the rules, not inside them, and `0042` does not do `0105`-`0107`'s work.
+
+**The pin (B-002).** [`SpecManifest`](../../specht/SpecManifest.cs) knows the key `schemaVersion`. No key reads as 1, the version that predates it (A-1). A JSON number that is an integer of at least 1 loads, even one the tool does not ship: rejecting an unshipped pin is the version set's job, not the loader's. Anything else - zero, a negative, a fraction, a string, a boolean, `null`, an array - is a `SpechtManifestException`. The pin travels on [`SpecStructure`](../../specht/SpecStructure.cs)`.SchemaVersion`.
+
+**Loading with the pinned version (B-001, C-4).** [`SpecSchemas.Load(IFileSystem, string, SchemaVersions)`](../../specht/SpecSchemas.cs) reads the manifest from `<root>/.spec/schema/` first, selects the pinned version, and builds the three frontmatter schemas from that version's text, each load with its own `SchemaRegistry` as before. A hand edit to `<root>/.spec/schema/*.frontmatter.schema.json` no longer reaches the check. The two-argument `SpecSchemas.Load(IFileSystem, string)` still reads all four files from disk; nothing in the check calls it, and two test fixtures build schemas through it from a mock file system. It is the on-disk source item `0043` selects (B-009), not a second path the check takes. [`SpecModel.Load(string, SchemaVersions)`](../../specht/SpecModel.cs) passes the set through; `SpecModel.Load(string)` uses `SchemaVersions.Embedded`.
+
+**The vocabulary decides the run (B-014).** [`SpecCheckRunner.Run(string, SchemaVersions)`](../../specht/SpecCheckRunner.cs) selects the pinned version again from the loaded structure, evaluates each discovered rule that reports at least one id in its vocabulary, drops any violation whose rule id is outside it, and counts as evaluated only the vocabulary's ids among the selected rules' `ReportedIds`. `Run(string)` is `Run(string, SchemaVersions.Embedded)`, so the host's `Func<string, SpecCheckReport>` registration in `Program.cs` is unchanged.
+
+**The report names the version.** [`SpecCheckReport`](../../specht/SpecCheckReport.cs) carries `SchemaVersion` as its first positional member, and [`SpecReportDocument.From`](../../specht/Report/SpecReportDocument.cs) writes it with the source `embedded` (`0001-F3` B-005). The source becomes a choice with item `0043`.
+
+**Version 1's epic schema (B-022, B-023).** Already in the shipping copy (decision 0003, item `0051`): optional `title` and `description` with `minLength: 1`. `0042` only makes the check read it from the embedded set, so an empty value is a `SPEC004` through the existing frontmatter rule.
 
 ## 8. Testing Strategy
 
