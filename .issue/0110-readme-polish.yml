@@ -1,0 +1,51 @@
+id: "0110"
+type: task
+title: Reshape README.md into a terse front page with logo, badges and quick start
+
+status: done
+
+priority: low # DERIVED
+value: 1
+risk: 1
+rank: 17 # DERIVED
+
+parent: null
+children: []
+
+depends_on: []
+blocks: [] # DERIVED
+spikes: []
+
+spec: null
+
+claims: []
+
+created: "2026-10-09"
+updated: "2026-10-09"
+closed: "2026-10-09"
+
+summary: |
+  README.md was accurate but prose-heavy, under What/Why/Who/When/Where/How
+  headings. The owner asked for a cleaner front page modelled on
+  ArmynC/ArminC-AutoExec (terse, centred logo, badge row, one-line nav) and
+  CoffeeIsAllYouNeed/Invisible-Driver (badges, quick start, directory tree).
+  The logo in .assets/logos was unused.
+
+acceptance_criteria:
+  - README.md opens with the centred logo, title, tagline, badge row and a
+    one-line section nav.
+  - Sections are Quick start, Usage, Exit codes, Layout, Build, Status and
+    License; no What/Why/Who/When/Where headings.
+  - Every fact the previous README stated survives, and the Status list
+    reflects brief § 8 as delivered on main.
+  - Install steps stay a placeholder until 0088.
+  - No badge that renders broken on a private, unpublished repository.
+
+decisions:
+  - "2026-10-09, repository owner: follow ArminC-AutoExec's terseness and
+    Invisible-Driver's badges, quick start and directory tree."
+
+out_of_scope:
+  - The real install section - 0088.
+  - Codecov, NuGet and stars badges - nothing is published and the
+    repository is private.
