@@ -16,8 +16,9 @@ Extends [`test-from-scenarios`](../../test-from-scenarios/SKILL.md).
 | Integration | `test/specht.tests/**/<Thing>.Integration.Tests.cs`          | `[Trait("Tier","Integration")]` |
 | Acceptance  | `test/specht.acceptance`, Reqnroll over the `.feature` files | the project, no filter          |
 
-`./build.sh UnitTest` and `IntegrationTest` run `--filter Tier=<X>` over every
-project whose name ends `.Tests`. `AcceptanceTest` runs `test/specht.acceptance`
+`./build.sh UnitTest` and `IntegrationTest` run `--filter-trait "Tier=<X>"`,
+xunit.v3's trait filter on Microsoft.Testing.Platform, over every project whose
+name ends `.tests`, ignoring case. `AcceptanceTest` runs `test/specht.acceptance`
 with no filter.
 
 The line between the first two tiers is the file system: a unit test exercises

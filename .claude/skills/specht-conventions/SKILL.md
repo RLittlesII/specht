@@ -13,6 +13,7 @@ method skill your work belongs to _and_ this one.
 | ------------ | ------------------------------------------------------------ | -------------------------------------------------------- |
 | Coding       | [`coding-conventions`](../coding-conventions/SKILL.md)       | [references/coding.md](references/coding.md)             |
 | Delivery     | [`deliver-change`](../deliver-change/SKILL.md)               | [references/delivery.md](references/delivery.md)         |
+| Next item    | [`next`](../next/SKILL.md)                                   | [references/delivery.md](references/delivery.md)         |
 | Testing      | [`test-from-scenarios`](../test-from-scenarios/SKILL.md)     | [references/testing.md](references/testing.md)           |
 | Questions    | [`clarify-requirements`](../clarify-requirements/SKILL.md)   | [references/questions.md](references/questions.md)       |
 | Specs        | [`spec-and-traceability`](../spec-and-traceability/SKILL.md) | [references/specs.md](references/specs.md)               |
@@ -167,8 +168,8 @@ produce a spec delta afterwards.
 ```sh
 ./build.sh                  # Default = Compile + Test
 ./build.sh Format           # dotnet format --verify-no-changes
-./build.sh UnitTest         # --filter Tier=Unit
-./build.sh IntegrationTest  # --filter Tier=Integration
+./build.sh UnitTest         # --filter-trait "Tier=Unit"
+./build.sh IntegrationTest  # --filter-trait "Tier=Integration"
 ./build.sh AcceptanceTest   # test/specht.acceptance, Reqnroll, no filter
 ./build.sh Pack             # specht.tool.<version>.nupkg into .artifacts/nupkg
 ./build.sh SpecCheck        # the tool checking this repository's own .spec/ tree

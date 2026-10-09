@@ -1,0 +1,57 @@
+id: "0113"
+type: task
+title: Answer "what is next" and "what can run in parallel" with one command
+
+status: done
+
+priority: low # DERIVED
+value: 2
+risk: 1
+rank: 37 # DERIVED
+
+parent: null
+children: []
+
+depends_on: []
+blocks: [] # DERIVED
+spikes: []
+
+spec: null
+
+claims: []
+
+created: "2026-10-09"
+updated: "2026-10-09"
+closed: "2026-10-09"
+
+summary: |
+  Choosing the next item took three hand passes over every `.issue/` item:
+  rank the open ones, check each `depends_on` against its target's status,
+  then group the startable ones by the files they share so parallel work
+  does not collide. Two of those passes went wrong by hand - a `status:`
+  carrying a trailing comment read as not done, and a glob that skips dot
+  folders dropped every item under `.build/`, `.github/` and `.config/`. One
+  command does all three in one deterministic pass.
+
+acceptance_criteria:
+  - "`/next` loads a method skill that names no path, with a Project rules
+    preamble pointing at `specht-conventions`."
+  - "A stdlib-only script under `specht-conventions` prints the next item,
+    the startable items with id, rank, status, title and description, the
+    high-ranked blocked items with their blockers, the taken items, and the
+    parallel lanes."
+  - "Items sharing a specification or a declared write set fall in one lane."
+  - "On `main` at `58db716` it names 0028 next, as the hand answer did."
+  - No tool behaviour changes.
+
+decisions:
+  - "2026-10-09, repository owner: split the command into a portable method
+    skill and the companion's script and reference, rather than a second
+    skill that names the repository."
+  - "2026-10-09, repository owner: write the script in Python 3, rejecting a
+    C# file-based app."
+
+out_of_scope:
+  - Editing, claiming or re-ranking an item - the command only reads.
+  - Recomputing `rank` or `priority` - they stay derived per
+    `.spec/templates/item.yml`.

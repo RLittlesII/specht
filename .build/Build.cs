@@ -64,6 +64,23 @@ internal partial class Build : NukeBuild
                 workingDirectory: RootDirectory);
         });
 
+    // B-006: the classes trait-tagged Tier=Unit in every *.tests project.
+    private Target UnitTest => definition => definition
+        .DependsOn(Compile)
+        .Executes(() => TestTier("Unit"));
+
+    // B-007: the classes trait-tagged Tier=Integration in every *.tests project.
+    private Target IntegrationTest => definition => definition
+        .DependsOn(Compile)
+        .Executes(() => TestTier("Integration"));
+
+    // B-008: every scenario the acceptance project links, unfiltered.
+    private Target AcceptanceTest => definition => definition
+        .DependsOn(Compile)
+        .Executes(() => DotNet(
+            $"test --project {RootDirectory / "test" / "specht.acceptance" / "specht.acceptance.csproj"} --configuration {Configuration} --no-build",
+            workingDirectory: RootDirectory));
+
     // B-003, B-017: C# and Markdown, verified and never fixed (C-2, B-004); B-020: given --files, those and no other.
     // Both checks run before the target fails, so one formatter's failure never hides the other's files.
     private Target Format => definition => definition
@@ -117,6 +134,16 @@ internal partial class Build : NukeBuild
     private static string Include(string[]? files) => files is null ? string.Empty : $"--include {Quote(files)}";
 
     private static string Quote(IEnumerable<string> files) => string.Join(' ', files.Select(static file => $"\"{file}\""));
+
+    private void TestTier(string tier)
+    {
+        foreach (var project in Solution.AllProjects.Where(static project => project.Name.EndsWith(".tests", StringComparison.OrdinalIgnoreCase)))
+        {
+            DotNet(
+                $"test --project {project.Path} --configuration {Configuration} --no-build --filter-trait \"Tier={tier}\"",
+                workingDirectory: RootDirectory);
+        }
+    }
 
     // --verify-no-changes reports and writes nothing, so analyzer code fixes never apply (C-2).
     private bool CheckCSharp(string[]? files) =>
