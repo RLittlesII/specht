@@ -2,7 +2,7 @@ id: "0024"
 type: test
 title: Prove the verdict is deterministic, relative and grid-blind
 
-status: ready-for-architecture
+status: done
 
 priority: high
 risk: 3
@@ -23,23 +23,37 @@ claims:
   - B-008
 
 created: "2026-10-08"
-updated: "2026-10-08"
-closed: null
+updated: "2026-10-09"
+closed: "2026-10-09"
 
 summary: |
   Tests that nothing about the machine reaches the verdict, that every path
   is root-relative with `/`, and that a grid table reads as no table. Risk 3:
-  the spec review notes the machine name cannot be varied in a test, so
-  B-006's proof needs a seam the architecture must name without changing an
-  engine verdict (C-9).
+  the machine name and the clock cannot be varied in a test, so B-006 proves
+  the engine references neither (decision 0006). The locale test found B-006
+  false: the schema rule now evaluates under the invariant culture (lesson
+  0001), and C-9 binds under that culture.
 
 acceptance_criteria:
-  - "B-006 — clock, environment, locale, machine name, root location varied; verdict unchanged"
+  - "B-006 — root location, locale and an environment variable varied, verdict unchanged; no clock, machine-name, environment or current-culture reference in the engine except the one pinned exemption"
+  - "B-006 — schema evaluation runs under the invariant culture and restores the caller's culture"
   - "B-007 — root-relative, `/` separators"
   - "B-008 — grid table: no table, no row"
   - "§ 9 carries a row naming a test for each id above."
 
-decisions: []
+decisions:
+  - |
+    2026-10-09, the owner (0001-F1 decision 0006): the clock and the
+    machine name are proven by a test that the engine assembly references
+    neither, not by an injected seam; the root location, the locale and an
+    environment variable are varied against the golden report.
+  - |
+    2026-10-09, the owner (0001-F1 decision 0006, amended; lesson 0001):
+    under tr-TR a SPEC002 message read "ınteger". Fixed here, not in a bug
+    item: FrontmatterSchemaRule evaluates through EvaluateInvariant under
+    the invariant culture, restored in a finally; the reference guard
+    exempts CultureInfo.CurrentCulture at that one site, pinned by a test.
+    C-9 amended to bind under the invariant culture.
 
 out_of_scope:
   - "A grid-table reader or second Markdown parser — C-6."

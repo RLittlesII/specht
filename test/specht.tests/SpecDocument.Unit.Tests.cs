@@ -4,7 +4,8 @@ namespace specht.tests;
 
 /// <summary>
 /// A specification parsed from text held in memory (ADR-0001 stage A, item 0104): the frontmatter, the sections, the
-/// table each section opens with, and the one-based line of each, with no file behind it.
+/// table each section opens with, and the one-based line of each, with no file behind it. A grid table is read as no table
+/// (<c>0001-F1</c> B-008).
 /// </summary>
 [Trait("Tier", "Unit")]
 public sealed class SpecDocumentUnitTests
@@ -76,6 +77,30 @@ public sealed class SpecDocumentUnitTests
         section.Headers.Should().Equal(headers);
         section.Rows.Should().BeEquivalentTo(rows, static options => options.WithStrictOrdering());
         section.RowLines.Should().Equal(rowLines);
+    }
+
+    [Fact]
+    public void ASectionHoldingAGridTable_WhenParsed_ShouldCarryNoHeadersAndNoRows()
+    {
+        // Given
+        const string text =
+            """
+            ## 9. Traceability Matrix
+
+            +----------+-------------------+---------+---------+
+            | Claim ID | Scenario          | Test    | Status  |
+            +==========+===================+=========+=========+
+            | B-001    | It does the thing | Missing | Missing |
+            +----------+-------------------+---------+---------+
+            """;
+
+        // When
+        var section = SpecDocument.Parse(text, RelativePath).Section("9. Traceability Matrix")!;
+
+        // Then
+        section.Headers.Should().BeEmpty();
+        section.Rows.Should().BeEmpty();
+        section.RowLines.Should().BeEmpty();
     }
 
     private const string RelativePath = "src/sample/.spec/README.md";

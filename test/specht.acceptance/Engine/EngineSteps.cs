@@ -1,8 +1,8 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 using System.Reflection.Metadata;
 using System.Reflection.PortableExecutable;
 using AwesomeAssertions;
@@ -20,7 +20,10 @@ namespace specht.acceptance.Engine;
 /// under a folder its identity does not name, and B-011 two co-located specifications of one identity. B-005 reads the built library itself: its assembly name,
 /// and the namespace of every type it declares, which is where a root namespace shows once compiled. It reads the file
 /// <c>src/specht</c> builds, from its metadata, and never the loaded assembly: a coverage run instruments the copy the
-/// test process loads (0055-F3 B-001) and adds a type of its own to it.
+/// test process loads (0055-F3 B-001) and adds a type of its own to it. B-006 moves the baseline tree to a nested root,
+/// runs under the <c>tr-TR</c> culture with an extra environment variable set, and reads the same library for a clock,
+/// machine-name, environment or current-culture reference outside the one exempt site (decision 0006). B-007 replaces
+/// the root with a deeply nested one, and B-008 writes a specification whose § 9 is a grid table.
 /// </summary>
 [Binding]
 [Scope(Feature = "The engine, extracted unchanged")]
@@ -133,17 +136,7 @@ public sealed class EngineSteps
     [Given("the library is built")]
     public void GivenTheLibraryIsBuilt()
     {
-        var output = AppContext.BaseDirectory.TrimEnd(Path.DirectorySeparatorChar);
-        var configuration = typeof(EngineSteps).Assembly.GetCustomAttribute<AssemblyConfigurationAttribute>()?.Configuration
-            ?? throw new InvalidOperationException("The test assembly names no configuration.");
-        _library = Path.Combine(
-            FindRepository(output),
-            "src",
-            "specht",
-            "bin",
-            configuration,
-            Path.GetFileName(output),
-            Path.GetFileName(typeof(SpecCheckRunner).Assembly.Location));
+        _library = EngineAssembly.Built;
         File.Exists(_library).Should().BeTrue(_library);
     }
 
@@ -174,6 +167,102 @@ public sealed class EngineSteps
     {
         _assemblyName.Should().NotContain(name);
         _namespaces.Should().AllSatisfy(ns => ns.Should().NotContain(name));
+    }
+
+    [Given("the baseline tree and the golden report")]
+    public void GivenTheBaselineTreeAndTheGoldenReport()
+    {
+        BaselineTree.Write(Tree);
+        _golden = GoldenReport.Read();
+    }
+
+    [When("the engine runs again at a different root location, under a different locale and with an extra environment variable set")]
+    public void WhenTheEngineRunsAgainAtADifferentRootLocationUnderADifferentLocaleAndWithAnExtraEnvironmentVariableSet()
+    {
+        Tree.Dispose();
+        _tree = new SpecTree(["moved", "elsewhere"]);
+        BaselineTree.Write(_tree);
+        var variable = "SPECHT_B006_" + Guid.NewGuid().ToString("N");
+        var culture = CultureInfo.CurrentCulture;
+        var uiCulture = CultureInfo.CurrentUICulture;
+
+        try
+        {
+            CultureInfo.CurrentCulture = CultureInfo.GetCultureInfo("tr-TR");
+            CultureInfo.CurrentUICulture = CultureInfo.GetCultureInfo("tr-TR");
+            Environment.SetEnvironmentVariable(variable, "set");
+            _report = _tree.Run();
+        }
+        finally
+        {
+            Environment.SetEnvironmentVariable(variable, null);
+            CultureInfo.CurrentCulture = culture;
+            CultureInfo.CurrentUICulture = uiCulture;
+        }
+    }
+
+    [Then("it reports the same violations as the golden report, in the same order")]
+    public void ThenItReportsTheSameViolationsAsTheGoldenReportInTheSameOrder() => GoldenReport.Of(Report).Should().Equal(Golden);
+
+    [Then("the engine reads no clock and no machine name")]
+    public void ThenTheEngineReadsNoClockAndNoMachineName() =>
+        EngineAssembly.Unexempted(EngineAssembly.ForbiddenReferencesIn(EngineAssembly.Built)).Should().BeEmpty();
+
+    [Given("the root is a deeply nested directory on this machine")]
+    public void GivenTheRootIsADeeplyNestedDirectoryOnThisMachine()
+    {
+        Tree.Dispose();
+        _tree = new SpecTree(["a", "deeply", "nested", "folder", "on", "this", "machine"]);
+    }
+
+    [Given("the root holds a specification with one violation")]
+    public void GivenTheRootHoldsASpecificationWithOneViolation() =>
+        Tree.WriteFeature(
+            "0001",
+            "F1",
+            sections: SpecTree.SectionsWith(
+                "3. Acceptance Criteria",
+                "## 3. Acceptance Criteria\n\n| ID | Claim | Source | Status |\n| -- | ----- | ------ | ------ |\n"
+                    + "| B-001 | It does the thing. | brd | Active |\n| B-002 | It does another. | brd | Active |\n"));
+
+    [Then("the violation's file is relative to the root")]
+    public void ThenTheViolationsFileIsRelativeToTheRoot()
+    {
+        var file = Report.Violations.Should().ContainSingle().Subject.File;
+        file.Should().Be("epics/0001-epic/F1-feature/spec.md");
+        Path.IsPathRooted(file).Should().BeFalse(file);
+    }
+
+    [Then("it uses a forward slash where the platform's separator differs")]
+    public void ThenItUsesAForwardSlashWhereThePlatformsSeparatorDiffers() =>
+        Report.Violations.Should().ContainSingle().Which.File.Should().Contain("/").And.NotContain("\\");
+
+    [Given("the root holds a specification whose traceability section holds a grid table")]
+    public void GivenTheRootHoldsASpecificationWhoseTraceabilitySectionHoldsAGridTable() =>
+        Tree.WriteFeature(
+            "0001",
+            "F1",
+            sections: SpecTree.SectionsWith(
+                Traceability,
+                $"## {Traceability}\n\n"
+                    + "+----------+-------------------+---------+---------+\n"
+                    + "| Claim ID | Scenario          | Test    | Status  |\n"
+                    + "+==========+===================+=========+=========+\n"
+                    + "| B-001    | It does the thing | Missing | Missing |\n"
+                    + "+----------+-------------------+---------+---------+\n"
+                    + "| B-999    | A grid-only row   | Missing | Missing |\n"
+                    + "+----------+-------------------+---------+---------+\n"));
+
+    [Then("the section is reported as carrying no table")]
+    public void ThenTheSectionIsReportedAsCarryingNoTable() =>
+        Report.Violations.Should().ContainSingle(static violation => violation.RuleId == "SPEC013")
+            .Which.Identifier.Should().Be(Traceability);
+
+    [Then("no row of the grid is read as a claim")]
+    public void ThenNoRowOfTheGridIsReadAsAClaim()
+    {
+        Report.Violations.Should().ContainSingle(static violation => violation.RuleId == "SPEC031").Which.Identifier.Should().Be("B-001");
+        Report.Violations.Should().NotContain(static violation => violation.Identifier == "B-999");
     }
 
     [AfterScenario]
@@ -217,12 +306,6 @@ public sealed class EngineSteps
             _ => null,
         };
     }
-
-    private static string FindRepository(string directory) =>
-        File.Exists(Path.Combine(directory, "build.sh")) && Directory.Exists(Path.Combine(directory, ".nuke"))
-            ? directory
-            : FindRepository(Path.GetDirectoryName(directory.TrimEnd(Path.DirectorySeparatorChar))
-                ?? throw new InvalidOperationException("No repository root above the test assembly."));
 
     private const string Traceability = "9. Traceability Matrix";
 

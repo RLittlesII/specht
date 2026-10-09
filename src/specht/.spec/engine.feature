@@ -52,9 +52,10 @@ Feature: The engine, extracted unchanged
 
   @B-006
   Scenario: Nothing about the machine reaches the verdict
-    Given a tree with violations, and the violations the engine reports on it
-    When the engine runs again with a different clock, environment, locale, machine name and root location
-    Then it reports the same violations in the same order
+    Given the baseline tree and the golden report
+    When the engine runs again at a different root location, under a different locale and with an extra environment variable set
+    Then it reports the same violations as the golden report, in the same order
+    And the engine reads no clock and no machine name
 
   @B-007
   Scenario: Every path is relative to the root
