@@ -152,7 +152,7 @@ Delivered so far by item 0021.
 
 ## 9. Traceability Matrix
 
-<!-- last written by: test-writer, 2026-10-08 (item 0022) -->
+<!-- last written by: test-writer, 2026-10-09 (B-012 to B-016 rows added) -->
 
 | Claim ID | Scenario                                                  | Test                                                                                                                                                                                                                                                                                  | Status  |
 | -------- | --------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------- |
@@ -167,6 +167,11 @@ Delivered so far by item 0021.
 | B-009    | The copy differs from hooked only by the namespace        | Missing                                                                                                                                                                                                                                                                               | Missing |
 | B-010    | A violation carries the six baseline fields               | `EngineSteps`; `SpecCheckRunnerBaselineIntegrationTests.AClaimWithNoTraceabilityRow_WhenChecked_ShouldCarryARuleSeverityFileLineIdentifierAndMessage`, `EveryViolationOnTheBaselineTree_WhenChecked_ShouldCarryARuleSeverityFileLineAndMessage`; `SpecCheckRunnerViolationsUnitTests` | Covered |
 | B-011    | One identity at two paths is reported                     | Missing                                                                                                                                                                                                                                                                               | Missing |
+| B-012    | A rule that fails does not stop the others                | Missing                                                                                                                                                                                                                                                                               | Missing |
+| B-013    | A rule that fails is reported under its own id            | Missing                                                                                                                                                                                                                                                                               | Missing |
+| B-014    | Nothing a rule found before it failed is reported         | Missing                                                                                                                                                                                                                                                                               | Missing |
+| B-015    | Lowering a rule's severity does not lower its failure     | Missing                                                                                                                                                                                                                                                                               | Missing |
+| B-016    | A rule's failure carries nothing from the machine         | Missing                                                                                                                                                                                                                                                                               | Missing |
 
 ## 10. Lessons / Spec Deltas
 

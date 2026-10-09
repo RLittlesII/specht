@@ -158,7 +158,7 @@ Delivered so far by items 0026 and 0027. The slice layout is `dotnet-tool` § Ve
 
 ## 9. Traceability Matrix
 
-<!-- last written by: test-writer, 2026-10-08 -->
+<!-- last written by: test-writer, 2026-10-09 (B-015 row added) -->
 
 | Claim ID | Scenario                                                           | Test                                                                                                                                                                                                                                                                                                                                  | Status  |
 | -------- | ------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------- |
@@ -176,6 +176,7 @@ Delivered so far by items 0026 and 0027. The slice layout is `dotnet-tool` § Ve
 | B-012    | A check writes nothing but the named report                        | Missing                                                                                                                                                                                                                                                                                                                               | Missing |
 | B-013    | No derived path in the output is absolute                          | `CheckSteps`; `CheckCommandIntegrationTests.ATreeWithViolations_WhenChecked_ShouldPrintTheRunnersViolationsAsRootRelativeLines`                                                                                                                                                                                                       | Covered |
 | B-014    | The build reaches the tool through the local tool manifest         | Missing                                                                                                                                                                                                                                                                                                                               | Missing |
+| B-015    | A rule that throws exits 1, not -1                                 | Missing                                                                                                                                                                                                                                                                                                                               | Missing |
 
 ## 10. Lessons / Spec Deltas
 
