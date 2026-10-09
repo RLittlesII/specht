@@ -175,7 +175,7 @@ internal sealed partial class Build
     }
 
     /// <summary>
-    /// Uploads the Cobertura reports the Test target writes to Codecov, and warns when the upload fails.
+    /// Uploads the Cobertura reports the Test target writes to Codecov from the ubuntu leg only, and warns when the upload fails.
     /// </summary>
     private static void AddCodecovUpload(RocketSurgeonsGithubActionsJob buildJob)
     {
@@ -183,7 +183,7 @@ internal sealed partial class Build
         var uploadStep = new UsingStep("Upload coverage to Codecov")
         {
             Id = "codecov",
-            If = "${{ !cancelled() }}",
+            If = "${{ !cancelled() && matrix.os == 'ubuntu-latest' }}",
             ContinueOnError = true,
             Uses = "codecov/codecov-action@v5",
             With = new Dictionary<string, string>
