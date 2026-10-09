@@ -168,8 +168,8 @@ produce a spec delta afterwards.
 ```sh
 ./build.sh                  # Default = Compile + Test
 ./build.sh Format           # dotnet format --verify-no-changes
-./build.sh UnitTest         # --filter Tier=Unit
-./build.sh IntegrationTest  # --filter Tier=Integration
+./build.sh UnitTest         # --filter-trait "Tier=Unit"
+./build.sh IntegrationTest  # --filter-trait "Tier=Integration"
 ./build.sh AcceptanceTest   # test/specht.acceptance, Reqnroll, no filter
 ./build.sh Pack             # specht.tool.<version>.nupkg into .artifacts/nupkg
 ./build.sh SpecCheck        # the tool checking this repository's own .spec/ tree
