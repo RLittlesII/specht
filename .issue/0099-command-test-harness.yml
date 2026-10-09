@@ -52,9 +52,9 @@ summary: |
   decided, the fewer tests copy the helper.
 
 acceptance_criteria:
-  - "A decision record names the chosen harness, the rejected candidates with their costs, and the owner as decider."
-  - "CheckCommand's integration tests and CheckSteps use the chosen harness; the private Check helper is gone."
-  - "specht-conventions references/testing.md states the rule, with its Never-add item."
+  - "ADR-0007 (.spec/adr/0007-each-part-registers-itself-and-one-factory-composes-the-host.md) is accepted by the owner."
+  - "specht-conventions references/testing.md states the rule - a test that runs a command gets its registrar and configuration from the factory - with its Never-add item: a ServiceCollection, TypeRegistrar or CommandAppTester assembled in a test outside the factory."
+  - "The migration is a separate item that depends on 0099: the factory and the per-slice registrations; the Check and Init command tests moved onto it; the private Check helper, the duplicated private statics NewestVersion and Read in test/specht.tests/ShippingCopy.*.Tests.cs and test/specht.acceptance/Init/InitSteps.cs, and the hand-built CommandAppTester in test/specht.tests/InitCommand.Integration.Tests.cs removed; the unused Spectre.Console.Cli.Testing reference dropped from specht.acceptance."
 
 decisions:
   - |
@@ -74,6 +74,24 @@ decisions:
     point. Correction to the summary: CheckSteps has launched the built tool
     since 0027 and composes no registrar. The second and third acceptance
     criteria wait on the owner's acceptance of ADR-0006.
+  - |
+    2026-10-09, implementer, on the owner's direction in session: the
+    owner rejected ADR-0006 - the services and configuration do not move
+    into a central public list, and the fixture that Replaces registrations
+    after the fact rests on that list, so the proposal falls whole. ADR-0006
+    is marked rejected. ADR-0007
+    (.spec/adr/0007-each-part-registers-itself-and-one-factory-composes-the-host.md)
+    is proposed, with the owner as decider: one static factory builds the
+    app and Program.cs only calls it; the engine registers itself through
+    AddSpechtEngine() (0107) and each command slice through its own
+    registration; a test builds the same graph through the same factory,
+    with the file system and the console as factory parameters and no
+    after-the-fact Replace. Modelled on Transporter's and Rx.Tracker's
+    MauiProgram.CreateMauiApp(). Two questions on this direction are open in
+    the record: whether the check's runner is a factory parameter, and
+    whether one test-tree wrap of the factory's product is the only
+    CommandAppTester construction. The acceptance criteria are rewritten to
+    this direction.
 
 out_of_scope:
   - "Changing what the check command does - 0001-F2 owns that."
