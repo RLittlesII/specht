@@ -1,4 +1,5 @@
 using System.IO.Abstractions;
+using System.Text.Json;
 using System.Text.Json.Nodes;
 
 namespace specht;
@@ -21,11 +22,37 @@ public static class SpecManifest
     /// <param name="fileSystem">The file system the manifest is read through.</param>
     /// <param name="root">The repository root.</param>
     /// <returns>The section contract and id grammars, every omitted value read as the default manifest's.</returns>
+    /// <exception cref="SpechtRootNotFoundException"><paramref name="root"/> is not a directory.</exception>
+    /// <exception cref="SpechtManifestNotFoundException">There is no file at the manifest path.</exception>
+    /// <exception cref="SpechtManifestUnreadableException">The manifest is not well-formed JSON or not the manifest's shape.</exception>
     /// <exception cref="SpechtManifestException">The manifest carries a key the engine does not know.</exception>
     public static SpecStructure Load(IFileSystem fileSystem, string root)
     {
+        if (!fileSystem.Directory.Exists(root))
+        {
+            throw new SpechtRootNotFoundException();
+        }
+
         var path = fileSystem.Path.Combine(root, ".spec", "schema", "spec-structure.schema.json");
-        var manifest = JsonNode.Parse(fileSystem.File.ReadAllText(path))!.AsObject();
+
+        if (!fileSystem.File.Exists(path))
+        {
+            throw new SpechtManifestNotFoundException();
+        }
+
+        try
+        {
+            return Read(fileSystem.File.ReadAllText(path));
+        }
+        catch (Exception exception) when (exception is JsonException or InvalidOperationException or FormatException)
+        {
+            throw new SpechtManifestUnreadableException(exception);
+        }
+    }
+
+    private static SpecStructure Read(string text)
+    {
+        var manifest = Present(JsonNode.Parse(text)).AsObject();
         var unknown = manifest
             .Select(static entry => entry.Key)
             .Where(static key => !key.StartsWith('$') && !KnownKeys.Contains(key))
@@ -55,19 +82,22 @@ public static class SpecManifest
     }
 
     private static List<string> Strings(JsonNode node) =>
-        node.AsArray().Select(static element => element!.GetValue<string>()).ToList();
+        node.AsArray().Select(static element => Present(element).GetValue<string>()).ToList();
 
     private static Dictionary<string, IReadOnlyList<string>> Tables(JsonNode node) =>
         node.AsObject().ToDictionary(
             static entry => entry.Key,
-            static entry => (IReadOnlyList<string>)Strings(entry.Value!),
+            static entry => (IReadOnlyList<string>)Strings(Present(entry.Value)),
             StringComparer.Ordinal);
 
     private static Dictionary<string, string> Grammars(JsonNode node) =>
         node.AsObject().ToDictionary(
             static entry => entry.Key,
-            static entry => entry.Value!.GetValue<string>(),
+            static entry => Present(entry.Value).GetValue<string>(),
             StringComparer.Ordinal);
+
+    private static JsonNode Present(JsonNode? node) =>
+        node ?? throw new InvalidOperationException("A JSON null stands where the manifest's shape requires a value.");
 
     private static JsonObject ReadDefaults()
     {

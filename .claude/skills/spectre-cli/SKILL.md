@@ -101,6 +101,10 @@ public sealed class DeployCommand : AsyncCommand<DeployCommand.Settings>
   routing by inspecting `args` directly.
 - **PREFER** `SetExceptionHandler` for centralized exception-to-exit-code mapping; reach for
   `PropagateExceptions()` only when the host app needs its own `try`/`catch` around `app.Run()`.
+  In this repository the command catches the engine's typed input failures and returns the
+  `ExitCodes` constant instead, because `CommandAppTester` composes its own app and never reaches a
+  handler set in `Program.cs` — `0001-F2` C-2 and § 7 of the
+  [Check specification](../../../src/specht.tool/Features/Check/.spec/README.md).
 - **RETURN** semantic exit codes (`0` success, a distinct non-zero value per error category) — never
   let an exception cross the command boundary unhandled.
 - **NEVER** write manual help text or hand-parse `-h`/`--help` — customize via `HelpProviderStyles`

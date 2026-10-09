@@ -82,6 +82,11 @@ app.Configure(config =>
 `resolver` (`ITypeResolver`) is `null` when the exception occurred during parsing, before DI is
 available.
 
+**In this repository** no handler is set: the command catches the engine's typed input failures
+around the runner call and returns the `ExitCodes` constant, because `CommandAppTester` composes its
+own app and never reaches a handler set in `Program.cs` — `0001-F2` C-2 and § 7 of the
+[Check specification](../../../../src/specht.tool/Features/Check/.spec/README.md).
+
 **`PropagateExceptions()`** — re-throws instead, for apps that need their own `try`/`catch` around
 `app.Run()` (layered error handling, custom logging integration, exception-specific properties):
 

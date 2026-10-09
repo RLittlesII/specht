@@ -8,9 +8,11 @@ using Spectre.Console.Testing;
 namespace specht.tests;
 
 /// <summary>
-/// The command through Spectre's command tester (<c>0001-F2</c> B-001, B-003, B-004, B-009, B-013; C-7): over a runner
-/// returning a report built in memory, and over the real runner and a synthetic tree on disk. The runner is the seam: the
-/// engine emits no warning until <c>0001-F5</c>'s rule settings exist, so a warning-only report is reachable only in memory.
+/// The command through Spectre's command tester (<c>0001-F2</c> B-001, B-003, B-004, B-005, B-006, B-007, B-009, B-013;
+/// C-7): over a runner returning a report built in memory, and over the real runner and a synthetic tree on disk. The runner
+/// is the seam: the engine emits no warning until <c>0001-F5</c>'s rule settings exist, so a warning-only report is
+/// reachable only in memory. The tester captures stdout alone, so an input failure's stderr message is the acceptance
+/// tier's to pin.
 /// </summary>
 [Trait("Tier", "Integration")]
 public sealed class CheckCommandIntegrationTests
@@ -49,6 +51,68 @@ public sealed class CheckCommandIntegrationTests
         {
             { [], Directory.GetCurrentDirectory() },
             { ["--root", "some/where"], Path.GetFullPath("some/where") },
+        };
+
+    /// <summary>Gets input failures, each arranged on an otherwise clean tree, returning the root to name, and the claimed code.</summary>
+    public static TheoryData<string, Func<SpecTree, string>, int> InputFailures =>
+        new()
+        {
+            { "a root that does not exist (B-005)", static tree => Path.Combine(tree.Root, "no-such-root"), 2 },
+            { "a root that is a file (B-005)", static tree => tree.WriteRaw("a-file", string.Empty), 2 },
+            {
+                "a root with no manifest (B-006)",
+                static tree =>
+                {
+                    File.Delete(Path.Combine(tree.Root, SpecManifest.RelativePath));
+                    return tree.Root;
+                },
+                2
+            },
+            {
+                "a manifest that is not well-formed JSON (B-007)",
+                static tree =>
+                {
+                    tree.WriteRaw(SpecManifest.RelativePath, "{ \"sections\": ");
+                    return tree.Root;
+                },
+                3
+            },
+            {
+                "a manifest whose top level is an array (B-007)",
+                static tree =>
+                {
+                    tree.WriteRaw(SpecManifest.RelativePath, "[]");
+                    return tree.Root;
+                },
+                3
+            },
+            {
+                "a manifest whose sections are not an array of strings (B-007)",
+                static tree =>
+                {
+                    tree.WriteRaw(SpecManifest.RelativePath, "{ \"sections\": [1, 2] }");
+                    return tree.Root;
+                },
+                3
+            },
+            {
+                "a manifest that is the JSON literal null (B-007)",
+                static tree =>
+                {
+                    tree.WriteRaw(SpecManifest.RelativePath, "null");
+                    return tree.Root;
+                },
+                3
+            },
+            {
+                "a manifest whose sections hold a null (B-007)",
+                static tree =>
+                {
+                    tree.WriteRaw(SpecManifest.RelativePath, "{ \"sections\": [null] }");
+                    return tree.Root;
+                },
+                3
+            },
         };
 
     [Theory]
@@ -132,6 +196,26 @@ public sealed class CheckCommandIntegrationTests
         // Then
         result.Output.Should().BeEmpty();
         result.ExitCode.Should().Be(0);
+    }
+
+    [Theory]
+    [MemberData(nameof(InputFailures))]
+    public void AnInputFailure_WhenChecked_ShouldPrintNothingOnStdoutAndExitWithTheClaimedCode(
+        string because,
+        Func<SpecTree, string> arrange,
+        int expected)
+    {
+        // Given
+        using var tree = new SpecTree();
+        tree.WriteFeature("0001", "F1");
+        var root = arrange(tree);
+
+        // When
+        var result = Check(SpecCheckRunner.Run, "--root", root);
+
+        // Then
+        result.Output.Should().BeEmpty(because);
+        result.ExitCode.Should().Be(expected, because);
     }
 
     private static CommandAppResult Check(Func<string, SpecCheckReport> run, params string[] args)

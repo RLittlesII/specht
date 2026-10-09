@@ -41,6 +41,9 @@ public sealed class SpecModel
     public int CoLocatedCount => Features.Count(static feature => feature.Location.Layout == SpecLayout.CoLocated);
 
     /// <summary>Loads the model rooted at <paramref name="root"/>, the schemas and manifest before the tree.</summary>
+    /// <exception cref="SpechtRootNotFoundException"><paramref name="root"/> is not a directory; nothing in the tree is read.</exception>
+    /// <exception cref="SpechtManifestNotFoundException">There is no manifest; nothing in the tree is read.</exception>
+    /// <exception cref="SpechtManifestUnreadableException">The manifest does not parse; nothing in the tree is read.</exception>
     /// <exception cref="SpechtManifestException">The manifest is rejected; nothing in the tree is read.</exception>
     public static SpecModel Load(string root)
     {

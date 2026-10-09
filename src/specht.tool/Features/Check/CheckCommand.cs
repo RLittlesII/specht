@@ -19,7 +19,24 @@ public sealed class CheckCommand(IAnsiConsole console, Func<string, SpecCheckRep
     /// <inheritdoc />
     public override Task<int> ExecuteAsync(CommandContext context, Settings settings, CancellationToken cancellationToken)
     {
-        var report = run(Path.GetFullPath(settings.Root));
+        SpecCheckReport report;
+
+        try
+        {
+            report = run(Path.GetFullPath(settings.Root));
+        }
+        catch (SpechtRootNotFoundException)
+        {
+            return Fail(ExitCodes.MissingInput, $"specht: '{settings.Root}' is not a directory.");
+        }
+        catch (SpechtManifestNotFoundException exception)
+        {
+            return Fail(ExitCodes.MissingInput, $"specht: {exception.Message}");
+        }
+        catch (SpechtManifestUnreadableException exception)
+        {
+            return Fail(ExitCodes.InvalidManifest, $"specht: {exception.Message}");
+        }
 
         foreach (var violation in report.Violations)
         {
@@ -43,5 +60,12 @@ public sealed class CheckCommand(IAnsiConsole console, Func<string, SpecCheckRep
         [CommandOption("--strict")]
         [Description("Fail on a violation of any severity, not only an error.")]
         public bool Strict { get; init; }
+    }
+
+    private static Task<int> Fail(int code, string message)
+    {
+        Console.Error.WriteLine(message);
+
+        return Task.FromResult(code);
     }
 }

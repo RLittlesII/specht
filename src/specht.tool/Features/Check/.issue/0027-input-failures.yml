@@ -2,7 +2,7 @@ id: "0027"
 type: task
 title: Fail a missing root or manifest with 2 and an unparseable one with 3
 
-status: ready-for-architecture
+status: done
 
 priority: high
 risk: 2
@@ -24,7 +24,7 @@ claims:
 
 created: "2026-10-08"
 updated: "2026-10-08"
-closed: null
+closed: "2026-10-08"
 
 summary: |
   The input failures: a root that is not a directory or has no manifest
