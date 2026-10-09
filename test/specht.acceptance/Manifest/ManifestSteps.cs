@@ -10,8 +10,9 @@ namespace specht.acceptance.Manifest;
 
 /// <summary>
 /// Steps for <c>src/specht/Manifest/.spec/manifest.feature</c> (0001-F5). The manifest is edited in memory from the tree's
-/// default copy and written when the check runs, so a tree's violations are counted under the default manifest first. A run
-/// is the engine's runner; the exit code and stream of a rejection are 0013's to bind.
+/// default copy and written when the check or the tool runs, so a tree's violations are counted under the default manifest
+/// first. "The check runs" is the engine's runner; "the tool runs as a command" launches the built tool, the only place a
+/// rejection's exit code and streams are seen (B-022, B-023).
 /// </summary>
 [Binding]
 [Scope(Feature = "The manifest carries the roles")]
@@ -92,6 +93,22 @@ public sealed class ManifestSteps
         }
     }
 
+    [When("the tool runs as a command on the root")]
+    public void WhenTheToolRunsAsACommandOnTheRoot()
+    {
+        File.WriteAllText(ManifestPath, Manifest.ToJsonString());
+        _run = Tool.Launch(Tree.Root, "--root", ".");
+    }
+
+    [Then("the exit code is {int}")]
+    public void ThenTheExitCodeIs(int code) => Run.ExitCode.Should().Be(code, Run.Stderr);
+
+    [Then("the standard error carries the rejection, naming that key")]
+    public void ThenTheStandardErrorCarriesTheRejectionNamingThatKey() => Run.Stderr.Should().Contain(UnknownKey);
+
+    [Then("the standard output is empty")]
+    public void ThenTheStandardOutputIsEmpty() => Run.Stdout.Should().BeEmpty();
+
     [Given("the baseline tree the engine's tests build")]
     public void GivenTheBaselineTreeTheEnginesTestsBuild() => BaselineTree.Write(Tree);
 
@@ -139,6 +156,8 @@ public sealed class ManifestSteps
 
     private SpecTree Tree => _tree ?? throw new InvalidOperationException("No repository root was prepared.");
 
+    private (string Stdout, string Stderr, int ExitCode) Run => _run ?? throw new InvalidOperationException("The tool was not run.");
+
     private JsonObject Manifest => _manifest ?? throw new InvalidOperationException("No manifest was read.");
 
     private string ManifestPath => Path.Combine(Tree.Root, ".spec", "schema", "spec-structure.schema.json");
@@ -155,6 +174,7 @@ public sealed class ManifestSteps
     private SpecTree? _tree;
     private JsonObject? _manifest;
     private SpecCheckReport? _report;
+    private (string Stdout, string Stderr, int ExitCode)? _run;
     private SpechtManifestException? _rejection;
     private string? _defaultClaimGrammar;
     private IReadOnlyList<GoldenReport.Verdict>? _golden;
