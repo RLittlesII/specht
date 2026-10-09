@@ -1,5 +1,5 @@
 <p align="center">
-  <img src=".assets/logos/specht-book-logo.svg" width="180" alt="specht" />
+  <img src=".assets/logos/specht-book-logo.png" width="180" alt="specht" />
 </p>
 
 <h1 align="center">specht</h1>
