@@ -1,0 +1,56 @@
+id: "0115"
+type: task
+title: Answer "what is next" with a choice of one item per parallel lane
+
+status: done
+
+priority: low # DERIVED
+value: 2
+risk: 1
+rank: 37 # DERIVED
+
+parent: null
+children: []
+
+depends_on: []
+blocks: [] # DERIVED
+spikes: []
+
+spec: null
+
+claims: []
+
+created: "2026-10-09"
+updated: "2026-10-09"
+closed: "2026-10-09"
+
+summary: |
+  `/next` answered with a single record. The `next` skill delivered by 0113
+  said "Lead with the next item", and the companion script printed
+  `**Next:** <id>` first and the parallel lanes last, so the answer chose for
+  the owner instead of offering the parallel work to choose from. The script
+  now opens with a "Pick one per lane" table, one row per lane with its head,
+  rank, status, title, the items queued behind it and the write set it holds,
+  and drops the single next line and the trailing lanes list. The skill
+  defines Next as a set - the head of every lane - leads its Reporting with
+  the lanes, and never offers one item while more than one lane can start.
+
+acceptance_criteria:
+  - The script's output opens with one row per parallel lane, and prints no
+    single next item.
+  - "The `next` skill states that Next is a set, the head of every lane, and
+    that the person asking chooses from it."
+  - On `main` at `0b58a7c` the script prints six lanes, headed by 0029, 0073,
+    0024, 0013, 0051 and 0035.
+  - No tool behaviour changes.
+
+decisions:
+  - "2026-10-09, repository owner: \"`/next` isn't supposed to return a
+    SINGLE record. It's supposed to return a list of paralelizable work that
+    I can chose from!\" - the answer leads with one item per lane, rejecting
+    a single next item."
+
+out_of_scope:
+  - Changing how lanes are formed or how rank is computed - lanes stay as
+    0113 built them, and rank stays derived per `.spec/templates/item.yml`.
+  - Editing, claiming or re-ranking an item - the command only reads.

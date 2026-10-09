@@ -87,6 +87,9 @@ public sealed partial class CheckSteps
         Launch(Nested);
     }
 
+    [When("the tool is asked for help")]
+    public void WhenTheToolIsAskedForHelp() => Launch(Path.GetTempPath(), "--help");
+
     [Then("the standard output carries one line per violation")]
     public void ThenTheStandardOutputCarriesOneLinePerViolation()
     {
@@ -128,6 +131,9 @@ public sealed partial class CheckSteps
             .And.Contain(report.ErrorCount.ToString(CultureInfo.InvariantCulture))
             .And.Contain(report.WarningCount.ToString(CultureInfo.InvariantCulture));
     }
+
+    [Then("the output names the root option and the strict option")]
+    public void ThenTheOutputNamesTheRootOptionAndTheStrictOption() => _stdout.Should().Contain("--root").And.Contain("--strict");
 
     [Then("the exit code is {int}")]
     public void ThenTheExitCodeIs(int code) => _exitCode.Should().Be(code, _stderr);
@@ -233,7 +239,7 @@ public sealed partial class CheckSteps
     }
 
     private void Launch(string workingDirectory, params string[] args) =>
-        (_exitCode, _stdout, _stderr) = ToolRun.Launch(workingDirectory, args);
+        (_stdout, _stderr, _exitCode) = Tool.Launch(workingDirectory, args);
 
     private const string TwoClaims =
         "## 3. Acceptance Criteria\n\n| ID | Claim | Source | Status |\n| -- | ----- | ------ | ------ |\n"

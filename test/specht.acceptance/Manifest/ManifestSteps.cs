@@ -97,7 +97,7 @@ public sealed class ManifestSteps
     public void WhenTheToolRunsAsACommandOnTheRoot()
     {
         File.WriteAllText(ManifestPath, Manifest.ToJsonString());
-        _run = ToolRun.Launch(Tree.Root, "--root", ".");
+        _run = Tool.Launch(Tree.Root, "--root", ".");
     }
 
     [Then("the exit code is {int}")]
@@ -156,7 +156,7 @@ public sealed class ManifestSteps
 
     private SpecTree Tree => _tree ?? throw new InvalidOperationException("No repository root was prepared.");
 
-    private ToolRun Run => _run ?? throw new InvalidOperationException("The tool was not run.");
+    private (string Stdout, string Stderr, int ExitCode) Run => _run ?? throw new InvalidOperationException("The tool was not run.");
 
     private JsonObject Manifest => _manifest ?? throw new InvalidOperationException("No manifest was read.");
 
@@ -174,7 +174,7 @@ public sealed class ManifestSteps
     private SpecTree? _tree;
     private JsonObject? _manifest;
     private SpecCheckReport? _report;
-    private ToolRun? _run;
+    private (string Stdout, string Stderr, int ExitCode)? _run;
     private SpechtManifestException? _rejection;
     private string? _defaultClaimGrammar;
     private IReadOnlyList<GoldenReport.Verdict>? _golden;

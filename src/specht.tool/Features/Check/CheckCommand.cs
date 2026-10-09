@@ -11,8 +11,8 @@ namespace specht.tool.Features.Check;
 
 /// <summary>
 /// <c>specht</c>, the default command (<c>0001-F2</c>): checks the tree under a root, prints one MSBuild-shaped line per
-/// violation on stdout and then the run summary, and folds the report into an exit code. It parses, calls the runner and
-/// folds - nothing else (C-4).
+/// violation on stdout and then the run summary - or, under <c>--json</c>, the report document in their place (<c>0001-F3</c>
+/// B-001) - and folds the report into an exit code. It parses, calls the runner and folds - nothing else (C-4).
 /// </summary>
 /// <param name="console">Where the product goes; injected so the command tester captures it.</param>
 /// <param name="run">The engine's runner, <see cref="SpecCheckRunner.Run"/> outside a test.</param>
@@ -44,14 +44,23 @@ public sealed class CheckCommand(IAnsiConsole console, Func<string, SpecCheckRep
             return Fail(ExitCodes.InvalidManifest, $"specht: {exception.Message}");
         }
 
-        foreach (var violation in report.Violations)
-        {
-            console.Profile.Out.Writer.WriteLine(violation);
-        }
+        var document = SpecReportDocument.From(report);
 
-        foreach (var line in SpecReportDocument.From(report).SummaryLines())
+        if (settings.Json)
         {
-            console.Profile.Out.Writer.WriteLine(line);
+            console.Profile.Out.Writer.WriteLine(document.ToJson());
+        }
+        else
+        {
+            foreach (var violation in report.Violations)
+            {
+                console.Profile.Out.Writer.WriteLine(violation);
+            }
+
+            foreach (var line in document.SummaryLines())
+            {
+                console.Profile.Out.Writer.WriteLine(line);
+            }
         }
 
         var failed = settings.Strict ? report.Violations.Count > 0 : report.ErrorCount > 0;
@@ -71,6 +80,11 @@ public sealed class CheckCommand(IAnsiConsole console, Func<string, SpecCheckRep
         [CommandOption("--strict")]
         [Description("Fail on a violation of any severity, not only an error.")]
         public bool Strict { get; init; }
+
+        /// <summary>Gets a value indicating whether stdout carries the report document instead of the lines and the summary.</summary>
+        [CommandOption("--json")]
+        [Description("Write the report document to stdout in place of the violation lines and the summary.")]
+        public bool Json { get; init; }
     }
 
     private static Task<int> Fail(int code, string message)

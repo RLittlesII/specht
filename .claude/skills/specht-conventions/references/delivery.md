@@ -108,6 +108,10 @@ and prints the answer:
 python3 .claude/skills/specht-conventions/scripts/next.py   # --top N, --width N, --root DIR
 ```
 
+It prints a choice, not one item: first a "Pick one per lane" table, one row
+per lane with its head, the items queued behind it and the write set it holds,
+then the startable table, the blocked list and the taken list.
+
 It needs nothing but Python 3's standard library and reads the tree it lives
 in, so a worktree answers for its own branch. It walks hidden folders - most
 items live under `.build/`, `.github/` and `.config/` - and strips a trailing
