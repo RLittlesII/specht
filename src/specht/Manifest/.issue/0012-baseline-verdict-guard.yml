@@ -2,7 +2,7 @@ id: "0012"
 type: test
 title: Guard the baseline verdicts under the default manifest
 
-status: ready-for-architecture
+status: in-progress
 
 priority: high
 risk: 3
