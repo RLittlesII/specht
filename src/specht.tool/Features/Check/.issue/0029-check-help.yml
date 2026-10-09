@@ -2,7 +2,7 @@ id: "0029"
 type: task
 title: Name the check's options in --help
 
-status: ready-for-architecture
+status: done
 
 priority: high
 risk: 1
@@ -21,8 +21,8 @@ claims:
   - B-008
 
 created: "2026-10-08"
-updated: "2026-10-08"
-closed: null
+updated: "2026-10-09"
+closed: "2026-10-09"
 
 summary: |
   `specht --help` prints usage naming `--root` and `--strict` and exits 0.
