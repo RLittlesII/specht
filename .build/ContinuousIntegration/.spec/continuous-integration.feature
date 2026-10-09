@@ -51,9 +51,17 @@ Feature: Continuous integration
 
   @B-006
   Scenario: A specification violation is shown on the diff
-    Given a pull request that breaks a specification rule
+    Given a pull request that changes a file carrying a specification violation
     When integration runs
     Then the violation is annotated on its file and line in the pull request's diff
+    And it is annotated once, from the Linux check only
+
+  @B-006 @boundary
+  Scenario: A violation in a file the pull request does not change is not annotated
+    Given a pull request that changes no file carrying a specification violation
+    And a specification violation elsewhere in the repository
+    When integration runs
+    Then no violation is annotated on the pull request's diff
 
   @B-007
   Scenario: Check names do not change between runs
