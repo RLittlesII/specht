@@ -92,6 +92,29 @@ public sealed class ManifestSteps
         }
     }
 
+    [Given("the baseline tree the engine's tests build")]
+    public void GivenTheBaselineTreeTheEnginesTestsBuild() => BaselineTree.Write(Tree);
+
+    [Given("the golden report of the violations the engine gave on that tree when the copy landed")]
+    public void GivenTheGoldenReportOfTheViolationsTheEngineGaveOnThatTreeWhenTheCopyLanded() => _golden = GoldenReport.Read();
+
+    [When("the check runs with the default manifest")]
+    public void WhenTheCheckRunsWithTheDefaultManifest()
+    {
+        foreach (var key in Manifest.Select(static entry => entry.Key).Where(static key => !key.StartsWith('$')).ToList())
+        {
+            Manifest.Remove(key);
+        }
+
+        WhenTheCheckRuns();
+    }
+
+    [Then("the same violations are reported, in the same order, each with the same rule id, severity, file, line, identifier and message")]
+    public void ThenTheSameViolationsAreReportedInTheSameOrderEachWithTheSameRuleIdSeverityFileLineIdentifierAndMessage() =>
+        GoldenReport.Of(_report ?? throw new InvalidOperationException("The check gave no report."))
+            .Should()
+            .Equal(_golden ?? throw new InvalidOperationException("No golden report was read."));
+
     [Then("the manifest is rejected")]
     public void ThenTheManifestIsRejected() => _rejection.Should().NotBeNull();
 
@@ -134,4 +157,5 @@ public sealed class ManifestSteps
     private SpecCheckReport? _report;
     private SpechtManifestException? _rejection;
     private string? _defaultClaimGrammar;
+    private IReadOnlyList<GoldenReport.Verdict>? _golden;
 }
