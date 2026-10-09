@@ -1,10 +1,13 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using AwesomeAssertions;
 using Reqnroll;
+using specht.Report;
 using specht.tests;
 using specht.tool;
 using specht.tool.Features.Check;
@@ -27,6 +30,17 @@ public sealed partial class CheckSteps
     [Given("the root holds a specification whose claim B-002 has no traceability row")]
     public void GivenTheRootHoldsASpecificationWhoseClaimB002HasNoTraceabilityRow() =>
         Tree.WriteFeature("0001", "F1", sections: SpecTree.SectionsWith("3. Acceptance Criteria", TwoClaims));
+
+    [Given("the root holds two specifications in the legacy layout and one in the co-located layout")]
+    public void GivenTheRootHoldsTwoSpecificationsInTheLegacyLayoutAndOneInTheCoLocatedLayout()
+    {
+        Tree.WriteFeature("0001", "F1");
+        Tree.WriteFeature("0001", "F2");
+        Tree.WriteCoLocatedFeature("src/area", "0001", "F3");
+        var report = Tree.Run();
+        report.LegacyCount.Should().Be(2);
+        report.CoLocatedCount.Should().Be(1);
+    }
 
     [Given("the root holds a specification with one error-severity violation")]
     [Given("the root holds a specification with one violation")]
@@ -78,18 +92,44 @@ public sealed partial class CheckSteps
     [Then("the standard output carries one line per violation")]
     public void ThenTheStandardOutputCarriesOneLinePerViolation()
     {
-        Expected.Should().NotBeEmpty();
+        Violations.Should().NotBeEmpty();
         Lines(_stdout).Should().Equal(Expected);
     }
 
     [Then("each line names the file, the line, the severity, the rule id and the message in the build's diagnostic form")]
     public void ThenEachLineNamesTheFileTheLineTheSeverityTheRuleIdAndTheMessageInTheBuildsDiagnosticForm() =>
-        Lines(_stdout).Should().NotBeEmpty().And.AllSatisfy(line =>
+        ViolationLines().Should().NotBeEmpty().And.AllSatisfy(line =>
         {
             var match = Diagnostic().Match(line);
             match.Success.Should().BeTrue(line);
             File.Exists(Path.Combine(Tree.Root, match.Groups["file"].Value)).Should().BeTrue(line);
         });
+
+    [Then("the standard output ends with the specification count per layout")]
+    public void ThenTheStandardOutputEndsWithTheSpecificationCountPerLayout()
+    {
+        var summary = Summary;
+        Lines(_stdout).TakeLast(summary.Count).Should().Equal(summary);
+        SummaryLine(0).Should().Contain("legacy 2").And.Contain("coLocated 1");
+    }
+
+    [Then("the item count and the count of rule ids evaluated")]
+    public void ThenTheItemCountAndTheCountOfRuleIdsEvaluated()
+    {
+        var report = Tree.Run();
+        var summary = Summary;
+        SummaryLine(1).Should().Be(summary[1]).And.Contain(report.ItemCount.ToString(CultureInfo.InvariantCulture));
+        SummaryLine(2).Should().Be(summary[2]).And.Contain(report.RulesEvaluated.ToString(CultureInfo.InvariantCulture));
+    }
+
+    [Then("the error count and the warning count")]
+    public void ThenTheErrorCountAndTheWarningCount()
+    {
+        var report = Tree.Run();
+        SummaryLine(3).Should().Be(Summary[3])
+            .And.Contain(report.ErrorCount.ToString(CultureInfo.InvariantCulture))
+            .And.Contain(report.WarningCount.ToString(CultureInfo.InvariantCulture));
+    }
 
     [Then("the exit code is {int}")]
     public void ThenTheExitCodeIs(int code) => _exitCode.Should().Be(code, _stderr);
@@ -99,8 +139,12 @@ public sealed partial class CheckSteps
         Lines(_stdout).Should().Equal(Expected);
 
     [Then("nothing about the tool itself appears on the standard output")]
-    public void ThenNothingAboutTheToolItselfAppearsOnTheStandardOutput() =>
-        Lines(_stdout).Should().AllSatisfy(static line => Diagnostic().IsMatch(line).Should().BeTrue(line));
+    public void ThenNothingAboutTheToolItselfAppearsOnTheStandardOutput()
+    {
+        var summary = Summary;
+        ViolationLines().Should().AllSatisfy(static line => Diagnostic().IsMatch(line).Should().BeTrue(line));
+        Lines(_stdout).TakeLast(summary.Count).Should().Equal(summary);
+    }
 
     [Then("the standard error names that path as it was typed")]
     public void ThenTheStandardErrorNamesThatPathAsItWasTyped() => _stderr.Should().Contain(_typed);
@@ -119,7 +163,7 @@ public sealed partial class CheckSteps
     public void ThenEveryPathOnTheStandardOutputIsRelativeToTheRoot()
     {
         _exitCode.Should().Be(ExitCodes.Violations);
-        Lines(_stdout).Should().NotBeEmpty().And.AllSatisfy(line =>
+        ViolationLines().Should().NotBeEmpty().And.AllSatisfy(line =>
         {
             var file = Diagnostic().Match(line).Groups["file"].Value;
             Path.IsPathRooted(file).Should().BeFalse(line);
@@ -155,7 +199,11 @@ public sealed partial class CheckSteps
 
     private string Nested => _nested ?? throw new InvalidOperationException("No nested root was named.");
 
-    private string[] Expected => Tree.Run().Violations.Select(static violation => violation.ToString()).ToArray();
+    private string[] Violations => Tree.Run().Violations.Select(static violation => violation.ToString()).ToArray();
+
+    private IReadOnlyList<string> Summary => SpecReportDocument.From(Tree.Run()).SummaryLines();
+
+    private string[] Expected => [.. Violations, .. Summary];
 
     [GeneratedRegex(@"^(?<file>[^\s(:][^(:]*)(\((?<line>\d+)\))?: (?<severity>error|warning) (?<rule>SPEC\d{3}): \S.*$")]
     private static partial Regex Diagnostic();
@@ -175,6 +223,15 @@ public sealed partial class CheckSteps
         {
             File.Copy(file, Path.Combine(to, Path.GetRelativePath(from, file)));
         }
+    }
+
+    private string[] ViolationLines() => Lines(_stdout).SkipLast(Summary.Count).ToArray();
+
+    private string SummaryLine(int index)
+    {
+        var tail = Lines(_stdout).TakeLast(Summary.Count).ToArray();
+        tail.Should().HaveCount(Summary.Count, _stdout);
+        return tail[index];
     }
 
     private void Launch(string workingDirectory, params string[] args)

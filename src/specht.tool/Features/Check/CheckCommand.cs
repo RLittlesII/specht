@@ -3,6 +3,7 @@ using System.ComponentModel;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using specht.Report;
 using Spectre.Console;
 using Spectre.Console.Cli;
 
@@ -10,7 +11,8 @@ namespace specht.tool.Features.Check;
 
 /// <summary>
 /// <c>specht</c>, the default command (<c>0001-F2</c>): checks the tree under a root, prints one MSBuild-shaped line per
-/// violation on stdout, and folds the report into an exit code. It parses, calls the runner and folds - nothing else (C-4).
+/// violation on stdout and then the run summary, and folds the report into an exit code. It parses, calls the runner and
+/// folds - nothing else (C-4).
 /// </summary>
 /// <param name="console">Where the product goes; injected so the command tester captures it.</param>
 /// <param name="run">The engine's runner, <see cref="SpecCheckRunner.Run"/> outside a test.</param>
@@ -41,6 +43,11 @@ public sealed class CheckCommand(IAnsiConsole console, Func<string, SpecCheckRep
         foreach (var violation in report.Violations)
         {
             console.Profile.Out.Writer.WriteLine(violation);
+        }
+
+        foreach (var line in SpecReportDocument.From(report).SummaryLines())
+        {
+            console.Profile.Out.Writer.WriteLine(line);
         }
 
         var failed = settings.Strict ? report.Violations.Count > 0 : report.ErrorCount > 0;
