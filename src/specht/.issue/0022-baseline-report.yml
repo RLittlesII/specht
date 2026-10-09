@@ -2,7 +2,7 @@ id: "0022"
 type: test
 title: Commit the golden baseline report on a synthetic tree and test the verdicts against it
 
-status: ready-for-architecture
+status: done
 
 priority: high
 risk: 3
@@ -23,7 +23,7 @@ claims:
 
 created: "2026-10-08"
 updated: "2026-10-08"
-closed: null
+closed: "2026-10-08"
 
 summary: |
   Build the baseline tree with SpecTree, breaking each of the twenty-one
