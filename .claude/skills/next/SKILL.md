@@ -1,6 +1,6 @@
 ---
 name: next
-description: Answer "what is next" from the work-item queue - the highest-ranked item that can start, the high-ranked items still waiting and on what, the items already taken, and which startable items can run in parallel without colliding. Use when asked what to pick up, what is next, or what can be worked on at the same time.
+description: Answer "what is next" from the work-item queue as a choice - one startable item per parallel lane, so several can be picked up at once without colliding - then the startable items, the high-ranked items still waiting and on what, and the items already taken. Use when asked what to pick up, what is next, or what can be worked on at the same time.
 ---
 
 # What is next
@@ -18,9 +18,11 @@ comment, misses items in hidden folders, and forgets a dependency's status.
 
 ## What each part means
 
-- **Next** is the highest-ranked item that is ready to start, whose every hard
+- **Next** is a set, not one item: the head of every lane. A head is the
+  highest-ranked item in its lane that is ready to start, whose every hard
   prerequisite is done, that nobody has taken, and that is not a container for
-  open children. Ties keep rank order, then id.
+  open children. Ties keep rank order, then id. The person asking chooses from
+  the set; the answer does not choose for them.
 - **Rank is read, never computed here.** It is derived where the tracker says;
   a rank that looks wrong is a grooming problem, raised, not corrected in the
   answer.
@@ -47,10 +49,11 @@ which files it actually touches, so restate a lane as confirmed only after it.
 
 ## Reporting
 
-Lead with the next item. Then the startable table - id, rank, status, title,
-description - the blocked list, the taken list, and the lanes. State the commit
-the answer was read at: the queue moves with every merge, and an answer from
-before a pull is stale.
+Lead with the lanes: one row per lane - its head, rank, status, title, the
+items queued behind it, and the write set it holds. Then the startable table -
+id, rank, status, title, description - the blocked list and the taken list.
+State the commit the answer was read at: the queue moves with every merge, and
+an answer from before a pull is stale.
 
 ## Never add
 
@@ -58,5 +61,6 @@ before a pull is stale.
 - An edit to an item, a status change, or a claim on one - this skill only
   reads.
 - A taken item offered as next.
+- A single item offered as the answer while more than one lane can start.
 - A lane split that ignores a shared write set because no dependency joins the
   two items.

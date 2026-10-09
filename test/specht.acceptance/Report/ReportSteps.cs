@@ -13,10 +13,12 @@ using specht.tests;
 namespace specht.acceptance.Report;
 
 /// <summary>
-/// Steps for <c>src/specht/Report/.spec/report.feature</c> (0001-F3) that 0034 binds: B-005, B-007, B-008 and B-021, the
-/// claims made "given the document". "The check runs with JSON output" is the engine's runner and the document made from
-/// its report; the command's <c>--json</c> is 0035's to bind, and so are the two B-006 runs, whose clock, user and machine
-/// name only a launched tool can vary. The rest of the file's scenarios stay pending for their items.
+/// Steps for <c>src/specht/Report/.spec/report.feature</c> (0001-F3): 0034 binds B-005, B-007, B-008 and B-021, the claims
+/// made "given the document", and 0035 binds B-001. "The check runs with JSON output" runs the engine's runner for the
+/// typed report and its document, and launches the built tool with <c>--json</c> over the same root, so B-001, B-008 and
+/// B-021 see the tool's real stdout. The two B-006 scenarios stay unbound: the launched tool has no clock seam to set, and
+/// a child process's machine name cannot be set; B-006 is proved at the engine. The rest of the file's scenarios stay
+/// pending for their items.
 /// </summary>
 [Binding]
 [Scope(Feature = "The report contract")]
@@ -78,8 +80,16 @@ public sealed class ReportSteps
         _root = root;
         _report = SpecCheckRunner.Run(root);
         _document = SpecReportDocument.From(_report);
-        _json = _document.ToJson();
+        (_stdout, _stderr, _) = Tool.Launch(root, "--root", ".", "--json");
+        _json = _stdout.EndsWith(Environment.NewLine, StringComparison.Ordinal) ? _stdout[..^Environment.NewLine.Length] : _stdout;
     }
+
+    [Then("the standard output parses as a single JSON document")]
+    public void ThenTheStandardOutputParsesAsASingleJsonDocument() =>
+        _stdout.Invoking(static stdout => JsonDocument.Parse(stdout).Dispose()).Should().NotThrow(_stderr);
+
+    [Then("no diagnostic line and no summary line precede or follow it")]
+    public void ThenNoDiagnosticLineAndNoSummaryLinePrecedeOrFollowIt() => Json.Should().Be(Document.ToJson(), _stderr);
 
     [Then("the document names the schema version checked against")]
     public void ThenTheDocumentNamesTheSchemaVersionCheckedAgainst() => Document.SchemaVersion.Should().Be(1);
@@ -194,4 +204,6 @@ public sealed class ReportSteps
     private SpecCheckReport? _report;
     private SpecReportDocument? _document;
     private string? _json;
+    private string _stdout = string.Empty;
+    private string _stderr = string.Empty;
 }

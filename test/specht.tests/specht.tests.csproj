@@ -33,6 +33,14 @@
              CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
+  <!-- The live templates the tool ships (0001-F4 A-1, B-004), copied the same way; item.yml is this repository's own and
+       not one of them. -->
+  <ItemGroup>
+    <Content Include="..\..\.spec\templates\feature.md;..\..\.spec\templates\decision.md;..\..\.spec\templates\adr.md;..\..\.spec\templates\lesson.md"
+             Link=".spec\templates\%(Filename)%(Extension)"
+             CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
   <!-- The golden report (0001-F1 B-004, C-10): the engine's verdicts on the baseline tree at commit e7dba24, test data
        committed beside the builder and read from the output. -->
   <ItemGroup>
