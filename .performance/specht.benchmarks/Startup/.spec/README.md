@@ -45,10 +45,10 @@ Every call site starts the tool as a new process - the pre-commit hook on every 
 
 ### Assumptions
 
-| ID  | Assumption                                                                                                                                              |
-| --- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| A-1 | The benchmark target packs the tool before any benchmark runs (`0109-F1` B-013), and that package is the one `0055-F7` describes a consumer installing. |
-| A-2 | A check of the one-specification generated tree exits `0` (`0109-F1` B-015; `0001-F2` exit codes).                                                      |
+| ID  | Assumption                                                                                                                                                                                        |
+| --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| A-1 | The benchmark target packs the tool before any benchmark runs when this Feature's benchmark is selected (`0109-F1` B-013), and that package is the one `0055-F7` describes a consumer installing. |
+| A-2 | A check of the one-specification generated tree exits `0` (`0109-F1` B-015; `0001-F2` exit codes).                                                                                                |
 
 ## 3. Acceptance Criteria
 
@@ -58,7 +58,7 @@ Every call site starts the tool as a new process - the pre-commit hook on every 
 | ----- | ------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------- | ------ |
 | B-001 | Given the package the build packed, this Feature installs it from the local package output into a temporary local tool manifest before measuring. | owner, 2026-10-09; C-3; C-4 | Active |
 | B-002 | Given the installed tool, this Feature measures one check of the one-specification generated tree from process start to exit.                     | owner, 2026-10-09; C-1      | Active |
-| B-003 | Given two measured invocations, each starts its own process.                                                                                      | decision 0001; C-6          | Active |
+| B-003 | Given two measured invocations, this Feature starts each in a process of its own.                                                                 | decision 0001; C-6          | Active |
 | B-004 | Given a measured invocation that exits non-zero, this Feature fails instead of reporting a time.                                                  | `0109-F1` OQ-3; C-1         | Active |
 | B-005 | Given a run completes, this Feature leaves no tool installed outside its temporary directory.                                                     | `0109-F1` C-10; C-4         | Active |
 
@@ -124,7 +124,7 @@ Pending: owned by `test-writer`, written after agreement.
 
 <!-- last written by: spec-author, 2026-10-09 -->
 
-None.
+- 2026-10-09, spec-reviewer finding on commit `4b23e76`: B-003 restated with this Feature as subject. A-1 follows `0109-F1` B-013, which now packs only when this Feature's benchmark is selected.
 
 ## 11. Open Questions
 

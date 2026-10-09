@@ -47,58 +47,59 @@ No cost the tool incurs is measured, so every specification constraint about tim
 
 ### Assumptions
 
-| ID  | Assumption                                                                                                                                                                                                                                           |
-| --- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| A-1 | `0055-F2` is amended to admit the benchmark step: its B-004 lists the gates each run runs and its C-3 allows only package restore and the coverage upload to leave the runner. The amendment is owed by `spec-author` before B-017 to B-020 are cut. |
-| A-2 | `0055-F2` B-012 holds unchanged: a pull request that changes only Markdown outside a specification folder runs no target, the benchmark target included.                                                                                             |
-| A-3 | The tool package `0055-F1`'s `Pack` target writes is the one `0109-F4` installs; this Feature only orders `Pack` first (B-013).                                                                                                                      |
+| ID  | Assumption                                                                                                                                                                                                                                                          |
+| --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| A-1 | `0055-F2` is amended to admit the benchmark step: its B-004 lists the targets each run runs, and its C-3 reads "A run is offline beyond restoring packages and tools and uploading coverage." The amendment is owed by `spec-author` before B-017 to B-020 are cut. |
+| A-2 | `0055-F2` B-012 holds unchanged: a pull request that changes only Markdown outside a specification folder runs no target, the benchmark target included.                                                                                                            |
+| A-3 | The tool package `0055-F1`'s `Pack` target writes is the one `0109-F4` installs; this Feature only packs it first, and only when `0109-F4`'s benchmark is selected (B-013, B-021).                                                                                  |
 
 ## 3. Acceptance Criteria
 
 <!-- last written by: spec-author, 2026-10-09 -->
 
-| ID    | Claim                                                                                                                               | Source                                   | Status |
-| ----- | ----------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------- | ------ |
-| B-001 | Given the solution is compiled, this Feature's benchmark project is compiled with it.                                               | owner, 2026-10-09; C-2                   | Active |
-| B-002 | Given the default build runs, this Feature runs no benchmark.                                                                       | owner, 2026-10-09; decision 0001         | Active |
-| B-003 | Given the benchmark target runs with no filter, this Feature runs every benchmark in the project.                                   | decision 0002                            | Active |
-| B-004 | Given the benchmark target runs with a filter, this Feature runs only the benchmarks whose full names match it.                     | decision 0002; C-5                       | Active |
-| B-005 | Given the benchmark target runs with a job named, this Feature runs every selected benchmark under that job.                        | decision 0002                            | Active |
-| B-006 | Given the benchmark target runs with no job named, this Feature runs every selected benchmark under the library's default job.      | decision 0002                            | Active |
-| B-007 | Given any benchmark runs, this Feature reports the managed memory it allocates per operation.                                       | owner, 2026-10-09; C-4                   | Active |
-| B-008 | Given a run, this Feature writes its results under `.artifacts/benchmarks/` at the repository root.                                 | decision 0002                            | Active |
-| B-009 | Given a run, this Feature writes a human-readable summary for each benchmark class it ran.                                          | decision 0002                            | Active |
-| B-010 | Given a run, this Feature writes a machine-readable result for each benchmark class it ran.                                         | decision 0002; OQ-4                      | Active |
-| B-011 | Given every selected benchmark completes, the benchmark target succeeds whatever times and allocations it measured.                 | owner, 2026-10-09; decision 0001; C-1    | Active |
-| B-012 | Given a selected benchmark throws, the benchmark target fails.                                                                      | OQ-3                                     | Active |
-| B-013 | Given the benchmark target runs, the tool package is packed before any benchmark runs.                                              | `0109-F4` B-001; A-3                     | Active |
-| B-014 | Given a run, this Feature leaves the repository's working tree unchanged outside `.artifacts/`.                                     | brief § 9; C-10                          | Active |
-| B-015 | Given a generated tree of any size, the check reports no violation against it.                                                      | decision 0004                            | Active |
-| B-016 | Given the same size twice, this Feature generates the same files at the same relative paths with the same contents.                 | brief § 9; decision 0004; C-8            | Active |
-| B-017 | Given a CI run that builds, this Feature runs the benchmark target on each operating system the run covers.                         | owner, 2026-10-09; OQ-2; `0055-F2` B-003 | Active |
-| B-018 | Given a CI run, this Feature runs the benchmarks under the short job.                                                               | OQ-1                                     | Active |
-| B-019 | Given a CI run's benchmark target completes, this Feature publishes its results as a build artifact named for the operating system. | owner, 2026-10-09; C-13                  | Active |
-| B-020 | Given a CI run, the benchmark step runs after the format, compile, test, self-check and pack steps.                                 | decision 0001; C-12                      | Active |
+| ID    | Claim                                                                                                                                         | Source                                                                                                                       | Status |
+| ----- | --------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- | ------ |
+| B-001 | Given the solution is compiled, this Feature's benchmark project is compiled with it.                                                         | owner, 2026-10-09; C-2                                                                                                       | Active |
+| B-002 | Given the default build runs, this Feature runs no benchmark.                                                                                 | owner, 2026-10-09; decision 0001                                                                                             | Active |
+| B-003 | Given the benchmark target runs with no filter, this Feature runs every benchmark in the project.                                             | decision 0002                                                                                                                | Active |
+| B-004 | Given the benchmark target runs with a filter, this Feature runs only the benchmarks whose full names match it.                               | decision 0002; C-5                                                                                                           | Active |
+| B-005 | Given the benchmark target runs with a job named, this Feature runs every selected benchmark under that job.                                  | decision 0002                                                                                                                | Active |
+| B-006 | Given the benchmark target runs with no job named, this Feature runs every selected benchmark under the library's default job.                | decision 0002                                                                                                                | Active |
+| B-007 | Given any benchmark runs, this Feature reports the managed memory it allocates per operation.                                                 | owner, 2026-10-09; C-4                                                                                                       | Active |
+| B-008 | Given a run, this Feature writes its results under `.artifacts/benchmarks/` at the repository root.                                           | decision 0002                                                                                                                | Active |
+| B-009 | Given a run, this Feature writes a human-readable summary for each benchmark class it ran.                                                    | decision 0002                                                                                                                | Active |
+| B-010 | Given a run, this Feature writes a machine-readable result for each benchmark class it ran.                                                   | decision 0002; OQ-4                                                                                                          | Active |
+| B-011 | Given every selected benchmark completes, this Feature reports the benchmark target as succeeded, whatever times and allocations it measured. | owner, 2026-10-09; decision 0001; C-1                                                                                        | Active |
+| B-012 | Given a selected benchmark throws, this Feature reports the benchmark target as failed.                                                       | OQ-3                                                                                                                         | Active |
+| B-013 | Given the benchmark target runs with a cold-start benchmark selected, this Feature packs the tool package before any benchmark runs.          | `0109-F4` B-001; A-3; decision 0002                                                                                          | Active |
+| B-014 | Given a run, this Feature leaves the repository's working tree unchanged outside `.artifacts/`.                                               | brief § 9; C-10                                                                                                              | Active |
+| B-015 | Given a size of 1, 10, 100 or 1000 specifications, this Feature generates a tree on which the check reports no violation.                     | decision 0004                                                                                                                | Active |
+| B-016 | Given the same size twice, this Feature generates the same files at the same relative paths with the same contents.                           | owner, 2026-10-09 (item `0108`; `specht-conventions` references/benchmarking.md); AGENTS.md § Invariants; decision 0004; C-8 | Active |
+| B-017 | Given a CI run that builds, this Feature runs the benchmark target on each operating system the run covers.                                   | owner, 2026-10-09; OQ-2; `0055-F2` B-003                                                                                     | Active |
+| B-018 | Given a CI run, this Feature runs the benchmarks under the short job.                                                                         | OQ-1                                                                                                                         | Active |
+| B-019 | Given a CI run's benchmark target completes, this Feature publishes its results as a build artifact named for the operating system.           | owner, 2026-10-09; C-13                                                                                                      | Active |
+| B-020 | Given a CI run, this Feature runs the benchmark step after the format, compile, test and self-check steps.                                    | decision 0001; C-12                                                                                                          | Active |
+| B-021 | Given the benchmark target runs with no cold-start benchmark selected, this Feature packs nothing.                                            | decision 0002; B-013                                                                                                         | Active |
 
 ## 4. Constraints
 
 <!-- last written by: spec-author, 2026-10-09 -->
 
-| ID   | Constraint                                                                                                                                                                     | Rules Out                                                                                                                                                         |
-| ---- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| C-1  | No build target, CI step or test fails on a measured time or allocation (owner, 2026-10-09).                                                                                   | A threshold, an assertion or a regression check on any number; a CI step whose outcome reads a result; a `Ratio` compared against a limit.                        |
-| C-2  | The benchmark project is `.performance/specht.benchmarks`, listed in `specht.slnx`, not packable, and not a test project.                                                      | A project under `test/`; a `.Tests` name the tier filters select; a `Tier` trait on a benchmark; packing it; a project `Compile` does not build.                  |
-| C-3  | The benchmark library's version is written once, in `Directory.Packages.props`.                                                                                                | A version in the benchmark `.csproj`.                                                                                                                             |
-| C-4  | Allocated managed memory per operation is a reported finding of every benchmark, switched on by the shared configuration; it scales with whatever input that benchmark varies. | A benchmark without an allocation column; memory as a per-class opt-in; an allocation threshold.                                                                  |
-| C-5  | One entry point selects benchmarks by full name from the command line.                                                                                                         | A `Main` or a runner per benchmark class; a benchmark reachable only by editing code.                                                                             |
-| C-6  | A recorded finding comes from a Release build, run by the default out-of-process toolchain, with no debugger attached.                                                         | Recording an in-process, Debug or debugger-attached number in a § 8 `### Performance` row; the benchmark target passing the in-process toolchain (decision 0003). |
-| C-7  | Every specification a fixture holds is generated by the benchmark code; only the shipped schema and manifest are copied.                                                       | A fixture copied from this repository's `.spec/` tree or any consumer's; reading `hooked` source.                                                                 |
-| C-8  | A generated tree is a function of its size alone.                                                                                                                              | Random content, a clock, a GUID or a machine name in any generated file; a size chosen at run time.                                                               |
-| C-9  | Every path a benchmark writes into a fixture, a parameter, a benchmark name or a finding is relative to the tree's root or the repository root.                                | An absolute path in any of those; a path as a parameter value.                                                                                                    |
-| C-10 | A run writes only into its own temporary directory and `.artifacts/benchmarks/`.                                                                                               | A write into the repository's tree, a consumer's tree, the user profile or a shared cache.                                                                        |
-| C-11 | A run is offline beyond the build's package and tool restore.                                                                                                                  | A benchmark that touches the network, a feed or a live provider.                                                                                                  |
-| C-12 | The CI benchmark step is generated by the NUKE build, and its regeneration is committed with its step order diffed.                                                            | A hand edit to `.github/workflows/ci.yml`; a step order nobody checked (`0055-F2` C-1).                                                                           |
-| C-13 | The published build artifact holds the exporters' result files only.                                                                                                           | Publishing the library's run log, which carries absolute paths and machine detail; publishing the generated benchmark projects.                                   |
+| ID   | Constraint                                                                                                                                                                            | Rules Out                                                                                                                                                         |
+| ---- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| C-1  | No build target, CI step or test fails on a measured time or allocation (owner, 2026-10-09).                                                                                          | A threshold, an assertion or a regression check on any number; a CI step whose outcome reads a result; a `Ratio` compared against a limit.                        |
+| C-2  | The benchmark project is `.performance/specht.benchmarks`, listed in `specht.slnx`, not packable, and not a test project.                                                             | A project under `test/`; a `.Tests` name the tier filters select; a `Tier` trait on a benchmark; packing it; a project `Compile` does not build.                  |
+| C-3  | The benchmark library's version is written once, in `Directory.Packages.props`.                                                                                                       | A version in the benchmark `.csproj`.                                                                                                                             |
+| C-4  | Allocated managed memory per operation is a reported finding of every benchmark, switched on by the shared configuration, and reported at every parameter value the benchmark varies. | A benchmark without an allocation column; memory as a per-class opt-in; an allocation threshold.                                                                  |
+| C-5  | One entry point selects benchmarks by full name from the command line.                                                                                                                | A `Main` or a runner per benchmark class; a benchmark reachable only by editing code.                                                                             |
+| C-6  | A recorded finding comes from a Release build, run by the default out-of-process toolchain, with no debugger attached.                                                                | Recording an in-process, Debug or debugger-attached number in a § 8 `### Performance` row; the benchmark target passing the in-process toolchain (decision 0003). |
+| C-7  | Every specification a fixture holds is generated by the benchmark code; only the shipped schema and manifest are copied.                                                              | A fixture copied from this repository's `.spec/` tree or any consumer's; reading `hooked` source.                                                                 |
+| C-8  | A generated tree is a function of its size alone.                                                                                                                                     | Random content, a clock, a GUID or a machine name in any generated file; a size chosen at run time.                                                               |
+| C-9  | Every path a benchmark writes into a fixture, a parameter, a benchmark name or a finding is relative to the tree's root or the repository root.                                       | An absolute path in any of those; a path as a parameter value.                                                                                                    |
+| C-10 | A run writes only into its own temporary directory and `.artifacts/benchmarks/`.                                                                                                      | A write into the repository's tree, a consumer's tree, the user profile or a shared cache.                                                                        |
+| C-11 | A run is offline beyond the build's package and tool restore.                                                                                                                         | A benchmark that touches the network, a feed or a live provider.                                                                                                  |
+| C-12 | The CI benchmark step is generated by the NUKE build, and its regeneration is committed with its step order diffed.                                                                   | A hand edit to `.github/workflows/ci.yml`; a step order nobody checked (`0055-F2` C-1).                                                                           |
+| C-13 | The published build artifact holds the exporters' result files only.                                                                                                                  | Publishing the library's run log, which carries absolute paths and machine detail; publishing the generated benchmark projects.                                   |
 
 ## 5. Out of Scope
 
@@ -136,34 +137,35 @@ Pending: owned by `test-writer`, written after agreement.
 
 <!-- last written by: spec-author, 2026-10-09 -->
 
-| Claim ID | Scenario                                           | Test    | Status  |
-| -------- | -------------------------------------------------- | ------- | ------- |
-| B-001    | The benchmarks are compiled with the solution      | Missing | Missing |
-| B-002    | The default build runs no benchmark                | Missing | Missing |
-| B-003    | Every benchmark runs when none is named            | Missing | Missing |
-| B-004    | A filter runs only the benchmarks it names         | Missing | Missing |
-| B-005    | A named job is the job every benchmark runs under  | Missing | Missing |
-| B-006    | With no job named, the default job runs            | Missing | Missing |
-| B-007    | Every benchmark reports the memory it allocates    | Missing | Missing |
-| B-008    | Results land in the benchmark results folder       | Missing | Missing |
-| B-009    | A person can read each class's results             | Missing | Missing |
-| B-010    | A machine can read each class's results            | Missing | Missing |
-| B-011    | A slower result does not fail the build            | Missing | Missing |
-| B-012    | A benchmark that breaks fails the target           | Missing | Missing |
-| B-013    | The tool is packed before the benchmarks run       | Missing | Missing |
-| B-014    | A run leaves the repository as it found it         | Missing | Missing |
-| B-015    | A generated tree passes the check                  | Missing | Missing |
-| B-016    | The same size generates the same tree              | Missing | Missing |
-| B-017    | CI runs the benchmarks on every operating system   | Missing | Missing |
-| B-018    | CI uses the short job                              | Missing | Missing |
-| B-019    | CI publishes the results for each operating system | Missing | Missing |
-| B-020    | The benchmarks run after every gate                | Missing | Missing |
+| Claim ID | Scenario                                               | Test    | Status  |
+| -------- | ------------------------------------------------------ | ------- | ------- |
+| B-001    | The benchmarks are compiled with the solution          | Missing | Missing |
+| B-002    | The default build runs no benchmark                    | Missing | Missing |
+| B-003    | Every benchmark runs when none is named                | Missing | Missing |
+| B-004    | A filter runs only the benchmarks it names             | Missing | Missing |
+| B-005    | A named job is the job every benchmark runs under      | Missing | Missing |
+| B-006    | With no job named, the default job runs                | Missing | Missing |
+| B-007    | Every benchmark reports the memory it allocates        | Missing | Missing |
+| B-008    | Results land in the benchmark results folder           | Missing | Missing |
+| B-009    | A person can read each class's results                 | Missing | Missing |
+| B-010    | A machine can read each class's results                | Missing | Missing |
+| B-011    | Whatever a benchmark measures, the build does not fail | Missing | Missing |
+| B-012    | A benchmark that breaks fails the target               | Missing | Missing |
+| B-013    | The tool is packed before the benchmarks run           | Missing | Missing |
+| B-014    | A run leaves the repository as it found it             | Missing | Missing |
+| B-015    | A generated tree passes the check                      | Missing | Missing |
+| B-016    | The same size generates the same tree                  | Missing | Missing |
+| B-017    | CI runs the benchmarks on every operating system       | Missing | Missing |
+| B-018    | CI uses the short job                                  | Missing | Missing |
+| B-019    | CI publishes the results for each operating system     | Missing | Missing |
+| B-020    | The benchmarks run after every gate                    | Missing | Missing |
+| B-021    | A run without the cold-start benchmark packs nothing   | Missing | Missing |
 
 ## 10. Lessons / Spec Deltas
 
 <!-- last written by: spec-author, 2026-10-09 -->
 
-None.
+- 2026-10-09, spec-reviewer finding on commit `4b23e76`: B-020 ordered the CI step after a pack step CI does not run; dropped. B-013 packed on every run; it now packs only when a cold-start benchmark is selected, and B-021 states the other case (decision 0002). B-011, B-012, B-013, B-015 and B-020 restated with this Feature as subject; B-015 names decision 0004's sizes; B-016's source corrected from brief § 9 to the owner's decision and AGENTS.md § Invariants; A-1 quotes `0055-F2` C-3 exactly; C-4 restated as an exclusion.
 
 ## 11. Open Questions
 

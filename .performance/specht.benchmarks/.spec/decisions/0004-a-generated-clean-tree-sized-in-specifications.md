@@ -38,7 +38,9 @@ owner may reverse the sizes and the shape
 - A clean tree keeps the measured path stable: a violation adds report and
   ordering work whose amount depends on which rule fired.
 - A captured tree changes whenever its repository does, so two runs would
-  measure different inputs; and brief § 9 forbids it.
+  measure different inputs; and the owner ruled it out (item `0108`;
+  `specht-conventions` references/benchmarking.md). Determinism is AGENTS.md
+  § Invariants: the same tree gives the same report.
 
 ## Rejected
 

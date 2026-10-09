@@ -55,8 +55,8 @@ Feature: Benchmark harness
     Then a machine-readable result is written for each of them
 
   @B-011 @boundary
-  Scenario: A slower result does not fail the build
-    Given a benchmark that measures more time and more memory than its previous run
+  Scenario: Whatever a benchmark measures, the build does not fail
+    Given a benchmark, whatever time and allocation it measures
     When the benchmark target runs
     Then the benchmark target succeeds
 
@@ -68,7 +68,7 @@ Feature: Benchmark harness
 
   @B-013
   Scenario: The tool is packed before the benchmarks run
-    When the benchmark target runs
+    When the benchmark target runs with the cold-start benchmark selected
     Then the tool package is packed before the first benchmark starts
 
   @B-014
@@ -79,7 +79,7 @@ Feature: Benchmark harness
 
   @B-015
   Scenario: A generated tree passes the check
-    Given a generated tree of each size the benchmarks use
+    Given a generated tree of 1, 10, 100 and 1000 specifications
     When the check runs on it
     Then no violation is reported
 
@@ -107,4 +107,9 @@ Feature: Benchmark harness
   @B-020
   Scenario: The benchmarks run after every gate
     When integration runs on one operating system
-    Then the benchmarks run after the format, compile, test, self-check and pack gates
+    Then the benchmarks run after the format, compile, test and self-check gates
+
+  @B-021 @boundary
+  Scenario: A run without the cold-start benchmark packs nothing
+    When the benchmark target runs with a filter naming only the stage benchmarks
+    Then the tool package is not packed
