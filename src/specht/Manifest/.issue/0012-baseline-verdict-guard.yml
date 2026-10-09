@@ -2,7 +2,7 @@ id: "0012"
 type: test
 title: Guard the baseline verdicts under the default manifest
 
-status: in-progress
+status: done
 
 priority: high
 risk: 3
@@ -22,7 +22,7 @@ claims:
 
 created: "2026-10-08"
 updated: "2026-10-08"
-closed: null
+closed: "2026-10-08"
 
 summary: |
   A test that runs the default manifest over 0001-F1's synthetic baseline
