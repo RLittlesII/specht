@@ -108,11 +108,17 @@ def main():
     blocked = [i for i in open_items if i["status"] in STARTABLE | {"blocked"} and i["blockers"] and i["rank"] >= floor]
     taken = [i for i in open_items if i["status"] in TAKEN]
 
+    print("## Pick one per lane\n")
     if not startable:
-        print("**Next:** nothing startable.")
+        print("- nothing startable")
     else:
-        top = startable[0]
-        print(f"**Next:** {top['id']} - {top['title']} (rank {top['rank']}, {top['status']})")
+        print("| Lane | Pick | Rank | Status | Title | Then | Shares |")
+        print("| --- | --- | --- | --- | --- | --- | --- |")
+    for number, lane in enumerate(lanes(startable), 1):
+        head, rest = lane["items"][0], lane["items"][1:]
+        then = ", ".join(f"{i['id']} ({i['rank']})" for i in rest) or "-"
+        shares = ", ".join(sorted(lane["sets"])) or "nothing"
+        print(f"| {number} | {head['id']} | {head['rank']} | {head['status']} | {head['title']} | {then} | {shares} |")
 
     print("\n## Startable\n")
     print("| ID | Rank | Status | Title | Description |")
@@ -131,11 +137,6 @@ def main():
         print(f"- {i['id']} ({i['status']}) {i['title']}")
     if not taken:
         print("- none")
-
-    print("\n## Parallel lanes\n")
-    for number, lane in enumerate(lanes(startable), 1):
-        chain = " -> ".join(f"{i['id']} ({i['rank']})" for i in lane["items"])
-        print(f"{number}. {chain} - shares: {', '.join(sorted(lane['sets'])) or 'nothing'}")
 
 
 if __name__ == "__main__":

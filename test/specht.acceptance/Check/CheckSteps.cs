@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -10,7 +9,6 @@ using Reqnroll;
 using specht.Report;
 using specht.tests;
 using specht.tool;
-using specht.tool.Features.Check;
 
 namespace specht.acceptance.Check;
 
@@ -89,6 +87,9 @@ public sealed partial class CheckSteps
         Launch(Nested);
     }
 
+    [When("the tool is asked for help")]
+    public void WhenTheToolIsAskedForHelp() => Launch(Path.GetTempPath(), "--help");
+
     [Then("the standard output carries one line per violation")]
     public void ThenTheStandardOutputCarriesOneLinePerViolation()
     {
@@ -130,6 +131,9 @@ public sealed partial class CheckSteps
             .And.Contain(report.ErrorCount.ToString(CultureInfo.InvariantCulture))
             .And.Contain(report.WarningCount.ToString(CultureInfo.InvariantCulture));
     }
+
+    [Then("the output names the root option and the strict option")]
+    public void ThenTheOutputNamesTheRootOptionAndTheStrictOption() => _stdout.Should().Contain("--root").And.Contain("--strict");
 
     [Then("the exit code is {int}")]
     public void ThenTheExitCodeIs(int code) => _exitCode.Should().Be(code, _stderr);
@@ -234,27 +238,8 @@ public sealed partial class CheckSteps
         return tail[index];
     }
 
-    private void Launch(string workingDirectory, params string[] args)
-    {
-        var start = new ProcessStartInfo("dotnet")
-        {
-            WorkingDirectory = workingDirectory,
-            RedirectStandardOutput = true,
-            RedirectStandardError = true,
-        };
-        start.ArgumentList.Add(typeof(CheckCommand).Assembly.Location);
-        foreach (var arg in args)
-        {
-            start.ArgumentList.Add(arg);
-        }
-
-        using var process = Process.Start(start) ?? throw new InvalidOperationException("dotnet did not start.");
-        var stdout = process.StandardOutput.ReadToEndAsync();
-        _stderr = process.StandardError.ReadToEnd();
-        _stdout = stdout.GetAwaiter().GetResult();
-        process.WaitForExit();
-        _exitCode = process.ExitCode;
-    }
+    private void Launch(string workingDirectory, params string[] args) =>
+        (_stdout, _stderr, _exitCode) = Tool.Launch(workingDirectory, args);
 
     private const string TwoClaims =
         "## 3. Acceptance Criteria\n\n| ID | Claim | Source | Status |\n| -- | ----- | ------ | ------ |\n"
