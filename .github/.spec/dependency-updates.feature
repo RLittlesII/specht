@@ -48,7 +48,7 @@ Feature: Dependency updates
 
   @B-008 @boundary
   Scenario: The engine's dependencies are left alone
-    Given the behaviour baseline has not been tagged
+    Given the behaviour baseline has not been committed
     And one of the engine's three dependencies has a newer release
     When updates are proposed
     Then no pull request updates it

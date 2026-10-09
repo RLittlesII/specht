@@ -1,0 +1,658 @@
+[
+  {
+    "ruleId": "SPEC001",
+    "severity": "error",
+    "file": "epics/0001-epic/F1-feature/spec.md",
+    "line": 1,
+    "identifier": null,
+    "message": "no YAML frontmatter - every tracked specification artifact opens with a '---' delimited mapping"
+  },
+  {
+    "ruleId": "SPEC020",
+    "severity": "error",
+    "file": "epics/0001-epic/F10-feature/spec.md",
+    "line": 0,
+    "identifier": "0001-F10",
+    "message": "found 2 '.feature' files beside this specification - expected exactly one companion"
+  },
+  {
+    "ruleId": "SPEC021",
+    "severity": "error",
+    "file": "epics/0001-epic/F11-feature/feature.feature",
+    "line": 7,
+    "identifier": "B-002",
+    "message": "scenario tag '@B-002' does not resolve to a claim in § 3 of epics/0001-epic/F11-feature/spec.md"
+  },
+  {
+    "ruleId": "SPEC030",
+    "severity": "error",
+    "file": "epics/0001-epic/F12-feature/spec.md",
+    "line": 43,
+    "identifier": "B-1",
+    "message": "claim id 'B-1' does not match ^B-[0-9]{3}[a-z]?$ - claim ids are permanent, so the form is fixed"
+  },
+  {
+    "ruleId": "SPEC030",
+    "severity": "error",
+    "file": "epics/0001-epic/F13-feature/spec.md",
+    "line": 43,
+    "identifier": "B-001",
+    "message": "claim 'B-001' is declared twice in § 3 (also at line 42)"
+  },
+  {
+    "ruleId": "SPEC031",
+    "severity": "error",
+    "file": "epics/0001-epic/F14-feature/spec.md",
+    "line": 43,
+    "identifier": "B-002",
+    "message": "claim 'B-002' has no row in § 9 - every § 3 claim appears there exactly once, with 'Missing' as its test until one exists"
+  },
+  {
+    "ruleId": "SPEC031",
+    "severity": "error",
+    "file": "epics/0001-epic/F15-feature/spec.md",
+    "line": 73,
+    "identifier": "B-001",
+    "message": "claim 'B-001' has 2 rows in § 9 - expected exactly one"
+  },
+  {
+    "ruleId": "SPEC031",
+    "severity": "error",
+    "file": "epics/0001-epic/F16-feature/spec.md",
+    "line": 73,
+    "identifier": "B-999",
+    "message": "§ 9 cites 'B-999', which is not a claim in § 3 - a withdrawn claim is marked Withdrawn, not deleted"
+  },
+  {
+    "ruleId": "SPEC040",
+    "severity": "error",
+    "file": "epics/0001-epic/F17-feature/spec.md",
+    "line": 16,
+    "identifier": "0001-97",
+    "message": "frontmatter children names '0001-97', but no '0001-97-*.md' was discovered"
+  },
+  {
+    "ruleId": "SPEC044",
+    "severity": "error",
+    "file": "epics/0001-epic/F18-feature/0001-05-second.md",
+    "line": 2,
+    "identifier": "0001-05",
+    "message": "item id '0001-05' is already used by epics/0001-epic/F18-feature/0001-05-first.md - ids are never reused"
+  },
+  {
+    "ruleId": "SPEC040",
+    "severity": "error",
+    "file": "epics/0001-epic/F18-feature/spec.md",
+    "line": 16,
+    "identifier": "0001-05",
+    "message": "frontmatter children names '0001-05', which resolves to 2 files"
+  },
+  {
+    "ruleId": "SPEC041",
+    "severity": "error",
+    "file": "epics/0001-epic/F19-feature/spec.md",
+    "line": 19,
+    "identifier": "0001-98",
+    "message": "frontmatter spikes names '0001-98', but no '0001-98-*.md' was discovered"
+  },
+  {
+    "ruleId": "SPEC002",
+    "severity": "error",
+    "file": "epics/0001-epic/F2-feature/spec.md",
+    "line": 1,
+    "identifier": null,
+    "message": "frontmatter Some properties did not match the required schema: [\"spec_status\"]"
+  },
+  {
+    "ruleId": "SPEC002",
+    "severity": "error",
+    "file": "epics/0001-epic/F2-feature/spec.md",
+    "line": 1,
+    "identifier": null,
+    "message": "frontmatter Some properties did not match the required schema: [\"github_issue\"]"
+  },
+  {
+    "ruleId": "SPEC002",
+    "severity": "error",
+    "file": "epics/0001-epic/F2-feature/spec.md",
+    "line": 5,
+    "identifier": "spec_status",
+    "message": "frontmatter 'spec_status' Value should match one of the values specified by the enum"
+  },
+  {
+    "ruleId": "SPEC002",
+    "severity": "error",
+    "file": "epics/0001-epic/F2-feature/spec.md",
+    "line": 22,
+    "identifier": "github_issue",
+    "message": "frontmatter 'github_issue' Value is \"null\" but should be \"integer\""
+  },
+  {
+    "ruleId": "SPEC041",
+    "severity": "error",
+    "file": "epics/0001-epic/F20-feature/0001-06-item.md",
+    "line": 4,
+    "identifier": "0001-06",
+    "message": "'0001-06' is declared in frontmatter spikes but its type is 'task', not 'spike'"
+  },
+  {
+    "ruleId": "SPEC043",
+    "severity": "error",
+    "file": "epics/0001-epic/F21-feature/0001-03-item.md",
+    "line": 2,
+    "identifier": "0001-02",
+    "message": "frontmatter id '0001-02' does not match the file name prefix '0001-03'"
+  },
+  {
+    "ruleId": "SPEC044",
+    "severity": "error",
+    "file": "epics/0001-epic/F22-feature/0001-04-item.md",
+    "line": 2,
+    "identifier": "0001-04",
+    "message": "epic 0001's item sequence skips 03 - tasks are numbered per epic, contiguously from 01"
+  },
+  {
+    "ruleId": "SPEC043",
+    "severity": "error",
+    "file": "epics/0001-epic/F22-feature/0001-04-item.md",
+    "line": 3,
+    "identifier": "0001-04",
+    "message": "frontmatter parent '0001-F99' does not match the Feature it sits in ('0001-F22')"
+  },
+  {
+    "ruleId": "SPEC044",
+    "severity": "error",
+    "file": "epics/0001-epic/F24-feature/0001-07-item.md",
+    "line": 2,
+    "identifier": "0001-07",
+    "message": "item id '0001-07' is already used by epics/0001-epic/F23-feature/0001-07-item.md - ids are never reused"
+  },
+  {
+    "ruleId": "SPEC050",
+    "severity": "error",
+    "file": "epics/0001-epic/F25-feature/spec.md",
+    "line": 17,
+    "identifier": "0001-F99",
+    "message": "frontmatter depends_on names '0001-F99', which is not a discovered Feature"
+  },
+  {
+    "ruleId": "SPEC051",
+    "severity": "error",
+    "file": "epics/0001-epic/F26-feature/spec.md",
+    "line": 18,
+    "identifier": "0001-F2",
+    "message": "'0001-F26' declares blocks '0001-F2', but '0001-F2' does not declare depends_on '0001-F26'"
+  },
+  {
+    "ruleId": "SPEC052",
+    "severity": "error",
+    "file": "epics/0001-epic/F27-feature/spec.md",
+    "line": 17,
+    "identifier": "0001-F27",
+    "message": "frontmatter depends_on names this Feature itself"
+  },
+  {
+    "ruleId": "SPEC052",
+    "severity": "error",
+    "file": "epics/0001-epic/F27-feature/spec.md",
+    "line": 17,
+    "identifier": "0001-F27",
+    "message": "dependency cycle: 0001-F27 -> 0001-F27"
+  },
+  {
+    "ruleId": "SPEC052",
+    "severity": "error",
+    "file": "epics/0001-epic/F28-feature/spec.md",
+    "line": 17,
+    "identifier": "0001-F28",
+    "message": "dependency cycle: 0001-F28 -> 0001-F29 -> 0001-F28"
+  },
+  {
+    "ruleId": "SPEC052",
+    "severity": "error",
+    "file": "epics/0001-epic/F29-feature/spec.md",
+    "line": 17,
+    "identifier": "0001-F29",
+    "message": "dependency cycle: 0001-F29 -> 0001-F28 -> 0001-F29"
+  },
+  {
+    "ruleId": "SPEC003",
+    "severity": "error",
+    "file": "epics/0001-epic/F3-feature/0001-01-item.md",
+    "line": 1,
+    "identifier": null,
+    "message": "frontmatter Some properties did not match the required schema: [\"status\"]"
+  },
+  {
+    "ruleId": "SPEC003",
+    "severity": "error",
+    "file": "epics/0001-epic/F3-feature/0001-01-item.md",
+    "line": 5,
+    "identifier": "status",
+    "message": "frontmatter 'status' Value should match one of the values specified by the enum"
+  },
+  {
+    "ruleId": "SPEC060",
+    "severity": "error",
+    "file": "epics/0001-epic/F30-feature/spec.md",
+    "line": 72,
+    "identifier": "B-001",
+    "message": "spec_status is 'approved' while § 9 still carries a 'Missing' cell"
+  },
+  {
+    "ruleId": "SPEC061",
+    "severity": "error",
+    "file": "epics/0001-epic/F31-feature/spec.md",
+    "line": 86,
+    "identifier": "1-5",
+    "message": "spec_status is 'approved' while § 12 carries a row that is not approved"
+  },
+  {
+    "ruleId": "SPEC010",
+    "severity": "error",
+    "file": "epics/0001-epic/F4-feature/spec.md",
+    "line": 0,
+    "identifier": "8. Testing Strategy",
+    "message": "missing section '## 8. Testing Strategy' - the contracted sections are in .spec/schema/spec-structure.schema.json"
+  },
+  {
+    "ruleId": "SPEC012",
+    "severity": "error",
+    "file": "epics/0001-epic/F40-feature/spec.md",
+    "line": 2,
+    "identifier": "0001-F40",
+    "message": "'0001-F40' is specified in 2 places (epics/0001-epic/F40-feature/spec.md, src/moved-without-removing/.spec/README.md) - a migration removes the old tree in the same change"
+  },
+  {
+    "ruleId": "SPEC011",
+    "severity": "error",
+    "file": "epics/0001-epic/F41-feature/spec.md",
+    "line": 3,
+    "identifier": "0003-F41",
+    "message": "frontmatter epic '0003' does not match the containing directory '0001-epic'"
+  },
+  {
+    "ruleId": "SPEC011",
+    "severity": "error",
+    "file": "epics/0001-epic/F42-feature/spec.md",
+    "line": 2,
+    "identifier": "0001-F420",
+    "message": "frontmatter id 'F420' does not match the containing directory 'F42-feature'"
+  },
+  {
+    "ruleId": "SPEC010",
+    "severity": "error",
+    "file": "epics/0001-epic/F5-feature/spec.md",
+    "line": 0,
+    "identifier": "7. Technical Design",
+    "message": "section '## 7. Technical Design' appears 2 times - each contracted section appears exactly once"
+  },
+  {
+    "ruleId": "SPEC010",
+    "severity": "error",
+    "file": "epics/0001-epic/F6-feature/spec.md",
+    "line": 56,
+    "identifier": "7. Technical Design",
+    "message": "section '## 7. Technical Design' is out of order - '## 6. Concern Separation' is expected at this position"
+  },
+  {
+    "ruleId": "SPEC031",
+    "severity": "error",
+    "file": "epics/0001-epic/F7-feature/spec.md",
+    "line": 42,
+    "identifier": "B-001",
+    "message": "claim 'B-001' has no row in § 9 - every § 3 claim appears there exactly once, with 'Missing' as its test until one exists"
+  },
+  {
+    "ruleId": "SPEC013",
+    "severity": "error",
+    "file": "epics/0001-epic/F7-feature/spec.md",
+    "line": 68,
+    "identifier": "9. Traceability Matrix",
+    "message": "section '## 9. Traceability Matrix' carries no table - expected a table with headers Claim ID | Scenario | Test | Status"
+  },
+  {
+    "ruleId": "SPEC013",
+    "severity": "error",
+    "file": "epics/0001-epic/F8-feature/spec.md",
+    "line": 68,
+    "identifier": "9. Traceability Matrix",
+    "message": "section '## 9. Traceability Matrix' has headers Claim ID | Scenario | Test - expected Claim ID | Scenario | Test | Status"
+  },
+  {
+    "ruleId": "SPEC020",
+    "severity": "error",
+    "file": "epics/0001-epic/F9-feature/spec.md",
+    "line": 0,
+    "identifier": "0001-F9",
+    "message": "found 0 '.feature' files beside this specification - expected exactly one companion"
+  },
+  {
+    "ruleId": "SPEC004",
+    "severity": "error",
+    "file": "epics/0001-epic/epic.md",
+    "line": 1,
+    "identifier": null,
+    "message": "frontmatter Some properties did not match the required schema: [\"priority\"]"
+  },
+  {
+    "ruleId": "SPEC004",
+    "severity": "error",
+    "file": "epics/0001-epic/epic.md",
+    "line": 5,
+    "identifier": "priority",
+    "message": "frontmatter 'priority' Value should match one of the values specified by the enum"
+  },
+  {
+    "ruleId": "SPEC061",
+    "severity": "error",
+    "file": "src/approved-in-draft/.spec/README.md",
+    "line": 86,
+    "identifier": "1-5",
+    "message": "spec_status is 'approved' while § 12 carries a row that is not approved"
+  },
+  {
+    "ruleId": "SPEC060",
+    "severity": "error",
+    "file": "src/approved-with-missing/.spec/README.md",
+    "line": 72,
+    "identifier": "B-001",
+    "message": "spec_status is 'approved' while § 9 still carries a 'Missing' cell"
+  },
+  {
+    "ruleId": "SPEC051",
+    "severity": "error",
+    "file": "src/blocks-one-sided/.spec/README.md",
+    "line": 18,
+    "identifier": "0002-F2",
+    "message": "'0002-F26' declares blocks '0002-F2', but '0002-F2' does not declare depends_on '0002-F26'"
+  },
+  {
+    "ruleId": "SPEC044",
+    "severity": "error",
+    "file": "src/child-in-two-files/.spec/0002-05-second.md",
+    "line": 2,
+    "identifier": "0002-05",
+    "message": "item id '0002-05' is already used by src/child-in-two-files/.spec/0002-05-first.md - ids are never reused"
+  },
+  {
+    "ruleId": "SPEC040",
+    "severity": "error",
+    "file": "src/child-in-two-files/.spec/README.md",
+    "line": 16,
+    "identifier": "0002-05",
+    "message": "frontmatter children names '0002-05', which resolves to 2 files"
+  },
+  {
+    "ruleId": "SPEC040",
+    "severity": "error",
+    "file": "src/child-without-file/.spec/README.md",
+    "line": 16,
+    "identifier": "0002-97",
+    "message": "frontmatter children names '0002-97', but no '0002-97-*.md' was discovered"
+  },
+  {
+    "ruleId": "SPEC030",
+    "severity": "error",
+    "file": "src/claim-id-grammar/.spec/README.md",
+    "line": 43,
+    "identifier": "B-1",
+    "message": "claim id 'B-1' does not match ^B-[0-9]{3}[a-z]?$ - claim ids are permanent, so the form is fixed"
+  },
+  {
+    "ruleId": "SPEC030",
+    "severity": "error",
+    "file": "src/claim-twice/.spec/README.md",
+    "line": 43,
+    "identifier": "B-001",
+    "message": "claim 'B-001' is declared twice in § 3 (also at line 42)"
+  },
+  {
+    "ruleId": "SPEC031",
+    "severity": "error",
+    "file": "src/claim-with-two-rows/.spec/README.md",
+    "line": 73,
+    "identifier": "B-001",
+    "message": "claim 'B-001' has 2 rows in § 9 - expected exactly one"
+  },
+  {
+    "ruleId": "SPEC031",
+    "severity": "error",
+    "file": "src/claim-without-row/.spec/README.md",
+    "line": 43,
+    "identifier": "B-002",
+    "message": "claim 'B-002' has no row in § 9 - every § 3 claim appears there exactly once, with 'Missing' as its test until one exists"
+  },
+  {
+    "ruleId": "SPEC052",
+    "severity": "error",
+    "file": "src/cycle-first/.spec/README.md",
+    "line": 17,
+    "identifier": "0002-F28",
+    "message": "dependency cycle: 0002-F28 -> 0002-F29 -> 0002-F28"
+  },
+  {
+    "ruleId": "SPEC052",
+    "severity": "error",
+    "file": "src/cycle-second/.spec/README.md",
+    "line": 17,
+    "identifier": "0002-F29",
+    "message": "dependency cycle: 0002-F29 -> 0002-F28 -> 0002-F29"
+  },
+  {
+    "ruleId": "SPEC052",
+    "severity": "error",
+    "file": "src/depends-on-itself/.spec/README.md",
+    "line": 17,
+    "identifier": "0002-F27",
+    "message": "frontmatter depends_on names this Feature itself"
+  },
+  {
+    "ruleId": "SPEC052",
+    "severity": "error",
+    "file": "src/depends-on-itself/.spec/README.md",
+    "line": 17,
+    "identifier": "0002-F27",
+    "message": "dependency cycle: 0002-F27 -> 0002-F27"
+  },
+  {
+    "ruleId": "SPEC050",
+    "severity": "error",
+    "file": "src/depends-on-nothing/.spec/README.md",
+    "line": 17,
+    "identifier": "0002-F99",
+    "message": "frontmatter depends_on names '0002-F99', which is not a discovered Feature"
+  },
+  {
+    "ruleId": "SPEC043",
+    "severity": "error",
+    "file": "src/item-id-not-its-file/.spec/0002-03-item.md",
+    "line": 2,
+    "identifier": "0002-02",
+    "message": "frontmatter id '0002-02' does not match the file name prefix '0002-03'"
+  },
+  {
+    "ruleId": "SPEC044",
+    "severity": "error",
+    "file": "src/item-id-reused-second/.spec/0002-07-item.md",
+    "line": 2,
+    "identifier": "0002-07",
+    "message": "item id '0002-07' is already used by src/item-id-reused-first/.spec/0002-07-item.md - ids are never reused"
+  },
+  {
+    "ruleId": "SPEC044",
+    "severity": "error",
+    "file": "src/item-parent-elsewhere/.spec/0002-04-item.md",
+    "line": 2,
+    "identifier": "0002-04",
+    "message": "epic 0002's item sequence skips 03 - tasks are numbered per epic, contiguously from 01"
+  },
+  {
+    "ruleId": "SPEC043",
+    "severity": "error",
+    "file": "src/item-parent-elsewhere/.spec/0002-04-item.md",
+    "line": 3,
+    "identifier": "0002-04",
+    "message": "frontmatter parent '0002-F99' does not match the Feature it sits in ('0002-F22')"
+  },
+  {
+    "ruleId": "SPEC003",
+    "severity": "error",
+    "file": "src/item-status-outside-enum/.spec/0002-01-item.md",
+    "line": 1,
+    "identifier": null,
+    "message": "frontmatter Some properties did not match the required schema: [\"status\"]"
+  },
+  {
+    "ruleId": "SPEC003",
+    "severity": "error",
+    "file": "src/item-status-outside-enum/.spec/0002-01-item.md",
+    "line": 5,
+    "identifier": "status",
+    "message": "frontmatter 'status' Value should match one of the values specified by the enum"
+  },
+  {
+    "ruleId": "SPEC031",
+    "severity": "error",
+    "file": "src/matrix-without-table/.spec/README.md",
+    "line": 42,
+    "identifier": "B-001",
+    "message": "claim 'B-001' has no row in § 9 - every § 3 claim appears there exactly once, with 'Missing' as its test until one exists"
+  },
+  {
+    "ruleId": "SPEC013",
+    "severity": "error",
+    "file": "src/matrix-without-table/.spec/README.md",
+    "line": 68,
+    "identifier": "9. Traceability Matrix",
+    "message": "section '## 9. Traceability Matrix' carries no table - expected a table with headers Claim ID | Scenario | Test | Status"
+  },
+  {
+    "ruleId": "SPEC013",
+    "severity": "error",
+    "file": "src/matrix-wrong-headers/.spec/README.md",
+    "line": 68,
+    "identifier": "9. Traceability Matrix",
+    "message": "section '## 9. Traceability Matrix' has headers Claim ID | Scenario | Test - expected Claim ID | Scenario | Test | Status"
+  },
+  {
+    "ruleId": "SPEC012",
+    "severity": "error",
+    "file": "src/moved-without-removing/.spec/README.md",
+    "line": 2,
+    "identifier": "0001-F40",
+    "message": "'0001-F40' is specified in 2 places (epics/0001-epic/F40-feature/spec.md, src/moved-without-removing/.spec/README.md) - a migration removes the old tree in the same change"
+  },
+  {
+    "ruleId": "SPEC020",
+    "severity": "error",
+    "file": "src/no-feature-file/.spec/README.md",
+    "line": 0,
+    "identifier": "0002-F9",
+    "message": "found 0 '.feature' files beside this specification - expected exactly one companion"
+  },
+  {
+    "ruleId": "SPEC001",
+    "severity": "error",
+    "file": "src/no-frontmatter/.spec/README.md",
+    "line": 1,
+    "identifier": null,
+    "message": "no YAML frontmatter - every tracked specification artifact opens with a '---' delimited mapping"
+  },
+  {
+    "ruleId": "SPEC031",
+    "severity": "error",
+    "file": "src/row-without-claim/.spec/README.md",
+    "line": 73,
+    "identifier": "B-999",
+    "message": "§ 9 cites 'B-999', which is not a claim in § 3 - a withdrawn claim is marked Withdrawn, not deleted"
+  },
+  {
+    "ruleId": "SPEC010",
+    "severity": "error",
+    "file": "src/section-missing/.spec/README.md",
+    "line": 0,
+    "identifier": "8. Testing Strategy",
+    "message": "missing section '## 8. Testing Strategy' - the contracted sections are in .spec/schema/spec-structure.schema.json"
+  },
+  {
+    "ruleId": "SPEC010",
+    "severity": "error",
+    "file": "src/section-twice/.spec/README.md",
+    "line": 0,
+    "identifier": "7. Technical Design",
+    "message": "section '## 7. Technical Design' appears 2 times - each contracted section appears exactly once"
+  },
+  {
+    "ruleId": "SPEC010",
+    "severity": "error",
+    "file": "src/sections-out-of-order/.spec/README.md",
+    "line": 56,
+    "identifier": "7. Technical Design",
+    "message": "section '## 7. Technical Design' is out of order - '## 6. Concern Separation' is expected at this position"
+  },
+  {
+    "ruleId": "SPEC041",
+    "severity": "error",
+    "file": "src/spike-of-another-type/.spec/0002-06-item.md",
+    "line": 4,
+    "identifier": "0002-06",
+    "message": "'0002-06' is declared in frontmatter spikes but its type is 'task', not 'spike'"
+  },
+  {
+    "ruleId": "SPEC041",
+    "severity": "error",
+    "file": "src/spike-without-file/.spec/README.md",
+    "line": 19,
+    "identifier": "0002-98",
+    "message": "frontmatter spikes names '0002-98', but no '0002-98-*.md' was discovered"
+  },
+  {
+    "ruleId": "SPEC002",
+    "severity": "error",
+    "file": "src/status-outside-enum/.spec/README.md",
+    "line": 1,
+    "identifier": null,
+    "message": "frontmatter Some properties did not match the required schema: [\"spec_status\"]"
+  },
+  {
+    "ruleId": "SPEC002",
+    "severity": "error",
+    "file": "src/status-outside-enum/.spec/README.md",
+    "line": 1,
+    "identifier": null,
+    "message": "frontmatter Some properties did not match the required schema: [\"github_issue\"]"
+  },
+  {
+    "ruleId": "SPEC002",
+    "severity": "error",
+    "file": "src/status-outside-enum/.spec/README.md",
+    "line": 5,
+    "identifier": "spec_status",
+    "message": "frontmatter 'spec_status' Value should match one of the values specified by the enum"
+  },
+  {
+    "ruleId": "SPEC002",
+    "severity": "error",
+    "file": "src/status-outside-enum/.spec/README.md",
+    "line": 22,
+    "identifier": "github_issue",
+    "message": "frontmatter 'github_issue' Value is \"null\" but should be \"integer\""
+  },
+  {
+    "ruleId": "SPEC021",
+    "severity": "error",
+    "file": "src/tag-without-claim/.spec/feature.feature",
+    "line": 7,
+    "identifier": "B-002",
+    "message": "scenario tag '@B-002' does not resolve to a claim in § 3 of src/tag-without-claim/.spec/README.md"
+  },
+  {
+    "ruleId": "SPEC020",
+    "severity": "error",
+    "file": "src/two-feature-files/.spec/README.md",
+    "line": 0,
+    "identifier": "0002-F10",
+    "message": "found 2 '.feature' files beside this specification - expected exactly one companion"
+  }
+]

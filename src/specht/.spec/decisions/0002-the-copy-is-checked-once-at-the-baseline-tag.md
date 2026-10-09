@@ -27,7 +27,9 @@ type: decision
    step 3 (drop `generatedAtUtc`, add `expected`).
 4. **The tag is `baseline/hooked-6afe8ab`** (added 2026-10-08), on the commit
    that lands the copy on `main` - item 0021's merge commit, not a branch
-   commit a squash merge discards. Item 0022 places it.
+   commit a squash merge discards. Item 0022 places it. (2026-10-08: no tag
+   is placed - decision 0004. That commit is `e7dba24`, and C-2 and C-9 cite
+   it; read "the baseline tag" above as commit `e7dba24`.)
 
 ## Why
 
@@ -53,4 +55,7 @@ type: decision
 
 ## Reversal
 
-None.
+2026-10-08, the owner (decision 0004): item 4 is redirected. No git tag is
+placed; the start of C-9 and the commit C-2's diff is recorded against are
+cited as commit `e7dba24`, item 0021's merge commit on `main`. Items 1 to 3
+stand.

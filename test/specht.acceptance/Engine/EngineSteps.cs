@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -7,28 +8,65 @@ using System.Reflection.PortableExecutable;
 using AwesomeAssertions;
 using Reqnroll;
 using specht;
+using specht.tests;
 
 namespace specht.acceptance.Engine;
 
 /// <summary>
-/// Steps for <c>src/specht/.spec/engine.feature</c> (0001-F1). B-005 reads the built library itself: its assembly name,
+/// Steps for <c>src/specht/.spec/engine.feature</c> (0001-F1). The Background is a <see cref="SpecTree"/> holding the live
+/// version 1 schema set (A-3). B-004 builds the baseline tree on it and holds the engine to the golden report; B-010 reads
+/// the one violation a missing traceability row gives. B-005 reads the built library itself: its assembly name,
 /// and the namespace of every type it declares, which is where a root namespace shows once compiled. It reads the file
 /// <c>src/specht</c> builds, from its metadata, and never the loaded assembly: a coverage run instruments the copy the
 /// test process loads (0055-F3 B-001) and adds a type of its own to it.
 /// </summary>
 [Binding]
+[Scope(Feature = "The engine, extracted unchanged")]
 public sealed class EngineSteps
 {
-    // A synthetic root under the temp folder, holding this repository's live version 1 schema set (A-3).
     [Given("a repository root holding a manifest and the three frontmatter schemas of schema version {int}")]
     public void GivenARepositoryRootHoldingAManifestAndTheThreeFrontmatterSchemasOfSchemaVersion(int version)
     {
         version.Should().Be(1);
-        var schema = Directory.CreateDirectory(Path.Combine(_root, ".spec", "schema"));
-        foreach (var file in Directory.GetFiles(Path.Combine(FindRepository(AppContext.BaseDirectory), ".spec", "schema"), "*.json"))
-        {
-            File.Copy(file, Path.Combine(schema.FullName, Path.GetFileName(file)));
-        }
+        _tree = new SpecTree();
+    }
+
+    [Given("the baseline tree the tests build, which breaks each of the twenty-one version 1 rules in each layout the rule applies to")]
+    public void GivenTheBaselineTree() => BaselineTree.Write(Tree);
+
+    [Given("the golden report the engine gave on that tree at the commit the copy landed on main")]
+    public void GivenTheGoldenReport() => _golden = GoldenReport.Read();
+
+    [Given("the root holds a specification whose claim {word} has no traceability row")]
+    public void GivenTheRootHoldsASpecificationWhoseClaimHasNoTraceabilityRow(string claim) =>
+        Tree.WriteFeature(
+            "0001",
+            "F1",
+            sections: SpecTree.SectionsWith(
+                "3. Acceptance Criteria",
+                "## 3. Acceptance Criteria\n\n| ID | Claim | Source | Status |\n| -- | ----- | ------ | ------ |\n"
+                    + $"| B-001 | It does the thing. | brd | Active |\n| {claim} | It does another. | brd | Active |\n"));
+
+    [When("the engine runs")]
+    [When("the engine runs on that tree")]
+    public void WhenTheEngineRuns() => _report = Tree.Run();
+
+    [Then("it reports the same violations as the golden report, with the same rule, severity, file, line, identifier and message")]
+    public void ThenItReportsTheSameViolationsAsTheGoldenReport() => GoldenReport.Of(Report).Should().BeEquivalentTo(Golden);
+
+    [Then("in the same order")]
+    public void ThenInTheSameOrder() => GoldenReport.Of(Report).Should().Equal(Golden);
+
+    [Then("the violation carries a rule id, a severity, a file, a line, an identifier and a message")]
+    public void ThenTheViolationCarriesTheSixFields()
+    {
+        var violation = Report.Violations.Should().ContainSingle().Subject;
+        violation.RuleId.Should().NotBeNullOrWhiteSpace();
+        violation.Severity.Should().BeDefined();
+        violation.File.Should().NotBeNullOrWhiteSpace();
+        violation.Line.Should().BePositive();
+        violation.Identifier.Should().NotBeNullOrWhiteSpace();
+        violation.Message.Should().NotBeNullOrWhiteSpace();
     }
 
     [Given("the library is built")]
@@ -78,13 +116,13 @@ public sealed class EngineSteps
     }
 
     [AfterScenario]
-    public void DeleteRoot()
-    {
-        if (Directory.Exists(_root))
-        {
-            Directory.Delete(_root, recursive: true);
-        }
-    }
+    public void DeleteRoot() => _tree?.Dispose();
+
+    private SpecTree Tree => _tree ?? throw new InvalidOperationException("No repository root was prepared.");
+
+    private SpecCheckReport Report => _report ?? throw new InvalidOperationException("The engine has not run.");
+
+    private IReadOnlyList<GoldenReport.Verdict> Golden => _golden ?? throw new InvalidOperationException("No golden report was read.");
 
     private string Library => _library ?? throw new InvalidOperationException("No library was built.");
 
@@ -125,7 +163,9 @@ public sealed class EngineSteps
             : FindRepository(Path.GetDirectoryName(directory.TrimEnd(Path.DirectorySeparatorChar))
                 ?? throw new InvalidOperationException("No repository root above the test assembly."));
 
-    private readonly string _root = Path.Combine(Path.GetTempPath(), "specht-engine", Guid.NewGuid().ToString("N"));
+    private SpecTree? _tree;
+    private SpecCheckReport? _report;
+    private IReadOnlyList<GoldenReport.Verdict>? _golden;
     private string? _library;
     private string? _assemblyName;
     private string[] _namespaces = [];
