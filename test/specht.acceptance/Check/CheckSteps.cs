@@ -1,25 +1,21 @@
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using AwesomeAssertions;
-using Microsoft.Extensions.DependencyInjection;
 using Reqnroll;
 using specht.tests;
 using specht.tool;
 using specht.tool.Features.Check;
-using Spectre.Console.Cli.Testing;
-using Spectre.Console.Testing;
 
 namespace specht.acceptance.Check;
 
 /// <summary>
-/// Steps for <c>src/specht.tool/Features/Check/.spec/check.feature</c> (0001-F2). A run goes through Spectre's command
-/// tester over a synthetic tree (C-7); the one run from inside the root launches the built tool, because the working
-/// directory is the process's. Scoped to the feature: <c>engine.feature</c> words some of its steps the same way, and its
-/// steps are 0001-F1's to bind.
+/// Steps for <c>src/specht.tool/Features/Check/.spec/check.feature</c> (0001-F2). A run launches the built tool over a
+/// synthetic tree, so a scenario sees the process's stdout, stderr and exit code as a shell does: stderr is not captured
+/// by Spectre's command tester, which the integration tier uses (C-7). Scoped to the feature: <c>engine.feature</c> words
+/// some of its steps the same way, and its steps are 0001-F1's to bind.
 /// </summary>
 [Binding]
 [Scope(Feature = "The check command")]
@@ -52,48 +48,38 @@ public sealed partial class CheckSteps
     public void GivenTheRootIsADeeplyNestedDirectoryOnThisMachine() =>
         _nested = Path.Combine(Path.GetTempPath(), "specht-check", Guid.NewGuid().ToString("N"), "a", "b", "c", "d", "e", "f");
 
+    [Given("a root path that does not exist")]
+    public void GivenARootPathThatDoesNotExist() => _typed = "no-such-root";
+
+    [Given("a root directory with no manifest at the manifest path")]
+    public void GivenARootDirectoryWithNoManifestAtTheManifestPath()
+    {
+        File.Delete(Path.Combine(Tree.Root, SpecManifest.RelativePath));
+        _typed = ".";
+    }
+
+    [Given("the root's manifest is not well-formed JSON")]
+    public void GivenTheRootsManifestIsNotWellFormedJson() => Tree.WriteRaw(SpecManifest.RelativePath, "{ \"sections\": ");
+
     [When("the check runs")]
     [When("the check runs without asking for the JSON document")]
-    public void WhenTheCheckRuns()
-    {
-        var services = new ServiceCollection();
-        services.AddSingleton<Func<string, SpecCheckReport>>(SpecCheckRunner.Run);
+    public void WhenTheCheckRuns() => Launch(Tree.Root, "--root", ".");
 
-        var app = new CommandAppTester(new TypeRegistrar(services), console: new TestConsole().Width(80));
-        app.SetDefaultCommand<CheckCommand>();
-
-        var result = app.Run("--root", Tree.Root);
-        _stdout = result.Output;
-        _exitCode = result.ExitCode;
-        _expected = Tree.Run().Violations.Select(static violation => violation.ToString()).ToArray();
-    }
+    [When("the check runs against it")]
+    public void WhenTheCheckRunsAgainstIt() => Launch(Tree.Root, "--root", _typed ?? throw new InvalidOperationException("No root was typed."));
 
     [When("the check runs from inside the root without naming it")]
     public void WhenTheCheckRunsFromInsideTheRootWithoutNamingIt()
     {
         Copy(Tree.Root, Nested);
-
-        var start = new ProcessStartInfo("dotnet")
-        {
-            WorkingDirectory = Nested,
-            RedirectStandardOutput = true,
-            RedirectStandardError = true,
-        };
-        start.ArgumentList.Add(typeof(CheckCommand).Assembly.Location);
-
-        using var process = Process.Start(start) ?? throw new InvalidOperationException("dotnet did not start.");
-        var stdout = process.StandardOutput.ReadToEndAsync();
-        _stderr = process.StandardError.ReadToEnd();
-        _stdout = stdout.GetAwaiter().GetResult();
-        process.WaitForExit();
-        _exitCode = process.ExitCode;
+        Launch(Nested);
     }
 
     [Then("the standard output carries one line per violation")]
     public void ThenTheStandardOutputCarriesOneLinePerViolation()
     {
-        _expected.Should().NotBeEmpty();
-        Lines(_stdout).Should().Equal(_expected);
+        Expected.Should().NotBeEmpty();
+        Lines(_stdout).Should().Equal(Expected);
     }
 
     [Then("each line names the file, the line, the severity, the rule id and the message in the build's diagnostic form")]
@@ -106,15 +92,28 @@ public sealed partial class CheckSteps
         });
 
     [Then("the exit code is {int}")]
-    public void ThenTheExitCodeIs(int code) => _exitCode.Should().Be(code);
+    public void ThenTheExitCodeIs(int code) => _exitCode.Should().Be(code, _stderr);
 
     [Then("the standard output holds the violation lines and the summary and nothing else")]
     public void ThenTheStandardOutputHoldsTheViolationLinesAndTheSummaryAndNothingElse() =>
-        Lines(_stdout).Should().Equal(_expected);
+        Lines(_stdout).Should().Equal(Expected);
 
     [Then("nothing about the tool itself appears on the standard output")]
     public void ThenNothingAboutTheToolItselfAppearsOnTheStandardOutput() =>
         Lines(_stdout).Should().AllSatisfy(static line => Diagnostic().IsMatch(line).Should().BeTrue(line));
+
+    [Then("the standard error names that path as it was typed")]
+    public void ThenTheStandardErrorNamesThatPathAsItWasTyped() => _stderr.Should().Contain(_typed);
+
+    [Then("the standard error names the manifest path")]
+    public void ThenTheStandardErrorNamesTheManifestPath() => _stderr.Should().Contain(SpecManifest.RelativePath);
+
+    [Then("the standard error names the manifest path relative to the root")]
+    public void ThenTheStandardErrorNamesTheManifestPathRelativeToTheRoot() =>
+        _stderr.Should().Contain(SpecManifest.RelativePath).And.NotContain(Tree.Root);
+
+    [Then("the standard output is empty")]
+    public void ThenTheStandardOutputIsEmpty() => _stdout.Should().BeEmpty();
 
     [Then("every path on the standard output is relative to the root")]
     public void ThenEveryPathOnTheStandardOutputIsRelativeToTheRoot()
@@ -156,6 +155,8 @@ public sealed partial class CheckSteps
 
     private string Nested => _nested ?? throw new InvalidOperationException("No nested root was named.");
 
+    private string[] Expected => Tree.Run().Violations.Select(static violation => violation.ToString()).ToArray();
+
     [GeneratedRegex(@"^(?<file>[^\s(:][^(:]*)(\((?<line>\d+)\))?: (?<severity>error|warning) (?<rule>SPEC\d{3}): \S.*$")]
     private static partial Regex Diagnostic();
 
@@ -176,14 +177,36 @@ public sealed partial class CheckSteps
         }
     }
 
+    private void Launch(string workingDirectory, params string[] args)
+    {
+        var start = new ProcessStartInfo("dotnet")
+        {
+            WorkingDirectory = workingDirectory,
+            RedirectStandardOutput = true,
+            RedirectStandardError = true,
+        };
+        start.ArgumentList.Add(typeof(CheckCommand).Assembly.Location);
+        foreach (var arg in args)
+        {
+            start.ArgumentList.Add(arg);
+        }
+
+        using var process = Process.Start(start) ?? throw new InvalidOperationException("dotnet did not start.");
+        var stdout = process.StandardOutput.ReadToEndAsync();
+        _stderr = process.StandardError.ReadToEnd();
+        _stdout = stdout.GetAwaiter().GetResult();
+        process.WaitForExit();
+        _exitCode = process.ExitCode;
+    }
+
     private const string TwoClaims =
         "## 3. Acceptance Criteria\n\n| ID | Claim | Source | Status |\n| -- | ----- | ------ | ------ |\n"
             + "| B-001 | It does the thing. | brd | Active |\n| B-002 | It does another thing. | brd | Active |\n";
 
     private SpecTree? _tree;
     private string? _nested;
+    private string? _typed;
     private string _stdout = string.Empty;
     private string _stderr = string.Empty;
-    private string[] _expected = [];
     private int _exitCode = -1;
 }

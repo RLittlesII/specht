@@ -48,6 +48,9 @@ public sealed class SpecSchemas
     /// <c>$id</c>, so a second load in one process - two roots in one test
     /// run, say - would throw rather than simply reading the schemas again.
     /// </remarks>
+    /// <exception cref="SpechtRootNotFoundException"><paramref name="root"/> is not a directory; no frontmatter schema is read.</exception>
+    /// <exception cref="SpechtManifestNotFoundException">There is no manifest; no frontmatter schema is read.</exception>
+    /// <exception cref="SpechtManifestUnreadableException">The manifest does not parse; no frontmatter schema is read.</exception>
     /// <exception cref="SpechtManifestException">The manifest is rejected; no frontmatter schema is read.</exception>
     public static SpecSchemas Load(IFileSystem fileSystem, string root)
     {
