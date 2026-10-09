@@ -4,6 +4,7 @@
   "timezone": "America/Chicago",
   "schedule": ["before 6am on monday"],
   "labels": ["dependencies"],
+  "dependencyDashboard": false,
   "nuget": {
     "enabled": true
   },
@@ -15,11 +16,6 @@
       "matchManagers": ["nuget"],
       "groupName": "NuGet dependencies",
       "matchUpdateTypes": ["minor", "patch"]
-    },
-    {
-      "matchManagers": ["nuget"],
-      "matchUpdateTypes": ["major"],
-      "dependencyDashboardApproval": true
     }
   ]
 }
