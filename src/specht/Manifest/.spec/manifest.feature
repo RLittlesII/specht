@@ -182,3 +182,101 @@ Feature: The manifest carries the roles
     When the tool runs as a command on the root
     Then the standard error carries the rejection, naming that key
     And the standard output is empty
+
+  @B-024
+  Scenario: With epics, identity is the epic and the id
+    Given the manifest declares the epic grammar
+    And the root holds a specification declaring epic "0001" and id "F2"
+    When the check runs
+    Then the specification is read as "0001-F2"
+
+  @B-025
+  Scenario: Without epics, identity is the id alone
+    Given the manifest declares no epic grammar
+    And the root holds a specification declaring id "F2" and no epic
+    When the check runs
+    Then the specification is read as "F2"
+
+  @B-025 @boundary
+  Scenario: Without epics, the folder a specification sits in gives it no epic
+    Given the manifest declares no epic grammar
+    And the root holds a specification declaring id "F2" and no epic, in a folder named "0001-epic"
+    When the check runs
+    Then the specification is read as "F2"
+
+  @B-026
+  Scenario: Without epics, a repeated id is a duplicate identity
+    Given the manifest declares no epic grammar
+    And the root holds two specifications in different folders, both declaring id "F2" and no epic
+    When the check runs
+    Then the duplicate-identity rule reports "F2" once on each specification
+    And each report names both paths
+
+  @B-027
+  Scenario: Without epics, no specification is left out of the identity and edge checks
+    Given the manifest declares no epic grammar
+    And the root holds a specification declaring id "F2" and no epic, which depends on "F9"
+    And no specification declares id "F9"
+    When the check runs
+    Then the unresolved-dependency rule reports "F9" on that specification
+
+  @B-028
+  Scenario: Without epics, a local edge resolves by id
+    Given the manifest declares no epic grammar
+    And the root holds a specification "F1" that depends on "F2"
+    And a specification "F2" that lists "F1" as blocked by it
+    When the check runs
+    Then no dependency violation is reported
+
+  @B-029 @boundary
+  Scenario: Without epics, a qualified edge names no Feature
+    Given the manifest declares no epic grammar
+    And the root holds a specification "F1" that depends on "0002/F2"
+    And a specification "F2" that lists "F1" as blocked by it
+    When the check runs
+    Then the unresolved-dependency rule reports "0002/F2" on specification "F1"
+
+  @B-030
+  Scenario: Without epics, an item's parent is its Feature's id
+    Given the manifest declares no epic grammar
+    And the root holds a specification "F2" with an item beside it whose parent is "F2"
+    When the check runs
+    Then no item-parent violation is reported
+
+  @B-031
+  Scenario: With epics, a bare parent is reported
+    Given the manifest declares the epic grammar
+    And the root holds a specification declaring epic "0001" and id "F2", with an item beside it whose parent is "F2"
+    When the check runs
+    Then the item-parent rule reports that item
+
+  @B-032
+  Scenario: Without epics, items are numbered per Feature
+    Given the manifest declares no epic grammar
+    And the manifest's task grammar carries no epic part
+    And the root holds specifications "F1" and "F2", each with its own items numbered 01 and 02
+    When the check runs
+    Then no item-sequence violation is reported
+
+  @B-033
+  Scenario: Without epics, no epic schema file is needed
+    Given the frontmatter schemas are read from the root
+    And the manifest declares no epic grammar
+    And the root holds no epic frontmatter schema
+    When the check runs
+    Then the root is checked
+    And nothing is reported about a missing schema
+
+  @B-034
+  Scenario: Without epics, epic files are not checked
+    Given the manifest declares no epic grammar
+    And the root holds an epic file whose frontmatter would fail the epic schema
+    When the check runs
+    Then the epic-frontmatter rule reports nothing
+
+  @B-035
+  Scenario: With epics, a missing epic is reported
+    Given the manifest declares the epic grammar
+    And the root holds a co-located specification declaring id "F2" and no epic
+    When the check runs
+    Then a missing-epic violation is reported on that specification

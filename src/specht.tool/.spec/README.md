@@ -20,7 +20,7 @@ depends_on: ["F3", "F4", "F5"]
 blocks: ["0101/F1", "0101/F2", "0101/F3", "0101/F4", "0101/F5"]
 spikes: []
 created: "2026-10-07"
-updated: "2026-10-08"
+updated: "2026-10-09"
 github_issue: null
 synced_at: null
 ---
@@ -35,7 +35,7 @@ A repository's `.spec/schema/` is a copy of `hooked`'s from one day, and nothing
 
 ## 2. User Needs
 
-<!-- last written by: spec-author, 2026-10-08 -->
+<!-- last written by: spec-author, 2026-10-09 (A-2 amended, `0001-F5` decision 0003) -->
 
 | #   | Persona                                   | Need                                                                                           | Pain Point Today                                                            |
 | --- | ----------------------------------------- | ---------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------- |
@@ -48,15 +48,15 @@ A repository's `.spec/schema/` is a copy of `hooked`'s from one day, and nothing
 
 ### Assumptions
 
-| ID  | Assumption                                                                                                                                                                                                                                                                                                       |
-| --- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| A-1 | A manifest with no `schemaVersion` key is version 1, the version that predates the key. `hooked`'s manifest at the baseline commit has no key and must keep checking unchanged (Should-7).                                                                                                                       |
-| A-2 | Version 1 is the schema set the first published package embeds (decision 0002): `0001-F1` A-3's set, plus the manifest keys `0001-F5` and `0001-F6` add, plus the optional `title` and `description` keys decision 0003 adds to the epic frontmatter schema, since nothing is published before brief § 8 step 5. |
-| A-3 | "Prints what changed" is the version moved from and to and the name of every file rewritten, and no diff (OQ-3, resolved 2026-10-08).                                                                                                                                                                            |
+| ID  | Assumption                                                                                                                                                                                                                                                                                                                                                                                                      |
+| --- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| A-1 | A manifest with no `schemaVersion` key is version 1, the version that predates the key. `hooked`'s manifest at the baseline commit has no key and must keep checking unchanged (Should-7).                                                                                                                                                                                                                      |
+| A-2 | Version 1 is the schema set the first published package embeds (decision 0002): `0001-F1` A-3's set, plus the manifest keys `0001-F5` and `0001-F6` add, plus the optional `title` and `description` keys decision 0003 adds to the epic frontmatter schema, plus `0001-F5` decision 0003's loosening of a Feature's `epic` and a task's `parent` and `id`, since nothing is published before brief § 8 step 5. |
+| A-3 | "Prints what changed" is the version moved from and to and the name of every file rewritten, and no diff (OQ-3, resolved 2026-10-08).                                                                                                                                                                                                                                                                           |
 
 ## 3. Acceptance Criteria
 
-<!-- last written by: spec-author, 2026-10-08 -->
+<!-- last written by: spec-author, 2026-10-09 (B-037 and B-038 added, `0001-F5` decision 0003) -->
 
 | ID    | Claim                                                                                                                                                                                                                                                                                   | Source                                                           | Status  |
 | ----- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------- | ------- |
@@ -96,6 +96,8 @@ A repository's `.spec/schema/` is a copy of `hooked`'s from one day, and nothing
 | B-034 | Given `specht upgrade` under a manifest that records an upstream schema source, the upstream version and content hash the manifest records are unchanged.                                                                                                                               | owner, 2026-10-08; decision 0004; C-10                           | Active  |
 | B-035 | Given `specht upgrade` under a manifest that records an upstream schema source it must fetch (B-026) and a source that cannot be reached, this Feature names the source on stderr, writes nothing, and exits with code `3`.                                                             | owner, 2026-10-08; decision 0004; B-027; `0001-F2` decision 0003 | Active  |
 | B-036 | Given a manifest that records an upstream schema source and explicitly selects the embedded source, the check names the contradiction on stderr, writes nothing on stdout, and exits with code `3`.                                                                                     | owner, 2026-10-08; decision 0004; `0001-F2` decision 0003        | Active  |
+| B-037 | Given a root pinned to version 1 with the embedded source and a manifest declaring no epic grammar, a specification whose frontmatter carries no `epic` gets no frontmatter violation.                                                                                                  | `0001-F5` decision 0003; decision 0002                           | Active  |
+| B-038 | Given a root pinned to version 1 with the embedded source and a manifest declaring no epic grammar, an item whose `parent` is a bare Feature id, such as `F2`, gets no frontmatter violation.                                                                                           | `0001-F5` decision 0003; decision 0002                           | Active  |
 
 ## 4. Constraints
 
@@ -116,7 +118,7 @@ A repository's `.spec/schema/` is a copy of `hooked`'s from one day, and nothing
 
 ## 5. Out of Scope
 
-<!-- last written by: spec-author, 2026-10-08 -->
+<!-- last written by: spec-author, 2026-10-09 (row 7 added, `0001-F5` decision 0003) -->
 
 | #   | Item                                              | Exclusion Reason                                                                                                                                                                                                              |
 | --- | ------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -126,6 +128,7 @@ A repository's `.spec/schema/` is a copy of `hooked`'s from one day, and nothing
 | 4   | Versioning the report document                    | `0001-F3` C-4; the report is versioned with the tool.                                                                                                                                                                         |
 | 5   | A version pinned per specification                | Decided: the version is the repository's (brief § 6); a document declares none.                                                                                                                                               |
 | 6   | `init` fetching a recorded upstream schema source | `0001-F4` B-014 and B-015, under C-8 and C-9.                                                                                                                                                                                 |
+| 7   | Epics opt-in as version 2                         | Additive to version 1, which is unpublished (decision 0002; `0001-F5` decision 0003).                                                                                                                                         |
 
 ## 6. Concern Separation
 
@@ -187,12 +190,14 @@ Pending: owned by `test-writer`.
 | B-034    | Upgrade leaves the recorded upstream version alone                                                                               | Missing | Missing |
 | B-035    | Upgrade refuses an upstream source it cannot reach                                                                               | Missing | Missing |
 | B-036    | An upstream source with the embedded source selected is rejected                                                                 | Missing | Missing |
+| B-037    | Version 1 accepts a specification with no epic when there are no epics                                                           | Missing | Missing |
+| B-038    | Version 1 accepts a bare parent when there are no epics                                                                          | Missing | Missing |
 
 ## 10. Lessons / Spec Deltas
 
-<!-- last written by: spec-author, 2026-10-07 -->
+<!-- last written by: spec-author, 2026-10-09 (`0001-F5` decision 0003) -->
 
-None.
+- 2026-10-09, epics made opt-in by the owner ([`0001-F5` decision 0003](../../specht/Manifest/.spec/decisions/0003-epics-are-opt-in-by-the-manifests-epic-grammar.md)), as a change to version 1 that decision 0002 permits before the first publish, as decision 0003 did. A-2 amended. B-037, B-038 and § 5 row 7 added. B-013 and C-1 are untouched: no version has shipped.
 
 ## 11. Open Questions
 
