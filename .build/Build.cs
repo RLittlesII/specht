@@ -127,7 +127,12 @@ internal partial class Build : NukeBuild
         .DependsOn(Test)
         .Executes(() =>
         {
-            var clean = Run(DotNetPath, "run --project src/specht.tool -- --root .");
+            var clean = true;
+            AnnotateChangedFiles(DotNet(
+                "run --project src/specht.tool -- --root .",
+                RootDirectory,
+                logger: ProcessTasks.DefaultLogger,
+                exitHandler: process => clean = process.ExitCode == 0));
             Log.Information("SpecCheck: {Verdict}; the check does not gate until 0001-F5's rule settings exist", clean ? "clean" : "violations reported");
         });
 

@@ -112,6 +112,11 @@ jobs:
           echo "::warning title=Codecov upload failed::The coverage upload to Codecov failed; this check is not failed on that account."
       - name: Spec Check
         id: specCheck
+        env:
+          EVENT_NAME: '${{ github.event_name }}'
+          BASE_SHA: '${{ github.event.pull_request.base.sha }}'
+          HEAD_SHA: '${{ github.event.pull_request.head.sha }}'
+          MATRIX_OS: '${{ matrix.os }}'
         if: ${{ steps.changes.outputs.build == 'true' }}
         run: |
           ./build.cmd --target SpecCheck --skip Test

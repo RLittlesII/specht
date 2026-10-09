@@ -2,7 +2,7 @@ id: "0066"
 type: task
 title: Annotate specification violations on the pull request diff
 
-status: ready-for-architecture
+status: done
 
 priority: high
 risk: 2
@@ -21,8 +21,8 @@ claims:
   - B-006
 
 created: "2026-10-08"
-updated: "2026-10-08"
-closed: null
+updated: "2026-10-09"
+closed: "2026-10-09"
 
 summary: |
   Turn the MSBuild-shaped lines 0001-F2's command prints through
@@ -30,10 +30,17 @@ summary: |
   (AGENTS.md § `specht`).
 
 acceptance_criteria:
-  - "B-006 — a violation's file and line annotated on the diff"
+  - "B-006 — a violation in a file the pull request changes annotated on its file and line in the diff, from the ubuntu-latest leg only"
   - "§ 9 carries a row naming a test for each id above."
 
-decisions: []
+decisions:
+  - |
+    2026-10-09, owner: annotate only violations whose file is among the
+    pull request's changed files, from the ubuntu-latest leg only, written
+    by the build's SpecCheck target beside its unchanged output; a push
+    annotates nothing. Decision 0002; B-006 amended, C-6 and § 5 #13 to
+    #16 added. Rejected: annotating every violation in the tree;
+    annotating from both legs; a problem matcher.
 
 out_of_scope:
   - "Failing the run on a violation — 0055-F1 C-7, 0062."

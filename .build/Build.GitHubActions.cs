@@ -2,11 +2,14 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Text.RegularExpressions;
 using Nuke.Common;
 using Nuke.Common.CI.GitHubActions;
+using Nuke.Common.Tooling;
 using Rocket.Surgery.Nuke.ContinuousIntegration;
 using Rocket.Surgery.Nuke.DotNetCore;
 using Rocket.Surgery.Nuke.GithubActions;
+using static Nuke.Common.Tools.Git.GitTasks;
 
 // 0055-F2: the integration workflow, generated into .github/workflows/ci.yml and committed (C-1).
 // B-001, B-002: a pull request to main and a push to main. B-004: every gate, each through the entry script.
@@ -85,6 +88,7 @@ internal sealed partial class Build
         buildJob.FailFast = false;
 
         AddCodecovUpload(buildJob);
+        PassAnnotationContext(buildJob);
         GateOnChangedFiles(buildJob);
 
         return configuration;
@@ -204,6 +208,24 @@ internal sealed partial class Build
     }
 
     /// <summary>
+    /// Gives the SpecCheck step the event, the pull request's commits and the leg, so the target decides what to annotate.
+    /// </summary>
+    private static void PassAnnotationContext(RocketSurgeonsGithubActionsJob buildJob)
+    {
+        var specCheckStep = buildJob.Steps.OfType<RunStep>().Single(static z => z.Id == "specCheck");
+        specCheckStep.Environment = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+        {
+            ["EVENT_NAME"] = "${{ github.event_name }}",
+            ["BASE_SHA"] = "${{ github.event.pull_request.base.sha }}",
+            ["HEAD_SHA"] = "${{ github.event.pull_request.head.sha }}",
+            ["MATRIX_OS"] = "${{ matrix.os }}",
+        };
+    }
+
+    [GeneratedRegex(@"^(?<file>.+?)(\((?<line>\d+)\))?: (?<severity>error|warning) (?<rule>SPEC\d{3}): (?<message>.*)$")]
+    private static partial Regex Diagnostic();
+
+    /// <summary>
     /// Decides inside each leg whether the run builds, and runs every later step only when it does.
     /// </summary>
     private static void GateOnChangedFiles(RocketSurgeonsGithubActionsJob buildJob)
@@ -243,6 +265,40 @@ internal sealed partial class Build
             step.If = string.IsNullOrEmpty(condition)
                 ? $"${{{{ {gate} }}}}"
                 : $"${{{{ ({condition.TrimStart('$').Trim('{', '}').Trim()}) && {gate} }}}}";
+        }
+    }
+
+    private static string EscapeData(string data) => data.Replace("%", "%25").Replace("\r", "%0D").Replace("\n", "%0A");
+
+    private static string EscapeProperty(string value) => EscapeData(value).Replace(":", "%3A").Replace(",", "%2C");
+
+    /// <summary>
+    /// Writes each violation in a pull request's changed files as a GitHub annotation, from the ubuntu-latest leg only.
+    /// </summary>
+    private void AnnotateChangedFiles(IReadOnlyCollection<Output> output)
+    {
+        if (GitHubActions.Instance is null
+            || Environment.GetEnvironmentVariable("EVENT_NAME") != "pull_request"
+            || Environment.GetEnvironmentVariable("MATRIX_OS") != "ubuntu-latest"
+            || Environment.GetEnvironmentVariable("BASE_SHA") is not { Length: > 0 } baseSha
+            || Environment.GetEnvironmentVariable("HEAD_SHA") is not { Length: > 0 } headSha)
+        {
+            return;
+        }
+
+        var changed = Git($"diff --name-only --no-renames {baseSha}...{headSha}", RootDirectory, logOutput: false, exitHandler: static _ => null)
+            .Where(static line => line.Type == OutputType.Std).Select(static line => line.Text).ToHashSet(StringComparer.Ordinal);
+        var violations = output
+            .Where(static line => line.Type == OutputType.Std)
+            .Select(static line => Diagnostic().Match(line.Text))
+            .Where(match => match.Success && changed.Contains(match.Groups["file"].Value));
+
+        foreach (var violation in violations)
+        {
+            var line = violation.Groups["line"].Success ? $",line={EscapeProperty(violation.Groups["line"].Value)}" : string.Empty;
+            Console.WriteLine(
+                $"::{violation.Groups["severity"].Value} file={EscapeProperty(violation.Groups["file"].Value)}{line}," +
+                $"title={EscapeProperty(violation.Groups["rule"].Value)}::{EscapeData(violation.Groups["message"].Value)}");
         }
     }
 }
