@@ -99,6 +99,38 @@ Branch from `main` as `<id>/<short-description>`, from the item id — or
 `spec/<feature-slug>` when authoring a specification, which has no item to take
 an id from.
 
+## Choosing the next item
+
+Extends [`next`](../../next/SKILL.md). One command reads every `.issue/` item
+and prints the answer:
+
+```sh
+python3 .claude/skills/specht-conventions/scripts/next.py   # --top N, --width N, --root DIR
+```
+
+It needs nothing but Python 3's standard library and reads the tree it lives
+in, so a worktree answers for its own branch. It walks hidden folders - most
+items live under `.build/`, `.github/` and `.config/` - and strips a trailing
+`# comment` from every field before comparing it.
+
+| It treats              | As                                                                                       |
+| ---------------------- | ---------------------------------------------------------------------------------------- |
+| startable              | `ready`, `ready-for-architecture`, `ready-for-implementation`, every `depends_on` `done` |
+| taken                  | `in-progress`, `in-review`                                                               |
+| a container            | any item another open item names as `parent` - never offered as next                     |
+| a missing `depends_on` | a blocker, printed with a `?`                                                            |
+
+`rank` is read as the item carries it; the derivation stays in
+[`.spec/templates/item.yml`](../../../../.spec/templates/item.yml).
+
+**Lanes.** Two startable items share a lane when they name the same `spec:`, or
+when their homes fall under the same entry of `SHARED_WRITE_SETS` at the top of
+the script: `.build/ContinuousIntegration`, `.build/Releasing` and `.github`
+share the generated workflows (`.build/Build.GitHubActions.cs` and the committed
+`.github/workflows/`, which every such branch regenerates), and the rest of
+`.build` shares `.build/Build.cs`. A new generated workflow or a new hand-edited
+build file adds an entry there in the pull request that creates it.
+
 ## Cite the item and the claim in the commit message
 
 The repository allows **squash** and **rebase** merges and no merge commits.

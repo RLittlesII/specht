@@ -373,6 +373,7 @@ Each one's **Project rules** preamble points at the companion:
 | Skill                                                                    | Covers                                                                  |
 | ------------------------------------------------------------------------ | ----------------------------------------------------------------------- |
 | [`deliver-change`](.claude/skills/deliver-change/SKILL.md)               | issue → branch → specification → build → pull request                   |
+| [`next`](.claude/skills/next/SKILL.md)                                   | the next item, what it waits on, and which items can run in parallel    |
 | [`coding-conventions`](.claude/skills/coding-conventions/SKILL.md)       | orient, stop on a gap, keep the design direct, put a rule where it runs |
 | [`test-from-scenarios`](.claude/skills/test-from-scenarios/SKILL.md)     | a claim first, an injected clock, synthetic fixtures, both tiers        |
 | [`clarify-requirements`](.claude/skills/clarify-requirements/SKILL.md)   | when to ask versus decide, and writing the answer back                  |
