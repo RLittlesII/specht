@@ -29,8 +29,8 @@ closed: null
 
 summary: |
   Group by ecosystem, change versions only where they are declared once
-  (C-4), and exclude the engine's three dependencies until brief § 8 step
-  2's baseline tag (C-1).
+  (C-4), and exclude the engine's three dependencies until 0001-F1 B-004's
+  golden baseline test is on main (C-1).
 
 acceptance_criteria:
   - "B-001 — NuGet minor and patch: one pull request"

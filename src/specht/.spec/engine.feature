@@ -35,11 +35,11 @@ Feature: The engine, extracted unchanged
     Then the duplicate identity is reported once
 
   @B-004
-  Scenario: The report on hooked's tree is unchanged
-    Given hooked's tree at the commit the engine was copied from
-    And the baseline report hooked's engine wrote at that commit
+  Scenario: The verdicts on the baseline tree match the golden report
+    Given the baseline tree the tests build, which breaks each of the twenty-one version 1 rules in each layout the rule applies to
+    And the golden report the engine gave on that tree at the commit the copy landed on main
     When the engine runs on that tree
-    Then it reports the same violations as the baseline, with the same rule, severity, file, line, identifier and message
+    Then it reports the same violations as the golden report, with the same rule, severity, file, line, identifier and message
     And in the same order
 
   @B-005 @boundary

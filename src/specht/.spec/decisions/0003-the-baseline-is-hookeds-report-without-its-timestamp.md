@@ -8,6 +8,7 @@ type: decision
 
 **Date:** 2026-10-07
 **Decided by:** the repository owner (brief § 6, "Report timestamp"); settled across `0001-F1` and `0001-F5` by the coordinator (S7); recorded by spec-author
+**Status:** superseded 2026-10-08 by decision 0004 - see Reversal
 
 ## The call
 
@@ -56,4 +57,10 @@ runs, and how a run without the checkout reports it, is `test-writer`'s § 8.
 
 ## Reversal
 
-None.
+Superseded 2026-10-08 by decision 0004, the owner: B-004's input is a
+synthetic tree the tests build, and its golden report is the engine's output on
+it at commit `e7dba24`, committed at
+`test/specht.tests/Baseline/engine-e7dba24.json`. `hooked`'s tree is not a
+test input, and `docs/reference/hooked-6afe8ab-report.json` is never
+committed. The verdict field list and the exclusion of `generatedAtUtc` and
+`0001-F3`'s fields stand.

@@ -127,8 +127,8 @@ Feature: The manifest carries the roles
 
   @B-016
   Scenario: The default manifest reproduces the baseline verdicts
-    Given hooked's tree at the commit the engine was copied from
-    And the violations hooked's engine reported at that commit
+    Given the baseline tree the engine's tests build
+    And the golden report of the violations the engine gave on that tree when the copy landed
     When the check runs with the default manifest
     Then the same violations are reported, in the same order, each with the same rule id, severity, file, line, identifier and message
 

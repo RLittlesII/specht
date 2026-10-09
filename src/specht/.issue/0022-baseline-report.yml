@@ -1,6 +1,6 @@
 id: "0022"
 type: test
-title: Commit hooked's baseline report and test the verdicts against it
+title: Commit the golden baseline report on a synthetic tree and test the verdicts against it
 
 status: ready-for-architecture
 
@@ -26,19 +26,31 @@ updated: "2026-10-08"
 closed: null
 
 summary: |
-  Commit hooked's report at 6afe8ab, without its timestamp (decision 0003),
-  as docs/reference/hooked-6afe8ab-report.json, and a test that the copied
+  Build the baseline tree with SpecTree, breaking each of the twenty-one
+  rules in each layout it applies to (C-10). Commit the engine's verdicts on
+  it at commit e7dba24 as the golden report
+  test/specht.tests/Baseline/engine-e7dba24.json, and a test that the
   engine's verdicts on that tree equal it field for field, in order (C-9).
-  Manifest's guard 0012 reuses this report, so it lands before that.
+  Manifest's guard 0012 reuses this golden report, so it lands before that.
 
 acceptance_criteria:
-  - "B-004 — rule id, severity, file, line, identifier, message, in order, equal the committed report"
+  - "B-004 — rule id, severity, file, line, identifier, message, in order, equal the golden report at `test/specht.tests/Baseline/engine-e7dba24.json`"
   - "B-010 — every violation carries the six fields"
+  - "C-10 — the tree is built by the tests, and the golden report is the engine's output at `e7dba24`"
   - "§ 9 carries a row naming a test for each id above."
-  - "Tag `baseline/hooked-6afe8ab` on 0021's merge commit on main, where C-9 starts (decision 0002)."
 
-decisions: []
+decisions:
+  - |
+    2026-10-08, the owner (0001-F1 decision 0004, superseding decision
+    0003): B-004's input is a synthetic tree built with SpecTree, and its
+    golden report is the engine's output on it at commit e7dba24, committed
+    as test data. No git tag is placed; C-2 and C-9 cite commit e7dba24.
+    Rejected: hooked's checkout as the test input, which inverts the
+    dependency (specht is upstream of hooked) and cannot run in CI; a tag
+    baseline/hooked-6afe8ab, which a commit citation replaces; withdrawing
+    B-004, which leaves C-9 and 0012 with no baseline.
 
 out_of_scope:
   - "A new report field or the `--json` document — § 5 #2, 0001-F3."
   - "hooked consuming the tool — § 5 #8."
+  - "Running the engine on hooked's tree — § 5 #11."

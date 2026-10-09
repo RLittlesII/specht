@@ -52,7 +52,7 @@ summary: |
   hardcodes about the model read from the manifest, so that I can bring my
   own schema, tune rules my tree cannot yet pass, and hooked notices nothing.
 
-  Risk 4: the default manifest must reproduce hooked's baseline verdicts byte
+  Risk 4: the default manifest must reproduce the golden baseline verdicts byte
   for byte after every literal moves. OQ-1 (the manifest's key names) is open
   and blocks B-001 to B-011; architecture resolves it in § 7 and a decision
   record. The engine copy and baseline report (0001-F1) are the edges

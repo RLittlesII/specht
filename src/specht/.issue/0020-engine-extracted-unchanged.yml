@@ -61,10 +61,10 @@ decisions:
     2026-10-08, Claude at the owner's request: sliced into the copy (0021),
     the baseline report that freezes its verdicts (0022), then two test items
     proving the remaining claims against the copied engine (0023, 0024). The
-    copy is alone so the baseline tag marks a commit that is a pure move
+    copy is alone so commit e7dba24, where C-9 starts, is a pure move
     (C-2). Rejected: the copy and the baseline in one item, which would put
     new test code into the commit C-2 requires to be the rename alone.
 
 out_of_scope:
   - "Everything in § 5 of the spec."
-  - "B-009 — withdrawn 2026-10-07; its check is C-2 at the baseline tag, carried by 0021."
+  - "B-009 — withdrawn 2026-10-07; its check is C-2 at commit e7dba24, carried by 0021."

@@ -72,4 +72,4 @@ out_of_scope:
   - "Types where `Spec` is not a prefix (FeatureSpec) and the `*Rule` classes, which carry no prefix."
   - "The namespace and assembly `specht`, already lowercase per the repository's naming."
   - "Accepted ADRs - immutable; they keep the old names and are not edited."
-  - "The baseline diff against `hooked` (0001-F1 C-2) - recorded at the baseline tag by 0021; this rename lands after it and does not reopen it."
+  - "The baseline diff against `hooked` (0001-F1 C-2) - recorded at commit `e7dba24` by 0021; this rename lands after it and does not reopen it."
