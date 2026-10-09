@@ -35,7 +35,7 @@ Every version this repository depends on - packages, the SDK, local tools, workf
 
 ## 2. User Needs
 
-<!-- last written by: spec-author, 2026-10-08 -->
+<!-- last written by: spec-author, 2026-10-09 -->
 
 | #   | Persona        | Need                                                                           | Pain Point Today                            |
 | --- | -------------- | ------------------------------------------------------------------------------ | ------------------------------------------- |
@@ -46,11 +46,11 @@ Every version this repository depends on - packages, the SDK, local tools, workf
 
 ### Assumptions
 
-| ID  | Assumption                                                                                                                                                                                                                                            |
-| --- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| A-1 | The schedule and timezone in `.github/renovate.json` today (before 6am on Monday, America/Chicago) are kept; the owner did not change them.                                                                                                           |
-| A-2 | Renovate runs self-hosted, as a scheduled workflow in this repository using `renovatebot/github-action`, and a merge without a person relies on the repository allowing it (`0055-F8`). Amended 2026-10-08 by OQ-6; it assumed the hosted app before. |
-| A-3 | "The engine's three dependencies" are Markdig, YamlDotNet and JsonSchema.Net, the `Engine` group of `Directory.Packages.props` (`0001-F1` C-7).                                                                                                       |
+| ID  | Assumption                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| --- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| A-1 | The schedule and timezone in `.github/renovate.json` today (before 6am on Monday, America/Chicago) are kept; the owner did not change them.                                                                                                                                                                                                                                                                                                                                                                                        |
+| A-2 | Renovate runs self-hosted, as a scheduled workflow in this repository using `renovatebot/github-action`, and a merge without a person relies on the repository allowing it (`0055-F8`). Amended 2026-10-08 by OQ-6; it assumed the hosted app before. Amended 2026-10-09 by decision 0001: "self-hosted" means a self-hosted Renovate, not a self-hosted runner; the job runs on GitHub's hosted `ubuntu-latest` runner, where `renovatebot/github-action` runs the Renovate container, and uses no infrastructure of the owner's. |
+| A-3 | "The engine's three dependencies" are Markdig, YamlDotNet and JsonSchema.Net, the `Engine` group of `Directory.Packages.props` (`0001-F1` C-7).                                                                                                                                                                                                                                                                                                                                                                                    |
 
 ## 3. Acceptance Criteria
 
@@ -78,7 +78,7 @@ Every version this repository depends on - packages, the SDK, local tools, workf
 
 ## 4. Constraints
 
-<!-- last written by: spec-author, 2026-10-08 -->
+<!-- last written by: spec-author, 2026-10-09 -->
 
 | ID  | Constraint                                                                                                                                                                                                                                                                                                                                                                                                              | Rules Out                                                                                                                                                                                                              |
 | --- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -89,19 +89,21 @@ Every version this repository depends on - packages, the SDK, local tools, workf
 | C-5 | No dependency dashboard (owner, 2026-10-08).                                                                                                                                                                                                                                                                                                                                                                            | A Renovate dashboard issue; a major update waiting on approval in an issue rather than as an open pull request.                                                                                                        |
 | C-6 | A GitHub Action's version is declared in the build project's source, where Renovate updates it; the workflow YAML is regenerated from it (owner, 2026-10-08).                                                                                                                                                                                                                                                           | An action version written only in a workflow file; a Renovate rule matching a file under `.github/workflows/`.                                                                                                         |
 | C-7 | The regenerated workflows are committed to an update pull request by a Renovate post-upgrade task that runs the build's workflow generation, for every update that can change a generated workflow - an action version (C-6) or the NUKE package; this requires `postUpgradeTasks`, with that command listed in `allowedPostUpgradeCommands` in the self-hosted run's configuration committed here (owner, 2026-10-08). | A CI step pushing to the update branch; a person committing the regeneration; an update pull request merged with a stale workflow; an allowlist kept outside the repository.                                           |
-| C-8 | The Renovate workflow is generated by the NUKE build (`0055-F2` C-1) and opens its pull requests with a token stored as a repository secret, not the workflow's own token, because a pull request opened with the workflow's own token starts no workflow run and would never get its required checks (owner, 2026-10-08).                                                                                              | A hand-written Renovate workflow; the workflow's own token as the credential Renovate opens pull requests with (reading the feed with it is B-017); the hosted Renovate app.                                           |
+| C-8 | The Renovate workflow is generated by the NUKE build (`0055-F2` C-1) and opens its pull requests with a token stored as the repository secret `RENOVATE_TOKEN` (amended 2026-10-09, decision 0001), not the workflow's own token, because a pull request opened with the workflow's own token starts no workflow run and would never get its required checks (owner, 2026-10-08).                                       | A hand-written Renovate workflow; the workflow's own token as the credential Renovate opens pull requests with (reading the feed with it is B-017); a secret of any other name; the hosted Renovate app.               |
 
 ## 5. Out of Scope
 
-<!-- last written by: spec-author, 2026-10-08 -->
+<!-- last written by: spec-author, 2026-10-09 -->
 
-| #   | Item                                                                    | Exclusion Reason                                                                  |
-| --- | ----------------------------------------------------------------------- | --------------------------------------------------------------------------------- |
-| 1   | Allowing a merge without a person in the repository's settings          | `0055-F8`.                                                                        |
-| 2   | The checks an update waits on                                           | `0055-F2`, `0055-F3`; required by `0055-F8`.                                      |
-| 3   | Updating the engine's dependencies after the golden baseline test lands | A later change under C-1, with `0001-F1`'s baseline test (its B-004) as its gate. |
-| 4   | Vulnerability alerts and security advisories                            | Not asked for.                                                                    |
-| 5   | `hooked`'s and Transporter's dependency updates                         | Tracked in those repositories (owner, 2026-10-08).                                |
+| #   | Item                                                                      | Exclusion Reason                                                                                    |
+| --- | ------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
+| 1   | Allowing a merge without a person in the repository's settings            | `0055-F8`.                                                                                          |
+| 2   | The checks an update waits on                                             | `0055-F2`, `0055-F3`; required by `0055-F8`.                                                        |
+| 3   | Updating the engine's dependencies after the golden baseline test lands   | A later change under C-1, with `0001-F1`'s baseline test (its B-004) as its gate.                   |
+| 4   | Vulnerability alerts and security advisories                              | Not asked for.                                                                                      |
+| 5   | `hooked`'s and Transporter's dependency updates                           | Tracked in those repositories (owner, 2026-10-08).                                                  |
+| 6   | A claim on starting the Renovate workflow by hand                         | A convenience beside the schedule, not a behaviour; B-015 claims the scheduled run (decision 0001). |
+| 7   | A self-hosted runner, or any machine of the owner's, for the Renovate run | The run uses GitHub's hosted runner (A-2, decision 0001).                                           |
 
 ## 6. Concern Separation
 
@@ -151,6 +153,7 @@ Pending: owned by `test-writer`.
 
 - 2026-10-08, C-1, § 1 and § 5 row 3 amended, following `0001-F1` decision 0004 (the owner): no baseline tag is placed, so the exclusion holds until `0001-F1` B-004's golden baseline test is on `main`, not until a tag exists. The B-008 scenario's precondition follows.
 - 2026-10-09, `0055-F2` B-009 withdrawn by the owner (`0055-F2` decision 0001). B-013 and B-014 now rest on `0055-F2` C-1, the committed workflows staying the build's generation, rather than on a run-time check passing; their behaviour is unchanged. Their scenarios' last step follows.
+- 2026-10-09, decision 0001 (the owner, while item 0073 was planned): the Renovate workflow can also be started by hand, which is not claimed (§ 5 row 6); C-8 names its token secret `RENOVATE_TOKEN`; A-2 states that the run uses GitHub's hosted runner, not a self-hosted one (§ 5 row 7). No claim changes.
 
 ## 11. Open Questions
 
