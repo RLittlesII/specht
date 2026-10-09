@@ -81,11 +81,12 @@ epic glob `epics/**/epic.md` discovers it (`0001-F6` decision 0001).
 
 ## Out of this epic
 
-| Item                                                   | Where it lives instead                                           |
-| ------------------------------------------------------ | ---------------------------------------------------------------- |
-| `hooked` replacing its engine with the tool            | `hooked`, a Feature of its own                                   |
-| Installing in Transporter and repairing its tree       | Transporter; the repair is the agent's, from the report (Must-6) |
-| The claim bridge and the convention analyzers (Roslyn) | `hooked` `0008-F1`, `0008-F2`                                    |
-| Rule plugins                                           | Rejected: `0001-F2` decision 0001                                |
-| Autofix: `--fix`, or `upgrade` rewriting a document    | Out of scope (brief § 2)                                         |
-| A second schema version's content                      | After `0001-F7`, as its own epic                                 |
+| Item                                                   | Where it lives instead                                                                                       |
+| ------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------ |
+| `hooked` replacing its engine with the tool            | `hooked`, a Feature of its own                                                                               |
+| Installing in Transporter and repairing its tree       | Transporter; the repair is the agent's, from the report (Must-6)                                             |
+| The claim bridge and the convention analyzers (Roslyn) | `hooked` `0008-F1`, `0008-F2`                                                                                |
+| Rule plugins                                           | Rejected: `0001-F2` decision 0001                                                                            |
+| Autofix: `--fix`, or `upgrade` rewriting a document    | Out of scope (brief § 2); reordering rows and keys is `specht format`, epic `0101` (`0101-F5` decision 0001) |
+| Style and ordering rules                               | Epic `0101`, as schema version 2                                                                             |
+| A second schema version's content                      | After `0001-F7`, as its own epic                                                                             |

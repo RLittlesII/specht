@@ -55,8 +55,10 @@ From brief § 2, § 5 and § 6, as of 2026-10-07:
   prints the rule's full text.
 - **Every path in every output is repository-relative.** An absolute path
   anywhere is a defect.
-- **The tool never writes into a consumer's tree** except through `init` and
-  `upgrade`, and never overwrites an existing file.
+- **The tool never writes into a consumer's tree** except through `init`,
+  `upgrade`, the caller-named `--report` file and, from epic `0101`, `format`,
+  which only moves whole table rows and frontmatter keys (brief § 9; `0101-F5`
+  decision 0001). `init` never overwrites an existing file.
 - **No rule plugins.** Per-rule disable and `--strict` instead. No Roslyn: the
   claim bridge and the convention analyzers stay in `hooked`.
 - **The engine is copied from `hooked`, never regenerated**, and the rule

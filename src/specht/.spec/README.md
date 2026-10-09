@@ -88,7 +88,7 @@ The rule engine exists only inside `hooked`, as a project reference from its bui
 
 ## 5. Out of Scope
 
-<!-- last written by: spec-author, 2026-10-07 -->
+<!-- last written by: spec-author, 2026-10-08 -->
 
 | #   | Item                                                                                                                                                     | Exclusion Reason                                                                        |
 | --- | -------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------- |
@@ -101,6 +101,7 @@ The rule engine exists only inside `hooked`, as a project reference from its bui
 | 7   | A new rule, including `SPEC070`                                                                                                                          | C-5; a new rule is a new schema version.                                                |
 | 8   | `hooked` replacing its project reference with the tool                                                                                                   | A Feature of `hooked`; this repository only has to give it the same verdicts (B-004).   |
 | 9   | Anything Roslyn                                                                                                                                          | `hooked` `0008-F1` and `0008-F2` (brief § 2).                                           |
+| 10  | Style and ordering rules, and the `specht format` command                                                                                                | Epic `0101`, as schema version 2 after `0001-F7` (`0101-F5` decision 0001); C-5.        |
 
 ## 6. Concern Separation
 
@@ -152,6 +153,7 @@ Delivered so far by item 0021.
 
 - 2026-10-08, A-2 amended by the owner during 0021's review: the three draft-spec files are cited at `hooked@a6d056f` instead of copied into `docs/reference/`. The specifications absorbed them, and an absorbed record is cited at its commit, not kept live ([lesson 0001](../../../.spec/lessons/0001-cite-a-superseded-record-at-a-commit.md)).
 - 2026-10-08, C-2 names its scope over the tests: `hooked`'s test `.csproj` is not copied; `test/specht.tests` keeps this repository's project file (spec-reviewer, 0021).
+- 2026-10-08, § 5 row 10 added by the spec-author: style and ordering rules and `specht format` are epic `0101`, decided by the owner in that epic's requirements session. No claim or constraint changed.
 
 ## 11. Open Questions
 

@@ -66,7 +66,10 @@ proves the tool handles a tree it did not write.
    0008-F2 convention analyzers stay there). Rule plugins. Spec revision history.
    Autofix: no `--fix`, and `upgrade` never rewrites a document — it touches
    `.spec/schema/` and `.spec/templates/` only; the agent migrates documents from
-   the violations (Must-6).
+   the violations (Must-6). Reordering is the one exception, decided 2026-10-08:
+   `specht format`, a separate command, moves whole table rows and frontmatter
+   keys and edits nothing else; the check keeps no `--fix` (epic `0101`,
+   `0101-F5` decision 0001).
    **Constraints.**
    | Constraint                                                                                                         | Hard/Soft |
    | ------------------------------------------------------------------------------------------------------------------ | --------- |
@@ -271,7 +274,7 @@ the owner can reverse; record a reversal as a decision, never silently.
 | Schema `$id` URLs                                  | `https://github.com/rlittlesii/specht/schema/v1/<file>`                                                                                                                                                                                                                                                                                                                                                    | They move with the schema                                                                                                                                                    |
 | Report timestamp                                   | Drop `generatedAtUtc` from the report                                                                                                                                                                                                                                                                                                                                                                      | Determinism; Should-7 becomes byte-identical                                                                                                                                 |
 | Second install, the "done" event                   | Transporter. Its `.spec/` tree predates the schema                                                                                                                                                                                                                                                                                                                                                         | The origin of the model; proves the tool on a tree it did not write                                                                                                          |
-| Who migrates documents across schema versions      | The agent, from the violations and their `expected`. Never the tool                                                                                                                                                                                                                                                                                                                                        | Autofix is out of scope                                                                                                                                                      |
+| Who migrates documents across schema versions      | The agent, from the violations and their `expected`. Never the tool                                                                                                                                                                                                                                                                                                                                        | Autofix is out of scope; `specht format` only reorders rows and keys (`0101-F5` decision 0001)                                                                               |
 
 ## 7. The repository should eat its own cooking
 
@@ -323,7 +326,9 @@ the owner can reverse; record a reversal as a decision, never silently.
   only to fetch an upstream schema source the manifest records with its
   version and content hash (`0001-F7` decision 0004).
 - The tool never writes into a consumer's tree except through `init`,
-  `upgrade` and the report file the caller names with `--report`. `init`
+  `upgrade`, the report file the caller names with `--report`, and `format`,
+  which moves whole table rows and frontmatter keys in the files it reorders
+  and nothing else (`0101-F5` decision 0001). `init`
   never overwrites an existing file. `upgrade` rewrites the schema and
   template files it owns and changes only `schemaVersion` and the keys the
   next version adds in the manifest (`0001-F7` decision 0001). `--report`

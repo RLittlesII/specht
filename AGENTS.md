@@ -122,8 +122,10 @@ violation under `--strict`), `2` missing root or manifest, `3` invalid manifest,
 
 - **Never an absolute path** in any output, report, log line, or test fixture
   (brief § 9). Paths are relative to the root the tool was given.
-- **Never a write into a consumer's tree** except through `init`, `upgrade` and
-  the caller-named `--report` file (brief § 9). `init` never overwrites.
+- **Never a write into a consumer's tree** except through `init`, `upgrade`,
+  the caller-named `--report` file and, from epic `0101`, `format`, which only
+  moves whole table rows and frontmatter keys (brief § 9; `0101-F5` decision
+  0001). `init` never overwrites.
 - **Deterministic and offline.** The check never touches the network and never
   calls GitHub; only `init` and `upgrade` may fetch, and only an upstream
   schema source the manifest records (`0001-F7` decision 0004). The same tree
