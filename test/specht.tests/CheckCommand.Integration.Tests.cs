@@ -9,8 +9,8 @@ using Spectre.Console.Testing;
 namespace specht.tests;
 
 /// <summary>
-/// The command through Spectre's command tester (<c>0001-F2</c> B-001, B-002, B-003, B-004, B-005, B-006, B-007, B-009, B-013;
-/// C-7): over a runner returning a report built in memory, and over the real runner and a synthetic tree on disk. The runner
+/// The command through Spectre's command tester (<c>0001-F2</c> B-001, B-002, B-003, B-004, B-005, B-006, B-007, B-009, B-013,
+/// C-7; <c>0001-F5</c> B-022, B-023): over a runner returning a report built in memory, and over the real runner and a synthetic tree on disk. The runner
 /// is the seam: the engine emits no warning until <c>0001-F5</c>'s rule settings exist, so a warning-only report is
 /// reachable only in memory. The tester captures stdout alone, so an input failure's stderr message is the acceptance
 /// tier's to pin.
@@ -110,6 +110,15 @@ public sealed class CheckCommandIntegrationTests
                 static tree =>
                 {
                     tree.WriteRaw(SpecManifest.RelativePath, "{ \"sections\": [null] }");
+                    return tree.Root;
+                },
+                3
+            },
+            {
+                "a well-formed manifest carrying a key the engine does not know (0001-F5 B-022, B-023)",
+                static tree =>
+                {
+                    tree.WriteRaw(SpecManifest.RelativePath, "{ \"glossary\": \"synthetic\" }");
                     return tree.Root;
                 },
                 3

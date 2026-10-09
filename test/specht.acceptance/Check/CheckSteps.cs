@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -10,7 +9,6 @@ using Reqnroll;
 using specht.Report;
 using specht.tests;
 using specht.tool;
-using specht.tool.Features.Check;
 
 namespace specht.acceptance.Check;
 
@@ -234,27 +232,8 @@ public sealed partial class CheckSteps
         return tail[index];
     }
 
-    private void Launch(string workingDirectory, params string[] args)
-    {
-        var start = new ProcessStartInfo("dotnet")
-        {
-            WorkingDirectory = workingDirectory,
-            RedirectStandardOutput = true,
-            RedirectStandardError = true,
-        };
-        start.ArgumentList.Add(typeof(CheckCommand).Assembly.Location);
-        foreach (var arg in args)
-        {
-            start.ArgumentList.Add(arg);
-        }
-
-        using var process = Process.Start(start) ?? throw new InvalidOperationException("dotnet did not start.");
-        var stdout = process.StandardOutput.ReadToEndAsync();
-        _stderr = process.StandardError.ReadToEnd();
-        _stdout = stdout.GetAwaiter().GetResult();
-        process.WaitForExit();
-        _exitCode = process.ExitCode;
-    }
+    private void Launch(string workingDirectory, params string[] args) =>
+        (_exitCode, _stdout, _stderr) = ToolRun.Launch(workingDirectory, args);
 
     private const string TwoClaims =
         "## 3. Acceptance Criteria\n\n| ID | Claim | Source | Status |\n| -- | ----- | ------ | ------ |\n"
