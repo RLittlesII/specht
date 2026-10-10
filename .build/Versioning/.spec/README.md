@@ -196,6 +196,7 @@ Item 0079 built what the list below describes, and item 0080 built B-005 under i
 - 2026-10-09, the owner chose an executable proof for B-005 over a recorded hand check, while item 0080 was being delivered ([decision 0002](decisions/0002-b-005-has-an-executable-proof.md)). The standing decision that the build has no tests (`0055-F2` § 8) is narrowed for B-005 only: `versioning.feature` is linked into the acceptance tier and the `@B-005` scenario is bound. B-005's text and its scenario are unchanged, and B-001 to B-004 and B-006 to B-008 keep their § 9 rows. § 8 and § 9 follow with the test.
 - 2026-10-09, item 0080 as built stops every build target in a shallow clone, where C-2 rules out a shallow checkout only in a build that packs. OQ-2 raised; C-2 is unchanged until it is answered.
 - 2026-10-09, B-005 is the `nbgv` tool and the Nerdbank.GitVersioning package agreeing, and their two pins sit in files `0055-F4` updates in separate pull requests. OQ-3 raised.
+- 2026-10-09, decision 0002 records that the owner was told `Pack` runs inside the acceptance tier; what was built issues the target's `dotnet pack` command and never runs the target, so the proof does not watch `Pack` itself (§ 7, § 8). An addendum to [decision 0002](decisions/0002-b-005-has-an-executable-proof.md) says so, raised by spec-reviewer round 4 (§ 12). The call, B-005 and its scenario are unchanged. Not yet put to the owner.
 
 ## 11. Open Questions
 

@@ -68,3 +68,24 @@ and unwatched afterwards, with § 9 `Missing` for good.
 ## Reversal
 
 None.
+
+## Addendum - 2026-10-09
+
+Recorded by spec-author after spec-reviewer round 4 (§ 12). The sections above
+stand as written: "`Pack` runs inside the acceptance tier that CI runs" is what
+the owner was told when asked. This says what was then built. **Not yet put to
+the owner.**
+
+- **What was built is narrower.** The step issues the `Pack` target's own
+  command into a temporary directory:
+  `dotnet pack specht.slnx --configuration <configuration> --no-build --output <temp>`.
+  It never runs the `Pack` target: the target's output directory is fixed and
+  cleaned, and running it would start the build from inside the build's own
+  test target (§ 8).
+- **What the proof therefore does not watch** is the target itself. A version
+  later passed to `DotNetPack` in `.build/Build.cs`, which C-3 rules out, would
+  not turn the scenario red, and neither would any other change to the target.
+  The proof holds for `Pack` only while the step's `dotnet pack` arguments
+  equal the target's, which nothing pins (§ 7, § 8).
+- **Unchanged:** the call, B-005 and its scenario. The proof still watches the
+  two declarations that make the package take the computed version.
