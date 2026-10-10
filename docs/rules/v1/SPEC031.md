@@ -19,11 +19,11 @@ type: rule
 
 The rows of the matrix table do not match the claims of the claims table one to one, by first cell. The two sections are the ones the manifest's `matrix` and `claims` roles name, `## 9. Traceability Matrix` and `## 3. Acceptance Criteria` in the default manifest; the messages say § 9 and § 3 whatever their titles.
 
-| Condition                         | Line reported             | Message                                                                                                                    |
-| --------------------------------- | ------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
-| A claim has no row in § 9         | The claim's row in § 3    | `claim '{id}' has no row in § 9 - every § 3 claim appears there exactly once, with 'Missing' as its test until one exists` |
-| A claim has several rows in § 9   | Its second row in § 9     | `claim '{id}' has {count} rows in § 9 - expected exactly one`                                                              |
-| A § 9 row's id is not a § 3 claim | The first such row in § 9 | `§ 9 cites '{id}', which is not a claim in § 3 - a withdrawn claim is marked Withdrawn, not deleted`                       |
+| Condition                         | Line reported              | Message                                                                                                                    |
+| --------------------------------- | -------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
+| A claim has no row in § 9         | The claim's row in § 3     | `claim '{id}' has no row in § 9 - every § 3 claim appears there exactly once, with 'Missing' as its test until one exists` |
+| A claim has several rows in § 9   | Its second row in § 9      | `claim '{id}' has {count} rows in § 9 - expected exactly one`                                                              |
+| A § 9 row's id is not a § 3 claim | That id's first row in § 9 | `§ 9 cites '{id}', which is not a claim in § 3 - a withdrawn claim is marked Withdrawn, not deleted`                       |
 
 ## Rule description
 

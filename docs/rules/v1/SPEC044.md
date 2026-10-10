@@ -24,7 +24,7 @@ The `id`s of an epic's item files, across all its Features, are not `<epic>-01`,
 | The `id` is also an earlier item's | `item id '{id}' is already used by {path} - ids are never reused`                                |
 | The epic's numbers skip one        | `epic {epic}'s item sequence skips {number} - tasks are numbered per epic, contiguously from 01` |
 
-Only the first skip in an epic is reported. A reused id is reported under both conditions, because the number after it is then skipped.
+Only the first skip in an epic is reported. A reused id also breaks the sequence, so its epic gets a skip line too.
 
 ## Rule description
 
