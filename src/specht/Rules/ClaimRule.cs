@@ -28,7 +28,7 @@ public sealed class ClaimRule : ISpecRule
         foreach (var feature in model.Features)
         {
             var claims = feature.Document.Section(model.Schemas.Structure.Roles["claims"]);
-            var matrix = feature.Document.Section(TraceabilityMatrix);
+            var matrix = feature.Document.Section(model.Schemas.Structure.Roles["matrix"]);
 
             if (claims is null)
             {
@@ -147,6 +147,4 @@ public sealed class ClaimRule : ISpecRule
     }
 
     private static string FirstCell(IReadOnlyList<string> row) => row.Count == 0 ? string.Empty : row[0].Trim();
-
-    private const string TraceabilityMatrix = "9. Traceability Matrix";
 }

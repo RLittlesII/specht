@@ -38,6 +38,7 @@
     "epic": "epic.frontmatter.schema.json"
   },
   "roles": {
-    "claims": "3. Acceptance Criteria"
+    "claims": "3. Acceptance Criteria",
+    "matrix": "9. Traceability Matrix"
   }
 }
