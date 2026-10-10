@@ -75,15 +75,22 @@ The starting hypothesis was confirmed unchanged. Where it was tested:
   harness it has nothing to run.
 - **The "&" heuristic** found no conjunction in any Feature name.
 
+Baseline comparison - a later Feature of this epic, to be defined (owner,
+2026-10-09; `0109-F1` OQ-4), comparing a run against a stored result; not
+`0109-F4`'s in-run baseline row. Like every Feature here it reports and never
+gates (`0109-F1` decision 0001), and it reads `0109-F1` B-010's
+machine-readable result. It takes a Feature id when it is specified, and
+joins `children` then, so that every child resolves to a file.
+
 `0109-F2`, `0109-F3` and `0109-F4` depend on `0109-F1`. `0109-F1` depends on
 `0055-F1` (the build it adds a target to, whose `Pack` `0109-F4` measures) and
 `0055-F2` (the CI workflow it adds a step to). `0109-F2` measures the stages
 ADR-0005 names through whatever entry points `0001-F1`'s items have landed
-(`0109-F2` A-1), so it waits on no item. Only the edges inside this epic are
-in the Features' `depends_on`: the two cross-epic edges join `0109-F1`'s
-frontmatter in the same change that adds `0109/F1` to the `blocks` of
-`0055-F1` and `0055-F2`, so that `SPEC051`'s symmetry holds. That change is
-the owner's to make.
+(`0109-F2` A-1), so it waits on no item. The two cross-epic edges landed on
+2026-10-09, on the owner's word: `0109-F1`'s `depends_on` names `0055/F1` and
+`0055/F2`, and each of those names `0109/F1` in its `blocks`, so `SPEC051`'s
+symmetry holds. The same change amended `0055-F2` B-004 and C-3 to admit the
+benchmark step (`0109-F1` A-1).
 
 ## Placement
 
@@ -102,15 +109,13 @@ This epic file lives at `epics/0109-benchmarks/epic.md`, where schema version
 
 `ready-for-architecture`: every Feature has its agreement half - § 1-5 and its
 `.feature` - and the next owner is the `implementer`, for § 6 and § 7. The
-open questions each carry a default the claims proceed on; none stops the
-design.
+owner answered every open question on 2026-10-09, and none remains.
 
 ## Out of this epic
 
 | Item                                                      | Where it lives instead                                                             |
 | --------------------------------------------------------- | ---------------------------------------------------------------------------------- |
 | A CI gate that fails on a regression or a threshold       | Never: nothing gates on a measurement (owner, 2026-10-09; `0109-F1` decision 0001) |
-| Comparing a run against a stored baseline                 | A later epic, if asked for (`0109-F1` OQ-4)                                        |
 | Profiling and tracing - where inside a call the time goes | Not asked for; a finding names a cost, not its cause                               |
 | The optimisation work a finding prompts                   | The `implementer`, through a claim or an ADR; never inside a benchmark             |
 | Benchmarking a consumer's tree, or any captured tree      | Never: fixtures are synthetic (`0109-F1` C-7; owner, item `0108`)                  |
