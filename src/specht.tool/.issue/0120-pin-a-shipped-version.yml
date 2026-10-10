@@ -52,9 +52,10 @@ acceptance_criteria:
 
 decisions:
   - |
-    2026-10-09, spec-author, on the plan the owner approved (decision
-    0005, OQ-13): the pin command's own move in one item, its input
-    failures in 0121 and the interactive pick in 0123. Status blocked:
+    2026-10-09, the repository owner approved a written plan (decision
+    0005, OQ-13) naming a pin item and, apart from it, the interactive
+    pick (0123). Splitting the pin's input failures into 0121, and the
+    claims this item carries, are spec-author's cut. Status blocked:
     OQ-11, OQ-14 and OQ-20 are open.
 
 out_of_scope:

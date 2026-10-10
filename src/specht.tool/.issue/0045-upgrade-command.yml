@@ -50,7 +50,9 @@ decisions:
     one version" to "bring the files to the pin". B-008 dropped, withdrawn
     with C-3; B-050 added; the item now waits on the conversion item 0118
     in place of 0042. Rejected by the owner: `upgrade` keeping the move of
-    the pin, and the pin command replacing `upgrade`.
+    the pin, and the pin command replacing `upgrade`. The owner's plan
+    named the re-cut and the wait on the conversion item; which claims
+    the item carries is spec-author's cut.
 
 out_of_scope:
   - "Migrating documents — § 5 #1."

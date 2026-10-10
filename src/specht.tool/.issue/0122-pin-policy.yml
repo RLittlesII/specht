@@ -46,9 +46,10 @@ acceptance_criteria:
 
 decisions:
   - |
-    2026-10-09, spec-author, at the spec-reviewer's request (round 7) and
-    on the plan the owner approved: the Could claims sit in an item of
-    their own, so no Must item waits on them. Status blocked: OQ-11 and
+    2026-10-09, the repository owner approved a written plan (decision
+    0005, OQ-13) naming this item; the spec-reviewer asked for the same
+    in round 7, so no Must item waits on a Could. The claims it carries
+    are spec-author's cut. Status blocked: OQ-11 and
     OQ-16 are open.
 
 out_of_scope:

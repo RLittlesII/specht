@@ -42,9 +42,10 @@ acceptance_criteria:
 
 decisions:
   - |
-    2026-10-09, spec-author, on the plan the owner approved (decision
-    0005, OQ-13): cut apart from 0120 as 0046 is from 0045, so the pin's
-    own move does not wait on its failure paths.
+    2026-10-09, spec-author's cut, not named in the plan the owner
+    approved (decision 0005, OQ-13), which names one pin item: cut apart
+    from 0120 as 0046 is from 0045, so the pin's own move does not wait
+    on its failure paths.
 
 out_of_scope:
   - "A version the tool does not ship — B-046, 0120."

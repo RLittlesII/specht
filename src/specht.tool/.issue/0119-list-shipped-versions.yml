@@ -39,9 +39,9 @@ acceptance_criteria:
 
 decisions:
   - |
-    2026-10-09, spec-author, on the plan the owner approved (decision
-    0005, OQ-13): cut apart from the pin command, which writes; this one
-    only reads. Status blocked: OQ-11 and OQ-19 are open.
+    2026-10-09, the repository owner approved a written plan (decision
+    0005, OQ-13) naming a list item apart from the pin item. The claims
+    it carries are spec-author's cut. Status blocked: OQ-11 and OQ-19 are open.
 
 out_of_scope:
   - "Pinning a version — 0120."
