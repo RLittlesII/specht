@@ -17,6 +17,8 @@ Partially superseded by [ADR-0004](0004-per-rule-settings-are-selection-and-a-ma
 
 Amended 2026-10-09, by the owner on pull request #29 ([review comment](https://github.com/RLittlesII/specht/pull/29#discussion_r4231043583), on `src/specht/FrontmatterReader.cs`): `FrontmatterReader` moves from stage D to stage A, as a sealed instance class taking `IFileSystem`, in item `0104`.
 
+Partially superseded by [ADR-0008](0008-evaluate-takes-the-rule-set-and-the-model-carries-the-vocabulary.md), 2026-10-09: the signature `Evaluate(SpecModel)` in the Decision and in the stage B row. `Evaluate` takes the rule set as a second argument and reads the pinned vocabulary from the model. The rest stands.
+
 ## Context
 
 The owner's comment: "All these classes are starting to feel like they should

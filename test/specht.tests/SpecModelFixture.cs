@@ -36,4 +36,9 @@ internal sealed partial class SpecModelFixture
     /// <param name="features">The Features.</param>
     /// <returns>The fixture.</returns>
     public SpecModelFixture WithFeatures(params IReadOnlyList<FeatureSpec> features) => WithList(features);
+
+    /// <summary>Sets the items beside the specifications.</summary>
+    /// <param name="items">The items.</param>
+    /// <returns>The fixture.</returns>
+    public SpecModelFixture WithItems(params IReadOnlyList<ChildItem> items) => WithList(items);
 }
