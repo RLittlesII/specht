@@ -7,69 +7,75 @@ using System.Text.Json.Nodes;
 using System.Text.RegularExpressions;
 using AwesomeAssertions;
 using Reqnroll;
+using specht.Report;
 using specht.tests;
 
 namespace specht.acceptance.Versioning;
 
 /// <summary>
-/// Steps for <c>src/specht.tool/.spec/versioning.feature</c> (0001-F7): 0042 binds B-001, B-002, B-003, B-004, B-014, B-022
-/// and B-023. "The tool ships schema versions 1 and 2" builds a synthetic version set in memory from the embedded version 1,
-/// so B-001 and B-014 run the engine's runner over that set; every other run launches the built tool with <c>--json</c>
-/// over a synthetic root, so B-003 sees the process's stderr and exit code and B-002, B-022 and B-023 read the document.
-/// "The tool ships schema version 1 only" is the real embedded set, asserted, not built. The rest of the file's scenarios
-/// stay pending for their items.
+/// Steps for <c>src/specht.tool/.spec/versioning.feature</c> (0001-F7): item 0120 binds B-001, B-002, B-003, B-014, B-022,
+/// B-023, B-039 and B-055, with every version written <c>major.minor.patch</c>. "The tool ships schema versions ..." builds
+/// a synthetic version set in memory, each member the embedded version 0.1.0 under the number the step names, so B-001,
+/// B-014 and B-055 run the engine's runner over that set and B-055 reads the document the engine makes from its report;
+/// every other run launches the built tool with <c>--json</c> over a synthetic root, so B-003 and B-039 see the process's
+/// stderr and exit code and B-002, B-022 and B-023 read the document it printed. "The tool ships schema version 0.1.0
+/// only" is the real embedded set, asserted, not built. "The manifest's schema version is ..." writes a value of digits
+/// alone as a JSON number, the integer the retired pin was, and any other value as a JSON string. B-004's three steps stay
+/// unbound: its proof against what was published is item 0044's. The rest of the file's scenarios stay pending for their
+/// items; a step one of them shares with a scenario above is bound, and its other steps are not.
 /// </summary>
 [Binding]
 [Scope(Feature = "Schema versioning")]
-public sealed partial class VersioningSteps
+public sealed class VersioningSteps
 {
     [Given("a repository root holding a manifest and the three frontmatter schemas")]
     public void GivenARepositoryRootHoldingAManifestAndTheThreeFrontmatterSchemas() => _tree = new SpecTree();
 
-    [Given("the tool ships schema versions 1 and 2")]
-    public void GivenTheToolShipsSchemaVersions1And2()
+    [Given(@"^the tool ships schema versions (.+) and (\S+)$")]
+    public void GivenTheToolShipsSchemaVersions(string earlier, string last)
     {
-        var shipped = SchemaVersions.Embedded.Select(1);
-        _one = shipped;
-        _two = shipped with { Number = 2, FeatureSchema = Rehome(shipped.FeatureSchema, 2) };
+        var embedded = SchemaVersions.Embedded.Select(new SemanticVersion(0, 1, 0));
+        _shipped = earlier.Split(", ").Append(last).Select(Version).ToDictionary(
+            static number => number,
+            number => embedded with { Number = number });
     }
 
-    [Given("the tool ships schema version 1 only")]
-    public void GivenTheToolShipsSchemaVersion1Only() =>
-        SchemaVersions.Embedded.Versions.Select(static version => version.Number).Should().Equal(1);
+    [Given("the tool ships schema version {word} only")]
+    public void GivenTheToolShipsSchemaVersionOnly(string version) =>
+        SchemaVersions.Embedded.Versions.Select(static shipped => shipped.Number.ToString()).Should().Equal(version);
 
-    [Given("the tool ships schema version n")]
-    public void GivenTheToolShipsSchemaVersionN()
+    [Given(@"^version (\S+) holds a rule version (\S+) does not$")]
+    public void GivenVersionHoldsARuleVersionDoesNot(string holder, string lacking)
     {
-        var versions = typeof(SchemaVersions).Assembly.GetManifestResourceNames()
-            .Select(static name => EmbeddedSchema().Match(name))
-            .Where(static match => match.Success)
-            .Select(static match => int.Parse(match.Groups[1].Value, CultureInfo.InvariantCulture))
-            .ToList();
-        versions.Should().NotBeEmpty("the engine embeds at least one schema/v<n>/ resource");
-        _newest = versions.Max();
+        Shipped[Version(holder)].RuleIds.Should().Contain(MissingRule);
+        var without = Shipped[Version(lacking)];
+        Shipped[Version(lacking)] = without with
+        {
+            RuleIds = without.RuleIds.Where(static id => id != MissingRule).ToHashSet(StringComparer.Ordinal),
+        };
     }
 
-    [Given("version 2 holds a rule version 1 does not")]
-    public void GivenVersion2HoldsARuleVersion1DoesNot()
-    {
-        One.RuleIds.Should().Contain(MissingRule);
-        _one = One with { RuleIds = One.RuleIds.Where(static id => id != MissingRule).ToHashSet(StringComparer.Ordinal) };
-    }
-
-    [Given("the manifest pins version {int}")]
-    [Given("the manifest pins version {int} and records no upstream schema source")]
-    public void GivenTheManifestPinsVersion(int version) => Pin(version);
+    [Given("the manifest pins version {word}")]
+    [Given("the manifest pins version {word} and records no upstream schema source")]
+    [Given("the manifest pins version {word} with no pin policy")]
+    public void GivenTheManifestPinsVersion(string version) => WriteSchemaVersion(JsonValue.Create(version));
 
     [Given("the manifest carries no schema version")]
-    public void GivenTheManifestCarriesNoSchemaVersion() => Pin(null);
+    public void GivenTheManifestCarriesNoSchemaVersion() => WriteSchemaVersion(null);
 
-    [Given("the root holds a specification whose frontmatter version 1 accepts and version 2 rejects")]
-    public void GivenTheRootHoldsASpecificationWhoseFrontmatterVersion1AcceptsAndVersion2Rejects()
+    [Given("the manifest's schema version is {word}")]
+    public void GivenTheManifestsSchemaVersionIs(string value) =>
+        WriteSchemaVersion(
+            value.All(char.IsAsciiDigit) ? JsonValue.Create(int.Parse(value, CultureInfo.InvariantCulture)) : JsonValue.Create(value));
+
+    [Given(@"^the root holds a specification whose frontmatter version (\S+) accepts and version (\S+) rejects$")]
+    public void GivenTheRootHoldsASpecificationWhoseFrontmatterOneVersionAcceptsAndAnotherRejects(string accepting, string rejecting)
     {
-        var schema = JsonNode.Parse(Two.FeatureSchema)!.AsObject();
+        Shipped.Should().ContainKey(Version(accepting));
+        var stricter = Shipped[Version(rejecting)];
+        var schema = JsonNode.Parse(stricter.FeatureSchema)!.AsObject();
         schema["properties"]!["priority"]!["enum"] = new JsonArray("critical");
-        _two = Two with { FeatureSchema = schema.ToJsonString() };
+        Shipped[Version(rejecting)] = stricter with { FeatureSchema = schema.ToJsonString() };
         Tree.WriteFeature("0001", "F1", new Dictionary<string, string> { ["priority"] = "med" });
     }
 
@@ -94,18 +100,14 @@ public sealed partial class VersioningSteps
     [When("the check runs with JSON output")]
     public void WhenTheCheckRuns()
     {
-        if (_one is not null)
+        if (_shipped is not null)
         {
-            _report = SpecCheckRunner.Run(Tree.Root, new SchemaVersions([One, Two]));
+            _report = SpecCheckRunner.Run(Tree.Root, new SchemaVersions(_shipped.Values));
             return;
         }
 
         (_stdout, _stderr, _exitCode) = Tool.Launch(Tree.Root, "--root", ".", "--json");
     }
-
-    [When("its embedded versions are enumerated")]
-    public void WhenItsEmbeddedVersionsAreEnumerated() =>
-        _enumerated = SchemaVersions.Embedded.Versions.Select(static version => version.Number).ToList();
 
     [Then("no frontmatter violation is reported")]
     public void ThenNoFrontmatterViolationIsReported() =>
@@ -114,29 +116,29 @@ public sealed partial class VersioningSteps
     [Then("no violation is reported")]
     public void ThenNoViolationIsReported() => Report.Violations.Should().BeEmpty();
 
-    [Then("the document names schema version {int}")]
-    public void ThenTheDocumentNamesSchemaVersion(int version) =>
-        Document["schemaVersion"]!.GetValue<int>().Should().Be(version);
+    [Then("the document names schema version {word}")]
+    public void ThenTheDocumentNamesSchemaVersion(string version) =>
+        Document["schemaVersion"]!.GetValue<string>().Should().Be(version);
 
-    [Then("the standard error names version {int} and the versions the tool ships")]
-    public void ThenTheStandardErrorNamesVersionAndTheVersionsTheToolShips(int version)
+    [Then("the standard error names version {word} and the versions the tool ships")]
+    public void ThenTheStandardErrorNamesVersionAndTheVersionsTheToolShips(string version)
     {
-        var shipped = SchemaVersions.Embedded.Versions.Select(static shippedVersion => shippedVersion.Number);
+        var shipped = SchemaVersions.Embedded.Versions.Select(static shippedVersion => shippedVersion.Number.ToString());
         foreach (var named in shipped.Prepend(version))
         {
-            _stderr.Should().MatchRegex($@"\b{named}\b", "the standard error names version {0}", named);
+            _stderr.Should().MatchRegex(Naming(named), "the standard error names version {0}", named);
         }
     }
+
+    [Then("the standard error names {word}")]
+    public void ThenTheStandardErrorNames(string value) =>
+        _stderr.Should().MatchRegex(Naming(value), "the standard error names {0}", value);
 
     [Then("the standard output is empty")]
     public void ThenTheStandardOutputIsEmpty() => _stdout.Should().BeEmpty();
 
     [Then("the exit code is {int}")]
     public void ThenTheExitCodeIs(int code) => _exitCode.Should().Be(code, _stderr);
-
-    [Then("every version from 1 to n is present")]
-    public void ThenEveryVersionFrom1ToNIsPresent() =>
-        Enumerated.Should().Equal(Enumerable.Range(1, _newest ?? throw new InvalidOperationException("No newest version was read.")));
 
     [Then("no frontmatter violation is reported for the epic")]
     public void ThenNoFrontmatterViolationIsReportedForTheEpic() =>
@@ -157,18 +159,20 @@ public sealed partial class VersioningSteps
 
     private SpecTree Tree => _tree ?? throw new InvalidOperationException("No repository root was prepared.");
 
-    private SchemaVersion One => _one ?? throw new InvalidOperationException("No version 1 was built.");
-
-    private SchemaVersion Two => _two ?? throw new InvalidOperationException("No version 2 was built.");
+    private Dictionary<SemanticVersion, SchemaVersion> Shipped =>
+        _shipped ?? throw new InvalidOperationException("No version set was built.");
 
     private SpecCheckReport Report => _report ?? throw new InvalidOperationException("The check has not run in process.");
-
-    private IReadOnlyList<int> Enumerated => _enumerated ?? throw new InvalidOperationException("No version was enumerated.");
 
     private JsonObject Document
     {
         get
         {
+            if (_report is not null)
+            {
+                return JsonNode.Parse(SpecReportDocument.From(_report).ToJson())!.AsObject();
+            }
+
             _stdout.Should().NotBeEmpty("the check wrote its document: {0}", _stderr);
             return JsonNode.Parse(_stdout)!.AsObject();
         }
@@ -176,24 +180,21 @@ public sealed partial class VersioningSteps
 
     private IReadOnlyList<JsonNode> Violations => Document["violations"]!.AsArray().Select(static violation => violation!).ToList();
 
-    [GeneratedRegex("^schema/v([0-9]+)/")]
-    private static partial Regex EmbeddedSchema();
+    private static SemanticVersion Version(string text) =>
+        SemanticVersion.TryParse(text, out var version)
+            ? version
+            : throw new InvalidOperationException($"'{text}' is not a major.minor.patch version.");
 
-    private static string Rehome(string schema, int version)
-    {
-        var node = JsonNode.Parse(schema)!.AsObject();
-        node["$id"] = Regex.Replace(node["$id"]!.GetValue<string>(), "/v[0-9]+/", $"/v{version}/");
-        return node.ToJsonString();
-    }
+    private static string Naming(string value) => $@"(?<![\w.]){Regex.Escape(value)}(?!\.?\w)";
 
-    private void Pin(int? version)
+    private void WriteSchemaVersion(JsonNode? value)
     {
         var path = Path.Combine(Tree.Root, SpecManifest.RelativePath);
         var manifest = JsonNode.Parse(File.ReadAllText(path))!.AsObject();
         manifest.Remove("schemaVersion");
-        if (version is { } pinned)
+        if (value is not null)
         {
-            manifest["schemaVersion"] = pinned;
+            manifest["schemaVersion"] = value;
         }
 
         File.WriteAllText(path, manifest.ToJsonString());
@@ -210,11 +211,8 @@ public sealed partial class VersioningSteps
     private static readonly HashSet<string> FrontmatterRules = new(StringComparer.Ordinal) { "SPEC001", "SPEC002", "SPEC003", "SPEC004" };
 
     private SpecTree? _tree;
-    private SchemaVersion? _one;
-    private SchemaVersion? _two;
+    private Dictionary<SemanticVersion, SchemaVersion>? _shipped;
     private SpecCheckReport? _report;
-    private IReadOnlyList<int>? _enumerated;
-    private int? _newest;
     private string _stdout = string.Empty;
     private string _stderr = string.Empty;
     private int _exitCode = -1;

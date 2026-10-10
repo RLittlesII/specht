@@ -3,7 +3,7 @@ using Rocket.Surgery.Extensions.Testing.AutoFixtures;
 namespace specht.tests;
 
 /// <summary>
-/// Builds a <see cref="SchemaVersion"/>: version 1 with three schemas that accept anything and an empty rule vocabulary,
+/// Builds a <see cref="SchemaVersion"/>: version 0.1.0 with three schemas that accept anything and an empty rule vocabulary,
 /// until a test overrides what it asserts on.
 /// </summary>
 /// <remarks>
@@ -16,7 +16,7 @@ internal sealed class SchemaVersionFixture : AutoFixtureBase<SchemaVersionFixtur
     /// <summary>Sets the version's number.</summary>
     /// <param name="number">The number.</param>
     /// <returns>The fixture.</returns>
-    public SchemaVersionFixture WithNumber(int number) => With(ref _number, number);
+    public SchemaVersionFixture WithNumber(SemanticVersion number) => With(ref _number, number);
 
     /// <summary>Sets the version's rule vocabulary.</summary>
     /// <param name="ruleIds">The rule ids.</param>
@@ -27,7 +27,7 @@ internal sealed class SchemaVersionFixture : AutoFixtureBase<SchemaVersionFixtur
 
     private SchemaVersion Build() => new(_number, "{}", "{}", "{}", _ruleIds);
 
-    private int _number = 1;
+    private SemanticVersion _number = new(0, 1, 0);
 
     private IReadOnlySet<string> _ruleIds = new HashSet<string>(StringComparer.Ordinal);
 }

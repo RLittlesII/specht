@@ -9,7 +9,7 @@ namespace specht.Report;
 /// made from one <see cref="SpecCheckReport"/>. A function of the report alone, so nothing in it reads the clock, the
 /// machine or the environment (B-006, C-3).
 /// </summary>
-/// <param name="SchemaVersion">The schema version checked against.</param>
+/// <param name="SchemaVersion">The schema version checked against, as <c>major.minor.patch</c>.</param>
 /// <param name="SchemaSource">Where the schemas the check used came from.</param>
 /// <param name="Layouts">Each layout, with its specification count.</param>
 /// <param name="ItemCount">How many items sit beside the specifications.</param>
@@ -18,7 +18,7 @@ namespace specht.Report;
 /// <param name="WarningCount">How many violations are warnings.</param>
 /// <param name="Violations">Every violation, in the report's order.</param>
 public sealed record SpecReportDocument(
-    int SchemaVersion,
+    string SchemaVersion,
     SpecSchemaSource SchemaSource,
     IReadOnlyList<SpecReportLayout> Layouts,
     int ItemCount,
@@ -32,7 +32,7 @@ public sealed record SpecReportDocument(
     /// <returns>The document.</returns>
     public static SpecReportDocument From(SpecCheckReport report) =>
         new(
-            report.SchemaVersion,
+            report.SchemaVersion.ToString(),
             SpecSchemaSource.Embedded,
             report.Layouts,
             report.ItemCount,

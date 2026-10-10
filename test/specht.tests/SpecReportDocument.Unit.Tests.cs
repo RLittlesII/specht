@@ -90,13 +90,13 @@ public sealed partial class SpecReportDocumentUnitTests
     public void AReportCheckedAgainstAPinnedVersion_WhenMadeADocument_ShouldNameThatVersionAndTheEmbeddedSource()
     {
         // Given
-        SpecCheckReport report = new SpecCheckReportFixture().WithSchemaVersion(2);
+        SpecCheckReport report = new SpecCheckReportFixture().WithSchemaVersion(new SemanticVersion(0, 2, 0));
 
         // When
         var document = SpecReportDocument.From(report);
 
         // Then
-        document.SchemaVersion.Should().Be(2);
+        document.SchemaVersion.Should().Be("0.2.0");
         document.SchemaSource.Should().Be(SpecSchemaSource.Embedded);
     }
 

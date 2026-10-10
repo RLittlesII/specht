@@ -32,7 +32,7 @@ public sealed class SpecReportDocumentIntegrationTests
         };
 
     [Fact]
-    public void ATreeWhoseManifestPinsNoVersion_WhenItsDocumentIsMade_ShouldNameSchemaVersion1FromTheEmbeddedSet()
+    public void ATreeWhoseManifestPinsNoVersion_WhenItsDocumentIsMade_ShouldNameSchemaVersionZeroOneZeroFromTheEmbeddedSet()
     {
         // Given
         using var tree = new SpecTree();
@@ -42,7 +42,7 @@ public sealed class SpecReportDocumentIntegrationTests
         var document = SpecReportDocument.From(tree.Run());
 
         // Then
-        document.SchemaVersion.Should().Be(1);
+        document.SchemaVersion.Should().Be("0.1.0");
         document.SchemaSource.Should().Be(SpecSchemaSource.Embedded);
     }
 

@@ -16,9 +16,9 @@
   ],
   "properties": {
     "schemaVersion": {
-      "description": "The schema version the tree was checked against.",
-      "type": "integer",
-      "minimum": 1
+      "description": "The schema version the tree was checked against, as major.minor.patch.",
+      "type": "string",
+      "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)$"
     },
     "schemaSource": {
       "description": "Where the schemas the check used came from: the set embedded in the tool, the repository's own files, or the on-disk copy of a recorded upstream source.",

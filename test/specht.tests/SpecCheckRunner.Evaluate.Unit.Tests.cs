@@ -128,11 +128,11 @@ public sealed class SpecCheckRunnerEvaluateUnitTests
     {
         // Given
         SchemaVersion one = new SchemaVersionFixture();
-        SchemaVersion two = new SchemaVersionFixture().WithNumber(2);
+        SchemaVersion two = new SchemaVersionFixture().WithNumber(new SemanticVersion(0, 2, 0));
         var fileSystem = new MockFileSystem(
             new Dictionary<string, MockFileData>
             {
-                [Path.Combine("repo", ".spec", "schema", "spec-structure.schema.json")] = new("""{ "schemaVersion": 2 }"""),
+                [Path.Combine("repo", ".spec", "schema", "spec-structure.schema.json")] = new("""{ "schemaVersion": "0.2.0" }"""),
             });
         SpecModel model = new SpecModelFixture().WithSchemas(SpecSchemas.Load(fileSystem, "repo", new SchemaVersions([one, two])));
 
@@ -140,7 +140,7 @@ public sealed class SpecCheckRunnerEvaluateUnitTests
         var report = SpecCheckRunner.Evaluate(model, []);
 
         // Then
-        report.SchemaVersion.Should().Be(2);
+        report.SchemaVersion.Should().Be(new SemanticVersion(0, 2, 0));
     }
 
     [Theory]

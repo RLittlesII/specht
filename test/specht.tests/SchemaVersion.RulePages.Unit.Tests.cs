@@ -14,21 +14,21 @@ namespace specht.tests;
 [Trait("Tier", "Unit")]
 public sealed class SchemaVersionRulePagesUnitTests
 {
-    /// <summary>Gets the number of every schema version the engine embeds.</summary>
-    public static TheoryData<int> Shipped => [.. SchemaVersions.Embedded.Versions.Select(static version => version.Number)];
+    /// <summary>Gets the number of every schema version the engine embeds, as <c>major.minor.patch</c>.</summary>
+    public static TheoryData<string> Shipped => [.. SchemaVersions.Embedded.Versions.Select(static version => version.Number.ToString())];
 
     /// <summary>Gets every shipped version's number with each rule id in its vocabulary.</summary>
-    public static TheoryData<int, string> Rules
+    public static TheoryData<string, string> Rules
     {
         get
         {
-            var rules = new TheoryData<int, string>();
+            var rules = new TheoryData<string, string>();
 
             foreach (var version in SchemaVersions.Embedded.Versions)
             {
                 foreach (var id in version.RuleIds.Order(StringComparer.Ordinal))
                 {
-                    rules.Add(version.Number, id);
+                    rules.Add(version.Number.ToString(), id);
                 }
             }
 
@@ -38,10 +38,10 @@ public sealed class SchemaVersionRulePagesUnitTests
 
     [Theory]
     [MemberData(nameof(Shipped))]
-    public void AShippedVersion_WhenItsRulePagesAreGathered_ShouldNameExactlyItsVocabularyOnePageEach(int number)
+    public void AShippedVersion_WhenItsRulePagesAreGathered_ShouldNameExactlyItsVocabularyOnePageEach(string number)
     {
         // Given
-        var version = SchemaVersions.Embedded.Select(number);
+        var version = Version(number);
 
         // When
         var pages = version.RulePages.Keys;
@@ -66,13 +66,14 @@ public sealed class SchemaVersionRulePagesUnitTests
 
     [Theory]
     [MemberData(nameof(Rules))]
-    public void ARulePage_WhenRead_ShouldFollowTheOnePageShapeInOrderWithNoOtherSection(int number, string id)
+    public void ARulePage_WhenRead_ShouldFollowTheOnePageShapeInOrderWithNoOtherSection(string number, string id)
     {
         // Given
-        var text = Page(number, id);
+        var version = Version(number);
+        var text = Page(version, id);
 
         // When
-        var page = RulePage.Read(number, id, text);
+        var page = RulePage.Read(EmbeddedFolder.Of(version), id, text);
 
         // Then
         using var scope = new AssertionScope();
@@ -94,10 +95,10 @@ public sealed class SchemaVersionRulePagesUnitTests
 
     [Theory]
     [MemberData(nameof(Rules))]
-    public void ARulePage_WhenItsExampleViolationIsRead_ShouldShowTheLineTheToolPrintsForThatRule(int number, string id)
+    public void ARulePage_WhenItsExampleViolationIsRead_ShouldShowTheLineTheToolPrintsForThatRule(string number, string id)
     {
         // Given
-        var page = RulePage.Read(number, id, Page(number, id));
+        var page = Read(number, id);
 
         // When
         var lines = page.ToolLineFiles();
@@ -108,10 +109,10 @@ public sealed class SchemaVersionRulePagesUnitTests
 
     [Theory]
     [MemberData(nameof(Rules))]
-    public void ARulePage_WhenItsMetadataIsRead_ShouldGiveTheSchemaVersionItShipsUnder(int number, string id)
+    public void ARulePage_WhenItsMetadataIsRead_ShouldGiveTheSchemaVersionItShipsUnder(string number, string id)
     {
         // Given
-        var page = RulePage.Read(number, id, Page(number, id));
+        var page = Read(number, id);
 
         // When
         var version = page.Value("Schema version");
@@ -122,10 +123,10 @@ public sealed class SchemaVersionRulePagesUnitTests
 
     [Theory]
     [MemberData(nameof(Rules))]
-    public void ARulePage_WhenRead_ShouldCarryNoAbsolutePath(int number, string id)
+    public void ARulePage_WhenRead_ShouldCarryNoAbsolutePath(string number, string id)
     {
         // Given
-        var page = RulePage.Read(number, id, Page(number, id));
+        var page = Read(number, id);
 
         // When
         var absolute = Regex.Matches(page.Text, """(?<=^|[\s`"'(|])(?:/[A-Za-z]|[A-Za-z]:[\\/]|~/)\S*""", RegexOptions.Multiline)
@@ -136,11 +137,20 @@ public sealed class SchemaVersionRulePagesUnitTests
         absolute.Should().BeEmpty();
     }
 
-    private static string Page(int number, string id)
-    {
-        var pages = SchemaVersions.Embedded.Select(number).RulePages;
-        pages.Should().ContainKey(id, "version {0} ships a page for every rule id in its vocabulary (B-031)", number);
+    private static SchemaVersion Version(string number) =>
+        SchemaVersions.Embedded.Versions.Single(version => string.Equals(version.Number.ToString(), number, StringComparison.Ordinal));
 
-        return pages[id];
+    private static RulePage Read(string number, string id)
+    {
+        var version = Version(number);
+
+        return RulePage.Read(EmbeddedFolder.Of(version), id, Page(version, id));
+    }
+
+    private static string Page(SchemaVersion version, string id)
+    {
+        version.RulePages.Should().ContainKey(id, "version {0} ships a page for every rule id in its vocabulary (B-031)", version.Number);
+
+        return version.RulePages[id];
     }
 }

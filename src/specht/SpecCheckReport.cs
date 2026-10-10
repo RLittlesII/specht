@@ -10,7 +10,7 @@ namespace specht;
 /// <param name="RulesEvaluated">How many <c>SPEC###</c> ids were evaluated.</param>
 /// <param name="Violations">Every violation, most severe first.</param>
 public sealed record SpecCheckReport(
-    int SchemaVersion,
+    SemanticVersion SchemaVersion,
     int SpecificationCount,
     IReadOnlyList<SpecReportLayout> Layouts,
     int ItemCount,
