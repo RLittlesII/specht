@@ -2,7 +2,7 @@ id: "0030"
 type: test
 title: Prove a check writes nothing under the root
 
-status: ready-for-architecture
+status: done
 
 priority: high
 risk: 2
@@ -21,20 +21,24 @@ claims:
   - B-012
 
 created: "2026-10-08"
-updated: "2026-10-08"
-closed: null
+updated: "2026-10-09"
+closed: "2026-10-09"
 
 summary: |
-  A test over a synthetic root that no file is created, modified or deleted
-  by a run, through Spectre's command tester (C-7). The `--report` file is
-  the one exemption, and it is 0001-F3's to write.
+  The B-012 scenario over a synthetic root: a run with no report path, the
+  built tool launched as a process, leaves every file under the root as it
+  was - none created, modified or deleted. The `--report` exemption is
+  proven with the file 0001-F3 writes (decision 0005).
 
 acceptance_criteria:
-  - "B-012 — root unchanged after a run, except the `--report` file"
+  - "B-012 — root unchanged after a run with no report path"
   - "§ 9 carries a row naming a test for each id above."
 
-decisions: []
+decisions:
+  - "2026-10-09, the repository owner: split. The scenario runs with no report path and launches the built tool; the report exemption goes to 0036 and the command-tester Integration test to 0099's migration item. Rejected: a private `Check` helper over Spectre's command tester (PR #4 review). Recorded as 0001-F2 decision 0005."
 
 out_of_scope:
   - "Writing the `--report` file — § 5 #10, 0001-F3."
   - "Autofix — § 5 #5."
+  - "The report exemption: the file `--report` names is the only write under the root — § 5 #10, 0036 (0001-F3 C-7, decision 0005)."
+  - "The command-tester Integration test for B-012 — the item migrating command tests to 0099's harness (ADR-0007), not yet filed."
