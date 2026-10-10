@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Text.RegularExpressions;
 using AwesomeAssertions;
 using Reqnroll;
@@ -72,6 +73,9 @@ public sealed partial class CheckSteps
 
     [Given("the root's manifest is not well-formed JSON")]
     public void GivenTheRootsManifestIsNotWellFormedJson() => Tree.WriteRaw(SpecManifest.RelativePath, "{ \"sections\": ");
+
+    [Given("a snapshot of every file under the root")]
+    public void GivenASnapshotOfEveryFileUnderTheRoot() => _snapshot = Snapshot(Tree.Root);
 
     [When("the check runs")]
     [When("the check runs without asking for the JSON document")]
@@ -189,6 +193,10 @@ public sealed partial class CheckSteps
         }
     }
 
+    [Then("no file under the root was created, modified or deleted")]
+    public void ThenNoFileUnderTheRootWasCreatedModifiedOrDeleted() =>
+        Snapshot(Tree.Root).Should().BeEquivalentTo(_snapshot ?? throw new InvalidOperationException("No snapshot was taken."));
+
     [AfterScenario]
     public void DeleteRoots()
     {
@@ -229,6 +237,13 @@ public sealed partial class CheckSteps
         }
     }
 
+    private static Dictionary<string, string> Snapshot(string root) =>
+        Directory.EnumerateFiles(root, "*", new EnumerationOptions { RecurseSubdirectories = true, AttributesToSkip = 0 })
+            .ToDictionary(
+                file => Path.GetRelativePath(root, file).Replace(Path.DirectorySeparatorChar, '/'),
+                static file => $"{new FileInfo(file).Length}:{Convert.ToHexString(SHA256.HashData(File.ReadAllBytes(file)))}",
+                StringComparer.Ordinal);
+
     private string[] ViolationLines() => Lines(_stdout).SkipLast(Summary.Count).ToArray();
 
     private string SummaryLine(int index)
@@ -248,6 +263,7 @@ public sealed partial class CheckSteps
     private SpecTree? _tree;
     private string? _nested;
     private string? _typed;
+    private Dictionary<string, string>? _snapshot;
     private string _stdout = string.Empty;
     private string _stderr = string.Empty;
     private int _exitCode = -1;
