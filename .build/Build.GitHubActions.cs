@@ -245,8 +245,8 @@ internal sealed partial class Build
     /// </summary>
     private static void GateOnChangedFiles(RocketSurgeonsGithubActionsJob buildJob)
     {
-        // B-012, B-014, C-5: a pull request whose changed files are all Markdown outside any .spec/ folder skips;
-        // a push, no changed files, or a failed diff builds.
+        // B-012, B-014, B-015, C-5: a pull request skips on windows, and on ubuntu when its changed files are all
+        // Markdown outside any .spec/ folder; a push builds, as does ubuntu on no changed files or a failed diff.
         const string gate = "steps.changes.outputs.build == 'true'";
         var fetchStep = buildJob.Steps.OfType<RunStep>().Single(static z => z.Run == "git fetch --prune");
         var decisionStep = new RunStep("Decide whether the change needs a build")
@@ -261,7 +261,10 @@ internal sealed partial class Build
             },
             Run = """
                 build=true
-                if [ "$EVENT_NAME" = "pull_request" ] && files="$(git diff --name-only --no-renames "$BASE_SHA...$HEAD_SHA")" && [ -n "$files" ]; then
+                if [ "$EVENT_NAME" = "pull_request" ] && [ "$RUNNER_OS" = "Windows" ]; then
+                build=false
+                echo "::notice title=Windows gates skipped::The Windows gates run on a push to main only."
+                elif [ "$EVENT_NAME" = "pull_request" ] && files="$(git diff --name-only --no-renames "$BASE_SHA...$HEAD_SHA")" && [ -n "$files" ]; then
                 if ! grep -Evq '\.md$' <<< "$files" && ! grep -Eq '(^|/)\.spec/' <<< "$files"; then
                 build=false
                 echo "::notice title=Build skipped::Every changed file is Markdown outside any .spec/ folder."
