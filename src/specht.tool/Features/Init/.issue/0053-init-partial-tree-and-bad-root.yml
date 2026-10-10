@@ -2,7 +2,7 @@ id: "0053"
 type: task
 title: Fill a partial tree and fail a root that is not a directory
 
-status: ready-for-architecture
+status: done
 
 priority: high
 risk: 2
@@ -23,8 +23,8 @@ claims:
   - B-011
 
 created: "2026-10-08"
-updated: "2026-10-08"
-closed: null
+updated: "2026-10-10"
+closed: "2026-10-10"
 
 summary: |
   With some of the eight files present and no manifest, or one pinning the
