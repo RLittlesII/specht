@@ -42,8 +42,10 @@ message when the violation has none.
 their order, claim ids, one traceability row per claim, `.feature` tags that
 resolve to claims, and dependency edges that agree from both ends. Rules are
 `SPEC001`–`SPEC061`
-([brief § 4](.spec/brief.md#4-the-rule-vocabulary-fixed-versioned-with-the-schema)),
-and each finding says what the rule expected.
+([brief § 4](.spec/brief.md#4-the-rule-vocabulary-fixed-versioned-with-the-schema)
+summarises them; each has a page under
+[`docs/rules/v1/`](docs/rules/v1/)), and each finding says
+what the rule expected.
 
 Deterministic and offline: the same tree gives the same report, and every path
 is relative to the root.

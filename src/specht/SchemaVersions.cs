@@ -10,7 +10,7 @@ public sealed class SchemaVersions
     public SchemaVersions(IEnumerable<SchemaVersion> versions) =>
         Versions = versions.OrderBy(static version => version.Number).ToList();
 
-    /// <summary>Every version embedded in the engine, read from its <c>schema/v&lt;n&gt;/</c> resources.</summary>
+    /// <summary>Every version embedded in the engine, read from its <c>schema/v&lt;n&gt;/</c> and <c>rules/v&lt;n&gt;/</c> resources.</summary>
     public static SchemaVersions Embedded { get; } = ReadEmbedded();
 
     /// <summary>The versions, ascending by number.</summary>
@@ -36,14 +36,19 @@ public sealed class SchemaVersions
 
         return new SchemaVersions(numbers.Select(number => new SchemaVersion(
             number,
-            Read(number, "feature-spec.frontmatter.schema.json"),
-            Read(number, "task.frontmatter.schema.json"),
-            Read(number, "epic.frontmatter.schema.json"),
-            Vocabulary(number))));
-
-        string Read(int number, string file)
+            Read($"{Prefix}{number}/feature-spec.frontmatter.schema.json"),
+            Read($"{Prefix}{number}/task.frontmatter.schema.json"),
+            Read($"{Prefix}{number}/epic.frontmatter.schema.json"),
+            Vocabulary(number))
         {
-            using var stream = assembly.GetManifestResourceStream($"schema/v{number}/{file}")!;
+            RulePages = assembly.GetManifestResourceNames()
+                .Where(name => name.StartsWith($"{PagePrefix}{number}/", StringComparison.Ordinal))
+                .ToDictionary(static name => Path.GetFileNameWithoutExtension(name), Read, StringComparer.Ordinal),
+        }));
+
+        string Read(string name)
+        {
+            using var stream = assembly.GetManifestResourceStream(name)!;
             using var reader = new StreamReader(stream);
 
             return reader.ReadToEnd();
@@ -67,4 +72,5 @@ public sealed class SchemaVersions
         };
 
     private const string Prefix = "schema/v";
+    private const string PagePrefix = "rules/v";
 }

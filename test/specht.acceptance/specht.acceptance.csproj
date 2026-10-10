@@ -42,6 +42,8 @@
     <Compile Include="..\specht.tests\Baseline\GoldenReport.cs" Link="Engine\GoldenReport.cs" />
     <!-- The engine's built library and the references that would let the machine reach a verdict (B-005, B-006). -->
     <Compile Include="..\specht.tests\EngineAssembly.cs" Link="Engine\EngineAssembly.cs" />
+    <!-- The reader the rule page tests and steps share (0001-F3 B-032, B-033). -->
+    <Compile Include="..\specht.tests\RulePage.cs" Link="Report\RulePage.cs" />
     <Content Include="..\specht.tests\Baseline\engine-e7dba24.json"
              Link="Baseline\engine-e7dba24.json"
              CopyToOutputDirectory="PreserveNewest" />
