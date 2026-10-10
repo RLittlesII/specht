@@ -2,7 +2,7 @@ id: "0005"
 type: task
 title: Read layouts, exclusions and file shapes from the manifest
 
-status: in-progress
+status: done
 
 priority: high
 risk: 2
@@ -25,7 +25,7 @@ claims:
 
 created: "2026-10-08"
 updated: "2026-10-09"
-closed: null
+closed: "2026-10-09"
 
 summary: |
   The input contract both discovery modes share: each layout (name and glob),
@@ -59,9 +59,17 @@ decisions:
     `SpecCheckReport.MigrationSummary` is removed with the assertions on its
     text (decision 0006).
     Rejected: generalising it over the manifest's layouts; keeping it.
+  - |
+    2026-10-09, spec-author recording the repository owner's answer to OQ-11:
+    README.md's default-manifest block omits the five discovery keys, its
+    table of configurable keys gains them with no layout named, and item
+    0119's criterion is amended to that (decision 0007).
+    Rejected: showing `legacy` in README.md; dropping `legacy` from the
+    default manifest.
 
 out_of_scope:
   - "SPEC011 for a layout not named `legacy` — decision 0005; 0006 (B-004)."
   - "What a glob token outside the dialect, a duplicate layout name or a malformed layout entry does — § 11 OQ-7, open."
+  - "A trailing `**`, a `**` beside other characters, and the item id read from a file name under another task grammar — § 11 OQ-8, OQ-9 and OQ-10, open."
   - "Walking or listing files with these inputs — 0007 and 0008."
   - "Reading `.gitignore` — § 5 #2."

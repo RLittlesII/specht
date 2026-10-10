@@ -128,14 +128,19 @@ work items, gets every other check.
 
 ### What is configurable
 
-| Manifest key        | Read today                                                                                                                                                  |
-| ------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `schemaVersion`     | Which embedded version checks the tree: its frontmatter schemas and its rule vocabulary.                                                                    |
-| `sections`          | The `##` headings `SPEC010` requires, in order.                                                                                                             |
-| `tables`            | The header cells `SPEC013` expects in a role's section, by role name; a key that is not a role exits `3`.                                                   |
-| `roles`             | The `sections` title that holds the claims, the matrix and the sign-off, which `SPEC013`, `SPEC021`, `SPEC030`, `SPEC031`, `SPEC060` and `SPEC061` look up. |
-| `markers`           | The text of a missing-test cell, a draft and a blocked sign-off row and the approved status, which `SPEC060` and `SPEC061` look for.                        |
-| `identifiers.claim` | The claim id grammar `SPEC030` enforces in § 3, and the § 3 ids a tag may resolve to under `SPEC021`.                                                       |
+| Manifest key        | Read today                                                                                                                                                      |
+| ------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `schemaVersion`     | Which embedded version checks the tree: its frontmatter schemas and its rule vocabulary.                                                                        |
+| `layouts`           | Where specifications are found: an ordered list, each entry a name and a path glob, which discovery matches and the summary and the report name each entry by.  |
+| `exclusions`        | The directories discovery never looks in: a bare name at any depth, or a path from the root when the entry begins with `/`.                                     |
+| `taskFiles`         | The file-name shape of an item beside a specification, `{task}` standing for `identifiers.task`, which discovery matches to find the files the item rules read. |
+| `epicFiles`         | The path glob discovery matches to find epic files.                                                                                                             |
+| `companionFiles`    | The file-name glob of a companion beside a specification, which discovery matches to find the `.feature` file `SPEC020` and `SPEC021` read.                     |
+| `sections`          | The `##` headings `SPEC010` requires, in order.                                                                                                                 |
+| `tables`            | The header cells `SPEC013` expects in a role's section, by role name; a key that is not a role exits `3`.                                                       |
+| `roles`             | The `sections` title that holds the claims, the matrix and the sign-off, which `SPEC013`, `SPEC021`, `SPEC030`, `SPEC031`, `SPEC060` and `SPEC061` look up.     |
+| `markers`           | The text of a missing-test cell, a draft and a blocked sign-off row and the approved status, which `SPEC060` and `SPEC061` look for.                            |
+| `identifiers.claim` | The claim id grammar `SPEC030` enforces in § 3, and the § 3 ids a tag may resolve to under `SPEC021`.                                                           |
 
 A key left out takes its value from the default manifest. A key the engine does
 not know exits `3`; a key starting with `$` is ignored. The other `identifiers`
@@ -154,7 +159,10 @@ still literals in the engine; they move into the manifest in
 ### Default manifest
 
 It lives at `<root>/.spec/schema/spec-structure.schema.json`. `specht init`
-writes it when the file is absent.
+writes it when the file is absent. The block leaves out the five discovery keys
+(`layouts`, `exclusions`, `taskFiles`, `epicFiles` and `companionFiles`): the
+file carries each at its default, and a manifest without them is read the same
+way.
 
 <!-- prettier-ignore -->
 ```json
