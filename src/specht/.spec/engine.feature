@@ -15,8 +15,8 @@ Feature: The engine, extracted unchanged
 
   @B-002
   Scenario: Both layouts are held to the same rules
-    Given the root holds one specification in the legacy layout missing its traceability section
-    And one specification in the co-located layout missing its traceability section
+    Given the root holds one specification in the epics layout missing its traceability section
+    And one specification in the features layout missing its traceability section
     When the engine runs
     Then each specification is reported for the missing section
     And neither is reported for the layout it is in

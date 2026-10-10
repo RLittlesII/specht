@@ -74,4 +74,16 @@ decision 0003 already accepted for `frontmatterSchemas.task`.
 
 ## Reversal
 
-None.
+**Amended 2026-10-09 by the repository owner ([decision 0008](0008-the-layouts-are-named-epics-and-features-and-the-file-shape-keys-are-lists.md)).**
+Two parts of the call above are superseded, and the sections above stand as
+written.
+
+- The default layout names: `legacy` reads as `epics` and `coLocated` as
+  `features`. The Why line that the two names change no output no longer
+  holds: the default manifest's summary and report now print the new names.
+- `taskFiles`, `epicFiles` and `companionFiles` are each a list of globs, not
+  a string. The defaults are the same globs as lists of one, a file matching
+  any entry counts, and an empty list is rejected (`0001-F5` B-041).
+
+The five keys, flat and top-level, `layouts` replaced whole and ordered,
+`{task}` and the glob dialect stand.

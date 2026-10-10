@@ -185,11 +185,12 @@ Delivered so far by items 0026, 0027 and 0028. The slice layout is `dotnet-tool`
 
 ## 10. Lessons / Spec Deltas
 
-<!-- last written by: spec-author, 2026-10-09 (B-012 scenario) -->
+<!-- last written by: spec-author, 2026-10-09 (B-012 scenario; `0001-F6` decision 0008) -->
 
 - 2026-10-08, C-2 reworded in place during 0027: it named an exception handler as the mechanism, and the command now catches the engine's input failures itself (§ 7). The rule and what it rules out are unchanged.
 - 2026-10-09, B-015 added on the owner's acceptance of [ADR-0005](../../../../../.spec/adr/0005-typed-injected-stages-not-a-chain.md) (c): a rule that throws reached Spectre and returned `-1`, the anti-pattern C-2 rules out. B-003 does not cover it, because its Given is a completed run; B-015 holds the command to `1` once `0001-F1` B-013 reports the fault as an error. C-2 is unchanged.
 - 2026-10-09, the `@B-012` scenario amended in place to run with no report path: `--report` is not built, so its exemption is proven with `0001-F3` C-7 (decision 0005). B-012's text and § 5 row 10's owner are unchanged.
+- 2026-10-09, the default layouts renamed by the owner in review of pull request #78 ([`0001-F6` decision 0008](../../../../specht/Discovery/.spec/decisions/0008-the-layouts-are-named-epics-and-features-and-the-file-shape-keys-are-lists.md)): `legacy` is `epics` and `coLocated` is `features`. The `@B-002` scenario names the layouts so, and under the default manifest the summary's first line for its tree now reads `specifications: epics 2, features 1`. B-002's text is unchanged. Owed to the `test-writer`: the reworded step and the expected summary lines. Owed to the `implementer`: § 7 still spells `specifications: legacy 2, coLocated 1`.
 
 ## 11. Open Questions
 

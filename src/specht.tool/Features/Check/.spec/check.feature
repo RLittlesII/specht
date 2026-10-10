@@ -15,7 +15,7 @@ Feature: The check command
 
   @B-002
   Scenario: A run ends with the summary
-    Given the root holds two specifications in the legacy layout and one in the co-located layout
+    Given the root holds two specifications in the epics layout and one in the features layout
     When the check runs
     Then the standard output ends with the specification count per layout
     And the item count and the count of rule ids evaluated

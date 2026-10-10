@@ -40,4 +40,7 @@ manifest that renames the legacy layout loses `SPEC011` with no diagnostic.
 
 ## Reversal
 
-None.
+**Amended 2026-10-09 by the repository owner ([decision 0008](0008-the-layouts-are-named-epics-and-features-and-the-file-shape-keys-are-lists.md)).**
+The default manifest's layout `legacy` is renamed `epics`. The interim stands,
+and the name `SPEC011` selects is `epics`: "the layout named `legacy`" above
+reads as "the layout named `epics`". The sections above stand as written.

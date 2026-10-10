@@ -17,11 +17,11 @@ Feature: Discovery
 
   @B-001
   Scenario: A declared layout list replaces the default layouts
-    Given the manifest declares one layout only, the co-located one
-    And the root holds a specification where the default legacy layout would find it
-    And the root holds a co-located specification
+    Given the manifest declares one layout only, the features layout
+    And the root holds a specification where the default epics layout would find it
+    And the root holds a specification where the features layout finds it
     When the check runs
-    Then only the co-located specification is discovered
+    Then only the specification in the features layout is discovered
     And the summary names one layout
 
   @B-002
@@ -57,15 +57,32 @@ Feature: Discovery
     And the epic's frontmatter is checked
     And the companion's tags are resolved against the specification
 
+  @B-001
+  Scenario: The default layouts are named epics and features
+    Given the root holds one specification under the epics folder and one beside code
+    When the check runs
+    Then the summary and the report name the layouts "epics" and "features", in that order
+
+  @B-012
+  Scenario: A file matching any entry of a list is discovered
+    Given the manifest declares two item file shapes, two epic file globs and two companion globs
+    And the root holds, beside a specification, one item matching the first item shape and one matching the second
+    And the root holds one epic file matching the first epic glob and one matching the second
+    And the root holds, beside a second specification, one companion matching the second companion glob only
+    When the check runs
+    Then the summary counts two items
+    And both epics' frontmatter is checked
+    And that companion's tags are resolved against the second specification
+
   @B-004
   Scenario: Path identity applies only to a layout that declares it
-    Given the manifest's legacy layout declares which path segments carry the epic and the Feature id
-    And the manifest's co-located layout declares none
-    And the root holds a legacy specification whose epic directory does not match its frontmatter
-    And the root holds a co-located specification under a folder named nothing like its identity
+    Given the manifest's epics layout declares which path segments carry the epic and the Feature id
+    And the manifest's features layout declares none
+    And the root holds a specification in the epics layout whose epic directory does not match its frontmatter
+    And the root holds a specification in the features layout under a folder named nothing like its identity
     When the check runs
-    Then the legacy specification is reported for the mismatch
-    And the co-located specification is not
+    Then the specification in the epics layout is reported for the mismatch
+    And the specification in the features layout is not
 
   @B-005
   Scenario: Discovery in a git work tree never opens an ignored directory
