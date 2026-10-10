@@ -1,7 +1,7 @@
 Feature: Continuous integration
   As the reviewer of a pull request
-  I want every change built and checked on every operating system the tool runs on
-  So that a merge never rests on the author's word or on one machine
+  I want every change built and checked before it merges, and on every operating system the tool runs on once it reaches the main branch
+  So that a merge never rests on the author's word, and the main branch never rests on one operating system
 
   @B-001
   Scenario: A pull request is built
@@ -39,14 +39,26 @@ Feature: Continuous integration
 
   @B-004
   Scenario: Every operating system runs every gate
-    Given a pull request that changes code
+    Given a commit pushed to the main branch
     When integration runs on one operating system
+    Then the format, compile, unit test, integration test, acceptance test and self-check gates and the benchmarks each run as a step of their own
+
+  @B-004 @boundary
+  Scenario: A pull request still runs every gate on Linux
+    Given a pull request that changes code
+    When integration runs on Linux
+    Then the format, compile, unit test, integration test, acceptance test and self-check gates and the benchmarks each run as a step of their own
+
+  @B-004 @boundary
+  Scenario: A push to main still runs every gate on Windows
+    Given a commit pushed to the main branch
+    When integration runs on Windows
     Then the format, compile, unit test, integration test, acceptance test and self-check gates and the benchmarks each run as a step of their own
 
   @B-005
   Scenario: A failing gate fails its operating system's check
     Given a change whose tests fail on Windows only
-    When integration runs
+    When it is pushed to the main branch
     Then the Windows check fails
 
   @B-006
@@ -108,3 +120,21 @@ Feature: Continuous integration
     Given a pull request that changes no file
     When integration runs
     Then the build runs against the pull request's head
+
+  @B-015
+  Scenario: A pull request skips the gates on Windows
+    Given a pull request that changes code
+    When integration runs on Windows
+    Then none of the build's gates runs
+
+  @B-016
+  Scenario: A pull request passes its Windows check
+    Given a pull request that changes code
+    When integration runs
+    Then the Windows check passes
+
+  @B-016 @boundary
+  Scenario: A Windows-only failure does not fail a pull request's Windows check
+    Given a pull request whose tests would fail on Windows only
+    When integration runs
+    Then the Windows check passes

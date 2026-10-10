@@ -3,13 +3,49 @@ Feature: init
   I want one command that writes the schema set and the templates into my repository
   So that I start from the same bytes every other repository starts from, and keep what I already have
 
-  @B-001
-  Scenario: Init writes the defaults into a bare repository
+  @B-018
+  Scenario: Init with epics writes the eight files into a bare repository
     Given a root directory with no schema folder and no templates folder
-    When init runs against it
+    When init runs against it with epics
     Then the schema folder holds the manifest and the three frontmatter schemas
     And the templates folder holds the four templates
-    And the exit code is 0
+
+  @B-019
+  Scenario: Init without epics writes no epic schema
+    Given a root directory with no schema folder and no templates folder
+    When init runs against it
+    Then the schema folder holds the manifest and the Feature and item frontmatter schemas
+    And the schema folder holds no epic frontmatter schema
+    And the templates folder holds the four templates
+
+  @B-020
+  Scenario Outline: Init into a bare repository succeeds
+    Given a root directory with no schema folder and no templates folder
+    When init runs against it <with or without> epics
+    Then the exit code is 0
+
+    Examples:
+      | with or without |
+      | with            |
+      | without         |
+
+  @B-021
+  Scenario: Init without epics writes a manifest with no epic grammar
+    Given a root directory with no schema folder and no templates folder
+    When init runs against it
+    Then the manifest written declares no epic grammar
+
+  @B-022
+  Scenario: Init without epics writes a task grammar with no epic part
+    Given a root directory with no schema folder and no templates folder
+    When init runs against it
+    Then the manifest written has a task grammar with no epic part
+
+  @B-002 @boundary
+  Scenario: Init with epics never adds the epic grammar to an existing manifest
+    Given a root directory whose schema folder holds a manifest declaring no epic grammar
+    When init runs against it with epics
+    Then the manifest is byte-for-byte as it was
 
   @B-002 @boundary
   Scenario: Init never overwrites an existing file
@@ -23,7 +59,7 @@ Feature: init
     Given a root directory with no schema folder and no templates folder
     And no upstream schema source is recorded
     When init runs against it
-    Then each written file is byte-identical to the tool's embedded copy
+    Then each written file other than the manifest is byte-identical to the tool's embedded copy
 
   @B-004
   Scenario: The embedded copies equal this repository's live copy on what the tool owns

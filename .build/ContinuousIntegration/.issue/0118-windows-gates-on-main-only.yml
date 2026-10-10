@@ -1,0 +1,77 @@
+id: "0118"
+type: task
+title: Run the Windows gates on a push to main only
+
+status: done
+
+priority: high
+risk: 2
+rank: 94
+
+parent: "0063"
+children: []
+
+depends_on: ["0102"] # 0102's in-leg decision step (C-5) also decides this
+blocks: []
+spikes: []
+
+spec: .build/ContinuousIntegration/.spec/README.md
+
+claims:
+  - B-001
+  - B-004
+  - B-014
+  - B-015
+  - B-016
+
+created: "2026-10-09"
+updated: "2026-10-09"
+closed: "2026-10-09"
+
+summary: |
+  On a pull request the `windows-latest` leg runs none of the build's
+  targets and its check still reports and passes; on a push to `main` it
+  runs every gate, as today. The `ubuntu-latest` leg is unchanged on both
+  events (owner, 2026-10-09: build minutes are not free; decision 0003).
+
+  Depends on 0102: the decision is made by the step 0102 built inside each
+  leg (C-5), and cannot be built or verified without it.
+
+  Traps:
+  1. `ci.yml` is generated (C-1): regenerate it with `./build.sh Compile`,
+     commit the regeneration, and diff the step order.
+  2. `build (windows-latest)` is a required check (`0055-F8` B-002). It
+     must report and pass on a pull request under its unchanged name
+     (B-007, B-016); a leg left out of the run, or a job-level condition,
+     leaves it pending and blocks every merge (C-5).
+  3. A push to `main` must still run every gate on Windows (B-002, B-004),
+     including a documentation-only push (§ 5 #9).
+  4. The B-012 skip, the Codecov upload and the annotations on the
+     `ubuntu-latest` leg must still gate and run as they do.
+
+  Risk 2: one more condition in a decision step that exists, in a
+  generated workflow (C-1); a wrong answer either leaves a required check
+  pending on every pull request or drops the Windows gates from `main`
+  with nothing failing.
+
+acceptance_criteria:
+  - "B-015 — pull request: no target runs on windows"
+  - "B-016 — pull request: the windows check passes, under its name"
+  - "B-001, B-014 — amended first: a pull request builds on ubuntu"
+  - "B-004 — amended first: a push to `main` runs every gate on both systems; a pull request on ubuntu"
+  - "B-012, B-013 skip, the Codecov upload and B-006 annotations unchanged on ubuntu"
+  - "§ 9 keeps a row for each id above; `Missing` stands under the owner's no-tests decision (`0055-F2` § 8)."
+
+decisions:
+  - |
+    2026-10-09, the repository owner: the Windows gates run on a push to
+    `main` only; a Windows-only break is found one merge late (decision
+    0003). Rejected: deferring one test tier, which saves no billed
+    minute; and leaving windows out of a pull request's run, which leaves
+    a required check pending.
+
+out_of_scope:
+  - "Running the Windows gates on a pull request — § 5 #19."
+  - "Deferring a single test tier — § 5 #20."
+  - "Which checks branch protection requires — § 5 #3, `0055-F8`."
+  - "What each target does — § 5 #5, `0055-F1`."

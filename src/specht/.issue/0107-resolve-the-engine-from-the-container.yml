@@ -7,13 +7,13 @@ status: ready-for-implementation
 priority: high # DERIVED
 value: 3
 risk: 4
-rank: 63 # DERIVED
+rank: 68 # DERIVED
 
 parent: "0020"
 children: []
 
 depends_on: ["0106", "0099"] # registers 0106's rule list; host composition follows 0099's harness decision
-blocks: ["0007", "0008", "0016"] # DERIVED
+blocks: ["0007", "0008", "0016", "0118"] # DERIVED
 spikes: []
 
 spec: src/specht/.spec/README.md
