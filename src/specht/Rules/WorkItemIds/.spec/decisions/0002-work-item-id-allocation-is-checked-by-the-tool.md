@@ -84,4 +84,12 @@ a number skipped by mistake is never reported.
 
 ## Reversal
 
-None.
+**Amended 2026-10-09 by the repository owner (decisions [0004](0004-the-work-item-id-rules-are-opt-in-by-manifest.md) and [0006](0006-epics-count-in-the-work-item-number-space.md)).**
+Two of the author's readings above are now the owner's answers, and the
+sections above stand as written.
+
+- **Who is checked.** Opt-in by manifest: `0101-F8` OQ-2 is resolved.
+- **Epics.** Epics count: `0101-F8` OQ-7 is resolved, but for two epic files
+  sharing an id, which is OQ-10.
+
+Nothing is reversed.

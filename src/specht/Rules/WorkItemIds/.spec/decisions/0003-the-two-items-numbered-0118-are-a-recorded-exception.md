@@ -89,4 +89,10 @@ validate and a way to go stale.
 
 ## Reversal
 
-None.
+**Amended 2026-10-09 by the repository owner ([decision 0007](0007-the-recorded-exception-is-a-manifest-key-from-id-to-paths.md)).**
+The mechanism above, proposed by the author, is now the owner's choice: a
+manifest key from an id to the exact paths allowed to share it. "A marker
+inside the two item files" was put to the owner and rejected by the owner.
+The key's name, an entry's exact shape and where a stale-entry finding sits
+stay the author's proposal (`0101-F8` OQ-5, OQ-9). The sections above stand
+as written, and nothing is reversed.
