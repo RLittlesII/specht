@@ -55,4 +55,11 @@ declaration itself, and one that forgets to is told nothing.
 
 ## Reversal
 
-None.
+**Noted 2026-10-09, after review round 1.** Nothing is reversed, and the
+sections above stand as written. The owner selected the option "Opt-in by
+manifest"; "the question's wording beside that option" above is that
+option's description, which the owner did not restate. What the bullets
+under "The author's inference" hold was not asked and is now `0101-F8`
+OQ-11: the claimed-twice rule running where no sequence file is named
+(B-028), and no shipping manifest holding a shared-id entry (B-029).
+OQ-2's Resolution no longer cites B-028 or B-029 as answered.

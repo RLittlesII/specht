@@ -84,7 +84,7 @@ Where the invariant changes, the Feature is cut:
   claimed by two files anywhere in the tree, and a sequence file behind the
   ids present. It errors by default (`0101-F8` decision 0001), and it is the
   one rule Feature here that runs only where the manifest declares the files
-  it reads (`0101-F8` OQ-2, open).
+  it reads (`0101-F8` decision 0004).
 
 The AGENTS.md "&" heuristic was applied to `0101-F3`, "Heading and table
 form". Both halves share one invariant - a finding about the text of the

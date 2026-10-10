@@ -49,10 +49,16 @@ Feature: Work-item id allocation
     Then each claimed-twice finding names the three paths in the same order, sorted by path
 
   @B-005
-  Scenario: Every path in a finding is relative to the repository
-    Given two work items numbered 0118, each in its own folder
+  Scenario Outline: Every path in a finding is relative to the repository
+    Given <situation>
     When the check runs
-    Then every path the claimed-twice findings name starts at the repository root and is written with forward slashes
+    Then every path named by <finding> starts at the repository root and is written with forward slashes
+
+    Examples:
+      | situation                                                                                   | finding                    |
+      | two work items numbered 0118, each in its own folder                                        | the claimed-twice findings |
+      | the manifest records that two files share 0118, and no file is at one of the recorded paths | the stale-record finding   |
+      | work items numbered 0117 and 0118, and the sequence file holds 0117                         | the sequence finding       |
 
   @B-006
   Scenario: Ids each claimed once report nothing
@@ -84,7 +90,8 @@ Feature: Work-item id allocation
 
   @B-008
   Scenario: A work item that takes an epic's id is reported
-    Given an epic numbered 0101
+    Given the manifest says the repository has epics
+    And an epic numbered 0101
     And a work item numbered 0101
     When the check runs
     Then a claimed-twice finding names 0101, the work item and the epic
@@ -199,9 +206,23 @@ Feature: Work-item id allocation
     When the check runs
     Then the sequence finding names 0117, 0118 and the work item numbered 0118
 
+  @B-020
+  Scenario Outline: The finding names every file that carries the highest id
+    Given a work item numbered 0117
+    And <the highest work items>
+    And the sequence file holds 0117
+    When the check runs
+    Then the sequence finding names 0117 and both of those work items, each by its id and its path, sorted by path
+
+    Examples:
+      | the highest work items                                                                 |
+      | two work items numbered 0118 that the manifest records as sharing that id              |
+      | work items numbered 118 and 0118, under a manifest whose ids may be written either way |
+
   @B-021
   Scenario: A sequence file behind the highest epic is reported
-    Given work items numbered 0117 and 0118
+    Given the manifest says the repository has epics
+    And work items numbered 0117 and 0118
     And an epic numbered 0132
     And the sequence file holds 0118
     When the check runs
@@ -244,7 +265,7 @@ Feature: Work-item id allocation
 
   @B-027 @boundary
   Scenario: A repository that declares no work items is not checked
-    Given the manifest declares no work-item files instead
+    Given the manifest declares no work-item files and names no sequence file instead
     And two tracker files numbered 0118 that the manifest declares nothing about
     When the check runs
     Then no work-item id finding is reported
@@ -279,7 +300,24 @@ Feature: Work-item id allocation
 
   @B-032 @boundary
   Scenario: A repository pinned to 0.1.0 is not checked for work-item ids
-    Given the manifest pins schema version 0.1.0 instead
-    And two work items numbered 0118, each in its own folder
+    Given the manifest pins schema version 0.1.0 instead, and declares no work-item files and names no sequence file
+    And two tracker files numbered 0118, each in its own folder
     When the check runs
     Then no work-item id finding is reported
+
+  @B-033 @boundary
+  Scenario: A repository with no epic tier does not count an epic as a claimant
+    Given the manifest does not say the repository has epics
+    And an epic file numbered 0101
+    And a work item numbered 0101
+    When the check runs
+    Then no claimed-twice finding is reported
+
+  @B-033 @boundary
+  Scenario: A repository with no epic tier does not count an epic toward the highest id
+    Given the manifest does not say the repository has epics
+    And work items numbered 0117 and 0118
+    And an epic file numbered 0132
+    And the sequence file holds 0118
+    When the check runs
+    Then no sequence finding is reported

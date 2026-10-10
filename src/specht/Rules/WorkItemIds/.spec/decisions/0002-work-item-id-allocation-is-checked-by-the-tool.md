@@ -93,3 +93,17 @@ sections above stand as written.
   sharing an id, which is OQ-10.
 
 Nothing is reversed.
+
+**Noted 2026-10-09, after review round 1.** The sections above stand as
+written and nothing is reversed; this says whose words they are, as
+decisions 0001 and 0003 do in place.
+
+- **Why.** Both bullets are the author's reasoning, taken from lesson 0005
+  and from item `0128`'s summary. The owner's decisions on item `0128` give
+  the call and no reason beside it.
+- **Rejected.** The three rejections above "Turned down by the author" are
+  the owner's (item `0128`, decisions 1, 3 and 4). Each "Cost of rejecting"
+  sentence, and "Taken" after it, is the author's assessment: item `0128`
+  records the rejections and no cost. "The check would compare two revisions
+  and stop being a read of one tree" restates the owner's "stays a
+  deterministic, offline check over one tree" (item `0128`, decision 4).

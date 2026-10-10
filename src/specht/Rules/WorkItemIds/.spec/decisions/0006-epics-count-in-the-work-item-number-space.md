@@ -51,4 +51,12 @@ item carries (OQ-10; § 5 row 13).
 
 ## Reversal
 
-None.
+**Noted 2026-10-09, after review round 1.** Nothing is reversed, and the
+sections above stand as written. The owner selected the option "Epics
+count"; "the question's wording beside that option" above is that option's
+description, which the owner did not restate. The second bullet under "The
+author's inference" - where epics count, with no separate switch - was not
+asked and is now `0101-F8` OQ-12, with where an epic's id is read from and
+what a repository with no epic grammar sees (C-15; B-033). B-008 and B-021
+now name the manifest that declares the epic grammar, and OQ-7's Resolution
+no longer gives part (b) as answered.

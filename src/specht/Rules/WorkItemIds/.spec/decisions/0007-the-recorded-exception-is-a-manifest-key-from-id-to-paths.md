@@ -47,4 +47,15 @@ files it excuses, and can go stale when one of them moves.
 
 ## Reversal
 
-None.
+**Noted 2026-10-09, after review round 1.** Nothing is reversed, and the
+sections above stand as written. The owner selected the option "Manifest
+key, id to paths" and did not restate its description, which read: "One
+manifest key maps an id to the exact paths allowed to share it. Lives with
+the rest of this repository's settings; a third `0118` still fails; a stale
+entry is itself a finding." The mechanism is the owner's. "A further
+claimant still fails" (B-012) and "a stale entry is itself a finding"
+(B-013) are that description and not the owner's own words; item `0128`'s
+acceptance criteria also say a third item numbered `0118` is still reported.
+`0101-F8` OQ-8's Resolution and the Sources of B-012 and B-013 say the same.
+The description field above this record's title is unchanged and carries the
+same two phrases.
