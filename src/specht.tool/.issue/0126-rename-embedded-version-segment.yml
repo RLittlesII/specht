@@ -1,0 +1,61 @@
+id: "0126"
+type: task
+title: Name the embedded version folder and the `$id` version segment
+
+status: blocked
+
+priority: high
+risk: 2
+rank: 74
+
+parent: "0041"
+children: []
+
+depends_on: ["0120"] # names the folder and `$id` of the semver set 0120 converts
+blocks: []
+spikes: []
+
+spec: src/specht.tool/.spec/README.md
+
+claims: []
+
+created: "2026-10-09"
+updated: "2026-10-09"
+closed: null
+
+summary: |
+  The embedded folder for one schema version and the version segment of
+  the `$id` of specht's own frontmatter schemas are both the integer `v1`
+  today, and decision 0005 names no form for a `major.minor.patch`
+  version. Once the owner answers OQ-22, give both the form answered -
+  nothing to rename if the answer keeps today's - and bring into line the
+  layout lines in the skills and AGENTS.md, the README badge, and
+  0001-F4 § 7 and § 8, which state `v<n>`.
+
+  Blocked on the owner: OQ-22. Depends on 0120, which converts the
+  version set this names and closes without the answer. It must land
+  before the first publish, which freezes the bytes (decision 0002).
+
+  `claims: []` because the claim is another Feature's and the rest is a
+  constraint: this item re-proves 0001-F4 B-005, which 0051 delivered
+  against `v<n>` and 0050 rolls up, and keeps 0001-F7 C-6. Both are
+  provisional on OQ-22, as is 0001-F4 A-2.
+
+acceptance_criteria:
+  - "0001-F4 B-005 — the `$id` a written schema carries names the version in the form OQ-22 answers"
+  - "0001-F7 C-6 — every embedded frontmatter schema's `$id` in that form"
+  - "0001-F4 A-2 — one embedded folder for each version, named in that form"
+  - "0001-F4 § 9 carries a row naming a test for B-005 in that form."
+
+decisions:
+  - |
+    2026-10-09, spec-author, at the spec-reviewer's request (0001-F7
+    § 12, item cut of 2026-10-09): cut out of 0120, so the conversion and
+    every item behind it do not wait on a naming answer. The owner's plan
+    named no such item; the cut is spec-author's. Status blocked: OQ-22
+    is open. Rejected: leaving it in 0120 "not done until" OQ-22.
+
+out_of_scope:
+  - "Converting the pin, the version set and the report to semver — 0120."
+  - "Proving a published version is still embedded byte-for-byte — 0044."
+  - "Versions hosted on the web, and the `$id` that would follow — § 5 #13, OQ-9."

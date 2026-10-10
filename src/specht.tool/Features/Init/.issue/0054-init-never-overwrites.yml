@@ -11,7 +11,7 @@ rank: 74
 parent: "0050"
 children: []
 
-depends_on: ["0052", "0042"] # extends 0052's write; an older pin needs 0042's version set
+depends_on: ["0052", "0042", "0120"] # extends 0052's write; an older pin needs 0042's version set, in the semver 0120 converts it to
 blocks: []
 spikes: []
 
@@ -23,7 +23,7 @@ claims:
   - B-013
 
 created: "2026-10-08"
-updated: "2026-10-08"
+updated: "2026-10-09"
 closed: null
 
 summary: |
@@ -32,7 +32,8 @@ summary: |
   written at that version, keeping one version in `.spec/`; beside a pin the
   tool does not ship, init writes nothing and exits 3, as the check does.
   Depends on 0042 because writing an older version needs the embedded
-  version set.
+  version set, and on 0120 because the pin it reads against that set is
+  `major.minor.patch` once 0120 converts it.
 
 acceptance_criteria:
   - "B-002 — an existing file left byte-for-byte"
@@ -48,6 +49,13 @@ decisions:
     older or unshipped pin. The spec gained B-012 and B-013 for (b) and (c);
     both land here beside B-002. Status moved from blocked to
     ready-for-architecture.
+  - |
+    2026-10-09, spec-author, at the spec-reviewer's request (0001-F7
+    § 12, item cut of 2026-10-09): `0120` added to `depends_on`. 0001-F7
+    decision 0005 makes the pin `major.minor.patch`; on 0042 alone this
+    item could start beside 0120 and be built on the integer pin.
+    Rejected: replacing the 0042 edge, which is still what ships the
+    version set.
 
 out_of_scope:
   - "A version argument — § 5 #6."

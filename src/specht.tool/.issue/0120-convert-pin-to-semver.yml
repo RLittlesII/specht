@@ -1,0 +1,98 @@
+id: "0120"
+type: task
+title: Convert the integer pin to semver
+
+status: ready-for-architecture
+
+priority: high
+risk: 3
+rank: 121
+
+parent: "0041"
+children: []
+
+depends_on: ["0042"] # converts the integer pin and version set 0042 delivered
+blocks: ["0043", "0044", "0045", "0048", "0049", "0054", "0121", "0122", "0124", "0126"]
+spikes: []
+
+spec: src/specht.tool/.spec/README.md
+
+claims:
+  - B-001
+  - B-002
+  - B-003
+  - B-004
+  - B-014
+  - B-022
+  - B-023
+  - B-039
+  - B-055
+
+created: "2026-10-09"
+updated: "2026-10-09"
+closed: null
+
+summary: |
+  Item 0042 delivered `schemaVersion` as an integer; decision 0005 makes
+  it `major.minor.patch`. Convert the pin, the embedded version set and
+  the report to semver: no key reads as `0.1.0`, a value that is not
+  three numbers is rejected with exit 3, and a pin is checked with exactly
+  the version it names. The first item of this Feature to start: every
+  other open one reads the version this produces.
+
+  It also carries what the specification change left behind:
+  - rebinding the acceptance steps decision 0005 reworded, in
+    `versioning.feature` and in the "version 1" steps of `init.feature`,
+    `report.feature` and `engine.feature`;
+  - spec-author's rewording of the `init.feature` scenarios that pin the
+    integers 1, 2 and 7 (0001-F4 B-012, B-013), which B-039 makes
+    malformed. It is due in this item's pull request; whether 0001-F4
+    also claims `init` beside a malformed `schemaVersion` is 0001-F4 OQ-3;
+  - the report document's `schemaVersion` type (0001-F3 B-005,
+    `docs/schema/report.schema.json`), an integer today;
+  - refreshing 0001-F7 § 6 to § 8, which describe the integer pin, and
+    confirming the § 9 rows the specification change reset.
+
+  The embedded folder and the `$id` segment keep the name they have
+  today. Renaming them is 0126, which waits on OQ-22; this item closes
+  without that answer.
+
+  Risk 3: it changes a delivered engine path and a published document
+  shape across three Features, before anything is published. Whether a
+  prerelease or build suffix is a version is OQ-15; B-039 reads three
+  numbers and nothing else until it is answered.
+
+acceptance_criteria:
+  - "B-001 — a `major.minor.patch` pin validates with that version's embedded frontmatter schemas"
+  - "B-002 — no `schemaVersion` checks as `0.1.0`; report names `0.1.0`"
+  - "B-003 — unshipped pin: pinned and shipped versions on stderr, stdout empty, exit 3"
+  - "B-004 — the embedded set enumerated in semver; the proof against what was published is 0044"
+  - "B-014 — exactly the pinned version's rule ids evaluated"
+  - "B-022 — `0.1.0`'s epic schema accepts optional non-empty `title` and `description`"
+  - "B-023 — an empty epic `title` or `description` is a `SPEC004` violation"
+  - "B-039 — a key whose value is not `major.minor.patch`, the integer `1` included: stderr, exit 3"
+  - "B-055 — no pin policy: exactly the pinned version, with a later patch or minor shipped"
+  - "§ 9 carries a row naming a test for each id above."
+
+decisions:
+  - |
+    2026-10-09, the repository owner (decision 0005, OQ-13): one
+    conversion item, cut before any other item of this Feature starts.
+    Rejected: reopening 0042, and converting piecemeal inside each
+    dependent item. The owner approved the conversion item by name; the
+    claims assigned to it are spec-author's cut.
+  - |
+    2026-10-09, spec-author, at the spec-reviewer's request (0001-F7
+    § 12, item cut of 2026-10-09): the embedded folder and `$id` rename
+    moved to 0126, blocked on OQ-22, so this item and everything behind
+    it no longer wait on a naming answer. 0054 now waits on this item.
+    Rejected: holding the rename here "not done until" OQ-22.
+
+out_of_scope:
+  - "The schema source switch — 0043."
+  - "A pin policy that floats — 0124."
+  - "The pin and list commands — 0121, 0122."
+  - "Renaming the embedded folder and the `$id` version segment — 0126, OQ-22."
+  - "A claim for `init` beside a malformed `schemaVersion` — 0001-F4 OQ-3."
+  - "Epic 0101 naming its schema version as 2 — OQ-18."
+  - "A version pinned per specification — § 5 #5."
