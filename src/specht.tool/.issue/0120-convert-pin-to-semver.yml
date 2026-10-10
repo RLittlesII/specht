@@ -2,7 +2,7 @@ id: "0120"
 type: task
 title: Convert the integer pin to semver
 
-status: in-progress
+status: done
 
 priority: high
 risk: 3
@@ -30,7 +30,7 @@ claims:
 
 created: "2026-10-09"
 updated: "2026-10-10"
-closed: null
+closed: "2026-10-10"
 
 summary: |
   Item 0042 delivered `schemaVersion` as an integer; decision 0005 makes
