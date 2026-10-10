@@ -14,9 +14,11 @@ namespace specht.acceptance.Init;
 /// <summary>
 /// Steps for <c>src/specht.tool/Features/Init/.spec/init.feature</c> (0001-F4). B-004 compares the tool's embedded copies
 /// of the newest version with this repository's live <c>.spec/schema/</c> and <c>.spec/templates/</c>, copied into the
-/// output; the live manifest is read and given a rule setting in memory, which the comparison must ignore. B-001, B-003,
-/// B-005, B-006, B-008 and B-009 launch the built tool over a synthetic root inside a temporary sandbox, from the sandbox
-/// so a write beside the root is seen, or from the root when no root is named.
+/// output; the live manifest is read and given a rule setting in memory, which the comparison must ignore. B-005, B-006,
+/// B-008, B-009, B-010 and B-011 launch the built tool over a synthetic root inside a temporary sandbox, from the sandbox
+/// so a write beside the root is seen, or from the root when no root is named. B-007's sandbox holds no root: the root is
+/// typed relative to it, and the sandbox is snapshotted before the run. B-010 and B-011's manifest is the embedded one
+/// with <c>schemaVersion</c> set to the newest version shipped.
 /// </summary>
 [Binding]
 [Scope(Feature = "init")]
@@ -50,11 +52,43 @@ public sealed partial class InitSteps
         File.WriteAllText(Written(FeatureTemplate), "# A synthetic feature template with local edits\n");
     }
 
+    [Given("a root path that does not exist")]
+    public void GivenARootPathThatDoesNotExist()
+    {
+        _sandbox = Path.Combine(Path.GetTempPath(), "specht-init-" + Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(Sandbox);
+        File.WriteAllText(Path.Combine(Sandbox, "beside-the-root.txt"), "synthetic\n");
+        _typed = "./no-such-root";
+        Directory.Exists(Root).Should().BeFalse();
+        _snapshot = Snapshot();
+    }
+
+    [Given("a root directory whose schema folder holds a manifest pinning the newest version the tool ships and declaring the epic grammar")]
+    public void GivenARootDirectoryWhoseSchemaFolderHoldsAManifestPinningTheNewestVersionTheToolShipsAndDeclaringTheEpicGrammar()
+    {
+        Prepare();
+        var version = NewestVersion();
+        var manifest = JsonNode.Parse(Read(Embedded(Manifest, version)))!.AsObject();
+        manifest["schemaVersion"] = version;
+        (manifest["identifiers"]?["epic"]).Should().NotBeNull("the manifest declares the epic grammar");
+        _manifest = System.Text.Encoding.UTF8.GetBytes(manifest.ToJsonString());
+        Directory.CreateDirectory(Path.GetDirectoryName(Written(Manifest))!);
+        File.WriteAllBytes(Written(Manifest), _manifest);
+    }
+
+    [Given("no other schema or template file beside it")]
+    public void GivenNoOtherSchemaOrTemplateFileBesideIt() =>
+        Snapshot().Keys
+            .Where(static path => path.StartsWith("repo/.spec/schema/", StringComparison.Ordinal)
+                || path.StartsWith("repo/.spec/templates/", StringComparison.Ordinal))
+            .Should()
+            .Equal($"repo/.spec/{Manifest}");
+
     [Given("a snapshot of every file under the root")]
     public void GivenASnapshotOfEveryFileUnderTheRoot() => _snapshot = Snapshot();
 
     [When("init runs against it")]
-    public void WhenInitRunsAgainstIt() => (_stdout, _stderr, _exitCode) = Tool.Launch(Sandbox, "init", "--root", "repo");
+    public void WhenInitRunsAgainstIt() => (_stdout, _stderr, _exitCode) = Tool.Launch(Sandbox, "init", "--root", _typed);
 
     [When("init runs there without naming a root")]
     public void WhenInitRunsThereWithoutNamingARoot() => (_stdout, _stderr, _exitCode) = Tool.Launch(Root, "init");
@@ -155,6 +189,37 @@ public sealed partial class InitSteps
         }
     }
 
+    [Then("the standard error names that path exactly as it was given")]
+    public void ThenTheStandardErrorNamesThatPathExactlyAsItWasGiven() =>
+        _stderr.Should().Contain(_typed).And.NotContain(Path.GetFileName(Sandbox));
+
+    [Then("nothing is written")]
+    public void ThenNothingIsWritten()
+    {
+        var before = _snapshot ?? throw new InvalidOperationException("No snapshot was taken.");
+        var after = Snapshot();
+        after.Keys.Should().BeEquivalentTo(before.Keys, _stdout + _stderr);
+        foreach (var (path, bytes) in before)
+        {
+            after[path].Should().Equal(bytes, $"init leaves {path} as it was");
+        }
+
+        Directory.Exists(Root).Should().BeFalse($"init never creates the root; {_stdout}{_stderr}");
+    }
+
+    [Then("the seven other files are written")]
+    public void ThenTheSevenOtherFilesAreWritten()
+    {
+        var version = NewestVersion();
+        foreach (var file in ToolOwnedFiles)
+        {
+            File.Exists(Written(file)).Should().BeTrue($"init writes .spec/{file}; {_stdout}{_stderr}");
+            File.ReadAllBytes(Written(file)).Should().Equal(Read(Embedded(file, version)), $"init writes .spec/{file} from the embedded copy");
+        }
+
+        File.ReadAllBytes(Written(Manifest)).Should().Equal(_manifest, "init leaves the manifest that was there as it was");
+    }
+
     [Then("the schema folder and the templates folder are written under the working directory")]
     public void ThenTheSchemaFolderAndTheTemplatesFolderAreWrittenUnderTheWorkingDirectory() =>
         EightFiles.Should()
@@ -197,7 +262,7 @@ public sealed partial class InitSteps
 
     private string Sandbox => _sandbox ?? throw new InvalidOperationException("No root was prepared.");
 
-    private string Root => Path.Combine(Sandbox, "repo");
+    private string Root => Path.Combine(Sandbox, _typed);
 
     private Dictionary<string, (byte[]? Embedded, byte[] Live)> Files =>
         _files ?? throw new InvalidOperationException("Nothing was compared.");
@@ -276,6 +341,8 @@ public sealed partial class InitSteps
     private JsonObject? _embeddedManifest;
     private string? _sandbox;
     private Dictionary<string, byte[]>? _snapshot;
+    private byte[]? _manifest;
+    private string _typed = "repo";
     private string _stdout = string.Empty;
     private string _stderr = string.Empty;
     private int _exitCode = -1;
