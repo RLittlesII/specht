@@ -22,7 +22,7 @@ public sealed class IdentityRule : ISpecRule
     /// <inheritdoc />
     public IEnumerable<SpecViolation> Evaluate(SpecModel model)
     {
-        foreach (var feature in model.Features.Where(static candidate => candidate.Location.Layout.Name == "legacy"))
+        foreach (var feature in model.Features.Where(static candidate => candidate.Location.Layout.Name == "epics"))
         {
             var segments = feature.RelativePath.Split('/');
 

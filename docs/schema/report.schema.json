@@ -33,7 +33,7 @@
         "required": ["layout", "specificationCount"],
         "properties": {
           "layout": {
-            "description": "The layout's name in the manifest; the default manifest names legacy, epics/**/spec.md, and coLocated, **/.spec/README.md.",
+            "description": "The layout's name in the manifest; the default manifest names epics, epics/**/spec.md, and features, **/.spec/README.md.",
             "type": "string",
             "minLength": 1
           },

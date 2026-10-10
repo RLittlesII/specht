@@ -122,7 +122,7 @@ public sealed class SpecManifestDiscoveryUnitTests
         discovery.Exclusions.Should().BeEquivalentTo("vendor", "/generated");
     }
 
-    private static object Shape(SpecDiscoveryInputs discovery, string key) =>
+    private static IReadOnlyList<string> Shape(SpecDiscoveryInputs discovery, string key) =>
         key switch
         {
             "taskFiles" => discovery.TaskFiles,

@@ -27,7 +27,8 @@ public static class SpecManifest
     /// <exception cref="SpechtManifestUnreadableException">The manifest is not well-formed JSON or not the manifest's shape.</exception>
     /// <exception cref="SpechtManifestException">
     /// The manifest carries a key the engine does not know, a <c>schemaVersion</c> that is not an integer of at least 1, a
-    /// role naming a title <c>sections</c> does not list, a <c>tables</c> key that is not a role, or a marker whose text is empty.
+    /// role naming a title <c>sections</c> does not list, a <c>tables</c> key that is not a role, a marker whose text is empty,
+    /// or an empty <c>taskFiles</c>, <c>epicFiles</c> or <c>companionFiles</c> list.
     /// </exception>
     public static SpecStructure Load(IFileSystem fileSystem, string root)
     {
@@ -98,6 +99,15 @@ public static class SpecManifest
                     .Select(static entry => entry.Key)
                     .Where(marker => structure.Markers[marker].Length == 0)
                     .Select(static marker => $"the marker '{marker}' in markers is empty"))
+            .Concat(
+                new (string Key, IReadOnlyList<string> Entries)[]
+                {
+                    ("taskFiles", structure.Discovery.TaskFiles),
+                    ("epicFiles", structure.Discovery.EpicFiles),
+                    ("companionFiles", structure.Discovery.CompanionFiles),
+                }
+                    .Where(static list => list.Entries.Count == 0)
+                    .Select(static list => $"the list '{list.Key}' is empty"))
             .ToList();
 
         if (faults.Count > 0)
@@ -110,9 +120,9 @@ public static class SpecManifest
         new(
             (manifest["layouts"] ?? Defaults["layouts"]!).AsArray().Select(Layout).ToList(),
             Strings(manifest["exclusions"] ?? Defaults["exclusions"]!),
-            (manifest["taskFiles"] ?? Defaults["taskFiles"]!).GetValue<string>(),
-            (manifest["epicFiles"] ?? Defaults["epicFiles"]!).GetValue<string>(),
-            (manifest["companionFiles"] ?? Defaults["companionFiles"]!).GetValue<string>());
+            Strings(manifest["taskFiles"] ?? Defaults["taskFiles"]!),
+            Strings(manifest["epicFiles"] ?? Defaults["epicFiles"]!),
+            Strings(manifest["companionFiles"] ?? Defaults["companionFiles"]!));
 
     private static SpecLayout Layout(JsonNode? node)
     {

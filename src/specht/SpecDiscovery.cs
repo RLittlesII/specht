@@ -5,7 +5,7 @@ namespace specht;
 
 /// <summary>
 /// Finds the repository's specifications, items, epics and companion files where the manifest says they are
-/// (<c>0001-F6</c> B-001, B-002, B-003).
+/// (<c>0001-F6</c> B-001, B-002, B-003, B-012).
 /// </summary>
 public static class SpecDiscovery
 {
@@ -22,14 +22,14 @@ public static class SpecDiscovery
         var files = Files(fileSystem, root);
 
         return inputs.Layouts
-            .SelectMany(layout => Matching(files, layout.Glob, inputs.Exclusions)
+            .SelectMany(layout => Matching(files, [layout.Glob], inputs.Exclusions)
                 .Select(file => new SpecLocation(file.Path, file.Relative, layout, fileSystem.Path.GetDirectoryName(file.Path)!)))
             .ToList();
     }
 
     /// <summary>
-    /// Discovers the item files beside each specification: every file whose name matches the manifest's task file shape,
-    /// <c>{task}</c> standing for <paramref name="taskGrammar"/> (<c>0001-F6</c> B-003).
+    /// Discovers the item files beside each specification: every file whose name matches one of the manifest's task file
+    /// shapes, <c>{task}</c> standing for <paramref name="taskGrammar"/> (<c>0001-F6</c> B-003, B-012).
     /// </summary>
     /// <param name="fileSystem">The file system the tree is read through.</param>
     /// <param name="specifications">The discovered specifications.</param>
@@ -43,14 +43,16 @@ public static class SpecDiscovery
         string taskGrammar)
     {
         var task = $"(?:{taskGrammar.TrimStart('^').TrimEnd('$')})";
-        var shape = new Regex(Pattern(inputs.TaskFiles).Replace(@"\{task}", task, StringComparison.Ordinal));
+        var shapes = inputs.TaskFiles
+            .Select(shape => new Regex(Pattern(shape).Replace(@"\{task}", task, StringComparison.Ordinal)))
+            .ToList();
 
-        return specifications.SelectMany(specification => Beside(fileSystem, specification, shape)).ToList();
+        return specifications.SelectMany(specification => Beside(fileSystem, specification, shapes)).ToList();
     }
 
     /// <summary>
-    /// Discovers every epic file under <paramref name="root"/>: each file the manifest's epic glob matches and its
-    /// exclusions do not skip (<c>0001-F6</c> B-002, B-003).
+    /// Discovers every epic file under <paramref name="root"/>: each file one of the manifest's epic globs matches and
+    /// its exclusions do not skip (<c>0001-F6</c> B-002, B-003, B-012).
     /// </summary>
     /// <param name="fileSystem">The file system the tree is read through.</param>
     /// <param name="root">The repository root.</param>
@@ -60,15 +62,15 @@ public static class SpecDiscovery
         Matching(Files(fileSystem, root), inputs.EpicFiles, inputs.Exclusions).Select(static file => file.Path).ToList();
 
     /// <summary>
-    /// Discovers the companion files beside <paramref name="specification"/>: every file whose name matches the manifest's
-    /// companion glob (<c>0001-F6</c> B-003).
+    /// Discovers the companion files beside <paramref name="specification"/>: every file whose name matches one of the
+    /// manifest's companion globs (<c>0001-F6</c> B-003, B-012).
     /// </summary>
     /// <param name="fileSystem">The file system the tree is read through.</param>
     /// <param name="specification">The specification.</param>
     /// <param name="inputs">The manifest's discovery inputs.</param>
     /// <returns>The path of each companion file.</returns>
     public static IReadOnlyList<string> FindCompanions(IFileSystem fileSystem, SpecLocation specification, SpecDiscoveryInputs inputs) =>
-        Beside(fileSystem, specification, new Regex(Pattern(inputs.CompanionFiles))).ToList();
+        Beside(fileSystem, specification, inputs.CompanionFiles.Select(static glob => new Regex(Pattern(glob))).ToList()).ToList();
 
     /// <summary>Gets <paramref name="path"/> relative to <paramref name="root"/>, with <c>/</c> separators (<c>0001-F3</c> B-021).</summary>
     /// <param name="root">The root the tool was given.</param>
@@ -89,19 +91,19 @@ public static class SpecDiscovery
 
     private static IEnumerable<(string Path, string Relative)> Matching(
         List<(string Path, string Relative)> files,
-        string glob,
+        IReadOnlyList<string> globs,
         IReadOnlyList<string> exclusions)
     {
-        var expression = new Regex(Pattern(glob));
+        var expressions = globs.Select(static glob => new Regex(Pattern(glob))).ToList();
 
         return files
-            .Where(file => expression.IsMatch(file.Relative) && !IsExcluded(file.Relative, exclusions))
+            .Where(file => expressions.Any(expression => expression.IsMatch(file.Relative)) && !IsExcluded(file.Relative, exclusions))
             .OrderBy(static file => file.Relative, StringComparer.Ordinal);
     }
 
-    private static IEnumerable<string> Beside(IFileSystem fileSystem, SpecLocation specification, Regex name) =>
+    private static IEnumerable<string> Beside(IFileSystem fileSystem, SpecLocation specification, List<Regex> names) =>
         fileSystem.Directory.EnumerateFiles(specification.Directory)
-            .Where(path => name.IsMatch(fileSystem.Path.GetFileName(path)))
+            .Where(path => names.Any(name => name.IsMatch(fileSystem.Path.GetFileName(path))))
             .Order(StringComparer.Ordinal);
 
     private static string Pattern(string glob)
