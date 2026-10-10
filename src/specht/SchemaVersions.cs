@@ -1,6 +1,7 @@
 using System.Globalization;
+using Specht.Manifest;
 
-namespace specht;
+namespace Specht;
 
 /// <summary>The schema versions a check can select from, ascending by version (<c>0001-F7</c> B-001, B-003, B-004).</summary>
 public sealed class SchemaVersions

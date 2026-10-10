@@ -81,7 +81,7 @@ internal partial class Build : NukeBuild
         {
             var coverage = TierCoverageDirectory("Acceptance");
             DotNet(
-                $"test --project {RootDirectory / "test" / "specht.acceptance" / "specht.acceptance.csproj"} --configuration {Configuration} --no-build " +
+                $"test --project {RootDirectory / "test" / "acceptance" / "acceptance.csproj"} --configuration {Configuration} --no-build " +
                 $"--coverage --coverage-output-format cobertura --results-directory {coverage}",
                 workingDirectory: RootDirectory);
         });
@@ -113,7 +113,7 @@ internal partial class Build : NukeBuild
             }
         });
 
-    // B-009: exactly one specht.tool.<version>.nupkg under .artifacts/nupkg/.
+    // B-009: exactly one tool.<version>.nupkg under .artifacts/nupkg/.
     private Target Pack => definition => definition
         .DependsOn(Compile)
         .Produces(PackageDirectory / "*.nupkg")
@@ -134,7 +134,7 @@ internal partial class Build : NukeBuild
         {
             var clean = true;
             AnnotateChangedFiles(DotNet(
-                "run --project src/specht.tool -- --root .",
+                "run --project src/tool -- --root .",
                 RootDirectory,
                 logger: ProcessTasks.DefaultLogger,
                 exitHandler: process => clean = process.ExitCode == 0));

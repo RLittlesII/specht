@@ -3,7 +3,7 @@ using Markdig.Extensions.Tables;
 using Markdig.Syntax;
 using Markdig.Syntax.Inlines;
 
-namespace specht;
+namespace Specht;
 
 /// <summary>
 /// A parsed specification document: its frontmatter and its top-level sections.

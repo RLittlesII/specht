@@ -2,7 +2,7 @@ using System.Globalization;
 using System.Text.Json;
 using Json.Schema;
 
-namespace specht.Rules;
+namespace Specht.Rules;
 
 /// <summary>
 /// SPEC001-SPEC005 - every specification, item and epic file carries

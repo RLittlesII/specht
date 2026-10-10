@@ -1,4 +1,4 @@
-namespace specht;
+namespace Specht;
 
 /// <summary>
 /// One schema version the tool ships: its three frontmatter schemas, its rule vocabulary (<c>0001-F7</c>) and its rule

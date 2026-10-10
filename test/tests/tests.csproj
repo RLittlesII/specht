@@ -1,0 +1,68 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <!-- CS8669: AutoFixtures 10.0.6 emits AutoFixtureBase.g.cs with nullable annotations and no #nullable directive. Only
+         generated code raises it, an .editorconfig section does not reach a generated tree, and only the package can fix
+         it; drop this when it does. -->
+    <NoWarn>$(NoWarn);CS8669</NoWarn>
+    <RootNamespace>Specht.Tests</RootNamespace>
+    <AssemblyName>specht.tests</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="xunit.v3" />
+    <PackageReference Include="AwesomeAssertions" />
+    <PackageReference Include="Spectre.Console.Cli.Testing" />
+    <PackageReference Include="Rocket.Surgery.Extensions.Testing.AutoFixtures" />
+    <PackageReference Include="TestableIO.System.IO.Abstractions.TestingHelpers" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\specht\specht.csproj" />
+    <ProjectReference Include="..\..\src\tool\tool.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Include="Xunit" />
+  </ItemGroup>
+
+  <!-- The acceptance tier's launcher, linked rather than copied: an init test reads the process's stdout as a shell does,
+       since no seam beneath the command exists yet (0001-F4 § 8). -->
+
+  <!-- The live schema set, copied into the output as hooked's test project did: the tests run against the contract the
+       rules enforce, not a fixture copy of it. -->
+  <ItemGroup>
+    <Content Include="..\..\.spec\schema\*.json"
+             Link=".spec\schema\%(Filename)%(Extension)"
+             CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <!-- The live templates the tool ships (0001-F4 A-1, B-004), copied the same way; item.yml is this repository's own and
+       not one of them. -->
+  <ItemGroup>
+    <Content Include="..\..\.spec\templates\feature.md;..\..\.spec\templates\decision.md;..\..\.spec\templates\adr.md;..\..\.spec\templates\lesson.md"
+             Link=".spec\templates\%(Filename)%(Extension)"
+             CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <!-- The golden report (0001-F1 B-004, C-10): the engine's verdicts on the baseline tree at commit e7dba24, test data
+       committed beside the builder and read from the output. -->
+  <ItemGroup>
+    <Content Include="Baseline\engine-e7dba24.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <!-- The published report schema (0001-F3 A-1), copied the same way: a produced document is validated against the file
+       this repository publishes (B-008). A wildcard, so its absence fails the test that reads it, not the build. -->
+  <ItemGroup>
+    <Content Include="..\..\docs\schema\*.json"
+             Link="docs\schema\%(Filename)%(Extension)"
+             CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="..\acceptance\AcceptanceTool.cs">
+      <Link>AcceptanceTool.cs</Link>
+    </Compile>
+  </ItemGroup>
+
+</Project>

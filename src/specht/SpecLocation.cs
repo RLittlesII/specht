@@ -1,4 +1,4 @@
-namespace specht;
+namespace Specht;
 
 /// <summary>A discovered specification file and where its companions live.</summary>
 /// <param name="AbsolutePath">Absolute path to the specification file.</param>

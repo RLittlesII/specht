@@ -89,7 +89,7 @@ internal sealed partial class Build
                     {
                         ["GITHUB_TOKEN"] = "${{ secrets.GITHUB_TOKEN }}",
                     },
-                    Run = $"dotnet nuget push \"{PackagePath}/specht.tool.${{GITHUB_REF_NAME#v}}.nupkg\" " +
+                    Run = $"dotnet nuget push \"{PackagePath}/tool.${{GITHUB_REF_NAME#v}}.nupkg\" " +
                           "--source \"https://nuget.pkg.github.com/rlittlesii/index.json\" --api-key \"$GITHUB_TOKEN\"",
                 },
             ],

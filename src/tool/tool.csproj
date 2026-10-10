@@ -1,0 +1,31 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- The one project that packs: NuGet package specht.tool, command specht. -->
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <IsPackable>true</IsPackable>
+    <PackAsTool>true</PackAsTool>
+    <ToolCommandName>specht</ToolCommandName>
+    <PackageId>tool</PackageId>
+    <RootNamespace>Specht.Tool</RootNamespace>
+    <AssemblyName>specht.tool</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Spectre.Console.Cli" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\specht\specht.csproj" />
+  </ItemGroup>
+
+  <!-- The shipping copy (0001-F4 C-2), one folder per schema version, named schema/v<n>/<file> and templates/v<n>/<file>. -->
+  <ItemGroup>
+    <EmbeddedResource Include="schema\v*\*.json"
+                      LogicalName="schema/$([MSBuild]::ValueOrDefault('%(RecursiveDir)', '').Replace('\', '/'))%(Filename)%(Extension)" />
+    <EmbeddedResource Include="templates\v*\*.md"
+                      LogicalName="templates/$([MSBuild]::ValueOrDefault('%(RecursiveDir)', '').Replace('\', '/'))%(Filename)%(Extension)" />
+  </ItemGroup>
+
+</Project>

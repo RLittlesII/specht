@@ -1,4 +1,4 @@
-namespace specht;
+namespace Specht;
 
 /// <summary>A <c>## </c> section of a specification, with the table it opens with, if any.</summary>
 /// <param name="Title">The heading text, trimmed.</param>

@@ -1,6 +1,6 @@
 using System.Text.Json.Nodes;
 
-namespace specht;
+namespace Specht;
 
 /// <summary>A Feature's specification, resolved against what sits beside it.</summary>
 public sealed class FeatureSpec

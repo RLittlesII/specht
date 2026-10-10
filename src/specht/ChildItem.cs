@@ -1,4 +1,4 @@
-namespace specht;
+namespace Specht;
 
 /// <summary>A task, test, bug or spike file beside a specification.</summary>
 public sealed class ChildItem

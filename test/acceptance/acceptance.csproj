@@ -1,0 +1,111 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <ReqnrollUseIntermediateOutputPathForCodeBehind>true</ReqnrollUseIntermediateOutputPathForCodeBehind>
+    <RootNamespace>Specht.Acceptance</RootNamespace>
+    <AssemblyName>specht.acceptance</AssemblyName>
+  </PropertyGroup>
+
+  <!-- One literal entry per linked .feature file; a batched glob silently discovers zero tests (specht-conventions § Testing). -->
+  <ItemGroup>
+    <ReqnrollFeatureFile Include="..\..\src\specht\.spec\engine.feature" Link="Features\engine.feature" />
+    <ReqnrollFeatureFile Include="..\..\src\specht\Discovery\.spec\discovery.feature" Link="Features\discovery.feature" />
+    <ReqnrollFeatureFile Include="..\..\src\specht\Manifest\.spec\manifest.feature" Link="Features\manifest.feature" />
+    <ReqnrollFeatureFile Include="..\..\src\specht\Report\.spec\report.feature" Link="Features\report.feature" />
+    <ReqnrollFeatureFile Include="..\..\.build\Versioning\.spec\versioning.feature" Link="Features\package-versioning.feature" />
+    <ReqnrollFeatureFile Include="..\..\src\tool\.spec\versioning.feature">
+      <Link>Features\versioning.feature</Link>
+      <NormalizedLogicalName>Features/versioning.feature</NormalizedLogicalName>
+      <NormalizedRelativeDir>_/_/src/specht.tool/.spec/</NormalizedRelativeDir>
+      <CodeBehindFile>obj\Debug/net10.0/_/_/src/specht.tool/.spec/versioning.feature.cs</CodeBehindFile>
+      <LegacyCodeBehindFile>../../src/specht.tool/.spec/versioning.feature.cs</LegacyCodeBehindFile>
+      <MessagesFile>obj\Debug/net10.0/_/_/src/specht.tool/.spec/versioning.feature.ndjson</MessagesFile>
+      <MessagesResourceName>Features/versioning.feature.ndjson</MessagesResourceName>
+      <FeatureFileResourceName>Features/versioning.feature</FeatureFileResourceName>
+    </ReqnrollFeatureFile>
+    <ReqnrollFeatureFile Include="..\..\src\tool\Features\Check\.spec\check.feature">
+      <Link>Features\check.feature</Link>
+      <NormalizedLogicalName>Features/check.feature</NormalizedLogicalName>
+      <NormalizedRelativeDir>_/_/src/specht.tool/Features/Check/.spec/</NormalizedRelativeDir>
+      <CodeBehindFile>obj\Debug/net10.0/_/_/src/specht.tool/Features/Check/.spec/check.feature.cs</CodeBehindFile>
+      <LegacyCodeBehindFile>../../src/specht.tool/Features/Check/.spec/check.feature.cs</LegacyCodeBehindFile>
+      <MessagesFile>obj\Debug/net10.0/_/_/src/specht.tool/Features/Check/.spec/check.feature.ndjson</MessagesFile>
+      <MessagesResourceName>Features/check.feature.ndjson</MessagesResourceName>
+      <FeatureFileResourceName>Features/check.feature</FeatureFileResourceName>
+    </ReqnrollFeatureFile>
+    <ReqnrollFeatureFile Include="..\..\src\tool\Features\Init\.spec\init.feature">
+      <Link>Features\init.feature</Link>
+      <NormalizedLogicalName>Features/init.feature</NormalizedLogicalName>
+      <NormalizedRelativeDir>_/_/src/specht.tool/Features/Init/.spec/</NormalizedRelativeDir>
+      <CodeBehindFile>obj\Debug/net10.0/_/_/src/specht.tool/Features/Init/.spec/init.feature.cs</CodeBehindFile>
+      <LegacyCodeBehindFile>../../src/specht.tool/Features/Init/.spec/init.feature.cs</LegacyCodeBehindFile>
+      <MessagesFile>obj\Debug/net10.0/_/_/src/specht.tool/Features/Init/.spec/init.feature.ndjson</MessagesFile>
+      <MessagesResourceName>Features/init.feature.ndjson</MessagesResourceName>
+      <FeatureFileResourceName>Features/init.feature</FeatureFileResourceName>
+    </ReqnrollFeatureFile>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Reqnroll.xunit.v3" />
+    <PackageReference Include="YamlDotNet" />
+    <PackageReference Include="xunit.v3" />
+    <PackageReference Include="AwesomeAssertions" />
+    <PackageReference Include="Spectre.Console.Cli.Testing" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\specht\specht.csproj" />
+    <ProjectReference Include="..\..\src\tool\tool.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Include="Xunit" />
+  </ItemGroup>
+
+  <!-- The check's scenarios build their trees with the engine tests' fixture, over the live schema set it copies from the
+       output (specht-conventions § Testing: fixtures are built, not copied). -->
+  <ItemGroup>
+    <!-- The baseline tree and its golden report (0001-F1 B-004, C-10), the same files the engine tests read. -->
+    <!-- The engine's built library and the references that would let the machine reach a verdict (B-005, B-006). -->
+    <!-- The reader the rule page tests and steps share (0001-F3 B-032, B-033). -->
+    <!-- The folder integer an embedded schema version was read from, which the rule page steps hand that reader. -->
+    <Compile Include="..\tests\Baseline\BaselineTree.cs">
+      <Link>Engine\BaselineTree.cs</Link>
+    </Compile>
+    <Compile Include="..\tests\Baseline\GoldenReport.cs">
+      <Link>Engine\GoldenReport.cs</Link>
+    </Compile>
+    <Compile Include="..\tests\EmbeddedFolder.cs">
+      <Link>Report\EmbeddedFolder.cs</Link>
+    </Compile>
+    <Compile Include="..\tests\EngineAssembly.cs">
+      <Link>Engine\EngineAssembly.cs</Link>
+    </Compile>
+    <Compile Include="..\tests\Rules\RulePage.cs">
+      <Link>Rules\RulePage.cs</Link>
+    </Compile>
+    <Compile Include="..\tests\SpecTree.cs">
+      <Link>Check\SpecTree.cs</Link>
+    </Compile>
+    <Content Include="..\tests\Baseline\engine-e7dba24.json">
+      <Link>Baseline\engine-e7dba24.json</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <!-- The fixture is hooked's, copied unchanged (0001-F1 C-2), and leans on implicit usings; these are the ones it reads. -->
+    <Using Include="System" />
+    <Using Include="System.Collections.Generic" />
+    <Using Include="System.IO" />
+    <Using Include="System.Linq" />
+    <Content Include="..\..\.spec\schema\*.json"
+             Link=".spec\schema\%(Filename)%(Extension)"
+             CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="..\..\.spec\templates\feature.md;..\..\.spec\templates\decision.md;..\..\.spec\templates\adr.md;..\..\.spec\templates\lesson.md"
+             Link=".spec\templates\%(Filename)%(Extension)"
+             CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="..\..\docs\schema\*.json"
+             Link="docs\schema\%(Filename)%(Extension)"
+             CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+</Project>

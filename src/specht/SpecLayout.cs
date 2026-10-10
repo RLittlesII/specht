@@ -1,4 +1,4 @@
-namespace specht;
+namespace Specht;
 
 /// <summary>A specification layout, as the manifest declares it (<c>0001-F6</c> B-001, decision 0004).</summary>
 /// <param name="Name">The name the summary and the report give it (B-009).</param>

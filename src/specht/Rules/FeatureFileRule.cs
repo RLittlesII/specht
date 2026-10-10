@@ -1,6 +1,7 @@
 using System.Text.RegularExpressions;
+using Specht.Discovery;
 
-namespace specht.Rules;
+namespace Specht.Rules;
 
 /// <summary>
 /// SPEC020 and SPEC021 - a specification has exactly one companion Gherkin

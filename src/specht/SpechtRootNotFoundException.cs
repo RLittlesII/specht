@@ -1,4 +1,4 @@
-namespace specht;
+namespace Specht;
 
 /// <summary>
 /// A root that is not a directory (<c>0001-F2</c> B-005). It carries no path: the engine holds only the resolved root, and

@@ -1,4 +1,4 @@
-namespace specht.Rules;
+namespace Specht.Rules;
 
 /// <summary>
 /// SPEC060 and SPEC061 - an approved specification has no missing coverage and
