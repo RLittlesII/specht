@@ -15,6 +15,15 @@ Feature: Discovery
     Then that specification is discovered
     And it is checked by every rule
 
+  @B-001
+  Scenario: A declared layout list replaces the default layouts
+    Given the manifest declares one layout only, the co-located one
+    And the root holds a specification where the default legacy layout would find it
+    And the root holds a co-located specification
+    When the check runs
+    Then only the co-located specification is discovered
+    And the summary names one layout
+
   @B-002
   Scenario: A directory name is excluded at any depth
     Given the manifest excludes the directory name "vendor"
