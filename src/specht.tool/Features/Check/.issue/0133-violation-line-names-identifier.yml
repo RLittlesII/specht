@@ -1,0 +1,49 @@
+id: "0133"
+type: task
+title: Name the identifier on every violation line that has one
+
+status: in-progress
+
+priority: high
+risk: 2
+rank: 94
+
+parent: "0025"
+children: []
+
+depends_on: ["0026"] # amends the line 0026 prints
+blocks: []
+spikes: []
+
+spec: src/specht.tool/Features/Check/.spec/README.md
+
+claims:
+  - B-001
+  - B-016
+
+created: "2026-10-09"
+updated: "2026-10-09"
+closed: null
+
+summary: |
+  A printed violation line does not say what it targets: the engine carries
+  the identifier and the report document prints it, and the line drops it.
+  Append it to the line in square brackets where the violation has one, and
+  leave a line with none as it is (decision 0006). Waits on 0026, which
+  built the line.
+
+acceptance_criteria:
+  - "B-001 — the line ends with the identifier in brackets"
+  - "B-016 — no identifier, no brackets"
+  - "§ 9 carries a row naming a test for each id above."
+
+decisions:
+  - |
+    2026-10-09, the repository owner: every violation line states what it
+    targets, as a trailing `[<identifier>]`. Rejected: rewording rule
+    messages (0001-F1 C-9). Recorded in the spec's decision 0006.
+
+out_of_scope:
+  - "Rewording a rule's message — § 5 #12, 0001-F1 C-9."
+  - "The `--json` and `--report` documents — § 5 #1, 0001-F3."
+  - "The frontmatter command's line — 0001-F8 B-010, its own items."

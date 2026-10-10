@@ -10,7 +10,7 @@ risk: 3
 rank: 91
 
 parent: "0001"
-children: ["0026", "0027", "0028", "0029", "0030", "0031", "0032"]
+children: ["0026", "0027", "0028", "0029", "0030", "0031", "0032", "0133"]
 
 depends_on: []
 blocks: []
@@ -33,9 +33,10 @@ claims:
   - B-012
   - B-013
   - B-014
+  - B-016
 
 created: "2026-10-08"
-updated: "2026-10-08"
+updated: "2026-10-09"
 closed: null
 
 summary: |
@@ -48,7 +49,7 @@ summary: |
   counts from the report document: 0028 -> 0034 (0001-F3 B-005).
 
 acceptance_criteria:
-  - "B-001 — MSBuild-shaped line per violation, engine order (0026)"
+  - "B-001 — MSBuild-shaped line per violation, engine order (0026); the identifier on it (0133)"
   - "B-002 — summary after the violations (0028)"
   - "B-003 — exit 1 on an error, 0 otherwise (0026)"
   - "B-004 — `--strict` exits 1 on any violation (0026)"
@@ -62,6 +63,7 @@ acceptance_criteria:
   - "B-012 — nothing written but the `--report` file (0030)"
   - "B-013 — derived paths relative; typed paths echoed (0026)"
   - "B-014 — SpecCheck through the local tool manifest (0032)"
+  - "B-016 — no identifier, no brackets (0133)"
   - "§ 9 carries a row naming a test for each id above."
 
 decisions:
@@ -79,6 +81,9 @@ decisions:
     0055-F1's 0061 now points `SpecCheck` at the command. 0032 and 0066
     therefore depend on 0061 instead of 0031. Rejected: 0031 and 0061 landing
     together, which was prose that no edge held.
+  - |
+    2026-10-09, spec-author on the owner's decision (decision 0006): 0133
+    cut for B-001 as amended and the new B-016. It waits on 0026.
 
 out_of_scope:
   - "Everything in § 5 of the spec."
