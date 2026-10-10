@@ -122,4 +122,4 @@ jobs:
           GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
         shell: bash
         run: |
-          dotnet nuget push ".artifacts/nupkg/specht.tool.${GITHUB_REF_NAME#v}.nupkg" --source "https://nuget.pkg.github.com/rlittlesii/index.json" --api-key "$GITHUB_TOKEN"
+          dotnet nuget push ".artifacts/nupkg/tool.${GITHUB_REF_NAME#v}.nupkg" --source "https://nuget.pkg.github.com/rlittlesii/index.json" --api-key "$GITHUB_TOKEN"

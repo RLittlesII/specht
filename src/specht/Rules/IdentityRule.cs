@@ -1,4 +1,4 @@
-namespace specht.Rules;
+namespace Specht.Rules;
 
 /// <summary>
 /// SPEC011 and SPEC012 - a specification's frontmatter identity agrees with

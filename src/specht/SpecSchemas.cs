@@ -1,7 +1,8 @@
 using System.IO.Abstractions;
 using Json.Schema;
+using Specht.Manifest;
 
-namespace specht;
+namespace Specht;
 
 /// <summary>
 /// Loads the schema files that define a specification's shape.

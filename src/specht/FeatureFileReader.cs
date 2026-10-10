@@ -1,6 +1,6 @@
 using System.Text.RegularExpressions;
 
-namespace specht;
+namespace Specht;
 
 /// <summary>Scans a Gherkin file for the claim tags its scenarios carry.</summary>
 /// <remarks>

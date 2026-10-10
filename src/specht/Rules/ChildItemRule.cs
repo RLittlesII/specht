@@ -1,6 +1,6 @@
 using System.Text.RegularExpressions;
 
-namespace specht.Rules;
+namespace Specht.Rules;
 
 /// <summary>
 /// SPEC040-SPEC044 - a Feature's declared children resolve to real files,
@@ -146,7 +146,7 @@ public sealed class ChildItemRule : ISpecRule
                 string.Equals(feature.Location.Directory, item.ParentDirectory, StringComparison.Ordinal));
 
             if (parent is not null && item.Parent is not null
-                && !string.Equals(item.Parent, parent.Identity, StringComparison.Ordinal))
+                                   && !string.Equals(item.Parent, parent.Identity, StringComparison.Ordinal))
             {
                 yield return new SpecViolation(
                     "SPEC043",

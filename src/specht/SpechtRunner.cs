@@ -1,6 +1,6 @@
-using specht.Report;
+using Specht.Report;
 
-namespace specht;
+namespace Specht;
 
 /// <summary>
 /// Runs every <see cref="ISpecRule"/> in this assembly against the resolved

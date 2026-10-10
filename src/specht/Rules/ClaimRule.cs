@@ -1,6 +1,6 @@
 using System.Text.RegularExpressions;
 
-namespace specht.Rules;
+namespace Specht.Rules;
 
 /// <summary>
 /// SPEC030 and SPEC031 - claim ids are well-formed and unique within their

@@ -16,10 +16,10 @@
   </Folder>
   <Folder Name="/src/">
     <Project Path="src/specht/specht.csproj" />
-    <Project Path="src/specht.tool/specht.tool.csproj" />
+    <Project Path="src\tool\tool.csproj" />
   </Folder>
   <Folder Name="/test/">
-    <Project Path="test/specht.acceptance/specht.acceptance.csproj" />
-    <Project Path="test/specht.tests/specht.tests.csproj" />
+    <Project Path="test\acceptance\acceptance.csproj" />
+    <Project Path="test\tests\tests.csproj" />
   </Folder>
 </Solution>

@@ -1,6 +1,6 @@
-using specht.Report;
+using Specht.Report;
 
-namespace specht;
+namespace Specht;
 
 /// <summary>The outcome of one <c>Specht</c> run.</summary>
 /// <param name="SchemaVersion">The schema version the check ran under (<c>0001-F7</c> B-002).</param>

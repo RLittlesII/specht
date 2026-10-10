@@ -1,6 +1,6 @@
 using System.Text.Json.Nodes;
 
-namespace specht.Report;
+namespace Specht.Report;
 
 /// <summary>One violation as the document carries it (B-007).</summary>
 /// <param name="RuleId">The <c>SPEC###</c> rule that fired.</param>

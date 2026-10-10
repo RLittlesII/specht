@@ -1,4 +1,4 @@
-namespace specht.Rules;
+namespace Specht.Rules;
 
 /// <summary>
 /// SPEC050-SPEC052 - every dependency edge names a real Feature, every edge is

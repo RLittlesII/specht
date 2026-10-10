@@ -1,4 +1,4 @@
-namespace specht;
+namespace Specht;
 
 /// <summary>An epic file and its frontmatter.</summary>
 /// <param name="RelativePath">Path relative to the repository root.</param>

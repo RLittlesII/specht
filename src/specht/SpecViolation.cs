@@ -1,4 +1,4 @@
-namespace specht;
+namespace Specht;
 
 /// <summary>
 /// One rule violation, rendered as an MSBuild-shaped diagnostic so GitHub

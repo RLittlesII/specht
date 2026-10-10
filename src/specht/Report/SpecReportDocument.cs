@@ -2,7 +2,7 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 
-namespace specht.Report;
+namespace Specht.Report;
 
 /// <summary>
 /// The report document (<c>0001-F3</c> B-005 to B-008, B-021): the shape <c>docs/schema/report.schema.json</c> publishes,

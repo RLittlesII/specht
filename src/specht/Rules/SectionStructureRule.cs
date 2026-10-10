@@ -1,4 +1,4 @@
-namespace specht.Rules;
+namespace Specht.Rules;
 
 /// <summary>
 /// SPEC010 and SPEC013 - a specification carries the contracted sections,

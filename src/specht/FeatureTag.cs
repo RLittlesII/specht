@@ -1,4 +1,4 @@
-namespace specht;
+namespace Specht;
 
 /// <summary>A claim tag found in a Gherkin file.</summary>
 /// <param name="Id">The claim id, e.g. <c>B-001</c>.</param>

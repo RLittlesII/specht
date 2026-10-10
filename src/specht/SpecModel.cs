@@ -1,6 +1,8 @@
 using System.IO.Abstractions;
+using Specht.Discovery;
+using Specht.Manifest;
 
-namespace specht;
+namespace Specht;
 
 /// <summary>The whole specification tree, resolved once and evaluated by every rule.</summary>
 public sealed class SpecModel
