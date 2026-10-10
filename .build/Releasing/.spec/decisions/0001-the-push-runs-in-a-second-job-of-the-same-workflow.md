@@ -88,3 +88,19 @@ dry run would hold package write. Cost of rejecting: reading 3.
 ## Reversal
 
 None.
+
+## Addendum - 2026-10-09
+
+Recorded by spec-author after spec-reviewer round 4 (§ 12). The sections above
+stand as written. "Why" quotes the owner on the question only; the call, the
+three readings and the names are the recorder's words. These are the option
+labels the owner selected on 2026-10-09, verbatim:
+
+- Where the push runs (OQ-8): "A: second job, needs build"
+- The three readings: "Accept all three"
+- The names (OQ-6): "publish.yml"
+
+C-7 is not among the owner's words. spec-author derived it from the choice of
+option A, which was put to the owner as `publish` alone holding package write.
+The owner has been told and has neither confirmed nor objected; § 4 marks the
+constraint so.

@@ -71,3 +71,27 @@ open item tracks unless one is cut for it.
 ## Reversal
 
 None.
+
+## Addendum - 2026-10-09
+
+Recorded by spec-author after spec-reviewer round 4 (§ 12). The sections above
+stand as written.
+
+**The owner's answers.** "Why" gives both in the recorder's words. These are
+the option labels the owner selected on 2026-10-09, verbatim:
+
+- Call 1 (OQ-9): "No tests, records only"
+- Call 2 (OQ-10): "Merge, then dry-run main"
+
+**Affects, added: the rule this sets aside.** `spec-and-traceability` says "A
+row whose test is missing blocks the item reaching done." For B-001, B-002,
+B-005, B-008 and B-009 that rule is set aside: item `0083` closes on the
+records while their § 9 rows read `Missing`, as `0055-F1`'s items did under the
+standing decision. Whether § 9's vocabulary gains a by-record value, so that
+such a row stops reading `Missing` and firing `SPEC060`, is `0001-F5` OQ-12:
+open, and not put to the owner.
+
+**The follow-up is tracked by a criterion, not an item.** No item was cut for
+the post-merge dry run on the delivering branch, because an item id is reserved
+on `main` before a branch claims it (`specht-conventions` § Delivery). Item
+`0083`'s last criterion names what the follow-up pull request records.

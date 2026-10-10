@@ -2,7 +2,7 @@ id: "0083"
 type: task
 title: Generate the release workflow with its gates, dry run and tag check
 
-status: in-progress
+status: done
 
 priority: high
 risk: 3
@@ -26,7 +26,7 @@ claims:
 
 created: "2026-10-08"
 updated: "2026-10-09"
-closed: null
+closed: "2026-10-09"
 
 summary: |
   The NUKE-generated release workflow (0055-F2 C-1), triggered by a `v*`
@@ -41,7 +41,7 @@ acceptance_criteria:
   - "B-008 — dry run without a tag: every step of `build`, the upload included; `publish` skipped"
   - "B-009 — tag differs from the computed version: fails before any push"
   - "§ 9 carries a row for each id above and none names a test; § 8 records the generated file read against § 7 and the hand runs of `VerifyTag` (decision 0002)."
-  - "After the merge: a dry run is started on `main` and a follow-up pull request records it in § 8; a dry run that fails reopens this item (OQ-10, decision 0002)."
+  - "After the merge: a dry run is started on `main` under `workflow_dispatch`, and a follow-up pull request records in § 8 all eleven steps of `build` green on `ubuntu-latest`, the upload finding exactly one file in `.artifacts/nupkg`, and `publish` shown as skipped; a dry run that fails reopens this item (OQ-10, decision 0002)."
 
 decisions:
   - |
@@ -53,6 +53,12 @@ decisions:
     carries a row naming a test for each id above" is reworded; this item
     closes on the generated file and the hand runs, and the dry run on
     `main` follows the merge (0055-F6 decision 0002).
+  - |
+    2026-10-09, spec-reviewer round 4 (0055-F6 § 12): approved, no
+    blocker; closed on the generated file and the hand runs. No item was
+    cut for the post-merge dry run: an id is reserved on `main` first
+    (specht-conventions § Delivery), so the last criterion above carries
+    what the follow-up pull request records.
 
 out_of_scope:
   - "Computing the version and creating the tag — § 5 #1, 0055-F5."
