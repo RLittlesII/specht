@@ -202,7 +202,7 @@ Delivered so far by items 0021, 0104, 0103 and 0024.
 
 ## 10. Lessons / Spec Deltas
 
-<!-- last written by: spec-author, 2026-10-09 (item 0024) -->
+<!-- last written by: spec-author, 2026-10-09 (item 0105) -->
 
 - 2026-10-08, A-2 amended by the owner during 0021's review: the three draft-spec files are cited at `hooked@a6d056f` instead of copied into `docs/reference/`. The specifications absorbed them, and an absorbed record is cited at its commit, not kept live ([lesson 0001](../../../.spec/lessons/0001-cite-a-superseded-record-at-a-commit.md)).
 - 2026-10-08, C-2 names its scope over the tests: `hooked`'s test `.csproj` is not copied; `test/specht.tests` keeps this repository's project file (spec-reviewer, 0021).
@@ -216,6 +216,7 @@ Delivered so far by items 0021, 0104, 0103 and 0024.
 - 2026-10-09, B-006 found false and fixed during item 0024 ([lesson 0001](lessons/0001-the-locale-reached-a-schema-message.md)): under `tr-TR`, JsonSchema.Net 9.4.0 lowercased a `SPEC002` message's expected type to `"ınteger"`. The owner decided the fix in the item: `FrontmatterSchemaRule` evaluates schemas under the invariant culture (§ 7), and the reference guard carries one exemption, pinned to that site. Decision 0006 amended, as its "no engine file changes" no longer holds.
 - 2026-10-09, C-9 amended by spec-author for that fix: its verdicts are those of commit `e7dba24` under the invariant culture. Under the invariant or an English culture every verdict still equals `e7dba24`'s and the golden report is unchanged; only a message under a culture whose lowercase of `I` is not `i` changes, and there `e7dba24`'s message was the leak C-3 and B-006 forbid. A reading line would not do, because C-9's "on any tree" binds every culture and the engine did give a verdict under `tr-TR`, unlike the fault reading above, where it gave none.
 - 2026-10-09, item 0020 closed with item 0024, its last open child: every § 3 claim the item cut has a § 9 row naming a test. This Feature's `status` stays `ready-for-architecture` until item 0107 covers B-012 to B-016. B-002 stays `Partial`; its remaining unit mechanisms wait on item 0107, which removes the engine's static file access, and 0107 owns them.
+- 2026-10-09, [ADR-0008](../../../.spec/adr/0008-evaluate-takes-the-rule-set-and-the-model-carries-the-vocabulary.md) recorded on the owner's decision during item 0105: `SpecCheckRunner.Evaluate` takes the rule set as its second argument and reads the pinned version's rule vocabulary from the model, superseding ADR-0001 and ADR-0004 in part. No claim or constraint changed; C-9 holds. § 6 and § 7 are owed the new shape by `implementer`.
 
 ## 11. Open Questions
 
