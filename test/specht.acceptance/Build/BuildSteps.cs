@@ -49,7 +49,7 @@ public sealed partial class BuildSteps(IUnitTestRuntimeProvider runtime) : IDisp
     {
         if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
         {
-            runtime.TestIgnore("build.cmd runs on Windows only; this scenario runs on the Windows leg of CI.");
+            runtime.TestIgnore("build.cmd runs on Windows only; this scenario needs a Windows machine.");
         }
 
         WriteTree();

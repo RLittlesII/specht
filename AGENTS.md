@@ -336,7 +336,7 @@ A skill that needs a fact another skill owns **links it**. The role contracts in
 `.claude/agents/` name what a role produces and refuses; they are not where a rule is
 written down.
 
-Six traps are worth carrying here, because each costs real damage when missed and
+Seven traps are worth carrying here, because each costs real damage when missed and
 none of them changes:
 
 - **`.github/workflows/ci.yml` is generated.** Regenerate it with
@@ -353,6 +353,10 @@ none of them changes:
   `risk` and every other item's `depends_on`. Recompute them — and the
   dependents' — when an edge changes; never hand-edit them.
   `status: in-progress` is the only signal an item is taken.
+- **An id is not reserved until it merges.** Before a branch takes a number,
+  check `main` _and_ every open pull request: two branches cut from one `main`
+  take the same next id, and git reports nothing. The rule is in
+  [`specht-conventions` § Delivery](.claude/skills/specht-conventions/references/delivery.md).
 - **Never commit a generated report.** `format.json` is `dotnet format`'s output
   and `.artifacts/spec-check/*.json` is the tool's; both carry machine-specific
   or already-stale content and both are gitignored.

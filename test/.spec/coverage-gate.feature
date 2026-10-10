@@ -27,6 +27,7 @@ Feature: The coverage gate
 
   @B-002 @boundary
   Scenario: The Windows run uploads no coverage
+    Given a commit pushed to the main branch
     When integration runs the build's gates
     Then the Windows run's tests run
     And none of the Windows run's coverage is sent to the coverage service

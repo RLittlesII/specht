@@ -6,13 +6,13 @@ status: done
 
 priority: high
 risk: 3
-rank: 91
+rank: 96
 
 parent: "0063"
 children: []
 
 depends_on: ["0064"] # a condition inside each leg of 0064's workflow
-blocks: []
+blocks: ["0118"]
 spikes: []
 
 spec: .build/ContinuousIntegration/.spec/README.md
@@ -25,7 +25,7 @@ claims:
   - B-014
 
 created: "2026-10-08"
-updated: "2026-10-08"
+updated: "2026-10-09"
 closed: "2026-10-08"
 
 summary: |

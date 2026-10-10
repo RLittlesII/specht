@@ -119,6 +119,9 @@ Claim an id against trunk, not against your branch. Two branches that both take
 thing ids may never do. If a collision does land, the newer change renumbers its
 own **new** ids; an id already cited anywhere stays.
 
+Trunk is not the only claimant: a change still in review holds the ids it wrote.
+Count those before taking a number; the companion says how one is reserved.
+
 ## Never add
 
 - Template guidance, or a `{{placeholder}}`, left in a copy.
