@@ -56,4 +56,8 @@ about records, which `0101-F8` decision 0004 spares for work items. Taken.
 
 ## Reversal
 
-None.
+**Amended 2026-10-09 by the repository owner ([decision 0005](0005-the-record-number-rule-is-on-by-default.md)).**
+"Rejected" above rests on "the proposal that the rule is on for every
+repository (OQ-7)". That proposal is now the owner's answer: `0101-F7` OQ-7
+is resolved, on by default. The sections above stand as written, and nothing
+is reversed.

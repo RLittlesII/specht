@@ -94,4 +94,21 @@ somewhere else is checked only once the manifest names it (B-021).
 
 ## Reversal
 
-None.
+**Amended 2026-10-09 by the repository owner (decisions [0003](0003-a-features-adr-numbers-are-apart-from-the-repository-wide-ones.md), [0004](0004-a-named-root-record-folder-is-read-under-an-exclusion.md) and [0005](0005-the-record-number-rule-is-on-by-default.md)).**
+Three of the author's readings above are now the owner's answers, and the
+sections above stand as written.
+
+- **Per folder.** A Feature's `adr/` and the repository-wide `.spec/adr` are
+  apart: `0101-F7` OQ-2 is resolved. "One ADR space" was put to the owner
+  and rejected by the owner; one record number space across every folder
+  stays turned down by the author.
+- **Which folders.** A named root record folder is read under an exclusion:
+  `0101-F7` OQ-5 is resolved as to its part (b). How record folders are
+  found is OQ-8.
+- **Who is checked.** On by default: `0101-F7` OQ-7 is resolved.
+
+"What a record file is" cites OQ-5; that part was not asked and is now OQ-8.
+"The number is the file name's", "How numbers compare" and "Scope of the
+version" stay the author's readings (OQ-4, OQ-6, OQ-3).
+
+Nothing is reversed.
