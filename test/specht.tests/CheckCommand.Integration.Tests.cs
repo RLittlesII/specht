@@ -11,8 +11,8 @@ using Spectre.Console.Testing;
 namespace specht.tests;
 
 /// <summary>
-/// The command through Spectre's command tester (<c>0001-F2</c> B-001, B-002, B-003, B-004, B-005, B-006, B-007, B-008, B-009, B-013;
-/// C-7; <c>0001-F5</c> B-022, B-023; <c>0001-F7</c> B-003): over a runner returning a report built in memory, and over the real runner and a
+/// The command through Spectre's command tester (<c>0001-F2</c> B-001, B-002, B-003, B-004, B-005, B-006, B-007, B-008, B-009, B-013,
+/// B-016; C-7; <c>0001-F5</c> B-022, B-023; <c>0001-F7</c> B-003): over a runner returning a report built in memory, and over the real runner and a
 /// synthetic tree on disk. The runner is the seam: the engine emits no warning until <c>0001-F5</c>'s rule settings exist,
 /// so a warning-only report is reachable only in memory. The tester captures stdout alone, so an input failure's stderr
 /// message is the acceptance tier's to pin.
@@ -36,6 +36,18 @@ public sealed class CheckCommandIntegrationTests
                 new SpecCheckReportFixture().WithViolations(
                     new SpecViolationFixture().WithFile(string.Join('/', Enumerable.Repeat("a-long-directory-name", 10)) + "/spec.md"))
             },
+        };
+
+    /// <summary>Gets a violation, and what its printed line must carry after its message.</summary>
+    public static TheoryData<string, SpecViolation, string> Endings =>
+        new()
+        {
+            {
+                "a violation with an identifier ends with it in square brackets (B-001)",
+                new SpecViolationFixture().WithIdentifier("B-002"),
+                " [B-002]"
+            },
+            { "a violation with no identifier ends at its message (B-016)", new SpecViolationFixture().WithIdentifier(null), string.Empty },
         };
 
     /// <summary>Gets the severities a report carries, the arguments, and the exit code the claim states for them.</summary>
@@ -189,6 +201,23 @@ public sealed class CheckCommandIntegrationTests
 
         // Then
         result.Output.Should().Be(expected, because);
+    }
+
+    [Theory]
+    [MemberData(nameof(Endings))]
+    public void AViolation_WhenChecked_ShouldPrintItsLineEndingWithItsIdentifierInSquareBracketsOrAtItsMessage(
+        string because,
+        SpecViolation violation,
+        string ending)
+    {
+        // Given
+        SpecCheckReport report = new SpecCheckReportFixture().WithViolations(violation);
+
+        // When
+        var result = Check(_ => report);
+
+        // Then
+        result.Output.Split('\n')[0].Should().EndWith(violation.Message + ending, because);
     }
 
     [Theory]

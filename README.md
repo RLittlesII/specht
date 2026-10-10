@@ -32,15 +32,20 @@
 Every violation comes back with a file, a line and a rule id.
 
 ```text
-src/specht/.spec/README.md(214): error SPEC031: § 9 has no row for claim B-007
+src/specht/.spec/README.md(214): error SPEC031: § 9 has no row for claim B-007 [B-007]
 ```
+
+A line ends with the identifier it is about in square brackets, and at the
+message when the violation has none.
 
 `specht` checks frontmatter against JSON Schema, the contracted sections and
 their order, claim ids, one traceability row per claim, `.feature` tags that
 resolve to claims, and dependency edges that agree from both ends. Rules are
 `SPEC001`–`SPEC061`
-([brief § 4](.spec/brief.md#4-the-rule-vocabulary-fixed-versioned-with-the-schema)),
-and each finding says what the rule expected.
+([brief § 4](.spec/brief.md#4-the-rule-vocabulary-fixed-versioned-with-the-schema)
+summarises them; each has a page under
+[`docs/rules/v1/`](docs/rules/v1/)), and each finding says
+what the rule expected.
 
 Deterministic and offline: the same tree gives the same report, and every path
 is relative to the root.

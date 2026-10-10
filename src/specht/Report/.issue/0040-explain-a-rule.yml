@@ -11,7 +11,7 @@ rank: 71
 parent: "0033"
 children: []
 
-depends_on: ["0026"] # an option on the check command
+depends_on: ["0026", "0129"] # an option on the check command; the rule pages it prints
 blocks: []
 spikes: []
 
@@ -24,7 +24,7 @@ claims:
   - B-030
 
 created: "2026-10-08"
-updated: "2026-10-08"
+updated: "2026-10-09"
 closed: null
 
 summary: |
@@ -35,6 +35,12 @@ summary: |
   beside any manifest the check rejects - unparseable, rejected by 0001-F5,
   or pinning an unshipped version - it exits 3, printing no text. The 4 constant joins C-2's set
   in 0026's exit-code class.
+
+  Depends on 0129: the full text is the rule page 0129 writes (decision
+  0003), so there is nothing to print until the pages exist. A page opens
+  with YAML frontmatter, which `--explain` must not print; that is OQ-3's
+  proposed default and the owner has not been asked, so confirm it before
+  building.
 
 acceptance_criteria:
   - "B-019 — full text, version, stdout, exit 0, no check run"
@@ -49,6 +55,9 @@ decisions:
     not found (0001-F2 decision 0003), over A-2's proposed 2; OQ-2 resolved
     as failing as the check does, over printing the newest version's text.
     Status moved from blocked to ready-for-architecture.
+  - |
+    2026-10-09, the repository owner: the text `--explain` prints is the
+    rule page (decision 0003). `depends_on` gains 0129.
 
 out_of_scope:
   - "Changing a rule's text between versions — § 5 #5, 0001-F7."
