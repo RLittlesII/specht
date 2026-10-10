@@ -27,15 +27,15 @@ updated: "2026-10-09"
 closed: null
 
 summary: |
-  With the on-disk source selected, `upgrade` brings the templates to
-  the pinned version and leaves the consumer's frontmatter schemas as
+  With the on-disk source selected, `upgrade` brings the templates the
+  manifest does not name as the consumer's to the pinned version and leaves the consumer's frontmatter schemas as
   they are (C-2, OQ-8), saying which it skipped and why in 0047's
   listing.
 
 acceptance_criteria:
   - "B-029 — on-disk source: none of the pinned version's frontmatter schemas written"
   - "B-030 — each skipped schema printed with the reason"
-  - "B-031 — templates rewritten to the pinned version's and listed"
+  - "B-031 — the templates the manifest does not name rewritten to the pinned version's and listed"
   - "§ 9 carries a row naming a test for each id above."
 
 decisions:
@@ -43,6 +43,12 @@ decisions:
     2026-10-09, spec-author, recording the owner's decision 0005: the
     summary and criteria say "the pinned version" where they said
     `n+1`. Claims and dependencies unchanged.
+
+  - |
+    2026-10-09, spec-author, recording the owner's decision 0006: B-031
+    is scoped to the templates the manifest does not name as the
+    consumer's; selecting the on-disk source names none. Claims and
+    dependencies unchanged.
 
 out_of_scope:
   - "Overwriting a consumer's frontmatter schemas — C-2."

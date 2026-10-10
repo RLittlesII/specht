@@ -40,6 +40,7 @@ Feature: Schema versioning
     Given the tool ships schema versions 0.1.0 and 0.2.0
     And the root's frontmatter schemas and templates are version <files>'s
     And the root is pinned to version <pin> with the embedded source and no upstream schema source
+    And its manifest names no template as the consumer's
     And one of its templates has been edited by hand
     When upgrade runs against it
     Then the frontmatter schemas and the templates are version <pin>'s
@@ -55,6 +56,18 @@ Feature: Schema versioning
     Given the tool ships schema versions 0.1.0 and 0.2.0
     And the root is pinned to version 0.1.0 and records no upstream schema source
     And its frontmatter schemas, templates and manifest keys are already version 0.1.0's
+    When upgrade runs against it
+    Then the standard output says the repository is current
+    And no file was rewritten
+    And the exit code is 0
+
+  @B-006
+  Scenario: A root that differs only in a template the consumer owns is current
+    Given the tool ships schema versions 0.1.0 and 0.2.0
+    And the root is pinned to version 0.1.0 and records no upstream schema source
+    And its frontmatter schemas, templates and manifest keys are already version 0.1.0's
+    And its manifest names the feature template as the consumer's
+    And the consumer has rewritten the feature template
     When upgrade runs against it
     Then the standard output says the repository is current
     And no file was rewritten
@@ -262,6 +275,7 @@ Feature: Schema versioning
     Given the tool ships schema versions 0.1.0 and 0.2.0
     And the root is pinned to version 0.2.0 with the on-disk source selected
     And the root's templates are version 0.1.0's
+    And its manifest names no template as the consumer's
     When upgrade runs against it
     Then the templates are version 0.2.0's
     And the output names each template it rewrote
@@ -497,3 +511,60 @@ Feature: Schema versioning
     And its manifest lacks a key version 0.2.0 defines
     When upgrade runs against it
     Then the exit code is 0
+
+  @B-060 @boundary
+  Scenario: Upgrade never writes a template the consumer owns
+    Given the tool ships schema versions 0.1.0 and 0.2.0
+    And the root is pinned to version 0.2.0 and its frontmatter schemas and templates are version 0.1.0's
+    And its manifest names the feature template as the consumer's
+    And the consumer has rewritten the feature template
+    When upgrade runs against it
+    Then the feature template is as the consumer wrote it
+
+  @B-061
+  Scenario: Upgrade says which templates it skipped and why
+    Given the tool ships schema versions 0.1.0 and 0.2.0
+    And the root is pinned to version 0.2.0 and its frontmatter schemas and templates are version 0.1.0's
+    And its manifest names the feature template as the consumer's
+    When upgrade runs against it
+    Then the output names the feature template as skipped
+    And the reason it skipped it
+
+  @B-062
+  Scenario: Upgrade still rewrites the templates the consumer does not own
+    Given the tool ships schema versions 0.1.0 and 0.2.0
+    And the root is pinned to version 0.2.0 and its templates are version 0.1.0's, which differ from version 0.2.0's
+    And its manifest names the feature template as the consumer's
+    When upgrade runs against it
+    Then every template but the feature template is version 0.2.0's
+
+  @B-063 @boundary
+  Scenario Outline: Upgrade leaves alone a template file the tool does not ship
+    Given the tool ships schema versions 0.1.0 and 0.2.0
+    And the root is pinned to version 0.2.0 and its frontmatter schemas and templates are version 0.1.0's
+    And its templates folder holds a runbook template that version 0.2.0 does not ship
+    And its manifest <naming> the runbook template as the consumer's
+    When upgrade runs against it
+    Then the runbook template is still there, as the consumer wrote it
+    And the templates folder holds no new file that version 0.2.0 does not ship
+
+    Examples:
+      | naming        |
+      | names         |
+      | does not name |
+
+  @B-005 @boundary
+  Scenario: Owning a template leaves the frontmatter schemas the tool's
+    Given the tool ships schema versions 0.1.0 and 0.2.0
+    And the root's frontmatter schemas and templates are version 0.1.0's
+    And the root is pinned to version 0.2.0 with the embedded source and no upstream schema source
+    And its manifest names the feature template as the consumer's
+    When upgrade runs against it
+    Then the frontmatter schemas are version 0.2.0's
+
+  @B-065 @boundary
+  Scenario: Owning a template changes nothing in the check
+    Given the root holds specifications, records and companions
+    And the report the check gives while the manifest names no template as the consumer's
+    When the manifest names the feature template as the consumer's and the check runs again
+    Then the report is the same
