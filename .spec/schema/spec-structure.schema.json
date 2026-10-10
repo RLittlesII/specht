@@ -39,10 +39,13 @@
   },
   "roles": {
     "claims": "3. Acceptance Criteria",
-    "matrix": "9. Traceability Matrix"
+    "matrix": "9. Traceability Matrix",
+    "signOff": "12. Sign-off"
   },
   "markers": {
     "missing": "Missing",
+    "draft": "🟡",
+    "blocked": "🔴",
     "approved": "approved"
   }
 }

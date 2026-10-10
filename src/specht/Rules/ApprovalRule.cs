@@ -52,7 +52,7 @@ public sealed class ApprovalRule : ISpecRule
                 }
             }
 
-            var signOff = feature.Document.Section(SignOff);
+            var signOff = feature.Document.Section(roles["signOff"]);
 
             if (signOff is null)
             {
@@ -63,7 +63,7 @@ public sealed class ApprovalRule : ISpecRule
             {
                 var row = signOff.Rows[index];
 
-                if (row.Any(NotApproved))
+                if (row.Any(cell => cell.Contains(markers["draft"], StringComparison.Ordinal) || cell.Contains(markers["blocked"], StringComparison.Ordinal)))
                 {
                     yield return new SpecViolation(
                         "SPEC061",
@@ -76,11 +76,4 @@ public sealed class ApprovalRule : ISpecRule
             }
         }
     }
-
-    private static bool NotApproved(string cell) =>
-        cell.Contains(Draft, StringComparison.Ordinal) || cell.Contains(Blocked, StringComparison.Ordinal);
-
-    private const string SignOff = "12. Sign-off";
-    private const string Draft = "\U0001F7E1";
-    private const string Blocked = "\U0001F534";
 }
