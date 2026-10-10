@@ -113,9 +113,10 @@ version numbers to read; C-12 keeps them apart.
 
 - `0001-F7` § 1; § 2 need 2 and need 7, A-1 to A-3; § 3 B-001, B-002, B-004,
   B-005, B-006, B-012 to B-014, B-016, B-017, B-021 to B-023, B-029, B-031
-  (amended), B-008 (withdrawn), B-039 to B-059 (added); § 4 C-1, C-6
-  (amended), C-3 (retired), C-11 to C-13 (added); § 5 row 2 (withdrawn), row 3
-  (amended), rows 7 to 12 (added); § 11 OQ-9 to OQ-24 (raised), OQ-2, OQ-3 and
+  (amended), B-008 (withdrawn), B-039 to B-059 (added), B-037 and B-038
+  (amended: `main`'s, pinned to `0.1.0`); § 4 C-1, C-6 (amended), C-3
+  (retired), C-11 to C-13 (added); § 5 row 2 (withdrawn), rows 3 and 7
+  (amended), rows 8 to 13 (added); § 11 OQ-9 to OQ-24 (raised), OQ-2, OQ-3 and
   OQ-6 (resolutions amended), OQ-13 (resolved by the item cut).
 - Decision 0001 narrowed and decision 0002 amended; see their Reversal
   sections.
@@ -127,6 +128,10 @@ version numbers to read; C-12 keeps them apart.
   § Invariants; README.md.
 - The `specht-conventions` skill (its settled answers and both write lists) and
   the `dotnet-tool` skill's vertical-slice reference.
+- Follow-up, outside the pull request that carries this decision: `0001-F5`
+  § 5 row 8, OQ-3 and OQ-5 and the brief § 6 epics row still say "version 1"
+  and "version 2", and `0001-F5` decision 0004 does too; the rows are to be
+  amended and the decision annotated with a dated note, not rewritten.
 
 ## Reversal
 
