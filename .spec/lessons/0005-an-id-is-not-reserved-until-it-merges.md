@@ -36,11 +36,20 @@ Git reported text conflicts or nothing; the clashes were found by reading.
   was squash-merged, #69 conflicted again though its tree was already correct.
 - **One duplicate landed.** #69 merged with item 0118, and #72 merged after it
   (`5fa5964`) with its own. `main` holds
-  [`src/specht/Manifest/.issue/0118-configurable-claim-tags.yml`](../../src/specht/Manifest/.issue/0118-configurable-claim-tags.yml)
+  [`src/specht/Manifest/.issue/0118-configurable-claim-tags.yml`](../../src/specht/Manifest/.issue/0134-configurable-claim-tags.yml)
   and
   [`.build/ContinuousIntegration/.issue/0118-windows-gates-on-main-only.yml`](../../.build/ContinuousIntegration/.issue/0118-windows-gates-on-main-only.yml),
   and a bare `0118` in a `depends_on`, a `blocks` or a commit subject no longer
   names one item.
+
+**Noted 2026-10-10.** The repository owner reversed the recorded exception
+(item `0128`, decision of 2026-10-10): the claim-tags item is renumbered
+`0134`, which is where the first link above now leads, and the
+continuous-integration item keeps `0118`. The owner's word was "renumber".
+The reading that follows is spec-author's, not the owner's: it is the one
+renumber made after a merge, an exception to the rule under § Skill, and that
+rule was not changed with it. Commits and review rows from before that date
+carry `0118` for both items.
 
 Each later pull request paid for a merge of `main`, a renumber with every
 citation followed through the specifications, the `@B-` tags, the items and
