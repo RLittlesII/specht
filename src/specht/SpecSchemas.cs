@@ -41,6 +41,9 @@ public sealed class SpecSchemas
     /// <summary>The ordered section contract and id grammars.</summary>
     public SpecStructure Structure { get; }
 
+    /// <summary>The schema version these schemas were built from, and whose rule ids a check over them evaluates (ADR-0008).</summary>
+    public SchemaVersion Version => throw new NotImplementedException("0105: the schemas do not keep their version yet.");
+
     /// <summary>
     /// Loads every schema from <paramref name="root"/>'s <c>.spec/schema/</c>, the manifest first, each frontmatter schema
     /// from the file the manifest names for its kind (<c>0001-F5</c> B-008).

@@ -39,6 +39,16 @@ public static class SpecCheckRunner
     }
 
     /// <summary>
+    /// Evaluates <paramref name="rules"/>, in the order given, over <paramref name="model"/> under the vocabulary of the
+    /// version its schemas keep (<c>0001-F1</c> B-004; <c>0001-F7</c> B-014; ADR-0008).
+    /// </summary>
+    /// <param name="model">The resolved tree.</param>
+    /// <param name="rules">The rule set.</param>
+    /// <returns>The report.</returns>
+    public static SpecCheckReport Evaluate(SpecModel model, IEnumerable<ISpecRule> rules) =>
+        throw new NotImplementedException("0105: Evaluate is not built yet.");
+
+    /// <summary>
     /// Orders <paramref name="violations"/> as the report carries them (<c>0001-F1</c> B-004, C-9): severity
     /// descending, then file, line and rule id, file and rule id compared ordinally, and violations equal on all
     /// four keys kept in the order they were given.
