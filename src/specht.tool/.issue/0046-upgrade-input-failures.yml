@@ -23,7 +23,7 @@ claims:
   - B-020
 
 created: "2026-10-08"
-updated: "2026-10-08"
+updated: "2026-10-09"
 closed: null
 
 summary: |
@@ -40,4 +40,4 @@ acceptance_criteria:
 decisions: []
 
 out_of_scope:
-  - "An unshipped pinned version — 0048, pending OQ-5."
+  - "A `schemaVersion` the check rejects, unshipped or malformed — 0048."

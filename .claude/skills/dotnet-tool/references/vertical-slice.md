@@ -18,7 +18,8 @@ src/specht.tool/
       CheckCommand.cs           command class + nested Settings
     Init/                       `specht init` - writes schema and templates, never overwrites
       InitCommand.cs
-    Upgrade/                    `specht upgrade` - moves the manifest to the next schemaVersion
+    Upgrade/                    `specht upgrade` - brings the schema and template files to the pinned
+                                schemaVersion and never moves the pin (0001-F7 decision 0005)
       UpgradeCommand.cs
   schema/v1/                    embedded - the shipping copy of the schema set
   templates/v1/                 embedded - the shipping copy of the templates
