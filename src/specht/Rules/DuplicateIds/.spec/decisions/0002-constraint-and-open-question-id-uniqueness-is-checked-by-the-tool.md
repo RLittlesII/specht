@@ -54,8 +54,8 @@ Reversed by the owner on 2026-10-09.
 
 - `0101-F6` B-001, B-002, B-008, B-011, B-014; C-1, C-6, C-8, C-9; § 5 rows
   1 to 5 and 8.
-- `0055-F2`: the merge-tree run is that Feature's to specify. On 2026-10-09
-  its specification is open pull request #85, and nothing of it has merged.
+- `0055-F2`: the merge-tree run is that Feature's, specified as `0055-F2`
+  B-017 and C-7 (its decision 0004).
 - Two later Features, proposed `0101-F7` and `0101-F8`, not yet specified:
   record numbers and work-item ids.
 
