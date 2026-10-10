@@ -8,10 +8,11 @@ namespace specht.tests;
 
 /// <summary>
 /// The schema version set (<c>0001-F7</c> B-003, B-004, B-014, B-022, B-023, B-055; C-6): the embedded set names its
-/// versions as <c>major.minor.patch</c>, holds <c>0.1.0</c> and ascends by precedence, each frontmatter schema sits in its
-/// own slot, version 0.1.0's epic schema accepts a non-empty title and description and rejects an empty one, version
-/// 0.1.0's vocabulary is the twenty-one rule ids, a pin selects exactly the version it names although a later patch and a
-/// later minor are held, and selecting a version the set does not hold is a rejected manifest naming the pin and the set.
+/// versions as <c>major.minor.patch</c> and holds <c>0.1.0</c>, a set given its versions out of order holds them ascending
+/// by major, then minor, then patch, each frontmatter schema sits in its own slot, version 0.1.0's epic schema accepts a
+/// non-empty title and description and rejects an empty one, version 0.1.0's vocabulary is the twenty-one rule ids, a pin
+/// selects exactly the version it names although a later patch and a later minor are held, and selecting a version the set
+/// does not hold is a rejected manifest naming the pin and the set.
 /// </summary>
 [Trait("Tier", "Unit")]
 public sealed class SchemaVersionsUnitTests
@@ -45,6 +46,29 @@ public sealed class SchemaVersionsUnitTests
 
         // Then
         numbers.Should().Contain(new SemanticVersion(0, 1, 0)).And.BeInAscendingOrder().And.OnlyHaveUniqueItems();
+    }
+
+    [Fact]
+    public void VersionsGivenOutOfOrder_WhenEnumerated_ShouldAscendByMajorThenMinorThenPatch()
+    {
+        // Given
+        var versions = new SchemaVersions(
+        [
+            new SchemaVersionFixture().WithNumber(new SemanticVersion(1, 0, 0)),
+            new SchemaVersionFixture().WithNumber(new SemanticVersion(0, 10, 0)),
+            new SchemaVersionFixture().WithNumber(new SemanticVersion(0, 9, 1)),
+            new SchemaVersionFixture().WithNumber(new SemanticVersion(0, 9, 0)),
+        ]);
+
+        // When
+        var numbers = versions.Versions.Select(static version => version.Number);
+
+        // Then
+        numbers.Should().Equal(
+            new SemanticVersion(0, 9, 0),
+            new SemanticVersion(0, 9, 1),
+            new SemanticVersion(0, 10, 0),
+            new SemanticVersion(1, 0, 0));
     }
 
     [Theory]
