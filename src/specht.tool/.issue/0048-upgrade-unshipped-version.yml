@@ -1,6 +1,6 @@
 id: "0048"
 type: task
-title: Refuse to upgrade from a version the tool does not ship
+title: Refuse to upgrade under a schemaVersion the check rejects
 
 status: ready-for-architecture
 
@@ -11,7 +11,7 @@ rank: 77
 parent: "0041"
 children: []
 
-depends_on: ["0046"] # one more failure path beside 0046's
+depends_on: ["0046", "0120"] # one more failure path beside 0046's; the malformed-version rejection is 0120's
 blocks: []
 spikes: []
 
@@ -21,17 +21,18 @@ claims:
   - B-021
 
 created: "2026-10-08"
-updated: "2026-10-08"
+updated: "2026-10-09"
 closed: null
 
 summary: |
-  Under a root pinned to a version the tool does not ship, upgrade names
-  the pinned and shipped versions on stderr, writes nothing, and exits 3 —
-  the code the check gives the same pin (B-003), so one manifest gets one
-  answer from every command.
+  Under a root whose `schemaVersion` the check rejects — a version the
+  tool does not ship (B-003) or a value that is not `major.minor.patch`
+  (B-039) — upgrade names on stderr what the check names, writes nothing,
+  and exits 3, so one manifest gets one answer from every command. Waits
+  on 0120, which delivers both rejections for the check.
 
 acceptance_criteria:
-  - "B-021 — unshipped pin: versions on stderr, nothing written, exit 3"
+  - "B-021 — unshipped or malformed `schemaVersion`: the check's stderr, nothing written, exit 3"
   - "§ 9 carries a row naming a test for each id above."
 
 decisions:
@@ -40,5 +41,9 @@ decisions:
     check, over 4, which is for what the command line names
     (0001-F2 decision 0003). Status moved from blocked to
     ready-for-architecture.
+  - |
+    2026-10-09, spec-author, recording the owner's decision 0005: B-021
+    widened to a malformed `schemaVersion`, the integer `1` included; the
+    item now waits on 0120.
 
 out_of_scope: []

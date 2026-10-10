@@ -43,10 +43,14 @@ From brief § 2, § 5 and § 6, as of 2026-10-07:
   GitHub Packages on `rlittlesii/specht` first; NuGet.org is the reversal
   (brief § 2, § 6). The consumer's build calls the tool; no consumer carries the
   engine.
-- **A schema version is the manifest's `schemaVersion`.** A repository pins by
-  editing one number; the tool embeds every version it knows and validates with
-  the pinned one; `specht upgrade` rewrites the manifest and schema files to the
-  next version and prints what changed.
+- **A schema version is the manifest's `schemaVersion`**, a `major.minor.patch`
+  version numbered by verdict and apart from the package version; the first is
+  `0.1.0`, and no key means it. The tool embeds every version it knows and
+  validates with exactly the pinned one. A pin command moves the pin to any
+  shipped version, up or down, and changes nothing else; `specht upgrade`
+  rewrites the schema and template files to match the pin, never moves it, and
+  prints what changed (`0001-F7` decision 0005, amending this list
+  2026-10-09). The pin and list commands' names are `0001-F7` OQ-11.
 - **Templates ship in the tool**, written by `specht init` beside the schema,
   never overwritten. They are part of the generation contract.
 - **The agent-facing contract is `--json`**: violations (rule, severity, file,
@@ -56,9 +60,11 @@ From brief § 2, § 5 and § 6, as of 2026-10-07:
 - **Every path in every output is repository-relative.** An absolute path
   anywhere is a defect.
 - **The tool never writes into a consumer's tree** except through `init`,
-  `upgrade`, the caller-named `--report` file and, from epic `0101`, `format`,
-  which only moves whole table rows and frontmatter keys (brief § 9; `0101-F5`
-  decision 0001). `init` never overwrites an existing file.
+  `upgrade`, the pin command, which changes only `schemaVersion` in the
+  manifest (`0001-F7` decision 0005), the caller-named `--report` file and,
+  from epic `0101`, `format`, which only moves whole table rows and
+  frontmatter keys (brief § 9; `0101-F5` decision 0001). `init` never
+  overwrites an existing file.
 - **No rule plugins.** Per-rule disable and `--strict` instead. No Roslyn: the
   claim bridge and the convention analyzers stay in `hooked`.
 - **The engine is copied from `hooked`, never regenerated**, and the rule

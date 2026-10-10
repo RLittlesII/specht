@@ -46,8 +46,11 @@ with `**/.issue/<id>-*.yml`.
 Ids are four digits, repository-wide, and share one number space with the epics
 under `epics/`. `.issue/.sequence` holds the **last id claimed**: take the next
 number and write it back in the same commit that adds the item. **Claim after
-rebasing** — an id is taken the moment someone else merges it. Ids are never
-reused, and a closed item stays as permanent history.
+rebasing** — an id is taken the moment someone else merges it. `main` is not
+the only claimant: an open pull request holds ids too, and
+[Reserve an id before a branch claims it](#reserve-an-id-before-a-branch-claims-it)
+says how to count them. Ids are never reused, and a closed item stays as
+permanent history.
 
 ## Each step of brief § 8 is a pull request
 
@@ -105,6 +108,59 @@ take it back to grooming rather than stacking.
 Branch from `main` as `<id>/<short-description>`, from the item id — or
 `spec/<feature-slug>` when authoring a specification, which has no item to take
 an id from.
+
+## Reserve an id before a branch claims it
+
+An id is permanent once it is on `main`. Before that it is a claim only its own
+branch can see, and two branches cut from the same `main` take the same "next"
+number. Git does not report it: two records sharing a number under different
+file names merge cleanly
+([lesson 0005](../../../../.spec/lessons/0005-an-id-is-not-reserved-until-it-merges.md)).
+
+This covers every number a branch takes: a work item, a claim, constraint or
+open question in an existing specification, and a `decisions/`, `adr/` or
+`lessons/` file.
+
+**Check before claiming.** Read what `main` holds _and_ what every open pull
+request adds in that number space:
+
+```sh
+gh pr list --state open --json number,title,files
+```
+
+For an item, the next id is one above the highest id on `main` or in any open
+pull request - not one above `.issue/.sequence` on `main`.
+
+**Reserve by landing first.** `main` is protected, so a reservation is a pull
+request, not a push: one that bumps `.issue/.sequence` and names the range and
+what it is for in its commit message. It changes one line, so it merges before
+the work starts. A session that cannot wait takes the range above every open
+pull request's highest id, and says so in its pull-request description.
+
+**One writer per specification.** Two branches that both amend the same
+Feature's § 1-5 are sequenced, never run in parallel: the Feature's claim,
+constraint, question and `decisions/` numbers have no sequence file, and one
+writer is what reserves them. Work on different Features runs in parallel once
+its item ids are reserved. The root `.spec/adr/` and `.spec/lessons/` numbers
+are shared by every branch and are checked as above.
+
+**When a clash is found anyway:**
+
+1. The pull request that merges first keeps its ids. The unmerged one renumbers
+   its own new ids before it merges, never after.
+2. Renumber on the branch **before** merging `main`, while every such id in the
+   tree is unambiguously the branch's own.
+3. Follow every citation: specifications, `@B-` tags, items, `README.md` and
+   decision records.
+4. Leave a reviewer's earlier § 12 rows verbatim, for the reviewer to annotate.
+5. Record the renumber in that specification's § 10.
+6. State the new numbers in the merge commit's message and in the pull-request
+   text - the squash is built from commit messages, and the earlier commits
+   carry the old numbers.
+
+**A stacked pull request whose base was squash-merged** is brought up to date by
+merging `main`. When `main`'s tree equals what the branch already merged, that
+merge changes no file.
 
 ## Choosing the next item
 
@@ -221,6 +277,9 @@ act on is answered with why, and left open for the reviewer to close.
 
 - A GitHub issue, label or milestone as a tracker.
 - An item id not claimed from `.issue/.sequence`, or a reused one.
+- An id claimed by reading `main` alone while a pull request is open.
+- A second branch amending a Feature's § 1-5 while another is open on them.
+- A renumber after the merge, or one made after merging `main` into the branch.
 - A branch or an edit before the item is `in-progress`.
 - A second item in progress on the same Feature.
 - A `type: feature` item without `spec:` and the `claims:` it delivers.

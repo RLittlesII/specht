@@ -14,6 +14,7 @@
     <ReqnrollFeatureFile Include="..\..\src\specht\Manifest\.spec\manifest.feature" Link="Features\manifest.feature" />
     <ReqnrollFeatureFile Include="..\..\src\specht\Report\.spec\report.feature" Link="Features\report.feature" />
     <ReqnrollFeatureFile Include="..\..\src\specht.tool\.spec\versioning.feature" Link="Features\versioning.feature" />
+    <ReqnrollFeatureFile Include="..\..\.build\Versioning\.spec\versioning.feature" Link="Features\package-versioning.feature" />
   </ItemGroup>
 
   <ItemGroup>
