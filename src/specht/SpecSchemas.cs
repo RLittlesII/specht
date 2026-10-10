@@ -41,7 +41,10 @@ public sealed class SpecSchemas
     /// <summary>The ordered section contract and id grammars.</summary>
     public SpecStructure Structure { get; }
 
-    /// <summary>Loads every schema from <paramref name="root"/>'s <c>.spec/schema/</c>, the manifest first.</summary>
+    /// <summary>
+    /// Loads every schema from <paramref name="root"/>'s <c>.spec/schema/</c>, the manifest first, each frontmatter schema
+    /// from the file the manifest names for its kind (<c>0001-F5</c> B-008).
+    /// </summary>
     /// <remarks>
     /// The check loads through a version set instead; this reads the on-disk frontmatter schemas, which no check selects
     /// until the schema source exists (<c>0001-F7</c> B-009).
@@ -61,9 +64,9 @@ public sealed class SpecSchemas
         var options = new BuildOptions { SchemaRegistry = new SchemaRegistry() };
 
         return new SpecSchemas(
-            Read(fileSystem, directory, "feature-spec.frontmatter.schema.json", options),
-            Read(fileSystem, directory, "task.frontmatter.schema.json", options),
-            Read(fileSystem, directory, "epic.frontmatter.schema.json", options),
+            Read(fileSystem, directory, structure.FrontmatterSchemas["feature"], options),
+            Read(fileSystem, directory, structure.FrontmatterSchemas["task"], options),
+            Read(fileSystem, directory, structure.FrontmatterSchemas["epic"], options),
             structure);
     }
 

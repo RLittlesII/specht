@@ -9,4 +9,8 @@ public sealed record SpecStructure(
     IReadOnlyList<string> Sections,
     IReadOnlyDictionary<string, IReadOnlyList<string>> Tables,
     IReadOnlyDictionary<string, string> Identifiers,
-    int SchemaVersion);
+    int SchemaVersion)
+{
+    /// <summary>The frontmatter schema file names under <c>.spec/schema/</c>, keyed by kind (B-008, decision 0003).</summary>
+    public IReadOnlyDictionary<string, string> FrontmatterSchemas { get; init; } = new Dictionary<string, string>(StringComparer.Ordinal);
+}
