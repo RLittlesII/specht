@@ -4,7 +4,7 @@ Feature: The frontmatter command
   So that frontmatter that is not in the tree gets the same verdict the check would give it
 
   Background:
-    Given a repository root holding a manifest that pins schema version 1
+    Given a repository root holding a manifest that pins schema version 0.1.0
 
   @B-001
   Scenario: A document named by a path is checked
@@ -44,7 +44,7 @@ Feature: The frontmatter command
 
   @B-006
   Scenario: The schema is the one the check selects for the root
-    Given a task document that pinned version 1 accepts and a stricter version rejects
+    Given a task document that pinned version 0.1.0 accepts and a stricter version rejects
     And the root's manifest pins the stricter version
     When its frontmatter is checked as a task
     Then a violation is reported

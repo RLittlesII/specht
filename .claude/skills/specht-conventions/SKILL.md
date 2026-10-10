@@ -135,6 +135,11 @@ Always carry the prefix in prose — several sequences have a twelfth member.
 in every past commit, review, issue and sibling specification. A dropped claim
 leaves its number retired.
 
+That holds from the moment an id is on `main`. Until then a number is a claim
+other branches cannot see; how one is checked, reserved, and renumbered when two
+branches took it is in [references/delivery.md](references/delivery.md)
+§ "Reserve an id before a branch claims it".
+
 The rule vocabulary is fixed per schema version (brief § 4). A new `SPEC###` is
 a new schema version, after brief § 8 step 6 — never a quiet addition.
 
@@ -207,7 +212,8 @@ a commit of `main` creates `v<version>` (`0055-F5` A-1, B-007).
   matches on its tool-owned keys; a test says so (`0001-F4` B-004).
 - An absolute path in any output, report, log line or test fixture.
 - A write into a consumer's tree from anything but `init`, `upgrade`, the
-  caller-named `--report` file and, from epic `0101`, `format`, which only
-  moves whole table rows and frontmatter keys (brief § 9); or an overwrite of
-  an existing file from `init`.
+  pin command, which writes only `schemaVersion` in the manifest (`0001-F7`
+  decision 0005), the caller-named `--report` file and, from epic `0101`,
+  `format`, which only moves whole table rows and frontmatter keys
+  (brief § 9); or an overwrite of an existing file from `init`.
 - A second index of anything this skill already indexes.

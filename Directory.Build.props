@@ -18,6 +18,7 @@
 
     <ItemGroup>
         <PackageReference Include="Rocket.Surgery.Airframe.CodeAnalysis" PrivateAssets="all"/>
+        <PackageReference Include="Nerdbank.GitVersioning" PrivateAssets="all"/>
     </ItemGroup>
     <ItemGroup>
         <Content Include="**\.spec\*.feature"/>

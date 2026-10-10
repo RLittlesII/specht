@@ -43,4 +43,12 @@ rejecting: none beyond the wait above.
 
 ## Reversal
 
-None.
+**Amended 2026-10-09 by the repository owner (decision 0005).** The integer
+version `1` is now `0.1.0`: "version 1" above reads as `0.1.0`, the version the
+first published package embeds, and the manifest keys `0001-F5` and `0001-F6`
+add are `0.1.0`'s. "A change is the next version" now means a new version
+numbered by `0001-F7` C-11. Whether a published `x.y.z` is frozen forever,
+`0.x` included, is reopened as `0001-F7` OQ-10, behind OQ-9; until it is
+answered, C-1, B-013 and B-015 hold as written. Considered and not chosen:
+deciding the freeze for `0.x` now (the owner deferred it behind where the
+schemas are hosted).
