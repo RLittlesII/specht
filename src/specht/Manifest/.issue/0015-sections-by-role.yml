@@ -2,7 +2,7 @@ id: "0015"
 type: task
 title: Read sections, table headers and markers by role
 
-status: ready-for-architecture
+status: in-progress
 
 priority: high
 risk: 3
@@ -24,7 +24,7 @@ claims:
   - B-015
 
 created: "2026-10-08"
-updated: "2026-10-08"
+updated: "2026-10-09"
 closed: null
 
 summary: |
