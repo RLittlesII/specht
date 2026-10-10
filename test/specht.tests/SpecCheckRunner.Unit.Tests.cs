@@ -1,4 +1,5 @@
 using AwesomeAssertions;
+using specht.Report;
 
 namespace specht.tests;
 
@@ -41,23 +42,7 @@ public sealed class SpecCheckRunnerUnitTests
         // Then
         report.Violations.Should().BeEmpty();
         report.SpecificationCount.Should().Be(1);
-        report.LegacyCount.Should().Be(1);
-        report.CoLocatedCount.Should().Be(0);
-    }
-
-    [Fact]
-    public void AMigrationInProgress_WhenChecked_ShouldReportProgressWithoutFailing()
-    {
-        // Given
-        using var tree = new SpecTree();
-        tree.WriteFeature("0001", "F1");
-
-        // When
-        var report = tree.Run();
-
-        // Then
-        report.ErrorCount.Should().Be(0);
-        report.MigrationSummary.Should().Contain("Migration 0% complete");
+        report.Layouts.Should().Equal(new SpecReportLayout("epics", 1), new SpecReportLayout("features", 0));
     }
 
     [Fact]

@@ -1,4 +1,5 @@
 using AwesomeAssertions;
+using specht.Report;
 
 namespace specht.tests;
 
@@ -10,9 +11,9 @@ namespace specht.tests;
 public sealed class SpecCheckRunnerIntegrationTests
 {
     [Fact]
-    public void ATreeInBothLayouts_WhenChecked_ShouldAcceptBothAndReportMigrationProgress()
+    public void ATreeInBothLayouts_WhenChecked_ShouldAcceptBothAndCountTheSpecificationsOfEachLayout()
     {
-        // Given - the state this repository is in while the migration runs.
+        // Given
         using var tree = new SpecTree();
         tree.WriteFeature("0001", "F1");
         tree.WriteFeature("0001", "F2");
@@ -25,9 +26,7 @@ public sealed class SpecCheckRunnerIntegrationTests
         // Then
         report.Violations.Should().BeEmpty();
         report.SpecificationCount.Should().Be(4);
-        report.LegacyCount.Should().Be(3);
-        report.CoLocatedCount.Should().Be(1);
-        report.MigrationSummary.Should().Contain("Migration 25% complete");
+        report.Layouts.Should().Equal(new SpecReportLayout("epics", 3), new SpecReportLayout("features", 1));
     }
 
     [Fact]

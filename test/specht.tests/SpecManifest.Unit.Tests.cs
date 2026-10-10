@@ -6,7 +6,7 @@ namespace specht.tests;
 
 /// <summary>
 /// The manifest loader over an in-memory file system (0001-F5 B-001, B-002, B-003, B-008, B-012, B-015, B-019, B-020, B-039,
-/// B-040; 0001-F2 B-005, B-006, B-007): what it rejects and as which failure, what it ignores, and what it fills from the
+/// B-040, B-041; 0001-F2 B-005, B-006, B-007): what it rejects and as which failure, what it ignores, and what it fills from the
 /// default manifest.
 /// </summary>
 [Trait("Tier", "Unit")]
@@ -470,6 +470,24 @@ public sealed class SpecManifestUnitTests
 
         // Then
         load.Should().ThrowExactly<SpechtManifestException>().Which.Message.Should().Contain($"'{marker}'");
+    }
+
+    [Theory]
+    [InlineData("taskFiles")]
+    [InlineData("epicFiles")]
+    [InlineData("companionFiles")]
+    public void AManifestWhoseFileShapeListIsEmpty_WhenLoaded_ShouldRejectItNamingTheKey(string key)
+    {
+        // Given
+        var manifest = DefaultManifest();
+        manifest[key] = new JsonArray();
+        var fileSystem = Holding(manifest);
+
+        // When
+        var load = () => SpecManifest.Load(fileSystem, Root);
+
+        // Then
+        load.Should().ThrowExactly<SpechtManifestException>().Which.Message.Should().Contain(key);
     }
 
     [Fact]

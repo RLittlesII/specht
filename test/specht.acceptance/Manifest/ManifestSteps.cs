@@ -19,7 +19,7 @@ namespace specht.acceptance.Manifest;
 /// check is the model the runner loads, with its schemas loaded from the root's files, evaluated by the frontmatter rule
 /// (B-008): the runner selects no on-disk source until <c>0001-F7</c> B-009. A role, a role's headers and a marker are
 /// written into the manifest under <c>roles</c>, <c>tables</c> and <c>markers</c> (B-001 to B-003, B-015, B-039, B-040;
-/// decision 0006).
+/// decision 0006). An empty file-shape list is written under <c>companionFiles</c> (B-041; <c>0001-F6</c> decision 0008).
 /// </summary>
 [Binding]
 [Scope(Feature = "The manifest carries the roles")]
@@ -163,6 +163,12 @@ public sealed class ManifestSteps
 
     [Then("the rejection names the {word} marker")]
     public void ThenTheRejectionNamesTheMarker(string marker) => _rejection!.Message.Should().Contain(marker);
+
+    [Given("the manifest's companion file list is empty")]
+    public void GivenTheManifestsCompanionFileListIsEmpty() => Manifest["companionFiles"] = new JsonArray();
+
+    [Then("the rejection names the companion file list")]
+    public void ThenTheRejectionNamesTheCompanionFileList() => _rejection!.Message.Should().Contain("companionFiles");
 
     [Then("the rejection names {string}")]
     public void ThenTheRejectionNames(string name) => _rejection!.Message.Should().Contain(name);

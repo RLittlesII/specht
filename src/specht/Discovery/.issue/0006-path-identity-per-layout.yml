@@ -21,7 +21,7 @@ claims:
   - B-004
 
 created: "2026-10-08"
-updated: "2026-10-08"
+updated: "2026-10-09"
 closed: null
 
 summary: |
@@ -33,7 +33,13 @@ acceptance_criteria:
   - "B-004 — SPEC011 against declared segments; silent when none declared"
   - "§ 9 carries a row naming a test for each id above."
 
-decisions: []
+decisions:
+  - |
+    2026-10-09, spec-author recording the repository owner's answer to OQ-5:
+    this item ends the interim 0005 leaves, in which SPEC011 selects its
+    layout by the name `legacy` and a manifest that renames that layout
+    turns SPEC011 off for it (decision 0005).
+    Rejected: landing 0005 and 0006 in one pull request.
 
 out_of_scope:
   - "Any other rule's handling of a discovered file — § 5 #5, 0001-F1 and 0001-F5."

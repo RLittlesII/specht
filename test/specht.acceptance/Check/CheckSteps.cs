@@ -30,15 +30,14 @@ public sealed partial class CheckSteps
     public void GivenTheRootHoldsASpecificationWhoseClaimB002HasNoTraceabilityRow() =>
         Tree.WriteFeature("0001", "F1", sections: SpecTree.SectionsWith("3. Acceptance Criteria", TwoClaims));
 
-    [Given("the root holds two specifications in the legacy layout and one in the co-located layout")]
-    public void GivenTheRootHoldsTwoSpecificationsInTheLegacyLayoutAndOneInTheCoLocatedLayout()
+    [Given("the root holds two specifications in the epics layout and one in the features layout")]
+    public void GivenTheRootHoldsTwoSpecificationsInTheEpicsLayoutAndOneInTheFeaturesLayout()
     {
         Tree.WriteFeature("0001", "F1");
         Tree.WriteFeature("0001", "F2");
         Tree.WriteCoLocatedFeature("src/area", "0001", "F3");
         var report = Tree.Run();
-        report.LegacyCount.Should().Be(2);
-        report.CoLocatedCount.Should().Be(1);
+        report.Layouts.Should().Equal(new SpecReportLayout("epics", 2), new SpecReportLayout("features", 1));
     }
 
     [Given("the root holds a specification with one error-severity violation")]
@@ -145,7 +144,7 @@ public sealed partial class CheckSteps
     {
         var summary = Summary;
         Lines(_stdout).TakeLast(summary.Count).Should().Equal(summary);
-        SummaryLine(0).Should().Contain("legacy 2").And.Contain("coLocated 1");
+        SummaryLine(0).Should().Contain("epics 2").And.Contain("features 1");
     }
 
     [Then("the item count and the count of rule ids evaluated")]

@@ -34,7 +34,7 @@ public sealed record SpecReportDocument(
         new(
             report.SchemaVersion,
             SpecSchemaSource.Embedded,
-            [new SpecReportLayout(SpecLayout.Legacy, report.LegacyCount), new SpecReportLayout(SpecLayout.CoLocated, report.CoLocatedCount)],
+            report.Layouts,
             report.ItemCount,
             report.RulesEvaluated,
             report.ErrorCount,
@@ -65,7 +65,7 @@ public sealed record SpecReportDocument(
     public string ToJson() => JsonSerializer.Serialize(this, Options);
 
     private static string Count(SpecReportLayout layout) =>
-        FormattableString.Invariant($"{JsonNamingPolicy.CamelCase.ConvertName(layout.Layout.ToString())} {layout.SpecificationCount}");
+        FormattableString.Invariant($"{layout.Layout} {layout.SpecificationCount}");
 
     private static readonly JsonSerializerOptions Options = new()
     {
