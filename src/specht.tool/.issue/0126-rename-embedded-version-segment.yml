@@ -1,4 +1,4 @@
-id: "0124"
+id: "0126"
 type: task
 title: Name the embedded version folder and the `$id` version segment
 
@@ -11,7 +11,7 @@ rank: 74
 parent: "0041"
 children: []
 
-depends_on: ["0118"] # names the folder and `$id` of the semver set 0118 converts
+depends_on: ["0120"] # names the folder and `$id` of the semver set 0120 converts
 blocks: []
 spikes: []
 
@@ -32,7 +32,7 @@ summary: |
   layout lines in the skills and AGENTS.md, the README badge, and
   0001-F4 § 7 and § 8, which state `v<n>`.
 
-  Blocked on the owner: OQ-22. Depends on 0118, which converts the
+  Blocked on the owner: OQ-22. Depends on 0120, which converts the
   version set this names and closes without the answer. It must land
   before the first publish, which freezes the bytes (decision 0002).
 
@@ -50,12 +50,12 @@ acceptance_criteria:
 decisions:
   - |
     2026-10-09, spec-author, at the spec-reviewer's request (0001-F7
-    § 12, item cut of 2026-10-09): cut out of 0118, so the conversion and
+    § 12, item cut of 2026-10-09): cut out of 0120, so the conversion and
     every item behind it do not wait on a naming answer. The owner's plan
     named no such item; the cut is spec-author's. Status blocked: OQ-22
-    is open. Rejected: leaving it in 0118 "not done until" OQ-22.
+    is open. Rejected: leaving it in 0120 "not done until" OQ-22.
 
 out_of_scope:
-  - "Converting the pin, the version set and the report to semver — 0118."
+  - "Converting the pin, the version set and the report to semver — 0120."
   - "Proving a published version is still embedded byte-for-byte — 0044."
-  - "Versions hosted on the web, and the `$id` that would follow — § 5 #12, OQ-9."
+  - "Versions hosted on the web, and the `$id` that would follow — § 5 #13, OQ-9."

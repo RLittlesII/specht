@@ -127,7 +127,7 @@ violation under `--strict`), `2` missing root or manifest, `3` invalid manifest,
 or a schema version to pin).
 
 A command that lists the shipped schema versions and a command that pins one
-are specified and not yet named (`0001-F7` B-039 to B-049, OQ-11).
+are specified and not yet named (`0001-F7` B-041 to B-051, OQ-11).
 
 ## Invariants
 

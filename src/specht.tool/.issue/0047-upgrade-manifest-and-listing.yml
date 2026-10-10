@@ -20,7 +20,7 @@ spec: src/specht.tool/.spec/README.md
 claims:
   - B-016
   - B-017
-  - B-057
+  - B-059
 
 created: "2026-10-08"
 updated: "2026-10-09"
@@ -38,7 +38,7 @@ summary: |
 acceptance_criteria:
   - "B-016 — the pinned version's absent keys added; present keys keep their value"
   - "B-017 — the pinned version and each rewritten file; no diff; provisional on OQ-21"
-  - "B-057 — files already at the pin, a key added: exit 0"
+  - "B-059 — files already at the pin, a key added: exit 0"
   - "§ 9 carries a row naming a test for each id above."
 
 decisions:
@@ -49,9 +49,9 @@ decisions:
     ready-for-architecture.
   - |
     2026-10-09, spec-author, recording the owner's decision 0005: upgrade
-    no longer moves `schemaVersion` (B-050, in 0045), so the version pair
+    no longer moves `schemaVersion` (B-052, in 0045), so the version pair
     of OQ-3 lost its first member; B-017 states the pinned version and is
-    provisional on OQ-21. B-057 added.
+    provisional on OQ-21. B-059 added.
 
 out_of_scope:
   - "A consumer-side migration script or changelog — C-5."

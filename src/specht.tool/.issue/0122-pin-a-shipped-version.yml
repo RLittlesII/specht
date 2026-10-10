@@ -1,4 +1,4 @@
-id: "0120"
+id: "0122"
 type: task
 title: Pin a shipped version, up or down
 
@@ -11,19 +11,19 @@ rank: 81
 parent: "0041"
 children: []
 
-depends_on: ["0118"] # pins a version of the semver set 0118 produces
-blocks: ["0121", "0123"]
+depends_on: ["0120"] # pins a version of the semver set 0120 produces
+blocks: ["0123", "0125"]
 spikes: []
 
 spec: src/specht.tool/.spec/README.md
 
 claims:
-  - B-041
-  - B-042
   - B-043
   - B-044
   - B-045
   - B-046
+  - B-047
+  - B-048
 
 created: "2026-10-09"
 updated: "2026-10-09"
@@ -38,28 +38,28 @@ summary: |
   Blocked on the owner: OQ-11, the command's name; OQ-14, a key only a
   higher version defines after a move down; OQ-20, whether it repairs a
   manifest whose current version the tool cannot use. OQ-23, which
-  failure wins when two apply, is shared with 0121. Waits on 0118 for
+  failure wins when two apply, is shared with 0123. Waits on 0120 for
   the version set.
 
 acceptance_criteria:
-  - "B-041 — a higher shipped version: pin set; exit 0"
-  - "B-042 — a lower shipped version: pin set; exit 0"
-  - "B-043 — manifest bytes differ only in the key's value"
-  - "B-044 — no other file created, modified or deleted"
-  - "B-045 — no `schemaVersion` key: added, other keys keep their value"
-  - "B-046 — unshipped or malformed version named: stderr, nothing written, exit 4"
+  - "B-043 — a higher shipped version: pin set; exit 0"
+  - "B-044 — a lower shipped version: pin set; exit 0"
+  - "B-045 — manifest bytes differ only in the key's value"
+  - "B-046 — no other file created, modified or deleted"
+  - "B-047 — no `schemaVersion` key: added, other keys keep their value"
+  - "B-048 — unshipped or malformed version named: stderr, nothing written, exit 4"
   - "§ 9 carries a row naming a test for each id above."
 
 decisions:
   - |
     2026-10-09, the repository owner approved a written plan (decision
     0005, OQ-13) naming a pin item and, apart from it, the interactive
-    pick (0123). Splitting the pin's input failures into 0121, and the
+    pick (0125). Splitting the pin's input failures into 0123, and the
     claims this item carries, are spec-author's cut. Status blocked:
     OQ-11, OQ-14 and OQ-20 are open.
 
 out_of_scope:
-  - "Rewriting the schema set or the templates — § 5 #10; that is upgrade's, 0045."
-  - "The root, missing-manifest and rejected-manifest failures — 0121."
-  - "A selection list when no version is named — 0123."
-  - "A pin policy — 0122."
+  - "Rewriting the schema set or the templates — § 5 #11; that is upgrade's, 0045."
+  - "The root, missing-manifest and rejected-manifest failures — 0123."
+  - "A selection list when no version is named — 0125."
+  - "A pin policy — 0124."

@@ -1,4 +1,4 @@
-id: "0119"
+id: "0121"
 type: task
 title: List the shipped schema versions
 
@@ -11,15 +11,15 @@ rank: 77
 parent: "0041"
 children: []
 
-depends_on: ["0118"] # lists the semver version set 0118 produces
+depends_on: ["0120"] # lists the semver version set 0120 produces
 blocks: []
 spikes: []
 
 spec: src/specht.tool/.spec/README.md
 
 claims:
-  - B-039
-  - B-040
+  - B-041
+  - B-042
 
 created: "2026-10-09"
 updated: "2026-10-09"
@@ -29,12 +29,12 @@ summary: |
   A command that prints each schema version the tool ships, one to a
   line, in ascending semver precedence. Blocked on OQ-11, the command's
   name, and OQ-19, whether it needs a root or a manifest and whether it
-  marks the pinned version; both are the owner's. Waits on 0118 for the
+  marks the pinned version; both are the owner's. Waits on 0120 for the
   version set.
 
 acceptance_criteria:
-  - "B-039 — each shipped version, one per line; exit 0"
-  - "B-040 — ascending semver precedence: `0.9.0` before `0.10.0`"
+  - "B-041 — each shipped version, one per line; exit 0"
+  - "B-042 — ascending semver precedence: `0.9.0` before `0.10.0`"
   - "§ 9 carries a row naming a test for each id above."
 
 decisions:
@@ -44,5 +44,5 @@ decisions:
     it carries are spec-author's cut. Status blocked: OQ-11 and OQ-19 are open.
 
 out_of_scope:
-  - "Pinning a version — 0120."
-  - "Versions hosted on the web — § 5 #12, OQ-9."
+  - "Pinning a version — 0122."
+  - "Versions hosted on the web — § 5 #13, OQ-9."

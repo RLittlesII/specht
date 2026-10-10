@@ -113,7 +113,7 @@ version numbers to read; C-12 keeps them apart.
 
 - `0001-F7` § 1; § 2 need 2 and need 7, A-1 to A-3; § 3 B-001, B-002, B-004,
   B-005, B-006, B-012 to B-014, B-016, B-017, B-021 to B-023, B-029, B-031
-  (amended), B-008 (withdrawn), B-037 to B-057 (added); § 4 C-1, C-6
+  (amended), B-008 (withdrawn), B-039 to B-059 (added); § 4 C-1, C-6
   (amended), C-3 (retired), C-11 to C-13 (added); § 5 row 2 (withdrawn), row 3
   (amended), rows 7 to 12 (added); § 11 OQ-9 to OQ-24 (raised), OQ-2, OQ-3 and
   OQ-6 (resolutions amended), OQ-13 (resolved by the item cut).

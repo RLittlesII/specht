@@ -1,4 +1,4 @@
-id: "0122"
+id: "0124"
 type: task
 title: Float the pin with a pin policy
 
@@ -12,16 +12,16 @@ rank: 31
 parent: "0041"
 children: []
 
-depends_on: ["0118"] # floats from the exact semver pin 0118 delivers
+depends_on: ["0120"] # floats from the exact semver pin 0120 delivers
 blocks: []
 spikes: []
 
 spec: src/specht.tool/.spec/README.md
 
 claims:
-  - B-051
-  - B-052
+  - B-053
   - B-054
+  - B-056
 
 created: "2026-10-09"
 updated: "2026-10-09"
@@ -36,12 +36,12 @@ summary: |
   Blocked on the owner: OQ-11, the manifest key's name and whether exact
   has a value of its own; OQ-16, what `upgrade` brings the files to
   under a floating pin and whether an unshipped pin inside the range
-  resolves. The exact default is B-053, in 0118.
+  resolves. The exact default is B-055, in 0120.
 
 acceptance_criteria:
-  - "B-051 — `latest-patch`: highest shipped version with the pin's major and minor"
-  - "B-052 — `latest-minor`: highest shipped version with the pin's major"
-  - "B-054 — a policy value not defined: stderr, stdout empty, exit 3"
+  - "B-053 — `latest-patch`: highest shipped version with the pin's major and minor"
+  - "B-054 — `latest-minor`: highest shipped version with the pin's major"
+  - "B-056 — a policy value not defined: stderr, stdout empty, exit 3"
   - "§ 9 carries a row naming a test for each id above."
 
 decisions:
@@ -53,5 +53,5 @@ decisions:
     OQ-16 are open.
 
 out_of_scope:
-  - "Any range but `latest-patch` and `latest-minor` — § 5 #7."
-  - "A pin that floats by default — § 5 #8."
+  - "Any range but `latest-patch` and `latest-minor` — § 5 #8."
+  - "A pin that floats by default — § 5 #9."

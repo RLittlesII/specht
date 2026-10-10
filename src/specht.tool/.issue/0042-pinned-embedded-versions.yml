@@ -12,7 +12,7 @@ parent: "0041"
 children: []
 
 depends_on: ["0011", "0027", "0034", "0051"] # key via 0011; exit 3 via 0027; version field in 0034; embedded set from 0051
-blocks: ["0043", "0044", "0049", "0054", "0118"]
+blocks: ["0043", "0044", "0049", "0054", "0120"]
 spikes: []
 
 spec: src/specht.tool/.spec/README.md
@@ -51,7 +51,7 @@ acceptance_criteria:
 decisions:
   - |
     2026-10-09, spec-author, recording the owner's decision 0005: the
-    integer pin this item delivered is superseded. Item 0118 converts it
+    integer pin this item delivered is superseded. Item 0120 converts it
     to `major.minor.patch`; this item stays closed as what was delivered
     on 2026-10-09, and its summary and criteria keep the integer wording
     they were delivered against. Rejected: reopening it.

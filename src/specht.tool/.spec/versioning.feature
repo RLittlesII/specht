@@ -307,7 +307,7 @@ Feature: Schema versioning
     And the standard output is empty
     And the exit code is 3
 
-  @B-037
+  @B-039
   Scenario Outline: A schema version that is not major.minor.patch is invalid configuration
     Given the manifest's schema version is <value>
     When the check runs
@@ -321,27 +321,27 @@ Feature: Schema versioning
       | 0.1    |
       | v0.1.0 |
 
-  @B-038
+  @B-040
   Scenario: A new rule is a new major
     Given two schema versions the tool ships, one higher than the other by version precedence
     And the higher one holds a rule the lower one does not
     When their numbers are compared
     Then the higher one's major is greater than the lower one's
 
-  @B-039
+  @B-041
   Scenario: Listing names every shipped version
     Given the tool ships schema versions 0.1.0 and 0.2.0
     When the shipped versions are listed
     Then the standard output is 0.1.0 and 0.2.0, one to a line
     And the exit code is 0
 
-  @B-040
+  @B-042
   Scenario: Listing orders versions by precedence
     Given the tool ships schema versions 0.9.0 and 0.10.0
     When the shipped versions are listed
     Then 0.9.0 is printed before 0.10.0
 
-  @B-041
+  @B-043
   Scenario: Pinning a newer version moves the pin up
     Given the tool ships schema versions 0.1.0 and 0.2.0
     And the manifest pins version 0.1.0
@@ -349,7 +349,7 @@ Feature: Schema versioning
     Then the manifest pins version 0.2.0
     And the exit code is 0
 
-  @B-042
+  @B-044
   Scenario: Pinning an older version moves the pin down
     Given the tool ships schema versions 0.1.0 and 0.2.0
     And the manifest pins version 0.2.0
@@ -357,7 +357,7 @@ Feature: Schema versioning
     Then the manifest pins version 0.1.0
     And the exit code is 0
 
-  @B-043
+  @B-045
   Scenario: Pinning changes only the version in the manifest
     Given the tool ships schema versions 0.1.0 and 0.2.0
     And the manifest pins version 0.1.0
@@ -366,7 +366,7 @@ Feature: Schema versioning
     When version 0.2.0 is pinned
     Then the manifest differs from the snapshot only in the version it pins
 
-  @B-044 @boundary
+  @B-046 @boundary
   Scenario: Pinning touches no other file
     Given the tool ships schema versions 0.1.0 and 0.2.0
     And the root is pinned to version 0.1.0 and its frontmatter schemas and templates are version 0.1.0's
@@ -376,7 +376,7 @@ Feature: Schema versioning
     Then the only file changed is the manifest
     And the frontmatter schemas and the templates are still version 0.1.0's
 
-  @B-045
+  @B-047
   Scenario: Pinning adds a version to a manifest that has none
     Given the tool ships schema versions 0.1.0 and 0.2.0
     And the manifest carries no schema version
@@ -384,7 +384,7 @@ Feature: Schema versioning
     Then the manifest pins version 0.2.0
     And every other manifest key keeps its value
 
-  @B-046
+  @B-048
   Scenario Outline: Pinning a version the tool does not ship is a not-found failure
     Given the tool ships schema version 0.1.0 only
     And a snapshot of every file under the root
@@ -398,55 +398,55 @@ Feature: Schema versioning
       | 7.0.0 |
       | 0.1   |
 
-  @B-047
+  @B-049
   Scenario: Pinning under a missing root is a missing-input failure
     When a version is pinned against a path that is not a directory
     Then nothing is written
     And the exit code is 2
 
-  @B-048
+  @B-050
   Scenario: Pinning without a manifest is a missing-input failure
     Given the manifest has been removed from the root
     When a version is pinned
     Then nothing is written
     And the exit code is 2
 
-  @B-049
+  @B-051
   Scenario: Pinning in an invalid manifest is invalid configuration
     Given the root's manifest is not valid for a reason other than its schema version
     When a version is pinned
     Then nothing is written
     And the exit code is 3
 
-  @B-050 @boundary
+  @B-052 @boundary
   Scenario: Upgrade never moves the pin
     Given the tool ships schema versions 0.1.0 and 0.2.0
     And the root is pinned to version 0.1.0 and its frontmatter schemas and templates are version 0.2.0's
     When upgrade runs against it
     Then the manifest pins version 0.1.0
 
-  @B-051
+  @B-053
   Scenario: A latest-patch policy floats to the newest patch
     Given the tool ships schema versions 0.1.0, 0.1.1 and 0.2.0
     And the manifest pins version 0.1.0 with the pin policy latest-patch
     When the check runs with JSON output
     Then the document names schema version 0.1.1
 
-  @B-052
+  @B-054
   Scenario: A latest-minor policy floats to the newest minor
     Given the tool ships schema versions 0.1.0, 0.2.0 and 1.0.0
     And the manifest pins version 0.1.0 with the pin policy latest-minor
     When the check runs with JSON output
     Then the document names schema version 0.2.0
 
-  @B-053 @boundary
+  @B-055 @boundary
   Scenario: A pin is exact unless a policy floats it
     Given the tool ships schema versions 0.1.0, 0.1.1 and 0.2.0
     And the manifest pins version 0.1.0 with no pin policy
     When the check runs with JSON output
     Then the document names schema version 0.1.0
 
-  @B-054 @boundary
+  @B-056 @boundary
   Scenario Outline: A pin policy the tool does not define is invalid configuration
     Given the manifest pins version 0.1.0 with the pin policy <policy>
     When the check runs
@@ -459,14 +459,14 @@ Feature: Schema versioning
       | latest-major |
       | latest       |
 
-  @B-055
+  @B-057
   Scenario: Pinning without a version offers the shipped versions
     Given the tool ships schema versions 0.1.0 and 0.2.0
     And an interactive terminal
     When a version is pinned without naming one
     Then versions 0.1.0 and 0.2.0 are offered as a list to choose from with the arrow keys
 
-  @B-056
+  @B-058
   Scenario: The version chosen from the list is pinned
     Given the tool ships schema versions 0.1.0 and 0.2.0
     And the manifest pins version 0.1.0
@@ -474,7 +474,7 @@ Feature: Schema versioning
     When a version is pinned without naming one and 0.2.0 is chosen
     Then the manifest pins version 0.2.0
 
-  @B-057
+  @B-059
   Scenario: Upgrade that only adds a manifest key succeeds
     Given the tool ships schema versions 0.1.0 and 0.2.0
     And the root is pinned to version 0.2.0 and its frontmatter schemas and templates are already version 0.2.0's

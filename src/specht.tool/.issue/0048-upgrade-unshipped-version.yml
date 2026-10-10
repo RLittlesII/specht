@@ -11,7 +11,7 @@ rank: 77
 parent: "0041"
 children: []
 
-depends_on: ["0046", "0118"] # one more failure path beside 0046's; the malformed-version rejection is 0118's
+depends_on: ["0046", "0120"] # one more failure path beside 0046's; the malformed-version rejection is 0120's
 blocks: []
 spikes: []
 
@@ -27,9 +27,9 @@ closed: null
 summary: |
   Under a root whose `schemaVersion` the check rejects — a version the
   tool does not ship (B-003) or a value that is not `major.minor.patch`
-  (B-037) — upgrade names on stderr what the check names, writes nothing,
+  (B-039) — upgrade names on stderr what the check names, writes nothing,
   and exits 3, so one manifest gets one answer from every command. Waits
-  on 0118, which delivers both rejections for the check.
+  on 0120, which delivers both rejections for the check.
 
 acceptance_criteria:
   - "B-021 — unshipped or malformed `schemaVersion`: the check's stderr, nothing written, exit 3"
@@ -44,6 +44,6 @@ decisions:
   - |
     2026-10-09, spec-author, recording the owner's decision 0005: B-021
     widened to a malformed `schemaVersion`, the integer `1` included; the
-    item now waits on 0118.
+    item now waits on 0120.
 
 out_of_scope: []

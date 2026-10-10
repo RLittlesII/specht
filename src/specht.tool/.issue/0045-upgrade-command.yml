@@ -11,7 +11,7 @@ rank: 83
 parent: "0041"
 children: []
 
-depends_on: ["0118", "0026"] # reads 0118's semver pin and version set; a sibling of 0026's command
+depends_on: ["0120", "0026"] # reads 0120's semver pin and version set; a sibling of 0026's command
 blocks: ["0046", "0047", "0093"]
 spikes: []
 
@@ -21,7 +21,7 @@ claims:
   - B-005
   - B-006
   - B-007
-  - B-050
+  - B-052
 
 created: "2026-10-08"
 updated: "2026-10-09"
@@ -34,21 +34,21 @@ summary: |
   `.spec/templates/` (C-2) and never moving `schemaVersion` (C-13); when
   the root already holds what it would write, say so and write nothing.
   Risk 4: the first command that writes into a consumer's tree. Waits on
-  0118 for the semver pin it reads. Manifest keys and printing what
-  changed are 0047; moving the pin is 0120.
+  0120 for the semver pin it reads. Manifest keys and printing what
+  changed are 0047; moving the pin is 0122.
 
 acceptance_criteria:
   - "B-005 — schemas and templates rewritten to the pin, from older or newer; exit 0"
   - "B-006 — already at the pin: says current, rewrites nothing, exit 0"
   - "B-007 — nothing outside schema/ and templates/ touched"
-  - "B-050 — `schemaVersion` unchanged"
+  - "B-052 — `schemaVersion` unchanged"
   - "§ 9 carries a row naming a test for each id above."
 
 decisions:
   - |
     2026-10-09, the repository owner (decision 0005): re-cut from "move
     one version" to "bring the files to the pin". B-008 dropped, withdrawn
-    with C-3; B-050 added; the item now waits on the conversion item 0118
+    with C-3; B-052 added; the item now waits on the conversion item 0120
     in place of 0042. Rejected by the owner: `upgrade` keeping the move of
     the pin, and the pin command replacing `upgrade`. The owner's plan
     named the re-cut and the wait on the conversion item; which claims
@@ -56,6 +56,6 @@ decisions:
 
 out_of_scope:
   - "Migrating documents — § 5 #1."
-  - "Moving the pin, or a target version argument — § 5 #11; the pin command is 0120."
+  - "Moving the pin, or a target version argument — § 5 #12; the pin command is 0122."
   - "The manifest's keys and the change listing — 0047."
   - "The command's name — OQ-12."

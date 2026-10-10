@@ -1,4 +1,4 @@
-id: "0121"
+id: "0123"
 type: task
 title: Fail pin on a missing root, missing manifest or invalid manifest
 
@@ -11,16 +11,16 @@ rank: 74
 parent: "0041"
 children: []
 
-depends_on: ["0120"] # guards 0120's command
+depends_on: ["0122"] # guards 0122's command
 blocks: []
 spikes: []
 
 spec: src/specht.tool/.spec/README.md
 
 claims:
-  - B-047
-  - B-048
   - B-049
+  - B-050
+  - B-051
 
 created: "2026-10-09"
 updated: "2026-10-09"
@@ -30,23 +30,23 @@ summary: |
   The pin command writes nothing and exits 2 for a root that is not a
   directory or has no manifest, and 3 for a manifest the check rejects
   for a reason other than its `schemaVersion` — the codes the check and
-  `upgrade` give (0027 and 0013, both delivered; 0046). Waits on 0120
+  `upgrade` give (0027 and 0013, both delivered; 0046). Waits on 0122
   for the command, and through it on OQ-11. Which failure wins when one
-  of these meets an unshipped version (B-046) is OQ-23, the owner's.
+  of these meets an unshipped version (B-048) is OQ-23, the owner's.
 
 acceptance_criteria:
-  - "B-047 — root not a directory: nothing written, exit 2"
-  - "B-048 — no manifest: nothing written, exit 2"
-  - "B-049 — manifest rejected for another reason than its version: nothing written, exit 3"
+  - "B-049 — root not a directory: nothing written, exit 2"
+  - "B-050 — no manifest: nothing written, exit 2"
+  - "B-051 — manifest rejected for another reason than its version: nothing written, exit 3"
   - "§ 9 carries a row naming a test for each id above."
 
 decisions:
   - |
     2026-10-09, spec-author's cut, not named in the plan the owner
     approved (decision 0005, OQ-13), which names one pin item: cut apart
-    from 0120 as 0046 is from 0045, so the pin's own move does not wait
+    from 0122 as 0046 is from 0045, so the pin's own move does not wait
     on its failure paths.
 
 out_of_scope:
-  - "A version the tool does not ship — B-046, 0120."
+  - "A version the tool does not ship — B-048, 0122."
   - "A manifest whose current `schemaVersion` the tool cannot use — OQ-20."

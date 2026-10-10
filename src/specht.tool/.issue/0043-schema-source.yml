@@ -11,7 +11,7 @@ rank: 81
 parent: "0041"
 children: []
 
-depends_on: ["0042", "0118"] # switches the source of the schemas 0042 selects; the version it names is 0118's semver
+depends_on: ["0042", "0120"] # switches the source of the schemas 0042 selects; the version it names is 0120's semver
 blocks: ["0092", "0094"]
 spikes: []
 
@@ -32,7 +32,7 @@ summary: |
   schemas only (C-4), and the report names the source chosen. The field
   and argument names are OQ-1, for architecture to propose in § 7 and a
   decision record to ratify. Manifest's 0017 loads the on-disk files by
-  their manifest names once this selects disk. Waits on 0118: the
+  their manifest names once this selects disk. Waits on 0120: the
   version the report names beside the source is `major.minor.patch`
   (decision 0005).
 
@@ -49,7 +49,7 @@ acceptance_criteria:
 decisions:
   - |
     2026-10-09, spec-author, on the plan the owner approved (decision
-    0005): now waits on the conversion item 0118. Claims unchanged.
+    0005): now waits on the conversion item 0120. Claims unchanged.
 
 out_of_scope:
   - "A switch that also moves the manifest — C-4."
