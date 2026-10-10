@@ -28,29 +28,36 @@ written; this record binds only `0101-F6`.
 
 ## Why
 
-- The existing uniqueness rules are errors: `SPEC030` (a claim id declared
-  twice), `SPEC012` (a Feature identity declared twice) and `SPEC044` (an
-  item id declared twice). A doubled constraint or open-question id is the
-  same fault in a table no rule read.
+Stated by the owner:
+
+- The new rules are errors by default "as `SPEC030`, `SPEC012` and `SPEC044`
+  are": a claim id declared twice, a Feature identity declared twice and an
+  item id declared twice.
+
+The author's inference, not stated by the owner:
+
+- A doubled constraint or open-question id is the same fault as those three,
+  in a table no rule read.
 - `0101-F1` decision 0001 gave its reason for warnings: a lint finding
   "leaves the document complete and the verdict sound". A doubled id does
   not: a citation of it names two rows.
 
 ## Rejected
 
-**Warning by default, as the epic worded it.** One default for every rule of
-the epic, and no tree fails on moving to schema version 2. Cost of
-rejecting: a tree that already carries a doubled id fails on the day it pins
-version 2, until a row is renumbered or the repository lowers or disables
-the rule. Taken.
+**Warning by default, as the epic worded it.** Rejected by the owner. The
+cost is the author's assessment, not the owner's: warning by default would
+keep one default for every rule of the epic, and no tree would fail on
+moving to the schema version that adds the rules. Cost of rejecting: a tree
+that already carries a doubled id fails on the day it pins that version,
+until a row is renumbered or the repository lowers or disables the rule.
+Taken.
 
 ## Affects
 
 - `0101-F6` B-012, B-013; C-7.
 - Epic `0101`: its description and summary, which said every rule warns.
-- `0101-F1` decision 0001: unchanged. It names `0101-F1` to `0101-F4`, and
-  its opening words, "every rule epic `0101` adds", are now read by that
-  list.
+- `0101-F1` decision 0001: narrowed by a dated note in its Reversal section;
+  the text above that note is unchanged.
 - `0001-F5` B-010, B-011: relied on, unchanged.
 
 ## Reversal

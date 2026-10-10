@@ -1,6 +1,6 @@
 ---
 title: "Decision 0002: constraint and open-question id uniqueness is checked by the tool"
-description: "A constraint or open-question id declared twice inside one specification is reported by specht as schema version 2 rules, over the one tree it is given; a build-target check in one repository and a base or diff input were turned down"
+description: "A constraint or open-question id declared twice inside one specification is reported by specht as rules of a new major schema version, over the one tree it is given; a build-target check in one repository and a base or diff input were turned down"
 type: decision
 ---
 
@@ -13,8 +13,7 @@ type: decision
 
 `specht` reports a constraint id declared twice in a specification's § 4 and
 an open-question id declared twice in its § 11, as `SPEC###` rules. A new
-rule is a new major schema version (`0001-F7` C-11); these belong to schema
-version 2, with the rest of epic `0101`.
+rule is a new major schema version (`0001-F7` C-11).
 
 The check stays a deterministic, offline read of one tree. An id a pull
 request adds that its base already holds is found by running the check a
@@ -23,21 +22,26 @@ that run is a `0055-F2` delta.
 
 Claim-id uniqueness stays `SPEC030`.
 
+The author's inference, not stated by the owner: these rules ship in the
+same major schema version as the rest of epic `0101`. Which number that is,
+is `0001-F7` OQ-18, and whether this Feature shares it is `0101-F6` OQ-4;
+the owner was asked neither.
+
 ## Why
 
 - Lesson 0005: constraint and open-question ids were claimed twice by
   parallel pull requests, git reported nothing, and the clashes were found
   by reading.
-- No version 1 rule reads § 4 or § 11, so the stable-id rule (AGENTS.md
-  § "Stable IDs") is enforced for claims and by review alone for these two
-  kinds.
+- No rule of schema version `0.1.0` reads § 4 or § 11, so the stable-id rule
+  (AGENTS.md § "Stable IDs") is enforced for claims and by review alone for
+  these two kinds.
 
 ## Rejected
 
 **A build-target check in this repository, run in CI beside the
 self-check.** It was the first proposal. Cost of rejecting: the rules wait
-for schema version 2 and for `0001-F5`'s rule settings, and until then
-review enforces the rule. Taken.
+for a new major schema version and for `0001-F5`'s rule settings, and until
+then review enforces the rule. Taken.
 
 **A base, diff or pull-request input to `specht`.** The check would compare
 two revisions and stop being a read of one tree. Cost of rejecting: CI runs
@@ -50,7 +54,8 @@ Reversed by the owner on 2026-10-09.
 
 - `0101-F6` B-001, B-002, B-008, B-011, B-014; C-1, C-6, C-8, C-9; § 5 rows
   1 to 5 and 8.
-- `0055-F2`: the merge-tree run, not yet specified.
+- `0055-F2`: the merge-tree run is that Feature's to specify. On 2026-10-09
+  its specification is open pull request #85, and nothing of it has merged.
 - Two later Features, proposed `0101-F7` and `0101-F8`, not yet specified:
   record numbers and work-item ids.
 
