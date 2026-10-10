@@ -27,7 +27,7 @@ closed: "2026-10-09"
 
 summary: |
   ADR-0001 (accepted 2026-10-08), stage B, as ADR-0008 amends it.
-  SpecCheckRunner splits into Evaluate(SpecModel, rules) - every rule
+  SpechtRunner splits into Evaluate(SpecModel, rules) - every rule
   given, collect, sort, count - and Run(root), which loads, passes the
   discovered rules and evaluates; both stay static. Evaluate reads the
   pinned version's rule vocabulary from the model (0001-F7 B-014). The sort is the order

@@ -34,7 +34,7 @@ closed: "2026-10-08"
 summary: |
   Declare the integration workflow in `Build.GitHubActions.cs` and commit
   its generation (C-1), with a full-history checkout (C-2) and no service
-  call beyond restore and the coverage upload (C-3). `SpecCheck` runs as
+  call beyond restore and the coverage upload (C-3). `Specht` runs as
   whatever state 0055-F1 has it in (C-4). Every epic 0001 root item waits
   on this. Risk 3: the generator orders steps by dependency depth, so the
   step order is diffed (AGENTS.md).
@@ -43,7 +43,7 @@ acceptance_criteria:
   - "B-001 — pull request to `main`: the build on its head"
   - "B-002 — push to `main`: the build on the commit"
   - "B-003 — once each on ubuntu and windows"
-  - "B-004 — `Format`, `Compile`, `Test`, `SpecCheck`, `Pack` via the entry script"
+  - "B-004 — `Format`, `Compile`, `Test`, `Specht`, `Pack` via the entry script"
   - "B-005 — a failing target fails that system's check"
   - "B-007 — check names stable across commits"
   - "B-008 — nothing pushed to any feed"

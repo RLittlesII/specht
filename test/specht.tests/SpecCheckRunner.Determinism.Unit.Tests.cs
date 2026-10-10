@@ -11,7 +11,7 @@ namespace specht.tests;
 /// scoped schema evaluation gives the invariant message under another culture and leaves the caller's culture in place.
 /// </summary>
 [Trait("Tier", "Unit")]
-public sealed class SpecCheckRunnerDeterminismUnitTests
+public sealed class SpechtRunnerDeterminismUnitTests
 {
     [Fact]
     public void AFrontmatterValueOfTheWrongType_WhenTheSchemaRuleEvaluatesItUnderTheTurkishCulture_ShouldNameTheExpectedTypeInvariantly()

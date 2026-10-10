@@ -8,7 +8,7 @@ namespace specht.tests;
 /// layouts, schema loading from <c>.spec/schema/</c>, and the written report.
 /// </summary>
 [Trait("Tier", "Integration")]
-public sealed class SpecCheckRunnerIntegrationTests
+public sealed class SpechtRunnerIntegrationTests
 {
     [Fact]
     public void ATreeInBothLayouts_WhenChecked_ShouldAcceptBothAndCountTheSpecificationsOfEachLayout()
@@ -72,7 +72,7 @@ public sealed class SpecCheckRunnerIntegrationTests
         var path = Path.Combine(tree.Root, ".artifacts", "spec-check", "spec-check.json");
 
         // When
-        SpecCheckRunner.WriteReport(report, path);
+        SpechtRunner.WriteReport(report, path);
         var json = File.ReadAllText(path);
 
         // Then

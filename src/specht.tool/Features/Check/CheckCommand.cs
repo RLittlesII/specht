@@ -15,13 +15,13 @@ namespace specht.tool.Features.Check;
 /// B-001) - and folds the report into an exit code. It parses, calls the runner and folds - nothing else (C-4).
 /// </summary>
 /// <param name="console">Where the product goes; injected so the command tester captures it.</param>
-/// <param name="run">The engine's runner, <see cref="SpecCheckRunner.Run"/> outside a test.</param>
-public sealed class CheckCommand(IAnsiConsole console, Func<string, SpecCheckReport> run) : AsyncCommand<CheckCommand.Settings>
+/// <param name="run">The engine's runner, <see cref="SpechtRunner.Run"/> outside a test.</param>
+public sealed class CheckCommand(IAnsiConsole console, Func<string, SpechtReport> run) : AsyncCommand<CheckCommand.Settings>
 {
     /// <inheritdoc />
     public override Task<int> ExecuteAsync(CommandContext context, Settings settings, CancellationToken cancellationToken)
     {
-        SpecCheckReport report;
+        SpechtReport report;
 
         try
         {

@@ -123,8 +123,8 @@ jobs:
         if: ${{ (!cancelled() && steps.codecov.outcome == 'failure') && steps.changes.outputs.build == 'true' }}
         run: |
           echo "::warning title=Codecov upload failed::The coverage upload to Codecov failed; this check is not failed on that account."
-      - name: Spec Check
-        id: specCheck
+      - name: Specht
+        id: specht
         env:
           EVENT_NAME: '${{ github.event_name }}'
           BASE_SHA: '${{ github.event.pull_request.base.sha }}'
@@ -132,9 +132,9 @@ jobs:
           MATRIX_OS: '${{ matrix.os }}'
         if: ${{ steps.changes.outputs.build == 'true' }}
         run: |
-          ./build.cmd --target SpecCheck --skip Test
+          ./build.cmd --target Specht --skip Test
       - name: Continuous Integration
         id: continuousIntegration
         if: ${{ steps.changes.outputs.build == 'true' }}
         run: |
-          ./build.cmd --target ContinuousIntegration --skip Format Compile UnitTest IntegrationTest AcceptanceTest SpecCheck Test
+          ./build.cmd --target ContinuousIntegration --skip Format Compile UnitTest IntegrationTest AcceptanceTest Specht Test

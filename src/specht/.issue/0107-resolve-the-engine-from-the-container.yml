@@ -35,7 +35,7 @@ summary: |
   AddSpechtEngine(), registers every engine type as a singleton, each rule
   by name; Program.cs calls it once. The engine references
   Microsoft.Extensions.DependencyInjection.Abstractions only, pinned in the
-  Engine item group of Directory.Packages.props. The two SpecCheckRunner
+  Engine item group of Directory.Packages.props. The two SpechtRunner
   Unit files move to Integration with the § 9 rows that name them (B-004,
   B-010). No verdict changes (C-9).
 
@@ -53,7 +53,7 @@ summary: |
   mapping, SpecDiscovery.Relative, which FeatureFileRule calls from inside
   a rule (FeatureFileRule.cs:39), moves to a static type of its own, so no
   rule reaches into the discovery stage. The model loader, SpecModelLoader
-  (placeholder name), is sealed and concrete. SpecCheckRunner keeps its
+  (placeholder name), is sealed and concrete. SpechtRunner keeps its
   name.
 
 acceptance_criteria:

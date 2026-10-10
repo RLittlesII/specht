@@ -14,7 +14,7 @@ using static Nuke.Common.Tools.DotNet.DotNetTasks;
     AutoGenerate = true,
     OnPushTags = ["v*"],
     On = [RocketSurgeonGitHubActionsTrigger.WorkflowDispatch],
-    InvokedTargets = [nameof(VerifyTag), nameof(Format), nameof(Compile), nameof(Test), nameof(SpecCheck), nameof(Pack)],
+    InvokedTargets = [nameof(VerifyTag), nameof(Format), nameof(Compile), nameof(Test), nameof(Specht), nameof(Pack)],
     Enhancements = [nameof(PublishMiddleware)]
 )]
 [SuppressMessage("Design", "RSA2002:Private members should appear after non-private members", Justification = "Build")]

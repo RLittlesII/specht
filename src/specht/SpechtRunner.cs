@@ -6,17 +6,17 @@ namespace specht;
 /// Runs every <see cref="ISpecRule"/> in this assembly against the resolved
 /// specification tree.
 /// </summary>
-public static class SpecCheckRunner
+public static class SpechtRunner
 {
     /// <summary>Loads the tree under <paramref name="root"/> and evaluates its rules with the embedded version set.</summary>
-    public static SpecCheckReport Run(string root) => Run(root, SchemaVersions.Embedded);
+    public static SpechtReport Run(string root) => Run(root, SchemaVersions.Embedded);
 
     /// <summary>
     /// Loads the tree under <paramref name="root"/> and evaluates the rules of the version its manifest pins from
-    /// <paramref name="versions"/>: a rule outside that version's vocabulary is not evaluated and a violation it would
+    /// <paramref name="versions"/>: a rule outside that version's vocabulary is not evaluated, and a violation it would
     /// report is dropped (<c>0001-F7</c> B-014).
     /// </summary>
-    public static SpecCheckReport Run(string root, SchemaVersions versions) =>
+    public static SpechtReport Run(string root, SchemaVersions versions) =>
         Evaluate(SpecModel.Load(root, versions), Discover());
 
     /// <summary>
@@ -26,7 +26,7 @@ public static class SpecCheckRunner
     /// <param name="model">The resolved tree.</param>
     /// <param name="rules">The rule set.</param>
     /// <returns>The report.</returns>
-    public static SpecCheckReport Evaluate(SpecModel model, IEnumerable<ISpecRule> rules)
+    public static SpechtReport Evaluate(SpecModel model, IEnumerable<ISpecRule> rules)
     {
         var version = model.Schemas.Version;
         var evaluated = rules.Where(rule => rule.ReportedIds.Any(version.RuleIds.Contains)).ToList();
@@ -37,7 +37,7 @@ public static class SpecCheckRunner
             violations.AddRange(rule.Evaluate(model).Where(violation => version.RuleIds.Contains(violation.RuleId)));
         }
 
-        return new SpecCheckReport(
+        return new SpechtReport(
             version.Number,
             model.Features.Count,
             [
@@ -67,7 +67,7 @@ public static class SpecCheckRunner
     /// <summary>Writes <paramref name="report"/> to <paramref name="path"/> as the report document (<c>0001-F3</c> B-008).</summary>
     /// <param name="report">The run's report.</param>
     /// <param name="path">Where the document is written.</param>
-    public static void WriteReport(SpecCheckReport report, string path)
+    public static void WriteReport(SpechtReport report, string path)
     {
         Directory.CreateDirectory(Path.GetDirectoryName(path)!);
         File.WriteAllText(path, SpecReportDocument.From(report).ToJson());
@@ -78,7 +78,7 @@ public static class SpecCheckRunner
     /// edit - the same reason the test projects glob their sources.
     /// </summary>
     private static IReadOnlyList<ISpecRule> Discover() =>
-        typeof(SpecCheckRunner).Assembly
+        typeof(SpechtRunner).Assembly
             .GetTypes()
             .Where(static type => typeof(ISpecRule).IsAssignableFrom(type) && type is { IsAbstract: false, IsInterface: false })
             .Select(static type => (ISpecRule)Activator.CreateInstance(type)!)

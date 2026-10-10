@@ -1,5 +1,5 @@
 {
-  "$comment": "Not a JSON Schema. The ordered section manifest SpecCheck rule SPEC010 reads, kept beside the schemas so the section contract - the twelve numbered sections plus Tasks and Scoring - lives in one place rather than as a string array in C#.",
+  "$comment": "Not a JSON Schema. The ordered section manifest Specht rule SPEC010 reads, kept beside the schemas so the section contract - the twelve numbered sections plus Tasks and Scoring - lives in one place rather than as a string array in C#.",
   "layouts": [
     {
       "name": "epics",

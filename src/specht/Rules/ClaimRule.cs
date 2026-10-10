@@ -3,7 +3,7 @@ using System.Text.RegularExpressions;
 namespace specht.Rules;
 
 /// <summary>
-/// SPEC030 and SPEC031 - claim ids are well formed and unique within their
+/// SPEC030 and SPEC031 - claim ids are well-formed and unique within their
 /// Feature, and the traceability matrix carries exactly one row per claim.
 /// </summary>
 /// <remarks>

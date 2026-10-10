@@ -8,7 +8,7 @@ namespace specht.tests;
 /// case that must stay green, and a negative case that must actually fire.
 /// </summary>
 [Trait("Tier", "Unit")]
-public sealed class SpecCheckRunnerUnitTests
+public sealed class SpechtRunnerUnitTests
 {
     [Fact]
     public void EveryRuleInTheEngine_WhenItsReportedIdsAreRead_ShouldNameExactlyTheTwentyOneVersion1RuleIds()

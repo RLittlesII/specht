@@ -14,7 +14,7 @@ namespace specht.tests;
 /// grammar. A layout is read from the serialized document and the summary line, which is where a consumer reads it.
 /// </summary>
 [Trait("Tier", "Integration")]
-public sealed class SpecCheckRunnerDiscoveryIntegrationTests
+public sealed class SpechtRunnerDiscoveryIntegrationTests
 {
     /// <summary>Gets the layouts a manifest declares, and each layout's name and count as the outputs must list them.</summary>
     public static TheoryData<string, string, string> DeclaredLayouts { get; } = new()

@@ -47,7 +47,7 @@ internal sealed partial class Build
         .DependsOn(UnitTest)
         .DependsOn(IntegrationTest)
         .DependsOn(AcceptanceTest)
-        .DependsOn(SpecCheck);
+        .DependsOn(Specht);
 
     public static RocketSurgeonGitHubActionsConfiguration ContinuousIntegrationMiddleware(
         RocketSurgeonGitHubActionsConfiguration configuration)
@@ -74,7 +74,7 @@ internal sealed partial class Build
         tierSteps.ForEach(tier => buildJob.Steps.Remove(tier));
         buildJob.Steps.InsertRange(buildJob.Steps.IndexOf(compileStep) + 1, tierSteps);
 
-        foreach (var run in steps.OfType<RunStep>().Where(static z => z.Id is "specCheck" or "continuousIntegration"))
+        foreach (var run in steps.OfType<RunStep>().Where(static z => z.Id is "specht" or "continuousIntegration"))
         {
             run.Run = run.Run.Contains("--skip ", StringComparison.Ordinal) ? $"{run.Run} {nameof(Test)}" : $"{run.Run} --skip {nameof(Test)}";
         }
@@ -231,12 +231,12 @@ internal sealed partial class Build
     }
 
     /// <summary>
-    /// Gives the SpecCheck step the event, the pull request's commits and the leg, so the target decides what to annotate.
+    /// Gives the Specht step the event, the pull request's commits and the leg, so the target decides what to annotate.
     /// </summary>
     private static void PassAnnotationContext(RocketSurgeonsGithubActionsJob buildJob)
     {
-        var specCheckStep = buildJob.Steps.OfType<RunStep>().Single(static z => z.Id == "specCheck");
-        specCheckStep.Environment = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+        var spechtStep = buildJob.Steps.OfType<RunStep>().Single(static z => z.Id == "specht");
+        spechtStep.Environment = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
         {
             ["EVENT_NAME"] = "${{ github.event_name }}",
             ["BASE_SHA"] = "${{ github.event.pull_request.base.sha }}",

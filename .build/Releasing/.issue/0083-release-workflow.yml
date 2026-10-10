@@ -35,7 +35,7 @@ summary: |
   is provable by the dry run, before the first tag.
 
 acceptance_criteria:
-  - "B-001 — `v*` tag: `Format`, `Compile`, `Test`, `SpecCheck`, `Pack` on the tagged commit"
+  - "B-001 — `v*` tag: `Format`, `Compile`, `Test`, `Specht`, `Pack` on the tagged commit"
   - "B-002 — a failing target: no package pushed, no Release"
   - "B-005 — branch or non-`v*` tag: nothing published, no Release"
   - "B-008 — dry run without a tag: every step of `build`, the upload included; `publish` skipped"

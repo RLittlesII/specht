@@ -102,7 +102,7 @@ public sealed class VersioningSteps
     {
         if (_shipped is not null)
         {
-            _report = SpecCheckRunner.Run(Tree.Root, new SchemaVersions(_shipped.Values));
+            _report = SpechtRunner.Run(Tree.Root, new SchemaVersions(_shipped.Values));
             return;
         }
 
@@ -162,7 +162,7 @@ public sealed class VersioningSteps
     private Dictionary<SemanticVersion, SchemaVersion> Shipped =>
         _shipped ?? throw new InvalidOperationException("No version set was built.");
 
-    private SpecCheckReport Report => _report ?? throw new InvalidOperationException("The check has not run in process.");
+    private SpechtReport Report => _report ?? throw new InvalidOperationException("The check has not run in process.");
 
     private JsonObject Document
     {
@@ -212,7 +212,7 @@ public sealed class VersioningSteps
 
     private SpecTree? _tree;
     private Dictionary<SemanticVersion, SchemaVersion>? _shipped;
-    private SpecCheckReport? _report;
+    private SpechtReport? _report;
     private string _stdout = string.Empty;
     private string _stderr = string.Empty;
     private int _exitCode = -1;

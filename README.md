@@ -172,7 +172,7 @@ way.
 <!-- prettier-ignore -->
 ```json
 {
-  "$comment": "Not a JSON Schema. The ordered section manifest SpecCheck rule SPEC010 reads, kept beside the schemas so the section contract - the twelve numbered sections plus Tasks and Scoring - lives in one place rather than as a string array in C#.",
+  "$comment": "Not a JSON Schema. The ordered section manifest Specht rule SPEC010 reads, kept beside the schemas so the section contract - the twelve numbered sections plus Tasks and Scoring - lives in one place rather than as a string array in C#.",
   "sections": [
     "1. Business Goal",
     "2. User Needs",
@@ -267,7 +267,7 @@ Requires the .NET SDK pinned in [`global.json`](global.json).
 dotnet tool restore
 ./build.sh             # compile and test
 ./build.sh Pack        # specht.tool.<version>.nupkg
-./build.sh SpecCheck   # run specht on this repository's own specifications
+./build.sh Specht   # run specht on this repository's own specifications
 ```
 
 ## Status

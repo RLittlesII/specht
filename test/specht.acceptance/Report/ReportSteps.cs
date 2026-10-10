@@ -78,7 +78,7 @@ public sealed class ReportSteps
         }
 
         _root = root;
-        _report = SpecCheckRunner.Run(root);
+        _report = SpechtRunner.Run(root);
         _document = SpecReportDocument.From(_report);
         (_stdout, _stderr, _) = Tool.Launch(root, "--root", ".", "--json");
         _json = _stdout.EndsWith(Environment.NewLine, StringComparison.Ordinal) ? _stdout[..^Environment.NewLine.Length] : _stdout;
@@ -164,7 +164,7 @@ public sealed class ReportSteps
 
     private SpecTree Tree => _tree ?? throw new InvalidOperationException("No repository root was prepared.");
 
-    private SpecCheckReport Report => _report ?? throw new InvalidOperationException("The check has not run.");
+    private SpechtReport Report => _report ?? throw new InvalidOperationException("The check has not run.");
 
     private SpecReportDocument Document => _document ?? throw new InvalidOperationException("No document was made.");
 
@@ -201,7 +201,7 @@ public sealed class ReportSteps
     private SpecTree? _tree;
     private string? _nested;
     private string? _root;
-    private SpecCheckReport? _report;
+    private SpechtReport? _report;
     private SpecReportDocument? _document;
     private string? _json;
     private string _stdout = string.Empty;

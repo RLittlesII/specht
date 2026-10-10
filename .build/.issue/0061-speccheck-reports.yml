@@ -1,6 +1,6 @@
 id: "0061"
 type: task
-title: Report the check from SpecCheck without failing until rule settings exist
+title: Report the check from Specht without failing until rule settings exist
 
 status: done
 
@@ -26,7 +26,7 @@ closed: "2026-10-08"
 
 summary: |
   Once 0001-F2's check command exists and before 0001-F5's rule settings
-  do, `SpecCheck` prints the check's violations and exits 0 (C-7). This
+  do, `Specht` prints the check's violations and exits 0 (C-7). This
   item replaces 0057's placeholder: it points the target at the command,
   through `dotnet run --project src/specht.tool -- --root .` until a
   package exists (0001-F2 A-2), and exits 0 whatever the command reports.

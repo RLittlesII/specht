@@ -1,6 +1,6 @@
 id: "0032"
 type: task
-title: Switch SpecCheck to the tool through the local tool manifest
+title: Switch Specht to the tool through the local tool manifest
 
 status: ready-for-architecture
 
@@ -25,13 +25,13 @@ updated: "2026-10-08"
 closed: null
 
 summary: |
-  Once a specht.tool package is published, have `./build.sh SpecCheck`
+  Once a specht.tool package is published, have `./build.sh Specht`
   invoke it through the committed local tool manifest instead of `dotnet
   run --project` (A-2, C-6). 0087 (0055-F7 B-003) adds the `specht` entry
   to the manifest, and 0084 is the first publish. Packing is C-5.
 
 acceptance_criteria:
-  - "B-014 — SpecCheck invokes the tool via `.config/dotnet-tools.json`"
+  - "B-014 — Specht invokes the tool via `.config/dotnet-tools.json`"
   - "§ 9 carries a row naming a test for each id above."
 
 decisions: []

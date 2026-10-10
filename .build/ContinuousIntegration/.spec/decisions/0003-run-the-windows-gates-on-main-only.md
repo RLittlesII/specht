@@ -27,7 +27,7 @@ paying for the Windows gates.
 - The last completed run before the decision was on pull request branch
   `0017/schema-file-names`, commit `e23bdfd`. Its `windows-latest` leg took
   about 219 s: `Restore` 65, `Format` 50, `IntegrationTest` 22, `Compile` 20,
-  `AcceptanceTest` 19, `UnitTest` 12, `SpecCheck` 10, the rest about 21.
+  `AcceptanceTest` 19, `UnitTest` 12, `Specht` 10, the rest about 21.
   GitHub bills a job per whole minute, so that is 4 billed minutes, at a
   higher per-minute rate than Linux on a private repository. The
   `ubuntu-latest` leg took about 113 s.

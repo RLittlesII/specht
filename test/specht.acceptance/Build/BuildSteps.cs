@@ -126,7 +126,7 @@ public sealed partial class BuildSteps(IUnitTestRuntimeProvider runtime) : IDisp
     public async Task WhenTheBuildRunsWithNoTargetNamed() => await RunAsync(UnixEntry());
 
     [When("a target is run through the Windows entry script")]
-    public async Task WhenATargetIsRunThroughTheWindowsEntryScript() => await RunAsync(WindowsEntry("SpecCheck"));
+    public async Task WhenATargetIsRunThroughTheWindowsEntryScript() => await RunAsync(WindowsEntry("Specht"));
 
     [When("the test gate runs")]
     public async Task WhenTheTestGateRuns() => await RunAsync(UnixEntry("Test"));
@@ -143,7 +143,7 @@ public sealed partial class BuildSteps(IUnitTestRuntimeProvider runtime) : IDisp
     public async Task WhenTheLocalToolsAreRestored() => await RunAsync(("dotnet", ["tool", "restore"]));
 
     [When("the self-check runs")]
-    public async Task WhenTheSelfCheckRuns() => await RunAsync(UnixEntry("SpecCheck"));
+    public async Task WhenTheSelfCheckRuns() => await RunAsync(UnixEntry("Specht"));
 
     [When("the format gate runs")]
     [When("each runs the format gate")]
@@ -169,7 +169,7 @@ public sealed partial class BuildSteps(IUnitTestRuntimeProvider runtime) : IDisp
     public void ThenTheSameTargetRunsAsThroughTheUnixEntryScript()
     {
         _exitCode.Should().Be(0, _output);
-        Summary().Should().Equal("SpecCheck Succeeded");
+        Summary().Should().Equal("Specht Succeeded");
     }
 
     [Then("the unit, integration and acceptance tiers each ran")]

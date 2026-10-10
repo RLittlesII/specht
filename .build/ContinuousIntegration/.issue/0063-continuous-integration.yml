@@ -52,7 +52,7 @@ acceptance_criteria:
   - "B-001 — pull request to `main`: build on ubuntu, on its head (0064; the B-012 exception, 0102; ubuntu alone, 0118)"
   - "B-002 — push to `main`: build on the commit (0064)"
   - "B-003 — once each on ubuntu and windows (0064)"
-  - "B-004 — `Format`, `Compile`, the three tier targets, `SpecCheck` and `Benchmark` through the entry script, where neither B-012 nor B-015 applies (0064; tiers, 0114; B-015, 0118; `Benchmark` owed with the item that delivers `0109-F1` B-017)"
+  - "B-004 — `Format`, `Compile`, the three tier targets, `Specht` and `Benchmark` through the entry script, where neither B-012 nor B-015 applies (0064; tiers, 0114; B-015, 0118; `Benchmark` owed with the item that delivers `0109-F1` B-017)"
   - "B-005 — any target fails: that system's check fails (0064)"
   - "B-006 — a specification violation annotated on the diff (0066)"
   - "B-007 — each system's check keeps its name across runs (0064)"

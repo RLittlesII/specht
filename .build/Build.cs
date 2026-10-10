@@ -128,7 +128,7 @@ internal partial class Build : NukeBuild
         });
 
     // B-025: until 0001-F5's rule settings exist, the check's violations print and never fail the target (C-7, 0001-F2 A-2).
-    private Target SpecCheck => definition => definition
+    private Target Specht => definition => definition
         .DependsOn(Test)
         .Executes(() =>
         {
@@ -138,7 +138,7 @@ internal partial class Build : NukeBuild
                 RootDirectory,
                 logger: ProcessTasks.DefaultLogger,
                 exitHandler: process => clean = process.ExitCode == 0));
-            Log.Information("SpecCheck: {Verdict}; the check does not gate until 0001-F5's rule settings exist", clean ? "clean" : "violations reported");
+            Log.Information("Specht: {Verdict}; the check does not gate until 0001-F5's rule settings exist", clean ? "clean" : "violations reported");
         });
 
     private static string Include(string[]? files) => files is null ? string.Empty : $"--include {Quote(files)}";

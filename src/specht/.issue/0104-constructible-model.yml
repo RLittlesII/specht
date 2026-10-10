@@ -61,5 +61,5 @@ decisions:
 out_of_scope:
   - "Splitting the runner — 0105 (ADR-0001 stage B)."
   - "Every other instance class, IFileSystem through the other readers, the walk and the loader, and the container — 0107 (stage D)."
-  - "Re-tiering the SpecCheckRunner Unit files — 0107 (stage D)."
+  - "Re-tiering the SpechtRunner Unit files — 0107 (stage D)."
   - "Everything else in § 5 of the spec."

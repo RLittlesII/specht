@@ -72,10 +72,10 @@ jobs:
         id: test
         run: |
           ./build.cmd --target Test --skip Compile
-      - name: Spec Check
-        id: specCheck
+      - name: Specht
+        id: specht
         run: |
-          ./build.cmd --target SpecCheck --skip Test
+          ./build.cmd --target Specht --skip Test
       - name: 📦 Pack
         id: pack
         run: |

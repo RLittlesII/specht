@@ -7,7 +7,7 @@ namespace specht.tests;
 /// says it reports has at least one tree here that makes it fire.
 /// </summary>
 [Trait("Tier", "Unit")]
-public sealed class SpecCheckRunnerViolationsUnitTests
+public sealed class SpechtRunnerViolationsUnitTests
 {
     [Fact]
     public void ASpecificationWithNoFrontmatter_WhenChecked_ShouldReportSpec001()

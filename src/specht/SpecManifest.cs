@@ -21,7 +21,7 @@ public static class SpecManifest
     /// <summary>Reads, checks and fills the manifest under <paramref name="root"/>.</summary>
     /// <param name="fileSystem">The file system the manifest is read through.</param>
     /// <param name="root">The repository root.</param>
-    /// <returns>The section contract, id grammars, discovery inputs and schema file names, every omitted value read as the default manifest's.</returns>
+    /// <returns>The section contract, id grammars, discovery inputs and schema file names, every omitted value read as the default manifest.</returns>
     /// <exception cref="SpechtRootNotFoundException"><paramref name="root"/> is not a directory.</exception>
     /// <exception cref="SpechtManifestNotFoundException">There is no file at the manifest path.</exception>
     /// <exception cref="SpechtManifestUnreadableException">The manifest is not well-formed JSON or not the manifest's shape.</exception>

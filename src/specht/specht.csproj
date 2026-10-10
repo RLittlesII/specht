@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <RootNamespace>specht</RootNamespace>
+    <RootNamespace>Specht</RootNamespace>
     <AssemblyName>specht</AssemblyName>
   </PropertyGroup>
 
