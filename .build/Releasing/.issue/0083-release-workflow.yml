@@ -2,7 +2,7 @@ id: "0083"
 type: task
 title: Generate the release workflow with its gates, dry run and tag check
 
-status: ready-for-architecture
+status: in-progress
 
 priority: high
 risk: 3
@@ -25,7 +25,7 @@ claims:
   - B-009
 
 created: "2026-10-08"
-updated: "2026-10-08"
+updated: "2026-10-09"
 closed: null
 
 summary: |
