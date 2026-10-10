@@ -1,8 +1,8 @@
 id: "0128"
 type: task
-title: Make the build detect an id claimed twice
+title: Make specht detect an id claimed twice
 
-status: ready
+status: blocked
 
 priority: medium # DERIVED
 value: 3
@@ -28,49 +28,105 @@ summary: |
   Lesson 0005: ids claimed twice were found by reading, because git merges two
   records that share a number under different file names without a conflict.
   Item 0127 put the rule in the delivery reference; review is all that
-  enforces it. This item makes the build say so instead.
+  enforces it. This item makes `specht` say so instead, as `SPEC###` rules
+  (decisions, 2026-10-09).
 
-  Three cases:
+  Five cases:
   (a) two files in one `decisions/`, `adr/` or `lessons/` folder sharing a
       number;
   (b) two `.issue/` items sharing an id;
-  (c) a pull request adding an id that already exists on its base.
+  (c) a pull request adding an id that already exists on its base;
+  (d) `.issue/.sequence` disagreeing with the ids present - it holds the last
+      id claimed, and work items and epics share the number space;
+  (e) a constraint (`C-n`) or open-question (`OQ-n`) id declared twice inside
+      one specification.
 
-  (a) and (b) can be seen in a single tree. (c) cannot: it needs the base the
-  pull request is compared against, so it is a check on a diff, not on a tree.
+  (a), (b), (d) and (e) can be seen in a single tree. (c) cannot be seen in
+  the pull request's head, which is all CI checks today (`0055-F2` B-001;
+  `.build/Build.GitHubActions.cs`). `specht` gains no base or diff input:
+  CI runs `SpecCheck` a second time, over the merge tree, where (c) is (a),
+  (b) or (e).
 
-  Open question 1, owner not asked: where the check lives. As a `SPEC###`
-  rule it is a new rule, and a new rule is a new schema version (AGENTS.md
-  § Invariants; brief § 4). It would also read `.issue/`, which the tool does
-  not read today, and (c) would need a base, which a check that is
-  deterministic and offline over one tree does not have. Proposed default: a
-  build-target check in this repository, run in CI beside `SpecCheck`, for all
-  three cases; a `specht` rule for (a) is raised with the owner as a separate
-  specification delta if consumers want it.
+  Blocked: no specification states any of this yet. A new rule is a new
+  major schema version (`0001-F7` C-11), so the specification deltas come
+  first and this item is re-cut from their § 3 claims; until then it
+  carries no claim and `spec:` stays null.
 
-  Open question 2, owner not asked: `main` already holds two items numbered
-  0118 - `src/specht/Manifest/.issue/0118-configurable-claim-tags.yml`
-  (`9f01e20`) and
+  Proposed shape. None of these ids is reserved - an id is not reserved
+  until it merges (lesson 0005), and each is checked against `main` and
+  every open pull request when its specification is written:
+  - three Features under epic `0101`, proposed `0101-F6` to `0101-F8`:
+    in-specification id uniqueness, case (e); record number uniqueness,
+    case (a); work-item id allocation, cases (b) and (d), which also owns
+    the recorded exception for the two items numbered 0118;
+  - a rule block, proposed `SPEC090` to `SPEC094`;
+  - a `0055-F2` specification delta for the merge-tree run, case (c).
+
+  Not asked of the owner; each is an open question for the Feature that
+  meets it, not a decision:
+  - the work-item rules are opt-in by a manifest key, because `.issue/*.yml`
+    is this repository's tracker and not something the tool ships;
+  - the rule block is `SPEC09x`, because `SPEC08x` is proposed for `0101-F1`
+    to `0101-F4` (`0101-F1` OQ-1, open).
+
+  Sequencing. The Features of epic `0101` are blocked on `0001-F7` and
+  `0001-F5`: the specifications can be written now, and implementation
+  waits. `SpecCheck` does not gate CI until `0001-F5`'s rule settings exist
+  (`0055-F1` B-025; `0055-F2` C-4; `.build/Build.cs`), so until then neither
+  run fails a pull request on these rules.
+
+  The two items numbered 0118 are
+  `src/specht/Manifest/.issue/0118-configurable-claim-tags.yml` (`9f01e20`)
+  and
   `.build/ContinuousIntegration/.issue/0118-windows-gates-on-main-only.yml`
-  (`5fa5964`) - so (b) fails on the first run. AGENTS.md § Stable IDs forbids
-  renumbering an id on `main`, and both ids are in landed commit subjects.
-  Proposed default: both stay; the check carries that one pair as a recorded
-  exception, and a citation of 0118 that could mean either names the path.
-  The alternative is to renumber the one that merged second, as an explicit
-  exception to § Stable IDs recorded in `0055-F2` § 10.
+  (`5fa5964`). A citation of 0118 that could mean either names the path.
 
 acceptance_criteria:
-  - "Both open questions are answered by the owner and recorded in `decisions` before any check is written."
-  - "(a) Two files sharing a number in one `decisions/`, `adr/` or `lessons/` folder fail the check, which names both paths."
-  - "(b) Two `.issue/` items sharing an id fail the check, which names both paths."
-  - "(c) A pull request that adds an id its base already holds fails the check in CI."
-  - "Every path the check prints is repository-relative."
-  - "If the answer to question 1 is a `specht` rule, the specification delta and the schema version come first, and this item is re-cut from those claims."
-  - "specht-conventions' delivery reference names the check where it now says review enforces the rule."
+  - "(e) A constraint or open-question id declared twice inside one specification is reported - delivered by claims cut from § 3 of the in-specification id uniqueness Feature (proposed `0101-F6`)."
+  - "(a) Two files sharing a number in one `decisions/`, `adr/` or `lessons/` folder are reported, both paths named - delivered by claims cut from § 3 of the record number uniqueness Feature (proposed `0101-F7`)."
+  - "(b) Two `.issue/` items sharing an id are reported, both paths named - delivered by claims cut from § 3 of the work-item id allocation Feature (proposed `0101-F8`)."
+  - "(d) `.issue/.sequence` disagreeing with the ids present is reported - delivered by claims cut from § 3 of the same Feature as (b)."
+  - "The two items numbered 0118 pass as a recorded exception, neither renumbered, and a third item numbered 0118 is still reported - delivered by claims cut from § 3 of the same Feature as (b)."
+  - "(c) On a pull request CI runs `SpecCheck` over the merge tree as well as the head, and `specht` takes no base or diff input - delivered by claims cut from the `0055-F2` § 3 delta."
+  - "The new rules are errors by default, and epic `0101`'s \"all warnings by default\" is amended in the pull request that specifies the first of the three Features."
+  - "Every path the rules print is repository-relative."
+  - "This item is re-cut from those claims before any rule is written: `spec:`, `claims:` and these criteria then cite claim ids."
+  - "specht-conventions' delivery reference names the rules where it now says review enforces the rule."
 
-decisions: []
+decisions:
+  - |
+    2026-10-09, the repository owner: the check lives in `specht`, as
+    `SPEC###` rules. A new rule is a new major schema version (`0001-F7`
+    C-11), so the specification deltas come first and this item is re-cut
+    from their claims. Rejected: the default this item proposed, a
+    build-target check in this repository run in CI beside `SpecCheck`.
+  - |
+    2026-10-09, the repository owner: both items numbered 0118 stay and
+    neither is renumbered; the check carries that one pair as a recorded
+    exception. Rejected: renumbering the one that merged second, as an
+    exception to AGENTS.md § Stable IDs.
+  - |
+    2026-10-09, the repository owner: scope grows by two cases. (d)
+    `.issue/.sequence` disagreeing with the ids present. (e) a constraint
+    or open-question id declared twice inside one specification, which
+    reverses this item's earlier out-of-scope row for those two id kinds.
+    Claim-id uniqueness stays `SPEC030`.
+  - |
+    2026-10-09, the repository owner: for case (c) `specht` stays a
+    deterministic, offline check over one tree. CI runs `SpecCheck` a
+    second time, over the merge tree, on a pull request; that is a
+    `0055-F2` specification delta. Rejected: a base or diff input to
+    `specht`.
+  - |
+    2026-10-09, the repository owner: the new rules are errors by default,
+    as `SPEC030`, `SPEC012` and `SPEC044` are. Epic `0101`'s "all warnings
+    by default" is amended when the first of the new Features is
+    specified. Rejected: warnings by default, as the epic words it today.
 
 out_of_scope:
   - "Reserving ids, and the rule for claiming one - 0127, delivered."
-  - "Detecting a claim, constraint or open-question id used twice inside one specification - claim-id uniqueness is already a `specht` rule, and the other two are not asked for here."
-  - "Any implementation before question 1 is answered."
+  - "Detecting a claim id declared twice inside one specification - already `SPEC030`."
+  - "Renumbering either item numbered 0118 - decided against, 2026-10-09."
+  - "A base, diff or pull-request input to `specht`, and any call to GitHub from the check - decided against, 2026-10-09; case (c) is the merge-tree run in `0055-F2`."
+  - "Authoring the three Features, the `0055-F2` delta or the epic `0101` amendment - each is its own specification pull request, and this item is re-cut from them."
+  - "Any rule, schema, manifest key or CI change before those specifications are agreed."
