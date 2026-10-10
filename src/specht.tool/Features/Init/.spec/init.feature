@@ -134,7 +134,7 @@ Feature: init
   @B-012
   Scenario: Init fills a partial tree at its pinned older version
     Given the tool ships schema versions 0.1.0 and 0.2.0
-    And a root directory whose schema folder holds a manifest pinning version 0.1.0
+    And a root directory whose schema folder holds a manifest pinning version 0.1.0 and declaring the epic grammar
     And no other schema or template file beside it
     When init runs against it
     Then the seven other files are written at version 0.1.0
