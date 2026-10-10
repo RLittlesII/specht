@@ -6,13 +6,13 @@ status: done
 
 priority: high
 risk: 2
-rank: 94
+rank: 99
 
 parent: "0010"
 children: []
 
 depends_on: ["0022"] # compares against the golden report 0022 commits
-blocks: ["0015", "0016", "0017", "0104"]
+blocks: ["0015", "0016", "0017", "0104", "0118"]
 spikes: []
 
 spec: src/specht/Manifest/.spec/README.md
@@ -21,7 +21,7 @@ claims:
   - B-016
 
 created: "2026-10-08"
-updated: "2026-10-08"
+updated: "2026-10-09"
 closed: "2026-10-08"
 
 summary: |
