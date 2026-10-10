@@ -18,7 +18,7 @@ children:
     "0055-F8",
   ]
 created: "2026-10-08"
-updated: "2026-10-08"
+updated: "2026-10-09"
 github_issue: null
 ---
 
@@ -49,25 +49,25 @@ anything checks it: no workflow runs, no coverage is measured, no check is
 required before a merge, and the first release is improvised on the day it
 matters most, because that release freezes schema version 1 for every
 consumer. With it delivered, a pull request is built, tested, formatted,
-spec-checked and coverage-gated on every operating system the tool runs on,
-dependencies arrive as reviewed pull requests, and a release is one deliberate
-tag.
+spec-checked and coverage-gated on Linux, a push to `main` runs the build on
+every operating system the tool runs on, dependencies arrive as reviewed pull
+requests, and a release is one deliberate tag.
 
 ## Features
 
 Decomposed by capability dimension, not by file. Each Feature has its own
 invariant, and the cut is made where the invariant changes.
 
-| Feature   | Name                          | Specification                                  | Invariant                                                                       |
-| --------- | ----------------------------- | ---------------------------------------------- | ------------------------------------------------------------------------------- |
-| `0055-F1` | The build                     | `.build/.spec/README.md`                       | Every gate is a build target; the hook and CI call targets, never `dotnet`      |
-| `0055-F2` | Continuous integration        | `.build/ContinuousIntegration/.spec/README.md` | Every pull request and every push to `main` runs the build on Linux and Windows |
-| `0055-F3` | The coverage gate             | `test/.spec/README.md`                         | New code under the patch target fails the pull request; the total never does    |
-| `0055-F4` | Dependency updates            | `.github/.spec/README.md`                      | An update is a pull request; only a green minor or patch merges itself          |
-| `0055-F5` | Package versioning            | `.build/Versioning/.spec/README.md`            | The package version is a function of the commit, never of a hand edit           |
-| `0055-F6` | Release                       | `.build/Releasing/.spec/README.md`             | Only a `v*` tag publishes, and only after the full build passes                 |
-| `0055-F7` | Consuming the package         | `.config/.spec/README.md`                      | A repository installs the tool from the feed through its local tool manifest    |
-| `0055-F8` | Repository settings checklist | `.github/settings/.spec/README.md`             | The settings that make a check binding are written down and applied by hand     |
+| Feature   | Name                          | Specification                                  | Invariant                                                                      |
+| --------- | ----------------------------- | ---------------------------------------------- | ------------------------------------------------------------------------------ |
+| `0055-F1` | The build                     | `.build/.spec/README.md`                       | Every gate is a build target; the hook and CI call targets, never `dotnet`     |
+| `0055-F2` | Continuous integration        | `.build/ContinuousIntegration/.spec/README.md` | A pull request runs the build on Linux; a push to `main`, on Linux and Windows |
+| `0055-F3` | The coverage gate             | `test/.spec/README.md`                         | New code under the patch target fails the pull request; the total never does   |
+| `0055-F4` | Dependency updates            | `.github/.spec/README.md`                      | An update is a pull request; only a green minor or patch merges itself         |
+| `0055-F5` | Package versioning            | `.build/Versioning/.spec/README.md`            | The package version is a function of the commit, never of a hand edit          |
+| `0055-F6` | Release                       | `.build/Releasing/.spec/README.md`             | Only a `v*` tag publishes, and only after the full build passes                |
+| `0055-F7` | Consuming the package         | `.config/.spec/README.md`                      | A repository installs the tool from the feed through its local tool manifest   |
+| `0055-F8` | Repository settings checklist | `.github/settings/.spec/README.md`             | The settings that make a check binding are written down and applied by hand    |
 
 ### Where "&" was checked
 
