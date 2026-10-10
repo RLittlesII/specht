@@ -41,7 +41,7 @@
     "Scoring"
   ],
   "tables": {
-    "9. Traceability Matrix": [
+    "matrix": [
       "Claim ID",
       "Scenario",
       "Test",
@@ -60,5 +60,16 @@
     "feature": "feature-spec.frontmatter.schema.json",
     "task": "task.frontmatter.schema.json",
     "epic": "epic.frontmatter.schema.json"
+  },
+  "roles": {
+    "claims": "3. Acceptance Criteria",
+    "matrix": "9. Traceability Matrix",
+    "signOff": "12. Sign-off"
+  },
+  "markers": {
+    "missing": "Missing",
+    "draft": "🟡",
+    "blocked": "🔴",
+    "approved": "approved"
   }
 }

@@ -17,7 +17,9 @@ namespace specht.acceptance.Manifest;
 /// first. "The check runs" is the engine's runner; "the tool runs as a command" launches the built tool, the only place a
 /// rejection's exit code and streams are seen (B-022, B-023). Under "the frontmatter schemas are read from the root" the
 /// check is the model the runner loads, with its schemas loaded from the root's files, evaluated by the frontmatter rule
-/// (B-008): the runner selects no on-disk source until <c>0001-F7</c> B-009.
+/// (B-008): the runner selects no on-disk source until <c>0001-F7</c> B-009. A role, a role's headers and a marker are
+/// written into the manifest under <c>roles</c>, <c>tables</c> and <c>markers</c> (B-001 to B-003, B-015, B-039, B-040;
+/// decision 0006).
 /// </summary>
 [Binding]
 [Scope(Feature = "The manifest carries the roles")]
@@ -57,6 +59,113 @@ public sealed class ManifestSteps
                 "3. Acceptance Criteria",
                 "## 3. Acceptance Criteria\n\n| ID | Claim | Source | Status |\n| -- | ----- | ------ | ------ |\n"
                     + $"| {claim} | It does the thing. | brd | Active |\n"));
+
+    [Given("the manifest renames the {word} section to {string} in its section list and its {word} role")]
+    public void GivenTheManifestRenamesTheSectionInItsSectionListAndItsRole(string section, string title, string role)
+    {
+        section.Should().Be(role);
+        var sections = Manifest["sections"]!.AsArray();
+        var index = sections.Select(static listed => listed!.GetValue<string>()).ToList().IndexOf(DefaultTitles[role]);
+        sections[index] = title;
+        Named("roles")[role] = title;
+    }
+
+    [Given("the manifest maps the {word} role to a title that is not in its section list")]
+    public void GivenTheManifestMapsTheRoleToATitleThatIsNotInItsSectionList(string role) => Named("roles")[role] = "3. Nowhere";
+
+    [Given("the manifest's headers for the matrix role name the third column {string}")]
+    public void GivenTheManifestsHeadersForTheMatrixRoleNameTheThirdColumn(string header) =>
+        Manifest["tables"] = new JsonObject { ["matrix"] = new JsonArray("Claim ID", "Scenario", header, "Status") };
+
+    [Given("the manifest declares table headers under {string} and not under a role")]
+    public void GivenTheManifestDeclaresTableHeadersUnderAndNotUnderARole(string key) =>
+        Manifest["tables"] = new JsonObject { [key] = new JsonArray("Claim ID", "Scenario", "Test", "Status") };
+
+    [Given("the manifest's missing-test cell value is {string}")]
+    public void GivenTheManifestsMissingTestCellValueIs(string text) => Named("markers")["missing"] = text;
+
+    [Given("the manifest's {word} sign-off marker is empty")]
+    public void GivenTheManifestsSignOffMarkerIsEmpty(string marker) => Named("markers")[marker] = string.Empty;
+
+    [Given("the root holds a specification whose claims table sits under {string}")]
+    public void GivenTheRootHoldsASpecificationWhoseClaimsTableSitsUnder(string title) =>
+        Tree.WriteFeatureFile(
+            Write(
+                "F1",
+                SpecTree.SectionsWith(
+                    DefaultTitles["claims"],
+                    $"## {title}\n\n| ID | Claim | Source | Status |\n| -- | ----- | ------ | ------ |\n"
+                        + "| B-001 | It does the thing. | brd | Active |\n| B-1 | Its id is malformed. | brd | Active |\n"
+                        + "| B-002 | It has no matrix row. | brd | Active |\n")),
+            PhantomTag);
+
+    [Given("the root holds a specification whose traceability table has a {string} column in third place")]
+    public void GivenTheRootHoldsASpecificationWhoseTraceabilityTableHasAColumnInThirdPlace(string header) =>
+        Write("F1", SpecTree.SectionsWith(DefaultTitles["matrix"], Matrix(DefaultTitles["matrix"], $"Scenario | {header}", "It does the thing | A test")));
+
+    [Given("the root holds a second specification whose traceability table has a {string} column in third place")]
+    public void GivenTheRootHoldsASecondSpecificationWhoseTraceabilityTableHasAColumnInThirdPlace(string header) =>
+        Write("F2", SpecTree.SectionsWith(DefaultTitles["matrix"], Matrix(DefaultTitles["matrix"], $"Scenario | {header}", "It does the thing | A test")));
+
+    [Given("the root holds a specification whose {string} table lacks one of the matrix role's columns")]
+    public void GivenTheRootHoldsASpecificationWhoseTableLacksOneOfTheMatrixRolesColumns(string title) =>
+        Write("F1", SpecTree.SectionsWith(DefaultTitles["matrix"], Matrix(title, "Scenario", "It does the thing")));
+
+    [Given("the root holds an approved specification with a {string} cell in its traceability table")]
+    public void GivenTheRootHoldsAnApprovedSpecificationWithACellInItsTraceabilityTable(string cell) =>
+        _specifications.Add(
+            Relative(
+                Tree.WriteFeature(
+                    "0001",
+                    "F1",
+                    new Dictionary<string, string> { ["spec_status"] = "approved" },
+                    SpecTree.SectionsWith(DefaultTitles["matrix"], Matrix(DefaultTitles["matrix"], "Scenario | Test", $"It does the thing | {cell}")))));
+
+    [Then("the claims are read from that section")]
+    public void ThenTheClaimsAreReadFromThatSection()
+    {
+        _rejection.Should().BeNull();
+        _report!.Violations
+            .Select(static violation => (violation.RuleId, violation.Identifier))
+            .Should()
+            .Contain(("SPEC030", "B-1"))
+            .And.Contain(("SPEC031", "B-002"))
+            .And.Contain(("SPEC021", "B-404"))
+            .And.NotContain(("SPEC021", "B-001"));
+    }
+
+    [Then("no missing-section violation is reported")]
+    public void ThenNoMissingSectionViolationIsReported() =>
+        _report!.Violations.Should().NotContain(static violation => violation.RuleId == "SPEC010");
+
+    [Then("the table-header rule reports the second specification")]
+    public void ThenTheTableHeaderRuleReportsTheSecondSpecification() => HeaderViolationFiles().Should().Contain(_specifications[1]);
+
+    [Then("it does not report the first")]
+    public void ThenItDoesNotReportTheFirst() => HeaderViolationFiles().Should().NotContain(_specifications[0]);
+
+    [Then("the table-header rule reports that specification")]
+    public void ThenTheTableHeaderRuleReportsThatSpecification() => HeaderViolationFiles().Should().Contain(_specifications[0]);
+
+    [Then("the approved-with-missing-coverage rule reports that row")]
+    public void ThenTheApprovedWithMissingCoverageRuleReportsThatRow()
+    {
+        _rejection.Should().BeNull();
+        _report!.Violations
+            .Where(static violation => violation.RuleId == "SPEC060")
+            .Select(static violation => (violation.File, violation.Identifier))
+            .Should()
+            .Equal((_specifications[0], "B-001"));
+    }
+
+    [Then("the rejection names the {word} role")]
+    public void ThenTheRejectionNamesTheRole(string role) => _rejection!.Message.Should().Contain(role);
+
+    [Then("the rejection names the {word} marker")]
+    public void ThenTheRejectionNamesTheMarker(string marker) => _rejection!.Message.Should().Contain(marker);
+
+    [Then("the rejection names {string}")]
+    public void ThenTheRejectionNames(string name) => _rejection!.Message.Should().Contain(name);
 
     [Given("the frontmatter schemas are read from the root")]
     public void GivenTheFrontmatterSchemasAreReadFromTheRoot() => _fromRoot = true;
@@ -209,6 +318,38 @@ public sealed class ManifestSteps
 
     private string FeatureSchema => _featureSchema ?? throw new InvalidOperationException("The manifest names no Feature schema file.");
 
+    private static string Matrix(string title, string middleHeaders, string middleCells) =>
+        $"## {title}\n\n| Claim ID | {middleHeaders} | Status |\n| --- | {string.Join(" | ", middleHeaders.Split('|').Select(static _ => "---"))} | --- |\n"
+            + $"| B-001 | {middleCells} | Covered |\n";
+
+    private JsonObject Named(string key)
+    {
+        if (Manifest[key] is not JsonObject named)
+        {
+            named = [];
+            Manifest[key] = named;
+        }
+
+        return named;
+    }
+
+    private string Write(string id, IReadOnlyList<string> sections)
+    {
+        var path = Tree.WriteFeature("0001", id, sections: sections);
+        _specifications.Add(Relative(path));
+
+        return path;
+    }
+
+    private string Relative(string path) => Path.GetRelativePath(Tree.Root, path).Replace(Path.DirectorySeparatorChar, '/');
+
+    private IEnumerable<string> HeaderViolationFiles()
+    {
+        _rejection.Should().BeNull();
+
+        return _report!.Violations.Where(static violation => violation.RuleId == "SPEC013").Select(static violation => violation.File);
+    }
+
     private const string UnknownKey = "glossary";
 
     private const string FeatureSchemaRejectingTheDomain = """{ "properties": { "domain": { "const": "Elsewhere" } } }""";
@@ -220,6 +361,13 @@ public sealed class ManifestSteps
     private const string PhantomTag =
         "Feature: it\n\n  @B-001\n  Scenario: It does the thing\n    Given a thing\n\n  @B-404\n  Scenario: Phantom\n    Given nothing\n";
 
+    private static readonly Dictionary<string, string> DefaultTitles = new(StringComparer.Ordinal)
+    {
+        ["claims"] = "3. Acceptance Criteria",
+        ["matrix"] = "9. Traceability Matrix",
+    };
+
+    private readonly List<string> _specifications = [];
     private SpecTree? _tree;
     private JsonObject? _manifest;
     private SpecCheckReport? _report;

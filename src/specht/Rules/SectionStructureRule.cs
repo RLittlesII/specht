@@ -78,8 +78,9 @@ public sealed class SectionStructureRule : ISpecRule
 
     private static IEnumerable<SpecViolation> CheckTables(SpecModel model, FeatureSpec feature)
     {
-        foreach (var (title, headers) in model.Schemas.Structure.Tables)
+        foreach (var (role, headers) in model.Schemas.Structure.Tables)
         {
+            var title = model.Schemas.Structure.Roles[role];
             var section = feature.Document.Section(title);
 
             if (section is null)

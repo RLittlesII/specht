@@ -114,9 +114,9 @@ under `.git`, `.artifacts`, `.claude`, `.skillfile`, `graphify-out`, `bin`,
 | `SPEC050`–`SPEC052`                        | Dependencies. Every `depends_on` and `blocks` edge names a discovered specification, is declared from both ends, and forms no cycle.                                                                |
 | `SPEC060`, `SPEC061`                       | Approval. A specification with `spec_status: approved` has no `Missing` cell in § 9 and no draft or blocked row in § 12.                                                                            |
 
-§ 3 is `3. Acceptance Criteria`, § 9 is `9. Traceability Matrix` and § 12 is
-`12. Sign-off`. A `Missing` cell in § 9 is not a violation until the
-specification is approved.
+§ 3, § 9 and § 12 are the sections the manifest's `roles` name: by default
+`3. Acceptance Criteria`, `9. Traceability Matrix` and `12. Sign-off`. A
+`Missing` cell in § 9 is not a violation until the specification is approved.
 
 ### Work items are optional
 
@@ -128,12 +128,14 @@ work items, gets every other check.
 
 ### What is configurable
 
-| Manifest key        | Read today                                                                                            |
-| ------------------- | ----------------------------------------------------------------------------------------------------- |
-| `schemaVersion`     | Which embedded version checks the tree: its frontmatter schemas and its rule vocabulary.              |
-| `sections`          | The `##` headings `SPEC010` requires, in order.                                                       |
-| `tables`            | The header cells `SPEC013` expects, by section title.                                                 |
-| `identifiers.claim` | The claim id grammar `SPEC030` enforces in § 3, and the § 3 ids a tag may resolve to under `SPEC021`. |
+| Manifest key        | Read today                                                                                                                                                  |
+| ------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `schemaVersion`     | Which embedded version checks the tree: its frontmatter schemas and its rule vocabulary.                                                                    |
+| `sections`          | The `##` headings `SPEC010` requires, in order.                                                                                                             |
+| `tables`            | The header cells `SPEC013` expects in a role's section, by role name; a key that is not a role exits `3`.                                                   |
+| `roles`             | The `sections` title that holds the claims, the matrix and the sign-off, which `SPEC013`, `SPEC021`, `SPEC030`, `SPEC031`, `SPEC060` and `SPEC061` look up. |
+| `markers`           | The text of a missing-test cell, a draft and a blocked sign-off row and the approved status, which `SPEC060` and `SPEC061` look for.                        |
+| `identifiers.claim` | The claim id grammar `SPEC030` enforces in § 3, and the § 3 ids a tag may resolve to under `SPEC021`.                                                       |
 
 A key left out takes its value from the default manifest. A key the engine does
 not know exits `3`; a key starting with `$` is ignored. The other `identifiers`
@@ -145,9 +147,9 @@ Claim tags in a `.feature` file are read as `@B-nnn`, with an optional
 lowercase letter suffix, whatever `identifiers.claim` says. A configurable tag
 form and letter case are specified
 ([`src/specht/Manifest/.spec/README.md`](src/specht/Manifest/.spec/README.md)
-B-007, B-036–B-038) and not built yet. The section titles the rules look up and
-the frontmatter keys they read are still literals in the engine; they move into
-the manifest in [brief § 8](.spec/brief.md#8-order-of-work) step 5.
+B-007, B-036–B-038) and not built yet. The frontmatter keys the rules read are
+still literals in the engine; they move into the manifest in
+[brief § 8](.spec/brief.md#8-order-of-work) step 5.
 
 ### Default manifest
 
@@ -175,7 +177,7 @@ writes it when the file is absent.
     "Scoring"
   ],
   "tables": {
-    "9. Traceability Matrix": [
+    "matrix": [
       "Claim ID",
       "Scenario",
       "Test",
@@ -194,6 +196,17 @@ writes it when the file is absent.
     "feature": "feature-spec.frontmatter.schema.json",
     "task": "task.frontmatter.schema.json",
     "epic": "epic.frontmatter.schema.json"
+  },
+  "roles": {
+    "claims": "3. Acceptance Criteria",
+    "matrix": "9. Traceability Matrix",
+    "signOff": "12. Sign-off"
+  },
+  "markers": {
+    "missing": "Missing",
+    "draft": "🟡",
+    "blocked": "🔴",
+    "approved": "approved"
   }
 }
 ```
