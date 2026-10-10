@@ -20,6 +20,8 @@ branch and worktree conventions, the build commands and the merge strategy —
    two people building the same thing.
 3. **One item in progress at a time, per Feature.** A task that cannot be finished
    without a sibling finishing first is a decomposition problem, not a small task.
+   Two changes that amend one specification's agreement are sequenced the same
+   way, never written side by side: each would take the same next id.
 4. **Do not start an item whose specification is unresolved.** Open questions that
    block the claims you are about to build are resolved first, or the exception is
    written down as a decision record naming what was assumed.
