@@ -1,5 +1,6 @@
 using System.IO.Abstractions.TestingHelpers;
 using AwesomeAssertions;
+using specht.Report;
 
 namespace specht.tests;
 
@@ -8,6 +9,7 @@ namespace specht.tests;
 /// it, item 0105; <c>0001-F1</c> B-004, C-9; <c>0001-F7</c> B-014): the counts come from the model, the vocabulary of the
 /// version the model's schemas keep decides which rules run, which violations are kept and how many rule ids count as
 /// evaluated, the rules run in the order given, and the violations are the ones <see cref="SpecCheckRunner.Order"/> gives.
+/// The report's layouts are the manifest's, by name and in its order, each with its count (<c>0001-F6</c> B-001, B-009, C-7).
 /// No tree on disk and no container.
 /// </summary>
 [Trait("Tier", "Unit")]
@@ -21,6 +23,34 @@ public sealed class SpecCheckRunnerEvaluateUnitTests
             { 2, 1, 3 },
             { 0, 2, 1 },
             { 3, 0, 0 },
+        };
+
+    /// <summary>Gets a manifest, then the name, the glob and the specification count of each layout it gives, in its order.</summary>
+    public static TheoryData<string, string, string[], string[], int[]> ManifestLayouts =>
+        new()
+        {
+            {
+                "three layouts under names the code does not hold, the second holding no specification",
+                """
+                {
+                  "layouts": [
+                    { "name": "old-tree", "glob": "archive/**/spec.md" },
+                    { "name": "beside-code", "glob": "**/.spec/README.md" },
+                    { "name": "documentation", "glob": "docs/**/specification.md" }
+                  ]
+                }
+                """,
+                ["old-tree", "beside-code", "documentation"],
+                ["archive/**/spec.md", "**/.spec/README.md", "docs/**/specification.md"],
+                [2, 0, 1]
+            },
+            {
+                "a manifest leaving its layouts out gives the default manifest's two",
+                "{}",
+                ["legacy", "coLocated"],
+                ["epics/**/spec.md", "**/.spec/README.md"],
+                [1, 2]
+            },
         };
 
     /// <summary>Gets a vocabulary, the reported ids of each rule given, and how many rule ids count as evaluated.</summary>
@@ -59,6 +89,38 @@ public sealed class SpecCheckRunnerEvaluateUnitTests
             report.Layouts.Single(static layout => layout.Layout == "coLocated").SpecificationCount,
             report.ItemCount)
             .Should().Be((legacy + coLocated, legacy, coLocated, items));
+    }
+
+    [Theory]
+    [MemberData(nameof(ManifestLayouts))]
+    public void AModelWhoseManifestGivesItsLayouts_WhenEvaluated_ShouldListEachByItsManifestNameInTheManifestsOrderWithItsSpecificationCount(
+        string because,
+        string manifest,
+        string[] names,
+        string[] globs,
+        int[] counts)
+    {
+        // Given
+        var fileSystem = new MockFileSystem(
+            new Dictionary<string, MockFileData> { [Path.Combine("repo", ".spec", "schema", "spec-structure.schema.json")] = new(manifest) });
+        SchemaVersion version = new SchemaVersionFixture();
+        List<FeatureSpec> features =
+        [
+            .. names
+                .Select((name, index) => Enumerable.Repeat(new SpecLayout(name, globs[index]), counts[index]))
+                .Reverse()
+                .SelectMany(static layouts => layouts)
+                .Select(static layout => (FeatureSpec)new FeatureSpecFixture().WithLocation(new SpecLocationFixture().WithLayout(layout))),
+        ];
+        SpecModel model = new SpecModelFixture()
+            .WithSchemas(SpecSchemas.Load(fileSystem, "repo", new SchemaVersions([version])))
+            .WithFeatures(features);
+
+        // When
+        var report = SpecCheckRunner.Evaluate(model, []);
+
+        // Then
+        report.Layouts.Should().Equal(names.Zip(counts, static (name, count) => new SpecReportLayout(name, count)), because);
     }
 
     [Fact]
