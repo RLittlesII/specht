@@ -31,5 +31,10 @@
     "task": "^[0-9]{4}-[0-9]{2}$",
     "feature": "^F[0-9]+[a-z]?$",
     "epic": "^[0-9]{4}$"
+  },
+  "frontmatterSchemas": {
+    "feature": "feature-spec.frontmatter.schema.json",
+    "task": "task.frontmatter.schema.json",
+    "epic": "epic.frontmatter.schema.json"
   }
 }
