@@ -2,7 +2,7 @@ id: "0015"
 type: task
 title: Read sections, table headers and markers by role
 
-status: in-progress
+status: done
 
 priority: high
 risk: 3
@@ -27,7 +27,7 @@ claims:
 
 created: "2026-10-08"
 updated: "2026-10-09"
-closed: null
+closed: "2026-10-09"
 
 summary: |
   Moves the section titles, table headers and markers out of SPEC013, SPEC021,

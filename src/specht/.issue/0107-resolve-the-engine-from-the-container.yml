@@ -63,6 +63,9 @@ acceptance_criteria:
   - "C-7 — amended (spec/adr-0001-owed-edits) before this merges"
   - "ADR-0001 stage D proof — MockFileSystem unit tests per remaining reader and for the loader"
   - "ADR-0005 (a) — the manifest loader class, named; the path mapping in its own type, named, and no rule calls SpecDiscovery; the model loader named"
+  - "0001-F5 B-001 unit test — once the tag reader takes an injected file
+    system, a unit test pins `SPEC021`'s lookup by the claims role, and
+    Manifest § 9's B-001 row moves Partial to Covered"
   - "§ 9 carries a row naming a test for each id above."
 
 decisions:

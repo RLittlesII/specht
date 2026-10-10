@@ -95,3 +95,13 @@ switch a marker off by emptying it; a rule is switched off by B-011.
 ## Reversal
 
 None.
+
+## Addendum - 2026-10-09
+
+Recorded by spec-author after spec-reviewer round 1 of item `0015` (§ 12). The
+sections above stand as written.
+
+Call 3 fails a manifest that ran, which `0001-F7` C-11 and `0001-F7` decision
+0005 number as a major change. It is part of `0.1.0` and needs no new version
+only because `0.1.0` is unpublished (`0001-F7` decision 0002). § 5 row 13
+says the same.
