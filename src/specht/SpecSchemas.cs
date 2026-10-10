@@ -41,8 +41,13 @@ public sealed class SpecSchemas
     /// <summary>The ordered section contract and id grammars.</summary>
     public SpecStructure Structure { get; }
 
-    /// <summary>Loads every schema from <paramref name="root"/>'s <c>.spec/schema/</c>, the manifest first.</summary>
+    /// <summary>
+    /// Loads every schema from <paramref name="root"/>'s <c>.spec/schema/</c>, the manifest first, each frontmatter schema
+    /// from the file the manifest names for its kind (<c>0001-F5</c> B-008).
+    /// </summary>
     /// <remarks>
+    /// The check loads through a version set instead; this reads the on-disk frontmatter schemas, which no check selects
+    /// until the schema source exists (<c>0001-F7</c> B-009).
     /// Each load gets its own <see cref="SchemaRegistry"/>. The library's
     /// default registry is process-wide and refuses to re-register a
     /// <c>$id</c>, so a second load in one process - two roots in one test
@@ -59,9 +64,33 @@ public sealed class SpecSchemas
         var options = new BuildOptions { SchemaRegistry = new SchemaRegistry() };
 
         return new SpecSchemas(
-            Read(fileSystem, directory, "feature-spec.frontmatter.schema.json", options),
-            Read(fileSystem, directory, "task.frontmatter.schema.json", options),
-            Read(fileSystem, directory, "epic.frontmatter.schema.json", options),
+            Read(fileSystem, directory, structure.FrontmatterSchemas["feature"], options),
+            Read(fileSystem, directory, structure.FrontmatterSchemas["task"], options),
+            Read(fileSystem, directory, structure.FrontmatterSchemas["epic"], options),
+            structure);
+    }
+
+    /// <summary>
+    /// Loads the manifest from <paramref name="root"/>'s <c>.spec/schema/</c> and the frontmatter schemas of the version it
+    /// pins from <paramref name="versions"/> (<c>0001-F7</c> B-001, C-4).
+    /// </summary>
+    /// <remarks>Each load gets its own <see cref="SchemaRegistry"/>, for the same reason as the on-disk load.</remarks>
+    /// <exception cref="SpechtRootNotFoundException"><paramref name="root"/> is not a directory; no frontmatter schema is read.</exception>
+    /// <exception cref="SpechtManifestNotFoundException">There is no manifest; no frontmatter schema is read.</exception>
+    /// <exception cref="SpechtManifestUnreadableException">The manifest does not parse; no frontmatter schema is read.</exception>
+    /// <exception cref="SpechtManifestException">
+    /// The manifest is rejected, or pins a version <paramref name="versions"/> does not hold; no frontmatter schema is read.
+    /// </exception>
+    public static SpecSchemas Load(IFileSystem fileSystem, string root, SchemaVersions versions)
+    {
+        var structure = SpecManifest.Load(fileSystem, root);
+        var version = versions.Select(structure.SchemaVersion);
+        var options = new BuildOptions { SchemaRegistry = new SchemaRegistry() };
+
+        return new SpecSchemas(
+            JsonSchema.FromText(version.FeatureSchema, options),
+            JsonSchema.FromText(version.ItemSchema, options),
+            JsonSchema.FromText(version.EpicSchema, options),
             structure);
     }
 

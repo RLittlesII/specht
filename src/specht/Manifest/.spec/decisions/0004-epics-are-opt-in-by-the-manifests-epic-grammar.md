@@ -1,17 +1,17 @@
 ---
-title: "Decision 0003: Epics are opt-in by the manifest's epic grammar"
+title: "Decision 0004: Epics are opt-in by the manifest's epic grammar"
 description: "A repository has an epic tier only when its manifest declares the epic grammar; without it a Feature's identity is its id alone, unique across the repository, shipped as an additive change to schema version 1 with no new rule id"
 type: decision
 ---
 
-# Decision 0003: Epics are opt-in by the manifest's epic grammar
+# Decision 0004: Epics are opt-in by the manifest's epic grammar
 
 **Date:** 2026-10-09
 **Decided by:** the repository owner (2026-10-09); recorded by spec-author
 
 ## The call
 
-Epics are opt-in. Resolves OQ-2.
+Epics are opt-in. Resolves OQ-3.
 
 - **The signal** is the manifest's epic grammar, `identifiers.epic`. Every
   manifest that exists today declares it, including `hooked`'s and this
@@ -36,7 +36,7 @@ Epics are opt-in. Resolves OQ-2.
 - **Schema version 1, additive.** In version 1's Feature frontmatter schema,
   `epic` is no longer `required`. The task `parent` pattern widens to
   `^([0-9]{4}-)?F[0-9]+[a-z]?$`, and the task `id` pattern widens to allow a
-  per-Feature sequence, in the form OQ-4 settles. With the epic grammar
+  per-Feature sequence, in the form OQ-5 settles. With the epic grammar
   declared, epic mode stays as strict as it is today: a missing `epic` is a
   `SPEC011` violation in either layout (B-035), and a bare `parent` is a
   `SPEC043` violation (B-031).
@@ -95,8 +95,8 @@ epic tier. B-016's check "by omission" has to keep the epic grammar.
 ## Affects
 
 - `0001-F5` § 2 need 6 added. § 3 B-008 and B-019 amended, and B-024 to
-  B-035 added. § 4 C-10 and C-11 added. § 5 rows 8 to 11 added. § 11 OQ-2
-  resolved, and OQ-3 to OQ-6 opened.
+  B-035 added. § 4 C-10 and C-11 added. § 5 rows 8 to 11 added. § 11 OQ-3
+  resolved, and OQ-4 to OQ-7 opened.
 - `0001-F1` § 2 A-3 amended. § 3 B-002, B-003 and B-011 amended to depend
   on whether the epic grammar is declared. § 5 row 14 added.
 - `0001-F4` § 2 need 5 added and A-1 amended. § 3 B-001 withdrawn, B-003

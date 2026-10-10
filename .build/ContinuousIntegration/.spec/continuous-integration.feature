@@ -41,7 +41,7 @@ Feature: Continuous integration
   Scenario: Every operating system runs every gate
     Given a pull request that changes code
     When integration runs on one operating system
-    Then the format, compile, unit test, integration test, acceptance test and self-check gates each run as a step of their own
+    Then the format, compile, unit test, integration test, acceptance test and self-check gates and the benchmarks each run as a step of their own
 
   @B-005
   Scenario: A failing gate fails its operating system's check

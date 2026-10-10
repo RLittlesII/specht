@@ -110,10 +110,10 @@ Feature: The check command
 
   @B-012 @boundary
   Scenario: A check writes nothing but the named report
-    Given the root holds specifications with violations
+    Given the root holds a specification with one violation
     And a snapshot of every file under the root
-    When the check runs with a report path under the root
-    Then no file under the root other than the report was created, modified or deleted
+    When the check runs
+    Then no file under the root was created, modified or deleted
 
   @B-013
   Scenario: No derived path in the output is absolute

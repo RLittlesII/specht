@@ -1,9 +1,12 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
+using System.IO.Abstractions;
 using System.Linq;
 using System.Text.Json.Nodes;
 using AwesomeAssertions;
 using Reqnroll;
+using specht.Rules;
 using specht.tests;
 
 namespace specht.acceptance.Manifest;
@@ -12,7 +15,9 @@ namespace specht.acceptance.Manifest;
 /// Steps for <c>src/specht/Manifest/.spec/manifest.feature</c> (0001-F5). The manifest is edited in memory from the tree's
 /// default copy and written when the check or the tool runs, so a tree's violations are counted under the default manifest
 /// first. "The check runs" is the engine's runner; "the tool runs as a command" launches the built tool, the only place a
-/// rejection's exit code and streams are seen (B-022, B-023).
+/// rejection's exit code and streams are seen (B-022, B-023). Under "the frontmatter schemas are read from the root" the
+/// check is the model the runner loads, with its schemas loaded from the root's files, evaluated by the frontmatter rule
+/// (B-008): the runner selects no on-disk source until <c>0001-F7</c> B-009.
 /// </summary>
 [Binding]
 [Scope(Feature = "The manifest carries the roles")]
@@ -53,6 +58,37 @@ public sealed class ManifestSteps
                 "## 3. Acceptance Criteria\n\n| ID | Claim | Source | Status |\n| -- | ----- | ------ | ------ |\n"
                     + $"| {claim} | It does the thing. | brd | Active |\n"));
 
+    [Given("the frontmatter schemas are read from the root")]
+    public void GivenTheFrontmatterSchemasAreReadFromTheRoot() => _fromRoot = true;
+
+    [Given("the manifest names the Feature schema file {string}")]
+    public void GivenTheManifestNamesTheFeatureSchemaFile(string name)
+    {
+        Manifest["frontmatterSchemas"] = new JsonObject { ["feature"] = name };
+        _featureSchema = name;
+    }
+
+    [Given("the schema folder holds that file and not the default name")]
+    public void GivenTheSchemaFolderHoldsThatFileAndNotTheDefaultName()
+    {
+        var schema = Path.Combine(Tree.Root, ".spec", "schema");
+        File.WriteAllText(Path.Combine(schema, FeatureSchema), FeatureSchemaRejectingTheDomain);
+        File.Delete(Path.Combine(schema, "feature-spec.frontmatter.schema.json"));
+    }
+
+    [Then("every specification's frontmatter is checked against {string}")]
+    public void ThenEverySpecificationsFrontmatterIsCheckedAgainst(string name)
+    {
+        _rejection.Should().BeNull();
+        var model = _model ?? throw new InvalidOperationException("The check loaded no model.");
+        model.Features.Should().NotBeEmpty();
+        _frontmatterViolations
+            .Where(static violation => violation.RuleId == "SPEC002" && violation.Identifier == "domain")
+            .Select(static violation => violation.File)
+            .Should()
+            .BeEquivalentTo(model.Features.Select(static feature => feature.RelativePath), name);
+    }
+
     [Then("the malformed-claim-id rule reports {string} against the default claim grammar")]
     public void ThenTheMalformedClaimIdRuleReportsAgainstTheDefaultClaimGrammar(string claim) =>
         _report!.Violations
@@ -85,7 +121,16 @@ public sealed class ManifestSteps
 
         try
         {
-            _report = SpecCheckRunner.Run(Tree.Root);
+            if (_fromRoot)
+            {
+                var loaded = SpecModel.Load(Tree.Root);
+                _model = new SpecModel(loaded.Root, loaded.Features, loaded.Items, loaded.Epics, SpecSchemas.Load(new FileSystem(), Tree.Root));
+                _frontmatterViolations = new FrontmatterSchemaRule().Evaluate(_model).ToList();
+            }
+            else
+            {
+                _report = SpecCheckRunner.Run(Tree.Root);
+            }
         }
         catch (SpechtManifestException rejection)
         {
@@ -162,7 +207,11 @@ public sealed class ManifestSteps
 
     private string ManifestPath => Path.Combine(Tree.Root, ".spec", "schema", "spec-structure.schema.json");
 
+    private string FeatureSchema => _featureSchema ?? throw new InvalidOperationException("The manifest names no Feature schema file.");
+
     private const string UnknownKey = "glossary";
+
+    private const string FeatureSchemaRejectingTheDomain = """{ "properties": { "domain": { "const": "Elsewhere" } } }""";
 
     private const string TwoClaims =
         "## 3. Acceptance Criteria\n\n| ID | Claim | Source | Status |\n| -- | ----- | ------ | ------ |\n"
@@ -177,5 +226,9 @@ public sealed class ManifestSteps
     private (string Stdout, string Stderr, int ExitCode)? _run;
     private SpechtManifestException? _rejection;
     private string? _defaultClaimGrammar;
+    private bool _fromRoot;
+    private string? _featureSchema;
+    private SpecModel? _model;
+    private IReadOnlyList<SpecViolation> _frontmatterViolations = [];
     private IReadOnlyList<GoldenReport.Verdict>? _golden;
 }

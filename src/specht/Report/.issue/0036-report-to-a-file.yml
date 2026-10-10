@@ -26,7 +26,7 @@ claims:
   - B-025
 
 created: "2026-10-08"
-updated: "2026-10-08"
+updated: "2026-10-09"
 closed: null
 
 summary: |
@@ -43,10 +43,11 @@ acceptance_criteria:
   - "B-023 — missing directories created"
   - "B-024 — existing file replaced"
   - "B-025 — stdout keeps the lines and summary"
+  - "0001-F2 B-012's report exemption, with C-7 — the file `--report` names is the only write under the root (0001-F2 decision 0005)"
   - "§ 9 carries a row naming a test for each id above."
 
 decisions: []
 
 out_of_scope:
   - "Refusing, appending to or backing up an existing file — § 5 #7."
-  - "Any write but this file — C-7, 0001-F2 B-012 (0030)."
+  - "Any write but this file — C-7; a run with no report path writes nothing, 0001-F2 B-012 (0030)."

@@ -3,10 +3,11 @@
 #     cut from — a sibling of that Feature's .spec/, where <home> is the
 #     directory holding both (specifications are co-located from the first
 #     commit, so <home> already exists: src/specht/Discovery/.issue/). Every
-#     `type: feature` item, and any task, test or bug delivering its claims.
+#     `type: feature` item, any task, test or bug delivering its claims, and
+#     any refactor of that Feature's code alone.
 #   - .issue/<id>-<slug>.yml at the repository root, for an item that belongs
-#     to no Feature: a bug, spike or chore with `spec: null`. Same blast-radius
-#     split .spec/adr/ and .spec/lessons/ use.
+#     to no Feature: a bug, spike, chore or refactor with `spec: null`. Same
+#     blast-radius split .spec/adr/ and .spec/lessons/ use.
 # Ids are REPOSITORY-WIDE either way, and share one number space with the
 # epics under epics/, so a bare id in `depends_on` or `parent` resolves from
 # anywhere; find an item with **/.issue/<id>-*.yml.
@@ -23,13 +24,19 @@
 # starts here instead — its trigger is an observation, not an agreement — and
 # leaves `spec:` null until one is written.
 #
+# A REFACTOR changes structure, never behaviour, so it delivers no claim:
+# `claims: []`, and `spec:` names the Feature whose code it restructures, or
+# null when it spans several. Its acceptance criteria cite the constraints it
+# preserves, in the form AGENTS.md § Exemptions fixes. A change that needs a
+# scenario amended is not a refactor.
+#
 # The whole file is YAML, with the prose fields as block scalars. .issue/.sequence
 # at the repository root holds the last id claimed: take the next number and
 # write it back in the same commit. Claim the id AFTER rebasing: it is taken
 # the moment someone else merges it.
 
 id: "0003" # string, so leading zeros survive. Never reused.
-type: feature # epic | feature | task | test | bug | spike
+type: feature # epic | feature | task | test | bug | spike | refactor
 title: Read specification layouts from the manifest
 
 # ready-for-architecture -> ready-for-implementation -> in-progress ->
@@ -73,7 +80,8 @@ blocks: [] # DERIVED: the inverse of other items' depends_on
 spikes: [] # ids of investigations this waits on
 
 # REQUIRED for type: feature — the spec this item was cut from. null for a
-# bug, spike or chore, which may produce a spec delta later.
+# bug, spike or chore, which may produce a spec delta later. A refactor names
+# the spec whose code it restructures, or null.
 spec: src/specht/Discovery/.spec/README.md # <home>/.spec/README.md
 
 # The § 3 claims this item delivers — ids ONLY, never the claim text, or the
@@ -103,7 +111,8 @@ summary: |
 # satisfied is not coverage.
 #
 # A bug or chore with `spec: null` states its criteria in prose here, and cites
-# claim ids once a spec delta adds them.
+# claim ids once a spec delta adds them. A refactor cites the constraint ids it
+# preserves — "Constraints preserved: <epic>-F<n> C-<n>" — and no claim id.
 acceptance_criteria:
   - "B-001 — layouts from the manifest"
   - "B-002 — exclusions from the manifest"

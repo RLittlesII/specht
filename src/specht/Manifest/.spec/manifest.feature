@@ -68,6 +68,7 @@ Feature: The manifest carries the roles
   @B-008
   Scenario: Frontmatter schemas are loaded by the manifest's file names
     Given the frontmatter schemas are read from the root
+    And the root holds a specification with no violations
     And the manifest names the Feature schema file "feature.json"
     And the schema folder holds that file and not the default name
     When the check runs

@@ -1,6 +1,6 @@
 ---
 title: "ADR-0006: A test runs a command through the production composition"
-description: "Item 0099's spike. An integration test runs a specht command through a CommandAppTester that one AutoFixtureBase<T> fixture builds fresh from the host's own composition - services and configuration lifted out of Program.cs into one public type - replacing only the seam the test names. The acceptance tier keeps launching the built tool. Rejected, each against the code or the package: the hand-wired helper per class, a shared xunit fixture, the generated [AutoFixture] over the tester, a Rocket Surgery test host, constructing the command directly, and invoking Program.cs's entry point."
+description: "Rejected by the owner, 2026-10-09; superseded in intent by ADR-0007. Item 0099's spike. An integration test runs a specht command through a CommandAppTester that one AutoFixtureBase<T> fixture builds fresh from the host's own composition - services and configuration lifted out of Program.cs into one public type - replacing only the seam the test names. The acceptance tier keeps launching the built tool. Rejected, each against the code or the package: the hand-wired helper per class, a shared xunit fixture, the generated [AutoFixture] over the tester, a Rocket Surgery test host, constructing the command directly, and invoking Program.cs's entry point."
 type: adr
 ---
 
@@ -8,7 +8,17 @@ type: adr
 
 ## Status
 
-proposed - 2026-10-09. Decider: the owner. Item `0099`
+rejected - 2026-10-09, by the owner, in session. The owner rejected the
+direction this record starts from: the services and configuration do not move
+into one central public list (question 1), and the `SpechtAppFixture` that
+`Replace`s registrations after the fact rests on that list, so the whole
+proposal falls with it; the other questions depended on the same direction.
+The record started from the command tester and moved the composition as a side
+effect. Superseded in intent by
+[ADR-0007](0007-each-part-registers-itself-and-one-factory-composes-the-host.md).
+Everything below is kept as history.
+
+Proposed 2026-10-09. Decider: the owner. Item `0099`
 (`.issue/0099-command-test-harness.yml`), cut when the owner rejected the
 test wiring on pull request #4
 ([review comment](https://github.com/RLittlesII/specht/pull/4#discussion_r4225019006),
