@@ -148,6 +148,18 @@ public sealed class SpecTree : IDisposable
         return path;
     }
 
+    /// <summary>
+    /// Writes a Feature specification at <paramref name="relativePath"/> under the root, a place no method above names,
+    /// with no companion beside it.
+    /// </summary>
+    public string WriteSpecification(
+        string relativePath,
+        string epic,
+        string id,
+        IReadOnlyDictionary<string, string>? frontmatter = null,
+        IReadOnlyList<string>? sections = null) =>
+        WriteRaw(relativePath, Frontmatter(epic, id, frontmatter) + $"# Specification: {id}\n\n" + string.Join('\n', sections ?? Sections));
+
     /// <summary>Writes a child item beside the Feature at <paramref name="specPath"/>.</summary>
     public void WriteItem(
         string specPath,

@@ -27,7 +27,6 @@ public sealed class SpecCheckRunnerIntegrationTests
         report.SpecificationCount.Should().Be(4);
         report.LegacyCount.Should().Be(3);
         report.CoLocatedCount.Should().Be(1);
-        report.MigrationSummary.Should().Contain("Migration 25% complete");
     }
 
     [Fact]

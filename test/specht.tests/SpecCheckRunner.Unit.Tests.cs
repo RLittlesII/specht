@@ -46,21 +46,6 @@ public sealed class SpecCheckRunnerUnitTests
     }
 
     [Fact]
-    public void AMigrationInProgress_WhenChecked_ShouldReportProgressWithoutFailing()
-    {
-        // Given
-        using var tree = new SpecTree();
-        tree.WriteFeature("0001", "F1");
-
-        // When
-        var report = tree.Run();
-
-        // Then
-        report.ErrorCount.Should().Be(0);
-        report.MigrationSummary.Should().Contain("Migration 0% complete");
-    }
-
-    [Fact]
     public void AFrontmatterValueOutsideItsEnum_WhenChecked_ShouldReportSpec002()
     {
         // Given

@@ -11,6 +11,9 @@ public sealed record SpecStructure(
     IReadOnlyDictionary<string, string> Identifiers,
     int SchemaVersion)
 {
+    /// <summary>What discovery finds and skips (<c>0001-F6</c> B-001, B-002, B-003); empty until item 0005 reads it from the manifest.</summary>
+    public SpecDiscoveryInputs Discovery { get; init; } = new([], [], string.Empty, string.Empty, string.Empty);
+
     /// <summary>The frontmatter schema file names under <c>.spec/schema/</c>, keyed by kind (B-008, decision 0003).</summary>
     public IReadOnlyDictionary<string, string> FrontmatterSchemas { get; init; } = new Dictionary<string, string>(StringComparer.Ordinal);
 }

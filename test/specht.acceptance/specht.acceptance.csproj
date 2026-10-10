@@ -10,6 +10,7 @@
     <ReqnrollFeatureFile Include="..\..\src\specht\.spec\engine.feature" Link="Features\engine.feature" />
     <ReqnrollFeatureFile Include="..\..\src\specht.tool\Features\Check\.spec\check.feature" Link="Features\check.feature" />
     <ReqnrollFeatureFile Include="..\..\src\specht.tool\Features\Init\.spec\init.feature" Link="Features\init.feature" />
+    <ReqnrollFeatureFile Include="..\..\src\specht\Discovery\.spec\discovery.feature" Link="Features\discovery.feature" />
     <ReqnrollFeatureFile Include="..\..\src\specht\Manifest\.spec\manifest.feature" Link="Features\manifest.feature" />
     <ReqnrollFeatureFile Include="..\..\src\specht\Report\.spec\report.feature" Link="Features\report.feature" />
     <ReqnrollFeatureFile Include="..\..\src\specht.tool\.spec\versioning.feature" Link="Features\versioning.feature" />

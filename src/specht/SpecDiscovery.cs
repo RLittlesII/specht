@@ -1,3 +1,5 @@
+using System.IO.Abstractions;
+
 namespace specht;
 
 /// <summary>
@@ -37,6 +39,55 @@ public static class SpecDiscovery
 
         return found;
     }
+
+    /// <summary>
+    /// Discovers every specification under <paramref name="root"/> in the layouts <paramref name="inputs"/> declares,
+    /// skipping what it excludes (<c>0001-F6</c> B-001, B-002, C-6, C-7).
+    /// </summary>
+    /// <param name="fileSystem">The file system the tree is read through.</param>
+    /// <param name="root">The repository root.</param>
+    /// <param name="inputs">The manifest's discovery inputs.</param>
+    /// <returns>Each specification, carrying the layout it was found in.</returns>
+    public static IReadOnlyList<SpecLocation> FindSpecifications(IFileSystem fileSystem, string root, SpecDiscoveryInputs inputs) =>
+        throw new NotImplementedException("0005: discovery does not read its layouts and exclusions from the manifest yet.");
+
+    /// <summary>
+    /// Discovers the item files beside each specification: every file whose name matches the manifest's task file shape,
+    /// <c>{task}</c> standing for <paramref name="taskGrammar"/> (<c>0001-F6</c> B-003).
+    /// </summary>
+    /// <param name="fileSystem">The file system the tree is read through.</param>
+    /// <param name="specifications">The discovered specifications.</param>
+    /// <param name="inputs">The manifest's discovery inputs.</param>
+    /// <param name="taskGrammar">The manifest's <c>identifiers.task</c> grammar.</param>
+    /// <returns>The path of each item file.</returns>
+    public static IReadOnlyList<string> FindChildItems(
+        IFileSystem fileSystem,
+        IEnumerable<SpecLocation> specifications,
+        SpecDiscoveryInputs inputs,
+        string taskGrammar) =>
+        throw new NotImplementedException("0005: discovery does not read the task file shape from the manifest yet.");
+
+    /// <summary>
+    /// Discovers every epic file under <paramref name="root"/>: each file the manifest's epic glob matches and its
+    /// exclusions do not skip (<c>0001-F6</c> B-002, B-003).
+    /// </summary>
+    /// <param name="fileSystem">The file system the tree is read through.</param>
+    /// <param name="root">The repository root.</param>
+    /// <param name="inputs">The manifest's discovery inputs.</param>
+    /// <returns>The path of each epic file.</returns>
+    public static IReadOnlyList<string> FindEpics(IFileSystem fileSystem, string root, SpecDiscoveryInputs inputs) =>
+        throw new NotImplementedException("0005: discovery does not read the epic file glob from the manifest yet.");
+
+    /// <summary>
+    /// Discovers the companion files beside <paramref name="specification"/>: every file whose name matches the manifest's
+    /// companion glob (<c>0001-F6</c> B-003).
+    /// </summary>
+    /// <param name="fileSystem">The file system the tree is read through.</param>
+    /// <param name="specification">The specification.</param>
+    /// <param name="inputs">The manifest's discovery inputs.</param>
+    /// <returns>The path of each companion file.</returns>
+    public static IReadOnlyList<string> FindCompanions(IFileSystem fileSystem, SpecLocation specification, SpecDiscoveryInputs inputs) =>
+        throw new NotImplementedException("0005: discovery does not read the companion glob from the manifest yet.");
 
     /// <summary>
     /// Discovers the task, test and spike files beside each specification.
