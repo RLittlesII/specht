@@ -34,7 +34,7 @@ public sealed class FeatureFileRule : ISpecRule
                 continue;
             }
 
-            var claims = ClaimIds(feature, grammar);
+            var claims = ClaimIds(model, feature, grammar);
             var path = feature.FeatureFiles[0];
             var relative = SpecDiscovery.Relative(model.Root, path);
 
@@ -54,9 +54,9 @@ public sealed class FeatureFileRule : ISpecRule
         }
     }
 
-    private static HashSet<string> ClaimIds(FeatureSpec feature, Regex grammar)
+    private static HashSet<string> ClaimIds(SpecModel model, FeatureSpec feature, Regex grammar)
     {
-        var section = feature.Document.Section(AcceptanceCriteria);
+        var section = feature.Document.Section(model.Schemas.Structure.Roles["claims"]);
         var ids = new HashSet<string>(StringComparer.Ordinal);
 
         if (section is null)
@@ -76,6 +76,4 @@ public sealed class FeatureFileRule : ISpecRule
 
         return ids;
     }
-
-    private const string AcceptanceCriteria = "3. Acceptance Criteria";
 }
