@@ -21,14 +21,17 @@ public sealed class ApprovalRule : ISpecRule
     /// <inheritdoc />
     public IEnumerable<SpecViolation> Evaluate(SpecModel model)
     {
+        var roles = model.Schemas.Structure.Roles;
+        var markers = model.Schemas.Structure.Markers;
+
         foreach (var feature in model.Features)
         {
-            if (!string.Equals(feature.SpecStatus, Approved, StringComparison.Ordinal))
+            if (!string.Equals(feature.SpecStatus, markers["approved"], StringComparison.Ordinal))
             {
                 continue;
             }
 
-            var matrix = feature.Document.Section(TraceabilityMatrix);
+            var matrix = feature.Document.Section(roles["matrix"]);
 
             if (matrix is not null)
             {
@@ -36,7 +39,7 @@ public sealed class ApprovalRule : ISpecRule
                 {
                     var row = matrix.Rows[index];
 
-                    if (row.Any(static cell => string.Equals(cell.Trim(), Missing, StringComparison.Ordinal)))
+                    if (row.Any(cell => string.Equals(cell.Trim(), markers["missing"], StringComparison.Ordinal)))
                     {
                         yield return new SpecViolation(
                             "SPEC060",
@@ -77,10 +80,7 @@ public sealed class ApprovalRule : ISpecRule
     private static bool NotApproved(string cell) =>
         cell.Contains(Draft, StringComparison.Ordinal) || cell.Contains(Blocked, StringComparison.Ordinal);
 
-    private const string TraceabilityMatrix = "9. Traceability Matrix";
     private const string SignOff = "12. Sign-off";
-    private const string Approved = "approved";
-    private const string Missing = "Missing";
     private const string Draft = "\U0001F7E1";
     private const string Blocked = "\U0001F534";
 }

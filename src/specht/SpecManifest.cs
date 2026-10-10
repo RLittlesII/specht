@@ -26,8 +26,8 @@ public static class SpecManifest
     /// <exception cref="SpechtManifestNotFoundException">There is no file at the manifest path.</exception>
     /// <exception cref="SpechtManifestUnreadableException">The manifest is not well-formed JSON or not the manifest's shape.</exception>
     /// <exception cref="SpechtManifestException">
-    /// The manifest carries a key the engine does not know, a <c>schemaVersion</c> that is not an integer of at least 1, or a
-    /// role naming a title <c>sections</c> does not list.
+    /// The manifest carries a key the engine does not know, a <c>schemaVersion</c> that is not an integer of at least 1, a
+    /// role naming a title <c>sections</c> does not list, or a marker whose text is empty.
     /// </exception>
     public static SpecStructure Load(IFileSystem fileSystem, string root)
     {
@@ -76,6 +76,7 @@ public static class SpecManifest
         {
             FrontmatterSchemas = Filled(manifest, "frontmatterSchemas"),
             Roles = Filled(manifest, "roles"),
+            Markers = Filled(manifest, "markers"),
         };
 
         Check(structure);
@@ -89,6 +90,11 @@ public static class SpecManifest
             .Select(static entry => entry.Key)
             .Where(role => !structure.Sections.Contains(structure.Roles[role], StringComparer.Ordinal))
             .Select(role => $"the role '{role}' names '{structure.Roles[role]}', which sections does not list")
+            .Concat(
+                Defaults["markers"]!.AsObject()
+                    .Select(static entry => entry.Key)
+                    .Where(marker => structure.Markers[marker].Length == 0)
+                    .Select(static marker => $"the marker '{marker}' in markers is empty"))
             .ToList();
 
         if (faults.Count > 0)
@@ -162,6 +168,7 @@ public static class SpecManifest
         "identifiers",
         "frontmatterSchemas",
         "roles",
+        "markers",
     };
 
     private static readonly JsonObject Defaults = ReadDefaults();

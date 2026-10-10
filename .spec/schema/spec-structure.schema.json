@@ -40,5 +40,9 @@
   "roles": {
     "claims": "3. Acceptance Criteria",
     "matrix": "9. Traceability Matrix"
+  },
+  "markers": {
+    "missing": "Missing",
+    "approved": "approved"
   }
 }
