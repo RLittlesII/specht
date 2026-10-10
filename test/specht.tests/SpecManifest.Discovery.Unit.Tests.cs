@@ -4,10 +4,10 @@ using AwesomeAssertions;
 namespace specht.tests;
 
 /// <summary>
-/// The manifest loader's read of the discovery keys over an in-memory file system (<c>0001-F6</c> B-002, B-003, A-2;
-/// decision 0004): each of <c>exclusions</c>, <c>taskFiles</c>, <c>epicFiles</c> and <c>companionFiles</c> is read as the
-/// manifest writes it, and as the default manifest's value when the manifest leaves it out. What <c>layouts</c> is read as
-/// is pinned where a layout is used, in <see cref="SpecDiscoveryManifestUnitTests"/>.
+/// The manifest loader's read of the discovery keys over an in-memory file system (<c>0001-F6</c> B-001, B-002, B-003,
+/// A-2, C-7; decision 0004): each of <c>layouts</c>, <c>exclusions</c>, <c>taskFiles</c>, <c>epicFiles</c> and
+/// <c>companionFiles</c> is read as the manifest writes it, and as the default manifest's value when the manifest leaves
+/// it out.
 /// </summary>
 [Trait("Tier", "Unit")]
 public sealed class SpecManifestDiscoveryUnitTests
@@ -54,6 +54,44 @@ public sealed class SpecManifestDiscoveryUnitTests
 
         // Then
         Shape(discovery, key).Should().Be(shape);
+    }
+
+    [Fact]
+    public void AManifestLeavingOutItsLayouts_WhenLoaded_ShouldReadTheDefaultManifestsTwoInItsOrder()
+    {
+        // Given
+        var fileSystem = Holding("{}");
+
+        // When
+        var discovery = SpecManifest.Load(fileSystem, Root).Discovery;
+
+        // Then
+        discovery.Layouts.Should().Equal(
+            new SpecLayout("legacy", "epics/**/spec.md"),
+            new SpecLayout("coLocated", "**/.spec/README.md"));
+    }
+
+    [Fact]
+    public void AManifestDeclaringItsLayouts_WhenLoaded_ShouldReadEachNameAndGlobAsWrittenInTheOrderDeclared()
+    {
+        // Given
+        var fileSystem = Holding(
+            """
+            {
+              "layouts": [
+                { "name": "documentation", "glob": "docs/**/specification.md" },
+                { "name": "beside-code", "glob": "**/.spec/README.md" }
+              ]
+            }
+            """);
+
+        // When
+        var discovery = SpecManifest.Load(fileSystem, Root).Discovery;
+
+        // Then
+        discovery.Layouts.Should().Equal(
+            new SpecLayout("documentation", "docs/**/specification.md"),
+            new SpecLayout("beside-code", "**/.spec/README.md"));
     }
 
     [Fact]

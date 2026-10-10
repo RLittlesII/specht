@@ -7,8 +7,9 @@ using specht.Report;
 namespace specht.tests;
 
 /// <summary>
-/// The report document made from a report built in memory (<c>0001-F3</c> B-005, B-006, B-007; <c>0001-F2</c> B-002): what
-/// it counts, what a violation carries, that nothing in it comes from the clock or the machine, and the run summary it makes.
+/// The report document made from a report built in memory (<c>0001-F3</c> B-005, B-006, B-007; <c>0001-F2</c> B-002;
+/// <c>0001-F6</c> B-009, C-7): what it counts, the name and the order it gives each layout, what a violation carries, that
+/// nothing in it comes from the clock or the machine, and the run summary it makes.
 /// </summary>
 [Trait("Tier", "Unit")]
 public sealed partial class SpecReportDocumentUnitTests
@@ -48,6 +49,41 @@ public sealed partial class SpecReportDocumentUnitTests
         document.ErrorCount.Should().Be(2);
         document.WarningCount.Should().Be(1);
         document.Violations.Should().HaveCount(3);
+    }
+
+    [Fact]
+    public void AReportNamingItsLayouts_WhenMadeADocument_ShouldCarryEachByItsNameInTheReportsOrderWithALayoutHoldingNoneAtZero()
+    {
+        // Given
+        SpecCheckReport report = new SpecCheckReportFixture().WithLayouts(
+            new SpecReportLayout("documentation", 1),
+            new SpecReportLayout("beside-code", 0),
+            new SpecReportLayout("old-tree", 2));
+
+        // When
+        var document = SpecReportDocument.From(report);
+
+        // Then
+        document.Layouts.Should().Equal(
+            new SpecReportLayout("documentation", 1),
+            new SpecReportLayout("beside-code", 0),
+            new SpecReportLayout("old-tree", 2));
+    }
+
+    [Fact]
+    public void AReportNamingItsLayouts_WhenSummarized_ShouldNameEachByItsNameInTheReportsOrderWithALayoutHoldingNoneAtZero()
+    {
+        // Given
+        SpecCheckReport report = new SpecCheckReportFixture().WithLayouts(
+            new SpecReportLayout("documentation", 1),
+            new SpecReportLayout("beside-code", 0),
+            new SpecReportLayout("old-tree", 2));
+
+        // When
+        var summary = SpecReportDocument.From(report).SummaryLines();
+
+        // Then
+        summary[0].Should().Be("specifications: documentation 1, beside-code 0, old-tree 2");
     }
 
     [Fact]

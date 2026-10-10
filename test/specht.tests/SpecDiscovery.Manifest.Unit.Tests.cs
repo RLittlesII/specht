@@ -4,9 +4,9 @@ using AwesomeAssertions;
 namespace specht.tests;
 
 /// <summary>
-/// Discovery over the inputs a manifest declares, on an in-memory file system (<c>0001-F6</c> B-001, B-002, B-003, C-4,
-/// C-6, C-7; decisions 0003 and 0004): which layouts a specification is found in, how a glob is matched, what an
-/// exclusion skips, and which files are items, epics and companions. Each test's inputs are the ones the loader reads from
+/// Discovery over the inputs a manifest declares, on an in-memory file system (<c>0001-F6</c> B-001, B-002, B-003, B-009,
+/// C-4, C-6, C-7; decisions 0003 and 0004): which layouts a specification is found in and which one it carries, how a glob
+/// is matched, what an exclusion skips, and which files are items, epics and companions. Each test's inputs are the ones the loader reads from
 /// the manifest the test writes, so a key the manifest leaves out is the default manifest's.
 /// </summary>
 [Trait("Tier", "Unit")]
@@ -121,6 +121,38 @@ public sealed class SpecDiscoveryManifestUnitTests
 
         // Then
         found.Select(static location => location.RelativePath).Should().BeEquivalentTo(expected, because);
+    }
+
+    [Fact]
+    public void AManifestsLayouts_WhenSpecificationsAreDiscovered_ShouldGiveEachSpecificationTheLayoutWhoseGlobMatchedIt()
+    {
+        // Given
+        var fileSystem = Tree(
+            """
+            {
+              "layouts": [
+                { "name": "old-tree", "glob": "epics/**/spec.md" },
+                { "name": "beside-code", "glob": "**/.spec/README.md" },
+                { "name": "documentation", "glob": "docs/**/specification.md" }
+              ]
+            }
+            """,
+            LegacySpecification,
+            CoLocatedSpecification,
+            DocumentationSpecification);
+        var inputs = SpecManifest.Load(fileSystem, Root).Discovery;
+
+        // When
+        var found = SpecDiscovery.FindSpecifications(fileSystem, Root, inputs);
+
+        // Then
+        found.ToDictionary(static location => location.RelativePath, static location => location.Layout).Should().Equal(
+            new Dictionary<string, SpecLayout>
+            {
+                [LegacySpecification] = new("old-tree", "epics/**/spec.md"),
+                [CoLocatedSpecification] = new("beside-code", "**/.spec/README.md"),
+                [DocumentationSpecification] = new("documentation", "docs/**/specification.md"),
+            });
     }
 
     [Theory]
