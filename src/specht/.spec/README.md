@@ -20,7 +20,7 @@ depends_on: []
 blocks: ["F2", "F5"]
 spikes: []
 created: "2026-10-07"
-updated: "2026-10-09"
+updated: "2026-10-10"
 github_issue: null
 synced_at: null
 ---
@@ -220,7 +220,7 @@ Delivered so far by items 0021, 0104, 0103, 0024 and 0105.
 
 ## 10. Lessons / Spec Deltas
 
-<!-- last written by: spec-author, 2026-10-09 (item 0105; `0001-F6` decision 0008) -->
+<!-- last written by: spec-author, 2026-10-10 (item 0120: scenario wording, `0001-F7` decision 0005) -->
 
 - 2026-10-08, A-2 amended by the owner during 0021's review: the three draft-spec files are cited at `hooked@a6d056f` instead of copied into `docs/reference/`. The specifications absorbed them, and an absorbed record is cited at its commit, not kept live ([lesson 0001](../../../.spec/lessons/0001-cite-a-superseded-record-at-a-commit.md)).
 - 2026-10-08, C-2 names its scope over the tests: `hooked`'s test `.csproj` is not copied; `test/specht.tests` keeps this repository's project file (spec-reviewer, 0021).
@@ -237,6 +237,7 @@ Delivered so far by items 0021, 0104, 0103, 0024 and 0105.
 - 2026-10-09, epics made opt-in by the owner ([`0001-F5` decision 0004](../Manifest/.spec/decisions/0004-epics-are-opt-in-by-the-manifests-epic-grammar.md)). The change lands with `0001-F5`, at brief § 8 step 5, where C-9 stops binding. On the baseline tree every Feature carries an `epic` under the epic grammar, so B-004's golden report is unchanged. B-003 and B-011 are scoped to a manifest declaring the epic grammar. B-002 gains one exception: a missing `epic` is reported under `SPEC011` in either layout (`0001-F5` B-035). All three are marked `Amended`. A-3's version 1 set now includes the loosening, and § 5 row 14 sends the epic-less behaviour to `0001-F5`. The scenarios of B-002, B-003 and B-011 run under the default manifest, which declares the epic grammar, and are unchanged.
 - 2026-10-09, [ADR-0008](../../../.spec/adr/0008-evaluate-takes-the-rule-set-and-the-model-carries-the-vocabulary.md) recorded on the owner's decision during item 0105: `SpecCheckRunner.Evaluate` takes the rule set as its second argument and reads the pinned version's rule vocabulary from the model, superseding ADR-0001 and ADR-0004 in part. No claim or constraint changed; C-9 holds. § 6 and § 7 are owed the new shape by `implementer`.
 - 2026-10-09, the default layouts renamed by the owner in review of pull request #78 ([`0001-F6` decision 0008](../Discovery/.spec/decisions/0008-the-layouts-are-named-epics-and-features-and-the-file-shape-keys-are-lists.md)): `legacy` is `epics` and `coLocated` is `features`. B-002, B-003 and the `@B-002` scenario name the layouts so; what each claim asserts is unchanged, and decision 0001's "legacy" and "co-located" read as `epics` and `features`. No verdict field B-004 lists carries a layout name. Owed to the `test-writer`: the reworded `@B-002` steps. Owed to the `implementer`: § 7 and § 8 still spell `legacy`.
+- 2026-10-10, scenario wording only, by spec-author in item `0120` ([`0001-F7` decision 0005](../../specht.tool/.spec/decisions/0005-a-schema-version-is-semver-pinned-exactly-moved-by-pin.md)): the Background reads "schema version 0.1.0" where it read "schema version 1", and the `@B-001` and `@B-004` scenarios read "the twenty-one version 0.1.0 rules" where they read "version 1 rules", as A-3 and C-8 already name the set. No claim, constraint or scenario title changed. Owed to the `test-writer`: the bindings of the three reworded steps.
 
 ## 11. Open Questions
 
