@@ -12,7 +12,8 @@ branch and worktree conventions, the build commands and the merge strategy —
 ## The shape of it
 
 1. **A Feature starts at its specification.** Items are cut from its claims after
-   agreement, not before. A bug, spike or chore starts at the item instead.
+   agreement, not before. A bug, spike, chore or refactor starts at the item
+   instead; a refactor cites the constraints it preserves, never a claim.
 2. **Take exactly one item.** Signal that you have it in the tracker _before_ the
    branch, before the worktree, and before the first edit. An item already
    signalled as taken is never picked up — that signal is the only thing stopping

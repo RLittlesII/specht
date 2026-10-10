@@ -159,7 +159,9 @@ is the first edit, not the last.
 
 A **Feature begins with its specification**, authored with no issue in existence —
 the specification is the agreement that issues are later cut from. A bug, spike, or
-chore begins at the issue instead, and may produce a spec delta afterwards.
+chore begins at the issue instead, and may produce a spec delta afterwards. A
+refactor begins there too and produces none; its item cites the constraints it
+preserves, as an exemption does.
 
 ### Four non-discretionary rules
 
@@ -453,8 +455,9 @@ schema, the status vocabulary and the rank derivation are in
 
 - **An item sits beside the specification it was cut from**: `<home>/.issue/`,
   a sibling of that Feature's `.spec/`. An item that belongs to no Feature — a
-  bug, a spike, a chore — goes in the repository-root `.issue/`, the same blast
-  radius split `.spec/adr/` and `.spec/lessons/` use. Ids stay repository-wide
+  bug, a spike, a chore, a refactor spanning Features — goes in the
+  repository-root `.issue/`, the same blast radius split `.spec/adr/` and
+  `.spec/lessons/` use. Ids stay repository-wide
   from one `.issue/.sequence`, which holds the last id claimed; find one with
   `**/.issue/<id>-*.yml`.
 - `status: in-progress` marks an item taken, and `in-review` once the pull

@@ -162,7 +162,8 @@ specification  →  grooming  →  .issue/ items  →  scenarios  →  tests  �
 
 The specification exists first and stands alone; items are cut from its § 3
 claims after agreement. A bug, spike or chore starts at the item instead and may
-produce a spec delta afterwards.
+produce a spec delta afterwards. A refactor starts at the item too, and produces
+none.
 
 ## Build and test
 
