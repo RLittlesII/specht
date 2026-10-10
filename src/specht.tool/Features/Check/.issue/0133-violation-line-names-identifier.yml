@@ -2,7 +2,7 @@ id: "0133"
 type: task
 title: Name the identifier on every violation line that has one
 
-status: in-progress
+status: done
 
 priority: high
 risk: 2
@@ -23,7 +23,7 @@ claims:
 
 created: "2026-10-09"
 updated: "2026-10-09"
-closed: null
+closed: "2026-10-09"
 
 summary: |
   A printed violation line does not say what it targets: the engine carries

@@ -8,7 +8,7 @@ namespace specht;
 /// <param name="Severity">Whether this fails the target.</param>
 /// <param name="File">Path relative to the repository root - never absolute.</param>
 /// <param name="Line">One-based line the diagnostic points at, or 0 when the file as a whole is at fault.</param>
-/// <param name="Identifier">The specification identifier at fault, when there is one.</param>
+/// <param name="Identifier">The specification identifier at fault, when there is one; the line ends with it in square brackets.</param>
 /// <param name="Message">What is wrong, in terms the author can act on.</param>
 public sealed record SpecViolation(
     string RuleId,
@@ -24,6 +24,8 @@ public sealed record SpecViolation(
         var severity = Severity == SpecSeverity.Error ? "error" : "warning";
         var position = Line > 0 ? $"({Line})" : string.Empty;
 
-        return $"{File}{position}: {severity} {RuleId}: {Message}";
+        var identifier = Identifier is null ? string.Empty : $" [{Identifier}]";
+
+        return $"{File}{position}: {severity} {RuleId}: {Message}{identifier}";
     }
 }
