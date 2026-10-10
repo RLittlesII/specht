@@ -43,7 +43,8 @@ specht.slnx                    the solution - a project not listed here is not b
 Directory.Build.props          repo-wide MSBuild: nullable, warnings as errors, IsPackable=false
 Directory.Packages.props       central package versions - the only place a version is written
 global.json                    the pinned SDK and the Microsoft.Testing.Platform runner
-.config/dotnet-tools.json      local tools: husky, nuke, and specht itself once published
+version.json                   the package version line, read by nbgv - the only source of a version
+.config/dotnet-tools.json      local tools: husky, nbgv, nuke, and specht itself once published
 build.sh / build.cmd           entry to the NUKE build
 
 src/
@@ -161,7 +162,8 @@ specification  →  grooming  →  .issue/ items  →  scenarios  →  tests  �
 
 The specification exists first and stands alone; items are cut from its § 3
 claims after agreement. A bug, spike or chore starts at the item instead and may
-produce a spec delta afterwards.
+produce a spec delta afterwards. A refactor starts at the item too, and produces
+none.
 
 ## Build and test
 
@@ -184,6 +186,11 @@ or is a `.feature`.
 
 `dotnet tool restore && dotnet husky install` once per clone, or `core.hooksPath`
 is unset and no git hook fires.
+
+`dotnet nbgv get-version` prints the version a commit computes: public on `main`
+and `v*` tags, a `-g<commit>` prerelease everywhere else, and a failure in a
+shallow clone (`0055-F5` C-2). A release tag is never typed: `dotnet nbgv tag` on
+a commit of `main` creates `v<version>` (`0055-F5` A-1, B-007).
 
 ## Never add
 

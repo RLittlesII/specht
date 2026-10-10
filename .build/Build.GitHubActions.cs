@@ -12,7 +12,7 @@ using Rocket.Surgery.Nuke.GithubActions;
 using static Nuke.Common.Tools.Git.GitTasks;
 
 // 0055-F2: the integration workflow, generated into .github/workflows/ci.yml and committed (C-1).
-// B-001, B-002: a pull request to main and a push to main. B-004: every gate, each through the entry script.
+// B-001, B-002: a pull request to main and a push to main. B-004: every gate, each through the entry script; § 5 #17.
 [GitHubActionsSteps(
     "ci",
     GitHubActionsImage.UbuntuLatest,
@@ -33,6 +33,7 @@ using static Nuke.Common.Tools.Git.GitTasks;
     [
         nameof(ICanClean.Clean),
         nameof(ICanRestoreWithDotNetCore.DotnetToolRestore),
+        nameof(Test),
     ],
     Enhancements = [nameof(ContinuousIntegrationMiddleware)]
 )]
@@ -43,7 +44,9 @@ internal sealed partial class Build
         .OnlyWhenStatic(GitHubActionsTasks.IsRunningOnGitHubActions)
         .DependsOn(Format)
         .DependsOn(Compile)
-        .DependsOn(Test)
+        .DependsOn(UnitTest)
+        .DependsOn(IntegrationTest)
+        .DependsOn(AcceptanceTest)
         .DependsOn(SpecCheck);
 
     public static RocketSurgeonGitHubActionsConfiguration ContinuousIntegrationMiddleware(
@@ -63,6 +66,18 @@ internal sealed partial class Build
 
         buildJob.Steps.Remove(formatStep);
         buildJob.Steps.Insert(buildJob.Steps.IndexOf(compileStep), formatStep);
+
+        // B-004, § 5 #17.
+        var tierSteps = new[] { "unitTest", "integrationTest", "acceptanceTest" }
+            .Select(id => steps.Single(z => z.Id == id))
+            .ToList();
+        tierSteps.ForEach(tier => buildJob.Steps.Remove(tier));
+        buildJob.Steps.InsertRange(buildJob.Steps.IndexOf(compileStep) + 1, tierSteps);
+
+        foreach (var run in steps.OfType<RunStep>().Where(static z => z.Id is "specCheck" or "continuousIntegration"))
+        {
+            run.Run = run.Run.Contains("--skip ", StringComparison.Ordinal) ? $"{run.Run} {nameof(Test)}" : $"{run.Run} --skip {nameof(Test)}";
+        }
 
         // B-004: every gate through the entry script, which bootstraps the build from the local tool manifest
         // (0055-F1 C-3) - never a global NUKE install, never the build assembly directly.
@@ -179,11 +194,11 @@ internal sealed partial class Build
     }
 
     /// <summary>
-    /// Uploads the Cobertura reports the Test target writes to Codecov from the ubuntu leg only, and warns when the upload fails.
+    /// Uploads the Cobertura reports the tier targets write to Codecov from the ubuntu leg only, after the last tier, and warns when the upload fails.
     /// </summary>
     private static void AddCodecovUpload(RocketSurgeonsGithubActionsJob buildJob)
     {
-        var testStep = buildJob.Steps.Cast<BaseGitHubActionsStep>().Single(static z => z.Id == "test");
+        var acceptanceTestStep = buildJob.Steps.Cast<BaseGitHubActionsStep>().Single(static z => z.Id == "acceptanceTest");
         var uploadStep = new UsingStep("Upload coverage to Codecov")
         {
             Id = "codecov",
@@ -204,7 +219,7 @@ internal sealed partial class Build
             Run = "echo \"::warning title=Codecov upload failed::The coverage upload to Codecov failed; this check is not failed on that account.\"",
         };
 
-        buildJob.Steps.InsertRange(buildJob.Steps.IndexOf(testStep) + 1, [uploadStep, warningStep]);
+        buildJob.Steps.InsertRange(buildJob.Steps.IndexOf(acceptanceTestStep) + 1, [uploadStep, warningStep]);
     }
 
     /// <summary>

@@ -25,7 +25,9 @@ public static class SpecManifest
     /// <exception cref="SpechtRootNotFoundException"><paramref name="root"/> is not a directory.</exception>
     /// <exception cref="SpechtManifestNotFoundException">There is no file at the manifest path.</exception>
     /// <exception cref="SpechtManifestUnreadableException">The manifest is not well-formed JSON or not the manifest's shape.</exception>
-    /// <exception cref="SpechtManifestException">The manifest carries a key the engine does not know.</exception>
+    /// <exception cref="SpechtManifestException">
+    /// The manifest carries a key the engine does not know, or a <c>schemaVersion</c> that is not an integer of at least 1.
+    /// </exception>
     public static SpecStructure Load(IFileSystem fileSystem, string root)
     {
         if (!fileSystem.Directory.Exists(root))
@@ -78,7 +80,23 @@ public static class SpecManifest
         return new SpecStructure(
             Strings(manifest["sections"] ?? Defaults["sections"]!),
             Tables(manifest["tables"] ?? Defaults["tables"]!),
-            identifiers);
+            identifiers,
+            SchemaVersion(manifest));
+    }
+
+    private static int SchemaVersion(JsonObject manifest)
+    {
+        if (!manifest.TryGetPropertyValue("schemaVersion", out var node))
+        {
+            return 1;
+        }
+
+        if (node is JsonValue value && value.GetValueKind() == JsonValueKind.Number && value.TryGetValue<int>(out var version) && version >= 1)
+        {
+            return version;
+        }
+
+        throw new SpechtManifestException($"{RelativePath}: schemaVersion must be an integer of at least 1.");
     }
 
     private static List<string> Strings(JsonNode node) =>
@@ -108,7 +126,7 @@ public static class SpecManifest
 
     private const string DefaultResource = "specht.default-manifest.json";
 
-    private static readonly HashSet<string> KnownKeys = new(StringComparer.Ordinal) { "sections", "tables", "identifiers" };
+    private static readonly HashSet<string> KnownKeys = new(StringComparer.Ordinal) { "schemaVersion", "sections", "tables", "identifiers" };
 
     private static readonly JsonObject Defaults = ReadDefaults();
 }

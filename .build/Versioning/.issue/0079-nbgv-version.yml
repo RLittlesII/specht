@@ -2,7 +2,7 @@ id: "0079"
 type: task
 title: Compute the version with Nerdbank.GitVersioning from version.json
 
-status: ready-for-architecture
+status: done
 
 priority: high
 risk: 3
@@ -26,8 +26,8 @@ claims:
   - B-008
 
 created: "2026-10-08"
-updated: "2026-10-08"
-closed: null
+updated: "2026-10-09"
+closed: "2026-10-09"
 
 summary: |
   Commit `version.json` at `0.1` (OQ-1), add nbgv to the local tool
@@ -44,7 +44,16 @@ acceptance_criteria:
   - "B-008 — first `version.json`: `0.1.` on `main`"
   - "§ 9 carries a row naming a test for each id above."
 
-decisions: []
+decisions:
+  - |
+    2026-10-08, owner: the build carries no tests (0055-F2 § 8), and that
+    decision applies here too, so the criterion "§ 9 carries a row naming
+    a test for each id above" is superseded; 0055-F5 § 8 says so and
+    records the hand verification.
+  - |
+    2026-10-09: the Nerdbank.GitVersioning MSBuild package that stamps the
+    assemblies and the package is left to 0080 (B-005); 0079 commits
+    version.json and the nbgv CLI only.
 
 out_of_scope:
   - "Schema versions — § 5 #1, 0001-F7."

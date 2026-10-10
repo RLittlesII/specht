@@ -8,6 +8,18 @@ Feature: The coverage gate
     When the tests run through the build
     Then a coverage report is written for each test project in the build's coverage output
 
+  @B-001
+  Scenario: A test tier writes coverage of its own
+    When one test tier runs through the build
+    Then a coverage report is written for each test project that tier runs, in that tier's own coverage output
+
+  @B-001 @boundary
+  Scenario: One tier's run keeps another tier's coverage
+    Given the unit tier has written its coverage
+    When the integration tier runs through the build
+    Then the unit tier's coverage is still there
+    And neither tier's coverage replaces the other's
+
   @B-002
   Scenario: Integration uploads coverage
     When integration runs the build's gates
