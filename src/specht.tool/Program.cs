@@ -8,7 +8,7 @@ using specht.tool.Features.Init;
 using Spectre.Console.Cli;
 
 var services = new ServiceCollection();
-services.AddSingleton<Func<string, SpecCheckReport>>(SpecCheckRunner.Run);
+services.AddSingleton<Func<string, SpechtReport>>(SpechtRunner.Run);
 services.AddSingleton(static _ => new InitWriter(InitWriter.ShippingCopy(typeof(InitWriter).Assembly), new FileSystem()));
 
 var app = new CommandApp(new TypeRegistrar(services));

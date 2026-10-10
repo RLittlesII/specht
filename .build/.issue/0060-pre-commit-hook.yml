@@ -33,7 +33,7 @@ closed: "2026-10-09"
 summary: |
   Replace the hook copied from another repository with one that calls
   `Format` on the staged content and never rewrites or re-stages a file
-  (C-2). 0062 adds the hook's `SpecCheck` call and 0031 proves it agrees
+  (C-2). 0062 adds the hook's `Specht` call and 0031 proves it agrees
   with a shell, so both wait on this item. Risk 3: checking staged content rather than the working tree
   (B-022) without touching the index (B-015).
 
@@ -55,5 +55,5 @@ decisions:
     § 9 row naming a test for each claim.
 
 out_of_scope:
-  - "The hook's `SpecCheck` call and its gate — B-013, 0062."
+  - "The hook's `Specht` call and its gate — B-013, 0062."
   - "Fixing formatting — § 5 #8."

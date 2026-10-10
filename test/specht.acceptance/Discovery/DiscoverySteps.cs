@@ -157,7 +157,7 @@ public sealed class DiscoverySteps
     public void WhenTheCheckRuns()
     {
         File.WriteAllText(ManifestPath, Manifest.ToJsonString());
-        _report = SpecCheckRunner.Run(Tree.Root);
+        _report = SpechtRunner.Run(Tree.Root);
     }
 
     [Then("that specification is discovered")]
@@ -259,7 +259,7 @@ public sealed class DiscoverySteps
 
     private JsonObject Manifest => _manifest ?? throw new InvalidOperationException("No manifest was read.");
 
-    private SpecCheckReport Report => _report ?? throw new InvalidOperationException("The check gave no report.");
+    private SpechtReport Report => _report ?? throw new InvalidOperationException("The check gave no report.");
 
     private string Subject => _subject ?? throw new InvalidOperationException("No step named that specification.");
 
@@ -300,7 +300,7 @@ public sealed class DiscoverySteps
 
     private SpecTree? _tree;
     private JsonObject? _manifest;
-    private SpecCheckReport? _report;
+    private SpechtReport? _report;
     private string? _subject;
     private string? _underEpics;
     private string? _besideCode;

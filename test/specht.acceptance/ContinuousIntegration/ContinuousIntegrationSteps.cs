@@ -52,7 +52,7 @@ public sealed class ContinuousIntegrationSteps
         foreach (var job in Jobs())
         {
             Runs(job).Should().AllSatisfy(static run => run.Should().StartWith("./build.cmd --target "));
-            Runs(job).Select(static run => run.Split(' ')[2]).Should().Contain(["Format", "Compile", "Test", "SpecCheck", "Pack"]);
+            Runs(job).Select(static run => run.Split(' ')[2]).Should().Contain(["Format", "Compile", "Test", "Specht", "Pack"]);
         }
     }
 

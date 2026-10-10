@@ -26,7 +26,7 @@ Answered by the owner, 2026-10-09, on the reviewer's Round 12:
   log and is not annotated on the diff (B-020, § 5 #26). The owner accepted
   that B-006 is narrowed to violations in the head tree. Cost, as the
   question stated it: a reader must open the log to see the collision.
-- OQ-3: no. Once `SpecCheck` gates, a merge tree that cannot be computed is
+- OQ-3: no. Once `Specht` gates, a merge tree that cannot be computed is
   reported, "no merge tree was checked", and does not by itself fail the
   ubuntu check (B-019, B-024).
 
@@ -37,7 +37,7 @@ Derived by spec-author from claims already agreed, not stated by the owner:
   B-012 applies. A pull request B-012 applies to therefore has no merge tree
   checked, one that adds only an `epics/<id>-*/epic.md` among them (§ 5 #27).
 - The head stays what every other gate builds (B-001, C-8).
-- The second run is part of the ubuntu check and gates when `SpecCheck` does
+- The second run is part of the ubuntu check and gates when `Specht` does
   (C-4, C-10), so no check name is added to the two `0055-F8` B-002 requires;
   a violation it reports then fails that check (B-023).
 - A merge tree that cannot be computed is reported, never passed as clean
@@ -75,7 +75,7 @@ and the same tree would give different reports depending on a second input,
 against "the same tree gives the same report" (AGENTS.md § Invariants).
 
 **Catching the collision only on the push to `main`.** Cost of rejecting: a
-second self-check on every pull request's ubuntu leg. The `SpecCheck` step
+second self-check on every pull request's ubuntu leg. The `Specht` step
 took about 10 s on the windows leg of the run decision 0003 measured; the
 merge-tree run was not measured. Rejected because the duplicate is then
 already on `main`, where an id is permanent and one of the two records has to

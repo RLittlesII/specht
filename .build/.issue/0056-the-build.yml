@@ -58,7 +58,7 @@ summary: |
 
   The scaffold (0057) is the root of the whole backlog: every epic 0001
   root item (0021, 0051) waits on it and on CI (0055-F2), because
-  infrastructure lands before any 0001 work. `SpecCheck` is in three
+  infrastructure lands before any 0001 work. `Specht` is in three
   states (C-7): a placeholder in the scaffold (B-023), report-only once
   0001-F2's command exists (0061), and a gate once 0001-F5's rule settings
   exist (0062, waiting on 0026 and 0014). Each later state supersedes the
@@ -89,7 +89,7 @@ acceptance_criteria:
   - "B-020 — `Format` given files checks only those (0059)"
   - "B-021 — hook calls `Format` with the staged files (0060)"
   - "B-022 — staged content checked, not the working tree (0060)"
-  - "B-023 — `SpecCheck` before the check exists: reports, exits 0 (0057)"
+  - "B-023 — `Specht` before the check exists: reports, exits 0 (0057)"
   - "B-024 — `Missing` row: `SPEC060` warning, exit 0 (0062)"
   - "B-025 — check without rule settings: prints, exits 0 (0061)"
   - "§ 9 carries a row naming a test for each id above."
@@ -98,9 +98,9 @@ decisions:
   - |
     2026-10-08, Claude at the owner's request: sliced into the scaffold
     (0057) that every other item and epic 0001 build on, the tier filters
-    (0058), `Format` (0059), the hook (0060), and `SpecCheck`'s two later
+    (0058), `Format` (0059), the hook (0060), and `Specht`'s two later
     states apart (0061, 0062), so the scaffold waits on nothing. Rejected:
-    `SpecCheck` in one item waiting on 0026 and 0014, which would put the
+    `Specht` in one item waiting on 0026 and 0014, which would put the
     scaffold's placeholder (B-023) behind the check it stands in for, and a
     cycle through 0021, which waits on the scaffold.
 

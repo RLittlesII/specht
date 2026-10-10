@@ -28,7 +28,7 @@ closed: null
 summary: |
   ADR-0001 (accepted 2026-10-08), stage C. A hand-written list of the
   eight ISpecRules replaces discovery by reflection and
-  Activator.CreateInstance (SpecCheckRunner.cs:52-58), with a unit test
+  Activator.CreateInstance (SpechtRunner.cs:52-58), with a unit test
   that every ISpecRule in the assembly is on the list. The rules that run
   are the ones named, which serves C-5, 0001-F5 C-3 and 0001-F5 B-017;
   ISpecRule's summary that says otherwise is rewritten. No verdict changes

@@ -31,7 +31,7 @@
         "IntegrationTest",
         "Pack",
         "Restore",
-        "SpecCheck",
+        "Specht",
         "Test",
         "UnitTest",
         "VerifyTag"

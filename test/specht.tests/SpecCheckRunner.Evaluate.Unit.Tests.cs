@@ -5,15 +5,15 @@ using specht.Report;
 namespace specht.tests;
 
 /// <summary>
-/// <see cref="SpecCheckRunner.Evaluate"/> over a model built in memory and fake rules (ADR-0001 stage B as ADR-0008 amends
+/// <see cref="SpechtRunner.Evaluate"/> over a model built in memory and fake rules (ADR-0001 stage B as ADR-0008 amends
 /// it, item 0105; <c>0001-F1</c> B-004, C-9; <c>0001-F7</c> B-014): the counts come from the model, the vocabulary of the
 /// version the model's schemas keep decides which rules run, which violations are kept and how many rule ids count as
-/// evaluated, the rules run in the order given, and the violations are the ones <see cref="SpecCheckRunner.Order"/> gives.
+/// evaluated, the rules run in the order given, and the violations are the ones <see cref="SpechtRunner.Order"/> gives.
 /// The report's layouts are the manifest's, by name and in its order, each with its count (<c>0001-F6</c> B-001, B-009, C-7).
 /// No tree on disk and no container.
 /// </summary>
 [Trait("Tier", "Unit")]
-public sealed class SpecCheckRunnerEvaluateUnitTests
+public sealed class SpechtRunnerEvaluateUnitTests
 {
     /// <summary>Gets how many specifications in the epics layout, how many in the features layout and how many items a model holds.</summary>
     public static TheoryData<int, int, int> ModelSizes =>
@@ -80,7 +80,7 @@ public sealed class SpecCheckRunnerEvaluateUnitTests
         SpecModel model = ModelWithVocabulary().WithFeatures(features).WithItems(children);
 
         // When
-        var report = SpecCheckRunner.Evaluate(model, []);
+        var report = SpechtRunner.Evaluate(model, []);
 
         // Then
         (
@@ -117,7 +117,7 @@ public sealed class SpecCheckRunnerEvaluateUnitTests
             .WithFeatures(features);
 
         // When
-        var report = SpecCheckRunner.Evaluate(model, []);
+        var report = SpechtRunner.Evaluate(model, []);
 
         // Then
         report.Layouts.Should().Equal(names.Zip(counts, static (name, count) => new SpecReportLayout(name, count)), because);
@@ -137,7 +137,7 @@ public sealed class SpecCheckRunnerEvaluateUnitTests
         SpecModel model = new SpecModelFixture().WithSchemas(SpecSchemas.Load(fileSystem, "repo", new SchemaVersions([one, two])));
 
         // When
-        var report = SpecCheckRunner.Evaluate(model, []);
+        var report = SpechtRunner.Evaluate(model, []);
 
         // Then
         report.SchemaVersion.Should().Be(new SemanticVersion(0, 2, 0));
@@ -156,7 +156,7 @@ public sealed class SpecCheckRunnerEvaluateUnitTests
         List<ISpecRule> rules = [.. reportedIds.Select(static ids => new FakeRule(ids[0], ids))];
 
         // When
-        var report = SpecCheckRunner.Evaluate(model, rules);
+        var report = SpechtRunner.Evaluate(model, rules);
 
         // Then
         report.RulesEvaluated.Should().Be(expected, because);
@@ -180,10 +180,10 @@ public sealed class SpecCheckRunnerEvaluateUnitTests
         List<ISpecRule> rules = [new FakeRule("FAKE001", ["FAKE001"], first), new FakeRule("FAKE002", ["FAKE002"], second)];
 
         // When
-        var report = SpecCheckRunner.Evaluate(model, rules);
+        var report = SpechtRunner.Evaluate(model, rules);
 
         // Then
-        report.Violations.Should().Equal(SpecCheckRunner.Order([.. first, .. second]));
+        report.Violations.Should().Equal(SpechtRunner.Order([.. first, .. second]));
     }
 
     [Fact]
@@ -195,7 +195,7 @@ public sealed class SpecCheckRunnerEvaluateUnitTests
         List<ISpecRule> rules = [new FakeRule("FAKE002", ["FAKE002"], inVocabulary)];
 
         // When
-        var report = SpecCheckRunner.Evaluate(model, rules);
+        var report = SpechtRunner.Evaluate(model, rules);
 
         // Then
         report.Violations.Should().BeEmpty("the rule reports no id in the vocabulary, so the violation it would return is never asked for");
@@ -211,7 +211,7 @@ public sealed class SpecCheckRunnerEvaluateUnitTests
         List<ISpecRule> rules = [new FakeRule("FAKE001", ["FAKE001", "FAKE002"], dropped, kept)];
 
         // When
-        var report = SpecCheckRunner.Evaluate(model, rules);
+        var report = SpechtRunner.Evaluate(model, rules);
 
         // Then
         report.Violations.Should().Equal(kept);
@@ -227,7 +227,7 @@ public sealed class SpecCheckRunnerEvaluateUnitTests
         List<ISpecRule> rules = [new FakeRule("FAKE900", ["FAKE001"], fromTheFirst), new FakeRule("FAKE100", ["FAKE001"], fromTheSecond)];
 
         // When
-        var report = SpecCheckRunner.Evaluate(model, rules);
+        var report = SpechtRunner.Evaluate(model, rules);
 
         // Then
         report.Violations.Should().Equal(fromTheFirst, fromTheSecond);

@@ -58,7 +58,7 @@ NUKE drives everything. `specht.slnx` is the solution.
 ./build.sh             # Default = Compile + Test
 ./build.sh Format      # verify-only - fails on a diff
 ./build.sh Pack        # specht.tool.<version>.nupkg
-./build.sh SpecCheck   # specht, on this repository's own .spec/ tree
+./build.sh Specht   # specht, on this repository's own .spec/ tree
 ```
 
 Every target, the tier filters, and what CI actually runs:
@@ -74,7 +74,7 @@ Two projects, one direction of dependency:
   through YamlDotNet's representation model, so dates stay strings →
   `SpecSchemas` loads the frontmatter schemas and the manifest with JsonSchema.Net
   → `SpecDocument`/`SpecStructure` model the Markdown with Markdig, pipe tables
-  only → the `ISpecRule`s run → `SpecCheckRunner` collects → `SpecCheckReport`
+  only → the `ISpecRule`s run → `SpechtRunner` collects → `SpechtReport`
   carries violations and counts.
 - **`src/specht.tool`** — the Spectre.Console.Cli host. One folder per command;
   a command parses, calls the runner, and folds the report into an exit code.
@@ -247,7 +247,7 @@ commit; it is never a reason to keep the file live
 Traceability is checked deterministically, not by memory:
 
 ```sh
-./build.sh SpecCheck
+./build.sh Specht
 ```
 
 It runs the tool on this repository's own tree, through the local tool manifest,
@@ -436,7 +436,7 @@ six agents, come from `littlestechnology/.agents` through a `Skillfile` pinned i
 from the repository root, into the gitignored part of `.claude/`. That
 repository is **private**: without access, the install fails and none of those
 skills land. Everything in `.claude/skills/`, `.claude/agents/` and `.spec/`
-still works, and so do `./build.sh` and `./build.sh SpecCheck`. What is lost is
+still works, and so do `./build.sh` and `./build.sh Specht`. What is lost is
 the general guide to xUnit, Reqnroll or NUKE; this repository's own traps for
 those surfaces live in `specht-conventions`, which is tracked.
 

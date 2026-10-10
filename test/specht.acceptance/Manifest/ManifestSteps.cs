@@ -248,7 +248,7 @@ public sealed class ManifestSteps
             }
             else
             {
-                _report = SpecCheckRunner.Run(Tree.Root);
+                _report = SpechtRunner.Run(Tree.Root);
             }
         }
         catch (SpechtManifestException rejection)
@@ -380,7 +380,7 @@ public sealed class ManifestSteps
     private readonly List<string> _specifications = [];
     private SpecTree? _tree;
     private JsonObject? _manifest;
-    private SpecCheckReport? _report;
+    private SpechtReport? _report;
     private (string Stdout, string Stderr, int ExitCode)? _run;
     private SpechtManifestException? _rejection;
     private string? _defaultClaimGrammar;

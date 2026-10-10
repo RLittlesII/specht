@@ -40,8 +40,8 @@ evaluated schemas under the caller's culture, and no test had varied it.
 
 ## Claim
 
-- B-006 — `SpecCheckRunnerDeterminismIntegrationTests` (the baseline tree at a
+- B-006 — `SpechtRunnerDeterminismIntegrationTests` (the baseline tree at a
   nested root under `tr-TR` with an extra environment variable, held to the
-  golden report), and the `SpecCheckRunnerDeterminismUnitTests` § 9 names: the
+  golden report), and the `SpechtRunnerDeterminismUnitTests` § 9 names: the
   reference guard, its one pinned exemption, the invariant message under
   `tr-TR`, and the restore of the caller's culture.

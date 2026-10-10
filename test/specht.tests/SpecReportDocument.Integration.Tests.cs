@@ -14,13 +14,13 @@ namespace specht.tests;
 public sealed class SpecReportDocumentIntegrationTests
 {
     /// <summary>Gets reports of each shape a document is made from: empty, and with violations of both severities.</summary>
-    public static TheoryData<string, SpecCheckReport> Reports =>
+    public static TheoryData<string, SpechtReport> Reports =>
         new()
         {
-            { "a run that found nothing", new SpecCheckReportFixture() },
+            { "a run that found nothing", new SpechtReportFixture() },
             {
                 "a run with an error carrying an identifier and a warning on a whole file",
-                new SpecCheckReportFixture()
+                new SpechtReportFixture()
                     .WithSpecificationCount(2)
                     .WithLayouts(new SpecReportLayout("epics", 1), new SpecReportLayout("features", 1))
                     .WithItemCount(1)
@@ -64,7 +64,7 @@ public sealed class SpecReportDocumentIntegrationTests
 
     [Theory]
     [MemberData(nameof(Reports))]
-    public void AReport_WhenItsDocumentIsSerialized_ShouldValidateAgainstThePublishedReportSchema(string because, SpecCheckReport report)
+    public void AReport_WhenItsDocumentIsSerialized_ShouldValidateAgainstThePublishedReportSchema(string because, SpechtReport report)
     {
         // Given
         var path = Path.Combine(AppContext.BaseDirectory, "docs", "schema", "report.schema.json");

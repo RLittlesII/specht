@@ -40,7 +40,7 @@ summary: |
   the first one, which freezes schema version 1, is not improvised.
 
 acceptance_criteria:
-  - "B-001 — `v*` tag: `Format`, `Compile`, `Test`, `SpecCheck`, `Pack` (0083)"
+  - "B-001 — `v*` tag: `Format`, `Compile`, `Test`, `Specht`, `Pack` (0083)"
   - "B-002 — a failing target: no package, no Release (0083)"
   - "B-003 — every target passing: package pushed to GitHub Packages (0084)"
   - "B-004 — package pushed: GitHub Release created (0084)"

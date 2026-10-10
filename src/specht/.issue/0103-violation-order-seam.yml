@@ -27,7 +27,7 @@ closed: "2026-10-09"
 
 summary: |
   The order the engine reports violations in (severity descending, then
-  file, line and rule id, ordinal) is computed inline in SpecCheckRunner.Run,
+  file, line and rule id, ordinal) is computed inline in SpechtRunner.Run,
   where no unit test can reach it, so B-004 stays Partial in § 9. Expose the
   order as a function a unit test can reach, with no verdict change (C-9):
   the golden baseline test 0022 landed stays green unchanged.
@@ -44,7 +44,7 @@ decisions:
   - |
     2026-10-09, implementer's architecture pass: the order becomes
     `public static IReadOnlyList<SpecViolation> Order(IEnumerable<SpecViolation>)`
-    on `SpecCheckRunner`, the inline LINQ chain moved verbatim, and `Run`
+    on `SpechtRunner`, the inline LINQ chain moved verbatim, and `Run`
     calls it. LINQ stays because its sort is stable, and ties on all four
     keys keep collection order (C-9). No `IComparer` (no second caller;
     invites the unstable `List.Sort`) and no new type. Static under ADR-0001

@@ -61,7 +61,7 @@ decisions:
     Rejected: landing 0005 and 0006 in one pull request.
   - |
     2026-10-09, spec-author recording the repository owner's answer to OQ-6:
-    `SpecCheckReport.MigrationSummary` is removed with the assertions on its
+    `SpechtReport.MigrationSummary` is removed with the assertions on its
     text (decision 0006).
     Rejected: generalising it over the manifest's layouts; keeping it.
   - |

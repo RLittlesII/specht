@@ -7,7 +7,7 @@ namespace specht.tests;
 /// fields every violation carries (B-010).
 /// </summary>
 [Trait("Tier", "Integration")]
-public sealed class SpecCheckRunnerBaselineIntegrationTests
+public sealed class SpechtRunnerBaselineIntegrationTests
 {
     /// <summary>Gets each rule, and the root-relative prefix of each layout the baseline tree breaks it in.</summary>
     public static TheoryData<string, string> Breaks

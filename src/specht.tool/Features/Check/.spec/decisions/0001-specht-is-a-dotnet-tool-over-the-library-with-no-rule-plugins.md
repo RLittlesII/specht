@@ -49,7 +49,7 @@ a manifest may not add a rule, and no assembly is loaded at run time.
 ## Rejected
 
 **Nuke-only - `hooked`'s shape at the time.** The engine stays a project
-reference from `.build/` and `./build.sh SpecCheck` is the only entry.
+reference from `.build/` and `./build.sh Specht` is the only entry.
 
 - Reaches no other repository: adopting the model means copying the engine,
   the schemas and the target, and every copy drifts from the next. This is the

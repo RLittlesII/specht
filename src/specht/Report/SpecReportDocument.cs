@@ -6,7 +6,7 @@ namespace specht.Report;
 
 /// <summary>
 /// The report document (<c>0001-F3</c> B-005 to B-008, B-021): the shape <c>docs/schema/report.schema.json</c> publishes,
-/// made from one <see cref="SpecCheckReport"/>. A function of the report alone, so nothing in it reads the clock, the
+/// made from one <see cref="SpechtReport"/>. A function of the report alone, so nothing in it reads the clock, the
 /// machine or the environment (B-006, C-3).
 /// </summary>
 /// <param name="SchemaVersion">The schema version checked against, as <c>major.minor.patch</c>.</param>
@@ -30,7 +30,7 @@ public sealed record SpecReportDocument(
     /// <summary>Makes the document for <paramref name="report"/>.</summary>
     /// <param name="report">The run's report.</param>
     /// <returns>The document.</returns>
-    public static SpecReportDocument From(SpecCheckReport report) =>
+    public static SpecReportDocument From(SpechtReport report) =>
         new(
             report.SchemaVersion.ToString(),
             SpecSchemaSource.Embedded,

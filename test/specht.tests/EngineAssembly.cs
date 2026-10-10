@@ -59,7 +59,7 @@ public static class EngineAssembly
                 "bin",
                 configuration,
                 Path.GetFileName(output),
-                Path.GetFileName(typeof(SpecCheckRunner).Assembly.Location));
+                Path.GetFileName(typeof(SpechtRunner).Assembly.Location));
         }
     }
 

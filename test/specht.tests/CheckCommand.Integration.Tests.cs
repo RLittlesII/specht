@@ -21,19 +21,19 @@ namespace specht.tests;
 public sealed class CheckCommandIntegrationTests
 {
     /// <summary>Gets reports whose lines must come out one per violation, in the runner's order, unwrapped, then the summary.</summary>
-    public static TheoryData<string, SpecCheckReport> Reports =>
+    public static TheoryData<string, SpechtReport> Reports =>
         new()
         {
-            { "no violation prints the summary alone", new SpecCheckReportFixture() },
+            { "no violation prints the summary alone", new SpechtReportFixture() },
             {
                 "two violations keep the runner's order, and a violation with no line has no position",
-                new SpecCheckReportFixture().WithViolations(
+                new SpechtReportFixture().WithViolations(
                     new SpecViolationFixture().WithFile("b/spec.md").WithLine(9),
                     new SpecViolationFixture().WithSeverity(SpecSeverity.Warning).WithLine(0))
             },
             {
                 "a violation wider than the 80-column console is not wrapped",
-                new SpecCheckReportFixture().WithViolations(
+                new SpechtReportFixture().WithViolations(
                     new SpecViolationFixture().WithFile(string.Join('/', Enumerable.Repeat("a-long-directory-name", 10)) + "/spec.md"))
             },
         };
@@ -211,7 +211,7 @@ public sealed class CheckCommandIntegrationTests
 
     [Theory]
     [MemberData(nameof(Reports))]
-    public void AReport_WhenChecked_ShouldPrintOneUnwrappedLinePerViolationInTheRunnersOrderThenTheSummary(string because, SpecCheckReport report)
+    public void AReport_WhenChecked_ShouldPrintOneUnwrappedLinePerViolationInTheRunnersOrderThenTheSummary(string because, SpechtReport report)
     {
         // Given
         var expected = string.Join(
@@ -233,7 +233,7 @@ public sealed class CheckCommandIntegrationTests
         string ending)
     {
         // Given
-        SpecCheckReport report = new SpecCheckReportFixture().WithViolations(violation);
+        SpechtReport report = new SpechtReportFixture().WithViolations(violation);
 
         // When
         var result = Check(_ => report);
@@ -247,7 +247,7 @@ public sealed class CheckCommandIntegrationTests
     public void AReportOfSeverities_WhenChecked_ShouldExitWithTheClaimedCode(SpecSeverity[] severities, string[] args, int expected)
     {
         // Given
-        SpecCheckReport report = new SpecCheckReportFixture().WithViolations(
+        SpechtReport report = new SpechtReportFixture().WithViolations(
             [.. severities.Select(static severity => (SpecViolation)new SpecViolationFixture().WithSeverity(severity))]);
 
         // When
@@ -269,7 +269,7 @@ public sealed class CheckCommandIntegrationTests
             root =>
             {
                 checkedRoot = root;
-                return new SpecCheckReportFixture();
+                return new SpechtReportFixture();
             },
             args);
 
@@ -288,7 +288,7 @@ public sealed class CheckCommandIntegrationTests
         var violations = report.Violations.Select(static violation => violation.ToString()).ToArray();
 
         // When
-        var result = Check(SpecCheckRunner.Run, "--root", tree.Root);
+        var result = Check(SpechtRunner.Run, "--root", tree.Root);
 
         // Then
         violations.Should().HaveCountGreaterThan(1);
@@ -306,7 +306,7 @@ public sealed class CheckCommandIntegrationTests
         var report = tree.Run();
 
         // When
-        var result = Check(SpecCheckRunner.Run, "--root", tree.Root);
+        var result = Check(SpechtRunner.Run, "--root", tree.Root);
 
         // Then
         report.Violations.Should().BeEmpty();
@@ -316,7 +316,7 @@ public sealed class CheckCommandIntegrationTests
 
     [Theory]
     [MemberData(nameof(Reports))]
-    public void AReport_WhenCheckedWithJson_ShouldPrintOnlyItsDocument(string because, SpecCheckReport report)
+    public void AReport_WhenCheckedWithJson_ShouldPrintOnlyItsDocument(string because, SpechtReport report)
     {
         // Given
         var expected = SpecReportDocument.From(report).ToJson();
@@ -340,7 +340,7 @@ public sealed class CheckCommandIntegrationTests
         var document = SpecReportDocument.From(report);
 
         // When
-        var result = Check(SpecCheckRunner.Run, "--root", tree.Root, "--json");
+        var result = Check(SpechtRunner.Run, "--root", tree.Root, "--json");
 
         // Then
         report.Violations.Should().HaveCountGreaterThan(1);
@@ -364,7 +364,7 @@ public sealed class CheckCommandIntegrationTests
         var root = arrange(tree);
 
         // When
-        var result = Check(SpecCheckRunner.Run, "--root", root);
+        var result = Check(SpechtRunner.Run, "--root", root);
 
         // Then
         result.Output.Should().BeEmpty(because);
@@ -375,7 +375,7 @@ public sealed class CheckCommandIntegrationTests
     public void AHelpRequest_WhenChecked_ShouldNameTheRootAndStrictOptionsAndExitZero()
     {
         // Given
-        SpecCheckReport report = new SpecCheckReportFixture();
+        SpechtReport report = new SpechtReportFixture();
 
         // When
         var result = Check(_ => report, "--help");
@@ -385,7 +385,7 @@ public sealed class CheckCommandIntegrationTests
         result.ExitCode.Should().Be(0);
     }
 
-    private static CommandAppResult Check(Func<string, SpecCheckReport> run, params string[] args)
+    private static CommandAppResult Check(Func<string, SpechtReport> run, params string[] args)
     {
         var services = new ServiceCollection();
         services.AddSingleton(run);

@@ -2,14 +2,14 @@ using specht.Report;
 
 namespace specht;
 
-/// <summary>The outcome of one <c>SpecCheck</c> run.</summary>
+/// <summary>The outcome of one <c>Specht</c> run.</summary>
 /// <param name="SchemaVersion">The schema version the check ran under (<c>0001-F7</c> B-002).</param>
 /// <param name="SpecificationCount">How many specifications were discovered.</param>
 /// <param name="Layouts">Each manifest layout, in the manifest's order, with its specification count (<c>0001-F6</c> B-009, C-7).</param>
 /// <param name="ItemCount">How many task, test, bug and spike files sit beside them.</param>
 /// <param name="RulesEvaluated">How many <c>SPEC###</c> ids were evaluated.</param>
 /// <param name="Violations">Every violation, most severe first.</param>
-public sealed record SpecCheckReport(
+public sealed record SpechtReport(
     SemanticVersion SchemaVersion,
     int SpecificationCount,
     IReadOnlyList<SpecReportLayout> Layouts,

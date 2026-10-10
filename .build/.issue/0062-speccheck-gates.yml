@@ -1,6 +1,6 @@
 id: "0062"
 type: task
-title: Gate the hook and SpecCheck once rule settings exist
+title: Gate the hook and Specht once rule settings exist
 
 status: ready-for-architecture
 
@@ -26,7 +26,7 @@ updated: "2026-10-08"
 closed: null
 
 summary: |
-  The step C-7 names: from 0001-F5's arrival, `SpecCheck` exits with the
+  The step C-7 names: from 0001-F5's arrival, `Specht` exits with the
   command's code and the pre-commit hook calls it and refuses on an
   error-severity violation, and this repository's manifest lowers
   `SPEC060` to a warning (C-6) in the same change, so no window gates on a

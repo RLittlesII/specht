@@ -44,7 +44,7 @@ acceptance_criteria:
 decisions:
   - |
     2026-10-08, implementer at the owner's request: disable (B-011) and
-    re-grade (B-010) are one step in `SpecCheckRunner` over each rule's
+    re-grade (B-010) are one step in `SpechtRunner` over each rule's
     collected violations, read from the manifest, before the single sort.
     No chain of handlers, no decorator, no context object (ADR-0002, option
     1). A chain around `ISpecRule` waits on a third per-rule behaviour and a
@@ -52,7 +52,7 @@ decisions:
   - |
     2026-10-09, spec-author on the owner's acceptance of ADR-0004,
     superseding the 2026-10-08 entry: disable and re-grade are two
-    functions inside `SpecCheckRunner.Evaluate(SpecModel)` (0105), both
+    functions inside `SpechtRunner.Evaluate(SpecModel)` (0105), both
     reading the settings from `model.Schemas.Structure`. Selection runs over
     the rule set before evaluation, so a disabled rule is never evaluated and
     leaves the count (B-011); the severity map runs over the violations

@@ -271,7 +271,7 @@ public sealed class EngineSteps
 
     private SpecTree Tree => _tree ?? throw new InvalidOperationException("No repository root was prepared.");
 
-    private SpecCheckReport Report => _report ?? throw new InvalidOperationException("The engine has not run.");
+    private SpechtReport Report => _report ?? throw new InvalidOperationException("The engine has not run.");
 
     private IReadOnlyList<GoldenReport.Verdict> Golden => _golden ?? throw new InvalidOperationException("No golden report was read.");
 
@@ -321,7 +321,7 @@ public sealed class EngineSteps
 
     private readonly List<string> _specifications = [];
     private SpecTree? _tree;
-    private SpecCheckReport? _report;
+    private SpechtReport? _report;
     private IReadOnlyList<GoldenReport.Verdict>? _golden;
     private string? _library;
     private string? _assemblyName;

@@ -97,7 +97,7 @@ Feature: The check command
   Scenario: This repository checks itself with the tool
     Given the tool honours rule settings in the manifest
     And this repository's tree at one commit
-    When the build's SpecCheck target runs
+    When the build's Specht target runs
     Then the check runs against this repository's root
     And the target exits with the check's exit code
 
@@ -105,7 +105,7 @@ Feature: The check command
   Scenario: The build reaches the tool through the local tool manifest
     Given the tool has been published as a package
     And this repository's local tool manifest names that package
-    When the build's SpecCheck target runs
+    When the build's Specht target runs
     Then it reaches the tool through the local tool manifest
     And it does not build the tool from this repository's source
 

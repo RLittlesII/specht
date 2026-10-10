@@ -21,7 +21,7 @@ public static class GoldenReport
     /// <summary>The verdicts <paramref name="report"/> gives, in its order, in the golden report's terms.</summary>
     /// <param name="report">A run of the engine.</param>
     /// <returns>Each violation's six fields.</returns>
-    public static IReadOnlyList<Verdict> Of(SpecCheckReport report) =>
+    public static IReadOnlyList<Verdict> Of(SpechtReport report) =>
         [.. report.Violations.Select(static violation => new Verdict(
             violation.RuleId,
             violation.Severity.ToString().ToLowerInvariant(),

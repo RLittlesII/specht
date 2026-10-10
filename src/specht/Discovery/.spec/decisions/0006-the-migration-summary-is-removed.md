@@ -11,7 +11,7 @@ type: decision
 
 ## The call
 
-`SpecCheckReport.MigrationSummary` is removed, with the assertions on its
+`SpechtReport.MigrationSummary` is removed, with the assertions on its
 text. The summary and the report name each layout and its count (B-009,
 `0001-F2` B-002, `0001-F3` B-005) and say nothing about migration between
 layouts.
