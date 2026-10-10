@@ -141,13 +141,20 @@ Item 0079 built what the list below describes, and item 0080 built B-005 under i
 
 <!-- last written by: test-writer, 2026-10-09 -->
 
-- **The build has no tests (owner, 2026-10-08), and versioning is the build's.** That decision is recorded in [`0055-F2` § 8](../../ContinuousIntegration/.spec/README.md) and applies here unchanged. `versioning.feature` is not linked into `test/specht.acceptance`, and no step class or unit test exists for it. Every § 9 row is therefore `Missing`: nothing pins these claims.
-- **Mechanisms, per claim.** Read in [`version.json`](../../../version.json) and [`.config/dotnet-tools.json`](../../../.config/dotnet-tools.json). None has a test, by the owner's decision above.
+- **The build has no tests (owner, 2026-10-08), and versioning is the build's, with one exception: B-005.** The standing decision is recorded in [`0055-F2` § 8](../../ContinuousIntegration/.spec/README.md). The owner narrowed it on 2026-10-09 for B-005 only ([decision 0002](decisions/0002-b-005-has-an-executable-proof.md)). `versioning.feature` is therefore linked into `test/specht.acceptance` as `Features\package-versioning.feature`, and `PackageVersioningSteps`, scoped to this Feature's title, binds the `@B-005` scenario and no other. The file's other seven scenarios are discovered and reported skipped, their steps undefined; their § 9 rows stay `Missing`, and nothing pins those claims.
+- **How B-005 is proved.** The scenario runs against the commit the repository has checked out.
+  - `Given a commit` asks the `nbgv` tool for that commit's version: `dotnet nbgv get-version --variable NuGetPackageVersion`, from the repository root.
+  - `When the tool is packed` issues the command the `Pack` target issues, `dotnet pack specht.slnx --configuration <the configuration the test assembly was built in> --no-build`, with `--output` naming a temporary directory the scenario deletes afterwards. It does not run `./build.sh Pack`: that would start the build from inside the build's own test target and clean `.artifacts/nupkg/`. It packs what `Compile` already built, which is what `AcceptanceTest` runs after, so CI needs no `Pack` step before the tier (`0055-F2` B-004 is unchanged).
+  - `Then the package's version is the version computed for that commit` asserts the three things § 7 names: the temporary directory holds exactly one file; its name is `specht.tool.<computed>.nupkg`; and the `<version>` of the `specht.tool.nuspec` inside it is `<computed>`. The expectation is the tool's answer, never a literal, so the scenario holds on a pull request (a prerelease) and on `main` (public): both processes inherit the same `GITHUB_REF`.
+  - **Seen red.** With the two § 7 edits reverted in the working tree and nothing else changed, the scenario failed on the file name, `specht.tool.1.0.0.nupkg` where `specht.tool.0.1.10-gfc45647ca3.nupkg` was expected; restored, it passes. The revert was not committed.
+  - **Cost.** The scenario took 2.8 seconds on the machine it was written on; every acceptance run now packs once.
+- **Mechanisms, per claim.** Read in [`version.json`](../../../version.json) and [`.config/dotnet-tools.json`](../../../.config/dotnet-tools.json) and, for B-005, in [`Directory.Packages.props`](../../../Directory.Packages.props), [`Directory.Build.props`](../../../Directory.Build.props) and [`.build/Build.cs`](../../Build.cs). None but B-005 has a test, by the owner's standing decision.
   - B-001, B-002: no mechanism of their own. Nerdbank.GitVersioning derives the version from `version.json`'s `version` and the git height of the commit, so both follow from the tool, not from code here.
   - B-003, B-004: a literal setting. `publicReleaseRefSpec` names `^refs/heads/main$` and `^refs/tags/v\d+(?:\.\d+)*$` and nothing else; every other ref gets the `-g<commit>` suffix.
   - B-007: a literal setting. `release.tagName` is `v{version}`, and the local tool manifest pins `nbgv` 3.10.94 with `rollForward: false`.
   - B-008: a literal setting. `version` is `0.1`.
-  - B-005 and B-006: items 0080 and 0081; not verified here.
+  - B-005: two declarations and no code. `Directory.Packages.props` pins `Nerdbank.GitVersioning`, and `Directory.Build.props` references it from every project; the package's own `GetBuildVersion` target sets `PackageVersion`. `Build.cs` `Pack` sets the project, the configuration, the output directory and `--no-build`, and derives no version and passes none. There is no decision, derivation or mapping of this repository's beneath the claim, so it has no unit test; the scenario observes the declarations' effect directly.
+  - B-006: item 0081; not verified here.
 - **Verified by hand on 2026-10-09, for 0079.**
   - B-004, B-008: on branch `0079/nbgv-version`, `dotnet nbgv get-version` gave NuGetPackageVersion `0.1.1-g7a88c23105`.
   - B-003: with `GITHUB_ACTIONS=true` and `GITHUB_REF=refs/heads/main`, and again with `refs/tags/v0.1.1`, it gave `0.1.1`. With `refs/pull/9/merge` and `refs/heads/feature/x` it gave `0.1.1-g7a88c23105`.
@@ -155,22 +162,26 @@ Item 0079 built what the list below describes, and item 0080 built B-005 under i
   - B-002: in a throwaway clone, an empty commit on a local `main` took the version from `0.1.1` to `0.1.2`.
   - B-007: `dotnet nbgv tag` there created `v0.1.2` at HEAD, equal to the computed SimpleVersion. The clone was deleted and nothing was pushed.
   - Those results describe the code as it was then. Nothing re-checks them.
-- **Verdict.** Every claim built here rests on a literal setting in `version.json` or on Nerdbank.GitVersioning itself; there is no code in this repository beneath them to unit-test. Each is testable as it stands, the way the hand checks ran: a temporary git repository with `version.json` committed, `dotnet nbgv get-version` run under a set `GITHUB_REF`. No claim has a test because the owner decided the build needs none, not because the design prevents it.
+- **Verdict.** Every claim built here rests on a literal setting in `version.json`, a package declaration, or Nerdbank.GitVersioning itself; there is no code in this repository beneath them to unit-test. Each is testable as it stands, the way the hand checks ran: a temporary git repository with `version.json` committed, `dotnet nbgv get-version` run under a set `GITHUB_REF`. B-005 has its scenario. No other claim has a test because the owner decided the build needs none, not because the design prevents it.
+- **Hard to test, for the implementer.**
+  - `Pack` cannot be run from a test: its output directory is fixed at `.artifacts/nupkg/`, which it cleans, and it is reached only through the build. The step therefore restates the target's `dotnet pack` command. A version argument later added to `Pack` in `Build.cs` (which C-3 rules out) would not turn this scenario red.
+  - The scenario's result depends on the `nbgv` tool being restored and on full history; in a shallow clone `Given a commit` fails with the tool's own message (C-2).
+  - On a GitHub runner the pack inside the tier appends the package's cloud-build variables to `GITHUB_ENV` again (§ 7), with the values `Compile` already wrote. Not yet seen on a runner, on either operating system.
 
 ## 9. Traceability Matrix
 
-<!-- last written by: spec-author, 2026-10-08 -->
+<!-- last written by: test-writer, 2026-10-09 -->
 
-| Claim ID | Scenario                                           | Test    | Status  |
-| -------- | -------------------------------------------------- | ------- | ------- |
-| B-001    | One commit has one version everywhere              | Missing | Missing |
-| B-002    | A later commit has a higher version                | Missing | Missing |
-| B-003    | A main-branch build is a public version            | Missing | Missing |
-| B-004    | A branch build is a prerelease                     | Missing | Missing |
-| B-005    | The package carries the computed version           | Missing | Missing |
-| B-006    | A package version change leaves the schema version | Missing | Missing |
-| B-007    | The release tag is made from the computed version  | Missing | Missing |
-| B-008    | The first version line is 0.1                      | Missing | Missing |
+| Claim ID | Scenario                                           | Test                     | Status  |
+| -------- | -------------------------------------------------- | ------------------------ | ------- |
+| B-001    | One commit has one version everywhere              | Missing                  | Missing |
+| B-002    | A later commit has a higher version                | Missing                  | Missing |
+| B-003    | A main-branch build is a public version            | Missing                  | Missing |
+| B-004    | A branch build is a prerelease                     | Missing                  | Missing |
+| B-005    | The package carries the computed version           | `PackageVersioningSteps` | Covered |
+| B-006    | A package version change leaves the schema version | Missing                  | Missing |
+| B-007    | The release tag is made from the computed version  | Missing                  | Missing |
+| B-008    | The first version line is 0.1                      | Missing                  | Missing |
 
 ## 10. Lessons / Spec Deltas
 
