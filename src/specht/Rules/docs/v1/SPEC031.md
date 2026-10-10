@@ -17,7 +17,7 @@ type: rule
 
 ## Cause
 
-The rows of a Feature specification's `## 9. Traceability Matrix` table do not correspond one to one with the claims of its `## 3. Acceptance Criteria` table. The rule reports three conditions:
+The rows of the table in a Feature specification's matrix section do not correspond one to one with the claims in the table of its claims section. The two sections are the ones the manifest's `matrix` and `claims` roles name, `## 9. Traceability Matrix` and `## 3. Acceptance Criteria` in the default manifest; the messages call them § 9 and § 3 whatever their titles, and so does this page. The rule reports three conditions:
 
 | Condition                                | Line reported                 | Message                                                                                                                    |
 | ---------------------------------------- | ----------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
@@ -27,7 +27,7 @@ The rows of a Feature specification's `## 9. Traceability Matrix` table do not c
 
 A row is matched to a claim by its first cell, compared exactly after surrounding spaces are removed. Rows with an empty first cell are skipped. The claims are the § 3 ids that are well formed and counted once; an id SPEC030 reports as malformed is not a claim, so its § 9 row is reported as citing a non-claim.
 
-What the other cells of a § 9 row hold is not checked here. In particular a `Missing` test or status is not a violation of this rule: it is the honest value until a test exists. A claim's Status in § 3 is not read either, so a claim marked Withdrawn still needs its row.
+What the other cells of a § 9 row hold is not checked here. In particular a test or status of `Missing` - the manifest's `missing` marker, by default - is not a violation of this rule: it is the honest value until a test exists. A claim's Status in § 3 is not read either, so a claim marked Withdrawn still needs its row.
 
 The rule needs both sections. A specification with no § 3 or no § 9 is not reported here; SPEC010 reports the missing section.
 

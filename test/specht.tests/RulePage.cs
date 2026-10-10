@@ -9,8 +9,9 @@ namespace specht.tests;
 /// <summary>
 /// A rule page as a test reads it (<c>0001-F3</c> B-032, B-033, C-8), shared by the unit tests and the acceptance steps.
 /// The frontmatter and the metadata table come from the engine's own <see cref="SpecDocument"/>; the headings of every
-/// level come from Markdig with its frontmatter extension on, because <see cref="SpecDocument"/> keeps only the
-/// <c>## </c> sections and reads a frontmatter block's closing delimiter as a heading underline.
+/// level, a heading nested in a list or a quote included, come from Markdig with its frontmatter extension on, because
+/// <see cref="SpecDocument"/> keeps only the <c>## </c> sections and reads a frontmatter block's closing delimiter as a
+/// heading underline.
 /// </summary>
 internal sealed class RulePage
 {
@@ -61,7 +62,7 @@ internal sealed class RulePage
     public static RulePage Read(int version, string id, string text)
     {
         var headings = Markdown.Parse(text, Pipeline)
-            .OfType<HeadingBlock>()
+            .Descendants<HeadingBlock>()
             .Select(static heading => ($"{new string('#', heading.Level)} {Flatten(heading)}", heading.Line))
             .ToList();
 

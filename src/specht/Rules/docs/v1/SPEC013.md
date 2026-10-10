@@ -17,7 +17,7 @@ type: rule
 
 ## Cause
 
-The manifest, `.spec/schema/spec-structure.schema.json`, names under `tables` the sections that must carry a table and the headers each table has. A Feature specification has such a section whose table does not match. The rule reports two conditions, both at the line of the section's heading:
+The manifest, `.spec/schema/spec-structure.schema.json`, gives under `tables` the headers a section's table must have. Each entry is keyed by a role, and the manifest's `roles` give the title of the section that role is. A Feature specification has such a section whose table does not match. The rule reports two conditions, both at the line of the section's heading:
 
 | Condition                                  | Message                                                                            |
 | ------------------------------------------ | ---------------------------------------------------------------------------------- |
@@ -28,11 +28,11 @@ The manifest, `.spec/schema/spec-structure.schema.json`, names under `tables` th
 
 The table read is the first pipe table after the section's heading and before the next `## ` heading. Its header cells must equal the contracted ones exactly: the same text, the same case, the same number of columns, in the same order. Text in a code span counts as its content, so `` `Status` `` reads as `Status`.
 
-A specification that lacks the section altogether is not reported here; the missing section is SPEC010's. Under the manifest this schema version ships, one section is contracted: `9. Traceability Matrix`, with the headers `Claim ID`, `Scenario`, `Test` and `Status`.
+A specification that lacks the section altogether is not reported here; the missing section is SPEC010's. The default manifest contracts one table, the `matrix` role's: `roles` names that section `9. Traceability Matrix`, and `tables` gives it the headers `Claim ID`, `Scenario`, `Test` and `Status`. `{title}` in the message is the title `roles` gives, so a manifest that names another section for the role is checked, and reported, under that title.
 
 ## Rule description
 
-The rules that check coverage read a table by position: the first cell of each row of § 9 is the claim the row is for (SPEC031), and a `Missing` cell is what an approved specification may not carry (SPEC060). Fixed headers are what make the columns mean the same thing in every specification, to the tool and to a reader comparing two of them.
+The rules that check coverage read a table by position: the first cell of each row of the traceability matrix is the claim the row is for (SPEC031), and a cell holding the manifest's `missing` marker is what an approved specification may not carry (SPEC060). Fixed headers are what make the columns mean the same thing in every specification, to the tool and to a reader comparing two of them.
 
 ### Example violation
 

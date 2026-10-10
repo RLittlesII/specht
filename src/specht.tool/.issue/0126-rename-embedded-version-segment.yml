@@ -32,6 +32,12 @@ summary: |
   layout lines in the skills and AGENTS.md, the README badge, and
   0001-F4 § 7 and § 8, which state `v<n>`.
 
+  The rule pages follow the same answer (0001-F3 A-4, decision 0003):
+  the page folder `src/specht/Rules/docs/v<n>/`, the `rules/v<n>/`
+  resource name the engine embeds them under, and the Schema version
+  each page's metadata gives (0001-F3 B-033), with 0001-F3 § 7 and § 8,
+  which state `v1`.
+
   Blocked on the owner: OQ-22. Depends on 0120, which converts the
   version set this names and closes without the answer. It must land
   before the first publish, which freezes the bytes (decision 0002).
@@ -45,6 +51,8 @@ acceptance_criteria:
   - "0001-F4 B-005 — the `$id` a written schema carries names the version in the form OQ-22 answers"
   - "0001-F7 C-6 — every embedded frontmatter schema's `$id` in that form"
   - "0001-F4 A-2 — one embedded folder for each version, named in that form"
+  - "0001-F3 A-4 — the rule-page folder and its `rules/` resource name carry the same segment as the schema folder"
+  - "0001-F3 B-033 — each page's Schema version is the version in the form 0120 converts to"
   - "0001-F4 § 9 carries a row naming a test for B-005 in that form."
 
 decisions:
@@ -54,6 +62,11 @@ decisions:
     every item behind it do not wait on a naming answer. The owner's plan
     named no such item; the cut is spec-author's. Status blocked: OQ-22
     is open. Rejected: leaving it in 0120 "not done until" OQ-22.
+  - |
+    2026-10-09, spec-author, at the spec-reviewer's request (0001-F3
+    § 12, round 7): the rule-page folder, its resource name and the
+    pages' Schema version added to the scope, since 0001-F3 A-4 ties
+    them to OQ-22. No edge added.
 
 out_of_scope:
   - "Converting the pin, the version set and the report to semver — 0120."

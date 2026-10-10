@@ -17,13 +17,21 @@ type: rule
 
 ## Cause
 
-A Feature specification's frontmatter has `spec_status: approved`, and a row of its `## 9. Traceability Matrix` table has a cell that reads `Missing`. The rule reports once for each such row, at the row's line, with the message:
+A Feature specification's `spec_status` is the approved value, and a row of the table in its matrix section has a cell that is the missing marker. All three are read from the manifest, `.spec/schema/spec-structure.schema.json`:
+
+| What               | Manifest key       | Default manifest         |
+| ------------------ | ------------------ | ------------------------ |
+| The approved value | `markers.approved` | `approved`               |
+| The missing marker | `markers.missing`  | `Missing`                |
+| The matrix section | `roles.matrix`     | `9. Traceability Matrix` |
+
+The message is fixed text: it says `'approved'`, `§ 9` and `'Missing'` whatever the manifest gives, and this page uses the default values from here on. The rule reports once for each such row, at the row's line, with the message:
 
 `spec_status is 'approved' while § 9 still carries a 'Missing' cell`
 
 The rule applies only when `spec_status` is exactly `approved`. A specification with any other status - `draft`, `in-review`, `superseded` - may carry any number of `Missing` cells and is never reported.
 
-A cell counts when its whole text, with surrounding spaces removed, is the word `Missing` with that capital. Any column of the row can hold it; a row with `Missing` in two columns is reported once. A cell that only mentions the word in a longer note does not count. The table read is the first table of § 9, and a specification with no § 9 is not reported here.
+A cell counts when its whole text, with surrounding spaces removed, is exactly the marker, capitals included. Any column of the row can hold it; a row with `Missing` in two columns is reported once. A cell that only mentions the word in a longer note does not count. The table read is the first table of § 9, and a specification with no § 9 is not reported here.
 
 ## Rule description
 

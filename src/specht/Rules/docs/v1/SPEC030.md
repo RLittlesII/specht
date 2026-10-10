@@ -17,14 +17,14 @@ type: rule
 
 ## Cause
 
-The first cell of a row in a Feature specification's `## 3. Acceptance Criteria` table is not a usable claim id. The rule reports two conditions, each at the line of the row:
+The first cell of a row in the table of a Feature specification's claims section is not a usable claim id. The claims section is the one the manifest's `claims` role names, `## 3. Acceptance Criteria` in the default manifest; the messages call it § 3 whatever its title, and so does this page. The rule reports two conditions, each at the line of the row:
 
 | Condition                                           | Message                                                                                    |
 | --------------------------------------------------- | ------------------------------------------------------------------------------------------ |
 | The id does not match the claim id grammar          | `claim id '{id}' does not match {grammar} - claim ids are permanent, so the form is fixed` |
 | The id is the same as that of an earlier row in § 3 | `claim '{id}' is declared twice in § 3 (also at line {line})`                              |
 
-`{grammar}` is the `claim` pattern under `identifiers` in the manifest, `.spec/schema/spec-structure.schema.json`. In the manifest this schema version ships it is `^B-[0-9]{3}[a-z]?$`: `B-`, three digits, and an optional lowercase letter, such as `B-007` or `B-007a`.
+`{grammar}` is the `claim` pattern under `identifiers` in the manifest, `.spec/schema/spec-structure.schema.json`. In the default manifest it is `^B-[0-9]{3}[a-z]?$`: `B-`, three digits, and an optional lowercase letter, such as `B-007` or `B-007a`.
 
 The table read is the first table in § 3. A row whose first cell is empty is skipped. Surrounding spaces are ignored, and an id written as a code span reads as its content. Uniqueness is per specification: two Features may each have a `B-001`.
 

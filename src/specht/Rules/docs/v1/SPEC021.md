@@ -17,7 +17,7 @@ type: rule
 
 ## Cause
 
-The companion `.feature` file of a Feature specification carries a claim tag whose id is not the first cell of any row in the specification's `## 3. Acceptance Criteria` table. The rule reports once for each such tag, against the `.feature` file at the tag's line, with the message:
+The companion `.feature` file of a Feature specification carries a claim tag whose id is not the first cell of any row in the table of the specification's claims section. The claims section is the one the manifest's `claims` role names, `## 3. Acceptance Criteria` in the default manifest; the message calls it § 3 whatever its title, and so does this page. The rule reports once for each such tag, against the `.feature` file at the tag's line, with the message:
 
 `scenario tag '@{id}' does not resolve to a claim in § 3 of {specification}`
 

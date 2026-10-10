@@ -31,7 +31,7 @@ The order check compares the contracted sections that are present, so a missing 
 
 ## Rule description
 
-A specification is read by position as much as by name: claims are cited as § 3, constraints as § 4, the traceability matrix as § 9, and the rules that check those sections find them by their exact titles. One fixed set of sections in one fixed order is what lets a reader, a reviewer and the tool open any specification and find the same thing in the same place.
+A specification is read by position as much as by name: claims are cited as § 3, constraints as § 4, the traceability matrix as § 9, and the rules that check those sections find each by the title the manifest's `roles` give it. One fixed set of sections in one fixed order is what lets a reader, a reviewer and the tool open any specification and find the same thing in the same place.
 
 The contracted sections are the twelve numbered ones, `1. Business Goal` to `12. Sign-off`, then `Tasks` and `Scoring`. The manifest's `sections` list is the authority.
 
