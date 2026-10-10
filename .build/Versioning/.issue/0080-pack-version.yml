@@ -2,7 +2,7 @@ id: "0080"
 type: task
 title: Pack the computed version into the package
 
-status: in-progress
+status: done
 
 priority: high
 risk: 1
@@ -22,7 +22,7 @@ claims:
 
 created: "2026-10-08"
 updated: "2026-10-09"
-closed: null
+closed: "2026-10-09"
 
 summary: |
   `Pack` (0055-F1 B-009) takes nbgv's version, so the file name and the
