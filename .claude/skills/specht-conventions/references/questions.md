@@ -57,6 +57,10 @@ From brief § 2, § 5 and § 6, as of 2026-10-07:
   line, identifier, message), counts, layouts, and the schema version checked
   against, with a published JSON Schema in this repository. `--explain SPEC031`
   prints the rule's full text.
+- **The command line stays the agent-facing contract of record.** `--json`
+  plus `--explain` is where an agent's answer is defined; the Model Context
+  Protocol is a second door onto the same answers and adds nothing the command
+  line cannot say (owner, 2026-10-09; epic `0132`).
 - **Every path in every output is repository-relative.** An absolute path
   anywhere is a defect.
 - **The tool never writes into a consumer's tree** except through `init`,
