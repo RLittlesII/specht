@@ -69,23 +69,26 @@ specht upgrade [--root <dir>]
 specht --explain SPEC031
 ```
 
-| Command                 | Does                                                                             |
-| ----------------------- | -------------------------------------------------------------------------------- |
-| `specht`                | Check the tree. One MSBuild-shaped line per violation, then a summary.           |
-| `--json`                | Print the report document instead, with what each rule expected.                 |
-| `--report <path>`       | Also write the JSON report to a path.                                            |
-| `--strict`              | Fail on any violation, of any severity.                                          |
-| `specht init`           | Write the schema set and templates into `<root>/.spec/`. Never overwrites.       |
-| `specht upgrade`        | Move `.spec/schema/` and `.spec/templates/` to the next version; print the diff. |
-| `specht --explain <id>` | Print a rule's full text.                                                        |
+| Command                 | Does                                                                                          |
+| ----------------------- | --------------------------------------------------------------------------------------------- |
+| `specht`                | Check the tree. One MSBuild-shaped line per violation, then a summary.                        |
+| `--json`                | Print the report document instead, with what each rule expected.                              |
+| `--report <path>`       | Also write the JSON report to a path.                                                         |
+| `--strict`              | Fail on any violation, of any severity.                                                       |
+| `specht init`           | Write the schema set and templates into `<root>/.spec/`. Never overwrites.                    |
+| `specht upgrade`        | Bring `.spec/schema/` and `.spec/templates/` to the pinned version; list each file rewritten. |
+| `specht --explain <id>` | Print a rule's full text.                                                                     |
 
 One file configures it: `.spec/schema/spec-structure.schema.json`, which pins
-`schemaVersion`.
+`schemaVersion` - a `major.minor.patch` schema version, numbered apart from the
+tool's own. A patch changes no verdict, a minor only accepts more, and a major
+can fail a tree that passed. The pin is exact; a manifest with no
+`schemaVersion` is `0.1.0`.
 
 The schema is per repository however the tool is installed. `specht` reads the
 manifest from the root it is given, embeds every schema version it ships, and
-checks with the pinned one, so one install can check a v1 repository and a v2
-one. A pin the tool does not ship exits `3`, naming the pin and the versions it
+checks with the pinned one, so one install can check a `0.1.0` repository and
+a `1.0.0` one. A pin the tool does not ship exits `3`, naming the pin and the versions it
 ships. Install through the local tool manifest anyway: it pins the tool's
 version beside `schemaVersion`, so CI and every clone run the same release. A
 global install is not the documented path.

@@ -66,3 +66,16 @@ the frontmatter schemas: they are the consumer's own. It prints each one it
 skipped and why, and still rewrites and lists the templates. Considered and
 not chosen: rewriting them anyway (overwrites the consumer's schemas), and
 refusing the upgrade (the templates could not move either).
+
+**Narrowed 2026-10-09 by the repository owner (decision 0005).** `upgrade` no
+longer moves a root from `n` to `n+1`. It rewrites the frontmatter schemas and
+the templates to match the version the manifest pins, up or down, and never
+changes `schemaVersion`; a separate pin command moves the pin and changes
+nothing else. In the manifest, `upgrade` still adds only the keys the pinned
+version introduces that the manifest lacks, and every present key keeps its
+value; what it does with a key the pinned version does not define, after a
+move down, is `0001-F7` OQ-14. The "half at `n` and half at `n+1`" reason
+under Rejected now reads as half at one version and half at another; C-3,
+which it cited, is retired. Considered and not chosen: keeping `upgrade` as the
+command that moves the pin (it would do two things, and could not move down
+without a target argument, which C-3 ruled out).

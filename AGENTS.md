@@ -91,14 +91,21 @@ B-004, decision 0004). Until that step the engine is exactly `hooked`'s, renamed
 A consumer configures the tool with one file: `.spec/schema/spec-structure.schema.json`,
 the manifest. It carries `schemaVersion` and will carry the roles above. Beside
 it sit the three frontmatter schemas (`feature-spec`, `task`, `epic`) and
-`.spec/templates/`. `specht init` writes all of them from the embedded copies;
-`specht upgrade` moves them to the next version and prints what changed. `init`
-never overwrites a file that exists. `upgrade` rewrites the schema and template
-files and, in the manifest, changes only `schemaVersion` and the keys the next
-version adds, so consumer settings survive (`0001-F7` decision 0001).
+`.spec/templates/`. `specht init` writes all of them from the embedded copies
+and never overwrites a file that exists.
+
+`schemaVersion` is a `major.minor.patch` schema version, numbered apart from
+the `specht.tool` package version; the first is `0.1.0`, and a manifest with no
+key means it. A patch changes no tree's verdict, a minor only accepts more, and
+a major can fail a tree that passed. A pin is exact. A pin command moves it to
+any shipped version, up or down, and changes nothing else; `specht upgrade`
+then rewrites the schema and template files to match the pin and prints what
+changed. In the manifest `upgrade` adds only the keys the pinned version
+defines that are missing, so consumer settings survive (`0001-F7` decisions
+0001 and 0005).
 
 This repository's own `.spec/schema/` and `.spec/templates/` are that live copy
-— the same bytes as the embedded `v1` for the tool-owned files (the three
+— the same bytes as the newest embedded version for the tool-owned files (the three
 frontmatter schemas and the templates), and the same manifest on its tool-owned
 keys, with rule settings and other consumer configuration excluded; a test says
 so (`0001-F4` B-004).
@@ -116,22 +123,27 @@ Stdout: one MSBuild-shaped line per violation (`path(line): error SPEC031: …`)
 then the summary lines. `--json` replaces the stream with the report document;
 `--report` writes the same JSON to a path. Exit `0` clean, `1` violations (any
 violation under `--strict`), `2` missing root or manifest, `3` invalid manifest,
-`4` a thing named on the command line not found (such as an `--explain` rule id).
+`4` a thing named on the command line not found (such as an `--explain` rule id
+or a schema version to pin).
+
+A command that lists the shipped schema versions and a command that pins one
+are specified and not yet named (`0001-F7` B-039 to B-049, OQ-11).
 
 ## Invariants
 
 - **Never an absolute path** in any output, report, log line, or test fixture
   (brief § 9). Paths are relative to the root the tool was given.
 - **Never a write into a consumer's tree** except through `init`, `upgrade`,
-  the caller-named `--report` file and, from epic `0101`, `format`, which only
-  moves whole table rows and frontmatter keys (brief § 9; `0101-F5` decision
-  0001). `init` never overwrites.
+  the pin command, which changes only `schemaVersion` in the manifest
+  (`0001-F7` decision 0005), the caller-named `--report` file and, from epic
+  `0101`, `format`, which only moves whole table rows and frontmatter keys
+  (brief § 9; `0101-F5` decision 0001). `init` never overwrites.
 - **Deterministic and offline.** The check never touches the network and never
   calls GitHub; only `init` and `upgrade` may fetch, and only an upstream
   schema source the manifest records (`0001-F7` decision 0004). The same tree
   gives the same report. `generatedAtUtc` is not in the report for this reason.
 - **The rule vocabulary is fixed per schema version.** A new `SPEC###` is a new
-  schema version, after brief § 8 step 6.
+  major schema version (`0001-F7` C-11), after brief § 8 step 6.
 
 ## Specification-Driven Development
 
