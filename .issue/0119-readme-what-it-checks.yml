@@ -21,7 +21,7 @@ spec: null
 claims: []
 
 created: "2026-10-09"
-updated: "2026-10-09"
+updated: "2026-10-10"
 closed: "2026-10-09"
 
 summary: |
@@ -33,7 +33,7 @@ summary: |
 
   The section states only what the code does today. Claim tags in a
   `.feature` file are still read as `@B-nnn` whatever `identifiers.claim`
-  says; item 0118 builds the configurable tag form and refreshes the
+  says; item 0134 builds the configurable tag form and refreshes the
   README's default-manifest block when the tag keys land.
 
 acceptance_criteria:
@@ -75,7 +75,7 @@ decisions:
     `legacy` from the default manifest."
 
 out_of_scope:
-  - Building the configurable claim tag form and case - 0118.
-  - Refreshing the default-manifest block when the tag keys land - 0118.
+  - Building the configurable claim tag form and case - 0134.
+  - Refreshing the default-manifest block when the tag keys land - 0134.
   - README.md § Usage rows for commands and options that do not ship yet.
   - Changing any claim, constraint or rule.

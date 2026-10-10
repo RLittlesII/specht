@@ -41,6 +41,18 @@ Feature: init
     When init runs against it
     Then the manifest written has a task grammar with no epic part
 
+  @B-023 @boundary
+  Scenario Outline: Init writes no epic schema beside a manifest declaring no epic grammar
+    Given a root directory whose schema folder holds a manifest pinning the newest version the tool ships and declaring no epic grammar
+    And no other schema or template file beside it
+    When init runs against it <with or without> epics
+    Then the schema folder holds no epic frontmatter schema
+
+    Examples:
+      | with or without |
+      | with            |
+      | without         |
+
   @B-002 @boundary
   Scenario: Init with epics never adds the epic grammar to an existing manifest
     Given a root directory whose schema folder holds a manifest declaring no epic grammar
@@ -107,14 +119,14 @@ Feature: init
 
   @B-010
   Scenario: Init writes what is missing beside an existing file
-    Given a root directory whose schema folder holds a manifest pinning the newest version the tool ships
+    Given a root directory whose schema folder holds a manifest pinning the newest version the tool ships and declaring the epic grammar
     And no other schema or template file beside it
     When init runs against it
     Then the seven other files are written
 
   @B-011
   Scenario: Init succeeds when some files already exist
-    Given a root directory whose schema folder holds a manifest pinning the newest version the tool ships
+    Given a root directory whose schema folder holds a manifest pinning the newest version the tool ships and declaring the epic grammar
     And no other schema or template file beside it
     When init runs against it
     Then the exit code is 0

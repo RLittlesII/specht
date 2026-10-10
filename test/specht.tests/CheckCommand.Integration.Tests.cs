@@ -174,6 +174,15 @@ public sealed class CheckCommandIntegrationTests
                 3
             },
             {
+                "a manifest whose exclusion entry has a slash inside it and no leading slash (0001-F5 B-021, B-022, B-023)",
+                static tree =>
+                {
+                    tree.WriteRaw(SpecManifest.RelativePath, "{ \"exclusions\": [\"build/output\"] }");
+                    return tree.Root;
+                },
+                3
+            },
+            {
                 "a manifest pinning a schema version the tool does not ship (0001-F7 B-003)",
                 static tree =>
                 {

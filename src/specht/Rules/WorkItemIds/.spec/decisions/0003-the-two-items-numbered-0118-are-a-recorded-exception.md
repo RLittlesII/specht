@@ -96,3 +96,14 @@ inside the two item files" was put to the owner and rejected by the owner.
 The key's name, an entry's exact shape and where a stale-entry finding sits
 stay the author's proposal (`0101-F8` OQ-5, OQ-9). The sections above stand
 as written, and nothing is reversed.
+
+**Reversed in part 2026-10-10 by the repository owner (recorded on work item `0128`); recorded by spec-author.**
+Asked whether to reverse this decision and renumber the claim-tags item, or
+keep both items as the recorded exception, the owner answered "renumber".
+The claim-tags item is now
+`src/specht/Manifest/.issue/0134-configurable-claim-tags.yml`; the
+continuous-integration item keeps `0118`. "Both stay" and "neither is
+renumbered" no longer hold, and this repository has no pair to record. The
+owner was not asked about the mechanism: whether the shared-id record stays
+is `0101-F8` OQ-14, open, and decision 0007 is not changed. The sections
+above stand as the record of 2026-10-09.

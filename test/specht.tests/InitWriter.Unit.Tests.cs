@@ -6,8 +6,8 @@ using specht.tool.Features.Init;
 namespace specht.tests;
 
 /// <summary>
-/// The init writer over an in-memory file system (<c>0001-F4</c> B-001, B-003, B-006, B-008; C-1, C-3, C-4): which shipped
-/// version it writes, where each embedded name lands, and the choice between written and skipped.
+/// The init writer over an in-memory file system (<c>0001-F4</c> B-001, B-003, B-006, B-008, B-010; C-1, C-3, C-4): which
+/// shipped version it writes, where each embedded name lands, and the choice between written and skipped, file by file.
 /// </summary>
 [Trait("Tier", "Unit")]
 public sealed class InitWriterUnitTests
@@ -94,6 +94,32 @@ public sealed class InitWriterUnitTests
         // Then
         listing.Should().Equal((".spec/templates/adr.md", true), (".spec/templates/feature.md", false));
         fileSystem.File.ReadAllText(present).Should().Be("# Local edits\n");
+    }
+
+    [Fact]
+    public async Task SomeFilesPresentAndOthersAbsent_WhenWritten_ShouldWriteEachAbsentOneWithItsShippedBytes()
+    {
+        // Given
+        var present = Path.Combine(Root, ".spec", "templates", "decision.md");
+        var fileSystem = new MockFileSystem(new Dictionary<string, MockFileData> { [present] = new("# Local edits\n") });
+        var shippingCopy = new Dictionary<string, byte[]>
+        {
+            ["templates/v1/adr.md"] = "# Shipped adr\n"u8.ToArray(),
+            ["templates/v1/decision.md"] = "# Shipped decision\n"u8.ToArray(),
+            ["templates/v1/feature.md"] = "# Shipped feature\n"u8.ToArray(),
+            ["schema/v1/task.frontmatter.schema.json"] = "{}\n"u8.ToArray(),
+        };
+
+        // When
+        await new InitWriter(shippingCopy, fileSystem).Write(Root, CancellationToken.None);
+
+        // Then
+        foreach (var (name, bytes) in shippingCopy.Where(static entry => entry.Key != "templates/v1/decision.md"))
+        {
+            var absent = Path.Combine([Root, ".spec", .. name.Replace("/v1/", "/", StringComparison.Ordinal).Split('/')]);
+            fileSystem.File.Exists(absent).Should().BeTrue($"{name} was absent");
+            fileSystem.File.ReadAllBytes(absent).Should().Equal(bytes, name);
+        }
     }
 
     [Theory]

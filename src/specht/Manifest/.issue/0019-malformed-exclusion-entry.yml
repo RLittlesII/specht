@@ -2,7 +2,7 @@ id: "0019"
 type: task
 title: Reject an exclusion entry with an inner slash
 
-status: ready-for-architecture
+status: done
 
 priority: high
 risk: 1
@@ -21,8 +21,8 @@ claims:
   - B-021
 
 created: "2026-10-08"
-updated: "2026-10-08"
-closed: null
+updated: "2026-10-10"
+closed: "2026-10-10"
 
 summary: |
   An exclusion entry that has a `/` inside it but does not begin with one is

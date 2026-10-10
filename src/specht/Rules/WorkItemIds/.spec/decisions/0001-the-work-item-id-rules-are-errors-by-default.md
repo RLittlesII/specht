@@ -59,3 +59,10 @@ the change that delivers the rules (A-7). Taken.
 ## Reversal
 
 None.
+
+**Noted 2026-10-10 by spec-author.** Nothing here is reversed, and the
+sections above stand as written. The example under "Rejected" is past: the
+repository owner had one of the two items numbered `0118` renumbered `0134`
+(decision 0003 § Reversal), so this repository holds no doubled id and has
+no pair to record (A-7). The cost named there still falls on any repository
+that pins the version with a doubled id.
