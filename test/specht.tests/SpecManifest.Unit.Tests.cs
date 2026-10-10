@@ -5,8 +5,8 @@ using AwesomeAssertions;
 namespace specht.tests;
 
 /// <summary>
-/// The manifest loader over an in-memory file system (0001-F5 B-001, B-002, B-003, B-008, B-012, B-015, B-019, B-020, B-039,
-/// B-040, B-041; 0001-F2 B-005, B-006, B-007): what it rejects and as which failure, what it ignores, and what it fills from the
+/// The manifest loader over an in-memory file system (0001-F5 B-001, B-002, B-003, B-008, B-012, B-015, B-019, B-020, B-021,
+/// B-039, B-040, B-041; 0001-F2 B-005, B-006, B-007): what it rejects and as which failure, what it ignores, and what it fills from the
 /// default manifest.
 /// </summary>
 [Trait("Tier", "Unit")]
@@ -488,6 +488,60 @@ public sealed class SpecManifestUnitTests
 
         // Then
         load.Should().ThrowExactly<SpechtManifestException>().Which.Message.Should().Contain(key);
+    }
+
+    [Theory]
+    [InlineData("build/output")]
+    [InlineData("a/b/c")]
+    [InlineData("build/")]
+    public void AManifestWhoseExclusionEntryHasASlashInsideItAndNoLeadingSlash_WhenLoaded_ShouldRejectItNamingTheEntry(string entry)
+    {
+        // Given
+        var manifest = DefaultManifest();
+        manifest["exclusions"] = new JsonArray(entry);
+        var fileSystem = Holding(manifest);
+
+        // When
+        var load = () => SpecManifest.Load(fileSystem, Root);
+
+        // Then
+        load.Should().ThrowExactly<SpechtManifestException>().Which.Message.Should().Contain($"'{entry}'");
+    }
+
+    [Theory]
+    [InlineData("bin")]
+    [InlineData("/.spec")]
+    [InlineData("/docs/generated")]
+    public void AManifestWhoseExclusionEntryIsANameOrBeginsWithASlash_WhenLoaded_ShouldAcceptIt(string entry)
+    {
+        // Given
+        var manifest = DefaultManifest();
+        manifest["exclusions"] = new JsonArray(entry);
+        var fileSystem = Holding(manifest);
+
+        // When
+        var load = () => SpecManifest.Load(fileSystem, Root);
+
+        // Then
+        load.Should().NotThrow();
+    }
+
+    [Fact]
+    public void AManifestWithTwoMalformedExclusionEntries_WhenLoaded_ShouldRejectItOnceNamingBothInTheManifestsOrder()
+    {
+        // Given
+        string[] faults = ["zeta/output", "alpha/output"];
+        var manifest = DefaultManifest();
+        manifest["exclusions"] = new JsonArray("zeta/output", "bin", "alpha/output");
+        var fileSystem = Holding(manifest);
+
+        // When
+        var load = () => SpecManifest.Load(fileSystem, Root);
+
+        // Then
+        var message = load.Should().ThrowExactly<SpechtManifestException>().Which.Message;
+        var positions = faults.Select(fault => message.IndexOf($"'{fault}'", StringComparison.Ordinal)).ToList();
+        positions.Should().NotContain(-1, message).And.BeInAscendingOrder(message);
     }
 
     [Fact]

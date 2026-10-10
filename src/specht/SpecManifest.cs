@@ -28,7 +28,8 @@ public static class SpecManifest
     /// <exception cref="SpechtManifestException">
     /// The manifest carries a key the engine does not know, a <c>schemaVersion</c> that is not an integer of at least 1, a
     /// role naming a title <c>sections</c> does not list, a <c>tables</c> key that is not a role, a marker whose text is empty,
-    /// or an empty <c>taskFiles</c>, <c>epicFiles</c> or <c>companionFiles</c> list.
+    /// an empty <c>taskFiles</c>, <c>epicFiles</c> or <c>companionFiles</c> list, or an <c>exclusions</c> entry with a
+    /// <c>/</c> inside it and no leading <c>/</c>.
     /// </exception>
     public static SpecStructure Load(IFileSystem fileSystem, string root)
     {
@@ -108,6 +109,10 @@ public static class SpecManifest
                 }
                     .Where(static list => list.Entries.Count == 0)
                     .Select(static list => $"the list '{list.Key}' is empty"))
+            .Concat(
+                structure.Discovery.Exclusions
+                    .Where(static entry => entry.Contains('/') && !entry.StartsWith('/'))
+                    .Select(static entry => $"the exclusion '{entry}' has a '/' inside it and no leading '/'"))
             .ToList();
 
         if (faults.Count > 0)
