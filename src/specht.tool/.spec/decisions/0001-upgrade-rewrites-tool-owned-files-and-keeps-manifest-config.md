@@ -79,3 +79,13 @@ under Rejected now reads as half at one version and half at another; C-3,
 which it cited, is retired. Considered and not chosen: keeping `upgrade` as the
 command that moves the pin (it would do two things, and could not move down
 without a target argument, which C-3 ruled out).
+
+**Narrowed 2026-10-09 by the repository owner (decision 0006).** "Every file
+under `.spec/templates/`" now reads as every template the pinned version
+ships that the manifest does not name as the consumer's. `upgrade` does not
+write a template the manifest names, prints each one it skipped and why, and
+never creates, modifies or deletes a template file the pinned version does
+not ship. A hand edit to a template the manifest does not name is still
+overwritten. Considered and not chosen: one switch for all the templates,
+ownership inferred from the on-disk schema source, and skipping whatever was
+edited by hand, which this decision rejected above.

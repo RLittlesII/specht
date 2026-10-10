@@ -6,13 +6,13 @@ status: ready-for-architecture
 
 priority: high
 risk: 3
-rank: 76
+rank: 81
 
 parent: "0041"
 children: []
 
 depends_on: ["0045"] # extends the rewrite 0045 performs
-blocks: ["0094"]
+blocks: ["0094", "0131"]
 spikes: []
 
 spec: src/specht.tool/.spec/README.md
