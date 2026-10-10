@@ -1,10 +1,10 @@
 ---
-title: "Decision 0003: The claim tag case setting is how a tag reads"
+title: "Decision 0005: The claim tag case setting is how a tag reads"
 description: "A manifest may declare that claim tags are read ignoring letter case; that is where SPEC021 looks, within C-7, because what the rule asserts - every claim tag resolves to a claim in the claims section - does not change"
 type: decision
 ---
 
-# Decision 0003: The claim tag case setting is how a tag reads
+# Decision 0005: The claim tag case setting is how a tag reads
 
 **Date:** 2026-10-09
 **Decided by:** spec-author, on the owner's direction of 2026-10-09 that a
@@ -15,16 +15,16 @@ is the owner's to overturn.
 ## The call
 
 The manifest carries two values for claim tags: a tag form, literal text around
-one `{claim}` placeholder (B-024), and a case setting saying whether a tag is
-read in exact case or ignoring letter case (B-025). Both are within C-7: each
+one `{claim}` placeholder (B-036), and a case setting saying whether a tag is
+read in exact case or ignoring letter case (B-037). Both are within C-7: each
 says how a tag in the companion reads, and neither changes what `SPEC021`
-asserts. The limit is C-10: the case setting reaches the reading of a tag and
+asserts. The limit is C-12: the case setting reaches the reading of a tag and
 nothing else, so a claim id in § 3 and § 9 is still matched by the claim grammar
 as written.
 
 Ignoring case is an ordinal, culture-invariant fold: the same tag resolves to
 the same claim on every machine and under every locale, which the determinism
-invariant requires (brief § 9, C-10).
+invariant requires (brief § 9, C-12).
 
 The default manifest declares `@{claim}` and exact case, which is what the
 engine does today, so the baseline verdicts hold (C-4, B-016).
@@ -52,7 +52,7 @@ resolve to `B-001`.
 
 - **Opening an open question and writing no claim.** The owner had already
   chosen the case setting; only its fit with C-7 was unjudged. Cost of not
-  asking: if the owner reads C-7 more strictly, B-025 is withdrawn and its id
+  asking: if the owner reads C-7 more strictly, B-037 is withdrawn and its id
   retired.
 - **Case-insensitive claim ids everywhere.** That changes what `SPEC030` and
   `SPEC031` accept and how § 9 pairs with § 3, which is rule logic (C-7, § 5
@@ -70,8 +70,8 @@ is satisfied by one.
 
 ## Affects
 
-B-024, B-025, B-026, C-10; read against C-2, C-4, C-7 and § 5 row 5. OQ-2 and
-OQ-3 stay open under it.
+B-036, B-037, B-038, C-12; read against C-2, C-4, C-7 and § 5 row 5. OQ-8 and
+OQ-9 stay open under it.
 
 ## Reversal
 

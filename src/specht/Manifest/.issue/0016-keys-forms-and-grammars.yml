@@ -45,11 +45,11 @@ acceptance_criteria:
 decisions:
   - |
     2026-10-09, spec-author on the owner's direction: B-007 moved to item
-    0118, which carries all the claim-tag work (B-007, B-024 to B-026). Risk
+    0118, which carries all the claim-tag work (B-007, B-036 to B-038). Risk
     stays 4: five rules and C-2 and C-8 remain here. Rejected: keeping B-007
     here, which would split one reader's change across two items.
 
 out_of_scope:
   - "Deriving or patching a frontmatter schema from the manifest — C-8."
   - "Moving every literal in one change — § 5 #6."
-  - "Claim tags in the companion, SPEC021 — B-007, B-024 to B-026; item 0118."
+  - "Claim tags in the companion, SPEC021 — B-007, B-036 to B-038; item 0118."

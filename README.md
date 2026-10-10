@@ -142,7 +142,7 @@ Claim tags in a `.feature` file are read as `@B-nnn`, with an optional
 lowercase letter suffix, whatever `identifiers.claim` says. A configurable tag
 form and letter case are specified
 ([`src/specht/Manifest/.spec/README.md`](src/specht/Manifest/.spec/README.md)
-B-007, B-024–B-026) and not built yet. The section titles the rules look up and
+B-007, B-036–B-038) and not built yet. The section titles the rules look up and
 the frontmatter keys they read are still literals in the engine; they move into
 the manifest in [brief § 8](.spec/brief.md#8-order-of-work) step 5.
 
@@ -186,6 +186,11 @@ writes it when the file is absent.
     "task": "^[0-9]{4}-[0-9]{2}$",
     "feature": "^F[0-9]+[a-z]?$",
     "epic": "^[0-9]{4}$"
+  },
+  "frontmatterSchemas": {
+    "feature": "feature-spec.frontmatter.schema.json",
+    "task": "task.frontmatter.schema.json",
+    "epic": "epic.frontmatter.schema.json"
   }
 }
 ```
