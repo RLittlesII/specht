@@ -235,3 +235,40 @@ Feature: The report contract
     Then no rule text is printed
     And the standard output is empty
     And the exit code is 3
+
+  @B-031
+  Scenario: Every rule of a shipped version has one rule page
+    Given a schema version the tool ships
+    When the rule pages for that version are gathered
+    Then every rule in that version's vocabulary has exactly one page
+
+  @B-031 @boundary
+  Scenario: No rule page is for a rule outside its version
+    Given a schema version the tool ships
+    When the rule pages for that version are gathered
+    Then no page is for a rule outside that version's vocabulary
+
+  @B-032
+  Scenario: A rule page follows the one page shape
+    Given the rule pages for a schema version the tool ships
+    When each page is read
+    Then it declares itself a rule page, with a title and a description
+    And its heading names the rule it is for, then the rule's title
+    And it gives the rule's id, its family, its default severity and its schema version
+    And it says what the rule checks
+    And it describes what the rule expects, with an example violation, the line the tool prints for it, and the corrected example
+    And it says how to fix a violation
+    And those parts come in that order
+
+  @B-032 @boundary
+  Scenario: A rule page has no part on suppressing or re-grading the rule
+    Given the rule pages for a schema version the tool ships
+    When each page is read
+    Then it has no part beyond the one page shape
+    And it says nothing on suppressing, disabling or changing the severity of the rule
+
+  @B-033
+  Scenario: A rule page gives the schema version it ships under
+    Given the rule pages for a schema version the tool ships
+    When each page is read
+    Then the schema version it gives is the version it ships under

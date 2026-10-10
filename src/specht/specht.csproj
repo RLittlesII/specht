@@ -28,4 +28,11 @@
                       LogicalName="schema/$([MSBuild]::ValueOrDefault('%(RecursiveDir)', '').Replace('\', '/'))%(Filename)%(Extension)" />
   </ItemGroup>
 
+  <!-- Every shipped version's rule pages (0001-F3 B-031, A-4), embedded as rules/v<n>/<file>, as the schemas are
+       as schema/v<n>/<file>. -->
+  <ItemGroup>
+    <EmbeddedResource Include="Rules\docs\v*\*.md"
+                      LogicalName="rules/$([MSBuild]::ValueOrDefault('%(RecursiveDir)', '').Replace('\', '/'))%(Filename)%(Extension)" />
+  </ItemGroup>
+
 </Project>

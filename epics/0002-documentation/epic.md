@@ -8,7 +8,7 @@ priority: med
 milestone: null
 children: ["0002-F1", "0002-F2"]
 created: "2026-10-07"
-updated: "2026-10-08"
+updated: "2026-10-09"
 github_issue: null
 ---
 
@@ -111,10 +111,11 @@ specification makes that claim.
 
 ## Out of this epic
 
-| Item                                                                                         | Where it lives instead                                                                                                                  |
-| -------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
-| `--help` text                                                                                | `0001-F2`                                                                                                                               |
-| `--explain` rule text and the report's JSON Schema                                           | `0001-F3`                                                                                                                               |
-| `hooked`'s own documentation                                                                 | `hooked`, its Documentation epic (PR #212)                                                                                              |
-| Rewriting `.spec/**` documents as usage docs                                                 | Rejected: a specification is the agreement                                                                                              |
-| Turning the specification-model and rule-catalogue prose into user documentation (brief § 3) | Unowned. Neither `0002` Feature claims it; the owner decides whether it is a `0002-F1` claim once OQ-2 settles, or a Feature of its own |
+| Item                                                                      | Where it lives instead                                                                                                                  |
+| ------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| `--help` text                                                             | `0001-F2`                                                                                                                               |
+| `--explain` rule text and the report's JSON Schema                        | `0001-F3`                                                                                                                               |
+| `hooked`'s own documentation                                              | `hooked`, its Documentation epic (PR #212)                                                                                              |
+| Rewriting `.spec/**` documents as usage docs                              | Rejected: a specification is the agreement                                                                                              |
+| A documentation page per rule, from the rule-catalogue prose (brief § 3)  | `0001-F3` (B-031 to B-033, decision 0003): the pages are the text `--explain` prints                                                    |
+| Turning the specification-model prose into user documentation (brief § 3) | Unowned. Neither `0002` Feature claims it; the owner decides whether it is a `0002-F1` claim once OQ-2 settles, or a Feature of its own |
