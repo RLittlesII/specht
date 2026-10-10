@@ -2,7 +2,7 @@ id: "0015"
 type: task
 title: Read sections, table headers and markers by role
 
-status: ready-for-architecture
+status: done
 
 priority: high
 risk: 3
@@ -22,25 +22,49 @@ claims:
   - B-002
   - B-003
   - B-015
+  - B-039
+  - B-040
 
 created: "2026-10-08"
-updated: "2026-10-08"
-closed: null
+updated: "2026-10-09"
+closed: "2026-10-09"
 
 summary: |
   Moves the section titles, table headers and markers out of SPEC013, SPEC021,
   SPEC030, SPEC031, SPEC060 and SPEC061 into manifest roles, one rule at a
   time with 0012 green after each (A-2), and rejects a role naming a section
-  `sections` lacks. Key names wait on OQ-1.
+  `sections` lacks, a `tables` key that is no role, and an empty marker text.
+  Key names are Manifest decision 0006.
 
 acceptance_criteria:
   - "B-001 — claims, matrix, sign-off read by role; a rename moves SPEC030, SPEC031, SPEC021"
   - "B-002 — SPEC013 headers per role"
   - "B-003 — `Missing`, 🟡, 🔴, `approved` from the manifest"
   - "B-015 — role naming an absent title rejected, naming the role"
+  - "B-039 — `tables` key that is no role rejected, naming the key"
+  - "B-040 — empty marker text rejected, naming the marker"
   - "§ 9 carries a row naming a test for each id above."
 
-decisions: []
+decisions:
+  - |
+    2026-10-09, the repository owner, asked during delivery; recorded by
+    spec-author as Manifest decision 0006: section roles are a top-level
+    `roles` object (`claims`, `matrix`, `signOff`) and markers a top-level
+    `markers` object (`missing`, `draft`, `blocked`, `approved`), each
+    filled per name. Rejected: different names; one object per role
+    holding its section and headers.
+  - |
+    2026-10-09, the repository owner, same record: `tables` is re-keyed
+    from section title to role name, changing a key consumers already
+    write. Rejected: leaving it keyed by title, against B-002.
+  - |
+    2026-10-09, the repository owner, same record: a `tables` key that is
+    no role is an invalid manifest (B-039). Rejected: keeping the key and
+    never reading it, which silently stops SPEC013 checking.
+  - |
+    2026-10-09, the repository owner, same record: an empty marker text is
+    an invalid manifest (B-040). Rejected: leaving it, where an empty
+    `draft` or `blocked` matches every sign-off cell.
 
 out_of_scope:
   - "Moving every literal in one change — § 5 #6."

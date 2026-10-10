@@ -5,8 +5,9 @@ using AwesomeAssertions;
 namespace specht.tests;
 
 /// <summary>
-/// The manifest loader over an in-memory file system (0001-F5 B-008, B-012, B-019, B-020; 0001-F2 B-005, B-006, B-007): what it
-/// rejects and as which failure, what it ignores, and what it fills from the default manifest.
+/// The manifest loader over an in-memory file system (0001-F5 B-001, B-002, B-003, B-008, B-012, B-015, B-019, B-020, B-039,
+/// B-040; 0001-F2 B-005, B-006, B-007): what it rejects and as which failure, what it ignores, and what it fills from the
+/// default manifest.
 /// </summary>
 [Trait("Tier", "Unit")]
 public sealed class SpecManifestUnitTests
@@ -35,6 +36,40 @@ public sealed class SpecManifestUnitTests
         { "feature", "feature.json" },
         { "task", "item.json" },
         { "epic", "epic.json" },
+    };
+
+    /// <summary>Gets each section role and the title the default manifest gives it (decision 0006).</summary>
+    public static TheoryData<string, string> DefaultRoles { get; } = new()
+    {
+        { "claims", "3. Acceptance Criteria" },
+        { "matrix", "9. Traceability Matrix" },
+        { "signOff", "12. Sign-off" },
+    };
+
+    /// <summary>Gets each section role and a title from <c>sections</c> a manifest declares for it in place of the default.</summary>
+    public static TheoryData<string, string> DeclaredRoles { get; } = new()
+    {
+        { "claims", "4. Constraints" },
+        { "matrix", "5. Out of Scope" },
+        { "signOff", "6. Concern Separation" },
+    };
+
+    /// <summary>Gets each marker and the text the default manifest gives it (decision 0006).</summary>
+    public static TheoryData<string, string> DefaultMarkers { get; } = new()
+    {
+        { "missing", "Missing" },
+        { "draft", "\U0001F7E1" },
+        { "blocked", "\U0001F534" },
+        { "approved", "approved" },
+    };
+
+    /// <summary>Gets each marker and a text a manifest declares for it in place of the default.</summary>
+    public static TheoryData<string, string> DeclaredMarkers { get; } = new()
+    {
+        { "missing", "TBD" },
+        { "draft", "WIP" },
+        { "blocked", "HELD" },
+        { "approved", "agreed" },
     };
 
     public static TheoryData<string, MockFileSystem> RootsThatAreNotDirectories =>
@@ -268,14 +303,193 @@ public sealed class SpecManifestUnitTests
     {
         // Given
         var manifest = DefaultManifest();
-        manifest["tables"] = new JsonObject { ["9. Traceability Matrix"] = new JsonArray("Claim ID", "Proof") };
+        manifest["tables"] = new JsonObject { ["matrix"] = new JsonArray("Claim ID", "Proof") };
         var fileSystem = Holding(manifest);
 
         // When
         var structure = SpecManifest.Load(fileSystem, Root);
 
         // Then
-        structure.Tables.Should().ContainKey("9. Traceability Matrix").WhoseValue.Should().Equal("Claim ID", "Proof");
+        structure.Tables.Should().ContainKey("matrix").WhoseValue.Should().Equal("Claim ID", "Proof");
+    }
+
+    [Theory]
+    [MemberData(nameof(DefaultRoles))]
+    public void AManifestLeavingOutARole_WhenLoaded_ShouldReadTheDefaultManifestsTitle(string role, string title)
+    {
+        // Given
+        var manifest = DefaultManifest();
+        var declared = new JsonObject
+        {
+            ["claims"] = "4. Constraints",
+            ["matrix"] = "5. Out of Scope",
+            ["signOff"] = "6. Concern Separation",
+        };
+        declared.Remove(role);
+        manifest["roles"] = declared;
+        var fileSystem = Holding(manifest);
+
+        // When
+        var structure = SpecManifest.Load(fileSystem, Root);
+
+        // Then
+        structure.Roles.Should().ContainKey(role).WhoseValue.Should().Be(title);
+    }
+
+    [Theory]
+    [MemberData(nameof(DeclaredRoles))]
+    public void AManifestDeclaringARole_WhenLoaded_ShouldReadItsTitleAsWritten(string role, string title)
+    {
+        // Given
+        var manifest = DefaultManifest();
+        manifest["roles"] = new JsonObject
+        {
+            ["claims"] = "4. Constraints",
+            ["matrix"] = "5. Out of Scope",
+            ["signOff"] = "6. Concern Separation",
+        };
+        var fileSystem = Holding(manifest);
+
+        // When
+        var structure = SpecManifest.Load(fileSystem, Root);
+
+        // Then
+        structure.Roles.Should().ContainKey(role).WhoseValue.Should().Be(title);
+    }
+
+    [Theory]
+    [MemberData(nameof(DefaultMarkers))]
+    public void AManifestLeavingOutAMarker_WhenLoaded_ShouldReadTheDefaultManifestsText(string marker, string text)
+    {
+        // Given
+        var manifest = DefaultManifest();
+        var declared = new JsonObject
+        {
+            ["missing"] = "TBD",
+            ["draft"] = "WIP",
+            ["blocked"] = "HELD",
+            ["approved"] = "agreed",
+        };
+        declared.Remove(marker);
+        manifest["markers"] = declared;
+        var fileSystem = Holding(manifest);
+
+        // When
+        var structure = SpecManifest.Load(fileSystem, Root);
+
+        // Then
+        structure.Markers.Should().ContainKey(marker).WhoseValue.Should().Be(text);
+    }
+
+    [Theory]
+    [MemberData(nameof(DeclaredMarkers))]
+    public void AManifestDeclaringAMarker_WhenLoaded_ShouldReadItsTextAsWritten(string marker, string text)
+    {
+        // Given
+        var manifest = DefaultManifest();
+        manifest["markers"] = new JsonObject
+        {
+            ["missing"] = "TBD",
+            ["draft"] = "WIP",
+            ["blocked"] = "HELD",
+            ["approved"] = "agreed",
+        };
+        var fileSystem = Holding(manifest);
+
+        // When
+        var structure = SpecManifest.Load(fileSystem, Root);
+
+        // Then
+        structure.Markers.Should().ContainKey(marker).WhoseValue.Should().Be(text);
+    }
+
+    [Theory]
+    [InlineData("claims")]
+    [InlineData("matrix")]
+    [InlineData("signOff")]
+    public void AManifestWhoseRoleNamesATitleSectionsLacks_WhenLoaded_ShouldRejectItNamingTheRole(string role)
+    {
+        // Given
+        var manifest = DefaultManifest();
+        manifest["roles"] = new JsonObject { [role] = "3. Nowhere" };
+        var fileSystem = Holding(manifest);
+
+        // When
+        var load = () => SpecManifest.Load(fileSystem, Root);
+
+        // Then
+        load.Should().ThrowExactly<SpechtManifestException>().Which.Message.Should().Contain($"'{role}'");
+    }
+
+    [Fact]
+    public void AManifestRenamingTheClaimsSectionAndLeavingItsRoleOut_WhenLoaded_ShouldRejectItNamingTheRole()
+    {
+        // Given
+        var manifest = DefaultManifest();
+        manifest["sections"]!.AsArray()[2] = "3. Claims";
+        var fileSystem = Holding(manifest);
+
+        // When
+        var load = () => SpecManifest.Load(fileSystem, Root);
+
+        // Then
+        load.Should().ThrowExactly<SpechtManifestException>().Which.Message.Should().Contain("'claims'");
+    }
+
+    [Theory]
+    [InlineData("9. Traceability Matrix")]
+    [InlineData("Glossary")]
+    public void AManifestWhoseTablesKeyIsNotARole_WhenLoaded_ShouldRejectItNamingTheKey(string key)
+    {
+        // Given
+        var manifest = DefaultManifest();
+        manifest["tables"] = new JsonObject { [key] = new JsonArray("Claim ID", "Scenario", "Test", "Status") };
+        var fileSystem = Holding(manifest);
+
+        // When
+        var load = () => SpecManifest.Load(fileSystem, Root);
+
+        // Then
+        load.Should().ThrowExactly<SpechtManifestException>().Which.Message.Should().Contain($"'{key}'");
+    }
+
+    [Theory]
+    [InlineData("missing")]
+    [InlineData("draft")]
+    [InlineData("blocked")]
+    [InlineData("approved")]
+    public void AManifestWhoseMarkerTextIsEmpty_WhenLoaded_ShouldRejectItNamingTheMarker(string marker)
+    {
+        // Given
+        var manifest = DefaultManifest();
+        manifest["markers"] = new JsonObject { [marker] = string.Empty };
+        var fileSystem = Holding(manifest);
+
+        // When
+        var load = () => SpecManifest.Load(fileSystem, Root);
+
+        // Then
+        load.Should().ThrowExactly<SpechtManifestException>().Which.Message.Should().Contain($"'{marker}'");
+    }
+
+    [Fact]
+    public void AManifestWithARoleTwoTablesKeysAndAMarkerAtFault_WhenLoaded_ShouldRejectItOnceNamingTheRoleThenTheKeysInTheManifestsOrderThenTheMarker()
+    {
+        // Given
+        string[] faults = ["claims", "Zeta", "Alpha", "draft"];
+        var manifest = DefaultManifest();
+        manifest["roles"] = new JsonObject { ["claims"] = "3. Nowhere" };
+        manifest["tables"] = new JsonObject { ["Zeta"] = new JsonArray("Claim ID"), ["Alpha"] = new JsonArray("Claim ID") };
+        manifest["markers"] = new JsonObject { ["draft"] = string.Empty };
+        var fileSystem = Holding(manifest);
+
+        // When
+        var load = () => SpecManifest.Load(fileSystem, Root);
+
+        // Then
+        var message = load.Should().ThrowExactly<SpechtManifestException>().Which.Message;
+        var positions = faults.Select(fault => message.IndexOf($"'{fault}'", StringComparison.Ordinal)).ToList();
+        positions.Should().NotContain(-1, message).And.BeInAscendingOrder(message);
     }
 
     private static MockFileSystem Holding(JsonObject manifest) => Holding(manifest.ToJsonString());
@@ -308,7 +522,7 @@ public sealed class SpecManifestUnitTests
                 "Scoring"
               ],
               "tables": {
-                "9. Traceability Matrix": ["Claim ID", "Scenario", "Test", "Status"]
+                "matrix": ["Claim ID", "Scenario", "Test", "Status"]
               },
               "identifiers": {
                 "claim": "^B-[0-9]{3}[a-z]?$",
