@@ -4,43 +4,11 @@ using System.Text.RegularExpressions;
 namespace specht;
 
 /// <summary>
-/// Finds the repository's specifications, in both layouts at once.
+/// Finds the repository's specifications, items, epics and companion files where the manifest says they are
+/// (<c>0001-F6</c> B-001, B-002, B-003).
 /// </summary>
-/// <remarks>
-/// Both layouts coexist for as long as the migration runs, and neither is
-/// treated as second class: the same rules apply to each, and a specification
-/// never fails for being un-migrated. The migration itself is reported as a
-/// count, not as a violation.
-/// </remarks>
 public static class SpecDiscovery
 {
-    /// <summary>Discovers every specification under <paramref name="root"/>.</summary>
-    public static IReadOnlyList<SpecLocation> FindSpecifications(string root)
-    {
-        var found = new List<SpecLocation>();
-        var epics = Path.Combine(root, "epics");
-
-        if (Directory.Exists(epics))
-        {
-            foreach (var path in Directory.EnumerateFiles(epics, "spec.md", SearchOption.AllDirectories).Order(StringComparer.Ordinal))
-            {
-                found.Add(Location(root, path, SpecLayout.Legacy));
-            }
-        }
-
-        foreach (var directory in SpecDirectories(root))
-        {
-            var readme = Path.Combine(directory, "README.md");
-
-            if (File.Exists(readme))
-            {
-                found.Add(Location(root, readme, SpecLayout.CoLocated));
-            }
-        }
-
-        return found;
-    }
-
     /// <summary>
     /// Discovers every specification under <paramref name="root"/> in the layouts <paramref name="inputs"/> declares,
     /// skipping what it excludes (<c>0001-F6</c> B-001, B-002, C-6, C-7).
@@ -49,8 +17,15 @@ public static class SpecDiscovery
     /// <param name="root">The repository root.</param>
     /// <param name="inputs">The manifest's discovery inputs.</param>
     /// <returns>Each specification, carrying the layout it was found in.</returns>
-    public static IReadOnlyList<SpecLocation> FindSpecifications(IFileSystem fileSystem, string root, SpecDiscoveryInputs inputs) =>
-        throw new NotImplementedException("0005: discovery does not read its layouts and exclusions from the manifest yet.");
+    public static IReadOnlyList<SpecLocation> FindSpecifications(IFileSystem fileSystem, string root, SpecDiscoveryInputs inputs)
+    {
+        var files = Files(fileSystem, root);
+
+        return inputs.Layouts
+            .SelectMany(layout => Matching(files, layout.Glob, inputs.Exclusions)
+                .Select(file => new SpecLocation(file.Path, file.Relative, layout, fileSystem.Path.GetDirectoryName(file.Path)!)))
+            .ToList();
+    }
 
     /// <summary>
     /// Discovers the item files beside each specification: every file whose name matches the manifest's task file shape,
@@ -82,7 +57,7 @@ public static class SpecDiscovery
     /// <param name="inputs">The manifest's discovery inputs.</param>
     /// <returns>The path of each epic file.</returns>
     public static IReadOnlyList<string> FindEpics(IFileSystem fileSystem, string root, SpecDiscoveryInputs inputs) =>
-        Matching(fileSystem, root, inputs.EpicFiles, inputs.Exclusions).Select(static file => file.Path).ToList();
+        Matching(Files(fileSystem, root), inputs.EpicFiles, inputs.Exclusions).Select(static file => file.Path).ToList();
 
     /// <summary>
     /// Discovers the companion files beside <paramref name="specification"/>: every file whose name matches the manifest's
@@ -102,19 +77,24 @@ public static class SpecDiscovery
     public static string Relative(string root, string path) =>
         Path.GetRelativePath(root, path).Replace(Path.DirectorySeparatorChar, '/');
 
+    private static List<(string Path, string Relative)> Files(IFileSystem fileSystem, string root)
+    {
+        var origin = fileSystem.Path.GetFullPath(root);
+        var separator = fileSystem.Path.DirectorySeparatorChar;
+
+        return fileSystem.Directory.EnumerateFiles(root, "*", SearchOption.AllDirectories)
+            .Select(path => (path, fileSystem.Path.GetRelativePath(origin, fileSystem.Path.GetFullPath(path)).Replace(separator, '/')))
+            .ToList();
+    }
+
     private static IEnumerable<(string Path, string Relative)> Matching(
-        IFileSystem fileSystem,
-        string root,
+        List<(string Path, string Relative)> files,
         string glob,
         IReadOnlyList<string> exclusions)
     {
         var expression = new Regex(Pattern(glob));
-        var origin = fileSystem.Path.GetFullPath(root);
 
-        var separator = fileSystem.Path.DirectorySeparatorChar;
-
-        return fileSystem.Directory.EnumerateFiles(root, "*", SearchOption.AllDirectories)
-            .Select(path => (Path: path, Relative: fileSystem.Path.GetRelativePath(origin, fileSystem.Path.GetFullPath(path)).Replace(separator, '/')))
+        return files
             .Where(file => expression.IsMatch(file.Relative) && !IsExcluded(file.Relative, exclusions))
             .OrderBy(static file => file.Relative, StringComparer.Ordinal);
     }
@@ -141,35 +121,4 @@ public static class SpecDiscovery
             ? anchored.StartsWith(entry + "/", StringComparison.Ordinal)
             : directories.Contains(entry, StringComparer.Ordinal));
     }
-
-    private static IEnumerable<string> SpecDirectories(string root)
-    {
-        var rootSpec = Path.Combine(root, ".spec");
-
-        foreach (var directory in Directory.EnumerateDirectories(root, ".spec", SearchOption.AllDirectories).Order(StringComparer.Ordinal))
-        {
-            // The repository-wide .spec/ holds adr/, lessons/, templates/ and
-            // schema/ - records about every Feature, not one Feature's spec.
-            if (string.Equals(directory, rootSpec, StringComparison.Ordinal))
-            {
-                continue;
-            }
-
-            if (!IsExcluded(root, directory))
-            {
-                yield return directory;
-            }
-        }
-    }
-
-    private static bool IsExcluded(string root, string path) =>
-        Path.GetRelativePath(root, path)
-            .Split(Path.DirectorySeparatorChar)
-            .Any(static segment => ExcludedDirectories.Contains(segment, StringComparer.Ordinal));
-
-    private static SpecLocation Location(string root, string path, SpecLayout layout) =>
-        new(path, Relative(root, path), layout, Path.GetDirectoryName(path)!);
-
-    private static readonly string[] ExcludedDirectories =
-        [".git", ".artifacts", ".skillfile", ".claude", "graphify-out", "bin", "obj", "node_modules"];
 }

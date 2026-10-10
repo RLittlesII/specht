@@ -1,4 +1,5 @@
 using AwesomeAssertions;
+using specht.Report;
 
 namespace specht.tests;
 
@@ -41,8 +42,7 @@ public sealed class SpecCheckRunnerUnitTests
         // Then
         report.Violations.Should().BeEmpty();
         report.SpecificationCount.Should().Be(1);
-        report.LegacyCount.Should().Be(1);
-        report.CoLocatedCount.Should().Be(0);
+        report.Layouts.Should().Equal(new SpecReportLayout("legacy", 1), new SpecReportLayout("coLocated", 0));
     }
 
     [Fact]

@@ -80,11 +80,18 @@ public static class SpecManifest
 
     private static SpecDiscoveryInputs Discovery(JsonObject manifest) =>
         new(
-            [],
+            (manifest["layouts"] ?? Defaults["layouts"]!).AsArray().Select(Layout).ToList(),
             Strings(manifest["exclusions"] ?? Defaults["exclusions"]!),
             (manifest["taskFiles"] ?? Defaults["taskFiles"]!).GetValue<string>(),
             (manifest["epicFiles"] ?? Defaults["epicFiles"]!).GetValue<string>(),
             (manifest["companionFiles"] ?? Defaults["companionFiles"]!).GetValue<string>());
+
+    private static SpecLayout Layout(JsonNode? node)
+    {
+        var layout = Present(node);
+
+        return new SpecLayout(Present(layout["name"]).GetValue<string>(), Present(layout["glob"]).GetValue<string>());
+    }
 
     private static Dictionary<string, string> Filled(JsonObject manifest, string key)
     {
@@ -146,6 +153,7 @@ public static class SpecManifest
     private static readonly HashSet<string> KnownKeys = new(StringComparer.Ordinal)
     {
         "schemaVersion",
+        "layouts",
         "exclusions",
         "taskFiles",
         "epicFiles",

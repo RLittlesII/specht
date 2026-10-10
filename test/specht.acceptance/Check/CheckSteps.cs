@@ -37,8 +37,7 @@ public sealed partial class CheckSteps
         Tree.WriteFeature("0001", "F2");
         Tree.WriteCoLocatedFeature("src/area", "0001", "F3");
         var report = Tree.Run();
-        report.LegacyCount.Should().Be(2);
-        report.CoLocatedCount.Should().Be(1);
+        report.Layouts.Should().Equal(new SpecReportLayout("legacy", 2), new SpecReportLayout("coLocated", 1));
     }
 
     [Given("the root holds a specification with one error-severity violation")]

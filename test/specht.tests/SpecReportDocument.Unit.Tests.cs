@@ -30,8 +30,7 @@ public sealed partial class SpecReportDocumentUnitTests
         // Given
         SpecCheckReport report = new SpecCheckReportFixture()
             .WithSpecificationCount(3)
-            .WithLegacyCount(2)
-            .WithCoLocatedCount(1)
+            .WithLayouts(new SpecReportLayout("legacy", 2), new SpecReportLayout("coLocated", 1))
             .WithItemCount(4)
             .WithRulesEvaluated(9)
             .WithViolations(
@@ -43,7 +42,7 @@ public sealed partial class SpecReportDocumentUnitTests
         var document = SpecReportDocument.From(report);
 
         // Then
-        document.Layouts.Should().BeEquivalentTo([new SpecReportLayout(SpecLayout.Legacy, 2), new SpecReportLayout(SpecLayout.CoLocated, 1)]);
+        document.Layouts.Should().BeEquivalentTo([new SpecReportLayout("legacy", 2), new SpecReportLayout("coLocated", 1)]);
         document.ItemCount.Should().Be(4);
         document.RulesEvaluated.Should().Be(9);
         document.ErrorCount.Should().Be(2);
@@ -94,7 +93,7 @@ public sealed partial class SpecReportDocumentUnitTests
         // Given
         SpecCheckReport report = new SpecCheckReportFixture()
             .WithSpecificationCount(1)
-            .WithLegacyCount(1)
+            .WithLayouts(new SpecReportLayout("legacy", 1), new SpecReportLayout("coLocated", 0))
             .WithRulesEvaluated(1)
             .WithViolations(new SpecViolationFixture().WithIdentifier("B-002"));
         string[] machine =
@@ -122,8 +121,7 @@ public sealed partial class SpecReportDocumentUnitTests
         // Given
         SpecCheckReport report = new SpecCheckReportFixture()
             .WithSpecificationCount(3)
-            .WithLegacyCount(2)
-            .WithCoLocatedCount(1)
+            .WithLayouts(new SpecReportLayout("legacy", 2), new SpecReportLayout("coLocated", 1))
             .WithItemCount(4)
             .WithRulesEvaluated(9)
             .WithViolations(
@@ -148,7 +146,7 @@ public sealed partial class SpecReportDocumentUnitTests
         // Given
         SpecCheckReport report = new SpecCheckReportFixture()
             .WithSpecificationCount(1)
-            .WithLegacyCount(1)
+            .WithLayouts(new SpecReportLayout("legacy", 1), new SpecReportLayout("coLocated", 0))
             .WithRulesEvaluated(1)
             .WithViolations(new SpecViolationFixture(), new SpecViolationFixture().WithSeverity(SpecSeverity.Warning));
 

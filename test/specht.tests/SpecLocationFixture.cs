@@ -13,6 +13,6 @@ internal sealed partial class SpecLocationFixture
     public SpecLocationFixture() =>
         WithAbsolutePath(Path.Combine("repo", "src", "sample", ".spec", "README.md"))
             .WithRelativePath("src/sample/.spec/README.md")
-            .WithLayout(SpecLayout.CoLocated)
+            .WithLayout(new SpecLayout("coLocated", "**/.spec/README.md"))
             .WithDirectory(Path.Combine("repo", "src", "sample", ".spec"));
 }

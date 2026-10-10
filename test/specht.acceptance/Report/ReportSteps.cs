@@ -100,7 +100,7 @@ public sealed class ReportSteps
 
     [Then("each layout by name with its specification count")]
     public void ThenEachLayoutByNameWithItsSpecificationCount() =>
-        Document.Layouts.Should().BeEquivalentTo([new SpecReportLayout(SpecLayout.Legacy, 2), new SpecReportLayout(SpecLayout.CoLocated, 1)]);
+        Document.Layouts.Should().BeEquivalentTo([new SpecReportLayout("legacy", 2), new SpecReportLayout("coLocated", 1)]);
 
     [Then("the item count, the count of rule ids evaluated, the error count and the warning count")]
     public void ThenTheItemCountTheCountOfRuleIdsEvaluatedTheErrorCountAndTheWarningCount()

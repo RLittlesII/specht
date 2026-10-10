@@ -1,15 +1,23 @@
 using Rocket.Surgery.Extensions.Testing.AutoFixtures;
+using specht.Report;
 
 namespace specht.tests;
 
 /// <summary>
-/// Builds a <see cref="SpecCheckReport"/>: pinned to schema version 1, with zero counts and no violation until a test adds
-/// some. The generated default version is 0, which no shipped version carries.
+/// Builds a <see cref="SpecCheckReport"/>: pinned to schema version 1, with the default manifest's two layouts at zero, zero
+/// counts and no violation until a test adds some. The generated default version is 0, which no shipped version carries.
 /// </summary>
 [AutoFixture(typeof(SpecCheckReport))]
 internal sealed partial class SpecCheckReportFixture
 {
-    public SpecCheckReportFixture() => WithSchemaVersion(1);
+    public SpecCheckReportFixture() =>
+        WithSchemaVersion(1).WithLayouts(new SpecReportLayout("legacy", 0), new SpecReportLayout("coLocated", 0));
+
+    /// <summary>Sets each layout and its specification count, in the manifest's order.</summary>
+    /// <remarks>The generator names the list's setter <c>WithList</c>, after its type; this names it after the report's.</remarks>
+    /// <param name="layouts">The layouts.</param>
+    /// <returns>The fixture.</returns>
+    public SpecCheckReportFixture WithLayouts(params IReadOnlyList<SpecReportLayout> layouts) => WithList(layouts);
 
     /// <summary>Sets the violations, in the runner's order.</summary>
     /// <remarks>The generator names the list's setter <c>WithList</c>, after its type; this names it after the report's.</remarks>

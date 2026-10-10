@@ -23,7 +23,7 @@ public sealed class SpecModel
     /// <summary>Absolute path to the repository root.</summary>
     public string Root { get; }
 
-    /// <summary>Every discovered Feature specification, in both layouts.</summary>
+    /// <summary>Every discovered Feature specification, in every layout.</summary>
     public IReadOnlyList<FeatureSpec> Features { get; }
 
     /// <summary>Every task, test, bug and spike file beside a specification.</summary>
@@ -34,12 +34,6 @@ public sealed class SpecModel
 
     /// <summary>The schemas and the section contract every rule is evaluated against.</summary>
     public SpecSchemas Schemas { get; }
-
-    /// <summary>How many specifications are still in the legacy layout.</summary>
-    public int LegacyCount => Features.Count(static feature => feature.Location.Layout == SpecLayout.Legacy);
-
-    /// <summary>How many specifications have been migrated.</summary>
-    public int CoLocatedCount => Features.Count(static feature => feature.Location.Layout == SpecLayout.CoLocated);
 
     /// <summary>Loads the model rooted at <paramref name="root"/> with the embedded version set.</summary>
     /// <exception cref="SpechtRootNotFoundException"><paramref name="root"/> is not a directory; nothing in the tree is read.</exception>
@@ -64,7 +58,7 @@ public sealed class SpecModel
         var schemas = SpecSchemas.Load(fileSystem, root, versions);
         var frontmatter = new FrontmatterReader(fileSystem);
         var discovery = schemas.Structure.Discovery;
-        var locations = SpecDiscovery.FindSpecifications(root);
+        var locations = SpecDiscovery.FindSpecifications(fileSystem, root, discovery);
         var features = new List<FeatureSpec>();
 
         foreach (var location in locations)
