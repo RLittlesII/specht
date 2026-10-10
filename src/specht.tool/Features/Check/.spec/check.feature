@@ -12,6 +12,7 @@ Feature: The check command
     When the check runs
     Then the standard output carries one line per violation
     And each line names the file, the line, the severity, the rule id and the message in the build's diagnostic form
+    And the line reporting that claim ends with B-002 in square brackets
 
   @B-002
   Scenario: A run ends with the summary
@@ -130,3 +131,10 @@ Feature: The check command
     And one rule fails while it is evaluated
     When the check runs
     Then the exit code is 1
+
+  @B-016 @boundary
+  Scenario: A violation with no identifier prints no brackets
+    Given the root holds a specification with no frontmatter
+    When the check runs
+    Then the line reporting the missing frontmatter ends with its message
+    And nothing in square brackets follows the message

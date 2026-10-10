@@ -49,6 +49,14 @@ public sealed partial class CheckSteps
         Tree.Run().Violations.Should().ContainSingle().Which.Severity.Should().Be(SpecSeverity.Error);
     }
 
+    [Given("the root holds a specification with no frontmatter")]
+    public void GivenTheRootHoldsASpecificationWithNoFrontmatter()
+    {
+        Tree.WriteRaw("epics/0001-epic/F1-feature/spec.md", "# Specification: F1\n\n" + string.Join('\n', SpecTree.Sections));
+        Tree.WriteRaw("epics/0001-epic/F1-feature/feature.feature", "Feature: it\n");
+        MissingFrontmatter.Identifier.Should().BeNull();
+    }
+
     [Given("the root holds specifications with no violation")]
     public void GivenTheRootHoldsSpecificationsWithNoViolation()
     {
@@ -109,6 +117,28 @@ public sealed partial class CheckSteps
             match.Success.Should().BeTrue(line);
             File.Exists(Path.Combine(Tree.Root, match.Groups["file"].Value)).Should().BeTrue(line);
         });
+
+    [Then("the line reporting that claim ends with B-002 in square brackets")]
+    public void ThenTheLineReportingThatClaimEndsWithB002InSquareBrackets()
+    {
+        var claim = Tree.Run().Violations.Should().ContainSingle(static violation => violation.Identifier == "B-002").Which;
+        LineReporting(claim).Should().EndWith($"{claim.Message} [B-002]");
+    }
+
+    [Then("the line reporting the missing frontmatter ends with its message")]
+    public void ThenTheLineReportingTheMissingFrontmatterEndsWithItsMessage()
+    {
+        var missing = MissingFrontmatter;
+        LineReporting(missing).Should().EndWith(missing.Message);
+    }
+
+    [Then("nothing in square brackets follows the message")]
+    public void ThenNothingInSquareBracketsFollowsTheMessage()
+    {
+        var missing = MissingFrontmatter;
+        var line = LineReporting(missing);
+        line[(line.IndexOf(missing.Message, StringComparison.Ordinal) + missing.Message.Length)..].Should().NotContainAny("[", "]");
+    }
 
     [Then("the standard output ends with the specification count per layout")]
     public void ThenTheStandardOutputEndsWithTheSpecificationCountPerLayout()
@@ -211,6 +241,9 @@ public sealed partial class CheckSteps
 
     private string Nested => _nested ?? throw new InvalidOperationException("No nested root was named.");
 
+    private SpecViolation MissingFrontmatter =>
+        Tree.Run().Violations.Should().ContainSingle(static violation => violation.RuleId == "SPEC001").Which;
+
     private string[] Violations => Tree.Run().Violations.Select(static violation => violation.ToString()).ToArray();
 
     private IReadOnlyList<string> Summary => SpecReportDocument.From(Tree.Run()).SummaryLines();
@@ -245,6 +278,12 @@ public sealed partial class CheckSteps
                 StringComparer.Ordinal);
 
     private string[] ViolationLines() => Lines(_stdout).SkipLast(Summary.Count).ToArray();
+
+    private string LineReporting(SpecViolation violation) =>
+        ViolationLines()
+            .Should()
+            .ContainSingle(line => line.Contains($" {violation.RuleId}: {violation.Message}", StringComparison.Ordinal))
+            .Which;
 
     private string SummaryLine(int index)
     {

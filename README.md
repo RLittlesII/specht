@@ -32,8 +32,11 @@
 Every violation comes back with a file, a line and a rule id.
 
 ```text
-src/specht/.spec/README.md(214): error SPEC031: § 9 has no row for claim B-007
+src/specht/.spec/README.md(214): error SPEC031: § 9 has no row for claim B-007 [B-007]
 ```
+
+A line ends with the identifier it is about in square brackets, and at the
+message when the violation has none.
 
 `specht` checks frontmatter against JSON Schema, the contracted sections and
 their order, claim ids, one traceability row per claim, `.feature` tags that

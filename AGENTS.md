@@ -119,8 +119,9 @@ specht upgrade [--root <dir>]
 specht --explain SPEC031
 ```
 
-Stdout: one MSBuild-shaped line per violation (`path(line): error SPEC031: …`),
-then the summary lines. `--json` replaces the stream with the report document;
+Stdout: one MSBuild-shaped line per violation
+(`path(line): error SPEC031: … [identifier]`, the brackets absent when the
+violation has no identifier), then the summary lines. `--json` replaces the stream with the report document;
 `--report` writes the same JSON to a path. Exit `0` clean, `1` violations (any
 violation under `--strict`), `2` missing root or manifest, `3` invalid manifest,
 `4` a thing named on the command line not found (such as an `--explain` rule id
