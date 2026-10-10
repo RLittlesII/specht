@@ -2,7 +2,7 @@ id: "0005"
 type: task
 title: Read layouts, exclusions and file shapes from the manifest
 
-status: ready-for-architecture
+status: in-progress
 
 priority: high
 risk: 2
@@ -24,7 +24,7 @@ claims:
   - B-009
 
 created: "2026-10-08"
-updated: "2026-10-08"
+updated: "2026-10-09"
 closed: null
 
 summary: |
