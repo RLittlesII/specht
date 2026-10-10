@@ -13,9 +13,36 @@
   },
   "packageRules": [
     {
+      "description": "0055-F4 B-001: NuGet minor and patch updates in Directory.Packages.props, one pull request.",
       "matchManagers": ["nuget"],
-      "groupName": "NuGet dependencies",
-      "matchUpdateTypes": ["minor", "patch"]
+      "matchFileNames": ["Directory.Packages.props"],
+      "matchUpdateTypes": ["minor", "patch"],
+      "groupName": "NuGet packages"
+    },
+    {
+      "description": "0055-F4 B-003: the .NET SDK global.json pins, one pull request.",
+      "matchManagers": ["nuget"],
+      "matchDepTypes": ["dotnet-sdk"],
+      "matchUpdateTypes": ["minor", "patch"],
+      "groupName": ".NET SDK"
+    },
+    {
+      "description": "0055-F4 B-004: local tool manifest minor and patch updates, one pull request.",
+      "matchManagers": ["nuget"],
+      "matchFileNames": [".config/dotnet-tools.json"],
+      "matchUpdateTypes": ["minor", "patch"],
+      "groupName": "dotnet local tools"
+    },
+    {
+      "description": "0055-F4 C-4: a version is changed only where it is declared once.",
+      "matchManagers": ["nuget"],
+      "matchFileNames": ["!Directory.Packages.props", "!global.json", "!.config/dotnet-tools.json"],
+      "enabled": false
+    },
+    {
+      "description": "0055-F4 C-1, B-008: the engine's three dependencies stay on hooked's versions. Lifted only by a change after 0001-F1 B-004's golden baseline test is on main that also amends 0001-F1 C-7.",
+      "matchPackageNames": ["Markdig", "YamlDotNet", "JsonSchema.Net"],
+      "enabled": false
     }
   ]
 }

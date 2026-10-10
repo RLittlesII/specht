@@ -24,12 +24,19 @@ The specification exists first and stands alone — a `type: feature` item is cu
 from its § 3 claims after agreement, and cites the claim ids it delivers, never
 their text. A bug, spike or chore starts at the item instead, with `spec: null`.
 
+A `type: refactor` item starts at the item too. It changes structure, never
+behaviour, so it carries `claims: []`, names in `spec:` the Feature whose code it
+restructures (or null when it spans several), and its acceptance criteria cite the
+constraints it preserves in the [exemption](#exemptions) form. A change that needs
+a scenario amended is not a refactor.
+
 ### Where an item goes
 
-| Item                                                  | Path                              |
-| ----------------------------------------------------- | --------------------------------- |
-| A Feature item, or a task, test or bug delivering one | `<home>/.issue/`, beside `.spec/` |
-| A bug, spike or chore belonging to no Feature         | `.issue/` at the repository root  |
+| Item                                                    | Path                              |
+| ------------------------------------------------------- | --------------------------------- |
+| A Feature item, or a task, test or bug delivering one   | `<home>/.issue/`, beside `.spec/` |
+| A refactor of one Feature's code                        | `<home>/.issue/`, beside `.spec/` |
+| A bug, spike, chore or refactor belonging to no Feature | `.issue/` at the repository root  |
 
 The same blast-radius split `.spec/adr/` and `.spec/lessons/` use. Find any item
 with `**/.issue/<id>-*.yml`.
@@ -147,7 +154,7 @@ when authoring a specification — and cites the claims it satisfies. There is n
 issue for `Closes` to close.
 
 The subject is `<type>(<id>): <summary>` — the delivered item's `type`
-(`feature`, `task`, `test`, `bug`, `spike`) and its id, never a conventional-commit
+(`feature`, `task`, `test`, `bug`, `spike`, `refactor`) and its id, never a conventional-commit
 type or a component scope (`feat(ci):`). The pull-request title takes the same
 form, because a squash of more than one commit takes its subject from the title.
 
@@ -155,6 +162,17 @@ form, because a squash of more than one commit takes its subject from the title.
 bug(0004): relativize the report path before writing it
 
 Delivers 0004. Satisfies 0001-F1 B-012. Constraints preserved: 0001-F1 C-3.
+```
+
+A refactor satisfies no claim; its body carries the exemption instead:
+
+```
+refactor(0123): extract the discovery walk
+
+Delivers 0123.
+No .feature change needed: refactor — extracted the discovery walk;
+the same file set is returned in the same order and the report is unchanged.
+Constraints preserved: 0001-F1 C-9.
 ```
 
 The pull-request body is still where the reviewer reads what changed upstream —

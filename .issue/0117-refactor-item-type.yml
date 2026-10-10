@@ -1,0 +1,52 @@
+id: "0117"
+type: task
+title: Add refactor as a work-item type
+
+status: done
+
+priority: medium # DERIVED
+value: 3
+risk: 1
+rank: 57 # DERIVED
+
+parent: null
+children: []
+
+depends_on: []
+blocks: [] # DERIVED
+spikes: []
+
+spec: null
+
+claims: []
+
+created: "2026-10-09"
+updated: "2026-10-09"
+closed: "2026-10-09"
+
+summary: |
+  A process chore, raised by the owner on 2026-10-09: "we need to add a task
+  type for refactor". A refactor was filed as `type: task` and committed as
+  `task(<id>):`, so nothing told it apart from work that delivers a claim.
+
+  Scope - this repository's tracker only:
+  - .spec/templates/item.yml - `refactor` in the `type` vocabulary, and where a
+    refactor item sits, what it carries in `spec:` and `claims:`, and what its
+    acceptance criteria cite.
+  - .claude/skills/specht-conventions - the item placement table, the commit
+    subject types, and a refactor commit example.
+  - .claude/skills/deliver-change, .claude/skills/spec-and-traceability and
+    AGENTS.md - a refactor starts at the item and produces no spec delta.
+
+acceptance_criteria:
+  - "`.spec/templates/item.yml` lists `refactor` in the `type` vocabulary and states that a refactor carries `claims: []` and cites the constraints it preserves."
+  - "specht-conventions names `refactor` as a commit subject type and places a refactor item beside the Feature it restructures, or at the root."
+  - "The shipped frontmatter schemas under `.spec/schema/` and `src/specht.tool/schema/v1/` are unchanged."
+  - "The commit message carries the exemption: No .feature change needed: process documentation - tracker vocabulary only; no behaviour of the tool changes. Constraints preserved: 0001-F1 C-5, 0001-F1 C-9."
+  - "./build.sh and ./build.sh SpecCheck are green."
+
+decisions: []
+
+out_of_scope:
+  - "`refactor` in `task.frontmatter.schema.json`'s `type` enum - a change to what consumers' child items may declare, which needs a specification delta first (0001-F4 B-004)."
+  - "Retyping past items filed as `task` - closed items stay as written."
