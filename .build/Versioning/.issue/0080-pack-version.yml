@@ -2,7 +2,7 @@ id: "0080"
 type: task
 title: Pack the computed version into the package
 
-status: ready-for-architecture
+status: in-progress
 
 priority: high
 risk: 1
@@ -21,7 +21,7 @@ claims:
   - B-005
 
 created: "2026-10-08"
-updated: "2026-10-08"
+updated: "2026-10-09"
 closed: null
 
 summary: |
