@@ -17,10 +17,19 @@ Feature: The manifest carries the roles
 
   @B-002
   Scenario: Table headers are read by role
-    Given the manifest names the traceability table's third column "Proof"
+    Given the manifest's headers for the matrix role name the third column "Proof"
     And the root holds a specification whose traceability table has a "Proof" column in third place
+    And the root holds a second specification whose traceability table has a "Test" column in third place
     When the check runs
-    Then no table-header violation is reported
+    Then the table-header rule reports the second specification
+    And it does not report the first
+
+  @B-002
+  Scenario: Table headers follow a renamed section
+    Given the manifest renames the matrix section to "9. Coverage" in its section list and its matrix role
+    And the root holds a specification whose "9. Coverage" table lacks one of the matrix role's columns
+    When the check runs
+    Then the table-header rule reports that specification
 
   @B-003
   Scenario: Markers are read from the manifest
@@ -281,3 +290,17 @@ Feature: The manifest carries the roles
     And the root holds a co-located specification declaring id "F2" and no epic
     When the check runs
     Then a missing-epic violation is reported on that specification
+
+  @B-039
+  Scenario: Table headers keyed by a section title are invalid
+    Given the manifest declares table headers under "9. Traceability Matrix" and not under a role
+    When the check runs
+    Then the manifest is rejected
+    And the rejection names "9. Traceability Matrix"
+
+  @B-040
+  Scenario: An empty marker is invalid
+    Given the manifest's draft sign-off marker is empty
+    When the check runs
+    Then the manifest is rejected
+    And the rejection names the draft marker
