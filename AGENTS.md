@@ -99,10 +99,10 @@ the `specht.tool` package version; the first is `0.1.0`, and a manifest with no
 key means it. A patch changes no tree's verdict, a minor only accepts more, and
 a major can fail a tree that passed. A pin is exact. A pin command moves it to
 any shipped version, up or down, and changes nothing else; `specht upgrade`
-then rewrites the schema and template files to match the pin and prints what
-changed. In the manifest `upgrade` adds only the keys the pinned version
-defines that are missing, so consumer settings survive (`0001-F7` decisions
-0001 and 0005).
+then rewrites the schema files, and every template the manifest does not name
+as the consumer's, to match the pin and prints what changed. In the manifest
+`upgrade` adds only the keys the pinned version defines that are missing, so
+consumer settings survive (`0001-F7` decisions 0001, 0005 and 0006).
 
 This repository's own `.spec/schema/` and `.spec/templates/` are that live copy
 — the same bytes as the newest embedded version for the tool-owned files (the three

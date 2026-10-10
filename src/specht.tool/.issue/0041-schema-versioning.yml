@@ -10,7 +10,7 @@ risk: 4
 rank: 68
 
 parent: "0001"
-children: ["0042", "0043", "0044", "0045", "0046", "0047", "0048", "0049", "0092", "0093", "0094", "0120", "0121", "0122", "0123", "0124", "0125", "0126"]
+children: ["0042", "0043", "0044", "0045", "0046", "0047", "0048", "0049", "0092", "0093", "0094", "0120", "0121", "0122", "0123", "0124", "0125", "0126", "0130", "0131"]
 
 depends_on: []
 blocks: []
@@ -75,6 +75,11 @@ claims:
   - B-057
   - B-058
   - B-059
+  - B-060
+  - B-061
+  - B-062
+  - B-063
+  - B-065
 
 created: "2026-10-08"
 updated: "2026-10-09"
@@ -106,13 +111,19 @@ summary: |
   Naming the embedded folder and the `$id` segment (0126) waits on OQ-22
   and carries no claim of this Feature: it keeps C-6.
 
+  Decision 0006 (2026-10-09) lets a consumer keep its own templates: the
+  manifest names them (0130) and upgrade leaves them, and every template
+  file the tool does not ship, alone (0131). B-064 is withdrawn and
+  carried by no item. A name the pinned version does not ship (OQ-27)
+  and the upstream template source (OQ-26) are open and have no item.
+
 acceptance_criteria:
   - "B-001 — pinned version checks with its embedded frontmatter schemas (0120)"
   - "B-002 — no key is `0.1.0` (0120)"
   - "B-003 — unshipped pin: stderr, exit 3 (0120)"
   - "B-004 — every published version still embedded (0120, 0044)"
-  - "B-005 — upgrade rewrites schemas and templates to the pin, up or down (0045)"
-  - "B-006 — upgrade at the pin: current, nothing rewritten (0045)"
+  - "B-005 — upgrade rewrites schemas, and the templates the manifest does not name, to the pin, up or down (0045, 0131)"
+  - "B-006 — upgrade at the pin, a named template apart: current, nothing rewritten (0045, 0131)"
   - "B-007 — upgrade writes only under schema/ and templates/ (0045)"
   - "B-009 — on-disk source by configuration (0043)"
   - "B-010 — embedded source ignores an on-disk edit (0043)"
@@ -136,7 +147,7 @@ acceptance_criteria:
   - "B-028 — upstream recorded: pinned embedded vocabulary (0092)"
   - "B-029 — upgrade, on-disk source: no frontmatter schema written (0094)"
   - "B-030 — upgrade prints each skipped schema and why (0094)"
-  - "B-031 — upgrade rewrites and lists the templates (0094)"
+  - "B-031 — upgrade, on-disk source: rewrites and lists the templates the manifest does not name (0094)"
   - "B-032 — upstream recorded, nothing selected: on-disk (0092)"
   - "B-033 — upgrade, local copy matches the hash: no network call (0093)"
   - "B-034 — upgrade leaves the upstream version and hash (0093)"
@@ -163,6 +174,11 @@ acceptance_criteria:
   - "B-057 — pin with no version offers a selection list (0125)"
   - "B-058 — the chosen version is pinned (0125)"
   - "B-059 — upgrade that only adds a key: exit 0 (0047)"
+  - "B-060 — upgrade does not write a named template (0131)"
+  - "B-061 — upgrade prints each skipped template and why (0131)"
+  - "B-062 — upgrade rewrites an unnamed template that differs (0131)"
+  - "B-063 — upgrade touches no template file the pinned version does not ship (0131)"
+  - "B-065 — a named template leaves the check's report unchanged (0130)"
   - "§ 9 carries a row naming a test for each id above."
 
 decisions:
@@ -198,6 +214,12 @@ decisions:
     pin command's input failures apart in 0123; the folder and `$id`
     rename apart in 0126, at the spec-reviewer's request; and which
     claim each item carries.
+
+  - |
+    2026-10-09, spec-author's cut, recording the owner's decision 0006:
+    the key that names the consumer's templates apart (0130) from what
+    upgrade does with it (0131). Rejected: an item validating the names
+    in the key, which waits on OQ-27.
 
 out_of_scope:
   - "Everything in § 5 of the spec."
