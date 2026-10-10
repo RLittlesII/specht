@@ -183,6 +183,7 @@ jobs:
       - name: 🏺 Upload the package
         uses: actions/upload-artifact@v4
         with:
+          include-hidden-files: 'true'
           if-no-files-found: 'error'
           name: 'nupkg'
           path: '.artifacts/nupkg/*.nupkg'
@@ -222,6 +223,7 @@ The three comment lines stand for text the generator wrote out in full; the rest
 - **The `publish` job invokes no target at all.** `0055-F1` C-1 is set out below.
 - **The second job is assembled entirely in the enhancement**: three steps, none of them a target, and the SDK version written a second time beside the one the shared `Middleware` holds.
 - **A dry run leaves a package behind as a run artifact**, for one day, readable by whoever can read the repository's runs. It is not on a feed, which is what C-1 names.
+- **The upload is told to include hidden files.** `Pack` writes under `.artifacts/`, a folder whose name starts with a dot. `actions/upload-artifact`'s README for the `v4` line says "With `v4.4` and later, hidden files are excluded by default" and defines them as "any file beginning with `.` or files within folders beginning with `.`"; its `action.yml` declares `include-hidden-files`, default `'false'`. Read that way the glob finds no file and `if-no-files-found: 'error'` fails the step, so the step carries `include-hidden-files: 'true'`. The glob still names only `*.nupkg` in that one folder, so no other hidden file is uploaded. This is the action's documentation, read on 2026-10-09, not something observed on a runner. The alternative, a staging path with no dot, would move where `Pack` writes and was not taken. `actions/download-artifact`'s README describes its `path` as "Destination path", by default the workspace, and says nothing about hidden files or folders, so the download into `.artifacts/nupkg` carries no such input.
 
 **Rejected: a second generated workflow started by `workflow_run`** (option B in decision 0001; § 5 #8). Emitted, and taken no further. The probe's second file, trimmed:
 
@@ -267,7 +269,7 @@ What it would have cost:
 
 - calls the shared `Middleware`, for the full-depth checkout, the fetch and the SDK (`0055-F5` C-2, `0055-F2` C-2);
 - calls `RunThroughEntryScript` on the `build` job;
-- inserts the upload step after the step whose `Id` is `pack`: the artifact `nupkg`, the path `.artifacts/nupkg/*.nupkg`, which `0055-F1` B-009 makes exactly one file, failing when no file is found, kept one day;
+- inserts the upload step after the step whose `Id` is `pack`: the artifact `nupkg`, the path `.artifacts/nupkg/*.nupkg`, which `0055-F1` B-009 makes exactly one file, failing when no file is found, kept one day, hidden files included. `UploadArtifactStep` has typed properties for the first four and none for `include-hidden-files`; that input goes through `With`, the dictionary the step inherits from `UsingStep`, and the generator writes it as the first line of the step's `with:` block, beside the typed ones;
 - sets the workflow's permissions to `contents: read` and everything else `none`;
 - adds the `publish` job: `needs: build`; `if: ${{ github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v') }}`; permissions `contents: read` and `packages: write`, everything else `none` (C-5, C-7); `ubuntu-latest`; the download step, the SDK step and the push step.
 
@@ -301,7 +303,7 @@ Job `publish`: `needs: build`, the `if` above on the job, `packages: write`.
 | 2   | Use .NET 10 SDK      | `actions/setup-dotnet`                             | none      |
 | 3   | Push                 | `dotnet nuget push`, as above                      | none      |
 
-The `publish` job is the only place with an `if` and the only job whose token can write a package; its last step is the only step given the token and the only line in any workflow that pushes. No step carries `continue-on-error`.
+The `publish` job is the only place with an `if` and the only job whose token can write a package; its last step is the only step the file hands the token to and the only line in any workflow that pushes. `actions/checkout`, step 1 of `build`, takes the job's token by its own default and leaves it in the clone's git configuration for the steps after it; in `build` that token is read-only. No step carries `continue-on-error`.
 
 ### The version and the file name
 
@@ -328,8 +330,16 @@ The `publish` job is the only place with an `if` and the only job whose token ca
 - **The event.** The only push command is the last step of `publish`, and that job's `if` is false for every event but `push`. A manual run's event is `workflow_dispatch` whatever ref it is started from, a tag included.
 - **The token.** No token that can write a package exists in a dry run: `build`'s is read-only in every run, a tag's included, and a skipped job is given none.
 - **The file.** A manual run from a branch has `GITHUB_REF_NAME` equal to the branch's name, so the path the step would push, `specht.tool.main.nupkg` from `main`, does not exist. This holds even if the `if` were lost. It does not hold for a manual run started from an existing `v*` tag; there the event and the token are the barriers.
-- **The token's reach.** No target pushes, no other step is handed the token, and `Build.cs` has no code that reads it.
+- **The token's reach.** No target pushes, and `Build.cs` has no code that reads the token. The push step is the only step the file hands it to by name. `actions/checkout` takes the job's token by its own default, with no `token` line in the file, and keeps it in the clone's git configuration, so the steps of `build` that run the repository's code can read it. That token is `build`'s, read-only in every run, with `packages: none`; `publish` has no checkout.
 - **This item pushed nothing and created no tag.** Its proof is the generated file, hand runs of `VerifyTag`, and the dry run on `main` after the merge (decision 0002). The first tag is item 0084's, after `0001-F5` and `0001-F6` (C-2).
+
+### What the dry run must settle
+
+None of these can be known before a runner, and a dry run that fails on one reopens the item (decision 0002).
+
+- **The upload from a hidden folder.** That step 11 of `build` finds the one `.nupkg` under `.artifacts/nupkg` with `include-hidden-files: 'true'` and uploads it. If it finds none, `if-no-files-found: 'error'` fails the run.
+- **The upload with `actions: none`** on the job's token.
+- **`publish` reported as skipped**, not failed and not absent.
 
 ### What the dry run does not prove
 

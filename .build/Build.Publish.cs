@@ -53,6 +53,10 @@ internal sealed partial class Build
                 Path = $"{PackagePath}/*.nupkg",
                 IfNoFilesFound = "error",
                 RetentionDays = 1,
+                With = new Dictionary<string, string>
+                {
+                    ["include-hidden-files"] = "true",
+                },
             });
 
         configuration.Permissions = Rocket.Surgery.Nuke.GithubActions.GitHubActionsPermissions.None with
