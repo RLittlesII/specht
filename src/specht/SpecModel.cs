@@ -63,6 +63,7 @@ public sealed class SpecModel
         var fileSystem = new FileSystem();
         var schemas = SpecSchemas.Load(fileSystem, root, versions);
         var frontmatter = new FrontmatterReader(fileSystem);
+        var discovery = schemas.Structure.Discovery;
         var locations = SpecDiscovery.FindSpecifications(root);
         var features = new List<FeatureSpec>();
 
@@ -71,12 +72,12 @@ public sealed class SpecModel
             features.Add(new FeatureSpec(
                 location,
                 SpecDocument.Parse(File.ReadAllText(location.AbsolutePath), location.RelativePath),
-                Directory.EnumerateFiles(location.Directory, "*.feature").Order(StringComparer.Ordinal).ToList()));
+                SpecDiscovery.FindCompanions(fileSystem, location, discovery)));
         }
 
         var items = new List<ChildItem>();
 
-        foreach (var path in SpecDiscovery.FindChildItems(locations))
+        foreach (var path in SpecDiscovery.FindChildItems(fileSystem, locations, discovery, schemas.Structure.Identifiers["task"]))
         {
             items.Add(new ChildItem(
                 SpecDiscovery.Relative(root, path),
@@ -86,16 +87,10 @@ public sealed class SpecModel
         }
 
         var epics = new List<EpicFile>();
-        var epicsDirectory = Path.Combine(root, "epics");
 
-        if (Directory.Exists(epicsDirectory))
+        foreach (var path in SpecDiscovery.FindEpics(fileSystem, root, discovery))
         {
-            var paths = Directory.EnumerateFiles(epicsDirectory, "epic.md", SearchOption.AllDirectories);
-
-            foreach (var path in paths.Order(StringComparer.Ordinal))
-            {
-                epics.Add(new EpicFile(SpecDiscovery.Relative(root, path), frontmatter.Read(path)));
-            }
+            epics.Add(new EpicFile(SpecDiscovery.Relative(root, path), frontmatter.Read(path)));
         }
 
         return new SpecModel(root, features, items, epics, schemas);

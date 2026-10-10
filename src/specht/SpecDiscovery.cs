@@ -1,4 +1,5 @@
 using System.IO.Abstractions;
+using System.Text.RegularExpressions;
 
 namespace specht;
 
@@ -64,8 +65,13 @@ public static class SpecDiscovery
         IFileSystem fileSystem,
         IEnumerable<SpecLocation> specifications,
         SpecDiscoveryInputs inputs,
-        string taskGrammar) =>
-        throw new NotImplementedException("0005: discovery does not read the task file shape from the manifest yet.");
+        string taskGrammar)
+    {
+        var task = $"(?:{taskGrammar.TrimStart('^').TrimEnd('$')})";
+        var shape = new Regex(Pattern(inputs.TaskFiles).Replace(@"\{task}", task, StringComparison.Ordinal));
+
+        return specifications.SelectMany(specification => Beside(fileSystem, specification, shape)).ToList();
+    }
 
     /// <summary>
     /// Discovers every epic file under <paramref name="root"/>: each file the manifest's epic glob matches and its
@@ -76,7 +82,7 @@ public static class SpecDiscovery
     /// <param name="inputs">The manifest's discovery inputs.</param>
     /// <returns>The path of each epic file.</returns>
     public static IReadOnlyList<string> FindEpics(IFileSystem fileSystem, string root, SpecDiscoveryInputs inputs) =>
-        throw new NotImplementedException("0005: discovery does not read the epic file glob from the manifest yet.");
+        Matching(fileSystem, root, inputs.EpicFiles, inputs.Exclusions).Select(static file => file.Path).ToList();
 
     /// <summary>
     /// Discovers the companion files beside <paramref name="specification"/>: every file whose name matches the manifest's
@@ -87,54 +93,7 @@ public static class SpecDiscovery
     /// <param name="inputs">The manifest's discovery inputs.</param>
     /// <returns>The path of each companion file.</returns>
     public static IReadOnlyList<string> FindCompanions(IFileSystem fileSystem, SpecLocation specification, SpecDiscoveryInputs inputs) =>
-        throw new NotImplementedException("0005: discovery does not read the companion glob from the manifest yet.");
-
-    /// <summary>
-    /// Discovers the task, test and spike files beside each specification.
-    /// </summary>
-    /// <remarks>
-    /// Scoped to the directories that hold a specification on purpose. A bare
-    /// <c>&lt;dddd&gt;-&lt;dd&gt;-*.md</c> glob also matches the date-named
-    /// grooming records under <c>epics/audits/</c>, which carry no frontmatter
-    /// and are not items.
-    /// </remarks>
-    public static IReadOnlyList<string> FindChildItems(IEnumerable<SpecLocation> specifications)
-    {
-        var found = new List<string>();
-
-        foreach (var specification in specifications)
-        {
-            foreach (var path in Directory.EnumerateFiles(specification.Directory, "*.md").Order(StringComparer.Ordinal))
-            {
-                if (IsItemFileName(Path.GetFileName(path)))
-                {
-                    found.Add(path);
-                }
-            }
-        }
-
-        return found;
-    }
-
-    /// <summary>Whether <paramref name="fileName"/> is an <c>&lt;epic&gt;-&lt;nn&gt;-&lt;slug&gt;.md</c> item file.</summary>
-    public static bool IsItemFileName(string fileName)
-    {
-        if (fileName.Length < 11 || !fileName.EndsWith(".md", StringComparison.Ordinal))
-        {
-            return false;
-        }
-
-        var span = fileName.AsSpan();
-
-        return char.IsAsciiDigit(span[0])
-            && char.IsAsciiDigit(span[1])
-            && char.IsAsciiDigit(span[2])
-            && char.IsAsciiDigit(span[3])
-            && span[4] == '-'
-            && char.IsAsciiDigit(span[5])
-            && char.IsAsciiDigit(span[6])
-            && span[7] == '-';
-    }
+        Beside(fileSystem, specification, new Regex(Pattern(inputs.CompanionFiles))).ToList();
 
     /// <summary>Gets <paramref name="path"/> relative to <paramref name="root"/>, with <c>/</c> separators (<c>0001-F3</c> B-021).</summary>
     /// <param name="root">The root the tool was given.</param>
@@ -142,6 +101,46 @@ public static class SpecDiscovery
     /// <returns>The root-relative path.</returns>
     public static string Relative(string root, string path) =>
         Path.GetRelativePath(root, path).Replace(Path.DirectorySeparatorChar, '/');
+
+    private static IEnumerable<(string Path, string Relative)> Matching(
+        IFileSystem fileSystem,
+        string root,
+        string glob,
+        IReadOnlyList<string> exclusions)
+    {
+        var expression = new Regex(Pattern(glob));
+        var origin = fileSystem.Path.GetFullPath(root);
+
+        var separator = fileSystem.Path.DirectorySeparatorChar;
+
+        return fileSystem.Directory.EnumerateFiles(root, "*", SearchOption.AllDirectories)
+            .Select(path => (Path: path, Relative: fileSystem.Path.GetRelativePath(origin, fileSystem.Path.GetFullPath(path)).Replace(separator, '/')))
+            .Where(file => expression.IsMatch(file.Relative) && !IsExcluded(file.Relative, exclusions))
+            .OrderBy(static file => file.Relative, StringComparer.Ordinal);
+    }
+
+    private static IEnumerable<string> Beside(IFileSystem fileSystem, SpecLocation specification, Regex name) =>
+        fileSystem.Directory.EnumerateFiles(specification.Directory)
+            .Where(path => name.IsMatch(fileSystem.Path.GetFileName(path)))
+            .Order(StringComparer.Ordinal);
+
+    private static string Pattern(string glob)
+    {
+        var segments = glob.Split('/').Select(static segment =>
+            segment == "**" ? "(?:[^/]+/)*" : Regex.Escape(segment).Replace(@"\*", "[^/]*", StringComparison.Ordinal) + "/");
+
+        return @"\A" + string.Concat(segments).TrimEnd('/') + @"\z";
+    }
+
+    private static bool IsExcluded(string relative, IReadOnlyList<string> exclusions)
+    {
+        var directories = relative.Split('/')[..^1];
+        var anchored = $"/{string.Join('/', directories)}/";
+
+        return exclusions.Any(entry => entry.StartsWith('/')
+            ? anchored.StartsWith(entry + "/", StringComparison.Ordinal)
+            : directories.Contains(entry, StringComparer.Ordinal));
+    }
 
     private static IEnumerable<string> SpecDirectories(string root)
     {
