@@ -20,6 +20,7 @@ namespace specht.acceptance.Manifest;
 /// (B-008): the runner selects no on-disk source until <c>0001-F7</c> B-009. A role, a role's headers and a marker are
 /// written into the manifest under <c>roles</c>, <c>tables</c> and <c>markers</c> (B-001 to B-003, B-015, B-039, B-040;
 /// decision 0006). An empty file-shape list is written under <c>companionFiles</c> (B-041; <c>0001-F6</c> decision 0008).
+/// An exclusion entry is written as the whole <c>exclusions</c> list (B-021; <c>0001-F6</c> decision 0003).
 /// </summary>
 [Binding]
 [Scope(Feature = "The manifest carries the roles")]
@@ -166,6 +167,9 @@ public sealed class ManifestSteps
 
     [Given("the manifest's companion file list is empty")]
     public void GivenTheManifestsCompanionFileListIsEmpty() => Manifest["companionFiles"] = new JsonArray();
+
+    [Given("the manifest's exclusion list holds the entry {string}")]
+    public void GivenTheManifestsExclusionListHoldsTheEntry(string entry) => Manifest["exclusions"] = new JsonArray(entry);
 
     [Then("the rejection names the companion file list")]
     public void ThenTheRejectionNamesTheCompanionFileList() => _rejection!.Message.Should().Contain("companionFiles");

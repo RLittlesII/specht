@@ -121,7 +121,7 @@ Item `0005` declares the inputs; the walk (`0007`), the git listing (`0008`) and
 
 ## 7. Technical Design
 
-<!-- last written by: implementer, 2026-10-09 (item 0005: decision 0008 as built - the layouts named `epics` and `features`, the three file-shape keys lists; what the code does for OQ-12 to OQ-14) -->
+<!-- last written by: implementer, 2026-10-10 (item 0019: the malformed exclusion entry is rejected at load, `0001-F5` B-021; item 0005: decision 0008 as built - the layouts named `epics` and `features`, the three file-shape keys lists; what the code does for OQ-12 to OQ-14) -->
 
 Design for item `0005` (B-001, B-002, B-003, B-009, B-012), as built. brief § 5 "Discovery cost" is the drafted direction for `0007` and `0008`, which are not designed here.
 
@@ -265,7 +265,7 @@ The layout list is computed where the report is built, from the model alone: for
 - **The git listing (`0008`).** The globs become `:(glob)` pathspecs and `Exclusions` become exclude pathspecs (B-005, B-010).
 - **Path identity (`0006`).** `IdentityRule` reads `segments[1]` and `segments[2]` of a path in the `epics` layout. Until `0006` declares the segments on the layout, the rule selects the layout named `epics` (`legacy` until decision 0008), compared ordinally: the one layout literal this item leaves in a rule, and a manifest that renames that layout turns `SPEC011` off for it. The owner accepted that interim, and `0005` lands as its own pull request ([decision 0005](decisions/0005-spec011-selects-the-legacy-layout-by-name-until-path-identity-is-declared.md), which resolved OQ-5). Whether `SPEC011` reads the epic segment of a path in the `epics` layout when the manifest declares no epic grammar is `0001-F5` OQ-7, and `0006`'s to build.
 - **One order across layouts (`0009`, B-008).** `0005` keeps today's order: the layouts in turn, each ordinal by path.
-- **Rejecting a malformed exclusion entry (`0019`, `0001-F5` B-021).** `0005` reads an entry beginning with `/` as a path and any other as a name; an entry with an inner `/` matches no directory name until `0019` rejects it.
+- **Rejecting a malformed exclusion entry (`0019`, `0001-F5` B-021). Built.** Discovery reads an entry beginning with `/` as a path and any other as a name, as `0005` left it. An entry with a `/` inside it and no leading `/` never reaches it: the manifest's loader rejects the manifest, naming the entry (`0001-F5` B-021, [`0001-F5` § 7](../../Manifest/.spec/README.md)).
 - **`ISpecDiscovery` and instance classes.** ADR-0001 stages D and E (`0107`, `0007`, `0008`).
 - **The item id read from a file name.** [`ChildItem.FileNameId`](../../ChildItem.cs) is still the first seven characters of an item's file name, the default task grammar's length. `0005` did not change it: no test of B-003 reads it, and under a task grammar of another length `SPEC040` to `SPEC044` compare the wrong prefix. No claim of this Feature covers it; it is `spec-author`'s to place.
 
