@@ -58,3 +58,12 @@ claimed twice until it changes the manifest.
 ## Reversal
 
 None.
+
+**Noted 2026-10-09, after review round 1.** Nothing is reversed, and the
+labels above stand. `0101-F7` B-020 carried two defaults and was split: it
+keeps the record file shape, and the record number grammar's default is
+B-026. Where this record cites B-020 for the grammar, read B-026. C-13,
+OQ-7's Resolution and OQ-8 part (c) now say what "Why" says here: the owner
+selected "On by default", the folder names are the question's wording, and
+the root record folders, the file shape, the grammar and tool-owned are the
+author's inference, carried open in OQ-8.

@@ -122,14 +122,15 @@ Feature: Record number uniqueness
 
   @B-013
   Scenario Outline: Record folders are read beside a specification in every layout
-    Given a Feature specified in the <layout> layout whose decisions folder holds two records numbered 0003
+    Given a Feature specified in <layout> whose decisions folder holds two records numbered 0003
     When the check runs
     Then a claimed-twice finding names 0003
 
     Examples:
-      | layout   |
-      | features |
-      | epics    |
+      | layout                     |
+      | the features layout        |
+      | the epics layout           |
+      | a layout the manifest adds |
 
   @B-014 @boundary
   Scenario: A folder named like a record folder elsewhere is not checked
@@ -187,8 +188,14 @@ Feature: Record number uniqueness
       | lessons |
 
   @B-020
-  Scenario: A record is named with four digits, a hyphen and a Markdown extension by default
-    Given a Feature whose decisions folder holds files named 0003-first-call.md and 0003-second-call.md
+  Scenario: A date-named file is a record by default
+    Given a Feature whose decisions folder holds files named 2024-10-01-review.md and 2024-11-05-review.md
+    When the check runs
+    Then a claimed-twice finding names 2024 and both files
+
+  @B-020
+  Scenario: A record's name may end at the hyphen by default
+    Given a Feature whose decisions folder holds files named 0003-first-call.md and 0003-.md
     When the check runs
     Then a claimed-twice finding names 0003 and both files
 
@@ -229,3 +236,34 @@ Feature: Record number uniqueness
     And a Feature whose decisions folder holds two records numbered 0003
     When the check runs
     Then no record number finding is reported
+
+  @B-026
+  Scenario: A record number is four digits by default
+    Given a Feature whose decisions folder holds files named 0003-first-call.md and 0003-second-call.md
+    When the check runs
+    Then a claimed-twice finding names 0003 and both files
+
+  @B-026 @boundary
+  Scenario Outline: A run of digits that is not four long is no record number by default
+    Given a Feature whose decisions folder holds files named <one> and <another>
+    When the check runs
+    Then no claimed-twice finding is reported
+
+    Examples:
+      | one                 | another              |
+      | 003-first-call.md   | 003-second-call.md   |
+      | 00030-first-call.md | 00030-second-call.md |
+
+  @B-027
+  Scenario: A record number grammar the manifest declares is read
+    Given the manifest's record numbers are three digits instead
+    And a Feature whose decisions folder holds files named 003-first-call.md and 003-second-call.md
+    When the check runs
+    Then a claimed-twice finding names 003 and both files
+
+  @B-028
+  Scenario: A record file shape the manifest declares is read
+    Given the manifest declares that a record is named with a record number, a hyphen, any text and a text-file extension
+    And a Feature whose decisions folder holds files named 0003-first-call.txt and 0003-second-call.txt
+    When the check runs
+    Then a claimed-twice finding names 0003 and both files
