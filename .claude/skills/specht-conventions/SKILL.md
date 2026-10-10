@@ -80,6 +80,9 @@ epics/                         one folder per epic - ids share the items' number
 .claude/agents/                the five role contracts - tracked
 .claude/skills/                these skills - tracked; the rest of .claude/ is gitignored
                                (no Skillfile is committed)
+docs/
+  rules/v1/                    rule pages, one SPEC###.md per rule id of the version - embedded in
+                               the engine as rules/v1/<file>
 AGENTS.md                      the entry point for agents
 README.md                      the public front page - what, why, status, usage
 ```
