@@ -21,7 +21,7 @@ public static class SpecManifest
     /// <summary>Reads, checks and fills the manifest under <paramref name="root"/>.</summary>
     /// <param name="fileSystem">The file system the manifest is read through.</param>
     /// <param name="root">The repository root.</param>
-    /// <returns>The section contract, id grammars and frontmatter schema file names, every omitted value read as the default manifest's.</returns>
+    /// <returns>The section contract, id grammars, discovery inputs and schema file names, every omitted value read as the default manifest's.</returns>
     /// <exception cref="SpechtRootNotFoundException"><paramref name="root"/> is not a directory.</exception>
     /// <exception cref="SpechtManifestNotFoundException">There is no file at the manifest path.</exception>
     /// <exception cref="SpechtManifestUnreadableException">The manifest is not well-formed JSON or not the manifest's shape.</exception>
@@ -73,9 +73,18 @@ public static class SpecManifest
             Filled(manifest, "identifiers"),
             SchemaVersion(manifest))
         {
+            Discovery = Discovery(manifest),
             FrontmatterSchemas = Filled(manifest, "frontmatterSchemas"),
         };
     }
+
+    private static SpecDiscoveryInputs Discovery(JsonObject manifest) =>
+        new(
+            [],
+            Strings(manifest["exclusions"] ?? Defaults["exclusions"]!),
+            (manifest["taskFiles"] ?? Defaults["taskFiles"]!).GetValue<string>(),
+            (manifest["epicFiles"] ?? Defaults["epicFiles"]!).GetValue<string>(),
+            (manifest["companionFiles"] ?? Defaults["companionFiles"]!).GetValue<string>());
 
     private static Dictionary<string, string> Filled(JsonObject manifest, string key)
     {
@@ -137,6 +146,10 @@ public static class SpecManifest
     private static readonly HashSet<string> KnownKeys = new(StringComparer.Ordinal)
     {
         "schemaVersion",
+        "exclusions",
+        "taskFiles",
+        "epicFiles",
+        "companionFiles",
         "sections",
         "tables",
         "identifiers",

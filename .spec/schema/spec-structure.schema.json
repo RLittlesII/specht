@@ -1,5 +1,19 @@
 {
   "$comment": "Not a JSON Schema. The ordered section manifest SpecCheck rule SPEC010 reads, kept beside the schemas so the section contract - the twelve numbered sections plus Tasks and Scoring - lives in one place rather than as a string array in C#.",
+  "exclusions": [
+    ".git",
+    ".artifacts",
+    ".skillfile",
+    ".claude",
+    "graphify-out",
+    "bin",
+    "obj",
+    "node_modules",
+    "/.spec"
+  ],
+  "taskFiles": "{task}-*.md",
+  "epicFiles": "epics/**/epic.md",
+  "companionFiles": "*.feature",
   "sections": [
     "1. Business Goal",
     "2. User Needs",
