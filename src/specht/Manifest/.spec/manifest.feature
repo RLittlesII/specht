@@ -69,7 +69,7 @@ Feature: The manifest carries the roles
   Scenario: Claim tags follow the claim grammar
     Given the manifest's claim grammar accepts a four-digit claim number
     And the root holds a specification declaring claim "B-0001"
-    And its companion carries a scenario tagged "B-0001"
+    And its companion carries a scenario tagged "@B-0001"
     When the check runs
     Then the tag resolves to the claim
     And no unresolved-tag violation is reported
@@ -290,6 +290,60 @@ Feature: The manifest carries the roles
     And the root holds a co-located specification declaring id "F2" and no epic
     When the check runs
     Then a missing-epic violation is reported on that specification
+
+  @B-036
+  Scenario: Claim tags follow the manifest's tag form
+    Given the manifest's claim tag form is "@req:{claim}"
+    And the root holds a specification declaring claim "B-001"
+    And its companion carries a scenario tagged "@req:B-001" and a scenario tagged "@req:B-002"
+    When the check runs
+    Then the first tag resolves to the claim
+    And the unresolved-tag rule reports the second tag and nothing else
+
+  @B-036 @boundary
+  Scenario: A tag outside the manifest's tag form is not a claim tag
+    Given the manifest's claim tag form is "@req:{claim}"
+    And the root holds a specification declaring claim "B-001"
+    And its companion carries a scenario tagged "@B-002"
+    When the check runs
+    Then no unresolved-tag violation is reported
+
+  @B-037
+  Scenario: Claim tags resolve ignoring case when the manifest says so
+    Given the manifest reads claim tags ignoring letter case
+    And the root holds a specification declaring claim "B-001"
+    And its companion carries a scenario tagged "@b-001" and a scenario tagged "@b-002"
+    When the check runs
+    Then the first tag resolves to the claim
+    And the unresolved-tag rule reports the second tag and nothing else
+
+  @B-037 @boundary
+  Scenario: Claim tags are read in exact case unless the manifest says otherwise
+    Given the root holds a specification declaring claim "B-001"
+    And its companion carries a scenario tagged "@b-002"
+    When the check runs
+    Then no unresolved-tag violation is reported
+
+  @B-037 @boundary
+  Scenario: Reading tags ignoring case leaves a claim's own id exact
+    Given the manifest reads claim tags ignoring letter case
+    And the root holds a specification declaring claim "b-001"
+    When the check runs
+    Then the malformed-claim-id rule reports "b-001"
+
+  @B-038
+  Scenario: A tag form without a claim placeholder is invalid
+    Given the manifest's claim tag form is "@req:"
+    When the check runs
+    Then the manifest is rejected
+    And the rejection names the claim tag form
+
+  @B-038 @boundary
+  Scenario: A tag form cannot carry two claims
+    Given the manifest's claim tag form is "@{claim}:{claim}"
+    When the check runs
+    Then the manifest is rejected
+    And the rejection names the claim tag form
 
   @B-039
   Scenario: Table headers keyed by a section title are invalid

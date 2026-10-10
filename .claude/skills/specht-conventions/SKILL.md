@@ -135,6 +135,11 @@ Always carry the prefix in prose — several sequences have a twelfth member.
 in every past commit, review, issue and sibling specification. A dropped claim
 leaves its number retired.
 
+That holds from the moment an id is on `main`. Until then a number is a claim
+other branches cannot see; how one is checked, reserved, and renumbered when two
+branches took it is in [references/delivery.md](references/delivery.md)
+§ "Reserve an id before a branch claims it".
+
 The rule vocabulary is fixed per schema version (brief § 4). A new `SPEC###` is
 a new schema version, after brief § 8 step 6 — never a quiet addition.
 
