@@ -1,0 +1,70 @@
+id: "0119"
+type: task
+title: Say in README.md what specht checks, what is configurable, and the default manifest
+
+status: done
+
+priority: low # DERIVED
+value: 1
+risk: 1
+rank: 17 # DERIVED
+
+parent: null
+children: []
+
+depends_on: []
+blocks: [] # DERIVED
+spikes: []
+
+spec: null
+
+claims: []
+
+created: "2026-10-09"
+updated: "2026-10-09"
+closed: "2026-10-09"
+
+summary: |
+  README.md is the front page a consumer reads, and it did not say what
+  counts as a specification, which rule families run, that work items are
+  optional, which manifest keys the engine reads today, or what the default
+  manifest is. The owner asked for a `## What it checks` section that says
+  so, with the default manifest's JSON on the page so it can be copied.
+
+  The section states only what the code does today. Claim tags in a
+  `.feature` file are still read as `@B-nnn` whatever `identifiers.claim`
+  says; item 0118 builds the configurable tag form and refreshes the
+  README's default-manifest block when the tag keys land.
+
+acceptance_criteria:
+  - README.md carries `## What it checks` between `## Usage` and
+    `## Exit codes`, and the nav row links it.
+  - The section says what a specification is and that the repository-root
+    `.spec/` is never checked as one.
+  - The section lists the rule families with their rule ids, only those
+    that exist in code.
+  - The section says work items are optional and that `.issue/` is never
+    read.
+  - The section says which manifest keys the engine reads today, and that
+    the claim tag form is specified and not built.
+  - The `### Default manifest` JSON block is byte-for-byte
+    `.spec/schema/spec-structure.schema.json`.
+  - README.md § Usage no longer says the manifest always pins
+    `schemaVersion`.
+  - README.md § Status names the commands that ship.
+  - No tool behaviour changes.
+
+decisions:
+  - "2026-10-09, repository owner: give consumers the default manifest's
+    JSON on README.md so they can copy it."
+  - "2026-10-09, repository owner: do not mention the legacy layout in
+    README.md - it will likely be removed soon."
+  - "2026-10-09, implementer: SPEC004 and SPEC011 are left out of the rule
+    table. In code both act only on the layout README.md does not mention;
+    listing them would state a check a co-located repository never gets."
+
+out_of_scope:
+  - Building the configurable claim tag form and case - 0118.
+  - Refreshing the default-manifest block when the tag keys land - 0118.
+  - README.md § Usage rows for commands and options that do not ship yet.
+  - Changing any claim, constraint or rule.
