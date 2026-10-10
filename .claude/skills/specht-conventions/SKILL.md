@@ -183,6 +183,7 @@ none.
 ./build.sh AcceptanceTest   # test/specht.acceptance, Reqnroll, no filter
 ./build.sh Pack             # specht.tool.<version>.nupkg into .artifacts/nupkg
 ./build.sh SpecCheck        # the tool checking this repository's own .spec/ tree
+./build.sh VerifyTag        # on a tag build, fails unless the tag is v<version>; skipped otherwise
 ```
 
 `SpecCheck` runs `specht` exactly as a consumer would — through the local tool
@@ -207,7 +208,8 @@ a commit of `main` creates `v<version>` (`0055-F5` A-1, B-007).
 - A renumbered claim, constraint, question, task or rule id.
 - A GitHub issue, label or milestone as a tracker.
 - A hand edit to any derived field.
-- A hand edit to `.github/workflows/ci.yml`. It is NUKE-generated.
+- A hand edit to `.github/workflows/ci.yml` or `.github/workflows/publish.yml`.
+  Both are NUKE-generated.
 - A package version in a `.csproj`.
 - A specification in two places at once.
 - A second copy of a schema file that can drift. `.spec/schema/` and the embedded

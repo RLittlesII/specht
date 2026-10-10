@@ -24,7 +24,7 @@ claims:
   - B-007
 
 created: "2026-10-08"
-updated: "2026-10-08"
+updated: "2026-10-09"
 closed: null
 
 summary: |
@@ -39,6 +39,7 @@ acceptance_criteria:
   - "B-004 — package pushed: a GitHub Release for the tag"
   - "B-006 — Release notes generated from the pull requests since the previous `v*` tag"
   - "B-007 — the published package attached to the Release"
+  - "0055-F6 OQ-11 is answered before the first tag is pushed — `specht.tool.csproj` sets no `RepositoryUrl`"
   - "§ 9 carries a row naming a test for each id above."
 
 decisions: []

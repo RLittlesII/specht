@@ -1,0 +1,66 @@
+id: "0131"
+type: task
+title: Leave the consumer's templates alone on upgrade
+
+status: ready-for-architecture
+
+priority: high
+risk: 3
+rank: 71
+
+parent: "0041"
+children: []
+
+depends_on: ["0130", "0045", "0047"] # reads 0130's key; narrows the rewrite 0045 performs; extends 0047's listing of what changed
+blocks: []
+spikes: []
+
+spec: src/specht.tool/.spec/README.md
+
+claims:
+  - B-005
+  - B-006
+  - B-060
+  - B-061
+  - B-062
+  - B-063
+
+created: "2026-10-09"
+updated: "2026-10-09"
+closed: null
+
+summary: |
+  As a maintainer with a template of my own, I want `upgrade` to leave
+  the templates my manifest names as mine and still bring every other
+  template to the pinned version, so that moving the pin does not cost me
+  my template (decision 0006). `upgrade` says which templates it skipped
+  and why in 0047's listing, and never creates, modifies or deletes a
+  template file the pinned version does not ship (C-2, C-14). Risk 3: it
+  decides which of a consumer's files `upgrade` overwrites. Waits on 0130
+  for the key, 0045 for the rewrite and 0047 for the listing. B-005 and
+  B-006 are 0045's; this item delivers only the cases decision 0006 added
+  to them.
+
+acceptance_criteria:
+  - "B-060 — a named template is not written"
+  - "B-061 — each skipped template printed with the reason"
+  - "B-062 — an unnamed template that differs is rewritten"
+  - "B-063 — no template file the pinned version does not ship is touched"
+  - "B-005 — a template named: the frontmatter schemas still rewritten (its `@boundary` scenario)"
+  - "B-006 — only a named template differs: current, nothing rewritten (its second scenario)"
+  - "§ 9 carries a row naming a test for each id above."
+
+decisions:
+  - |
+    2026-10-09, spec-author's cut, recording the owner's decision 0006:
+    B-060 to B-063 in one item, with the scenarios B-005 and B-006 gained,
+    since none can be shown without the key (0130) and the rewrite (0045).
+    B-064 is withdrawn into B-005 and carried by no item. Rejected: B-063
+    in 0045, where its case of a name in the manifest could not be shown.
+
+out_of_scope:
+  - "The key and the check under it — 0130."
+  - "A name the pinned version does not ship as an invalid manifest — OQ-27; no claim yet."
+  - "An upstream template source — § 5 #14; OQ-26."
+  - "`init` beside a named template — § 5 #18."
+  - "Validating a template's content — § 5 #15."
