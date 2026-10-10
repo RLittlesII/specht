@@ -119,49 +119,51 @@ Nothing publishes `specht.tool`: `0001-F2` § 5 row 7 hands the release workflow
 
 <!-- last written by: implementer, 2026-10-09 -->
 
-**Design for item 0083 (B-001, B-002, B-005, B-008, B-009). Nothing below is built.** Its names are the owner's (OQ-6, answered 2026-10-09): the file `publish.yml`, the target `VerifyTag`, the job `build` on `ubuntu-latest`. Where the push runs is still a proposal the owner has not chosen (OQ-8), and OQ-7 and OQ-9 to OQ-12 are open. B-003, B-004, B-006 and B-007 are item 0084's and B-010 is item 0085's; where this design leaves room for them it says so and builds nothing.
+**Built by item 0083 for B-001, B-002, B-005, B-008 and B-009**, in the shape decision 0001 records: the generated file `publish.yml`, the target `VerifyTag`, the job `build` on `ubuntu-latest` and the job `publish`. No test proves it (decision 0002); § 8 holds the records. The manual trigger carries no input, which is OQ-7's proposed default; OQ-7, OQ-11 and OQ-12 are open and block nothing here. B-003, B-004, B-006 and B-007 are item 0084's and B-010 is item 0085's; where this design leaves room for them it says so and builds nothing.
 
 ### What the generator can express
 
-The generator is Rocket.Surgery.Nuke 2.9.12's `[GitHubActionsSteps]`, the one [`.build/Build.GitHubActions.cs`](../../Build.GitHubActions.cs) and [`.build/Build.Renovate.cs`](../../Build.Renovate.cs) already use (`0055-F2` C-1). Each line below was observed on 2026-10-09, in two probes, by declaring throwaway workflows in the build project, running `./build.sh Compile` and reading the files it wrote; the declarations and the files were then deleted, and nothing of either probe is committed.
+The generator is Rocket.Surgery.Nuke 2.9.12's `[GitHubActionsSteps]`, the one [`.build/Build.GitHubActions.cs`](../../Build.GitHubActions.cs) and [`.build/Build.Renovate.cs`](../../Build.Renovate.cs) already use (`0055-F2` C-1). Each line below was observed on 2026-10-09, in two probes, by declaring throwaway workflows in the build project, running `./build.sh Compile` and reading the files it wrote; the declarations and the files were then deleted, and nothing of either probe is committed. The lines the built workflow uses were observed again in the committed [`publish.yml`](../../../.github/workflows/publish.yml).
 
 - **A `v*` tag trigger: yes, by attribute.** `GithubActionsStepsAttributeBase.OnPushTags = ["v*"]` wrote `on: push: tags: - 'v*'`, with no `branches` key.
 - **A manual trigger: yes, by attribute.** `On = [RocketSurgeonGitHubActionsTrigger.WorkflowDispatch]` beside `OnPushTags` wrote a bare `workflow_dispatch:` next to the `push` trigger. No enhancement is needed for it.
-- **A manual trigger with an input: yes, by enhancement only.** Adding to `RocketSurgeonGitHubActionsConfiguration.DetailedTriggers` a `RocketSurgeonGitHubActionsWorkflowTrigger` of `Kind` `WorkflowDispatch` whose `Inputs` holds a `GitHubActionsInput(Name, Type, Default, Description, Required, Alias)` wrote `workflow_dispatch: inputs:` with the input's `type`, `description`, `required` and `default`. This design uses no input (OQ-7).
+- **A manual trigger with an input: yes, by enhancement only.** Adding to `RocketSurgeonGitHubActionsConfiguration.DetailedTriggers` a `RocketSurgeonGitHubActionsWorkflowTrigger` of `Kind` `WorkflowDispatch` whose `Inputs` holds a `GitHubActionsInput(Name, Type, Default, Description, Required, Alias)` wrote `workflow_dispatch: inputs:` with the input's `type`, `description`, `required` and `default`. The built workflow has no input.
 - **The workflow token's permissions: yes, by enhancement.** `configuration.Permissions = GitHubActionsPermissions.None with { Contents = Read, Packages = Write }` wrote all thirteen scopes, `contents: read`, `packages: write` and the rest `none`. With no enhancement the generator wrote its own default, which grants more than this run needs.
 - **A full-depth checkout: yes, already.** `CheckoutStep.FetchDepth`, which the shared `Middleware` sets to 0, wrote `fetch-depth: '0'`. With `CheckoutStep.Ref` left unset the step has no `ref`, so the run checks out the commit the event names.
 - **A condition, an environment and a shell on one step: yes.** `BaseGitHubActionsStep.If`, `BaseGitHubActionsStep.Environment` and `RunStep.Shell` wrote `if:`, `env:` and `shell:` on an inserted `RunStep`.
 - **A tag check before the push: not as a setting.** The generator has no member that compares a tag with a version. It is a target, which the generator turns into a step like any other.
 - **A publish step of its own: no.** `GithubActionsExtensions.AddNugetPublish` is marked obsolete with the message "Method no longer does anything, use PublishNugetJob attribute instead", so calling it fails this build, which treats warnings as errors. `PublishNugetPackagesJobAttribute` is the replacement it names; the next line is what that wrote.
 - **`PublishNugetPackagesJobAttribute`: probed, and it does not fit.** `[PublishNugetPackagesJob("<secret name>", "<workflow name>", AutoGenerate = true)]` wrote a second file, `publish-nuget.yml`, named `Publish Nuget Packages`. Its trigger is `workflow_run` on the named workflow with `types: completed`. Its one job, `publish_nuget`, runs when `github.event.workflow_run.conclusion == 'success'`, prints the whole `github` context, downloads the artifact named `nuget` from the triggering run, and in a `pwsh` step runs `dotnet nuget push **/*.nupkg --skip-duplicate -s nuget.org --api-key $ENV:ApiKey` and the same for `**/*.snupkg`, the key being `${{ secrets.<secret name> }}`. The feed, both globs, the artifact name and the steps are literals inside the attribute; its constructor takes the secret's name, the triggering workflow, branches, a condition and images, and nothing else. It ignored `Enhancements`: an enhancement that renamed the workflow changed nothing. Its token carried the generator's default permissions, `packages: none` among them. So it names a feed C-3 rules out, pushes a glob where C-4 names one file, fetches from another run, which C-4 rules out, and needs a stored secret, which C-5 rules out.
-- **A second job: yes, by enhancement.** Adding to `configuration.Jobs` a `RocketSurgeonsGithubActionsJob` with `Needs`, `If`, `Permissions`, a `Matrix` of one image and its own `Steps` wrote a `publish:` job after `build:` with `needs: - build`, `if:`, a `permissions:` block, `runs-on: ubuntu-latest` and the steps given, in that order. `RunsOn` in place of `Matrix` writes the list form, `runs-on: [ubuntu-latest]`.
+- **A second job: yes, by enhancement.** Adding to `configuration.Jobs` a `RocketSurgeonsGithubActionsJob` with `Needs`, `If`, `Permissions`, a `Matrix` of one image name and its own `Steps` wrote a `publish:` job after `build:` with `needs: - build`, `if:`, a `permissions:` block, `runs-on: ubuntu-latest` and the steps given, in that order. `RunsOn` in place of `Matrix` writes the list form, `runs-on: [ubuntu-latest]`.
 - **Workflow-level and job-level permissions are separate: yes.** `configuration.Permissions` wrote the block at the top of the file and the job's `Permissions` wrote the job's own. The probe had `packages: none` at the top and `packages: write` in `publish` alone; `build`, given no `Permissions`, wrote no block and so takes the top one.
-- **Artifact steps: yes, as typed steps.** An `UploadArtifactStep` with `Name`, `Path`, `IfNoFilesFound` and `RetentionDays`, inserted after the step whose `Id` is `pack`, wrote `actions/upload-artifact@v4` with `name`, `path`, `if-no-files-found` and `retention-days`. A `DownloadArtifactStep` with `Name` and `Path` wrote `actions/download-artifact@v4`. The generator puts an emoji before both step names, as it does before `Restore`, `Compile`, `Test` and `Pack` in `ci.yml`.
+- **Artifact steps: yes, as typed steps.** An `UploadArtifactStep` with `Name`, `Path`, `IfNoFilesFound` and `RetentionDays`, inserted after the step whose `Id` is `pack`, wrote `actions/upload-artifact@v4` with `name`, `path`, `if-no-files-found` and `retention-days`. A `DownloadArtifactStep` with `Name` and `Path` wrote `actions/download-artifact@v4`. The generator puts an emoji before both step names, as it does before `Restore`, `Compile`, `Test` and `Pack`. The action versions are the typed steps' own, as those of `actions/checkout` and `actions/setup-dotnet` are in `ci.yml`.
 - **A `workflow_run` trigger: yes, by enhancement.** `RocketSurgeonGitHubActionsTrigger` has a `WorkflowRun` member, and a `RocketSurgeonGitHubActionsWorkflowTrigger` of that `Kind` with `Workflows` and `Types` wrote `on: workflow_run: workflows: - '<name>' types: - 'completed'`; it writes `Branches` too when given. `DownloadArtifactStep.RunId` and `GithubToken` wrote `run-id` and `github-token`, which is how a second workflow fetches from the run that started it.
-- **The other workflows did not move.** With all of the above declared, the same regeneration left `ci.yml` and `renovate.yml` without a difference.
-- **The step order, when the targets are invoked one by one, needs no repair.** `InvokedTargets` naming the tag check, `Format`, `Compile`, `Test`, `SpecCheck` and `Pack` wrote the steps in exactly that order after `Restore`, with `SpecCheck` as `--skip Test` and `Pack` as `--skip Compile`. Invoking one aggregate target that depends on the six instead wrote `Format` after `Pack`, and after a push step inserted behind `Pack`, followed by a trailing step for the aggregate. So this design has no aggregate target.
+- **The other workflows did not move.** With all of the above declared, the same regeneration left `ci.yml` and `renovate.yml` without a difference, and so did the regeneration that wrote the committed `publish.yml`.
+- **The trigger order is the generator's.** It wrote `workflow_dispatch:` above `push:`.
+- **The step order, when the targets are invoked one by one, needs no repair.** `InvokedTargets` naming the tag check, `Format`, `Compile`, `Test`, `SpecCheck` and `Pack` wrote the steps in exactly that order after `Restore`, with `SpecCheck` as `--skip Test` and `Pack` as `--skip Compile`. Invoking one aggregate target that depends on the six instead wrote `Format` after `Pack`, and after a push step inserted behind `Pack`, followed by a trailing step for the aggregate. So there is no aggregate target.
 - **What the generator always writes and the enhancement must undo**, as `ContinuousIntegrationMiddleware` does for `ci.yml`: a `dotnet tool restore` step, a global `nuke` install, `nuke --target Restore` and `dotnet .build/bin/Debug/.build.dll --target ...` for every later target. `0055-F1` C-3 rules out the global install, and `0055-F2` B-004 runs every target through the entry script.
 - **Adding a target changes [`.nuke/build.schema.json`](../../../.nuke/build.schema.json)**, which the same run regenerates.
 
-So nothing these five claims need is beyond the generator: two attribute settings, one enhancement and one target, whichever answer OQ-8 gets.
+Nothing these five claims need was beyond the generator: two attribute settings, one enhancement and one target.
 
 **No line of `publish.yml` is written by hand.** Every line comes from the attribute or from a typed step or job the enhancement adds. Two kinds of generated text are changed by the enhancement after the generator produced them, which is how `ci.yml` is already made by `ContinuousIntegrationMiddleware`: the `run:` line of each target step, rewritten from `dotnet .build/bin/Debug/.build.dll --target ...` and `nuke --target Restore` to `./build.cmd --target ...`; and the generator's `dotnet tool restore` and global `nuke` install steps, removed.
 
 ### What is declared
 
-- **A new partial of `Build`**, `.build/Build.Publish.cs`, beside `Build.Renovate.cs`. It carries the attribute, the enhancement and the tag-check target.
-- **The attribute.** `[GitHubActionsSteps("publish", GitHubActionsImage.UbuntuLatest, AutoGenerate = true, OnPushTags = ["v*"], On = [WorkflowDispatch], InvokedTargets = [VerifyTag, Format, Compile, Test, SpecCheck, Pack], Enhancements = [PublishMiddleware])]`, generating `.github/workflows/publish.yml`. The file name is the one `specht-conventions` § Layout already gives, which A-1 cites, and the owner's (OQ-6). One image: a release packs once and pushes one file, and the windows gates run on every push to `main` (`0055-F2` B-004).
-- **The triggers** are those two and no other: a pushed tag matching `v*`, and a run started by hand. No `branches`, no `pull_request`.
-- **One new target, `VerifyTag`** (OQ-6), depending on `Restore`, which is what restores `nbgv` (`0055-F5` § 7). It runs only when `GITHUB_REF_TYPE` is `tag`, through NUKE's `OnlyWhenDynamic`; the probe showed such a target reported `Skipped` otherwise. It asks `dotnet nbgv get-version --variable NuGetPackageVersion` for the commit's version, the value `Pack` stamps (`0055-F5` B-005), and fails with both names in its message unless `GITHUB_REF_NAME` equals `v` followed by that version, the shape `version.json`'s `release.tagName` gives a tag made by `nbgv tag` (A-2). It reads the two variables the runner sets in every step, so the workflow passes it nothing and no tag name is ever written into a command line. It is a gate, so it is a target (`0055-F1` C-1).
-- **No target pushes.** `0055-F1` C-1 makes every gate a target; the push is not a gate, and C-1 here rules out a publish from a developer's machine, which a `Publish` target would put one command away. The owner accepts that concern (2026-10-09). The push is one `RunStep` the enhancement declares; which job it sits in is the proposal below (OQ-8).
+- **A partial of `Build`**, [`.build/Build.Publish.cs`](../../Build.Publish.cs), beside `Build.Renovate.cs`. It declares the attribute, the enhancement `PublishMiddleware` and the target `VerifyTag`.
+- **The attribute**, `[GitHubActionsSteps("publish", ...)]`, generating `.github/workflows/publish.yml`. The file name is the one `specht-conventions` § Layout gives, which A-1 cites. One image: a release packs once and pushes one file, and the windows gates run on every push to `main` (`0055-F2` B-004).
+- **The triggers** are two and no other: a pushed tag matching `v*`, and a run started by hand. No `branches`, no `pull_request`, no input.
+- **The target `VerifyTag`**, depending on `Restore`, which is what restores `nbgv` (`0055-F5` § 7). It runs only when `GITHUB_REF_TYPE` is `tag`, through NUKE's `OnlyWhenDynamic`, and reports `Skipped` otherwise. It asks `dotnet nbgv get-version --variable NuGetPackageVersion` for the commit's version, the value `Pack` stamps (`0055-F5` B-005), and fails with the tag and the version in its message unless `GITHUB_REF_NAME` equals `v` followed by that version, the shape `version.json`'s `release.tagName` gives a tag made by `nbgv tag` (A-2). It reads the two variables the runner sets in every step, so the workflow passes it nothing and no tag name is ever written into a command line. It is a gate, so it is a target (`0055-F1` C-1).
+- **`RunThroughEntryScript`**, in [`.build/Build.GitHubActions.cs`](../../Build.GitHubActions.cs): the statements that remove the generator's tool-restore and global-install steps and rewrite every target step to `./build.cmd --target ...`. `ContinuousIntegrationMiddleware` held them; with a second caller they are one private method both enhancements call.
+- **No target pushes.** `0055-F1` C-1 makes every gate a target; the push is not a gate, and C-1 here rules out a publish from a developer's machine, which a `Publish` target would put one command away (§ 5 #7, decision 0001). The push is one `RunStep` the enhancement declares in the `publish` job.
 - **The feed and the token are the constraints', not this design's.** C-3 names GitHub Packages on `rlittlesii/specht` as the only feed, and C-5 the workflow's own token granted package write as the only credential. The address in the push line is GitHub's NuGet endpoint for the owner `rlittlesii`; no specification writes the address down, and what ties a pushed package to the repository `specht` is OQ-11.
 - **`Build.cs` is unchanged.** `Format`, `Compile`, `Test`, `SpecCheck` and `Pack` are the targets `0055-F1` built, and `Configuration` is already `Release` off a developer's machine. `DeployMiddleware` in `Build.GitHubActions.cs`, with its registry and Azure logins, is not used here either and stays as it is.
 
-### Where the push runs: a proposal (OQ-8)
+### Where the push runs
 
-The owner asked on 2026-10-09 whether the publish to the feed can run on a trigger after the build succeeds, with NUKE still generating every line of the file. It can, two ways, and the generator emitted both in the second probe. **The owner has not chosen.** The three shapes follow, each with what it costs. The rest of this section then describes option A, because it is the one that answers the question without a constraint having to be amended.
+In a second job, `publish`, of the same generated file (decision 0001). The owner asked on 2026-10-09 whether the publish to the feed can run on a trigger after the build succeeds, with NUKE still generating every line of the file. It can, two ways, and the generator emitted both in the second probe. The owner chose the first. The three shapes follow, each with what it costs.
 
-**Option A: two jobs in `publish.yml`. Emitted.** `build` runs the gates and `Pack` with a read-only token and uploads the one package as a run artifact. `publish` needs `build`, runs only for a pushed `v*` tag, and is the only job whose token carries `packages: write`. The probe's file, trimmed to what differs from a one-job file:
+**Built: two jobs in `publish.yml`** (option A in decision 0001). `build` runs the gates and `Pack` with a read-only token and uploads the one package as a run artifact. `publish` needs `build`, runs only for a pushed `v*` tag, and is the only job whose token carries `packages: write` (C-7). The committed [`publish.yml`](../../../.github/workflows/publish.yml), trimmed to what differs from a one-job file:
 
 ```text
 permissions:
@@ -212,16 +214,16 @@ jobs:
           dotnet nuget push ".artifacts/nupkg/specht.tool.${GITHUB_REF_NAME#v}.nupkg" --source "https://nuget.pkg.github.com/rlittlesii/index.json" --api-key "$GITHUB_TOKEN"
 ```
 
-The three comment lines stand for text the generator wrote out in full; the rest is as written. What option A costs:
+The three comment lines stand for text the generator wrote out in full; the rest is as written. What this shape costs, each cost accepted by decision 0001:
 
-- **B-008's wording needs the owner's reading.** On a dry run the `publish` job is skipped whole, so its download and SDK steps do not run. "Every step up to the push" then holds for every step of `build`, the upload included, and not for the two steps of `publish` that precede the push. Putting the `if` on the push step instead would make the claim literal and give a dry run a write token, because a job's permissions cannot follow the event; keeping that token out of a dry run is what this option is for.
-- **C-4's wording needs the owner's reading.** The package leaves `build` as a run artifact and arrives in `publish` by download. It is "the file `Pack` wrote in the same run": the same workflow run, never rebuilt, never re-versioned, and not "fetched from another run". It is also a copy GitHub's artifact store carried between two machines, and nothing compares it with what `Pack` wrote. The first draft of this section read C-4 as against a hand-off; read by its own words it allows one within a run. The owner or `spec-author` says which.
-- **C-5 says "granted package write for the run"**; here the grant is to one job of the run. That is narrower than the words and inside them.
-- **`0055-F1` C-1 is where it was with one job**, set out below. The `publish` job invokes no target at all.
+- **A dry run skips the `publish` job whole**, so its download and SDK steps do not run; B-008 as amended says so. Putting the `if` on the push step instead would give a dry run a write token, because a job's permissions cannot follow the event; keeping that token out of a dry run is what the second job is for.
+- **The package leaves `build` as a run artifact and arrives in `publish` by download** (C-4 as amended). It is the same workflow run, never rebuilt, never re-versioned, and not fetched from another run. It is also a copy GitHub's artifact store carried between two machines, and nothing compares it with what `Pack` wrote.
+- **C-5 says "granted package write for the run"**; here the grant is to one job of the run (C-7). That is narrower than the words and inside them.
+- **The `publish` job invokes no target at all.** `0055-F1` C-1 is set out below.
 - **The second job is assembled entirely in the enhancement**: three steps, none of them a target, and the SDK version written a second time beside the one the shared `Middleware` holds.
-- **A dry run leaves a package behind as a run artifact**, for the retention set (one day in the probe), readable by whoever can read the repository's runs. It is not on a feed, which is what C-1 names.
+- **A dry run leaves a package behind as a run artifact**, for one day, readable by whoever can read the repository's runs. It is not on a feed, which is what C-1 names.
 
-**Option B: a second generated workflow started by `workflow_run`. Emitted, and taken no further.** The probe's second file, trimmed:
+**Rejected: a second generated workflow started by `workflow_run`** (option B in decision 0001; § 5 #8). Emitted, and taken no further. The probe's second file, trimmed:
 
 ```text
 on:
@@ -243,37 +245,37 @@ jobs:
           name: 'nupkg'
           path: '.artifacts/nupkg'
           run-id: '${{ github.event.workflow_run.id }}'
-      # SDK and push as in option A, the tag read from github.event.workflow_run.head_branch
+      # the SDK and the push as in the built file, the tag read from github.event.workflow_run.head_branch
 ```
 
-What option B costs:
+What it would have cost:
 
-- **C-4 rules it out by name.** The package is "fetched from another run between the gates and the push". Taking B means amending C-4.
+- **C-4 rules it out by name.** The package is "fetched from another run between the gates and the push".
 - **Two generated files and two runs for one release.** A failed gate fails one run and the publish is absent from another, where B-002 and B-009 speak of one run.
 - **The barrier is the triggering run's payload**: its conclusion, its event, and the tag's name as `head_branch`. GitHub runs such a workflow from the default branch's copy of the file, whatever was tagged. Both are GitHub's rules as documented, not something observed here.
 - **Every completed run of `publish.yml`, each dry run included, starts a run of the second workflow**, which then skips its job.
 - **The token needs `actions: read`** as well, to download across runs.
-- **It gains nothing over A** for C-1 or C-5: A confines the write token to one job as tightly.
+- **It gains nothing over two jobs** for C-1 or C-5: two jobs confine the write token to one job as tightly.
 
-**The fallback: one job, the push its last step.** This is the shape this section first proposed: `packages: write` on the one job, and the push as step 11 with the `if` on the step. B-008 is literal and C-4 needs no reading, since nothing leaves the job. What it costs: the token of every dry run carries `packages: write`, and so does the token present while every gate runs the repository's code; the event `if` on one step is the only barrier.
+**Rejected: one job, the push its last step.** `packages: write` on the one job, and the push as step 11 with the `if` on the step. B-008's first wording would be literal, and nothing would leave the job. What it would have cost: the token of every dry run carries `packages: write`, and so does the token present while every gate runs the repository's code; the event `if` on one step is the only barrier. C-7 now rules it out.
 
-**`0055-F1` C-1, in its own words**: "Every gate is a NUKE target; the hook and every workflow invoke targets by name." It rules out "A `dotnet test`, `dotnet format` or `dotnet run` line in a workflow or the hook that no target runs; a gate CI has and the build lacks." Under every option the push is one `dotnet nuget push` line that no target runs. It is not one of the three commands named and it is not a gate, so the constraint read as covering gates leaves it alone. Read as "a workflow runs nothing but targets" it does not, and then C-1 of this Feature and `0055-F1` C-1 cannot both hold. The artifact steps are `uses:` steps and not `dotnet` lines, as the SDK step and `ci.yml`'s coverage upload are. `renovate.yml` is already a workflow that invokes no target. The reading is the owner's and is part of OQ-8.
+**`0055-F1` C-1, in its own words**: "Every gate is a NUKE target; the hook and every workflow invoke targets by name." It rules out "A `dotnet test`, `dotnet format` or `dotnet run` line in a workflow or the hook that no target runs; a gate CI has and the build lacks." The push is one `dotnet nuget push` line that no target runs. It is not one of the three commands named and it is not a gate, and decision 0001 reads the constraint as covering gates. The artifact steps are `uses:` steps and not `dotnet` lines, as the SDK step and `ci.yml`'s coverage upload are. `renovate.yml` is already a workflow that invokes no target.
 
-### The enhancement, under option A
+### The enhancement
 
 `PublishMiddleware`, in order:
 
 - calls the shared `Middleware`, for the full-depth checkout, the fetch and the SDK (`0055-F5` C-2, `0055-F2` C-2);
-- removes the generator's tool-restore and global-install steps and rewrites every target step to `./build.cmd --target ...`. `ContinuousIntegrationMiddleware` holds those statements today; with a second caller they move to one private method both enhancements call, and the regenerated `ci.yml` must not change by a byte;
-- inserts the upload step after the step whose `Id` is `pack`: the artifact `nupkg`, the path `.artifacts/nupkg/*.nupkg`, which `0055-F1` B-009 makes exactly one file, failing when no file is found;
+- calls `RunThroughEntryScript` on the `build` job;
+- inserts the upload step after the step whose `Id` is `pack`: the artifact `nupkg`, the path `.artifacts/nupkg/*.nupkg`, which `0055-F1` B-009 makes exactly one file, failing when no file is found, kept one day;
 - sets the workflow's permissions to `contents: read` and everything else `none`;
-- adds the `publish` job: `needs: build`; `if: ${{ github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v') }}`; permissions `contents: read` and `packages: write`, everything else `none` (C-5); `ubuntu-latest`; the download step, the SDK step and the push step.
+- adds the `publish` job: `needs: build`; `if: ${{ github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v') }}`; permissions `contents: read` and `packages: write`, everything else `none` (C-5, C-7); `ubuntu-latest`; the download step, the SDK step and the push step.
 
-The push step has `shell: bash`, an `env` mapping `GITHUB_TOKEN` to `${{ secrets.GITHUB_TOKEN }}`, the only place in the file the token is named, and one line: `dotnet nuget push ".artifacts/nupkg/specht.tool.${GITHUB_REF_NAME#v}.nupkg" --source "https://nuget.pkg.github.com/rlittlesii/index.json" --api-key "$GITHUB_TOKEN"`. It names one file, not a glob. It is written here and first run by item 0084.
+The push step has `shell: bash`, an `env` mapping `GITHUB_TOKEN` to `${{ secrets.GITHUB_TOKEN }}`, the only place in the file the token is named, and one line: `dotnet nuget push ".artifacts/nupkg/specht.tool.${GITHUB_REF_NAME#v}.nupkg" --source "https://nuget.pkg.github.com/rlittlesii/index.json" --api-key "$GITHUB_TOKEN"`. It names one file, not a glob. It is first run by item 0084.
 
-### The file expected, under option A
+### The file generated
 
-Two jobs, both on `ubuntu-latest`, in this order. The regeneration is diffed against these lists (`0055-F2` C-1).
+Two jobs, both on `ubuntu-latest`, in this order. The regeneration was diffed against these lists (`0055-F2` C-1) and matches them step for step: the generator moved nothing.
 
 Job `build`: no `needs`, no `if`, the workflow's read-only token.
 
@@ -299,75 +301,80 @@ Job `publish`: `needs: build`, the `if` above on the job, `packages: write`.
 | 2   | Use .NET 10 SDK      | `actions/setup-dotnet`                             | none      |
 | 3   | Push                 | `dotnet nuget push`, as above                      | none      |
 
-The `publish` job is the only place with an `if` and the only job whose token can write a package; its last step is the only step given the token and the only line in any workflow that pushes. No step carries `continue-on-error`. Under the fallback the file is the first table with step 11 the push, its `if` on the step, and no second job.
+The `publish` job is the only place with an `if` and the only job whose token can write a package; its last step is the only step given the token and the only line in any workflow that pushes. No step carries `continue-on-error`.
 
-### How each claim is met, under option A
+### The version and the file name
+
+- **On a `v*` tag's run the version is public.** `nbgv` reads the runner's ref, and `version.json`'s `publicReleaseRefSpec` names `refs/tags/v` followed by digits and dots, so the tag `v0.1.14` on a commit of height 14 computes `0.1.14`, `Pack` writes `specht.tool.0.1.14.nupkg`, and the push line, which strips the `v` from the tag, names that file.
+- **Off `main` and off such a tag the version is a prerelease**, `0.1.<height>-g<commit>`, and `Pack` writes `specht.tool.0.1.<height>-g<commit>.nupkg`. A dry run started from `main` packs the public name; one started from another branch packs the prerelease name.
+- **On a developer's machine `VerifyTag` compares with the prerelease**, no runner ref being set: by hand it passes only for `v0.1.<height>-g<commit>`. The comparison is the same; the version it is handed differs.
+
+### How each claim is met
 
 - **B-001.** A pushed `v*` tag starts the run. The checkout names no `ref`, so it is the tagged commit, with its full history. Steps 6 to 10 of `build` are the five targets the claim names, each through the entry script. `SpecCheck` is the target as `0055-F1` built it, so it reports and passes until `0001-F5` lands (C-6).
 - **B-002.** Steps run in order in `build`, and a failing target exits the entry script non-zero (`0055-F1` B-018), which fails the job. `publish` needs `build` and its `if` names no status function, so GitHub runs it only when `build` succeeded, and no step of `build` is allowed to fail and continue. No Release is created because nothing in this item creates one; item 0084 puts that step after the push, in `publish`, which already holds the file B-007 attaches.
 - **B-005.** A branch push, a pull request, or a tag that does not match `v*` starts no run of this workflow: its triggers name none of them. `ci.yml` and `renovate.yml` pack nothing and push nothing, and their tokens have `packages: none`. The `publish` job's own `if` repeats the rule, so it does not depend on the trigger list staying as it is. The glob `v*` is wider than a version: a tag such as `vnext` does start a run, and B-009 is what stops it.
-- **B-008.** A run started by hand executes all eleven steps of `build`. `VerifyTag` reports `Skipped` when the run was started from a branch, there being no tag to compare. `publish` is skipped because the event is `workflow_dispatch`, so nothing is pushed. There is no input and no parameter that turns a manual run into a publishing one (C-1, OQ-7). Whether a skipped `publish` job leaves "every step up to the push" true is the reading asked for above.
+- **B-008.** A run started by hand executes all eleven steps of `build`. `VerifyTag` reports `Skipped` when the run was started from a branch, there being no tag to compare. `publish` is skipped because the event is `workflow_dispatch`, so nothing is pushed. There is no input and no parameter that turns a manual run into a publishing one (C-1, § 5 #10).
 - **B-009.** `VerifyTag` is step 5 of `build`: it fails before any gate runs, fails the job, and so `publish` never starts; it names the tag and the computed version. A tag `nbgv tag` made passes. A hand-typed `v0.1.99` on a commit whose version is `0.1.14` fails. A tag that is not a version at all, `vnext`, is outside `publicReleaseRefSpec`, so the commit computes a prerelease version and the comparison fails too. Should the check ever be removed or wrong, the push step still names its file from the tag, and `Pack` names the only file in the artifact from the computed version, so a tag that disagrees has no file to push.
 - **C-1.** A manual run skips `publish`, and no target pushes, so no command on a developer's machine does.
 - **C-3.** One address, in one line.
-- **C-4.** The pushed file is the one `Pack` wrote in step 10 of `build`, uploaded in step 11 and downloaded by `publish` in the same run; nothing is rebuilt or re-versioned and no other run is read. Subject to the reading asked for above.
+- **C-4.** The pushed file is the one `Pack` wrote in step 10 of `build`, uploaded in step 11 and downloaded by `publish` in the same run; nothing is rebuilt or re-versioned and no other run is read.
 - **C-5.** `secrets.GITHUB_TOKEN` is the only credential named, and only `publish` can write a package with it.
+- **C-6.** The `SpecCheck` step is the target `0055-F1` built; nothing here changes when it gates.
+- **C-7.** `packages: write` appears once in the file, in the `publish` job's block; the workflow's block has `packages: none`, and `build` has no block of its own.
 
 ### Why a dry run cannot push
 
 - **The event.** The only push command is the last step of `publish`, and that job's `if` is false for every event but `push`. A manual run's event is `workflow_dispatch` whatever ref it is started from, a tag included.
-- **The token.** Under option A no token that can write a package exists in a dry run: `build`'s is read-only in every run, a tag's included, and a skipped job is given none. Under the fallback this barrier is absent, since permissions are fixed per job and cannot follow the event.
+- **The token.** No token that can write a package exists in a dry run: `build`'s is read-only in every run, a tag's included, and a skipped job is given none.
 - **The file.** A manual run from a branch has `GITHUB_REF_NAME` equal to the branch's name, so the path the step would push, `specht.tool.main.nupkg` from `main`, does not exist. This holds even if the `if` were lost. It does not hold for a manual run started from an existing `v*` tag; there the event and the token are the barriers.
 - **The token's reach.** No target pushes, no other step is handed the token, and `Build.cs` has no code that reads it.
-- **This item pushes nothing and creates no tag.** Its proof is the dry run, hand runs of `VerifyTag`, and the generated file. The first tag is item 0084's, after `0001-F5` and `0001-F6` (C-2).
+- **This item pushed nothing and created no tag.** Its proof is the generated file, hand runs of `VerifyTag`, and the dry run on `main` after the merge (decision 0002). The first tag is item 0084's, after `0001-F5` and `0001-F6` (C-2).
 
 ### What the dry run does not prove
 
 - **The push itself**: that the token is accepted, that the address is right, that the package lands on `rlittlesii/specht` (B-003, OQ-11). `dotnet nuget push` has no trial mode. Item 0084's first tag is the first time the push step runs.
-- **The `publish` job at all, under option A.** A dry run proves the upload and stops there. That the job starts on a tag, and that the artifact arrives as one file at the path the push line names, are first shown by item 0084's tag. Under the fallback there is no hand-off to prove.
-- **The tag check on a runner.** A dry run from a branch skips it. It is exercised by hand on a developer's machine (below) and first runs live on item 0084's tag.
+- **The `publish` job at all.** A dry run proves the upload and stops there. That the job starts on a tag, and that the artifact arrives as one file at the path the push line names, are first shown by item 0084's tag.
+- **The tag check on a runner.** A dry run from a branch skips it. It is exercised by hand on a developer's machine, against the prerelease version, and first runs live, against the public version, on item 0084's tag.
 - **B-002 on a runner.** That a failed gate stops the push is the file's shape plus GitHub's rules for `needs` and for an `if` with no status function. Nothing short of a failing gate on a real tag shows it live.
-- **The run on `main` before the merge.** GitHub starts a manual run only of a workflow file that is on the default branch, so the first dry run happens after the pull request that delivers this item has merged (OQ-10). That is GitHub's rule as documented, not something observed here.
+- **The run on `main` before the merge.** GitHub starts a manual run only of a workflow file that is on the default branch, so the first dry run happens after the pull request that delivers this item has merged (decision 0002). That is GitHub's rule as documented, not something observed here.
 
 ### Rejected
 
-- **A `Publish` target.** It would let `./build.sh Publish` push from a developer's machine with any token in the environment, which C-1 rules out, and it would need its own guard against a dry run. The owner accepts the concern (2026-10-09). The cost of rejecting it: one `dotnet` line in a workflow that no target runs, which is the tension with `0055-F1` C-1's wording set out above (OQ-8).
-- **`PublishNugetPackagesJobAttribute`.** The generator's own publish job, probed above: its feed, its globs and its stored secret are literals that C-3, C-4 and C-5 each rule out, and it accepts no enhancement.
-- **The `if` on the push step of a second job**, so that `publish` runs on a dry run up to the push. It makes B-008 literal and gives every dry run the write token, and keeping that token out is the one thing a second job is for.
-- **A dry-run input on the manual trigger**, defaulting to true. C-1 rules out a publish from a manually triggered run, so the input's other value is forbidden; an input that may never be false is a public name with nothing to configure.
+- **A `Publish` target** (§ 5 #7). It would let `./build.sh Publish` push from a developer's machine with any token in the environment, which C-1 rules out, and it would need its own guard against a dry run. The cost of rejecting it: one `dotnet` line in a workflow that no target runs, which decision 0001's reading of `0055-F1` C-1 allows.
+- **`PublishNugetPackagesJobAttribute`** (§ 5 #8). The generator's own publish job, probed above: its feed, its globs and its stored secret are literals that C-3, C-4 and C-5 each rule out, and it accepts no enhancement.
+- **The `if` on the push step of the second job**, so that `publish` runs on a dry run up to the push. It gives every dry run the write token, and keeping that token out is the one thing a second job is for.
+- **A dry-run input on the manual trigger**, defaulting to true (§ 5 #10). C-1 rules out a publish from a manually triggered run, so the input's other value is forbidden; an input that may never be false is a public name with nothing to configure.
 - **An aggregate `Release` target** invoked by the workflow, as `ContinuousIntegration` is. The probe showed it reorders the steps and adds a trailing step after the push; it would also be a public `./build.sh Release` with nothing to do that the six targets do not.
 - **Comparing the tag in a shell step.** `0055-F2` § 8 records what that cost the changed-files decision: a script held in a string, reachable only by running bash. A target can be run by name on any machine.
 - **Passing the tag to the target as `--tag ${{ github.ref_name }}`.** A tag name is text an author controls, written into a command line; the runner's own `GITHUB_REF_NAME` needs no such line.
 
-### Predicted file set
-
-The set is the same under option A and under the fallback; only what `PublishMiddleware` declares differs. Option B alone adds a file, a second generated workflow.
+### File set
 
 - `.build/Build.Publish.cs`, new: the attribute, `PublishMiddleware` with the upload step and the `publish` job, `VerifyTag`.
-- `.build/Build.GitHubActions.cs`: the entry-script statements moved into a method both enhancements call. Nothing else.
+- `.build/Build.GitHubActions.cs`: the entry-script statements moved into `RunThroughEntryScript`. Nothing else.
 - `.github/workflows/publish.yml`, new and generated, with the jobs `build` and `publish`; `.github/workflows/ci.yml` and `.github/workflows/renovate.yml` regenerated with no difference.
-- `.nuke/build.schema.json`, regenerated: it gains `VerifyTag`.
-- `.claude/skills/specht-conventions/SKILL.md`: `VerifyTag` under § Build and test, and the generated-file rule naming `publish.yml` as it names `ci.yml`.
-- This file: § 7 rewritten to what was built, § 8 and § 9 by `test-writer`, § 12 by `spec-reviewer`.
-- The item, [`0083`](../.issue/0083-release-workflow.yml): its status and dates.
-- Only if the owner widens the rule on tests (OQ-9): `test/specht.acceptance/specht.acceptance.csproj` linking `release.feature`, and a step class beside `ContinuousIntegrationSteps`. Those are `test-writer`'s.
-- Not in the set: `Build.cs`, `version.json`, `Directory.Packages.props`, `src/`, the tool manifest, and any package or tag.
+- `.nuke/build.schema.json`, regenerated: it gained `VerifyTag` and nothing else.
+- `.claude/skills/specht-conventions/SKILL.md`: `VerifyTag` under § Build and test, and the generated-file rule naming `publish.yml` beside `ci.yml`.
+- This file: § 7; § 8 and § 9 by `test-writer`, § 12 by `spec-reviewer`.
+- The item, [`0083`](../.issue/0083-release-workflow.yml): its status and dates, written by the pull request that delivers it.
+- Not in the set: `Build.cs`, `version.json`, `Directory.Packages.props`, `src/`, `test/`, the tool manifest, and any package or tag.
 
 ### How each claim can be proven without publishing
 
-The standing decision is that the build has no tests (`0055-F2` § 8), narrowed for `0055-F5` B-005 only (`0055-F5` decision 0002). The release workflow is the build's. **Under the rules as they stand, none of these five claims may have an executable proof**, and item 0083's criterion that § 9 names a test for each is in the position item 0079's was. Whether to widen the rule, and for which claims, is the owner's (OQ-9). What follows is what exists either way, and what a test could assert if the owner asks for one.
+The standing decision is that the build has no tests (`0055-F2` § 8), narrowed for `0055-F5` B-005 only (`0055-F5` decision 0002). The release workflow is the build's, and the owner kept the rule for these five claims (decision 0002, § 5 #9): none has an executable proof. The proof is the generated file read against this section, recorded hand runs of `VerifyTag`, and the dry run on `main`, all kept in § 8. The third column is what the owner was shown and declined.
 
-| Claim | Without a test                                                                                                                            | What a test could assert, if the rule is widened                                                                                                                                                                                                                            | What stays unproven until a real tag                                  |
+| Claim | Without a test                                                                                                                            | What a test could have asserted (decision 0002)                                                                                                                                                                                                                             | What stays unproven until a real tag                                  |
 | ----- | ----------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------- |
 | B-001 | The generated file read against the table above; the dry run runs the same steps                                                          | Over `publish.yml`: `push.tags` is `v*`; the checkout has no `ref` and `fetch-depth` 0; the five targets appear as `./build.cmd --target` steps in order                                                                                                                    | That a tag's run checks out the tagged commit                         |
 | B-002 | The generated file                                                                                                                        | Over `publish.yml`: the push is the last step of `publish`, whose `if` names no `always`, `failure` or `cancelled`; no step has `continue-on-error`                                                                                                                         | A failing gate on a tag                                               |
 | B-005 | The generated files                                                                                                                       | Over all three workflows: `publish.yml`'s triggers are exactly a `v*` tag push and a manual run; no other workflow has a push command or `packages: write`                                                                                                                  | Nothing; no tag is needed to show a branch starts no run              |
-| B-008 | The dry run itself, after the merge (OQ-10)                                                                                               | Over `publish.yml`: the `publish` job's `if` requires the `push` event; the manual trigger has no inputs. A test reads the expression; it does not evaluate it                                                                                                              | Nothing; this is the one claim with a live proof before the first tag |
+| B-008 | The dry run itself, after the merge (decision 0002)                                                                                       | Over `publish.yml`: the `publish` job's `if` requires the `push` event; the manual trigger has no inputs. A test reads the expression; it does not evaluate it                                                                                                              | Nothing; this is the one claim with a live proof before the first tag |
 | B-009 | `VerifyTag` by hand: `GITHUB_REF_TYPE=tag GITHUB_REF_NAME=v0.0.0 ./build.sh VerifyTag` fails, and with the name `nbgv` computes it passes | Over `publish.yml`: the `VerifyTag` step precedes every gate and the push. The comparison itself has no test seam: it is inside a target, no test project references the build project, and `0055-F5` § 8 already declined to start the build from inside its own test tier | The check on a runner, with a real tag                                |
 
 - **The technique exists.** [`ContinuousIntegrationSteps`](../../../test/specht.acceptance/ContinuousIntegration/ContinuousIntegrationSteps.cs) reads the committed `ci.yml` with YamlDotNet and calls nothing; it is unbound today by the owner's decision. A release step class would be the same shape, over the committed `publish.yml`.
-- **A test over the file proves the file, not a runner.** It pins the triggers, the order and the conditions against the next edit. It cannot show that GitHub skips the `publish` job or stops after a failed step.
-- **An executable proof of B-009's comparison needs a second decision**, beyond widening the rule: where the comparison lives so that a test can reach it. This design keeps it in the target and offers the hand check. Moving it is not proposed here.
+- **A record describes the file on the day it was made.** Nothing pins the triggers, the order or the conditions against the next edit, which is the cost decision 0002 records. A test over the file would have proven the file, not a runner: it could not show that GitHub skips the `publish` job or stops after a failed step.
+- **An executable proof of B-009's comparison would need a second decision**: where the comparison lives so that a test can reach it. It is in the target, with the hand check.
 
 ## 8. Testing Strategy
 
