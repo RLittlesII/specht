@@ -20,7 +20,7 @@ depends_on: ["F5"]
 blocks: []
 spikes: []
 created: "2026-10-07"
-updated: "2026-10-08"
+updated: "2026-10-09"
 github_issue: null
 synced_at: null
 ---
@@ -84,16 +84,17 @@ The engine walks every directory under the root and discards `bin`, `obj` and `n
 
 ## 5. Out of Scope
 
-<!-- last written by: spec-author, 2026-10-07 -->
+<!-- last written by: spec-author, 2026-10-09 (row 7 added, `0001-F5` decision 0004) -->
 
-| #   | Item                                    | Exclusion Reason                                                                                                                          |
-| --- | --------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
-| 1   | Following symbolic links                | B-011 for a linked directory; a linked tree is not the repository's.                                                                      |
-| 2   | Reading `.gitignore` itself             | The walk uses the manifest's list only (C-5), inside a work tree or not; in git mode, git is the reader.                                  |
-| 3   | A watch mode                            | A command runs once (`0001-F2`).                                                                                                          |
-| 4   | Submodules                              | A submodule is another repository with its own root and manifest; C-3 does not cover a tree holding one.                                  |
-| 5   | What a rule does with a discovered file | `0001-F1` and `0001-F5`.                                                                                                                  |
-| 6   | Proving B-007 on `hooked`'s tree        | Pending OQ-3: brief § 5 asks both modes to return the same set on `hooked`, and whether that is this Feature's claim is the owner's call. |
+| #   | Item                                    | Exclusion Reason                                                                                                                                                                                                                                    |
+| --- | --------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | Following symbolic links                | B-011 for a linked directory; a linked tree is not the repository's.                                                                                                                                                                                |
+| 2   | Reading `.gitignore` itself             | The walk uses the manifest's list only (C-5), inside a work tree or not; in git mode, git is the reader.                                                                                                                                            |
+| 3   | A watch mode                            | A command runs once (`0001-F2`).                                                                                                                                                                                                                    |
+| 4   | Submodules                              | A submodule is another repository with its own root and manifest; C-3 does not cover a tree holding one.                                                                                                                                            |
+| 5   | What a rule does with a discovered file | `0001-F1` and `0001-F5`.                                                                                                                                                                                                                            |
+| 6   | Proving B-007 on `hooked`'s tree        | Pending OQ-3: brief § 5 asks both modes to return the same set on `hooked`, and whether that is this Feature's claim is the owner's call.                                                                                                           |
+| 7   | An epic-less discovery mode             | Discovery finds what the manifest's globs declare, whether or not the manifest declares the epic grammar. What a rule does without epics is `0001-F5` B-025 to B-034 (decision 0004); `SPEC011` on a legacy layout without epics is `0001-F5` OQ-7. |
 
 ## 6. Concern Separation
 
