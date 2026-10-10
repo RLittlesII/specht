@@ -24,7 +24,7 @@ claims:
   - B-012
 
 created: "2026-10-08"
-updated: "2026-10-08"
+updated: "2026-10-09"
 closed: null
 
 summary: |
@@ -39,7 +39,15 @@ acceptance_criteria:
   - "B-012 — one pull request per major"
   - "§ 9 carries a row naming a test for each id above."
 
-decisions: []
+decisions:
+  - |
+    2026-10-09, handoff from the 0074 review (round 9): config:recommended,
+    which .github/renovate.json extends, includes group:monorepos, so
+    majors of dotnet monorepo packages share one pull request; a local
+    dry run on 2026-10-09 put System.Security.Cryptography.Xml 9.0.20 to
+    10.0.12 on renovate/major-dotnet-monorepo (§ 7). Once two such packages
+    have majors at once, that breaks B-012. 0076 must leave every major
+    ungrouped despite the preset; the rule that does it is 0076's choice.
 
 out_of_scope:
   - "The merge setting itself — § 5 #1, 0055-F8."

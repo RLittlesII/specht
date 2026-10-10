@@ -17,7 +17,8 @@ afterwards, once a stakeholder has agreed to it. That ordering is what lets a
 specification be argued with before anyone has spent a day building from it.
 
 A bug, a spike or a chore begins at the item instead, and may produce a
-specification delta afterwards.
+specification delta afterwards. A refactor begins at the item too, and produces
+none: it delivers no claim and cites the constraints it preserves.
 
 ## Two records, one authority each
 
