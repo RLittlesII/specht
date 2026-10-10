@@ -1,0 +1,51 @@
+id: "0130"
+type: task
+title: Read the manifest key that names the consumer's templates
+
+status: ready-for-architecture
+
+priority: high
+risk: 2
+rank: 79
+
+parent: "0041"
+children: []
+
+depends_on: [] # extends the manifest loader, which 0011 delivered
+blocks: ["0131"]
+spikes: []
+
+spec: src/specht.tool/.spec/README.md
+
+claims:
+  - B-065
+
+created: "2026-10-09"
+updated: "2026-10-09"
+closed: null
+
+summary: |
+  The manifest gains the key that names which templates are the
+  consumer's (decision 0006). The engine knows the key, so 0001-F5 B-012
+  does not reject it, and the check, which reads no template, reports
+  exactly what it reported without it. The key's name and the form a
+  template takes in it are the implementer's to propose in § 7 (OQ-1).
+  Part of `0.1.0`: no new schema version.
+
+acceptance_criteria:
+  - "B-065 — a shipped template named: the check's report is unchanged"
+  - "§ 9 carries a row naming a test for each id above."
+
+decisions:
+  - |
+    2026-10-09, spec-author's cut: the key apart from the upgrade
+    behaviour (0131), so the check accepts a manifest that names a
+    template before `upgrade` is built. Rejected: an item validating the
+    names in the key - whether a name the pinned version does not ship is
+    invalid is OQ-27, the owner's, and no claim states it.
+
+out_of_scope:
+  - "What `upgrade` does with a named template — 0131."
+  - "A name the pinned version does not ship — OQ-27; no claim yet."
+  - "Template ownership in the report — § 5 #16."
+  - "An upstream template source — § 5 #14; OQ-26."
