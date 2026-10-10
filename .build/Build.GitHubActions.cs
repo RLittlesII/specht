@@ -83,11 +83,7 @@ internal sealed partial class Build
         // (0055-F1 C-3) - never a global NUKE install, never the build assembly directly.
         // The Restore step restores the manifest's tools (0055-F1 B-010); the generator's own restore step, emitted only
         // where a manifest exists, would make the workflow depend on the root it is generated in.
-        buildJob.Steps.RemoveAll(static z => z is RunStep { StepName: "Install Nuke Global Tool" or "dotnet tool restore" });
-        foreach (var run in buildJob.Steps.OfType<RunStep>().Where(static z => z.Run.Contains("--target ", StringComparison.Ordinal)))
-        {
-            run.Run = $"./build.cmd {run.Run[run.Run.IndexOf("--target ", StringComparison.Ordinal)..]}";
-        }
+        RunThroughEntryScript(buildJob);
 
         // C-2: the pull request's head commit, not GitHub's merge commit; empty on a push, so the pushed commit.
         buildJob.Steps.OfType<CheckoutStep>().Single().Ref = "${{ github.event.pull_request.head.sha }}";
@@ -191,6 +187,18 @@ internal sealed partial class Build
         public static Func<bool> IsNotRunningOnGitHubActions => static ()
             => !(Host is GitHubActions ||
                  Environment.GetEnvironmentVariable("GITHUB_ACTIONS") == true.ToString());
+    }
+
+    /// <summary>
+    /// Removes the generator's tool-restore and global NUKE install steps and runs every target step through the entry script.
+    /// </summary>
+    private static void RunThroughEntryScript(RocketSurgeonsGithubActionsJob buildJob)
+    {
+        buildJob.Steps.RemoveAll(static z => z is RunStep { StepName: "Install Nuke Global Tool" or "dotnet tool restore" });
+        foreach (var run in buildJob.Steps.OfType<RunStep>().Where(static z => z.Run.Contains("--target ", StringComparison.Ordinal)))
+        {
+            run.Run = $"./build.cmd {run.Run[run.Run.IndexOf("--target ", StringComparison.Ordinal)..]}";
+        }
     }
 
     /// <summary>
