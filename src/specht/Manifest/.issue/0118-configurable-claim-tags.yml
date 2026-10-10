@@ -1,0 +1,66 @@
+id: "0118"
+type: task
+title: Read claim tags by the manifest's claim grammar, tag form and case setting
+
+status: ready-for-architecture
+
+priority: high # DERIVED
+value: 4
+risk: 3
+rank: 71 # DERIVED
+
+parent: "0010"
+children: []
+
+depends_on: ["0011", "0012", "0107"] # the tag keys load through 0011; the move keeps 0012 green; ADR-0001 sequences stage D (0107) before it
+blocks: [] # DERIVED
+spikes: []
+
+spec: src/specht/Manifest/.spec/README.md
+
+claims:
+  - B-007
+  - B-024
+  - B-025
+  - B-026
+
+created: "2026-10-09"
+updated: "2026-10-09"
+closed: null
+
+summary: |
+  Moves the claim tag scan out of the companion reader's own expression and
+  onto the manifest: the one claim grammar, a tag form around it, and a case
+  setting, with a form that does not hold exactly one placeholder rejected.
+  Depends on 0011 for the loader the two keys join, on 0012 because the
+  default form and exact case must keep the baseline verdicts (A-2, C-4), and
+  on 0107 because ADR-0001 stage D threads the file system through the reader
+  this item changes. Risk 3: one rule and one reader, but the tag scan and the
+  claim grammar must become one expression without a second one appearing
+  (C-2), the default must read every tag exactly as today's scan does, and the
+  case setting must stop at the tag (C-10). Key names wait on OQ-1; OQ-2 and
+  OQ-3 are open on B-025 and B-024.
+
+acceptance_criteria:
+  - "B-007 — SPEC021 claim tags via the manifest grammar only"
+  - "B-024 — tags read by the manifest's tag form; default form declared"
+  - "B-025 — tags resolve ignoring case when declared; default exact"
+  - "B-026 — form without exactly one placeholder rejected, naming it"
+  - "B-019, B-022 and B-023 — their tests gain the tag form, the case setting and B-026's rejection."
+  - "If the repository-root README.md carries a `### Default manifest` block when the tag keys land in the default manifest, it is refreshed to match `.spec/schema/spec-structure.schema.json`."
+  - "§ 9 carries a row naming a test for each id above."
+
+decisions:
+  - |
+    2026-10-09, the owner: claim tags are configured through the manifest by
+    a tag form composing the one claim grammar and by a case setting, exact
+    case by default; all tag work, B-007 included, is one item. Rejected:
+    leaving B-007 in 0016 beside the frontmatter keys.
+  - |
+    2026-10-09, spec-author: the case setting is within C-7 - it is how a tag
+    reads, not what SPEC021 asserts (decision 0003, C-10).
+
+out_of_scope:
+  - "The companion file's extension and how the companion is found — § 5 #8; 0001-F6."
+  - "Deriving or patching a frontmatter schema from the manifest — C-8."
+  - "A key that changes what a rule asserts — § 5 #5; C-10."

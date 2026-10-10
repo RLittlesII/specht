@@ -21,31 +21,35 @@ claims:
   - B-004
   - B-005
   - B-006
-  - B-007
   - B-014
 
 created: "2026-10-08"
-updated: "2026-10-08"
+updated: "2026-10-09"
 closed: null
 
 summary: |
   Moves the frontmatter key names, the identity and edge forms and the task
-  and claim grammars into the manifest, one rule at a time with 0012 green
-  after each (A-2), and rejects a grammar that does not compile. Risk 4: it
-  touches SPEC021, SPEC043, SPEC044 and SPEC050-SPEC052, every id grammar
-  must live once (C-2), and a renamed key must not be excused from the
-  frontmatter schemas (C-8). Key names wait on OQ-1.
+  grammar into the manifest, one rule at a time with 0012 green after each
+  (A-2), and rejects a grammar that does not compile. Risk 4: it touches
+  SPEC043, SPEC044 and SPEC050-SPEC052, every id grammar must live once
+  (C-2), and a renamed key must not be excused from the frontmatter schemas
+  (C-8). Key names wait on OQ-1.
 
 acceptance_criteria:
   - "B-004 — every frontmatter key a rule reads named in the manifest"
   - "B-005 — qualified identity and both edge forms declared"
   - "B-006 — epic and sequence via named groups; three-digit sequence checked"
-  - "B-007 — SPEC021 claim tags via the manifest grammar only"
   - "B-014 — non-compiling grammar rejected, naming it"
   - "§ 9 carries a row naming a test for each id above."
 
-decisions: []
+decisions:
+  - |
+    2026-10-09, spec-author on the owner's direction: B-007 moved to item
+    0118, which carries all the claim-tag work (B-007, B-024 to B-026). Risk
+    stays 4: five rules and C-2 and C-8 remain here. Rejected: keeping B-007
+    here, which would split one reader's change across two items.
 
 out_of_scope:
   - "Deriving or patching a frontmatter schema from the manifest — C-8."
   - "Moving every literal in one change — § 5 #6."
+  - "Claim tags in the companion, SPEC021 — B-007, B-024 to B-026; item 0118."

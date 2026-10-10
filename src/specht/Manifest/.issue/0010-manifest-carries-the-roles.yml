@@ -10,7 +10,7 @@ risk: 4
 rank: 73
 
 parent: "0001"
-children: ["0011", "0012", "0013", "0014", "0015", "0016", "0017", "0018", "0019"]
+children: ["0011", "0012", "0013", "0014", "0015", "0016", "0017", "0018", "0019", "0118"]
 
 depends_on: []
 blocks: ["0084"]
@@ -42,9 +42,12 @@ claims:
   - B-021
   - B-022
   - B-023
+  - B-024
+  - B-025
+  - B-026
 
 created: "2026-10-08"
-updated: "2026-10-08"
+updated: "2026-10-09"
 closed: null
 
 summary: |
@@ -54,7 +57,7 @@ summary: |
 
   Risk 4: the default manifest must reproduce the golden baseline verdicts byte
   for byte after every literal moves. OQ-1 (the manifest's key names) is open
-  and blocks B-001 to B-011; architecture resolves it in § 7 and a decision
+  and blocks B-001 to B-011, B-024 and B-025; architecture resolves it in § 7 and a decision
   record. The engine copy and baseline report (0001-F1) are the edges
   0011 -> 0021 and 0012 -> 0022; the check command (0001-F2) is 0013 -> 0027
   and 0014 -> 0026. Discovery reads this manifest through 0005 -> 0011.
@@ -66,7 +69,7 @@ acceptance_criteria:
   - "B-004 — frontmatter key names (0016)"
   - "B-005 — identity and edge forms (0016)"
   - "B-006 — task grammar named groups (0016)"
-  - "B-007 — claim grammar for tags (0016)"
+  - "B-007 — claim grammar for tags (0118)"
   - "B-008 — schema files by manifest name (0017)"
   - "B-009 — messages name manifest values (0018)"
   - "B-010 — severity lowered to warning (0014)"
@@ -83,6 +86,9 @@ acceptance_criteria:
   - "B-021 — malformed exclusion entry rejected (0019)"
   - "B-022 — rejection exits 3 (0013)"
   - "B-023 — rejection is the only output, on stderr (0013)"
+  - "B-024 — claim tag form (0118)"
+  - "B-025 — claim tag case setting (0118)"
+  - "B-026 — tag form without exactly one placeholder rejected (0118)"
   - "§ 9 carries a row naming a test for each id above."
 
 decisions:
@@ -99,6 +105,10 @@ decisions:
     list it validates is declared by Discovery's 0005, which itself needs
     this Feature's loader; folding B-021 into 0011 would make 0005 and 0011
     wait on each other.
+  - |
+    2026-10-09, spec-author on the owner's direction: claim tags are one
+    item (0118) carrying B-007, moved out of 0016, with B-024 to B-026.
+    Rejected: B-007 staying in 0016 beside the frontmatter keys.
 
 out_of_scope:
   - "Everything in § 5 of the spec."
