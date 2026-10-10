@@ -26,7 +26,8 @@ public static class SpecManifest
     /// <exception cref="SpechtManifestNotFoundException">There is no file at the manifest path.</exception>
     /// <exception cref="SpechtManifestUnreadableException">The manifest is not well-formed JSON or not the manifest's shape.</exception>
     /// <exception cref="SpechtManifestException">
-    /// The manifest carries a key the engine does not know, or a <c>schemaVersion</c> that is not an integer of at least 1.
+    /// The manifest carries a key the engine does not know, a <c>schemaVersion</c> that is not an integer of at least 1, or a
+    /// role naming a title <c>sections</c> does not list.
     /// </exception>
     public static SpecStructure Load(IFileSystem fileSystem, string root)
     {
@@ -67,14 +68,33 @@ public static class SpecManifest
                 $"{RelativePath}: the engine does not know the key {string.Join(", ", unknown)}.");
         }
 
-        return new SpecStructure(
+        var structure = new SpecStructure(
             Strings(manifest["sections"] ?? Defaults["sections"]!),
             Tables(manifest["tables"] ?? Defaults["tables"]!),
             Filled(manifest, "identifiers"),
             SchemaVersion(manifest))
         {
             FrontmatterSchemas = Filled(manifest, "frontmatterSchemas"),
+            Roles = Filled(manifest, "roles"),
         };
+
+        Check(structure);
+
+        return structure;
+    }
+
+    private static void Check(SpecStructure structure)
+    {
+        var faults = Defaults["roles"]!.AsObject()
+            .Select(static entry => entry.Key)
+            .Where(role => !structure.Sections.Contains(structure.Roles[role], StringComparer.Ordinal))
+            .Select(role => $"the role '{role}' names '{structure.Roles[role]}', which sections does not list")
+            .ToList();
+
+        if (faults.Count > 0)
+        {
+            throw new SpechtManifestException($"{RelativePath}: {string.Join("; ", faults)}.");
+        }
     }
 
     private static Dictionary<string, string> Filled(JsonObject manifest, string key)
@@ -141,6 +161,7 @@ public static class SpecManifest
         "tables",
         "identifiers",
         "frontmatterSchemas",
+        "roles",
     };
 
     private static readonly JsonObject Defaults = ReadDefaults();

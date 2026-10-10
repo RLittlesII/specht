@@ -36,5 +36,8 @@
     "feature": "feature-spec.frontmatter.schema.json",
     "task": "task.frontmatter.schema.json",
     "epic": "epic.frontmatter.schema.json"
+  },
+  "roles": {
+    "claims": "3. Acceptance Criteria"
   }
 }
