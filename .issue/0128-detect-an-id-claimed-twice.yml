@@ -21,7 +21,7 @@ spec: null
 claims: []
 
 created: "2026-10-09"
-updated: "2026-10-09"
+updated: "2026-10-10"
 closed: null
 
 summary: |
@@ -57,8 +57,7 @@ summary: |
   every open pull request when its specification is written:
   - three Features under epic `0101`, proposed `0101-F6` to `0101-F8`:
     in-specification id uniqueness, case (e); record number uniqueness,
-    case (a); work-item id allocation, cases (b) and (d), which also owns
-    the recorded exception for the two items numbered 0118;
+    case (a); work-item id allocation, cases (b) and (d);
   - a rule block, proposed `SPEC090` to `SPEC094`;
   - a `0055-F2` specification delta for the merge-tree run, case (c).
 
@@ -75,18 +74,22 @@ summary: |
   (`0055-F1` B-025; `0055-F2` C-4; `.build/Build.cs`), so until then neither
   run fails a pull request on these rules.
 
-  The two items numbered 0118 are
-  `src/specht/Manifest/.issue/0118-configurable-claim-tags.yml` (`9f01e20`)
-  and
+  Two items were numbered 0118 until 2026-10-10. The claim-tags item, added
+  as 0118 by `9f01e20`, is now
+  `src/specht/Manifest/.issue/0134-configurable-claim-tags.yml`;
   `.build/ContinuousIntegration/.issue/0118-windows-gates-on-main-only.yml`
-  (`5fa5964`). A citation of 0118 that could mean either names the path.
+  (`5fa5964`) keeps 0118. No id is claimed twice on trunk. A commit or
+  review row from before that date that says 0118 can mean either.
+  Whether the check keeps a recorded exception for a pair a repository
+  knowingly keeps is open for the `0101-F8` specification (OQ-14), and is
+  not decided here.
 
 acceptance_criteria:
   - "(e) A constraint or open-question id declared twice inside one specification is reported - delivered by claims cut from § 3 of the in-specification id uniqueness Feature (proposed `0101-F6`)."
   - "(a) Two files sharing a number in one `decisions/`, `adr/` or `lessons/` folder are reported, both paths named - delivered by claims cut from § 3 of the record number uniqueness Feature (proposed `0101-F7`)."
   - "(b) Two `.issue/` items sharing an id are reported, both paths named - delivered by claims cut from § 3 of the work-item id allocation Feature (proposed `0101-F8`)."
   - "(d) `.issue/.sequence` disagreeing with the ids present is reported - delivered by claims cut from § 3 of the same Feature as (b)."
-  - "The two items numbered 0118 pass as a recorded exception, neither renumbered, and a third item numbered 0118 is still reported - delivered by claims cut from § 3 of the same Feature as (b)."
+  - "This repository needs no recorded exception: the claim-tags item is 0134 and no id is claimed twice on trunk (decision of 2026-10-10). Where a pair is recorded as an exception, a claimant beyond it is still reported - as first written here on 2026-10-09, a third item numbered 0118 is still reported - delivered by claims cut from § 3 of the same Feature as (b). That clause stands until `0101-F8` OQ-14, whether the check carries a recorded exception at all, is answered, and then follows the answer."
   - "(c) On a pull request CI runs `SpecCheck` over the merge tree as well as the head, and `specht` takes no base or diff input - delivered by claims cut from the `0055-F2` § 3 delta."
   - "The new rules are errors by default, and epic `0101`'s \"all warnings by default\" is amended in the pull request that specifies the first of the three Features."
   - "Every path the rules print is repository-relative."
@@ -122,11 +125,19 @@ decisions:
     as `SPEC030`, `SPEC012` and `SPEC044` are. Epic `0101`'s "all warnings
     by default" is amended when the first of the new Features is
     specified. Rejected: warnings by default, as the epic words it today.
+  - |
+    2026-10-10, the repository owner: "renumber". Reverses the second
+    decision above. The claim-tags item moves from 0118 to 0134, the next
+    id from `.issue/.sequence`; the continuous-integration item keeps
+    0118. Rejected: keeping both items numbered 0118 as the recorded
+    exception. Not decided: whether the check keeps a recorded-exception
+    mechanism now that no pair needs it - `0101-F8` OQ-14. Recorded by
+    spec-author.
 
 out_of_scope:
   - "Reserving ids, and the rule for claiming one - 0127, delivered."
   - "Detecting a claim id declared twice inside one specification - already `SPEC030`."
-  - "Renumbering either item numbered 0118 - decided against, 2026-10-09."
+  - "Renumbering either item numbered 0118 - decided against, 2026-10-09; reversed 2026-10-10 and done outside this item, the claim-tags item now 0134."
   - "A base, diff or pull-request input to `specht`, and any call to GitHub from the check - decided against, 2026-10-09; case (c) is the merge-tree run in `0055-F2`."
   - "Authoring the three Features, the `0055-F2` delta or the epic `0101` amendment - each is its own specification pull request, and this item is re-cut from them."
   - "Any rule, schema, manifest key or CI change before those specifications are agreed."

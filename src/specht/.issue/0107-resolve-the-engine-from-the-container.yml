@@ -13,7 +13,7 @@ parent: "0020"
 children: []
 
 depends_on: ["0106", "0099"] # registers 0106's rule list; host composition follows 0099's harness decision
-blocks: ["0007", "0008", "0016", "0118"] # DERIVED
+blocks: ["0007", "0008", "0016", "0134"] # DERIVED
 spikes: []
 
 spec: src/specht/.spec/README.md
@@ -23,7 +23,7 @@ claims:
   - B-010
 
 created: "2026-10-08"
-updated: "2026-10-09"
+updated: "2026-10-10"
 closed: null
 
 summary: |

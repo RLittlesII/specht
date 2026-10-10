@@ -24,7 +24,7 @@ claims:
   - B-014
 
 created: "2026-10-08"
-updated: "2026-10-09"
+updated: "2026-10-10"
 closed: null
 
 summary: |
@@ -48,8 +48,11 @@ decisions:
     0118, which carries all the claim-tag work (B-007, B-036 to B-038). Risk
     stays 4: five rules and C-2 and C-8 remain here. Rejected: keeping B-007
     here, which would split one reader's change across two items.
+  - |
+    2026-10-10, the repository owner: the claim-tags item is renumbered
+    from 0118 to 0134 (item 0134's decisions). Recorded by spec-author.
 
 out_of_scope:
   - "Deriving or patching a frontmatter schema from the manifest — C-8."
   - "Moving every literal in one change — § 5 #6."
-  - "Claim tags in the companion, SPEC021 — B-007, B-036 to B-038; item 0118."
+  - "Claim tags in the companion, SPEC021 — B-007, B-036 to B-038; item 0134."
