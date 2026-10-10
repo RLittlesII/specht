@@ -2,7 +2,7 @@ id: "0105"
 type: task
 title: Split the runner into evaluating a model and running a root
 
-status: ready-for-implementation
+status: done
 
 priority: high # DERIVED
 value: 3
@@ -22,13 +22,15 @@ claims:
   - B-004
 
 created: "2026-10-08"
-updated: "2026-10-08"
-closed: null
+updated: "2026-10-09"
+closed: "2026-10-09"
 
 summary: |
-  ADR-0001 (accepted 2026-10-08), stage B. SpecCheckRunner splits into
-  Evaluate(SpecModel) - every rule, collect, sort, count - and Run(root),
-  which loads and evaluates; both stay static. The sort is the order
+  ADR-0001 (accepted 2026-10-08), stage B, as ADR-0008 amends it.
+  SpecCheckRunner splits into Evaluate(SpecModel, rules) - every rule
+  given, collect, sort, count - and Run(root), which loads, passes the
+  discovered rules and evaluates; both stay static. Evaluate reads the
+  pinned version's rule vocabulary from the model (0001-F7 B-014). The sort is the order
   function 0103 exposes, not a second one. No ISpecModelLoader: ADR-0001
   takes one only if this split is refused. No verdict changes (C-9).
   Depends on 0104 for a model a test can build, and on 0103 for the order
@@ -44,6 +46,17 @@ decisions:
   - |
     2026-10-08, cut by spec-author on the owner's acceptance of ADR-0001
     and ADR-0003, one item per migration stage.
+  - |
+    2026-10-09, the owner, asked directly during this item's delivery;
+    recorded by spec-author as ADR-0008. The rule set is Evaluate's second
+    argument, Evaluate(SpecModel model, IEnumerable<ISpecRule> rules), still
+    static, and Run passes the discovered rules. SpecSchemas keeps the
+    SchemaVersion it selects, and Evaluate reads the vocabulary from
+    model.Schemas. Rejected: a one-parameter Evaluate with a separate public
+    counting function; deferring the fake-rule proof to 0107; a
+    SchemaVersion parameter on Evaluate; leaving the filter in Run. What
+    the SpecSchemas.Load overload without a version set carries is the
+    implementer's to propose in 0001-F1 § 7.
 
 out_of_scope:
   - "Replacing reflection rule discovery — 0106 (ADR-0001 stage C)."
