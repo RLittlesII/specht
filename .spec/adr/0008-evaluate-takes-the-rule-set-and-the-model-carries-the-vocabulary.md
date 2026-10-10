@@ -16,11 +16,13 @@ Supersedes in part, each record's body unedited and its Status gaining one
 line pointing here:
 
 - **[ADR-0001](0001-resolve-the-engine-from-the-container.md):** the signature
-  `Evaluate(SpecModel)` in its Decision (`:201-203`) and its stage B row
-  (`:314`). The split, its proof and its edges stand.
+  `Evaluate(SpecModel)` in its Decision ("The runner splits") and in the
+  stage B row of the table under its Consequences. The split, its proof and
+  its edges stand.
 - **[ADR-0004](0004-per-rule-settings-are-selection-and-a-map.md):** the
-  clause "`Evaluate` takes no second parameter and reads no static" (`:170`),
-  narrowed to the rule settings. Selection and the map stand.
+  clause "`Evaluate` takes no second parameter and reads no static" in its
+  Decision (the selection bullet), narrowed to the rule settings. Selection
+  and the map stand.
 
 ## Context
 
@@ -29,12 +31,11 @@ Item `0105` is ADR-0001's stage B: static `SpecCheckRunner` splits into
 and neither says how a third fact reaches `Evaluate`.
 
 1. **The fake-rule proof has no way in.** ADR-0001's stage B proof requires "a
-   unit test of counts and `ReportedIds` with fake rules" (`:314`). The rules
-   come from the private, reflection-based `Discover()`
+   unit test of counts and `ReportedIds` with fake rules" (the stage B row).
+   The rules come from the private, reflection-based `Discover()`
    (`src/specht/SpecCheckRunner.cs`), which stage C replaces, not stage B.
-   ADR-0004 says "`Evaluate` takes no second parameter and reads no static"
-   (`:170`). With one parameter and no static, no fake rule reaches
-   `Evaluate`.
+   ADR-0004's Decision says "`Evaluate` takes no second parameter and reads no
+   static". With one parameter and no static, no fake rule reaches `Evaluate`.
 2. **The vocabulary has no way in.** Since `0001-F7` B-014,
    `Run(root, SchemaVersions)` keeps only the rules, the violations and the
    count of rule ids evaluated that the pinned version's `RuleIds` hold. A
@@ -48,6 +49,19 @@ At stake: `0001-F1` B-004 and C-9 (no verdict changes), `0001-F7` B-014 (only
 the pinned vocabulary is evaluated, counted and reported), and ADR-0005
 Decision (d) (a test substitutes through an argument it can construct, not
 through a new interface).
+
+## Decision drivers
+
+1. No verdict changes (`0001-F1` B-004 and C-9).
+2. Only the pinned vocabulary is evaluated, counted and reported, by the
+   function a test calls as by the check (`0001-F7` B-014).
+3. ADR-0001's stage B proof is written at stage B, against `Evaluate` itself:
+   a unit test of counts and `ReportedIds` with fake rules.
+4. A test substitutes through an argument it can construct - no new
+   interface, and no public member that exists for a test alone (ADR-0005
+   Decision (d)).
+5. The pinned version is a fact about the loaded schemas, as the rule
+   settings are (ADR-0004), so a caller cannot pass another.
 
 ## Considered options
 
@@ -128,7 +142,8 @@ Costs:
     decides the run: `implementer`, in item `0105`.
   - `0001-F5` § 6 and § 7, and item `0014`, which write
     `SpecCheckRunner.Evaluate(SpecModel)`: reworded when item `0014` is taken.
-  - Item `0106`'s `depends_on` comment, which writes `Evaluate(SpecModel)`.
+  - Item `0106`'s `depends_on` comment, which writes `Evaluate(SpecModel)`:
+    reworded when item `0106` is taken, in its pull request.
 
 No verdict changes (`0001-F1` C-9): the golden-report test and item `0012`'s
 guard stay green unchanged.

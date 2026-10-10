@@ -2,7 +2,7 @@ id: "0105"
 type: task
 title: Split the runner into evaluating a model and running a root
 
-status: in-progress
+status: done
 
 priority: high # DERIVED
 value: 3
@@ -23,7 +23,7 @@ claims:
 
 created: "2026-10-08"
 updated: "2026-10-09"
-closed: null
+closed: "2026-10-09"
 
 summary: |
   ADR-0001 (accepted 2026-10-08), stage B, as ADR-0008 amends it.
