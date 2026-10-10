@@ -158,7 +158,7 @@ Pending: owned by `test-writer`, written after agreement.
 
 <!-- last written by: spec-author, 2026-10-09 (after review round 1) -->
 
-- 2026-10-09, after review round 1, before any of it merged: claims, constraints and scenarios name the existing schema version as `0.1.0` and the later one by what it adds, its number being OQ-4 (`0001-F7` decision 0005, OQ-18); B-003 covers two rows as well as three. The owner answered OQ-3: ids are compared by text (decision 0003; C-11; B-015). OQ-4 to OQ-6 raised. No id changed.
+- 2026-10-09, after review round 1, with the specification still `draft`: claims, constraints and scenarios name the existing schema version as `0.1.0` and the later one by what it adds, its number being OQ-4 (`0001-F7` decision 0005, OQ-18); B-003 covers two rows as well as three. The owner answered OQ-3: ids are compared by text (decision 0003; C-11; B-015). OQ-4 to OQ-6 raised. No id changed.
 
 ## 11. Open Questions
 
