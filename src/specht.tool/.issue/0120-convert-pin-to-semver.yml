@@ -2,7 +2,7 @@ id: "0120"
 type: task
 title: Convert the integer pin to semver
 
-status: ready-for-architecture
+status: in-progress
 
 priority: high
 risk: 3
@@ -29,7 +29,7 @@ claims:
   - B-055
 
 created: "2026-10-09"
-updated: "2026-10-09"
+updated: "2026-10-10"
 closed: null
 
 summary: |
