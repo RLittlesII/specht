@@ -10,7 +10,7 @@ risk: 4
 rank: 68
 
 parent: "0001"
-children: ["0042", "0043", "0044", "0045", "0046", "0047", "0048", "0049", "0092", "0093", "0094"]
+children: ["0042", "0043", "0044", "0045", "0046", "0047", "0048", "0049", "0092", "0093", "0094", "0118", "0119", "0120", "0121", "0122", "0123"]
 
 depends_on: []
 blocks: []
@@ -26,7 +26,6 @@ claims:
   - B-005
   - B-006
   - B-007
-  - B-008
   - B-009
   - B-010
   - B-011
@@ -55,54 +54,79 @@ claims:
   - B-034
   - B-035
   - B-036
+  - B-037
+  - B-038
+  - B-039
+  - B-040
+  - B-041
+  - B-042
+  - B-043
+  - B-044
+  - B-045
+  - B-046
+  - B-047
+  - B-048
+  - B-049
+  - B-050
+  - B-051
+  - B-052
+  - B-053
+  - B-054
+  - B-055
+  - B-056
+  - B-057
 
 created: "2026-10-08"
-updated: "2026-10-08"
+updated: "2026-10-09"
 closed: null
 
 summary: |
   As the maintainer of a lagging repository, I want the manifest to pin a
-  schema version the tool still checks, and `specht upgrade` to move the
-  schema set and templates one version forward and say what changed, so
-  that lagging is deliberate and catching up is one command.
+  `major.minor.patch` schema version the tool still checks, a command that
+  moves the pin up or down, and `specht upgrade` to bring the schema set
+  and templates to the pin and say what changed, so that lagging is
+  deliberate, moving is one command each way, and the number says whether
+  a move can fail my build.
 
   Risk 4: every shipped version stays embedded and byte-identical forever
-  (C-1), so a mistake is permanent once published. OQ-3, OQ-5 and OQ-6 were
-  resolved by the owner on 2026-10-08 (0047, 0048 unblocked), and OQ-4
-  too (decision 0003): version 1 accepts an epic's `title` and
-  `description`, claimed by B-022 and delivered in 0042. OQ-1, the
-  source option's names, is architecture's to propose in § 7.
-  The embedded version set builds on init's shipping copy (0042 -> 0051),
-  and init pinning the newest version waits on init's write (0049 -> 0052).
+  (C-1), so a mistake is permanent once published. OQ-1, the source
+  option's names, is architecture's to propose in § 7. The embedded
+  version set builds on init's shipping copy (0042 -> 0051), and init
+  pinning the newest version waits on init's write (0049 -> 0052).
 
   Decision 0004 (2026-10-08) added B-024 to B-036, the recorded
   upstream schema source: the check under it (0092), upgrade fetching
   it (0093), and upgrade leaving on-disk schemas alone (0094).
 
+  Decision 0005 (2026-10-09) made the version semver. 0042 delivered an
+  integer pin and stays closed; 0118 converts it and starts before any
+  other item here. B-008 is withdrawn and carried by no item. The list
+  command (0119), the pin command (0120, 0121), the pin policy (0122)
+  and the interactive pick (0123) wait on the open questions each names.
+
 acceptance_criteria:
-  - "B-001 — pinned `n` checks with `n`'s embedded frontmatter schemas (0042)"
-  - "B-002 — no key is version 1 (0042)"
-  - "B-003 — unshipped pin: stderr, exit 3 (0042)"
-  - "B-004 — every lower version still shipped, by test (0042)"
-  - "B-005 — upgrade rewrites schemas and templates to `n+1` (0045)"
-  - "B-006 — upgrade at newest: current, nothing rewritten (0045)"
+  - "B-001 — pinned version checks with its embedded frontmatter schemas (0118)"
+  - "B-002 — no key is `0.1.0` (0118)"
+  - "B-003 — unshipped pin: stderr, exit 3 (0118)"
+  - "B-004 — every published version still embedded (0118, 0044)"
+  - "B-005 — upgrade rewrites schemas and templates to the pin, up or down (0045)"
+  - "B-006 — upgrade at the pin: current, nothing rewritten (0045)"
   - "B-007 — upgrade writes only under schema/ and templates/ (0045)"
-  - "B-008 — upgrade moves one version at a time (0045)"
   - "B-009 — on-disk source by configuration (0043)"
   - "B-010 — embedded source ignores an on-disk edit (0043)"
   - "B-011 — report names the selected source (0043)"
-  - "B-012 — init writes `schemaVersion` as the newest (0049)"
+  - "B-012 — init writes the newest `schemaVersion`, by semver precedence (0049)"
   - "B-013 — shipped files byte-identical in later tools (0044)"
-  - "B-014 — pinned version's rule vocabulary evaluated (0042)"
+  - "B-014 — pinned version's rule vocabulary evaluated (0118)"
   - "B-015 — shipped vocabulary never changes (0044)"
-  - "B-016 — upgrade changes only `schemaVersion` and added keys (0047)"
-  - "B-017 — upgrade prints versions and rewritten files (0047)"
+  - "B-016 — upgrade adds the pinned version's absent keys, keeps present ones (0047)"
+  - "B-017 — upgrade prints the pinned version and rewritten files, no diff (0047)"
   - "B-018 — upgrade, root not a directory: exit 2 (0046)"
   - "B-019 — upgrade, no manifest: exit 2 (0046)"
   - "B-020 — upgrade, invalid manifest: exit 3 (0046)"
-  - "B-021 — upgrade from an unshipped version writes nothing (0048)"
-  - "B-022 — version 1 accepts `title` and `description` on an epic (0042)"
-  - "B-023 — an empty epic `title` or `description` is a `SPEC004` violation (0042)"
+  - "B-021 — upgrade under a `schemaVersion` the check rejects writes nothing (0048)"
+  - "B-022 — `0.1.0` accepts `title` and `description` on an epic (0118)"
+  - "B-023 — an empty epic `title` or `description` is a `SPEC004` violation (0118)"
   - "B-024 — upstream recorded: schemas from the local copy (0092)"
   - "B-025 — upstream recorded: the check makes no network call (0092)"
   - "B-026 — upgrade writes fetched content matching the hash (0093)"
@@ -116,6 +140,27 @@ acceptance_criteria:
   - "B-034 — upgrade leaves the upstream version and hash (0093)"
   - "B-035 — upgrade, source unreachable: exit 3 (0093)"
   - "B-036 — upstream recorded, embedded selected: exit 3 (0092)"
+  - "B-037 — malformed `schemaVersion`: stderr, exit 3 (0118)"
+  - "B-038 — a new rule id only in a higher major (0044)"
+  - "B-039 — list prints each shipped version (0119)"
+  - "B-040 — list in semver precedence (0119)"
+  - "B-041 — pin moves up (0120)"
+  - "B-042 — pin moves down (0120)"
+  - "B-043 — pin changes only the key's value (0120)"
+  - "B-044 — pin touches no other file (0120)"
+  - "B-045 — pin adds the key when absent (0120)"
+  - "B-046 — pin, unshipped version named: exit 4 (0120)"
+  - "B-047 — pin, root not a directory: exit 2 (0121)"
+  - "B-048 — pin, no manifest: exit 2 (0121)"
+  - "B-049 — pin, rejected manifest: exit 3 (0121)"
+  - "B-050 — upgrade leaves `schemaVersion` (0045)"
+  - "B-051 — `latest-patch` floats to the newest patch (0122)"
+  - "B-052 — `latest-minor` floats to the newest minor (0122)"
+  - "B-053 — no policy: exactly the pinned version (0118)"
+  - "B-054 — undefined pin policy: exit 3 (0122)"
+  - "B-055 — pin with no version offers a selection list (0123)"
+  - "B-056 — the chosen version is pinned (0123)"
+  - "B-057 — upgrade that only adds a key: exit 0 (0047)"
   - "§ 9 carries a row naming a test for each id above."
 
 decisions:
@@ -138,6 +183,15 @@ decisions:
     upstream source (0092), upgrade's fetch (0093), and upgrade with the
     on-disk source (0094). Rejected: folding them into 0043 or 0045,
     whose claims need no network path and would wait on one.
+  - |
+    2026-10-09, spec-author, on the plan the owner approved (decision
+    0005, OQ-13): one conversion item (0118) for the integer pin 0042
+    delivered, cut before any other item here starts; 0045 re-cut as
+    "bring the files to the pin"; the list command (0119), the pin command
+    (0120) and its input failures (0121) each in an item; the Coulds
+    apart in 0122 and 0123, at the spec-reviewer's request, so no Must
+    item waits on them. B-008 dropped: withdrawn. Rejected: reopening
+    0042, which would erase what it delivered and when.
 
 out_of_scope:
   - "Everything in § 5 of the spec."

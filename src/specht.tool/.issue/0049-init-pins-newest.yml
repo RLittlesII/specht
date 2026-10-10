@@ -11,7 +11,7 @@ rank: 82
 parent: "0041"
 children: []
 
-depends_on: ["0042", "0052"] # the newest version 0042 embeds, in the manifest 0052 writes
+depends_on: ["0042", "0052", "0118"] # the newest version 0042 embeds, in the manifest 0052 writes, as the semver 0118 makes it
 blocks: ["0081"]
 spikes: []
 
@@ -21,19 +21,24 @@ claims:
   - B-012
 
 created: "2026-10-08"
-updated: "2026-10-08"
+updated: "2026-10-09"
 closed: null
 
 summary: |
   The manifest `specht init` writes carries `schemaVersion` equal to the
-  newest version the tool embeds. Waits on 0042 for the version and on
-  init's bare-root write (0001-F4, 0052) for the manifest.
+  newest version the tool embeds, the highest by semver precedence, as
+  `major.minor.patch`. Waits on 0042 for the version, on 0118 for its
+  semver form, and on init's bare-root write (0001-F4, 0052) for the
+  manifest.
 
 acceptance_criteria:
-  - "B-012 — init's manifest carries the newest `schemaVersion`"
+  - "B-012 — init's manifest carries the newest `schemaVersion`, by semver precedence"
   - "§ 9 carries a row naming a test for each id above."
 
-decisions: []
+decisions:
+  - |
+    2026-10-09, spec-author, on the plan the owner approved (decision
+    0005): now waits on the conversion item 0118. Claim unchanged in id.
 
 out_of_scope:
-  - "init writing an older version — § 5 #2, 0001-F4 OQ-1."
+  - "init writing an older version — 0001-F4 § 5 #6; moving the pin is 0120."

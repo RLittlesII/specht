@@ -166,19 +166,23 @@ Feature: Schema versioning
     And the exit code is 3
 
   @B-021 @boundary
-  Scenario Outline: Upgrade under a pin the tool cannot use rewrites nothing
+  Scenario: Upgrade under a version the tool does not ship rewrites nothing
     Given the tool ships schema version 0.1.0 only
-    And the manifest's schema version is <value>
+    And the manifest pins version 7.0.0
     And a snapshot of every file under the root
     When upgrade runs against it
     Then no file under the root has changed
-    And the standard error names <value> and the versions the tool ships
+    And the standard error names version 7.0.0 and the versions the tool ships, as the check's does
     And the exit code is 3
 
-    Examples:
-      | value |
-      | 7.0.0 |
-      | 1     |
+  @B-021 @boundary
+  Scenario: Upgrade under a malformed schema version rewrites nothing
+    Given the manifest's schema version is 1
+    And a snapshot of every file under the root
+    When upgrade runs against it
+    Then no file under the root has changed
+    And the standard error names 1, as the check's does
+    And the exit code is 3
 
   @B-022
   Scenario: Version 0.1.0 accepts a title and a description on an epic
@@ -319,10 +323,10 @@ Feature: Schema versioning
 
   @B-038
   Scenario: A new rule is a new major
-    Given two schema versions the tool ships, one later than the other
-    And the later one holds a rule the earlier one does not
+    Given two schema versions the tool ships, one higher than the other by version precedence
+    And the higher one holds a rule the lower one does not
     When their numbers are compared
-    Then the later one's major is greater than the earlier one's
+    Then the higher one's major is greater than the lower one's
 
   @B-039
   Scenario: Listing names every shipped version
@@ -469,3 +473,11 @@ Feature: Schema versioning
     And an interactive terminal
     When a version is pinned without naming one and 0.2.0 is chosen
     Then the manifest pins version 0.2.0
+
+  @B-057
+  Scenario: Upgrade that only adds a manifest key succeeds
+    Given the tool ships schema versions 0.1.0 and 0.2.0
+    And the root is pinned to version 0.2.0 and its frontmatter schemas and templates are already version 0.2.0's
+    And its manifest lacks a key version 0.2.0 defines
+    When upgrade runs against it
+    Then the exit code is 0
