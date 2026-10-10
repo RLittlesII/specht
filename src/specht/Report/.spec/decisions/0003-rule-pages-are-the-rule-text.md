@@ -91,4 +91,25 @@ shape.** The three parts of an analyzer page this one leaves out.
 
 ## Reversal
 
-None.
+**2026-10-09, redirected by the repository owner**, reviewing the pages on the
+pull request that delivered them. The sections above are as written.
+
+- **Location.** The owner: "I was thinking these would live at root `docs/`".
+  A page's file now sits at `docs/rules/v<n>/SPEC###.md`, `docs/rules/v1/`
+  today, not under `src/specht/Rules/docs/`. The `rules/v<n>/` sub-path and
+  keeping the version segment are the author's reading, not the owner's words:
+  the text is versioned with the schema (C-6), and `docs/schema/` is the
+  precedent for a published file under `docs/`.
+- **Terseness.** The owner: "These are more verbose than I'd like can we make
+  them terse?!". A page states each condition the rule reports and its
+  message, one minimal example and the fix, and carries no background (§ 5
+  row 12). The page shape is unchanged.
+- **Unchanged.** The pages are the rule text, the engine embeds them - now
+  from `docs/rules/` - `--explain` prints them, and `0001-F3` owns them. The
+  first Rejected entry stands as written: what it turned down is a page
+  `--explain` does not read, and its stated cost, pages away from where a
+  reader looks first, is no longer paid.
+- **Affects.** `0001-F3` A-4 (amended), § 5 row 12 (added). C-6, B-019 and
+  B-031 to B-033 are unchanged. `0001-F7` item `0126` names the new folder.
+  Epic `0002` and `0002-F1` § 5 row 4 say the pages under `docs/` are
+  `0001-F3`'s.

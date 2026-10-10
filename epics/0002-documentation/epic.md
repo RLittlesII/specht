@@ -117,5 +117,5 @@ specification makes that claim.
 | `--explain` rule text and the report's JSON Schema                        | `0001-F3`                                                                                                                               |
 | `hooked`'s own documentation                                              | `hooked`, its Documentation epic (PR #212)                                                                                              |
 | Rewriting `.spec/**` documents as usage docs                              | Rejected: a specification is the agreement                                                                                              |
-| A documentation page per rule, from the rule-catalogue prose (brief § 3)  | `0001-F3` (B-031 to B-033, decision 0003): the pages are the text `--explain` prints                                                    |
+| A documentation page per rule, from the rule-catalogue prose (brief § 3)  | `0001-F3` (B-031 to B-033, decision 0003): the text `--explain` prints. Its files sit at `docs/rules/` and stay `0001-F3`'s             |
 | Turning the specification-model prose into user documentation (brief § 3) | Unowned. Neither `0002` Feature claims it; the owner decides whether it is a `0002-F1` claim once OQ-2 settles, or a Feature of its own |

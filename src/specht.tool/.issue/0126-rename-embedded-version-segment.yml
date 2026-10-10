@@ -33,7 +33,7 @@ summary: |
   0001-F4 § 7 and § 8, which state `v<n>`.
 
   The rule pages follow the same answer (0001-F3 A-4, decision 0003):
-  the page folder `src/specht/Rules/docs/v<n>/`, the `rules/v<n>/`
+  the page folder `docs/rules/v<n>/`, the `rules/v<n>/`
   resource name the engine embeds them under, and the Schema version
   each page's metadata gives (0001-F3 B-033), with 0001-F3 § 7 and § 8,
   which state `v1`.
@@ -67,6 +67,10 @@ decisions:
     § 12, round 7): the rule-page folder, its resource name and the
     pages' Schema version added to the scope, since 0001-F3 A-4 ties
     them to OQ-22. No edge added.
+  - |
+    2026-10-09, the repository owner (0001-F3 decision 0003, amended):
+    the pages moved to the repository-root `docs/`, so the folder named
+    here is `docs/rules/v<n>/`. No edge added.
 
 out_of_scope:
   - "Converting the pin, the version set and the report to semver — 0120."

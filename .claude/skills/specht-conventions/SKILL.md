@@ -51,7 +51,6 @@ src/
   specht/                      specht - the rule engine: discovery, readers, schema loader,
                                rules, runner, report. Copied from hooked (brief § 3).
     .spec/                     this Feature's specification, .feature and records (epic 0001)
-    Rules/docs/v1/             embedded rule pages, one SPEC###.md per rule id of the version
   specht.tool/                 specht.tool - the CLI host; PackAsTool, command `specht`
     Features/<Command>/        one folder per Spectre command - dotnet-tool owns the inside
     schema/v1/                 embedded shipping copy of the schema set
@@ -81,6 +80,9 @@ epics/                         one folder per epic - ids share the items' number
 .claude/agents/                the five role contracts - tracked
 .claude/skills/                these skills - tracked; the rest of .claude/ is gitignored
                                (no Skillfile is committed)
+docs/
+  rules/v1/                    rule pages, one SPEC###.md per rule id of the version - embedded in
+                               the engine as rules/v1/<file>
 AGENTS.md                      the entry point for agents
 README.md                      the public front page - what, why, status, usage
 ```

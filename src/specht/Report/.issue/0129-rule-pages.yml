@@ -46,6 +46,11 @@ decisions:
     this item is the pages and the completeness check (decision 0003).
     Rejected: pages under `docs/` that `--explain` does not read; rule text
     in C# descriptors with generated pages.
+  - |
+    2026-10-09, the repository owner, reviewing the pull request: the
+    pages live at the repository-root `docs/`, at `docs/rules/v<n>/`
+    (A-4, amended; the sub-path is spec-author's reading), and are terse
+    (§ 5 #12). Still embedded in the engine (decision 0003, amended).
 
 out_of_scope:
   - "Printing a page — § 5 #11, B-019, item 0040."

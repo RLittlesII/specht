@@ -41,7 +41,7 @@ resolve to claims, and dependency edges that agree from both ends. Rules are
 `SPEC001`–`SPEC061`
 ([brief § 4](.spec/brief.md#4-the-rule-vocabulary-fixed-versioned-with-the-schema)
 summarises them; each has a page under
-[`src/specht/Rules/docs/v1/`](src/specht/Rules/docs/v1/)), and each finding says
+[`docs/rules/v1/`](docs/rules/v1/)), and each finding says
 what the rule expected.
 
 Deterministic and offline: the same tree gives the same report, and every path
