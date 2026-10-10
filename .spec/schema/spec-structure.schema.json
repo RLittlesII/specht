@@ -17,7 +17,7 @@
     "Scoring"
   ],
   "tables": {
-    "9. Traceability Matrix": [
+    "matrix": [
       "Claim ID",
       "Scenario",
       "Test",

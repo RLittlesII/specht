@@ -27,7 +27,7 @@ public static class SpecManifest
     /// <exception cref="SpechtManifestUnreadableException">The manifest is not well-formed JSON or not the manifest's shape.</exception>
     /// <exception cref="SpechtManifestException">
     /// The manifest carries a key the engine does not know, a <c>schemaVersion</c> that is not an integer of at least 1, a
-    /// role naming a title <c>sections</c> does not list, or a marker whose text is empty.
+    /// role naming a title <c>sections</c> does not list, a <c>tables</c> key that is not a role, or a marker whose text is empty.
     /// </exception>
     public static SpecStructure Load(IFileSystem fileSystem, string root)
     {
@@ -86,10 +86,12 @@ public static class SpecManifest
 
     private static void Check(SpecStructure structure)
     {
-        var faults = Defaults["roles"]!.AsObject()
+        var roles = Defaults["roles"]!.AsObject();
+        var faults = roles
             .Select(static entry => entry.Key)
             .Where(role => !structure.Sections.Contains(structure.Roles[role], StringComparer.Ordinal))
             .Select(role => $"the role '{role}' names '{structure.Roles[role]}', which sections does not list")
+            .Concat(structure.Tables.Keys.Where(key => !roles.ContainsKey(key)).Select(static key => $"the tables key '{key}' is not a role"))
             .Concat(
                 Defaults["markers"]!.AsObject()
                     .Select(static entry => entry.Key)
