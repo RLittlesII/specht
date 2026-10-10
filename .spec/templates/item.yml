@@ -33,7 +33,8 @@
 # The whole file is YAML, with the prose fields as block scalars. .issue/.sequence
 # at the repository root holds the last id claimed: take the next number and
 # write it back in the same commit. Claim the id AFTER rebasing: it is taken
-# the moment someone else merges it.
+# the moment someone else merges it - and an open pull request holds ids too,
+# so take the number above the highest any of them claims.
 
 id: "0003" # string, so leading zeros survive. Never reused.
 type: feature # epic | feature | task | test | bug | spike | refactor

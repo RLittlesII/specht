@@ -1,0 +1,76 @@
+id: "0128"
+type: task
+title: Make the build detect an id claimed twice
+
+status: ready
+
+priority: medium # DERIVED
+value: 3
+risk: 2
+rank: 54 # DERIVED
+
+parent: null
+children: []
+
+depends_on: []
+blocks: [] # DERIVED
+spikes: []
+
+spec: null
+
+claims: []
+
+created: "2026-10-09"
+updated: "2026-10-09"
+closed: null
+
+summary: |
+  Lesson 0005: ids claimed twice were found by reading, because git merges two
+  records that share a number under different file names without a conflict.
+  Item 0127 put the rule in the delivery reference; review is all that
+  enforces it. This item makes the build say so instead.
+
+  Three cases:
+  (a) two files in one `decisions/`, `adr/` or `lessons/` folder sharing a
+      number;
+  (b) two `.issue/` items sharing an id;
+  (c) a pull request adding an id that already exists on its base.
+
+  (a) and (b) can be seen in a single tree. (c) cannot: it needs the base the
+  pull request is compared against, so it is a check on a diff, not on a tree.
+
+  Open question 1, owner not asked: where the check lives. As a `SPEC###`
+  rule it is a new rule, and a new rule is a new schema version (AGENTS.md
+  § Invariants; brief § 4). It would also read `.issue/`, which the tool does
+  not read today, and (c) would need a base, which a check that is
+  deterministic and offline over one tree does not have. Proposed default: a
+  build-target check in this repository, run in CI beside `SpecCheck`, for all
+  three cases; a `specht` rule for (a) is raised with the owner as a separate
+  specification delta if consumers want it.
+
+  Open question 2, owner not asked: `main` already holds two items numbered
+  0118 - `src/specht/Manifest/.issue/0118-configurable-claim-tags.yml`
+  (`9f01e20`) and
+  `.build/ContinuousIntegration/.issue/0118-windows-gates-on-main-only.yml`
+  (`5fa5964`) - so (b) fails on the first run. AGENTS.md § Stable IDs forbids
+  renumbering an id on `main`, and both ids are in landed commit subjects.
+  Proposed default: both stay; the check carries that one pair as a recorded
+  exception, and a citation of 0118 that could mean either names the path.
+  The alternative is to renumber the one that merged second, as an explicit
+  exception to § Stable IDs recorded in `0055-F2` § 10.
+
+acceptance_criteria:
+  - "Both open questions are answered by the owner and recorded in `decisions` before any check is written."
+  - "(a) Two files sharing a number in one `decisions/`, `adr/` or `lessons/` folder fail the check, which names both paths."
+  - "(b) Two `.issue/` items sharing an id fail the check, which names both paths."
+  - "(c) A pull request that adds an id its base already holds fails the check in CI."
+  - "Every path the check prints is repository-relative."
+  - "If the answer to question 1 is a `specht` rule, the specification delta and the schema version come first, and this item is re-cut from those claims."
+  - "specht-conventions' delivery reference names the check where it now says review enforces the rule."
+
+decisions: []
+
+out_of_scope:
+  - "Reserving ids, and the rule for claiming one - 0127, delivered."
+  - "Detecting a claim, constraint or open-question id used twice inside one specification - claim-id uniqueness is already a `specht` rule, and the other two are not asked for here."
+  - "Any implementation before question 1 is answered."

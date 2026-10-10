@@ -1,0 +1,64 @@
+id: "0127"
+type: task
+title: Reserve an id on main before a branch claims it
+
+status: done
+
+priority: medium # DERIVED
+value: 3
+risk: 1
+rank: 57 # DERIVED
+
+parent: null
+children: []
+
+depends_on: []
+blocks: [] # DERIVED
+spikes: []
+
+spec: null
+
+claims: []
+
+created: "2026-10-09"
+updated: "2026-10-09"
+closed: "2026-10-09"
+
+summary: |
+  A process chore. On 2026-10-09 pull requests cut in parallel from one `main`
+  each took the next free id, so a decision number, claims, a constraint, open
+  questions and a work-item id were claimed two and three times, and git
+  reported none of it. Lesson 0005 keeps the incident; this item records the
+  lesson and puts the rule in the skill that owns it.
+
+  Scope - process documentation only:
+  - .spec/lessons/0005-an-id-is-not-reserved-until-it-merges.md - the lesson.
+  - .claude/skills/specht-conventions/references/delivery.md - the rule, as
+    "Reserve an id before a branch claims it", and three `Never add` rows.
+  - .claude/skills/specht-conventions/SKILL.md § ID schemes,
+    .claude/skills/spec-and-traceability, .claude/skills/deliver-change and
+    .spec/templates/item.yml - one pointer or one portable sentence each.
+  - AGENTS.md - the trap, in its short list.
+
+  This item's own id applies the rule. `.issue/.sequence` on `main` read
+  `0119`; open pull request #71 claims 0120 to 0126, so those ids are skipped
+  and this item and 0128 take the two above them.
+
+acceptance_criteria:
+  - "`.spec/lessons/0005-an-id-is-not-reserved-until-it-merges.md` states the symptom, the root cause, the delta and the skill changed, and names no claim."
+  - "specht-conventions' delivery reference says to check `main` and every open pull request before claiming an id, how an item id is reserved, that one specification has one writer at a time, and how an unmerged clash is renumbered."
+  - "The rule is written once: every other file that mentions it links the delivery reference."
+  - "The skill does not retell the incident, and the lesson and the skill link each other."
+  - "`.issue/.sequence` reads `0128`, and no id from 0120 to 0126 is used."
+  - "No specification, `.feature` file, schema or tool behaviour changes."
+  - "./build.sh SpecCheck reports no rule id it did not report on `main`."
+
+decisions:
+  - "2026-10-09, spec-author: the rule's home is specht-conventions' delivery reference, beside \"Claiming an id\". It names `main`, pull requests and `.issue/.sequence`, which the portable skills may not, so `spec-and-traceability` and `deliver-change` gain one path-free sentence each. Rejected: AGENTS.md § Stable IDs as the home - that section states what an id is, not the delivery flow."
+  - "2026-10-09, spec-author: AGENTS.md's trap list gains the trap as a seventh entry. It meets the list's own test: it cost three pull requests a renumber and a review round and put a duplicate item id on `main`, and it does not change while ids are claimed on branches."
+
+out_of_scope:
+  - "A build or `specht` check that detects an id claimed twice - 0128."
+  - "The two items numbered 0118 on `main` - which keeps the id is the owner's decision, carried by 0128."
+  - "Renumbering anything in open pull request #71 - that branch's own work."
+  - "A subject form for a commit that only reserves ids - the delivery reference fixes `<type>(<id>)`, and a reservation has no item; not decided here."
