@@ -23,10 +23,10 @@ withdrawn constraint is deleted instead of marked, a heading carries markup, a
 row grows an empty trailing cell, frontmatter keys wander. Each is harmless to
 the verdict and costly to the reader and to every diff that follows.
 
-This epic adds those checks as rules of schema version 2, every one a warning
-by default, and adds `specht format`, a separate command that fixes the
-ordering findings by moving whole table rows and frontmatter keys. The check
-stays read-only.
+This epic adds those checks as rules of schema version 2, each of these style
+and ordering rules a warning by default, and adds `specht format`, a separate
+command that fixes the ordering findings by moving whole table rows and
+frontmatter keys. The check stays read-only.
 
 It also holds the uniqueness rules: an id declared twice is not harmless to
 the verdict, because a citation of it names two rows. Those rules are errors
@@ -43,10 +43,13 @@ and 0002).
 
 Four repositories write specifications on one model, by hand and by agent. A
 document that is complete but out of order still costs every reader a scan
-and every reviewer a diff of moved rows. With this epic delivered, a
-repository is told where a document drifted from the form, can choose which
-of those findings it enforces, and can put the ordering right with one
-command that never touches what a row or key says.
+and every reviewer a diff of moved rows. A document that declares an id twice
+costs more: every citation of that id names two rows, and only a reader
+finds it. With this epic delivered, a repository is told where a document
+drifted from the form, can choose which of those findings it enforces, can
+put the ordering right with one command that never touches what a row or key
+says, and fails its check on an id declared twice until it lowers or
+disables that rule.
 
 ## Features
 

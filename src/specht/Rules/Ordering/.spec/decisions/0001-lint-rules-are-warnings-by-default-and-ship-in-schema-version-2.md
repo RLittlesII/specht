@@ -58,4 +58,10 @@ rules wait for `0001-F7`. Taken.
 
 ## Reversal
 
-None.
+**Narrowed 2026-10-09 by the repository owner (`0101-F6` decision 0001).**
+"Every rule epic `0101` adds" now reads as the rules of the four Features
+this record names, `0101-F1` to `0101-F4`. The uniqueness rules the owner
+added to the epic on 2026-10-09 are errors by default, and "Error by
+default" under Rejected does not bind them. Considered and not chosen:
+warning by default for the uniqueness rules too (`0101-F6` decision 0001,
+Rejected).
