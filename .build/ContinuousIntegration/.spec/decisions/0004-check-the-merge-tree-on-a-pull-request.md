@@ -24,8 +24,8 @@ Answered by the owner, 2026-10-09, on the reviewer's Round 12:
 
 - OQ-4: log only. A violation only the merge tree carries is printed in the
   log and is not annotated on the diff (B-020, § 5 #26). The owner accepted
-  that B-006 is narrowed to violations in the head tree. Stated cost: a
-  reader must open the log to see the collision.
+  that B-006 is narrowed to violations in the head tree. Cost, as the
+  question stated it: a reader must open the log to see the collision.
 - OQ-3: no. Once `SpecCheck` gates, a merge tree that cannot be computed is
   reported, "no merge tree was checked", and does not by itself fail the
   ubuntu check (B-019, B-024).
@@ -52,10 +52,13 @@ two records that share a number under different file names without a conflict
 (lesson 0005). One duplicate reached `main` that way: the two work items
 numbered 0118.
 
-Rules that report an id claimed twice inside one tree are proposed for epic
-`0101` and are not yet specified. A pull request's run checks the pull
-request's head (B-001), so such a rule never sees `main` and the branch
-together there, and the collision first appears on `main`, after the merge.
+Rules that report an id claimed twice inside one tree belong to epic `0101`.
+`0101-F6` specifies, as a draft, those for a constraint id or an open-question
+id declared twice in one specification; those for record numbers and for
+work-item ids, proposed as `0101-F7` and `0101-F8`, are not yet specified. A
+pull request's run checks the pull request's head (B-001), so such a rule
+never sees `main` and the branch together there, and the collision first
+appears on `main`, after the merge.
 In the merge tree the collision is two records in one tree, which a
 single-tree rule can report.
 
@@ -79,13 +82,16 @@ already on `main`, where an id is permanent and one of the two records has to
 be renumbered against AGENTS.md § Stable IDs.
 
 **Annotating the violations only the merge tree carries** (owner, 2026-10-09,
-OQ-4). Cost of rejecting: such a violation is not on the diff, and a reader
-must open the log to see it. Rejected because it needs the two runs'
-violations de-duplicated and each line mapped from the merge tree to the diff.
+OQ-4: the owner chose log only). Cost of rejecting: such a violation is not on
+the diff, and a reader must open the log to see it. The reason is the
+question's, written by spec-author when asking and not stated by the owner: it
+needs the two runs' violations de-duplicated and each line mapped from the
+merge tree to the diff.
 
 **Making the merge-tree run the one that annotates** (owner, 2026-10-09,
-OQ-4). Cost of rejecting: the same as above. Rejected because its line numbers
-are wrong wherever `main` changed the same file.
+OQ-4: the owner chose log only). Cost of rejecting: the same as above. The
+reason is the question's, as above, and not stated by the owner: its line
+numbers are wrong wherever `main` changed the same file.
 
 **Failing the ubuntu check when the merge tree cannot be computed** (owner,
 2026-10-09, OQ-3). Cost of rejecting, as spec-author reads it, not stated by
