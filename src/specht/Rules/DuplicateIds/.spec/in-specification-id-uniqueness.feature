@@ -4,7 +4,7 @@ Feature: In-specification id uniqueness
   So that a citation names one row and a number taken twice is caught by the check
 
   Background:
-    Given a repository whose manifest pins schema version 2
+    Given a repository whose manifest pins a schema version that carries the duplicate-id rules
 
   @B-001
   Scenario: A constraint id declared twice is reported
@@ -23,6 +23,12 @@ Feature: In-specification id uniqueness
     Given a specification whose constraints are C-1, C-1 and C-1
     When the check runs
     Then two duplicate-id findings are reported, one on each row after the first
+
+  @B-003
+  Scenario: The second of two rows carries the finding
+    Given a specification whose constraints are C-1, C-2 and C-2
+    When the check runs
+    Then one duplicate-id finding is reported, on the second C-2 row
 
   @B-004
   Scenario: The finding names the id and where it was first declared
@@ -56,7 +62,7 @@ Feature: In-specification id uniqueness
     Given a specification whose claims are B-001, B-002 and B-002
     When the check runs
     Then no duplicate-id finding is reported
-    And the claim rule reports B-002 once
+    And SPEC030 reports B-002 once
 
   @B-009 @boundary
   Scenario: The same id in two specifications is not a duplicate
@@ -65,10 +71,15 @@ Feature: In-specification id uniqueness
     Then no duplicate-id finding is reported
 
   @B-010
-  Scenario: A section with no table reports nothing
-    Given a specification whose open questions section holds no table
+  Scenario Outline: A section with no table reports nothing
+    Given a specification whose <section> section holds no table
     When the check runs
     Then no duplicate-id finding is reported
+
+    Examples:
+      | section        |
+      | constraints    |
+      | open questions |
 
   @B-011
   Scenario: Ids each declared once report nothing
@@ -92,8 +103,14 @@ Feature: In-specification id uniqueness
     Then no duplicate-id finding is reported
 
   @B-014 @boundary
-  Scenario: A version 1 repository is not checked for duplicate ids
-    Given the manifest pins schema version 1 instead
+  Scenario: A repository pinned to 0.1.0 is not checked for duplicate ids
+    Given the manifest pins schema version 0.1.0 instead
     And a specification whose constraints are C-1, C-2 and C-2
+    When the check runs
+    Then no duplicate-id finding is reported
+
+  @B-015 @boundary
+  Scenario: Ids that differ only by leading zeros are two ids
+    Given a specification whose constraints are C-1 and C-01
     When the check runs
     Then no duplicate-id finding is reported
