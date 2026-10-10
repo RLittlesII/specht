@@ -358,3 +358,10 @@ Feature: The manifest carries the roles
     When the check runs
     Then the manifest is rejected
     And the rejection names the draft marker
+
+  @B-041
+  Scenario: An empty file-shape list is invalid
+    Given the manifest's companion file list is empty
+    When the check runs
+    Then the manifest is rejected
+    And the rejection names the companion file list

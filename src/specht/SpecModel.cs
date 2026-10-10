@@ -23,7 +23,7 @@ public sealed class SpecModel
     /// <summary>Absolute path to the repository root.</summary>
     public string Root { get; }
 
-    /// <summary>Every discovered Feature specification, in both layouts.</summary>
+    /// <summary>Every discovered Feature specification, in every layout.</summary>
     public IReadOnlyList<FeatureSpec> Features { get; }
 
     /// <summary>Every task, test, bug and spike file beside a specification.</summary>
@@ -34,12 +34,6 @@ public sealed class SpecModel
 
     /// <summary>The schemas and the section contract every rule is evaluated against.</summary>
     public SpecSchemas Schemas { get; }
-
-    /// <summary>How many specifications are still in the legacy layout.</summary>
-    public int LegacyCount => Features.Count(static feature => feature.Location.Layout == SpecLayout.Legacy);
-
-    /// <summary>How many specifications have been migrated.</summary>
-    public int CoLocatedCount => Features.Count(static feature => feature.Location.Layout == SpecLayout.CoLocated);
 
     /// <summary>Loads the model rooted at <paramref name="root"/> with the embedded version set.</summary>
     /// <exception cref="SpechtRootNotFoundException"><paramref name="root"/> is not a directory; nothing in the tree is read.</exception>
@@ -63,7 +57,8 @@ public sealed class SpecModel
         var fileSystem = new FileSystem();
         var schemas = SpecSchemas.Load(fileSystem, root, versions);
         var frontmatter = new FrontmatterReader(fileSystem);
-        var locations = SpecDiscovery.FindSpecifications(root);
+        var discovery = schemas.Structure.Discovery;
+        var locations = SpecDiscovery.FindSpecifications(fileSystem, root, discovery);
         var features = new List<FeatureSpec>();
 
         foreach (var location in locations)
@@ -71,12 +66,12 @@ public sealed class SpecModel
             features.Add(new FeatureSpec(
                 location,
                 SpecDocument.Parse(File.ReadAllText(location.AbsolutePath), location.RelativePath),
-                Directory.EnumerateFiles(location.Directory, "*.feature").Order(StringComparer.Ordinal).ToList()));
+                SpecDiscovery.FindCompanions(fileSystem, location, discovery)));
         }
 
         var items = new List<ChildItem>();
 
-        foreach (var path in SpecDiscovery.FindChildItems(locations))
+        foreach (var path in SpecDiscovery.FindChildItems(fileSystem, locations, discovery, schemas.Structure.Identifiers["task"]))
         {
             items.Add(new ChildItem(
                 SpecDiscovery.Relative(root, path),
@@ -86,16 +81,10 @@ public sealed class SpecModel
         }
 
         var epics = new List<EpicFile>();
-        var epicsDirectory = Path.Combine(root, "epics");
 
-        if (Directory.Exists(epicsDirectory))
+        foreach (var path in SpecDiscovery.FindEpics(fileSystem, root, discovery))
         {
-            var paths = Directory.EnumerateFiles(epicsDirectory, "epic.md", SearchOption.AllDirectories);
-
-            foreach (var path in paths.Order(StringComparer.Ordinal))
-            {
-                epics.Add(new EpicFile(SpecDiscovery.Relative(root, path), frontmatter.Read(path)));
-            }
+            epics.Add(new EpicFile(SpecDiscovery.Relative(root, path), frontmatter.Read(path)));
         }
 
         return new SpecModel(root, features, items, epics, schemas);

@@ -22,8 +22,7 @@ public sealed class SpecReportDocumentIntegrationTests
                 "a run with an error carrying an identifier and a warning on a whole file",
                 new SpecCheckReportFixture()
                     .WithSpecificationCount(2)
-                    .WithLegacyCount(1)
-                    .WithCoLocatedCount(1)
+                    .WithLayouts(new SpecReportLayout("epics", 1), new SpecReportLayout("features", 1))
                     .WithItemCount(1)
                     .WithRulesEvaluated(21)
                     .WithViolations(

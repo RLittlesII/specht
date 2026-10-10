@@ -40,8 +40,10 @@ public static class SpecCheckRunner
         return new SpecCheckReport(
             version.Number,
             model.Features.Count,
-            model.LegacyCount,
-            model.CoLocatedCount,
+            [
+                .. model.Schemas.Structure.Discovery.Layouts.Select(layout =>
+                    new SpecReportLayout(layout.Name, model.Features.Count(feature => feature.Location.Layout == layout))),
+            ],
             model.Items.Count,
             evaluated.SelectMany(static rule => rule.ReportedIds).Count(version.RuleIds.Contains),
             Order(violations));

@@ -33,8 +33,9 @@
         "required": ["layout", "specificationCount"],
         "properties": {
           "layout": {
-            "description": "legacy is epics/<epic>/<feature>/spec.md; coLocated is <area>/.spec/README.md.",
-            "enum": ["legacy", "coLocated"]
+            "description": "The layout's name in the manifest; the default manifest names epics, epics/**/spec.md, and features, **/.spec/README.md.",
+            "type": "string",
+            "minLength": 1
           },
           "specificationCount": {
             "type": "integer",
