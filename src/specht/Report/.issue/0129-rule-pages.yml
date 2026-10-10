@@ -2,7 +2,7 @@ id: "0129"
 type: task
 title: Write a page for every rule and check the set is complete
 
-status: in-progress
+status: done
 
 priority: high
 risk: 2
@@ -24,7 +24,7 @@ claims:
 
 created: "2026-10-09"
 updated: "2026-10-09"
-closed: null
+closed: "2026-10-09"
 
 summary: |
   One Markdown page per rule id of the shipped schema version, embedded in
