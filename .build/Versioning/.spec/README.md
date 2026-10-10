@@ -101,12 +101,13 @@ Nothing sets the package's version, so every `Pack` would produce the same defau
 | 5   | Cutting the release tag from the computed version                       | Both           |
 | 6   | Keeping one source of the version                                       | Both           |
 | 7   | Getting the `nbgv` tool onto a fresh clone, and keeping its pin current | Technical      |
+| 8   | Carrying the computed version into the package and its assemblies       | Technical      |
 
 ## 7. Technical Design
 
 <!-- last written by: implementer, 2026-10-09 -->
 
-Delivered so far by item 0079. Stamping the computed version into the assemblies and the package with the Nerdbank.GitVersioning MSBuild package (B-005) is 0080; the schema version staying put when `version.json` moves (B-006) is 0081. Until 0080 lands, `Pack` still carries the SDK's default version, and the version below is what `dotnet nbgv get-version` reports.
+Item 0079 built what the list below describes. B-005 is designed under its own heading and not yet built (item 0080): until it lands, `Pack` carries the SDK's default version, and the computed version is only what `dotnet nbgv get-version` reports. The schema version staying put when `version.json` moves (B-006) is 0081.
 
 - **The source** is [`version.json`](../../../version.json) at the repository root: `version` `0.1` (OQ-1), `publicReleaseRefSpec` `^refs/heads/main$` and `^refs/tags/v\d+(?:\.\d+)*$` (A-2), and `release.tagName` `v{version}`. It carries no comments; the reasons live here.
 - **The tool** is `nbgv` 3.10.94 in the local tool manifest, [`.config/dotnet-tools.json`](../../../.config/dotnet-tools.json), `rollForward: false`. The build's `Restore` target restores it with `DotNetToolRestore` (item 0057), so a fresh clone has it after `./build.sh` or `dotnet tool restore`. Renovate keeps the pin current through the manifest.
@@ -116,6 +117,22 @@ Delivered so far by item 0079. Stamping the computed version into the assemblies
 - **The release tag** (A-1, B-007): `dotnet nbgv tag` on a commit of `main` creates `v<version>` at that commit from `release.tagName`. It creates the tag locally only; pushing it is the maintainer's step, and publishing on the tag is `0055-F6`.
 - **One source** (C-3): no `<Version>` is set in `Directory.Build.props` or any project file, and no workflow passes one in.
 - **Verified by hand** when 0079 was built, 2026-10-09. Nothing here has a test yet (§ 8).
+
+### B-005: `Pack` takes the computed version (designed, item 0080)
+
+- **Today B-005 does not hold.** On branch `0080/pack-version` at `199bc2a`, `./build.sh Pack` wrote `.artifacts/nupkg/specht.tool.1.0.0.nupkg`, its nuspec `<version>` `1.0.0`, while `dotnet nbgv get-version` gave NuGetPackageVersion `0.1.7-g199bc2a591`. Item 0079 added the `nbgv` command-line tool, which computes and reports; nothing hands its answer to MSBuild, so the package takes the SDK default.
+- **The mechanism** is the Nerdbank.GitVersioning MSBuild package, the same product as the tool and the same reader of `version.json`. Its `GetBuildVersion` target runs before the SDK generates assembly attributes and before it writes the nuspec, and sets `Version`, `AssemblyVersion`, `FileVersion`, `InformationalVersion` and `PackageVersion`. `PackageVersion` is its `NuGetPackageVersion`, the value `dotnet nbgv get-version` prints under that name.
+- **Two edits, both declarations.**
+  - [`Directory.Packages.props`](../../../Directory.Packages.props): `<PackageVersion Include="Nerdbank.GitVersioning" Version="3.10.94" />` under the `Build` label, the same version the local tool manifest pins for `nbgv`. The two pins move together: the tool reports the version and the package stamps it, and B-005 is that they agree.
+  - [`Directory.Build.props`](../../../Directory.Build.props): `<PackageReference Include="Nerdbank.GitVersioning" PrivateAssets="all" />` beside the analyzer reference, so every project takes it (§ 5 row 5: the rest takes the same version, unasserted). `PrivateAssets="all"` keeps it out of the package's dependencies.
+- **Nothing else changes.** [`.build/Build.cs`](../../Build.cs) `Pack` stays as it is: `DotNetPack` on the solution with `--no-build` evaluates `PackageVersion` through the package's target, and `Compile`, which `Pack` depends on in the same run, has already stamped the assemblies from the same commit and ref. `Pack` passes no version and no project sets one (C-3). `version.json`, the tool manifest and the generated workflow are untouched; CI already checks out the full history (C-2).
+- **Rejected:** `Pack` reading `dotnet nbgv get-version` and passing `/p:Version` to `DotNetPack`. It is a version passed in, which C-3 rules out; it leaves the assemblies inside the package at `1.0.0.0`; and a `dotnet pack` run outside the build would still write `1.0.0`.
+- **Spiked 2026-10-09, then reverted.** With the two edits in place at `199bc2a`, `./build.sh Pack` wrote exactly one file, `specht.tool.0.1.7-g199bc2a591.nupkg`, with nuspec `<version>` `0.1.7-g199bc2a591`, equal to the tool's NuGetPackageVersion (B-005, `0055-F1` B-009), and the solution compiled with warnings as errors. Evaluating `specht.tool` with `GITHUB_REF=refs/heads/main` gave `PackageVersion` `0.1.7`, as the tool does under that ref (B-003).
+- **What a test must observe.** After `Pack` on a commit with full history: one file under `.artifacts/nupkg/`; the `<version>` element of the `specht.tool.nuspec` inside it; the version in the file's name; and `dotnet nbgv get-version -v NuGetPackageVersion` on the same commit and ref. All three are the same string. Comparing against the tool's output, never a literal, keeps the check true on every commit.
+- **Consequences to check when it is built.**
+  - The reference reaches [`.build/.build.csproj`](../../.build.csproj) too, so `build.sh` computes the version before any target runs. A shallow clone then fails every target, not only `Pack` (C-2 rules out less than that).
+  - On GitHub Actions the package appends `GitBuildVersion`, `GitBuildVersionSimple` and `GitAssemblyInformationalVersion` to the file `GITHUB_ENV` names, once per project built. A run that sets `GITHUB_ACTIONS` without `GITHUB_ENV` fails in that step; a real runner always sets both.
+  - The pre-commit hook runs `Format` over an export of the index outside the repository (`0055-F1` § 7), where there is no git history to count. Not spiked: commit a staged `.cs` file through the hook before 0080 is done.
 
 ## 8. Testing Strategy
 
