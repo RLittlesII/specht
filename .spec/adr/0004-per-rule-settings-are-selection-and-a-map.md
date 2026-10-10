@@ -11,6 +11,8 @@ type: adr
 accepted - 2026-10-09, by the owner. Raised by the owner on 2026-10-08: "Given we are now
 inverting control, maybe this leads us to a different approach?", and proposed on pull request #24.
 
+Partially superseded by [ADR-0008](0008-evaluate-takes-the-rule-set-and-the-model-carries-the-vocabulary.md), 2026-10-09: the Decision's clause "`Evaluate` takes no second parameter and reads no static" is narrowed to the rule settings. The rule set is `Evaluate`'s second argument. The rest stands.
+
 Supersedes [ADR-0002](0002-no-chain-of-responsibility-for-the-check.md) in
 part:
 
