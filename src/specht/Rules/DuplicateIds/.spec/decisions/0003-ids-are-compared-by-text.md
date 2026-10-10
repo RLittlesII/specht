@@ -16,9 +16,16 @@ different ids, and a table that declares each once has no duplicate.
 
 ## Why
 
-Stated by the owner:
+Stated by the owner, by choosing the option "Compare by text - `C-1` and
+`C-01` are different ids":
 
-- Ids are compared as `SPEC030` compares claim ids.
+- Ids are compared by text; `C-1` and `C-01` differ.
+
+The question's wording, written by the session that asked and not restated
+by the owner:
+
+- `SPEC030` compares claim ids the same way. The fact holds: that rule's
+  comparison is ordinal.
 
 ## Rejected
 
