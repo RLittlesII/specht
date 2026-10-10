@@ -14,12 +14,16 @@ using static Nuke.Common.Tools.DotNet.DotNetTasks;
     AutoGenerate = true,
     OnPushTags = ["v*"],
     On = [RocketSurgeonGitHubActionsTrigger.WorkflowDispatch],
-    InvokedTargets = [nameof(VerifyTag), nameof(Format), nameof(Compile), nameof(Test), nameof(Specht), nameof(Pack)],
+    InvokedTargets = [nameof(Publish)],
     Enhancements = [nameof(PublishMiddleware)]
 )]
 [SuppressMessage("Design", "RSA2002:Private members should appear after non-private members", Justification = "Build")]
-internal sealed partial class Build
+internal sealed partial class SpechtBuild
 {
+    private Target Publish => definition => definition
+        .DependsOn(VerifyTag)
+        .DependsOn(Pack);
+
     private Target VerifyTag => definition => definition
         .DependsOn(Restore)
         .OnlyWhenDynamic(static () => Environment.GetEnvironmentVariable("GITHUB_REF_TYPE") == "tag")

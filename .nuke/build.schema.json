@@ -25,11 +25,13 @@
       "type": "string",
       "enum": [
         "AcceptanceTest",
+        "Build",
         "Compile",
         "ContinuousIntegration",
         "Format",
         "IntegrationTest",
         "Pack",
+        "Publish",
         "Restore",
         "Specht",
         "Test",

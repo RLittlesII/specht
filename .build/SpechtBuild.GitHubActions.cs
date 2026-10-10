@@ -16,9 +16,29 @@ using static Nuke.Common.Tools.Git.GitTasks;
 [GitHubActionsSteps(
     "ci",
     GitHubActionsImage.UbuntuLatest,
-    GitHubActionsImage.WindowsLatest,
     AutoGenerate = true,
     OnPullRequestBranches = ["main"],
+    InvokedTargets = [nameof(ContinuousIntegration)],
+    NonEntryTargets =
+    [
+        nameof(ICIEnvironment.CIEnvironment),
+        nameof(ITriggerCodeCoverageReports.GenerateCodeCoverageReportCobertura),
+        nameof(IGenerateCodeCoverageBadges.GenerateCodeCoverageBadges),
+        nameof(IGenerateCodeCoverageReport.GenerateCodeCoverageReport),
+        nameof(IGenerateCodeCoverageSummary.GenerateCodeCoverageSummary),
+    ],
+    ExcludedTargets =
+    [
+        nameof(ICanClean.Clean),
+        nameof(ICanRestoreWithDotNetCore.DotnetToolRestore),
+    ],
+    Enhancements = [nameof(ContinuousIntegrationMiddleware)]
+)]
+[GitHubActionsSteps(
+    "main",
+    GitHubActionsImage.UbuntuLatest,
+    GitHubActionsImage.WindowsLatest,
+    AutoGenerate = true,
     OnPushBranches = ["main"],
     InvokedTargets = [nameof(ContinuousIntegration)],
     NonEntryTargets =
@@ -33,21 +53,15 @@ using static Nuke.Common.Tools.Git.GitTasks;
     [
         nameof(ICanClean.Clean),
         nameof(ICanRestoreWithDotNetCore.DotnetToolRestore),
-        nameof(Test),
     ],
     Enhancements = [nameof(ContinuousIntegrationMiddleware)]
 )]
 [SuppressMessage("Design", "RSA2002:Private members should appear after non-private members", Justification = "Build")]
-internal sealed partial class Build
+internal sealed partial class SpechtBuild
 {
     private Target ContinuousIntegration => _ => _
         .OnlyWhenStatic(GitHubActionsTasks.IsRunningOnGitHubActions)
-        .DependsOn(Format)
-        .DependsOn(Compile)
-        .DependsOn(UnitTest)
-        .DependsOn(IntegrationTest)
-        .DependsOn(AcceptanceTest)
-        .DependsOn(Specht);
+        .DependsOn(Build);
 
     public static RocketSurgeonGitHubActionsConfiguration ContinuousIntegrationMiddleware(
         RocketSurgeonGitHubActionsConfiguration configuration)
@@ -57,30 +71,8 @@ internal sealed partial class Build
         var buildJob = configuration.Jobs.Cast<RocketSurgeonsGithubActionsJob>()
             .First(static z => z.Name.Equals("build", StringComparison.OrdinalIgnoreCase));
 
-        // Nuke appends invoked targets, which puts Format after the test
-        // steps. dotnet format needs a restored project graph, not build output,
-        // so run it ahead of Compile to fail fast on formatting.
-        var steps = buildJob.Steps.Cast<BaseGitHubActionsStep>().ToList();
-        var formatStep = steps.Single(static z => z.Id == "format");
-        var compileStep = steps.Single(static z => z.Id == "compile");
-
-        buildJob.Steps.Remove(formatStep);
-        buildJob.Steps.Insert(buildJob.Steps.IndexOf(compileStep), formatStep);
-
-        // B-004, § 5 #17.
-        var tierSteps = new[] { "unitTest", "integrationTest", "acceptanceTest" }
-            .Select(id => steps.Single(z => z.Id == id))
-            .ToList();
-        tierSteps.ForEach(tier => buildJob.Steps.Remove(tier));
-        buildJob.Steps.InsertRange(buildJob.Steps.IndexOf(compileStep) + 1, tierSteps);
-
-        foreach (var run in steps.OfType<RunStep>().Where(static z => z.Id is "specht" or "continuousIntegration"))
-        {
-            run.Run = run.Run.Contains("--skip ", StringComparison.Ordinal) ? $"{run.Run} {nameof(Test)}" : $"{run.Run} --skip {nameof(Test)}";
-        }
-
         // B-004: every gate through the entry script, which bootstraps the build from the local tool manifest
-        // (0055-F1 C-3) - never a global NUKE install, never the build assembly directly.
+        // (0055-F1 C-3) - never a global NUKE installation, never the build assembly directly.
         // The Restore step restores the manifest's tools (0055-F1 B-010); the generator's own restore step, emitted only
         // where a manifest exists, would make the workflow depend on the root it is generated in.
         RunThroughEntryScript(buildJob);
