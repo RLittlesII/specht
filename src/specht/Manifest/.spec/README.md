@@ -117,7 +117,7 @@ Half of the model's contract is not in the schema files: which section holds the
 
 ## 6. Concern Separation
 
-<!-- last written by: implementer, 2026-10-09 (item 0017: the frontmatter schema file names) -->
+<!-- last written by: implementer, 2026-10-09 (item 0015: roles, table headers and markers, design) -->
 
 Item `0011` builds the loader; the families of keys (`0014`-`0019`) extend this table.
 
@@ -131,10 +131,15 @@ Item `0011` builds the loader; the families of keys (`0014`-`0019`) extend this 
 | The rejection's exit code and stream (B-022, B-023)                                                 | Business       | `CheckCommand.ExecuteAsync`'s catch of `SpechtManifestException`, folding it to `ExitCodes.InvalidManifest` and stderr                                                                                                                                               |
 | Where rule settings apply: disable and re-grade (B-010, B-011, ADR-0002, ADR-0004)                  | Business       | Item `0014`, inside `SpecCheckRunner.Evaluate(SpecModel)` (ADR-0001 stage B, item `0105`): selection over the rule set before evaluation, and a map over the violations that runs before item `0103`'s order function, because that function sorts by severity first |
 | The frontmatter schema file names, per kind (B-008, decision 0003)                                  | Business       | `SpecManifest.Load`'s per-name fill of `frontmatterSchemas`, and the on-disk `SpecSchemas.Load(IFileSystem, root)`, which reads each kind's file by that name                                                                                                        |
+| Which section holds the claims, the matrix and the sign-off (B-001)                                 | Business       | Item `0015`: the manifest's `roles`, read as `SpecStructure.Roles` by `ClaimRule`, `FeatureFileRule` and `ApprovalRule`                                                                                                                                              |
+| Which header cells a role's table carries (B-002)                                                   | Business       | Item `0015`: the manifest's `tables`, keyed by role, read by `SectionStructureRule`                                                                                                                                                                                  |
+| What marks a missing test, a draft or blocked sign-off row and an approved specification (B-003)    | Business       | Item `0015`: the manifest's `markers`, read as `SpecStructure.Markers` by `ApprovalRule`                                                                                                                                                                             |
+| A role must name a title `sections` lists (B-015)                                                   | Business       | Item `0015`: `SpecManifest.Load`, over the filled values, before a structure is returned                                                                                                                                                                             |
+| One rule moves at a time, with the baseline green after each (A-2, B-016)                           | Technical      | Item `0015`'s six moves in § 7, each held by `SpecManifestBaselineIntegrationTests`                                                                                                                                                                                  |
 
 ## 7. Technical Design
 
-<!-- last written by: implementer, 2026-10-09 (item 0017: the frontmatter schema file names) -->
+<!-- last written by: implementer, 2026-10-09 (item 0015: roles, table headers and markers, design) -->
 
 The literal each claim moves is cited by file and line in `hooked`'s draft `0008-F3` § 3 (`hooked@a6d056f:tools/SpecGovernance/.spec/README.md`, `0001-F1` A-2).
 
@@ -156,6 +161,58 @@ The literal each claim moves is cited by file and line in `hooked`'s draft `0008
 **What 0011 does not reject.** A manifest that does not parse, or a known key of the wrong shape, still fails as it did before, with the library's exception; the rejections each family owns (rule ids, grammars, roles, exclusion entries) are `0014`-`0016` and `0019`.
 
 **Where rule settings apply (item `0014`, [ADR-0002](../../../../.spec/adr/0002-no-chain-of-responsibility-for-the-check.md), [ADR-0004](../../../../.spec/adr/0004-per-rule-settings-are-selection-and-a-map.md)).** The stages stay the fixed, typed sequence ADR-0002 kept. Item `0014` is two functions inside `SpecCheckRunner.Evaluate(SpecModel)`, the split ADR-0001 stage B makes (item `0105`). Both read the settings from `model.Schemas.Structure` ([`SpecSchemas.Structure`](../../SpecSchemas.cs)), which item `0014` extends with the rule settings; `Evaluate` takes no second parameter and reads no static. Selection runs over the rule set before evaluation: a disabled rule is not evaluated at all, and the count of rules evaluated is summed over the selected set, so its id leaves the count (B-011). Severity resolution is a map over the violations that runs before item `0103`'s order function, because that function sorts by severity first: a re-graded rule's violations carry the manifest's severity (B-010). The sort still runs once, so the report stays independent of evaluation order (`0001-F1` C-9). Per-rule settings are selection and a map however many accumulate: no chain of handlers, decorator, stage list, rule-set filter or context object (ADR-0004). A rule's default severity and first schema version become `ISpecRule` members with epic `0101`'s first item, not before; the member is a fact about the rule, not a switch (`0101-F1` decision 0001), and the manifest's rule settings override it, which `0101-F1` C-6's wording is owed (ADR-0004). The key names still wait on OQ-1.
+
+**Section roles, table headers and markers (item `0015`, B-001 to B-003, B-015). Design; nothing below is built yet.** The key and member names here are **proposed** (A-3) and wait on OQ-1's ratification by a decision record, as `frontmatterSchemas` waited on decision 0003. A consumer writes:
+
+```json
+{
+  "roles": {
+    "claims": "3. Acceptance Criteria",
+    "matrix": "9. Traceability Matrix",
+    "signOff": "12. Sign-off"
+  },
+  "tables": {
+    "matrix": ["Claim ID", "Scenario", "Test", "Status"]
+  },
+  "markers": {
+    "missing": "Missing",
+    "draft": "🟡",
+    "blocked": "🔴",
+    "approved": "approved"
+  }
+}
+```
+
+| Key       | Shape                                   | Status                                                                           | Names                                     | Fill of an omitted value (B-019)                             |
+| --------- | --------------------------------------- | -------------------------------------------------------------------------------- | ----------------------------------------- | ------------------------------------------------------------ |
+| `roles`   | object, role name to a `sections` title | new top-level key, proposed                                                      | `claims`, `matrix`, `signOff`             | per role, as `identifiers` fills per grammar                 |
+| `tables`  | object, role name to its header cells   | existing key; proposed change: its keys are role names, no longer section titles | `matrix` in the default manifest          | unchanged: the whole object, and a declared entry as written |
+| `markers` | object, marker name to its text         | new top-level key, proposed                                                      | `missing`, `draft`, `blocked`, `approved` | per marker, as `identifiers` fills per grammar               |
+
+The values are the literals `hooked`'s engine hardcodes (A-4, C-4). `approved` is the `spec_status` value that turns `SPEC060` and `SPEC061` on; the key that carries it, `spec_status`, is B-004's and item `0016`'s.
+
+**Where each is read.** [`SpecManifest`](../../SpecManifest.cs) adds `roles` and `markers` to `KnownKeys` and reads each with the per-name fill `identifiers` and `frontmatterSchemas` already use; `tables` keeps its reader. [`SpecStructure`](../../SpecStructure.cs) gains two members beside `FrontmatterSchemas`, `Roles` and `Markers`, each a name-to-text dictionary; `Tables` keeps its member and type, and its keys become role names. A rule reads `model.Schemas.Structure.Roles["claims"]` as it reads `Identifiers["claim"]` today, and hands the title to `SpecDocument.Section`. The role and marker names are the engine's vocabulary, as the grammar names are; the titles and marker texts they map to are the manifest's (C-1, C-7). No type, interface or helper is added: three rule classes read two dictionaries. This block is the whole of item `0015`'s surface: two `KnownKeys` entries, two `SpecStructure` members, two new top-level JSON properties and the re-keyed `tables` entry, in both the live manifest and the embedded `v1` copy (`0001-F4` B-004).
+
+**The moves, one rule at a time (A-2).** Each move is one change with `SpecManifestBaselineIntegrationTests` green on both of its rows after it, the manifest as shipped and every key reached by omission (B-016). A name joins both manifest copies in the move that first reads it (A-1).
+
+| Move | Rule      | Class                  | Literal it loses                                                                         | Reads instead                                                     | The manifests gain                                  |
+| ---- | --------- | ---------------------- | ---------------------------------------------------------------------------------------- | ----------------------------------------------------------------- | --------------------------------------------------- |
+| 1    | `SPEC030` | `ClaimRule`            | `AcceptanceCriteria`                                                                     | `Roles["claims"]`                                                 | `roles.claims`; the loader gains B-015's rejection  |
+| 2    | `SPEC031` | `ClaimRule`            | `TraceabilityMatrix`                                                                     | `Roles["matrix"]`                                                 | `roles.matrix`                                      |
+| 3    | `SPEC021` | `FeatureFileRule`      | `AcceptanceCriteria`                                                                     | `Roles["claims"]`                                                 | nothing                                             |
+| 4    | `SPEC060` | `ApprovalRule`         | `TraceabilityMatrix`, `Missing`, `Approved`                                              | `Roles["matrix"]`, `Markers["missing"]`, `Markers["approved"]`    | `markers.missing`, `markers.approved`               |
+| 5    | `SPEC061` | `ApprovalRule`         | `SignOff`, `Draft`, `Blocked`                                                            | `Roles["signOff"]`, `Markers["draft"]`, `Markers["blocked"]`      | `roles.signOff`, `markers.draft`, `markers.blocked` |
+| 6    | `SPEC013` | `SectionStructureRule` | none in C#: the section title that keys `tables` in both manifest copies, today's lookup | each `tables` entry's role, resolved to its title through `Roles` | `tables`' key becomes `matrix`                      |
+
+`Approved` guards both of `ApprovalRule`'s rules, so it leaves with `SPEC060`, the first of the two to move. `SPEC013` moves last because it is the one move that changes a key the manifest already ships. After move 6, renaming a section touches `sections` and `roles` and nothing else, which is what B-001's scenario writes.
+
+**What does not move.** The messages keep `§ 3`, `§ 9`, `§ 12`, `'Missing'` and `'approved'` as text: the golden report compares messages (`0001-F1` C-9), and naming the manifest's value in a message is B-009 and item `0018`. `FeatureSpec.SpecStatus` keeps reading `spec_status` (B-004, item `0016`). `SPEC010` already reads `sections`. What each rule asserts is unchanged (C-7): `SPEC060` still matches a whole trimmed cell against the missing marker, `SPEC061` still looks for either sign-off marker inside a cell, and both still compare ordinally.
+
+**B-015's rejection.** `SpecManifest.Load` checks the roles after the fill and before it builds the structure, so it is part of the whole-manifest check no rule runs ahead of (B-018, C-5). Every entry of the filled `roles` whose title is not in the filled `sections` is collected, and one [`SpechtManifestException`](../../SpechtManifestException.cs) names them all, as the unknown-key rejection does: the manifest's repository-relative path, each role, the title it names, and that `sections` does not list it. `CheckCommand.ExecuteAsync` already folds that exception to exit `3` and stderr (B-022, B-023), so the host does not change. Checking the filled values has one consequence a consumer meets: a manifest that renames a section in `sections` and leaves `roles` out is rejected, because the omitted role reads as the default title (B-019), which `sections` no longer lists.
+
+**What item `0015` does not reject.** A name inside `roles`, `tables` or `markers` that the engine does not read is kept and never read, exactly as an unread name inside `identifiers` is today; B-012 names top-level keys. Two cases follow that no claim covers, and both are reported to `spec-author` and not decided here. First, a manifest whose `tables` is still keyed by a section title, as `hooked`'s is today, declares no headers for any role after move 6, so `SPEC013` stops checking its matrix without a word; move 6 does not land until that has an answer. Second, an empty `draft` or `blocked` marker is contained in every cell, so `SPEC061` would report every sign-off row of an approved specification.
+
+**Rejected: `tables` left keyed by section title.** It needs no change to either manifest copy and breaks no manifest. It is rejected because B-002 reads the headers per role and brief § 5 lists "table headers per role", and because a rename of the matrix section would then be written three times, in `sections`, `roles` and the `tables` key. Its cost is the first unclaimed case above. **Rejected: one object per role carrying `section` and `headers`.** It reads well, and leaves the shipped `tables` key either a second home for the headers or an unknown key B-012 rejects in every manifest that carries it today.
 
 ## 8. Testing Strategy
 
