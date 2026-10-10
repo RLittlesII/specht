@@ -127,10 +127,10 @@ Feature: Record number uniqueness
     Then a claimed-twice finding names 0003
 
     Examples:
-      | layout                     |
-      | the features layout        |
-      | the epics layout           |
-      | a layout the manifest adds |
+      | layout                         |
+      | the features layout            |
+      | the epics layout               |
+      | a layout the manifest declares |
 
   @B-014 @boundary
   Scenario: A folder named like a record folder elsewhere is not checked
