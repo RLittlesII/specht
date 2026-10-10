@@ -11,7 +11,7 @@ namespace specht.tests;
 internal sealed partial class SpecCheckReportFixture
 {
     public SpecCheckReportFixture() =>
-        WithSchemaVersion(1).WithLayouts(new SpecReportLayout("legacy", 0), new SpecReportLayout("coLocated", 0));
+        WithSchemaVersion(1).WithLayouts(new SpecReportLayout("epics", 0), new SpecReportLayout("features", 0));
 
     /// <summary>Sets each layout and its specification count, in the manifest's order.</summary>
     /// <remarks>The generator names the list's setter <c>WithList</c>, after its type; this names it after the report's.</remarks>

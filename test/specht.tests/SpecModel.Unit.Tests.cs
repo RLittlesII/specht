@@ -19,8 +19,8 @@ public sealed class SpecModelUnitTests
 
     public static TheoryData<string, string, string[]> IdentityViolationsByLayout { get; } = new()
     {
-        { "legacy", "epics/**/spec.md", ["SPEC011", "SPEC011"] },
-        { "coLocated", "**/.spec/README.md", [] },
+        { "epics", "epics/**/spec.md", ["SPEC011", "SPEC011"] },
+        { "features", "**/.spec/README.md", [] },
     };
 
     [Theory]

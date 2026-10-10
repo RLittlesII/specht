@@ -31,7 +31,7 @@ public sealed partial class SpecReportDocumentUnitTests
         // Given
         SpecCheckReport report = new SpecCheckReportFixture()
             .WithSpecificationCount(3)
-            .WithLayouts(new SpecReportLayout("legacy", 2), new SpecReportLayout("coLocated", 1))
+            .WithLayouts(new SpecReportLayout("epics", 2), new SpecReportLayout("features", 1))
             .WithItemCount(4)
             .WithRulesEvaluated(9)
             .WithViolations(
@@ -43,7 +43,7 @@ public sealed partial class SpecReportDocumentUnitTests
         var document = SpecReportDocument.From(report);
 
         // Then
-        document.Layouts.Should().BeEquivalentTo([new SpecReportLayout("legacy", 2), new SpecReportLayout("coLocated", 1)]);
+        document.Layouts.Should().BeEquivalentTo([new SpecReportLayout("epics", 2), new SpecReportLayout("features", 1)]);
         document.ItemCount.Should().Be(4);
         document.RulesEvaluated.Should().Be(9);
         document.ErrorCount.Should().Be(2);
@@ -129,7 +129,7 @@ public sealed partial class SpecReportDocumentUnitTests
         // Given
         SpecCheckReport report = new SpecCheckReportFixture()
             .WithSpecificationCount(1)
-            .WithLayouts(new SpecReportLayout("legacy", 1), new SpecReportLayout("coLocated", 0))
+            .WithLayouts(new SpecReportLayout("epics", 1), new SpecReportLayout("features", 0))
             .WithRulesEvaluated(1)
             .WithViolations(new SpecViolationFixture().WithIdentifier("B-002"));
         string[] machine =
@@ -157,7 +157,7 @@ public sealed partial class SpecReportDocumentUnitTests
         // Given
         SpecCheckReport report = new SpecCheckReportFixture()
             .WithSpecificationCount(3)
-            .WithLayouts(new SpecReportLayout("legacy", 2), new SpecReportLayout("coLocated", 1))
+            .WithLayouts(new SpecReportLayout("epics", 2), new SpecReportLayout("features", 1))
             .WithItemCount(4)
             .WithRulesEvaluated(9)
             .WithViolations(
@@ -170,7 +170,7 @@ public sealed partial class SpecReportDocumentUnitTests
 
         // Then
         summary.Should().Equal(
-            "specifications: legacy 2, coLocated 1",
+            "specifications: epics 2, features 1",
             "items: 4",
             "rules evaluated: 9",
             "errors: 2, warnings: 1");
@@ -182,7 +182,7 @@ public sealed partial class SpecReportDocumentUnitTests
         // Given
         SpecCheckReport report = new SpecCheckReportFixture()
             .WithSpecificationCount(1)
-            .WithLayouts(new SpecReportLayout("legacy", 1), new SpecReportLayout("coLocated", 0))
+            .WithLayouts(new SpecReportLayout("epics", 1), new SpecReportLayout("features", 0))
             .WithRulesEvaluated(1)
             .WithViolations(new SpecViolationFixture(), new SpecViolationFixture().WithSeverity(SpecSeverity.Warning));
 

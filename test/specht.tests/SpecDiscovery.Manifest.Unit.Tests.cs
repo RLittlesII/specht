@@ -5,8 +5,9 @@ namespace specht.tests;
 
 /// <summary>
 /// Discovery over the inputs a manifest declares, on an in-memory file system (<c>0001-F6</c> B-001, B-002, B-003, B-009,
-/// C-4, C-6, C-7; decisions 0003 and 0004): which layouts a specification is found in and which one it carries, how a glob
-/// is matched, what an exclusion skips, and which files are items, epics and companions. Each test's inputs are the ones the loader reads from
+/// B-012, C-4, C-6, C-7; decisions 0003, 0004 and 0008): which layouts a specification is found in and which one it carries,
+/// how a glob is matched, what an exclusion skips, and which files are items, epics and companions under a list of one
+/// entry and of several. Each test's inputs are the ones the loader reads from
 /// the manifest the test writes, so a key the manifest leaves out is the default manifest's.
 /// </summary>
 [Trait("Tier", "Unit")]
@@ -16,7 +17,7 @@ public sealed class SpecDiscoveryManifestUnitTests
     public static TheoryData<string, string, string[]> Layouts { get; } = new()
     {
         {
-            "the default manifest declares the legacy and the co-located layout",
+            "the default manifest declares the epics and the features layout",
             "{}",
             [LegacySpecification, CoLocatedSpecification]
         },
@@ -25,8 +26,8 @@ public sealed class SpecDiscoveryManifestUnitTests
             """
             {
               "layouts": [
-                { "name": "legacy", "glob": "epics/**/spec.md" },
-                { "name": "coLocated", "glob": "**/.spec/README.md" },
+                { "name": "epics", "glob": "epics/**/spec.md" },
+                { "name": "features", "glob": "**/.spec/README.md" },
                 { "name": "documentation", "glob": "docs/**/specification.md" }
               ]
             }
@@ -35,7 +36,7 @@ public sealed class SpecDiscoveryManifestUnitTests
         },
         {
             "a declared list is the whole list, so a default layout it leaves out is not discovered",
-            """{ "layouts": [{ "name": "coLocated", "glob": "**/.spec/README.md" }] }""",
+            """{ "layouts": [{ "name": "features", "glob": "**/.spec/README.md" }] }""",
             [CoLocatedSpecification]
         },
     };
@@ -83,7 +84,7 @@ public sealed class SpecDiscoveryManifestUnitTests
             ["0001-001-do.md"]
         },
         { "{task} follows a task grammar with no epic part", """{ "identifiers": { "task": "^T[0-9]+$" } }""", ["T7-do.md"] },
-        { "a declared shape replaces the default", """{ "taskFiles": "{task}-*.markdown" }""", ["0001-01-do.markdown"] },
+        { "a declared shape replaces the default", """{ "taskFiles": ["{task}-*.markdown"] }""", ["0001-01-do.markdown"] },
     };
 
     /// <summary>Gets a manifest, and which of the tree's files are epic files under it (B-002, B-003).</summary>
@@ -94,7 +95,7 @@ public sealed class SpecDiscoveryManifestUnitTests
             "{}",
             ["epics/0001-example/epic.md", "epics/archive/0003-example/epic.md"]
         },
-        { "a declared glob replaces the default", """{ "epicFiles": "portfolio/*/epic.md" }""", ["portfolio/0002-example/epic.md"] },
+        { "a declared glob replaces the default", """{ "epicFiles": ["portfolio/*/epic.md"] }""", ["portfolio/0002-example/epic.md"] },
         { "an exclusion applies to an epic file", """{ "exclusions": ["archive"] }""", ["epics/0001-example/epic.md"] },
     };
 
@@ -102,7 +103,27 @@ public sealed class SpecDiscoveryManifestUnitTests
     public static TheoryData<string, string, string[]> CompanionFiles { get; } = new()
     {
         { "the default glob is *.feature", "{}", ["first.feature"] },
-        { "a declared glob replaces the default", """{ "companionFiles": "*.gherkin" }""", ["second.gherkin"] },
+        { "a declared glob replaces the default", """{ "companionFiles": ["*.gherkin"] }""", ["second.gherkin"] },
+    };
+
+    /// <summary>Gets a file-shape key, a manifest giving it two entries, and the files each entry alone matches (B-012).</summary>
+    public static TheoryData<string, string, string[]> ListsOfSeveralEntries { get; } = new()
+    {
+        {
+            "taskFiles",
+            """{ "taskFiles": ["{task}-*.md", "{task}-*.markdown"] }""",
+            ["src/sample/.spec/0001-01-do.md", "src/sample/.spec/0001-02-do.markdown"]
+        },
+        {
+            "epicFiles",
+            """{ "epicFiles": ["epics/**/epic.md", "portfolio/*/epic.md"] }""",
+            ["epics/0001-example/epic.md", "portfolio/0002-example/epic.md"]
+        },
+        {
+            "companionFiles",
+            """{ "companionFiles": ["*.feature", "*.gherkin"] }""",
+            ["src/sample/.spec/first.feature", "src/sample/.spec/second.gherkin"]
+        },
     };
 
     [Theory]
@@ -270,6 +291,41 @@ public sealed class SpecDiscoveryManifestUnitTests
 
         // Then
         found.Select(path => Relative(fileSystem, path)).Should().BeEquivalentTo(expected.Select(Beside), because);
+    }
+
+    [Theory]
+    [MemberData(nameof(ListsOfSeveralEntries))]
+    public void AFileShapeListOfSeveralEntries_WhenItsFilesAreDiscovered_ShouldFindAFileMatchingAnyOneEntry(
+        string key,
+        string manifest,
+        string[] expected)
+    {
+        // Given
+        SpecLocation specification = new SpecLocationFixture();
+        var fileSystem = Tree(
+            manifest,
+            Beside("0001-01-do.md"),
+            Beside("0001-02-do.markdown"),
+            Beside("0001-03-do.txt"),
+            Beside("first.feature"),
+            Beside("second.gherkin"),
+            Beside("third.story"),
+            "epics/0001-example/epic.md",
+            "portfolio/0002-example/epic.md",
+            "archive/0003-example/epic.md");
+        var structure = SpecManifest.Load(fileSystem, Root);
+
+        // When
+        var found = key switch
+        {
+            "taskFiles" => SpecDiscovery.FindChildItems(fileSystem, [specification], structure.Discovery, structure.Identifiers["task"]),
+            "epicFiles" => SpecDiscovery.FindEpics(fileSystem, Root, structure.Discovery),
+            "companionFiles" => SpecDiscovery.FindCompanions(fileSystem, specification, structure.Discovery),
+            _ => throw new ArgumentOutOfRangeException(nameof(key), key, "Not a file-shape key."),
+        };
+
+        // Then
+        found.Select(path => Relative(fileSystem, path)).Should().BeEquivalentTo(expected, key);
     }
 
     private static MockFileSystem Tree(string manifest, params string[] files)

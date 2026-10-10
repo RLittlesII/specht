@@ -11,7 +11,7 @@ using specht.tests;
 namespace specht.acceptance.Discovery;
 
 /// <summary>
-/// Steps for <c>src/specht/Discovery/.spec/discovery.feature</c> (0001-F6): item 0005 binds B-001, B-002, B-003 and B-009.
+/// Steps for <c>src/specht/Discovery/.spec/discovery.feature</c> (0001-F6): item 0005 binds B-001, B-002, B-003, B-009 and B-012.
 /// The manifest is edited in memory from the tree's default copy and written when the check runs, and "the check runs" is
 /// the engine's runner; the summary is the lines its report document makes and the report is that document serialized,
 /// which <c>0001-F2</c> B-002 and <c>0001-F3</c> B-001 hold the tool's own output to. A specification a step writes has no
@@ -32,24 +32,25 @@ public sealed class DiscoverySteps
     [Given("the manifest declares a third layout whose specification file is a differently named markdown file under a documentation folder")]
     public void GivenTheManifestDeclaresAThirdLayout() =>
         Manifest["layouts"] = new JsonArray(
-            Layout("legacy", LegacyGlob),
-            Layout("coLocated", CoLocatedGlob),
+            Layout("epics", EpicsGlob),
+            Layout("features", FeaturesGlob),
             Layout("documentation", "docs/**/specification.md"));
 
     [Given("the root holds a specification at that place")]
     public void GivenTheRootHoldsASpecificationAtThatPlace() =>
         Write(_subject = "docs/guide/specification.md", "F1", sections: ThreeDefects);
 
-    [Given("the manifest declares one layout only, the co-located one")]
-    public void GivenTheManifestDeclaresOneLayoutOnlyTheCoLocatedOne() =>
-        Manifest["layouts"] = new JsonArray(Layout("coLocated", CoLocatedGlob));
+    [Given("the manifest declares one layout only, the features layout")]
+    public void GivenTheManifestDeclaresOneLayoutOnlyTheFeaturesLayout() =>
+        Manifest["layouts"] = new JsonArray(Layout("features", FeaturesGlob));
 
-    [Given("the root holds a specification where the default legacy layout would find it")]
-    public void GivenTheRootHoldsASpecificationWhereTheDefaultLegacyLayoutWouldFindIt() =>
-        Write(_legacy = "epics/0001-epic/F1-feature/spec.md", "F1");
+    [Given("the root holds a specification where the default epics layout would find it")]
+    public void GivenTheRootHoldsASpecificationWhereTheDefaultEpicsLayoutWouldFindIt() =>
+        Write(_underEpics = "epics/0001-epic/F1-feature/spec.md", "F1");
 
-    [Given("the root holds a co-located specification")]
-    public void GivenTheRootHoldsACoLocatedSpecification() => Write(_coLocated = "src/area/.spec/README.md", "F2");
+    [Given("the root holds a specification where the features layout finds it")]
+    public void GivenTheRootHoldsASpecificationWhereTheFeaturesLayoutFindsIt() =>
+        Write(_besideCode = "src/area/.spec/README.md", "F2");
 
     [Given("the manifest excludes the directory name {string}")]
     [Given("the manifest excludes the root-relative path {string}")]
@@ -76,9 +77,48 @@ public sealed class DiscoverySteps
     [Given("the manifest declares an item file shape, an epic file glob and a companion glob")]
     public void GivenTheManifestDeclaresAnItemFileShapeAnEpicFileGlobAndACompanionGlob()
     {
-        Manifest["taskFiles"] = "{task}-*.markdown";
-        Manifest["epicFiles"] = "epics/*/epic.md";
-        Manifest["companionFiles"] = "*.gherkin";
+        Manifest["taskFiles"] = new JsonArray("{task}-*.markdown");
+        Manifest["epicFiles"] = new JsonArray("epics/*/epic.md");
+        Manifest["companionFiles"] = new JsonArray("*.gherkin");
+    }
+
+    [Given("the manifest declares two item file shapes, two epic file globs and two companion globs")]
+    public void GivenTheManifestDeclaresTwoItemFileShapesTwoEpicFileGlobsAndTwoCompanionGlobs()
+    {
+        Manifest["taskFiles"] = new JsonArray("{task}-*.md", "{task}-*.markdown");
+        Manifest["epicFiles"] = new JsonArray("epics/**/epic.md", "portfolio/*/epic.md");
+        Manifest["companionFiles"] = new JsonArray("*.feature", "*.gherkin");
+    }
+
+    [Given("the root holds, beside a specification, one item matching the first item shape and one matching the second")]
+    public void GivenTheRootHoldsBesideASpecificationOneItemMatchingTheFirstItemShapeAndOneMatchingTheSecond()
+    {
+        var specification = Write(
+            "src/area/.spec/README.md",
+            "F1",
+            new Dictionary<string, string> { ["children"] = "[\"0001-01\", \"0001-02\"]" });
+        var directory = Path.GetDirectoryName(specification)!;
+        Tree.WriteItem(specification, "0001-01", "F1");
+        Tree.WriteItem(specification, "0001-02", "F1");
+        File.Move(Path.Combine(directory, "0001-02-item.md"), Path.Combine(directory, "0001-02-item.markdown"));
+    }
+
+    [Given("the root holds one epic file matching the first epic glob and one matching the second")]
+    public void GivenTheRootHoldsOneEpicFileMatchingTheFirstEpicGlobAndOneMatchingTheSecond()
+    {
+        var urgent = new Dictionary<string, string> { ["priority"] = "urgent" };
+        Tree.WriteEpic("0002", urgent);
+        var written = Path.Combine(Tree.Root, "epics", "0002-epic");
+        File.Move(Path.Combine(written, "epic.md"), Tree.WriteRaw(SecondEpic, string.Empty), overwrite: true);
+        Directory.Delete(written);
+        Tree.WriteEpic("0001", urgent);
+    }
+
+    [Given("the root holds, beside a second specification, one companion matching the second companion glob only")]
+    public void GivenTheRootHoldsBesideASecondSpecificationOneCompanionMatchingTheSecondCompanionGlobOnly()
+    {
+        Write(SecondSpecification, "F2");
+        Tree.WriteRaw(SecondCompanion, PhantomTag);
     }
 
     [Given("the root holds one item and one companion matching them beside a specification")]
@@ -102,10 +142,11 @@ public sealed class DiscoverySteps
     }
 
     [Given("the manifest names its layouts {string} and {string}")]
-    public void GivenTheManifestNamesItsLayouts(string legacy, string coLocated) =>
-        Manifest["layouts"] = new JsonArray(Layout(legacy, LegacyGlob), Layout(coLocated, CoLocatedGlob));
+    public void GivenTheManifestNamesItsLayouts(string first, string second) =>
+        Manifest["layouts"] = new JsonArray(Layout(first, EpicsGlob), Layout(second, FeaturesGlob));
 
     [Given("the root holds one specification in each layout")]
+    [Given("the root holds one specification under the epics folder and one beside code")]
     public void GivenTheRootHoldsOneSpecificationInEachLayout()
     {
         Write("epics/0001-epic/F1-feature/spec.md", "F1");
@@ -135,15 +176,15 @@ public sealed class DiscoverySteps
         Report.Violations.Where(violation => violation.File == Subject).Select(Verdict).Should().Equal(expected);
     }
 
-    [Then("only the co-located specification is discovered")]
-    public void ThenOnlyTheCoLocatedSpecificationIsDiscovered()
+    [Then("only the specification in the features layout is discovered")]
+    public void ThenOnlyTheSpecificationInTheFeaturesLayoutIsDiscovered()
     {
-        Reported.Should().Contain(_coLocated).And.NotContain(_legacy);
+        Reported.Should().Contain(_besideCode).And.NotContain(_underEpics);
         Report.SpecificationCount.Should().Be(1);
     }
 
     [Then("the summary names one layout")]
-    public void ThenTheSummaryNamesOneLayout() => Summary[0].Should().Be("specifications: coLocated 1");
+    public void ThenTheSummaryNamesOneLayout() => Summary[0].Should().Be("specifications: features 1");
 
     [Then("the root README is not discovered")]
     public void ThenTheRootReadmeIsNotDiscovered() => Reported.Should().NotContain(_rootReadme);
@@ -174,7 +215,27 @@ public sealed class DiscoverySteps
             .Which.Should().Match<SpecViolation>(static violation => violation.File == Companion && violation.Identifier == "B-404");
     }
 
+    [Then("the summary counts two items")]
+    public void ThenTheSummaryCountsTwoItems() => Summary[1].Should().Be("items: 2");
+
+    [Then("both epics' frontmatter is checked")]
+    public void ThenBothEpicsFrontmatterIsChecked() =>
+        Report.Violations.Where(static violation => violation.RuleId == "SPEC004")
+            .Select(static violation => violation.File)
+            .Distinct()
+            .Should().BeEquivalentTo(FirstEpic, SecondEpic);
+
+    [Then("that companion's tags are resolved against the second specification")]
+    public void ThenThatCompanionsTagsAreResolvedAgainstTheSecondSpecification()
+    {
+        Report.Violations.Should().NotContain(static violation => violation.RuleId == "SPEC020" && violation.File == SecondSpecification);
+        Report.Violations.Where(static violation => violation.RuleId == "SPEC021")
+            .Should().ContainSingle()
+            .Which.Should().Match<SpecViolation>(static violation => violation.File == SecondCompanion && violation.Identifier == "B-404");
+    }
+
     [Then("the summary and the report name the layouts {string} and {string}")]
+    [Then("the summary and the report name the layouts {string} and {string}, in that order")]
     public void ThenTheSummaryAndTheReportNameTheLayouts(string first, string second)
     {
         Summary[0].Should().Be($"specifications: {first} 1, {second} 1");
@@ -220,11 +281,19 @@ public sealed class DiscoverySteps
         IReadOnlyList<string>? sections = null) =>
         Tree.WriteSpecification(path, "0001", id, frontmatter, sections);
 
-    private const string LegacyGlob = "epics/**/spec.md";
+    private const string EpicsGlob = "epics/**/spec.md";
 
-    private const string CoLocatedGlob = "**/.spec/README.md";
+    private const string FeaturesGlob = "**/.spec/README.md";
 
     private const string Companion = "src/area/.spec/thing.gherkin";
+
+    private const string FirstEpic = "epics/0001-epic/epic.md";
+
+    private const string SecondEpic = "portfolio/0002-epic/epic.md";
+
+    private const string SecondSpecification = "src/other/.spec/README.md";
+
+    private const string SecondCompanion = "src/other/.spec/thing.gherkin";
 
     private const string PhantomTag =
         "Feature: it\n\n  @B-001\n  Scenario: It does the thing\n    Given a thing\n\n  @B-404\n  Scenario: Phantom\n    Given nothing\n";
@@ -233,8 +302,8 @@ public sealed class DiscoverySteps
     private JsonObject? _manifest;
     private SpecCheckReport? _report;
     private string? _subject;
-    private string? _legacy;
-    private string? _coLocated;
+    private string? _underEpics;
+    private string? _besideCode;
     private string? _rootReadme;
     private string? _epic;
     private IReadOnlyList<string> _pair = [];

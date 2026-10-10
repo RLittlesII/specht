@@ -27,8 +27,8 @@ public sealed class ReportSteps
     [Given("a repository root holding a manifest and the three frontmatter schemas")]
     public void GivenARepositoryRootHoldingAManifestAndTheThreeFrontmatterSchemas() => _tree = new SpecTree();
 
-    [Given("the root holds two specifications in the legacy layout and one in the co-located layout")]
-    public void GivenTheRootHoldsTwoSpecificationsInTheLegacyLayoutAndOneInTheCoLocatedLayout()
+    [Given("the root holds two specifications in the epics layout and one in the features layout")]
+    public void GivenTheRootHoldsTwoSpecificationsInTheEpicsLayoutAndOneInTheFeaturesLayout()
     {
         Tree.WriteFeature("0001", "F1");
         Tree.WriteFeature("0001", "F2");
@@ -100,7 +100,7 @@ public sealed class ReportSteps
 
     [Then("each layout by name with its specification count")]
     public void ThenEachLayoutByNameWithItsSpecificationCount() =>
-        Document.Layouts.Should().BeEquivalentTo([new SpecReportLayout("legacy", 2), new SpecReportLayout("coLocated", 1)]);
+        Document.Layouts.Should().BeEquivalentTo([new SpecReportLayout("epics", 2), new SpecReportLayout("features", 1)]);
 
     [Then("the item count, the count of rule ids evaluated, the error count and the warning count")]
     public void ThenTheItemCountTheCountOfRuleIdsEvaluatedTheErrorCountAndTheWarningCount()

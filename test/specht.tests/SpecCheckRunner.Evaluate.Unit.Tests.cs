@@ -15,7 +15,7 @@ namespace specht.tests;
 [Trait("Tier", "Unit")]
 public sealed class SpecCheckRunnerEvaluateUnitTests
 {
-    /// <summary>Gets how many legacy specifications, co-located specifications and items a model holds.</summary>
+    /// <summary>Gets how many specifications in the epics layout, how many in the features layout and how many items a model holds.</summary>
     public static TheoryData<int, int, int> ModelSizes =>
         new()
         {
@@ -47,7 +47,7 @@ public sealed class SpecCheckRunnerEvaluateUnitTests
             {
                 "a manifest leaving its layouts out gives the default manifest's two",
                 "{}",
-                ["legacy", "coLocated"],
+                ["epics", "features"],
                 ["epics/**/spec.md", "**/.spec/README.md"],
                 [1, 2]
             },
@@ -67,13 +67,13 @@ public sealed class SpecCheckRunnerEvaluateUnitTests
 
     [Theory]
     [MemberData(nameof(ModelSizes))]
-    public void AModelBuiltInMemory_WhenEvaluated_ShouldCountItsSpecificationsByLayoutAndItsItems(int legacy, int coLocated, int items)
+    public void AModelBuiltInMemory_WhenEvaluated_ShouldCountItsSpecificationsByLayoutAndItsItems(int inEpics, int inFeatures, int items)
     {
         // Given
         List<FeatureSpec> features =
         [
-            .. Enumerable.Repeat(new SpecLayout("legacy", "epics/**/spec.md"), legacy)
-                .Concat(Enumerable.Repeat(new SpecLayout("coLocated", "**/.spec/README.md"), coLocated))
+            .. Enumerable.Repeat(new SpecLayout("epics", "epics/**/spec.md"), inEpics)
+                .Concat(Enumerable.Repeat(new SpecLayout("features", "**/.spec/README.md"), inFeatures))
                 .Select(static layout => (FeatureSpec)new FeatureSpecFixture().WithLocation(new SpecLocationFixture().WithLayout(layout))),
         ];
         List<ChildItem> children = [.. Enumerable.Range(0, items).Select(static _ => (ChildItem)new ChildItemFixture())];
@@ -85,10 +85,10 @@ public sealed class SpecCheckRunnerEvaluateUnitTests
         // Then
         (
             report.SpecificationCount,
-            report.Layouts.Single(static layout => layout.Layout == "legacy").SpecificationCount,
-            report.Layouts.Single(static layout => layout.Layout == "coLocated").SpecificationCount,
+            report.Layouts.Single(static layout => layout.Layout == "epics").SpecificationCount,
+            report.Layouts.Single(static layout => layout.Layout == "features").SpecificationCount,
             report.ItemCount)
-            .Should().Be((legacy + coLocated, legacy, coLocated, items));
+            .Should().Be((inEpics + inFeatures, inEpics, inFeatures, items));
     }
 
     [Theory]

@@ -153,6 +153,15 @@ public sealed class CheckCommandIntegrationTests
                 3
             },
             {
+                "a manifest whose companion file list is empty (0001-F5 B-041, B-022, B-023)",
+                static tree =>
+                {
+                    tree.WriteRaw(SpecManifest.RelativePath, "{ \"companionFiles\": [] }");
+                    return tree.Root;
+                },
+                3
+            },
+            {
                 "a manifest pinning a schema version the tool does not ship (0001-F7 B-003)",
                 static tree =>
                 {

@@ -26,7 +26,7 @@ public sealed class SpecCheckRunnerIntegrationTests
         // Then
         report.Violations.Should().BeEmpty();
         report.SpecificationCount.Should().Be(4);
-        report.Layouts.Should().Equal(new SpecReportLayout("legacy", 3), new SpecReportLayout("coLocated", 1));
+        report.Layouts.Should().Equal(new SpecReportLayout("epics", 3), new SpecReportLayout("features", 1));
     }
 
     [Fact]

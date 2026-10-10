@@ -42,7 +42,7 @@ public sealed class SpecCheckRunnerUnitTests
         // Then
         report.Violations.Should().BeEmpty();
         report.SpecificationCount.Should().Be(1);
-        report.Layouts.Should().Equal(new SpecReportLayout("legacy", 1), new SpecReportLayout("coLocated", 0));
+        report.Layouts.Should().Equal(new SpecReportLayout("epics", 1), new SpecReportLayout("features", 0));
     }
 
     [Fact]

@@ -28,28 +28,28 @@ public sealed class SpecCheckRunnerDiscoveryIntegrationTests
             "a third layout is listed after the two the default manifest declares",
             """
             [
-              { "name": "legacy", "glob": "epics/**/spec.md" },
-              { "name": "coLocated", "glob": "**/.spec/README.md" },
+              { "name": "epics", "glob": "epics/**/spec.md" },
+              { "name": "features", "glob": "**/.spec/README.md" },
               { "name": "documentation", "glob": "docs/**/specification.md" }
             ]
             """,
-            "legacy 2, coLocated 1, documentation 1"
+            "epics 2, features 1, documentation 1"
         },
         {
             "a layout holding no specification is listed at zero",
             """
             [
-              { "name": "legacy", "glob": "epics/**/spec.md" },
-              { "name": "coLocated", "glob": "**/.spec/README.md" },
+              { "name": "epics", "glob": "epics/**/spec.md" },
+              { "name": "features", "glob": "**/.spec/README.md" },
               { "name": "archive", "glob": "archive/**/spec.md" }
             ]
             """,
-            "legacy 2, coLocated 1, archive 0"
+            "epics 2, features 1, archive 0"
         },
         {
             "a manifest declaring one layout lists one, and no default layout is added back",
-            """[{ "name": "coLocated", "glob": "**/.spec/README.md" }]""",
-            "coLocated 1"
+            """[{ "name": "features", "glob": "**/.spec/README.md" }]""",
+            "features 1"
         },
     };
 

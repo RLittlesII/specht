@@ -52,12 +52,12 @@ public sealed class EngineSteps
                 "## 3. Acceptance Criteria\n\n| ID | Claim | Source | Status |\n| -- | ----- | ------ | ------ |\n"
                     + $"| B-001 | It does the thing. | brd | Active |\n| {claim} | It does another. | brd | Active |\n"));
 
-    [Given("the root holds one specification in the legacy layout missing its traceability section")]
-    public void GivenTheRootHoldsOneSpecificationInTheLegacyLayoutMissingItsTraceabilitySection() =>
+    [Given("the root holds one specification in the epics layout missing its traceability section")]
+    public void GivenTheRootHoldsOneSpecificationInTheEpicsLayoutMissingItsTraceabilitySection() =>
         _specifications.Add(SpecDiscovery.Relative(Tree.Root, Tree.WriteFeature("0001", "F1", sections: WithoutTraceability)));
 
-    [Given("one specification in the co-located layout missing its traceability section")]
-    public void GivenOneSpecificationInTheCoLocatedLayoutMissingItsTraceabilitySection() =>
+    [Given("one specification in the features layout missing its traceability section")]
+    public void GivenOneSpecificationInTheFeaturesLayoutMissingItsTraceabilitySection() =>
         _specifications.Add(
             SpecDiscovery.Relative(Tree.Root, Tree.WriteCoLocatedFeature("src/area", "0002", "F1", sections: WithoutTraceability)));
 
