@@ -16,14 +16,23 @@ public static class SpecCheckRunner
     /// <paramref name="versions"/>: a rule outside that version's vocabulary is not evaluated and a violation it would
     /// report is dropped (<c>0001-F7</c> B-014).
     /// </summary>
-    public static SpecCheckReport Run(string root, SchemaVersions versions)
+    public static SpecCheckReport Run(string root, SchemaVersions versions) =>
+        Evaluate(SpecModel.Load(root, versions), Discover());
+
+    /// <summary>
+    /// Evaluates <paramref name="rules"/>, in the order given, over <paramref name="model"/> under the vocabulary of the
+    /// version its schemas keep (<c>0001-F1</c> B-004; <c>0001-F7</c> B-014; ADR-0008).
+    /// </summary>
+    /// <param name="model">The resolved tree.</param>
+    /// <param name="rules">The rule set.</param>
+    /// <returns>The report.</returns>
+    public static SpecCheckReport Evaluate(SpecModel model, IEnumerable<ISpecRule> rules)
     {
-        var model = SpecModel.Load(root, versions);
-        var version = versions.Select(model.Schemas.Structure.SchemaVersion);
-        var rules = Discover().Where(rule => rule.ReportedIds.Any(version.RuleIds.Contains)).ToList();
+        var version = model.Schemas.Version;
+        var evaluated = rules.Where(rule => rule.ReportedIds.Any(version.RuleIds.Contains)).ToList();
         var violations = new List<SpecViolation>();
 
-        foreach (var rule in rules)
+        foreach (var rule in evaluated)
         {
             violations.AddRange(rule.Evaluate(model).Where(violation => version.RuleIds.Contains(violation.RuleId)));
         }
@@ -36,7 +45,7 @@ public static class SpecCheckRunner
                     new SpecReportLayout(layout.Name, model.Features.Count(feature => feature.Location.Layout == layout))),
             ],
             model.Items.Count,
-            rules.SelectMany(static rule => rule.ReportedIds).Count(version.RuleIds.Contains),
+            evaluated.SelectMany(static rule => rule.ReportedIds).Count(version.RuleIds.Contains),
             Order(violations));
     }
 

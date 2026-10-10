@@ -14,12 +14,15 @@ namespace specht;
 /// </remarks>
 public sealed class SpecSchemas
 {
-    private SpecSchemas(JsonSchema feature, JsonSchema item, JsonSchema epic, SpecStructure structure)
+    private SpecSchemas(SchemaVersion version, SpecStructure structure)
     {
-        Feature = feature;
-        Item = item;
-        Epic = epic;
+        var options = new BuildOptions { SchemaRegistry = new SchemaRegistry() };
+
+        Feature = JsonSchema.FromText(version.FeatureSchema, options);
+        Item = JsonSchema.FromText(version.ItemSchema, options);
+        Epic = JsonSchema.FromText(version.EpicSchema, options);
         Structure = structure;
+        Version = version;
     }
 
     /// <summary>Evaluation options that make <c>format</c> an assertion rather than an annotation.</summary>
@@ -41,13 +44,17 @@ public sealed class SpecSchemas
     /// <summary>The ordered section contract and id grammars.</summary>
     public SpecStructure Structure { get; }
 
+    /// <summary>The schema version these schemas were built from, and whose rule ids a check over them evaluates (ADR-0008).</summary>
+    public SchemaVersion Version { get; }
+
     /// <summary>
     /// Loads every schema from <paramref name="root"/>'s <c>.spec/schema/</c>, the manifest first, each frontmatter schema
     /// from the file the manifest names for its kind (<c>0001-F5</c> B-008).
     /// </summary>
     /// <remarks>
     /// The check loads through a version set instead; this reads the on-disk frontmatter schemas, which no check selects
-    /// until the schema source exists (<c>0001-F7</c> B-009).
+    /// until the schema source exists (<c>0001-F7</c> B-009). The version kept is the embedded one the manifest pins,
+    /// carrying the texts read here in place of its own, so its rule ids are that version's (ADR-0008).
     /// Each load gets its own <see cref="SchemaRegistry"/>. The library's
     /// default registry is process-wide and refuses to re-register a
     /// <c>$id</c>, so a second load in one process - two roots in one test
@@ -56,17 +63,22 @@ public sealed class SpecSchemas
     /// <exception cref="SpechtRootNotFoundException"><paramref name="root"/> is not a directory; no frontmatter schema is read.</exception>
     /// <exception cref="SpechtManifestNotFoundException">There is no manifest; no frontmatter schema is read.</exception>
     /// <exception cref="SpechtManifestUnreadableException">The manifest does not parse; no frontmatter schema is read.</exception>
-    /// <exception cref="SpechtManifestException">The manifest is rejected; no frontmatter schema is read.</exception>
+    /// <exception cref="SpechtManifestException">
+    /// The manifest is rejected, or pins a version the tool does not ship; no frontmatter schema is read.
+    /// </exception>
     public static SpecSchemas Load(IFileSystem fileSystem, string root)
     {
         var structure = SpecManifest.Load(fileSystem, root);
+        var version = SchemaVersions.Embedded.Select(structure.SchemaVersion);
         var directory = fileSystem.Path.Combine(root, ".spec", "schema");
-        var options = new BuildOptions { SchemaRegistry = new SchemaRegistry() };
 
         return new SpecSchemas(
-            Read(fileSystem, directory, structure.FrontmatterSchemas["feature"], options),
-            Read(fileSystem, directory, structure.FrontmatterSchemas["task"], options),
-            Read(fileSystem, directory, structure.FrontmatterSchemas["epic"], options),
+            version with
+            {
+                FeatureSchema = Read(fileSystem, directory, structure.FrontmatterSchemas["feature"]),
+                ItemSchema = Read(fileSystem, directory, structure.FrontmatterSchemas["task"]),
+                EpicSchema = Read(fileSystem, directory, structure.FrontmatterSchemas["epic"]),
+            },
             structure);
     }
 
@@ -84,16 +96,10 @@ public sealed class SpecSchemas
     public static SpecSchemas Load(IFileSystem fileSystem, string root, SchemaVersions versions)
     {
         var structure = SpecManifest.Load(fileSystem, root);
-        var version = versions.Select(structure.SchemaVersion);
-        var options = new BuildOptions { SchemaRegistry = new SchemaRegistry() };
 
-        return new SpecSchemas(
-            JsonSchema.FromText(version.FeatureSchema, options),
-            JsonSchema.FromText(version.ItemSchema, options),
-            JsonSchema.FromText(version.EpicSchema, options),
-            structure);
+        return new SpecSchemas(versions.Select(structure.SchemaVersion), structure);
     }
 
-    private static JsonSchema Read(IFileSystem fileSystem, string directory, string name, BuildOptions options) =>
-        JsonSchema.FromText(fileSystem.File.ReadAllText(fileSystem.Path.Combine(directory, name)), options);
+    private static string Read(IFileSystem fileSystem, string directory, string name) =>
+        fileSystem.File.ReadAllText(fileSystem.Path.Combine(directory, name));
 }
