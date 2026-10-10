@@ -21,6 +21,12 @@ Feature: Continuous integration
     When integration runs
     Then the build runs against the pull request's head
 
+  @B-001 @boundary
+  Scenario: The gates still build the pull request's head when its merge is checked
+    Given a pull request that changes code
+    When integration runs
+    Then every gate but the second self-check runs against the pull request's head
+
   @B-002
   Scenario: A push to main is built
     When a commit is pushed to the main branch
@@ -63,7 +69,7 @@ Feature: Continuous integration
 
   @B-006
   Scenario: A specification violation is shown on the diff
-    Given a pull request that changes a file carrying a specification violation
+    Given a pull request whose own tree carries a specification violation in a file it changes
     When integration runs
     Then the violation is annotated on its file and line in the pull request's diff
     And it is annotated once, from the Linux check only
@@ -138,3 +144,89 @@ Feature: Continuous integration
     Given a pull request whose tests would fail on Windows only
     When integration runs
     Then the Windows check passes
+
+  @B-017
+  Scenario: A violation only the merge carries is reported before the merge
+    Given a pull request whose own tree carries no specification violation
+    And merging it with the main branch produces one
+    When integration runs
+    Then the self-check runs a second time, over the pull request merged with the main branch
+    And that run reports the violation
+
+  @B-017 @boundary
+  Scenario: A change that reaches main after the run is not seen by it
+    Given a pull request whose merged tree carried no violation when integration last ran
+    And a change that has reached the main branch since and collides with it
+    When the pull request is merged without integration running again
+    Then the pull request's last run still reports no violation
+    And the run on the main branch reports the collision
+
+  @B-017 @boundary
+  Scenario: A documentation-only pull request has no merged tree checked
+    Given a pull request that changes only documentation outside any specification folder
+    When integration runs
+    Then the self-check runs over no merged tree
+
+  @B-017 @boundary
+  Scenario: A pull request has no merged tree checked on Windows
+    Given a pull request that changes code
+    When integration runs on Windows
+    Then the self-check runs over no merged tree
+
+  @B-018
+  Scenario: A push to main is checked once
+    When a commit is pushed to the main branch
+    Then the self-check runs over that commit
+    And the self-check runs over no merged tree
+
+  @B-019
+  Scenario: A merge that cannot be computed is reported, not passed
+    Given a pull request that could be merged with the main branch when integration started
+    And a change that has reached the main branch since and conflicts with it
+    When integration runs
+    Then the run says that no merged tree was checked
+    And the run does not report the merged tree as clean
+
+  @B-020
+  Scenario: The merged tree's check annotates nothing
+    Given a pull request whose own tree carries a specification violation in a file it changes
+    When integration runs
+    Then the check of the merged tree annotates nothing on the pull request's diff
+    And the violation is annotated once
+
+  @B-020 @boundary
+  Scenario: A violation only the merge carries is in the log, not on the diff
+    Given a pull request whose own tree carries no specification violation
+    And merging it with the main branch produces one in a file the pull request adds
+    When integration runs
+    Then the violation is in the run's log
+    And no violation is annotated on the pull request's diff
+
+  @B-021
+  Scenario: The merged tree's violations name repository paths
+    Given a pull request whose merged tree carries a specification violation
+    When integration runs
+    Then the violation names its file by the file's path in the repository
+
+  @B-022
+  Scenario: The merged tree's check does not gate before the self-check does
+    Given the self-check does not yet gate integration
+    And a pull request whose merged tree carries a specification violation
+    When integration runs
+    Then the Linux check does not fail because of it
+
+  @B-023
+  Scenario: A violation the merged tree carries fails the Linux check once the self-check gates
+    Given the self-check gates integration
+    And a pull request whose own tree carries no specification violation
+    And merging it with the main branch produces one
+    When integration runs
+    Then the Linux check fails
+
+  @B-024
+  Scenario: A merge that cannot be computed does not fail the Linux check
+    Given the self-check gates integration
+    And a pull request that could be merged with the main branch when integration started
+    And a change that has reached the main branch since and conflicts with it
+    When integration runs
+    Then the Linux check does not fail because no merged tree was checked

@@ -54,7 +54,7 @@ Feature: The report contract
 
   @B-005
   Scenario: The document carries the counts and the version
-    Given the root holds two specifications in the legacy layout and one in the co-located layout
+    Given the root holds two specifications in the epics layout and one in the features layout
     When the check runs with JSON output
     Then the document names the schema version checked against
     And whether the schemas came from the tool or from the repository's own files
@@ -108,7 +108,7 @@ Feature: The report contract
 
   @B-012
   Scenario: An identity violation says the identity implied
-    Given the root holds a legacy specification whose epic directory does not match its frontmatter
+    Given the root holds a specification in the epics layout whose epic directory does not match its frontmatter
     When the check runs with JSON output
     Then the violation's expectation carries the identity form
     And the identity the directory implies

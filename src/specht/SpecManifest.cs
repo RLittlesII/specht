@@ -21,13 +21,14 @@ public static class SpecManifest
     /// <summary>Reads, checks and fills the manifest under <paramref name="root"/>.</summary>
     /// <param name="fileSystem">The file system the manifest is read through.</param>
     /// <param name="root">The repository root.</param>
-    /// <returns>The section contract, id grammars and frontmatter schema file names, every omitted value read as the default manifest's.</returns>
+    /// <returns>The section contract, id grammars, discovery inputs and schema file names, every omitted value read as the default manifest's.</returns>
     /// <exception cref="SpechtRootNotFoundException"><paramref name="root"/> is not a directory.</exception>
     /// <exception cref="SpechtManifestNotFoundException">There is no file at the manifest path.</exception>
     /// <exception cref="SpechtManifestUnreadableException">The manifest is not well-formed JSON or not the manifest's shape.</exception>
     /// <exception cref="SpechtManifestException">
     /// The manifest carries a key the engine does not know, a <c>schemaVersion</c> that is not an integer of at least 1, a
-    /// role naming a title <c>sections</c> does not list, a <c>tables</c> key that is not a role, or a marker whose text is empty.
+    /// role naming a title <c>sections</c> does not list, a <c>tables</c> key that is not a role, a marker whose text is empty,
+    /// or an empty <c>taskFiles</c>, <c>epicFiles</c> or <c>companionFiles</c> list.
     /// </exception>
     public static SpecStructure Load(IFileSystem fileSystem, string root)
     {
@@ -74,6 +75,7 @@ public static class SpecManifest
             Filled(manifest, "identifiers"),
             SchemaVersion(manifest))
         {
+            Discovery = Discovery(manifest),
             FrontmatterSchemas = Filled(manifest, "frontmatterSchemas"),
             Roles = Filled(manifest, "roles"),
             Markers = Filled(manifest, "markers"),
@@ -97,12 +99,36 @@ public static class SpecManifest
                     .Select(static entry => entry.Key)
                     .Where(marker => structure.Markers[marker].Length == 0)
                     .Select(static marker => $"the marker '{marker}' in markers is empty"))
+            .Concat(
+                new (string Key, IReadOnlyList<string> Entries)[]
+                {
+                    ("taskFiles", structure.Discovery.TaskFiles),
+                    ("epicFiles", structure.Discovery.EpicFiles),
+                    ("companionFiles", structure.Discovery.CompanionFiles),
+                }
+                    .Where(static list => list.Entries.Count == 0)
+                    .Select(static list => $"the list '{list.Key}' is empty"))
             .ToList();
 
         if (faults.Count > 0)
         {
             throw new SpechtManifestException($"{RelativePath}: {string.Join("; ", faults)}.");
         }
+    }
+
+    private static SpecDiscoveryInputs Discovery(JsonObject manifest) =>
+        new(
+            (manifest["layouts"] ?? Defaults["layouts"]!).AsArray().Select(Layout).ToList(),
+            Strings(manifest["exclusions"] ?? Defaults["exclusions"]!),
+            Strings(manifest["taskFiles"] ?? Defaults["taskFiles"]!),
+            Strings(manifest["epicFiles"] ?? Defaults["epicFiles"]!),
+            Strings(manifest["companionFiles"] ?? Defaults["companionFiles"]!));
+
+    private static SpecLayout Layout(JsonNode? node)
+    {
+        var layout = Present(node);
+
+        return new SpecLayout(Present(layout["name"]).GetValue<string>(), Present(layout["glob"]).GetValue<string>());
     }
 
     private static Dictionary<string, string> Filled(JsonObject manifest, string key)
@@ -165,6 +191,11 @@ public static class SpecManifest
     private static readonly HashSet<string> KnownKeys = new(StringComparer.Ordinal)
     {
         "schemaVersion",
+        "layouts",
+        "exclusions",
+        "taskFiles",
+        "epicFiles",
+        "companionFiles",
         "sections",
         "tables",
         "identifiers",

@@ -17,10 +17,10 @@ public sealed class SpecModelUnitTests
         new[] { "repo/src/sample/.spec/first.feature", "repo/src/sample/.spec/second.feature" },
     };
 
-    public static TheoryData<SpecLayout, string[]> IdentityViolationsByLayout { get; } = new()
+    public static TheoryData<string, string, string[]> IdentityViolationsByLayout { get; } = new()
     {
-        { SpecLayout.Legacy, ["SPEC011", "SPEC011"] },
-        { SpecLayout.CoLocated, [] },
+        { "epics", "epics/**/spec.md", ["SPEC011", "SPEC011"] },
+        { "features", "**/.spec/README.md", [] },
     };
 
     [Theory]
@@ -54,13 +54,14 @@ public sealed class SpecModelUnitTests
 
     [Theory]
     [MemberData(nameof(IdentityViolationsByLayout))]
-    public void AFeatureUnderFoldersItsIdentityDoesNotName_WhenTheIdentityRuleEvaluatesTheModel_ShouldReportSpec011InTheLegacyLayoutOnly(
-        SpecLayout layout,
+    public void AFeatureUnderFoldersItsIdentityDoesNotName_WhenTheIdentityRuleEvaluatesTheModel_ShouldReportSpec011InTheEpicsLayoutOnly(
+        string layout,
+        string glob,
         string[] expected)
     {
         // Given
         FeatureSpec feature = new FeatureSpecFixture()
-            .WithLocation(new SpecLocationFixture().WithRelativePath("src/area/.spec/README.md").WithLayout(layout))
+            .WithLocation(new SpecLocationFixture().WithRelativePath("src/area/.spec/README.md").WithLayout(new SpecLayout(layout, glob)))
             .WithDocument(
                 new SpecDocumentFixture().WithFrontmatter(
                     new FrontmatterFixture().WithNode(new JsonObject { ["epic"] = "0001", ["id"] = "F2" })));
