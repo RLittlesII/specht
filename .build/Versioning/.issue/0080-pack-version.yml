@@ -33,7 +33,16 @@ acceptance_criteria:
   - "B-005 — the version inside the package equals the commit's computed version"
   - "§ 9 carries a row naming a test for each id above."
 
-decisions: []
+decisions:
+  - |
+    2026-10-09, owner: B-005 is closed by an executable proof, not a
+    recorded hand check (0055-F5 decision 0002). The standing decision that
+    the build carries no tests (0055-F2 § 8) is narrowed for B-005 only, so
+    the criterion "§ 9 carries a row naming a test for each id above"
+    stands here, unlike on 0079. versioning.feature is linked into
+    test/specht.acceptance, a step class binds @B-005, and the acceptance
+    tier packs. The Feature's other claims and the other build Features
+    are unchanged.
 
 out_of_scope:
   - "Versioning other assemblies — § 5 #5."
