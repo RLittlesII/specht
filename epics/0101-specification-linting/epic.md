@@ -7,7 +7,16 @@ status: blocked
 priority: med
 milestone: null
 children:
-  ["0101-F1", "0101-F2", "0101-F3", "0101-F4", "0101-F5", "0101-F6", "0101-F8"]
+  [
+    "0101-F1",
+    "0101-F2",
+    "0101-F3",
+    "0101-F4",
+    "0101-F5",
+    "0101-F6",
+    "0101-F7",
+    "0101-F8",
+  ]
 created: "2026-10-08"
 updated: "2026-10-09"
 github_issue: null
@@ -38,7 +47,8 @@ The need and its scope were decided by the repository owner on 2026-10-08,
 in a requirements session; the decisions are recorded beside the Features
 they bind (`0101-F1` decisions 0001 and 0002, `0101-F5` decision 0001).
 Uniqueness was added by the owner on 2026-10-09 (`0101-F6` decisions 0001
-and 0002; `0101-F8` decisions 0001 to 0003).
+and 0002; `0101-F7` decisions 0001 and 0002; `0101-F8` decisions 0001 to
+0003).
 
 ## Business Value
 
@@ -55,9 +65,8 @@ disables that rule.
 ## Features
 
 Decomposed by capability dimension: four style and ordering rule Features
-and two uniqueness rule Features, each with its own finding, and the one
-command that writes. `0101-F7` is proposed for record number uniqueness and
-is not yet specified.
+and three uniqueness rule Features, each with its own finding, and the one
+command that writes.
 
 | Feature   | Name                           | Specification                                       |
 | --------- | ------------------------------ | --------------------------------------------------- |
@@ -67,6 +76,7 @@ is not yet specified.
 | `0101-F4` | Frontmatter key order          | `src/specht/Rules/FrontmatterOrder/.spec/README.md` |
 | `0101-F5` | The format command             | `src/specht.tool/Features/Format/.spec/README.md`   |
 | `0101-F6` | In-specification id uniqueness | `src/specht/Rules/DuplicateIds/.spec/README.md`     |
+| `0101-F7` | Record number uniqueness       | `src/specht/Rules/RecordNumbers/.spec/README.md`    |
 | `0101-F8` | Work-item id allocation        | `src/specht/Rules/WorkItemIds/.spec/README.md`      |
 
 Where the invariant changes, the Feature is cut:
@@ -80,6 +90,11 @@ Where the invariant changes, the Feature is cut:
 - `0101-F6` judges whether an id is declared twice in one table. It errors
   by default, and `format` fixes none of it: a fix is a new id, and `format`
   renumbers nothing.
+- `0101-F7` judges numbers that open file names, not table rows: a number
+  two files in one `decisions/`, `adr/` or `lessons/` folder share, beside
+  a specification or repository-wide. It errors by default (`0101-F7`
+  decision 0001), reads no record's content, and never compares one folder
+  with another.
 - `0101-F8` judges ids that are file names, not table rows: a work-item id
   claimed by two files anywhere in the tree, and a sequence file behind the
   ids present. It errors by default (`0101-F8` decision 0001), and it is the
@@ -93,10 +108,11 @@ version 1 rules already cover most of the ground (`0101-F3` OQ-1). They stay
 one Feature; if OQ-1 drops the heading half, the name drops with it.
 
 Every Feature depends on `0001-F7`: a new rule is a new schema version
-(brief § 9; `0001-F1` C-5). The six rule Features also depend on `0001-F5`,
+(brief § 9; `0001-F1` C-5). The seven rule Features also depend on `0001-F5`,
 whose per-rule severity and disable they are defaulted and switched off by
-(`0101-F1` decision 0001; `0101-F6` decision 0001; `0101-F8` decision 0001).
-`0101-F8` also depends on `0001-F6`, which finds the files it reads.
+(`0101-F1` decision 0001; `0101-F6` decision 0001; `0101-F7` decision 0001;
+`0101-F8` decision 0001). `0101-F7` and `0101-F8` also depend on `0001-F6`,
+which finds the files they read.
 
 ## Placement
 
