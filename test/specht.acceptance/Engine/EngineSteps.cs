@@ -14,8 +14,9 @@ namespace specht.acceptance.Engine;
 
 /// <summary>
 /// Steps for <c>src/specht/.spec/engine.feature</c> (0001-F1). The Background is a <see cref="SpecTree"/> holding the live
-/// version 1 schema set (A-3). B-001 builds the baseline tree on it and reads the rule ids the engine reports; B-004 holds
-/// the engine to the golden report on the same tree; B-010 reads the one violation a missing traceability row gives.
+/// version 0.1.0 schema set (A-3), which the Background reads back from the root it built. B-001 builds the baseline
+/// tree on it and reads the rule ids the engine reports; B-004 holds the engine to the golden report on the same tree;
+/// B-010 reads the one violation a missing traceability row gives.
 /// B-002 writes one specification in each layout without its traceability section, B-003 one co-located specification
 /// under a folder its identity does not name, and B-011 two co-located specifications of one identity. B-005 reads the built library itself: its assembly name,
 /// and the namespace of every type it declares, which is where a root namespace shows once compiled. It reads the file
@@ -29,14 +30,14 @@ namespace specht.acceptance.Engine;
 [Scope(Feature = "The engine, extracted unchanged")]
 public sealed class EngineSteps
 {
-    [Given("a repository root holding a manifest and the three frontmatter schemas of schema version {int}")]
-    public void GivenARepositoryRootHoldingAManifestAndTheThreeFrontmatterSchemasOfSchemaVersion(int version)
+    [Given("a repository root holding a manifest and the three frontmatter schemas of schema version {word}")]
+    public void GivenARepositoryRootHoldingAManifestAndTheThreeFrontmatterSchemasOfSchemaVersion(string version)
     {
-        version.Should().Be(1);
         _tree = new SpecTree();
+        SpecModel.Load(_tree.Root).Schemas.Version.Number.ToString().Should().Be(version);
     }
 
-    [Given("the baseline tree the tests build, which breaks each of the twenty-one version 1 rules in each layout the rule applies to")]
+    [Given("the baseline tree the tests build, which breaks each of the twenty-one version 0.1.0 rules in each layout the rule applies to")]
     public void GivenTheBaselineTree() => BaselineTree.Write(Tree);
 
     [Given("the golden report the engine gave on that tree at the commit the copy landed on main")]

@@ -188,7 +188,20 @@ public sealed class CheckCommandIntegrationTests
                 {
                     var path = Path.Combine(tree.Root, SpecManifest.RelativePath);
                     var manifest = JsonNode.Parse(File.ReadAllText(path))!.AsObject();
-                    manifest["schemaVersion"] = SchemaVersions.Embedded.Versions.Max(static version => version.Number) + 1;
+                    var newest = SchemaVersions.Embedded.Versions.Max(static version => version.Number);
+                    manifest["schemaVersion"] = new SemanticVersion(newest.Major + 1, 0, 0).ToString();
+                    File.WriteAllText(path, manifest.ToJsonString());
+                    return tree.Root;
+                },
+                3
+            },
+            {
+                "a manifest whose schema version is the integer 1, not major.minor.patch (0001-F7 B-039)",
+                static tree =>
+                {
+                    var path = Path.Combine(tree.Root, SpecManifest.RelativePath);
+                    var manifest = JsonNode.Parse(File.ReadAllText(path))!.AsObject();
+                    manifest["schemaVersion"] = 1;
                     File.WriteAllText(path, manifest.ToJsonString());
                     return tree.Root;
                 },

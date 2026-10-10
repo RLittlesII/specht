@@ -1,15 +1,18 @@
 using System.Text.Json;
 using System.Text.Json.Nodes;
+using System.Text.RegularExpressions;
 using AwesomeAssertions;
 using Json.Schema;
 
 namespace specht.tests;
 
 /// <summary>
-/// The schema version set (<c>0001-F7</c> B-003, B-004, B-014, B-022, B-023; C-6): the embedded set holds every version
-/// from 1 to the newest, each frontmatter schema sits in its own slot, version 1's epic schema accepts a non-empty title
-/// and description and rejects an empty one, version 1's vocabulary is the twenty-one rule ids, and selecting a version the
-/// set does not hold is a rejected manifest naming the pin and the set.
+/// The schema version set (<c>0001-F7</c> B-003, B-004, B-014, B-022, B-023, B-055; C-6): the embedded set names its
+/// versions as <c>major.minor.patch</c> and holds <c>0.1.0</c>, a set given its versions out of order holds them ascending
+/// by major, then minor, then patch, each frontmatter schema sits in its own slot, version 0.1.0's epic schema accepts a
+/// non-empty title and description and rejects an empty one, version 0.1.0's vocabulary is the twenty-one rule ids, a pin
+/// selects exactly the version it names although a later patch and a later minor are held, and selecting a version the set
+/// does not hold is a rejected manifest naming the pin and the set.
 /// </summary>
 [Trait("Tier", "Unit")]
 public sealed class SchemaVersionsUnitTests
@@ -23,7 +26,7 @@ public sealed class SchemaVersionsUnitTests
             { "epic.frontmatter.schema.json", static version => version.EpicSchema },
         };
 
-    /// <summary>Gets an epic's title and description, and the frontmatter locations version 1 rejects (B-022, B-023).</summary>
+    /// <summary>Gets an epic's title and description, and the frontmatter locations version 0.1.0 rejects (B-022, B-023).</summary>
     public static TheoryData<string, string, string, string[]> EpicTitles =>
         new()
         {
@@ -33,7 +36,7 @@ public sealed class SchemaVersionsUnitTests
         };
 
     [Fact]
-    public void TheEmbeddedSet_WhenEnumerated_ShouldHoldEveryVersionFromOneToTheNewest()
+    public void TheEmbeddedSet_WhenEnumerated_ShouldHoldVersionZeroOneZeroAndAscendByPrecedence()
     {
         // Given
         var embedded = SchemaVersions.Embedded;
@@ -42,8 +45,30 @@ public sealed class SchemaVersionsUnitTests
         var numbers = embedded.Versions.Select(static version => version.Number).ToList();
 
         // Then
-        numbers.Should().NotBeEmpty();
-        numbers.Should().Equal(Enumerable.Range(1, numbers.Max()));
+        numbers.Should().Contain(new SemanticVersion(0, 1, 0)).And.BeInAscendingOrder().And.OnlyHaveUniqueItems();
+    }
+
+    [Fact]
+    public void VersionsGivenOutOfOrder_WhenEnumerated_ShouldAscendByMajorThenMinorThenPatch()
+    {
+        // Given
+        var versions = new SchemaVersions(
+        [
+            new SchemaVersionFixture().WithNumber(new SemanticVersion(1, 0, 0)),
+            new SchemaVersionFixture().WithNumber(new SemanticVersion(0, 10, 0)),
+            new SchemaVersionFixture().WithNumber(new SemanticVersion(0, 9, 1)),
+            new SchemaVersionFixture().WithNumber(new SemanticVersion(0, 9, 0)),
+        ]);
+
+        // When
+        var numbers = versions.Versions.Select(static version => version.Number);
+
+        // Then
+        numbers.Should().Equal(
+            new SemanticVersion(0, 9, 0),
+            new SemanticVersion(0, 9, 1),
+            new SemanticVersion(0, 10, 0),
+            new SemanticVersion(1, 0, 0));
     }
 
     [Theory]
@@ -54,21 +79,23 @@ public sealed class SchemaVersionsUnitTests
         var versions = SchemaVersions.Embedded.Versions;
 
         // When
-        var ids = versions.Select(version => (version.Number, Id: JsonNode.Parse(slot(version))!["$id"]!.GetValue<string>())).ToList();
+        var ids = versions
+            .Select(version => (Folder: EmbeddedFolder.Of(version), Id: JsonNode.Parse(slot(version))!["$id"]!.GetValue<string>()))
+            .ToList();
 
         // Then
         ids.Should().NotBeEmpty().And.AllSatisfy(pair =>
-            pair.Id.Should().Be($"https://github.com/rlittlesii/specht/schema/v{pair.Number}/{file}"));
+            pair.Id.Should().Be($"https://github.com/rlittlesii/specht/schema/v{pair.Folder}/{file}"));
     }
 
     [Fact]
-    public void EmbeddedVersion1_WhenItsVocabularyIsRead_ShouldNameExactlyTheTwentyOneVersion1RuleIds()
+    public void EmbeddedVersionZeroOneZero_WhenItsVocabularyIsRead_ShouldNameExactlyItsTwentyOneRuleIds()
     {
         // Given
         var embedded = SchemaVersions.Embedded;
 
         // When
-        var ids = embedded.Select(1).RuleIds;
+        var ids = embedded.Select(new SemanticVersion(0, 1, 0)).RuleIds;
 
         // Then
         ids.Should().BeEquivalentTo(
@@ -78,14 +105,16 @@ public sealed class SchemaVersionsUnitTests
 
     [Theory]
     [MemberData(nameof(EpicTitles))]
-    public void EmbeddedVersion1sEpicSchema_WhenAnEpicCarriesATitleAndADescription_ShouldRejectOnlyAnEmptyOne(
+    public void EmbeddedVersionZeroOneZerosEpicSchema_WhenAnEpicCarriesATitleAndADescription_ShouldRejectOnlyAnEmptyOne(
         string because,
         string title,
         string description,
         string[] expected)
     {
         // Given
-        var schema = JsonSchema.FromText(SchemaVersions.Embedded.Select(1).EpicSchema, new BuildOptions { SchemaRegistry = new SchemaRegistry() });
+        var schema = JsonSchema.FromText(
+            SchemaVersions.Embedded.Select(new SemanticVersion(0, 1, 0)).EpicSchema,
+            new BuildOptions { SchemaRegistry = new SchemaRegistry() });
         var epic = new JsonObject
         {
             ["id"] = "0001",
@@ -117,34 +146,35 @@ public sealed class SchemaVersionsUnitTests
     }
 
     [Fact]
-    public void AShippedVersion_WhenSelected_ShouldBeThatVersion()
+    public void AVersionHeldBesideALaterPatchAndALaterMinor_WhenSelected_ShouldBeExactlyTheVersionNamed()
     {
         // Given
-        SchemaVersion one = new SchemaVersionFixture();
-        SchemaVersion two = new SchemaVersionFixture().WithNumber(2);
-        var versions = new SchemaVersions([one, two]);
+        SchemaVersion pinned = new SchemaVersionFixture();
+        SchemaVersion laterPatch = new SchemaVersionFixture().WithNumber(new SemanticVersion(0, 1, 1));
+        SchemaVersion laterMinor = new SchemaVersionFixture().WithNumber(new SemanticVersion(0, 2, 0));
+        var versions = new SchemaVersions([laterMinor, laterPatch, pinned]);
 
         // When
-        var selected = versions.Select(2);
+        var selected = versions.Select(new SemanticVersion(0, 1, 0));
 
         // Then
-        selected.Should().BeSameAs(two);
+        selected.Should().BeSameAs(pinned);
     }
 
     [Fact]
     public void AVersionTheSetDoesNotHold_WhenSelected_ShouldRejectTheManifestNamingThePinnedVersionAndEveryShippedVersion()
     {
         // Given
-        var versions = new SchemaVersions([new SchemaVersionFixture(), new SchemaVersionFixture().WithNumber(2)]);
+        var versions = new SchemaVersions([new SchemaVersionFixture(), new SchemaVersionFixture().WithNumber(new SemanticVersion(0, 2, 0))]);
 
         // When
-        var select = () => versions.Select(9);
+        var select = () => versions.Select(new SemanticVersion(7, 0, 0));
 
         // Then
         var message = select.Should().ThrowExactly<SpechtManifestException>().Which.Message;
-        foreach (var named in new[] { 9, 1, 2 })
+        foreach (var named in new[] { "7.0.0", "0.1.0", "0.2.0" })
         {
-            message.Should().MatchRegex($@"\b{named}\b", "the message names version {0}", named);
+            message.Should().MatchRegex($@"(?<![\w.]){Regex.Escape(named)}(?!\.?\w)", "the message names version {0}", named);
         }
     }
 }

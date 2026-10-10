@@ -1,5 +1,6 @@
 using System.IO.Abstractions.TestingHelpers;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 using AwesomeAssertions;
 using Json.Schema;
 
@@ -56,11 +57,13 @@ public sealed class SpecSchemasUnitTests
     {
         // Given
         SchemaVersion one = new SchemaVersionFixture();
-        SchemaVersion two = new SchemaVersionFixture().WithNumber(2).WithRuleIds(new HashSet<string>(["FAKE001"], StringComparer.Ordinal));
+        SchemaVersion two = new SchemaVersionFixture()
+            .WithNumber(new SemanticVersion(0, 2, 0))
+            .WithRuleIds(new HashSet<string>(["FAKE001"], StringComparer.Ordinal));
         var fileSystem = new MockFileSystem(
             new Dictionary<string, MockFileData>
             {
-                [Path.Combine(Root, ".spec", "schema", "spec-structure.schema.json")] = new("""{ "schemaVersion": 2 }"""),
+                [Path.Combine(Root, ".spec", "schema", "spec-structure.schema.json")] = new("""{ "schemaVersion": "0.2.0" }"""),
             });
 
         // When
@@ -74,12 +77,12 @@ public sealed class SpecSchemasUnitTests
     public void AnOnDiskSchemaSet_WhenLoaded_ShouldKeepTheEmbeddedVersionItsManifestPinsWithThatVersionsRuleIds()
     {
         // Given
-        var embedded = SchemaVersions.Embedded.Select(1);
+        var embedded = SchemaVersions.Embedded.Select(new SemanticVersion(0, 1, 0));
         var schema = Path.Combine(Root, ".spec", "schema");
         var fileSystem = new MockFileSystem(
             new Dictionary<string, MockFileData>
             {
-                [Path.Combine(schema, "spec-structure.schema.json")] = new("""{ "schemaVersion": 1 }"""),
+                [Path.Combine(schema, "spec-structure.schema.json")] = new("""{ "schemaVersion": "0.1.0" }"""),
                 [Path.Combine(schema, "feature-spec.frontmatter.schema.json")] = new("{}"),
                 [Path.Combine(schema, "task.frontmatter.schema.json")] = new("{}"),
                 [Path.Combine(schema, "epic.frontmatter.schema.json")] = new("{}"),
@@ -89,7 +92,7 @@ public sealed class SpecSchemasUnitTests
         var schemas = SpecSchemas.Load(fileSystem, Root);
 
         // Then
-        schemas.Version.Number.Should().Be(1);
+        schemas.Version.Number.Should().Be(new SemanticVersion(0, 1, 0));
         schemas.Version.RuleIds.Should().BeEquivalentTo(embedded.RuleIds);
     }
 
@@ -121,18 +124,19 @@ public sealed class SpecSchemasUnitTests
     public void AnOnDiskManifestPinningAVersionTheToolDoesNotShip_WhenLoaded_ShouldRejectTheManifestNamingThePinBeforeReadingAFrontmatterSchema()
     {
         // Given
-        var unshipped = SchemaVersions.Embedded.Versions.Max(static version => version.Number) + 1;
+        var newest = SchemaVersions.Embedded.Versions.Max(static version => version.Number);
+        var unshipped = new SemanticVersion(newest.Major + 1, 0, 0).ToString();
         var fileSystem = new MockFileSystem(
             new Dictionary<string, MockFileData>
             {
-                [Path.Combine(Root, ".spec", "schema", "spec-structure.schema.json")] = new($$"""{ "schemaVersion": {{unshipped}} }"""),
+                [Path.Combine(Root, ".spec", "schema", "spec-structure.schema.json")] = new($$"""{ "schemaVersion": "{{unshipped}}" }"""),
             });
 
         // When
         var load = () => SpecSchemas.Load(fileSystem, Root);
 
         // Then
-        load.Should().ThrowExactly<SpechtManifestException>().Which.Message.Should().MatchRegex($@"\b{unshipped}\b");
+        load.Should().ThrowExactly<SpechtManifestException>().Which.Message.Should().MatchRegex($@"(?<![\w.]){Regex.Escape(unshipped)}(?!\.?\w)");
     }
 
     private const string Root = "repo";

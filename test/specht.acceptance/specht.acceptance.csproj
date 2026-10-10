@@ -45,6 +45,8 @@
     <Compile Include="..\specht.tests\EngineAssembly.cs" Link="Engine\EngineAssembly.cs" />
     <!-- The reader the rule page tests and steps share (0001-F3 B-032, B-033). -->
     <Compile Include="..\specht.tests\RulePage.cs" Link="Report\RulePage.cs" />
+    <!-- The folder integer an embedded schema version was read from, which the rule page steps hand that reader. -->
+    <Compile Include="..\specht.tests\EmbeddedFolder.cs" Link="Report\EmbeddedFolder.cs" />
     <Content Include="..\specht.tests\Baseline\engine-e7dba24.json"
              Link="Baseline\engine-e7dba24.json"
              CopyToOutputDirectory="PreserveNewest" />

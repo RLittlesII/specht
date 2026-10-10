@@ -1,13 +1,14 @@
 using System.IO.Abstractions.TestingHelpers;
 using System.Text.Json.Nodes;
+using System.Text.RegularExpressions;
 using AwesomeAssertions;
 
 namespace specht.tests;
 
 /// <summary>
 /// The manifest loader over an in-memory file system (0001-F5 B-001, B-002, B-003, B-008, B-012, B-015, B-019, B-020, B-021,
-/// B-039, B-040, B-041; 0001-F2 B-005, B-006, B-007): what it rejects and as which failure, what it ignores, and what it fills from the
-/// default manifest.
+/// B-039, B-040, B-041; 0001-F2 B-005, B-006, B-007; 0001-F7 B-002, B-039): what it rejects and as which failure, what it
+/// ignores, the schema version it reads, and what it fills from the default manifest.
 /// </summary>
 [Trait("Tier", "Unit")]
 public sealed class SpecManifestUnitTests
@@ -88,35 +89,42 @@ public sealed class SpecManifestUnitTests
         "{ \"sections\": [null] }",
     };
 
-    /// <summary>Gets a manifest's <c>schemaVersion</c>, absent when null, and the version the loader must read (<c>0001-F7</c> B-002, B-003).</summary>
-    public static TheoryData<string, int?, int> Pins { get; } = new()
+    /// <summary>
+    /// Gets a manifest's <c>schemaVersion</c>, absent when null, and the version the loader must read (<c>0001-F7</c>
+    /// B-001, B-002, B-003).
+    /// </summary>
+    public static TheoryData<string, string?, SemanticVersion> Pins { get; } = new()
     {
-        { "a manifest with no schemaVersion is version 1", null, 1 },
-        { "a manifest pinning 1", 1, 1 },
-        { "a pin the tool does not ship still loads; the version set rejects it", 7, 7 },
+        { "a manifest with no schemaVersion is version 0.1.0", null, new SemanticVersion(0, 1, 0) },
+        { "a manifest pinning 0.1.0", "0.1.0", new SemanticVersion(0, 1, 0) },
+        { "a manifest pinning another version", "1.2.3", new SemanticVersion(1, 2, 3) },
+        { "a pin the tool does not ship still loads; the version set rejects it", "7.0.0", new SemanticVersion(7, 0, 0) },
     };
 
-    /// <summary>Gets <c>schemaVersion</c> values that are not an integer of at least 1, as JSON.</summary>
-    public static TheoryData<string> RejectedPins { get; } = new()
+    /// <summary>
+    /// Gets <c>schemaVersion</c> values that are not a <c>major.minor.patch</c> string, as the manifest's JSON writes them,
+    /// and the text the rejection names (<c>0001-F7</c> B-039).
+    /// </summary>
+    public static TheoryData<string, string, string> RejectedPins { get; } = new()
     {
-        "0",
-        "-1",
-        "1.5",
-        "\"1\"",
-        "true",
-        "null",
-        "[1]",
+        { "the integer the retired pin was", "1", "1" },
+        { "a string of one number", "\"1\"", "1" },
+        { "a string of two numbers", "\"0.1\"", "0.1" },
+        { "a string with a prefix", "\"v0.1.0\"", "v0.1.0" },
+        { "a boolean", "true", "true" },
+        { "a null", "null", "null" },
+        { "an array", "[1]", "[1]" },
     };
 
     [Theory]
     [MemberData(nameof(Pins))]
-    public void AManifestsSchemaVersion_WhenLoaded_ShouldBeTheVersionItPins(string because, int? pinned, int expected)
+    public void AManifestsSchemaVersion_WhenLoaded_ShouldBeTheVersionItPins(string because, string? pinned, SemanticVersion expected)
     {
         // Given
         var manifest = DefaultManifest();
-        if (pinned is { } version)
+        if (pinned is not null)
         {
-            manifest["schemaVersion"] = version;
+            manifest["schemaVersion"] = pinned;
         }
 
         // When
@@ -128,7 +136,10 @@ public sealed class SpecManifestUnitTests
 
     [Theory]
     [MemberData(nameof(RejectedPins))]
-    public void AManifestWhoseSchemaVersionIsNotAnIntegerOfAtLeastOne_WhenLoaded_ShouldRejectIt(string pinned)
+    public void AManifestWhoseSchemaVersionIsNotMajorMinorPatch_WhenLoaded_ShouldRejectItNamingTheValue(
+        string because,
+        string pinned,
+        string named)
     {
         // Given
         var fileSystem = Holding($"{{ \"schemaVersion\": {pinned}, {DefaultManifest().ToJsonString()[1..]}");
@@ -137,8 +148,8 @@ public sealed class SpecManifestUnitTests
         var load = () => SpecManifest.Load(fileSystem, Root);
 
         // Then
-        load.Should().Throw<Exception>().Which.Should().Match<Exception>(static thrown =>
-            thrown is SpechtManifestException || thrown is SpechtManifestUnreadableException);
+        load.Should().ThrowExactly<SpechtManifestException>(because)
+            .Which.Message.Should().MatchRegex($@"(?<![\w.]){Regex.Escape(named)}(?!\.?\w)", because);
     }
 
     [Theory]

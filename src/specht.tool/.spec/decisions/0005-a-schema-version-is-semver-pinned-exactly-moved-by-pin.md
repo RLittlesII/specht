@@ -132,6 +132,13 @@ version numbers to read; C-12 keeps them apart.
   § 5 row 8, OQ-3 and OQ-5 and the brief § 6 epics row still say "version 1"
   and "version 2", and `0001-F5` decision 0004 does too; the rows are to be
   amended and the decision annotated with a dated note, not rewritten.
+- Added 2026-10-10 (item `0120`; `0001-F3` § 12, the row for item `0120`):
+  `0001-F3` B-005, unchanged in its text, whose document names the version
+  as `major.minor.patch` (B-002), with `docs/schema/report.schema.json`; the
+  wording of the `@B-030` scenario; `0001-F3` § 10 and OQ-5. What this
+  decision says of the report is that it names `0.1.0`. That the integer
+  member is replaced, and not kept beside a string member, is item `0120`'s
+  and is open (`0001-F3` OQ-5).
 
 ## Reversal
 

@@ -69,7 +69,7 @@ public sealed partial class InitSteps
         Prepare();
         var version = NewestVersion();
         var manifest = JsonNode.Parse(Read(Embedded(Manifest, version)))!.AsObject();
-        manifest["schemaVersion"] = version;
+        manifest["schemaVersion"] = SchemaVersions.Embedded.Versions[^1].Number.ToString();
         (manifest["identifiers"]?["epic"]).Should().NotBeNull("the manifest declares the epic grammar");
         _manifest = System.Text.Encoding.UTF8.GetBytes(manifest.ToJsonString());
         Directory.CreateDirectory(Path.GetDirectoryName(Written(Manifest))!);

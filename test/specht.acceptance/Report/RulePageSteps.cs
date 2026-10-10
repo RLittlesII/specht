@@ -36,7 +36,7 @@ public sealed class RulePageSteps
     [When("each page is read")]
     public void WhenEachPageIsRead() =>
         _pages = _versions
-            .SelectMany(static version => version.RulePages.Select(page => RulePage.Read(version.Number, page.Key, page.Value)))
+            .SelectMany(static version => version.RulePages.Select(page => RulePage.Read(EmbeddedFolder.Of(version), page.Key, page.Value)))
             .ToList();
 
     [Then("every rule in that version's vocabulary has exactly one page")]

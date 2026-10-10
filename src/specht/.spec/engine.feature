@@ -4,11 +4,11 @@ Feature: The engine, extracted unchanged
   So that the same verdict can be given everywhere, and the move itself changes nothing
 
   Background:
-    Given a repository root holding a manifest and the three frontmatter schemas of schema version 1
+    Given a repository root holding a manifest and the three frontmatter schemas of schema version 0.1.0
 
   @B-001
   Scenario: Every rule in the vocabulary is applied, and no other
-    Given the baseline tree the tests build, which breaks each of the twenty-one version 1 rules in each layout the rule applies to
+    Given the baseline tree the tests build, which breaks each of the twenty-one version 0.1.0 rules in each layout the rule applies to
     When the engine runs
     Then a violation is reported under each of the twenty-one rule ids
     And no violation is reported under any other rule id
@@ -37,7 +37,7 @@ Feature: The engine, extracted unchanged
 
   @B-004
   Scenario: The verdicts on the baseline tree match the golden report
-    Given the baseline tree the tests build, which breaks each of the twenty-one version 1 rules in each layout the rule applies to
+    Given the baseline tree the tests build, which breaks each of the twenty-one version 0.1.0 rules in each layout the rule applies to
     And the golden report the engine gave on that tree at the commit the copy landed on main
     When the engine runs on that tree
     Then it reports the same violations as the golden report, with the same rule, severity, file, line, identifier and message

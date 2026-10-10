@@ -26,7 +26,7 @@ public static class SpecManifest
     /// <exception cref="SpechtManifestNotFoundException">There is no file at the manifest path.</exception>
     /// <exception cref="SpechtManifestUnreadableException">The manifest is not well-formed JSON or not the manifest's shape.</exception>
     /// <exception cref="SpechtManifestException">
-    /// The manifest carries a key the engine does not know, a <c>schemaVersion</c> that is not an integer of at least 1, a
+    /// The manifest carries a key the engine does not know, a <c>schemaVersion</c> that is not a <c>major.minor.patch</c> string, a
     /// role naming a title <c>sections</c> does not list, a <c>tables</c> key that is not a role, a marker whose text is empty,
     /// an empty <c>taskFiles</c>, <c>epicFiles</c> or <c>companionFiles</c> list, or an <c>exclusions</c> entry with a
     /// <c>/</c> inside it and no leading <c>/</c>.
@@ -151,19 +151,20 @@ public static class SpecManifest
         return values;
     }
 
-    private static int SchemaVersion(JsonObject manifest)
+    private static SemanticVersion SchemaVersion(JsonObject manifest)
     {
         if (!manifest.TryGetPropertyValue("schemaVersion", out var node))
         {
-            return 1;
+            return new SemanticVersion(0, 1, 0);
         }
 
-        if (node is JsonValue value && value.GetValueKind() == JsonValueKind.Number && value.TryGetValue<int>(out var version) && version >= 1)
+        if (node is JsonValue value && value.TryGetValue<string>(out var text) && SemanticVersion.TryParse(text, out var version))
         {
             return version;
         }
 
-        throw new SpechtManifestException($"{RelativePath}: schemaVersion must be an integer of at least 1.");
+        throw new SpechtManifestException(
+            $"{RelativePath}: schemaVersion {node?.ToJsonString() ?? "null"} is not a major.minor.patch version such as \"0.1.0\".");
     }
 
     private static List<string> Strings(JsonNode node) =>

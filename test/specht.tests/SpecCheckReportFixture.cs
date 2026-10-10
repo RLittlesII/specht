@@ -4,14 +4,14 @@ using specht.Report;
 namespace specht.tests;
 
 /// <summary>
-/// Builds a <see cref="SpecCheckReport"/>: pinned to schema version 1, with the default manifest's two layouts at zero, zero
-/// counts and no violation until a test adds some. The generated default version is 0, which no shipped version carries.
+/// Builds a <see cref="SpecCheckReport"/>: pinned to schema version 0.1.0, with the default manifest's two layouts at zero, zero
+/// counts and no violation until a test adds some. The generated default version is 0.0.0, which no shipped version carries.
 /// </summary>
 [AutoFixture(typeof(SpecCheckReport))]
 internal sealed partial class SpecCheckReportFixture
 {
     public SpecCheckReportFixture() =>
-        WithSchemaVersion(1).WithLayouts(new SpecReportLayout("epics", 0), new SpecReportLayout("features", 0));
+        WithSchemaVersion(new SemanticVersion(0, 1, 0)).WithLayouts(new SpecReportLayout("epics", 0), new SpecReportLayout("features", 0));
 
     /// <summary>Sets each layout and its specification count, in the manifest's order.</summary>
     /// <remarks>The generator names the list's setter <c>WithList</c>, after its type; this names it after the report's.</remarks>
