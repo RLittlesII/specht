@@ -11,9 +11,9 @@ namespace specht.tests;
 public sealed class SpecCheckRunnerIntegrationTests
 {
     [Fact]
-    public void ATreeInBothLayouts_WhenChecked_ShouldAcceptBothAndReportMigrationProgress()
+    public void ATreeInBothLayouts_WhenChecked_ShouldAcceptBothAndCountTheSpecificationsOfEachLayout()
     {
-        // Given - the state this repository is in while the migration runs.
+        // Given
         using var tree = new SpecTree();
         tree.WriteFeature("0001", "F1");
         tree.WriteFeature("0001", "F2");

@@ -54,7 +54,7 @@ public sealed class SpecModelUnitTests
 
     [Theory]
     [MemberData(nameof(IdentityViolationsByLayout))]
-    public void AFeatureUnderFoldersItsIdentityDoesNotName_WhenTheIdentityRuleEvaluatesTheModel_ShouldReportSpec011InTheLegacyLayoutOnly(
+    public void AFeatureUnderFoldersItsIdentityDoesNotName_WhenTheIdentityRuleEvaluatesTheModel_ShouldReportSpec011InTheEpicsLayoutOnly(
         string layout,
         string glob,
         string[] expected)
