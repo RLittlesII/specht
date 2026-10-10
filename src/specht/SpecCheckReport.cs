@@ -22,10 +22,4 @@ public sealed record SpecCheckReport(
 
     /// <summary>How many violations are reported without failing the target.</summary>
     public int WarningCount => Violations.Count(static violation => violation.Severity == SpecSeverity.Warning);
-
-    /// <summary>The migration tally, logged on every run so the number is never a question.</summary>
-    public string MigrationSummary =>
-        $"{SpecificationCount} specification(s) - {LegacyCount} legacy (epics/**/spec.md), "
-            + $"{CoLocatedCount} co-located (**/.spec/README.md). "
-            + $"Migration {(SpecificationCount == 0 ? 0 : CoLocatedCount * 100 / SpecificationCount)}% complete.";
 }
