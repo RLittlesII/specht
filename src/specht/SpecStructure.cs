@@ -13,4 +13,10 @@ public sealed record SpecStructure(
 {
     /// <summary>The frontmatter schema file names under <c>.spec/schema/</c>, keyed by kind (B-008, decision 0003).</summary>
     public IReadOnlyDictionary<string, string> FrontmatterSchemas { get; init; } = new Dictionary<string, string>(StringComparer.Ordinal);
+
+    /// <summary>The section title each role names, keyed by role (B-001, decision 0006).</summary>
+    public IReadOnlyDictionary<string, string> Roles { get; init; } = new Dictionary<string, string>(StringComparer.Ordinal);
+
+    /// <summary>The text each marker is written as, keyed by marker (B-003, decision 0006).</summary>
+    public IReadOnlyDictionary<string, string> Markers { get; init; } = new Dictionary<string, string>(StringComparer.Ordinal);
 }

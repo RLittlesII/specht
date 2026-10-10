@@ -126,6 +126,33 @@ public sealed class CheckCommandIntegrationTests
                 3
             },
             {
+                "a manifest whose claims role names a title its sections lack (0001-F5 B-015, B-022, B-023)",
+                static tree =>
+                {
+                    tree.WriteRaw(SpecManifest.RelativePath, "{ \"roles\": { \"claims\": \"3. Nowhere\" } }");
+                    return tree.Root;
+                },
+                3
+            },
+            {
+                "a manifest whose table headers are keyed by a section title (0001-F5 B-039, B-022, B-023)",
+                static tree =>
+                {
+                    tree.WriteRaw(SpecManifest.RelativePath, "{ \"tables\": { \"9. Traceability Matrix\": [\"Claim ID\", \"Test\"] } }");
+                    return tree.Root;
+                },
+                3
+            },
+            {
+                "a manifest whose missing marker is empty (0001-F5 B-040, B-022, B-023)",
+                static tree =>
+                {
+                    tree.WriteRaw(SpecManifest.RelativePath, "{ \"markers\": { \"missing\": \"\" } }");
+                    return tree.Root;
+                },
+                3
+            },
+            {
                 "a manifest pinning a schema version the tool does not ship (0001-F7 B-003)",
                 static tree =>
                 {
