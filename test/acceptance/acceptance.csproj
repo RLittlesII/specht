@@ -43,6 +43,7 @@
     <!-- The engine's built library and the references that would let the machine reach a verdict (B-005, B-006). -->
     <!-- The reader the rule page tests and steps share (0001-F3 B-032, B-033). -->
     <!-- The folder integer an embedded schema version was read from, which the rule page steps hand that reader. -->
+    <!-- The engine as AddSpechtEngine() registers it (item 0107), which the fixture's run and the steps resolve the runner and the model loader from. -->
     <Compile Include="..\tests\Engine\Baseline\BaselineTree.cs">
       <Link>Engine\BaselineTree.cs</Link>
     </Compile>
@@ -54,6 +55,9 @@
     </Compile>
     <Compile Include="..\tests\Shared\EngineAssembly.cs">
       <Link>Engine\EngineAssembly.cs</Link>
+    </Compile>
+    <Compile Include="..\tests\Shared\EngineServices.cs">
+      <Link>Engine\EngineServices.cs</Link>
     </Compile>
     <Compile Include="..\tests\Rules\RulePage.cs">
       <Link>Rules\RulePage.cs</Link>

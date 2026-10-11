@@ -1,3 +1,4 @@
+using System.IO.Abstractions;
 using System.Text.RegularExpressions;
 
 namespace Specht.Rules;
@@ -8,13 +9,14 @@ namespace Specht.Rules;
 /// repository's feature files contains three <c>@B-0nn</c> tokens that are
 /// prose, not tags. Treating them as tags reports three phantom orphans.
 /// </remarks>
-public static class FeatureFileReader
+/// <param name="fileSystem">The file system the feature files are read from.</param>
+public sealed class FeatureFileReader(IFileSystem fileSystem)
 {
     /// <summary>Reads every claim tag in the file at <paramref name="absolutePath"/>.</summary>
-    public static IReadOnlyList<FeatureTag> ReadTags(string absolutePath)
+    public IReadOnlyList<FeatureTag> ReadTags(string absolutePath)
     {
         var tags = new List<FeatureTag>();
-        var lines = File.ReadAllLines(absolutePath);
+        var lines = fileSystem.File.ReadAllLines(absolutePath);
 
         for (var index = 0; index < lines.Length; index++)
         {

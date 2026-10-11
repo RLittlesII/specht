@@ -1,14 +1,14 @@
 using AwesomeAssertions;
-using Specht.Discovery;
+using Specht.Model;
 
-namespace Specht.Tests.Discovery;
+namespace Specht.Tests.Model;
 
 /// <summary>
-/// The root-relative path mapping every engine path passes through (<c>0001-F3</c> B-021): relative to the root, with
-/// <c>/</c> separators.
+/// The root-relative path mapping every engine path passes through (<c>0001-F3</c> B-021; ADR-0005 (a), item 0107):
+/// relative to the root, with <c>/</c> separators, in a type of its own that no stage owns.
 /// </summary>
 [Trait("Tier", "Unit")]
-public sealed class SpecDiscoveryUnitTests
+public sealed class SpecPathUnitTests
 {
     /// <summary>Gets paths under a root, as segments, and the root-relative path each maps to.</summary>
     public static TheoryData<string[], string> Paths =>
@@ -28,7 +28,7 @@ public sealed class SpecDiscoveryUnitTests
         var path = Path.Combine([root, .. segments]);
 
         // When
-        var relative = SpecDiscovery.Relative(root, path);
+        var relative = SpecPath.Relative(root, path);
 
         // Then
         relative.Should().Be(expected);

@@ -2,7 +2,7 @@ id: "0107"
 type: task
 title: Resolve the engine from the container through AddSpechtEngine
 
-status: ready-for-implementation
+status: done
 
 value: 3
 risk: 4
@@ -20,8 +20,8 @@ claims:
   - B-010
 
 created: "2026-10-08"
-updated: "2026-10-10"
-closed: null
+updated: "2026-10-11"
+closed: "2026-10-11"
 
 summary: |
   ADR-0001 (accepted 2026-10-08), stage D; the host half is ADR-0003's.
@@ -37,27 +37,25 @@ summary: |
   B-010). No verdict changes (C-9).
 
   Depends on 0106 for the rule list it registers and on 0099 for how tests
-  compose the host. Also waits on the C-7 amendment on branch
-  spec/adr-0001-owed-edits, which must merge first: the new package is a
-  fifth engine dependency against C-7, and that amendment has no item id
-  to put in depends_on. Discovery's interface and git-listing seam
+  compose the host. The C-7 amendment this waited on is on main (§ 4 C-7,
+  § 10 2026-10-08): the new package is the fifth engine dependency C-7
+  names. Discovery's interface and git-listing seam
   (ADR-0001 stage E) are not here: they land inside 0007 and 0008, which
   wait on this, as does 0016.
 
   ADR-0005 (a) adds two pieces stage D did not name. The manifest stage
-  becomes a sealed instance class, SpecSchemasLoader (placeholder name),
-  around SpecSchemas.Load(IFileSystem, root). The pure root-relative path
+  becomes a sealed instance class, SpecSchemasLoader, around
+  SpecSchemas.Load(IFileSystem, root). The pure root-relative path
   mapping, SpecDiscovery.Relative, which FeatureFileRule calls from inside
-  a rule (FeatureFileRule.cs:39), moves to a static type of its own, so no
-  rule reaches into the discovery stage. The model loader, SpecModelLoader
-  (placeholder name), is sealed and concrete. SpechtRunner keeps its
-  name.
+  a rule (FeatureFileRule.cs:39), moves to a static type of its own,
+  SpecPath, so no rule reaches into the discovery stage. The model loader,
+  SpecModelLoader, is sealed and concrete. SpechtRunner keeps its name.
 
 acceptance_criteria:
   - "B-004 — the golden-report test green, field for field, in order"
   - "B-010 — § 9 row re-pointed at the re-tiered Integration class"
   - "C-9 — no verdict changes; 0012 green"
-  - "C-7 — amended (spec/adr-0001-owed-edits) before this merges"
+  - "C-7 — holds as amended on main: the abstractions package is its fifth dependency, and no sixth"
   - "ADR-0001 stage D proof — MockFileSystem unit tests per remaining reader and for the loader"
   - "ADR-0005 (a) — the manifest loader class, named; the path mapping in its own type, named, and no rule calls SpecDiscovery; the model loader named"
   - "0001-F5 B-001 unit test — once the tag reader takes an injected file
@@ -81,6 +79,41 @@ decisions:
     (review 5471216465): scope shrinks by FrontmatterReader, delivered by
     0104 as a sealed instance class over IFileSystem. AddSpechtEngine()
     registers it with the rest; no edge changes.
+  - |
+    2026-10-11, spec-author on taking the item: the C-7 amendment is on
+    main (§ 4 C-7 and the § 10 entry dated 2026-10-08), and no branch
+    spec/adr-0001-owed-edits exists locally or on the remote. The summary
+    and the C-7 criterion no longer wait on it.
+  - |
+    2026-10-11, spec-author on the owner's approval of the plan for this
+    item:
+    0107 lands before 0144. Program.cs calls AddSpechtEngine() once;
+    ADR-0007 moves that call into the factory when 0144 lands.
+    CheckCommand keeps Func<string, SpechtReport>, registered from the
+    resolved SpechtRunner.
+    AddSpechtEngine() registers IFileSystem with TryAddSingleton, so a
+    caller's registration wins.
+    SchemaVersions stays a Run argument (ADR-0003: run data as arguments).
+    Evaluate(model, rules) and Order stay static; the instance Run passes
+    the injected rule set, the proposal ADR-0008 and § 7 leave to this
+    item.
+    SpecRules.All is removed; AddSpechtEngine()'s registrations are the
+    hand-written rule list.
+    Names: SpecSchemasLoader and SpecModelLoader, in Model/; the path
+    mapping is SpecPath.Relative, in Model/; the extension is in
+    src/specht/Composition/.
+  - |
+    2026-10-11, spec-author on delivery:
+    SpecSchemasLoader.Load(root) is the load over the embedded version
+    set, what SpecModel.Load(root) did.
+    IsItemFileName and ExcludedDirectories no longer existed on
+    SpecDiscovery when the item was taken, so nothing was kept static
+    there.
+    The 0001-F5 B-001 unit test is FeatureFileRuleUnitTests, and Manifest
+    § 9's B-001 row is Covered.
+    Owed, recorded in § 8 and not delivered here: a unit test per rule
+    over SpecModelFixture, which is item 0152. The unit test of 0001-F5
+    B-018's ordering was delivered here.
 
 out_of_scope:
   - "ISpecDiscovery and the git-listing seam — ADR-0001 stage E, inside 0007 and 0008."

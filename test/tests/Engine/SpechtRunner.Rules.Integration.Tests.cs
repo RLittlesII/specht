@@ -1,32 +1,16 @@
 using AwesomeAssertions;
 using Specht.Report;
-using Specht.Rules;
 using Specht.Tests.Shared;
 
 namespace Specht.Tests.Engine;
 
 /// <summary>
-/// Exercises each day-one rule family against a synthetic tree - a positive
+/// Exercises each day-one rule family against a synthetic tree on disk - a positive
 /// case that must stay green, and a negative case that must actually fire.
 /// </summary>
-[Trait("Tier", "Unit")]
-public sealed class SpechtRunnerUnitTests
+[Trait("Tier", "Integration")]
+public sealed class SpechtRunnerRulesIntegrationTests
 {
-    [Fact]
-    public void EveryRuleInTheEngine_WhenItsReportedIdsAreRead_ShouldNameExactlyTheTwentyOneVersion1RuleIds()
-    {
-        // Given
-        var rules = SpecRules.All;
-
-        // When
-        var ids = rules.SelectMany(static rule => rule.ReportedIds).ToList();
-
-        // Then
-        ids.Should().BeEquivalentTo(
-            "SPEC001", "SPEC002", "SPEC003", "SPEC004", "SPEC010", "SPEC011", "SPEC012", "SPEC013", "SPEC020", "SPEC021", "SPEC030",
-            "SPEC031", "SPEC040", "SPEC041", "SPEC043", "SPEC044", "SPEC050", "SPEC051", "SPEC052", "SPEC060", "SPEC061");
-    }
-
     [Fact]
     public void ATreeWithOneValidSpecification_WhenChecked_ShouldReportNoViolations()
     {
