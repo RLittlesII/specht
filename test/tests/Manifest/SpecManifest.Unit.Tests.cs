@@ -8,9 +8,10 @@ using Specht.Versioning;
 namespace Specht.Tests.Manifest;
 
 /// <summary>
-/// The manifest loader over an in-memory file system (0001-F5 B-001, B-002, B-003, B-008, B-012, B-015, B-019, B-020, B-021,
-/// B-039, B-040, B-041, B-043; 0001-F2 B-005, B-006, B-007; 0001-F7 B-002, B-039): what it rejects and as which failure, what it
-/// ignores, the schema version it reads, and what it fills from the default manifest.
+/// The manifest loader over an in-memory file system (0001-F5 B-001, B-002, B-003, B-008, B-012, B-015, B-017, B-019, B-020,
+/// B-021, B-039, B-040, B-041, B-043, B-044, B-045; 0001-F2 B-005, B-006, B-007; 0001-F7 B-002, B-039): what it rejects and as
+/// which failure, what it ignores, the schema version it reads, what it fills from the default manifest, and that it fills no
+/// rule setting.
 /// </summary>
 [Trait("Tier", "Unit")]
 public sealed class SpecManifestUnitTests
@@ -608,6 +609,73 @@ public sealed class SpecManifestUnitTests
         var message = load.Should().ThrowExactly<SpechtManifestException>().Which.Message;
         var positions = faults.Select(fault => message.IndexOf($"'{fault}'", StringComparison.Ordinal)).ToList();
         positions.Should().NotContain(-1, message).And.BeInAscendingOrder(message);
+    }
+
+    [Theory]
+    [InlineData("error")]
+    [InlineData("warning")]
+    [InlineData("off")]
+    public void AManifestSettingARuleIdToOneOfTheThreeLevels_WhenLoaded_ShouldAcceptIt(string level)
+    {
+        // Given
+        var manifest = DefaultManifest();
+        manifest["rules"] = new JsonObject { ["SPEC010"] = level };
+        var fileSystem = Holding(manifest);
+
+        // When
+        var load = () => SpecManifest.Load(fileSystem, Root);
+
+        // Then
+        load.Should().NotThrow();
+    }
+
+    [Theory]
+    [InlineData("loud")]
+    [InlineData("Warning")]
+    [InlineData("")]
+    public void AManifestSettingARuleIdToAValueOutsideTheThreeLevels_WhenLoaded_ShouldRejectItNamingTheRuleIdAndTheValue(string value)
+    {
+        // Given
+        var manifest = DefaultManifest();
+        manifest["rules"] = new JsonObject { ["SPEC031"] = "off", ["SPEC010"] = value };
+        var fileSystem = Holding(manifest);
+
+        // When
+        var load = () => SpecManifest.Load(fileSystem, Root);
+
+        // Then
+        load.Should().ThrowExactly<SpechtManifestException>().Which.Message.Should().Contain("'SPEC010'").And.Contain($"'{value}'");
+    }
+
+    [Fact]
+    public void AManifestDeclaringARuleByATypeNameAndALibraryFile_WhenLoaded_ShouldRejectItNamingTheRuleId()
+    {
+        // Given
+        var manifest = DefaultManifest();
+        manifest["rules"] = new JsonObject
+        {
+            ["SPEC010"] = new JsonObject { ["type"] = "Consumer.Rules.MarkingRule", ["library"] = "rules/consumer-rules.dll" },
+        };
+        var fileSystem = Holding(manifest);
+
+        // When
+        var load = () => SpecManifest.Load(fileSystem, Root);
+
+        // Then
+        load.Should().ThrowExactly<SpechtManifestException>().Which.Message.Should().Contain("'SPEC010'");
+    }
+
+    [Fact]
+    public void AManifestLeavingOutItsRuleSettings_WhenLoaded_ShouldReadNoRuleSetting()
+    {
+        // Given
+        var fileSystem = Holding(DefaultManifest());
+
+        // When
+        var structure = SpecManifest.Load(fileSystem, Root);
+
+        // Then
+        structure.Rules.Should().BeEmpty();
     }
 
     private static MockFileSystem Holding(JsonObject manifest) => Holding(manifest.ToJsonString());

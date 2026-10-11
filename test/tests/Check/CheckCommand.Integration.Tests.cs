@@ -188,6 +188,24 @@ public sealed class CheckCommandIntegrationTests
                 3
             },
             {
+                "a manifest setting a rule id outside the pinned vocabulary (0001-F5 B-013, B-022, B-023)",
+                static tree =>
+                {
+                    tree.WriteRaw(SpecManifest.RelativePath, "{ \"rules\": { \"SPEC999\": \"warning\" } }");
+                    return tree.Root;
+                },
+                3
+            },
+            {
+                "a manifest setting a rule id to a level outside the three (0001-F5 B-045, B-022, B-023)",
+                static tree =>
+                {
+                    tree.WriteRaw(SpecManifest.RelativePath, "{ \"rules\": { \"SPEC010\": \"loud\" } }");
+                    return tree.Root;
+                },
+                3
+            },
+            {
                 "a manifest whose layout declares a path identity that is not a segment position (0001-F5 B-043, B-022, B-023)",
                 static tree =>
                 {

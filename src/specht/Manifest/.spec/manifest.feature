@@ -95,7 +95,7 @@ Feature: The manifest carries the roles
   Scenario: A rule's severity is lowered from the manifest
     Given the manifest sets the out-of-order-section rule to warning severity
     And the root holds a specification with its sections out of order
-    When the check runs
+    When the tool runs as a command on the root
     Then the violation is reported at warning severity
     And the exit code is 0
 
@@ -148,7 +148,9 @@ Feature: The manifest carries the roles
     And that library file exists under the root
     And the library's rule leaves a mark under the root when it runs
     When the check runs
-    Then the mark does not exist
+    Then the manifest is rejected
+    And the rejection names that rule id
+    And the mark does not exist
 
   @B-018 @boundary
   Scenario: An invalid manifest stops the run before any rule
@@ -389,3 +391,34 @@ Feature: The manifest carries the roles
     When the check runs
     Then the manifest is rejected
     And the rejection names the epics layout and "team"
+
+  @B-045
+  Scenario: A rule level outside the three is invalid
+    Given the manifest sets the out-of-order-section rule to "loud"
+    When the check runs
+    Then the manifest is rejected
+    And the rejection names that rule id
+    And the rejection names "loud"
+
+  @B-045 @boundary
+  Scenario: A rule set to error severity is not rejected
+    Given the manifest sets the out-of-order-section rule to error severity
+    And the root holds a specification with no violations
+    When the check runs
+    Then the manifest is accepted
+
+  @B-046
+  Scenario: A rule's severity is raised from the manifest
+    Given a rule that reports its violations at warning severity
+    And the manifest sets that rule to error severity
+    And the root holds a specification that rule reports
+    When the check runs with that rule
+    Then that rule's violation is reported at error severity
+
+  @B-044
+  Scenario: A rule the manifest sets no level for keeps its own severity
+    Given the manifest sets no level for the out-of-order-section rule
+    And the root holds a specification with its sections out of order
+    When the tool runs as a command on the root
+    Then the violation is reported at error severity
+    And the exit code is 1
