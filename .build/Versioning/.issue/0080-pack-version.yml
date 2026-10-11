@@ -4,15 +4,12 @@ title: Pack the computed version into the package
 
 status: done
 
-priority: high
 risk: 1
-rank: 82
 
 parent: "0078"
 children: []
 
 depends_on: ["0079"] # packs 0079's version
-blocks: ["0083"]
 spikes: []
 
 spec: .build/Versioning/.spec/README.md

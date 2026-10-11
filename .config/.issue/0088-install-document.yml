@@ -4,15 +4,12 @@ title: Write the install section of README.md
 
 status: ready-for-architecture
 
-priority: high # DERIVED
 risk: 1
-rank: 77 # DERIVED
 
 parent: "0086"
 children: []
 
 depends_on: ["0084"] # documents the package 0084 publishes
-blocks: []
 spikes: []
 
 spec: .config/.spec/README.md

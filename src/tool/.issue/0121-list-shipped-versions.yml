@@ -4,15 +4,12 @@ title: List the shipped schema versions
 
 status: blocked
 
-priority: high
 risk: 1
-rank: 77
 
 parent: "0041"
 children: []
 
 depends_on: ["0120"] # lists the semver version set 0120 produces
-blocks: []
 spikes: []
 
 spec: src/tool/.spec/README.md

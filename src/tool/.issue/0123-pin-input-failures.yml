@@ -4,15 +4,12 @@ title: Fail pin on a missing root, missing manifest or invalid manifest
 
 status: ready-for-architecture
 
-priority: high
 risk: 2
-rank: 74
 
 parent: "0041"
 children: []
 
 depends_on: ["0122"] # guards 0122's command
-blocks: []
 spikes: []
 
 spec: src/tool/.spec/README.md

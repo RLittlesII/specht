@@ -4,15 +4,12 @@ title: Generate the release workflow with its gates, dry run and tag check
 
 status: done
 
-priority: high
 risk: 3
-rank: 61
 
 parent: "0082"
 children: []
 
 depends_on: ["0064", "0080"] # generated beside 0064's workflow; publishes the package 0080 versions
-blocks: ["0084", "0085"]
 spikes: []
 
 spec: .build/Releasing/.spec/README.md

@@ -4,15 +4,12 @@ title: Name the check's options in --help
 
 status: done
 
-priority: high
 risk: 1
-rank: 97
 
 parent: "0025"
 children: []
 
 depends_on: ["0026"] # documents the options 0026 defines
-blocks: []
 spikes: []
 
 spec: src/tool/Features/Check/.spec/README.md

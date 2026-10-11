@@ -4,16 +4,13 @@ title: Repository settings checklist
 
 status: ready-for-architecture
 
-priority: high
 value: 4
 risk: 1
-rank: 77
 
 parent: "0055"
 children: ["0090", "0091"]
 
 depends_on: []
-blocks: []
 spikes: []
 
 spec: .github/settings/.spec/README.md

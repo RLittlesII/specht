@@ -4,16 +4,13 @@ title: Replace reflection rule discovery with a hand-written rule list
 
 status: done
 
-priority: medium # DERIVED
 value: 3
 risk: 2
-rank: 59 # DERIVED
 
 parent: "0020"
 children: []
 
-depends_on: ["0105"] # the list is what 0105's Evaluate(SpecModel, IEnumerable<ISpecRule>) is handed (ADR-0008)
-blocks: ["0107"] # DERIVED
+depends_on: ["0105"] # the list is what 0105's Evaluate(SpecModel) iterates
 spikes: []
 
 spec: src/specht/.spec/README.md

@@ -4,15 +4,12 @@ title: Read the feed from the Renovate run with the workflow's token
 
 status: ready-for-architecture
 
-priority: high
 risk: 2
-rank: 74
 
 parent: "0072"
 children: []
 
 depends_on: ["0073", "0087"] # a step in 0073's workflow; reads the package 0087 names
-blocks: []
 spikes: []
 
 spec: .github/.spec/README.md

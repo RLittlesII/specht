@@ -4,15 +4,12 @@ title: Publish the first release to GitHub Packages with a GitHub Release
 
 status: ready-for-architecture
 
-priority: medium
 risk: 4
-rank: 58
 
 parent: "0082"
 children: []
 
 depends_on: ["0083", "0010", "0004"] # the push step of 0083's workflow; C-2: the first tag waits on 0001-F5; C-2: the first tag waits on 0001-F6
-blocks: ["0087", "0088"]
 spikes: []
 
 spec: .build/Releasing/.spec/README.md

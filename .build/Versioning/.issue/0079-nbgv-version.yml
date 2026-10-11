@@ -4,15 +4,12 @@ title: Compute the version with Nerdbank.GitVersioning from version.json
 
 status: done
 
-priority: high
 risk: 3
-rank: 81
 
 parent: "0078"
 children: []
 
 depends_on: ["0057"] # read by 0057's build; nbgv in its tool manifest
-blocks: ["0080", "0081"]
 spikes: []
 
 spec: .build/Versioning/.spec/README.md

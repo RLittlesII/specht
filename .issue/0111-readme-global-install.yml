@@ -4,16 +4,13 @@ title: Say in README.md how the schema stays per repository under a global insta
 
 status: done
 
-priority: low # DERIVED
 value: 1
 risk: 1
-rank: 17 # DERIVED
 
 parent: null
 children: []
 
 depends_on: []
-blocks: [] # DERIVED
 spikes: []
 
 spec: null

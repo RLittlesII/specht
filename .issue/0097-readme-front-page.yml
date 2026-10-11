@@ -4,16 +4,13 @@ title: Move the seed brief to .spec/brief.md and rewrite README.md as the front 
 
 status: done
 
-priority: low # DERIVED
 value: 1
 risk: 1
-rank: 17 # DERIVED
 
 parent: null
 children: []
 
 depends_on: []
-blocks: [] # DERIVED
 spikes: []
 
 spec: null

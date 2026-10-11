@@ -4,15 +4,12 @@ title: Write the eight files into a bare root
 
 status: done
 
-priority: high
 risk: 3
-rank: 96
 
 parent: "0050"
 children: []
 
 depends_on: ["0051", "0026"] # writes 0051's copies; a sibling of 0026's command
-blocks: ["0049", "0053", "0054", "0095", "0096"]
 spikes: []
 
 spec: src/tool/Features/Init/.spec/README.md

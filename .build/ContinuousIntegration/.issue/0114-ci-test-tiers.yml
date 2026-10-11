@@ -4,15 +4,12 @@ title: Run each test tier as its own CI step
 
 status: done
 
-priority: high
 risk: 3
-rank: 91
 
 parent: "0063"
 children: []
 
 depends_on: ["0058"] # calls 0058's UnitTest, IntegrationTest and AcceptanceTest targets
-blocks: []
 spikes: []
 
 spec: .build/ContinuousIntegration/.spec/README.md

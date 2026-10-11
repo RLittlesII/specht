@@ -4,16 +4,13 @@ title: Resolve the engine from the container through AddSpechtEngine
 
 status: ready-for-implementation
 
-priority: high # DERIVED
 value: 3
 risk: 4
-rank: 68 # DERIVED
 
 parent: "0020"
 children: []
 
 depends_on: ["0106", "0099"] # registers 0106's rule list; host composition follows 0099's harness decision
-blocks: ["0007", "0008", "0016", "0134"] # DERIVED
 spikes: []
 
 spec: src/specht/.spec/README.md

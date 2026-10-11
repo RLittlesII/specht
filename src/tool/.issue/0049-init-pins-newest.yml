@@ -4,15 +4,12 @@ title: Write the newest schemaVersion from init
 
 status: ready-for-architecture
 
-priority: high
 risk: 1
-rank: 82
 
 parent: "0041"
 children: []
 
 depends_on: ["0042", "0052", "0120"] # the newest version 0042 embeds, in the manifest 0052 writes, as the semver 0120 makes it
-blocks: ["0081"]
 spikes: []
 
 spec: src/tool/.spec/README.md

@@ -35,6 +35,10 @@
 # write it back in the same commit. Claim the id AFTER rebasing: it is taken
 # the moment someone else merges it - and an open pull request holds ids too,
 # so take the number above the highest any of them claims.
+#
+# .issue/.goal beside it holds the PRODUCT GOAL: one item id per line, the
+# items that are the product's finish line. Every open item on their
+# dependency path is priority `high` - see the derivation below.
 
 id: "0003" # string, so leading zeros survive. Never reused.
 type: feature # epic | feature | task | test | bug | spike | refactor
@@ -50,25 +54,39 @@ title: Read specification layouts from the manifest
 # edit.
 status: ready
 
-# `value` and `risk` are AUTHORED; `priority` and `rank` are DERIVED from them
-# and recomputed, never hand-edited. The derivation:
+# `value` and `risk` are AUTHORED. NOTHING DERIVED IS STORED: an item carries no
+# `priority`, `rank` or `blocks` field. The queue script computes rank and
+# priority on every run, from `value`, `risk`, `depends_on`, `parent` and
+# `status` alone, so neither goes stale and neither is ever set by hand. What
+# an item gates - the open items whose `depends_on` names it - is printed by
+# the same script, not kept here.
 #
-#   rank = (value × 20) − (risk × 3) + (unblocks × 5)
+# Rank orders work by what gets the product, then a Feature, to done soonest:
+# value per remaining work. `risk` stands in for effort; there is no size field.
 #
-#   priority = high   when rank is 60 or above
-#              medium when rank is 40 to 59
-#              low    when rank is below 40
+#   cost    of an open item = its `risk`. Open is any status but done.
+#   closure of a Feature    = its open children, plus every open item they
+#                             wait on, through any number of `depends_on`
+#                             edges, in ANY Feature. A `depends_on` naming an
+#                             open Feature counts that Feature's open children.
+#   score   of a Feature    = value × 100 ÷ the summed cost of its closure,
+#                             rounded.
+#   rank    of an item      = the best score of any Feature whose closure
+#                             holds it. So a blocker carries the rank of what
+#                             it gates, and a Feature's rank climbs as its
+#                             closure shrinks.
 #
-# `unblocks` is the count of items whose `depends_on` names this one — the same
-# ids `blocks` lists below — counted across EVERY Feature. So cutting an item
-# in one Feature that waits on an item in another moves that item's rank with
-# no change to its value or risk. Recompute rather than read, and recompute the
-# dependents too when a `depends_on` edge is added. The formula lives here
-# only: an item carries the number and `# DERIVED`, never the arithmetic.
-priority: high # DERIVED — see above
-value: 4 # 1-5. Optional on a child: omit to inherit the parent's
-risk: 3 # 1-5. REQUIRED, and never inherited
-rank: 71 # DERIVED — see above. Orders items inside one priority bucket
+#   priority = high   when the item is in the closure of the product goal,
+#                     the ids in .issue/.goal
+#              medium when it is in some Feature's closure
+#              low    when no Feature needs it. Its rank is its own value × 100
+#                     ÷ the cost of itself and what it waits on.
+#
+# The queue orders by priority, then rank, then how many open items wait on
+# the item, then id. The definition lives here only, and the script is its one
+# implementation.
+value: 4 # 1-5. AUTHORED. Optional on a child: omit to inherit the parent's
+risk: 3 # 1-5. AUTHORED and REQUIRED, never inherited. The cost rank divides by
 
 parent: "0001" # id of the epic or feature this hangs under
 children: [] # ids carved out of this item, so its own scope shrank
@@ -77,7 +95,6 @@ children: [] # ids carved out of this item, so its own scope shrank
 # land. Not "touches similar code" — that is no relation at all. Say why in
 # the summary.
 depends_on: []
-blocks: [] # DERIVED: the inverse of other items' depends_on
 spikes: [] # ids of investigations this waits on
 
 # REQUIRED for type: feature — the spec this item was cut from. null for a

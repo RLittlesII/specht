@@ -4,16 +4,13 @@ title: Write the sliced layout into the conventions
 
 status: done
 
-priority: low # DERIVED
 value: 2
 risk: 1
-rank: 37 # DERIVED
 
 parent: null
 children: []
 
 depends_on: []
-blocks: [] # DERIVED
 spikes: []
 
 spec: null

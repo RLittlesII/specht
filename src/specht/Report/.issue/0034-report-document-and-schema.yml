@@ -4,15 +4,12 @@ title: Define the report document and publish its schema
 
 status: done
 
-priority: high
 risk: 3
-rank: 106
 
 parent: "0033"
 children: []
 
 depends_on: ["0021"] # the document is built from the copied engine's report
-blocks: ["0028", "0035", "0036", "0037", "0038", "0039", "0042"]
 spikes: []
 
 spec: src/specht/Report/.spec/README.md
