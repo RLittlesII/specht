@@ -1,0 +1,55 @@
+id: "0141"
+type: spike
+title: Weigh reading rule settings from .editorconfig
+
+status: ready
+
+priority: low # DERIVED
+value: 2
+risk: 2
+rank: 34 # DERIVED
+
+parent: null
+children: []
+
+depends_on: ["0014"] # a second source for the settings 0014 builds: nothing to compare against until 0014 lands
+blocks: [] # DERIVED
+spikes: []
+
+spec: null
+
+claims: []
+
+created: "2026-10-10"
+updated: "2026-10-10"
+closed: null
+
+summary: |
+  2026-10-10, the repository owner, on item 0014's per-rule severity and
+  disable: "if this could also be done from .editorconfig can we draft a
+  spike to look at that option in the future".
+
+  The same day the owner chose 0014's key: one top-level manifest key,
+  `rules`, mapping each rule id to `error`, `warning` or `off`. Item 0014
+  records that in `0001-F5` as a decision record; it is not merged, so no
+  number is cited here.
+
+  This spike investigates and recommends. It builds nothing, and waits on
+  0014 so that the manifest key exists to be compared against.
+
+acceptance_criteria:
+  - "A decision record or an ADR - blast radius picks which - answers the seven questions below and recommends one of: adopt, adopt in part, reject. If it adopts, it names the specification deltas owed."
+  - "1. Key form: whether `dotnet_diagnostic.SPEC010.severity = warning | none | error`, the convention the tool's MSBuild-shaped diagnostics already suggest, is the form, or another."
+  - "2. One file or two: `0001-F5` C-6 and AGENTS.md § Configuration (\"A consumer configures the tool with one file\"). Whether `.editorconfig` is a second source beside the manifest or replaces the `rules` key, and which wins when both set an id."
+  - "3. Per-path severity: a section glob (`[src/**/.spec/README.md]`) gives it and the manifest key does not. In or out, weighed against `0001-F5` C-7."
+  - "4. Lookup: `.editorconfig` is read from parent directories until `root = true`, which can reach above the root the tool was given. How that sits with `0001-F1` B-006 and with AGENTS.md § Invariants (\"The same tree gives the same report\")."
+  - "5. Unknown rule ids: `.editorconfig` readers ignore a key they do not know; `0001-F5` B-013 rejects an id outside the pinned vocabulary, and `0001-F5` C-5 validates before any rule runs."
+  - "6. Schema version: the effect under `0001-F7` C-11, and what `init` and `upgrade` write or leave alone."
+  - "7. The parser: a package dependency or a hand-written reader, and what each costs."
+
+decisions: []
+
+out_of_scope:
+  - "Building any of it - a follow-up item, cut from the specification delta the recommendation names."
+  - "Changing 0014's `rules` key, or B-010, B-011 and B-013 as 0014 delivers them - 0014 and `0001-F5` own those."
+  - "Any `.editorconfig` setting other than a rule's severity or its disabling."
