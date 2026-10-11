@@ -32,7 +32,7 @@ public sealed class EngineSteps
     public void GivenARepositoryRootHoldingAManifestAndTheThreeFrontmatterSchemasOfSchemaVersion(string version)
     {
         _tree = new SpecTree();
-        SpecModel.Load(_tree.Root).Schemas.Version.Number.ToString().Should().Be(version);
+        ((SpecModel)SpecModel.Load(_tree.Root)).Schemas.Version.Number.ToString().Should().Be(version);
     }
 
     [Given("the baseline tree the tests build, which breaks each of the twenty-one version 0.1.0 rules in each layout the rule applies to")]
@@ -95,7 +95,7 @@ public sealed class EngineSteps
 
     [Then("the specification is read as {string}")]
     public void ThenTheSpecificationIsReadAs(string identity) =>
-        SpecModel.Load(Tree.Root).Features.Should().ContainSingle().Which.Identity.Should().Be(identity);
+        ((SpecModel)SpecModel.Load(Tree.Root)).Features.Should().ContainSingle().Which.Identity.Should().Be(identity);
 
     [Then("no identity violation is reported")]
     public void ThenNoIdentityViolationIsReported() =>

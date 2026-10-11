@@ -1,4 +1,5 @@
 using System.IO.Abstractions;
+using LanguageExt;
 using Specht.Discovery;
 using Specht.Manifest;
 using Specht.Versioning;
@@ -39,26 +40,26 @@ public sealed class SpecModel
     public SpecSchemas Schemas { get; }
 
     /// <summary>Loads the model rooted at <paramref name="root"/> with the embedded version set.</summary>
-    /// <exception cref="SpechtRootNotFoundException"><paramref name="root"/> is not a directory; nothing in the tree is read.</exception>
-    /// <exception cref="SpechtManifestNotFoundException">There is no manifest; nothing in the tree is read.</exception>
-    /// <exception cref="SpechtManifestUnreadableException">The manifest does not parse; nothing in the tree is read.</exception>
-    /// <exception cref="SpechtManifestException">The manifest is rejected; nothing in the tree is read.</exception>
-    public static SpecModel Load(string root) => Load(root, SchemaVersions.Embedded);
+    /// <returns>The model, or the manifest's failure; on a failure nothing in the tree is read.</returns>
+    public static Either<SpechtFailure, SpecModel> Load(string root) => Load(root, SchemaVersions.Embedded);
 
     /// <summary>
     /// Loads the model rooted at <paramref name="root"/>, the manifest and the pinned version's schemas from
     /// <paramref name="versions"/> before the tree.
     /// </summary>
-    /// <exception cref="SpechtRootNotFoundException"><paramref name="root"/> is not a directory; nothing in the tree is read.</exception>
-    /// <exception cref="SpechtManifestNotFoundException">There is no manifest; nothing in the tree is read.</exception>
-    /// <exception cref="SpechtManifestUnreadableException">The manifest does not parse; nothing in the tree is read.</exception>
-    /// <exception cref="SpechtManifestException">
-    /// The manifest is rejected, or pins a version <paramref name="versions"/> does not hold; nothing in the tree is read.
-    /// </exception>
-    public static SpecModel Load(string root, SchemaVersions versions)
+    /// <returns>
+    /// The model, or the manifest's failure, one for a pin <paramref name="versions"/> does not hold included; on a failure
+    /// nothing in the tree is read.
+    /// </returns>
+    public static Either<SpechtFailure, SpecModel> Load(string root, SchemaVersions versions)
     {
         var fileSystem = new FileSystem();
-        var schemas = SpecSchemas.Load(fileSystem, root, versions);
+
+        return SpecSchemas.Load(fileSystem, root, versions).Map(schemas => Load(fileSystem, root, schemas));
+    }
+
+    private static SpecModel Load(FileSystem fileSystem, string root, SpecSchemas schemas)
+    {
         var frontmatter = new FrontmatterReader(fileSystem);
         var discovery = schemas.Structure.Discovery;
         var locations = SpecDiscovery.FindSpecifications(fileSystem, root, discovery);

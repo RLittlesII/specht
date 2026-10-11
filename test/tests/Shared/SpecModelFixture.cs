@@ -21,7 +21,7 @@ internal sealed partial class SpecModelFixture
     /// <returns>The fixture.</returns>
     public SpecModelFixture WithManifest(JsonObject manifest) =>
         WithSchemas(
-            SpecSchemas.Load(
+            (SpecSchemas)SpecSchemas.Load(
                 new MockFileSystem(
                     new Dictionary<string, MockFileData>
                     {

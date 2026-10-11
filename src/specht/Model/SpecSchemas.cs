@@ -1,5 +1,6 @@
 using System.IO.Abstractions;
 using Json.Schema;
+using LanguageExt;
 using Specht.Manifest;
 using Specht.Versioning;
 
@@ -62,27 +63,26 @@ public sealed class SpecSchemas
     /// <c>$id</c>, so a second load in one process - two roots in one test
     /// run, say - would throw rather than simply reading the schemas again.
     /// </remarks>
-    /// <exception cref="SpechtRootNotFoundException"><paramref name="root"/> is not a directory; no frontmatter schema is read.</exception>
-    /// <exception cref="SpechtManifestNotFoundException">There is no manifest; no frontmatter schema is read.</exception>
-    /// <exception cref="SpechtManifestUnreadableException">The manifest does not parse; no frontmatter schema is read.</exception>
-    /// <exception cref="SpechtManifestException">
-    /// The manifest is rejected, pins a version the tool does not ship, or sets a rule id outside the pinned version's
-    /// vocabulary (<c>0001-F5</c> B-013); no frontmatter schema is read.
-    /// </exception>
-    public static SpecSchemas Load(IFileSystem fileSystem, string root)
+    /// <returns>
+    /// The schemas, or the manifest's failure, a <see cref="SpechtFailureKind.ManifestRejected"/> one included when the
+    /// manifest pins a version the tool does not ship or sets a rule id outside the pinned version's vocabulary
+    /// (<c>0001-F5</c> B-013); on a failure no frontmatter schema is read.
+    /// </returns>
+    public static Either<SpechtFailure, SpecSchemas> Load(IFileSystem fileSystem, string root)
     {
-        var structure = SpecManifest.Load(fileSystem, root);
-        var version = Pinned(SchemaVersions.Embedded, structure);
         var directory = fileSystem.Path.Combine(root, ".spec", "schema");
 
-        return new SpecSchemas(
-            version with
-            {
-                FeatureSchema = Read(fileSystem, directory, structure.FrontmatterSchemas["feature"]),
-                ItemSchema = Read(fileSystem, directory, structure.FrontmatterSchemas["task"]),
-                EpicSchema = Read(fileSystem, directory, structure.FrontmatterSchemas["epic"]),
-            },
-            structure);
+        return
+            from structure in SpecManifest.Load(fileSystem, root)
+            from version in Pinned(SchemaVersions.Embedded, structure)
+            select new SpecSchemas(
+                version with
+                {
+                    FeatureSchema = Read(fileSystem, directory, structure.FrontmatterSchemas["feature"]),
+                    ItemSchema = Read(fileSystem, directory, structure.FrontmatterSchemas["task"]),
+                    EpicSchema = Read(fileSystem, directory, structure.FrontmatterSchemas["epic"]),
+                },
+                structure);
     }
 
     /// <summary>
@@ -90,33 +90,29 @@ public sealed class SpecSchemas
     /// pins from <paramref name="versions"/> (<c>0001-F7</c> B-001, C-4).
     /// </summary>
     /// <remarks>Each load gets its own <see cref="SchemaRegistry"/>, for the same reason as the on-disk load.</remarks>
-    /// <exception cref="SpechtRootNotFoundException"><paramref name="root"/> is not a directory; no frontmatter schema is read.</exception>
-    /// <exception cref="SpechtManifestNotFoundException">There is no manifest; no frontmatter schema is read.</exception>
-    /// <exception cref="SpechtManifestUnreadableException">The manifest does not parse; no frontmatter schema is read.</exception>
-    /// <exception cref="SpechtManifestException">
-    /// The manifest is rejected, pins a version <paramref name="versions"/> does not hold, or sets a rule id outside the
-    /// pinned version's vocabulary (<c>0001-F5</c> B-013); no frontmatter schema is read.
-    /// </exception>
-    public static SpecSchemas Load(IFileSystem fileSystem, string root, SchemaVersions versions)
-    {
-        var structure = SpecManifest.Load(fileSystem, root);
+    /// <returns>
+    /// The schemas, or the manifest's failure, a <see cref="SpechtFailureKind.ManifestRejected"/> one included when the
+    /// manifest pins a version <paramref name="versions"/> does not hold or sets a rule id outside the pinned version's
+    /// vocabulary (<c>0001-F5</c> B-013); on a failure no frontmatter schema is read.
+    /// </returns>
+    public static Either<SpechtFailure, SpecSchemas> Load(IFileSystem fileSystem, string root, SchemaVersions versions) =>
+        from structure in SpecManifest.Load(fileSystem, root)
+        from version in Pinned(versions, structure)
+        select new SpecSchemas(version, structure);
 
-        return new SpecSchemas(Pinned(versions, structure), structure);
-    }
+    private static Either<SpechtFailure, SchemaVersion> Pinned(SchemaVersions versions, SpecStructure structure) =>
+        versions.Select(structure.SchemaVersion).Bind(version => Held(version, structure));
 
-    private static SchemaVersion Pinned(SchemaVersions versions, SpecStructure structure)
+    private static Either<SpechtFailure, SchemaVersion> Held(SchemaVersion version, SpecStructure structure)
     {
-        var version = versions.Select(structure.SchemaVersion);
         var outside = structure.Rules.Keys.Where(id => !version.RuleIds.Contains(id)).Select(static id => $"'{id}'").ToList();
 
-        if (outside.Count > 0)
-        {
-            throw new SpechtManifestException(
+        return outside.Count > 0
+            ? new SpechtFailure(
+                SpechtFailureKind.ManifestRejected,
                 $"{SpecManifest.RelativePath}: rules names the rule id {string.Join(", ", outside)}, "
-                    + $"which schemaVersion {version.Number} does not hold.");
-        }
-
-        return version;
+                    + $"which schemaVersion {version.Number} does not hold.")
+            : version;
     }
 
     private static string Read(IFileSystem fileSystem, string directory, string name) =>

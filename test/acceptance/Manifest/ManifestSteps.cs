@@ -225,7 +225,7 @@ public sealed class ManifestSteps
     public void GivenTheRootHoldsASpecificationThatRuleReports()
     {
         Write("F1", SpecTree.Sections);
-        SpechtRunner.Evaluate(SpecModel.Load(Tree.Root), [StandIn])
+        SpechtRunner.Evaluate((SpecModel)SpecModel.Load(Tree.Root), [StandIn])
             .Violations.Should()
             .ContainSingle()
             .Which.Should()
@@ -237,7 +237,7 @@ public sealed class ManifestSteps
     public void WhenTheCheckRunsWithThatRule()
     {
         File.WriteAllText(ManifestPath, Manifest.ToJsonString());
-        _report = SpechtRunner.Evaluate(SpecModel.Load(Tree.Root), [StandIn]);
+        _report = SpechtRunner.Evaluate((SpecModel)SpecModel.Load(Tree.Root), [StandIn]);
     }
 
     [Then("that rule's violation is reported at error severity")]
@@ -359,22 +359,24 @@ public sealed class ManifestSteps
     {
         File.WriteAllText(ManifestPath, Manifest.ToJsonString());
 
-        try
+        if (_fromRoot)
         {
-            if (_fromRoot)
-            {
-                var loaded = SpecModel.Load(Tree.Root);
-                _model = new SpecModel(loaded.Root, loaded.Features, loaded.Items, loaded.Epics, SpecSchemas.Load(new FileSystem(), Tree.Root));
-                _frontmatterViolations = new FrontmatterSchemaRule().Evaluate(_model).ToList();
-            }
-            else
-            {
-                _report = SpechtRunner.Run(Tree.Root);
-            }
+            var loaded =
+                from model in SpecModel.Load(Tree.Root)
+                from schemas in SpecSchemas.Load(new FileSystem(), Tree.Root)
+                select new SpecModel(model.Root, model.Features, model.Items, model.Epics, schemas);
+
+            loaded.Match(
+                Left: failure => _rejection = failure,
+                Right: model =>
+                {
+                    _model = model;
+                    _frontmatterViolations = new FrontmatterSchemaRule().Evaluate(model).ToList();
+                });
         }
-        catch (SpechtManifestException rejection)
+        else
         {
-            _rejection = rejection;
+            SpechtRunner.Run(Tree.Root).Match(Left: failure => _rejection = failure, Right: report => _report = report);
         }
     }
 
@@ -533,7 +535,7 @@ public sealed class ManifestSteps
     private JsonObject? _manifest;
     private SpechtReport? _report;
     private (string Stdout, string Stderr, int ExitCode)? _run;
-    private SpechtManifestException? _rejection;
+    private SpechtFailure? _rejection;
     private string? _defaultClaimGrammar;
     private bool _fromRoot;
     private string? _featureSchema;

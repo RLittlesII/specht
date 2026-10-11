@@ -66,7 +66,7 @@ public sealed class SpechtRunnerDeterminismUnitTests
     private static SpecModel ModelExpectingAnInteger()
     {
         var schema = Path.Combine("repo", ".spec", "schema");
-        var schemas = SpecSchemas.Load(
+        var schemas = (SpecSchemas)SpecSchemas.Load(
             new MockFileSystem(
                 new Dictionary<string, MockFileData>
                 {

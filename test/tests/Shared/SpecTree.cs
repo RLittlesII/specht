@@ -77,7 +77,7 @@ public sealed class SpecTree : IDisposable
         File.WriteAllText(Path.Combine(Path.GetDirectoryName(specPath)!, "feature.feature"), content);
 
     /// <summary>Runs every rule against the tree.</summary>
-    public SpechtReport Run() => SpechtRunner.Run(Root);
+    public SpechtReport Run() => (SpechtReport)SpechtRunner.Run(Root);
 
     /// <inheritdoc />
     public void Dispose()
