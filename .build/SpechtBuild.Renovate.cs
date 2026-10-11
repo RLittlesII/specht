@@ -12,7 +12,7 @@ using Rocket.Surgery.Nuke.GithubActions;
     Enhancements = [nameof(RenovateMiddleware)]
 )]
 [SuppressMessage("Design", "RSA2002:Private members should appear after non-private members", Justification = "Build")]
-internal sealed partial class Build
+internal sealed partial class SpechtBuild
 {
     public static RocketSurgeonGitHubActionsConfiguration RenovateMiddleware(
         RocketSurgeonGitHubActionsConfiguration configuration)

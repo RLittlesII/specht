@@ -12,10 +12,10 @@ using Serilog;
 using static Nuke.Common.Tools.DotNet.DotNetTasks;
 
 // Every gate is a target here (0055-F1 C-1); a target writes only under .artifacts/, bin/ and obj/ (C-5).
-internal partial class Build : NukeBuild
+internal partial class SpechtBuild : NukeBuild
 {
     // B-001: `./build.sh` with no target name runs Compile, then Test.
-    public static int Main() => Execute<Build>(static x => x.Test);
+    public static int Main() => Execute<SpechtBuild>(static x => x.Build);
 
     private static string NpxPath => ToolPathResolver.GetPathExecutable("npx");
 
@@ -35,55 +35,17 @@ internal partial class Build : NukeBuild
         }
     }
 
-    private Target Restore => definition => definition
+    // B-025: until 0001-F5's rule settings exist, the check's violations print and never fail the target (C-7, 0001-F2 A-2).
+    private Target Specht => definition => definition
         .Executes(() =>
         {
-            // B-010: the tools the build and the hook invoke, at the versions the local tool manifest pins.
-            DotNetToolRestore(static s => s.SetProcessWorkingDirectory(RootDirectory));
-            DotNetRestore(s => s.SetProjectFile(Solution));
-        });
-
-    private Target Compile => definition => definition
-        .DependsOn(Restore)
-        .Executes(() => DotNetBuild(s => s
-            .SetProjectFile(Solution)
-            .SetConfiguration(Configuration)
-            .EnableNoRestore()));
-
-    // B-005: every test project in the solution - the unit, integration and acceptance tiers.
-    // 0055-F3 B-001, C-3: the same run writes one Cobertura report per test project; the directory is emptied first so
-    // no earlier run's report is counted or uploaded.
-    private Target Test => definition => definition
-        .DependsOn(Compile)
-        .Executes(() =>
-        {
-            CoverageDirectory.CreateOrCleanDirectory();
-            DotNet(
-                $"test --solution {Solution.Path} --configuration {Configuration} --no-build " +
-                $"--coverage --coverage-output-format cobertura --results-directory {CoverageDirectory}",
-                workingDirectory: RootDirectory);
-        });
-
-    // B-006: the classes trait-tagged Tier=Unit in every *.tests project; 0055-F3 B-001, C-7.
-    private Target UnitTest => definition => definition
-        .DependsOn(Compile)
-        .Executes(() => TestTier("Unit"));
-
-    // B-007: the classes trait-tagged Tier=Integration in every *.tests project; 0055-F3 B-001, C-7.
-    private Target IntegrationTest => definition => definition
-        .DependsOn(Compile)
-        .Executes(() => TestTier("Integration"));
-
-    // B-008: every scenario the acceptance project links, unfiltered; 0055-F3 B-001, C-7.
-    private Target AcceptanceTest => definition => definition
-        .DependsOn(Compile)
-        .Executes(() =>
-        {
-            var coverage = TierCoverageDirectory("Acceptance");
-            DotNet(
-                $"test --project {RootDirectory / "test" / "acceptance" / "acceptance.csproj"} --configuration {Configuration} --no-build " +
-                $"--coverage --coverage-output-format cobertura --results-directory {coverage}",
-                workingDirectory: RootDirectory);
+            var clean = true;
+            AnnotateChangedFiles(DotNet(
+                "run --project src/tool -- --root .",
+                RootDirectory,
+                logger: ProcessTasks.DefaultLogger,
+                exitHandler: process => clean = process.ExitCode == 0));
+            Log.Information("Specht: {Verdict}; the check does not gate until 0001-F5's rule settings exist", clean ? "clean" : "violations reported");
         });
 
     // B-003, B-017: C# and Markdown, verified and never fixed (C-2, B-004); B-020: given --files, those and no other.
@@ -113,9 +75,62 @@ internal partial class Build : NukeBuild
             }
         });
 
+    private Target Restore => definition => definition
+        .DependsOn(Specht)
+        .Executes(() =>
+        {
+            // B-010: the tools the build and the hook invoke, at the versions the local tool manifest pins.
+            DotNetToolRestore(static s => s.SetProcessWorkingDirectory(RootDirectory));
+            DotNetRestore(s => s.SetProjectFile(Solution));
+        });
+
+    private Target Compile => definition => definition
+        .DependsOn(Restore)
+        .DependsOn(Format)
+        .Executes(() => DotNetBuild(s => s
+            .SetProjectFile(Solution)
+            .SetConfiguration(Configuration)
+            .EnableNoRestore()));
+
+    // B-005: every test project in the solution - the unit, integration and acceptance tiers.
+    // 0055-F3 B-001, C-3: the same run writes one Cobertura report per test project; the directory is emptied first so
+    // no earlier run's report is counted or uploaded.
+    private Target Test => definition => definition
+        .DependsOn(Compile)
+        .DependsOn(UnitTest)
+        .DependsOn(IntegrationTest)
+        .DependsOn(AcceptanceTest);
+
+    // B-006: the classes trait-tagged Tier=Unit in every *.tests project; 0055-F3 B-001, C-7.
+    private Target UnitTest => definition => definition
+        .DependsOn(Compile)
+        .Executes(() => TestTier("Unit"));
+
+    // B-007: the classes trait-tagged Tier=Integration in every *.tests project; 0055-F3 B-001, C-7.
+    private Target IntegrationTest => definition => definition
+        .OnlyWhenStatic(static () => !OperatingSystem.IsWindows())
+        .DependsOn(UnitTest)
+        .Executes(() => TestTier("Integration"));
+
+    // B-008: every scenario the acceptance project links, unfiltered; 0055-F3 B-001, C-7.
+    private Target AcceptanceTest => definition => definition
+        .OnlyWhenStatic(static () => !OperatingSystem.IsWindows())
+        .DependsOn(IntegrationTest)
+        .Executes(() =>
+        {
+            var coverage = TierCoverageDirectory("Acceptance");
+            DotNet(
+                $"test --project {RootDirectory / "test" / "acceptance" / "acceptance.csproj"} --configuration {Configuration} --no-build " +
+                $"--coverage --coverage-output-format cobertura --results-directory {coverage}",
+                workingDirectory: RootDirectory);
+        });
+
+    private Target Build => definition => definition
+        .DependsOn(Test);
+
     // B-009: exactly one tool.<version>.nupkg under .artifacts/nupkg/.
     private Target Pack => definition => definition
-        .DependsOn(Compile)
+        .DependsOn(Build)
         .Produces(PackageDirectory / "*.nupkg")
         .Executes(() =>
         {
@@ -125,20 +140,6 @@ internal partial class Build : NukeBuild
                 .SetConfiguration(Configuration)
                 .SetOutputDirectory(PackageDirectory)
                 .EnableNoBuild());
-        });
-
-    // B-025: until 0001-F5's rule settings exist, the check's violations print and never fail the target (C-7, 0001-F2 A-2).
-    private Target Specht => definition => definition
-        .DependsOn(Test)
-        .Executes(() =>
-        {
-            var clean = true;
-            AnnotateChangedFiles(DotNet(
-                "run --project src/tool -- --root .",
-                RootDirectory,
-                logger: ProcessTasks.DefaultLogger,
-                exitHandler: process => clean = process.ExitCode == 0));
-            Log.Information("Specht: {Verdict}; the check does not gate until 0001-F5's rule settings exist", clean ? "clean" : "violations reported");
         });
 
     private static string Include(string[]? files) => files is null ? string.Empty : $"--include {Quote(files)}";
@@ -155,10 +156,10 @@ internal partial class Build : NukeBuild
     private void TestTier(string tier)
     {
         var coverage = TierCoverageDirectory(tier);
-        foreach (var project in Solution.AllProjects.Where(static project => project.Name.EndsWith(".tests", StringComparison.OrdinalIgnoreCase)))
+        foreach (var project in Solution.GetTestProjects())
         {
             DotNet(
-                $"test --project {project.Path} --configuration {Configuration} --no-build --filter-trait \"Tier={tier}\" " +
+                $"test --project {project.FilePath} --configuration {Configuration} --no-build --filter-trait \"Tier={tier}\" " +
                 $"--coverage --coverage-output-format cobertura --results-directory {coverage}",
                 workingDirectory: RootDirectory);
         }

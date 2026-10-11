@@ -9,15 +9,15 @@
 #
 #     - To trigger manual generation invoke:
 #
-#         nuke --generate-configuration GitHubActions_ci --host GitHubActions
+#         nuke --generate-configuration GitHubActions_main --host GitHubActions
 #
 # </auto-generated>
 # ------------------------------------------------------------------------------
 
-name: ci
+name: main
 
 on:
-  pull_request:
+  push:
     branches:
       - 'main'
 permissions:
@@ -39,7 +39,9 @@ jobs:
   build:
     strategy:
       fail-fast: false
-    runs-on: ubuntu-latest
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4

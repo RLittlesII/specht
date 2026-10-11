@@ -8,6 +8,7 @@
     <NoWarn>$(NoWarn);CS8669</NoWarn>
     <RootNamespace>Specht.Tests</RootNamespace>
     <AssemblyName>specht.tests</AssemblyName>
+    <IsTestProject>true</IsTestProject>
   </PropertyGroup>
 
   <ItemGroup>

@@ -52,10 +52,14 @@ jobs:
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '10.0.401'
+      - name: Specht
+        id: specht
+        run: |
+          ./build.cmd --target Specht
       - name: 🎁 Restore
         id: restore
         run: |
-          ./build.cmd --target Restore
+          ./build.cmd --target Restore --skip Specht
       - name: Verify Tag
         id: verifyTag
         run: |
@@ -67,19 +71,31 @@ jobs:
       - name: ⚙️ Compile
         id: compile
         run: |
-          ./build.cmd --target Compile --skip Restore
+          ./build.cmd --target Compile --skip Restore Format
+      - name: 💨 Unit Test
+        id: unitTest
+        run: |
+          ./build.cmd --target UnitTest --skip Compile
+      - name: 💨 Integration Test
+        id: integrationTest
+        run: |
+          ./build.cmd --target IntegrationTest --skip UnitTest
+      - name: 💨 Acceptance Test
+        id: acceptanceTest
+        run: |
+          ./build.cmd --target AcceptanceTest --skip IntegrationTest
       - name: 💨 Test
         id: test
         run: |
-          ./build.cmd --target Test --skip Compile
-      - name: Specht
-        id: specht
+          ./build.cmd --target Test --skip Compile UnitTest IntegrationTest AcceptanceTest
+      - name: ⚙️ Build
+        id: build
         run: |
-          ./build.cmd --target Specht --skip Test
+          ./build.cmd --target Build --skip Test
       - name: 📦 Pack
         id: pack
         run: |
-          ./build.cmd --target Pack --skip Compile
+          ./build.cmd --target Pack --skip Build
       - name: 🏺 Upload the package
         uses: actions/upload-artifact@v4
         with:
@@ -88,6 +104,10 @@ jobs:
           name: 'nupkg'
           path: '.artifacts/nupkg/*.nupkg'
           retention-days: '1'
+      - name: 🚀 Publish
+        id: publish
+        run: |
+          ./build.cmd --target Publish --skip VerifyTag Pack
   publish:
     needs:
       - build
