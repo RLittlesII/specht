@@ -15,7 +15,7 @@ depends_on: ["0052", "0042", "0120"] # extends 0052's write; an older pin needs 
 blocks: []
 spikes: []
 
-spec: src/specht.tool/Features/Init/.spec/README.md
+spec: src/tool/Features/Init/.spec/README.md
 
 claims:
   - B-002
@@ -23,7 +23,7 @@ claims:
   - B-013
 
 created: "2026-10-08"
-updated: "2026-10-09"
+updated: "2026-10-10"
 closed: null
 
 summary: |

@@ -15,13 +15,13 @@ depends_on: ["0026", "0034"] # follows 0026's lines; prints 0034's counts
 blocks: ["0005"]
 spikes: []
 
-spec: src/specht.tool/Features/Check/.spec/README.md
+spec: src/tool/Features/Check/.spec/README.md
 
 claims:
   - B-002
 
 created: "2026-10-08"
-updated: "2026-10-09"
+updated: "2026-10-10"
 closed: "2026-10-09"
 
 summary: |

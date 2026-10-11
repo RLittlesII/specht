@@ -15,13 +15,13 @@ depends_on: ["0042", "0052", "0120"] # the newest version 0042 embeds, in the ma
 blocks: ["0081"]
 spikes: []
 
-spec: src/specht.tool/.spec/README.md
+spec: src/tool/.spec/README.md
 
 claims:
   - B-012
 
 created: "2026-10-08"
-updated: "2026-10-09"
+updated: "2026-10-10"
 closed: null
 
 summary: |

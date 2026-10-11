@@ -15,7 +15,7 @@ depends_on: ["0045"] # extends the rewrite 0045 performs
 blocks: ["0094", "0131"]
 spikes: []
 
-spec: src/specht.tool/.spec/README.md
+spec: src/tool/.spec/README.md
 
 claims:
   - B-016
@@ -23,7 +23,7 @@ claims:
   - B-059
 
 created: "2026-10-08"
-updated: "2026-10-09"
+updated: "2026-10-10"
 closed: null
 
 summary: |

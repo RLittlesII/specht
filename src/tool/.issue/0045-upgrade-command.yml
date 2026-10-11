@@ -15,7 +15,7 @@ depends_on: ["0120", "0026"] # reads 0120's semver pin and version set; a siblin
 blocks: ["0046", "0047", "0093", "0131"]
 spikes: []
 
-spec: src/specht.tool/.spec/README.md
+spec: src/tool/.spec/README.md
 
 claims:
   - B-005
@@ -24,7 +24,7 @@ claims:
   - B-052
 
 created: "2026-10-08"
-updated: "2026-10-09"
+updated: "2026-10-10"
 closed: null
 
 summary: |

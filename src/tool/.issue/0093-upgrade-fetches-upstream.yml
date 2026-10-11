@@ -15,7 +15,7 @@ depends_on: ["0045", "0092"] # a step of 0045's upgrade; reads the recording 009
 blocks: ["0095"]
 spikes: []
 
-spec: src/specht.tool/.spec/README.md
+spec: src/tool/.spec/README.md
 
 claims:
   - B-026
@@ -25,7 +25,7 @@ claims:
   - B-035
 
 created: "2026-10-08"
-updated: "2026-10-08"
+updated: "2026-10-10"
 closed: null
 
 summary: |

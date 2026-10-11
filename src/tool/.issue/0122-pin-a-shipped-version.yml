@@ -15,7 +15,7 @@ depends_on: ["0120"] # pins a version of the semver set 0120 produces
 blocks: ["0123", "0125"]
 spikes: []
 
-spec: src/specht.tool/.spec/README.md
+spec: src/tool/.spec/README.md
 
 claims:
   - B-043
@@ -26,7 +26,7 @@ claims:
   - B-048
 
 created: "2026-10-09"
-updated: "2026-10-09"
+updated: "2026-10-10"
 closed: null
 
 summary: |

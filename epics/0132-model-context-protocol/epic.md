@@ -195,7 +195,7 @@ where it takes an `OQ-n` id and is resolved in place.
 No Feature specification exists, so none is placed. Where each will sit
 follows the project layout, which is the design's choice and is not made
 here. Candidate A is a command and would sit in its command folder under
-`src/specht.tool/Features/`, as every command's specification does.
+`src/tool/Features/`, as every command's specification does.
 
 This epic file lives at `epics/0132-model-context-protocol/epic.md`, where
 schema version 1's epic glob `epics/**/epic.md` discovers it (`0001-F6`

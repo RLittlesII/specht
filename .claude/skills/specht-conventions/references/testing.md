@@ -10,21 +10,21 @@ Extends [`test-from-scenarios`](../../test-from-scenarios/SKILL.md).
 
 ## Three tiers
 
-| Tier        | Where                                                        | Selected by                     |
-| ----------- | ------------------------------------------------------------ | ------------------------------- |
-| Unit        | `test/specht.tests/**/<Thing>.Unit.Tests.cs`                 | `[Trait("Tier","Unit")]`        |
-| Integration | `test/specht.tests/**/<Thing>.Integration.Tests.cs`          | `[Trait("Tier","Integration")]` |
-| Acceptance  | `test/specht.acceptance`, Reqnroll over the `.feature` files | the project, no filter          |
+| Tier        | Where                                                 | Selected by                     |
+| ----------- | ----------------------------------------------------- | ------------------------------- |
+| Unit        | `test/tests/**/<Thing>.Unit.Tests.cs`                 | `[Trait("Tier","Unit")]`        |
+| Integration | `test/tests/**/<Thing>.Integration.Tests.cs`          | `[Trait("Tier","Integration")]` |
+| Acceptance  | `test/acceptance`, Reqnroll over the `.feature` files | the project, no filter          |
 
 `./build.sh UnitTest` and `IntegrationTest` run `--filter-trait "Tier=<X>"`,
-xunit.v3's trait filter on Microsoft.Testing.Platform, over every project whose
-name ends `.tests`, ignoring case. `AcceptanceTest` runs `test/specht.acceptance`
-with no filter.
+xunit.v3's trait filter on Microsoft.Testing.Platform, over every project the
+solution reports as a test project (`Solution.GetTestProjects()`), which today
+is `test/tests` alone. `AcceptanceTest` runs `test/acceptance` with no filter.
 
 The line between the first two tiers is the file system: a unit test exercises
 one decision, derivation or mapping in memory; an integration test touches the
 disk or a process. In the engine, a unit test runs one rule or one reader over
-documents built in memory, and an integration test runs `SpecCheckRunner` over
+documents built in memory, and an integration test runs `SpechtRunner` over
 a `SpecTree` written to a temporary directory and asserts the report. The 56
 tests extracted from `hooked` already draw it this way (brief § 3); follow them.
 
@@ -77,7 +77,7 @@ empty formatter and quoted arguments - [lesson 0003](../../../../.spec/lessons/0
   generator handles a positional record. The fixture's constructor sets only the
   defaults that make the value valid, and a test overrides with `With*` only what
   it asserts on. Version 10.0.6 emits its `AutoFixtureBase` without a `#nullable`
-  directive, so `specht.tests.csproj` carries `NoWarn` `CS8669`, the one
+  directive, so `tests.csproj` carries `NoWarn` `CS8669`, the one
   diagnostic only generated code raises.
 - `Microsoft.Testing.Extensions.CodeCoverage`; each test project writes one
   report, `.artifacts/coverage/<project>.coverage.cobertura.xml`, named by
@@ -113,7 +113,7 @@ harness, and data two classes need is a `[ClassData]` type.
 ## Tests live in `test/`, not beside the code
 
 Tests are **not** co-located with production code here. `src/specht` is one
-assembly with one caller; a separate `test/specht.tests` project references it
+assembly with one caller; a separate `test/tests` project references it
 directly and needs no `Compile Remove` / `Compile Include` dance to pull test
 files back out of the product.
 
@@ -142,7 +142,7 @@ the guard.
 ## Reqnroll wiring, and why it is literal
 
 `.feature` files live in `src/**/.spec/` beside the specification they belong
-to, and are linked into `test/specht.acceptance` by a **literal
+to, and are linked into `test/acceptance` by a **literal
 `ReqnrollFeatureFile` glob** with a `Link=` path, plus
 `ReqnrollUseIntermediateOutputPathForCodeBehind=true`.
 
@@ -155,7 +155,7 @@ changed.
 ## Fixtures
 
 A fixture is a specification tree, and it is **built, not copied**: `SpecTree`
-in `test/specht.tests` constructs the files a test needs — frontmatter, sections,
+in `test/tests` constructs the files a test needs — frontmatter, sections,
 tables, a companion `.feature`, child items — and writes them to a temporary
 root the test owns. Every path inside a fixture, and every path in an expected
 report, is relative to that root; an absolute path in either is the defect

@@ -45,10 +45,10 @@ The check runs at three call sites, one a pre-commit hook a person waits on (bri
 
 ### Assumptions
 
-| ID  | Assumption                                                                                                                                              |
-| --- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| A-1 | The tree sizes and the generated, clean tree are `0109-F1`'s (`0109-F1` decision 0004, B-015).                                                          |
-| A-2 | The whole check is the engine's run from a root - `SpecCheckRunner`'s entry that takes one, as ADR-0005 § Decision (a) shapes it - and not the command. |
+| ID  | Assumption                                                                                                                                           |
+| --- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
+| A-1 | The tree sizes and the generated, clean tree are `0109-F1`'s (`0109-F1` decision 0004, B-015).                                                       |
+| A-2 | The whole check is the engine's run from a root - `SpechtRunner`'s entry that takes one, as ADR-0005 § Decision (a) shapes it - and not the command. |
 
 ## 3. Acceptance Criteria
 

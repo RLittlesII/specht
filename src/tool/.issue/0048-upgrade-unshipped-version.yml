@@ -15,13 +15,13 @@ depends_on: ["0046", "0120"] # one more failure path beside 0046's; the malforme
 blocks: []
 spikes: []
 
-spec: src/specht.tool/.spec/README.md
+spec: src/tool/.spec/README.md
 
 claims:
   - B-021
 
 created: "2026-10-08"
-updated: "2026-10-09"
+updated: "2026-10-10"
 closed: null
 
 summary: |

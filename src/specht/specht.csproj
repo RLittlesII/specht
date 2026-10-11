@@ -18,24 +18,12 @@
     <EmbeddedResource Include="..\..\.spec\schema\spec-structure.schema.json"
                       Link=".spec\schema\spec-structure.schema.json"
                       LogicalName="specht.default-manifest.json" />
-    <EmbeddedResource Include="..\tool\schema\v1\epic.frontmatter.schema.json">
-      <Link>schema\v1\epic.frontmatter.schema.json</Link>
-      <LogicalName>schema/v1/epic.frontmatter.schema.json</LogicalName>
-    </EmbeddedResource>
-    <EmbeddedResource Include="..\tool\schema\v1\feature-spec.frontmatter.schema.json">
-      <Link>schema\v1\feature-spec.frontmatter.schema.json</Link>
-      <LogicalName>schema/v1/feature-spec.frontmatter.schema.json</LogicalName>
-    </EmbeddedResource>
-    <EmbeddedResource Include="..\tool\schema\v1\task.frontmatter.schema.json">
-      <Link>schema\v1\task.frontmatter.schema.json</Link>
-      <LogicalName>schema/v1/task.frontmatter.schema.json</LogicalName>
-    </EmbeddedResource>
   </ItemGroup>
 
   <!-- Every shipped version's frontmatter schemas (0001-F7 B-004), linked from the tool's shipping copy, not copied,
        under the same schema/v<n>/<file> names. -->
   <ItemGroup>
-    <EmbeddedResource Include="..\specht.tool\schema\v*\*.frontmatter.schema.json"
+    <EmbeddedResource Include="..\tool\schema\v*\*.frontmatter.schema.json"
                       Link="schema\%(RecursiveDir)%(Filename)%(Extension)"
                       LogicalName="schema/$([MSBuild]::ValueOrDefault('%(RecursiveDir)', '').Replace('\', '/'))%(Filename)%(Extension)" />
   </ItemGroup>

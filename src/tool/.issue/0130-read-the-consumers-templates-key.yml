@@ -15,13 +15,13 @@ depends_on: [] # extends the manifest loader, which 0011 delivered
 blocks: ["0131"]
 spikes: []
 
-spec: src/specht.tool/.spec/README.md
+spec: src/tool/.spec/README.md
 
 claims:
   - B-065
 
 created: "2026-10-09"
-updated: "2026-10-09"
+updated: "2026-10-10"
 closed: null
 
 summary: |

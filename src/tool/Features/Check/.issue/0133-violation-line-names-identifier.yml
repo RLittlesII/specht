@@ -15,14 +15,14 @@ depends_on: ["0026"] # amends the line 0026 prints
 blocks: []
 spikes: []
 
-spec: src/specht.tool/Features/Check/.spec/README.md
+spec: src/tool/Features/Check/.spec/README.md
 
 claims:
   - B-001
   - B-016
 
 created: "2026-10-09"
-updated: "2026-10-09"
+updated: "2026-10-10"
 closed: "2026-10-09"
 
 summary: |

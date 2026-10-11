@@ -15,7 +15,7 @@ depends_on: ["0052", "0093"] # a case of 0052's write; reuses 0093's fetch and h
 blocks: []
 spikes: []
 
-spec: src/specht.tool/Features/Init/.spec/README.md
+spec: src/tool/Features/Init/.spec/README.md
 
 claims:
   - B-014
@@ -23,7 +23,7 @@ claims:
   - B-016
 
 created: "2026-10-08"
-updated: "2026-10-08"
+updated: "2026-10-10"
 closed: null
 
 summary: |

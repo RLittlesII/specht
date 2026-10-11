@@ -28,7 +28,7 @@ One-line goal: _"A repository pins a schema version, its build calls the tool,
 and no repository carries the engine."_
 
 Distribution is the NuGet package `specht.tool`, command `specht`, installed per
-consumer through a local tool manifest. `src/specht.tool` is the one project that
+consumer through a local tool manifest. `src/tool` is the one project that
 packs; `IsPackable=false` everywhere else.
 
 `README.md` is the public front page: what the tool is, why, its status, and how
@@ -76,7 +76,7 @@ Two projects, one direction of dependency:
   → `SpecDocument`/`SpecStructure` model the Markdown with Markdig, pipe tables
   only → the `ISpecRule`s run → `SpechtRunner` collects → `SpechtReport`
   carries violations and counts.
-- **`src/specht.tool`** — the Spectre.Console.Cli host. One folder per command;
+- **`src/tool`** — the Spectre.Console.Cli host. One folder per command;
   a command parses, calls the runner, and folds the report into an exit code.
   Nothing else lives in a command.
 
@@ -162,8 +162,8 @@ need (epic / issue)
   → scenario           the Feature's <feature-name>.feature
   → specification      the Feature's spec (twelve sections + frontmatter)
   → work items         .issue/ items, cut from § 3 claims after agreement
-  → tests              test/specht.acceptance step definitions, and
-                       test/specht.tests/**/*.{Unit,Integration}.Tests.cs
+  → tests              test/acceptance step definitions, and
+                       test/tests/**/*.{Unit,Integration}.Tests.cs
   → code               src/**
 ```
 
@@ -327,7 +327,7 @@ Each class of rule has one home. Read the owner, not a copy of it:
 | Naming, modifier order, braces, line length, suppressions | `.editorconfig` — the compiler reads it (scaffold, brief § 8 step 1)     |
 | Framework, nullability, strictness, packability           | `Directory.Build.props`                                                  |
 | Package versions                                          | `Directory.Packages.props`                                               |
-| Build targets, CI generation                              | `.build/Build.cs`, `.build/Build.GitHubActions.cs`                       |
+| Build targets, CI generation                              | `.build/SpechtBuild.cs`, `.build/SpechtBuild.GitHubActions.cs`           |
 | Project layout, test conventions, commands, ID schemes    | [`specht-conventions`](.claude/skills/specht-conventions/SKILL.md)       |
 | Command layout, packaging, what sits below a command      | [`dotnet-tool`](.claude/skills/dotnet-tool/SKILL.md)                     |
 | When an abstraction is earned, and how terse to be        | [`coding-conventions`](.claude/skills/coding-conventions/SKILL.md)       |
@@ -366,7 +366,7 @@ none of them changes:
   fails on the next machine.
 
 Which packages are referenced and which targets exist is repository state, not a
-rule: read `Directory.Packages.props` and `.build/Build.cs`. A green build proves
+rule: read `Directory.Packages.props` and `.build/SpechtBuild.cs`. A green build proves
 only that the targets it declares ran.
 
 ## Documentation structure

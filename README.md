@@ -249,10 +249,10 @@ specht/
 ├── docs/                   # report schema and documentation site
 ├── src/
 │   ├── specht/             # engine: discovery, frontmatter, schemas, document model, rules, report
-│   └── specht.tool/        # the specht command, one folder per command under Features/
+│   └── tool/               # the specht command, one folder per command under Features/
 └── test/
-    ├── specht.acceptance/  # Reqnroll scenarios
-    └── specht.tests/       # unit and integration tiers
+    ├── acceptance/         # Reqnroll scenarios
+    └── tests/              # unit and integration tiers
 ```
 
 Every Feature is specified in a `.spec/README.md` beside the code it covers, such

@@ -18,7 +18,7 @@ is installed globally, and no consumer carries the engine as a project reference
 This repository is its own first consumer. Its build and, from 0062, its
 pre-commit hook run `dotnet specht` from its own manifest — the same call site
 every other repository uses (brief § 7). Until the first package is published, the
-self-check runs the project directly (`dotnet run --project src/specht.tool --
+self-check runs the project directly (`dotnet run --project src/tool --
 --root .`); the moment a package exists, the manifest replaces that.
 
 ## Pack

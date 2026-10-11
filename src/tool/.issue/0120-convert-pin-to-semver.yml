@@ -15,7 +15,7 @@ depends_on: ["0042"] # converts the integer pin and version set 0042 delivered
 blocks: ["0043", "0044", "0045", "0048", "0049", "0054", "0121", "0122", "0124", "0126"]
 spikes: []
 
-spec: src/specht.tool/.spec/README.md
+spec: src/tool/.spec/README.md
 
 claims:
   - B-001
