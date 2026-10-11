@@ -31,8 +31,9 @@ Distribution is the NuGet package `specht.tool`, command `specht`, installed per
 consumer through a local tool manifest. `src/tool` is the one project that
 packs; `IsPackable=false` everywhere else.
 
-`README.md` is the public front page: what the tool is, why, its status, and how
-to use it. The design authority is the seed brief,
+`README.md` is the public front page: what the tool is, why, how to install and
+use it, and the layout; the reference pages are under `docs/`. The design
+authority is the seed brief,
 [`.spec/brief.md`](.spec/brief.md), cited as `brief § N`: requirements (§ 2), what
 was extracted from `hooked` (§ 3), the rule vocabulary (§ 4), the drafted design
 (§ 5), open questions with their defaults (§ 6), the order of work (§ 8) and the
