@@ -11,6 +11,25 @@
     <AssemblyName>specht.tool</AssemblyName>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <Description>A dotnet tool that checks a repository's specification documents against a versioned schema.</Description>
+    <Authors>Rodney Littles, II</Authors>
+    <Copyright>Copyright (c) 2026 Rodney Littles, II</Copyright>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageProjectUrl>https://github.com/RLittlesII/specht</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/RLittlesII/specht</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageReleaseNotes>https://github.com/RLittlesII/specht/releases</PackageReleaseNotes>
+    <PackageTags>specification spec-driven-development traceability gherkin dotnet-tool</PackageTags>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageIcon>specht-book-avatar.png</PackageIcon>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Update="README.md" Pack="true" PackagePath="\" />
+    <None Include="..\..\.assets\logos\specht-book-avatar.png" Pack="true" PackagePath="\" Visible="false" />
+  </ItemGroup>
+
   <ItemGroup>
     <PackageReference Include="Spectre.Console.Cli" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" />

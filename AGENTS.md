@@ -389,7 +389,8 @@ Every tracked markdown file opens with YAML frontmatter. Skill and role files
 declare `name` and `description`; everything else declares `title`, `description`
 and `type`. The blanks in [`.spec/templates/`](.spec/templates/) carry the `type`
 of the file they produce, so a copy needs no frontmatter edit beyond its title and
-description. Runtime prompts and `README.md` are exempt.
+description. Runtime prompts, `README.md` and `src/tool/README.md`, the readme
+the package carries, are exempt.
 
 ## Skills
 

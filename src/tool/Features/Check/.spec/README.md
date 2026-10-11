@@ -146,22 +146,24 @@ The gate runs only as `hooked`'s Nuke target, so a pre-commit hook, a CI step an
 
 ## 6. Concern Separation
 
-<!-- last written by: implementer, 2026-10-11 (item 0107: what `Program.cs` hands the command) -->
+<!-- last written by: implementer, 2026-10-11 (item 0172: the package's rows) -->
 
-| Concern                                                                                   | Classification | Where                                                       |
-| ----------------------------------------------------------------------------------------- | -------------- | ----------------------------------------------------------- |
-| Parsing `--root` and `--strict`; folding a report, or an input failure, into a code       | Both           | `Features/Check/CheckCommand.cs` (C-4)                      |
-| The exit codes                                                                            | Business       | `ExitCodes.cs`, the one static class (C-2)                  |
-| Which commands exist and what they are handed                                             | Technical      | `Program.cs`, a hand-written list; the engine by one call   |
-| Whether the root is a directory, the manifest exists, and the manifest parses (B-005-007) | Business       | `src/specht`: `SpecManifest.Load`, the first read of a root |
-| Discovery, rules, ordering, the line format, root-relative paths                          | Both           | `src/specht`: the runner and `SpecViolation`                |
-| The run summary's lines and the layout names in them (B-002)                              | Business       | `src/specht`: `SpecReportDocument.SummaryLines`             |
+| Concern                                                                                   | Classification | Where                                                         |
+| ----------------------------------------------------------------------------------------- | -------------- | ------------------------------------------------------------- |
+| Parsing `--root` and `--strict`; folding a report, or an input failure, into a code       | Both           | `Features/Check/CheckCommand.cs` (C-4)                        |
+| The exit codes                                                                            | Business       | `ExitCodes.cs`, the one static class (C-2)                    |
+| Which commands exist and what they are handed                                             | Technical      | `Program.cs`, a hand-written list; the engine by one call     |
+| Whether the root is a directory, the manifest exists, and the manifest parses (B-005-007) | Business       | `src/specht`: `SpecManifest.Load`, the first read of a root   |
+| Discovery, rules, ordering, the line format, root-relative paths                          | Both           | `src/specht`: the runner and `SpecViolation`                  |
+| The run summary's lines and the layout names in them (B-002)                              | Business       | `src/specht`: `SpecReportDocument.SummaryLines`               |
+| What the package says about itself, and the readme and icon it carries (B-017 to B-029)   | Business       | `tool.csproj`; `src/tool/README.md` (C-9, C-10)               |
+| The commit in each assembly, the source map, and no build-machine directory (B-030-032)   | Technical      | `Directory.Build.props`; the SDK and `Nerdbank.GitVersioning` |
 
 ## 7. Technical Design
 
-<!-- last written by: implementer, 2026-10-11 (item 0171: the package's id; every other bullet as its item left it) -->
+<!-- last written by: implementer, 2026-10-11 (item 0172: what the package says and carries; every other bullet as its item left it) -->
 
-Delivered so far by items 0026, 0027, 0028, 0133 and 0171. The slice layout is `dotnet-tool` § Vertical Slice.
+Delivered so far by items 0026, 0027, 0028, 0133, 0171 and 0172. The slice layout is `dotnet-tool` § Vertical Slice.
 
 - **The command.** `CheckCommand` is an `AsyncCommand` with its `Settings` nested (decision 0002): `--root <DIR>`, defaulting to `.`, and `--strict`. It resolves the root with `Path.GetFullPath`, calls the runner, writes each violation's `ToString()` - the engine's MSBuild-shaped line, in the engine's order, which `SpecViolation` ([`SpecViolation.cs`](../../../../specht/Model/SpecViolation.cs)) ends with ` [<identifier>]` when its `Identifier` is not null and at the message when it is (B-016, decision 0006) - and returns `ExitCodes.Violations` on an error, or on any violation under `--strict`, and `ExitCodes.Success` otherwise (B-001, B-003, B-004).
 - **The run summary** (B-002). After the violation lines the command writes each of `SpecReportDocument.From(report).SummaryLines()` through the same raw writer: four lines, `specifications: epics 2, features 1`, `items: 0`, `rules evaluated: 41`, `errors: 1, warnings: 0`, the layouts in the document's order. The lines are formatted in the engine, on the document `0001-F3` B-005 already defines the counts on, beside `SpecViolation`'s line format, so the command stays parse, run, fold (C-4) and the summary and `--json` cannot count differently. A layout is named by its name in the manifest, the string the document's JSON carries (`0001-F6` B-009, item `0005`), so the summary and `--json` cannot name it differently; `epics` and `features` are the default manifest's names (`0001-F6` decision 0008). No summary line has the diagnostic shape, so a log parser reads none as a violation. An input failure returns before the summary, so stdout stays empty for B-005 to B-007.
@@ -176,6 +178,11 @@ Delivered so far by items 0026, 0027, 0028, 0133 and 0171. The slice layout is `
 - **Stderr** is written with `Console.Error.WriteLine`, `dotnet-tool` § Conventions; it is not injected, because the command tester captures stdout alone and no test substitutes it. The message never reaches stdout (C-3, B-009).
 - **Exit codes** hold `0` to `3`; 0040 adds `4`.
 - **The package's id** (B-017, C-5) is `PackageId` in [`tool.csproj`](../../../tool.csproj), the one place it is declared. The release's push line in [`SpechtBuild.Publish.cs`](../../../../../.build/SpechtBuild.Publish.cs) spells the file name `specht.tool.<version>.nupkg` again, because the generated workflow carries a literal; `.github/workflows/publish.yml` is regenerated from it and never edited.
+- **What the package says** (B-018, B-020 to B-024, B-028, B-029) is one property group in [`tool.csproj`](../../../tool.csproj), each value the claim's: `RepositoryUrl` and `RepositoryType`, `PackageProjectUrl`, `PackageLicenseExpression`, `Authors`, `Copyright`, `Description`, `PackageTags`, `PackageReleaseNotes`. The repository address is written out, not left to the build to read from the clone's `origin`, so a fork packs the same address. The copyright line is `LICENSE.md`'s. `Authors` holds the name with its comma and the manifest carries it unchanged (OQ-5). No version is written (C-5).
+- **What the package carries** (B-025, B-027). `PackageReadmeFile` names `README.md` and `PackageIcon` names `specht-book-avatar.png`; one `None` item each packs the file at the package root. The icon is [`.assets/logos/specht-book-avatar.png`](../../../../../.assets/logos/specht-book-avatar.png), packed as it is (OQ-1), and hidden from the project's file list because it lives outside the project.
+- **The packed readme** (B-026, B-034 to B-036, C-9, C-10) is [`src/tool/README.md`](../../../README.md): the description sentence as its first text, the example line, a link to the repository readme's Quick start for the install, the command block, and a link to the rule pages and the licence. Every link is an absolute `https` address under the repository. It has no frontmatter and no heading above the sentence, because a package page prints the file from its first byte; `AGENTS.md` § Documentation structure names it exempt. The description is written twice, in the project and in this file; B-034's scenario is what holds them equal.
+- **The commit and the sources** (B-019, B-030, B-031, C-11). Nothing was added: `Nerdbank.GitVersioning`, referenced from [`Directory.Build.props`](../../../../../Directory.Build.props), writes the commit into the manifest and each assembly's version, and the SDK writes the source map and packs each `.pdb` beside its assembly.
+- **A build on a runner** (B-032). `Directory.Build.props` sets `ContinuousIntegrationBuild` when the environment carries `GITHUB_ACTIONS=true`, the variable a GitHub Actions runner sets for every step; the SDK then writes each source path under `/_/` in place of the clone's directory. It is set for every project, in the file that owns build strictness, because the engine's assembly ships in the package too. A developer's build is unchanged, so a debugger there still finds the sources (decision 0008). A consequence outside this Feature: on a runner the test projects are built the same way, so the coverage reports name sources under `/_/`.
 
 ## 8. Testing Strategy
 
