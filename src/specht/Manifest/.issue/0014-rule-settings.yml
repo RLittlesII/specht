@@ -4,15 +4,12 @@ title: Lower or disable a rule from the manifest
 
 status: ready-for-architecture
 
-priority: high
 risk: 3
-rank: 76
 
 parent: "0010"
 children: []
 
 depends_on: ["0011", "0026", "0103", "0105"] # keys load through 0011; B-010 needs 0026's `--strict`; the severity map runs before 0103's order function; selection and the map sit in 0105's Evaluate (ADR-0001 stage B, ADR-0004)
-blocks: ["0062"]
 spikes: []
 
 spec: src/specht/Manifest/.spec/README.md

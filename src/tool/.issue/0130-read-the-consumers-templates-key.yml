@@ -4,15 +4,12 @@ title: Read the manifest key that names the consumer's templates
 
 status: ready-for-architecture
 
-priority: high
 risk: 2
-rank: 79
 
 parent: "0041"
 children: []
 
 depends_on: [] # extends the manifest loader, which 0011 delivered
-blocks: ["0131"]
 spikes: []
 
 spec: src/tool/.spec/README.md

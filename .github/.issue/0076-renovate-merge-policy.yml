@@ -4,15 +4,12 @@ title: Merge green minor and patch updates and open each major alone
 
 status: ready-for-architecture
 
-priority: high
 risk: 3
-rank: 71
 
 parent: "0072"
 children: []
 
 depends_on: ["0073"] # rules in 0073's configuration
-blocks: []
 spikes: []
 
 spec: .github/.spec/README.md

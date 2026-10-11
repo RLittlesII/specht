@@ -4,15 +4,12 @@ title: Read layouts, exclusions and file shapes from the manifest
 
 status: done
 
-priority: high
 risk: 2
-rank: 74
 
 parent: "0004"
 children: []
 
 depends_on: ["0011", "0028"] # keys load through 0011; B-009 names layouts in 0028's summary
-blocks: ["0006", "0007", "0008", "0019"]
 spikes: []
 
 spec: src/specht/Discovery/.spec/README.md

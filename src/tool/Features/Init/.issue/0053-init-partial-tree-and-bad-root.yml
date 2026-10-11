@@ -4,15 +4,12 @@ title: Fill a partial tree and fail a root that is not a directory
 
 status: done
 
-priority: high
 risk: 2
-rank: 74
 
 parent: "0050"
 children: []
 
 depends_on: ["0052"] # extends 0052's write
-blocks: []
 spikes: []
 
 spec: src/tool/Features/Init/.spec/README.md

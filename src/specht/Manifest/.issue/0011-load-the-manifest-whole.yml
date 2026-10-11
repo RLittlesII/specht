@@ -4,15 +4,12 @@ title: Load and validate the manifest whole before any rule runs
 
 status: done
 
-priority: high
 risk: 3
-rank: 116
 
 parent: "0010"
 children: []
 
 depends_on: ["0021"] # the loader is written into the copied engine
-blocks: ["0005", "0013", "0014", "0015", "0016", "0017", "0019", "0042", "0134"]
 spikes: []
 
 spec: src/specht/Manifest/.spec/README.md

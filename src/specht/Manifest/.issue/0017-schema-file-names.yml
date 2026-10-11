@@ -4,15 +4,12 @@ title: Load frontmatter schemas by the manifest's file names
 
 status: done
 
-priority: high
 risk: 2
-rank: 79
 
 parent: "0010"
 children: []
 
 depends_on: ["0011", "0012"] # names load through 0011; the move keeps 0012 green
-blocks: ["0018"]
 spikes: []
 
 spec: src/specht/Manifest/.spec/README.md

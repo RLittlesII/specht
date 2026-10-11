@@ -23,12 +23,19 @@ comment, misses items in hidden folders, and forgets a dependency's status.
   prerequisite is done, that nobody has taken, and that is not a container for
   open children. Ties keep rank order, then id. The person asking chooses from
   the set; the answer does not choose for them.
-- **Rank is read, never computed here.** It is derived where the tracker says;
-  a rank that looks wrong is a grooming problem, raised, not corrected in the
-  answer.
+- **Rank is computed by the companion's script on every run**, never stored
+  and never by hand. It orders work by what gets the product, then a Feature,
+  to done soonest. A rank that looks wrong is a grooming problem in the fields
+  it is computed from, raised, not corrected in the answer.
+- **Priority** is the tier rank sorts inside: work on the path to the product
+  goal, then work some Feature needs, then work nothing waits on.
+- **Toward** names the Feature an item's rank comes from and, in brackets, the
+  work that Feature has left.
 - **Blocked** lists items ranked at or above the last startable one that still
-  wait on something, with what they wait on. A high-ranked blocked item is
-  often the better thing to unblock than the next startable one.
+  wait on something, with what they wait on. A blocker carries the rank of what
+  it gates, so the work that frees a blocked item ranks with it, not below it.
+- **Blocked by status** lists items marked blocked that wait on no open item:
+  what holds them is a decision, not work in the queue.
 - **Taken** items are never offered, whatever their rank.
 - **A status short of "ready to implement"** means the item still needs its
   design pass before code. Say so beside the answer; it is the first step, not a
@@ -49,16 +56,17 @@ which files it actually touches, so restate a lane as confirmed only after it.
 
 ## Reporting
 
-Lead with the lanes: one row per lane - its head, rank, priority, status,
-title, the items queued behind it, and the write set it holds. Then the
-startable table - id, rank, priority, status, title, description - the blocked
-list and the taken list.
+Lead with the lanes: one row per lane - its head, rank, priority, toward,
+status, title, the items queued behind it, and the write set it holds. Then
+the startable table - id, rank, priority, toward, status, title, description -
+the blocked list, the blocked-by-status list and the taken list.
 State the commit the answer was read at: the queue moves with every merge, and
 an answer from before a pull is stale.
 
 ## Never add
 
-- A rank, priority or blocker computed by hand instead of read.
+- A rank, priority or blocker worked out by hand instead of taken from the
+  script's output.
 - An edit to an item, a status change, or a claim on one - this skill only
   reads.
 - A taken item offered as next.

@@ -4,15 +4,12 @@ title: Select the embedded or on-disk schema source
 
 status: ready-for-architecture
 
-priority: high
 risk: 3
-rank: 81
 
 parent: "0041"
 children: []
 
 depends_on: ["0042", "0120"] # switches the source of the schemas 0042 selects; the version it names is 0120's semver
-blocks: ["0092", "0094"]
 spikes: []
 
 spec: src/tool/.spec/README.md

@@ -4,16 +4,13 @@ title: The engine, extracted unchanged
 
 status: done
 
-priority: high
 value: 5
 risk: 3
-rank: 91
 
 parent: "0001"
 children: ["0021", "0022", "0023", "0024", "0103"]
 
 depends_on: []
-blocks: []
 spikes: []
 
 spec: src/specht/.spec/README.md

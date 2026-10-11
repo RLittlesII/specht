@@ -4,15 +4,12 @@ title: List files through git inside a work tree
 
 status: ready-for-architecture
 
-priority: medium
 risk: 4
-rank: 53
 
 parent: "0004"
 children: []
 
 depends_on: ["0005", "0107"] # its pathspecs are the globs and exclusions 0005 reads; ISpecDiscovery and the git-listing seam (ADR-0001 stage E) land here on 0107's instance classes
-blocks: ["0009"]
 spikes: []
 
 spec: src/specht/Discovery/.spec/README.md

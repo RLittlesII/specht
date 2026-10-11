@@ -4,15 +4,12 @@ title: Upload coverage to Codecov from the ubuntu-latest leg only
 
 status: done
 
-priority: high # DERIVED
 risk: 1
-rank: 97 # DERIVED
 
 parent: "0068"
 children: []
 
 depends_on: ["0070"] # narrows 0070's upload step to one leg
-blocks: []
 spikes: []
 
 spec: test/.spec/README.md

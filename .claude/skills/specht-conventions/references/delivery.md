@@ -1,6 +1,6 @@
 ---
 title: Delivery in specht
-description: The local .issue/ work-item tracker, the status vocabulary and which fields are derived, branch and pull-request conventions, and why a claim citation belongs in the commit message
+description: The local .issue/ work-item tracker, the status vocabulary, which fields are authored and where rank is computed, branch and pull-request conventions, and why a claim citation belongs in the commit message
 type: reference
 ---
 
@@ -13,7 +13,7 @@ Extends [`deliver-change`](../../deliver-change/SKILL.md).
 There are **no GitHub issues, labels or milestones** in this workflow. A
 `<id>-<slug>.yml` work item stands in for an issue: the item owns delivery state,
 the Feature's `.spec/README.md` owns content, and neither duplicates the other.
-The schema, the status vocabulary and the rank derivation live in
+The schema, the status vocabulary and the rank definition live in
 [`.spec/templates/item.yml`](../../../../.spec/templates/item.yml) — not restated here.
 
 ```
@@ -87,17 +87,19 @@ authoritative.
 
 ## What is authored, and what is derived
 
-| Field                        | Where             | Rule                                                                |
-| ---------------------------- | ----------------- | ------------------------------------------------------------------- |
-| `status`, `closed`           | the item          | authored; the item is the delivery record                           |
-| `value`, `risk`              | the item          | authored; `risk` is never inherited from a parent                   |
-| `priority`, `rank`, `blocks` | the item          | derived — recompute per `.spec/templates/item.yml`, never hand-edit |
-| `claims`                     | the item          | ids only; the claim text lives in the spec's § 3                    |
-| `priority`                   | the specification | authored in its frontmatter, permanently                            |
-| `github_issue`, `synced_at`  | the specification | `null` — there is no issue to link and nothing to mirror from       |
+| Field                        | Where             | Rule                                                               |
+| ---------------------------- | ----------------- | ------------------------------------------------------------------ |
+| `status`, `closed`           | the item          | authored; the item is the delivery record                          |
+| `value`, `risk`              | the item          | authored; `risk` is never inherited from a parent                  |
+| `priority`, `rank`, `blocks` | the item          | never stored; the queue script computes rank and priority each run |
+| `claims`                     | the item          | ids only; the claim text lives in the spec's § 3                   |
+| `priority`                   | the specification | authored in its frontmatter, permanently                           |
+| `github_issue`, `synced_at`  | the specification | `null` — there is no issue to link and nothing to mirror from      |
 
-`rank` counts dependents across every Feature, so adding a `depends_on` edge
-means recomputing the dependent items too, not only the one edited.
+An item's rank moves when any item in its Feature's closure changes `status`,
+`risk` or `depends_on`, in any Feature. Nothing is recomputed by hand: the next
+run of the script in [Choosing the next item](#choosing-the-next-item) reads
+the change.
 
 ## One at a time
 
@@ -173,23 +175,32 @@ python3 .claude/skills/specht-conventions/scripts/next.py   # --top N, --width N
 
 It prints a choice, not one item: first a "Pick one per lane" table, one row
 per lane with its head, the items queued behind it and the write set it holds,
-then the startable table, the blocked list and the taken list.
+then the startable table, the blocked list, the "Blocked by status" list and
+the taken list. Both tables carry a Toward column after Priority: the Feature
+the rank comes from and, in brackets, the cost left in its closure, or `-` for
+an item no Feature needs. A blocked line reads `- 0062 (medium 83) …`.
 
 It needs nothing but Python 3's standard library and reads the tree it lives
 in, so a worktree answers for its own branch. It walks hidden folders - most
 items live under `.build/`, `.github/` and `.config/` - and strips a trailing
 `# comment` from every field before comparing it.
 
-| It treats              | As                                                                                       |
-| ---------------------- | ---------------------------------------------------------------------------------------- |
-| startable              | `ready`, `ready-for-architecture`, `ready-for-implementation`, every `depends_on` `done` |
-| taken                  | `in-progress`, `in-review`                                                               |
-| a container            | any item another open item names as `parent` - never offered as next                     |
-| a missing `depends_on` | a blocker, printed with a `?`                                                            |
+| It treats              | As                                                                                        |
+| ---------------------- | ----------------------------------------------------------------------------------------- |
+| startable              | `ready`, `ready-for-architecture`, `ready-for-implementation`, every `depends_on` `done`  |
+| taken                  | `in-progress`, `in-review`                                                                |
+| a container            | any item another open item names as `parent` - scored as a Feature, never offered as next |
+| a missing `depends_on` | a blocker, printed with a `?`                                                             |
+| blocked by status      | `blocked`, with no open `depends_on`                                                      |
 
-`rank` and `priority` are read as the item carries them; the derivation
-stays in
-[`.spec/templates/item.yml`](../../../../.spec/templates/item.yml).
+`rank` and `priority` are computed on every run from `value`, `risk`,
+`depends_on`, `parent` and `status`, and stored nowhere; the definition stays
+in [`.spec/templates/item.yml`](../../../../.spec/templates/item.yml).
+
+**The product goal** is `.issue/.goal`, one item id per line: every open item
+on those items' dependency path is `high`. It names Release (`0082`) and
+Consuming the package (`0086`), the first NuGet release. Moving the finish line
+is an edit to that file.
 
 **Lanes.** Two startable items share a lane when they name the same `spec:`, or
 when their homes fall under the same entry of `SHARED_WRITE_SETS` at the top of
@@ -285,7 +296,7 @@ act on is answered with why, and left open for the reviewer to close.
 - A second item in progress on the same Feature.
 - A `type: feature` item without `spec:` and the `claims:` it delivers.
 - Claim text copied into an item — cite the id.
-- A hand edit to `priority`, `rank` or `blocks` on an item.
+- A `priority`, `rank` or `blocks` field stored on an item.
 - A deleted item — a closed one stays as history.
 - A claim citation that exists only in the pull-request body.
 - A merge commit.

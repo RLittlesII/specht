@@ -4,16 +4,13 @@ title: Fold the engine's root files into feature slices and a named spine
 
 status: done
 
-priority: medium # DERIVED
 value: 3
 risk: 2
-rank: 54 # DERIVED
 
 parent: null
 children: []
 
 depends_on: []
-blocks: [] # DERIVED
 spikes: []
 
 spec: null

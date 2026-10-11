@@ -4,16 +4,13 @@ title: Replace reflection rule discovery with a hand-written rule list
 
 status: ready-for-implementation
 
-priority: medium # DERIVED
 value: 3
 risk: 2
-rank: 59 # DERIVED
 
 parent: "0020"
 children: []
 
 depends_on: ["0105"] # the list is what 0105's Evaluate(SpecModel) iterates
-blocks: ["0107"] # DERIVED
 spikes: []
 
 spec: src/specht/.spec/README.md

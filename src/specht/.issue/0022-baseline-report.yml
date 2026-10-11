@@ -4,15 +4,12 @@ title: Commit the golden baseline report on a synthetic tree and test the verdic
 
 status: done
 
-priority: high
 risk: 3
-rank: 96
 
 parent: "0020"
 children: []
 
 depends_on: ["0021"] # the verdicts compared are the copied engine's
-blocks: ["0012"]
 spikes: []
 
 spec: src/specht/.spec/README.md

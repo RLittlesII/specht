@@ -4,16 +4,13 @@ title: Offer an interactive version pick
 
 status: blocked
 
-priority: low
 value: 2
 risk: 2
-rank: 34
 
 parent: "0041"
 children: []
 
 depends_on: ["0122"] # a second way into 0122's pin
-blocks: []
 spikes: []
 
 spec: src/tool/.spec/README.md

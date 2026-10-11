@@ -4,16 +4,13 @@ title: Annotate and upload coverage where the workflow has no matrix
 
 status: done
 
-priority: medium # DERIVED
 value: 3
 risk: 1
-rank: 57 # DERIVED
 
 parent: "0063"
 children: []
 
 depends_on: []
-blocks: [] # DERIVED
 spikes: []
 
 spec: .build/ContinuousIntegration/.spec/README.md

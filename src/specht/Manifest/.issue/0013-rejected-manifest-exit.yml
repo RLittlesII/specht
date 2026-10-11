@@ -4,15 +4,12 @@ title: Exit 3 with the rejection alone on stderr
 
 status: done
 
-priority: high
 risk: 2
-rank: 89
 
 parent: "0010"
 children: []
 
 depends_on: ["0011", "0027"] # surfaces 0011's rejections through 0027's exit 3
-blocks: ["0046", "0092", "0096"]
 spikes: []
 
 spec: src/specht/Manifest/.spec/README.md

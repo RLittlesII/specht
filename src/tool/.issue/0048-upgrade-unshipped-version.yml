@@ -4,15 +4,12 @@ title: Refuse to upgrade under a schemaVersion the check rejects
 
 status: ready-for-architecture
 
-priority: high
 risk: 1
-rank: 77
 
 parent: "0041"
 children: []
 
 depends_on: ["0046", "0120"] # one more failure path beside 0046's; the malformed-version rejection is 0120's
-blocks: []
 spikes: []
 
 spec: src/tool/.spec/README.md

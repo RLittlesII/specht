@@ -4,16 +4,13 @@ title: Make the engine's model constructible in memory
 
 status: done
 
-priority: medium # DERIVED
 value: 3
 risk: 3
-rank: 56 # DERIVED
 
 parent: "0020"
 children: []
 
 depends_on: ["0012"] # ADR-0001 stage 0: every stage is proven against 0012's guard
-blocks: ["0105"] # DERIVED
 spikes: []
 
 spec: src/specht/.spec/README.md

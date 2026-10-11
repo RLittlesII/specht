@@ -4,15 +4,12 @@ title: Print a rule's full text with --explain
 
 status: ready-for-architecture
 
-priority: high
 risk: 3
-rank: 71
 
 parent: "0033"
 children: []
 
 depends_on: ["0026", "0129"] # an option on the check command; the rule pages it prints
-blocks: []
 spikes: []
 
 spec: src/specht/Report/.spec/README.md

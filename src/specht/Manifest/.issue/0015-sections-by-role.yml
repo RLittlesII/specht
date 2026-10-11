@@ -4,15 +4,12 @@ title: Read sections, table headers and markers by role
 
 status: done
 
-priority: high
 risk: 3
-rank: 76
 
 parent: "0010"
 children: []
 
 depends_on: ["0011", "0012"] # keys load through 0011; each move keeps 0012 green
-blocks: ["0018"]
 spikes: []
 
 spec: src/specht/Manifest/.spec/README.md

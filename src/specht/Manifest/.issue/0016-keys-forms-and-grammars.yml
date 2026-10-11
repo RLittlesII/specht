@@ -4,15 +4,12 @@ title: Read frontmatter keys, edge forms and id grammars from the manifest
 
 status: ready-for-architecture
 
-priority: high
 risk: 4
-rank: 73
 
 parent: "0010"
 children: []
 
 depends_on: ["0011", "0012", "0107"] # keys load through 0011; each move keeps 0012 green; ADR-0001 sequences stage D (0107) before it
-blocks: ["0018"]
 spikes: []
 
 spec: src/specht/Manifest/.spec/README.md

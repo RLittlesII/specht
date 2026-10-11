@@ -4,15 +4,12 @@ title: Refuse a manifest the check rejects from init with exit 3
 
 status: ready-for-architecture
 
-priority: high
 risk: 1
-rank: 77
 
 parent: "0050"
 children: []
 
 depends_on: ["0052", "0013", "0092"] # a refusal before 0052's write; 0013's exit 3 for a rejected manifest; 0092 rejects an upstream source with the embedded source selected
-blocks: []
 spikes: []
 
 spec: src/tool/Features/Init/.spec/README.md
