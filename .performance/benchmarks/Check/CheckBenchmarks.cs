@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.IO.Abstractions;
 using BenchmarkDotNet.Attributes;
 
 namespace Specht.Benchmarks.Check;
@@ -16,7 +17,7 @@ public class CheckBenchmarks
     public void GenerateTree()
     {
         _root = Directory.CreateTempSubdirectory("specht-check-").FullName;
-        SpecTreeGenerator.Generate(_root, Specifications);
+        new SpechtTreeStore(new FileSystem()).Save(SpechtTree.Of(Specifications), _root);
 
         var report = SpechtRunner.Run(_root);
         if (report.SpecificationCount == Specifications && report.Violations.Count == 0)
