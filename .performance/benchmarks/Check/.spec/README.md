@@ -87,21 +87,56 @@ The check runs at three call sites, one a pre-commit hook a person waits on (bri
 
 ## 6. Concern Separation
 
-<!-- last written by: spec-author, 2026-10-09 -->
+<!-- last written by: implementer, 2026-10-11 -->
 
-Pending: owned by `implementer`, written after agreement.
+| #   | Concern                                                                                 | Classification | Where                                                                                              |
+| --- | --------------------------------------------------------------------------------------- | -------------- | -------------------------------------------------------------------------------------------------- |
+| 1   | Which tree sizes are measured, and the size named in each result (B-001, B-004; C-1)    | Business       | `CheckBenchmarks.Specifications`, a `[Params(1, 10, 100, 1000)]` property                          |
+| 2   | What the measured call is: the engine's whole run from a root, and no host (C-2)        | Business       | `CheckBenchmarks.Check`, which returns `SpechtRunner.Run` of the root                              |
+| 3   | The tree is on disk, built once per size and outside the measured call (C-3, C-4)       | Both           | `CheckBenchmarks.GenerateTree`, the `[GlobalSetup]`; `DeleteTree`, the `[GlobalCleanup]`           |
+| 4   | A size is measured only when the check counts its whole tree and finds it clean (B-002) | Business       | `CheckBenchmarks.GenerateTree`, which throws otherwise                                             |
+| 5   | What the tree holds and how it is laid out (B-003)                                      | Business       | Not this Feature's: `SpechtTree.Of` and `SpechtTreeStore` (`0109-F1` § 7 `### The tree generator`) |
+| 6   | Allocated memory in the result, and which result files a run writes                     | Technical      | Not this Feature's: the shared `BenchmarkConfiguration` (`0109-F1` § 7)                            |
 
 ## 7. Technical Design
 
-<!-- last written by: spec-author, 2026-10-09 -->
+<!-- last written by: implementer, 2026-10-11 -->
 
-Pending: owned by `implementer`, written after agreement.
+Design for item `0150` (B-001 to B-004; C-1 to C-4), as built. The numbers are § 8's.
+
+- **One class**, [`Specht.Benchmarks.Check.CheckBenchmarks`](../CheckBenchmarks.cs), holds the Feature: one parameter, one setup, one cleanup and one measured method.
+- **The size is a parameter.** `Specifications` carries `[Params(1, 10, 100, 1000)]`, so each size is its own measurement and the parameter names the size in its result (B-001, B-004).
+- **The setup is outside the measured call**, so building a tree is never measured (C-4). `[GlobalSetup]` runs once per size: it creates a temporary directory and calls `new SpechtTreeStore(new FileSystem()).Save(SpechtTree.Of(Specifications), _root)`. `[GlobalCleanup]` deletes that directory.
+- **The tree is on disk** because C-3 requires it: the store writes through the real file system, and the measured call reads from that root.
+- **The guard.** The setup then runs the check once on the same root and throws, after deleting the directory, unless the report counts exactly `Specifications` specifications and holds no violation. It exists so a benchmark never measures a failing or miscounted check (B-002).
+- **The measured method** is `Check`, which returns `SpechtRunner.Run(_root)` and does nothing else (C-2). The report is returned so the call is not eliminated.
+- **The layout is the tree's.** This class lays nothing out; that every specification is co-located (B-003) is what `SpechtTree.Of` generates (`0109-F1` § 7).
+- **The class opts into nothing.** The memory diagnoser and the exporters come from the shared `BenchmarkConfiguration` of `0109-F1`; the class carries no diagnoser, job or exporter attribute.
+- **The tree types are due to move.** Refactor `0153` (owner, pull request #114) moves `SpechtTree` and `SpechtTreeStore` into the engine; this class's setup call follows them.
 
 ## 8. Testing Strategy
 
-<!-- last written by: spec-author, 2026-10-09 -->
+<!-- last written by: test-writer, 2026-10-11 (item 0150: the benchmark class read as built; no test, by the owner's rulings) -->
 
-Pending: owned by `test-writer`, written after agreement.
+- **No test proves these claims, and none is owed.** Three owner rulings decide it. On 2026-10-08: the build carries no tests. On 2026-10-11, the proof decision that cut item `0145` (`0109-F1` § 10): a build or benchmark-run claim is `Missing` in § 9, with its mechanism and a hand-run record here. On 2026-10-11, pull request #114 (`0109-F1` § 10, verbatim): "Bechmarks don't get tests. They should benchmark production code!" So no test of `CheckBenchmarks` is written or proposed, `check-scaling.feature` is not linked into `test/acceptance`, and it has no step class. All four rows of § 9 are `Missing`.
+- **Mechanisms, per claim.** Read on 2026-10-11 in [`CheckBenchmarks.cs`](../CheckBenchmarks.cs), as item `0150` built it. Each is a declaration or a guard in that one class; none has a test.
+  - B-001: `Specifications` carries `[Params(1, 10, 100, 1000)]`, and `Check`, the one `[Benchmark]` method, returns `SpechtRunner.Run(_root)`. The library measures the method once for each parameter value, after a `[GlobalSetup]` that builds that value's tree. Four sizes and one whole check of each are those two attributes.
+  - B-002: `Check` returns the report. Before any measurement of a size, `GenerateTree` runs the same call on the same root and throws unless `report.SpecificationCount == Specifications` and the report holds no violation. The guard reads the setup's report, not a measured call's: the two are one expression over a root nothing writes to between them, and the check is deterministic (`AGENTS.md` § Invariants), so the measured call returns the same count.
+  - B-003: no mechanism in this class. `GenerateTree` saves `SpechtTree.Of(Specifications)`, and nothing else, into a temporary directory it has just created, so the root holds only that tree. Where the tree puts a specification is `SpechtTree.Of`'s, which writes each at `features/feature-<n>/.spec/README.md` (`0109-F1` § 7 `### The tree generator`). The guard does not read the layout.
+  - B-004: the parameter is a public property named `Specifications`. The library prints a column for each parameter, headed by the property's name, with the value each row was measured at.
+- **Evidence: the hand run in `### Performance`.** `benchmarker`'s run of 2026-10-11, under the default job, with the command recorded there. Its result table has one row for each of 1, 10, 100 and 1000 specifications, each with a mean and an allocated figure. The record names no exit code.
+  - B-001 is in that table: four rows, one per size, each a measured whole check.
+  - B-004 is in that table: its first column is `Specifications`, and each row carries its size.
+  - B-002 is shown by the same rows, through the guard: a size whose setup threw would report no number, and all four report one. `### Performance` says so under "B-002, B-003".
+  - B-003 is not shown by the run. It holds by reading `SpechtTree.Of`, as `### Performance` also says.
+  - A run by hand pins nothing for the next change, so the rows stay `Missing`.
+- **What one measured call reads from disk.** `SpechtRunner.Run(root)` (`src/specht/SpechtRunner.cs` line 15) passes `SchemaVersions.Embedded` to `SpecModel.Load`, which calls the `SpecSchemas.Load` overload that takes a version set (`src/specht/Model/SpecModel.cs` line 61; `src/specht/Model/SpecSchemas.cs` lines 100 to 105). That overload reads the manifest from the tree (`src/specht/Manifest/SpecManifest.cs` line 57) and takes the three frontmatter schemas from the embedded version. `SchemaVersions.Embedded` is a static property, filled once for the process from the assembly's resources (`src/specht/Versioning/SchemaVersions.cs` line 15). The overload that reads the schema files from `.spec/schema/` (`SpecSchemas.cs` lines 72 to 86) is not on the check's path. So a measured call never opens the three schema files `SpechtTree.Of` writes. The files it reads are the manifest, each specification (`SpecModel.cs` line 71) and each Gherkin file (`src/specht/Rules/FeatureFileReader.cs` line 17): the manifest and `2n` files, as `### Performance` says under C-3.
+- **Testability verdict.**
+  - B-001: mechanism, the `[Params]` and `[Benchmark]` attributes. No unit test: a declaration the library reads, visible only in a run.
+  - B-002: mechanism, the guard in `GenerateTree`. No unit test: it is a decision, the only one in the class, and it is reachable only by calling a benchmark's setup over a real root; a benchmark is not tested (owner, pull request #114).
+  - B-003: no mechanism in this class; the layout is `SpechtTree.Of`'s.
+  - B-004: mechanism, the parameter's name. No unit test: a declaration, visible only in a result.
+  - Reported to `implementer`, not acted on: the report carries a count for each layout (`SpechtRunner.Evaluate`), and the guard reads only the total and the violations. A guard that also read the layout counts would make B-003 something the run shows, not only something read.
 
 ### Performance
 
@@ -139,14 +174,14 @@ Pending: owned by `test-writer`, written after agreement.
 
 ## 9. Traceability Matrix
 
-<!-- last written by: spec-author, 2026-10-09 -->
+<!-- last written by: test-writer, 2026-10-11 (item 0150: no test, by the owner's rulings; each row names its mechanism and the hand run) -->
 
-| Claim ID | Scenario                                     | Test    | Status  |
-| -------- | -------------------------------------------- | ------- | ------- |
-| B-001    | A whole check is measured at every tree size | Missing | Missing |
-| B-002    | The measured check covers the whole tree     | Missing | Missing |
-| B-003    | The measured tree is laid out co-located     | Missing | Missing |
-| B-004    | Each result names its tree size              | Missing | Missing |
+| Claim ID | Scenario                                     | Test                                                                                                                                    | Status  |
+| -------- | -------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- | ------- |
+| B-001    | A whole check is measured at every tree size | No test. `CheckBenchmarks.Specifications`' `[Params(1, 10, 100, 1000)]` and the `[Benchmark]` method `Check`; hand run, § 8 Performance | Missing |
+| B-002    | The measured check covers the whole tree     | No test. The guard in `CheckBenchmarks.GenerateTree`; hand run, § 8 Performance                                                         | Missing |
+| B-003    | The measured tree is laid out co-located     | No test. `SpechtTree.Of`'s layout (`0109-F1` § 7), by reading; the hand run does not show it                                            | Missing |
+| B-004    | Each result names its tree size              | No test. The parameter column `Specifications`; hand run, § 8 Performance                                                               | Missing |
 
 ## 10. Lessons / Spec Deltas
 
