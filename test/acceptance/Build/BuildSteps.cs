@@ -416,7 +416,7 @@ public sealed partial class BuildSteps(IUnitTestRuntimeProvider runtime) : IDisp
             <OutputType>Exe</OutputType>
             <PackAsTool>true</PackAsTool>
             <ToolCommandName>specht</ToolCommandName>
-            <PackageId>tool</PackageId>
+            <PackageId>specht.tool</PackageId>
           </PropertyGroup>
         </Project>
         """;

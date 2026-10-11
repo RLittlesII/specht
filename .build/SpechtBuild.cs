@@ -128,7 +128,7 @@ internal partial class SpechtBuild : NukeBuild
     private Target Build => definition => definition
         .DependsOn(Test);
 
-    // B-009: exactly one tool.<version>.nupkg under .artifacts/nupkg/.
+    // B-009: exactly one specht.tool.<version>.nupkg under .artifacts/nupkg/.
     private Target Pack => definition => definition
         .DependsOn(Build)
         .Produces(PackageDirectory / "*.nupkg")

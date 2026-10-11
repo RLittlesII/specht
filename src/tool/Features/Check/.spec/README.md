@@ -159,9 +159,9 @@ The gate runs only as `hooked`'s Nuke target, so a pre-commit hook, a CI step an
 
 ## 7. Technical Design
 
-<!-- last written by: implementer, 2026-10-11 (item 0107: the runner is resolved from `AddSpechtEngine()`'s graph; every other bullet as its item left it) -->
+<!-- last written by: implementer, 2026-10-11 (item 0171: the package's id; every other bullet as its item left it) -->
 
-Delivered so far by items 0026, 0027, 0028 and 0133. The slice layout is `dotnet-tool` § Vertical Slice.
+Delivered so far by items 0026, 0027, 0028, 0133 and 0171. The slice layout is `dotnet-tool` § Vertical Slice.
 
 - **The command.** `CheckCommand` is an `AsyncCommand` with its `Settings` nested (decision 0002): `--root <DIR>`, defaulting to `.`, and `--strict`. It resolves the root with `Path.GetFullPath`, calls the runner, writes each violation's `ToString()` - the engine's MSBuild-shaped line, in the engine's order, which `SpecViolation` ([`SpecViolation.cs`](../../../../specht/Model/SpecViolation.cs)) ends with ` [<identifier>]` when its `Identifier` is not null and at the message when it is (B-016, decision 0006) - and returns `ExitCodes.Violations` on an error, or on any violation under `--strict`, and `ExitCodes.Success` otherwise (B-001, B-003, B-004).
 - **The run summary** (B-002). After the violation lines the command writes each of `SpecReportDocument.From(report).SummaryLines()` through the same raw writer: four lines, `specifications: epics 2, features 1`, `items: 0`, `rules evaluated: 41`, `errors: 1, warnings: 0`, the layouts in the document's order. The lines are formatted in the engine, on the document `0001-F3` B-005 already defines the counts on, beside `SpecViolation`'s line format, so the command stays parse, run, fold (C-4) and the summary and `--json` cannot count differently. A layout is named by its name in the manifest, the string the document's JSON carries (`0001-F6` B-009, item `0005`), so the summary and `--json` cannot name it differently; `epics` and `features` are the default manifest's names (`0001-F6` decision 0008). No summary line has the diagnostic shape, so a log parser reads none as a violation. An input failure returns before the summary, so stdout stays empty for B-005 to B-007.
@@ -175,6 +175,7 @@ Delivered so far by items 0026, 0027, 0028 and 0133. The slice layout is `dotnet
 - **The root as typed.** The engine holds only the resolved root, so `SpechtRootNotFoundException` carries no path and the command names `settings.Root` (B-005); the manifest messages come from the engine.
 - **Stderr** is written with `Console.Error.WriteLine`, `dotnet-tool` § Conventions; it is not injected, because the command tester captures stdout alone and no test substitutes it. The message never reaches stdout (C-3, B-009).
 - **Exit codes** hold `0` to `3`; 0040 adds `4`.
+- **The package's id** (B-017, C-5) is `PackageId` in [`tool.csproj`](../../../tool.csproj), the one place it is declared. The release's push line in [`SpechtBuild.Publish.cs`](../../../../../.build/SpechtBuild.Publish.cs) spells the file name `specht.tool.<version>.nupkg` again, because the generated workflow carries a literal; `.github/workflows/publish.yml` is regenerated from it and never edited.
 
 ## 8. Testing Strategy
 

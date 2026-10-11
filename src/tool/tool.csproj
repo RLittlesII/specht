@@ -6,7 +6,7 @@
     <IsPackable>true</IsPackable>
     <PackAsTool>true</PackAsTool>
     <ToolCommandName>specht</ToolCommandName>
-    <PackageId>tool</PackageId>
+    <PackageId>specht.tool</PackageId>
     <RootNamespace>Specht.Tool</RootNamespace>
     <AssemblyName>specht.tool</AssemblyName>
   </PropertyGroup>
