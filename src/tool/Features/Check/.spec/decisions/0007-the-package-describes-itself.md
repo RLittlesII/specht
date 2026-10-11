@@ -94,4 +94,15 @@ maps to the repository.
 
 ## Reversal
 
-None.
+2026-10-11, in part, by the repository owner. Nothing above is edited.
+
+- **Source link and a runner-deterministic build are claimed.** The owner, on
+  OQ-3: "OQ-3 source link and deterministic CI build => yes. this will tie a
+  version of my binary to a git commit? Yes please!" Decision 0008; B-030 to
+  B-032, C-11.
+- **The description is reworded.** The owner: "`.spec/` tree => specification
+  documents". B-024 is amended. The repository `README.md` keeps its tagline:
+  "tagline stays".
+- **B-027 names the image kinds**, PNG or JPEG, and **B-034 to B-036** give
+  C-9 and C-10 a test each; both are spec-author's, on notes from the
+  `test-writer`.

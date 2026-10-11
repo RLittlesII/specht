@@ -177,7 +177,7 @@ Feature: The check command
   @B-024
   Scenario: The package says what the tool does
     When the tool is packed
-    Then the package describes the tool as one that checks a repository's specification tree against a versioned schema
+    Then the package describes the tool as one that checks a repository's specification documents against a versioned schema
 
   @B-025
   Scenario: The package carries its readme
@@ -204,3 +204,43 @@ Feature: The check command
   Scenario: The package points at the repository's releases
     When the tool is packed
     Then the package's release notes point at the repository's releases
+
+  @B-030
+  Scenario: The packed tool names the commit it was built from
+    When the tool is packed
+    Then every program file of the tool in the package states a version naming the commit it was built from
+
+  @B-031
+  Scenario: The packed tool's sources are found in the repository at that commit
+    When the tool is packed
+    Then the debug information in the package points each program file's sources at https://github.com/RLittlesII/specht
+    And it points them at the commit the tool was built from
+
+  @B-032
+  Scenario: A tool built by continuous integration names no directory of the machine that built it
+    Given the tool is built the way a continuous-integration run builds it
+    When that build is packed
+    Then no program file of the tool in the package names a directory of the machine that built it
+    And no debug information in the package names one
+
+  @B-033 @boundary
+  Scenario: The package carries no specification, scenario or work-item file
+    When the tool is packed
+    Then the package carries no specification file
+    And it carries no scenario file
+    And it carries no work-item file
+
+  @B-034
+  Scenario: The packed readme opens with what the tool does
+    When the tool is packed
+    Then the readme the package carries opens with the package's description
+
+  @B-035
+  Scenario: The packed readme links to the install document
+    When the tool is packed
+    Then the readme the package carries links to the install document in the repository
+
+  @B-036 @boundary
+  Scenario: The packed readme names no package feed
+    When the tool is packed
+    Then the readme the package carries holds no package feed's address

@@ -57,7 +57,7 @@ acceptance_criteria:
   - |
     Each section `README.md` holds at commit `3983024` is kept, moved or
     removed as this table says, and nothing else is dropped:
-      header, example line, "Why"            keep
+      header, example line, "Why"            keep; the tagline verbatim
       the rule-range sentence (`SPEC001` to
         `SPEC061`, brief § 4, rule pages)    move to docs/what-it-checks.md
       "Deterministic and offline" sentence   keep
@@ -101,6 +101,12 @@ acceptance_criteria:
   - "Constraints preserved: 0055-F7 C-4"
 
 decisions:
+  - |
+    2026-10-11, the repository owner, asked whether the tagline follows the
+    package description's new wording: "tagline stays". The header's line
+    "A dotnet tool that checks a repository's .spec/ tree against a
+    versioned schema." is kept word for word; "specification documents" is
+    the package's wording only (0001-F2 B-024, item 0172).
   - |
     2026-10-11, spec-author: one page per subject, four pages. "Work items
     are optional" and "Default manifest" are sections of the page whose

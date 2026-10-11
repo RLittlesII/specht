@@ -9,7 +9,7 @@ risk: 4
 parent: "0082"
 children: []
 
-depends_on: ["0083"] # the push step of 0083's workflow
+depends_on: ["0083", "0171", "0172", "0174"] # the push step of 0083's workflow; the package it pushes (OQ-11)
 spikes: []
 
 spec: .build/Releasing/.spec/README.md
@@ -46,6 +46,13 @@ decisions:
     now!" (0001-F7 decision 0007): `0010` and `0004` removed from
     `depends_on`, which C-2 no longer asks for. The ruling orders the
     work; it pushes no tag. `risk` is unchanged and was not re-scored.
+  - |
+    2026-10-11, spec-author, derived from OQ-11 as resolved that day: what
+    the package says about itself "lands before item 0084's tag", so
+    `0171` (its id), `0172` (its repository, commit and the rest) and
+    `0174` (what it must not carry) join `depends_on`. A published version
+    stays (§ 5 #4), so the first one is not pushed under the wrong id or
+    with the specification tree inside it. Not an owner ruling.
 
 out_of_scope:
   - "NuGet.org — § 5 #3, C-3."
