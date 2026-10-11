@@ -2,7 +2,7 @@ id: "0014"
 type: task
 title: Lower or disable a rule from the manifest
 
-status: ready-for-architecture
+status: in-progress
 
 priority: high
 risk: 3
@@ -24,7 +24,7 @@ claims:
   - B-017
 
 created: "2026-10-08"
-updated: "2026-10-09"
+updated: "2026-10-10"
 closed: null
 
 summary: |
