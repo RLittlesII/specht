@@ -55,7 +55,7 @@ public sealed class SpechtRunnerVersionsIntegrationTests
             [shipped, shipped with { Number = new SemanticVersion(1, 0, 0), FeatureSchema = schema.ToJsonString() }]);
 
         // When
-        var report = SpechtRunner.Run(tree.Root, versions);
+        var report = EngineServices.Runner().Run(tree.Root, versions);
 
         // Then
         var frontmatter = report.Violations
@@ -78,7 +78,7 @@ public sealed class SpechtRunnerVersionsIntegrationTests
             [shipped, shipped with { Number = new SemanticVersion(0, 1, 1) }, shipped with { Number = new SemanticVersion(0, 2, 0) }]);
 
         // When
-        var report = SpechtRunner.Run(tree.Root, versions);
+        var report = EngineServices.Runner().Run(tree.Root, versions);
 
         // Then
         report.SchemaVersion.Should().Be(expected, because);
@@ -96,7 +96,7 @@ public sealed class SpechtRunnerVersionsIntegrationTests
         var pinned = shipped with { RuleIds = shipped.RuleIds.Except(removed, StringComparer.Ordinal).ToHashSet(StringComparer.Ordinal) };
 
         // When
-        var report = SpechtRunner.Run(tree.Root, new SchemaVersions([pinned]));
+        var report = EngineServices.Runner().Run(tree.Root, new SchemaVersions([pinned]));
 
         // Then
         report.Violations.Select(static violation => violation.RuleId).Should().Equal(expected, because);

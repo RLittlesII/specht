@@ -100,7 +100,7 @@ public sealed class VersioningSteps
     {
         if (_shipped is not null)
         {
-            _report = SpechtRunner.Run(Tree.Root, new SchemaVersions(_shipped.Values));
+            _report = EngineServices.Runner().Run(Tree.Root, new SchemaVersions(_shipped.Values));
             return;
         }
 

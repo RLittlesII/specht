@@ -3,8 +3,8 @@ using Specht.Model;
 namespace Specht.Rules;
 
 /// <summary>
-/// One specification rule. The implementations that run are the ones named
-/// on <see cref="SpecRules.All"/>; none is found by reflection. A new rule is
+/// One specification rule. The implementations that run are the ones
+/// <c>AddSpechtEngine()</c> registers by name; none is found by reflection. A new rule is
 /// a new schema version (brief § 4), not just a new file.
 /// </summary>
 public interface ISpecRule

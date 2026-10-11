@@ -3,7 +3,6 @@ using System.Reflection.Metadata;
 using System.Reflection.PortableExecutable;
 using AwesomeAssertions;
 using Reqnroll;
-using Specht.Discovery;
 using Specht.Model;
 using Specht.Tests.Engine.Baseline;
 using Specht.Tests.Shared;
@@ -32,7 +31,7 @@ public sealed class EngineSteps
     public void GivenARepositoryRootHoldingAManifestAndTheThreeFrontmatterSchemasOfSchemaVersion(string version)
     {
         _tree = new SpecTree();
-        SpecModel.Load(_tree.Root).Schemas.Version.Number.ToString().Should().Be(version);
+        EngineServices.Loader().Load(_tree.Root).Schemas.Version.Number.ToString().Should().Be(version);
     }
 
     [Given("the baseline tree the tests build, which breaks each of the twenty-one version 0.1.0 rules in each layout the rule applies to")]
@@ -53,23 +52,23 @@ public sealed class EngineSteps
 
     [Given("the root holds one specification in the epics layout missing its traceability section")]
     public void GivenTheRootHoldsOneSpecificationInTheEpicsLayoutMissingItsTraceabilitySection() =>
-        _specifications.Add(SpecDiscovery.Relative(Tree.Root, Tree.WriteFeature("0001", "F1", sections: WithoutTraceability)));
+        _specifications.Add(SpecPath.Relative(Tree.Root, Tree.WriteFeature("0001", "F1", sections: WithoutTraceability)));
 
     [Given("one specification in the features layout missing its traceability section")]
     public void GivenOneSpecificationInTheFeaturesLayoutMissingItsTraceabilitySection() =>
         _specifications.Add(
-            SpecDiscovery.Relative(Tree.Root, Tree.WriteCoLocatedFeature("src/area", "0002", "F1", sections: WithoutTraceability)));
+            SpecPath.Relative(Tree.Root, Tree.WriteCoLocatedFeature("src/area", "0002", "F1", sections: WithoutTraceability)));
 
     [Given("the root holds a co-located specification declaring epic {string} and id {string} under a folder named nothing like it")]
     public void GivenTheRootHoldsACoLocatedSpecificationUnderAFolderNamedNothingLikeIt(string epic, string id) =>
-        _specifications.Add(SpecDiscovery.Relative(Tree.Root, Tree.WriteCoLocatedFeature("src/unrelated/area", epic, id)));
+        _specifications.Add(SpecPath.Relative(Tree.Root, Tree.WriteCoLocatedFeature("src/unrelated/area", epic, id)));
 
     [Given("the root holds two specifications both declaring epic {string} and id {string}")]
     public void GivenTheRootHoldsTwoSpecificationsBothDeclaring(string epic, string id)
     {
         _identity = $"{epic}-{id}";
-        _specifications.Add(SpecDiscovery.Relative(Tree.Root, Tree.WriteCoLocatedFeature("src/first", epic, id)));
-        _specifications.Add(SpecDiscovery.Relative(Tree.Root, Tree.WriteCoLocatedFeature("src/second", epic, id)));
+        _specifications.Add(SpecPath.Relative(Tree.Root, Tree.WriteCoLocatedFeature("src/first", epic, id)));
+        _specifications.Add(SpecPath.Relative(Tree.Root, Tree.WriteCoLocatedFeature("src/second", epic, id)));
     }
 
     [When("the engine runs")]
@@ -95,7 +94,7 @@ public sealed class EngineSteps
 
     [Then("the specification is read as {string}")]
     public void ThenTheSpecificationIsReadAs(string identity) =>
-        SpecModel.Load(Tree.Root).Features.Should().ContainSingle().Which.Identity.Should().Be(identity);
+        EngineServices.Loader().Load(Tree.Root).Features.Should().ContainSingle().Which.Identity.Should().Be(identity);
 
     [Then("no identity violation is reported")]
     public void ThenNoIdentityViolationIsReported() =>

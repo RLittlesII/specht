@@ -1,0 +1,71 @@
+id: "0152"
+type: test
+title: Unit-test each rule's decision over a model built in memory
+
+status: ready
+
+value: 2
+risk: 2
+
+parent: "0020"
+children: []
+
+depends_on: ["0107"] # FeatureFileRule takes its reader by constructor from 0107, so every rule is constructible in a unit test
+spikes: []
+
+spec: src/specht/.spec/README.md
+
+claims:
+  - B-004
+
+created: "2026-10-11"
+updated: "2026-10-11"
+closed: null
+
+summary: |
+  Item 0107 re-tiered the rule-level tests that write a SpecTree to disk to
+  Integration and rewrote none over an in-memory model, so 0001-F1 § 9 holds
+  B-004 Partial and § 8 records a unit test per rule over SpecModelFixture
+  as owed. This item writes them. No production code changes.
+
+  Each of the eight rules AddSpechtEngine() registers gets one Unit class
+  that calls the rule's Evaluate over a SpecModel built with
+  SpecModelFixture, with no tree on disk and no container. FeatureFileRule
+  is built over a FeatureFileReader on a MockFileSystem, as
+  FeatureFileRuleUnitTests already does. Four rules have a Unit class today
+  (ApprovalRule, ClaimRule, SectionStructureRule, FeatureFileRule) and four
+  have none (ChildItemRule, DependencyRule, FrontmatterSchemaRule,
+  IdentityRule); the existing classes are extended where a rule id they
+  report is pinned by none of their tests.
+
+  Depends on 0107 for the constructor-injected reader. It needs no design
+  pass: § 8 says nothing in the design stands in the way since item 0104.
+  The schema set of an in-memory model is loaded over a MockFileSystem
+  holding a manifest, as § 8 describes for item 0105.
+
+acceptance_criteria:
+  - "B-004 — one Unit class per rule, for each of the eight rules, over
+    `SpecModelFixture`"
+  - "B-004 — every rule id a rule reports is pinned by at least one unit
+    test of that rule: all twenty-one"
+  - "B-004 — no test of these classes writes a tree to disk or builds a
+    container; `FeatureFileRule` reads through a `MockFileSystem`"
+  - "0001-F1 § 9's B-004 row moves `Partial` to `Covered` and names the
+    classes."
+  - "C-9 — no verdict changes; the golden-report test green, unedited"
+  - "§ 9 carries a row naming a test for each id above."
+
+decisions:
+  - |
+    2026-10-11, cut by spec-author on spec-reviewer's condition 2 for item
+    0107 (0001-F1 § 12): the per-rule unit tests item 0107's delivery
+    decision records as owed had no item. Parent 0020, as 0104 to 0107
+    are, because it delivers 0001-F1 B-004. The other test that decision
+    named, 0001-F5 B-018's ordering, was written in item 0107's change and
+    is not here.
+
+out_of_scope:
+  - "Rewriting or deleting the Integration rule tests - they stay as the tree-on-disk proof."
+  - "A public constructor on `SpecSchemas` - § 8 reports the gap to `implementer` and asks for no change."
+  - "A test that a throwing rule propagates - § 8: 0001-F1 B-012 to B-016 replace that behaviour."
+  - "Any production code, and everything in § 5 of the spec."

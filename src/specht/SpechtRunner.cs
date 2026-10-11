@@ -1,3 +1,4 @@
+using System.IO.Abstractions;
 using Specht.Model;
 using Specht.Report;
 using Specht.Rules;
@@ -6,22 +7,13 @@ using Specht.Versioning;
 namespace Specht;
 
 /// <summary>
-/// Runs the rules named on <see cref="SpecRules.All"/> against the resolved
-/// specification tree.
+/// Runs the rules it was given against the resolved specification tree.
 /// </summary>
-public static class SpechtRunner
+/// <param name="loader">The model loader.</param>
+/// <param name="rules">The rule set, in the order it is evaluated.</param>
+/// <param name="fileSystem">The file system a report is written through.</param>
+public sealed class SpechtRunner(SpecModelLoader loader, IEnumerable<ISpecRule> rules, IFileSystem fileSystem)
 {
-    /// <summary>Loads the tree under <paramref name="root"/> and evaluates its rules with the embedded version set.</summary>
-    public static SpechtReport Run(string root) => Run(root, SchemaVersions.Embedded);
-
-    /// <summary>
-    /// Loads the tree under <paramref name="root"/> and evaluates the rules of the version its manifest pins from
-    /// <paramref name="versions"/>: a rule outside that version's vocabulary is not evaluated, and a violation it would
-    /// report is dropped (<c>0001-F7</c> B-014).
-    /// </summary>
-    public static SpechtReport Run(string root, SchemaVersions versions) =>
-        Evaluate(SpecModel.Load(root, versions), SpecRules.All);
-
     /// <summary>
     /// Evaluates <paramref name="rules"/>, in the order given, over <paramref name="model"/> under the vocabulary of the
     /// version its schemas keep (<c>0001-F1</c> B-004; <c>0001-F7</c> B-014; ADR-0008), less the rule ids its manifest sets
@@ -73,13 +65,23 @@ public static class SpechtRunner
             .ThenBy(static violation => violation.RuleId, StringComparer.Ordinal)
             .ToList();
 
+    /// <summary>Loads the tree under <paramref name="root"/> and evaluates its rules with the embedded version set.</summary>
+    public SpechtReport Run(string root) => Run(root, SchemaVersions.Embedded);
+
+    /// <summary>
+    /// Loads the tree under <paramref name="root"/> and evaluates the rules of the version its manifest pins from
+    /// <paramref name="versions"/>: a rule outside that version's vocabulary is not evaluated, and a violation it would
+    /// report is dropped (<c>0001-F7</c> B-014).
+    /// </summary>
+    public SpechtReport Run(string root, SchemaVersions versions) => Evaluate(loader.Load(root, versions), rules);
+
     /// <summary>Writes <paramref name="report"/> to <paramref name="path"/> as the report document (<c>0001-F3</c> B-008).</summary>
     /// <param name="report">The run's report.</param>
     /// <param name="path">Where the document is written.</param>
-    public static void WriteReport(SpechtReport report, string path)
+    public void WriteReport(SpechtReport report, string path)
     {
-        Directory.CreateDirectory(Path.GetDirectoryName(path)!);
-        File.WriteAllText(path, SpecReportDocument.From(report).ToJson());
+        fileSystem.Directory.CreateDirectory(fileSystem.Path.GetDirectoryName(path)!);
+        fileSystem.File.WriteAllText(path, SpecReportDocument.From(report).ToJson());
     }
 
     private static HashSet<string> Enabled(IReadOnlySet<string> vocabulary, IReadOnlyDictionary<string, string> settings) =>
