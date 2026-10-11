@@ -37,8 +37,8 @@ summary: |
   it. Priority is the tier: `high` on the dependency path of the product goal
   in `.issue/.goal` - Release (`0082`) and Consuming the package (`0086`), the
   first NuGet release - `medium` when some Feature needs the item, `low` when
-  none does. The `priority`, `rank` and `blocks` fields are deleted from all
-  133 items and from the template. The report gains a Toward column, a
+  none does. The `priority`, `rank` and `blocks` fields are deleted from
+  every item and from the template. The report gains a Toward column, a
   Gates column - the open items that wait on the item directly, which is what
   `blocks` stored - and a "Blocked by status" list, for items marked `blocked`
   that wait on no open item and appeared in no list before. The definition is in
