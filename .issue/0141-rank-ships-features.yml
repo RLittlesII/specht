@@ -38,9 +38,10 @@ summary: |
   in `.issue/.goal` - Release (`0082`) and Consuming the package (`0086`), the
   first NuGet release - `medium` when some Feature needs the item, `low` when
   none does. The `priority`, `rank` and `blocks` fields are deleted from all
-  133 items and from the template. The report gains a Toward column and a
-  "Blocked by status" list, for items marked `blocked` that wait on no open
-  item and appeared in no list before. The definition is in
+  133 items and from the template. The report gains a Toward column, a
+  Gates column - the open items that wait on the item directly, which is what
+  `blocks` stored - and a "Blocked by status" list, for items marked `blocked`
+  that wait on no open item and appeared in no list before. The definition is in
   `.spec/templates/item.yml`; the `next` skill, the companion and `AGENTS.md`
   say rank is computed and never stored.
 
@@ -56,7 +57,9 @@ acceptance_criteria:
   - Closing an item raises the rank of what is left in its Feature's closure,
     with no edit to another item.
   - "The \"Pick one per lane\" table and the startable table carry a Toward
-    column after Priority: the Feature id and its remaining cost."
+    column after Priority, the Feature id and its remaining cost, and a Gates
+    column after it: the ids of the open items whose `depends_on` names the
+    item directly, or `-` when none."
   - An item whose status is `blocked` and that waits on no open item lists
     under "Blocked by status".
   - "`.spec/templates/item.yml` holds the one definition; no other file
@@ -82,6 +85,10 @@ decisions:
   - "2026-10-10, repository owner, approving the plan: an item no Feature
     needs ranks in the `low` tier. Rejected: scoring it as a one-item goal
     beside the Features, where it outranks every one of them."
+  - "2026-10-10, repository owner: \"why did we remove - blocks: from
+    everywhere?\" - what an item gates is printed by the queue script, in a
+    Gates column, computed from open items' `depends_on`. Rejected: restoring
+    the stored `blocks` field."
 
 out_of_scope:
   - "The `priority`, `value`, `risk` and `rank` keys in specification

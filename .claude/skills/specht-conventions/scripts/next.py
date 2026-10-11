@@ -134,6 +134,7 @@ def rank(items, open_items, goal):
         item["tier"] = 0 if item["id"] in product else 1 if toward else 2
         item["priority"] = PRIORITIES[item["tier"]]
         item["waiting"] = sum(1 for i in open_items if i != item["id"] and item["id"] in work[i])
+        item["gates"] = ", ".join(sorted(i for i in open_items if item["id"] in open_items[i]["depends_on"])) or "-"
     return children
 
 
@@ -167,19 +168,19 @@ def main():
     if not startable:
         print("- nothing startable")
     else:
-        print("| Lane | Pick | Rank | Priority | Toward | Status | Title | Then | Shares |")
-        print("| --- | --- | --- | --- | --- | --- | --- | --- | --- |")
+        print("| Lane | Pick | Rank | Priority | Toward | Gates | Status | Title | Then | Shares |")
+        print("| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |")
     for number, lane in enumerate(lanes(startable), 1):
         head, rest = lane["items"][0], lane["items"][1:]
         then = ", ".join(f"{i['id']} ({i['rank']})" for i in rest) or "-"
         shares = ", ".join(sorted(lane["sets"])) or "nothing"
-        print(f"| {number} | {head['id']} | {head['rank']} | {head['priority']} | {head['toward']} | {head['status']} | {head['title']} | {then} | {shares} |")
+        print(f"| {number} | {head['id']} | {head['rank']} | {head['priority']} | {head['toward']} | {head['gates']} | {head['status']} | {head['title']} | {then} | {shares} |")
 
     print("\n## Startable\n")
-    print("| ID | Rank | Priority | Toward | Status | Title | Description |")
-    print("| --- | --- | --- | --- | --- | --- | --- |")
+    print("| ID | Rank | Priority | Toward | Gates | Status | Title | Description |")
+    print("| --- | --- | --- | --- | --- | --- | --- | --- |")
     for i in startable:
-        print(f"| {i['id']} | {i['rank']} | {i['priority']} | {i['toward']} | {i['status']} | {i['title']} | {describe(i['summary'], args.width)} |")
+        print(f"| {i['id']} | {i['rank']} | {i['priority']} | {i['toward']} | {i['gates']} | {i['status']} | {i['title']} | {describe(i['summary'], args.width)} |")
 
     print("\n## Blocked at or above that rank\n")
     for i in blocked or []:

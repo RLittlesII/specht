@@ -178,7 +178,9 @@ per lane with its head, the items queued behind it and the write set it holds,
 then the startable table, the blocked list, the "Blocked by status" list and
 the taken list. Both tables carry a Toward column after Priority: the Feature
 the rank comes from and, in brackets, the cost left in its closure, or `-` for
-an item no Feature needs. A blocked line reads `- 0062 (medium 83) …`.
+an item no Feature needs. A Gates column follows it: the ids of the open items
+whose `depends_on` names the item directly, or `-`. It replaces the stored
+`blocks` field. A blocked line reads `- 0062 (medium 83) …`.
 
 It needs nothing but Python 3's standard library and reads the tree it lives
 in, so a worktree answers for its own branch. It walks hidden folders - most

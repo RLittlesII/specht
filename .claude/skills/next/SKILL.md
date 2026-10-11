@@ -31,6 +31,8 @@ comment, misses items in hidden folders, and forgets a dependency's status.
   goal, then work some Feature needs, then work nothing waits on.
 - **Toward** names the Feature an item's rank comes from and, in brackets, the
   work that Feature has left.
+- **Gates** names the open items that wait on this one directly: what
+  finishing it frees.
 - **Blocked** lists items ranked at or above the last startable one that still
   wait on something, with what they wait on. A blocker carries the rank of what
   it gates, so the work that frees a blocked item ranks with it, not below it.
@@ -57,9 +59,9 @@ which files it actually touches, so restate a lane as confirmed only after it.
 ## Reporting
 
 Lead with the lanes: one row per lane - its head, rank, priority, toward,
-status, title, the items queued behind it, and the write set it holds. Then
-the startable table - id, rank, priority, toward, status, title, description -
-the blocked list, the blocked-by-status list and the taken list.
+gates, status, title, the items queued behind it, and the write set it holds.
+Then the startable table - id, rank, priority, toward, gates, status, title,
+description - the blocked list, the blocked-by-status list and the taken list.
 State the commit the answer was read at: the queue moves with every merge, and
 an answer from before a pull is stale.
 

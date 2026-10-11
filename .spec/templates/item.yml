@@ -57,7 +57,9 @@ status: ready
 # `value` and `risk` are AUTHORED. NOTHING DERIVED IS STORED: an item carries no
 # `priority`, `rank` or `blocks` field. The queue script computes rank and
 # priority on every run, from `value`, `risk`, `depends_on`, `parent` and
-# `status` alone, so neither goes stale and neither is ever set by hand.
+# `status` alone, so neither goes stale and neither is ever set by hand. What
+# an item gates - the open items whose `depends_on` names it - is printed by
+# the same script, not kept here.
 #
 # Rank orders work by what gets the product, then a Feature, to done soonest:
 # value per remaining work. `risk` stands in for effort; there is no size field.
