@@ -22,6 +22,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\specht\specht.csproj" />
     <ProjectReference Include="..\..\src\tool\tool.csproj" />
+    <ProjectReference Include="..\..\.performance\benchmarks\benchmarks.csproj" />
   </ItemGroup>
 
   <ItemGroup>
