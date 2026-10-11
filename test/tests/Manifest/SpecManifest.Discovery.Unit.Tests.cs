@@ -40,7 +40,7 @@ public sealed class SpecManifestDiscoveryUnitTests
         var fileSystem = Holding("{}");
 
         // When
-        var discovery = SpecManifest.Load(fileSystem, Root).Discovery;
+        var discovery = ((SpecStructure)SpecManifest.Load(fileSystem, Root).Value!).Discovery;
 
         // Then
         Shape(discovery, key).Should().BeEquivalentTo(shapes);
@@ -54,7 +54,7 @@ public sealed class SpecManifestDiscoveryUnitTests
         var fileSystem = Holding(new JsonObject { [key] = new JsonArray([.. shapes]) }.ToJsonString());
 
         // When
-        var discovery = SpecManifest.Load(fileSystem, Root).Discovery;
+        var discovery = ((SpecStructure)SpecManifest.Load(fileSystem, Root).Value!).Discovery;
 
         // Then
         Shape(discovery, key).Should().BeEquivalentTo(shapes);
@@ -67,7 +67,7 @@ public sealed class SpecManifestDiscoveryUnitTests
         var fileSystem = Holding("{}");
 
         // When
-        var discovery = SpecManifest.Load(fileSystem, Root).Discovery;
+        var discovery = ((SpecStructure)SpecManifest.Load(fileSystem, Root).Value!).Discovery;
 
         // Then
         discovery.Layouts.Should().Equal(
@@ -90,7 +90,7 @@ public sealed class SpecManifestDiscoveryUnitTests
             """);
 
         // When
-        var discovery = SpecManifest.Load(fileSystem, Root).Discovery;
+        var discovery = ((SpecStructure)SpecManifest.Load(fileSystem, Root).Value!).Discovery;
 
         // Then
         discovery.Layouts.Should().Equal(
@@ -113,7 +113,7 @@ public sealed class SpecManifestDiscoveryUnitTests
             """);
 
         // When
-        var discovery = SpecManifest.Load(fileSystem, Root).Discovery;
+        var discovery = ((SpecStructure)SpecManifest.Load(fileSystem, Root).Value!).Discovery;
 
         // Then
         discovery.Layouts.Should().Equal(
@@ -128,7 +128,7 @@ public sealed class SpecManifestDiscoveryUnitTests
         var fileSystem = Holding("{}");
 
         // When
-        var discovery = SpecManifest.Load(fileSystem, Root).Discovery;
+        var discovery = ((SpecStructure)SpecManifest.Load(fileSystem, Root).Value!).Discovery;
 
         // Then
         discovery.Exclusions.Should().BeEquivalentTo(
@@ -142,7 +142,7 @@ public sealed class SpecManifestDiscoveryUnitTests
         var fileSystem = Holding("""{ "exclusions": ["vendor", "/generated"] }""");
 
         // When
-        var discovery = SpecManifest.Load(fileSystem, Root).Discovery;
+        var discovery = ((SpecStructure)SpecManifest.Load(fileSystem, Root).Value!).Discovery;
 
         // Then
         discovery.Exclusions.Should().BeEquivalentTo("vendor", "/generated");

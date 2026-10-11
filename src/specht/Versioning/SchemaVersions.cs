@@ -19,13 +19,13 @@ public sealed class SchemaVersions
 
     /// <summary>The version a manifest pins.</summary>
     /// <param name="number">The pinned version.</param>
-    /// <returns>That version.</returns>
-    /// <exception cref="SpechtManifestException">The set holds no version <paramref name="number"/>.</exception>
-    public SchemaVersion Select(SemanticVersion number) =>
-        Versions.FirstOrDefault(version => version.Number == number)
-        ?? throw new SpechtManifestException(
-            $"{SpecManifest.RelativePath}: schemaVersion {number} is not shipped; this tool ships "
-                + $"{string.Join(", ", Versions.Select(static version => version.Number))}.");
+    /// <returns>That version, or a <see cref="ManifestRejected"/> when the set holds no version <paramref name="number"/>.</returns>
+    public Outcome<SchemaVersion> Select(SemanticVersion number) =>
+        Versions.FirstOrDefault(version => version.Number == number) is { } selected
+            ? selected
+            : new ManifestRejected(
+                $"{SpecManifest.RelativePath}: schemaVersion {number} is not shipped; this tool ships "
+                    + $"{string.Join(", ", Versions.Select(static version => version.Number))}.");
 
     private static SchemaVersions ReadEmbedded()
     {

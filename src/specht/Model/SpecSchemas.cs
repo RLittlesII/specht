@@ -62,27 +62,31 @@ public sealed class SpecSchemas
     /// <c>$id</c>, so a second load in one process - two roots in one test
     /// run, say - would throw rather than simply reading the schemas again.
     /// </remarks>
-    /// <exception cref="SpechtRootNotFoundException"><paramref name="root"/> is not a directory; no frontmatter schema is read.</exception>
-    /// <exception cref="SpechtManifestNotFoundException">There is no manifest; no frontmatter schema is read.</exception>
-    /// <exception cref="SpechtManifestUnreadableException">The manifest does not parse; no frontmatter schema is read.</exception>
-    /// <exception cref="SpechtManifestException">
-    /// The manifest is rejected, pins a version the tool does not ship, or sets a rule id outside the pinned version's
-    /// vocabulary (<c>0001-F5</c> B-013); no frontmatter schema is read.
-    /// </exception>
-    public static SpecSchemas Load(IFileSystem fileSystem, string root)
+    /// <returns>
+    /// The schemas, or the manifest's <see cref="InputFailure"/> with no frontmatter schema read: a
+    /// <see cref="ManifestRejected"/> also when the manifest pins a version the tool does not ship or sets a rule id outside
+    /// the pinned version's vocabulary (<c>0001-F5</c> B-013).
+    /// </returns>
+    public static Outcome<SpecSchemas> Load(IFileSystem fileSystem, string root)
     {
-        var structure = SpecManifest.Load(fileSystem, root);
-        var version = Pinned(SchemaVersions.Embedded, structure);
         var directory = fileSystem.Path.Combine(root, ".spec", "schema");
 
-        return new SpecSchemas(
-            version with
+        return SpecManifest.Load(fileSystem, root) switch
+        {
+            SpecStructure structure => Pinned(SchemaVersions.Embedded, structure) switch
             {
-                FeatureSchema = Read(fileSystem, directory, structure.FrontmatterSchemas["feature"]),
-                ItemSchema = Read(fileSystem, directory, structure.FrontmatterSchemas["task"]),
-                EpicSchema = Read(fileSystem, directory, structure.FrontmatterSchemas["epic"]),
+                SchemaVersion version => new SpecSchemas(
+                    version with
+                    {
+                        FeatureSchema = Read(fileSystem, directory, structure.FrontmatterSchemas["feature"]),
+                        ItemSchema = Read(fileSystem, directory, structure.FrontmatterSchemas["task"]),
+                        EpicSchema = Read(fileSystem, directory, structure.FrontmatterSchemas["epic"]),
+                    },
+                    structure),
+                InputFailure failure => failure,
             },
-            structure);
+            InputFailure failure => failure,
+        };
     }
 
     /// <summary>
@@ -90,33 +94,38 @@ public sealed class SpecSchemas
     /// pins from <paramref name="versions"/> (<c>0001-F7</c> B-001, C-4).
     /// </summary>
     /// <remarks>Each load gets its own <see cref="SchemaRegistry"/>, for the same reason as the on-disk load.</remarks>
-    /// <exception cref="SpechtRootNotFoundException"><paramref name="root"/> is not a directory; no frontmatter schema is read.</exception>
-    /// <exception cref="SpechtManifestNotFoundException">There is no manifest; no frontmatter schema is read.</exception>
-    /// <exception cref="SpechtManifestUnreadableException">The manifest does not parse; no frontmatter schema is read.</exception>
-    /// <exception cref="SpechtManifestException">
-    /// The manifest is rejected, pins a version <paramref name="versions"/> does not hold, or sets a rule id outside the
-    /// pinned version's vocabulary (<c>0001-F5</c> B-013); no frontmatter schema is read.
-    /// </exception>
-    public static SpecSchemas Load(IFileSystem fileSystem, string root, SchemaVersions versions)
-    {
-        var structure = SpecManifest.Load(fileSystem, root);
-
-        return new SpecSchemas(Pinned(versions, structure), structure);
-    }
-
-    private static SchemaVersion Pinned(SchemaVersions versions, SpecStructure structure)
-    {
-        var version = versions.Select(structure.SchemaVersion);
-        var outside = structure.Rules.Keys.Where(id => !version.RuleIds.Contains(id)).Select(static id => $"'{id}'").ToList();
-
-        if (outside.Count > 0)
+    /// <returns>
+    /// The schemas, or the manifest's <see cref="InputFailure"/> with no frontmatter schema read: a
+    /// <see cref="ManifestRejected"/> also when the manifest pins a version <paramref name="versions"/> does not hold or
+    /// sets a rule id outside the pinned version's vocabulary (<c>0001-F5</c> B-013).
+    /// </returns>
+    public static Outcome<SpecSchemas> Load(IFileSystem fileSystem, string root, SchemaVersions versions) =>
+        SpecManifest.Load(fileSystem, root) switch
         {
-            throw new SpechtManifestException(
-                $"{SpecManifest.RelativePath}: rules names the rule id {string.Join(", ", outside)}, "
-                    + $"which schemaVersion {version.Number} does not hold.");
+            SpecStructure structure => Pinned(versions, structure) switch
+            {
+                SchemaVersion version => new SpecSchemas(version, structure),
+                InputFailure failure => failure,
+            },
+            InputFailure failure => failure,
+        };
+
+    private static Outcome<SchemaVersion> Pinned(SchemaVersions versions, SpecStructure structure)
+    {
+        var selected = versions.Select(structure.SchemaVersion);
+
+        if (selected is not SchemaVersion version)
+        {
+            return selected;
         }
 
-        return version;
+        var outside = structure.Rules.Keys.Where(id => !version.RuleIds.Contains(id)).Select(static id => $"'{id}'").ToList();
+
+        return outside.Count > 0
+            ? new ManifestRejected(
+                $"{SpecManifest.RelativePath}: rules names the rule id {string.Join(", ", outside)}, "
+                    + $"which schemaVersion {version.Number} does not hold.")
+            : selected;
     }
 
     private static string Read(IFileSystem fileSystem, string directory, string name) =>

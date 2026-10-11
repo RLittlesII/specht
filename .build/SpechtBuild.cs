@@ -17,6 +17,13 @@ internal partial class SpechtBuild : NukeBuild
     // B-001: `./build.sh` with no target name runs Compile, then Test.
     public static int Main() => Execute<SpechtBuild>(static x => x.Build);
 
+    protected override void OnBuildInitialized()
+    {
+        Environment.SetEnvironmentVariable("MSBUILD_EXE_PATH", null);
+        Environment.SetEnvironmentVariable("MSBuildExtensionsPath", null);
+        Environment.SetEnvironmentVariable("MSBuildSDKsPath", null);
+    }
+
     private static string NpxPath => ToolPathResolver.GetPathExecutable("npx");
 
     private AbsolutePath ArtifactsDirectory => RootDirectory / ".artifacts";

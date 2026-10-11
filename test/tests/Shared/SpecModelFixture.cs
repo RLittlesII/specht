@@ -21,7 +21,7 @@ internal sealed partial class SpecModelFixture
     /// <returns>The fixture.</returns>
     public SpecModelFixture WithManifest(JsonObject manifest) =>
         WithSchemas(
-            SpecSchemas.Load(
+            (SpecSchemas)SpecSchemas.Load(
                 new MockFileSystem(
                     new Dictionary<string, MockFileData>
                     {
@@ -30,7 +30,7 @@ internal sealed partial class SpecModelFixture
                         [Path.Combine("repo", ".spec", "schema", "task.frontmatter.schema.json")] = new("{}"),
                         [Path.Combine("repo", ".spec", "schema", "epic.frontmatter.schema.json")] = new("{}"),
                     }),
-                "repo"));
+                "repo").Value!);
 
     /// <summary>Sets the Feature specifications.</summary>
     /// <remarks>The generator names each list's setter <c>WithList</c>, after its type; this names it after the model's.</remarks>

@@ -138,7 +138,7 @@ public sealed class SpecDiscoveryManifestUnitTests
     {
         // Given
         var fileSystem = Tree(manifest, LegacySpecification, CoLocatedSpecification, DocumentationSpecification, "src/area/README.md");
-        var inputs = SpecManifest.Load(fileSystem, Root).Discovery;
+        var inputs = ((SpecStructure)SpecManifest.Load(fileSystem, Root).Value!).Discovery;
 
         // When
         var found = SpecDiscovery.FindSpecifications(fileSystem, Root, inputs);
@@ -164,7 +164,7 @@ public sealed class SpecDiscoveryManifestUnitTests
             LegacySpecification,
             CoLocatedSpecification,
             DocumentationSpecification);
-        var inputs = SpecManifest.Load(fileSystem, Root).Discovery;
+        var inputs = ((SpecStructure)SpecManifest.Load(fileSystem, Root).Value!).Discovery;
 
         // When
         var found = SpecDiscovery.FindSpecifications(fileSystem, Root, inputs);
@@ -189,7 +189,7 @@ public sealed class SpecDiscoveryManifestUnitTests
     {
         // Given
         var fileSystem = Tree($$"""{ "layouts": [{ "name": "only", "glob": "{{glob}}" }], "exclusions": [] }""", path);
-        var inputs = SpecManifest.Load(fileSystem, Root).Discovery;
+        var inputs = ((SpecStructure)SpecManifest.Load(fileSystem, Root).Value!).Discovery;
         string[] expected = matches ? [path] : [];
 
         // When
@@ -209,7 +209,7 @@ public sealed class SpecDiscoveryManifestUnitTests
     {
         // Given
         var fileSystem = Tree($$"""{ "exclusions": {{exclusions}} }""", path);
-        var inputs = SpecManifest.Load(fileSystem, Root).Discovery;
+        var inputs = ((SpecStructure)SpecManifest.Load(fileSystem, Root).Value!).Discovery;
         string[] expected = discovered ? [path] : [];
 
         // When
@@ -238,7 +238,7 @@ public sealed class SpecDiscoveryManifestUnitTests
             Beside("T7-do.md"),
             Beside("notes.md"),
             Beside("nested/0001-02-do.md"));
-        var structure = SpecManifest.Load(fileSystem, Root);
+        var structure = (SpecStructure)SpecManifest.Load(fileSystem, Root).Value!;
 
         // When
         var found = SpecDiscovery.FindChildItems(fileSystem, [specification], structure.Discovery, structure.Identifiers["task"]);
@@ -261,7 +261,7 @@ public sealed class SpecDiscoveryManifestUnitTests
             "epics/0001-example/notes.md",
             "epics/archive/0003-example/epic.md",
             "portfolio/0002-example/epic.md");
-        var inputs = SpecManifest.Load(fileSystem, Root).Discovery;
+        var inputs = ((SpecStructure)SpecManifest.Load(fileSystem, Root).Value!).Discovery;
 
         // When
         var found = SpecDiscovery.FindEpics(fileSystem, Root, inputs);
@@ -287,7 +287,7 @@ public sealed class SpecDiscoveryManifestUnitTests
             Beside("third.FEATURE"),
             Beside("nested/fourth.feature"),
             Beside("nested/fifth.gherkin"));
-        var inputs = SpecManifest.Load(fileSystem, Root).Discovery;
+        var inputs = ((SpecStructure)SpecManifest.Load(fileSystem, Root).Value!).Discovery;
 
         // When
         var found = SpecDiscovery.FindCompanions(fileSystem, specification, inputs);
@@ -316,7 +316,7 @@ public sealed class SpecDiscoveryManifestUnitTests
             "epics/0001-example/epic.md",
             "portfolio/0002-example/epic.md",
             "archive/0003-example/epic.md");
-        var structure = SpecManifest.Load(fileSystem, Root);
+        var structure = (SpecStructure)SpecManifest.Load(fileSystem, Root).Value!;
 
         // When
         var found = key switch

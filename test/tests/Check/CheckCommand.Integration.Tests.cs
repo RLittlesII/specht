@@ -303,7 +303,7 @@ public sealed class CheckCommandIntegrationTests
             root =>
             {
                 checkedRoot = root;
-                return new SpechtReportFixture();
+                return (SpechtReport)new SpechtReportFixture();
             },
             args);
 
@@ -419,7 +419,7 @@ public sealed class CheckCommandIntegrationTests
         result.ExitCode.Should().Be(0);
     }
 
-    private static CommandAppResult Check(Func<string, SpechtReport> run, params string[] args)
+    private static CommandAppResult Check(Func<string, Outcome<SpechtReport>> run, params string[] args)
     {
         var services = new ServiceCollection();
         services.AddSingleton(run);

@@ -202,7 +202,7 @@ public sealed class DiscoverySteps
     public void WhenTheCheckRuns()
     {
         File.WriteAllText(ManifestPath, Manifest.ToJsonString());
-        _report = SpechtRunner.Run(Tree.Root);
+        _report = (SpechtReport)SpechtRunner.Run(Tree.Root).Value!;
     }
 
     [Then("that specification is discovered")]

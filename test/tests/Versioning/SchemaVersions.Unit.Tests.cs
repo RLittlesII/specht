@@ -99,7 +99,7 @@ public sealed class SchemaVersionsUnitTests
         var embedded = SchemaVersions.Embedded;
 
         // When
-        var ids = embedded.Select(new SemanticVersion(0, 1, 0)).RuleIds;
+        var ids = ((SchemaVersion)embedded.Select(new SemanticVersion(0, 1, 0)).Value!).RuleIds;
 
         // Then
         ids.Should().BeEquivalentTo(
@@ -117,7 +117,7 @@ public sealed class SchemaVersionsUnitTests
     {
         // Given
         var schema = JsonSchema.FromText(
-            SchemaVersions.Embedded.Select(new SemanticVersion(0, 1, 0)).EpicSchema,
+            ((SchemaVersion)SchemaVersions.Embedded.Select(new SemanticVersion(0, 1, 0)).Value!).EpicSchema,
             new BuildOptions { SchemaRegistry = new SchemaRegistry() });
         var epic = new JsonObject
         {
@@ -159,7 +159,7 @@ public sealed class SchemaVersionsUnitTests
         var versions = new SchemaVersions([laterMinor, laterPatch, pinned]);
 
         // When
-        var selected = versions.Select(new SemanticVersion(0, 1, 0));
+        var selected = (SchemaVersion)versions.Select(new SemanticVersion(0, 1, 0)).Value!;
 
         // Then
         selected.Should().BeSameAs(pinned);
@@ -172,10 +172,10 @@ public sealed class SchemaVersionsUnitTests
         var versions = new SchemaVersions([new SchemaVersionFixture(), new SchemaVersionFixture().WithNumber(new SemanticVersion(0, 2, 0))]);
 
         // When
-        var select = () => versions.Select(new SemanticVersion(7, 0, 0));
+        var selected = versions.Select(new SemanticVersion(7, 0, 0));
 
         // Then
-        var message = select.Should().ThrowExactly<SpechtManifestException>().Which.Message;
+        var message = selected.Value.Should().BeOfType<ManifestRejected>().Which.Message;
         foreach (var named in new[] { "7.0.0", "0.1.0", "0.2.0" })
         {
             message.Should().MatchRegex($@"(?<![\w.]){Regex.Escape(named)}(?!\.?\w)", "the message names version {0}", named);
