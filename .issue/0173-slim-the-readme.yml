@@ -1,0 +1,129 @@
+id: "0173"
+type: task
+title: Slim README.md to getting started and move the rest under docs/
+
+status: ready-for-implementation
+
+value: 3
+risk: 2
+
+parent: null
+children: []
+
+depends_on: []
+spikes: []
+
+spec: null
+
+claims: []
+
+created: "2026-10-11"
+updated: "2026-10-11"
+closed: null
+
+summary: |
+  `README.md` is 292 lines and holds the rule groups, the manifest reference,
+  the default manifest, the exit codes, the build and a stale status list
+  beside the few lines a newcomer needs. The repository owner, 2026-10-11:
+  "Can we also take another pass at the readme. slim it. Some should likely
+  be docs/ and the minimum on there should be getting it up and started
+  (commands, config) and the directory structure". No specification governs
+  `README.md` (epic `0002` is `needs-decomposition`), so this item delivers
+  no claim; the disposition below is spec-author's reading of the owner's
+  words.
+
+  Value 3: the front page a newcomer reads; nothing ships or is blocked by
+  it. Risk 2: prose moved between files, with links that must keep
+  resolving.
+
+  Expected files: `README.md`; new `docs/what-it-checks.md`,
+  `docs/configuration.md`, `docs/exit-codes.md` and `docs/building.md`;
+  `AGENTS.md` (§ Project's sentence on `README.md`);
+  `.claude/skills/specht-conventions/SKILL.md` (§ Layout's `README.md` and
+  `docs/` lines). Nothing under `src/`, `test/`, `.build/`, `docs/rules/`,
+  `docs/schema/` or `docs/site/`.
+
+acceptance_criteria:
+  - |
+    `README.md` keeps only these, in this order: the header (logo, name,
+    one-line description, badges, a navigation row naming only the sections
+    that remain); what the tool is, in a few lines, with the example
+    violation line and the "Why" sentence; "Quick start" (install); "Usage"
+    (the command block and the command table); the configuration paragraph
+    (the manifest's path, `schemaVersion`, what a patch, minor and major
+    change, the exact pin and the `0.1.0` default); "Layout" (the directory
+    structure and the sentence under it); one "Documentation" list linking
+    every page below and `docs/rules/v1/`; and the one-line "License".
+  - |
+    Each section `README.md` holds at commit `3983024` is kept, moved or
+    removed as this table says, and nothing else is dropped:
+      header, example line, "Why"            keep
+      the rule-range sentence (`SPEC001` to
+        `SPEC061`, brief § 4, rule pages)    move to docs/what-it-checks.md
+      "Deterministic and offline" sentence   keep
+      Quick start                            keep
+      Usage: command block and table         keep
+      Usage: the `schemaVersion` paragraph   keep
+      Usage: "The schema is per repository
+        however the tool is installed"       move to docs/configuration.md;
+                                             README keeps one sentence: install
+                                             through the local tool manifest
+      What it checks                         move to docs/what-it-checks.md
+      Work items are optional                move to docs/what-it-checks.md,
+                                             as a section of that page
+      What is configurable                   move to docs/configuration.md
+      Default manifest                       move to docs/configuration.md,
+                                             as a section of that page
+      Exit codes                             move to docs/exit-codes.md
+      Layout                                 keep; its `docs/` line names what
+                                             `docs/` now holds
+      Build                                  move to docs/building.md
+      Status                                 remove: stale. It shows the
+                                             command line as in progress with
+                                             `--report` and `--explain` "next"
+                                             and steps 5 and 6 as not started,
+                                             against a Usage section that lists
+                                             them. The pre-release badge and the
+                                             Quick start notice carry what is
+                                             still true.
+      License                                keep
+  - "A moved section keeps its facts; it is shortened, not rewritten into new claims about the tool. Each page is terse (owner, pull request #79, 2026-10-09: \"more verbose than I'd like can we make them terse?!\")."
+  - "Each new page sits directly under root `docs/`, beside `rules/`, `schema/` and `site/`, and opens with YAML frontmatter: `title`, `description` and `type: reference`. `README.md` stays exempt."
+  - "Every link in `README.md` and in the new pages resolves: a link that pointed into `README.md` from a moved section, or at a moved section from anywhere in the tracked tree, points at where the text now is."
+  - |
+    Install is true on the day this merges: nothing is published. "Quick
+    start" keeps its one-line notice that the tool is not published yet and
+    the three commands, and adds no feed address, package source entry or
+    token. Those are item 0088's (0055-F7 B-004 to B-006), which replaces
+    the notice once item 0084 publishes.
+  - "`AGENTS.md` § Project and `specht-conventions` § Layout describe `README.md` as it now is: both say it carries the status, which it no longer does."
+  - "`./build.sh Format` and `./build.sh Specht` pass."
+  - "Constraints preserved: 0055-F7 C-4"
+
+decisions:
+  - |
+    2026-10-11, spec-author: one page per subject, four pages. "Work items
+    are optional" and "Default manifest" are sections of the page whose
+    subject they belong to, as they are sections of "What it checks" in
+    `README.md` today, and not pages of their own.
+  - |
+    2026-10-11, spec-author: "License" stays. The owner's minimum does not
+    name it; it is one line, and the licence badge links to it.
+  - |
+    2026-10-11, spec-author: the install section is divided with item 0088,
+    not duplicated. This item leaves the placeholder; 0088 writes the feed,
+    the source entry, the token and the commands (0055-F7 C-4 keeps the
+    install document a section of `README.md`). 0088 records the same
+    division.
+  - |
+    2026-10-11, spec-author: the new pages are the text moved out of
+    `README.md`, not the per-command usage docs 0002-F1 B-003 places beside
+    each command. 0002-F1 is a draft and unbuilt; whether these pages move
+    again is its decomposition's question.
+
+out_of_scope:
+  - "The feed, the package source entry and the token in the install section — item 0088, 0055-F7."
+  - "The readme the package carries — item 0172, 0001-F2 C-9."
+  - "The rule pages, the report schema and the documentation site — 0001-F3 and 0002-F2 own `docs/rules/`, `docs/schema/` and `docs/site/`."
+  - "An API reference or per-command usage docs — 0002-F1."
+  - "Any change to what the tool does."

@@ -21,7 +21,7 @@ claims:
   - B-006
 
 created: "2026-10-08"
-updated: "2026-10-08"
+updated: "2026-10-11"
 closed: null
 
 summary: |
@@ -36,7 +36,13 @@ acceptance_criteria:
   - "B-006 — the install and restore commands"
   - "§ 9 carries a row naming a test for each id above."
 
-decisions: []
+decisions:
+  - |
+    2026-10-11, spec-author: divided with item 0173, which slims
+    `README.md`. 0173 keeps "Quick start" as a one-line notice that the tool
+    is not published and the three commands, and writes no feed address,
+    source entry or token. This item replaces that notice with the install
+    section once 0084 publishes. Its scope and `risk` are unchanged.
 
 out_of_scope:
   - "Moving it into `docs/` — § 5 #7, epic 0002."
