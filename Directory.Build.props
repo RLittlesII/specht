@@ -25,8 +25,8 @@
         <PackageReference Include="Nerdbank.GitVersioning" PrivateAssets="all"/>
     </ItemGroup>
     <ItemGroup>
-        <Content Include="**\.spec\*.feature"/>
-        <Content Include="**\.spec\**\*.md"/>
-        <Content Include="**\.issue\**\*.yml"/>
+        <None Include="**\.spec\*.feature"/>
+        <None Include="**\.spec\**\*.md"/>
+        <None Include="**\.issue\**\*.yml"/>
     </ItemGroup>
 </Project>
