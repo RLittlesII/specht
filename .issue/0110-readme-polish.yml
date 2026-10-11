@@ -4,16 +4,13 @@ title: Reshape README.md into a terse front page with logo, badges and quick sta
 
 status: done
 
-priority: low # DERIVED
 value: 1
 risk: 1
-rank: 17 # DERIVED
 
 parent: null
 children: []
 
 depends_on: []
-blocks: [] # DERIVED
 spikes: []
 
 spec: null

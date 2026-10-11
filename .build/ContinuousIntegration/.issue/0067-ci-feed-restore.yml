@@ -4,15 +4,12 @@ title: Restore the tool from the feed in CI with the workflow's token
 
 status: ready-for-architecture
 
-priority: high
 risk: 2
-rank: 94
 
 parent: "0063"
 children: []
 
 depends_on: ["0064", "0087"] # a step in 0064's workflow; restores the package 0087 names
-blocks: []
 spikes: []
 
 spec: .build/ContinuousIntegration/.spec/README.md

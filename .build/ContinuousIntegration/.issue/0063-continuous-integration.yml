@@ -4,16 +4,13 @@ title: Continuous integration
 
 status: ready-for-architecture
 
-priority: high
 value: 5
 risk: 3
-rank: 91
 
 parent: "0055"
 children: ["0064", "0066", "0067", "0102", "0114", "0118", "0140"]
 
 depends_on: []
-blocks: []
 spikes: []
 
 spec: .build/ContinuousIntegration/.spec/README.md

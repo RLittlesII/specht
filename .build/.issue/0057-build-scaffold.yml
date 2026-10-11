@@ -4,15 +4,12 @@ title: Scaffold the NUKE build, its entry scripts and the local tool manifest
 
 status: done
 
-priority: high
 risk: 3
-rank: 126
 
 parent: "0056"
 children: []
 
 depends_on: []
-blocks: ["0021", "0051", "0058", "0059", "0064", "0069", "0079"]
 spikes: []
 
 spec: .build/.spec/README.md

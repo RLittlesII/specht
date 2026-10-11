@@ -4,15 +4,12 @@ title: Prove the rule vocabulary, both layouts and identity
 
 status: done
 
-priority: high
 risk: 2
-rank: 94
 
 parent: "0020"
 children: []
 
 depends_on: ["0021"] # tests the copied engine
-blocks: []
 spikes: []
 
 spec: src/specht/.spec/README.md

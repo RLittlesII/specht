@@ -4,15 +4,12 @@ title: Report the check from Specht without failing until rule settings exist
 
 status: done
 
-priority: high
 risk: 2
-rank: 109
 
 parent: "0056"
 children: []
 
 depends_on: ["0026"] # runs the command 0026 builds, from the target 0057 scaffolds (0026 follows 0057 through 0021)
-blocks: ["0032", "0062", "0066"]
 spikes: []
 
 spec: .build/.spec/README.md

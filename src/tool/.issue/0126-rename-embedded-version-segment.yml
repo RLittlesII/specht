@@ -4,15 +4,12 @@ title: Name the embedded version folder and the `$id` version segment
 
 status: blocked
 
-priority: high
 risk: 2
-rank: 74
 
 parent: "0041"
 children: []
 
 depends_on: ["0120"] # names the folder and `$id` of the semver set 0120 converts
-blocks: []
 spikes: []
 
 spec: src/tool/.spec/README.md

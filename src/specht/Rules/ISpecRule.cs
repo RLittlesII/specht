@@ -3,9 +3,9 @@ using Specht.Model;
 namespace Specht.Rules;
 
 /// <summary>
-/// One specification rule. Implementations are discovered by reflection over
-/// this assembly until ADR-0001 replaces that with an explicit list. A new
-/// rule is a new schema version (brief § 4), not just a new file.
+/// One specification rule. The implementations that run are the ones named
+/// on <see cref="SpecRules.All"/>; none is found by reflection. A new rule is
+/// a new schema version (brief § 4), not just a new file.
 /// </summary>
 public interface ISpecRule
 {

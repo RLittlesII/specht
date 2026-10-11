@@ -2,18 +2,15 @@ id: "0106"
 type: task
 title: Replace reflection rule discovery with a hand-written rule list
 
-status: ready-for-implementation
+status: done
 
-priority: medium # DERIVED
 value: 3
 risk: 2
-rank: 59 # DERIVED
 
 parent: "0020"
 children: []
 
 depends_on: ["0105"] # the list is what 0105's Evaluate(SpecModel) iterates
-blocks: ["0107"] # DERIVED
 spikes: []
 
 spec: src/specht/.spec/README.md
@@ -22,8 +19,8 @@ claims:
   - B-004
 
 created: "2026-10-08"
-updated: "2026-10-08"
-closed: null
+updated: "2026-10-10"
+closed: "2026-10-10"
 
 summary: |
   ADR-0001 (accepted 2026-10-08), stage C. A hand-written list of the

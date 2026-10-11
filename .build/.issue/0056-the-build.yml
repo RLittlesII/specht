@@ -4,16 +4,13 @@ title: The build
 
 status: ready-for-architecture
 
-priority: high
 value: 5
 risk: 3
-rank: 91
 
 parent: "0055"
 children: ["0057", "0058", "0059", "0060", "0061", "0062", "0098"]
 
 depends_on: []
-blocks: []
 spikes: []
 
 spec: .build/.spec/README.md

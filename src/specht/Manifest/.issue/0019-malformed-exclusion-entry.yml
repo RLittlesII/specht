@@ -4,15 +4,12 @@ title: Reject an exclusion entry with an inner slash
 
 status: done
 
-priority: high
 risk: 1
-rank: 77
 
 parent: "0010"
 children: []
 
 depends_on: ["0011", "0005"] # a loader rejection, on the exclusion list Discovery's 0005 declares
-blocks: []
 spikes: []
 
 spec: src/specht/Manifest/.spec/README.md

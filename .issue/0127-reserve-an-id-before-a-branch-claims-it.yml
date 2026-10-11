@@ -4,16 +4,13 @@ title: Reserve an id on main before a branch claims it
 
 status: done
 
-priority: medium # DERIVED
 value: 3
 risk: 1
-rank: 57 # DERIVED
 
 parent: null
 children: []
 
 depends_on: []
-blocks: [] # DERIVED
 spikes: []
 
 spec: null

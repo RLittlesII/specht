@@ -4,15 +4,12 @@ title: Fetch and verify a recorded upstream schema source on upgrade
 
 status: ready-for-architecture
 
-priority: high
 risk: 4
-rank: 73
 
 parent: "0041"
 children: []
 
 depends_on: ["0045", "0092"] # a step of 0045's upgrade; reads the recording 0092 defines
-blocks: ["0095"]
 spikes: []
 
 spec: src/tool/.spec/README.md

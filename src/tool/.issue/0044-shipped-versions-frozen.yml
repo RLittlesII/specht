@@ -4,15 +4,12 @@ title: Prove a shipped version never changes
 
 status: ready-for-architecture
 
-priority: high
 risk: 2
-rank: 74
 
 parent: "0041"
 children: []
 
 depends_on: ["0042", "0120"] # guards the embedded set 0042 builds, in the semver form 0120 gives it
-blocks: []
 spikes: []
 
 spec: src/tool/.spec/README.md

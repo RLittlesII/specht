@@ -4,16 +4,13 @@ title: Answer "what is next" with a choice of one item per parallel lane
 
 status: done
 
-priority: low # DERIVED
 value: 2
 risk: 1
-rank: 37 # DERIVED
 
 parent: null
 children: []
 
 depends_on: []
-blocks: [] # DERIVED
 spikes: []
 
 spec: null

@@ -4,15 +4,12 @@ title: Prove the verdict is deterministic, relative and grid-blind
 
 status: done
 
-priority: high
 risk: 3
-rank: 91
 
 parent: "0020"
 children: []
 
 depends_on: ["0021"] # tests the copied engine
-blocks: []
 spikes: []
 
 spec: src/specht/.spec/README.md

@@ -4,15 +4,12 @@ title: Configure Codecov's patch and project statuses
 
 status: done
 
-priority: high # DERIVED
 risk: 2
-rank: 94 # DERIVED
 
 parent: "0068"
 children: []
 
 depends_on: ["0070"] # statuses on 0070's uploads
-blocks: []
 spikes: []
 
 spec: test/.spec/README.md

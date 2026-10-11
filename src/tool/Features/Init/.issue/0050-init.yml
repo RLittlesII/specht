@@ -4,16 +4,13 @@ title: init
 
 status: ready-for-architecture
 
-priority: high
 value: 4
 risk: 3
-rank: 71
 
 parent: "0001"
 children: ["0051", "0052", "0053", "0054", "0095", "0096"]
 
 depends_on: []
-blocks: []
 spikes: []
 
 spec: src/tool/Features/Init/.spec/README.md

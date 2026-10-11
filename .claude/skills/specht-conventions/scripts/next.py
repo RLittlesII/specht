@@ -7,6 +7,7 @@ from pathlib import Path
 SKIPPED = {".git", "bin", "obj", "node_modules", "graphify-out", ".artifacts", "worktrees"}
 STARTABLE = {"ready", "ready-for-architecture", "ready-for-implementation"}
 TAKEN = {"in-progress", "in-review"}
+PRIORITIES = ["high", "medium", "low"]
 SHARED_WRITE_SETS = [
     (".build/ContinuousIntegration", "generated workflows"),
     (".build/Releasing", "generated workflows"),
@@ -46,8 +47,8 @@ def read_items(root):
                 "id": name[:4],
                 "title": scalar(text, "title"),
                 "status": scalar(text, "status"),
-                "rank": int(scalar(text, "rank") or 0),
-                "priority": scalar(text, "priority"),
+                "value": scalar(text, "value"),
+                "risk": int(scalar(text, "risk") or 0),
                 "parent": scalar(text, "parent"),
                 "spec": scalar(text, "spec"),
                 "home": "" if home == "." else home,
@@ -84,7 +85,57 @@ def lanes(items):
 
 
 def order(item):
-    return (-item["rank"], item["id"])
+    return (item["tier"], -item["rank"], -item["waiting"], item["id"])
+
+
+def read_goal(root):
+    path = root / ".issue" / ".goal"
+    return re.findall(r"^\d{4}$", path.read_text(encoding="utf-8"), re.M) if path.exists() else []
+
+
+def value(item, items):
+    if item["value"] not in ("", "null"):
+        return int(item["value"])
+    parent = items.get(item["parent"])
+    return value(parent, items) if parent else 0
+
+
+def reach(ids, open_items, children):
+    seen, stack = set(), list(ids)
+    while stack:
+        current = stack.pop()
+        if current in seen or current not in open_items:
+            continue
+        seen.add(current)
+        stack += open_items[current]["depends_on"] + children.get(current, [])
+    return seen
+
+
+def score(item, closure, items, open_items):
+    cost = sum(open_items[i]["risk"] for i in closure)
+    return round(value(item, items) * 100 / max(cost, 1)), cost
+
+
+def rank(items, open_items, goal):
+    children = {}
+    for item in open_items.values():
+        children.setdefault(item["parent"], []).append(item["id"])
+    work = {i: reach([i], open_items, children) - set(children) for i in open_items}
+    features = {i: score(open_items[i], work[i], items, open_items) for i in open_items if i in children}
+    product = reach(goal, open_items, children)
+
+    for item in open_items.values():
+        toward = [(features[f][0], f) for f in features if item["id"] in work[f] | {f}]
+        if toward:
+            item["rank"], feature = max(toward, key=lambda t: (t[0], -int(t[1])))
+            item["toward"] = f"{feature} ({features[feature][1]})"
+        else:
+            item["rank"], item["toward"] = score(item, work[item["id"]], items, open_items)[0], "-"
+        item["tier"] = 0 if item["id"] in product else 1 if toward else 2
+        item["priority"] = PRIORITIES[item["tier"]]
+        item["waiting"] = sum(1 for i in open_items if i != item["id"] and item["id"] in work[i])
+        item["gates"] = ", ".join(sorted(i for i in open_items if item["id"] in open_items[i]["depends_on"])) or "-"
+    return children
 
 
 def main():
@@ -94,43 +145,53 @@ def main():
     parser.add_argument("--width", type=int, default=160)
     args = parser.parse_args()
 
-    items = read_items(args.root.resolve())
+    root = args.root.resolve()
+    items = read_items(root)
+    containers = rank(items, {i["id"]: i for i in items.values() if i["status"] != "done"}, read_goal(root))
     open_items = sorted((i for i in items.values() if i["status"] != "done"), key=order)
     for item in open_items:
         item["blockers"] = [
             d if items.get(d) else f"{d}?" for d in item["depends_on"] if items.get(d, {}).get("status") != "done"
         ]
 
-    containers = {i["parent"] for i in open_items}
     startable = [
         i for i in open_items if i["status"] in STARTABLE and not i["blockers"] and i["id"] not in containers
     ][: args.top]
-    floor = startable[-1]["rank"] if startable else 0
-    blocked = [i for i in open_items if i["status"] in STARTABLE | {"blocked"} and i["blockers"] and i["rank"] >= floor]
+    floor = order(startable[-1])[:2] if startable else (0, 0)
+    blocked = [
+        i for i in open_items if i["status"] in STARTABLE | {"blocked"} and i["blockers"] and order(i)[:2] <= floor
+    ]
+    held = [i for i in open_items if i["status"] == "blocked" and not i["blockers"]]
     taken = [i for i in open_items if i["status"] in TAKEN]
 
     print("## Pick one per lane\n")
     if not startable:
         print("- nothing startable")
     else:
-        print("| Lane | Pick | Rank | Priority | Status | Title | Then | Shares |")
-        print("| --- | --- | --- | --- | --- | --- | --- | --- |")
+        print("| Lane | Pick | Rank | Priority | Toward | Gates | Status | Title | Then | Shares |")
+        print("| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |")
     for number, lane in enumerate(lanes(startable), 1):
         head, rest = lane["items"][0], lane["items"][1:]
         then = ", ".join(f"{i['id']} ({i['rank']})" for i in rest) or "-"
         shares = ", ".join(sorted(lane["sets"])) or "nothing"
-        print(f"| {number} | {head['id']} | {head['rank']} | {head['priority']} | {head['status']} | {head['title']} | {then} | {shares} |")
+        print(f"| {number} | {head['id']} | {head['rank']} | {head['priority']} | {head['toward']} | {head['gates']} | {head['status']} | {head['title']} | {then} | {shares} |")
 
     print("\n## Startable\n")
-    print("| ID | Rank | Priority | Status | Title | Description |")
-    print("| --- | --- | --- | --- | --- | --- |")
+    print("| ID | Rank | Priority | Toward | Gates | Status | Title | Description |")
+    print("| --- | --- | --- | --- | --- | --- | --- | --- |")
     for i in startable:
-        print(f"| {i['id']} | {i['rank']} | {i['priority']} | {i['status']} | {i['title']} | {describe(i['summary'], args.width)} |")
+        print(f"| {i['id']} | {i['rank']} | {i['priority']} | {i['toward']} | {i['gates']} | {i['status']} | {i['title']} | {describe(i['summary'], args.width)} |")
 
     print("\n## Blocked at or above that rank\n")
     for i in blocked or []:
-        print(f"- {i['id']} ({i['rank']}) {i['title']} - waits on {', '.join(i['blockers'])}")
+        print(f"- {i['id']} ({i['priority']} {i['rank']}) {i['title']} - waits on {', '.join(i['blockers'])}")
     if not blocked:
+        print("- none")
+
+    print("\n## Blocked by status\n")
+    for i in held:
+        print(f"- {i['id']} ({i['priority']} {i['rank']}) {i['title']}")
+    if not held:
         print("- none")
 
     print("\n## Taken\n")

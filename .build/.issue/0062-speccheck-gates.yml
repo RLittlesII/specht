@@ -4,15 +4,12 @@ title: Gate the hook and Specht once rule settings exist
 
 status: ready-for-architecture
 
-priority: high
 risk: 3
-rank: 96
 
 parent: "0056"
 children: []
 
 depends_on: ["0061", "0060", "0026", "0014"] # replaces 0061's report-only state; gates 0060's hook; the check command; SPEC060 lowered to a warning through 0014's rule settings (C-6)
-blocks: ["0031"]
 spikes: []
 
 spec: .build/.spec/README.md

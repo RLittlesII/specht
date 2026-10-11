@@ -4,15 +4,12 @@ title: Run the Windows gates on a push to main only
 
 status: done
 
-priority: high
 risk: 2
-rank: 94
 
 parent: "0063"
 children: []
 
 depends_on: ["0102"] # 0102's in-leg decision step (C-5) also decides this
-blocks: []
 spikes: []
 
 spec: .build/ContinuousIntegration/.spec/README.md

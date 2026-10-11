@@ -4,15 +4,12 @@ title: Keep manifest settings on upgrade and print what changed
 
 status: ready-for-architecture
 
-priority: high
 risk: 3
-rank: 81
 
 parent: "0041"
 children: []
 
 depends_on: ["0045"] # extends the rewrite 0045 performs
-blocks: ["0094", "0131"]
 spikes: []
 
 spec: src/tool/.spec/README.md

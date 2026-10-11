@@ -4,15 +4,12 @@ title: Check path identity only for a layout that declares it
 
 status: ready-for-architecture
 
-priority: medium
 risk: 2
-rank: 54
 
 parent: "0004"
 children: []
 
 depends_on: ["0005"] # the layout declaration it reads comes from 0005
-blocks: []
 spikes: []
 
 spec: src/specht/Discovery/.spec/README.md

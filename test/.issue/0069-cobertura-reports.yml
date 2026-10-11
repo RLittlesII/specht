@@ -4,15 +4,12 @@ title: Write one Cobertura report per test project
 
 status: done
 
-priority: high # DERIVED
 risk: 2
-rank: 99 # DERIVED
 
 parent: "0068"
 children: []
 
 depends_on: ["0057"] # collected during 0057's Test target
-blocks: ["0070"]
 spikes: []
 
 spec: test/.spec/README.md

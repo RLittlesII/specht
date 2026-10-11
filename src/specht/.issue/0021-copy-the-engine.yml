@@ -4,15 +4,12 @@ title: Copy the engine and its tests from hooked and tag the baseline
 
 status: done
 
-priority: high
 risk: 3
-rank: 121
 
 parent: "0020"
 children: []
 
 depends_on: ["0057", "0064"] # the build and CI land before any engine work
-blocks: ["0011", "0022", "0023", "0024", "0026", "0034"]
 spikes: []
 
 spec: src/specht/.spec/README.md
