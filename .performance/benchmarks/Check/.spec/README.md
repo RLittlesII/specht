@@ -103,6 +103,40 @@ Pending: owned by `implementer`, written after agreement.
 
 Pending: owned by `test-writer`, written after agreement.
 
+### Performance
+
+<!-- last written by: benchmarker, 2026-10-11 -->
+
+| Concern                                                                             | Source | Benchmark               | Finding                                                                                                                                                                                                                                                                                   |
+| ----------------------------------------------------------------------------------- | ------ | ----------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| How a whole check's time and allocation grow with the tree's size in specifications | C-1    | `CheckBenchmarks.Check` | Both linear from 1 to 1000 specifications. Time: about 2.7 ms fixed, then 0.42 to 0.43 ms per specification. Allocation: about 473 KB fixed, then 310 KB per specification. The fixed part is 86% of the time and 60% of the allocation at 1 specification, and under 1% of both at 1000. |
+
+- **Environment.** BenchmarkDotNet v0.15.8, macOS Tahoe 26.4 (25E246) [Darwin 25.4.0]; Apple M1 Max, 1 CPU, 10 logical and 10 physical cores; .NET SDK 10.0.401; .NET 10.0.12 (10.0.12, 10.0.1226.42308), Arm64 RyuJIT armv8.0-a. Release build, `Toolchain=.NET 10.0`, out of process, no debugger (`0109-F1` C-6).
+- **Job.** The library's default job, run twice on 2026-10-11 with `dotnet run --configuration Release --project .performance/benchmarks -- --filter '*CheckBenchmarks*' --artifacts .artifacts/benchmarks`. The table is the second run; the first run's mean is beside it.
+
+| Specifications | Mean       | Error     | StdDev    | Allocated    | Gen2 per 1000 operations | Mean, first run |
+| -------------- | ---------- | --------- | --------- | ------------ | ------------------------ | --------------- |
+| 1              | 3.127 ms   | 0.0617 ms | 0.0781 ms | 782.95 KB    | -                        | 3.282 ms        |
+| 10             | 6.908 ms   | 0.1381 ms | 0.1644 ms | 3574.63 KB   | -                        | 7.399 ms        |
+| 100            | 45.635 ms  | 0.8902 ms | 1.5117 ms | 31485.77 KB  | 250                      | 45.287 ms       |
+| 1000           | 435.003 ms | 6.5275 ms | 5.7865 ms | 310536.23 KB | 1000                     | 434.373 ms      |
+
+- **The shape, from the differences between adjacent sizes.** A tenfold tree multiplies the mean by 2.21, 6.61 and 9.53, and the allocation by 4.57, 8.81 and 9.86: each ratio approaches 10 as the fixed part stops mattering.
+
+  | Between sizes | Added time per added specification | Added allocation per added specification |
+  | ------------- | ---------------------------------- | ---------------------------------------- |
+  | 1 and 10      | 0.420 ms                           | 310.19 KB                                |
+  | 10 and 100    | 0.430 ms                           | 310.12 KB                                |
+  | 100 and 1000  | 0.433 ms                           | 310.06 KB                                |
+
+  The three time slopes differ by less than the `Error` of the means they are taken from, so no growth worse than linear is shown up to 1000 specifications. Mean divided by size is 3.127, 0.691, 0.456 and 0.435 ms; allocation divided by size is 783, 357, 315 and 311 KB.
+
+- **The fixed part** is what a tree of any size pays once: the manifest and schema load among it. Which stage holds it is `0109-F2`'s to measure (§ 5 row 1).
+- **Between the two runs** the means at 100 and 1000 specifications agree within `Error`. At 1 and 10 they differ by 5% and 7%, more than `Error`; the first run had 15 outliers removed at 10 specifications and the second none. Allocation agrees within 0.1% at every size. The first run's slopes are 0.457, 0.421 and 0.432 ms.
+- **The file system is in the number (C-3).** Every measured call reads the manifest and `2n` files from a temporary directory on disk. The tree is generated once per size and checked once before the measurement (C-4), so every measured call reads through a warm file-system cache; a first check of a tree the cache does not hold is not measured here.
+- **Collections.** At 1000 specifications each check ran 50 gen-0, 4 gen-1 and 1 gen-2 collection.
+- **B-002, B-003.** `[GlobalSetup]` runs the same call on the same root once and throws, so the size reports no number, unless the report counts exactly the size's specifications and holds no violation. It does not check the layout: the generator writes only `features/feature-<n>/.spec/README.md` (`0109-F1` § 7).
+
 ## 9. Traceability Matrix
 
 <!-- last written by: spec-author, 2026-10-09 -->
