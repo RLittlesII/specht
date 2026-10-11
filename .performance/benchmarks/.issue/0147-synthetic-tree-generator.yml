@@ -9,7 +9,7 @@ risk: 3
 parent: "0145"
 children: []
 
-depends_on: ["0146"] # the generator lives in 0146's project
+depends_on: ["0146"] # the tree and its store live in 0146's project
 spikes: []
 
 spec: .performance/benchmarks/.spec/README.md
@@ -23,14 +23,15 @@ updated: "2026-10-11"
 closed: "2026-10-11"
 
 summary: |
-  The generator every measuring Feature shares: a tree of 1, 10, 100 or
+  The tree every measuring Feature shares, and the store that persists
+  it: a tree of 1, 10, 100 or
   1000 specifications on which the check reports no violation, the same
   files at the same relative paths with the same contents each time.
   Every specification is generated and only the shipped schema and
   manifest are copied (C-7); the tree is a function of its size alone
   (C-8); every path is relative (C-9).
 
-  Depends on 0146: the generator is code in the project 0146 creates.
+  Depends on 0146: both types are code in the project 0146 creates.
   `0109-F3`'s 0150 waits on this. Both claims are tested (owner,
   2026-10-11; 0145).
 
@@ -46,8 +47,23 @@ decisions:
   - |
     2026-10-11, the repository owner: B-015 and B-016 are tested, unlike
     the build-target and CI claims of this Feature (0145).
+  - |
+    2026-10-11, the repository owner, reviewing the static
+    SpecTreeGenerator on pull request #114: "Rather than _another_ static.
+    Could we build this with DDD principles in mind? In that. Maybe we
+    should load all the data into a `SpechtTree` object that can then do
+    all the things. Decouple the state persistence/retrieval mechanism
+    from the thing that does the work. Maybe it could be defined in
+    `specht` and consumed here?" Asked how far to take it, the owner
+    chose: here, the static becomes a SpechtTree - state only, the tree's
+    root-relative files, built for a size - and a separate SpechtTreeStore
+    that persists it through IFileSystem, both in the benchmark project.
+    Not chosen for this item: defining the types in src/specht, or
+    rewiring the engine's load onto them. Spike 0153 carries that. No
+    claim or constraint changed (spec § 10).
 
 out_of_scope:
   - "A tree with violations — § 5 #7."
   - "What a benchmark measures over the tree — § 5 #3, `0109-F3` (0150)."
   - "Running a benchmark — B-003 to B-014, 0148."
+  - "The tree and its store defined in `src/specht`, and the engine's load built on them — spike 0153; a type in `src/` with no engine consumer is `0109-F2` C-11's."

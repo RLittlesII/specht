@@ -1,0 +1,94 @@
+id: "0151"
+type: spike
+title: Weigh returning input failures as values instead of throwing them
+
+status: in-progress
+
+value: 2
+risk: 2
+
+parent: null
+children: []
+
+depends_on: []
+spikes: []
+
+spec: null
+
+claims: []
+
+created: "2026-10-11"
+updated: "2026-10-11"
+closed: null
+
+summary: |
+  2026-10-11, the repository owner: "I'd like to explore language-ext or some
+  concept of rail road track development for this so we can avoid throwing
+  exceptions.  I know C# 15 is coming with discrimintated unions.  Can we set
+  something up to evaluate that in  now?"
+
+  Today an expected input failure is an exception. Four sealed engine
+  exception types - `SpechtRootNotFoundException`,
+  `SpechtManifestNotFoundException`, `SpechtManifestUnreadableException` and
+  `SpechtManifestException` - are thrown from
+  `src/specht/Manifest/SpecManifest.cs`,
+  `src/specht/Versioning/SchemaVersions.cs` and
+  `src/specht/Model/SpecSchemas.cs`, and the catch ladder in
+  `src/tool/Features/Check/CheckCommand.cs` folds them into exit `2` or `3`.
+  `0001-F2` § 7 ("Input failures are engine exceptions the command folds")
+  records the first three; the fourth, a well-formed manifest the engine
+  rejects, is `0001-F5` B-022 and B-023. Violations are already values; only
+  input failures throw.
+
+  This spike rewrites one slice three ways on branches that never merge,
+  measures each against today's exceptions, and records the result in an ADR
+  the owner rules on. It changes nothing under `src/`, `test/`, `global.json`,
+  `Directory.Build.props` or `Directory.Packages.props` on `main`.
+
+  The slice, identical for every candidate: the manifest load
+  (`SpecManifest.Load` and what it calls), `SchemaVersions.Select`, the
+  vocabulary check in `SpecSchemas`, the frames that pass the result up
+  (`SpecModel.Load`, `SpechtRunner.Run`), and the catch ladder in
+  `CheckCommand`. Behaviour is frozen: the same stderr text and the same exit
+  codes, with the acceptance scenarios unedited.
+
+  Candidates, each on its own trial branch:
+  - C# 15 union types, on the .NET 11 RC 1 SDK `11.0.100-rc.1.26425.128`:
+    tried targeting `net11.0`, and again targeting `net10.0` with the
+    `UnionAttribute`/`IUnion` polyfill, which Microsoft documents as
+    unsupported. Branch `0151/trial-union`.
+  - language-ext `5.0.0-beta-78`. Branch `0151/trial-language-ext`.
+  - The Dunet source generator. Branch `0151/trial-dunet`.
+
+  .NET 11 reaches general availability on 2026-11-10, so "decide after that
+  date" is a legitimate recommendation.
+
+acceptance_criteria:
+  - "ADR-0009, in the repository-wide `.spec/adr/`, is proposed with the owner as decider. Its options are: keep exceptions, C# 15 union types, language-ext v5, Dunet. It recommends one, or recommends waiting for general availability. If it adopts, it names the specification deltas owed."
+  - "Each candidate is recorded against the eight measures below, each traced to a command run on a named trial commit."
+  - "1. Build: whether it builds under warnings-as-errors and the analyzers, and what the build's format check does with it."
+  - "2. Exhaustiveness: with a fifth failure case added and left unhandled, whether the build fails, and with which diagnostic."
+  - "3. Size of the change: source lines added and removed, files touched, and how many of the existing throw assertions in tests had to change."
+  - "4. The two hard places: how it reads at the manifest check that collects every fault before failing, and at the malformed-shape path that today is an `InvalidOperationException` caught by a filter."
+  - "5. The seam: what crosses between engine and command, and whether a candidate's types appear in `src/tool` (`0001-F2` C-4)."
+  - "6. Packaging: dependencies added (`0001-F1` C-7), the package's size, and a coarse start-up timing of the tool on this repository's own tree."
+  - "7. Compiler and tooling defects met."
+  - "8. Specification text that would change: `0001-F2` § 7, `0001-F2` C-2, `0001-F1` C-7, ADR-0002."
+  - "A candidate that cannot be made to build or pass is recorded as a finding, with the reason."
+
+decisions:
+  - |
+    2026-10-11, the repository owner: trial code lives on unmerged branches,
+    one per candidate, each cited at a commit. Rejected: a sandbox project
+    committed to the repository outside the solution; moving `main` to the
+    .NET 11 release candidate now.
+  - |
+    2026-10-11, the repository owner: the candidates are C# 15 union types,
+    language-ext v5 beta and Dunet. Not chosen: a hand-written result type on
+    C# 14.
+
+out_of_scope:
+  - "Migrating any code on `main` - a follow-up item that depends on this one, cut after the owner rules on the ADR, with the `0001-F2` § 7 delta."
+  - "The fault isolation around a rule that throws (`0001-F1` B-012 to B-016, `0001-F1` C-11, `0001-F2` B-015, ADR-0005) - that catches a defect, not an expected input failure, and stays."
+  - "`init`, and every command not yet built (exit `4`)."
+  - "language-ext 4.4.9 - the last stable release, from 2024, with ten package dependencies including `System.Reflection.Emit`."

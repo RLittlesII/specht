@@ -1,49 +1,68 @@
+using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
-using System.IO.Abstractions;
 using System.Linq;
 using System.Text;
+using System.Text.Json.Nodes;
 using Specht.Manifest;
 using Specht.Versioning;
 
 namespace Specht.Benchmarks;
 
-/// <summary>Writes the clean specification tree a benchmark measures over (<c>0109-F1</c> B-015, B-016; decision 0004).</summary>
-public static class SpecTreeGenerator
+/// <summary>The clean specification tree a benchmark measures over, held in memory (<c>0109-F1</c> B-015, B-016; decision 0004).</summary>
+public sealed class SpechtTree
 {
+    private SpechtTree(IReadOnlyList<SpechtTreeFile> files) => Files = files;
+
     /// <summary>
-    /// Writes the shipped manifest and frontmatter schemas, then <paramref name="specifications"/> co-located Feature
-    /// specifications, each with its companion Gherkin file, under <paramref name="root"/>.
+    /// Gets the tree's files: the manifest, the three frontmatter schemas, then each specification and its Gherkin file, in
+    /// index order.
     /// </summary>
-    /// <param name="root">An existing, empty directory, which the caller creates and deletes.</param>
+    public IReadOnlyList<SpechtTreeFile> Files { get; }
+
+    /// <summary>Builds the tree that holds <paramref name="specifications"/> specifications.</summary>
     /// <param name="specifications">How many specifications the tree holds.</param>
-    public static void Generate(string root, int specifications)
+    /// <returns>A new tree, holding the same files with the same contents for the same size.</returns>
+    public static SpechtTree Of(int specifications)
     {
-        var manifest = Path.Combine(root, SpecManifest.RelativePath);
-        var schema = Directory.CreateDirectory(Path.GetDirectoryName(manifest)!).FullName;
+        var manifest = ShippedManifest();
+        var keys = JsonNode.Parse(manifest)!;
+        var names = keys["frontmatterSchemas"]!;
+        var version = SchemaVersions.Embedded.Select(
+            SemanticVersion.TryParse(keys["schemaVersion"]?.GetValue<string>(), out var pinned) ? pinned : new SemanticVersion(0, 1, 0));
+        var schema = SpecManifest.RelativePath[..(SpecManifest.RelativePath.LastIndexOf('/') + 1)];
 
-        using (var shipped = typeof(SpecManifest).Assembly.GetManifestResourceStream(DefaultManifest)!)
-        using (var file = File.Create(manifest))
-        {
-            shipped.CopyTo(file);
-        }
-
-        var structure = SpecManifest.Load(new FileSystem(), root);
-        var version = SchemaVersions.Embedded.Select(structure.SchemaVersion);
-
-        Write(Path.Combine(schema, structure.FrontmatterSchemas["feature"]), version.FeatureSchema);
-        Write(Path.Combine(schema, structure.FrontmatterSchemas["task"]), version.ItemSchema);
-        Write(Path.Combine(schema, structure.FrontmatterSchemas["epic"]), version.EpicSchema);
+        List<SpechtTreeFile> files =
+        [
+            new(SpecManifest.RelativePath, manifest),
+            Text(schema + names["feature"]!.GetValue<string>(), version.FeatureSchema),
+            Text(schema + names["task"]!.GetValue<string>(), version.ItemSchema),
+            Text(schema + names["epic"]!.GetValue<string>(), version.EpicSchema),
+        ];
 
         for (var index = 1; index <= specifications; index++)
         {
             var number = index.ToString("D4", CultureInfo.InvariantCulture);
-            var directory = Directory.CreateDirectory(Path.Combine(root, "features", $"feature-{number}", ".spec")).FullName;
+            var directory = $"features/feature-{number}/.spec/";
 
-            Write(Path.Combine(directory, "README.md"), Specification(index, number));
-            Write(Path.Combine(directory, $"feature-{number}.feature"), Scenarios(number));
+            files.Add(Text(directory + "README.md", Specification(index, number)));
+            files.Add(Text(directory + $"feature-{number}.feature", Scenarios(number)));
         }
+
+        return new SpechtTree(files);
     }
+
+    private static byte[] ShippedManifest()
+    {
+        using var shipped = typeof(SpecManifest).Assembly.GetManifestResourceStream(DefaultManifest)!;
+        using var bytes = new MemoryStream();
+
+        shipped.CopyTo(bytes);
+
+        return bytes.ToArray();
+    }
+
+    private static SpechtTreeFile Text(string relativePath, string text) => new(relativePath, Utf8.GetBytes(text));
 
     private static string Specification(int index, string number)
     {
@@ -179,8 +198,6 @@ public static class SpecTreeGenerator
     }
 
     private static string Claim(int claim) => claim.ToString("D3", CultureInfo.InvariantCulture);
-
-    private static void Write(string path, string text) => File.WriteAllText(path, text, Utf8);
 
     private const int Claims = 3;
     private const string Epic = "0001";
