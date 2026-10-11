@@ -74,7 +74,7 @@ command that writes.
 | `0101-F2` | Retired-id rule                | `src/specht/Rules/RetiredIds/.spec/README.md`       |
 | `0101-F3` | Heading and table form         | `src/specht/Rules/Form/.spec/README.md`             |
 | `0101-F4` | Frontmatter key order          | `src/specht/Rules/FrontmatterOrder/.spec/README.md` |
-| `0101-F5` | The format command             | `src/specht.tool/Features/Format/.spec/README.md`   |
+| `0101-F5` | The format command             | `src/tool/Features/Format/.spec/README.md`          |
 | `0101-F6` | In-specification id uniqueness | `src/specht/Rules/DuplicateIds/.spec/README.md`     |
 | `0101-F7` | Record number uniqueness       | `src/specht/Rules/RecordNumbers/.spec/README.md`    |
 | `0101-F8` | Work-item id allocation        | `src/specht/Rules/WorkItemIds/.spec/README.md`      |
@@ -118,7 +118,7 @@ which finds the files they read.
 
 The rule specifications sit under `src/specht/Rules/`, one folder per
 Feature, beside the rule classes they will become. The command's sits in
-`src/specht.tool/Features/Format/`, the folder its command will occupy. The
+`src/tool/Features/Format/`, the folder its command will occupy. The
 `implementer` may move a specification with its code (`git mv`), because a
 specification's identity is its frontmatter `epic` and `id` (`SPEC012`).
 

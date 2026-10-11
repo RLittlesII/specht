@@ -14,36 +14,9 @@
     <ReqnrollFeatureFile Include="..\..\src\specht\Manifest\.spec\manifest.feature" Link="Features\manifest.feature" />
     <ReqnrollFeatureFile Include="..\..\src\specht\Report\.spec\report.feature" Link="Features\report.feature" />
     <ReqnrollFeatureFile Include="..\..\.build\Versioning\.spec\versioning.feature" Link="Features\package-versioning.feature" />
-    <ReqnrollFeatureFile Include="..\..\src\tool\.spec\versioning.feature">
-      <Link>Features\versioning.feature</Link>
-      <NormalizedLogicalName>Features/versioning.feature</NormalizedLogicalName>
-      <NormalizedRelativeDir>_/_/src/specht.tool/.spec/</NormalizedRelativeDir>
-      <CodeBehindFile>obj\Debug/net10.0/_/_/src/specht.tool/.spec/versioning.feature.cs</CodeBehindFile>
-      <LegacyCodeBehindFile>../../src/specht.tool/.spec/versioning.feature.cs</LegacyCodeBehindFile>
-      <MessagesFile>obj\Debug/net10.0/_/_/src/specht.tool/.spec/versioning.feature.ndjson</MessagesFile>
-      <MessagesResourceName>Features/versioning.feature.ndjson</MessagesResourceName>
-      <FeatureFileResourceName>Features/versioning.feature</FeatureFileResourceName>
-    </ReqnrollFeatureFile>
-    <ReqnrollFeatureFile Include="..\..\src\tool\Features\Check\.spec\check.feature">
-      <Link>Features\check.feature</Link>
-      <NormalizedLogicalName>Features/check.feature</NormalizedLogicalName>
-      <NormalizedRelativeDir>_/_/src/specht.tool/Features/Check/.spec/</NormalizedRelativeDir>
-      <CodeBehindFile>obj\Debug/net10.0/_/_/src/specht.tool/Features/Check/.spec/check.feature.cs</CodeBehindFile>
-      <LegacyCodeBehindFile>../../src/specht.tool/Features/Check/.spec/check.feature.cs</LegacyCodeBehindFile>
-      <MessagesFile>obj\Debug/net10.0/_/_/src/specht.tool/Features/Check/.spec/check.feature.ndjson</MessagesFile>
-      <MessagesResourceName>Features/check.feature.ndjson</MessagesResourceName>
-      <FeatureFileResourceName>Features/check.feature</FeatureFileResourceName>
-    </ReqnrollFeatureFile>
-    <ReqnrollFeatureFile Include="..\..\src\tool\Features\Init\.spec\init.feature">
-      <Link>Features\init.feature</Link>
-      <NormalizedLogicalName>Features/init.feature</NormalizedLogicalName>
-      <NormalizedRelativeDir>_/_/src/specht.tool/Features/Init/.spec/</NormalizedRelativeDir>
-      <CodeBehindFile>obj\Debug/net10.0/_/_/src/specht.tool/Features/Init/.spec/init.feature.cs</CodeBehindFile>
-      <LegacyCodeBehindFile>../../src/specht.tool/Features/Init/.spec/init.feature.cs</LegacyCodeBehindFile>
-      <MessagesFile>obj\Debug/net10.0/_/_/src/specht.tool/Features/Init/.spec/init.feature.ndjson</MessagesFile>
-      <MessagesResourceName>Features/init.feature.ndjson</MessagesResourceName>
-      <FeatureFileResourceName>Features/init.feature</FeatureFileResourceName>
-    </ReqnrollFeatureFile>
+    <ReqnrollFeatureFile Include="..\..\src\tool\.spec\versioning.feature" Link="Features\versioning.feature" />
+    <ReqnrollFeatureFile Include="..\..\src\tool\Features\Check\.spec\check.feature" Link="Features\check.feature" />
+    <ReqnrollFeatureFile Include="..\..\src\tool\Features\Init\.spec\init.feature" Link="Features\init.feature" />
   </ItemGroup>
 
   <ItemGroup>

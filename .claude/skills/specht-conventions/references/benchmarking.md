@@ -20,7 +20,7 @@ decided by the owner on 2026-10-09 (item 0108).
   (`test/Shared/TestTierGovernanceTests.cs`) scans only the assembly it is
   compiled into, so it never sees a benchmark class. A benchmark carries no
   `Tier` trait; a `[Benchmark]` method is not a test and asserts nothing.
-- **Not packable.** `IsPackable=false`, like every project but `src/specht.tool`.
+- **Not packable.** `IsPackable=false`, like every project but `src/tool`.
 - **In `specht.slnx`,** or `Compile` does not build it and it rots unseen.
 - **BenchmarkDotNet's version is central,** in `Directory.Packages.props`.
 

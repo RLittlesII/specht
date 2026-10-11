@@ -15,7 +15,7 @@ depends_on: ["0021"] # calls the copied engine's runner
 blocks: ["0014", "0027", "0028", "0029", "0030", "0031", "0035", "0036", "0040", "0045", "0052", "0061", "0062", "0133"]
 spikes: []
 
-spec: src/specht.tool/Features/Check/.spec/README.md
+spec: src/tool/Features/Check/.spec/README.md
 
 claims:
   - B-001
@@ -25,7 +25,7 @@ claims:
   - B-013
 
 created: "2026-10-08"
-updated: "2026-10-09"
+updated: "2026-10-10"
 closed: "2026-10-08"
 
 summary: |

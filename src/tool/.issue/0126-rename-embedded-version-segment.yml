@@ -15,12 +15,12 @@ depends_on: ["0120"] # names the folder and `$id` of the semver set 0120 convert
 blocks: []
 spikes: []
 
-spec: src/specht.tool/.spec/README.md
+spec: src/tool/.spec/README.md
 
 claims: []
 
 created: "2026-10-09"
-updated: "2026-10-09"
+updated: "2026-10-10"
 closed: null
 
 summary: |

@@ -8,10 +8,10 @@ type: reference
 
 ## In this repository
 
-There is one host, `src/specht.tool`, and one slice per Spectre command:
+There is one host, `src/tool`, and one slice per Spectre command:
 
 ```
-src/specht.tool/
+src/tool/
   Program.cs                    the composition root - a hand-written list, nothing else
   Features/
     Check/                      `specht [--root] [--report] [--strict] [--json]` - the default command
@@ -28,12 +28,12 @@ src/specht.tool/
 The engine — discovery, the frontmatter reader, the schema loader, the Markdig
 document model, the rules, the runner and the report — is the shared concern
 beneath every command and lives in `src/specht`, not in a slice. A command
-parses, calls `SpecCheckRunner`, folds the report into an exit code, and that is
+parses, calls `SpechtRunner`, folds the report into an exit code, and that is
 the whole command. `--explain SPEC031` lives in `Check/` until a second caller
 earns it a folder.
 
-Tests are **not** co-located here: they live in `test/specht.tests` and
-`test/specht.acceptance`. Why, and the tiers, are in
+Tests are **not** co-located here: they live in `test/tests` and
+`test/acceptance`. Why, and the tiers, are in
 [`specht-conventions` § Testing](../../specht-conventions/references/testing.md).
 
 ### The rules that make it hold

@@ -16,8 +16,8 @@
     <TestingPlatformCommandLineArguments>$(TestingPlatformCommandLineArguments) --coverage-output $(MSBuildProjectName).coverage.cobertura.xml</TestingPlatformCommandLineArguments>
   </PropertyGroup>
 
-  <!-- The tier guard, in every *.tests project and not in specht.acceptance (specht-conventions § Testing). -->
-  <ItemGroup Condition="$(MSBuildProjectName.EndsWith('.tests', StringComparison.OrdinalIgnoreCase))">
+  <!-- The tier guard, in every *tests project and not in acceptance (specht-conventions § Testing). -->
+  <ItemGroup Condition="$(MSBuildProjectName.EndsWith('tests', StringComparison.OrdinalIgnoreCase))">
     <Compile Include="$(MSBuildThisFileDirectory)Shared/TestTierGovernanceTests.cs" Link="Shared/TestTierGovernanceTests.cs" />
   </ItemGroup>
 

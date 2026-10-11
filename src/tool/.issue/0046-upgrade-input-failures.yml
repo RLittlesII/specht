@@ -15,7 +15,7 @@ depends_on: ["0045", "0013"] # guards 0045's command; exit 3 as 0013 gives the c
 blocks: ["0048"]
 spikes: []
 
-spec: src/specht.tool/.spec/README.md
+spec: src/tool/.spec/README.md
 
 claims:
   - B-018
@@ -23,7 +23,7 @@ claims:
   - B-020
 
 created: "2026-10-08"
-updated: "2026-10-09"
+updated: "2026-10-10"
 closed: null
 
 summary: |

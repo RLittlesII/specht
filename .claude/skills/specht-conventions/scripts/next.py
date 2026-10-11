@@ -11,7 +11,7 @@ SHARED_WRITE_SETS = [
     (".build/ContinuousIntegration", "generated workflows"),
     (".build/Releasing", "generated workflows"),
     (".github", "generated workflows"),
-    (".build", ".build/Build.cs"),
+    (".build", ".build/SpechtBuild.cs"),
 ]
 
 

@@ -100,7 +100,7 @@ homes that have no obvious code folder:
 
 - **A generated file is specified beside its generator.** `.github/workflows/`
   holds NUKE's output, never its source (`0055-F2` C-1), so CI and release are
-  specified under `.build/`, where `Build.GitHubActions.cs` will declare them.
+  specified under `.build/`, where `SpechtBuild.GitHubActions.cs` will declare them.
   The release folder is `Releasing/`, because `.gitignore` ignores every
   directory named `Release/` as build output.
 - **Hand-written GitHub configuration is specified under `.github/`.**

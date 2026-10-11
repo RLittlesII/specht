@@ -1,0 +1,68 @@
+id: "0136"
+type: task
+title: Reconcile the paths the project renames left behind
+
+status: done
+
+priority: medium # DERIVED
+value: 3
+risk: 1
+rank: 57 # DERIVED
+
+parent: null
+children: []
+
+depends_on: []
+blocks: [] # DERIVED
+spikes: []
+
+spec: null
+
+claims: []
+
+created: "2026-10-10"
+updated: "2026-10-10"
+closed: "2026-10-10"
+
+summary: |
+  Commits `a62689f` and `dc59b81` renamed `src/specht.tool` to `src/tool`,
+  `test/specht.tests` to `test/tests`, `test/specht.acceptance` to
+  `test/acceptance` and `.build/Build*.cs` to `.build/SpechtBuild*.cs`, and
+  the text that names those paths did not follow. 37 items carried a `spec:`
+  path to a file that no longer exists, so the queue script keyed their lane
+  on a dead path; the skills, the role contracts, `AGENTS.md`, `README.md`
+  and the epics named the old tree; the engine's schema glob pointed at the
+  old tool directory and matched nothing, with three literal entries doing
+  its work; the tier guard was linked only into a project named `*.tests`,
+  which no project now is; and three linked `.feature` entries carried
+  generated metadata naming the old directory and the Debug configuration.
+  This item brings each of those to the tree as it is, and changes nothing
+  else. It is the first of the steps that fold the code into feature slices.
+
+acceptance_criteria:
+  - Every item's `spec:` names a file that exists.
+  - "The skills, the role contracts, `AGENTS.md`, `README.md` and the epics
+    name `src/tool`, `test/tests`, `test/acceptance` and `.build/SpechtBuild*.cs`."
+  - "The engine embeds the same resources under the same names as before:
+    one manifest, three `schema/v1/` schemas, twenty-one `rules/v1/` pages."
+  - The tier guard is compiled into `test/tests` and runs in the unit tier.
+  - "Each linked `.feature` is one literal `Include` and `Link` entry, and the
+    acceptance tier runs the same scenarios as before."
+  - "Constraints preserved: 0001-F1 C-9, 0001-F7 C-1"
+
+decisions:
+  - "2026-10-10, repository owner: chose \"Reconcile first, then three
+    moves\" for the feature-slice restructure - the leftover paths are fixed
+    in their own pull request before any file moves, rejecting one pull
+    request for everything and moving files over the stale text."
+
+out_of_scope:
+  - Moving any file - the engine, test and convention steps that follow.
+  - "Closed records: the prose of done items, ADRs, decisions and lessons
+    keeps the names in use when it was written."
+  - "`PackageId` in `src/tool/tool.csproj`, which is `tool` where the
+    conventions name the package `specht.tool`, and the coverage report
+    names, which now follow the project names - both are behaviour, raised
+    with the owner and not changed here."
+  - "The rule that a test project's name ends `.Tests`, which the rename
+    itself no longer follows - raised with the owner and not rewritten here."

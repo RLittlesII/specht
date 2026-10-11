@@ -15,7 +15,7 @@ depends_on: ["0026"] # adds failure exits to the command 0026 builds
 blocks: ["0013", "0042"]
 spikes: []
 
-spec: src/specht.tool/Features/Check/.spec/README.md
+spec: src/tool/Features/Check/.spec/README.md
 
 claims:
   - B-005
@@ -23,7 +23,7 @@ claims:
   - B-007
 
 created: "2026-10-08"
-updated: "2026-10-08"
+updated: "2026-10-10"
 closed: "2026-10-08"
 
 summary: |

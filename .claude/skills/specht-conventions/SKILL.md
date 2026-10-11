@@ -51,14 +51,14 @@ src/
   specht/                      specht - the rule engine: discovery, readers, schema loader,
                                rules, runner, report. Copied from hooked (brief § 3).
     .spec/                     this Feature's specification, .feature and records (epic 0001)
-  specht.tool/                 specht.tool - the CLI host; PackAsTool, command `specht`
+  tool/                        specht.tool - the CLI host; PackAsTool, command `specht`
     Features/<Command>/        one folder per Spectre command - dotnet-tool owns the inside
     schema/v1/                 embedded shipping copy of the schema set
     templates/v1/              embedded shipping copy of the templates
 
 test/
-  specht.tests/                specht.tests - unit and integration tests; SpecTree builder
-  specht.acceptance/           specht.acceptance - Reqnroll over src/**/.spec/*.feature
+  tests/                       specht.tests - unit and integration tests; SpecTree builder
+  acceptance/                  specht.acceptance - Reqnroll over src/**/.spec/*.feature
 
 .build/                        the NUKE build project - targets and CI generation; tooling, not product
 .nuke/                         NUKE parameters and the generated build schema
@@ -87,7 +87,7 @@ AGENTS.md                      the entry point for agents
 README.md                      the public front page - what, why, status, usage
 ```
 
-**Everything below `src/specht.tool/Features/` is
+**Everything below `src/tool/Features/` is
 [`dotnet-tool` § Vertical Slice](../dotnet-tool/references/vertical-slice.md)** —
 how a command folder is laid out, how it joins `Program.cs`, and what belongs in
 the engine instead. Not restated here.
@@ -180,7 +180,7 @@ none.
 ./build.sh Format           # dotnet format --verify-no-changes
 ./build.sh UnitTest         # --filter-trait "Tier=Unit"
 ./build.sh IntegrationTest  # --filter-trait "Tier=Integration"
-./build.sh AcceptanceTest   # test/specht.acceptance, Reqnroll, no filter
+./build.sh AcceptanceTest   # test/acceptance, Reqnroll, no filter
 ./build.sh Pack             # specht.tool.<version>.nupkg into .artifacts/nupkg
 ./build.sh SpecCheck        # the tool checking this repository's own .spec/ tree
 ./build.sh VerifyTag        # on a tag build, fails unless the tag is v<version>; skipped otherwise
@@ -188,7 +188,7 @@ none.
 
 `SpecCheck` runs `specht` exactly as a consumer would — through the local tool
 manifest, never through a project reference (brief § 7). Until the first
-package is published it runs `dotnet run --project src/specht.tool -- --root .`
+package is published it runs `dotnet run --project src/tool -- --root .`
 instead; the manifest replaces that the moment a package exists. From 0062,
 pre-commit calls the same thing when a staged file is under a `.spec/` directory
 or is a `.feature`.

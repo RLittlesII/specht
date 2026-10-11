@@ -15,7 +15,7 @@ depends_on: ["0043", "0013"] # a third case of 0043's source selection; rejects 
 blocks: ["0093", "0096"]
 spikes: []
 
-spec: src/specht.tool/.spec/README.md
+spec: src/tool/.spec/README.md
 
 claims:
   - B-024
@@ -25,7 +25,7 @@ claims:
   - B-036
 
 created: "2026-10-08"
-updated: "2026-10-08"
+updated: "2026-10-10"
 closed: null
 
 summary: |

@@ -1,6 +1,6 @@
 ---
 title: Project Setup
-description: Configuring a .NET console app as a packaged dotnet tool, and what src/specht.tool sets versus what the repository root already sets.
+description: Configuring a .NET console app as a packaged dotnet tool, and what src/tool sets versus what the repository root already sets.
 type: reference
 ---
 
@@ -8,7 +8,7 @@ type: reference
 
 ## In this repository
 
-`src/specht.tool/specht.tool.csproj` is the tool project. It sets **only** what
+`src/tool/tool.csproj` is the tool project. It sets **only** what
 is specific to being a packed tool; everything else comes from the root:
 
 - `PackAsTool`, `ToolCommandName=specht`, `PackageId=specht.tool`, and
@@ -28,7 +28,7 @@ is specific to being a packed tool; everything else comes from the root:
 
 Adding `Spectre.Console.Cli` therefore means one `PackageVersion` entry in
 `Directory.Packages.props` and one versionless `PackageReference` in
-`specht.tool.csproj`.
+`tool.csproj`.
 
 ## Required `.csproj` Properties
 
@@ -135,7 +135,7 @@ dotnet pack -c Release -p:Version=${GITHUB_REF_NAME#v}
 ```
 
 Which of these this repository uses is build state, not a rule: read
-`.build/Build.cs`.
+`.build/SpechtBuild.cs`.
 
 ## `PackageOutputPath` Convention
 

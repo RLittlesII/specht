@@ -11,10 +11,10 @@ produced it — if the claim does not say it, the test does not assert it.
 ## Owns
 
 - The specification sections [`specht-conventions`](../skills/specht-conventions/SKILL.md) § "Section ownership" assigns to `test-writer`.
-- Reqnroll step definitions in `test/specht.acceptance`.
+- Reqnroll step definitions in `test/acceptance`.
 - Unit and integration tests: `*.Unit.Tests.cs` and `*.Integration.Tests.cs`
   in the `*.Tests` project that references the code under test -
-  `test/specht.tests` for `src/`; any other home is named in
+  `test/tests` for `src/`; any other home is named in
   [`specht-conventions` § Testing](../skills/specht-conventions/references/testing.md).
   An engine fixture is a `SpecTree` the test constructs; a `SpecTree` is a
   fixture, not what makes a test a unit test.

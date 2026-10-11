@@ -15,13 +15,13 @@ depends_on: ["0052", "0013", "0092"] # a refusal before 0052's write; 0013's exi
 blocks: []
 spikes: []
 
-spec: src/specht.tool/Features/Init/.spec/README.md
+spec: src/tool/Features/Init/.spec/README.md
 
 claims:
   - B-017
 
 created: "2026-10-08"
-updated: "2026-10-08"
+updated: "2026-10-10"
 closed: null
 
 summary: |

@@ -46,7 +46,7 @@ files — a second copy is a second thing to drift.
 - **No role is mandatory for a small change; the ordering is.** A one-line fix
   does not need five handoffs. It still may not reach code before the claim it
   satisfies exists.
-- **Scenarios execute.** `test/specht.acceptance` runs the `.feature` files
+- **Scenarios execute.** `test/acceptance` runs the `.feature` files
   through Reqnroll. Unit tests still cover the concerns — a passing acceptance scenario
   is not a substitute for them, and § 9 cites both.
 - **Every role writes less than it wants to.** Enough code to turn the test

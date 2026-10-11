@@ -194,9 +194,9 @@ stays in
 **Lanes.** Two startable items share a lane when they name the same `spec:`, or
 when their homes fall under the same entry of `SHARED_WRITE_SETS` at the top of
 the script: `.build/ContinuousIntegration`, `.build/Releasing` and `.github`
-share the generated workflows (`.build/Build.GitHubActions.cs` and the committed
+share the generated workflows (`.build/SpechtBuild.GitHubActions.cs` and the committed
 `.github/workflows/`, which every such branch regenerates), and the rest of
-`.build` shares `.build/Build.cs`. A new generated workflow or a new hand-edited
+`.build` shares `.build/SpechtBuild.cs`. A new generated workflow or a new hand-edited
 build file adds an entry there in the pull request that creates it.
 
 ## Cite the item and the claim in the commit message

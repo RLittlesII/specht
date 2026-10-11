@@ -16,7 +16,7 @@ depends_on: ["0120"] # floats from the exact semver pin 0120 delivers
 blocks: []
 spikes: []
 
-spec: src/specht.tool/.spec/README.md
+spec: src/tool/.spec/README.md
 
 claims:
   - B-053
@@ -24,7 +24,7 @@ claims:
   - B-056
 
 created: "2026-10-09"
-updated: "2026-10-09"
+updated: "2026-10-10"
 closed: null
 
 summary: |

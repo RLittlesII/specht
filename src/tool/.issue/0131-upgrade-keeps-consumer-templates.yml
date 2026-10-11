@@ -15,7 +15,7 @@ depends_on: ["0130", "0045", "0047"] # reads 0130's key; narrows the rewrite 004
 blocks: []
 spikes: []
 
-spec: src/specht.tool/.spec/README.md
+spec: src/tool/.spec/README.md
 
 claims:
   - B-005
@@ -26,7 +26,7 @@ claims:
   - B-063
 
 created: "2026-10-09"
-updated: "2026-10-09"
+updated: "2026-10-10"
 closed: null
 
 summary: |

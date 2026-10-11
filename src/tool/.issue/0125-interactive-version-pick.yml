@@ -16,14 +16,14 @@ depends_on: ["0122"] # a second way into 0122's pin
 blocks: []
 spikes: []
 
-spec: src/specht.tool/.spec/README.md
+spec: src/tool/.spec/README.md
 
 claims:
   - B-057
   - B-058
 
 created: "2026-10-09"
-updated: "2026-10-09"
+updated: "2026-10-10"
 closed: null
 
 summary: |

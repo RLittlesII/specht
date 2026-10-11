@@ -15,7 +15,7 @@ depends_on: ["0011", "0027", "0034", "0051"] # key via 0011; exit 3 via 0027; ve
 blocks: ["0043", "0044", "0049", "0054", "0120"]
 spikes: []
 
-spec: src/specht.tool/.spec/README.md
+spec: src/tool/.spec/README.md
 
 claims:
   - B-001
@@ -27,7 +27,7 @@ claims:
   - B-023
 
 created: "2026-10-08"
-updated: "2026-10-09"
+updated: "2026-10-10"
 closed: "2026-10-09"
 
 summary: |

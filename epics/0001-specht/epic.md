@@ -55,16 +55,16 @@ any of them has the same read-only oracle and the same generation contract.
 Decomposed by capability dimension, not by brief § 8 step. A step is a pull
 request; a Feature is a thing the tool does, with its own invariant.
 
-| Feature   | Name                            | Specification                                          | brief § 8 step |
-| --------- | ------------------------------- | ------------------------------------------------------ | -------------- |
-| `0001-F1` | The engine, extracted unchanged | `src/specht/.spec/README.md`                           | 2              |
-| `0001-F2` | The check command               | `src/specht.tool/Features/Check/.spec/README.md`       | 3              |
-| `0001-F3` | The report contract             | `src/specht/Report/.spec/README.md`                    | 3              |
-| `0001-F4` | `init`                          | `src/specht.tool/Features/Init/.spec/README.md`        | 3              |
-| `0001-F5` | The manifest carries the roles  | `src/specht/Manifest/.spec/README.md`                  | 5              |
-| `0001-F6` | Discovery                       | `src/specht/Discovery/.spec/README.md`                 | 5              |
-| `0001-F7` | Schema versioning               | `src/specht.tool/.spec/README.md`                      | 6              |
-| `0001-F8` | The frontmatter command         | `src/specht.tool/Features/Frontmatter/.spec/README.md` | after 6        |
+| Feature   | Name                            | Specification                                   | brief § 8 step |
+| --------- | ------------------------------- | ----------------------------------------------- | -------------- |
+| `0001-F1` | The engine, extracted unchanged | `src/specht/.spec/README.md`                    | 2              |
+| `0001-F2` | The check command               | `src/tool/Features/Check/.spec/README.md`       | 3              |
+| `0001-F3` | The report contract             | `src/specht/Report/.spec/README.md`             | 3              |
+| `0001-F4` | `init`                          | `src/tool/Features/Init/.spec/README.md`        | 3              |
+| `0001-F5` | The manifest carries the roles  | `src/specht/Manifest/.spec/README.md`           | 5              |
+| `0001-F6` | Discovery                       | `src/specht/Discovery/.spec/README.md`          | 5              |
+| `0001-F7` | Schema versioning               | `src/tool/.spec/README.md`                      | 6              |
+| `0001-F8` | The frontmatter command         | `src/tool/Features/Frontmatter/.spec/README.md` | after 6        |
 
 Why these and not `hooked`'s one draft (`0008-F3`, 34 claims): that draft
 bundled the command, `init`, the manifest roles, discovery and the baseline in

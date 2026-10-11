@@ -15,7 +15,7 @@ depends_on: ["0043", "0047"] # under 0043's on-disk selection; extends 0047's li
 blocks: []
 spikes: []
 
-spec: src/specht.tool/.spec/README.md
+spec: src/tool/.spec/README.md
 
 claims:
   - B-029
@@ -23,7 +23,7 @@ claims:
   - B-031
 
 created: "2026-10-08"
-updated: "2026-10-09"
+updated: "2026-10-10"
 closed: null
 
 summary: |
