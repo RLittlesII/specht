@@ -1,6 +1,7 @@
 using System.IO.Abstractions;
 using AwesomeAssertions;
 using Specht.Benchmarks;
+using Specht.Tests.Shared;
 
 namespace Specht.Tests.Benchmarks;
 
@@ -20,7 +21,7 @@ public sealed class SpechtTreeIntegrationTests : IDisposable
         new SpechtTreeStore(new FileSystem()).Save(SpechtTree.Of(specifications), root);
 
         // When
-        var report = SpechtRunner.Run(root);
+        var report = EngineServices.Runner().Run(root);
 
         // Then
         report.Violations.Should().BeEmpty();

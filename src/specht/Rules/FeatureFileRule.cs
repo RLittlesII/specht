@@ -1,5 +1,4 @@
 using System.Text.RegularExpressions;
-using Specht.Discovery;
 using Specht.Model;
 
 namespace Specht.Rules;
@@ -8,7 +7,8 @@ namespace Specht.Rules;
 /// SPEC020 and SPEC021 - a specification has exactly one companion Gherkin
 /// file beside it, and every claim tag in that file resolves to a § 3 claim.
 /// </summary>
-public sealed class FeatureFileRule : ISpecRule
+/// <param name="reader">The reader of a companion file's claim tags.</param>
+public sealed class FeatureFileRule(FeatureFileReader reader) : ISpecRule
 {
     /// <inheritdoc />
     public string Id => "SPEC020";
@@ -38,9 +38,9 @@ public sealed class FeatureFileRule : ISpecRule
 
             var claims = ClaimIds(model, feature, grammar);
             var path = feature.FeatureFiles[0];
-            var relative = SpecDiscovery.Relative(model.Root, path);
+            var relative = SpecPath.Relative(model.Root, path);
 
-            foreach (var tag in FeatureFileReader.ReadTags(path))
+            foreach (var tag in reader.ReadTags(path))
             {
                 if (!claims.Contains(tag.Id))
                 {

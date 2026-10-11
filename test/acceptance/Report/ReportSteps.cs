@@ -75,7 +75,7 @@ public sealed class ReportSteps
         }
 
         _root = root;
-        _report = SpechtRunner.Run(root);
+        _report = EngineServices.Runner().Run(root);
         _document = SpecReportDocument.From(_report);
         (_stdout, _stderr, _) = AcceptanceTool.Launch(root, "--root", ".", "--json");
         _json = _stdout.EndsWith(Environment.NewLine, StringComparison.Ordinal) ? _stdout[..^Environment.NewLine.Length] : _stdout;
