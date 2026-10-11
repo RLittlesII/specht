@@ -49,9 +49,10 @@ which files it actually touches, so restate a lane as confirmed only after it.
 
 ## Reporting
 
-Lead with the lanes: one row per lane - its head, rank, status, title, the
-items queued behind it, and the write set it holds. Then the startable table -
-id, rank, status, title, description - the blocked list and the taken list.
+Lead with the lanes: one row per lane - its head, rank, priority, status,
+title, the items queued behind it, and the write set it holds. Then the
+startable table - id, rank, priority, status, title, description - the blocked
+list and the taken list.
 State the commit the answer was read at: the queue moves with every merge, and
 an answer from before a pull is stale.
 

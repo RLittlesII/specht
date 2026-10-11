@@ -187,7 +187,8 @@ items live under `.build/`, `.github/` and `.config/` - and strips a trailing
 | a container            | any item another open item names as `parent` - never offered as next                     |
 | a missing `depends_on` | a blocker, printed with a `?`                                                            |
 
-`rank` is read as the item carries it; the derivation stays in
+`rank` and `priority` are read as the item carries them; the derivation
+stays in
 [`.spec/templates/item.yml`](../../../../.spec/templates/item.yml).
 
 **Lanes.** Two startable items share a lane when they name the same `spec:`, or
