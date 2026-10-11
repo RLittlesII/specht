@@ -183,14 +183,14 @@ public sealed partial class BuildSteps(IUnitTestRuntimeProvider runtime) : IDisp
     public void ThenExactlyOneToolPackageIsWrittenToTheBuildsPackageOutput()
     {
         _exitCode.Should().Be(0, _output);
-        Packages().Should().ContainSingle().Which.Should().StartWith("tool.");
+        Packages().Should().ContainSingle().Which.Should().StartWith("specht.tool.");
     }
 
     [Then("its name carries the version computed for the commit")]
     public async Task ThenItsNameCarriesTheVersionComputedForTheCommit()
     {
         await RunAsync(("dotnet", ["msbuild", "tool/tool.csproj", "-getProperty:Version"]));
-        Packages().Should().Equal($"tool.{_output.Trim()}.nupkg");
+        Packages().Should().Equal($"specht.tool.{_output.Trim()}.nupkg");
     }
 
     [Then("every dotnet tool the build and the hook invoke is available")]
