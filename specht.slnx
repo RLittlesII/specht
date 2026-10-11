@@ -18,6 +18,7 @@
     <File Path=".spec/brief.md" />
   </Folder>
   <Folder Name="/src/">
+    <Project Path="src/polyfill/polyfill.csproj" />
     <Project Path="src/specht/specht.csproj" />
     <Project Path="src\tool\tool.csproj" />
   </Folder>

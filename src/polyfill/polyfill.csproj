@@ -1,0 +1,10 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- The three types the C# 15 compiler requires for union and closed declarations, which net10.0 does not carry. They
+       sit outside the engine assembly because every namespace in it is Specht's (0001-F1 B-005). -->
+  <PropertyGroup>
+    <RootNamespace>System.Runtime.CompilerServices</RootNamespace>
+    <AssemblyName>specht.polyfill</AssemblyName>
+  </PropertyGroup>
+
+</Project>
