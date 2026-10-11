@@ -19,7 +19,8 @@ namespace Specht.Acceptance.Manifest;
 /// (B-008): the runner selects no on-disk source until <c>0001-F7</c> B-009. A role, a role's headers and a marker are
 /// written into the manifest under <c>roles</c>, <c>tables</c> and <c>markers</c> (B-001 to B-003, B-015, B-039, B-040;
 /// decision 0006). An empty file-shape list is written under <c>companionFiles</c> (B-041; <c>0001-F6</c> decision 0008).
-/// An exclusion entry is written as the whole <c>exclusions</c> list (B-021; <c>0001-F6</c> decision 0003).
+/// An exclusion entry is written as the whole <c>exclusions</c> list (B-021; <c>0001-F6</c> decision 0003). A path
+/// identity is written as the <c>identity</c> of the <c>layouts</c> entry named <c>epics</c> (B-043; <c>0001-F6</c> decision 0009).
 /// </summary>
 [Binding]
 [Scope(Feature = "The manifest carries the roles")]
@@ -169,6 +170,22 @@ public sealed class ManifestSteps
 
     [Given("the manifest's exclusion list holds the entry {string}")]
     public void GivenTheManifestsExclusionListHoldsTheEntry(string entry) => Manifest["exclusions"] = new JsonArray(entry);
+
+    [Given("the manifest's epics layout declares the position of its epic segment as {string}")]
+    public void GivenTheManifestsEpicsLayoutDeclaresThePositionOfItsEpicSegmentAs(string position) =>
+        EpicsLayout()["identity"] = new JsonObject { ["epic"] = position, ["feature"] = 2 };
+
+    [Given("the manifest's epics layout declares a path segment for a {string} beside its epic and its Feature")]
+    public void GivenTheManifestsEpicsLayoutDeclaresAPathSegmentForABesideItsEpicAndItsFeature(string member) =>
+        EpicsLayout()["identity"] = new JsonObject { ["epic"] = 1, ["feature"] = 2, [member] = 3 };
+
+    [Then("the rejection names the epics layout and its epic segment")]
+    public void ThenTheRejectionNamesTheEpicsLayoutAndItsEpicSegment() =>
+        _rejection!.Message.Should().MatchRegex(@"\bepics\b").And.MatchRegex(@"\bepic\b");
+
+    [Then("the rejection names the epics layout and {string}")]
+    public void ThenTheRejectionNamesTheEpicsLayoutAnd(string member) =>
+        _rejection!.Message.Should().MatchRegex(@"\bepics\b").And.Contain(member);
 
     [Then("the rejection names the companion file list")]
     public void ThenTheRejectionNamesTheCompanionFileList() => _rejection!.Message.Should().Contain("companionFiles");
@@ -330,6 +347,9 @@ public sealed class ManifestSteps
     private static string Matrix(string title, string middleHeaders, string middleCells) =>
         $"## {title}\n\n| Claim ID | {middleHeaders} | Status |\n| --- | {string.Join(" | ", middleHeaders.Split('|').Select(static _ => "---"))} | --- |\n"
             + $"| B-001 | {middleCells} | Covered |\n";
+
+    private JsonObject EpicsLayout() =>
+        Manifest["layouts"]!.AsArray().Select(static entry => entry!.AsObject()).Single(static entry => entry["name"]!.GetValue<string>() == "epics");
 
     private JsonObject Named(string key)
     {

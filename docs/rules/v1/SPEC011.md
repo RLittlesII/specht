@@ -1,6 +1,6 @@
 ---
 title: "SPEC011: Frontmatter identity matches the containing directory"
-description: In the epics layout, a Feature specification's epic or id disagrees with the directories it sits in.
+description: In a layout that declares its path identity, a Feature specification's epic or id disagrees with the directories it sits in.
 type: rule
 ---
 
@@ -17,7 +17,7 @@ type: rule
 
 ## Cause
 
-A Feature specification in the layout the manifest names `epics`, `epics/<epic-directory>/<feature-directory>/spec.md` by default, declares an `epic` or an `id` its directories do not start with. A co-located specification is never reported.
+A Feature specification in a layout that declares its path identity declares an `epic` or an `id` its directories do not start with. A layout's `identity` in the manifest gives the zero-based segments of the root-relative path that hold the epic and the feature directory. By default only the `epics` layout declares one, `{ "epic": 1, "feature": 2 }` for `epics/<epic-directory>/<feature-directory>/spec.md`. A specification in a layout that declares none, as a co-located one is by default, is never reported.
 
 | Condition                                         | Line reported  | Message                                                                           |
 | ------------------------------------------------- | -------------- | --------------------------------------------------------------------------------- |
