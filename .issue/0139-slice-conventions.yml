@@ -1,0 +1,60 @@
+id: "0139"
+type: chore
+title: Write the sliced layout into the conventions
+
+status: done
+
+priority: low # DERIVED
+value: 2
+risk: 1
+rank: 37 # DERIVED
+
+parent: null
+children: []
+
+depends_on: []
+blocks: [] # DERIVED
+spikes: []
+
+spec: null
+
+claims: []
+
+created: "2026-10-10"
+updated: "2026-10-10"
+closed: "2026-10-10"
+
+summary: |
+  Items 0137 and 0138 moved the engine and the tests into feature slices,
+  and the skills still describe what was there before: an engine that "lives
+  in `src/specht`, not in a slice", a layout block with no folder beneath the
+  engine or the test project, and no rule for where a new file or a shared
+  fixture goes. The next file would land at a project root again. This writes
+  the layout, and the rule that keeps it, where each is owned: the engine's
+  folders in the vertical-slice reference, the test folders in the testing
+  reference, and the layout block, `AGENTS.md` and `README.md` brought in
+  line. Last of the feature-slice steps.
+
+acceptance_criteria:
+  - "The vertical-slice reference names the engine's folders - `Model/`,
+    `Discovery/`, `Manifest/`, `Report/`, `Versioning/`, `Rules/` - what
+    stays at the project root, and where a new engine file goes."
+  - "The testing reference says the test folders mirror the slices and that
+    `Shared/` is the one home for a fixture more than one Feature uses."
+  - "The layout block in `specht-conventions`, `AGENTS.md` § Architecture and
+    the `README.md` tree agree with the tree on disk."
+  - No rule is written in two places - a skill that needs the layout links
+    its owner.
+  - No code, test, scenario or specification claim changes.
+
+decisions:
+  - '2026-10-10, repository owner: chose "Slices plus named spine" for the
+    engine and "Mirror folders in test/tests" for the tests; this item
+    records both where the conventions are written.'
+
+out_of_scope:
+  - Moving a file - 0137 and 0138 did.
+  - The rule that a test project's name ends `.Tests`, which the project
+    renames left untrue - raised on 0136 for the owner.
+  - A new claim or constraint about layout - the layout is a convention, not
+    behaviour the tool has.
