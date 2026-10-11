@@ -61,9 +61,28 @@ decisions:
     Not chosen for this item: defining the types in src/specht, or
     rewiring the engine's load onto them. Spike 0153 carries that. No
     claim or constraint changed (spec § 10).
+  - |
+    2026-10-11, the repository owner, on pull request #114, review
+    summary "boundaries.", on
+    `test/tests/Benchmarks/SpechtTree.Integration.Tests.cs`: "We should
+    not be writing integration tests for benchmarks. That's like writing
+    a unit tests for an acceptance test. This FURTHER proves the original
+    point I made in the session, that this should be PRODUCTION code and
+    _not_ code in the benchmarks. Bechmarks don't get tests. They should
+    benchmark production code!
+
+    Ignore these tests for the benchmark, create a refactor story to fix
+    this later."
+    Decided by the owner: the three types are production code, a
+    benchmark is not tested, and the move is a refactor story, later -
+    item 0153, reshaped from the spike named above. This reverses the
+    first decision here for B-015 and B-016 (0145). Nothing in this item
+    changes for it. spec-author's reading, not the owner's words: the
+    tests this item wrote stay as they are, with no further work, until
+    0153 moves or deletes them (spec § 10; OQ-5).
 
 out_of_scope:
   - "A tree with violations — § 5 #7."
   - "What a benchmark measures over the tree — § 5 #3, `0109-F3` (0150)."
   - "Running a benchmark — B-003 to B-014, 0148."
-  - "The tree and its store defined in `src/specht`, and the engine's load built on them — spike 0153; a type in `src/` with no engine consumer is `0109-F2` C-11's."
+  - "The tree and its store as production code under `src/`, and their tests as production tests — refactor 0153 (owner, 2026-10-11), which amends or satisfies C-7 and `0109-F2` C-11 first."
