@@ -30,10 +30,10 @@ Feature: Schema versioning
     And the exit code is 3
 
   @B-004 @boundary
-  Scenario: Every version ever published is still shipped
-    Given the schema versions published in packages so far
+  Scenario: Every version published from 1.0.0 on is still shipped
+    Given the schema versions 1.0.0 and higher published in packages so far
     When a later tool's embedded versions are enumerated
-    Then every published version is present
+    Then every one of those versions is present
 
   @B-005
   Scenario Outline: Upgrade brings the schema set and templates to the pinned version
@@ -114,7 +114,8 @@ Feature: Schema versioning
   @B-013 @boundary
   Scenario: A shipped version never changes
     Given the embedded schemas, manifest and templates for version 0.1.0 as the first published package shipped them
-    When a later tool's embedded files for version 0.1.0 are read
+    And a later tool that ships version 0.1.0
+    When that tool's embedded files for version 0.1.0 are read
     Then they are byte-identical
 
   @B-014
@@ -129,7 +130,8 @@ Feature: Schema versioning
   @B-015 @boundary
   Scenario: A shipped version's rules never change
     Given the rules version 0.1.0 held in the first published package
-    When a later tool's rules for version 0.1.0 are enumerated
+    And a later tool that ships version 0.1.0
+    When that tool's rules for version 0.1.0 are enumerated
     Then they are the same rules
 
   @B-016
@@ -352,11 +354,20 @@ Feature: Schema versioning
       | v0.1.0 |
 
   @B-040
-  Scenario: A new rule is a new major
+  Scenario: From 1.0.0 on a new rule is a new major
     Given two schema versions the tool ships, one higher than the other by version precedence
+    And the lower one is version 1.0.0 or higher
     And the higher one holds a rule the lower one does not
     When their numbers are compared
     Then the higher one's major is greater than the lower one's
+
+  @B-066
+  Scenario: Before 1.0.0 a new rule is at least a new minor
+    Given two schema versions the tool ships, one higher than the other by version precedence
+    And both are below version 1.0.0
+    And the higher one holds a rule the lower one does not
+    When their numbers are compared
+    Then the higher one's minor is greater than the lower one's
 
   @B-041
   Scenario: Listing names every shipped version

@@ -18,7 +18,7 @@ children:
     "0055-F8",
   ]
 created: "2026-10-08"
-updated: "2026-10-09"
+updated: "2026-10-11"
 github_issue: null
 ---
 
@@ -40,15 +40,16 @@ this work and no specification owned it; `0001-F2` § 5 row 7 hands the release
 workflow to "repository tooling", which this epic is. Approved claims already
 assume it: `0001-F2` B-010, B-011 and B-014 (the `SpecCheck` target, the
 pre-commit call site, the tool reached through the local tool manifest), and
-`0001-F7` decision 0002 (schema version 1 freezes at the first publish).
+`0001-F7` decision 0002 (what "shipped" means; amended 2026-10-11 by
+`0001-F7` decision 0007: the freeze starts at schema version `1.0.0`).
 
 ## Business Value
 
 Without this epic, the first pull request on GitHub is also the first time
 anything checks it: no workflow runs, no coverage is measured, no check is
 required before a merge, and the first release is improvised on the day it
-matters most, because that release freezes schema version 1 for every
-consumer. With it delivered, a pull request is built, tested, formatted,
+matters most, because a published package stays and the schema version it
+embeds is never changed in place (`0001-F7` C-1). With it delivered, a pull request is built, tested, formatted,
 spec-checked and coverage-gated on Linux, a push to `main` runs the build on
 every operating system the tool runs on, dependencies arrive as reviewed pull
 requests, and a release is one deliberate tag.
@@ -119,7 +120,7 @@ homes that have no obvious code folder:
 | -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Before the first push      | `0055-F1` the build, tool manifest and hook; `0055-F2` the CI workflow; `0055-F3` the coverage configuration; `0055-F4` the Renovate configuration and its scheduled workflow; `0055-F5` the version file; `0055-F6` the release workflow; `0055-F7` the feed configuration and install document; `0055-F8` the checklist |
 | Once, after the first push | The checklist applied by hand (`0055-F8`), the Codecov installation and the secrets it names                                                                                                                                                                                                                              |
-| The first publish          | The first `v*` tag (`0055-F6`). A later, deliberate act: schema version 1 freezes at it (`0001-F7` decision 0002), so it waits for `0001-F5` and `0001-F6` to land; the release path is proven before it by a dry run (`0055-F6` B-008)                                                                                   |
+| The first publish          | The first `v*` tag (`0055-F6`). A deliberate act that no longer waits for `0001-F5` and `0001-F6` (owner, 2026-10-11; `0001-F7` decision 0007; `0055-F6` C-2): it publishes schema `0.1.0`, and the freeze starts at schema `1.0.0`; the release path is proven before it by a dry run (`0055-F6` B-008)                  |
 | After the first publish    | This repository's own manifest names the published package (`0055-F7`; `0001-F2` B-014)                                                                                                                                                                                                                                   |
 
 Nothing in the first two rows publishes a package.

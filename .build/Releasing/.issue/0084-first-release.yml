@@ -9,7 +9,7 @@ risk: 4
 parent: "0082"
 children: []
 
-depends_on: ["0083", "0010", "0004"] # the push step of 0083's workflow; C-2: the first tag waits on 0001-F5; C-2: the first tag waits on 0001-F6
+depends_on: ["0083"] # the push step of 0083's workflow
 spikes: []
 
 spec: .build/Releasing/.spec/README.md
@@ -21,15 +21,16 @@ claims:
   - B-007
 
 created: "2026-10-08"
-updated: "2026-10-09"
+updated: "2026-10-11"
 closed: null
 
 summary: |
   The push, the GitHub Release and the first `v*` tag. Proven only by a
-  real publish, and the first publish freezes schema version 1 (0001-F7
-  decision 0002), so it waits on 0001-F5 (0010) and 0001-F6 (0004)
-  landing whole (C-2). Risk 4: irreversible - a published version stays
-  (§ 5 #4).
+  real publish. The first publish embeds schema `0.1.0`, a published
+  `0.x.y`: never changed in place, and a later tool may stop shipping it
+  (0001-F7 C-1, decision 0007). It no longer waits on 0001-F5 and 0001-F6
+  (C-2, amended 2026-10-11). Risk 4: irreversible - a published version
+  stays (§ 5 #4).
 
 acceptance_criteria:
   - "B-003 — every target passing: `specht.tool` pushed to GitHub Packages on `rlittlesii/specht`"
@@ -39,7 +40,12 @@ acceptance_criteria:
   - "0055-F6 OQ-11 is answered before the first tag is pushed — `specht.tool.csproj` sets no `RepositoryUrl`"
   - "§ 9 carries a row naming a test for each id above."
 
-decisions: []
+decisions:
+  - |
+    2026-10-11, spec-author, on the repository owner's ruling "publish
+    now!" (0001-F7 decision 0007): `0010` and `0004` removed from
+    `depends_on`, which C-2 no longer asks for. The ruling orders the
+    work; it pushes no tag. `risk` is unchanged and was not re-scored.
 
 out_of_scope:
   - "NuGet.org — § 5 #3, C-3."

@@ -87,8 +87,9 @@ specht --explain SPEC031
 
 One file configures it: `.spec/schema/spec-structure.schema.json`, which can
 pin `schemaVersion` - a `major.minor.patch` schema version, numbered apart from
-the tool's own. A patch changes no verdict, a minor only accepts more, and a
-major can fail a tree that passed. The pin is exact; a manifest without the key
+the tool's own. A patch changes no verdict; from schema `1.0.0` on a minor only
+accepts more and a major can fail a tree that passed, and before it a `0.minor`
+step can fail one too. The pin is exact; a manifest without the key
 is read as version `0.1.0`.
 
 The schema is per repository however the tool is installed. `specht` reads the

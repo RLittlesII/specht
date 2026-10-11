@@ -26,8 +26,11 @@ summary: |
   .spec/adr/0010-layered-engine-boundaries-with-io-at-the-edge-and-a-mediator.md),
   track R of "The order of work", from the record's § "Rule ids". It is
   the one track that is not a refactor: every rule id a consumer reads
-  changes, the vocabulary of schema version `0.1.0` is rewritten in place,
-  and the golden report is replaced once.
+  changes and the golden report is replaced once. Where the new ids land
+  depends on the first publish (`0001-F7` C-1, decision 0007). Before it,
+  the vocabulary of the unpublished `0.1.0` is rewritten in place. After
+  it, the published `0.1.0` is never changed in place and the new ids are
+  a new `0.minor` version.
 
   Rule ids become `SPEC` and four digits, the thousands digit naming the
   group; the groups and today's ids in each are the record's table. The
@@ -38,6 +41,12 @@ summary: |
   haven't shipped anything" (ADR-0010 § "Rule ids"). As written, the
   specifications forbid that, so this item starts at the specification and
   no id changes until the ruling and its deltas are recorded.
+
+  Since `0001-F7` decision 0007 (2026-10-11) neither order takes a major:
+  before schema `1.0.0` a `0.minor` step may fail a tree that passed
+  (`0001-F7` C-11). The same decision lets the first publish go ahead of
+  `0001-F5` and `0001-F6`, so which order applies is read when this item
+  starts, from whether a package has been published.
 
   Status and type. It is `ready-for-architecture` and not
   `ready-for-implementation`: the design that precedes its code is not in
@@ -56,9 +65,11 @@ summary: |
 
   1. A decision record of the owner's ruling, placed by blast radius -
      it changes brief § 4 and constraints of two Features, so it is
-     repository-wide - saying that the vocabulary of `0.1.0` is rewritten
-     in place with no major version, and why that is not a precedent once
-     a version has shipped.
+     repository-wide - saying which order applied: the unpublished
+     `0.1.0` rewritten in place, or a new `0.minor` version beside the
+     published `0.1.0`; neither is a major. Why an in-place rewrite is no
+     precedent is already written: `0001-F7` C-1 forbids it for every
+     published version (decision 0007).
   2. The deltas, by `spec-author`. The record lists brief § 4, `0001-F7`
      C-11, `0001-F1` C-10 and every rule page. Read at `eb7c161`, two more
      constraints forbid the change and the record does not list them:
@@ -86,8 +97,8 @@ summary: |
   evaluator stamps it, so the renumbering changes one member a rule.
 
 acceptance_criteria:
-  - "1. Before any id changes: a repository-wide decision record states the owner's ruling of 2026-10-11 - the vocabulary of schema version `0.1.0` is rewritten in place, with no new major version, because no version has shipped - and the condition under which it would not be allowed again."
-  - "2. Before any id changes, by `spec-author`: brief § 4, `0001-F7` C-11, `0001-F1` C-5, `0001-F1` C-9, `0001-F1` C-10 and the AGENTS.md invariant and id scheme are amended to permit this one renumbering and to say what holds after it; each amended constraint keeps its id."
+  - "1. Before any id changes: a repository-wide decision record states the owner's ruling of 2026-10-11 - a clean break with no new major version - and which order applied: no package published, so the vocabulary of `0.1.0` is rewritten in place; or a package published, so the new ids are a new `0.minor` version and the published `0.1.0` is not changed in place (`0001-F7` C-1, decision 0007)."
+  - "2. Before any id changes, by `spec-author`: brief § 4, `0001-F7` C-11, `0001-F1` C-5, `0001-F1` C-9, `0001-F1` C-10 and the AGENTS.md invariant and id scheme are amended to permit this one renumbering, in the order that applied, and to say what holds after it; each amended constraint keeps its id. `0001-F7` C-11 as amended by decision 0007 already allows a `0.minor` step that fails a tree, so it needs a delta only for an in-place rewrite."
   - "3. Before any id changes: the map from each of the twenty-one ids to its new id is in that decision record and the owner has approved it. Every new id is `SPEC` and four digits, its thousands digit is its group's in ADR-0010 § 'Rule ids', no `SPEC0xxx` id is assigned, and no new id is given to two rules."
   - "4. Before the code, by `spec-author`: every claim, scenario and `@boundary` scenario that names a rule id names the new one, with its claim id unchanged; this item's `claims:` then lists the claims it delivers, or the item is re-cut. `test-writer` brings § 9 to them."
   - "5. `specht --explain` answers each new id and no old one, and the rule pages under `docs/rules/v1/` are one page for each new id."
@@ -97,7 +108,16 @@ acceptance_criteria:
   - "9. Open point 7 is answered in the decision record: the vocabulary stays written twice and held equal by the composition test, or one of the two is derived from the other."
   - "10. This repository's own tree passes `./build.sh Specht` with the tool built from this item, the unit, integration and acceptance tiers pass, and the benchmark project `.performance/benchmarks` still compiles."
 
+  - "11. If a package has been published before this item's ids change: the published `0.1.0` is byte-identical with its old rule ids in every tool that ships it (`0001-F7` B-013, B-015), the new ids are a new `0.minor` version, and criteria 5 to 7 are read for that version."
+
 decisions:
+  - |
+    2026-10-11, spec-author, on the repository owner's rulings recorded
+    in `0001-F7` decision 0007 (the freeze starts at schema `1.0.0`; the
+    first publish does not wait for `0001-F5` and `0001-F6`): the summary
+    and criteria 1 and 2 now read in both orders and criterion 11 is
+    added. Which order applies is not decided here. Status, value, risk
+    and `depends_on` are unchanged.
   - |
     2026-10-11, spec-author: cut from ADR-0010 on the repository owner's
     acceptance of it the same day, as track R. Item 0154 is the session
@@ -112,8 +132,8 @@ decisions:
 
 out_of_scope:
   - "Assigning any new id in this item's text - the map is the owner's to approve (criterion 3)."
-  - "A new rule, a retired rule or a changed message - each is its own item, and a new rule after a version ships is a major version (`0001-F7` C-11)."
+  - "A new rule, a retired rule or a changed message - each is its own item, and a new rule is a new schema version, a major from schema `1.0.0` on (`0001-F7` C-11)."
   - "An id in the `SPEC0xxx` group, the faults of the tool - ADR-0010 assigns the group and no id; fault isolation is `0001-F1` B-012 to B-016 and OQ-2."
-  - "A second shipped schema version, or a migration for a consumer's manifest - no version has shipped."
+  - "A migration for a consumer's manifest; and a second shipped schema version while no package has been published (criterion 11 is the other order)."
   - "The rules of epic `0101`, which take their ids in the new scheme when they are specified."
   - "Any structural stage of ADR-0010 - items 0155 to 0168."
