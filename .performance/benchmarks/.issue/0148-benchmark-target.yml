@@ -12,7 +12,7 @@ children: []
 depends_on: ["0146", "0150"] # runs 0146's project; 0150's benchmark is what a run selects
 spikes: []
 
-spec: .performance/specht.benchmarks/.spec/README.md
+spec: .performance/benchmarks/.spec/README.md
 
 claims:
   - B-003

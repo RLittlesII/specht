@@ -13,7 +13,7 @@ children: ["0146", "0147", "0148", "0149"]
 depends_on: []
 spikes: []
 
-spec: .performance/specht.benchmarks/.spec/README.md
+spec: .performance/benchmarks/.spec/README.md
 
 claims:
   - B-001

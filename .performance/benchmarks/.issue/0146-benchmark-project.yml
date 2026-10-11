@@ -2,7 +2,7 @@ id: "0146"
 type: task
 title: Add the benchmark project, its central package version, single entry point and shared configuration
 
-status: ready-for-architecture
+status: done
 
 risk: 2
 
@@ -12,7 +12,7 @@ children: []
 depends_on: ["0057"] # joins 0057's solution, central package versions and Compile
 spikes: []
 
-spec: .performance/specht.benchmarks/.spec/README.md
+spec: .performance/benchmarks/.spec/README.md
 
 claims:
   - B-001
@@ -21,10 +21,10 @@ claims:
 
 created: "2026-10-11"
 updated: "2026-10-11"
-closed: null
+closed: "2026-10-11"
 
 summary: |
-  The benchmark project at `.performance/specht.benchmarks`, listed in the
+  The benchmark project at `.performance/benchmarks`, listed in the
   solution, not packable and not a test project (C-2); the benchmark
   library's version written once, centrally (C-3); one entry point that
   selects benchmarks by full name from the command line (C-5); and the
@@ -45,7 +45,7 @@ acceptance_criteria:
   - "B-001 — compiled when the solution is"
   - "B-002 — the default build runs no benchmark"
   - "B-007 — allocated memory per operation, from the shared configuration"
-  - "§ 9 carries a row naming a test for each id above."
+  - "§ 9 keeps a row for each id above; `Missing` stands under the owner's 2026-10-11 proof decision (`0145`; `0109-F1` § 8)."
 
 decisions: []
 

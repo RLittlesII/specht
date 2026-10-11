@@ -2,6 +2,9 @@
   <Folder Name="/.build/">
     <Project Path=".build/.build.csproj" />
   </Folder>
+  <Folder Name="/.performance/">
+    <Project Path=".performance/benchmarks/benchmarks.csproj" />
+  </Folder>
   <Folder Name="/.solution/">
     <File Path=".codecov.yml" />
     <File Path=".editorconfig" />

@@ -43,4 +43,22 @@ Cost of rejecting: CI pays for process isolation; OQ-1 bounds it by job.
 
 ## Reversal
 
-None.
+**Amended 2026-10-11 by spec-author - a default, not the owner's decision; the
+owner may reverse it.** One sentence of the call above no longer holds, and the
+sections above stand as written.
+
+- "A developer may run the project in process by hand to iterate" is
+  withdrawn: a by-hand in-process run is not available. The owner's
+  2026-10-11 naming ([decision 0001](0001-benchmarks-report-and-never-gate.md),
+  Reversal) gives the project file a name the library's default toolchain
+  cannot find, so the shared configuration supplies the out-of-process
+  toolchain on every job, and that overrides an in-process toolchain asked for
+  on the command line (`0109-F1` § 7).
+- Nothing recorded changes. An in-process number was never a finding, the
+  `Benchmark` target never passed the in-process toolchain, and `0109-F1` C-6
+  and `0109-F4` C-2 stand as written.
+
+The owner decided the naming; the loss of the in-process run follows from it
+and was not put to the owner. Restoring it means one of two things, both
+turned down by this default: giving up the short project file name, or
+special-casing the in-process argument in the shared configuration.

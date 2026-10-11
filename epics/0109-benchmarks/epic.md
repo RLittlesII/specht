@@ -22,7 +22,7 @@ three call sites, one of them a pre-commit hook a person waits on (brief § 2
 Must-1) - and every claim about cost, scaling or allocation is an opinion,
 because no number exists to cite.
 
-This epic adds a benchmark project, `.performance/specht.benchmarks`, built
+This epic adds a benchmark project, `.performance/benchmarks`, built
 on [BenchmarkDotNet](https://benchmarkdotnet.org/). It measures each engine
 stage, a full check as the tree grows, and the packed tool's cold start, and
 it measures memory on every benchmark. It runs locally through a build target
@@ -49,12 +49,12 @@ comparable run to run on one machine, and a regression is something the
 Decomposed by capability dimension. Each Feature measures a different cost on
 a different input, and the cut is made where the invariant changes.
 
-| Feature   | Name                     | Specification                                            | Invariant                                                                     |
-| --------- | ------------------------ | -------------------------------------------------------- | ----------------------------------------------------------------------------- |
-| `0109-F1` | Benchmark harness        | `.performance/specht.benchmarks/.spec/README.md`         | Benchmarks run, report memory and publish results; nothing gates on a number  |
-| `0109-F2` | Engine stage benchmarks  | `.performance/specht.benchmarks/Stages/.spec/README.md`  | Each stage's cost is measured alone, its setup outside the measurement        |
-| `0109-F3` | End-to-end check scaling | `.performance/specht.benchmarks/Check/.spec/README.md`   | A whole check is measured against tree size, so its growth shape is a finding |
-| `0109-F4` | Tool cold start          | `.performance/specht.benchmarks/Startup/.spec/README.md` | The packed tool is measured as a consumer runs it, one fresh process each     |
+| Feature   | Name                     | Specification                                     | Invariant                                                                     |
+| --------- | ------------------------ | ------------------------------------------------- | ----------------------------------------------------------------------------- |
+| `0109-F1` | Benchmark harness        | `.performance/benchmarks/.spec/README.md`         | Benchmarks run, report memory and publish results; nothing gates on a number  |
+| `0109-F2` | Engine stage benchmarks  | `.performance/benchmarks/Stages/.spec/README.md`  | Each stage's cost is measured alone, its setup outside the measurement        |
+| `0109-F3` | End-to-end check scaling | `.performance/benchmarks/Check/.spec/README.md`   | A whole check is measured against tree size, so its growth shape is a finding |
+| `0109-F4` | Tool cold start          | `.performance/benchmarks/Startup/.spec/README.md` | The packed tool is measured as a consumer runs it, one fresh process each     |
 
 The starting hypothesis was confirmed unchanged. Where it was tested:
 
@@ -95,7 +95,7 @@ benchmark step (`0109-F1` A-1).
 ## Placement
 
 Every specification sits in the benchmark project the owner placed at
-`.performance/specht.benchmarks`, outside `test/` and its tier governance
+`.performance/benchmarks`, outside `test/` and its tier governance
 (`specht-conventions` § Benchmarking). The harness's specification is the
 project's root; each measuring Feature has the folder its benchmark classes
 will occupy. The `implementer` may move a specification with its code
