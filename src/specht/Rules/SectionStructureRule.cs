@@ -1,3 +1,5 @@
+using Specht.Model;
+
 namespace Specht.Rules;
 
 /// <summary>

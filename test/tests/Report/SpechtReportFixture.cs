@@ -1,5 +1,7 @@
 using Rocket.Surgery.Extensions.Testing.AutoFixtures;
+using Specht.Model;
 using Specht.Report;
+using Specht.Versioning;
 
 namespace Specht.Tests.Report;
 

@@ -1,6 +1,7 @@
 using Specht.Discovery;
+using Specht.Versioning;
 
-namespace Specht;
+namespace Specht.Manifest;
 
 /// <summary>The ordered section contract and the id grammars, read from <c>.spec/schema/</c>.</summary>
 /// <param name="Sections">The <c>## </c> headings a specification must carry, in order.</param>

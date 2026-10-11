@@ -3,6 +3,7 @@ using System.Text.Json.Nodes;
 using System.Text.RegularExpressions;
 using AwesomeAssertions;
 using Specht.Manifest;
+using Specht.Versioning;
 
 namespace Specht.Tests.Manifest;
 

@@ -1,4 +1,5 @@
 using AwesomeAssertions;
+using Specht.Versioning;
 
 namespace Specht.Tests;
 

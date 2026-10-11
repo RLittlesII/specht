@@ -1,6 +1,7 @@
 using System.IO.Abstractions.TestingHelpers;
 using System.Text.Json.Nodes;
 using Rocket.Surgery.Extensions.Testing.AutoFixtures;
+using Specht.Model;
 
 namespace Specht.Tests;
 

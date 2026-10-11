@@ -3,12 +3,14 @@ using System.Text.Json.Nodes;
 using AwesomeAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using Specht.Manifest;
+using Specht.Model;
 using Specht.Report;
-
 using Specht.Tool;
 using Specht.Tool.Features.Check;
+using Specht.Versioning;
 using Spectre.Console.Cli.Testing;
 using Spectre.Console.Testing;
+
 
 namespace Specht.Tests;
 

@@ -2,6 +2,7 @@ using System.IO.Abstractions;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using Specht.Discovery;
+using Specht.Versioning;
 
 namespace Specht.Manifest;
 
