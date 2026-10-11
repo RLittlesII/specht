@@ -1,0 +1,53 @@
+id: "0135"
+type: task
+title: Show each item's priority in the "what is next" report
+
+status: done
+
+priority: low # DERIVED
+value: 2
+risk: 1
+rank: 37 # DERIVED
+
+parent: null
+children: []
+
+depends_on: []
+blocks: [] # DERIVED
+spikes: []
+
+spec: null
+
+claims: []
+
+created: "2026-10-10"
+updated: "2026-10-10"
+closed: "2026-10-10"
+
+summary: |
+  `/next` printed each item's rank and status and left out the `priority`
+  bucket every item already carries, so the reader had to open an item to see
+  whether a rank meant high, medium or low. The companion script now reads
+  `priority` as the item carries it and prints a Priority column between Rank
+  and Status, in both the "Pick one per lane" table and the startable table.
+  The `next` skill's Reporting names the column in both lists, and the
+  companion says `priority` is read, as `rank` is.
+
+acceptance_criteria:
+  - The "Pick one per lane" table and the startable table each carry a
+    Priority column between Rank and Status.
+  - "The column holds the bare value - `high`, `medium` or `low` - with no
+    trailing `# DERIVED` comment."
+  - The rows print in the same order as before; priority sorts nothing.
+  - No tool behaviour changes.
+
+decisions:
+  - "2026-10-10, repository owner: \"Can we add priority between rank and
+    status on the next report\" - the column sits between Rank and Status."
+
+out_of_scope:
+  - Ordering or grouping by priority - rows stay in rank order, then id.
+  - Deriving priority in the script - it is read from the item, and the
+    derivation stays in `.spec/templates/item.yml`.
+  - The blocked and taken lists - they are lists with no Rank or Status
+    column to sit between.

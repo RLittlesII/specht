@@ -47,6 +47,7 @@ def read_items(root):
                 "title": scalar(text, "title"),
                 "status": scalar(text, "status"),
                 "rank": int(scalar(text, "rank") or 0),
+                "priority": scalar(text, "priority"),
                 "parent": scalar(text, "parent"),
                 "spec": scalar(text, "spec"),
                 "home": "" if home == "." else home,
@@ -112,19 +113,19 @@ def main():
     if not startable:
         print("- nothing startable")
     else:
-        print("| Lane | Pick | Rank | Status | Title | Then | Shares |")
-        print("| --- | --- | --- | --- | --- | --- | --- |")
+        print("| Lane | Pick | Rank | Priority | Status | Title | Then | Shares |")
+        print("| --- | --- | --- | --- | --- | --- | --- | --- |")
     for number, lane in enumerate(lanes(startable), 1):
         head, rest = lane["items"][0], lane["items"][1:]
         then = ", ".join(f"{i['id']} ({i['rank']})" for i in rest) or "-"
         shares = ", ".join(sorted(lane["sets"])) or "nothing"
-        print(f"| {number} | {head['id']} | {head['rank']} | {head['status']} | {head['title']} | {then} | {shares} |")
+        print(f"| {number} | {head['id']} | {head['rank']} | {head['priority']} | {head['status']} | {head['title']} | {then} | {shares} |")
 
     print("\n## Startable\n")
-    print("| ID | Rank | Status | Title | Description |")
-    print("| --- | --- | --- | --- | --- |")
+    print("| ID | Rank | Priority | Status | Title | Description |")
+    print("| --- | --- | --- | --- | --- | --- |")
     for i in startable:
-        print(f"| {i['id']} | {i['rank']} | {i['status']} | {i['title']} | {describe(i['summary'], args.width)} |")
+        print(f"| {i['id']} | {i['rank']} | {i['priority']} | {i['status']} | {i['title']} | {describe(i['summary'], args.width)} |")
 
     print("\n## Blocked at or above that rank\n")
     for i in blocked or []:
