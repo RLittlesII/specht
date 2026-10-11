@@ -124,6 +124,30 @@ test project — it _silently compiled nowhere and no test ran_, while the solut
 built green and `dotnet test` reported success. A separate project cannot fail
 that way. If co-location is ever proposed, that incident is the cost to weigh.
 
+### `test/tests` mirrors the slices
+
+```
+test/tests/              no .cs at the root
+  Model/ Discovery/ Manifest/ Report/ Versioning/ Rules/
+                         one per engine folder in src/specht
+  Engine/                SpechtRunner's own tests
+  Engine/Baseline/       the baseline tree and the committed golden report
+  Check/ Init/           one per command under src/tool/Features/
+  Shared/                helpers and fixtures more than one Feature's tests use
+```
+
+A test goes in the folder of the code it tests, and its namespace follows the
+folder (`Specht.Tests.Discovery`). `Shared/` is the one home for a helper or
+fixture more than one Feature's tests use; a fixture only one Feature uses
+stays in that Feature's folder.
+
+The golden report is committed in `Engine/Baseline/` and copied to `Baseline/`
+beside the test assembly.
+
+`test/acceptance` is one folder per Feature. It compiles files from
+`test/tests` by link - from `Shared/`, `Engine/Baseline/` and `Rules/` - so
+moving one of them means updating `test/acceptance/acceptance.csproj`.
+
 ## The tier trait is enforced
 
 `test/Shared/TestTierGovernanceTests.cs` (scaffold) is linked into every `*.Tests`
@@ -155,7 +179,7 @@ changed.
 ## Fixtures
 
 A fixture is a specification tree, and it is **built, not copied**: `SpecTree`
-in `test/tests` constructs the files a test needs — frontmatter, sections,
+in `test/tests/Shared/` constructs the files a test needs — frontmatter, sections,
 tables, a companion `.feature`, child items — and writes them to a temporary
 root the test owns. Every path inside a fixture, and every path in an expected
 report, is relative to that root; an absolute path in either is the defect

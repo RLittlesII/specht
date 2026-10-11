@@ -75,7 +75,9 @@ Two projects, one direction of dependency:
   `SpecSchemas` loads the frontmatter schemas and the manifest with JsonSchema.Net
   → `SpecDocument`/`SpecStructure` model the Markdown with Markdig, pipe tables
   only → the `ISpecRule`s run → `SpechtRunner` collects → `SpechtReport`
-  carries violations and counts.
+  carries violations and counts. It is foldered by Feature, with a shared
+  `Model/`; the layout is
+  [`dotnet-tool` § Vertical Slice](.claude/skills/dotnet-tool/references/vertical-slice.md).
 - **`src/tool`** — the Spectre.Console.Cli host. One folder per command;
   a command parses, calls the runner, and folds the report into an exit code.
   Nothing else lives in a command.

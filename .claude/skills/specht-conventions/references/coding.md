@@ -38,7 +38,9 @@ orchestrator itself from compiling. Product code gets no such exemption.
 ## The engine is copied, not written
 
 `src/specht` arrives from `hooked` by `cp` with a namespace rename and nothing
-else (brief § 3, § 8 step 2). The tests that come with it are the behaviour
+else (brief § 3, § 8 step 2). Its files have since moved into folders, each
+taking the folder's namespace (item 0137), with no type or member changed; the
+baseline rule is unchanged. The tests that come with it are the behaviour
 baseline: `hooked`'s report must stay identical through every later step
 (brief § 2 Should-7). A file in `src/specht` that looks like it should be
 rewritten is a later step with a test, never a fresh draft — and the first

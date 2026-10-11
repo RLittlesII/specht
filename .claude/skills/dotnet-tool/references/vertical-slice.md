@@ -25,15 +25,33 @@ src/tool/
   templates/v1/                 embedded - the shipping copy of the templates
 ```
 
-The engine — discovery, the frontmatter reader, the schema loader, the Markdig
-document model, the rules, the runner and the report — is the shared concern
-beneath every command and lives in `src/specht`, not in a slice. A command
-parses, calls `SpechtRunner`, folds the report into an exit code, and that is
-the whole command. `--explain SPEC031` lives in `Check/` until a second caller
-earns it a folder.
+The engine is the shared concern beneath every command and lives in
+`src/specht`, sliced the same way — one folder per Feature, and a named folder
+for what more than one Feature reads:
+
+```
+src/specht/
+  SpechtRunner.cs               the runner, its report and the root-not-found exception -
+  SpechtReport.cs               the only .cs at the project root, namespace `Specht`
+  SpechtRootNotFoundException.cs
+  .spec/                        the engine Feature's specification (0001-F1)
+  Model/                        shared - what every rule reads: the spec model, the Markdig document,
+                                the frontmatter reader, the schema loader, the violation and its severity
+  Discovery/                    Feature 0001-F6 - finding specifications, layouts and locations
+  Manifest/                     Feature 0001-F5 - the manifest, the structure it declares, its exceptions
+  Report/                       Feature 0001-F3 - the report document
+  Versioning/                   shared - the engine half of 0001-F7, whose home is `src/tool`:
+                                the schema versions. No .spec/ here.
+  Rules/                        shared - `ISpecRule`, the rules, the feature-file reader
+    <Name>/.spec/               a rule Feature's specification
+```
+
+A command parses, calls `SpechtRunner`, folds the report into an exit code, and
+that is the whole command. `--explain SPEC031` lives in `Check/` until a second
+caller earns it a folder.
 
 Tests are **not** co-located here: they live in `test/tests` and
-`test/acceptance`. Why, and the tiers, are in
+`test/acceptance`. Why, the tiers, and the folders inside `test/tests` are in
 [`specht-conventions` § Testing](../../specht-conventions/references/testing.md).
 
 ### The rules that make it hold
@@ -50,6 +68,13 @@ Tests are **not** co-located here: they live in `test/tests` and
   engine if two commands need it.
 - **Shared types sit at the `Features/` root only once a second slice uses
   them.** A `Features/`-root type with one consumer belongs in that consumer.
+- **An engine file goes in a folder, never at the project root.** A file one
+  Feature owns goes in that Feature's folder. A type more than one Feature
+  reads goes in a named folder — `Model/`, `Versioning/`, `Rules/`. The root of
+  `src/specht` holds the runner, its report and the root-not-found exception,
+  and nothing joins them.
+- **Namespaces follow folders.** `Model/` is `Specht.Model`; the root is
+  `Specht`. A file that moves folder changes namespace with it.
 - **The composition root is a hand-written list.** `Program.cs` registers
   services explicitly, in plain `Microsoft.Extensions.DependencyInjection`
   through Spectre's `TypeRegistrar`. Commands are not in that list: they are
