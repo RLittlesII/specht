@@ -15,7 +15,7 @@ namespace Specht.Tests.Model;
 /// manifest gives its kind (0001-F5 B-008, decision 0003). Both loads keep the version they validate with (ADR-0008, item
 /// 0105; 0001-F1 § 7): the version-set load the version the manifest's pin selects, and the on-disk load the embedded
 /// version the manifest pins with the schema texts it read, rejecting a pin the tool does not ship before any frontmatter
-/// schema is read.
+/// schema is read. A rule setting is held to the vocabulary of the version the pin selects (0001-F5 B-013, item 0014).
 /// </summary>
 [Trait("Tier", "Unit")]
 public sealed class SpecSchemasUnitTests
@@ -141,6 +141,44 @@ public sealed class SpecSchemasUnitTests
 
         // Then
         load.Should().ThrowExactly<SpechtManifestException>().Which.Message.Should().MatchRegex($@"(?<![\w.]){Regex.Escape(unshipped)}(?!\.?\w)");
+    }
+
+    [Fact]
+    public void AManifestSettingARuleIdOutsideThePinnedVocabulary_WhenLoadedThroughTheSet_ShouldRejectItNamingTheId()
+    {
+        // Given
+        SchemaVersion version = new SchemaVersionFixture().WithRuleIds(new HashSet<string>(["FAKE001"], StringComparer.Ordinal));
+        var fileSystem = new MockFileSystem(
+            new Dictionary<string, MockFileData>
+            {
+                [Path.Combine(Root, ".spec", "schema", "spec-structure.schema.json")] =
+                    new("""{ "rules": { "FAKE001": "warning", "FAKE404": "off" } }"""),
+            });
+
+        // When
+        var load = () => SpecSchemas.Load(fileSystem, Root, new SchemaVersions([version]));
+
+        // Then
+        load.Should().ThrowExactly<SpechtManifestException>().Which.Message.Should().Contain("FAKE404");
+    }
+
+    [Fact]
+    public void AManifestSettingOnlyRuleIdsOfThePinnedVocabulary_WhenLoadedThroughTheSet_ShouldAcceptIt()
+    {
+        // Given
+        SchemaVersion version = new SchemaVersionFixture().WithRuleIds(new HashSet<string>(["FAKE001", "FAKE002"], StringComparer.Ordinal));
+        var fileSystem = new MockFileSystem(
+            new Dictionary<string, MockFileData>
+            {
+                [Path.Combine(Root, ".spec", "schema", "spec-structure.schema.json")] =
+                    new("""{ "rules": { "FAKE001": "warning", "FAKE002": "off" } }"""),
+            });
+
+        // When
+        var load = () => SpecSchemas.Load(fileSystem, Root, new SchemaVersions([version]));
+
+        // Then
+        load.Should().NotThrow();
     }
 
     private const string Root = "repo";

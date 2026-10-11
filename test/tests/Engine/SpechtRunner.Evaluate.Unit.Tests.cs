@@ -15,6 +15,8 @@ namespace Specht.Tests.Engine;
 /// version the model's schemas keep decides which rules run, which violations are kept, and how many rule ids count as
 /// evaluated, the rules run in the order given, and the violations are the ones <see cref="SpechtRunner.Order"/> gives.
 /// The report's layouts are the manifest's, by name and in its order, each with its count (<c>0001-F6</c> B-001, B-009, C-7).
+/// The manifest's rule settings take an id set <c>off</c> out of the rules run, the violations kept and the count, and
+/// report an id set <c>warning</c> at warning severity (<c>0001-F5</c> B-010, B-011, B-019; item 0014).
 /// No tree on disk and no container.
 /// </summary>
 [Trait("Tier", "Unit")]
@@ -68,6 +70,19 @@ public sealed class SpechtRunnerEvaluateUnitTests
             { "a rule with no id in the vocabulary adds nothing", ["FAKE001"], [["FAKE001"], ["FAKE002", "FAKE003"]], 1 },
             { "entries are counted, not distinct ids, so an id two rules report counts twice", ["FAKE001"], [["FAKE001"], ["FAKE001"]], 2 },
             { "a vocabulary id no rule reports is not counted", ["FAKE001", "FAKE002"], [["FAKE001"]], 1 },
+        };
+
+    /// <summary>Gets a manifest that does not lower <c>FAKE001</c>, and the severity that rule gives its finding.</summary>
+    public static TheoryData<string, string, SpecSeverity> KeptSeverities =>
+        new()
+        {
+            { "an id set to error keeps its error finding at error", """{ "rules": { "FAKE001": "error" } }""", SpecSeverity.Error },
+            {
+                "an id the rule settings do not name keeps the rule's own severity beside one they lower",
+                """{ "rules": { "FAKE002": "warning" } }""",
+                SpecSeverity.Error
+            },
+            { "a manifest leaving its rule settings out keeps the rule's own severity", "{}", SpecSeverity.Warning },
         };
 
     [Theory]
@@ -238,6 +253,88 @@ public sealed class SpechtRunnerEvaluateUnitTests
         report.Violations.Should().Equal(fromTheFirst, fromTheSecond);
     }
 
+    [Fact]
+    public void ARuleReportingTwoIdsOneOfThemSetOff_WhenEvaluated_ShouldReportTheOtherIdsViolationsAndCountThatIdAlone()
+    {
+        // Given
+        SpecModel model = ModelUnderManifest("""{ "rules": { "FAKE002": "off" } }""");
+        SpecViolation kept = new SpecViolationFixture().WithRuleId("FAKE001");
+        SpecViolation disabled = new SpecViolationFixture().WithRuleId("FAKE002");
+        List<ISpecRule> rules = [new FakeRule("FAKE001", ["FAKE001", "FAKE002"], disabled, kept)];
+
+        // When
+        var report = SpechtRunner.Evaluate(model, rules);
+
+        // Then
+        report.Violations.Should().Equal(kept);
+        report.RulesEvaluated.Should().Be(1);
+    }
+
+    [Fact]
+    public void ARuleWhoseEveryReportedIdIsSetOff_WhenEvaluated_ShouldNotBeAskedForItsViolationsAndShouldLeaveTheCount()
+    {
+        // Given
+        SpecModel model = ModelUnderManifest("""{ "rules": { "FAKE001": "off", "FAKE002": "off" } }""");
+        var asked = false;
+        List<ISpecRule> rules =
+        [
+            new AskedRule("FAKE001", ["FAKE001", "FAKE002"], () => asked = true),
+            new FakeRule("FAKE003", ["FAKE003"]),
+        ];
+
+        // When
+        var report = SpechtRunner.Evaluate(model, rules);
+
+        // Then
+        asked.Should().BeFalse();
+        report.RulesEvaluated.Should().Be(1);
+    }
+
+    [Fact]
+    public void ARuleIdSetToWarning_WhenEvaluated_ShouldReportItsErrorFindingAtWarningSeverityAfterTheErrors()
+    {
+        // Given
+        SpecModel model = ModelUnderManifest("""{ "rules": { "FAKE001": "warning" } }""");
+        SpecViolation lowered = new SpecViolationFixture().WithRuleId("FAKE001").WithSeverity(SpecSeverity.Error).WithFile("a/spec.md");
+        SpecViolation error = new SpecViolationFixture().WithRuleId("FAKE002").WithSeverity(SpecSeverity.Error).WithFile("b/spec.md");
+        List<ISpecRule> rules = [new FakeRule("FAKE001", ["FAKE001"], lowered), new FakeRule("FAKE002", ["FAKE002"], error)];
+
+        // When
+        var report = SpechtRunner.Evaluate(model, rules);
+
+        // Then
+        report.Violations.Should().Equal(error, lowered with { Severity = SpecSeverity.Warning });
+    }
+
+    [Theory]
+    [MemberData(nameof(KeptSeverities))]
+    public void ARuleIdSetToErrorOrNotNamed_WhenEvaluated_ShouldReportItsFindingAtTheSeverityTheRuleGaveIt(
+        string because,
+        string manifest,
+        SpecSeverity severity)
+    {
+        // Given
+        SpecModel model = ModelUnderManifest(manifest);
+        SpecViolation finding = new SpecViolationFixture().WithRuleId("FAKE001").WithSeverity(severity);
+        List<ISpecRule> rules = [new FakeRule("FAKE001", ["FAKE001"], finding)];
+
+        // When
+        var report = SpechtRunner.Evaluate(model, rules);
+
+        // Then
+        report.Violations.Should().Equal([finding], because);
+    }
+
+    private static SpecModelFixture ModelUnderManifest(string manifest)
+    {
+        SchemaVersion version = new SchemaVersionFixture().WithRuleIds(
+            new HashSet<string>(["FAKE001", "FAKE002", "FAKE003"], StringComparer.Ordinal));
+        var fileSystem = new MockFileSystem(
+            new Dictionary<string, MockFileData> { [Path.Combine("repo", ".spec", "schema", "spec-structure.schema.json")] = new(manifest) });
+
+        return new SpecModelFixture().WithSchemas(SpecSchemas.Load(fileSystem, "repo", new SchemaVersions([version])));
+    }
+
     private static SpecModelFixture ModelWithVocabulary(params string[] ruleIds)
     {
         SchemaVersion version = new SchemaVersionFixture().WithRuleIds(new HashSet<string>(ruleIds, StringComparer.Ordinal));
@@ -245,6 +342,20 @@ public sealed class SpechtRunnerEvaluateUnitTests
             new Dictionary<string, MockFileData> { [Path.Combine("repo", ".spec", "schema", "spec-structure.schema.json")] = new("{}") });
 
         return new SpecModelFixture().WithSchemas(SpecSchemas.Load(fileSystem, "repo", new SchemaVersions([version])));
+    }
+
+    private sealed class AskedRule(string id, IReadOnlyList<string> reportedIds, Action asked) : ISpecRule
+    {
+        public string Id => id;
+
+        public IReadOnlyList<string> ReportedIds => reportedIds;
+
+        public IEnumerable<SpecViolation> Evaluate(SpecModel model)
+        {
+            asked();
+
+            return [];
+        }
     }
 
     private sealed class FakeRule(string id, IReadOnlyList<string> reportedIds, params SpecViolation[] violations) : ISpecRule

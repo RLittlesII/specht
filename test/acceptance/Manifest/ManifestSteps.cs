@@ -20,6 +20,9 @@ namespace Specht.Acceptance.Manifest;
 /// written into the manifest under <c>roles</c>, <c>tables</c> and <c>markers</c> (B-001 to B-003, B-015, B-039, B-040;
 /// decision 0006). An empty file-shape list is written under <c>companionFiles</c> (B-041; <c>0001-F6</c> decision 0008).
 /// An exclusion entry is written as the whole <c>exclusions</c> list (B-021; <c>0001-F6</c> decision 0003).
+/// A rule setting is written under <c>rules</c>, a rule id mapped to its level (B-010, B-011, B-013, B-042; decision 0007).
+/// A rule declared by a type name and a library file is written there too, as an object under a rule id the pinned version
+/// does not hold, beside a file standing as the library; nothing compiled is put under the root (B-017).
 /// </summary>
 [Binding]
 [Scope(Feature = "The manifest carries the roles")]
@@ -169,6 +172,68 @@ public sealed class ManifestSteps
 
     [Given("the manifest's exclusion list holds the entry {string}")]
     public void GivenTheManifestsExclusionListHoldsTheEntry(string entry) => Manifest["exclusions"] = new JsonArray(entry);
+
+    [Given("the manifest sets the out-of-order-section rule to {word} severity")]
+    public void GivenTheManifestSetsTheOutOfOrderSectionRuleToSeverity(string level) => Set(OutOfOrderRule, level);
+
+    [Given("the manifest sets the out-of-order-section rule to {string}")]
+    public void GivenTheManifestSetsTheOutOfOrderSectionRuleTo(string value) => Set(OutOfOrderRule, value);
+
+    [Given("the manifest disables the out-of-order-section rule")]
+    public void GivenTheManifestDisablesTheOutOfOrderSectionRule() => Set(OutOfOrderRule, "off");
+
+    [Given("the manifest lists rule settings for an id outside the pinned version's vocabulary")]
+    public void GivenTheManifestListsRuleSettingsForAnIdOutsideThePinnedVersionsVocabulary() => Set(RuleOutsideTheVocabulary, "warning");
+
+    [Given("the manifest declares a rule by a type name and a library file")]
+    public void GivenTheManifestDeclaresARuleByATypeNameAndALibraryFile() =>
+        Set(RuleOutsideTheVocabulary, new JsonObject { ["type"] = "Consumer.Rules.MarkingRule", ["library"] = LibraryFile });
+
+    [Given("that library file exists under the root")]
+    public void GivenThatLibraryFileExistsUnderTheRoot() => Tree.WriteRaw(LibraryFile, "A file standing as a rule library.");
+
+    [Given("the library's rule leaves a mark under the root when it runs")]
+    public void GivenTheLibrarysRuleLeavesAMarkUnderTheRootWhenItRuns() => _mark = Path.Combine(Tree.Root, "rules", "rule-ran.mark");
+
+    [Given("the root holds a specification with its sections out of order")]
+    public void GivenTheRootHoldsASpecificationWithItsSectionsOutOfOrder()
+    {
+        var sections = SpecTree.Sections.ToList();
+        (sections[5], sections[6]) = (sections[6], sections[5]);
+        Write("F1", sections);
+        var report = Tree.Run();
+        report.Violations.Should().ContainSingle().Which.Should().Match<SpecViolation>(static violation =>
+            violation.RuleId == OutOfOrderRule && violation.Severity == SpecSeverity.Error);
+        _rulesEvaluatedByDefault = report.RulesEvaluated;
+    }
+
+    [Then("the violation is reported at warning severity")]
+    public void ThenTheViolationIsReportedAtWarningSeverity() =>
+        Run.Stdout.Split('\n')
+            .Should()
+            .ContainSingle(static line => line.Contains(OutOfOrderRule), Run.Stderr)
+            .Which.Should()
+            .StartWith(_specifications[0])
+            .And.Contain($": warning {OutOfOrderRule}: ");
+
+    [Then("nothing is reported for that rule")]
+    public void ThenNothingIsReportedForThatRule()
+    {
+        _rejection.Should().BeNull();
+        _report!.Violations.Should().NotContain(violation => violation.RuleId == RuleId);
+    }
+
+    [Then("the count of rules evaluated excludes it")]
+    public void ThenTheCountOfRulesEvaluatedExcludesIt() =>
+        _report!.RulesEvaluated.Should().Be(
+            (_rulesEvaluatedByDefault ?? throw new InvalidOperationException("No count was taken under the default manifest.")) - 1);
+
+    [Then("the rejection names that rule id")]
+    public void ThenTheRejectionNamesThatRuleId() => _rejection!.Message.Should().Contain(RuleId);
+
+    [Then("the mark does not exist")]
+    public void ThenTheMarkDoesNotExist() =>
+        File.Exists(_mark ?? throw new InvalidOperationException("No mark was named.")).Should().BeFalse();
 
     [Then("the rejection names the companion file list")]
     public void ThenTheRejectionNamesTheCompanionFileList() => _rejection!.Message.Should().Contain("companionFiles");
@@ -327,6 +392,8 @@ public sealed class ManifestSteps
 
     private string FeatureSchema => _featureSchema ?? throw new InvalidOperationException("The manifest names no Feature schema file.");
 
+    private string RuleId => _ruleId ?? throw new InvalidOperationException("The manifest sets no rule.");
+
     private static string Matrix(string title, string middleHeaders, string middleCells) =>
         $"## {title}\n\n| Claim ID | {middleHeaders} | Status |\n| --- | {string.Join(" | ", middleHeaders.Split('|').Select(static _ => "---"))} | --- |\n"
             + $"| B-001 | {middleCells} | Covered |\n";
@@ -340,6 +407,12 @@ public sealed class ManifestSteps
         }
 
         return named;
+    }
+
+    private void Set(string ruleId, JsonNode setting)
+    {
+        Named("rules")[ruleId] = setting;
+        _ruleId = ruleId;
     }
 
     private string Write(string id, IReadOnlyList<string> sections)
@@ -360,6 +433,12 @@ public sealed class ManifestSteps
     }
 
     private const string UnknownKey = "glossary";
+
+    private const string OutOfOrderRule = "SPEC010";
+
+    private const string RuleOutsideTheVocabulary = "SPEC999";
+
+    private const string LibraryFile = "rules/consumer-rules.dll";
 
     private const string FeatureSchemaRejectingTheDomain = """{ "properties": { "domain": { "const": "Elsewhere" } } }""";
 
@@ -388,4 +467,7 @@ public sealed class ManifestSteps
     private SpecModel? _model;
     private IReadOnlyList<SpecViolation> _frontmatterViolations = [];
     private IReadOnlyList<GoldenReport.Verdict>? _golden;
+    private string? _ruleId;
+    private int? _rulesEvaluatedByDefault;
+    private string? _mark;
 }
