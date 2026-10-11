@@ -6,8 +6,8 @@ namespace Specht.Tests.Rules;
 
 /// <summary>
 /// The feature-file rule over a tree on disk under a manifest that renames the claims section (<c>0001-F5</c> B-001,
-/// decision 0006): a scenario tag resolves against the section the claims role names. On disk because the rule reads the
-/// companion file's tags from its path.
+/// decision 0006): a scenario tag resolves against the section the claims role names, through the runner. The rule's own
+/// lookup is pinned in memory by <see cref="FeatureFileRuleUnitTests"/>.
 /// </summary>
 [Trait("Tier", "Integration")]
 public sealed class FeatureFileRuleIntegrationTests

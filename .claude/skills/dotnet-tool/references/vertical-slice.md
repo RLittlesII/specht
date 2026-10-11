@@ -36,13 +36,16 @@ src/specht/
   SpechtReport.cs               the only .cs at the project root, namespace `Specht`
   SpechtRootNotFoundException.cs
   .spec/                        the engine Feature's specification (0001-F1)
-  Model/                        shared - what every rule reads: the spec model, the Markdig document,
-                                the frontmatter reader, the schema loader, the violation and its severity
+  Model/                        shared - what every rule reads: the spec model and its loader, the Markdig
+                                document, the frontmatter reader, the schema loader, the root-relative path
+                                mapping, the violation and its severity
   Discovery/                    Feature 0001-F6 - finding specifications, layouts and locations
   Manifest/                     Feature 0001-F5 - the manifest, the structure it declares, its exceptions
   Report/                       Feature 0001-F3 - the report document
   Versioning/                   shared - the engine half of 0001-F7, whose home is `src/tool`:
                                 the schema versions. No .spec/ here.
+  Composition/                  shared - `AddSpechtEngine()`, the engine's one registration extension
+                                (ADR-0001 stage D). No .spec/ here.
   Rules/                        shared - `ISpecRule`, the rules, the feature-file reader
     <Name>/.spec/               a rule Feature's specification
 ```
@@ -71,7 +74,8 @@ Tests are **not** co-located here: they live in `test/tests` and
   them.** A `Features/`-root type with one consumer belongs in that consumer.
 - **An engine file goes in a folder, never at the project root.** A file one
   Feature owns goes in that Feature's folder. A type more than one Feature
-  reads goes in a named folder — `Model/`, `Versioning/`, `Rules/`. The root of
+  reads goes in a named folder — `Model/`, `Versioning/`, `Rules/`,
+  `Composition/`. The root of
   `src/specht` holds the runner, its report and the root-not-found exception,
   and nothing joins them.
 - **Namespaces follow folders.** `Model/` is `Specht.Model`; the root is
@@ -92,10 +96,11 @@ Tests are **not** co-located here: they live in `test/tests` and
   Spectre's `IConfigurator` with `AddCommand`/`AddBranch` (or
   `SetDefaultCommand`), and Spectre registers each command and settings type
   through the registrar when it runs. There is no assembly scanning and no
-  third-party container (ADR-0003). Once ADR-0001's stage D lands, the
-  engine's services arrive through one `AddSpechtEngine()` call in the
-  composition, in place of a line per engine service — owner-approved under
-  lesson 0002. Adding a command means adding its registration and one link
+  third-party container (ADR-0003). The engine's services arrive through
+  one `AddSpechtEngine()` call in the composition (ADR-0001 stage D, item
+  `0107`), in place of a line per engine service — owner-approved under
+  lesson 0002. The extension lives in `src/specht/Composition/` and is
+  itself a hand-written list. Adding a command means adding its registration and one link
   in the composition — that is the whole cost, and it is deliberate: the
   composition is readable, ordering is explicit, and a command cannot join
   the host by accident of being in the assembly.

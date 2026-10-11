@@ -225,7 +225,7 @@ public sealed class ManifestSteps
     public void GivenTheRootHoldsASpecificationThatRuleReports()
     {
         Write("F1", SpecTree.Sections);
-        SpechtRunner.Evaluate(SpecModel.Load(Tree.Root), [StandIn])
+        SpechtRunner.Evaluate(EngineServices.Loader().Load(Tree.Root), [StandIn])
             .Violations.Should()
             .ContainSingle()
             .Which.Should()
@@ -237,7 +237,7 @@ public sealed class ManifestSteps
     public void WhenTheCheckRunsWithThatRule()
     {
         File.WriteAllText(ManifestPath, Manifest.ToJsonString());
-        _report = SpechtRunner.Evaluate(SpecModel.Load(Tree.Root), [StandIn]);
+        _report = SpechtRunner.Evaluate(EngineServices.Loader().Load(Tree.Root), [StandIn]);
     }
 
     [Then("that rule's violation is reported at error severity")]
@@ -363,13 +363,13 @@ public sealed class ManifestSteps
         {
             if (_fromRoot)
             {
-                var loaded = SpecModel.Load(Tree.Root);
+                var loaded = EngineServices.Loader().Load(Tree.Root);
                 _model = new SpecModel(loaded.Root, loaded.Features, loaded.Items, loaded.Epics, SpecSchemas.Load(new FileSystem(), Tree.Root));
                 _frontmatterViolations = new FrontmatterSchemaRule().Evaluate(_model).ToList();
             }
             else
             {
-                _report = SpechtRunner.Run(Tree.Root);
+                _report = EngineServices.Runner().Run(Tree.Root);
             }
         }
         catch (SpechtManifestException rejection)

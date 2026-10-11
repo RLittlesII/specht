@@ -143,6 +143,7 @@ test/tests/              no .cs at the root
   Model/ Discovery/ Manifest/ Report/ Versioning/ Rules/
                          one per engine folder in src/specht
   Engine/                SpechtRunner's own tests
+  Composition/           AddSpechtEngine()'s registrations
   Engine/Baseline/       the baseline tree and the committed golden report
   Check/ Init/           one per command under src/tool/Features/
   Shared/                helpers and fixtures more than one Feature's tests use

@@ -322,7 +322,7 @@ public sealed class CheckCommandIntegrationTests
         var violations = report.Violations.Select(static violation => violation.ToString()).ToArray();
 
         // When
-        var result = Check(SpechtRunner.Run, "--root", tree.Root);
+        var result = Check(EngineServices.Runner().Run, "--root", tree.Root);
 
         // Then
         violations.Should().HaveCountGreaterThan(1);
@@ -340,7 +340,7 @@ public sealed class CheckCommandIntegrationTests
         var report = tree.Run();
 
         // When
-        var result = Check(SpechtRunner.Run, "--root", tree.Root);
+        var result = Check(EngineServices.Runner().Run, "--root", tree.Root);
 
         // Then
         report.Violations.Should().BeEmpty();
@@ -374,7 +374,7 @@ public sealed class CheckCommandIntegrationTests
         var document = SpecReportDocument.From(report);
 
         // When
-        var result = Check(SpechtRunner.Run, "--root", tree.Root, "--json");
+        var result = Check(EngineServices.Runner().Run, "--root", tree.Root, "--json");
 
         // Then
         report.Violations.Should().HaveCountGreaterThan(1);
@@ -398,7 +398,7 @@ public sealed class CheckCommandIntegrationTests
         var root = arrange(tree);
 
         // When
-        var result = Check(SpechtRunner.Run, "--root", root);
+        var result = Check(EngineServices.Runner().Run, "--root", root);
 
         // Then
         result.Output.Should().BeEmpty(because);
