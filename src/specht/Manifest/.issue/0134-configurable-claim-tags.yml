@@ -4,16 +4,13 @@ title: Read claim tags by the manifest's claim grammar, tag form and case settin
 
 status: ready-for-architecture
 
-priority: high # DERIVED
 value: 4
 risk: 3
-rank: 71 # DERIVED
 
 parent: "0010"
 children: []
 
 depends_on: ["0011", "0012", "0107"] # the tag keys load through 0011; the move keeps 0012 green; ADR-0001 sequences stage D (0107) before it
-blocks: [] # DERIVED
 spikes: []
 
 spec: src/specht/Manifest/.spec/README.md

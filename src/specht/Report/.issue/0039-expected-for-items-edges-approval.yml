@@ -4,15 +4,12 @@ title: Say what child-item, dependency and approval rules expected
 
 status: ready-for-architecture
 
-priority: high
 risk: 3
-rank: 71
 
 parent: "0033"
 children: []
 
 depends_on: ["0034"] # fills the `expected` member 0034 defines
-blocks: []
 spikes: []
 
 spec: src/specht/Report/.spec/README.md

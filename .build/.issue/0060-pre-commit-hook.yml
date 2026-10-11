@@ -4,15 +4,12 @@ title: Call the formatting gate from the pre-commit hook on what is staged
 
 status: done
 
-priority: high
 risk: 3
-rank: 101
 
 parent: "0056"
 children: []
 
 depends_on: ["0059"] # calls 0059's Format with the staged files
-blocks: ["0031", "0062"]
 spikes: []
 
 spec: .build/.spec/README.md

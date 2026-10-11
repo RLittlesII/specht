@@ -4,15 +4,12 @@ title: Leave the consumer's templates alone on upgrade
 
 status: ready-for-architecture
 
-priority: high
 risk: 3
-rank: 71
 
 parent: "0041"
 children: []
 
 depends_on: ["0130", "0045", "0047"] # reads 0130's key; narrows the rewrite 0045 performs; extends 0047's listing of what changed
-blocks: []
 spikes: []
 
 spec: src/tool/.spec/README.md

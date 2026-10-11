@@ -4,16 +4,13 @@ title: Decide how a test builds and runs a specht command
 
 status: in-progress
 
-priority: medium # DERIVED
 value: 3
 risk: 2
-rank: 59 # DERIVED
 
 parent: null
 children: []
 
 depends_on: []
-blocks: ["0107"] # DERIVED
 spikes: []
 
 spec: null

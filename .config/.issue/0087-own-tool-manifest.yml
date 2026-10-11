@@ -4,15 +4,12 @@ title: Name the published package in this repository's tool manifest
 
 status: ready-for-architecture
 
-priority: high # DERIVED
 risk: 3
-rank: 91 # DERIVED
 
 parent: "0086"
 children: []
 
 depends_on: ["0084"] # names the package 0084 publishes
-blocks: ["0032", "0067", "0077", "0085"]
 spikes: []
 
 spec: .config/.spec/README.md

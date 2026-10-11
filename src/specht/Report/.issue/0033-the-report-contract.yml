@@ -4,16 +4,13 @@ title: The report contract
 
 status: ready-for-architecture
 
-priority: high
 value: 4
 risk: 3
-rank: 71
 
 parent: "0001"
 children: ["0034", "0035", "0036", "0037", "0038", "0039", "0040", "0129"]
 
 depends_on: []
-blocks: []
 spikes: []
 
 spec: src/specht/Report/.spec/README.md

@@ -4,15 +4,12 @@ title: Give the build a unit tier and pin its mechanisms
 
 status: done
 
-priority: high
 risk: 2
-rank: 94
 
 parent: "0056"
 children: []
 
 depends_on: []
-blocks: []
 spikes: []
 
 spec: .build/.spec/README.md

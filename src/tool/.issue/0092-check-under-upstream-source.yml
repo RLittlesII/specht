@@ -4,15 +4,12 @@ title: Check under a recorded upstream schema source
 
 status: ready-for-architecture
 
-priority: high
 risk: 3
-rank: 81
 
 parent: "0041"
 children: []
 
 depends_on: ["0043", "0013"] # a third case of 0043's source selection; rejects the contradiction through 0013's exit 3
-blocks: ["0093", "0096"]
 spikes: []
 
 spec: src/tool/.spec/README.md

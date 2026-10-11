@@ -4,15 +4,12 @@ title: Name the manifest's values in rule messages
 
 status: ready-for-architecture
 
-priority: high
 risk: 2
-rank: 74
 
 parent: "0010"
 children: []
 
 depends_on: ["0015", "0016", "0017"] # a message can only spell a value once it is read
-blocks: []
 spikes: []
 
 spec: src/specht/Manifest/.spec/README.md

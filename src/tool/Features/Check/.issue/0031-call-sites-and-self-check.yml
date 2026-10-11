@@ -4,15 +4,12 @@ title: Prove Specht, the hook and a shell give one verdict once rule settings ex
 
 status: ready-for-architecture
 
-priority: high
 risk: 3
-rank: 91
 
 parent: "0025"
 children: []
 
 depends_on: ["0026", "0060", "0062"] # the command 0026 builds; the hook 0060 creates; the gate 0062 adds once 0001-F5's rule settings exist (C-8)
-blocks: []
 spikes: []
 
 spec: src/tool/Features/Check/.spec/README.md

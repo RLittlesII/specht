@@ -4,15 +4,12 @@ title: Prove both discovery modes find the same files in the same order
 
 status: ready-for-architecture
 
-priority: medium
 risk: 3
-rank: 51
 
 parent: "0004"
 children: []
 
 depends_on: ["0007", "0008"] # compares the two modes, so both must exist
-blocks: []
 spikes: []
 
 spec: src/specht/Discovery/.spec/README.md

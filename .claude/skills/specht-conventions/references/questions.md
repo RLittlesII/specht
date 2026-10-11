@@ -61,6 +61,19 @@ From brief § 2, § 5 and § 6, as of 2026-10-07:
   plus `--explain` is where an agent's answer is defined; the Model Context
   Protocol is a second door onto the same answers and adds nothing the command
   line cannot say (owner, 2026-10-09; epic `0132`).
+- **A GitHub Action shipped from this repository puts violations on a
+  build**, for consumers and for this repository, which adopts it and retires
+  its build-side annotation. It writes workflow commands on the diff, scoped
+  to the pull request's changed files unless an input widens them, and a step
+  summary of every violation; no check run and no SARIF. The tool still
+  learns nothing about GitHub (`0055-F2` C-6) (owner, 2026-10-10; epic
+  `0142`).
+- **The action installs nothing of its own and decides no verdict.** The tool
+  comes from the consumer's local tool manifest, the action pins no tool
+  version, the consumer supplies the feed authentication, and the step exits
+  with the tool's exit code. It lives in a subfolder of this repository, runs
+  on Linux, macOS and Windows, and shares the tool's `v<version>` tag (owner,
+  2026-10-10; epic `0142`).
 - **Every path in every output is repository-relative.** An absolute path
   anywhere is a defect.
 - **The tool never writes into a consumer's tree** except through `init`,

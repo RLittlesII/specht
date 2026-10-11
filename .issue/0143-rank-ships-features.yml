@@ -1,0 +1,100 @@
+id: "0143"
+type: task
+title: Rank work by what ships the product and its Features soonest
+
+status: done
+
+value: 4
+risk: 3
+
+parent: null
+children: []
+
+depends_on: []
+spikes: []
+
+spec: null
+
+claims: []
+
+created: "2026-10-10"
+updated: "2026-10-10"
+closed: "2026-10-10"
+
+summary: |
+  Rank did not order work by what gets something to done. The formula,
+  `rank = value × 20 − risk × 3 + unblocks × 5`, had no term for a Feature
+  nearing done; `unblocks` counted direct dependents only, and counted done
+  ones; and a blocker took nothing from what it gates. The five top-ranked
+  open items were each blocked by a lower-ranked one, and the startable item
+  gating the chain to seven Features sat 16th of 18. The numbers were also
+  stored on every item and recomputed by hand.
+
+  Rank is now value per remaining work, computed by the queue script on every
+  run from `value`, `risk`, `depends_on`, `parent` and `status`. A Feature
+  scores its value over the summed `risk` of everything open it still needs,
+  in any Feature, and an item takes the best score of any Feature that needs
+  it. Priority is the tier: `high` on the dependency path of the product goal
+  in `.issue/.goal` - Release (`0082`) and Consuming the package (`0086`), the
+  first NuGet release - `medium` when some Feature needs the item, `low` when
+  none does. The `priority`, `rank` and `blocks` fields are deleted from
+  every item and from the template. The report gains a Toward column, a
+  Gates column - the open items that wait on the item directly, which is what
+  `blocks` stored - and a "Blocked by status" list, for items marked `blocked`
+  that wait on no open item and appeared in no list before. The definition is in
+  `.spec/templates/item.yml`; the `next` skill, the companion and `AGENTS.md`
+  say rank is computed and never stored.
+
+acceptance_criteria:
+  - No item and no item template carries a `priority`, `rank` or `blocks`
+    field.
+  - "The script prints a rank and a priority for every open item it lists,
+    from `value`, `risk`, `depends_on`, `parent` and `status` alone."
+  - "Every open item on the dependency path of an id in `.issue/.goal` is
+    `high`, and lists above every item that is not."
+  - An item in a Feature's closure ranks no lower than that Feature scores, so
+    a blocker never ranks below the Feature it gates.
+  - Closing an item raises the rank of what is left in its Feature's closure,
+    with no edit to another item.
+  - "The \"Pick one per lane\" table and the startable table carry a Toward
+    column after Priority, the Feature id and its remaining cost, and a Gates
+    column after it: the ids of the open items whose `depends_on` names the
+    item directly, or `-` when none."
+  - An item whose status is `blocked` and that waits on no open item lists
+    under "Blocked by status".
+  - "`.spec/templates/item.yml` holds the one definition; no other file
+    restates the arithmetic."
+  - No tool behaviour changes.
+
+decisions:
+  - "2026-10-10, repository owner: \"we need to re define rank. Seems our rank
+    of hightest isn't about what gets features shipped as fast as possible.
+    That should be the goal. TO ship a product fast, and to ship features.
+    That is the purpose of determining rank, to assess work that will get
+    things to done.\" - rank measures value per remaining work. Rejected: the
+    weighted sum of value, risk and direct dependents."
+  - "2026-10-10, repository owner: the product finish line is the first NuGet
+    release - Release (`0082`) and Consuming the package (`0086`) - and every
+    open item on their dependency path is lifted above work off the path."
+  - "2026-10-10, repository owner: rank is computed by the queue script on
+    every run, and the stored `rank`, `priority` and `blocks` fields are
+    removed from items. Rejected: keeping the stored fields and recomputing
+    them on each edit."
+  - "2026-10-10, repository owner: `risk` is the effort proxy. No size field
+    exists, and none is added."
+  - "2026-10-10, repository owner, approving the plan: an item no Feature
+    needs ranks in the `low` tier. Rejected: scoring it as a one-item goal
+    beside the Features, where it outranks every one of them."
+  - "2026-10-10, repository owner: \"why did we remove - blocks: from
+    everywhere?\" - what an item gates is printed by the queue script, in a
+    Gates column, computed from open items' `depends_on`. Rejected: restoring
+    the stored `blocks` field."
+
+out_of_scope:
+  - "The `priority`, `value`, `risk` and `rank` keys in specification
+    frontmatter, and the shipped frontmatter schemas that require them - they
+    are consumer-facing, and changing them is a schema version change."
+  - "The status inconsistencies the computed rank exposed: Feature item `0020`
+    is `done` with open children `0106` and `0107`, and a specification's
+    `status` can disagree with its Feature item's."
+  - A size or effort field on an item - `risk` stands in for it.
