@@ -2,7 +2,7 @@ id: "0100"
 type: task
 title: Prefix the engine's types with Specht rather than Spec
 
-status: ready
+status: ready-for-implementation
 
 value: 2
 risk: 2
@@ -10,7 +10,7 @@ risk: 2
 parent: null
 children: []
 
-depends_on: []
+depends_on: ["0150"] # ADR-0010 runs this as stage 1, after pull request #118, which delivers 0150
 spikes: []
 
 spec: null
@@ -18,7 +18,7 @@ spec: null
 claims: []
 
 created: "2026-10-08"
-updated: "2026-10-08"
+updated: "2026-10-11"
 closed: null
 
 summary: |
@@ -52,15 +52,46 @@ summary: |
   every engine file, though, so take it when no engine item (0001-F1, -F3,
   -F5, Discovery) is in-progress, or it collides with that item's diff.
 
+  2026-10-11: ADR-0010 (accepted 2026-10-11,
+  .spec/adr/0010-layered-engine-boundaries-with-io-at-the-edge-and-a-mediator.md)
+  runs this item as stage 1 of its order of work, after pull request #118
+  (item 0150) and before every engine stage it cuts, items 0155 to 0167.
+  Those items write ADR-0010's type names, which are `Spec`-prefixed, and
+  say that each takes the prefix this item gives it; an item taken before
+  this one adds `Spec`-prefixed types that the third scope bullet above
+  already brings in. The scope list is as of this item's cutting and names
+  projects and types since renamed or removed (`SpecCheckRunner`,
+  `test/specht.tests`, `src/specht.tool`, the `SpecCheck` target); the
+  types and paths that exist when it is taken are the scope.
+
+  ADR-0010's open point 3 is carried here on its default: the record
+  writes its namespaces `Specht.*`, the source's namespaces are `Specht.*`
+  today, and the repository's naming is lowercase `specht` for projects
+  and packages - which the out-of-scope line below, "the namespace and
+  assembly `specht`, already lowercase", states of the namespace too. The
+  casing of the namespaces is settled inside this item, and that line is
+  brought true or the namespaces are.
+
 acceptance_criteria:
   - "No type, file, test class or fixture in src/ or test/ carries a bare `Spec` prefix; each named in the summary is `Specht`-prefixed, its file renamed with it."
   - "Every § 9 row and § 7 reference that named a renamed type or test file names the new one, in the same change - a § 9 row citing a test that no longer exists is the breakage this item must not leave."
   - "Unchanged: the SPEC### rule ids, every `.spec/` path and file name, the SpecCheck NUKE target and generated CI step, the manifest's keys and `$comment`, the report document's fields, and every violation message."
   - "The commit message carries the exemption: No .feature change needed: rename; the report and every verdict are unchanged. Constraints preserved: 0001-F1 C-3, 0001-F1 C-4, 0001-F1 C-5, 0001-F1 C-9, 0001-F3 C-3, 0001-F3 C-4, 0001-F5 C-3, 0001-F2 C-4."
   - "./build.sh and ./build.sh SpecCheck are green, and SpecCheck's report on this repository equals the report before the rename."
+  - "ADR-0010 open point 3, settled here and recorded in `decisions` before the rename: the casing of the engine's namespaces, `Specht.*` or `specht.*`, with the owner's answer where the default is not taken. The golden report `test/tests/Engine/Baseline/engine-e7dba24.json` is unchanged and the benchmark project `.performance/benchmarks` still compiles."
 
 decisions:
   - "2026-10-08, repository owner (PR #11 review): engine types take the `Specht` prefix; SpechtManifestException is the precedent. Cut as an item rather than done inside 0011. Recorded by spec-author."
+  - |
+    2026-10-11, spec-author: on ADR-0010, accepted by the repository owner
+    the same day (item 0154), which runs this item as stage 1 after pull
+    request #118. `depends_on` gains 0150, the item #118 delivers. The
+    record's open point 3, namespace casing, is carried here on its
+    default. Status moves `ready` to `ready-for-implementation`: `ready`
+    means the dependencies are resolved, and 0150 is open. The type stays
+    `task`, as the owner's item was cut before the `refactor` type
+    existed; ADR-0010's table calls the stage a refactor, and the item
+    already claims the rename exemption.
 
 out_of_scope:
   - "The `SPEC###` rule ids - fixed per schema version (0001-F1 C-5)."

@@ -9,7 +9,7 @@ risk: 2
 parent: "0033"
 children: []
 
-depends_on: ["0034", "0026", "0035"] # B-003 compares with 0035's stdout document
+depends_on: ["0034", "0026", "0035", "0167"] # B-003 compares with 0035's stdout document; the mediator and `SpecReportStore` are 0167's
 spikes: []
 
 spec: src/specht/Report/.spec/README.md
@@ -23,7 +23,7 @@ claims:
   - B-025
 
 created: "2026-10-08"
-updated: "2026-10-09"
+updated: "2026-10-11"
 closed: null
 
 summary: |
@@ -32,6 +32,22 @@ summary: |
   makes (C-7), while stdout keeps the line stream. Also carries the claims
   that span both options — identical documents and an unchanged exit code —
   so it waits on 0035.
+
+  Reshaped 2026-10-11 on ADR-0010 (accepted 2026-10-11,
+  .spec/adr/0010-layered-engine-boundaries-with-io-at-the-edge-and-a-mediator.md,
+  § "Items reshaped"). The claims are unchanged; the shape of what delivers
+  them is decided. `--report` is a second message beside the check, in
+  cqrsz's shape: a static class `SaveReport` in `Specht.Check`, nesting
+  `SaveReport.Command` and its `Handler`, registered by hand in
+  `AddSpechtEngine()` and dispatched through `ICqrs`. The handler maps the
+  report with `SpecReportDocumentMapper`, serialises it with
+  `SpecReportSerializer` and writes it through `SpecReportStore`, the one
+  type that holds the file system for a report. The command sends
+  `Check.Query`, then `SaveReport.Command` with the report and the path;
+  it names no store and no serializer. It is the "second handler" that
+  ADR-0010 § "Each interface, and what earns it" has the handler contracts
+  wait for. Type names are ADR-0010's; each carries the prefix item 0100
+  gives it once that lands.
 
 acceptance_criteria:
   - "B-003 — `--json` and `--report` documents identical"
@@ -42,9 +58,22 @@ acceptance_criteria:
   - "B-025 — stdout keeps the lines and summary"
   - "0001-F2 B-012's report exemption, with C-7 — the file `--report` names is the only write under the root (0001-F2 decision 0005)"
   - "§ 9 carries a row naming a test for each id above."
+  - "ADR-0010, as reshaped 2026-10-11: the write is a `SaveReport.Command` its handler answers over `SpecReportStore`, sent through `ICqrs`; no command in `src/tool` and no handler but this one writes a report, and the store is the only type on the path that holds an `IFileSystem`."
+  - "ADR-0010, as reshaped: the bytes B-003 compares come from one `SpecReportDocumentMapper` and one `SpecReportSerializer`, shared with `--json`."
 
-decisions: []
+decisions:
+  - |
+    2026-10-11, spec-author: reshaped on ADR-0010, accepted by the
+    repository owner the same day (item 0154), whose § "Items reshaped"
+    makes this item "`--report` and a `SaveReport.Command` handler over
+    `SpecReportStore`" and makes it depend on stage 7. `depends_on` gains
+    0167. It stays a task of `0001-F3` with its six claims; no claim is
+    added or changed, and what the document holds and where it is written
+    are as the specification says. Whether the handler returns a value is
+    the architecture pass's: cqrsz's command returns one, and ADR-0010
+    writes `ICommand<T>`.
 
 out_of_scope:
   - "Refusing, appending to or backing up an existing file — § 5 #7."
   - "Any write but this file — C-7; a run with no report path writes nothing, 0001-F2 B-012 (0030)."
+  - "`Specht.Cqrs`, `SpecReportDocumentMapper`, `SpecReportSerializer` and `SpecReportStore` themselves - item 0167."

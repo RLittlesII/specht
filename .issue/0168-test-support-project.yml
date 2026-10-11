@@ -1,0 +1,95 @@
+id: "0168"
+type: refactor
+title: Give both test projects one test-support project in place of the eight source links
+
+status: ready-for-implementation
+
+value: 3
+risk: 3
+
+parent: null
+children: []
+
+depends_on: ["0154"] # cut from ADR-0010, the record 0154 produced; it waits on no engine stage
+spikes: []
+
+spec: null
+
+claims: []
+
+created: "2026-10-11"
+updated: "2026-10-11"
+closed: null
+
+summary: |
+  ADR-0010 (accepted 2026-10-11,
+  .spec/adr/0010-layered-engine-boundaries-with-io-at-the-edge-and-a-mediator.md),
+  track T of "The order of work", from the record's § "The test-support
+  project". It runs beside every engine stage and depends on none of them.
+
+  One project is added, and it is the only one the record adds: a
+  test-support library that `test/tests` and `test/acceptance` both
+  reference. It holds the eight files the two projects compile from each
+  other by link today:
+
+  - into `test/acceptance` (`test/acceptance/acceptance.csproj:47-67`):
+    `test/tests/Engine/Baseline/BaselineTree.cs`,
+    `test/tests/Engine/Baseline/GoldenReport.cs`,
+    `test/tests/Shared/EmbeddedFolder.cs`,
+    `test/tests/Shared/EngineAssembly.cs`,
+    `test/tests/Shared/EngineServices.cs`, `test/tests/Rules/RulePage.cs`
+    and `test/tests/Shared/SpecTree.cs`;
+  - into `test/tests` (`test/tests/tests.csproj:67-69`):
+    `test/acceptance/AcceptanceTool.cs`.
+
+  With it go the eight `<Compile Include>` links, the `System*` `<Using>`
+  patch (`test/acceptance/acceptance.csproj:73-76`) and the conditions
+  keyed on a project's name (`Directory.Build.props:15`,
+  `test/Directory.Build.props:20-22`). The root `Content` globs nothing
+  reads (`Directory.Build.props:23-27`) go too, once the package's contents
+  are confirmed unchanged.
+
+  It restructures the two test projects and the build's shared properties
+  and belongs to no Feature's code, so it sits at the repository root with
+  `spec: null`.
+
+  The rule it retires is in `specht-conventions` § Testing ("Do not add a
+  ninth link"); that text and the layout beside it are brought true in the
+  same pull request.
+
+  Two things the design decides and records in `decisions`, because the
+  record does not: where the golden report file itself lives and how each
+  test project comes by it, since both copy
+  `test/tests/Engine/Baseline/engine-e7dba24.json` to their output today;
+  and how the tier guard and implicit usings are switched on for a project
+  once no condition names one - a property the project sets is the form
+  the record's wording allows.
+
+acceptance_criteria:
+  - "1. One project is added under `test/`, listed in `specht.slnx`, `IsPackable=false`, referenced by `test/tests` and `test/acceptance`. It holds the eight files named in the summary; no file is compiled into two assemblies and no `<Compile Include>` in the repository names a file of another project."
+  - "2. The project holds no test: no `[Fact]`, no `[Theory]`, no step definition and no tier trait, and no tier target selects it (`specht-conventions` § Testing). The count of tests each tier runs is the count it ran before."
+  - "3. The `System*` `<Using>` patch in `test/acceptance/acceptance.csproj` is gone, and no condition in `Directory.Build.props` or `test/Directory.Build.props` is keyed on `MSBuildProjectName`. The tier guard still compiles into every project that holds tier-trait tests and into no other, and `src/specht` and `test/tests` keep the usings their copied files rely on."
+  - "4. The golden report `test/tests/Engine/Baseline/engine-e7dba24.json` is unchanged, byte for byte, is one tracked file, and both test projects still read it. If it moves, the path moves in every specification, skill and item that cites it in the same pull request, and its content does not change."
+  - "5. The root `Content` globs at `Directory.Build.props:23-27` are removed only after `./build.sh Pack` shows `specht.tool`'s package holds the same files with them and without them; the comparison is recorded in this item's `decisions`. If the contents differ, the globs stay and the difference is recorded."
+  - "6. Coverage is still measured from the test tiers and counts `src/**` alone: the new project adds no measured code."
+  - "7. `specht-conventions` § Testing and its layout say what is true after the change: the test-support project, no links, and where a helper both projects need now goes."
+  - "8. No § 9 row names a path this item moves without being re-pointed by `test-writer` in the same pull request. The unit, integration and acceptance tiers pass, and the benchmark project `.performance/benchmarks` still compiles."
+  - "No .feature change needed: refactor - eight files compiled by link into two test assemblies move into one test-support project both reference; no test is added, removed or changed in what it asserts, and the tool and its package are unchanged."
+  - "Constraints preserved: 0001-F1 C-10, 0001-F2 C-5, 0001-F2 C-7, 0055-F3 C-3, 0055-F3 C-4"
+
+decisions:
+  - |
+    2026-10-11, spec-author: cut from ADR-0010 on the repository owner's
+    acceptance of it the same day, as track T. Item 0154 is the session
+    that produced the record and holds the owner's decisions. Status
+    `ready-for-implementation`, as items 0104 to 0107 were cut on ADR-0001:
+    the design is the accepted record's. `depends_on` names 0154 alone:
+    the record runs this track "beside everything".
+
+out_of_scope:
+  - "Any engine stage of ADR-0010 - items 0155 to 0167."
+  - "A new helper or fixture; this item moves the eight and adds none."
+  - "The command-test harness - item 0099."
+  - "The reference from `test/tests` to the benchmark project - item 0153."
+  - "A second production assembly - ADR-0010 § 'The layout' adds none."
+  - "Any change to what a test asserts."

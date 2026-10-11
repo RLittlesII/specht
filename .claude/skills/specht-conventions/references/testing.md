@@ -157,24 +157,40 @@ stays in that Feature's folder.
 The golden report is committed in `Engine/Baseline/` and copied to `Baseline/`
 beside the test assembly.
 
-`test/acceptance` is one folder per Feature. It compiles files from
-`test/tests` by link - from `Shared/`, `Engine/Baseline/` and `Rules/` - so
-moving one of them means updating `test/acceptance/acceptance.csproj`.
+`test/acceptance` is one folder per Feature. It compiles seven files from
+`test/tests` by link - from `Shared/`, `Engine/Baseline/` and `Rules/` - and
+`test/tests` links one back, so moving one of them means updating the
+`.csproj` that links it.
+
+**Do not add a ninth link.** The decided direction
+([ADR-0010](../../../../.spec/adr/0010-layered-engine-boundaries-with-io-at-the-edge-and-a-mediator.md),
+track T, accepted 2026-10-11) is one test-support project that both test
+projects reference, holding those eight files; the links, the `System*`
+`<Using>` patch in `acceptance.csproj` and the conditions keyed on a project's
+name go with it. Until it lands, a helper both projects need waits for it or
+is raised to the owner; it is not linked. The test-support project holds no
+test, so it carries no tier trait and no tier target may select it - confirm
+that when it is added.
 
 ## The tier trait is enforced
 
-`test/Shared/TestTierGovernanceTests.cs` (scaffold) is linked into every `*.Tests`
-project by `test/Directory.Build.props` and reflects over the assembly, asserting
-every class carrying a `[Fact]` or `[Theory]` declares exactly one
-`[Trait("Tier","Unit"|"Integration")]`.
+`test/Shared/TestTierGovernanceTests.cs` (scaffold) is linked by
+`test/Directory.Build.props` into every project under `test/` whose project
+name ends in `tests`, compared without case - today `test/tests` alone - and
+reflects over the assembly, asserting every class carrying a `[Fact]` or
+`[Theory]` declares exactly one `[Trait("Tier","Unit"|"Integration")]`.
 
 Without it, a class that forgets the trait drops out of **both** filtered tiers
 while an unfiltered run still reports it passing. It is not linked into
-`specht.acceptance` — Reqnroll-generated scenario classes do not use the
+`test/acceptance` — Reqnroll-generated scenario classes do not use the
 convention.
 
-A new test project must end in `.Tests`, or it gets neither the tier filters nor
-the guard.
+The guard follows the project's name and the tier targets run the projects
+`Solution.GetTestProjects()` returns (`.build/SpechtBuild.cs`), so the two can
+disagree. A new test project is named so its project name ends in `tests`,
+and is then checked both ways: the guard's test appears in it, and
+`./build.sh UnitTest` runs it. ADR-0010's track T removes the name-keyed
+condition.
 
 ## Reqnroll wiring, and why it is literal
 
@@ -205,7 +221,8 @@ wall clock.
 
 ## Never add
 
-- A test project whose name does not end `.Tests`.
+- A test project whose project name does not end in `tests`.
+- A `<Compile Include>` of another project's source (ADR-0010, track T).
 - A test class with no `Tier` trait, or with both.
 - A claim marked `Covered` by a scenario alone while the mechanism beneath it
   has no unit test, or a "no unit tier" verdict that names no code read.

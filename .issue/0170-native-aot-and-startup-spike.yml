@@ -1,0 +1,100 @@
+id: "0170"
+type: spike
+title: Weigh publishing the tool ahead of time, and what it does to start-up
+
+status: ready-for-implementation
+
+value: 3
+risk: 3
+
+parent: null
+children: []
+
+depends_on: ["0167"] # the engine's new code is free of reflection only once the dispatcher and the handlers exist
+spikes: []
+
+spec: null
+
+claims: []
+
+created: "2026-10-11"
+updated: "2026-10-11"
+closed: null
+
+summary: |
+  ADR-0010 (accepted 2026-10-11,
+  .spec/adr/0010-layered-engine-boundaries-with-io-at-the-edge-and-a-mediator.md),
+  track P of "The order of work", from the record's § "Ahead-of-time
+  compilation": the owner's decision 7, that readiness for ahead-of-time
+  compilation and start-up time are drivers and a spike measures them. It
+  is a spike in the manner of item 0151 and ADR-0009: trial code
+  on branches that never merge, measures traced to commands run on named
+  commits, and a proposed ADR the owner rules on.
+
+  What it asks. Can `specht` be published ahead of time, what stops it,
+  library by library, and what does it buy at start-up. ADR-0003, which
+  takes Microsoft's container, is open to revisit on that evidence; it is
+  not superseded by ADR-0010, and nothing in that record adopts a
+  source-generated container or a generated mediator.
+
+  It waits on item 0167. After it the engine's own new code - the
+  dispatcher, the handlers, the hand-written registrations - is free of
+  reflection (ADR-0010, Consequences), so the spike measures the libraries
+  and not this repository's code.
+
+  The trial, on branches `0170/trial-<candidate>` cut from `main` after
+  0167 and never merged:
+
+  - the tool as it stands, published ahead of time with trimming, with
+    every trim and compilation warning recorded against the library that
+    raises it - `Spectre.Console.Cli` first, then the container,
+    JsonSchema.Net, YamlDotNet, Markdig and System.IO.Abstractions;
+  - where a library stops the publish, the smallest change that gets past
+    it on the trial branch, recorded as a finding and not carried to
+    `main`.
+
+  It changes nothing under `src/`, `test/`, `.performance/`, `.build/`,
+  `global.json`, `Directory.Build.props` or `Directory.Packages.props` on
+  `main`.
+
+  Start-up is measured through `0109-F4`
+  (`.performance/benchmarks/Startup/.spec/README.md`), as ADR-0010 says.
+  That Feature's specification is approved, its status is `blocked`, every
+  row of its § 9 is `Missing` and no work item delivers it. Until it is
+  built this spike has no measure of start-up that the specifications
+  recognise; criterion 3 says what it records in that case.
+
+  It spans the tool's packaging (`0001-F2`), the engine's dependencies
+  (`0001-F1` C-7), ADR-0003 and `0109-F4`, so it sits at the repository
+  root with `spec: null`.
+
+acceptance_criteria:
+  - "A proposed ADR in the repository-wide `.spec/adr/`, with the owner as decider, weighs: stay on the just-in-time tool; publish ahead of time with the libraries as they are; publish ahead of time with a named library replaced or configured. It recommends one, or recommends waiting. It says whether ADR-0003 stands, and if it adopts anything it names the specification deltas owed and supersedes no accepted ADR by editing it."
+  - "Each finding is traced to a command run on a named trial commit of a branch `0170/trial-<candidate>` that is never merged."
+  - "1. Publish: whether the tool publishes ahead of time on each operating system CI builds on, and the full list of trim and ahead-of-time warnings, grouped by the library that raises each, `Spectre.Console.Cli` first."
+  - "2. Behaviour: on the published binary, whether the acceptance scenarios pass unedited and the golden report `test/tests/Engine/Baseline/engine-e7dba24.json` is reproduced byte for byte; every scenario that fails is recorded with its cause."
+  - "3. Start-up: the three rows `0109-F4` C-1 names - the launch floor, the tool composing its host, and one check of the one-specification tree - for the tool as shipped and as published ahead of time, measured by `0109-F4`'s benchmark. If `0109-F4` is not built when this spike is taken, the spike says so, records a coarse timing labelled as not that Feature's finding, and names `0109-F4`'s delivery as owed before the ADR is ruled on."
+  - "4. This repository's own code: every warning raised by `src/specht` or `src/tool` themselves, which ADR-0010 expects to be none in the code its stages added; each one found is a finding against that record."
+  - "5. Distribution: what an ahead-of-time binary does to the package - `specht.tool` is a `dotnet tool` installed through a local tool manifest (`0001-F2` C-5) - its size, and whether one package can still serve every platform a consumer builds on."
+  - "6. The container and the mediator: what ADR-0003's container and the hand-written dispatcher of item 0167 cost at start-up on the evidence of measure 3, and whether a source-generated alternative to either is worth an item. No alternative is adopted by this spike."
+  - "7. Specification text that would change if the recommendation were taken: `0001-F2` C-5 and § 7, `0001-F1` C-7, ADR-0003, `0109-F4`."
+  - "A candidate that cannot be made to publish or to pass is recorded as a finding, with the reason."
+
+decisions:
+  - |
+    2026-10-11, spec-author: cut from ADR-0010 on the repository owner's
+    acceptance of it the same day, as track P. Item 0154 is the session
+    that produced the record and holds the owner's decisions. Shaped as
+    item 0151 was: trial branches that never merge, one per candidate, each
+    cited at a commit, and a proposed ADR as the product. Status
+    `ready-for-implementation`: a spike has no design to precede it. Item
+    0151 was filed already `in-progress`, so it gives no precedent for a
+    spike that waits; this one waits on item 0167.
+
+out_of_scope:
+  - "Changing how `main` builds, packs or publishes - a follow-up item cut after the owner rules on the ADR."
+  - "Adopting a source-generated container or mediator - ADR-0010 adopts neither; this spike gathers the evidence."
+  - "Building `0109-F4` - it has an approved specification and no work item; cutting one is owed and is not this spike."
+  - "Editing ADR-0003 - an accepted ADR is answered by a new one."
+  - "The check's scaling with tree size - `0109-F3`, item 0150."
+  - "Returning input failures as values - item 0151 and ADR-0009."

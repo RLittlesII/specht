@@ -12,16 +12,17 @@ There is one host, `src/tool`, and one slice per Spectre command:
 
 ```
 src/tool/
-  Program.cs                    the composition root - a hand-written list, nothing else, until
-                                item 0144 moves the list into the factory (ADR-0007)
+  Program.cs                    the composition root - one `AddSpechtEngine()` call and a hand-written
+                                list, nothing else, until item 0144 moves the list into the factory
+                                (ADR-0007)
   Features/
     Check/                      `specht [--root] [--report] [--strict] [--json]` - the default command
       CheckCommand.cs           command class + nested Settings
     Init/                       `specht init` - writes schema and templates, never overwrites
       InitCommand.cs
-    Upgrade/                    `specht upgrade` - brings the schema and template files to the pinned
-                                schemaVersion and never moves the pin (0001-F7 decision 0005)
-      UpgradeCommand.cs
+    Upgrade/                    `specht upgrade` - specified, not yet built: brings the schema and
+                                template files to the pinned schemaVersion and never moves the pin
+                                (0001-F7 decision 0005)
   schema/v1/                    embedded - the shipping copy of the schema set
   templates/v1/                 embedded - the shipping copy of the templates
 ```
@@ -54,6 +55,32 @@ A command parses, calls `SpechtRunner`, folds the report into an exit code, and
 that is the whole command. `--explain SPEC031` lives in `Check/` until a second
 caller earns it a folder.
 
+**The decided direction for the engine**
+([ADR-0010](../../../../.spec/adr/0010-layered-engine-boundaries-with-io-at-the-edge-and-a-mediator.md),
+accepted 2026-10-11). The tree above is the engine as built; the staged work
+of ADR-0010 moves it to this, and a new engine file goes where this says:
+
+```
+src/specht/                     no .cs at the project root
+  Check/                        `Check.Query` and `Check.Handler`; later handlers join it
+  Cqrs/                         `ICqrs`, the message and handler contracts, the dispatcher
+  Composition/                  `AddSpechtEngine()` - references every folder; nothing references it
+  Report/                       the document, its mapper, its serializer, `SpecReportStore`
+  Evaluation/                   `SpecEvaluator`, `SpechtReport`, the violation and its order
+  Rules/                        `ISpecRule`, the finding, one rule per rule id in a folder per group
+  Model/                        the immutable `SpecModel`, the parsers, its builder and its reader
+  Tree/                         `SpechtTree`, its files, `SpechtTreeStore` (item 0153)
+  Manifest/                     the structure, the rule settings, the parser, `SpecManifestStore`
+  Discovery/                    finding specifications, layouts and locations
+  Versioning/                   the schema versions
+```
+
+A folder references only folders below it in that list, `Cqrs/` references
+none of them, and a test holds the direction. Only the four stores and the
+embedded-resource reader touch the file system or a resource. A command sends
+a request through `ICqrs` and folds the result; it calls no engine type by
+name.
+
 Tests are **not** co-located here: they live in `test/tests` and
 `test/acceptance`. Why, the tiers, and the folders inside `test/tests` are in
 [`specht-conventions` § Testing](../../specht-conventions/references/testing.md).
@@ -77,9 +104,12 @@ Tests are **not** co-located here: they live in `test/tests` and
   reads goes in a named folder — `Model/`, `Versioning/`, `Rules/`,
   `Composition/`. The root of
   `src/specht` holds the runner, its report and the root-not-found exception,
-  and nothing joins them.
+  and nothing joins them; ADR-0010 moves all three into folders.
 - **Namespaces follow folders.** `Model/` is `Specht.Model`; the root is
   `Specht`. A file that moves folder changes namespace with it.
+- **A folder depends downward only.** A new `using` of an engine namespace
+  points at a folder below the file's own in ADR-0010's list. One that points
+  up is a cycle, and the fix is to move the type, not to add the `using`.
 - **Each part registers itself, and one factory composes the host.** The
   decided direction
   ([ADR-0007](../../../../.spec/adr/0007-each-part-registers-itself-and-one-factory-composes-the-host.md),

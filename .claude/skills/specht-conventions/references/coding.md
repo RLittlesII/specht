@@ -94,6 +94,27 @@ static calls migrate as later items touch them, not in a sweep. The one
 recorded exception is ADR-0001's staged migration (items `0104`-`0107`), which
 the owner's acceptance authorizes.
 
+**Only a store touches the file system**
+([ADR-0010](../../../../.spec/adr/0010-layered-engine-boundaries-with-io-at-the-edge-and-a-mediator.md),
+accepted 2026-10-11). The engine reads, builds an in-memory model, works on
+it, and writes. `IFileSystem` belongs to four stores - the manifest's, the
+discovery walk, the tree's and the report's - and one type reads the
+assembly's embedded resources, once, at composition. One reader sequences the
+stores and hands their text to the builder. A parser, a builder, a rule and
+the evaluator take text or the model, never a store, a loader or an
+`IFileSystem`. The existing code that breaks this migrates in ADR-0010's
+stages; new code does not add to it.
+
+## No static holds logic, I/O or loaded state
+
+Owner decision, 2026-10-11 (ADR-0010). A type that computes, reads or loads is
+an instance, registered in `AddSpechtEngine()` and taken by constructor. What
+stays static: a private `static readonly` constant, a private helper of an
+instance class, an extension-method class, and an operation class that only
+nests a message and its handler. A data type does not load or parse itself -
+no `Load`, `Parse` or `From` factory on the type it returns. The statics the
+engine has today go in ADR-0010's stages, not in a sweep.
+
 ## Paths are repository-relative
 
 Every path the tool writes — a diagnostic, the `--json` document, the `--report`
@@ -138,5 +159,10 @@ but a build-file change made without running `Format` can still fail CI first.
 - A `#region`, or a `#if` spanning a member declaration.
 - An `Async` suffix.
 - A new static `File` or `Directory` call in engine code.
+- An `IFileSystem`, a store or a loader taken by a rule, a parser, a builder
+  or the evaluator.
+- A new static class or non-private static member that computes, reads or
+  loads, or a static field holding loaded state.
+- A `using` that points an engine namespace at one above it (ADR-0010).
 - An absolute path in anything the tool, a test or a fixture writes.
 - A rule stated only in prose when `.editorconfig` or an analyzer could fail it.

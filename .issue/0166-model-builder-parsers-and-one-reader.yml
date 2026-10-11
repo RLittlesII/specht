@@ -1,0 +1,107 @@
+id: "0166"
+type: refactor
+title: Build the model from text through a builder, parsers and one reader
+
+status: ready-for-implementation
+
+value: 3
+risk: 5
+
+parent: null
+children: []
+
+depends_on: ["0155", "0165", "0153"] # the model's content, the manifest store and shipped versions, and the tree and its store in the engine
+spikes: []
+
+spec: null
+
+claims: []
+
+created: "2026-10-11"
+updated: "2026-10-11"
+closed: null
+
+summary: |
+  ADR-0010 (accepted 2026-10-11,
+  .spec/adr/0010-layered-engine-boundaries-with-io-at-the-edge-and-a-mediator.md),
+  stage 6 (D2) of "The order of work", which the record runs with item
+  0153. The split between the two: 0153 moves `SpechtTree`,
+  `SpechtTreeFile` and `SpechtTreeStore` into `Specht.Tree` and keeps its
+  own criteria; this item builds the engine's load on them. Its scope,
+  from § "I/O is confined", § "The model is an immutable snapshot" and
+  § "How each cycle is cut", 3:
+
+  - `SpecModelBuilder` turns text into one immutable `SpecModel` and
+    touches no file system. The parsers it uses are instances: the
+    statics `SpecDocument.Parse` (`src/specht/Model/SpecDocument.cs:37`)
+    and `FrontmatterReader.Parse` (`src/specht/Model/FrontmatterReader.cs:28`)
+    go, and so does the reader's own I/O (`:26`).
+  - `SpecModelReader` is the one type that sequences the stores: it takes
+    a root, asks `SpecManifestStore`, `SpecDiscovery` and `SpechtTreeStore`
+    for what each holds, and hands the text to the builder. No other type
+    holds a store.
+  - `SpecSchemas` becomes data, built by a pure `SpecSchemaCompiler` from
+    the pinned version's schema text. `SpecSchemas.Load`, both overloads
+    (`src/specht/Model/SpecSchemas.cs:72`, `:100`), and
+    `SpecSchemas.Options` (`:31`) go; so do `SpecSchemasLoader` and
+    `SpecModelLoader`.
+  - The model carries paths relative to the root and no other kind; the
+    root is the reader's and the stores' and is not in the model. What
+    item 0155 left of the absolute-to-relative mapping inside the loader
+    goes with the loader.
+  - `SpechtRootNotFoundException` moves to `Specht.Tree`, and the reader
+    checks the root before it asks for the manifest, so a missing root is
+    still reported before a missing manifest.
+
+  This answers item 0153's criterion 3 and criterion 4: the engine's load
+  is built on the tree, on the authority of ADR-0010, and the store gains
+  the load the reader needs. ADR-0010 § "I/O is confined" gives the store
+  "the files of a tree: their text in" and gives discovery the listing;
+  the design says, in this item's `decisions`, that the store reads what
+  discovery lists and nothing else, or why not.
+
+  It restructures code of `0001-F1` (`Model/`, the runner's `Run`), of
+  `0001-F5` and `0001-F6` as the reader calls them, and the benchmark
+  project's use of the tree, so it sits at the repository root with
+  `spec: null`. Risk 5: it replaces the whole read path of the check in
+  one change, and the golden report is the proof.
+
+  `ISpecDiscovery` is not added here; it arrives with items 0007 and 0008
+  (ADR-0001, as ADR-0010 leaves it). The reader takes the concrete
+  `SpecDiscovery`. `SpechtRunner.Run` keeps its signature and calls the
+  reader, until item 0167 deletes the runner.
+
+  Type names and lines are ADR-0010's and the source's at `eb7c161`; once
+  item 0100 lands each carries the prefix that item gives it.
+
+acceptance_criteria:
+  - "1. Specification first, by the owning role, in the same pull request and before the code (ADR-0010 'Specification deltas owed', stage 6). `spec-author`: `0109-F2` B-003 and C-3, the frontmatter read as a unit, and `0109-F2` A-1, which names `SpecSchemasLoader` and `SpecModelLoader`. `implementer`: `0109-F1` § 7 and § 8, which place the tree types in the benchmark project, where item 0153 has not already brought them true. A claim that is amended keeps its id; one that no longer holds is marked `Withdrawn`."
+  - "2. `SpecModelBuilder` takes text and returns one `SpecModel`; neither it nor any parser holds an `IFileSystem`. `SpecDocument.Parse` and `FrontmatterReader.Parse` are not static, and no data type parses or loads itself."
+  - "3. `SpecModelReader` takes a root, sequences `SpecManifestStore`, `SpecDiscovery` and `SpechtTreeStore`, and hands text to the builder. It is the only type that holds a store. Within `Specht.Model`, `Specht.Tree`, `Specht.Manifest` and `Specht.Discovery`, only those three stores reference `IFileSystem`."
+  - "4. `SpecSchemas` is data built by `SpecSchemaCompiler`, which reads nothing. `SpecSchemas.Load`, `SpecSchemas.Options`, `SpecSchemasLoader` and `SpecModelLoader` are gone, and the frontmatter rules take the evaluation options from a value they are given."
+  - "5. Every path in the model is relative to the root, the model holds no root, and no type maps an absolute path back. Every violation still names its file as it did (`0001-F1` C-4)."
+  - "6. `SpechtRootNotFoundException` is in `Specht.Tree`. A missing root is reported before a missing manifest, and an invalid manifest as before: the exit codes and messages of `0001-F2` are unchanged."
+  - "7. The order the model lists Features, items and epics in is the order the loader produced, so every rule emits in the order it did."
+  - "8. Not a refactor until re-pointed. These tests are named by § 9 rows and are rewritten or deleted here: `SpecModelLoaderUnitTests`, `SpecSchemasLoaderUnitTests` and `FrontmatterReaderUnitTests` (`0001-F1` B-004), `SpecSchemasUnitTests` (`0001-F1` B-004; `0001-F5` B-008, B-013; `0001-F7` B-001, B-014), `SpecDocumentUnitTests` (`0001-F1` B-004, B-008), and the `SpechtRunner*IntegrationTests` classes where they construct a loader. `test-writer` re-points each row in the same pull request; no row names a test that no longer exists and no claim loses its proof."
+  - "9. The benchmark project's use of `SpechtTree` and `SpechtTreeStore` is re-pointed in this pull request or in item 0153's (ADR-0010 § 'The whole-check benchmark'), `0109-F3` C-3 holds, and `.performance/benchmarks` still compiles."
+  - "10. The golden report `test/tests/Engine/Baseline/engine-e7dba24.json` is unchanged, byte for byte, and the test that compares it is green unedited. The unit, integration and acceptance tiers pass."
+  - "No .feature change needed: refactor - the model is built from text by a builder that one reader feeds from the stores, in place of loaders and self-loading data types; the model's content, every violation and the report are unchanged."
+  - "Constraints preserved: 0001-F1 C-3, 0001-F1 C-4, 0001-F1 C-6, 0001-F1 C-7, 0001-F1 C-9, 0001-F1 C-10, 0001-F2 C-2, 0001-F5 C-5, 0001-F5 C-6, 0001-F6 C-5, 0001-F7 C-4, 0109-F3 C-3"
+
+decisions:
+  - |
+    2026-10-11, spec-author: cut from ADR-0010 on the repository owner's
+    acceptance of it the same day, as stage 6 (D2). Item 0154 is the session
+    that produced the record and holds the owner's decisions. Status
+    `ready-for-implementation`, as items 0104 to 0107 were cut on ADR-0001:
+    the design is the accepted record's. Item 0153 is a dependency and not
+    a part of this item: the owner's ruling on it stands as written, and
+    ADR-0010 is the record its criterion 3 asked for.
+
+out_of_scope:
+  - "Moving `SpechtTree`, `SpechtTreeFile` and `SpechtTreeStore` into the engine, and their tests - item 0153."
+  - "`ISpecDiscovery`, the pruned walk and the git-backed listing - items 0007 and 0008."
+  - "The glob helpers of `SpecDiscovery` as a value object - ADR-0010 open point 4; no item owns it yet."
+  - "`Check.Query`, its handler, the report's mapper, serializer and store, and deleting `SpechtRunner` - item 0167."
+  - "Asynchronous I/O - ADR-0010 open point 6."
+  - "Any change to a verdict or to the report - `0001-F1` C-9."

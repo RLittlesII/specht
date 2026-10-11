@@ -1,0 +1,93 @@
+id: "0161"
+type: refactor
+title: Split ChildItemRule into one rule per id
+
+status: ready-for-implementation
+
+value: 3
+risk: 3
+
+parent: null
+children: []
+
+depends_on: ["0155"] # the split rules read the model 0155 leaves
+spikes: []
+
+spec: src/specht/.spec/README.md
+
+claims: []
+
+created: "2026-10-11"
+updated: "2026-10-11"
+closed: null
+
+summary: |
+  ADR-0010 (accepted 2026-10-11,
+  .spec/adr/0010-layered-engine-boundaries-with-io-at-the-edge-and-a-mediator.md),
+  stage 3 (B) of "The order of work": the owner's decision 1, one rule per
+  rule id. `ChildItemRule` (`src/specht/Rules/ChildItemRule.cs:22`) reports
+  SPEC040, SPEC041, SPEC043 and SPEC044, and with one of them off and
+  another on the whole class still runs (ADR-0010 § "What the source
+  shows"). This item splits it into four rules, each reporting its own id
+  and no other.
+
+  The evaluator is untouched. `ISpecRule` keeps `Id`, `ReportedIds` and
+  `Evaluate`; each new rule's `ReportedIds` names its one id;
+  `SpechtRunner.Evaluate` selects, filters and counts as it does today.
+  Collapsing the interface is item 0164. `AddSpechtEngine()` registers each
+  new rule by name, in ordinal order of its id, where it registers
+  `ChildItemRule` today.
+
+  What keeps the report byte-identical is ADR-0010 § "Why no structural
+  stage changes a verdict": the rule id is the last sort key and the sort
+  is stable, so each new rule emits its violations in the order the old
+  class emitted that id, and keeps every guard the old class applied before
+  it, including a guard that today sits in another id's branch. This class
+  has the most of those: its four ids are reported from two passes that
+  share guards. The acceptance criteria name the order and the guards.
+
+  No test names this class; the golden report and the acceptance tier are
+  what hold its behaviour until item 0152 gives each rule a class of its
+  own.
+
+  Depends on 0155, so each split is written once, against the model that
+  item leaves.
+
+  It restructures the code of `0001-F1` alone, so it sits beside that
+  specification. The eight splits, 0156 to 0163, touch different rule
+  classes and share two files:
+  `src/specht/Composition/SpechtEngineServiceCollectionExtensions.cs` and
+  `test/tests/Composition/SpechtEngineServiceCollectionExtensions.Unit.Tests.cs`.
+  Type names and lines are the source's at commit `eb7c161`; once item 0100
+  lands each type carries the prefix that item gives it.
+
+acceptance_criteria:
+  - "Split: `ChildItemRule` is gone and four rules stand in its place, one each for SPEC040, SPEC041, SPEC043 and SPEC044; each one's `ReportedIds` names its own id alone, and `AddSpechtEngine()` registers each by name in ordinal order of its id."
+  - "Order kept: SPEC040 and SPEC041 keep the Features' order and, within one, the order `children` declares them (`src/specht/Rules/ChildItemRule.cs:68`). SPEC043 keeps the items' order and, for one item, the file-name mismatch before the parent mismatch (`:124-159`). SPEC044 emits every reused id (`:135-144`) before any gap in a sequence (`:163-194`)."
+  - "Guards kept: each rule applies every guard the old class applied before its id, whichever id's branch holds it today - the Feature-level skips (`:33-46`), the child-level skips and the resolution of a child to its file (`:74-98`, `:100-109`), the item-level skip (`:119-122`) and the conditions under which a sequence is checked for gaps (`:166-193`). A violation of one id is reported with the other three off exactly when it is reported with them on."
+  - "Shared work: what two of the four rules both need - resolving a declared child to its file, reading an item's id and its sequence - is one class they take or a derivation on the model, with no base class (ADR-0010 § 'One rule per id')."
+  - "Untouched: `ISpecRule`, `SpechtRunner.Evaluate` and `SpechtRunner.Order`, and every violation's file, line, identifier, message and severity."
+  - "The composition tests still hold: every concrete rule the engine declares is registered exactly once, the rules resolve in ordinal order of their ids, and the reported ids are the twenty-one of the pinned vocabulary, each once (`test/tests/Composition/SpechtEngineServiceCollectionExtensions.Unit.Tests.cs`)."
+  - "No test names `ChildItemRule` and no § 9 row names one, so no row is re-pointed here. The four ids are held by the golden report and the acceptance tier, both green unedited."
+  - "The golden report `test/tests/Engine/Baseline/engine-e7dba24.json` is unchanged, byte for byte, and the test that compares it is green unedited. The unit, integration and acceptance tiers pass, and the benchmark project `.performance/benchmarks` still compiles."
+  - "No .feature change needed: refactor - `ChildItemRule` becomes four rules of one id each; every violation, its severity, the report's order and its counts are unchanged."
+  - "Constraints preserved: 0001-F1 C-5, 0001-F1 C-9, 0001-F1 C-10, 0001-F5 C-3"
+
+decisions:
+  - |
+    2026-10-11, spec-author: cut from ADR-0010 on the repository owner's
+    acceptance of it the same day, as one of the eight parts of stage 3 (B).
+    Item 0154 is the session that produced the record and holds the owner's
+    decisions. ADR-0010 found eight rule classes where the plan said seven
+    and left the cut to spec-author: eight items, one for each class, 0156
+    to 0163. Status `ready-for-implementation`, as items 0104 to 0107 were
+    cut on ADR-0001: the design is the accepted record's.
+
+out_of_scope:
+  - "The collapse of `ISpecRule`, `SpecFinding`, `DefaultSeverity` and the evaluator - item 0164."
+  - "A unit-test class for each new rule that pins every id it reports - item 0152."
+  - "A folder for each rule group under `src/specht/Rules/`, and any new rule id - item 0169."
+  - "The other seven rule classes - items 0156 to 0160, 0162 and 0163, one each."
+  - "SPEC042, which the pinned vocabulary does not hold (`src/specht/Versioning/SchemaVersions.cs:75`)."
+  - "Fault isolation around a rule that throws - `0001-F1` B-012 to B-016 and OQ-2; ADR-0005 (c)."
+  - "Any change to a message, a line or an identifier - `0001-F1` C-9."

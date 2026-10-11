@@ -1,0 +1,103 @@
+id: "0165"
+type: refactor
+title: Split the manifest into a store and a parser and make the shipped versions an instance
+
+status: ready-for-implementation
+
+value: 3
+risk: 4
+
+parent: null
+children: []
+
+depends_on: ["0154"] # cut from ADR-0010, the record 0154 produced
+spikes: []
+
+spec: null
+
+claims: []
+
+created: "2026-10-11"
+updated: "2026-10-11"
+closed: null
+
+summary: |
+  ADR-0010 (accepted 2026-10-11,
+  .spec/adr/0010-layered-engine-boundaries-with-io-at-the-edge-and-a-mediator.md),
+  stage 5 (D1) of "The order of work". Its scope, from the record's
+  § "What the source shows", § "I/O is confined" and § "How each cycle is
+  cut", 1:
+
+  - The static class `SpecManifest` (`src/specht/Manifest/SpecManifest.cs:18`)
+    becomes `SpecManifestStore`, which reads the manifest's text and whether
+    it exists through `IFileSystem` and parses nothing, and
+    `SpecManifestParser`, which turns text into a `SpecStructure` and holds
+    no file system.
+  - The loaded statics go. `SpecManifest.Defaults` (`:275`) and
+    `SchemaVersions.Embedded` (`src/specht/Versioning/SchemaVersions.cs:15`)
+    are read once, at composition, by `SpechtResources`, the one type that
+    reads an embedded resource; `SchemaVersions` is an instance
+    `AddSpechtEngine()` registers.
+  - The cycle between `Specht.Manifest` and `Specht.Versioning` is cut:
+    `SchemaVersions` gains a lookup that returns no version where `Select`
+    throws, the parser asks it and throws `SpechtManifestException` with the
+    manifest's path, and `Versioning` then references nothing.
+
+  It restructures code of `0001-F5` and `0001-F6` (the manifest) and of
+  `0001-F7` (the shipped versions), and changes a call in the benchmark
+  project, so it sits at the repository root with `spec: null`.
+
+  Callers of the statics, read at `eb7c161`: `SchemaVersions.Embedded` at
+  `src/specht/SpechtRunner.cs:69`, `src/specht/Model/SpecModelLoader.cs:26`,
+  `src/specht/Model/SpecSchemasLoader.cs:18`, `src/specht/Model/SpecSchemas.cs:75`
+  and `.performance/benchmarks/SpechtTree.cs:31`. The loaders and
+  `SpecSchemas.Load` stay until item 0166; here they take the instance.
+  `SpechtTree` is not constructed by the container, so how it comes by the
+  shipped versions is designed here and settled for good by items 0153 and
+  0166.
+
+  Two things ADR-0010 leaves to this stage: where `SpechtResources` sits
+  (§ "The layout": "owed to the stage that builds it; it references no
+  engine namespace"), and open point 4 for `Versioning` -
+  `SemanticVersion.TryParse` stays static on its default.
+
+  ADR-0010's table of deltas lists none for this stage. Read at `eb7c161`,
+  the § 7 of `0001-F5` and of `0001-F6` name `SpecManifest`, `0001-F7`'s
+  names `SchemaVersions`, and `0109-F1` § 7 names both and the private
+  `SpecManifest.Read`. Criterion 1 carries them.
+
+  Order. ADR-0010 runs this after stage 1, item 0100, and beside stages 2
+  to 4. Stage 1 is the record's order of work and not a prerequisite of
+  building this item, so `depends_on` does not name 0100; whichever is
+  taken second rebases onto the first. Type names are ADR-0010's and the
+  source's at `eb7c161`; once 0100 lands each carries the prefix that item
+  gives it.
+
+acceptance_criteria:
+  - "1. Design text first, by `implementer`, in the same pull request and before the code: every § 7 or § 8 passage of `0001-F5`, `0001-F6`, `0001-F7` and `0109-F1` that names `SpecManifest.Load`, `SpecManifest.Defaults`, `SpecManifest.Read` or `SchemaVersions.Embedded` says what now holds that work. ADR-0010 lists no delta for this stage; if a § 4 constraint or a § 3 claim is found to name one of them, the change stops there and `spec-author` amends it first."
+  - "2. `SpecManifestStore` reads the manifest's text and whether it exists, through `IFileSystem`, and parses and decides nothing. `SpecManifestParser` holds no `IFileSystem`. The static class `SpecManifest` is gone."
+  - "3. `SpechtResources` reads the embedded default manifest and the embedded schema versions once, at composition, and is the only type in the engine that reads an embedded resource. It references no engine namespace; where it sits is recorded in this item's `decisions` when the design is made."
+  - "4. `SchemaVersions` is an instance registered by `AddSpechtEngine()`. No static field or property holds loaded state: `SpecManifest.Defaults` and `SchemaVersions.Embedded` are gone, and every caller named in the summary takes the instance."
+  - "5. The cycle is cut as ADR-0010 § 'How each cycle is cut', 1, writes it: a lookup on `SchemaVersions` returns no version, the parser throws `SpechtManifestException` with the manifest's path, and `Specht.Versioning` references no other engine namespace. The message, the exit code and the path a consumer sees for an unshipped or unreadable `schemaVersion` are unchanged."
+  - "6. Open point 4: `SemanticVersion.TryParse` stays static. The glob helpers of `SpecDiscovery` are not touched here."
+  - "7. Not a refactor until re-pointed. These tests are named by § 9 rows and are rewritten here: `SpecManifestUnitTests` (twenty rows of `0001-F5`; `0001-F7` B-001, B-002, B-039; `0001-F2` B-005, B-006, B-007), `SpecManifestIntegrationTests` (`0001-F5` B-018), `SpecManifestBaselineIntegrationTests` (`0001-F1` B-004; `0001-F5` B-016), `SpecManifestDiscoveryUnitTests` (`0001-F6` B-001, B-002, B-003, B-004, B-009, B-012) and `SchemaVersionsUnitTests` (`0001-F7` B-003, B-004, B-014, B-022, B-023, B-055). `test-writer` re-points each row whose test is renamed or split between the store and the parser, in the same pull request; no row names a test that no longer exists and no claim loses its proof."
+  - "8. The golden report `test/tests/Engine/Baseline/engine-e7dba24.json` is unchanged, byte for byte, and the test that compares it is green unedited. The unit, integration and acceptance tiers pass, and the benchmark project `.performance/benchmarks` still compiles, with its call at `.performance/benchmarks/SpechtTree.cs:31` changed in this pull request."
+  - "No .feature change needed: refactor - the manifest's read and its parse separate, and the default manifest and the shipped versions are read once at composition instead of by statics; the structure a manifest yields, every manifest failure and the report are unchanged."
+  - "Constraints preserved: 0001-F1 C-3, 0001-F1 C-7, 0001-F1 C-9, 0001-F1 C-10, 0001-F2 C-2, 0001-F5 C-4, 0001-F5 C-5, 0001-F5 C-6, 0001-F7 C-1, 0001-F7 C-4, 0001-F7 C-8"
+
+decisions:
+  - |
+    2026-10-11, spec-author: cut from ADR-0010 on the repository owner's
+    acceptance of it the same day, as stage 5 (D1). Item 0154 is the session
+    that produced the record and holds the owner's decisions. Status
+    `ready-for-implementation`, as items 0104 to 0107 were cut on ADR-0001:
+    the design is the accepted record's, and the one placement it leaves
+    open, `SpechtResources`, is the implementer's to record here.
+
+out_of_scope:
+  - "`SpecSchemas` as data, `SpecSchemaCompiler`, and removing the loaders and `SpecSchemas.Load` - item 0166."
+  - "`SpecRuleSettings` and `SpecRuleLevel` - item 0155."
+  - "`InitWriter.ShippingCopy`, the tool's own embedded copy - item 0144."
+  - "An upstream schema source - `0001-F7` decision 0004 and its items."
+  - "The vocabulary written twice - ADR-0010 open point 7, revisited in item 0169."
+  - "Any change to a manifest's verdict or to a failure's wording - `0001-F1` C-9."

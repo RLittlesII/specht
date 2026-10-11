@@ -2,7 +2,7 @@ id: "0152"
 type: test
 title: Unit-test each rule's decision over a model built in memory
 
-status: ready
+status: ready-for-implementation
 
 value: 2
 risk: 2
@@ -10,7 +10,7 @@ risk: 2
 parent: "0020"
 children: []
 
-depends_on: ["0107"] # FeatureFileRule takes its reader by constructor from 0107, so every rule is constructible in a unit test
+depends_on: ["0107", "0156", "0157", "0158", "0159", "0160", "0161", "0162", "0163"] # 0107 made every rule constructible; the eight splits leave the twenty-one rules a class is written for
 spikes: []
 
 spec: src/specht/.spec/README.md
@@ -43,6 +43,28 @@ summary: |
   The schema set of an in-memory model is loaded over a MockFileSystem
   holding a manifest, as § 8 describes for item 0105.
 
+  Reshaped 2026-10-11 on ADR-0010 (accepted 2026-10-11,
+  .spec/adr/0010-layered-engine-boundaries-with-io-at-the-edge-and-a-mediator.md,
+  § "Items reshaped"). The claim and the purpose stand; the count and the
+  shape change. Where the paragraphs above say eight rules and eight Unit
+  classes, read twenty-one: one Unit class for each single-id rule the
+  splits of items 0156 to 0163 leave, each pinning the one id its rule
+  reports. The item is kept and not dissolved into those eight: a split is
+  a refactor that re-points the tests a class already has and writes none,
+  and four of the eight classes have no Unit test to re-point, so the
+  tests owed for B-004 are still owed after the last split.
+
+  After item 0155 the companion tags are on the model, so the rules of
+  SPEC020 and SPEC021 are built with no reader and no MockFileSystem; the
+  second paragraph's sentence on FeatureFileRule no longer holds. How the
+  schema set of an in-memory model is built follows whichever of items
+  0165 and 0166 has landed when this is taken.
+
+  It does not wait on item 0164. If it lands first, 0164 re-points these
+  classes from violations to findings; if 0164 lands first, each class
+  asserts a rule's findings and leaves the id and severity to the
+  evaluator's tests.
+
 acceptance_criteria:
   - "B-004 — one Unit class per rule, for each of the eight rules, over
     `SpecModelFixture`"
@@ -54,6 +76,17 @@ acceptance_criteria:
     classes."
   - "C-9 — no verdict changes; the golden-report test green, unedited"
   - "§ 9 carries a row naming a test for each id above."
+  - "ADR-0010, as reshaped 2026-10-11: the three B-004 criteria above are
+    read with twenty-one single-id rules in place of eight rule classes -
+    one Unit class for each rule of items 0156 to 0163, twenty-one classes,
+    each pinning its rule's one id over a model built in memory."
+  - "ADR-0010, as reshaped: no test of these classes holds a file system of
+    any kind, `MockFileSystem` included, to build a rule; the companion
+    tags a test needs are given to the model (item 0155)."
+  - "ADR-0010, as reshaped: every order and guard the split items name as
+    kept - the Order kept and Guards kept criteria of items 0156 to 0163 -
+    is pinned by a test of the rule it belongs to, including a guard that
+    holds with the sibling ids off."
 
 decisions:
   - |
@@ -63,9 +96,22 @@ decisions:
     are, because it delivers 0001-F1 B-004. The other test that decision
     named, 0001-F5 B-018's ordering, was written in item 0107's change and
     is not here.
+  - |
+    2026-10-11, spec-author: reshaped on ADR-0010, accepted by the
+    repository owner the same day (item 0154), whose § "Items reshaped"
+    makes this item "one unit-test class per single-id rule, 21 of them"
+    and makes it depend on stage 3. `depends_on` gains the eight splits,
+    0156 to 0163. Decided here, where ADR-0010 leaves it: the item is kept
+    and not dissolved into the splits, for the reason in the summary.
+    Status moves `ready` to `ready-for-implementation`: `ready` means the
+    dependencies are resolved, and eight of them are now open. The earlier
+    criteria and summary are kept as written and read through the three
+    criteria added.
 
 out_of_scope:
   - "Rewriting or deleting the Integration rule tests - they stay as the tree-on-disk proof."
   - "A public constructor on `SpecSchemas` - § 8 reports the gap to `implementer` and asks for no change."
   - "A test that a throwing rule propagates - § 8: 0001-F1 B-012 to B-016 replace that behaviour."
   - "Any production code, and everything in § 5 of the spec."
+  - "Splitting a rule class - items 0156 to 0163 - and re-pointing a test a split renames, which is that split's."
+  - "Tests of `SpecEvaluator` and `SpecViolationOrder` - item 0164."

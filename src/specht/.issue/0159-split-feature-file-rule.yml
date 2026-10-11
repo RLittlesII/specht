@@ -1,0 +1,90 @@
+id: "0159"
+type: refactor
+title: Split FeatureFileRule into one rule per id
+
+status: ready-for-implementation
+
+value: 3
+risk: 2
+
+parent: null
+children: []
+
+depends_on: ["0155"] # 0155 rewrites the class first: no reader, and the tags and claims on the model
+spikes: []
+
+spec: src/specht/.spec/README.md
+
+claims: []
+
+created: "2026-10-11"
+updated: "2026-10-11"
+closed: null
+
+summary: |
+  ADR-0010 (accepted 2026-10-11,
+  .spec/adr/0010-layered-engine-boundaries-with-io-at-the-edge-and-a-mediator.md),
+  stage 3 (B) of "The order of work": the owner's decision 1, one rule per
+  rule id. `FeatureFileRule` (`src/specht/Rules/FeatureFileRule.cs:17`)
+  reports SPEC020 and SPEC021, and with one of them off and the other on the
+  whole class still runs (ADR-0010 § "What the source shows"). This item
+  splits it into two rules, each reporting its own id and no other.
+
+  The evaluator is untouched. `ISpecRule` keeps `Id`, `ReportedIds` and
+  `Evaluate`; each new rule's `ReportedIds` names its one id;
+  `SpechtRunner.Evaluate` selects, filters and counts as it does today.
+  Collapsing the interface is item 0164. `AddSpechtEngine()` registers each
+  new rule by name, in ordinal order of its id, where it registers
+  `FeatureFileRule` today.
+
+  Item 0155 rewrites this class first: after it the rule holds no reader,
+  and the companion tags and a Feature's claims are on the model. ADR-0010
+  § "Where the source differs from the plan" left it to `spec-author`
+  whether this split rides with that stage; it is its own item.
+
+  What keeps the report byte-identical is ADR-0010 § "Why no structural
+  stage changes a verdict": the rule id is the last sort key and the sort
+  is stable, so each new rule emits its violations in the order the old
+  class emitted that id, and keeps every guard the old class applied before
+  it, including a guard that today sits in the other id's branch. The
+  acceptance criteria name both.
+
+  It restructures the code of `0001-F1` alone, so it sits beside that
+  specification. The eight splits, 0156 to 0163, touch different rule
+  classes and share two files:
+  `src/specht/Composition/SpechtEngineServiceCollectionExtensions.cs` and
+  `test/tests/Composition/SpechtEngineServiceCollectionExtensions.Unit.Tests.cs`.
+  Type names and lines are the source's at commit `eb7c161`; once item 0100
+  lands each type carries the prefix that item gives it.
+
+acceptance_criteria:
+  - "Split: `FeatureFileRule` is gone and two rules stand in its place, one each for SPEC020 and SPEC021; each one's `ReportedIds` names its own id alone, and `AddSpechtEngine()` registers each by name in ordinal order of its id."
+  - "Order kept: SPEC020 keeps the Features' order. SPEC021 keeps the Features' order and, within one companion, the tags' order in the file (`src/specht/Rules/FeatureFileRule.cs:43-55`)."
+  - "Guards kept: SPEC021 reports nothing for a Feature that has not exactly one companion (`:26-37`), whether SPEC020 is on or off. A tag resolves against the Feature's claims as the claim grammar matches them (`:59-80`), the derivation the model carries from item 0155. SPEC021's violation names the companion by its root-relative path."
+  - "Untouched: `ISpecRule`, `SpechtRunner.Evaluate` and `SpechtRunner.Order`, and every violation's file, line, identifier, message and severity."
+  - "The composition tests still hold: every concrete rule the engine declares is registered exactly once, the rules resolve in ordinal order of their ids, and the reported ids are the twenty-one of the pinned vocabulary, each once (`test/tests/Composition/SpechtEngineServiceCollectionExtensions.Unit.Tests.cs`)."
+  - "Not a refactor until re-pointed: `FeatureFileRuleUnitTests` and `FeatureFileRuleIntegrationTests` (`0001-F5` § 9 B-001) and `SpecModelUnitTests` (`test/tests/Model/SpecModel.Unit.Tests.cs:72`; `0001-F1` § 9 B-002, B-004, B-011) construct or name `FeatureFileRule`, as item 0155 leaves them. Each test is aimed at the rule that reports the id it pins, and `test-writer` re-points any row whose test is renamed, in the same pull request."
+  - "The golden report `test/tests/Engine/Baseline/engine-e7dba24.json` is unchanged, byte for byte, and the test that compares it is green unedited. The unit, integration and acceptance tiers pass, and the benchmark project `.performance/benchmarks` still compiles."
+  - "No .feature change needed: refactor - `FeatureFileRule` becomes two rules of one id each; every violation, its severity, the report's order and its counts are unchanged."
+  - "Constraints preserved: 0001-F1 C-4, 0001-F1 C-5, 0001-F1 C-9, 0001-F1 C-10, 0001-F5 C-1, 0001-F5 C-3, 0001-F5 C-12"
+
+decisions:
+  - |
+    2026-10-11, spec-author: cut from ADR-0010 on the repository owner's
+    acceptance of it the same day, as one of the eight parts of stage 3 (B).
+    Item 0154 is the session that produced the record and holds the owner's
+    decisions. ADR-0010 found eight rule classes where the plan said seven
+    and left the cut to spec-author: eight items, one for each class, 0156
+    to 0163, with this class's split apart from item 0155 so that 0155
+    stays about the model. Status `ready-for-implementation`, as items 0104
+    to 0107 were cut on ADR-0001: the design is the accepted record's.
+
+out_of_scope:
+  - "Reading the companion tags at load and removing the reader - item 0155."
+  - "The collapse of `ISpecRule`, `SpecFinding`, `DefaultSeverity` and the evaluator - item 0164."
+  - "A unit-test class for each new rule that pins every id it reports - item 0152."
+  - "A folder for each rule group under `src/specht/Rules/`, and any new rule id - item 0169."
+  - "The other seven rule classes - items 0156 to 0158 and 0160 to 0163, one each."
+  - "How a claim tag is matched - item 0134 (`0001-F5` C-12)."
+  - "Fault isolation around a rule that throws - `0001-F1` B-012 to B-016 and OQ-2; ADR-0005 (c)."
+  - "Any change to a message, a line or an identifier - `0001-F1` C-9."

@@ -132,6 +132,22 @@ decisions:
     requests #116 and #117 add 0152 and 0151. Rejected: a second id for
     the story, which would leave a spike asking a question already
     answered.
+  - |
+    2026-10-11, spec-author: on ADR-0010
+    (.spec/adr/0010-layered-engine-boundaries-with-io-at-the-edge-and-a-mediator.md),
+    accepted by the repository owner the same day (item 0154). Nothing the
+    owner ruled above is changed, and no criterion is edited. Recorded:
+    criterion 3 asks for a new ADR before a load is built on the tree, and
+    ADR-0010 is that record - it supersedes ADR-0005 (a) in part and
+    edits nothing. It runs this item with its stage 6 and splits the work:
+    this item moves the three types, into the namespace `Specht.Tree`
+    beside `SpechtRootNotFoundException`, and item 0166, which depends on
+    this one, builds the engine's load on them and answers criteria 3 and
+    4. The engine consumer criterion 2 allows is therefore item 0166's,
+    and this item's risk stays 3. Status is left
+    `ready-for-architecture`: criterion 3 has the owner say whether the
+    load is built in this item, and ADR-0010's split answers it without
+    the owner's word on this item's own page.
 
 out_of_scope:
   - 'Anything in pull request #114 - the owner''s "later". The tests under `test/tests/Benchmarks/` and the reference stay as #114 has them until this item (`0109-F1` OQ-5).'
