@@ -82,7 +82,6 @@ jobs:
           EVENT_NAME: '${{ github.event_name }}'
           BASE_SHA: '${{ github.event.pull_request.base.sha }}'
           HEAD_SHA: '${{ github.event.pull_request.head.sha }}'
-          MATRIX_OS: '${{ matrix.os }}'
         if: ${{ steps.changes.outputs.build == 'true' }}
         run: |
           ./build.cmd --target Specht
@@ -118,7 +117,7 @@ jobs:
           ./build.cmd --target AcceptanceTest --skip IntegrationTest
       - name: Upload coverage to Codecov
         id: codecov
-        if: ${{ (!cancelled() && matrix.os == 'ubuntu-latest') && steps.changes.outputs.build == 'true' }}
+        if: ${{ (!cancelled() && runner.os == 'Linux') && steps.changes.outputs.build == 'true' }}
         continue-on-error: true
         uses: codecov/codecov-action@v5
         with:

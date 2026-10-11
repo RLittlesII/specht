@@ -1,0 +1,73 @@
+id: "0140"
+type: bug
+title: Annotate and upload coverage where the workflow has no matrix
+
+status: done
+
+priority: medium # DERIVED
+value: 3
+risk: 1
+rank: 57 # DERIVED
+
+parent: "0063"
+children: []
+
+depends_on: []
+blocks: [] # DERIVED
+spikes: []
+
+spec: .build/ContinuousIntegration/.spec/README.md
+
+claims:
+  - B-006
+
+created: "2026-10-10"
+updated: "2026-10-10"
+closed: "2026-10-10"
+
+summary: |
+  No pull request has carried a specification annotation, or sent coverage
+  to Codecov, since pull request 97 (`dc59b81`). That change split the one
+  workflow in two: `ci`, a pull request on `ubuntu-latest` alone, and
+  `main`, a push on both images. A workflow with one image is generated
+  with no matrix, so `matrix.os` is the empty string there. Two conditions
+  still read it: `AnnotateChangedFiles` returned unless `MATRIX_OS` was
+  `ubuntu-latest`, and the Codecov upload step ran only when
+  `matrix.os == 'ubuntu-latest'`. Both were false on every pull request,
+  and nothing failed.
+
+  Seen on pull request 99, run 38102606537: 316 `error SPEC###` lines in
+  the log, 76 of them in files the pull request changed, and no
+  `::error file=` command.
+
+  Both conditions now read the runner's own operating system, as the
+  `changes` step already does (`0055-F2` § 7): `RUNNER_OS` in the target,
+  `runner.os` in the step. The runner sets it whether or not the workflow
+  has a matrix, so the same condition holds in `ci` and in `main`.
+
+  Risk 1: two conditions and one `env` entry in a generated workflow
+  (C-1); the step order is unchanged.
+
+acceptance_criteria:
+  - "B-006 - a pull request's violations in its changed files are annotated
+    again, from the Linux runner only"
+  - "`0055-F3` B-002 - the coverage upload runs on a pull request again, and
+    still once per commit on a push to `main`"
+  - "No expression in a generated workflow reads `matrix.os` for a decision
+    the `ci` workflow makes."
+  - "`ci.yml` and `main.yml` are regenerated and committed; their step order
+    is unchanged."
+  - "§ 9 keeps its rows; `Missing` stands under the owner's no-tests
+    decision (`0055-F2` § 8)."
+
+decisions:
+  - "2026-10-10, repository owner: asked for the fix after the cause was
+    reported."
+
+out_of_scope:
+  - "Bringing `0055-F2` § 3 and § 7 in line with the two workflows pull
+    request 97 made - B-001 to B-003, B-015 and the matrix of two images
+    still describe one workflow; a grooming pass for the owner."
+  - "A test of the generated workflows - the owner's decision of 2026-10-08
+    stands."
+  - "Failing the run on a violation - `0055-F1` C-7, 0062."
