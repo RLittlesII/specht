@@ -95,7 +95,7 @@ Feature: The manifest carries the roles
   Scenario: A rule's severity is lowered from the manifest
     Given the manifest sets the out-of-order-section rule to warning severity
     And the root holds a specification with its sections out of order
-    When the check runs
+    When the tool runs as a command on the root
     Then the violation is reported at warning severity
     And the exit code is 0
 
@@ -365,3 +365,18 @@ Feature: The manifest carries the roles
     When the check runs
     Then the manifest is rejected
     And the rejection names the companion file list
+
+  @B-042
+  Scenario: A rule level outside the three is invalid
+    Given the manifest sets the out-of-order-section rule to "loud"
+    When the check runs
+    Then the manifest is rejected
+    And the rejection names that rule id
+    And the rejection names "loud"
+
+  @B-042 @boundary
+  Scenario: A rule set to error severity is not rejected
+    Given the manifest sets the out-of-order-section rule to error severity
+    And the root holds a specification with no violations
+    When the check runs
+    Then the manifest is accepted

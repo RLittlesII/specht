@@ -22,6 +22,7 @@ claims:
   - B-011
   - B-013
   - B-017
+  - B-042
 
 created: "2026-10-08"
 updated: "2026-10-10"
@@ -30,15 +31,16 @@ closed: null
 summary: |
   Per-rule severity and disable, limited to the pinned vocabulary: a rule id
   outside it is rejected, and nothing named in the manifest is loaded or run.
-  The default manifest sets nothing, so the baseline is untouched. Key names
-  wait on OQ-1.
+  The default manifest sets nothing, so the baseline is untouched. The key is
+  `rules`, each rule id mapped to `error`, `warning` or `off` (decision 0007).
 
 acceptance_criteria:
   - "B-010 — warning severity: printed, counted, fails only under `--strict`"
   - "B-011 — disabled: not evaluated at all, so not counted"
   - "B-013 — rule id outside the vocabulary rejected, naming it"
   - "B-017 — no rule type, library or body loaded (C-3)"
-  - "The severity map skips fault violations — 0001-F1 B-015 (ADR-0005 (c))"
+  - "B-042 — level other than `error`, `warning`, `off` rejected, naming the id and the value"
+  - "B-010's re-grade is proven on a rule's findings only; that it skips a fault violation is 0001-F1 B-015, owed to the item that delivers it (ADR-0005 (c); 0001-F1 OQ-2)"
   - "§ 9 carries a row naming a test for each id above."
 
 decisions:
@@ -61,8 +63,26 @@ decisions:
     decorator, stage list, rule-set filter or context object, however many
     per-rule settings accumulate. `DefaultSeverity` and
     `MinimumSchemaVersion` are cut with epic 0101's first item, not here.
+  - |
+    2026-10-10, spec-author on the repository owner's decision (OQ-1,
+    decision 0007): one top-level key `rules`, each rule id mapped to
+    `error`, `warning` or `off`; an id not named keeps the rule's own
+    severity (B-019), and the default manifest declares `"rules": {}`. Any
+    other value is an invalid manifest (B-042, added to this item).
+    Rejected: `rules` mapping an id to an object with `severity` and
+    `enabled`; two keys, a `severities` map and a `disabled` list.
+  - |
+    2026-10-10, spec-author, amending the 2026-10-09 entry's "The map skips
+    fault violations": this item proves B-010 on a rule's findings only.
+    Nothing in the engine produces a fault violation, 0001-F1 B-013 and
+    B-015 are `Missing`, and the provenance marker the map would test is
+    owed to the item that delivers them (ADR-0005 (c)). No item does today
+    (0001-F1 OQ-2). That item owes the marker, the skip in the map and the
+    test of 0001-F1 B-015; this item adds no marker and no test of a skip.
 
 out_of_scope:
   - "A rule plugin model — § 5 #1."
   - "What `--strict` does beyond warnings — 0001-F2."
+  - "The fault violation, its provenance marker and the test that the severity map skips it — 0001-F1 B-013 and B-015; no item delivers them yet (0001-F1 OQ-2)."
+  - "A per-rule setting other than its level — § 5 #14, decision 0007."
   - "A chain of handlers around ISpecRule — ADR-0002, ADR-0004: rejected for per-rule settings, not deferred."
