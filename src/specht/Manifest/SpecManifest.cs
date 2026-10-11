@@ -23,7 +23,10 @@ public static class SpecManifest
     /// <summary>Reads, checks, and fills the manifest under <paramref name="root"/>.</summary>
     /// <param name="fileSystem">The file system the manifest is read through.</param>
     /// <param name="root">The repository root.</param>
-    /// <returns>The section contract, id grammars, discovery inputs and schema file names, every omitted value read as the default manifest.</returns>
+    /// <returns>
+    /// The section contract, id grammars, discovery inputs and schema file names, every omitted value read as the default
+    /// manifest, and the rule settings as the manifest wrote them (<c>0001-F5</c> B-044).
+    /// </returns>
     /// <exception cref="SpechtRootNotFoundException"><paramref name="root"/> is not a directory.</exception>
     /// <exception cref="SpechtManifestNotFoundException">There is no file at the manifest path.</exception>
     /// <exception cref="SpechtManifestUnreadableException">The manifest is not well-formed JSON or not the manifest's shape.</exception>
@@ -31,8 +34,9 @@ public static class SpecManifest
     /// The manifest carries a key the engine does not know, a <c>schemaVersion</c> that is not a <c>major.minor.patch</c> string, a
     /// role naming a title <c>sections</c> does not list, a <c>tables</c> key that is not a role, a marker whose text is empty,
     /// an empty <c>taskFiles</c>, <c>epicFiles</c> or <c>companionFiles</c> list, an <c>exclusions</c> entry with a
-    /// <c>/</c> inside it and no leading <c>/</c>, or a <c>layouts</c> entry whose <c>identity</c> holds a member that is not a
-    /// non-negative integer, a member other than <c>epic</c> and <c>feature</c>, or neither of the two.
+    /// <c>/</c> inside it and no leading <c>/</c>, a <c>layouts</c> entry whose <c>identity</c> holds a member that is not a
+    /// non-negative integer, a member other than <c>epic</c> and <c>feature</c>, or neither of the two, or a <c>rules</c> entry
+    /// whose value is not <c>error</c>, <c>warning</c> or <c>off</c>.
     /// </exception>
     public static SpecStructure Load(IFileSystem fileSystem, string root)
     {
@@ -83,6 +87,7 @@ public static class SpecManifest
             FrontmatterSchemas = Filled(manifest, "frontmatterSchemas"),
             Roles = Filled(manifest, "roles"),
             Markers = Filled(manifest, "markers"),
+            Rules = Levels(manifest["rules"]),
         };
 
         Check(structure, IdentityFaults(manifest));
@@ -117,6 +122,10 @@ public static class SpecManifest
                     .Where(static entry => entry.Contains('/') && !entry.StartsWith('/'))
                     .Select(static entry => $"the exclusion '{entry}' has a '/' inside it and no leading '/'"))
             .Concat(identityFaults)
+            .Concat(
+                structure.Rules
+                    .Where(static rule => rule.Value is not ("error" or "warning" or "off"))
+                    .Select(static rule => $"the rule '{rule.Key}' in rules is set to '{rule.Value}', which is not 'error', 'warning' or 'off'"))
             .ToList();
 
         if (faults.Count > 0)
@@ -224,6 +233,16 @@ public static class SpecManifest
             static entry => Present(entry.Value).GetValue<string>(),
             StringComparer.Ordinal);
 
+    private static Dictionary<string, string> Levels(JsonNode? node) =>
+        node is null
+            ? new Dictionary<string, string>(StringComparer.Ordinal)
+            : node.AsObject().ToDictionary(
+                static entry => entry.Key,
+                static entry => entry.Value is JsonValue value && value.TryGetValue<string>(out var level)
+                    ? level
+                    : entry.Value?.ToJsonString() ?? "null",
+                StringComparer.Ordinal);
+
     private static JsonNode Present(JsonNode? node) =>
         node ?? throw new InvalidOperationException("A JSON null stands where the manifest's shape requires a value.");
 
@@ -250,6 +269,7 @@ public static class SpecManifest
         "frontmatterSchemas",
         "roles",
         "markers",
+        "rules",
     };
 
     private static readonly JsonObject Defaults = ReadDefaults();
