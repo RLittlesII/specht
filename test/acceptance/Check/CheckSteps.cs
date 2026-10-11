@@ -6,7 +6,7 @@ using Reqnroll;
 using Specht.Manifest;
 using Specht.Model;
 using Specht.Report;
-using Specht.Tests;
+using Specht.Tests.Shared;
 using Specht.Tool;
 
 

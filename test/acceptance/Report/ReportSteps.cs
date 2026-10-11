@@ -5,7 +5,7 @@ using Json.Schema;
 using Reqnroll;
 using Specht.Model;
 using Specht.Report;
-using Specht.Tests;
+using Specht.Tests.Shared;
 
 namespace Specht.Acceptance.Report;
 

@@ -4,9 +4,10 @@ using System.Text.RegularExpressions;
 using AwesomeAssertions;
 using Specht.Model;
 using Specht.Report;
+using Specht.Tests.Shared;
 using Specht.Versioning;
 
-namespace Specht.Tests;
+namespace Specht.Tests.Report;
 
 /// <summary>
 /// The report document made from a report built in memory (<c>0001-F3</c> B-005, B-006, B-007; <c>0001-F2</c> B-002;
@@ -31,7 +32,7 @@ public sealed partial class SpecReportDocumentUnitTests
     public void AReport_WhenMadeADocument_ShouldCarryEachLayoutsCountTheItemsTheRulesEvaluatedAndTheSeverityCounts()
     {
         // Given
-        SpechtReport report = new Report.SpechtReportFixture()
+        SpechtReport report = new SpechtReportFixture()
             .WithSpecificationCount(3)
             .WithLayouts(new SpecReportLayout("epics", 2), new SpecReportLayout("features", 1))
             .WithItemCount(4)
@@ -57,7 +58,7 @@ public sealed partial class SpecReportDocumentUnitTests
     public void AReportNamingItsLayouts_WhenMadeADocument_ShouldCarryEachByItsNameInTheReportsOrderWithALayoutHoldingNoneAtZero()
     {
         // Given
-        SpechtReport report = new Report.SpechtReportFixture().WithLayouts(
+        SpechtReport report = new SpechtReportFixture().WithLayouts(
             new SpecReportLayout("documentation", 1),
             new SpecReportLayout("beside-code", 0),
             new SpecReportLayout("old-tree", 2));
@@ -76,7 +77,7 @@ public sealed partial class SpecReportDocumentUnitTests
     public void AReportNamingItsLayouts_WhenSummarized_ShouldNameEachByItsNameInTheReportsOrderWithALayoutHoldingNoneAtZero()
     {
         // Given
-        SpechtReport report = new Report.SpechtReportFixture().WithLayouts(
+        SpechtReport report = new SpechtReportFixture().WithLayouts(
             new SpecReportLayout("documentation", 1),
             new SpecReportLayout("beside-code", 0),
             new SpecReportLayout("old-tree", 2));
@@ -92,7 +93,7 @@ public sealed partial class SpecReportDocumentUnitTests
     public void AReportCheckedAgainstAPinnedVersion_WhenMadeADocument_ShouldNameThatVersionAndTheEmbeddedSource()
     {
         // Given
-        SpechtReport report = new Report.SpechtReportFixture().WithSchemaVersion(new SemanticVersion(0, 2, 0));
+        SpechtReport report = new SpechtReportFixture().WithSchemaVersion(new SemanticVersion(0, 2, 0));
 
         // When
         var document = SpecReportDocument.From(report);
@@ -109,7 +110,7 @@ public sealed partial class SpecReportDocumentUnitTests
         SpecViolation violation)
     {
         // Given
-        SpechtReport report = new Report.SpechtReportFixture().WithViolations(violation);
+        SpechtReport report = new SpechtReportFixture().WithViolations(violation);
 
         // When
         var document = SpecReportDocument.From(report);
@@ -129,7 +130,7 @@ public sealed partial class SpecReportDocumentUnitTests
     public void AReport_WhenItsDocumentIsSerialized_ShouldCarryNoValueFromTheClockOrTheMachine()
     {
         // Given
-        SpechtReport report = new Report.SpechtReportFixture()
+        SpechtReport report = new SpechtReportFixture()
             .WithSpecificationCount(1)
             .WithLayouts(new SpecReportLayout("epics", 1), new SpecReportLayout("features", 0))
             .WithRulesEvaluated(1)
@@ -157,7 +158,7 @@ public sealed partial class SpecReportDocumentUnitTests
     public void AReport_WhenSummarized_ShouldPrintEachLayoutsCountThenTheItemsThenTheRulesEvaluatedThenTheSeverityCounts()
     {
         // Given
-        SpechtReport report = new Report.SpechtReportFixture()
+        SpechtReport report = new SpechtReportFixture()
             .WithSpecificationCount(3)
             .WithLayouts(new SpecReportLayout("epics", 2), new SpecReportLayout("features", 1))
             .WithItemCount(4)
@@ -182,7 +183,7 @@ public sealed partial class SpecReportDocumentUnitTests
     public void AReportWithViolations_WhenSummarized_ShouldPrintNoLineInTheDiagnosticShape()
     {
         // Given
-        SpechtReport report = new Report.SpechtReportFixture()
+        SpechtReport report = new SpechtReportFixture()
             .WithSpecificationCount(1)
             .WithLayouts(new SpecReportLayout("epics", 1), new SpecReportLayout("features", 0))
             .WithRulesEvaluated(1)

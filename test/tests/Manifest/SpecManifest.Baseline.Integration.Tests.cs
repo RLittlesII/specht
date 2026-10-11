@@ -1,6 +1,7 @@
 using AwesomeAssertions;
 using Specht.Manifest;
-using Specht.Tests.Baseline;
+using Specht.Tests.Engine.Baseline;
+using Specht.Tests.Shared;
 
 namespace Specht.Tests.Manifest;
 
