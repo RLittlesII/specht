@@ -2,7 +2,7 @@ id: "0147"
 type: task
 title: Generate a clean synthetic tree of a known size
 
-status: ready-for-architecture
+status: done
 
 risk: 3
 
@@ -20,7 +20,7 @@ claims:
 
 created: "2026-10-11"
 updated: "2026-10-11"
-closed: null
+closed: "2026-10-11"
 
 summary: |
   The generator every measuring Feature shares: a tree of 1, 10, 100 or

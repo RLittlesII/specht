@@ -68,4 +68,12 @@
     </Compile>
   </ItemGroup>
 
+  <!-- The benchmark fixture's generator (0109-F1 B-015, B-016), linked from the benchmark project as acceptance links
+       SpecTree: the tests compile the one file and take no reference to the benchmark executable or to BenchmarkDotNet. -->
+  <ItemGroup>
+    <Compile Include="..\..\.performance\benchmarks\SpecTreeGenerator.cs">
+      <Link>Benchmarks\SpecTreeGenerator.cs</Link>
+    </Compile>
+  </ItemGroup>
+
 </Project>
