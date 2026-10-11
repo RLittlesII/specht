@@ -2,9 +2,11 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 using AwesomeAssertions;
 using Json.Schema;
+using Specht.Model;
 using Specht.Report;
+using Specht.Tests.Shared;
 
-namespace Specht.Tests;
+namespace Specht.Tests.Report;
 
 /// <summary>
 /// The report document over a run on a tree on disk, and against the published schema (<c>0001-F3</c> B-005, B-006,
@@ -17,10 +19,10 @@ public sealed class SpecReportDocumentIntegrationTests
     public static TheoryData<string, SpechtReport> Reports =>
         new()
         {
-            { "a run that found nothing", new Report.SpechtReportFixture() },
+            { "a run that found nothing", new SpechtReportFixture() },
             {
                 "a run with an error carrying an identifier and a warning on a whole file",
-                new Report.SpechtReportFixture()
+                new SpechtReportFixture()
                     .WithSpecificationCount(2)
                     .WithLayouts(new SpecReportLayout("epics", 1), new SpecReportLayout("features", 1))
                     .WithItemCount(1)

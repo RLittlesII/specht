@@ -5,7 +5,8 @@ using AwesomeAssertions;
 using Reqnroll;
 using Specht.Manifest;
 using Specht.Report;
-using Specht.Tests;
+using Specht.Tests.Shared;
+using Specht.Versioning;
 
 namespace Specht.Acceptance.Versioning;
 

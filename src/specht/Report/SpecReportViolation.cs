@@ -1,4 +1,5 @@
 using System.Text.Json.Nodes;
+using Specht.Model;
 
 namespace Specht.Report;
 

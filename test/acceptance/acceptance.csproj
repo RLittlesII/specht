@@ -43,25 +43,25 @@
     <!-- The engine's built library and the references that would let the machine reach a verdict (B-005, B-006). -->
     <!-- The reader the rule page tests and steps share (0001-F3 B-032, B-033). -->
     <!-- The folder integer an embedded schema version was read from, which the rule page steps hand that reader. -->
-    <Compile Include="..\tests\Baseline\BaselineTree.cs">
+    <Compile Include="..\tests\Engine\Baseline\BaselineTree.cs">
       <Link>Engine\BaselineTree.cs</Link>
     </Compile>
-    <Compile Include="..\tests\Baseline\GoldenReport.cs">
+    <Compile Include="..\tests\Engine\Baseline\GoldenReport.cs">
       <Link>Engine\GoldenReport.cs</Link>
     </Compile>
-    <Compile Include="..\tests\EmbeddedFolder.cs">
+    <Compile Include="..\tests\Shared\EmbeddedFolder.cs">
       <Link>Report\EmbeddedFolder.cs</Link>
     </Compile>
-    <Compile Include="..\tests\EngineAssembly.cs">
+    <Compile Include="..\tests\Shared\EngineAssembly.cs">
       <Link>Engine\EngineAssembly.cs</Link>
     </Compile>
     <Compile Include="..\tests\Rules\RulePage.cs">
       <Link>Rules\RulePage.cs</Link>
     </Compile>
-    <Compile Include="..\tests\SpecTree.cs">
+    <Compile Include="..\tests\Shared\SpecTree.cs">
       <Link>Check\SpecTree.cs</Link>
     </Compile>
-    <Content Include="..\tests\Baseline\engine-e7dba24.json">
+    <Content Include="..\tests\Engine\Baseline\engine-e7dba24.json">
       <Link>Baseline\engine-e7dba24.json</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>

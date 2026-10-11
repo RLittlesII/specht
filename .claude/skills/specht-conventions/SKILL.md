@@ -51,13 +51,17 @@ src/
   specht/                      specht - the rule engine: discovery, readers, schema loader,
                                rules, runner, report. Copied from hooked (brief § 3).
     .spec/                     this Feature's specification, .feature and records (epic 0001)
+    Model/ Discovery/ Manifest/ Report/ Versioning/ Rules/
+                               one folder per Feature, and named folders for what several read
   tool/                        specht.tool - the CLI host; PackAsTool, command `specht`
     Features/<Command>/        one folder per Spectre command - dotnet-tool owns the inside
     schema/v1/                 embedded shipping copy of the schema set
     templates/v1/              embedded shipping copy of the templates
 
 test/
-  tests/                       specht.tests - unit and integration tests; SpecTree builder
+  tests/                       specht.tests - unit and integration tests
+    Shared/ Engine/ <Slice>/   fixtures several Features use, the runner's tests, and one
+                               folder per engine folder and per command
   acceptance/                  specht.acceptance - Reqnroll over src/**/.spec/*.feature
 
 .build/                        the NUKE build project - targets and CI generation; tooling, not product
@@ -90,7 +94,9 @@ README.md                      the public front page - what, why, status, usage
 **Everything below `src/tool/Features/` is
 [`dotnet-tool` § Vertical Slice](../dotnet-tool/references/vertical-slice.md)** —
 how a command folder is laid out, how it joins `Program.cs`, and what belongs in
-the engine instead. Not restated here.
+the engine instead. The inside of `src/specht` is owned there too: its folders,
+and where a new engine file goes. The inside of `test/tests` is owned by
+[`references/testing.md`](references/testing.md). Neither is restated here.
 
 ## Section ownership
 

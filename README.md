@@ -248,11 +248,11 @@ specht/
 │   └── templates/          # blanks for specifications, records and work items
 ├── docs/                   # report schema and documentation site
 ├── src/
-│   ├── specht/             # engine: discovery, frontmatter, schemas, document model, rules, report
+│   ├── specht/             # engine, foldered by Feature over a shared model: discovery, manifest, report, versioning, rules
 │   └── tool/               # the specht command, one folder per command under Features/
 └── test/
     ├── acceptance/         # Reqnroll scenarios
-    └── tests/              # unit and integration tiers
+    └── tests/              # unit and integration tiers, in folders that mirror src/
 ```
 
 Every Feature is specified in a `.spec/README.md` beside the code it covers, such
