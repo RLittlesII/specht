@@ -20,10 +20,36 @@ public sealed class SpecModelUnitTests
         new[] { "repo/src/sample/.spec/first.feature", "repo/src/sample/.spec/second.feature" },
     };
 
-    public static TheoryData<string, string, string[]> IdentityViolationsByLayout { get; } = new()
+    /// <summary>
+    /// Gets a layout, the path of a specification of epic <c>0001</c> and id <c>F2</c> found in it, and the rules reported
+    /// (<c>0001-F6</c> B-004, decision 0009).
+    /// </summary>
+    public static TheoryData<string, SpecLayout, string, string[]> IdentityViolationsByDeclaration { get; } = new()
     {
-        { "epics", "epics/**/spec.md", ["SPEC011", "SPEC011"] },
-        { "features", "**/.spec/README.md", [] },
+        {
+            "a layout declaring both segments is checked at both",
+            new SpecLayout("epics", "epics/**/spec.md", new SpecPathIdentity(1, 2)),
+            "epics/0009-epic/F9-feature/spec.md",
+            ["SPEC011", "SPEC011"]
+        },
+        {
+            "a layout declaring none is not checked, whatever it is named",
+            new SpecLayout("epics", "epics/**/spec.md"),
+            "epics/0009-epic/F9-feature/spec.md",
+            []
+        },
+        {
+            "a layout of another name declaring them is checked",
+            new SpecLayout("old-tree", "epics/**/spec.md", new SpecPathIdentity(1, 2)),
+            "epics/0009-epic/F9-feature/spec.md",
+            ["SPEC011", "SPEC011"]
+        },
+        {
+            "segments other than the second and third are read where they are declared",
+            new SpecLayout("documentation", "docs/archive/tree/**/spec.md", new SpecPathIdentity(3, 4)),
+            "docs/archive/tree/0001-epic/F9-feature/spec.md",
+            ["SPEC011"]
+        },
     };
 
     [Theory]
@@ -56,15 +82,16 @@ public sealed class SpecModelUnitTests
     }
 
     [Theory]
-    [MemberData(nameof(IdentityViolationsByLayout))]
-    public void AFeatureUnderFoldersItsIdentityDoesNotName_WhenTheIdentityRuleEvaluatesTheModel_ShouldReportSpec011InTheEpicsLayoutOnly(
-        string layout,
-        string glob,
+    [MemberData(nameof(IdentityViolationsByDeclaration))]
+    public void AFeatureUnderFoldersItsIdentityDoesNotName_WhenTheIdentityRuleEvaluatesTheModel_ShouldReportSpec011AtTheSegmentsItsLayoutDeclares(
+        string because,
+        SpecLayout layout,
+        string relativePath,
         string[] expected)
     {
         // Given
         FeatureSpec feature = new FeatureSpecFixture()
-            .WithLocation(new SpecLocationFixture().WithRelativePath("src/area/.spec/README.md").WithLayout(new SpecLayout(layout, glob)))
+            .WithLocation(new SpecLocationFixture().WithRelativePath(relativePath).WithLayout(layout))
             .WithDocument(
                 new SpecDocumentFixture().WithFrontmatter(
                     new FrontmatterFixture().WithNode(new JsonObject { ["epic"] = "0001", ["id"] = "F2" })));
@@ -74,7 +101,7 @@ public sealed class SpecModelUnitTests
         var violations = new IdentityRule().Evaluate(model).ToList();
 
         // Then
-        violations.Select(static violation => violation.RuleId).Should().Equal(expected);
+        violations.Select(static violation => violation.RuleId).Should().Equal(expected, because);
     }
 
     [Fact]
