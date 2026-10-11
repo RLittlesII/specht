@@ -35,7 +35,7 @@ A check's time is one number, and nothing says which stage spends it: a slower c
 
 ## 2. User Needs
 
-<!-- last written by: spec-author, 2026-10-09 -->
+<!-- last written by: spec-author, 2026-10-11 (A-1 and A-2, item `0107`) -->
 
 | #   | Persona                           | Need                                                                     | Pain Point Today                                      |
 | --- | --------------------------------- | ------------------------------------------------------------------------ | ----------------------------------------------------- |
@@ -47,8 +47,8 @@ A check's time is one number, and nothing says which stage spends it: a slower c
 
 | ID  | Assumption                                                                                                                                                                                                                                                                                 |
 | --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| A-1 | The stages are those ADR-0005 § Decision (a) names. Until item `0107` lands they are reached through today's entry points.                                                                                                                                                                 |
-| A-2 | The model is constructible in memory (item `0104`), and evaluation takes a model (item `0105`'s split of the runner), but evaluation still reads the disk: the companion-file rule reads each `.feature` file while it evaluates (`src/specht/Rules/FeatureFileRule.cs:41`; ADR-0005 (a)). |
+| A-1 | The stages are those ADR-0005 § Decision (a) names. From item `0107` they are `SpecSchemasLoader`, `SpecDiscovery`, `SpecModelLoader` and the static `SpechtRunner.Evaluate`.                                                                                                              |
+| A-2 | The model is constructible in memory (item `0104`), and evaluation takes a model (item `0105`'s split of the runner), but evaluation still reads the disk: the companion-file rule reads each `.feature` file while it evaluates (`src/specht/Rules/FeatureFileRule.cs:43`; ADR-0005 (a)). |
 | A-3 | The tree sizes and the generated tree are `0109-F1`'s (`0109-F1` decision 0004).                                                                                                                                                                                                           |
 
 ## 3. Acceptance Criteria
@@ -137,9 +137,10 @@ Pending: owned by `test-writer`, written after agreement.
 
 ## 10. Lessons / Spec Deltas
 
-<!-- last written by: spec-author, 2026-10-09 -->
+<!-- last written by: spec-author, 2026-10-11 (A-1 and A-2, item `0107`) -->
 
 - 2026-10-09, spec-reviewer finding on commit `4b23e76`: B-006, B-007, C-6 and C-7 said rules and evaluation run over an in-memory model, but the companion-file rule reads `.feature` files during evaluation. They now measure against a generated tree on disk and name the file system. B-008 and C-8 withdrawn (decision 0001). § 5 rows 8 and 9 added.
+- 2026-10-11, A-1 and A-2 amended by spec-author on item `0107`'s delivery: A-1 names the entry points the stages now have, where it said they were reached through the entry points of 2026-10-09 until that item landed, and A-2's line reference moves from 41 to 43. What A-2 asserts holds: the companion-file rule reads each `.feature` file while it evaluates, through the `FeatureFileReader` it is given. No claim or constraint changed.
 
 ## 11. Open Questions
 

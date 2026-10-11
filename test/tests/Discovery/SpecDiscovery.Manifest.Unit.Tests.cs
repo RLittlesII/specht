@@ -7,11 +7,11 @@ using Specht.Tests.Shared;
 namespace Specht.Tests.Discovery;
 
 /// <summary>
-/// Discovery over the inputs a manifest declares, on an in-memory file system (<c>0001-F6</c> B-001, B-002, B-003, B-009,
-/// B-012, C-4, C-6, C-7; decisions 0003, 0004 and 0008): which layouts a specification is found in and which one it carries,
-/// how a glob is matched, what an exclusion skips, and which files are items, epics and companions under a list of one
-/// entry and of several. Each test's inputs are the ones the loader reads from
-/// the manifest the test writes, so a key the manifest leaves out is the default manifest's.
+/// Discovery, built over an injected in-memory file system (ADR-0001 stage D, item 0107), over the inputs a manifest
+/// declares (<c>0001-F6</c> B-001, B-002, B-003, B-009, B-012, C-4, C-6, C-7; decisions 0003, 0004 and 0008): which
+/// layouts a specification is found in and which one it carries, how a glob is matched, what an exclusion skips, and
+/// which files are items, epics and companions under a list of one entry and of several. Each test's inputs are the
+/// ones the loader reads from the manifest the test writes, so a key the manifest leaves out is the default manifest's.
 /// </summary>
 [Trait("Tier", "Unit")]
 public sealed class SpecDiscoveryManifestUnitTests
@@ -141,7 +141,7 @@ public sealed class SpecDiscoveryManifestUnitTests
         var inputs = SpecManifest.Load(fileSystem, Root).Discovery;
 
         // When
-        var found = SpecDiscovery.FindSpecifications(fileSystem, Root, inputs);
+        var found = new SpecDiscovery(fileSystem).FindSpecifications(Root, inputs);
 
         // Then
         found.Select(static location => location.RelativePath).Should().BeEquivalentTo(expected, because);
@@ -167,7 +167,7 @@ public sealed class SpecDiscoveryManifestUnitTests
         var inputs = SpecManifest.Load(fileSystem, Root).Discovery;
 
         // When
-        var found = SpecDiscovery.FindSpecifications(fileSystem, Root, inputs);
+        var found = new SpecDiscovery(fileSystem).FindSpecifications(Root, inputs);
 
         // Then
         found.ToDictionary(static location => location.RelativePath, static location => location.Layout).Should().Equal(
@@ -193,7 +193,7 @@ public sealed class SpecDiscoveryManifestUnitTests
         string[] expected = matches ? [path] : [];
 
         // When
-        var found = SpecDiscovery.FindSpecifications(fileSystem, Root, inputs);
+        var found = new SpecDiscovery(fileSystem).FindSpecifications(Root, inputs);
 
         // Then
         found.Select(static location => location.RelativePath).Should().Equal(expected, because);
@@ -213,7 +213,7 @@ public sealed class SpecDiscoveryManifestUnitTests
         string[] expected = discovered ? [path] : [];
 
         // When
-        var found = SpecDiscovery.FindSpecifications(fileSystem, Root, inputs);
+        var found = new SpecDiscovery(fileSystem).FindSpecifications(Root, inputs);
 
         // Then
         found.Select(static location => location.RelativePath).Should().Equal(expected, because);
@@ -241,7 +241,7 @@ public sealed class SpecDiscoveryManifestUnitTests
         var structure = SpecManifest.Load(fileSystem, Root);
 
         // When
-        var found = SpecDiscovery.FindChildItems(fileSystem, [specification], structure.Discovery, structure.Identifiers["task"]);
+        var found = new SpecDiscovery(fileSystem).FindChildItems([specification], structure.Discovery, structure.Identifiers["task"]);
 
         // Then
         found.Select(path => Relative(fileSystem, path)).Should().BeEquivalentTo(expected.Select(Beside), because);
@@ -264,7 +264,7 @@ public sealed class SpecDiscoveryManifestUnitTests
         var inputs = SpecManifest.Load(fileSystem, Root).Discovery;
 
         // When
-        var found = SpecDiscovery.FindEpics(fileSystem, Root, inputs);
+        var found = new SpecDiscovery(fileSystem).FindEpics(Root, inputs);
 
         // Then
         found.Select(path => Relative(fileSystem, path)).Should().BeEquivalentTo(expected, because);
@@ -290,7 +290,7 @@ public sealed class SpecDiscoveryManifestUnitTests
         var inputs = SpecManifest.Load(fileSystem, Root).Discovery;
 
         // When
-        var found = SpecDiscovery.FindCompanions(fileSystem, specification, inputs);
+        var found = new SpecDiscovery(fileSystem).FindCompanions(specification, inputs);
 
         // Then
         found.Select(path => Relative(fileSystem, path)).Should().BeEquivalentTo(expected.Select(Beside), because);
@@ -321,9 +321,9 @@ public sealed class SpecDiscoveryManifestUnitTests
         // When
         var found = key switch
         {
-            "taskFiles" => SpecDiscovery.FindChildItems(fileSystem, [specification], structure.Discovery, structure.Identifiers["task"]),
-            "epicFiles" => SpecDiscovery.FindEpics(fileSystem, Root, structure.Discovery),
-            "companionFiles" => SpecDiscovery.FindCompanions(fileSystem, specification, structure.Discovery),
+            "taskFiles" => new SpecDiscovery(fileSystem).FindChildItems([specification], structure.Discovery, structure.Identifiers["task"]),
+            "epicFiles" => new SpecDiscovery(fileSystem).FindEpics(Root, structure.Discovery),
+            "companionFiles" => new SpecDiscovery(fileSystem).FindCompanions(specification, structure.Discovery),
             _ => throw new ArgumentOutOfRangeException(nameof(key), key, "Not a file-shape key."),
         };
 

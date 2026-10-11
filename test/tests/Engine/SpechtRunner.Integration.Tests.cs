@@ -1,5 +1,4 @@
 using AwesomeAssertions;
-using Specht.Discovery;
 using Specht.Model;
 using Specht.Report;
 using Specht.Tests.Shared;
@@ -75,7 +74,7 @@ public sealed class SpechtRunnerIntegrationTests
         var path = Path.Combine(tree.Root, ".artifacts", "spec-check", "spec-check.json");
 
         // When
-        SpechtRunner.WriteReport(report, path);
+        EngineServices.Runner().WriteReport(report, path);
         var json = File.ReadAllText(path);
 
         // Then
@@ -109,7 +108,7 @@ public sealed class SpechtRunnerIntegrationTests
     {
         // Given
         using var tree = new SpecTree();
-        var path = SpecDiscovery.Relative(
+        var path = SpecPath.Relative(
             tree.Root,
             tree.WriteFeature(
                 "0001",

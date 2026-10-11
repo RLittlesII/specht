@@ -4,11 +4,11 @@ using Specht.Tests.Shared;
 namespace Specht.Tests.Engine;
 
 /// <summary>
-/// The violation paths the happy-path tests never reach: every rule id a rule
+/// The violation paths the happy-path tests never reach, over a tree on disk: every rule id a rule
 /// says it reports has at least one tree here that makes it fire.
 /// </summary>
-[Trait("Tier", "Unit")]
-public sealed class SpechtRunnerViolationsUnitTests
+[Trait("Tier", "Integration")]
+public sealed class SpechtRunnerViolationsIntegrationTests
 {
     [Fact]
     public void ASpecificationWithNoFrontmatter_WhenChecked_ShouldReportSpec001()

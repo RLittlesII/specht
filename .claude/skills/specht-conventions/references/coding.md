@@ -82,14 +82,14 @@ owner direction (2026-10-08, `0001-F5` § 7).
 `Microsoft.Extensions.DependencyInjection.Abstractions` carries
 `AddSpechtEngine()` (ADR-0001); its version moves with the container
 implementation package's, and transitive pinning applies it graph-wide
-(ADR-0003). It lands at ADR-0001's stage D. No sixth engine dependency joins
+(ADR-0003). It landed with ADR-0001's stage D (item `0107`). No sixth engine dependency joins
 without an ADR.
 
 ## File access goes through `IFileSystem`
 
 Engine code that reads the file system takes an injected `IFileSystem`; it does
-not add a new static `File` or `Directory` call. Production passes
-`new FileSystem()`, a test a `MockFileSystem`. The copied engine's existing
+not add a new static `File` or `Directory` call. Production resolves the
+`FileSystem` `AddSpechtEngine()` registers, a test passes a `MockFileSystem`. The copied engine's existing
 static calls migrate as later items touch them, not in a sweep. The one
 recorded exception is ADR-0001's staged migration (items `0104`-`0107`), which
 the owner's acceptance authorizes.
