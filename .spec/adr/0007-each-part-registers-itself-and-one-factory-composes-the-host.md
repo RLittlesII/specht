@@ -8,7 +8,8 @@ type: adr
 
 ## Status
 
-proposed - 2026-10-09. Decider: the owner. Item `0099`
+accepted - 2026-10-10, by the owner, in session, with the two questions this
+record closes on answered below. Item `0099`
 (`.issue/0099-command-test-harness.yml`). Written on the owner's direction,
 given in session on 2026-10-09 when the owner rejected
 [ADR-0006](0006-a-test-runs-a-command-through-the-production-composition.md).
@@ -70,7 +71,7 @@ available had we started with injectable services!"
 ADR-0001's stages make the engine injectable: `0104` (done), `0105`, `0106`,
 then `0107`, which gives the engine its one composition entry point,
 `AddSpechtEngine()`. Until `0107` lands the engine is static: the command
-receives `SpecCheckRunner.Run` as a `Func<string, SpecCheckReport>`.
+receives `SpechtRunner.Run` as a `Func<string, SpechtReport>`.
 
 ### The Spectre fact
 
@@ -134,7 +135,7 @@ each separately.
 
 ## Decision
 
-Proposed: option 3.
+Option 3, accepted by the owner on 2026-10-10.
 
 1. **One static factory builds the app.** As `MauiProgram.CreateMauiApp()`
    does, one fluent chain composes the services and the configuration.
@@ -150,25 +151,27 @@ Proposed: option 3.
    `CommandAppTester` assembled by hand in a test. Every call builds a fresh
    collection, which ADR-0003's single-use registrar requires.
 4. **What only the caller knows enters as a factory parameter.** For specht
-   that is the file system (the host passes `new FileSystem()`, a test a
-   `MockFileSystem` or a temporary root) and the console (the host leaves
-   Spectre's, a test passes a `TestConsole`), and whatever else only a test or
-   the host owns.
+   the caller inputs are the file system (the host passes `new FileSystem()`,
+   a test a `MockFileSystem` or a temporary root) and the console (the host
+   leaves Spectre's, a test passes a `TestConsole`), and nothing else. The
+   runner is not one: a check test runs the real engine over a synthetic tree
+   and never hands the factory a runner (question 1).
 
 **The factory's product is the registrar and the configure step**, the inputs
 `CommandApp` and `CommandAppTester` share. The host wraps them in `CommandApp`
 and a test in `CommandAppTester`. `Spectre.Console.Cli.Testing` is a test
-package and `src/specht.tool` is the one project that packs, so the wrap into
-the tester lives once in the test tree, beside the fixtures, and is the only
-place a `CommandAppTester` is constructed. Judgement, labelled: that one wrap
-is part of the factory for the testing rule below (question 2).
+package and `src/tool` is the one project that packs, so the wrap into the
+tester lives once in the test tree, beside the fixtures. It is the only place
+a `CommandAppTester` is constructed, it sets the default command, and it is
+part of the factory for the testing rule below (question 2).
 
 **Until `0107` lands**, the slices register what exists today: the check slice
-registers the runner delegate bound to `SpecCheckRunner.Run`, and the init
+still registers the runner delegate bound to `SpechtRunner.Run`, and the init
 slice registers its `InitWriter` over the shipping copy and the file system it
-is given. When `0107` lands, the factory adds `AddSpechtEngine()` to its chain
-and the check slice stops registering the runner; no test changes its
-composition.
+is given. A check test reaches that runner through a synthetic tree, not a
+canned report, and registers none of its own. When `0107` lands, the factory
+adds `AddSpechtEngine()` to its chain and the check slice stops registering
+the runner; no test changes its composition.
 
 A non-binding sketch. Every name is a placeholder; the owner has asked for the
 shape, not for these names:
@@ -238,23 +241,28 @@ Costs:
   test or the host first needs it, not before (`coding-conventions`
   § "Design").
 
-The testing rule, for `specht-conventions` `references/testing.md` on
-acceptance:
+The testing rule, written into `specht-conventions` `references/testing.md` on
+acceptance. It binds from item `0144`, which builds the factory:
 
 - A test that runs a command gets its registrar and configuration from the
   factory, wrapped by the one test-tree wrap.
+- A check test supplies a synthetic tree, never a canned report.
 - Never add: a `ServiceCollection`, `TypeRegistrar` or `CommandAppTester`
-  assembled in a test outside the factory.
+  assembled in a test outside the factory, or a runner passed into the
+  factory.
 
-Work on acceptance, as its own item depending on `0099`, not before: the
-factory and the per-slice registrations, `Program.cs` calling the factory, the
-`CheckCommand` and `InitCommand` integration tests moved onto it, the private
-`Check` helper and the hand-built `CommandAppTester` removed, the duplicated
-private statics in the `ShippingCopy` tests and `InitSteps` removed, and the
-unused `Spectre.Console.Cli.Testing` reference dropped from
-`specht.acceptance`.
+Work on acceptance, as its own item, `0144`
+(`.issue/0144-compose-the-host-through-one-factory.yml`), depending on `0099`,
+not before: the factory and the per-slice registrations, `Program.cs` calling
+the factory, the `CheckCommand` and `InitCommand` integration tests moved onto
+it, the check's fold tests moved onto synthetic trees with the real engine,
+the private `Check` helper and the hand-built `CommandAppTester`s removed, the
+duplicated private statics in the `ShippingCopy` tests and `InitSteps`
+removed, and the unused `Spectre.Console.Cli.Testing` reference dropped from
+`test/acceptance`.
 
-Questions the owner answers to accept, each on this direction:
+The questions this record closed on, each answered by the owner in session on
+2026-10-10:
 
 1. **The check's runner, before and after `0107`.** The check's fold tests hand
    the command a canned report today (`_ => report`). Is the runner a factory
@@ -262,7 +270,16 @@ Questions the owner answers to accept, each on this direction:
    tests run the real engine over a synthetic tree, so the file system is the
    only caller input and the runner is never one? ADR-0001 lists "the runner
    the command calls" as a substitution that exists today.
-2. **The one test-tree wrap.** Since the tester cannot be built in
-   `src/specht.tool` without shipping a test package, is one test-side wrap of
-   the factory's product - the only `new CommandAppTester` in the tree, setting
-   the default command - what "built by calling the same factory" means here?
+
+   Resolved 2026-10-10, by the owner: tests run the real engine over a
+   synthetic tree. The file system and the console are the only caller
+   inputs, and the runner is never a factory parameter.
+
+2. **The one test-tree wrap.** Since the tester cannot be built in `src/tool`
+   without shipping a test package, is one test-side wrap of the factory's
+   product - the only `new CommandAppTester` in the tree, setting the default
+   command - what "built by calling the same factory" means here?
+
+   Resolved 2026-10-10, by the owner: yes. One test-tree wrap of the factory's
+   product is the only `new CommandAppTester` in the tree, and it sets the
+   default command.
