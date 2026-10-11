@@ -68,4 +68,19 @@
     </Compile>
   </ItemGroup>
 
+  <!-- The benchmark fixture's tree and its store (0109-F1 B-015, B-016), linked from the benchmark project as acceptance
+       links SpecTree: the tests compile the three files and take no reference to the benchmark executable or to
+       BenchmarkDotNet. -->
+  <ItemGroup>
+    <Compile Include="..\..\.performance\benchmarks\SpechtTree.cs">
+      <Link>Benchmarks\SpechtTree.cs</Link>
+    </Compile>
+    <Compile Include="..\..\.performance\benchmarks\SpechtTreeFile.cs">
+      <Link>Benchmarks\SpechtTreeFile.cs</Link>
+    </Compile>
+    <Compile Include="..\..\.performance\benchmarks\SpechtTreeStore.cs">
+      <Link>Benchmarks\SpechtTreeStore.cs</Link>
+    </Compile>
+  </ItemGroup>
+
 </Project>

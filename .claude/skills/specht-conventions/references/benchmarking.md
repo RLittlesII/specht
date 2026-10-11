@@ -36,8 +36,10 @@ decided by the owner on 2026-10-09 (item 0108). The project file is
   call measured is the stage's.
 - The packed tool's cold start, which only the default out-of-process toolchain
   can measure.
-- A tree is built with the same synthetic `SpecTree` approach the tests use,
-  under a temporary directory, with repository-relative paths throughout. Never a
+- A tree is built in memory by `SpechtTree.Of` and saved by
+  `SpechtTreeStore.Save`, into a temporary directory the benchmark creates and
+  deletes, with relative paths throughout
+  ([`0109-F1` § 7](../../../../.performance/benchmarks/.spec/README.md)). Never a
   copy of this repository's `.spec/` tree, and never `hooked`'s.
 
 ## Recording a finding
