@@ -25,46 +25,42 @@ public static class SpecManifest
     /// <param name="root">The repository root.</param>
     /// <returns>
     /// The section contract, id grammars, discovery inputs and schema file names, every omitted value read as the default
-    /// manifest, and the rule settings as the manifest wrote them (<c>0001-F5</c> B-044).
+    /// manifest, and the rule settings as the manifest wrote them (<c>0001-F5</c> B-044); or
+    /// <see cref="InputFailure.RootNotFound"/> when <paramref name="root"/> is not a directory,
+    /// <see cref="InputFailure.ManifestNotFound"/> when there is no file at the manifest path,
+    /// <see cref="InputFailure.ManifestUnreadable"/> when the manifest is not well-formed JSON or not the manifest's shape, and
+    /// <see cref="InputFailure.ManifestRejected"/> when the manifest carries a key the engine does not know, a
+    /// <c>schemaVersion</c> that is not a <c>major.minor.patch</c> string, a role naming a title <c>sections</c> does not list,
+    /// a <c>tables</c> key that is not a role, a marker whose text is empty, an empty <c>taskFiles</c>, <c>epicFiles</c> or
+    /// <c>companionFiles</c> list, an <c>exclusions</c> entry with a <c>/</c> inside it and no leading <c>/</c>, a
+    /// <c>layouts</c> entry whose <c>identity</c> holds a member that is not a non-negative integer, a member other than
+    /// <c>epic</c> and <c>feature</c>, or neither of the two, or a <c>rules</c> entry whose value is not <c>error</c>,
+    /// <c>warning</c> or <c>off</c>.
     /// </returns>
-    /// <exception cref="SpechtRootNotFoundException"><paramref name="root"/> is not a directory.</exception>
-    /// <exception cref="SpechtManifestNotFoundException">There is no file at the manifest path.</exception>
-    /// <exception cref="SpechtManifestUnreadableException">The manifest is not well-formed JSON or not the manifest's shape.</exception>
-    /// <exception cref="SpechtManifestException">
-    /// The manifest carries a key the engine does not know, a <c>schemaVersion</c> that is not a <c>major.minor.patch</c> string, a
-    /// role naming a title <c>sections</c> does not list, a <c>tables</c> key that is not a role, a marker whose text is empty,
-    /// an empty <c>taskFiles</c>, <c>epicFiles</c> or <c>companionFiles</c> list, an <c>exclusions</c> entry with a
-    /// <c>/</c> inside it and no leading <c>/</c>, a <c>layouts</c> entry whose <c>identity</c> holds a member that is not a
-    /// non-negative integer, a member other than <c>epic</c> and <c>feature</c>, or neither of the two, or a <c>rules</c> entry
-    /// whose value is not <c>error</c>, <c>warning</c> or <c>off</c>.
-    /// </exception>
-    public static SpecStructure Load(IFileSystem fileSystem, string root)
+    public static Result<SpecStructure> Load(IFileSystem fileSystem, string root)
     {
         if (!fileSystem.Directory.Exists(root))
         {
-            throw new SpechtRootNotFoundException();
+            return new InputFailure.RootNotFound();
         }
 
         var path = fileSystem.Path.Combine(root, ".spec", "schema", "spec-structure.schema.json");
 
         if (!fileSystem.File.Exists(path))
         {
-            throw new SpechtManifestNotFoundException();
+            return new InputFailure.ManifestNotFound();
         }
 
-        try
-        {
-            return Read(fileSystem.File.ReadAllText(path));
-        }
-        catch (Exception exception) when (exception is JsonException or InvalidOperationException or FormatException)
-        {
-            throw new SpechtManifestUnreadableException(exception);
-        }
+        return Read(fileSystem.File.ReadAllText(path));
     }
 
-    private static SpecStructure Read(string text)
+    private static Result<SpecStructure> Read(string text)
     {
-        var manifest = Present(JsonNode.Parse(text)).AsObject();
+        if (Parsed(text) is not JsonObject manifest)
+        {
+            return new InputFailure.ManifestUnreadable();
+        }
+
         var unknown = manifest
             .Select(static entry => entry.Key)
             .Where(static key => !key.StartsWith('$') && !KnownKeys.Contains(key))
@@ -73,29 +69,44 @@ public static class SpecManifest
 
         if (unknown.Count > 0)
         {
-            throw new SpechtManifestException(
+            return new InputFailure.ManifestRejected(
                 $"{RelativePath}: the engine does not know the key {string.Join(", ", unknown)}.");
         }
 
-        var structure = new SpecStructure(
-            Strings(manifest["sections"] ?? Defaults["sections"]!),
-            Tables(manifest["tables"] ?? Defaults["tables"]!),
-            Filled(manifest, "identifiers"),
-            SchemaVersion(manifest))
+        if (Strings(manifest["sections"] ?? Defaults["sections"]) is not { } sections
+            || Tables(manifest["tables"] ?? Defaults["tables"]) is not { } tables
+            || Filled(manifest, "identifiers") is not { } identifiers)
         {
-            Discovery = Discovery(manifest),
-            FrontmatterSchemas = Filled(manifest, "frontmatterSchemas"),
-            Roles = Filled(manifest, "roles"),
-            Markers = Filled(manifest, "markers"),
-            Rules = Levels(manifest["rules"]),
-        };
+            return new InputFailure.ManifestUnreadable();
+        }
 
-        Check(structure, IdentityFaults(manifest));
+        return SchemaVersion(manifest).Match<Result<SpecStructure>>(
+            pinned =>
+            {
+                if (Discovery(manifest) is not { } discovery
+                    || Filled(manifest, "frontmatterSchemas") is not { } frontmatterSchemas
+                    || Filled(manifest, "roles") is not { } roles
+                    || Filled(manifest, "markers") is not { } markers
+                    || Levels(manifest["rules"]) is not { } rules)
+                {
+                    return new InputFailure.ManifestUnreadable();
+                }
 
-        return structure;
+                return Check(
+                    new SpecStructure(sections, tables, identifiers, pinned.Value)
+                    {
+                        Discovery = discovery,
+                        FrontmatterSchemas = frontmatterSchemas,
+                        Roles = roles,
+                        Markers = markers,
+                        Rules = rules,
+                    },
+                    IdentityFaults(manifest));
+            },
+            static failed => failed.Failure);
     }
 
-    private static void Check(SpecStructure structure, IEnumerable<string> identityFaults)
+    private static Result<SpecStructure> Check(SpecStructure structure, IEnumerable<string> identityFaults)
     {
         var roles = Defaults["roles"]!.AsObject();
         var faults = roles
@@ -128,28 +139,48 @@ public static class SpecManifest
                     .Select(static rule => $"the rule '{rule.Key}' in rules is set to '{rule.Value}', which is not 'error', 'warning' or 'off'"))
             .ToList();
 
-        if (faults.Count > 0)
-        {
-            throw new SpechtManifestException($"{RelativePath}: {string.Join("; ", faults)}.");
-        }
+        return faults.Count > 0 ? new InputFailure.ManifestRejected($"{RelativePath}: {string.Join("; ", faults)}.") : structure;
     }
 
-    private static SpecDiscoveryInputs Discovery(JsonObject manifest) =>
-        new(
-            (manifest["layouts"] ?? Defaults["layouts"]!).AsArray().Select(Layout).ToList(),
-            Strings(manifest["exclusions"] ?? Defaults["exclusions"]!),
-            Strings(manifest["taskFiles"] ?? Defaults["taskFiles"]!),
-            Strings(manifest["epicFiles"] ?? Defaults["epicFiles"]!),
-            Strings(manifest["companionFiles"] ?? Defaults["companionFiles"]!));
-
-    private static SpecLayout Layout(JsonNode? node)
+    private static SpecDiscoveryInputs? Discovery(JsonObject manifest)
     {
-        var layout = Present(node);
+        if ((manifest["layouts"] ?? Defaults["layouts"]) is not JsonArray declared
+            || Strings(manifest["exclusions"] ?? Defaults["exclusions"]) is not { } exclusions
+            || Strings(manifest["taskFiles"] ?? Defaults["taskFiles"]) is not { } taskFiles
+            || Strings(manifest["epicFiles"] ?? Defaults["epicFiles"]) is not { } epicFiles
+            || Strings(manifest["companionFiles"] ?? Defaults["companionFiles"]) is not { } companionFiles)
+        {
+            return null;
+        }
 
-        return new SpecLayout(
-            Present(layout["name"]).GetValue<string>(),
-            Present(layout["glob"]).GetValue<string>(),
-            layout["identity"] is { } identity ? new SpecPathIdentity(Segment(identity["epic"]), Segment(identity["feature"])) : null);
+        var layouts = new List<SpecLayout>();
+
+        foreach (var node in declared)
+        {
+            if (Layout(node) is not { } layout)
+            {
+                return null;
+            }
+
+            layouts.Add(layout);
+        }
+
+        return new SpecDiscoveryInputs(layouts, exclusions, taskFiles, epicFiles, companionFiles);
+    }
+
+    private static SpecLayout? Layout(JsonNode? node)
+    {
+        if (node is not JsonObject layout || Text(layout["name"]) is not { } name || Text(layout["glob"]) is not { } glob)
+        {
+            return null;
+        }
+
+        return layout["identity"] switch
+        {
+            null => new SpecLayout(name, glob, null),
+            JsonObject identity => new SpecLayout(name, glob, new SpecPathIdentity(Segment(identity["epic"]), Segment(identity["feature"]))),
+            _ => null,
+        };
     }
 
     private static int? Segment(JsonNode? node) =>
@@ -187,22 +218,29 @@ public static class SpecManifest
         }
     }
 
-    private static Dictionary<string, string> Filled(JsonObject manifest, string key)
+    private static Dictionary<string, string>? Filled(JsonObject manifest, string key)
     {
-        var values = Named(Defaults[key]!);
+        var values = Named(Defaults[key]);
 
-        if (manifest[key] is { } declared)
+        if (values is null || manifest[key] is not { } declared)
         {
-            foreach (var (name, value) in Named(declared))
-            {
-                values[name] = value;
-            }
+            return values;
+        }
+
+        if (Named(declared) is not { } named)
+        {
+            return null;
+        }
+
+        foreach (var (name, value) in named)
+        {
+            values[name] = value;
         }
 
         return values;
     }
 
-    private static SemanticVersion SchemaVersion(JsonObject manifest)
+    private static Result<SemanticVersion> SchemaVersion(JsonObject manifest)
     {
         if (!manifest.TryGetPropertyValue("schemaVersion", out var node))
         {
@@ -214,37 +252,102 @@ public static class SpecManifest
             return version;
         }
 
-        throw new SpechtManifestException(
+        return new InputFailure.ManifestRejected(
             $"{RelativePath}: schemaVersion {node?.ToJsonString() ?? "null"} is not a major.minor.patch version such as \"0.1.0\".");
     }
 
-    private static List<string> Strings(JsonNode node) =>
-        node.AsArray().Select(static element => Present(element).GetValue<string>()).ToList();
+    private static List<string>? Strings(JsonNode? node)
+    {
+        if (node is not JsonArray elements)
+        {
+            return null;
+        }
 
-    private static Dictionary<string, IReadOnlyList<string>> Tables(JsonNode node) =>
-        node.AsObject().ToDictionary(
-            static entry => entry.Key,
-            static entry => (IReadOnlyList<string>)Strings(Present(entry.Value)),
-            StringComparer.Ordinal);
+        var strings = new List<string>();
 
-    private static Dictionary<string, string> Named(JsonNode node) =>
-        node.AsObject().ToDictionary(
-            static entry => entry.Key,
-            static entry => Present(entry.Value).GetValue<string>(),
-            StringComparer.Ordinal);
+        foreach (var element in elements)
+        {
+            if (Text(element) is not { } text)
+            {
+                return null;
+            }
 
-    private static Dictionary<string, string> Levels(JsonNode? node) =>
-        node is null
-            ? new Dictionary<string, string>(StringComparer.Ordinal)
-            : node.AsObject().ToDictionary(
+            strings.Add(text);
+        }
+
+        return strings;
+    }
+
+    private static Dictionary<string, IReadOnlyList<string>>? Tables(JsonNode? node)
+    {
+        if (node is not JsonObject entries)
+        {
+            return null;
+        }
+
+        var tables = new Dictionary<string, IReadOnlyList<string>>(StringComparer.Ordinal);
+
+        foreach (var (key, value) in entries)
+        {
+            if (Strings(value) is not { } headers)
+            {
+                return null;
+            }
+
+            tables.Add(key, headers);
+        }
+
+        return tables;
+    }
+
+    private static Dictionary<string, string>? Named(JsonNode? node)
+    {
+        if (node is not JsonObject entries)
+        {
+            return null;
+        }
+
+        var named = new Dictionary<string, string>(StringComparer.Ordinal);
+
+        foreach (var (key, value) in entries)
+        {
+            if (Text(value) is not { } text)
+            {
+                return null;
+            }
+
+            named.Add(key, text);
+        }
+
+        return named;
+    }
+
+    private static Dictionary<string, string>? Levels(JsonNode? node) =>
+        node switch
+        {
+            null => new Dictionary<string, string>(StringComparer.Ordinal),
+            JsonObject levels => levels.ToDictionary(
                 static entry => entry.Key,
                 static entry => entry.Value is JsonValue value && value.TryGetValue<string>(out var level)
                     ? level
                     : entry.Value?.ToJsonString() ?? "null",
-                StringComparer.Ordinal);
+                StringComparer.Ordinal),
+            _ => null,
+        };
 
-    private static JsonNode Present(JsonNode? node) =>
-        node ?? throw new InvalidOperationException("A JSON null stands where the manifest's shape requires a value.");
+    private static string? Text(JsonNode? node) => node is JsonValue value && value.TryGetValue<string>(out var text) ? text : null;
+
+    private static JsonNode? Parsed(string text)
+    {
+        try
+        {
+            return JsonNode.Parse(text);
+        }
+        catch (JsonException)
+        {
+            return null;
+        }
+    }
 
     private static JsonObject ReadDefaults()
     {

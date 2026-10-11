@@ -32,7 +32,7 @@ public sealed class VersioningSteps
     [Given(@"^the tool ships schema versions (.+) and (\S+)$")]
     public void GivenTheToolShipsSchemaVersions(string earlier, string last)
     {
-        var embedded = SchemaVersions.Embedded.Select(new SemanticVersion(0, 1, 0));
+        var embedded = SchemaVersions.Embedded.Select(new SemanticVersion(0, 1, 0)).UnwrapOk().Value;
         _shipped = earlier.Split(", ").Append(last).Select(Version).ToDictionary(
             static number => number,
             number => embedded with { Number = number });
@@ -100,7 +100,7 @@ public sealed class VersioningSteps
     {
         if (_shipped is not null)
         {
-            _report = SpechtRunner.Run(Tree.Root, new SchemaVersions(_shipped.Values));
+            _report = SpechtRunner.Run(Tree.Root, new SchemaVersions(_shipped.Values)).UnwrapOk().Value;
             return;
         }
 

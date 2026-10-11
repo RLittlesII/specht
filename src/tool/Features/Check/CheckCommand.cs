@@ -3,7 +3,6 @@ using System.ComponentModel;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
-using Specht.Manifest;
 using Specht.Report;
 using Spectre.Console;
 using Spectre.Console.Cli;
@@ -17,57 +16,17 @@ namespace Specht.Tool.Features.Check;
 /// </summary>
 /// <param name="console">Where the product goes; injected so the command tester captures it.</param>
 /// <param name="run">The engine's runner, <see cref="SpechtRunner.Run"/> outside a test.</param>
-public sealed class CheckCommand(IAnsiConsole console, Func<string, SpechtReport> run) : AsyncCommand<CheckCommand.Settings>
+public sealed class CheckCommand(IAnsiConsole console, Func<string, Result<SpechtReport>> run) : AsyncCommand<CheckCommand.Settings>
 {
     /// <inheritdoc />
-    public override Task<int> ExecuteAsync(CommandContext context, Settings settings, CancellationToken cancellationToken)
-    {
-        SpechtReport report;
-
-        try
-        {
-            report = run(Path.GetFullPath(settings.Root));
-        }
-        catch (SpechtRootNotFoundException)
-        {
-            return Fail(ExitCodes.MissingInput, $"specht: '{settings.Root}' is not a directory.");
-        }
-        catch (SpechtManifestNotFoundException exception)
-        {
-            return Fail(ExitCodes.MissingInput, $"specht: {exception.Message}");
-        }
-        catch (SpechtManifestUnreadableException exception)
-        {
-            return Fail(ExitCodes.InvalidManifest, $"specht: {exception.Message}");
-        }
-        catch (SpechtManifestException exception)
-        {
-            return Fail(ExitCodes.InvalidManifest, $"specht: {exception.Message}");
-        }
-
-        var document = SpecReportDocument.From(report);
-
-        if (settings.Json)
-        {
-            console.Profile.Out.Writer.WriteLine(document.ToJson());
-        }
-        else
-        {
-            foreach (var violation in report.Violations)
-            {
-                console.Profile.Out.Writer.WriteLine(violation);
-            }
-
-            foreach (var line in document.SummaryLines())
-            {
-                console.Profile.Out.Writer.WriteLine(line);
-            }
-        }
-
-        var failed = settings.Strict ? report.Violations.Count > 0 : report.ErrorCount > 0;
-
-        return Task.FromResult(failed ? ExitCodes.Violations : ExitCodes.Success);
-    }
+    public override Task<int> ExecuteAsync(CommandContext context, Settings settings, CancellationToken cancellationToken) =>
+        run(Path.GetFullPath(settings.Root)).Match(
+            loaded => Print(loaded.Value, settings),
+            failed => failed.Failure.Match(
+                _ => Fail(ExitCodes.MissingInput, $"specht: '{settings.Root}' is not a directory."),
+                static missing => Fail(ExitCodes.MissingInput, $"specht: {missing.Message}"),
+                static unreadable => Fail(ExitCodes.InvalidManifest, $"specht: {unreadable.Message}"),
+                static rejected => Fail(ExitCodes.InvalidManifest, $"specht: {rejected.Message}")));
 
     /// <summary>The check's options.</summary>
     public sealed class Settings : CommandSettings
@@ -93,5 +52,31 @@ public sealed class CheckCommand(IAnsiConsole console, Func<string, SpechtReport
         Console.Error.WriteLine(message);
 
         return Task.FromResult(code);
+    }
+
+    private Task<int> Print(SpechtReport report, Settings settings)
+    {
+        var document = SpecReportDocument.From(report);
+
+        if (settings.Json)
+        {
+            console.Profile.Out.Writer.WriteLine(document.ToJson());
+        }
+        else
+        {
+            foreach (var violation in report.Violations)
+            {
+                console.Profile.Out.Writer.WriteLine(violation);
+            }
+
+            foreach (var line in document.SummaryLines())
+            {
+                console.Profile.Out.Writer.WriteLine(line);
+            }
+        }
+
+        var failed = settings.Strict ? report.Violations.Count > 0 : report.ErrorCount > 0;
+
+        return Task.FromResult(failed ? ExitCodes.Violations : ExitCodes.Success);
     }
 }

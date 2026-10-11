@@ -48,14 +48,14 @@ public sealed class SpechtRunnerVersionsIntegrationTests
         using var tree = new SpecTree();
         tree.WriteFeature("0001", "F1", new Dictionary<string, string> { ["priority"] = "med" });
         Pin(tree, pinned);
-        var shipped = SchemaVersions.Embedded.Select(new SemanticVersion(0, 1, 0));
+        var shipped = SchemaVersions.Embedded.Select(new SemanticVersion(0, 1, 0)).UnwrapOk().Value;
         var schema = JsonNode.Parse(shipped.FeatureSchema)!.AsObject();
         schema["properties"]!["priority"]!["enum"] = new JsonArray("critical");
         var versions = new SchemaVersions(
             [shipped, shipped with { Number = new SemanticVersion(1, 0, 0), FeatureSchema = schema.ToJsonString() }]);
 
         // When
-        var report = SpechtRunner.Run(tree.Root, versions);
+        var report = SpechtRunner.Run(tree.Root, versions).UnwrapOk().Value;
 
         // Then
         var frontmatter = report.Violations
@@ -73,12 +73,12 @@ public sealed class SpechtRunnerVersionsIntegrationTests
         using var tree = new SpecTree();
         tree.WriteFeature("0001", "F1");
         Pin(tree, pinned);
-        var shipped = SchemaVersions.Embedded.Select(new SemanticVersion(0, 1, 0));
+        var shipped = SchemaVersions.Embedded.Select(new SemanticVersion(0, 1, 0)).UnwrapOk().Value;
         var versions = new SchemaVersions(
             [shipped, shipped with { Number = new SemanticVersion(0, 1, 1) }, shipped with { Number = new SemanticVersion(0, 2, 0) }]);
 
         // When
-        var report = SpechtRunner.Run(tree.Root, versions);
+        var report = SpechtRunner.Run(tree.Root, versions).UnwrapOk().Value;
 
         // Then
         report.SchemaVersion.Should().Be(expected, because);
@@ -92,11 +92,11 @@ public sealed class SpechtRunnerVersionsIntegrationTests
         using var tree = new SpecTree();
         tree.WriteFeature("0001", "F1", sections: SpecTree.SectionsWith("3. Acceptance Criteria", TwoClaims));
         Pin(tree, "0.1.0");
-        var shipped = SchemaVersions.Embedded.Select(new SemanticVersion(0, 1, 0));
+        var shipped = SchemaVersions.Embedded.Select(new SemanticVersion(0, 1, 0)).UnwrapOk().Value;
         var pinned = shipped with { RuleIds = shipped.RuleIds.Except(removed, StringComparer.Ordinal).ToHashSet(StringComparer.Ordinal) };
 
         // When
-        var report = SpechtRunner.Run(tree.Root, new SchemaVersions([pinned]));
+        var report = SpechtRunner.Run(tree.Root, new SchemaVersions([pinned])).UnwrapOk().Value;
 
         // Then
         report.Violations.Select(static violation => violation.RuleId).Should().Equal(expected, because);

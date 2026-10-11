@@ -142,7 +142,7 @@ public sealed class SpechtRunnerEvaluateUnitTests
                 .Select(static layout => (FeatureSpec)new FeatureSpecFixture().WithLocation(new SpecLocationFixture().WithLayout(layout))),
         ];
         SpecModel model = new SpecModelFixture()
-            .WithSchemas(SpecSchemas.Load(fileSystem, "repo", new SchemaVersions([version])))
+            .WithSchemas(SpecSchemas.Load(fileSystem, "repo", new SchemaVersions([version])).UnwrapOk().Value)
             .WithFeatures(features);
 
         // When
@@ -163,7 +163,7 @@ public sealed class SpechtRunnerEvaluateUnitTests
             {
                 [Path.Combine("repo", ".spec", "schema", "spec-structure.schema.json")] = new("""{ "schemaVersion": "0.2.0" }"""),
             });
-        SpecModel model = new SpecModelFixture().WithSchemas(SpecSchemas.Load(fileSystem, "repo", new SchemaVersions([one, two])));
+        SpecModel model = new SpecModelFixture().WithSchemas(SpecSchemas.Load(fileSystem, "repo", new SchemaVersions([one, two])).UnwrapOk().Value);
 
         // When
         var report = SpechtRunner.Evaluate(model, []);
@@ -356,7 +356,7 @@ public sealed class SpechtRunnerEvaluateUnitTests
         var fileSystem = new MockFileSystem(
             new Dictionary<string, MockFileData> { [Path.Combine("repo", ".spec", "schema", "spec-structure.schema.json")] = new(manifest) });
 
-        return new SpecModelFixture().WithSchemas(SpecSchemas.Load(fileSystem, "repo", new SchemaVersions([version])));
+        return new SpecModelFixture().WithSchemas(SpecSchemas.Load(fileSystem, "repo", new SchemaVersions([version])).UnwrapOk().Value);
     }
 
     private static SpecModelFixture ModelWithVocabulary(params string[] ruleIds)
@@ -365,7 +365,7 @@ public sealed class SpechtRunnerEvaluateUnitTests
         var fileSystem = new MockFileSystem(
             new Dictionary<string, MockFileData> { [Path.Combine("repo", ".spec", "schema", "spec-structure.schema.json")] = new("{}") });
 
-        return new SpecModelFixture().WithSchemas(SpecSchemas.Load(fileSystem, "repo", new SchemaVersions([version])));
+        return new SpecModelFixture().WithSchemas(SpecSchemas.Load(fileSystem, "repo", new SchemaVersions([version])).UnwrapOk().Value);
     }
 
     private sealed class AskedRule(string id, IReadOnlyList<string> reportedIds, Action asked) : ISpecRule

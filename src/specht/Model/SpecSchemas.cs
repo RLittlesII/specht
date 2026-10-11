@@ -62,62 +62,62 @@ public sealed class SpecSchemas
     /// <c>$id</c>, so a second load in one process - two roots in one test
     /// run, say - would throw rather than simply reading the schemas again.
     /// </remarks>
-    /// <exception cref="SpechtRootNotFoundException"><paramref name="root"/> is not a directory; no frontmatter schema is read.</exception>
-    /// <exception cref="SpechtManifestNotFoundException">There is no manifest; no frontmatter schema is read.</exception>
-    /// <exception cref="SpechtManifestUnreadableException">The manifest does not parse; no frontmatter schema is read.</exception>
-    /// <exception cref="SpechtManifestException">
-    /// The manifest is rejected, pins a version the tool does not ship, or sets a rule id outside the pinned version's
-    /// vocabulary (<c>0001-F5</c> B-013); no frontmatter schema is read.
-    /// </exception>
-    public static SpecSchemas Load(IFileSystem fileSystem, string root)
-    {
-        var structure = SpecManifest.Load(fileSystem, root);
-        var version = Pinned(SchemaVersions.Embedded, structure);
-        var directory = fileSystem.Path.Combine(root, ".spec", "schema");
+    /// <returns>
+    /// The schemas, or the <see cref="InputFailure"/> of the manifest's load; a manifest that pins a version the tool does not
+    /// ship, or sets a rule id outside the pinned version's vocabulary (<c>0001-F5</c> B-013), is an
+    /// <see cref="InputFailure.ManifestRejected"/>. No frontmatter schema is read on a failure.
+    /// </returns>
+    public static Result<SpecSchemas> Load(IFileSystem fileSystem, string root) =>
+        SpecManifest.Load(fileSystem, root).Match<Result<SpecSchemas>>(
+            loaded => Pinned(SchemaVersions.Embedded, loaded.Value).Match<Result<SpecSchemas>>(
+                pinned =>
+                {
+                    var structure = loaded.Value;
+                    var directory = fileSystem.Path.Combine(root, ".spec", "schema");
 
-        return new SpecSchemas(
-            version with
-            {
-                FeatureSchema = Read(fileSystem, directory, structure.FrontmatterSchemas["feature"]),
-                ItemSchema = Read(fileSystem, directory, structure.FrontmatterSchemas["task"]),
-                EpicSchema = Read(fileSystem, directory, structure.FrontmatterSchemas["epic"]),
-            },
-            structure);
-    }
+                    return new SpecSchemas(
+                        pinned.Value with
+                        {
+                            FeatureSchema = Read(fileSystem, directory, structure.FrontmatterSchemas["feature"]),
+                            ItemSchema = Read(fileSystem, directory, structure.FrontmatterSchemas["task"]),
+                            EpicSchema = Read(fileSystem, directory, structure.FrontmatterSchemas["epic"]),
+                        },
+                        structure);
+                },
+                static failed => failed.Failure),
+            static failed => failed.Failure);
 
     /// <summary>
     /// Loads the manifest from <paramref name="root"/>'s <c>.spec/schema/</c> and the frontmatter schemas of the version it
     /// pins from <paramref name="versions"/> (<c>0001-F7</c> B-001, C-4).
     /// </summary>
     /// <remarks>Each load gets its own <see cref="SchemaRegistry"/>, for the same reason as the on-disk load.</remarks>
-    /// <exception cref="SpechtRootNotFoundException"><paramref name="root"/> is not a directory; no frontmatter schema is read.</exception>
-    /// <exception cref="SpechtManifestNotFoundException">There is no manifest; no frontmatter schema is read.</exception>
-    /// <exception cref="SpechtManifestUnreadableException">The manifest does not parse; no frontmatter schema is read.</exception>
-    /// <exception cref="SpechtManifestException">
-    /// The manifest is rejected, pins a version <paramref name="versions"/> does not hold, or sets a rule id outside the
-    /// pinned version's vocabulary (<c>0001-F5</c> B-013); no frontmatter schema is read.
-    /// </exception>
-    public static SpecSchemas Load(IFileSystem fileSystem, string root, SchemaVersions versions)
-    {
-        var structure = SpecManifest.Load(fileSystem, root);
+    /// <returns>
+    /// The schemas, or the <see cref="InputFailure"/> of the manifest's load; a manifest that pins a version
+    /// <paramref name="versions"/> does not hold, or sets a rule id outside the pinned version's vocabulary (<c>0001-F5</c>
+    /// B-013), is an <see cref="InputFailure.ManifestRejected"/>. No frontmatter schema is read on a failure.
+    /// </returns>
+    public static Result<SpecSchemas> Load(IFileSystem fileSystem, string root, SchemaVersions versions) =>
+        SpecManifest.Load(fileSystem, root).Match<Result<SpecSchemas>>(
+            loaded => Pinned(versions, loaded.Value).Match<Result<SpecSchemas>>(
+                pinned => new SpecSchemas(pinned.Value, loaded.Value),
+                static failed => failed.Failure),
+            static failed => failed.Failure);
 
-        return new SpecSchemas(Pinned(versions, structure), structure);
-    }
+    private static Result<SchemaVersion> Pinned(SchemaVersions versions, SpecStructure structure) =>
+        versions.Select(structure.SchemaVersion).Match<Result<SchemaVersion>>(
+            selected =>
+            {
+                var version = selected.Value;
+                var outside = structure.Rules.Keys.Where(id => !version.RuleIds.Contains(id)).Select(static id => $"'{id}'").ToList();
 
-    private static SchemaVersion Pinned(SchemaVersions versions, SpecStructure structure)
-    {
-        var version = versions.Select(structure.SchemaVersion);
-        var outside = structure.Rules.Keys.Where(id => !version.RuleIds.Contains(id)).Select(static id => $"'{id}'").ToList();
-
-        if (outside.Count > 0)
-        {
-            throw new SpechtManifestException(
-                $"{SpecManifest.RelativePath}: rules names the rule id {string.Join(", ", outside)}, "
-                    + $"which schemaVersion {version.Number} does not hold.");
-        }
-
-        return version;
-    }
+                return outside.Count > 0
+                    ? new InputFailure.ManifestRejected(
+                        $"{SpecManifest.RelativePath}: rules names the rule id {string.Join(", ", outside)}, "
+                            + $"which schemaVersion {version.Number} does not hold.")
+                    : version;
+            },
+            static failed => failed.Failure);
 
     private static string Read(IFileSystem fileSystem, string directory, string name) =>
         fileSystem.File.ReadAllText(fileSystem.Path.Combine(directory, name));

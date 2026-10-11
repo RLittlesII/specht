@@ -76,7 +76,7 @@ public sealed class SpechtRunnerDeterminismUnitTests
                     [Path.Combine(schema, "task.frontmatter.schema.json")] = new("{}"),
                     [Path.Combine(schema, "epic.frontmatter.schema.json")] = new("{}"),
                 }),
-            "repo");
+            "repo").UnwrapOk().Value;
         FeatureSpec feature = new FeatureSpecFixture().WithDocument(
             new SpecDocumentFixture().WithFrontmatter(new FrontmatterFixture().WithNode(new JsonObject { ["github_issue"] = "null" })));
 

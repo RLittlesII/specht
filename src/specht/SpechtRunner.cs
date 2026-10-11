@@ -12,15 +12,19 @@ namespace Specht;
 public static class SpechtRunner
 {
     /// <summary>Loads the tree under <paramref name="root"/> and evaluates its rules with the embedded version set.</summary>
-    public static SpechtReport Run(string root) => Run(root, SchemaVersions.Embedded);
+    /// <returns>The report, or the <see cref="InputFailure"/> that stopped the load.</returns>
+    public static Result<SpechtReport> Run(string root) => Run(root, SchemaVersions.Embedded);
 
     /// <summary>
     /// Loads the tree under <paramref name="root"/> and evaluates the rules of the version its manifest pins from
     /// <paramref name="versions"/>: a rule outside that version's vocabulary is not evaluated, and a violation it would
     /// report is dropped (<c>0001-F7</c> B-014).
     /// </summary>
-    public static SpechtReport Run(string root, SchemaVersions versions) =>
-        Evaluate(SpecModel.Load(root, versions), SpecRules.All);
+    /// <returns>The report, or the <see cref="InputFailure"/> that stopped the load.</returns>
+    public static Result<SpechtReport> Run(string root, SchemaVersions versions) =>
+        SpecModel.Load(root, versions).Match<Result<SpechtReport>>(
+            static loaded => Evaluate(loaded.Value, SpecRules.All),
+            static failed => failed.Failure);
 
     /// <summary>
     /// Evaluates <paramref name="rules"/>, in the order given, over <paramref name="model"/> under the vocabulary of the

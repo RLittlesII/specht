@@ -225,7 +225,7 @@ public sealed class ManifestSteps
     public void GivenTheRootHoldsASpecificationThatRuleReports()
     {
         Write("F1", SpecTree.Sections);
-        SpechtRunner.Evaluate(SpecModel.Load(Tree.Root), [StandIn])
+        SpechtRunner.Evaluate(SpecModel.Load(Tree.Root).UnwrapOk().Value, [StandIn])
             .Violations.Should()
             .ContainSingle()
             .Which.Should()
@@ -237,7 +237,7 @@ public sealed class ManifestSteps
     public void WhenTheCheckRunsWithThatRule()
     {
         File.WriteAllText(ManifestPath, Manifest.ToJsonString());
-        _report = SpechtRunner.Evaluate(SpecModel.Load(Tree.Root), [StandIn]);
+        _report = SpechtRunner.Evaluate(SpecModel.Load(Tree.Root).UnwrapOk().Value, [StandIn]);
     }
 
     [Then("that rule's violation is reported at error severity")]
@@ -359,22 +359,33 @@ public sealed class ManifestSteps
     {
         File.WriteAllText(ManifestPath, Manifest.ToJsonString());
 
-        try
+        if (!_fromRoot)
         {
-            if (_fromRoot)
+            switch (SpechtRunner.Run(Tree.Root))
             {
-                var loaded = SpecModel.Load(Tree.Root);
-                _model = new SpecModel(loaded.Root, loaded.Features, loaded.Items, loaded.Epics, SpecSchemas.Load(new FileSystem(), Tree.Root));
-                _frontmatterViolations = new FrontmatterSchemaRule().Evaluate(_model).ToList();
+                case Result<SpechtReport>.Ok(var report):
+                    _report = report;
+                    break;
+                case Result<SpechtReport>.Failed(var failure):
+                    _rejection = failure.UnwrapManifestRejected();
+                    break;
             }
-            else
-            {
-                _report = SpechtRunner.Run(Tree.Root);
-            }
+
+            return;
         }
-        catch (SpechtManifestException rejection)
+
+        switch (SpecModel.Load(Tree.Root), SpecSchemas.Load(new FileSystem(), Tree.Root))
         {
-            _rejection = rejection;
+            case (Result<SpecModel>.Ok(var loaded), Result<SpecSchemas>.Ok(var schemas)):
+                _model = new SpecModel(loaded.Root, loaded.Features, loaded.Items, loaded.Epics, schemas);
+                _frontmatterViolations = new FrontmatterSchemaRule().Evaluate(_model).ToList();
+                break;
+            case (Result<SpecModel>.Failed(var failure), _):
+                _rejection = failure.UnwrapManifestRejected();
+                break;
+            case (_, Result<SpecSchemas>.Failed(var failure)):
+                _rejection = failure.UnwrapManifestRejected();
+                break;
         }
     }
 
@@ -533,7 +544,7 @@ public sealed class ManifestSteps
     private JsonObject? _manifest;
     private SpechtReport? _report;
     private (string Stdout, string Stderr, int ExitCode)? _run;
-    private SpechtManifestException? _rejection;
+    private InputFailure.ManifestRejected? _rejection;
     private string? _defaultClaimGrammar;
     private bool _fromRoot;
     private string? _featureSchema;

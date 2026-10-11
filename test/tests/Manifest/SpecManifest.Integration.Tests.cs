@@ -34,9 +34,10 @@ public sealed class SpecManifestIntegrationTests
         File.WriteAllText(path, manifest.ToJsonString());
 
         // When
-        var run = () => tree.Run();
+        var run = SpechtRunner.Run(tree.Root);
 
         // Then
-        run.Should().Throw<SpechtManifestException>().Which.Message.Should().Contain("glossary");
+        run.Should().BeOfType<Result<SpechtReport>.Failed>()
+            .Which.Failure.Should().BeOfType<InputFailure.ManifestRejected>().Which.Message.Should().Contain("glossary");
     }
 }

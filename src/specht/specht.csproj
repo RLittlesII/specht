@@ -10,6 +10,7 @@
     <PackageReference Include="YamlDotNet" />
     <PackageReference Include="Markdig" />
     <PackageReference Include="TestableIO.System.IO.Abstractions.Wrappers" />
+    <PackageReference Include="Dunet" />
   </ItemGroup>
 
   <!-- The default manifest (0001-F5 A-4) is this repository's own manifest, embedded from that one file so it cannot

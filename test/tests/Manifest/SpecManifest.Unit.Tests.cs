@@ -143,7 +143,7 @@ public sealed class SpecManifestUnitTests
         }
 
         // When
-        var structure = SpecManifest.Load(Holding(manifest), Root);
+        var structure = SpecManifest.Load(Holding(manifest), Root).UnwrapOk().Value;
 
         // Then
         structure.SchemaVersion.Should().Be(expected, because);
@@ -160,10 +160,11 @@ public sealed class SpecManifestUnitTests
         var fileSystem = Holding($"{{ \"schemaVersion\": {pinned}, {DefaultManifest().ToJsonString()[1..]}");
 
         // When
-        var load = () => SpecManifest.Load(fileSystem, Root);
+        var load = SpecManifest.Load(fileSystem, Root);
 
         // Then
-        load.Should().ThrowExactly<SpechtManifestException>(because)
+        load.Should().BeOfType<Result<SpecStructure>.Failed>(because)
+            .Which.Failure.Should().BeOfType<InputFailure.ManifestRejected>(because)
             .Which.Message.Should().MatchRegex($@"(?<![\w.]){Regex.Escape(named)}(?!\.?\w)", because);
     }
 
@@ -175,10 +176,11 @@ public sealed class SpecManifestUnitTests
         var root = Root;
 
         // When
-        var load = () => SpecManifest.Load(fileSystem, root);
+        var load = SpecManifest.Load(fileSystem, root);
 
         // Then
-        load.Should().ThrowExactly<SpechtRootNotFoundException>(because);
+        load.Should().BeOfType<Result<SpecStructure>.Failed>(because)
+            .Which.Failure.Should().BeOfType<InputFailure.RootNotFound>(because);
     }
 
     [Fact]
@@ -189,10 +191,11 @@ public sealed class SpecManifestUnitTests
         fileSystem.AddDirectory(Root);
 
         // When
-        var load = () => SpecManifest.Load(fileSystem, Root);
+        var load = SpecManifest.Load(fileSystem, Root);
 
         // Then
-        load.Should().ThrowExactly<SpechtManifestNotFoundException>().Which.Message.Should().Contain(SpecManifest.RelativePath);
+        load.Should().BeOfType<Result<SpecStructure>.Failed>()
+            .Which.Failure.Should().BeOfType<InputFailure.ManifestNotFound>().Which.Message.Should().Contain(SpecManifest.RelativePath);
     }
 
     [Theory]
@@ -203,12 +206,12 @@ public sealed class SpecManifestUnitTests
         var fileSystem = Holding(text);
 
         // When
-        var load = () => SpecManifest.Load(fileSystem, Root);
+        var load = SpecManifest.Load(fileSystem, Root);
 
         // Then
-        var thrown = load.Should().ThrowExactly<SpechtManifestUnreadableException>().Which;
+        var thrown = load.Should().BeOfType<Result<SpecStructure>.Failed>()
+            .Which.Failure.Should().BeOfType<InputFailure.ManifestUnreadable>().Which;
         thrown.Message.Should().Contain(SpecManifest.RelativePath).And.NotContain(Root + "/");
-        thrown.InnerException.Should().NotBeNull();
     }
 
     [Theory]
@@ -222,10 +225,11 @@ public sealed class SpecManifestUnitTests
         var fileSystem = Holding(manifest);
 
         // When
-        var load = () => SpecManifest.Load(fileSystem, Root);
+        var load = SpecManifest.Load(fileSystem, Root);
 
         // Then
-        load.Should().ThrowExactly<SpechtManifestException>().Which.Message.Should().Contain(key);
+        load.Should().BeOfType<Result<SpecStructure>.Failed>()
+            .Which.Failure.Should().BeOfType<InputFailure.ManifestRejected>().Which.Message.Should().Contain(key);
     }
 
     [Theory]
@@ -241,10 +245,10 @@ public sealed class SpecManifestUnitTests
         plain.Remove("$comment");
 
         // When
-        var structure = SpecManifest.Load(Holding(annotated), Root);
+        var structure = SpecManifest.Load(Holding(annotated), Root).UnwrapOk().Value;
 
         // Then
-        structure.Should().BeEquivalentTo(SpecManifest.Load(Holding(plain), Root));
+        structure.Should().BeEquivalentTo(SpecManifest.Load(Holding(plain), Root).UnwrapOk().Value);
     }
 
     [Theory]
@@ -257,7 +261,7 @@ public sealed class SpecManifestUnitTests
         var fileSystem = Holding(manifest);
 
         // When
-        var structure = SpecManifest.Load(fileSystem, Root);
+        var structure = SpecManifest.Load(fileSystem, Root).UnwrapOk().Value;
 
         // Then
         structure.Identifiers.Should().ContainKey(name).WhoseValue.Should().Be(grammar);
@@ -280,7 +284,7 @@ public sealed class SpecManifestUnitTests
         var fileSystem = Holding(manifest);
 
         // When
-        var structure = SpecManifest.Load(fileSystem, Root);
+        var structure = SpecManifest.Load(fileSystem, Root).UnwrapOk().Value;
 
         // Then
         structure.FrontmatterSchemas.Should().ContainKey(kind).WhoseValue.Should().Be(name);
@@ -301,7 +305,7 @@ public sealed class SpecManifestUnitTests
         var fileSystem = Holding(manifest);
 
         // When
-        var structure = SpecManifest.Load(fileSystem, Root);
+        var structure = SpecManifest.Load(fileSystem, Root).UnwrapOk().Value;
 
         // Then
         structure.FrontmatterSchemas.Should().ContainKey(kind).WhoseValue.Should().Be(name);
@@ -318,10 +322,10 @@ public sealed class SpecManifestUnitTests
         var fileSystem = Holding(manifest);
 
         // When
-        var structure = SpecManifest.Load(fileSystem, Root);
+        var structure = SpecManifest.Load(fileSystem, Root).UnwrapOk().Value;
 
         // Then
-        structure.Should().BeEquivalentTo(SpecManifest.Load(Holding(DefaultManifest()), Root));
+        structure.Should().BeEquivalentTo(SpecManifest.Load(Holding(DefaultManifest()), Root).UnwrapOk().Value);
     }
 
     [Fact]
@@ -333,7 +337,7 @@ public sealed class SpecManifestUnitTests
         var fileSystem = Holding(manifest);
 
         // When
-        var structure = SpecManifest.Load(fileSystem, Root);
+        var structure = SpecManifest.Load(fileSystem, Root).UnwrapOk().Value;
 
         // Then
         structure.Tables.Should().ContainKey("matrix").WhoseValue.Should().Equal("Claim ID", "Proof");
@@ -356,7 +360,7 @@ public sealed class SpecManifestUnitTests
         var fileSystem = Holding(manifest);
 
         // When
-        var structure = SpecManifest.Load(fileSystem, Root);
+        var structure = SpecManifest.Load(fileSystem, Root).UnwrapOk().Value;
 
         // Then
         structure.Roles.Should().ContainKey(role).WhoseValue.Should().Be(title);
@@ -377,7 +381,7 @@ public sealed class SpecManifestUnitTests
         var fileSystem = Holding(manifest);
 
         // When
-        var structure = SpecManifest.Load(fileSystem, Root);
+        var structure = SpecManifest.Load(fileSystem, Root).UnwrapOk().Value;
 
         // Then
         structure.Roles.Should().ContainKey(role).WhoseValue.Should().Be(title);
@@ -401,7 +405,7 @@ public sealed class SpecManifestUnitTests
         var fileSystem = Holding(manifest);
 
         // When
-        var structure = SpecManifest.Load(fileSystem, Root);
+        var structure = SpecManifest.Load(fileSystem, Root).UnwrapOk().Value;
 
         // Then
         structure.Markers.Should().ContainKey(marker).WhoseValue.Should().Be(text);
@@ -423,7 +427,7 @@ public sealed class SpecManifestUnitTests
         var fileSystem = Holding(manifest);
 
         // When
-        var structure = SpecManifest.Load(fileSystem, Root);
+        var structure = SpecManifest.Load(fileSystem, Root).UnwrapOk().Value;
 
         // Then
         structure.Markers.Should().ContainKey(marker).WhoseValue.Should().Be(text);
@@ -441,10 +445,11 @@ public sealed class SpecManifestUnitTests
         var fileSystem = Holding(manifest);
 
         // When
-        var load = () => SpecManifest.Load(fileSystem, Root);
+        var load = SpecManifest.Load(fileSystem, Root);
 
         // Then
-        load.Should().ThrowExactly<SpechtManifestException>().Which.Message.Should().Contain($"'{role}'");
+        load.Should().BeOfType<Result<SpecStructure>.Failed>()
+            .Which.Failure.Should().BeOfType<InputFailure.ManifestRejected>().Which.Message.Should().Contain($"'{role}'");
     }
 
     [Fact]
@@ -456,10 +461,11 @@ public sealed class SpecManifestUnitTests
         var fileSystem = Holding(manifest);
 
         // When
-        var load = () => SpecManifest.Load(fileSystem, Root);
+        var load = SpecManifest.Load(fileSystem, Root);
 
         // Then
-        load.Should().ThrowExactly<SpechtManifestException>().Which.Message.Should().Contain("'claims'");
+        load.Should().BeOfType<Result<SpecStructure>.Failed>()
+            .Which.Failure.Should().BeOfType<InputFailure.ManifestRejected>().Which.Message.Should().Contain("'claims'");
     }
 
     [Theory]
@@ -473,10 +479,11 @@ public sealed class SpecManifestUnitTests
         var fileSystem = Holding(manifest);
 
         // When
-        var load = () => SpecManifest.Load(fileSystem, Root);
+        var load = SpecManifest.Load(fileSystem, Root);
 
         // Then
-        load.Should().ThrowExactly<SpechtManifestException>().Which.Message.Should().Contain($"'{key}'");
+        load.Should().BeOfType<Result<SpecStructure>.Failed>()
+            .Which.Failure.Should().BeOfType<InputFailure.ManifestRejected>().Which.Message.Should().Contain($"'{key}'");
     }
 
     [Theory]
@@ -492,10 +499,11 @@ public sealed class SpecManifestUnitTests
         var fileSystem = Holding(manifest);
 
         // When
-        var load = () => SpecManifest.Load(fileSystem, Root);
+        var load = SpecManifest.Load(fileSystem, Root);
 
         // Then
-        load.Should().ThrowExactly<SpechtManifestException>().Which.Message.Should().Contain($"'{marker}'");
+        load.Should().BeOfType<Result<SpecStructure>.Failed>()
+            .Which.Failure.Should().BeOfType<InputFailure.ManifestRejected>().Which.Message.Should().Contain($"'{marker}'");
     }
 
     [Theory]
@@ -510,10 +518,11 @@ public sealed class SpecManifestUnitTests
         var fileSystem = Holding(manifest);
 
         // When
-        var load = () => SpecManifest.Load(fileSystem, Root);
+        var load = SpecManifest.Load(fileSystem, Root);
 
         // Then
-        load.Should().ThrowExactly<SpechtManifestException>().Which.Message.Should().Contain(key);
+        load.Should().BeOfType<Result<SpecStructure>.Failed>()
+            .Which.Failure.Should().BeOfType<InputFailure.ManifestRejected>().Which.Message.Should().Contain(key);
     }
 
     [Theory]
@@ -530,10 +539,11 @@ public sealed class SpecManifestUnitTests
         var fileSystem = Holding(manifest);
 
         // When
-        var load = () => SpecManifest.Load(fileSystem, Root);
+        var load = SpecManifest.Load(fileSystem, Root);
 
         // Then
-        load.Should().ThrowExactly<SpechtManifestException>(because)
+        load.Should().BeOfType<Result<SpecStructure>.Failed>(because)
+            .Which.Failure.Should().BeOfType<InputFailure.ManifestRejected>(because)
             .Which.Message.Should().Contain("old-tree", because).And.Contain(member, because);
     }
 
@@ -549,10 +559,11 @@ public sealed class SpecManifestUnitTests
         var fileSystem = Holding(manifest);
 
         // When
-        var load = () => SpecManifest.Load(fileSystem, Root);
+        var load = SpecManifest.Load(fileSystem, Root);
 
         // Then
-        load.Should().ThrowExactly<SpechtManifestException>().Which.Message.Should().Contain($"'{entry}'");
+        load.Should().BeOfType<Result<SpecStructure>.Failed>()
+            .Which.Failure.Should().BeOfType<InputFailure.ManifestRejected>().Which.Message.Should().Contain($"'{entry}'");
     }
 
     [Theory]
@@ -567,10 +578,10 @@ public sealed class SpecManifestUnitTests
         var fileSystem = Holding(manifest);
 
         // When
-        var load = () => SpecManifest.Load(fileSystem, Root);
+        var load = SpecManifest.Load(fileSystem, Root);
 
         // Then
-        load.Should().NotThrow();
+        load.Should().BeOfType<Result<SpecStructure>.Ok>();
     }
 
     [Fact]
@@ -583,10 +594,11 @@ public sealed class SpecManifestUnitTests
         var fileSystem = Holding(manifest);
 
         // When
-        var load = () => SpecManifest.Load(fileSystem, Root);
+        var load = SpecManifest.Load(fileSystem, Root);
 
         // Then
-        var message = load.Should().ThrowExactly<SpechtManifestException>().Which.Message;
+        var message = load.Should().BeOfType<Result<SpecStructure>.Failed>()
+            .Which.Failure.Should().BeOfType<InputFailure.ManifestRejected>().Which.Message;
         var positions = faults.Select(fault => message.IndexOf($"'{fault}'", StringComparison.Ordinal)).ToList();
         positions.Should().NotContain(-1, message).And.BeInAscendingOrder(message);
     }
@@ -603,10 +615,11 @@ public sealed class SpecManifestUnitTests
         var fileSystem = Holding(manifest);
 
         // When
-        var load = () => SpecManifest.Load(fileSystem, Root);
+        var load = SpecManifest.Load(fileSystem, Root);
 
         // Then
-        var message = load.Should().ThrowExactly<SpechtManifestException>().Which.Message;
+        var message = load.Should().BeOfType<Result<SpecStructure>.Failed>()
+            .Which.Failure.Should().BeOfType<InputFailure.ManifestRejected>().Which.Message;
         var positions = faults.Select(fault => message.IndexOf($"'{fault}'", StringComparison.Ordinal)).ToList();
         positions.Should().NotContain(-1, message).And.BeInAscendingOrder(message);
     }
@@ -623,10 +636,10 @@ public sealed class SpecManifestUnitTests
         var fileSystem = Holding(manifest);
 
         // When
-        var load = () => SpecManifest.Load(fileSystem, Root);
+        var load = SpecManifest.Load(fileSystem, Root);
 
         // Then
-        load.Should().NotThrow();
+        load.Should().BeOfType<Result<SpecStructure>.Ok>();
     }
 
     [Theory]
@@ -641,10 +654,11 @@ public sealed class SpecManifestUnitTests
         var fileSystem = Holding(manifest);
 
         // When
-        var load = () => SpecManifest.Load(fileSystem, Root);
+        var load = SpecManifest.Load(fileSystem, Root);
 
         // Then
-        load.Should().ThrowExactly<SpechtManifestException>().Which.Message.Should().Contain("'SPEC010'").And.Contain($"'{value}'");
+        load.Should().BeOfType<Result<SpecStructure>.Failed>()
+            .Which.Failure.Should().BeOfType<InputFailure.ManifestRejected>().Which.Message.Should().Contain("'SPEC010'").And.Contain($"'{value}'");
     }
 
     [Fact]
@@ -659,10 +673,11 @@ public sealed class SpecManifestUnitTests
         var fileSystem = Holding(manifest);
 
         // When
-        var load = () => SpecManifest.Load(fileSystem, Root);
+        var load = SpecManifest.Load(fileSystem, Root);
 
         // Then
-        load.Should().ThrowExactly<SpechtManifestException>().Which.Message.Should().Contain("'SPEC010'");
+        load.Should().BeOfType<Result<SpecStructure>.Failed>()
+            .Which.Failure.Should().BeOfType<InputFailure.ManifestRejected>().Which.Message.Should().Contain("'SPEC010'");
     }
 
     [Fact]
@@ -672,7 +687,7 @@ public sealed class SpecManifestUnitTests
         var fileSystem = Holding(DefaultManifest());
 
         // When
-        var structure = SpecManifest.Load(fileSystem, Root);
+        var structure = SpecManifest.Load(fileSystem, Root).UnwrapOk().Value;
 
         // Then
         structure.Rules.Should().BeEmpty();
