@@ -111,6 +111,26 @@ decisions:
   - |
     2026-10-11, the repository owner: `0109-F1` carries value 3 and is not
     on the `.issue/.goal` path.
+  - |
+    2026-10-11, the repository owner, on pull request #114, review
+    summary "boundaries.", on
+    `test/tests/Benchmarks/SpechtTree.Integration.Tests.cs`: "We should
+    not be writing integration tests for benchmarks. That's like writing
+    a unit tests for an acceptance test. This FURTHER proves the original
+    point I made in the session, that this should be PRODUCTION code and
+    _not_ code in the benchmarks. Bechmarks don't get tests. They should
+    benchmark production code!
+
+    Ignore these tests for the benchmark, create a refactor story to fix
+    this later."
+    Reverses, for B-015 and B-016, the decision above that "the tree
+    generator's claims (B-015, B-016) are tested": benchmark code carries
+    no test, and the tree and its store become production code, tested
+    there, under refactor 0153. The earlier entry stands as written. How
+    B-015 and B-016 are proven after the move is stated by 0153's
+    specification delta. spec-author's reading, not the owner's words:
+    until 0153 the tests 0147 wrote stay as they are, with no further
+    work (spec § 10; OQ-5).
 
 out_of_scope:
   - "Everything in § 5 of the spec."
