@@ -51,6 +51,19 @@ decisions:
     baseline proof (`0001-F5` B-016) reads it less its `rules` key, and
     `0001-F5` B-044 gains its first failing case, a consumer manifest
     naming no level for `SPEC060`.
+  - |
+    2026-10-10, spec-author, recorded on `spec-reviewer` round 2 of item
+    0014 (`0001-F5` § 12, note (a)); no call of the owner's. The root
+    `README.md` "Default manifest" block is today this repository's
+    manifest less its five discovery keys, byte for byte, which is item
+    0119's criterion, so it shows `"rules": {}`. `init` writes no `rules`
+    key and `0001-F5` A-4 leaves `rules` out of the default. Once this item
+    sets a rule level in this repository's manifest, that block would show
+    this repository's own setting as the default. Owed in this item's
+    change: the block leaves `rules` out, and item 0119's criterion then
+    reads "less its discovery keys and its `rules` key". Item 0119 is done
+    and its criterion is true of the README today, so neither it nor the
+    README is changed before then.
 
 out_of_scope:
   - "A change to the engine's `SPEC060` — C-6."

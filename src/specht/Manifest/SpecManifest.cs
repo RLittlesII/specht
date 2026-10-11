@@ -24,8 +24,8 @@ public static class SpecManifest
     /// <param name="fileSystem">The file system the manifest is read through.</param>
     /// <param name="root">The repository root.</param>
     /// <returns>
-    /// The section contract, id grammars, discovery inputs, schema file names and rule settings, every omitted value read as the
-    /// default manifest.
+    /// The section contract, id grammars, discovery inputs and schema file names, every omitted value read as the default
+    /// manifest, and the rule settings as the manifest wrote them (<c>0001-F5</c> B-044).
     /// </returns>
     /// <exception cref="SpechtRootNotFoundException"><paramref name="root"/> is not a directory.</exception>
     /// <exception cref="SpechtManifestNotFoundException">There is no file at the manifest path.</exception>
