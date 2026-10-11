@@ -9,7 +9,7 @@ risk: 1
 parent: "0050"
 children: []
 
-depends_on: ["0052", "0013", "0092"] # a refusal before 0052's write; 0013's exit 3 for a rejected manifest; 0092 rejects an upstream source with the embedded source selected
+depends_on: ["0052", "0013", "0177"] # a refusal before 0052's write; 0013's exit 3 for a rejected manifest; 0177 rejects an upstream source with the embedded source selected
 spikes: []
 
 spec: src/tool/Features/Init/.spec/README.md
@@ -18,20 +18,23 @@ claims:
   - B-017
 
 created: "2026-10-08"
-updated: "2026-10-10"
+updated: "2026-10-11"
 closed: null
 
 summary: |
   Every command answers a rejected manifest with 3 (0001-F2 decision
   0003); init does too, writing nothing. Kept apart from 0054, which
-  refuses an unshipped pin, because this waits on 0013 and 0092 and 0054
+  refuses an unshipped pin, because this waits on 0013 and 0177 and 0054
   need not.
 
 acceptance_criteria:
   - "B-017 — unparseable, 0001-F5-rejected or contradictory manifest: stderr, nothing written, exit 3"
   - "§ 9 carries a row naming a test for each id above."
 
-decisions: []
+decisions:
+  - |
+    2026-10-11, spec-author: the contradiction this item refuses, 0001-F7
+    B-036, moved from `0092` to `0177`; the edge follows it.
 
 out_of_scope:
   - "Repairing the manifest — § 5 of the spec."

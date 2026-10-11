@@ -1,0 +1,71 @@
+id: "0179"
+type: task
+title: Write the setup guide's initialisation and manifest parts
+
+status: ready
+
+value: 4
+risk: 2
+
+parent: null
+children: []
+
+depends_on: []
+spikes: []
+
+spec: null
+
+claims: []
+
+created: "2026-10-11"
+updated: "2026-10-11"
+closed: null
+
+summary: |
+  The repository owner, 2026-10-11: "We also need a "setup guide" proper.
+  covering. initialization, manifest, setting up your own schema using
+  github." No page walks a consumer from an empty repository to a checked
+  one: `README.md` has the install and the command table, and
+  `docs/configuration.md` is the manifest's reference, not a walk through
+  it. No specification governs `docs/` (epic `0002` is
+  `needs-decomposition`), so this item delivers no claim.
+
+  This item writes the first two parts, which describe what is built
+  today. The third, the consumer's own schema hosted on GitHub, is item
+  0180 and waits on the upstream source.
+
+  Value 4: the page a first consumer follows. Risk 2: prose, with links
+  that must resolve and commands that must be true on the day it merges.
+
+  Expected files: new `docs/setup.md`; `README.md` (one line in its
+  "Documentation" list). Nothing under `src/`, `test/` or `.build/`.
+
+acceptance_criteria:
+  - "`docs/setup.md` exists directly under root `docs/` and opens with YAML frontmatter: `title`, `description` and `type: reference`."
+  - "Initialisation: installing through the local tool manifest, `specht init`, the files it writes and that it never overwrites, then the first `specht` run and what its exit codes mean, linking `docs/exit-codes.md` and not repeating it."
+  - "Manifest: where the file is, `schemaVersion` and the exact pin, and how a consumer changes a setting, linking `docs/configuration.md` for every key and not repeating its tables."
+  - "It states only what the tool does on the day it merges: a command that is specified and not built (`specht manifest`, `specht rules`, the pin command) is not shown as usable."
+  - 'Terse (owner, pull request #79, 2026-10-09: "more verbose than I''d like can we make them terse?!").'
+  - '`README.md`''s "Documentation" list links the page. Every link in the page resolves, and no path in it is absolute.'
+  - "`./build.sh Format` and `./build.sh Specht` pass."
+
+decisions:
+  - |
+    2026-10-11, the repository owner: a setup guide is required, covering
+    initialisation, the manifest and setting up your own schema using
+    GitHub (0055-F6 decision 0004).
+  - |
+    2026-10-11, spec-author: one page, `docs/setup.md`, in two items, so
+    the two parts that describe built behaviour do not wait on the
+    upstream source. Not an owner ruling. Whether the guide holds the
+    first `v*` tag is 0055-F6 OQ-18, open; item `0084` does not wait on
+    this item.
+  - |
+    2026-10-11, spec-author: `value: 4` and `risk: 2` are spec-author's
+    scores, not the owner's.
+
+out_of_scope:
+  - "The consumer's own schema hosted on GitHub — item 0180."
+  - "The feed, the package source entry and the token in the install section — item 0088, 0055-F7."
+  - "The manifest's key-by-key reference — `docs/configuration.md`."
+  - "Any change to what the tool does."

@@ -225,7 +225,9 @@ replaces the stdout stream with the report document; each violation in it
 carries what the rule expected (Must-6). `--report` writes the same JSON to a
 path. `--explain SPEC031` prints the rule's full text. Never an absolute path
 in any output. `specht init` writes the schema set (and templates) into
-`<root>/.spec/` from embedded copies, never overwriting. `specht upgrade`
+`<root>/.spec/` from embedded copies, or the frontmatter schemas from an
+upstream schema source the manifest records (`0001-F4` B-014), never
+overwriting. `specht upgrade`
 brings `.spec/schema/` and `.spec/templates/` to the pinned version and prints
 what changed; it never touches a document. A list command names the shipped
 schema versions and a pin command moves `schemaVersion` to one of them, up or

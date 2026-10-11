@@ -101,8 +101,10 @@ B-004, decision 0004). Until that step the engine is exactly `hooked`'s, renamed
 A consumer configures the tool with one file: `.spec/schema/spec-structure.schema.json`,
 the manifest. It carries `schemaVersion` and will carry the roles above. Beside
 it sit the three frontmatter schemas (`feature-spec`, `task`, `epic`) and
-`.spec/templates/`. `specht init` writes all of them from the embedded copies
-and never overwrites a file that exists.
+`.spec/templates/`. `specht init` writes all of them from the embedded copies -
+the frontmatter schemas from an upstream schema source instead, where the
+manifest records one (`0001-F4` B-014) - and never overwrites a file that
+exists.
 
 `schemaVersion` is a `major.minor.patch` schema version, numbered apart from
 the `specht.tool` package version; the first is `0.1.0`, and a manifest with no

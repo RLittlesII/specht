@@ -9,7 +9,7 @@ risk: 4
 parent: "0082"
 children: []
 
-depends_on: ["0083", "0171", "0172", "0174"] # the push step of 0083's workflow; the package it pushes (OQ-11)
+depends_on: ["0083", "0171", "0172", "0174", "0092", "0095", "0178"] # the push step of 0083's workflow; the package it pushes (OQ-11); a schema sourced at a URL (C-8)
 spikes: []
 
 spec: .build/Releasing/.spec/README.md
@@ -34,6 +34,14 @@ summary: |
   (C-2, amended 2026-10-11). Risk 4: irreversible - a published version
   stays (§ 5 #4).
 
+  The first `v*` tag waits until a consumer can initialise a repository
+  to a schema sourced at a URL and have the check validate with it (C-8,
+  decision 0004; owner, 2026-10-11). Which claims are that ability is
+  OQ-17, open: this item waits on the smallest set proposed there -
+  the check under a recorded source (0092), init's fetch (0095) and init
+  recording a source (0178). Whether the setup guide (0179, 0180) also
+  holds the tag is OQ-18, open; this item does not wait on it.
+
 acceptance_criteria:
   - "B-003 — every target passing: `specht.tool` pushed to GitHub Packages on `rlittlesii/specht`"
   - "B-004 — package pushed: a GitHub Release for the tag"
@@ -42,6 +50,7 @@ acceptance_criteria:
   - "B-011 — a `v*` tag on a commit not reachable from `main`: the run fails before anything is packed or pushed"
   - "B-012 — no earlier `v*` tag: the Release notes cover every pull request merged up to the tag"
   - "0055-F6 OQ-11 is resolved (2026-10-11): `src/tool/tool.csproj` sets `RepositoryUrl`, and items `0171`, `0172` and `0174` are `done` before the first tag is pushed"
+  - "0055-F6 C-8 — items `0092`, `0095` and `0178` are `done` before the first tag is pushed; the set is 0055-F6 OQ-17's, open"
   - "0055-F6 OQ-13 — the delivering pull request merges with this item `in-review`; a follow-up pull request records the dry run and the tag's run in § 8 and writes this item `done`"
   - "§ 9 carries a row for each id above and none names a test (§ 5 #9); § 8 records the generated file read against § 7 and the hand runs of `VerifyTag`, and the follow-up pull request adds the dry run and the tag's run (0055-F6 OQ-13). Whether this item closes while those rows read `Missing` is 0055-F6 OQ-16, open."
 
@@ -87,6 +96,16 @@ decisions:
     decision 0002 names item `0083`'s five claims only, so that is
     0055-F6 OQ-16, open and not put to the owner. `status` is
     `in-review`, as OQ-13 has the delivering pull request merge.
+  - |
+    2026-10-11, spec-author, on the repository owner's ruling of that day
+    (0055-F6 decision 0004): "Okay, this is a HUGE gap. We can't release
+    without this. We need to solve this asap." `0092`, `0095` and `0178`
+    join `depends_on` (C-8). The three are spec-author's reading of the
+    ruling, proposed in OQ-17 and not ratified; `0178` is `blocked` on
+    0001-F4 OQ-6, so the tag waits on that answer. `status` stays
+    `in-review`: pull request #124 merged the workflow and no tag was
+    pushed. Nothing mechanical stops a `v*` tag; the hold is this record.
+    `risk` is unchanged and was not re-scored.
 
 out_of_scope:
   - "NuGet.org — § 5 #3, C-3."

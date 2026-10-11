@@ -8,7 +8,7 @@ value: 4
 risk: 3
 
 parent: "0001"
-children: ["0051", "0052", "0053", "0054", "0095", "0096", "0175"]
+children: ["0051", "0052", "0053", "0054", "0095", "0096", "0175", "0178"]
 
 depends_on: []
 spikes: []
@@ -33,6 +33,7 @@ claims:
   - B-015
   - B-016
   - B-017
+  - B-027
 
 created: "2026-10-08"
 updated: "2026-10-11"
@@ -56,6 +57,13 @@ summary: |
   recorded upstream source (0095) and init refusing a rejected
   manifest (0096).
 
+  The repository owner, 2026-10-11: the first release waits until a
+  consumer can initialise a repository to a schema sourced at a URL
+  (0055-F6 decision 0004). 0095 now builds the fetch and carries B-027;
+  init recording a source into the manifest it writes (0178) is
+  `blocked` on OQ-6 and OQ-7, proposed in decision 0003 and not
+  ratified.
+
 acceptance_criteria:
   - "B-001 — bare root: the eight files of the newest version; exit 0 (0052)"
   - "B-002 — an existing file left byte-for-byte (0054)"
@@ -74,6 +82,7 @@ acceptance_criteria:
   - "B-015 — upstream content mismatches the hash: exit 3 (0095)"
   - "B-016 — upstream source unreachable: exit 3 (0095)"
   - "B-017 — a manifest the check rejects: nothing written, exit 3 (0096)"
+  - "B-027 — nothing asks for a fetch: no network call (0095)"
   - "§ 9 carries a row naming a test for each id above."
 
 decisions:
@@ -90,6 +99,12 @@ decisions:
     item that reuses upgrade's fetch (0095 -> 0093), and B-017 alone
     (0096). Rejected: B-017 inside 0054, which would hold B-002 and
     the pinned-version write behind 0013 and 0092.
+  - |
+    2026-10-11, spec-author's cut, after the repository owner's ruling
+    (0055-F6 decision 0004): 0095 no longer reuses upgrade's fetch but
+    builds it (0095 -> 0176), and init recording a source is its own item
+    (0178), blocked on OQ-6. Rejected: the recording inside 0095, which
+    would block three claims that need no answer.
 
 out_of_scope:
   - "Everything in § 5 of the spec."

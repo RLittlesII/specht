@@ -198,6 +198,21 @@ Feature: init
     And the standard error names the source
     And the exit code is 3
 
+  @B-027 @boundary
+  Scenario: Init into a bare root makes no network call
+    Given a root directory with no schema folder and no templates folder
+    And the network is unavailable
+    When init runs against it
+    Then no network call was attempted
+
+  @B-027 @boundary
+  Scenario: Init beside a manifest recording no upstream source makes no network call
+    Given a root directory whose manifest records no upstream schema source
+    And no frontmatter schema file under the root's schema folder
+    And the network is unavailable
+    When init runs against it
+    Then no network call was attempted
+
   @B-017
   Scenario: Init beside a manifest that does not parse fails as the check does
     Given a root directory whose schema folder holds a manifest that is not well-formed JSON

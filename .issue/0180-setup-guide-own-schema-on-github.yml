@@ -1,0 +1,62 @@
+id: "0180"
+type: task
+title: Write the setup guide's part on hosting your own schema on GitHub
+
+status: ready
+
+value: 4
+risk: 2
+
+parent: null
+children: []
+
+depends_on: ["0179", "0092", "0178"] # a section of 0179's page; describes the check under a recorded source and init recording one
+spikes: []
+
+spec: null
+
+claims: []
+
+created: "2026-10-11"
+updated: "2026-10-11"
+closed: null
+
+summary: |
+  The third part of the guide the repository owner asked for on
+  2026-10-11: "setting up your own schema using github". It describes
+  behaviour that is specified and not built - a manifest recording an
+  upstream schema source (0001-F7 decision 0004), init fetching it
+  (0001-F4 B-014) and the check validating with it (0001-F7 B-024) - so it
+  waits on the items that build it. What a GitHub address looks like and
+  what credential a private repository takes are 0001-F7 OQ-35 and OQ-36,
+  open; this item reaches their answers through 0178 and 0092.
+
+  No specification governs `docs/`, so this item delivers no claim. Value
+  4 and risk 2, as 0179.
+
+  Expected files: `docs/setup.md`. Nothing under `src/`, `test/` or
+  `.build/`.
+
+acceptance_criteria:
+  - "`docs/setup.md` gains a section that takes a consumer from frontmatter schemas in a GitHub repository of their own to a repository whose check validates with them: where the files sit, the address, the hash, pointing a new repository at them, and what `init` writes."
+  - "It names the credential a private repository needs and where the tool reads it, as 0001-F7 OQ-36 is answered, and shows no token value."
+  - "It says what stays the tool's: the rule vocabulary and the manifest schema are the pinned embedded version's (0001-F7 B-028)."
+  - "It states only what the tool does on the day it merges, and every command it shows runs as written against a tool built from that commit."
+  - "Terse, as 0179. Every link resolves, and no path in it is absolute."
+  - "`./build.sh Format` and `./build.sh Specht` pass."
+
+decisions:
+  - |
+    2026-10-11, spec-author: cut apart from 0179 because it describes
+    unbuilt behaviour. Not an owner ruling.
+  - |
+    2026-10-11, spec-author: added to `.issue/.goal`, reading the owner's
+    "We also need" as naming the guide part of the product's finish
+    line. Reversible: remove the line. It does not join item `0084`'s
+    `depends_on`; whether the guide holds the first tag is 0055-F6
+    OQ-18, open.
+
+out_of_scope:
+  - "Initialisation and the manifest — item 0179."
+  - "Upgrade under a recorded source — 0093; a later revision of the page once it lands."
+  - "Any change to what the tool does."
