@@ -77,5 +77,6 @@
     "draft": "🟡",
     "blocked": "🔴",
     "approved": "approved"
-  }
+  },
+  "rules": {}
 }

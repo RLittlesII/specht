@@ -24,7 +24,8 @@ public static class SpechtRunner
 
     /// <summary>
     /// Evaluates <paramref name="rules"/>, in the order given, over <paramref name="model"/> under the vocabulary of the
-    /// version its schemas keep (<c>0001-F1</c> B-004; <c>0001-F7</c> B-014; ADR-0008).
+    /// version its schemas keep (<c>0001-F1</c> B-004; <c>0001-F7</c> B-014; ADR-0008), less the rule ids its manifest sets
+    /// <c>off</c>, each violation at the severity its manifest sets for its rule id (<c>0001-F5</c> B-010, B-011; ADR-0004).
     /// </summary>
     /// <param name="model">The resolved tree.</param>
     /// <param name="rules">The rule set.</param>
@@ -32,12 +33,17 @@ public static class SpechtRunner
     public static SpechtReport Evaluate(SpecModel model, IEnumerable<ISpecRule> rules)
     {
         var version = model.Schemas.Version;
-        var evaluated = rules.Where(rule => rule.ReportedIds.Any(version.RuleIds.Contains)).ToList();
+        var settings = model.Schemas.Structure.Rules;
+        var enabled = Enabled(version.RuleIds, settings);
+        var evaluated = rules.Where(rule => rule.ReportedIds.Any(enabled.Contains)).ToList();
         var violations = new List<SpecViolation>();
 
         foreach (var rule in evaluated)
         {
-            violations.AddRange(rule.Evaluate(model).Where(violation => version.RuleIds.Contains(violation.RuleId)));
+            violations.AddRange(
+                rule.Evaluate(model)
+                    .Where(violation => enabled.Contains(violation.RuleId))
+                    .Select(violation => Graded(violation, settings)));
         }
 
         return new SpechtReport(
@@ -48,7 +54,7 @@ public static class SpechtRunner
                     new SpecReportLayout(layout.Name, model.Features.Count(feature => feature.Location.Layout == layout))),
             ],
             model.Items.Count,
-            evaluated.SelectMany(static rule => rule.ReportedIds).Count(version.RuleIds.Contains),
+            evaluated.SelectMany(static rule => rule.ReportedIds).Count(enabled.Contains),
             Order(violations));
     }
 
@@ -75,6 +81,17 @@ public static class SpechtRunner
         Directory.CreateDirectory(Path.GetDirectoryName(path)!);
         File.WriteAllText(path, SpecReportDocument.From(report).ToJson());
     }
+
+    private static HashSet<string> Enabled(IReadOnlySet<string> vocabulary, IReadOnlyDictionary<string, string> settings) =>
+        vocabulary.Where(id => settings.GetValueOrDefault(id) != "off").ToHashSet(StringComparer.Ordinal);
+
+    private static SpecViolation Graded(SpecViolation violation, IReadOnlyDictionary<string, string> settings) =>
+        settings.GetValueOrDefault(violation.RuleId) switch
+        {
+            "warning" => violation with { Severity = SpecSeverity.Warning },
+            "error" => violation with { Severity = SpecSeverity.Error },
+            _ => violation,
+        };
 
     /// <summary>
     /// Finds every rule by reflection, so a new rule file needs no registration

@@ -66,12 +66,13 @@ public sealed class SpecSchemas
     /// <exception cref="SpechtManifestNotFoundException">There is no manifest; no frontmatter schema is read.</exception>
     /// <exception cref="SpechtManifestUnreadableException">The manifest does not parse; no frontmatter schema is read.</exception>
     /// <exception cref="SpechtManifestException">
-    /// The manifest is rejected, or pins a version the tool does not ship; no frontmatter schema is read.
+    /// The manifest is rejected, pins a version the tool does not ship, or sets a rule id outside the pinned version's
+    /// vocabulary (<c>0001-F5</c> B-013); no frontmatter schema is read.
     /// </exception>
     public static SpecSchemas Load(IFileSystem fileSystem, string root)
     {
         var structure = SpecManifest.Load(fileSystem, root);
-        var version = SchemaVersions.Embedded.Select(structure.SchemaVersion);
+        var version = Pinned(SchemaVersions.Embedded, structure);
         var directory = fileSystem.Path.Combine(root, ".spec", "schema");
 
         return new SpecSchemas(
@@ -93,13 +94,29 @@ public sealed class SpecSchemas
     /// <exception cref="SpechtManifestNotFoundException">There is no manifest; no frontmatter schema is read.</exception>
     /// <exception cref="SpechtManifestUnreadableException">The manifest does not parse; no frontmatter schema is read.</exception>
     /// <exception cref="SpechtManifestException">
-    /// The manifest is rejected, or pins a version <paramref name="versions"/> does not hold; no frontmatter schema is read.
+    /// The manifest is rejected, pins a version <paramref name="versions"/> does not hold, or sets a rule id outside the
+    /// pinned version's vocabulary (<c>0001-F5</c> B-013); no frontmatter schema is read.
     /// </exception>
     public static SpecSchemas Load(IFileSystem fileSystem, string root, SchemaVersions versions)
     {
         var structure = SpecManifest.Load(fileSystem, root);
 
-        return new SpecSchemas(versions.Select(structure.SchemaVersion), structure);
+        return new SpecSchemas(Pinned(versions, structure), structure);
+    }
+
+    private static SchemaVersion Pinned(SchemaVersions versions, SpecStructure structure)
+    {
+        var version = versions.Select(structure.SchemaVersion);
+        var outside = structure.Rules.Keys.Where(id => !version.RuleIds.Contains(id)).Select(static id => $"'{id}'").ToList();
+
+        if (outside.Count > 0)
+        {
+            throw new SpechtManifestException(
+                $"{SpecManifest.RelativePath}: rules names the rule id {string.Join(", ", outside)}, "
+                    + $"which schemaVersion {version.Number} does not hold.");
+        }
+
+        return version;
     }
 
     private static string Read(IFileSystem fileSystem, string directory, string name) =>
