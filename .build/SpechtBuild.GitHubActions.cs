@@ -202,7 +202,7 @@ internal sealed partial class SpechtBuild
         var uploadStep = new UsingStep("Upload coverage to Codecov")
         {
             Id = "codecov",
-            If = "${{ !cancelled() && matrix.os == 'ubuntu-latest' }}",
+            If = "${{ !cancelled() && runner.os == 'Linux' }}",
             ContinueOnError = true,
             Uses = "codecov/codecov-action@v5",
             With = new Dictionary<string, string>
@@ -223,7 +223,7 @@ internal sealed partial class SpechtBuild
     }
 
     /// <summary>
-    /// Gives the Specht step the event, the pull request's commits and the leg, so the target decides what to annotate.
+    /// Gives the Specht step the event and the pull request's commits, so the target decides what to annotate.
     /// </summary>
     private static void PassAnnotationContext(RocketSurgeonsGithubActionsJob buildJob)
     {
@@ -233,7 +233,6 @@ internal sealed partial class SpechtBuild
             ["EVENT_NAME"] = "${{ github.event_name }}",
             ["BASE_SHA"] = "${{ github.event.pull_request.base.sha }}",
             ["HEAD_SHA"] = "${{ github.event.pull_request.head.sha }}",
-            ["MATRIX_OS"] = "${{ matrix.os }}",
         };
     }
 
@@ -291,13 +290,13 @@ internal sealed partial class SpechtBuild
     private static string EscapeProperty(string value) => EscapeData(value).Replace(":", "%3A").Replace(",", "%2C");
 
     /// <summary>
-    /// Writes each violation in a pull request's changed files as a GitHub annotation, from the ubuntu-latest leg only.
+    /// Writes each violation in a pull request's changed files as a GitHub annotation, from a Linux runner only.
     /// </summary>
     private void AnnotateChangedFiles(IReadOnlyCollection<Output> output)
     {
         if (GitHubActions.Instance is null
             || Environment.GetEnvironmentVariable("EVENT_NAME") != "pull_request"
-            || Environment.GetEnvironmentVariable("MATRIX_OS") != "ubuntu-latest"
+            || Environment.GetEnvironmentVariable("RUNNER_OS") != "Linux"
             || Environment.GetEnvironmentVariable("BASE_SHA") is not { Length: > 0 } baseSha
             || Environment.GetEnvironmentVariable("HEAD_SHA") is not { Length: > 0 } headSha)
         {

@@ -108,6 +108,13 @@ path anywhere is a defect (brief § 9), and the review looks for it.
   `nuke --generate-configuration GitHubActions_ci --host GitHubActions`) and commit
   the regeneration. **Diff the step order** after any target change: the generator
   orders CI steps by dependency-graph depth, not by declaration order.
+- **A workflow with one image has no matrix.** The generator emits `matrix` only
+  for more than one image, so `${{ matrix.os }}` is the empty string in a
+  single-image workflow and a condition on it is false without failing anything.
+  A step condition reads `runner.os` and a target reads `RUNNER_OS`, which the
+  runner sets either way; neither reads `matrix.*`. Before changing a workflow's
+  images, search `.build/` for `matrix.` and `MATRIX_`
+  ([`0055-F2` lesson 0001](../../../../.build/ContinuousIntegration/.spec/lessons/0001-a-workflow-with-one-image-has-no-matrix.md)).
 - `format.json` — `dotnet format`'s report. Gitignored, and must stay so: every
   entry carries the absolute `FilePath` of the machine that produced it.
 - `.artifacts/spec-check/*.json` — the tool's own `--report` output. Gitignored
@@ -126,6 +133,7 @@ but a build-file change made without running `Format` can still fail CI first.
 - A package version in a `.csproj`.
 - `IsPackable=true` or `PackAsTool` anywhere but `src/tool`.
 - A hand edit to `ci.yml` or a commit of `format.json`.
+- A condition on `matrix.*` in a generated workflow or a build target.
 - A suppression without its reason on the adjacent line.
 - A `#region`, or a `#if` spanning a member declaration.
 - An `Async` suffix.
