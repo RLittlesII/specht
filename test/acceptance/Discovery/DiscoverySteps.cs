@@ -8,12 +8,15 @@ using Specht.Tests.Shared;
 namespace Specht.Acceptance.Discovery;
 
 /// <summary>
-/// Steps for <c>src/specht/Discovery/.spec/discovery.feature</c> (0001-F6): item 0005 binds B-001, B-002, B-003, B-009 and B-012.
+/// Steps for <c>src/specht/Discovery/.spec/discovery.feature</c> (0001-F6): item 0005 binds B-001, B-002, B-003, B-009 and B-012,
+/// and item 0006 binds B-004.
 /// The manifest is edited in memory from the tree's default copy and written when the check runs, and "the check runs" is
 /// the engine's runner; the summary is the lines its report document makes and the report is that document serialized,
 /// which <c>0001-F2</c> B-002 and <c>0001-F3</c> B-001 hold the tool's own output to. A specification a step writes has no
 /// companion beside it unless the step says so, so one that is discovered is reported under its own path and one that is
-/// not is reported nowhere. The scenarios of B-004 to B-008, B-010 and B-011 stay pending for their items.
+/// not is reported nowhere. A layout's path identity is written into its <c>layouts</c> entry as <c>identity</c>, and a
+/// specification is reported for the mismatch when <c>SPEC011</c> names its file once (B-004; decision 0009). The scenarios
+/// of B-005 to B-008, B-010 and B-011 stay pending for their items.
 /// </summary>
 [Binding]
 [Scope(Feature = "Discovery")]
@@ -150,6 +153,51 @@ public sealed class DiscoverySteps
         Write("src/area/.spec/README.md", "F2");
     }
 
+    [Given("the manifest's epics layout declares which path segments carry the epic and the Feature id")]
+    public void GivenTheManifestsEpicsLayoutDeclaresWhichPathSegmentsCarryTheEpicAndTheFeatureId() =>
+        Entry("epics")["identity"] = Identity(1, 2);
+
+    [Given("the manifest's features layout declares none")]
+    public void GivenTheManifestsFeaturesLayoutDeclaresNone() => Entry("features").Remove("identity");
+
+    [Given("the root holds a specification in the epics layout whose epic directory does not match its frontmatter")]
+    public void GivenTheRootHoldsASpecificationInTheEpicsLayoutWhoseEpicDirectoryDoesNotMatchItsFrontmatter() =>
+        Write(_underEpics = "epics/0002-epic/F1-feature/spec.md", "F1");
+
+    [Given("the root holds a specification in the features layout under a folder named nothing like its identity")]
+    public void GivenTheRootHoldsASpecificationInTheFeaturesLayoutUnderAFolderNamedNothingLikeItsIdentity() =>
+        Write(_besideCode = "src/area/.spec/README.md", "F2");
+
+    [Given("the manifest declares a third layout under a documentation folder, two folders deeper than the epics layout")]
+    public void GivenTheManifestDeclaresAThirdLayoutUnderADocumentationFolderTwoFoldersDeeperThanTheEpicsLayout()
+    {
+        _layoutFolder = "docs/archive/tree";
+        Manifest["layouts"]!.AsArray().Add(Layout("documentation", $"{_layoutFolder}/**/spec.md"));
+    }
+
+    [Given("that layout declares the path segments that carry the epic and the Feature id at their places in it")]
+    public void GivenThatLayoutDeclaresThePathSegmentsThatCarryTheEpicAndTheFeatureIdAtTheirPlacesInIt() =>
+        Entry("documentation")["identity"] = Identity(3, 4);
+
+    [Given("the root holds a specification in that layout whose epic and Feature folders match its frontmatter")]
+    public void GivenTheRootHoldsASpecificationInThatLayoutWhoseEpicAndFeatureFoldersMatchItsFrontmatter() =>
+        Write(_first = $"{_layoutFolder}/0001-epic/F1-feature/spec.md", "F1");
+
+    [Given("the root holds a second specification in that layout whose Feature folder does not match its frontmatter")]
+    public void GivenTheRootHoldsASecondSpecificationInThatLayoutWhoseFeatureFolderDoesNotMatchItsFrontmatter() =>
+        Write(_subject = $"{_layoutFolder}/0001-epic/F9-feature/spec.md", "F2");
+
+    [Given("the manifest renames its epics layout {string} and keeps the path segments that layout declares")]
+    public void GivenTheManifestRenamesItsEpicsLayoutAndKeepsThePathSegmentsThatLayoutDeclares(string name)
+    {
+        _layoutFolder = "epics";
+        Entry("epics")["name"] = name;
+    }
+
+    [Given("the root holds a specification in that layout whose Feature folder does not match its frontmatter")]
+    public void GivenTheRootHoldsASpecificationInThatLayoutWhoseFeatureFolderDoesNotMatchItsFrontmatter() =>
+        Write(_subject = $"{_layoutFolder}/0001-epic/F9-feature/spec.md", "F1");
+
     [When("the check runs")]
     public void WhenTheCheckRuns()
     {
@@ -241,6 +289,19 @@ public sealed class DiscoverySteps
             .Should().Equal(first, second);
     }
 
+    [Then("the specification in the epics layout is reported for the mismatch")]
+    public void ThenTheSpecificationInTheEpicsLayoutIsReportedForTheMismatch() => Mismatches(_underEpics).Should().ContainSingle();
+
+    [Then("the specification in the features layout is not")]
+    public void ThenTheSpecificationInTheFeaturesLayoutIsNot() => Mismatches(_besideCode).Should().BeEmpty();
+
+    [Then("the second specification is reported for the mismatch")]
+    [Then("that specification is reported for the mismatch")]
+    public void ThenThatSpecificationIsReportedForTheMismatch() => Mismatches(Subject).Should().ContainSingle();
+
+    [Then("the first is not")]
+    public void ThenTheFirstIsNot() => Mismatches(_first).Should().BeEmpty();
+
     [AfterScenario]
     public void DeleteTree() => _tree?.Dispose();
 
@@ -268,8 +329,18 @@ public sealed class DiscoverySteps
 
     private static JsonObject Layout(string name, string glob) => new() { ["name"] = name, ["glob"] = glob };
 
+    private static JsonObject Identity(int epic, int feature) => new() { ["epic"] = epic, ["feature"] = feature };
+
     private static (string RuleId, SpecSeverity Severity, int Line, string? Identifier, string Message) Verdict(SpecViolation violation) =>
         (violation.RuleId, violation.Severity, violation.Line, violation.Identifier, violation.Message);
+
+    private JsonObject Entry(string layout) =>
+        Manifest["layouts"]!.AsArray().Select(static entry => entry!.AsObject()).Single(entry => entry["name"]!.GetValue<string>() == layout);
+
+    private IEnumerable<SpecViolation> Mismatches(string? specification) =>
+        Report.Violations.Where(violation =>
+            violation.RuleId == "SPEC011"
+            && violation.File == (specification ?? throw new InvalidOperationException("No step wrote that specification.")));
 
     private string Write(
         string path,
@@ -302,6 +373,8 @@ public sealed class DiscoverySteps
     private string? _underEpics;
     private string? _besideCode;
     private string? _rootReadme;
+    private string? _layoutFolder;
+    private string? _first;
     private string? _epic;
     private IReadOnlyList<string> _pair = [];
 }

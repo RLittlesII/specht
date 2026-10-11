@@ -24,19 +24,22 @@ public sealed class IdentityRule : ISpecRule
     /// <inheritdoc />
     public IEnumerable<SpecViolation> Evaluate(SpecModel model)
     {
-        foreach (var feature in model.Features.Where(static candidate => candidate.Location.Layout.Name == "epics"))
+        foreach (var feature in model.Features)
         {
             var segments = feature.RelativePath.Split('/');
 
-            if (segments.Length < 4 || feature.Epic is null || feature.Id is null)
+            if (feature.Location.Layout.Identity is not { } identity
+                || feature.Epic is null
+                || feature.Id is null
+                || identity.Epic >= segments.Length - 1
+                || identity.Feature >= segments.Length - 1)
             {
                 continue;
             }
 
-            var epicDirectory = segments[1];
-            var featureDirectory = segments[2];
-
-            if (!epicDirectory.StartsWith(feature.Epic + "-", StringComparison.Ordinal))
+            if (identity.Epic is { } epicSegment
+                && segments[epicSegment] is var epicDirectory
+                && !epicDirectory.StartsWith(feature.Epic + "-", StringComparison.Ordinal))
             {
                 yield return new SpecViolation(
                     "SPEC011",
@@ -47,7 +50,9 @@ public sealed class IdentityRule : ISpecRule
                     $"frontmatter epic '{feature.Epic}' does not match the containing directory '{epicDirectory}'");
             }
 
-            if (!featureDirectory.StartsWith(feature.Id + "-", StringComparison.Ordinal))
+            if (identity.Feature is { } featureSegment
+                && segments[featureSegment] is var featureDirectory
+                && !featureDirectory.StartsWith(feature.Id + "-", StringComparison.Ordinal))
             {
                 yield return new SpecViolation(
                     "SPEC011",

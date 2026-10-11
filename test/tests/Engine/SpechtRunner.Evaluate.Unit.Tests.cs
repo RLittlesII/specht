@@ -77,7 +77,7 @@ public sealed class SpechtRunnerEvaluateUnitTests
         // Given
         List<FeatureSpec> features =
         [
-            .. Enumerable.Repeat(new SpecLayout("epics", "epics/**/spec.md"), inEpics)
+            .. Enumerable.Repeat(new SpecLayout("epics", "epics/**/spec.md", new SpecPathIdentity(1, 2)), inEpics)
                 .Concat(Enumerable.Repeat(new SpecLayout("features", "**/.spec/README.md"), inFeatures))
                 .Select(static layout => (FeatureSpec)new FeatureSpecFixture().WithLocation(new SpecLocationFixture().WithLayout(layout))),
         ];
@@ -112,7 +112,9 @@ public sealed class SpechtRunnerEvaluateUnitTests
         List<FeatureSpec> features =
         [
             .. names
-                .Select((name, index) => Enumerable.Repeat(new SpecLayout(name, globs[index]), counts[index]))
+                .Select((name, index) => Enumerable.Repeat(
+                    new SpecLayout(name, globs[index], name == "epics" ? new SpecPathIdentity(1, 2) : null),
+                    counts[index]))
                 .Reverse()
                 .SelectMany(static layouts => layouts)
                 .Select(static layout => (FeatureSpec)new FeatureSpecFixture().WithLocation(new SpecLocationFixture().WithLayout(layout))),
