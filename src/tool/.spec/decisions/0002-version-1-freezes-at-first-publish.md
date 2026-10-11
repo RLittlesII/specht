@@ -52,3 +52,18 @@ numbered by `0001-F7` C-11. Whether a published `x.y.z` is frozen forever,
 answered, C-1, B-013 and B-015 hold as written. Considered and not chosen:
 deciding the freeze for `0.x` now (the owner deferred it behind where the
 schemas are hosted).
+
+**Amended 2026-10-11 by the repository owner (decision 0007).** Two parts of
+the call are reversed. The first publish freezes nothing for good: the freeze
+starts at schema version `1.0.0`, keyed on the schema version and not on the
+package version. And "No package is published until brief § 8 step 5" no
+longer holds: the owner ruled "publish now!", so the first publish does not
+wait for `0001-F5` and `0001-F6`, and `0.1.0` is the set as it stands when the
+first tag is pushed; which of the manifest keys those Features add it holds is
+`0001-F7` OQ-30. What stands: "shipped" means published as a package, and a
+published version is never changed in place - "Allow additive changes to a
+shipped version" stays rejected, for `0.x.y` too. What a published `0.x.y`
+loses is its place in every later tool: one may stop shipping it, and a
+`0.minor` step may fail a tree that passed. Considered and not chosen: keying
+the freeze on the `specht.tool` package version `1.0.0`; rewriting a published
+`0.x.y` in place; publishing after the manifest lane, or waiting as before.

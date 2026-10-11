@@ -28,13 +28,13 @@ claims:
   - B-010
 
 created: "2026-10-08"
-updated: "2026-10-08"
+updated: "2026-10-11"
 closed: null
 
 summary: |
   As the maintainer, I want only a pushed `v*` tag to publish, and only
   after the full build passes, so that a release is one deliberate act and
-  the first one, which freezes schema version 1, is not improvised.
+  the first one is not improvised.
 
 acceptance_criteria:
   - "B-001 — `v*` tag: `Format`, `Compile`, `Test`, `Specht`, `Pack` (0083)"
@@ -56,6 +56,11 @@ decisions:
     publish, and the first real publish (0084), which C-2 holds until
     0001-F5 (0010) and 0001-F6 (0004) have landed. The feed restore (0085)
     waits on this repository naming the published package.
+  - |
+    2026-10-11, spec-author, on the repository owner's ruling "publish
+    now!" (0001-F7 decision 0007): C-2 no longer holds the first publish
+    (0084) for 0001-F5 and 0001-F6, and the first publish freezes no
+    schema version - the freeze starts at schema `1.0.0`.
 
 out_of_scope:
   - "Everything in § 5 of the spec."

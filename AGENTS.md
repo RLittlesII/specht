@@ -105,8 +105,12 @@ and never overwrites a file that exists.
 
 `schemaVersion` is a `major.minor.patch` schema version, numbered apart from
 the `specht.tool` package version; the first is `0.1.0`, and a manifest with no
-key means it. A patch changes no tree's verdict, a minor only accepts more, and
-a major can fail a tree that passed. A pin is exact. A pin command moves it to
+key means it. A patch changes no tree's verdict; from schema `1.0.0` on a minor
+only accepts more and a major can fail a tree that passed, and before it a
+`0.minor` step can fail one too. A published version is never changed in
+place; from schema `1.0.0` on it is in every later tool, and before it a later
+tool may stop shipping a `0.x.y` (`0001-F7` C-1, C-11, decision 0007). A pin is
+exact. A pin command moves it to
 any shipped version, up or down, and changes nothing else; `specht upgrade`
 then rewrites the schema files, and every template the manifest does not name
 as the consumer's, to match the pin and prints what changed. In the manifest
@@ -153,7 +157,8 @@ are specified and not yet named (`0001-F7` B-041 to B-051, OQ-11).
   schema source the manifest records (`0001-F7` decision 0004). The same tree
   gives the same report. `generatedAtUtc` is not in the report for this reason.
 - **The rule vocabulary is fixed per schema version.** A new `SPEC###` is a new
-  major schema version (`0001-F7` C-11), after brief § 8 step 6.
+  schema version - a major from schema `1.0.0` on, at least a `0.minor` before
+  it (`0001-F7` C-11) - after brief § 8 step 6.
 
 ## Specification-Driven Development
 
