@@ -26,6 +26,6 @@ public sealed record SpecStructure(
     /// <summary>The text each marker is written as, keyed by marker (B-003, decision 0006).</summary>
     public IReadOnlyDictionary<string, string> Markers { get; init; } = new Dictionary<string, string>(StringComparer.Ordinal);
 
-    /// <summary>The level each rule id is set to, <c>error</c>, <c>warning</c> or <c>off</c>, keyed by rule id (B-010, B-011, decision 0007).</summary>
+    /// <summary>The level each rule id is set to, <c>error</c>, <c>warning</c> or <c>off</c>, keyed by rule id (B-010, B-011, decision 0008).</summary>
     public IReadOnlyDictionary<string, string> Rules { get; init; } = new Dictionary<string, string>(StringComparer.Ordinal);
 }

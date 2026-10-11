@@ -368,7 +368,7 @@ Feature: The manifest carries the roles
     Then the manifest is rejected
     And the rejection names the companion file list
 
-  @B-042
+  @B-045
   Scenario: A rule level outside the three is invalid
     Given the manifest sets the out-of-order-section rule to "loud"
     When the check runs
@@ -376,14 +376,14 @@ Feature: The manifest carries the roles
     And the rejection names that rule id
     And the rejection names "loud"
 
-  @B-042 @boundary
+  @B-045 @boundary
   Scenario: A rule set to error severity is not rejected
     Given the manifest sets the out-of-order-section rule to error severity
     And the root holds a specification with no violations
     When the check runs
     Then the manifest is accepted
 
-  @B-043
+  @B-046
   Scenario: A rule's severity is raised from the manifest
     Given a rule that reports its violations at warning severity
     And the manifest sets that rule to error severity

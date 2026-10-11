@@ -17,7 +17,7 @@ namespace Specht.Tests.Engine;
 /// The report's layouts are the manifest's, by name and in its order, each with its count (<c>0001-F6</c> B-001, B-009, C-7).
 /// The manifest's rule settings take an id set <c>off</c> out of the rules run, the violations kept and the count,
 /// report an id set <c>warning</c> at warning severity and an id set <c>error</c> at error severity, and leave an id they do
-/// not name at the severity the rule gave (<c>0001-F5</c> B-010, B-011, B-043, B-044; item 0014).
+/// not name at the severity the rule gave (<c>0001-F5</c> B-010, B-011, B-046, B-044; item 0014).
 /// No tree on disk and no container.
 /// </summary>
 [Trait("Tier", "Unit")]

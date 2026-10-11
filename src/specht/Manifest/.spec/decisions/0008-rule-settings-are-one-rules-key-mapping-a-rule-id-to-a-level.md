@@ -1,10 +1,10 @@
 ---
-title: "Decision 0007: Rule settings are one rules key mapping a rule id to a level"
+title: "Decision 0008: Rule settings are one rules key mapping a rule id to a level"
 description: "The manifest lowers, promotes and disables a rule under one top-level key, rules, each rule id mapped to error, warning or off; any other value is an invalid manifest; an id not named keeps the rule's own severity"
 type: decision
 ---
 
-# Decision 0007: Rule settings are one rules key mapping a rule id to a level
+# Decision 0008: Rule settings are one rules key mapping a rule id to a level
 
 **Date:** 2026-10-10
 **Decided by:** the repository owner, asked during delivery of item `0014`; recorded by spec-author
@@ -34,7 +34,7 @@ Three calls, on the shape item `0014` proposed for B-010, B-011 and B-013
    (A-4, C-4).
 
 3. **A value that is not one of the three levels is an invalid manifest**
-   (B-042): exit `3`, naming the rule id and the value.
+   (B-045): exit `3`, naming the rule id and the value.
 
 ## Why
 
@@ -65,19 +65,19 @@ concern takes two top-level keys. Cost of rejecting: none recorded.
 
 - B-010, B-011, B-013: their key and values have names; the claims' text is
   unchanged.
-- B-042: added.
-- B-022, B-023: their list of rejections gains B-042.
-- B-017: a rule declared as a value under `rules` is rejected by B-042; text
+- B-045: added.
+- B-022, B-023: their list of rejections gains B-045.
+- B-017: a rule declared as a value under `rules` is rejected by B-045; text
   unchanged.
 - B-019: an id `rules` leaves out is the omitted rule setting; text unchanged.
 - B-016, C-4: the default manifest's `rules` is empty, so the golden report is
   unchanged.
 - § 5 row 14: added.
 - § 11 OQ-1: partly resolved, for rule settings.
-- § 11 OQ-13: opened; the owner was not asked.
+- § 11 OQ-15: opened; the owner was not asked.
 
 Left open: the letter case of a level and what the rejection names for a value
-that is not text (OQ-13). Not decided here: the severity of a rule's fault
+that is not text (OQ-15). Not decided here: the severity of a rule's fault
 violation, which `0001-F1` B-015 fixes at error (§ 5 row 7).
 
 ## Reversal
@@ -90,8 +90,8 @@ Recorded by spec-author after spec-reviewer round 15 (§ 12). The sections
 above stand as written; "text unchanged" for B-017 and B-019 under Affects was
 true on the day and is not after this addendum. The owner made no new call.
 
-- **B-043 added.** The table of call 1 gives `error` an effect and cites
-  B-010, which speaks of warning alone. B-043 states it.
+- **B-046 added.** The table of call 1 gives `error` an effect and cites
+  B-010, which speaks of warning alone. B-046 states it.
 - **B-044 added, B-019 and A-4 amended.** Call 2 says an id `rules` does not
   name keeps the rule's own severity, and cites B-019, which fills an omitted
   value from the default manifest. The two agree only while the default
@@ -100,8 +100,15 @@ true on the day and is not after this addendum. The owner made no new call.
   is B-044, B-019 no longer lists a rule setting, and A-4 leaves the `rules`
   key out of the default, as `0001-F4` B-004 already leaves rule settings out
   of the shipping copy.
-- **B-017 amended.** A rule declared under `rules` is rejected by B-042, so
+- **B-017 amended.** A rule declared under `rules` is rejected by B-045, so
   the claim no longer describes the rules a run evaluates.
 - **§ 5 row 14.** A severity per path or per Feature is not decided here. The
   row gave this record as its source; it is the spec-author's reading, and
   item `0141` puts the question to the owner.
+
+## Renumbered - 2026-10-10
+
+This record was decision 0007 until it was renumbered before merge: item
+`0006` merged first and holds this Feature's decision 0007, B-042, B-043 and
+OQ-13. Here B-042 became B-045, B-043 became B-046 and OQ-13 became OQ-15;
+nothing else changed. Commits `ec4cbeb` to `1dc570f` cite the old numbers.

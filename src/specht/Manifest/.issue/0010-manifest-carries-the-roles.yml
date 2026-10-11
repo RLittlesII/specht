@@ -57,9 +57,9 @@ claims:
   - B-039
   - B-040
   - B-041
-  - B-042
-  - B-043
   - B-044
+  - B-045
+  - B-046
 
 created: "2026-10-08"
 updated: "2026-10-10"
@@ -107,9 +107,9 @@ acceptance_criteria:
   - "B-039 — `tables` key that is no role rejected (0015)"
   - "B-040 — empty marker text rejected (0015)"
   - "B-041 — empty file-shape list rejected (0005)"
-  - "B-042 — rule level outside the three rejected (0014)"
-  - "B-043 — severity raised to error (0014)"
   - "B-044 — rule with no level set keeps its own severity (0014)"
+  - "B-045 — rule level outside the three rejected (0014)"
+  - "B-046 — severity raised to error (0014)"
   - "§ 9 carries a row naming a test for each id above."
 
 decisions:
@@ -135,8 +135,13 @@ decisions:
     from 0118 to 0134 (item 0134's decisions). Recorded by spec-author.
   - |
     2026-10-10, spec-author after spec-reviewer round 15: `claims` gains
-    B-041, delivered by 0005 in `0001-F6`, and B-042 to B-044, delivered by
+    B-041, delivered by 0005 in `0001-F6`, and B-044 to B-046, delivered by
     0014.
+  - |
+    2026-10-10, spec-author: the ids item 0014 took as B-042 and B-043 are
+    B-045 and B-046, renumbered before merge because item 0006 merged
+    first and holds those two numbers. The entry above and the lists carry
+    the new numbers; commits `ec4cbeb` to `1dc570f` cite the old ones.
 
 out_of_scope:
   - "Everything in § 5 of the spec."

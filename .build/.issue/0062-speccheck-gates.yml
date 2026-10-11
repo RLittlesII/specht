@@ -39,7 +39,7 @@ acceptance_criteria:
 decisions:
   - |
     2026-10-10, spec-author, recorded on delivery of item 0014 (`0001-F5`
-    decision 0007 and its addendum); no call of the owner's. The `SPEC060`
+    decision 0008 and its addendum); no call of the owner's. The `SPEC060`
     setting this item writes in this repository's manifest is this
     repository's own and reaches no consumer: `rules` is read as each
     manifest writes it and is never filled from the default manifest

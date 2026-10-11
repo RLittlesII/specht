@@ -20,13 +20,13 @@ namespace Specht.Acceptance.Manifest;
 /// written into the manifest under <c>roles</c>, <c>tables</c> and <c>markers</c> (B-001 to B-003, B-015, B-039, B-040;
 /// decision 0006). An empty file-shape list is written under <c>companionFiles</c> (B-041; <c>0001-F6</c> decision 0008).
 /// An exclusion entry is written as the whole <c>exclusions</c> list (B-021; <c>0001-F6</c> decision 0003).
-/// A rule setting is written under <c>rules</c>, a rule id mapped to its level (B-010, B-011, B-013, B-042, B-043; decision 0007),
+/// A rule setting is written under <c>rules</c>, a rule id mapped to its level (B-010, B-011, B-013, B-045, B-046; decision 0008),
 /// and "sets no level" leaves the <c>rules</c> key out (B-044).
 /// A rule declared by a type name and a library file is written there too, as an object under a rule id the pinned version
 /// holds, so that its shape alone is at fault, beside a file standing as the library; nothing compiled is put under the root
 /// (B-017). "A rule that reports its violations at warning severity" is a stand-in under a rule id of the pinned version,
 /// since no shipped rule gives a warning, and "the check runs with that rule" hands it to the engine's
-/// <see cref="SpechtRunner.Evaluate"/> over the model loaded from the root (B-043).
+/// <see cref="SpechtRunner.Evaluate"/> over the model loaded from the root (B-046).
 /// </summary>
 [Binding]
 [Scope(Feature = "The manifest carries the roles")]
