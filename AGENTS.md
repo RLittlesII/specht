@@ -31,8 +31,9 @@ Distribution is the NuGet package `specht.tool`, command `specht`, installed per
 consumer through a local tool manifest. `src/tool` is the one project that
 packs; `IsPackable=false` everywhere else.
 
-`README.md` is the public front page: what the tool is, why, its status, and how
-to use it. The design authority is the seed brief,
+`README.md` is the public front page: what the tool is, why, how to install and
+use it, and the layout; the reference pages are under `docs/`. The design
+authority is the seed brief,
 [`.spec/brief.md`](.spec/brief.md), cited as `brief § N`: requirements (§ 2), what
 was extracted from `hooked` (§ 3), the rule vocabulary (§ 4), the drafted design
 (§ 5), open questions with their defaults (§ 6), the order of work (§ 8) and the
@@ -389,7 +390,8 @@ Every tracked markdown file opens with YAML frontmatter. Skill and role files
 declare `name` and `description`; everything else declares `title`, `description`
 and `type`. The blanks in [`.spec/templates/`](.spec/templates/) carry the `type`
 of the file they produce, so a copy needs no frontmatter edit beyond its title and
-description. Runtime prompts and `README.md` are exempt.
+description. Runtime prompts, `README.md` and `src/tool/README.md`, the readme
+the package carries, are exempt.
 
 ## Skills
 

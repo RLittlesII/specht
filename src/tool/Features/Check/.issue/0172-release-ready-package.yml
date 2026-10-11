@@ -1,0 +1,127 @@
+id: "0172"
+type: task
+title: Make the package say what it is and carry its readme and icon
+
+status: done
+
+value: 4
+risk: 3
+
+parent: "0025"
+children: []
+
+depends_on: ["0171"] # its tests name the package by the id 0171 fixes
+spikes: []
+
+spec: src/tool/Features/Check/.spec/README.md
+
+claims:
+  - B-018
+  - B-019
+  - B-020
+  - B-021
+  - B-022
+  - B-023
+  - B-024
+  - B-025
+  - B-026
+  - B-027
+  - B-028
+  - B-029
+  - B-030
+  - B-031
+  - B-032
+  - B-034
+  - B-035
+  - B-036
+
+created: "2026-10-11"
+updated: "2026-10-11"
+closed: "2026-10-11"
+
+summary: |
+  The packed `specht.tool` names no repository, author, licence or
+  description and carries no readme or icon. The repository owner,
+  2026-10-11: "Can we make tool "release ready" so when it hits a package
+  manager it has all the README.md and stuff a good package should have?"
+  The list is spec-author's proposal on that delegation (decision 0007);
+  B-018 and B-019 answer 0055-F6 OQ-11, which must hold before item 0084's
+  tag. Waits on 0171: every test here opens the package by its id.
+
+  Value 4: the first release's package page, and what ties the package and
+  the binary in it to the repository and a commit. Risk 3, re-scored
+  2026-10-11 from 2: B-032 holds only for a build made as a runner makes
+  it, and its test has to make one on a developer's machine.
+
+  The description, and the opening line of `src/tool/README.md`, read
+  "A dotnet tool that checks a repository's specification documents against
+  a versioned schema." (owner, 2026-10-11; B-024, B-034). The repository
+  `README.md` keeps its own tagline and is not this item's.
+
+  Expected files: `src/tool/tool.csproj` (the settings and the two packed
+  files; no version, C-5); `src/tool/README.md`, new, the readme written for
+  the package (C-9, C-10) - it carries no frontmatter, because a package page
+  would print it; `AGENTS.md` § Documentation structure, naming that file
+  beside `README.md` as exempt; `.assets/logos/specht-book-avatar.png`,
+  packed as it is and not changed (OQ-1); the tests for B-018 to B-029 and
+  their step definitions, which may pack the way
+  `test/acceptance/PackageVersioning/PackageVersioningSteps.cs` does; § 6 to
+  § 9 of the specification by their owners. `Directory.Build.props` where a
+  setting has to reach the engine's project as well as the tool's (B-030 to
+  B-032 are about both assemblies).
+
+acceptance_criteria:
+  - "B-018 — the repository"
+  - "B-019 — the commit"
+  - "B-020 — the project page"
+  - "B-021 — the licence expression"
+  - "B-022 — the author"
+  - "B-023 — the copyright notice"
+  - "B-024 — the description"
+  - "B-025 — the readme, named and carried"
+  - "B-026 — no relative link or image in the packed readme"
+  - "B-027 — the icon, named and carried"
+  - "B-028 — the tags"
+  - "B-029 — the release notes"
+  - "B-030 — each assembly's version names the commit"
+  - "B-031 — the carried debug information maps sources to the repository at the commit"
+  - "B-032 — built as a runner builds it: no build-machine directory in an assembly or its debug information"
+  - "B-034 — the packed readme opens with the description"
+  - "B-035 — the packed readme links to the install document"
+  - "B-036 — no feed address in the packed readme"
+  - "C-11 — the debug information is a file beside each assembly, inside the one package."
+  - "`./build.sh Pack` still writes exactly one file (0055-F1 B-009), with the computed version (0055-F5 B-005)."
+  - "§ 9 carries a row naming a test for each id above."
+
+decisions:
+  - |
+    2026-10-11, spec-author, on the owner's delegation: the list, this
+    Feature as its owner, and a readme written for the package over packing
+    the repository's `README.md` with absolute links. Recorded in the spec's
+    decision 0007 with what was rejected.
+  - |
+    2026-10-11, spec-author: OQ-1 to OQ-4 are open and the owner was not
+    asked; each is built as its proposed default and none blocks this item.
+    OQ-3 builds nothing.
+  - |
+    2026-10-11, the repository owner, on OQ-3: "OQ-3 source link and
+    deterministic CI build => yes. this will tie a version of my binary to
+    a git commit? Yes please!" B-030 to B-032 and C-11 join this item
+    (decision 0008). The line above on OQ-3 is superseded.
+  - |
+    2026-10-11, the repository owner, on the description: "`.spec/` tree =>
+    specification documents", and of the repository README, "tagline
+    stays". B-024 amended; B-034 added.
+  - |
+    2026-10-11, spec-author, on notes from the test-writer: B-035 and B-036
+    replace the criterion that cited C-9 and C-10, which no test held.
+    OQ-5 and OQ-6 are open at their defaults and block nothing here.
+
+out_of_scope:
+  - "NuGet.org — § 5 #13, 0055-F6 C-3."
+  - "A symbol package — § 5 #14."
+  - "A version in a project file, or any change to how it is computed — § 5 #15, 0055-F5."
+  - "A byte-for-byte rebuild, and a check of the pushed file — § 5 #20, OQ-6."
+  - "What the package must not carry — B-033, item 0174."
+  - "The push and the package appearing on the repository — § 5 #17, item 0084."
+  - "The repository's `README.md` and `docs/` — § 5 #19, item 0173."

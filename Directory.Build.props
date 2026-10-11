@@ -16,13 +16,17 @@
         <ImplicitUsings>enable</ImplicitUsings>
     </PropertyGroup>
 
+    <PropertyGroup Condition="'$(GITHUB_ACTIONS)' == 'true'">
+        <ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
+    </PropertyGroup>
+
     <ItemGroup>
         <PackageReference Include="Rocket.Surgery.Airframe.CodeAnalysis" PrivateAssets="all"/>
         <PackageReference Include="Nerdbank.GitVersioning" PrivateAssets="all"/>
     </ItemGroup>
     <ItemGroup>
-        <Content Include="**\.spec\*.feature"/>
-        <Content Include="**\.spec\**\*.md"/>
-        <Content Include="**\.issue\**\*.yml"/>
+        <None Include="**\.spec\*.feature"/>
+        <None Include="**\.spec\**\*.md"/>
+        <None Include="**\.issue\**\*.yml"/>
     </ItemGroup>
 </Project>

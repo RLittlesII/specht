@@ -138,3 +138,109 @@ Feature: The check command
     When the check runs
     Then the line reporting the missing frontmatter ends with its message
     And nothing in square brackets follows the message
+
+  @B-017
+  Scenario: The package is named specht.tool
+    When the tool is packed
+    Then the package is named specht.tool
+
+  @B-018
+  Scenario: The package names its repository
+    When the tool is packed
+    Then the package names the git repository https://github.com/RLittlesII/specht as its source
+
+  @B-019
+  Scenario: The package records the commit it was built from
+    When the tool is packed
+    Then the package records the commit it was packed from
+
+  @B-020
+  Scenario: The package names its project page
+    When the tool is packed
+    Then the package names https://github.com/RLittlesII/specht as its project page
+
+  @B-021
+  Scenario: The package states its licence
+    When the tool is packed
+    Then the package states its licence as MIT
+
+  @B-022
+  Scenario: The package names its author
+    When the tool is packed
+    Then the package names Rodney Littles, II as its author
+
+  @B-023
+  Scenario: The package carries a copyright notice
+    When the tool is packed
+    Then the package's copyright notice names Rodney Littles, II
+
+  @B-024
+  Scenario: The package says what the tool does
+    When the tool is packed
+    Then the package describes the tool as one that checks a repository's specification documents against a versioned schema
+
+  @B-025
+  Scenario: The package carries its readme
+    When the tool is packed
+    Then the package carries the readme it names
+
+  @B-026 @boundary
+  Scenario: Nothing in the packed readme points inside the repository
+    When the tool is packed
+    Then every link in the readme the package carries is a full web address
+    And every image in it is a full web address
+
+  @B-027
+  Scenario: The package carries its icon
+    When the tool is packed
+    Then the package carries the icon it names
+
+  @B-028
+  Scenario: The package carries its tags
+    When the tool is packed
+    Then the package carries the tags specification, spec-driven-development, traceability, gherkin and dotnet-tool
+
+  @B-029
+  Scenario: The package points at the repository's releases
+    When the tool is packed
+    Then the package's release notes point at the repository's releases
+
+  @B-030
+  Scenario: The packed tool names the commit it was built from
+    When the tool is packed
+    Then every program file of the tool in the package states a version naming the commit it was built from
+
+  @B-031
+  Scenario: The packed tool's sources are found in the repository at that commit
+    When the tool is packed
+    Then the debug information in the package points each program file's sources at https://github.com/RLittlesII/specht
+    And it points them at the commit the tool was built from
+
+  @B-032
+  Scenario: A tool built by continuous integration names no directory of the machine that built it
+    Given the tool is built the way a continuous-integration run builds it
+    When that build is packed
+    Then no program file of the tool in the package names a directory of the machine that built it
+    And no debug information in the package names one
+
+  @B-033 @boundary
+  Scenario: The package carries no specification, scenario or work-item file
+    When the tool is packed
+    Then the package carries no specification file
+    And it carries no scenario file
+    And it carries no work-item file
+
+  @B-034
+  Scenario: The packed readme opens with what the tool does
+    When the tool is packed
+    Then the readme the package carries opens with the package's description
+
+  @B-035
+  Scenario: The packed readme links to the install document
+    When the tool is packed
+    Then the readme the package carries links to the install document in the repository
+
+  @B-036 @boundary
+  Scenario: The packed readme names no package feed
+    When the tool is packed
+    Then the readme the package carries holds no package feed's address
