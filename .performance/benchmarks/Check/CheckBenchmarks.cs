@@ -2,6 +2,10 @@ using System;
 using System.IO;
 using System.IO.Abstractions;
 using BenchmarkDotNet.Attributes;
+using Microsoft.Extensions.DependencyInjection;
+using Specht.Composition;
+using Specht.Tool;
+using Spectre.Console.Cli;
 
 namespace Specht.Benchmarks.Check;
 
@@ -12,32 +16,45 @@ public class CheckBenchmarks
     [Params(1, 10, 100, 1000)]
     public int Specifications { get; set; }
 
-    /// <summary>Generates this size's tree and refuses a tree the check does not count whole and clean.</summary>
+    /// <summary>
+    /// Generates this size's tree, resolves the runner <see cref="SpechtEngineServiceCollectionExtensions.AddSpechtEngine"/>
+    /// registers from the one provider <see cref="TypeRegistrar.Build"/> builds (ADR-0003), and refuses a tree the check
+    /// does not count whole and clean.
+    /// </summary>
     [GlobalSetup]
     public void GenerateTree()
     {
         _root = Directory.CreateTempSubdirectory("specht-check-").FullName;
         new SpechtTreeStore(new FileSystem()).Save(SpechtTree.Of(Specifications), _root);
+        _resolver = new TypeRegistrar(new ServiceCollection().AddSpechtEngine()).Build();
+        _runner = (SpechtRunner?)_resolver.Resolve(typeof(SpechtRunner))
+            ?? throw new InvalidOperationException("AddSpechtEngine() registers no SpechtRunner.");
 
-        var report = SpechtRunner.Run(_root);
+        var report = _runner.Run(_root);
         if (report.SpecificationCount == Specifications && report.Violations.Count == 0)
         {
             return;
         }
 
-        Directory.Delete(_root, recursive: true);
+        DeleteTree();
         throw new InvalidOperationException(
             $"The check counted {report.SpecificationCount} of {Specifications} specifications and reported {report.Violations.Count} violations.");
     }
 
-    /// <summary>Deletes this size's tree.</summary>
+    /// <summary>Disposes the provider the runner came from and deletes this size's tree.</summary>
     [GlobalCleanup]
-    public void DeleteTree() => Directory.Delete(_root, recursive: true);
+    public void DeleteTree()
+    {
+        (_resolver as IDisposable)?.Dispose();
+        Directory.Delete(_root, recursive: true);
+    }
 
     /// <summary>Runs the whole check from the tree's root.</summary>
     /// <returns>The report.</returns>
     [Benchmark]
-    public SpechtReport Check() => SpechtRunner.Run(_root);
+    public SpechtReport Check() => _runner.Run(_root);
 
     private string _root = string.Empty;
+    private ITypeResolver? _resolver;
+    private SpechtRunner _runner = null!;
 }
