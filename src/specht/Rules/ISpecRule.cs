@@ -1,4 +1,6 @@
-namespace Specht;
+using Specht.Model;
+
+namespace Specht.Rules;
 
 /// <summary>
 /// One specification rule. Implementations are discovered by reflection over

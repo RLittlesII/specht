@@ -1,0 +1,66 @@
+id: "0137"
+type: refactor
+title: Fold the engine's root files into feature slices and a named spine
+
+status: done
+
+priority: medium # DERIVED
+value: 3
+risk: 2
+rank: 54 # DERIVED
+
+parent: null
+children: []
+
+depends_on: []
+blocks: [] # DERIVED
+spikes: []
+
+spec: null
+
+claims: []
+
+created: "2026-10-10"
+updated: "2026-10-10"
+closed: "2026-10-10"
+
+summary: |
+  The engine held 23 files flat at its project root beside three Feature
+  folders, so the folders the queue's lanes name - Discovery, Manifest,
+  Report - held only part of the code those Features own. Twenty files move:
+  the layout and location records into `Discovery/`, the structure the
+  manifest loads into `Manifest/`, the version types into a new
+  `Versioning/`, the rule interface and the feature-file reader into
+  `Rules/`, and the shared model every rule reads - specifications,
+  documents, frontmatter, schemas, violations - into a new `Model/`. The
+  runner, its report and the root-not-found exception stay at the root, which
+  is the engine Feature's own home. Namespaces follow folders, as they
+  already did by hand. No type, member or behaviour changes; it spans
+  Features, so it sits at the repository root. Second of the feature-slice
+  steps, after 0136.
+
+acceptance_criteria:
+  - "`src/specht/` holds three `.cs` files at its root; every other engine
+    file sits in `Model/`, `Discovery/`, `Manifest/`, `Report/`,
+    `Versioning/` or `Rules/`, in the namespace its folder names."
+  - Every engine namespace is still `Specht` or under it.
+  - "The unit, integration and acceptance tiers run the same tests with the
+    same results as before the move, and the self-check reports the same
+    violations."
+  - "Every changed line outside a moved file's `namespace` is a `using`
+    directive or a path in a specification."
+  - "Constraints preserved: 0001-F1 C-1, 0001-F1 C-9"
+
+decisions:
+  - '2026-10-10, repository owner: chose "Slices plus named spine" for the
+    engine - Feature folders hold what one Feature owns and shared code gets
+    named folders, rejecting leaving the spine flat at the root and rejecting
+    a Feature folder for every file with a folder per shipped rule.'
+
+out_of_scope:
+  - Moving a specification or its items - no Feature home changes.
+  - Renaming a type or a file - 0100 owns the `Spec` to `Specht` rename and
+    runs after these moves.
+  - A folder per shipped rule - the eight rules stay together in `Rules/`
+    until a rule Feature claims one.
+  - The tests and the conventions - the steps that follow.

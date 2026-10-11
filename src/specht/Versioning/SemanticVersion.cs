@@ -1,6 +1,6 @@
 using System.Globalization;
 
-namespace Specht;
+namespace Specht.Versioning;
 
 /// <summary>A schema version, written <c>major.minor.patch</c> (<c>0001-F7</c> B-039, decision 0005).</summary>
 /// <param name="Major">The major number.</param>

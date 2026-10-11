@@ -1,6 +1,7 @@
 using System.Globalization;
 using System.Text.Json;
 using Json.Schema;
+using Specht.Model;
 
 namespace Specht.Rules;
 

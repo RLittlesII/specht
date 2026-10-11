@@ -3,6 +3,7 @@ using AwesomeAssertions;
 using Reqnroll;
 using Specht.Tests;
 using Specht.Tests.Rules;
+using Specht.Versioning;
 
 namespace Specht.Acceptance.Report;
 

@@ -3,7 +3,7 @@ using System.Text.Json.Nodes;
 using YamlDotNet.Core;
 using YamlDotNet.RepresentationModel;
 
-namespace Specht;
+namespace Specht.Model;
 
 /// <summary>
 /// Reads the YAML frontmatter of a markdown document into a <see cref="JsonObject"/>.

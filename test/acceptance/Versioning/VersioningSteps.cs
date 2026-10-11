@@ -6,6 +6,7 @@ using Reqnroll;
 using Specht.Manifest;
 using Specht.Report;
 using Specht.Tests;
+using Specht.Versioning;
 
 namespace Specht.Acceptance.Versioning;
 

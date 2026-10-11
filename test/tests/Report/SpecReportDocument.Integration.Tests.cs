@@ -2,6 +2,7 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 using AwesomeAssertions;
 using Json.Schema;
+using Specht.Model;
 using Specht.Report;
 
 namespace Specht.Tests;

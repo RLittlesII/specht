@@ -4,6 +4,7 @@ using System.Reflection.PortableExecutable;
 using AwesomeAssertions;
 using Reqnroll;
 using Specht.Discovery;
+using Specht.Model;
 using Specht.Tests;
 using Specht.Tests.Baseline;
 

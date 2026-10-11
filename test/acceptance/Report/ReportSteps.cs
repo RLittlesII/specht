@@ -3,6 +3,7 @@ using System.Text.Json.Nodes;
 using AwesomeAssertions;
 using Json.Schema;
 using Reqnroll;
+using Specht.Model;
 using Specht.Report;
 using Specht.Tests;
 

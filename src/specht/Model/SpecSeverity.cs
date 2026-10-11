@@ -1,4 +1,4 @@
-namespace Specht;
+namespace Specht.Model;
 
 /// <summary>How much a violation matters to the build.</summary>
 public enum SpecSeverity

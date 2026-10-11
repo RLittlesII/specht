@@ -1,6 +1,10 @@
 using System.IO.Abstractions.TestingHelpers;
 using AwesomeAssertions;
+using Specht.Discovery;
+using Specht.Model;
 using Specht.Report;
+using Specht.Rules;
+using Specht.Versioning;
 
 namespace Specht.Tests.Runner;
 

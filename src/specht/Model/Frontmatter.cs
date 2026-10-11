@@ -1,6 +1,6 @@
 using System.Text.Json.Nodes;
 
-namespace Specht;
+namespace Specht.Model;
 
 /// <summary>A document's YAML frontmatter, as a JSON object a schema can evaluate.</summary>
 /// <param name="Node">The frontmatter mapping, or <c>null</c> when the document has none.</param>

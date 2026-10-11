@@ -1,4 +1,5 @@
 using AwesomeAssertions;
+using Specht.Model;
 
 namespace Specht.Tests;
 

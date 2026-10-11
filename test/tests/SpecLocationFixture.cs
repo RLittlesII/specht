@@ -1,4 +1,5 @@
 using Rocket.Surgery.Extensions.Testing.AutoFixtures;
+using Specht.Discovery;
 
 namespace Specht.Tests;
 

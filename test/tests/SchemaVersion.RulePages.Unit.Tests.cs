@@ -2,6 +2,7 @@ using System.Text.RegularExpressions;
 using AwesomeAssertions;
 using AwesomeAssertions.Execution;
 using Specht.Tests.Rules;
+using Specht.Versioning;
 
 namespace Specht.Tests;
 

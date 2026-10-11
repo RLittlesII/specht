@@ -4,6 +4,8 @@ using System.Text.RegularExpressions;
 using AwesomeAssertions;
 using Json.Schema;
 using Specht.Manifest;
+using Specht.Model;
+using Specht.Versioning;
 
 namespace Specht.Tests;
 

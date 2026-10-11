@@ -1,5 +1,6 @@
 using AwesomeAssertions;
 using Specht.Discovery;
+using Specht.Model;
 using Specht.Report;
 
 namespace Specht.Tests.Runner;
