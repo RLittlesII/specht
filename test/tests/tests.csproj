@@ -50,7 +50,9 @@
   <!-- The golden report (0001-F1 B-004, C-10): the engine's verdicts on the baseline tree at commit e7dba24, test data
        committed beside the builder and read from the output. -->
   <ItemGroup>
-    <Content Include="Baseline\engine-e7dba24.json" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="Engine\Baseline\engine-e7dba24.json"
+             Link="Baseline\engine-e7dba24.json"
+             CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
   <!-- The published report schema (0001-F3 A-1), copied the same way: a produced document is validated against the file

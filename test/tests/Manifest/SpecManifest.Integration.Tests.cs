@@ -1,6 +1,7 @@
 using System.Text.Json.Nodes;
 using AwesomeAssertions;
 using Specht.Manifest;
+using Specht.Tests.Shared;
 
 namespace Specht.Tests.Manifest;
 

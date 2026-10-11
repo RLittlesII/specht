@@ -5,8 +5,8 @@ using AwesomeAssertions;
 using Reqnroll;
 using Specht.Discovery;
 using Specht.Model;
-using Specht.Tests;
-using Specht.Tests.Baseline;
+using Specht.Tests.Engine.Baseline;
+using Specht.Tests.Shared;
 
 namespace Specht.Acceptance.Engine;
 

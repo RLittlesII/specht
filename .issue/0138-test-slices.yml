@@ -1,0 +1,65 @@
+id: "0138"
+type: refactor
+title: Fold the tests into folders that mirror the feature slices
+
+status: done
+
+priority: medium # DERIVED
+value: 3
+risk: 2
+rank: 54 # DERIVED
+
+parent: null
+children: []
+
+depends_on: []
+blocks: [] # DERIVED
+spikes: []
+
+spec: null
+
+claims: []
+
+created: "2026-10-10"
+updated: "2026-10-10"
+closed: "2026-10-10"
+
+summary: |
+  The test project held 27 files flat at its root and foldered the rest by
+  production type, so a Feature's tests were not found where its code is.
+  Forty files move into folders that mirror the slices: `Engine/` for the
+  runner's tests and the baseline tree, `Model/`, `Versioning/`, `Check/`
+  and `Init/` for the tests of that code, `Report/` and `Rules/` for the two
+  files that sat outside them, and `Shared/` for the tree builder, the
+  assembly reader and the nine fixtures more than one Feature uses.
+  Namespaces follow folders. No test class or method is renamed, so no
+  traceability row changes; the golden report is still copied to the same
+  path beside the test assembly. Third of the feature-slice steps, after
+  0137.
+
+acceptance_criteria:
+  - "`test/tests/` holds no `.cs` file at its root; every test and fixture
+    sits in `Engine/`, `Model/`, `Discovery/`, `Manifest/`, `Report/`,
+    `Versioning/`, `Rules/`, `Check/`, `Init/` or `Shared/`, in the namespace
+    its folder names."
+  - Every test class and test method keeps its name, its file-name suffix and
+    its one `Tier` trait.
+  - "The unit, integration and acceptance tiers run the same tests with the
+    same results as before the move, and the self-check reports the same
+    violations."
+  - "The golden report is read from `Baseline/engine-e7dba24.json` beside
+    each test assembly, as before."
+  - "Constraints preserved: 0001-F1 C-9, 0001-F1 C-10"
+
+decisions:
+  - '2026-10-10, repository owner: chose "Mirror folders in test/tests" -
+    one test project whose folders mirror the slices, with `Shared/` for a
+    fixture two Features use, rejecting a test project per Feature and
+    rejecting tests placed beside the code under `src/`.'
+
+out_of_scope:
+  - Renaming a test class, a test method or a fixture.
+  - Moving a step definition - `test/acceptance` is already one folder per
+    Feature.
+  - Splitting the test project.
+  - The conventions that describe the layout - the step that follows.
