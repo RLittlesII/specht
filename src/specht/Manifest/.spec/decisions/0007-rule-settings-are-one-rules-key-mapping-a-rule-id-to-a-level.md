@@ -83,3 +83,25 @@ violation, which `0001-F1` B-015 fixes at error (§ 5 row 7).
 ## Reversal
 
 None.
+
+## Addendum - 2026-10-10
+
+Recorded by spec-author after spec-reviewer round 15 (§ 12). The sections
+above stand as written; "text unchanged" for B-017 and B-019 under Affects was
+true on the day and is not after this addendum. The owner made no new call.
+
+- **B-043 added.** The table of call 1 gives `error` an effect and cites
+  B-010, which speaks of warning alone. B-043 states it.
+- **B-044 added, B-019 and A-4 amended.** Call 2 says an id `rules` does not
+  name keeps the rule's own severity, and cites B-019, which fills an omitted
+  value from the default manifest. The two agree only while the default
+  declares `"rules": {}`. The default manifest is this repository's own
+  manifest (A-4), and item `0062` sets `SPEC060` to `warning` there. So call 2
+  is B-044, B-019 no longer lists a rule setting, and A-4 leaves the `rules`
+  key out of the default, as `0001-F4` B-004 already leaves rule settings out
+  of the shipping copy.
+- **B-017 amended.** A rule declared under `rules` is rejected by B-042, so
+  the claim no longer describes the rules a run evaluates.
+- **§ 5 row 14.** A severity per path or per Feature is not decided here. The
+  row gave this record as its source; it is the spec-author's reading, and
+  item `0141` puts the question to the owner.

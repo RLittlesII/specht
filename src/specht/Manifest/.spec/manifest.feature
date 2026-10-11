@@ -148,7 +148,9 @@ Feature: The manifest carries the roles
     And that library file exists under the root
     And the library's rule leaves a mark under the root when it runs
     When the check runs
-    Then the mark does not exist
+    Then the manifest is rejected
+    And the rejection names that rule id
+    And the mark does not exist
 
   @B-018 @boundary
   Scenario: An invalid manifest stops the run before any rule
@@ -380,3 +382,19 @@ Feature: The manifest carries the roles
     And the root holds a specification with no violations
     When the check runs
     Then the manifest is accepted
+
+  @B-043
+  Scenario: A rule's severity is raised from the manifest
+    Given a rule that reports its violations at warning severity
+    And the manifest sets that rule to error severity
+    And the root holds a specification that rule reports
+    When the check runs with that rule
+    Then that rule's violation is reported at error severity
+
+  @B-044
+  Scenario: A rule the manifest sets no level for keeps its own severity
+    Given the manifest sets no level for the out-of-order-section rule
+    And the root holds a specification with its sections out of order
+    When the tool runs as a command on the root
+    Then the violation is reported at error severity
+    And the exit code is 1

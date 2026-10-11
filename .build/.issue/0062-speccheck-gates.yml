@@ -19,7 +19,7 @@ claims:
   - B-024
 
 created: "2026-10-08"
-updated: "2026-10-08"
+updated: "2026-10-10"
 closed: null
 
 summary: |
@@ -36,7 +36,21 @@ acceptance_criteria:
   - "B-024 — approved spec with a `Missing` row: `SPEC060` warning, exit 0"
   - "§ 9 carries a row naming a test for each id above."
 
-decisions: []
+decisions:
+  - |
+    2026-10-10, spec-author, recorded on delivery of item 0014 (`0001-F5`
+    decision 0007 and its addendum); no call of the owner's. The `SPEC060`
+    setting this item writes in this repository's manifest is this
+    repository's own and reaches no consumer: `rules` is read as each
+    manifest writes it and is never filled from the default manifest
+    (`0001-F5` B-044, A-4), and `init` writes a manifest without the key
+    (`0001-F4` B-004). A consumer that wants `SPEC060` lowered sets it in
+    its own manifest. For whoever takes this item: this repository's
+    manifest is also the default manifest the engine embeds and the one the
+    acceptance scenarios of `0001-F5` and `0001-F6` start from, so the
+    baseline proof (`0001-F5` B-016) reads it less its `rules` key, and
+    `0001-F5` B-044 gains its first failing case, a consumer manifest
+    naming no level for `SPEC060`.
 
 out_of_scope:
   - "A change to the engine's `SPEC060` — C-6."
