@@ -48,4 +48,10 @@ live manifest than full equality would.
 
 ## Reversal
 
-None.
+**Amended 2026-10-11 by the repository owner (decision 0002).** One key is
+excepted. The embedded manifest now carries `rules`, a level for every rule
+id of its version, and `rules` is still consumer configuration: B-004 leaves
+it out of the comparison by name. For every other key the call stands - a
+top-level key the embedded manifest carries is tool-owned. Considered and not
+chosen: comparing `rules` too, which would stop this repository setting a
+level of its own (`0055-F1` C-6).

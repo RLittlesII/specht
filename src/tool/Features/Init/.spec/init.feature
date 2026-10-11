@@ -41,6 +41,24 @@ Feature: init
     When init runs against it
     Then the manifest written has a task grammar with no epic part
 
+  @B-024
+  Scenario: Init writes a level for every rule of the version it pins
+    Given a root directory with no schema folder and no templates folder
+    When init runs against it
+    Then the manifest written sets a level for every rule of the version it pins
+
+  @B-025
+  Scenario: Init writes each rule at its default level
+    Given a root directory with no schema folder and no templates folder
+    When init runs against it
+    Then each level the manifest written sets is that rule's own default severity
+
+  @B-026 @boundary
+  Scenario: Init writes no level for a rule outside the version it pins
+    Given a root directory with no schema folder and no templates folder
+    When init runs against it
+    Then the manifest written sets a level for no rule outside the version it pins
+
   @B-023 @boundary
   Scenario Outline: Init writes no epic schema beside a manifest declaring no epic grammar
     Given a root directory whose schema folder holds a manifest pinning the newest version the tool ships and declaring no epic grammar

@@ -20,7 +20,7 @@ depends_on: ["F2", "F3", "F7"]
 blocks: []
 spikes: []
 created: "2026-10-09"
-updated: "2026-10-09"
+updated: "2026-10-11"
 github_issue: null
 synced_at: null
 ---
@@ -99,17 +99,17 @@ Frontmatter written onto a GitHub issue is never in a `.spec/` tree on disk, so 
 
 ## 5. Out of Scope
 
-<!-- last written by: spec-author, 2026-10-09 -->
+<!-- last written by: spec-author, 2026-10-09, 2026-10-11 (row 3 names the set command, `0001-F11` decision 0001) -->
 
-| #   | Item                                                                                                                                       | Exclusion Reason                                                                                                                        |
-| --- | ------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------- |
-| 1   | Fetching a document from GitHub or any network, an issue by number or URL included                                                         | C-4; the check is offline (brief § 9). A caller pipes the issue body to standard input.                                                 |
-| 2   | The cross-file and structural rules: `children` and `depends_on` resolution, dependency symmetry, `@B` tags, § 9 rows, the twelve sections | They need the tree; the check owns them (`0001-F2`, `0001-F1`). B-007 is the boundary.                                                  |
-| 3   | Any write: a `--report` file, a fix, or posting the frontmatter onto an issue                                                              | C-3; the only writers are `init`, `upgrade`, the pin command, the check's `--report` and `format` (brief § 9; `0001-F7` decision 0005). |
-| 4   | A new rule id, or an issue kind with a schema of its own                                                                                   | The rule vocabulary is fixed per schema version (brief § 4); a new kind is a new schema version (OQ-1).                                 |
-| 5   | `--json` and the report document for this command                                                                                          | Not decided (OQ-2); `0001-F3` owns the report document.                                                                                 |
-| 6   | Frontmatter key order                                                                                                                      | `0101-F4`, in the schema version after `0.1.0`; its number is `0001-F7` OQ-18.                                                          |
-| 7   | Mirroring an issue's labels into the document, or the document's status into labels                                                        | Label-mirror drift is not this tool's (brief § 9).                                                                                      |
+| #   | Item                                                                                                                                       | Exclusion Reason                                                                                                                                                                   |
+| --- | ------------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | Fetching a document from GitHub or any network, an issue by number or URL included                                                         | C-4; the check is offline (brief § 9). A caller pipes the issue body to standard input.                                                                                            |
+| 2   | The cross-file and structural rules: `children` and `depends_on` resolution, dependency symmetry, `@B` tags, § 9 rows, the twelve sections | They need the tree; the check owns them (`0001-F2`, `0001-F1`). B-007 is the boundary.                                                                                             |
+| 3   | Any write: a `--report` file, a fix, or posting the frontmatter onto an issue                                                              | C-3; the only writers are `init`, `upgrade`, the pin command, the set command, the check's `--report` and `format` (brief § 9; `0001-F7` decision 0005; `0001-F11` decision 0001). |
+| 4   | A new rule id, or an issue kind with a schema of its own                                                                                   | The rule vocabulary is fixed per schema version (brief § 4); a new kind is a new schema version (OQ-1).                                                                            |
+| 5   | `--json` and the report document for this command                                                                                          | Not decided (OQ-2); `0001-F3` owns the report document.                                                                                                                            |
+| 6   | Frontmatter key order                                                                                                                      | `0101-F4`, in the schema version after `0.1.0`; its number is `0001-F7` OQ-18.                                                                                                     |
+| 7   | Mirroring an issue's labels into the document, or the document's status into labels                                                        | Label-mirror drift is not this tool's (brief § 9).                                                                                                                                 |
 
 ## 6. Concern Separation
 
@@ -163,9 +163,10 @@ Pending: owned by `test-writer`, written after agreement.
 
 ## 10. Lessons / Spec Deltas
 
-<!-- last written by: spec-author, 2026-10-09 -->
+<!-- last written by: spec-author, 2026-10-09, 2026-10-11 (§ 5 row 3) -->
 
 - 2026-10-09, B-010 amended in place: it restated the line form `0001-F2` B-001 held, which now carries the violation's identifier (`0001-F2` decision 0006). B-010 cites `0001-F2` B-001 and B-016 for the form and no longer copies it.
+- 2026-10-11, § 5 row 3 amended in place: its list of writers gains the set command (`0001-F11` decision 0001; brief § 9). No claim, constraint or scenario changed.
 
 ## 11. Open Questions
 

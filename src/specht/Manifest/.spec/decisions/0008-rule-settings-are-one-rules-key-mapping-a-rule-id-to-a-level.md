@@ -82,7 +82,15 @@ violation, which `0001-F1` B-015 fixes at error (§ 5 row 7).
 
 ## Reversal
 
-None.
+**Amended 2026-10-11 by the repository owner (decision 0009).** Two parts
+are reversed. Call 2's "The default manifest declares `"rules": {}`" and the
+addendum's "A-4 leaves the `rules` key out of the default" no longer hold:
+the default manifest sets every rule id of its version to the rule's own
+severity, and `specht init` writes that map (`0001-F4` decision 0002). What
+stands: the `rules` key, its three levels, B-045's rejection, and call 2's
+first sentence as B-044 states it - an id `rules` does not name keeps the
+rule's own severity. Considered and not chosen: keeping `rules` out of the
+default and listing the ids in an annotation.
 
 ## Addendum - 2026-10-10
 

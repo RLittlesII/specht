@@ -333,14 +333,16 @@ the owner can reverse; record a reversal as a decision, never silently.
   only to fetch an upstream schema source the manifest records with its
   version and content hash (`0001-F7` decision 0004).
 - The tool never writes into a consumer's tree except through `init`,
-  `upgrade`, the pin command, the report file the caller names with
-  `--report`, and `format`, which moves whole table rows and frontmatter keys
+  `upgrade`, the pin command, the set command, the report file the caller
+  names with `--report`, and `format`, which moves whole table rows and frontmatter keys
   in the files it reorders and nothing else (`0101-F5` decision 0001). `init`
   never overwrites an existing file. `upgrade` rewrites the schema and
   template files it owns to match the pinned version and, in the manifest,
   adds only the keys that version defines that are missing (`0001-F7`
   decision 0001). The pin command changes only `schemaVersion` in the
-  manifest (`0001-F7` decision 0005). `--report` overwrites the file it names
+  manifest (`0001-F7` decision 0005). The set command changes only one rule's
+  level in the manifest's `rules` (`0001-F11` decision 0001). `--report`
+  overwrites the file it names
   (`0001-F3` decision 0002).
 - When a question in § 6 turns out to need the owner, stop and ask; do not
   pick a second default silently.
