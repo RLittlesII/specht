@@ -16,9 +16,12 @@ children:
     "0001-F6",
     "0001-F7",
     "0001-F8",
+    "0001-F9",
+    "0001-F10",
+    "0001-F11",
   ]
 created: "2026-10-07"
-updated: "2026-10-09"
+updated: "2026-10-11"
 github_issue: null
 ---
 
@@ -55,16 +58,19 @@ any of them has the same read-only oracle and the same generation contract.
 Decomposed by capability dimension, not by brief § 8 step. A step is a pull
 request; a Feature is a thing the tool does, with its own invariant.
 
-| Feature   | Name                            | Specification                                   | brief § 8 step |
-| --------- | ------------------------------- | ----------------------------------------------- | -------------- |
-| `0001-F1` | The engine, extracted unchanged | `src/specht/.spec/README.md`                    | 2              |
-| `0001-F2` | The check command               | `src/tool/Features/Check/.spec/README.md`       | 3              |
-| `0001-F3` | The report contract             | `src/specht/Report/.spec/README.md`             | 3              |
-| `0001-F4` | `init`                          | `src/tool/Features/Init/.spec/README.md`        | 3              |
-| `0001-F5` | The manifest carries the roles  | `src/specht/Manifest/.spec/README.md`           | 5              |
-| `0001-F6` | Discovery                       | `src/specht/Discovery/.spec/README.md`          | 5              |
-| `0001-F7` | Schema versioning               | `src/tool/.spec/README.md`                      | 6              |
-| `0001-F8` | The frontmatter command         | `src/tool/Features/Frontmatter/.spec/README.md` | after 6        |
+| Feature    | Name                            | Specification                                   | brief § 8 step |
+| ---------- | ------------------------------- | ----------------------------------------------- | -------------- |
+| `0001-F1`  | The engine, extracted unchanged | `src/specht/.spec/README.md`                    | 2              |
+| `0001-F2`  | The check command               | `src/tool/Features/Check/.spec/README.md`       | 3              |
+| `0001-F3`  | The report contract             | `src/specht/Report/.spec/README.md`             | 3              |
+| `0001-F4`  | `init`                          | `src/tool/Features/Init/.spec/README.md`        | 3              |
+| `0001-F5`  | The manifest carries the roles  | `src/specht/Manifest/.spec/README.md`           | 5              |
+| `0001-F6`  | Discovery                       | `src/specht/Discovery/.spec/README.md`          | 5              |
+| `0001-F7`  | Schema versioning               | `src/tool/.spec/README.md`                      | 6              |
+| `0001-F8`  | The frontmatter command         | `src/tool/Features/Frontmatter/.spec/README.md` | after 6        |
+| `0001-F9`  | The manifest command            | `src/tool/Features/Manifest/.spec/README.md`    | after 6        |
+| `0001-F10` | The rules command               | `src/tool/Features/Rules/.spec/README.md`       | after 6        |
+| `0001-F11` | Setting a rule's level          | `src/tool/Features/Rules/Set/.spec/README.md`   | after 6        |
 
 Why these and not `hooked`'s one draft (`0008-F3`, 34 claims): that draft
 bundled the command, `init`, the manifest roles, discovery and the baseline in
@@ -77,6 +83,13 @@ heuristic").
 `0001-F8` joined on 2026-10-09 from the owner's need to check frontmatter that
 is not in a tree: its invariant is that one document is checked by the
 frontmatter rule alone, read-only, with no tree beside it.
+
+`0001-F9`, `0001-F10` and `0001-F11` joined on 2026-10-11 from the owner's need
+to see and change the configuration a check runs under. Each has its own
+invariant: the manifest command prints what the engine reads and writes
+nothing; the rules command lists the pinned version's vocabulary and keeps no
+second catalogue; the set command writes one rule's level and nothing else.
+The same need amended `0001-F4`: `init` writes a level for every rule.
 
 Dependencies are declared in each Feature's frontmatter and checked by the tool
 (`SPEC050`-`SPEC052`). The order they imply is brief § 8's.

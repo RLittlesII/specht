@@ -1,0 +1,68 @@
+id: "0175"
+type: task
+title: Write a level for every rule from init
+
+status: ready-for-architecture
+
+risk: 3
+
+parent: "0050"
+children: []
+
+depends_on: ["0049"] # the manifest init writes pins its version there; the rule levels are that version's vocabulary
+spikes: []
+
+spec: src/tool/Features/Init/.spec/README.md
+
+claims:
+  - B-004
+  - B-024
+  - B-025
+  - B-026
+
+created: "2026-10-11"
+updated: "2026-10-11"
+closed: null
+
+summary: |
+  The owner, 2026-10-11: "ensure that init covers providing the user with
+  all default configuration." The manifest `specht init` writes carries a
+  `rules` map naming every rule id of the version it pins, each at that
+  rule's default level, and no id outside that vocabulary (0001-F4
+  decision 0002; 0001-F5 decision 0009). B-004 is here because it was
+  amended: the embedded manifest now carries `rules`, and the live-copy
+  comparison item 0051 delivered must leave that key out by name.
+
+  Waits on 0049, which writes `schemaVersion` into the same manifest
+  (0001-F7 B-012): "the version it pins" in B-024 to B-026 is that key, and
+  both items change what init's manifest holds.
+
+  Risk 3, not 1. The change is small in init and wide beneath it. The
+  engine's default manifest is today a link to this repository's own
+  manifest (0001-F5 section 7), which sets its own levels, so the map init
+  writes cannot come from that file as it stands (0001-F4 OQ-5). The
+  embedded manifest stops matching the live one on `rules`, which
+  `ShippingCopyIntegrationTests` compares today. And the golden baseline
+  must not move (0001-F5 B-016): every level written is the rule's own.
+
+acceptance_criteria:
+  - "B-024 — a level for every rule id of the pinned version"
+  - "B-025 — each at the rule's default level"
+  - "B-026 — no id outside the pinned vocabulary"
+  - "B-004 — the live-copy comparison leaves `rules` out, though the embedded manifest carries it"
+  - "§ 9 carries a row naming a test for each id above."
+
+decisions:
+  - |
+    2026-10-11, spec-author, on the owner's ruling of the same day (0001-F4
+    decision 0002): one item for B-024 to B-026 with B-004 as amended, under
+    0050. Rejected: folding the claims into 0049, which is cut from 0001-F7
+    and delivers B-012 alone; and a separate item for B-004, whose amended
+    comparison cannot pass or fail apart from the embedded `rules` key this
+    item adds.
+
+out_of_scope:
+  - "Changing a level in an existing manifest — § 5 #9; the set command, 0001-F11."
+  - "What `upgrade` adds to `rules` — § 5 #10; 0001-F7 OQ-31."
+  - "Moving the pin to a version that lacks a named id — OQ-4."
+  - "`specht manifest` and `specht rules` — 0001-F9, 0001-F10; no item yet."

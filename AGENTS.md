@@ -131,6 +131,8 @@ specht [--root <dir>] [--report <path>] [--strict] [--json]
 specht init [--root <dir>]
 specht upgrade [--root <dir>]
 specht --explain SPEC031
+specht manifest [--root <dir>] [--defaults] [--json]
+specht rules [--root <dir>] [--json]
 ```
 
 Stdout: one MSBuild-shaped line per violation
@@ -144,13 +146,19 @@ or a schema version to pin).
 A command that lists the shipped schema versions and a command that pins one
 are specified and not yet named (`0001-F7` B-041 to B-051, OQ-11).
 
+`specht manifest` and `specht rules` are specified and not built (`0001-F9`,
+`0001-F10`). A command that sets one rule's level is specified and not yet
+named (`0001-F11` OQ-1).
+
 ## Invariants
 
 - **Never an absolute path** in any output, report, log line, or test fixture
   (brief § 9). Paths are relative to the root the tool was given.
 - **Never a write into a consumer's tree** except through `init`, `upgrade`,
   the pin command, which changes only `schemaVersion` in the manifest
-  (`0001-F7` decision 0005), the caller-named `--report` file and, from epic
+  (`0001-F7` decision 0005), the set command, which changes only one rule's
+  level in the manifest's `rules` (`0001-F11` decision 0001), the caller-named
+  `--report` file and, from epic
   `0101`, `format`, which only moves whole table rows and frontmatter keys
   (brief § 9; `0101-F5` decision 0001). `init` never overwrites.
 - **Deterministic and offline.** The check never touches the network and never
