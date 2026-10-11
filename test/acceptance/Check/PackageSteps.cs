@@ -10,8 +10,9 @@ using Reqnroll;
 namespace Specht.Acceptance.Check;
 
 /// <summary>
-/// Steps for the package scenarios of <c>src/tool/Features/Check/.spec/check.feature</c> (0001-F2 B-017 to B-029): what the
-/// packed tool says about itself and what it carries. "The tool is packed" is <see cref="PackedToolSteps"/>'s. Every
+/// Steps for the package scenarios of <c>src/tool/Features/Check/.spec/check.feature</c> (0001-F2 B-017 to B-029 and B-033
+/// to B-036): what the packed tool says about itself, what it carries and what it does not. The program files in it are
+/// <see cref="PackedProgramSteps"/>'s. "The tool is packed" is <see cref="PackedToolSteps"/>'s. Every
 /// expected value is the claim's, written here, and none is read back from the project that packs. A step reads the
 /// package's manifest as a feed does; no step opens the package by its id, so each claim fails on its own.
 /// </summary>
@@ -31,13 +32,8 @@ public sealed partial class PackageSteps(PackedTool tool)
     }
 
     [Then("the package records the commit it was packed from")]
-    public async Task ThenThePackageRecordsTheCommitItWasPackedFrom()
-    {
-        var (stdout, stderr, exitCode) = await tool.DotNetAsync("nbgv", "get-version", "--variable", "GitCommitId");
-        exitCode.Should().Be(0, stdout + stderr);
-
-        (await RepositoryAsync()).Commit.Should().Be(stdout.Trim());
-    }
+    public async Task ThenThePackageRecordsTheCommitItWasPackedFrom() =>
+        (await RepositoryAsync()).Commit.Should().Be(await tool.CommitAsync());
 
     [Then(@"^the package names https://github\.com/RLittlesII/specht as its project page$")]
     public async Task ThenThePackageNamesItsProjectPage() => (await SaysAsync("projectUrl")).Should().Be(Repository);
@@ -57,23 +53,15 @@ public sealed partial class PackageSteps(PackedTool tool)
     [Then("the package's copyright notice names Rodney Littles, II")]
     public async Task ThenThePackagesCopyrightNoticeNamesItsOwner() => (await SaysAsync("copyright")).Should().Contain(Owner);
 
-    [Then("the package describes the tool as one that checks a repository's specification tree against a versioned schema")]
-    public async Task ThenThePackageDescribesTheTool() =>
-        (await SaysAsync("description")).Should().Be("A dotnet tool that checks a repository's .spec/ tree against a versioned schema.");
+    [Then("the package describes the tool as one that checks a repository's specification documents against a versioned schema")]
+    public async Task ThenThePackageDescribesTheTool() => (await SaysAsync("description")).Should().Be(Description);
 
     [Then("the package carries the readme it names")]
     public async Task ThenThePackageCarriesTheReadmeItNames() => await CarriedAsync("readme");
 
     [Then("every link in the readme the package carries is a full web address")]
-    public async Task ThenEveryLinkInTheReadmeThePackageCarriesIsAFullWebAddress()
-    {
-        var readme = await ReadmeAsync();
-
-        readme.Descendants<LinkInline>().Where(static link => !link.IsImage).Select(static link => link.Url)
-            .Concat(readme.Descendants<AutolinkInline>().Select(static link => link.Url))
-            .Concat(Html(readme).SelectMany(static html => Anchor().Matches(html)).Select(static match => match.Groups[1].Value))
-            .Should().OnlyContain(static address => IsFullWebAddress(address));
-    }
+    public async Task ThenEveryLinkInTheReadmeThePackageCarriesIsAFullWebAddress() =>
+        Links(await ReadmeAsync()).Should().OnlyContain(static address => IsFullWebAddress(address));
 
     [Then("every image in it is a full web address")]
     public async Task ThenEveryImageInItIsAFullWebAddress()
@@ -102,12 +90,49 @@ public sealed partial class PackageSteps(PackedTool tool)
     public async Task ThenThePackagesReleaseNotesPointAtTheRepositorysReleases() =>
         (await SaysAsync("releaseNotes")).Should().Be(Repository + "/releases");
 
+    [Then("the package carries no specification file")]
+    public async Task ThenThePackageCarriesNoSpecificationFile() =>
+        (await tool.FilesAsync()).Where(static file => Under(file, ".spec") && !IsScenario(file)).Should().BeEmpty();
+
+    [Then("it carries no scenario file")]
+    public async Task ThenItCarriesNoScenarioFile() => (await tool.FilesAsync()).Where(IsScenario).Should().BeEmpty();
+
+    [Then("it carries no work-item file")]
+    public async Task ThenItCarriesNoWorkItemFile() =>
+        (await tool.FilesAsync()).Where(static file => Under(file, ".issue")).Should().BeEmpty();
+
+    [Then("the readme the package carries opens with the package's description")]
+    public async Task ThenTheReadmeThePackageCarriesOpensWithThePackagesDescription() =>
+        (await ReadmeTextAsync()).TrimStart().Should().StartWith(Description);
+
+    [Then("the readme the package carries links to the install document in the repository")]
+    public async Task ThenTheReadmeThePackageCarriesLinksToTheInstallDocumentInTheRepository() =>
+        Links(await ReadmeAsync()).Should().Contain(static address => IsUnderTheRepository(address));
+
+    [Then("the readme the package carries holds no package feed's address")]
+    public async Task ThenTheReadmeThePackageCarriesHoldsNoPackageFeedsAddress() =>
+        (await ReadmeTextAsync()).Should().NotContainEquivalentOf("nuget.pkg.github.com");
+
     private static ReadOnlySpan<byte> Png => [0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A];
 
     private static ReadOnlySpan<byte> Jpeg => [0xFF, 0xD8, 0xFF];
 
     private static bool IsFullWebAddress(string? address) =>
         Uri.TryCreate(address, UriKind.Absolute, out var uri) && uri.Scheme == Uri.UriSchemeHttps;
+
+    private static bool IsUnderTheRepository(string? address) =>
+        address is not null
+        && address.StartsWith(Repository, StringComparison.OrdinalIgnoreCase)
+        && (address.Length == Repository.Length || address[Repository.Length] is '/' or '#' or '?');
+
+    private static bool Under(string file, string folder) => file.Split('/')[..^1].Contains(folder);
+
+    private static bool IsScenario(string file) => file.EndsWith(".feature", StringComparison.OrdinalIgnoreCase);
+
+    private static IEnumerable<string?> Links(MarkdownDocument readme) =>
+        readme.Descendants<LinkInline>().Where(static link => !link.IsImage).Select(static link => link.Url)
+            .Concat(readme.Descendants<AutolinkInline>().Select(static link => link.Url))
+            .Concat(Html(readme).SelectMany(static html => Anchor().Matches(html)).Select(static match => match.Groups[1].Value));
 
     private static IEnumerable<string> Html(MarkdownDocument readme) =>
         readme.Descendants<HtmlInline>().Select(static html => html.Tag)
@@ -139,9 +164,13 @@ public sealed partial class PackageSteps(PackedTool tool)
         return file!;
     }
 
-    private async Task<MarkdownDocument> ReadmeAsync() => Markdown.Parse(Encoding.UTF8.GetString(await CarriedAsync("readme")));
+    private async Task<string> ReadmeTextAsync() => Encoding.UTF8.GetString(await CarriedAsync("readme")).TrimStart('\uFEFF');
+
+    private async Task<MarkdownDocument> ReadmeAsync() => Markdown.Parse(await ReadmeTextAsync());
 
     private const string Repository = "https://github.com/RLittlesII/specht";
 
     private const string Owner = "Rodney Littles, II";
+
+    private const string Description = "A dotnet tool that checks a repository's specification documents against a versioned schema.";
 }
