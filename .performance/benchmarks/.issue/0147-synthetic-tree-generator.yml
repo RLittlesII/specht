@@ -12,7 +12,7 @@ children: []
 depends_on: ["0146"] # the generator lives in 0146's project
 spikes: []
 
-spec: .performance/specht.benchmarks/.spec/README.md
+spec: .performance/benchmarks/.spec/README.md
 
 claims:
   - B-015

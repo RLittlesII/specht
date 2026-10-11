@@ -13,7 +13,7 @@ children: []
 depends_on: ["0146", "0147"] # 0146's project, entry point and configuration; 0147's generated trees
 spikes: []
 
-spec: .performance/specht.benchmarks/Check/.spec/README.md
+spec: .performance/benchmarks/Check/.spec/README.md
 
 claims:
   - B-001

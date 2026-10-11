@@ -12,7 +12,7 @@ children: []
 depends_on: ["0148", "0064", "0118"] # runs 0148's target; a step in 0064's workflow; 0118's decision step skips it on a windows pull request
 spikes: []
 
-spec: .performance/specht.benchmarks/.spec/README.md
+spec: .performance/benchmarks/.spec/README.md
 
 claims:
   - B-017

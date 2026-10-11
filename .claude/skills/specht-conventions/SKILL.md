@@ -64,6 +64,10 @@ test/
                                folder per engine folder and per command
   acceptance/                  specht.acceptance - Reqnroll over src/**/.spec/*.feature
 
+.performance/
+  benchmarks/                  specht.benchmarks - the BenchmarkDotNet project; not a test project,
+                               not packable (references/benchmarking.md)
+
 .build/                        the NUKE build project - targets and CI generation; tooling, not product
 .nuke/                         NUKE parameters and the generated build schema
 .husky/                        git hooks - pre-commit verifies staged .cs and .md through Format; specht from 0062

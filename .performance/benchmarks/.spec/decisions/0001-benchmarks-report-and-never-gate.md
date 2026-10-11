@@ -65,4 +65,17 @@ by name.
 
 ## Reversal
 
-None.
+**Amended 2026-10-11 by the repository owner; recorded by spec-author.** One
+part of the call above is redirected, and the sections above stand as written.
+
+- The project is `.performance/benchmarks`, not
+  `.performance/specht.benchmarks`. The owner: "instead of `specht.benchmarks`
+  it should follos the same convention as `tools` and `tests`" - the folder and
+  the project file carry the short name and the assembly carries the `specht.`
+  prefix. "`.performance/specht.benchmarks`" in the description and the call
+  reads as "`.performance/benchmarks`"; `0109-F1` C-2 is amended to match.
+- The Feature's specifications, records and items moved with the project, so
+  this record now sits under `.performance/benchmarks/`.
+
+Every other part of the call stands: the project is outside `test/` and its
+tier governance, and nothing gates on a measurement.
