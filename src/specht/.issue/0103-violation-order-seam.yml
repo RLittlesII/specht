@@ -4,16 +4,13 @@ title: Expose the violation order as a function a unit test can reach
 
 status: done
 
-priority: high # DERIVED
 value: 3
 risk: 2
-rank: 64 # DERIVED
 
 parent: "0020"
 children: []
 
 depends_on: []
-blocks: ["0014", "0105"] # DERIVED
 spikes: []
 
 spec: src/specht/.spec/README.md

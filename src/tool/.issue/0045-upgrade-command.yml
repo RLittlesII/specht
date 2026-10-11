@@ -4,15 +4,12 @@ title: Bring the schema set and templates to the pin with upgrade
 
 status: ready-for-architecture
 
-priority: high
 risk: 4
-rank: 88
 
 parent: "0041"
 children: []
 
 depends_on: ["0120", "0026"] # reads 0120's semver pin and version set; a sibling of 0026's command
-blocks: ["0046", "0047", "0093", "0131"]
 spikes: []
 
 spec: src/tool/.spec/README.md

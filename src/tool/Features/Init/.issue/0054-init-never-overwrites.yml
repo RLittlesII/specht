@@ -4,15 +4,12 @@ title: Respect existing files and the manifest's pinned version in init
 
 status: ready-for-architecture
 
-priority: high
 risk: 2
-rank: 74
 
 parent: "0050"
 children: []
 
 depends_on: ["0052", "0042", "0120"] # extends 0052's write; an older pin needs 0042's version set, in the semver 0120 converts it to
-blocks: []
 spikes: []
 
 spec: src/tool/Features/Init/.spec/README.md

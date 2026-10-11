@@ -4,15 +4,12 @@ title: Prove a package version change moves no schema version
 
 status: ready-for-architecture
 
-priority: high
 risk: 2
-rank: 74
 
 parent: "0078"
 children: []
 
 depends_on: ["0079", "0049"] # changes 0079's version.json; asserts the schemaVersion 0049 makes init write
-blocks: []
 spikes: []
 
 spec: .build/Versioning/.spec/README.md

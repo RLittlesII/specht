@@ -4,16 +4,13 @@ title: Split the runner into evaluating a model and running a root
 
 status: done
 
-priority: high # DERIVED
 value: 3
 risk: 2
-rank: 64 # DERIVED
 
 parent: "0020"
 children: []
 
 depends_on: ["0104", "0103"] # Evaluate takes the model 0104 makes constructible; it sorts with 0103's order function
-blocks: ["0014", "0106"] # DERIVED
 spikes: []
 
 spec: src/specht/.spec/README.md

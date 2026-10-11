@@ -4,15 +4,12 @@ title: Pin a shipped version, up or down
 
 status: blocked
 
-priority: high
 risk: 3
-rank: 81
 
 parent: "0041"
 children: []
 
 depends_on: ["0120"] # pins a version of the semver set 0120 produces
-blocks: ["0123", "0125"]
 spikes: []
 
 spec: src/tool/.spec/README.md

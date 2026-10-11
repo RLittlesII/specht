@@ -4,15 +4,12 @@ title: Switch Specht to the tool through the local tool manifest
 
 status: ready-for-architecture
 
-priority: high
 risk: 3
-rank: 91
 
 parent: "0025"
 children: []
 
 depends_on: ["0061", "0087"] # replaces the dotnet run call 0061 wires, through the manifest entry 0087 adds
-blocks: []
 spikes: []
 
 spec: src/tool/Features/Check/.spec/README.md

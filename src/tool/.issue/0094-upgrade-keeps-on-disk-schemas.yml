@@ -4,15 +4,12 @@ title: Leave on-disk frontmatter schemas alone on upgrade
 
 status: ready-for-architecture
 
-priority: high
 risk: 2
-rank: 74
 
 parent: "0041"
 children: []
 
 depends_on: ["0043", "0047"] # under 0043's on-disk selection; extends 0047's listing of what changed
-blocks: []
 spikes: []
 
 spec: src/tool/.spec/README.md

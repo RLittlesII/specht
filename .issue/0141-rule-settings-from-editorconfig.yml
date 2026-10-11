@@ -4,16 +4,13 @@ title: Weigh reading rule settings from .editorconfig
 
 status: ready
 
-priority: low # DERIVED
 value: 2
 risk: 2
-rank: 34 # DERIVED
 
 parent: null
 children: []
 
 depends_on: ["0014"] # a second source for the settings 0014 builds: nothing to compare against until 0014 lands
-blocks: [] # DERIVED
 spikes: []
 
 spec: null

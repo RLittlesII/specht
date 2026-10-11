@@ -4,15 +4,12 @@ title: Fail upgrade on a missing root, missing manifest or invalid manifest
 
 status: ready-for-architecture
 
-priority: high
 risk: 2
-rank: 79
 
 parent: "0041"
 children: []
 
 depends_on: ["0045", "0013"] # guards 0045's command; exit 3 as 0013 gives the check
-blocks: ["0048"]
 spikes: []
 
 spec: src/tool/.spec/README.md

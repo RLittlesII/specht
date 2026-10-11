@@ -4,15 +4,12 @@ title: Convert the integer pin to semver
 
 status: done
 
-priority: high
 risk: 3
-rank: 121
 
 parent: "0041"
 children: []
 
 depends_on: ["0042"] # converts the integer pin and version set 0042 delivered
-blocks: ["0043", "0044", "0045", "0048", "0049", "0054", "0121", "0122", "0124", "0126"]
 spikes: []
 
 spec: src/tool/.spec/README.md

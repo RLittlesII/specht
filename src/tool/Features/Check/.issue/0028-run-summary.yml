@@ -4,15 +4,12 @@ title: Print the summary after the violations
 
 status: done
 
-priority: high
 risk: 2
-rank: 99
 
 parent: "0025"
 children: []
 
 depends_on: ["0026", "0034"] # follows 0026's lines; prints 0034's counts
-blocks: ["0005"]
 spikes: []
 
 spec: src/tool/Features/Check/.spec/README.md

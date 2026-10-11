@@ -4,15 +4,12 @@ title: Walk the tree without entering an excluded directory
 
 status: ready-for-architecture
 
-priority: medium
 risk: 2
-rank: 59
 
 parent: "0004"
 children: []
 
 depends_on: ["0005", "0107"] # prunes on the manifest exclusions 0005 reads; ISpecDiscovery (ADR-0001 stage E) lands here on 0107's instance classes
-blocks: ["0009"]
 spikes: []
 
 spec: src/specht/Discovery/.spec/README.md

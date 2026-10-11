@@ -4,15 +4,12 @@ title: Write the document to the --report path
 
 status: ready-for-architecture
 
-priority: high
 risk: 2
-rank: 74
 
 parent: "0033"
 children: []
 
 depends_on: ["0034", "0026", "0035"] # B-003 compares with 0035's stdout document
-blocks: []
 spikes: []
 
 spec: src/specht/Report/.spec/README.md

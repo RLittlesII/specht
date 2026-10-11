@@ -352,9 +352,9 @@ none of them changes:
   engine's three `hooked` dependencies are pinned to `hooked`'s exact versions
   for a reason that is written beside them; its fourth, System.IO.Abstractions,
   is not.
-- **An item's `priority`, `rank` and `blocks` are derived**, from `value`,
-  `risk` and every other item's `depends_on`. Recompute them — and the
-  dependents' — when an edge changes; never hand-edit them.
+- **An item stores no `priority`, `rank` or `blocks`.** The queue script
+  computes rank and priority on every run, from `value`, `risk`, `depends_on`,
+  `parent` and `status`; never write one into an item.
   `status: in-progress` is the only signal an item is taken.
 - **An id is not reserved until it merges.** Before a branch takes a number,
   check `main` _and_ every open pull request: two branches cut from one `main`
@@ -469,8 +469,10 @@ claude.ai/code/artifacts.
 **Work is tracked locally.** A `<id>-<slug>.yml` item stands in for a GitHub
 issue, and there are **no issues, labels or milestones** in this workflow. The
 item owns delivery state; the Feature's `.spec/README.md` owns content. The
-schema, the status vocabulary and the rank derivation are in
-[`.spec/templates/item.yml`](.spec/templates/item.yml).
+schema, the status vocabulary and the rank definition are in
+[`.spec/templates/item.yml`](.spec/templates/item.yml): rank is computed on
+every run, never stored, and orders work by what ships the product, then a
+Feature, soonest.
 
 - **An item sits beside the specification it was cut from**: `<home>/.issue/`,
   a sibling of that Feature's `.spec/`. An item that belongs to no Feature — a

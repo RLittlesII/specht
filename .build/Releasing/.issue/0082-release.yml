@@ -4,16 +4,13 @@ title: Release
 
 status: ready-for-architecture
 
-priority: medium
 value: 3
 risk: 4
-rank: 48
 
 parent: "0055"
 children: ["0083", "0084", "0085"]
 
 depends_on: []
-blocks: []
 spikes: []
 
 spec: .build/Releasing/.spec/README.md

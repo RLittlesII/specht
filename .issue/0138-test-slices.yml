@@ -4,16 +4,13 @@ title: Fold the tests into folders that mirror the feature slices
 
 status: done
 
-priority: medium # DERIVED
 value: 3
 risk: 2
-rank: 54 # DERIVED
 
 parent: null
 children: []
 
 depends_on: []
-blocks: [] # DERIVED
 spikes: []
 
 spec: null

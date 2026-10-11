@@ -4,15 +4,12 @@ title: Upload coverage to Codecov from every CI run
 
 status: done
 
-priority: high # DERIVED
 risk: 2
-rank: 109 # DERIVED
 
 parent: "0068"
 children: []
 
 depends_on: ["0069", "0064"] # uploads 0069's reports; a step in 0064's workflow
-blocks: ["0071", "0091", "0112"]
 spikes: []
 
 spec: test/.spec/README.md

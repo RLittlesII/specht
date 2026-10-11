@@ -4,15 +4,12 @@ title: Restore the tool from the feed in the release run
 
 status: ready-for-architecture
 
-priority: medium
 risk: 2
-rank: 54
 
 parent: "0082"
 children: []
 
 depends_on: ["0083", "0087"] # a step in 0083's workflow; restores the package 0087 names
-blocks: []
 spikes: []
 
 spec: .build/Releasing/.spec/README.md

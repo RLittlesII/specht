@@ -4,16 +4,13 @@ title: The manifest carries the roles the engine hardcodes
 
 status: ready-for-architecture
 
-priority: high
 value: 4
 risk: 4
-rank: 73
 
 parent: "0001"
 children: ["0011", "0012", "0013", "0014", "0015", "0016", "0017", "0018", "0019", "0134"]
 
 depends_on: []
-blocks: ["0084"]
 spikes: []
 
 spec: src/specht/Manifest/.spec/README.md

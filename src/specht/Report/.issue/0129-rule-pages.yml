@@ -4,15 +4,12 @@ title: Write a page for every rule and check the set is complete
 
 status: done
 
-priority: high
 risk: 2
-rank: 79
 
 parent: "0033"
 children: []
 
 depends_on: []
-blocks: ["0040"]
 spikes: []
 
 spec: src/specht/Report/.spec/README.md

@@ -4,15 +4,12 @@ title: Guard the baseline verdicts under the default manifest
 
 status: done
 
-priority: high
 risk: 2
-rank: 99
 
 parent: "0010"
 children: []
 
 depends_on: ["0022"] # compares against the golden report 0022 commits
-blocks: ["0015", "0016", "0017", "0104", "0134"]
 spikes: []
 
 spec: src/specht/Manifest/.spec/README.md
