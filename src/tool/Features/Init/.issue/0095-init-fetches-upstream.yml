@@ -4,12 +4,12 @@ title: Write a recorded upstream schema source into absent files on init
 
 status: ready-for-architecture
 
-risk: 3
+risk: 4
 
 parent: "0050"
 children: []
 
-depends_on: ["0052", "0093"] # a case of 0052's write; reuses 0093's fetch and hash check
+depends_on: ["0052", "0176"] # a case of 0052's write; reads the recording 0176 defines
 spikes: []
 
 spec: src/tool/Features/Init/.spec/README.md
@@ -18,25 +18,40 @@ claims:
   - B-014
   - B-015
   - B-016
+  - B-027
 
 created: "2026-10-08"
-updated: "2026-10-10"
+updated: "2026-10-11"
 closed: null
 
 summary: |
   Init's side of 0001-F7 decision 0004: an absent frontmatter schema comes
   from the recorded upstream source, verified against its hash, and a
-  present one is never overwritten (C-1, B-002). Reuses upgrade's fetch
-  (0093). Risk 3: the network path again, now in the first command a
-  consumer runs.
+  present one is never overwritten (C-1, B-002). Builds the fetch and
+  the hash check, which upgrade's 0093 reuses, and makes no network call
+  when nothing asks for one (B-027). On the first release's path
+  (0055-F6 C-8). Risk 4: the first network path in a tool that is
+  otherwise offline (0001-F7 C-8), in the first command a consumer
+  runs. Where the fetch lives and how a test reaches it without the
+  network is 0001-F7 OQ-39, the implementer's.
 
 acceptance_criteria:
   - "B-014 — fetched content matches: absent schema files written, present ones kept"
   - "B-015 — fetched content mismatches the hash: stderr, nothing written, exit 3"
   - "B-016 — source unreachable for an absent file: stderr, nothing written, exit 3"
+  - "B-027 — no upstream source recorded, or a bare root and no option but `--root` and `--epics`: no network call"
   - "§ 9 carries a row naming a test for each id above."
 
-decisions: []
+decisions:
+  - |
+    2026-10-11, spec-author, re-cut after the repository owner's ruling
+    (0055-F6 decision 0004): this item builds the fetch and the hash
+    check and no longer waits on `upgrade` (`0093`, behind `0045`); it
+    waits on the recording (`0176`) instead. B-027 added. `risk` re-scored
+    3 to 4 by spec-author, the score 0093 carried for the first network
+    path. Not an owner ruling.
 
 out_of_scope:
   - "Fetching without a recorded source — 0001-F7 C-8."
+  - "Recording a source from the command line — 0178."
+  - "A credential for a source that asks for one — 0001-F7 OQ-36, open; no claim yet."

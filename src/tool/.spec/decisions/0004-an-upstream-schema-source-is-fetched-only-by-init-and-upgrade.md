@@ -88,4 +88,16 @@ on-disk source, B-009). Both a URL and a NuGet schema package were taken.
 
 ## Reversal
 
-None.
+**Corrected 2026-10-11 by spec-author (decision 0005, 2026-10-09).** The
+addendum says "`upgrade` moves `schemaVersion` and rewrites the templates".
+Decision 0005 took the move away the next day: `upgrade` brings the files to
+the pin and never moves it (B-052, C-13). The rest of the addendum stands.
+
+**Annotated 2026-10-11 by spec-author.** Nothing here is reversed. The owner
+ruled that the first release waits for a schema sourced at a URL
+([`0055-F6` decision 0004](../../../../.build/Releasing/.spec/decisions/0004-the-first-release-waits-for-a-schema-sourced-at-a-url.md)).
+This record names no manifest key, file set, hash or host, and says nothing of
+a root with no manifest. Those are proposed, and not ratified, in
+[decision 0008](0008-an-upstream-schema-source-is-one-manifest-key-with-a-base-address-a-label-and-a-hash-per-file.md)
+and
+[`0001-F4` decision 0003](../../Features/Init/.spec/decisions/0003-init-records-an-upstream-schema-source-named-on-the-command-line.md).

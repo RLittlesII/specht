@@ -1,0 +1,62 @@
+id: "0176"
+type: task
+title: Read the manifest key that records an upstream schema source
+
+status: blocked
+
+risk: 3
+
+parent: "0041"
+children: []
+
+depends_on: ["0120"] # beside the semver pin 0120 reads
+spikes: []
+
+spec: src/tool/.spec/README.md
+
+claims: []
+
+created: "2026-10-11"
+updated: "2026-10-11"
+closed: null
+
+summary: |
+  Decision 0004 says a manifest records an upstream schema source as an
+  address or package, a version and a content hash. No key carries it: the
+  manifest schema has none, the engine reads none, and no claim names one.
+  The check (0092), init's fetch (0095) and upgrade's fetch (0093) all read
+  the recording, so it is cut apart and they wait on it.
+
+  Blocked on the owner: OQ-1 (the key's name), OQ-32 (what the location
+  points at, and which files), OQ-33 (one hash or one per file), OQ-34 (the
+  form of the version), OQ-35 (what counts as a source, GitHub hosting
+  included) and OQ-36 (the credential). Decision 0008 proposes an answer to
+  each and is not ratified. OQ-40, which schema version first carries the
+  key, is answered with them.
+
+  `claims: []` because the claims are owed and not written: decision 0008
+  lists them under "Claims owed and not written", and spec-author writes
+  them, with their scenarios and § 9 rows, when the owner rules. This item
+  is then re-cut to carry them and leaves `blocked`. On the first release's
+  path (0055-F6 C-8). Risk 3: a key in a published manifest schema stays.
+
+acceptance_criteria:
+  - "0001-F7 OQ-1 and OQ-32 to OQ-36 are resolved in § 11, and the claims decision 0008 lists as owed are in § 3 with scenarios and § 9 rows"
+  - "The manifest schema accepts the key in the form answered, and the engine reads it into the model the check, init and upgrade read"
+  - "A manifest that records no source checks exactly as before: 0001-F1 B-004's golden baseline report is unchanged"
+  - "§ 9 carries a row naming a test for each claim this item is re-cut to carry."
+
+decisions:
+  - |
+    2026-10-11, spec-author's cut, after the repository owner's ruling
+    that the first release waits for a schema sourced at a URL (0055-F6
+    decision 0004): the recording apart from the three items that read
+    it. Status `blocked`: six open questions, proposed in decision 0008
+    and not put to the owner. Rejected: writing the claims against the
+    proposal, which would record an undecided point as agreed.
+
+out_of_scope:
+  - "Reading the schemas from the local copy — 0092."
+  - "Fetching — 0095, 0093."
+  - "Recording a source from the command line — 0178."
+  - "Selecting the embedded or on-disk source — 0043."

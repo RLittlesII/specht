@@ -116,4 +116,21 @@ what those Features add reaches a consumer as a later version it must pin and
 
 ## Reversal
 
-None.
+**Redirected 2026-10-11 by the repository owner
+([`0055-F6` decision 0004](../../../../.build/Releasing/.spec/decisions/0004-the-first-release-waits-for-a-schema-sourced-at-a-url.md)).**
+Ruling 3, "publish now!", is redirected the same day. On learning that
+`specht` cannot `init` a repository to a schema sourced at a URL, the owner
+said: "Okay, this is a HUGE gap. We can't release without this." The first
+`v*` tag now waits until a consumer can initialise a repository to such a
+schema and have the check validate with it (`0055-F6` C-8).
+
+What stands: rulings 1 and 2; and of ruling 3, that the first publish does not
+wait for `0001-F5` and `0001-F6` (`0055-F6` C-2). "Items `0084` (no longer
+waits on `0010` and `0004`)" under Affects still holds; the item now waits on
+the upstream source's items instead.
+
+What follows for `0.1.0`, read by the author: it is still the set as it stands
+when the first tag is pushed, and that set now holds the key that records an
+upstream schema source (OQ-30, OQ-40).
+
+Considered and not chosen: nothing was put to the owner as an alternative.

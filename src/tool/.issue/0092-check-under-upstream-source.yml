@@ -9,7 +9,7 @@ risk: 3
 parent: "0041"
 children: []
 
-depends_on: ["0043", "0013"] # a third case of 0043's source selection; rejects the contradiction through 0013's exit 3
+depends_on: ["0176"] # reads the recording 0176 defines
 spikes: []
 
 spec: src/tool/.spec/README.md
@@ -19,27 +19,39 @@ claims:
   - B-025
   - B-028
   - B-032
-  - B-036
 
 created: "2026-10-08"
-updated: "2026-10-10"
+updated: "2026-10-11"
 closed: null
 
 summary: |
   The check's side of decision 0004: a manifest recording an upstream
   schema source selects the on-disk copy, the vocabulary stays the pinned
-  embedded version's, and the check never fetches (C-8). Upgrade (0093)
-  and init (0095, 0096) read the recording this defines.
+  embedded version's, and the check never fetches (C-8). It reads the
+  recording 0176 defines and builds the read of the frontmatter schemas
+  from `<root>/.spec/schema/`, which 0043 then reuses for the on-disk
+  source a consumer selects. On the first release's path (0055-F6 C-8).
 
 acceptance_criteria:
   - "B-024 — upstream recorded: schemas read from the local copy"
   - "B-025 — upstream recorded: no network call from the check"
   - "B-028 — upstream recorded: the pinned embedded version's rule ids"
   - "B-032 — upstream recorded, no source selected: on-disk"
-  - "B-036 — upstream recorded, embedded selected: stderr, exit 3"
   - "§ 9 carries a row naming a test for each id above."
 
-decisions: []
+decisions:
+  - |
+    2026-10-11, spec-author, re-cut after the repository owner's ruling
+    that the first release waits for a schema sourced at a URL (0055-F6
+    decision 0004): B-036 moved to `0177`, which is the only claim here
+    that needs 0043's selection, and `0043` and `0013` left `depends_on`.
+    The recording moved to `0176`. This item now builds the read from the
+    local copy that it took from 0043 before. Not an owner ruling.
+    Rejected: keeping the edge to 0043, which holds the release behind the
+    names of an option (OQ-1) the upstream case never reads.
 
 out_of_scope:
-  - "Fetching the source — 0093, 0095."
+  - "Fetching the source — 0095, 0093."
+  - "Selecting a source by configuration or on the command line — 0043."
+  - "An upstream source recorded with the embedded source selected, B-036 — 0177."
+  - "A recorded source whose local file is absent, and verifying the hash in the check — OQ-37 and OQ-38, open; no claim yet."

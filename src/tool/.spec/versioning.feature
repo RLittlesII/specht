@@ -296,6 +296,13 @@ Feature: Schema versioning
     When upgrade runs
     Then no network call was attempted
 
+  @B-067 @boundary
+  Scenario: Upgrade makes no network call when no upstream source is recorded
+    Given the manifest records no upstream schema source
+    And the network is unavailable
+    When upgrade runs
+    Then no network call was attempted
+
   @B-034
   Scenario: Upgrade leaves the recorded upstream version alone
     Given the tool ships schema versions 0.1.0 and 0.2.0

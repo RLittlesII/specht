@@ -201,8 +201,8 @@ in [`.spec/templates/item.yml`](../../../../.spec/templates/item.yml).
 
 **The product goal** is `.issue/.goal`, one item id per line: every open item
 on those items' dependency path is `high`. It names Release (`0082`) and
-Consuming the package (`0086`), the first NuGet release. Moving the finish line
-is an edit to that file.
+Consuming the package (`0086`), the first NuGet release, and the setup guide's
+last item (`0180`). Moving the finish line is an edit to that file.
 
 **Lanes.** Two startable items share a lane when they name the same `spec:`, or
 when their homes fall under the same entry of `SHARED_WRITE_SETS` at the top of

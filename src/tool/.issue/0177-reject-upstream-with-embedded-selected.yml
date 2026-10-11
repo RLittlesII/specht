@@ -1,0 +1,43 @@
+id: "0177"
+type: task
+title: Reject an upstream schema source recorded with the embedded source selected
+
+status: ready-for-architecture
+
+risk: 1
+
+parent: "0041"
+children: []
+
+depends_on: ["0043", "0092", "0013"] # 0043's selection; 0092's check under a recorded source; 0013's exit 3
+spikes: []
+
+spec: src/tool/.spec/README.md
+
+claims:
+  - B-036
+
+created: "2026-10-11"
+updated: "2026-10-11"
+closed: null
+
+summary: |
+  A manifest that records an upstream schema source and also selects the
+  embedded source contradicts itself; the check says so and exits 3. Cut
+  out of 0092 because it is the one claim there that needs 0043's
+  selection, and the first release does not wait on it (0055-F6 OQ-17,
+  proposed). Init's refusal of the same manifest (0096) waits on this.
+
+acceptance_criteria:
+  - "B-036 — upstream recorded, embedded selected: stderr, exit 3"
+  - "§ 9 carries a row naming a test for each id above."
+
+decisions:
+  - |
+    2026-10-11, spec-author's cut: B-036 moved here from `0092`, so the
+    check under a recorded source does not wait on the names of the
+    option that selects a source (OQ-1). Not an owner ruling.
+
+out_of_scope:
+  - "The check under a recorded source — 0092."
+  - "Init refusing the same manifest — 0096."
