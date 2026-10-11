@@ -66,3 +66,17 @@ Feature: Release
     When a version tag is pushed
     Then the checker is restored with the run's own token
     And no stored token is read
+
+  @B-011 @boundary
+  Scenario: A version tag off the main line publishes nothing
+    Given a version tag on a commit that is not part of the main line
+    When the tag is pushed
+    Then the run fails before anything is packed
+    And no package is published
+
+  @B-012
+  Scenario: The first release's notes cover everything merged so far
+    Given no earlier version tag exists
+    And three pull requests were merged before the tagged commit
+    When the first version tag is published
+    Then its release notes list all three pull requests

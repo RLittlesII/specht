@@ -71,7 +71,7 @@ test/
 .build/                        the NUKE build project - targets and CI generation; tooling, not product
 .nuke/                         NUKE parameters and the generated build schema
 .husky/                        git hooks - pre-commit verifies staged .cs and .md through Format; specht from 0062
-.github/                       workflows (ci, publish), renovate.json, settings checklist; issue
+.github/                       workflows (ci, release), renovate.json, settings checklist; issue
                                templates for outside reports only - github_mode stays false and a
                                maintainer turns a report into a .issue/ item; the only label is
                                Renovate's `dependencies` on update pull requests (epic 0055)
@@ -193,11 +193,11 @@ none.
 ./build.sh IntegrationTest  # --filter-trait "Tier=Integration"
 ./build.sh AcceptanceTest   # test/acceptance, Reqnroll, no filter
 ./build.sh Pack             # specht.tool.<version>.nupkg into .artifacts/nupkg
-./build.sh SpecCheck        # the tool checking this repository's own .spec/ tree
-./build.sh VerifyTag        # on a tag build, fails unless the tag is v<version>; skipped otherwise
+./build.sh Specht           # the tool checking this repository's own .spec/ tree
+./build.sh VerifyTag        # on a tag build, fails unless the tag is v<version> on a commit of main; skipped otherwise
 ```
 
-`SpecCheck` runs `specht` exactly as a consumer would — through the local tool
+`Specht` runs `specht` exactly as a consumer would — through the local tool
 manifest, never through a project reference (brief § 7). Until the first
 package is published it runs `dotnet run --project src/tool -- --root .`
 instead; the manifest replaces that the moment a package exists. From 0062,
@@ -219,7 +219,7 @@ a commit of `main` creates `v<version>` (`0055-F5` A-1, B-007).
 - A renumbered claim, constraint, question, task or rule id.
 - A GitHub issue, label or milestone as a tracker.
 - A hand edit to any derived field.
-- A hand edit to `.github/workflows/ci.yml` or `.github/workflows/publish.yml`.
+- A hand edit to `.github/workflows/ci.yml` or `.github/workflows/release.yml`.
   Both are NUKE-generated.
 - A package version in a `.csproj`.
 - A specification in two places at once.
