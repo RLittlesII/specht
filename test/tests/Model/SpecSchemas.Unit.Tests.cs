@@ -181,5 +181,23 @@ public sealed class SpecSchemasUnitTests
         load.Should().NotThrow();
     }
 
+    [Fact]
+    public void AnOnDiskManifestSettingARuleIdOutsideThePinnedVocabulary_WhenLoaded_ShouldRejectItNamingTheId()
+    {
+        // Given
+        var fileSystem = new MockFileSystem(
+            new Dictionary<string, MockFileData>
+            {
+                [Path.Combine(Root, ".spec", "schema", "spec-structure.schema.json")] =
+                    new("""{ "schemaVersion": "0.1.0", "rules": { "SPEC010": "warning", "SPEC999": "off" } }"""),
+            });
+
+        // When
+        var load = () => SpecSchemas.Load(fileSystem, Root);
+
+        // Then
+        load.Should().ThrowExactly<SpechtManifestException>().Which.Message.Should().Contain("SPEC999");
+    }
+
     private const string Root = "repo";
 }
