@@ -16,14 +16,10 @@ public sealed class SpechtRunnerUnitTests
     public void EveryRuleInTheEngine_WhenItsReportedIdsAreRead_ShouldNameExactlyTheTwentyOneVersion1RuleIds()
     {
         // Given
-        var rules = typeof(ISpecRule).Assembly
-            .GetTypes()
-            .Where(static type => typeof(ISpecRule).IsAssignableFrom(type) && type is { IsAbstract: false, IsInterface: false })
-            .Select(static type => (ISpecRule)Activator.CreateInstance(type)!)
-            .ToList();
+        var rules = SpecRules.All;
 
         // When
-        var ids = rules.SelectMany(static rule => rule.ReportedIds).Distinct(StringComparer.Ordinal).ToList();
+        var ids = rules.SelectMany(static rule => rule.ReportedIds).ToList();
 
         // Then
         ids.Should().BeEquivalentTo(

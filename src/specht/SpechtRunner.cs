@@ -6,7 +6,7 @@ using Specht.Versioning;
 namespace Specht;
 
 /// <summary>
-/// Runs every <see cref="ISpecRule"/> in this assembly against the resolved
+/// Runs the rules named on <see cref="SpecRules.All"/> against the resolved
 /// specification tree.
 /// </summary>
 public static class SpechtRunner
@@ -20,7 +20,7 @@ public static class SpechtRunner
     /// report is dropped (<c>0001-F7</c> B-014).
     /// </summary>
     public static SpechtReport Run(string root, SchemaVersions versions) =>
-        Evaluate(SpecModel.Load(root, versions), Discover());
+        Evaluate(SpecModel.Load(root, versions), SpecRules.All);
 
     /// <summary>
     /// Evaluates <paramref name="rules"/>, in the order given, over <paramref name="model"/> under the vocabulary of the
@@ -75,16 +75,4 @@ public static class SpechtRunner
         Directory.CreateDirectory(Path.GetDirectoryName(path)!);
         File.WriteAllText(path, SpecReportDocument.From(report).ToJson());
     }
-
-    /// <summary>
-    /// Finds every rule by reflection, so a new rule file needs no registration
-    /// edit - the same reason the test projects glob their sources.
-    /// </summary>
-    private static IReadOnlyList<ISpecRule> Discover() =>
-        typeof(SpechtRunner).Assembly
-            .GetTypes()
-            .Where(static type => typeof(ISpecRule).IsAssignableFrom(type) && type is { IsAbstract: false, IsInterface: false })
-            .Select(static type => (ISpecRule)Activator.CreateInstance(type)!)
-            .OrderBy(static rule => rule.Id, StringComparer.Ordinal)
-            .ToList();
 }
