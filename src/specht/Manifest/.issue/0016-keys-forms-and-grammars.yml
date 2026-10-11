@@ -21,14 +21,16 @@ claims:
   - B-014
 
 created: "2026-10-08"
-updated: "2026-10-10"
+updated: "2026-10-11"
 closed: null
 
 summary: |
   Moves the frontmatter key names, the identity and edge forms and the task
   grammar into the manifest, one rule at a time with 0012 green after each
-  (A-2), and rejects a grammar that does not compile. Risk 4: it touches
-  SPEC043, SPEC044 and SPEC050-SPEC052, every id grammar must live once
+  (A-2), and rejects a grammar that does not compile. Risk 4: it changes
+  what SPEC011, SPEC012, SPEC020, SPEC040, SPEC041, SPEC043, SPEC044,
+  SPEC050-SPEC052, SPEC060 and SPEC061 read, and SPEC021, SPEC030 and
+  SPEC031 under B-014 (§ 7, the moves); every id grammar must live once
   (C-2), and a renamed key must not be excused from the frontmatter schemas
   (C-8). Key names wait on OQ-1.
 
@@ -48,6 +50,14 @@ decisions:
   - |
     2026-10-10, the repository owner: the claim-tags item is renumbered
     from 0118 to 0134 (item 0134's decisions). Recorded by spec-author.
+  - |
+    2026-10-11, the repository owner: a design pass only. No engine code is
+    written until the first release tag has landed and the order against
+    ADR-0010 is settled (OQ-17). The implementer's design is in § 6 and § 7;
+    its names are proposed in decision 0010, which is not ratified, and no
+    claim is written on them. The schema version that first carries them is
+    OQ-16. The summary's rule ids are corrected from § 7: they read SPEC043,
+    SPEC044 and SPEC050-SPEC052. Recorded by spec-author.
 
 out_of_scope:
   - "Deriving or patching a frontmatter schema from the manifest — C-8."
