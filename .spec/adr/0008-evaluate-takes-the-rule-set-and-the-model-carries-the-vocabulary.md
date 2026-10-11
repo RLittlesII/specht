@@ -12,6 +12,8 @@ accepted - 2026-10-09, by the owner. Both calls were put to the owner directly
 during item `0105`'s delivery and decided the same day; recorded by
 spec-author.
 
+Partially superseded by [ADR-0010](0010-layered-engine-boundaries-with-io-at-the-edge-and-a-mediator.md), 2026-10-11: the Decision's first bullet, the rule set as `Evaluate`'s second argument, and in its second bullet the filter over each rule's violations. The evaluator takes its rules by constructor, and a rule reports one id. The rest stands.
+
 Supersedes in part, each record's body unedited and its Status gaining one
 line pointing here:
 

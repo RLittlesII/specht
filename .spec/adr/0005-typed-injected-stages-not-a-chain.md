@@ -17,6 +17,8 @@ severity ((c)); a generic stage interface is a convention judgement, not
 chosen (option 8); the coordinator keeps the name `SpecCheckRunner` ((a)).
 Proposed on pull request #26.
 
+Partially superseded by [ADR-0010](0010-layered-engine-boundaries-with-io-at-the-edge-and-a-mediator.md), 2026-10-11: in Decision (a), the coordinator that takes its stages and calls them from `Run`, the model stage owning its readers, the loaders as the manifest and model stages, "The statics (a) does not replace", and the coordinator's name. I/O is confined to stores, the model is built before evaluation, and a host sends a request to a handler. The rest stands.
+
 Relation to earlier records, each stated in full under Decision:
 
 - **ADR-0001** (accepted on `main`, pull request #21): not reordered, and its

@@ -1,0 +1,102 @@
+id: "0155"
+type: refactor
+title: Put the shared derivations, typed rule settings and companion tags on the model
+
+status: ready-for-implementation
+
+value: 3
+risk: 4
+
+parent: null
+children: []
+
+depends_on: ["0154"] # cut from ADR-0010, the record 0154 produced
+spikes: []
+
+spec: null
+
+claims: []
+
+created: "2026-10-11"
+updated: "2026-10-11"
+closed: null
+
+summary: |
+  ADR-0010 (accepted 2026-10-11,
+  .spec/adr/0010-layered-engine-boundaries-with-io-at-the-edge-and-a-mediator.md),
+  stage 2 (A) of "The order of work". Its scope is the record's § "The model
+  is an immutable snapshot" as far as the eight rule classes and the
+  evaluator can take it without changing shape:
+
+  - The derivations several rules compute for themselves move onto the
+    model, each computed once when it is built: a Feature's claims, its
+    matrix section, the Features that have an identity, and the dependency
+    graph.
+  - The rule settings become `SpecRuleSettings`, mapping a rule id to a
+    `SpecRuleLevel`, in place of the dictionary of `error`, `warning` and
+    `off` strings (`src/specht/Manifest/SpecStructure.cs:30`) that
+    `SpechtRunner` compares (`src/specht/SpechtRunner.cs:87-96`).
+  - The tags of every companion `.feature` file are read at load and
+    carried by the model. `FeatureFileRule` loses its reader
+    (`src/specht/Rules/FeatureFileRule.cs:11`, `:43`), so no rule reads the
+    disk.
+  - `SpecPath` (`src/specht/Model/SpecPath.cs:4`) is deleted.
+
+  The rule classes stay eight and `ISpecRule` and `SpechtRunner.Evaluate`
+  keep their shape: the splits are items 0156 to 0163 and the collapse is
+  0164. The loaders stay until 0166.
+
+  It restructures code of `0001-F1` (`Model/`, `Rules/`, the runner) and of
+  `0001-F5` (`Manifest/SpecStructure.cs` and the manifest's read of rule
+  levels), so it sits at the repository root with `spec: null`.
+
+  Where the source differs from ADR-0010. The record deletes `SpecPath` in
+  this stage on the ground that no absolute path reaches the model. Read at
+  `eb7c161`, `SpecModelLoader` still maps discovery's absolute paths through
+  it (`src/specht/Model/SpecModelLoader.cs:61`, `:71`), and the model's
+  paths become root-relative only in stage 6 (item 0166). Criterion 7 says
+  how the two meet.
+
+  Order. ADR-0010 runs this after stage 1, item 0100, the `Spec` to
+  `Specht` rename. That is the record's order of work and not a
+  prerequisite of building this item, so `depends_on` does not name 0100;
+  whichever of the two is taken second rebases onto the first, and 0100 is
+  not taken while an engine item is in progress (its summary). Type names
+  here are ADR-0010's and the source's at `eb7c161`; once 0100 lands each
+  carries the prefix that item gives it.
+
+  ADR-0010's open point 1 is carried here on its default: reading every
+  companion at load makes an unreadable one a load failure even with
+  SPEC020 and SPEC021 off, where today it fails only when one of them runs.
+  That is the one observable difference in the series' structural stages.
+
+acceptance_criteria:
+  - "1. Specification first, by `spec-author`, in the same pull request and before the code (AGENTS.md rule 1; ADR-0010 'Specification deltas owed', stage 2): `0109-F2` C-6, C-7 and A-2 say a rule and evaluation read the generated tree's `.feature` files, and `0109-F2` decision 0001 gives that as a reason; after this item neither reads the disk. Each is amended, or answered by a new record, and `0109-F2` § 10 records it."
+  - "2. Read by `spec-author` in the same delta, though ADR-0010's table does not list it: `0109-F2` C-11 rules out 'a change to `src/` to keep a rule or evaluation off the disk'. This item makes that change, for ADR-0010's driver 2 and not for a benchmark; § 10 says whether C-11's wording stands."
+  - "3. Open point 1, by `spec-author`, before the code: `0001-F1` § 10 records that an unreadable companion file fails the load whether SPEC020 and SPEC021 are on or off. If the owner overrules the default in review, this item is re-cut before any code."
+  - "4. Design text, by `implementer`: `0001-F5` § 7 'Where rule settings apply' and 'What loads a rule' name the dictionary of texts and the lookups this item replaces."
+  - "5. The model carries the four derivations, each computed once at build: a Feature's claims, its matrix section, the Features that have an identity, and the dependency graph. No rule computes one of them for itself."
+  - "6. `SpecRuleSettings` maps a rule id to a `SpecRuleLevel`. The manifest's parse is the only place the texts `error`, `warning` and `off` are compared; the level a manifest sets, the ids it turns off and the rejection of an unknown id or level are unchanged."
+  - "7. The model carries every companion file's tags, read at load. `FeatureFileRule` takes no constructor argument that reads or loads, no type under `src/specht/Rules/` holds an `IFileSystem` or a reader, and SPEC021 still names the companion by its root-relative path. `SpecPath` is deleted and no rule maps a path; what `SpecModelLoader` needs of that mapping until item 0166 removes the loader is a private member of the loader (ADR-0010 § 'What no static covers', judgement), not a public static."
+  - "8. Not a refactor until re-pointed. These tests are named by § 9 rows and are rewritten or deleted here: `SpecPathUnitTests` (`0001-F1` B-004, B-007; `0001-F3` B-021), `FeatureFileRuleUnitTests` and `FeatureFileRuleIntegrationTests` (`0001-F5` B-001), `FeatureFileReaderUnitTests` (`0001-F1` B-004), and `SpecModelUnitTests` where it builds a Feature's companions (`0001-F1` B-002, B-004, B-011; `0001-F6` B-004). `test-writer` re-points each row in the same pull request; no row names a test that no longer exists, and no claim loses its proof - the root-relative path of `0001-F1` B-007 and `0001-F3` B-021 is still pinned by a test."
+  - "9. The golden report `test/tests/Engine/Baseline/engine-e7dba24.json` is unchanged, byte for byte, and the test that compares it is green unedited. The unit, integration and acceptance tiers pass, and the benchmark project `.performance/benchmarks` still compiles."
+  - "No .feature change needed: refactor - derivations, rule levels and companion tags move from the rules and the runner onto the model; every violation, its severity, the report's order and its counts are unchanged."
+  - "Constraints preserved: 0001-F1 C-3, 0001-F1 C-4, 0001-F1 C-5, 0001-F1 C-7, 0001-F1 C-9, 0001-F1 C-10, 0001-F5 C-3, 0001-F5 C-5"
+
+decisions:
+  - |
+    2026-10-11, spec-author: cut from ADR-0010 on the repository owner's
+    acceptance of it the same day, as stage 2 (A). Item 0154 is the session
+    that produced the record and holds the owner's decisions. Status
+    `ready-for-implementation`, as items 0104 to 0107 were cut on ADR-0001:
+    the design is the accepted record's. ADR-0010 left to spec-author
+    whether `FeatureFileRule`'s split rides with this stage; it does not -
+    it is item 0159, so this item stays about the model.
+
+out_of_scope:
+  - "Splitting any rule class - items 0156 to 0163."
+  - "`ISpecRule`, `SpecFinding`, `DefaultSeverity` and the evaluator - item 0164."
+  - "The model builder, the parsers, the reader, the loaders and root-relative paths throughout the model - item 0166."
+  - "The manifest's store, parser and defaults - item 0165."
+  - "How a claim tag is matched - item 0134 (`0001-F5` C-12)."
+  - "Any change to a verdict or to the report - `0001-F1` C-9."

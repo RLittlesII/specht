@@ -1,0 +1,92 @@
+id: "0162"
+type: refactor
+title: Split DependencyRule into one rule per id
+
+status: ready-for-implementation
+
+value: 3
+risk: 3
+
+parent: null
+children: []
+
+depends_on: ["0155"] # all three ids read the dependency graph from the model 0155 leaves
+spikes: []
+
+spec: src/specht/.spec/README.md
+
+claims: []
+
+created: "2026-10-11"
+updated: "2026-10-11"
+closed: null
+
+summary: |
+  ADR-0010 (accepted 2026-10-11,
+  .spec/adr/0010-layered-engine-boundaries-with-io-at-the-edge-and-a-mediator.md),
+  stage 3 (B) of "The order of work": the owner's decision 1, one rule per
+  rule id. `DependencyRule` (`src/specht/Rules/DependencyRule.cs:20`)
+  reports SPEC050, SPEC051 and SPEC052, and with one of them off and
+  another on the whole class still runs (ADR-0010 § "What the source
+  shows"). This item splits it into three rules, each reporting its own id
+  and no other.
+
+  The evaluator is untouched. `ISpecRule` keeps `Id`, `ReportedIds` and
+  `Evaluate`; each new rule's `ReportedIds` names its one id;
+  `SpechtRunner.Evaluate` selects, filters and counts as it does today.
+  Collapsing the interface is item 0164. `AddSpechtEngine()` registers each
+  new rule by name, in ordinal order of its id, where it registers
+  `DependencyRule` today.
+
+  What keeps the report byte-identical is ADR-0010 § "Why no structural
+  stage changes a verdict": the rule id is the last sort key and the sort
+  is stable, so each new rule emits its violations in the order the old
+  class emitted that id, and keeps every guard the old class applied before
+  it, including a guard that today sits in another id's branch. The
+  acceptance criteria name both.
+
+  No test names this class; the golden report and the acceptance tier are
+  what hold its behaviour until item 0152 gives each rule a class of its
+  own.
+
+  Depends on 0155: the dependency graph - the Features that have an
+  identity and each one's resolved `depends_on` and `blocks` edges - is a
+  derivation the model carries from that item, and the three rules read it
+  there instead of each building it (`DependencyRule.cs:25-38`).
+
+  It restructures the code of `0001-F1` alone, so it sits beside that
+  specification. The eight splits, 0156 to 0163, touch different rule
+  classes and share two files:
+  `src/specht/Composition/SpechtEngineServiceCollectionExtensions.cs` and
+  `test/tests/Composition/SpechtEngineServiceCollectionExtensions.Unit.Tests.cs`.
+  Type names and lines are the source's at commit `eb7c161`; once item 0100
+  lands each type carries the prefix that item gives it.
+
+acceptance_criteria:
+  - "Split: `DependencyRule` is gone and three rules stand in its place, one each for SPEC050, SPEC051 and SPEC052; each one's `ReportedIds` names its own id alone, and `AddSpechtEngine()` registers each by name in ordinal order of its id."
+  - "Order kept: SPEC050 and SPEC051 keep the Features' order and, for one Feature, its `depends_on` edges before its `blocks` edges (`src/specht/Rules/DependencyRule.cs:76-78`, `:127-128`). SPEC052 emits every self-dependency, in the Features' order (`:93-104`), before any cycle (`:131-153`), and the cycles in the order the old walk finds them."
+  - "Guards kept: every rule reads only the Features that have both `epic` and `id` (`:25-27`). SPEC051 does not test an edge whose target does not resolve (`:80-91`) or an edge to the Feature itself (`:93-104`), whether SPEC050 and SPEC052 are on or off. SPEC052 reports one cycle once (`:173`)."
+  - "Untouched: `ISpecRule`, `SpechtRunner.Evaluate` and `SpechtRunner.Order`, and every violation's file, line, identifier, message and severity."
+  - "The composition tests still hold: every concrete rule the engine declares is registered exactly once, the rules resolve in ordinal order of their ids, and the reported ids are the twenty-one of the pinned vocabulary, each once (`test/tests/Composition/SpechtEngineServiceCollectionExtensions.Unit.Tests.cs`)."
+  - "No test names `DependencyRule` and no § 9 row names one, so no row is re-pointed here. The three ids are held by the golden report and the acceptance tier, both green unedited."
+  - "The golden report `test/tests/Engine/Baseline/engine-e7dba24.json` is unchanged, byte for byte, and the test that compares it is green unedited. The unit, integration and acceptance tiers pass, and the benchmark project `.performance/benchmarks` still compiles."
+  - "No .feature change needed: refactor - `DependencyRule` becomes three rules of one id each; every violation, its severity, the report's order and its counts are unchanged."
+  - "Constraints preserved: 0001-F1 C-5, 0001-F1 C-9, 0001-F1 C-10, 0001-F5 C-3"
+
+decisions:
+  - |
+    2026-10-11, spec-author: cut from ADR-0010 on the repository owner's
+    acceptance of it the same day, as one of the eight parts of stage 3 (B).
+    Item 0154 is the session that produced the record and holds the owner's
+    decisions. ADR-0010 found eight rule classes where the plan said seven
+    and left the cut to spec-author: eight items, one for each class, 0156
+    to 0163. Status `ready-for-implementation`, as items 0104 to 0107 were
+    cut on ADR-0001: the design is the accepted record's.
+
+out_of_scope:
+  - "The collapse of `ISpecRule`, `SpecFinding`, `DefaultSeverity` and the evaluator - item 0164."
+  - "A unit-test class for each new rule that pins every id it reports - item 0152."
+  - "A folder for each rule group under `src/specht/Rules/`, and any new rule id - item 0169."
+  - "The other seven rule classes - items 0156 to 0161 and 0163, one each."
+  - "Fault isolation around a rule that throws - `0001-F1` B-012 to B-016 and OQ-2; ADR-0005 (c)."
+  - "Any change to a message, a line or an identifier - `0001-F1` C-9."

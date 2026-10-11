@@ -1,0 +1,95 @@
+id: "0164"
+type: refactor
+title: Collapse the rule interface to one id and make the evaluator an instance
+
+status: ready-for-implementation
+
+value: 4
+risk: 4
+
+parent: null
+children: []
+
+depends_on: ["0156", "0157", "0158", "0159", "0160", "0161", "0162", "0163"] # every rule reports one id before the interface says so
+spikes: []
+
+spec: src/specht/.spec/README.md
+
+claims: []
+
+created: "2026-10-11"
+updated: "2026-10-11"
+closed: null
+
+summary: |
+  ADR-0010 (accepted 2026-10-11,
+  .spec/adr/0010-layered-engine-boundaries-with-io-at-the-edge-and-a-mediator.md),
+  stage 4 (C) of "The order of work". Its scope is the record's § "One rule
+  per id" and § "The evaluator is pure":
+
+  - `ISpecRule` becomes `Id`, `DefaultSeverity` and an `Evaluate` that
+    returns `SpecFinding`s. `ReportedIds` goes
+    (`src/specht/Rules/ISpecRule.cs`). A `SpecFinding` carries a file, a
+    line, an identifier, a message and what was expected, and no rule id
+    and no severity.
+  - `SpecEvaluator` takes the rules and a `SpecViolationOrder` by
+    constructor and does four things in order - select, run, stamp, sort -
+    in place of the static `SpechtRunner.Evaluate` and `SpechtRunner.Order`
+    (`src/specht/SpechtRunner.cs:25`, `:60`) and their `Enabled` and
+    `Graded` (`:87`, `:90`). Both are instances `AddSpechtEngine()`
+    registers.
+  - `SpechtRunner` keeps `Run` and `WriteReport` until item 0167 deletes
+    it; `Run` calls the evaluator.
+
+  This is the stage at which a rule the manifest turns off is not run, for
+  every id, and it lands only when every rule reports one id: the eight
+  splits, 0156 to 0163.
+
+  What it reverses, on ADR-0010 § "What this supersedes": item 0107 left
+  `Evaluate` taking the rule set as its second argument (ADR-0008) and
+  `DefaultSeverity` waiting on epic `0101` (ADR-0004). Both rulings are
+  superseded by the accepted record; the selection and the severity map
+  stay two functions inside evaluation, as ADR-0004 decided, and no
+  selector type is added.
+
+  ADR-0010 moves `SpechtReport` and `SpecViolation` into `Specht.Evaluation`
+  (§ "The layout"; § "How each cycle is cut", 2) and names no stage for the
+  move. It is taken here, with the namespace this item creates, so the
+  guard of item 0167 has no upward reference left to wait on.
+
+  It restructures the code of `0001-F1` alone, so it sits beside that
+  specification. Type names and lines are the source's at commit `eb7c161`
+  and ADR-0010's; once item 0100 lands each type carries the prefix that
+  item gives it.
+
+acceptance_criteria:
+  - "1. Specification first, by the owning role, in the same pull request and before the code (ADR-0010 'Specification deltas owed', stage 4). `test-writer`: every § 9 row that names a test of a rule class or of `SpechtRunner.Evaluate` or `SpechtRunner.Order` is re-pointed - `SpechtRunnerEvaluateUnitTests` (`0001-F1` B-004; `0001-F6` B-001, B-009; `0001-F5` B-010, B-011, B-044, B-046; `0001-F7` B-002, B-014) and `SpechtRunnerOrderUnitTests` (`0001-F1` B-004) at the least. `implementer`: `0001-F5` § 7 and § 8 where they name `Enabled`, `Graded` and `SpechtRunner.Order`. `spec-author`: `0109-F2` A-1, which names the static `SpechtRunner.Evaluate`."
+  - "2. Not a refactor until those rows are re-pointed: the tests they name are rewritten against `SpecEvaluator` and `SpecViolationOrder`, no row names a test that no longer exists, and no claim loses its proof."
+  - "3. `ISpecRule` is `Id`, `DefaultSeverity` and `IEnumerable<SpecFinding> Evaluate(SpecModel model)`, as ADR-0010 § 'One rule per id' writes it. `ReportedIds` is gone. No rule constructs a `SpecViolation`, names its own id in a yield, or names a severity in a yield."
+  - "4. `DefaultSeverity` is error for all twenty-one rules, so stamping changes no severity (ADR-0010 § 'Why no structural stage changes a verdict')."
+  - "5. `SpecEvaluator.Evaluate` selects the rules whose id is in the pinned version's vocabulary and whose level is not off, runs each selected rule once, stamps each finding with the rule's id and the manifest's level for that id or the rule's `DefaultSeverity`, and sorts with `SpecViolationOrder`: severity descending, file, line, rule id, stable. A rule whose id is off or outside the vocabulary is not run. The count of rules evaluated is the count selected, and it is the count the report carried before."
+  - "6. `SpecEvaluator` and `SpecViolationOrder` are sealed instances registered by `AddSpechtEngine()`; no static `Evaluate`, `Order`, `Enabled` or `Graded` remains, and no selector type and no generic stage interface is added. `SpechtRunner.Run` and `SpechtRunner.WriteReport` keep their signatures."
+  - "7. `SpechtReport` and `SpecViolation` are in `Specht.Evaluation` with the evaluator and the order; `Specht.Report` references `Specht.Evaluation` and not the reverse."
+  - "8. The composition tests hold as amended for the new interface: every concrete rule is registered exactly once, the rules resolve in ordinal order of their ids, and the ids equal the pinned vocabulary's twenty-one, each once."
+  - "9. A benchmark that calls `SpechtRunner.Evaluate` by the time this item is taken is changed in the same pull request (ADR-0010 § 'The whole-check benchmark'). The benchmark project `.performance/benchmarks` still compiles."
+  - "10. The golden report `test/tests/Engine/Baseline/engine-e7dba24.json` is unchanged, byte for byte, and the test that compares it is green unedited. The unit, integration and acceptance tiers pass."
+  - "No .feature change needed: refactor - the rule interface loses `ReportedIds` and the evaluator becomes an instance that stamps id and severity; every violation, its severity, the report's order and its counts are unchanged."
+  - "Constraints preserved: 0001-F1 C-5, 0001-F1 C-7, 0001-F1 C-9, 0001-F1 C-10, 0001-F5 C-3, 0001-F5 C-5"
+
+decisions:
+  - |
+    2026-10-11, spec-author: cut from ADR-0010 on the repository owner's
+    acceptance of it the same day, as stage 4 (C). Item 0154 is the session
+    that produced the record and holds the owner's decisions. Status
+    `ready-for-implementation`, as items 0104 to 0107 were cut on ADR-0001:
+    the design is the accepted record's. The move of `SpechtReport` and
+    `SpecViolation` into `Specht.Evaluation`, which ADR-0010 gives no stage,
+    is placed here.
+
+out_of_scope:
+  - "Deleting `SpechtRunner`, the mediator, `Check.Query` and its handler, and the namespace guard - item 0167."
+  - "A rule that defaults to a severity other than error, and `MinimumSchemaVersion` - epic `0101` (ADR-0004, as it stands)."
+  - "Fault isolation around a rule that throws, by a decorator - `0001-F1` B-012 to B-016 and OQ-2; ADR-0005 (c). No item owns it yet."
+  - "New rule ids and a folder for each rule group - item 0169."
+  - "A unit-test class for each rule - item 0152, whose tests this item re-points from violations to findings where it has landed first."
+  - "The vocabulary written twice, in `SchemaVersions` and as the rules' ids - ADR-0010 open point 7, revisited in item 0169."

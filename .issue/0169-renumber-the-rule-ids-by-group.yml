@@ -1,0 +1,119 @@
+id: "0169"
+type: task
+title: Renumber the rule ids to four digits grouped by the thousands digit
+
+status: ready-for-architecture
+
+value: 3
+risk: 5
+
+parent: null
+children: []
+
+depends_on: ["0164"] # one rule per id, with the evaluator stamping the id, before any id changes
+spikes: []
+
+spec: null
+
+claims: []
+
+created: "2026-10-11"
+updated: "2026-10-11"
+closed: null
+
+summary: |
+  ADR-0010 (accepted 2026-10-11,
+  .spec/adr/0010-layered-engine-boundaries-with-io-at-the-edge-and-a-mediator.md),
+  track R of "The order of work", from the record's § "Rule ids". It is
+  the one track that is not a refactor: every rule id a consumer reads
+  changes, the vocabulary of schema version `0.1.0` is rewritten in place,
+  and the golden report is replaced once.
+
+  Rule ids become `SPEC` and four digits, the thousands digit naming the
+  group; the groups and today's ids in each are the record's table. The
+  record assigns no new id. The map from each of the twenty-one ids to its
+  new one is this item's, and the owner approves it here.
+
+  The owner decided a clean break with no new major schema version: "we
+  haven't shipped anything" (ADR-0010 § "Rule ids"). As written, the
+  specifications forbid that, so this item starts at the specification and
+  no id changes until the ruling and its deltas are recorded.
+
+  Status and type. It is `ready-for-architecture` and not
+  `ready-for-implementation`: the design that precedes its code is not in
+  ADR-0010 - a decision record of the owner's ruling, the constraint
+  amendments, and an id map the owner has not yet seen. It is a `task`
+  with `claims: []` because no claim exists for it to deliver, and none is
+  invented here; criterion 4 says who writes them. Once they exist this
+  item's `claims:` names them, or it is re-cut as one item to a claim.
+
+  It touches brief § 4, `0001-F1`, `0001-F7`, `0001-F3` (the rule pages),
+  `0001-F5` (the manifest's `rules` keys) and every specification and
+  scenario that names a rule id, so it sits at the repository root with
+  `spec: null`.
+
+  What is owed first, in order:
+
+  1. A decision record of the owner's ruling, placed by blast radius -
+     it changes brief § 4 and constraints of two Features, so it is
+     repository-wide - saying that the vocabulary of `0.1.0` is rewritten
+     in place with no major version, and why that is not a precedent once
+     a version has shipped.
+  2. The deltas, by `spec-author`. The record lists brief § 4, `0001-F7`
+     C-11, `0001-F1` C-10 and every rule page. Read at `eb7c161`, two more
+     constraints forbid the change and the record does not list them:
+     `0001-F1` C-5, "the rule vocabulary is fixed per schema version", and
+     `0001-F1` C-9, under which no edit changes a violation's rule id
+     until brief § 8 step 5. AGENTS.md's invariant "The rule vocabulary is
+     fixed per schema version" and its `SPEC###` id scheme are in the same
+     delta.
+  3. The id map, old id to new id for all twenty-one, approved by the
+     owner and recorded in that decision record.
+  4. The claims and scenarios that name a rule id, amended by
+     `spec-author` to the new ids, each keeping its `B-` id.
+
+  Then, and only then, the code: the rule pages under `docs/rules/v1/`,
+  the vocabulary (`src/specht/Versioning/SchemaVersions.cs:71-77`), the
+  manifest's `rules` keys in the embedded default and in this repository's
+  own `.spec/schema/`, each rule's `Id`, a new golden report, and a folder
+  for each group under `src/specht/Rules/`.
+
+  ADR-0010's open point 7 is revisited here: the vocabulary is written
+  twice, in `SchemaVersions` and as the rules' ids, held equal by the
+  composition test.
+
+  It waits on item 0164: after it a rule states its id once and the
+  evaluator stamps it, so the renumbering changes one member a rule.
+
+acceptance_criteria:
+  - "1. Before any id changes: a repository-wide decision record states the owner's ruling of 2026-10-11 - the vocabulary of schema version `0.1.0` is rewritten in place, with no new major version, because no version has shipped - and the condition under which it would not be allowed again."
+  - "2. Before any id changes, by `spec-author`: brief § 4, `0001-F7` C-11, `0001-F1` C-5, `0001-F1` C-9, `0001-F1` C-10 and the AGENTS.md invariant and id scheme are amended to permit this one renumbering and to say what holds after it; each amended constraint keeps its id."
+  - "3. Before any id changes: the map from each of the twenty-one ids to its new id is in that decision record and the owner has approved it. Every new id is `SPEC` and four digits, its thousands digit is its group's in ADR-0010 § 'Rule ids', no `SPEC0xxx` id is assigned, and no new id is given to two rules."
+  - "4. Before the code, by `spec-author`: every claim, scenario and `@boundary` scenario that names a rule id names the new one, with its claim id unchanged; this item's `claims:` then lists the claims it delivers, or the item is re-cut. `test-writer` brings § 9 to them."
+  - "5. `specht --explain` answers each new id and no old one, and the rule pages under `docs/rules/v1/` are one page for each new id."
+  - "6. The pinned vocabulary, the manifest's `rules` keys - in the embedded default manifest and in this repository's `.spec/schema/` - and each rule's `Id` hold the new ids and no old one. A manifest that names an old id is rejected as any unknown id is."
+  - "7. The golden report is replaced once, by the engine's output on the same synthetic baseline tree: it differs from `test/tests/Engine/Baseline/engine-e7dba24.json` in rule ids and in the order the last sort key gives, and in nothing else - the same violations, files, lines, identifiers, messages, severities and counts. The comparison is recorded in the pull request."
+  - "8. The rules sit in one folder for each group under `src/specht/Rules/`, with namespaces that follow the folders."
+  - "9. Open point 7 is answered in the decision record: the vocabulary stays written twice and held equal by the composition test, or one of the two is derived from the other."
+  - "10. This repository's own tree passes `./build.sh Specht` with the tool built from this item, the unit, integration and acceptance tiers pass, and the benchmark project `.performance/benchmarks` still compiles."
+
+decisions:
+  - |
+    2026-10-11, spec-author: cut from ADR-0010 on the repository owner's
+    acceptance of it the same day, as track R. Item 0154 is the session
+    that produced the record and holds the owner's decisions. Type `task`
+    and status `ready-for-architecture`: unlike the record's refactor
+    stages, this one changes what a consumer reads and is preceded by a
+    decision record, constraint amendments and an id map that do not exist
+    yet. No claim is cut with it; the specification work in criteria 1 to
+    4 comes first and names them. Found reading the source and added to
+    the record's list of deltas: `0001-F1` C-5 and C-9, and the AGENTS.md
+    invariant.
+
+out_of_scope:
+  - "Assigning any new id in this item's text - the map is the owner's to approve (criterion 3)."
+  - "A new rule, a retired rule or a changed message - each is its own item, and a new rule after a version ships is a major version (`0001-F7` C-11)."
+  - "An id in the `SPEC0xxx` group, the faults of the tool - ADR-0010 assigns the group and no id; fault isolation is `0001-F1` B-012 to B-016 and OQ-2."
+  - "A second shipped schema version, or a migration for a consumer's manifest - no version has shipped."
+  - "The rules of epic `0101`, which take their ids in the new scheme when they are specified."
+  - "Any structural stage of ADR-0010 - items 0155 to 0168."

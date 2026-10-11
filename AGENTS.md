@@ -82,6 +82,13 @@ Two projects, one direction of dependency:
   a command parses, calls the runner, and folds the report into an exit code.
   Nothing else lives in a command.
 
+That is the engine as built. Its decided shape is
+[ADR-0010](.spec/adr/0010-layered-engine-boundaries-with-io-at-the-edge-and-a-mediator.md):
+one assembly of namespaces that depend downward only, I/O confined to four
+stores, an immutable model built before any rule runs, one rule per rule id,
+and a host that sends a request to a handler in the engine. New engine code
+follows it; the existing code moves in its stages.
+
 The design direction (brief § 5) moves every literal the engine hardcodes —
 layouts, section roles, table headers, markers, frontmatter key roles, id
 grammars, per-rule severity — into the manifest, one rule at a time, each with a

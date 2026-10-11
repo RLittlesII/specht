@@ -13,6 +13,8 @@ inverting control, maybe this leads us to a different approach?", and proposed o
 
 Partially superseded by [ADR-0008](0008-evaluate-takes-the-rule-set-and-the-model-carries-the-vocabulary.md), 2026-10-09: the Decision's clause "`Evaluate` takes no second parameter and reads no static" is narrowed to the rule settings. The rule set is `Evaluate`'s second argument. The rest stands.
 
+Partially superseded by [ADR-0010](0010-layered-engine-boundaries-with-io-at-the-edge-and-a-mediator.md), 2026-10-11: the Decision's clause that `DefaultSeverity` lands with epic `0101`'s first item and not before, and the Consequences cost bullet that keeps the `SpecSeverity.Error` yields until then. `DefaultSeverity` lands when each rule reports one id and the evaluator stamps the severity. The rest stands.
+
 Supersedes [ADR-0002](0002-no-chain-of-responsibility-for-the-check.md) in
 part:
 

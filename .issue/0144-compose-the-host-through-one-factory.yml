@@ -10,7 +10,7 @@ risk: 3
 parent: null
 children: []
 
-depends_on: ["0099"] # builds what 0099 decided: ADR-0007's factory and its testing rule
+depends_on: ["0099", "0167", "0168"] # ADR-0007's factory from 0099; the mediator and `Check.Query` from 0167; the home both test projects compile from 0168
 spikes: []
 
 spec: null
@@ -62,6 +62,41 @@ summary: |
   InitWriter over the shipping copy, and names no caller input but the file
   system and the console.
 
+  Reshaped 2026-10-11 on ADR-0010 (accepted 2026-10-11,
+  .spec/adr/0010-layered-engine-boundaries-with-io-at-the-edge-and-a-mediator.md),
+  which runs this item as stage 8 of its order of work, after stage 7,
+  item 0167. ADR-0007's rules stand as written above. What ADR-0010 adds:
+
+  - `CheckCommand` sends `Check.Query` through `ICqrs` and folds the report
+    it receives. Where this summary says the factory "takes both" - the
+    call to AddSpechtEngine() and the Func<string, SpechtReport> delegate -
+    it takes the first only: the delegate is removed, not moved. Item 0167
+    deletes `SpechtRunner` and leaves that one registration in
+    src/tool/Program.cs re-pointed; this item removes it and the
+    constructor parameter it feeds
+    (`src/tool/Features/Check/CheckCommand.cs:19`).
+  - The four input-failure exceptions still cross to the catch ladder in
+    `CheckCommand` (`src/tool/Features/Check/CheckCommand.cs:31-46`);
+    ADR-0010's handlers return a plain result (owner decision 4).
+  - `InitWriter.ShippingCopy` (`src/tool/Features/Init/InitWriter.cs:25`),
+    a static that holds the embedded shipping copy for
+    `src/tool/Program.cs:15`, becomes an instance the init slice registers
+    (owner decision 5). That bears on the point above: a test that needs a
+    shipping copy of its own has an instance to be given.
+  - `test/tests/Shared/EngineServices.cs` is in the test-support project
+    from item 0168, which is also the "home both projects compile" a
+    criterion below asks for.
+
+  Two points ADR-0010 leaves open and hands to this item, for the
+  architecture pass. Open point 5: the commands write to the static
+  `Console.Error` (`src/tool/Features/Check/CheckCommand.cs:93`,
+  `src/tool/Features/Init/InitCommand.cs:32`), a static holding I/O that
+  the console the factory takes does not cover; the default is that it is
+  handled here. Open point 2: where `init`'s handler lives; the default is
+  the tool's `Init` slice, dispatched through the same `ICqrs`, and the
+  pass says whether `InitCommand` sends a message in this item or stays as
+  it is until `upgrade`.
+
 acceptance_criteria:
   - "One static factory composes the host; each of `src/tool/Features/Check/`
     and `src/tool/Features/Init/` holds its slice's registration - services
@@ -91,12 +126,30 @@ acceptance_criteria:
     `Read` in the last two - one copy each, in a home both projects compile."
   - "Removed: the unused `Spectre.Console.Cli.Testing` reference in
     `test/acceptance/acceptance.csproj`."
+  - "ADR-0010, stage 8: `CheckCommand` takes `ICqrs`, sends `Check.Query`
+    with the root and folds the report; no `Func<string, SpechtReport>` is
+    registered or injected anywhere in `src/tool`, and the command names no
+    handler, reader or evaluator (`0001-F2` C-4, as item 0167's delta
+    leaves it)."
+  - "ADR-0010, stage 8: `InitWriter.ShippingCopy` is not static; the init
+    slice registers the shipping copy as an instance, read once at
+    composition."
+  - "ADR-0010 open point 5, decided in the architecture pass, recorded here
+    and delivered: how a command writes to stderr without the static
+    `Console.Error`, with stdout and stderr carrying what they carry today
+    (`0001-F2` C-3)."
+  - "ADR-0010 open point 2, decided in the architecture pass and recorded
+    here: whether `InitCommand` sends a message through `ICqrs` in this
+    item."
   - "The unit, integration and acceptance tiers pass, and the tool's stdout,
     stderr and exit codes are unchanged."
+  - "The golden report `test/tests/Engine/Baseline/engine-e7dba24.json` is
+    unchanged, and the benchmark project `.performance/benchmarks` still
+    compiles."
   - "No .feature change needed: refactor - the composition moves from
     `Program.cs` and the test classes into one factory and the slices'
     registrations; no command's behaviour changes."
-  - "Constraints preserved: 0001-F2 C-7, ADR-0003"
+  - "Constraints preserved: 0001-F2 C-2, 0001-F2 C-3, 0001-F2 C-7, ADR-0003"
 
 decisions:
   - |
@@ -121,9 +174,26 @@ decisions:
     What becomes of the registration tests' collection is not decided
     here: the criterion names the two outcomes open, and the architecture
     pass picks one.
+  - |
+    2026-10-11, spec-author: reshaped on ADR-0010, accepted by the
+    repository owner the same day (item 0154), which names this item as
+    stage 8. ADR-0007's rules are kept as written. Added on ADR-0010's
+    authority: the command sends `Check.Query` through `ICqrs`; the
+    `Func<string, SpechtReport>` seam is removed; `ShippingCopy` becomes an
+    instance; open points 5 and 2 are carried for the architecture pass.
+    `depends_on` gains 0167, stage 7. It gains 0168 as well, which
+    ADR-0010's table does not ask for: this item needs one copy of a
+    helper in "a home both projects compile", and `specht-conventions`
+    § Testing makes such a helper wait for the test-support project. The
+    owner may drop that edge. Status stays `ready-for-architecture`: the
+    registration tests' collection and the two open points are still to
+    be decided. `0001-F2` C-2 and C-3 are added to the constraints
+    preserved, for the catch ladder and stderr.
 
 out_of_scope:
   - "What any command does - 0001-F2 and 0001-F4 own that."
   - "`AddSpechtEngine()` and the engine's registrations - 0107 (ADR-0001 stage D)."
+  - "`Specht.Cqrs`, `Check.Query` and `Check.Handler` themselves, and deleting `SpechtRunner` - item 0167."
+  - "`--report` as a `SaveReport` command - item 0036."
   - "The acceptance steps that launch the built tool - they compose nothing (ADR-0007). The five step classes that resolve the engine through `EngineServices` are in scope, above."
   - "A new command test, such as the command-tester test 0001-F2 § 9 holds `Partial` for B-012 - test-writer's, once this lands."

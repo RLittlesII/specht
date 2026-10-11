@@ -9,7 +9,7 @@ risk: 2
 parent: "0004"
 children: []
 
-depends_on: ["0005", "0107"] # prunes on the manifest exclusions 0005 reads; ISpecDiscovery (ADR-0001 stage E) lands here on 0107's instance classes
+depends_on: ["0005", "0107", "0166"] # prunes on the manifest exclusions 0005 reads; ISpecDiscovery (ADR-0001 stage E) lands here on 0107's instance classes; the one reader that calls discovery is 0166's
 spikes: []
 
 spec: src/specht/Discovery/.spec/README.md
@@ -18,7 +18,7 @@ claims:
   - B-006
 
 created: "2026-10-08"
-updated: "2026-10-08"
+updated: "2026-10-11"
 closed: null
 
 summary: |
@@ -31,7 +31,16 @@ acceptance_criteria:
   - "B-006 — no child of an excluded directory enumerated (C-1: no enumerate-then-filter)"
   - "§ 9 carries a row naming a test for each id above."
 
-decisions: []
+decisions:
+  - |
+    2026-10-11, spec-author: `depends_on` gains 0166 on ADR-0010, accepted
+    by the repository owner the same day (item 0154), whose § "Items
+    reshaped" makes items 0007 and 0008 depend on stage 6. After 0166 one
+    type, `SpecModelReader`, calls discovery, and discovery returns a
+    listing and reads no file's text; this item's mode is built behind
+    that caller. `ISpecDiscovery` still arrives with items 0007 and 0008
+    and not before (ADR-0001, as ADR-0010 § "What this supersedes" leaves
+    it). The claims, the criteria and the scope are unchanged.
 
 out_of_scope:
   - "Following symbolic links — § 5 #1; the B-011 proof across both modes is 0009."

@@ -21,6 +21,8 @@ Partially superseded by [ADR-0008](0008-evaluate-takes-the-rule-set-and-the-mode
 
 Partially superseded by [ADR-0007](0007-each-part-registers-itself-and-one-factory-composes-the-host.md), 2026-10-10: the Consequences sentence "`Program.cs` stays the composition root and calls it once". One factory composes the host, `Program.cs` only calls the factory, and the factory calls `AddSpechtEngine()` once. `AddSpechtEngine()` is still one hand-written list. The rest stands.
 
+Partially superseded by [ADR-0010](0010-layered-engine-boundaries-with-io-at-the-edge-and-a-mediator.md), 2026-10-11: in the Decision's "Lifetimes" bullet, the two process-wide statics `SpecManifest.Defaults` and `SpecSchemas.Options` and `SpecSchemas.Load` as the loader; in "The statics that stay", `SpecDiscovery.Relative` and `SpecReportDocument.From`. No static holds logic, I/O or loaded state. The rest stands.
+
 ## Context
 
 The owner's comment: "All these classes are starting to feel like they should

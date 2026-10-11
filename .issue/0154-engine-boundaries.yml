@@ -1,0 +1,140 @@
+id: "0154"
+type: spike
+title: Decide the engine's boundaries and the order of work that reaches them
+
+status: done
+
+value: 2
+risk: 2
+
+parent: null
+children: []
+
+depends_on: []
+spikes: []
+
+spec: null
+
+claims: []
+
+created: "2026-10-11"
+updated: "2026-10-11"
+closed: "2026-10-11"
+
+summary: |
+  2026-10-11, the repository owner: "I'd like to have a general architecture
+  session.  I am not sure we really set proper boundaries when we started
+  this.  SOLID is a must.  Gang of Four is important.  Abstracting only when
+  needed, not for fun.  The "rule engine" should skill rules that are skipped
+  from the manifest.  We should do I/O at the boundaries of the application.
+  Which means we should pull in from the file system, create in memory
+  representations, do our work, then output the result to I/O.  I/O is just a
+  data source (database).  Our logic shouldn't have to take in things like
+  "loaders" it should load at the start and be available through the
+  execution."
+
+  And, of the records that turned a chain of responsibility down: "This is
+  where I tried to add some semblance of architecture and was told no about
+  CoR.  Okay.  CoR may not have been write, but the way this is written is a
+  nightmare to maintain with statics and loose cohesion and highly coupled
+  concrete statics all over the place.  Hell we even fouled up the tests by
+  adding all the msbuild magic.  I need STRUCTURE!"
+
+  What the session read in the source, at commit `eb7c161`:
+  - A disabled rule can still run. `SpechtRunner.Evaluate` skips a rule class
+    only when every id it reports is off (`src/specht/SpechtRunner.cs:30`) and
+    then drops the disabled ids' violations (`:37`). Eight classes report the
+    21 ids.
+  - A rule reads the disk while it evaluates: `FeatureFileRule` holds a
+    `FeatureFileReader` and calls it inside `Evaluate`
+    (`src/specht/Rules/FeatureFileRule.cs:11`, `:43`).
+  - Reading and building are one method
+    (`src/specht/Model/SpecModelLoader.cs:41-75`), and the model carries
+    absolute paths (`src/specht/Model/SpecModel.cs:21-22`).
+  - Logic, I/O and loaded state sit in statics: `SpecManifest`,
+    `SpecSchemas.Load` and `SpecSchemas.Options`, `SchemaVersions.Embedded`,
+    `SpecDocument.Parse`, `FrontmatterReader.Parse`, `SpecPath`,
+    `SpecReportDocument.From`, `SpechtRunner.Evaluate` and `Order`,
+    `InitWriter.ShippingCopy`.
+  - The engine's namespaces depend on each other in three cycles.
+  - `test/acceptance` and `test/tests` compile each other's source through
+    eight `<Compile Include>` links.
+
+  This spike is the session and its record. It changes nothing under `src/`,
+  `test/`, `.performance/` or `.build/`: it writes ADR-0010, corrects the
+  skills ADR-0010 makes false, and leaves the staged work to items cut from
+  the ADR.
+
+acceptance_criteria:
+  - "ADR-0010, in the repository-wide `.spec/adr/`, is accepted with the owner as decider. It states the facts it rests on with a path and a line, the drivers in priority order, at least six options, the target boundaries, each interface and what earns it, and how each namespace cycle is cut."
+  - "ADR-0010 names the exact clauses of ADR-0001, ADR-0004, ADR-0005 and ADR-0008 it supersedes and the clauses that stand, and each of those four records gains one Status line pointing to it. No other line of an accepted record changes."
+  - "ADR-0010 carries the staged order of work: which stages are refactors, which specification deltas land before code, what may run in parallel, and why no structural stage changes a verdict (`0001-F1` C-9, C-10)."
+  - "ADR-0010 accounts for the whole-check benchmark of `0109-F3` (item `0150`, pull request #118): what it measures after the runner is gone, and which stage re-points it."
+  - "ADR-0010 records the seven points left open, each with a default that stands unless the owner overrules it in review."
+  - "The skills ADR-0010 makes false are corrected in the same change and link it: `dotnet-tool` (what sits below a command, and the engine's folder list), and `specht-conventions` (statics and file access; the tier guard's condition and the test-support project)."
+  - "The follow-on items are cut by `spec-author` from ADR-0010's stage table, each with the specification delta it owes. This item cuts none and takes no id for them."
+
+decisions:
+  - |
+    2026-10-11, the repository owner: one rule per rule id - 21 rules, each
+    reporting only its own id, so a rule set off is never run. Rejected:
+    keeping the eight classes and passing each the enabled ids; leaving today's
+    run-and-drop filter in place.
+  - |
+    2026-10-11, the repository owner: a mediator, not a use-case object -
+    "use-case is essentially clean architecture, which we explicitly prefer
+    mediator over." Requests and handlers take the shape of the owner's cqrsz
+    library, a static class per operation nesting the message record and its
+    `Handler`, and are dispatched through a minimal `ICqrs` in this repository
+    that uses no reflection, until the owner's source-generated port exists:
+    "I was considering porting my Cqrsz to .NET and doing it in source
+    generators (not now, but near future for use in places like this!)". Not
+    chosen: MediatR; a source-generated third-party mediator now.
+  - |
+    2026-10-11, the repository owner: requests and handlers live in the
+    engine, so the tool, the benchmarks and any later host send the same
+    request.
+  - |
+    2026-10-11, the repository owner: a handler returns a plain result and an
+    input failure stays an exception, as ADR-0009 proposes. This departs from
+    cqrsz's `Either<Error, T>` return and is recorded as a departure.
+  - |
+    2026-10-11, the repository owner: every static that holds logic, I/O or
+    loaded state goes. A private `static readonly` constant stays.
+  - |
+    2026-10-11, the repository owner: one engine assembly with boundaries
+    inside it - "Are you recommending splitting `specht` into 5 assemblies?
+    Why do we need that?  Can't it be 1 assembly with properly defined
+    boundaries?" The boundaries are namespaces that follow folders, held by a
+    test. Five assemblies were not proposed and are not built.
+  - |
+    2026-10-11, the repository owner: readiness for ahead-of-time compilation
+    and start-up time become decision drivers - "I am looking for performance,
+    and I think, AOT compatability given this should run on ever OS." - and a
+    spike measures them. Not chosen: adopting Pure.DI now; ADR-0003 stands
+    until the spike's evidence says otherwise.
+  - |
+    2026-10-11, the repository owner: rule ids become four digits with the
+    thousands digit naming a group - "Also SPEC0000 would be better.  4 digits
+    and some grouping of error types" - renumbered as its own track after the
+    rule split. On the transition: "Clean break.  No need for major version
+    schema ... we haven't shipped anything ...". Rejected: a new major schema
+    version; aliases from the old ids.
+  - |
+    2026-10-11, the repository owner: a chain of responsibility stays
+    rejected, as ADR-0002 decided. The structure asked for is ADR-0010's.
+  - |
+    2026-10-11, the repository owner: the deliverable is one superseding ADR
+    and staged items, and the owner approved the plan it records.
+  - |
+    2026-10-11, the repository owner: "take into account that #118 will land
+    soon and you will have to acount for the benchmark". ADR-0010 names the
+    whole-check benchmark as a caller of the engine's whole-run entry point
+    and puts its re-pointing inside the stage that removes the runner.
+
+out_of_scope:
+  - "Any change under `src/`, `test/`, `.performance/` or `.build/` - every stage is a follow-on item."
+  - "Any edit to a Feature's specification or `.feature` file - ADR-0010 lists the deltas owed, and the owning role writes each with its stage."
+  - "The follow-on items themselves and their ids - `spec-author` cuts them."
+  - "The fault isolation around a rule that throws (`0001-F1` B-012 to B-016, `0001-F1` OQ-2; ADR-0005 (c)) - still owed, and not reshaped here."
+  - "Pull request #118's files."

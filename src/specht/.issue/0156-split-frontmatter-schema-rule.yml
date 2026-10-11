@@ -1,0 +1,96 @@
+id: "0156"
+type: refactor
+title: Split FrontmatterSchemaRule into one rule per id
+
+status: ready-for-implementation
+
+value: 3
+risk: 3
+
+parent: null
+children: []
+
+depends_on: ["0155"] # the split rules read the model 0155 leaves
+spikes: []
+
+spec: src/specht/.spec/README.md
+
+claims: []
+
+created: "2026-10-11"
+updated: "2026-10-11"
+closed: null
+
+summary: |
+  ADR-0010 (accepted 2026-10-11,
+  .spec/adr/0010-layered-engine-boundaries-with-io-at-the-edge-and-a-mediator.md),
+  stage 3 (B) of "The order of work": the owner's decision 1, one rule per
+  rule id. `FrontmatterSchemaRule`
+  (`src/specht/Rules/FrontmatterSchemaRule.cs:24`) reports SPEC001, SPEC002,
+  SPEC003 and SPEC004, and with one of them off and another on the whole
+  class still runs (ADR-0010 § "What the source shows"). This item splits
+  it into four rules, each reporting its own id and no other.
+
+  The evaluator is untouched. `ISpecRule` keeps `Id`, `ReportedIds` and
+  `Evaluate`; each new rule's `ReportedIds` names its one id;
+  `SpechtRunner.Evaluate` selects, filters and counts as it does today.
+  Collapsing the interface is item 0164. `AddSpechtEngine()` registers each
+  new rule by name, in ordinal order of its id, where it registers
+  `FrontmatterSchemaRule` today.
+
+  Three of the four share one piece of work, the JSON Schema evaluation
+  beneath SPEC002, SPEC003 and SPEC004: the evaluation under the invariant
+  culture, the walk of its failures, the key and the message
+  (`FrontmatterSchemaRule.cs:69-151`). ADR-0010 § "One rule per id" makes it
+  a class the three take, `FrontmatterSchemaCheck`, and not a base class.
+  `SpecSchemas.Options`, which it reads (`:99`), stays the static it is
+  until item 0166.
+
+  What keeps the report byte-identical is ADR-0010 § "Why no structural
+  stage changes a verdict": the rule id is the last sort key and the sort
+  is stable, so each new rule emits its violations in the order the old
+  class emitted that id, and keeps every guard the old class applied before
+  it, including a guard that today sits in another id's branch. The
+  acceptance criteria name both.
+
+  Depends on 0155, so each split is written once, against the model that
+  item leaves.
+
+  It restructures the code of `0001-F1` alone, so it sits beside that
+  specification. The eight splits, 0156 to 0163, touch different rule
+  classes and share two files:
+  `src/specht/Composition/SpechtEngineServiceCollectionExtensions.cs` and
+  `test/tests/Composition/SpechtEngineServiceCollectionExtensions.Unit.Tests.cs`.
+  Type names and lines are the source's at commit `eb7c161`; once item 0100
+  lands each type carries the prefix that item gives it.
+
+acceptance_criteria:
+  - "Split: `FrontmatterSchemaRule` is gone and four rules stand in its place, one each for SPEC001, SPEC002, SPEC003 and SPEC004; each one's `ReportedIds` names its own id alone, and `AddSpechtEngine()` registers each by name in ordinal order of its id."
+  - "Order kept: SPEC001 is emitted for Features, then items, then epics (`src/specht/Rules/FrontmatterSchemaRule.cs:29-51`), each in the model's order. SPEC002 over Features, SPEC003 over items and SPEC004 over epics keep the model's order and, within one file, the order the failure walk yields (`:107-131`)."
+  - "Guards kept: SPEC002, SPEC003 and SPEC004 report nothing for a file with no frontmatter (`:56-67`), whether SPEC001 is on or off; SPEC001 evaluates no schema."
+  - "Shared work: the schema evaluation, its failure walk, key and message are one class the three schema rules take, `FrontmatterSchemaCheck`, with no base class (ADR-0010 § 'One rule per id'). The current culture is saved, set and restored in one member, as today."
+  - "Untouched: `ISpecRule`, `SpechtRunner.Evaluate` and `SpechtRunner.Order`, and every violation's file, line, identifier, message and severity."
+  - "The composition tests still hold: every concrete rule the engine declares is registered exactly once, the rules resolve in ordinal order of their ids, and the reported ids are the twenty-one of the pinned vocabulary, each once (`test/tests/Composition/SpechtEngineServiceCollectionExtensions.Unit.Tests.cs`)."
+  - "Not a refactor until re-pointed: `SpechtRunnerDeterminismUnitTests` (`0001-F1` § 9 B-006) and `test/acceptance/Manifest/ManifestSteps.cs:368` construct `FrontmatterSchemaRule`, and `EngineAssembly.Exemption` (`test/tests/Shared/EngineAssembly.cs:43-44`; `0001-F1` decision 0006) names `Specht.Rules.FrontmatterSchemaRule.EvaluateInvariant` as the one allowed reference to the current culture. Each is aimed at the type that now holds what it pins, the exemption stays one member, and `test-writer` re-points any § 9 row whose test is renamed, in the same pull request."
+  - "The golden report `test/tests/Engine/Baseline/engine-e7dba24.json` is unchanged, byte for byte, and the test that compares it is green unedited. The unit, integration and acceptance tiers pass, and the benchmark project `.performance/benchmarks` still compiles."
+  - "No .feature change needed: refactor - `FrontmatterSchemaRule` becomes four rules of one id each; every violation, its severity, the report's order and its counts are unchanged."
+  - "Constraints preserved: 0001-F1 C-3, 0001-F1 C-5, 0001-F1 C-9, 0001-F1 C-10, 0001-F5 C-3"
+
+decisions:
+  - |
+    2026-10-11, spec-author: cut from ADR-0010 on the repository owner's
+    acceptance of it the same day, as one of the eight parts of stage 3 (B).
+    Item 0154 is the session that produced the record and holds the owner's
+    decisions. ADR-0010 found eight rule classes where the plan said seven
+    and left the cut to spec-author: eight items, one for each class, 0156
+    to 0163. Status `ready-for-implementation`, as items 0104 to 0107 were
+    cut on ADR-0001: the design is the accepted record's.
+
+out_of_scope:
+  - "The collapse of `ISpecRule`, `SpecFinding`, `DefaultSeverity` and the evaluator - item 0164."
+  - "A unit-test class for each new rule that pins every id it reports - item 0152."
+  - "A folder for each rule group under `src/specht/Rules/`, and any new rule id - item 0169."
+  - "The other seven rule classes - items 0157 to 0163, one each."
+  - "`SpecSchemas.Options` and the schemas as data - item 0166."
+  - "Fault isolation around a rule that throws - `0001-F1` B-012 to B-016 and OQ-2; ADR-0005 (c)."
+  - "Any change to a message, a line or an identifier - `0001-F1` C-9."
