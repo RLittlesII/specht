@@ -9,8 +9,8 @@ namespace Specht.Tests.Manifest;
 
 /// <summary>
 /// The manifest loader over an in-memory file system (0001-F5 B-001, B-002, B-003, B-008, B-012, B-015, B-017, B-019, B-020,
-/// B-021, B-039, B-040, B-041, B-042; 0001-F2 B-005, B-006, B-007; 0001-F7 B-002, B-039): what it rejects and as which failure,
-/// what it ignores, the schema version it reads, and what it fills from the default manifest.
+/// B-021, B-039, B-040, B-041, B-042, B-044; 0001-F2 B-005, B-006, B-007; 0001-F7 B-002, B-039): what it rejects and as which failure,
+/// what it ignores, the schema version it reads, what it fills from the default manifest, and that it fills no rule setting.
 /// </summary>
 [Trait("Tier", "Unit")]
 public sealed class SpecManifestUnitTests
@@ -629,6 +629,19 @@ public sealed class SpecManifestUnitTests
 
         // Then
         load.Should().ThrowExactly<SpechtManifestException>().Which.Message.Should().Contain("'SPEC010'");
+    }
+
+    [Fact]
+    public void AManifestLeavingOutItsRuleSettings_WhenLoaded_ShouldReadNoRuleSetting()
+    {
+        // Given
+        var fileSystem = Holding(DefaultManifest());
+
+        // When
+        var structure = SpecManifest.Load(fileSystem, Root);
+
+        // Then
+        structure.Rules.Should().BeEmpty();
     }
 
     private static MockFileSystem Holding(JsonObject manifest) => Holding(manifest.ToJsonString());

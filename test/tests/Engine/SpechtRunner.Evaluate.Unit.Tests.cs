@@ -15,8 +15,9 @@ namespace Specht.Tests.Engine;
 /// version the model's schemas keep decides which rules run, which violations are kept, and how many rule ids count as
 /// evaluated, the rules run in the order given, and the violations are the ones <see cref="SpechtRunner.Order"/> gives.
 /// The report's layouts are the manifest's, by name and in its order, each with its count (<c>0001-F6</c> B-001, B-009, C-7).
-/// The manifest's rule settings take an id set <c>off</c> out of the rules run, the violations kept and the count, and
-/// report an id set <c>warning</c> at warning severity (<c>0001-F5</c> B-010, B-011, B-019; item 0014).
+/// The manifest's rule settings take an id set <c>off</c> out of the rules run, the violations kept and the count,
+/// report an id set <c>warning</c> at warning severity and an id set <c>error</c> at error severity, and leave an id they do
+/// not name at the severity the rule gave (<c>0001-F5</c> B-010, B-011, B-043, B-044; item 0014).
 /// No tree on disk and no container.
 /// </summary>
 [Trait("Tier", "Unit")]
@@ -72,7 +73,7 @@ public sealed class SpechtRunnerEvaluateUnitTests
             { "a vocabulary id no rule reports is not counted", ["FAKE001", "FAKE002"], [["FAKE001"]], 1 },
         };
 
-    /// <summary>Gets a manifest that does not lower <c>FAKE001</c>, and the severity that rule gives its finding.</summary>
+    /// <summary>Gets a manifest under which <c>FAKE001</c> keeps its finding's severity, and the severity that rule gives its finding.</summary>
     public static TheoryData<string, string, SpecSeverity> KeptSeverities =>
         new()
         {
@@ -82,7 +83,13 @@ public sealed class SpechtRunnerEvaluateUnitTests
                 """{ "rules": { "FAKE002": "warning" } }""",
                 SpecSeverity.Error
             },
-            { "a manifest leaving its rule settings out keeps the rule's own severity", "{}", SpecSeverity.Warning },
+            {
+                "an id the rule settings do not name keeps the rule's own severity beside one they raise",
+                """{ "rules": { "FAKE002": "error" } }""",
+                SpecSeverity.Warning
+            },
+            { "a manifest leaving its rule settings out keeps the rule's own warning", "{}", SpecSeverity.Warning },
+            { "a manifest leaving its rule settings out keeps the rule's own error", "{}", SpecSeverity.Error },
         };
 
     [Theory]
@@ -304,6 +311,21 @@ public sealed class SpechtRunnerEvaluateUnitTests
 
         // Then
         report.Violations.Should().Equal(error, lowered with { Severity = SpecSeverity.Warning });
+    }
+
+    [Fact]
+    public void ARuleIdSetToError_WhenEvaluated_ShouldReportItsWarningFindingAtErrorSeverity()
+    {
+        // Given
+        SpecModel model = ModelUnderManifest("""{ "rules": { "FAKE001": "error" } }""");
+        SpecViolation raised = new SpecViolationFixture().WithRuleId("FAKE001").WithSeverity(SpecSeverity.Warning);
+        List<ISpecRule> rules = [new FakeRule("FAKE001", ["FAKE001"], raised)];
+
+        // When
+        var report = SpechtRunner.Evaluate(model, rules);
+
+        // Then
+        report.Violations.Should().Equal(raised with { Severity = SpecSeverity.Error });
     }
 
     [Theory]

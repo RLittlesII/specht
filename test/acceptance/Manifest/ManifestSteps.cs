@@ -20,9 +20,13 @@ namespace Specht.Acceptance.Manifest;
 /// written into the manifest under <c>roles</c>, <c>tables</c> and <c>markers</c> (B-001 to B-003, B-015, B-039, B-040;
 /// decision 0006). An empty file-shape list is written under <c>companionFiles</c> (B-041; <c>0001-F6</c> decision 0008).
 /// An exclusion entry is written as the whole <c>exclusions</c> list (B-021; <c>0001-F6</c> decision 0003).
-/// A rule setting is written under <c>rules</c>, a rule id mapped to its level (B-010, B-011, B-013, B-042; decision 0007).
+/// A rule setting is written under <c>rules</c>, a rule id mapped to its level (B-010, B-011, B-013, B-042, B-043; decision 0007),
+/// and "sets no level" leaves the <c>rules</c> key out (B-044).
 /// A rule declared by a type name and a library file is written there too, as an object under a rule id the pinned version
-/// does not hold, beside a file standing as the library; nothing compiled is put under the root (B-017).
+/// holds, so that its shape alone is at fault, beside a file standing as the library; nothing compiled is put under the root
+/// (B-017). "A rule that reports its violations at warning severity" is a stand-in under a rule id of the pinned version,
+/// since no shipped rule gives a warning, and "the check runs with that rule" hands it to the engine's
+/// <see cref="SpechtRunner.Evaluate"/> over the model loaded from the root (B-043).
 /// </summary>
 [Binding]
 [Scope(Feature = "The manifest carries the roles")]
@@ -187,7 +191,7 @@ public sealed class ManifestSteps
 
     [Given("the manifest declares a rule by a type name and a library file")]
     public void GivenTheManifestDeclaresARuleByATypeNameAndALibraryFile() =>
-        Set(RuleOutsideTheVocabulary, new JsonObject { ["type"] = "Consumer.Rules.MarkingRule", ["library"] = LibraryFile });
+        Set(OutOfOrderRule, new JsonObject { ["type"] = "Consumer.Rules.MarkingRule", ["library"] = LibraryFile });
 
     [Given("that library file exists under the root")]
     public void GivenThatLibraryFileExistsUnderTheRoot() => Tree.WriteRaw(LibraryFile, "A file standing as a rule library.");
@@ -207,14 +211,50 @@ public sealed class ManifestSteps
         _rulesEvaluatedByDefault = report.RulesEvaluated;
     }
 
-    [Then("the violation is reported at warning severity")]
-    public void ThenTheViolationIsReportedAtWarningSeverity() =>
+    [Given("the manifest sets no level for the out-of-order-section rule")]
+    public void GivenTheManifestSetsNoLevelForTheOutOfOrderSectionRule() => Manifest.Remove("rules");
+
+    [Given("a rule that reports its violations at warning severity")]
+    public void GivenARuleThatReportsItsViolationsAtWarningSeverity() => _standIn = new WarningRule(OutOfOrderRule);
+
+    [Given("the manifest sets that rule to error severity")]
+    public void GivenTheManifestSetsThatRuleToErrorSeverity() => Set(StandIn.Id, "error");
+
+    [Given("the root holds a specification that rule reports")]
+    public void GivenTheRootHoldsASpecificationThatRuleReports()
+    {
+        Write("F1", SpecTree.Sections);
+        SpechtRunner.Evaluate(SpecModel.Load(Tree.Root), [StandIn])
+            .Violations.Should()
+            .ContainSingle()
+            .Which.Should()
+            .Match<SpecViolation>(violation =>
+                violation.RuleId == StandIn.Id && violation.Severity == SpecSeverity.Warning && violation.File == _specifications[0]);
+    }
+
+    [When("the check runs with that rule")]
+    public void WhenTheCheckRunsWithThatRule()
+    {
+        File.WriteAllText(ManifestPath, Manifest.ToJsonString());
+        _report = SpechtRunner.Evaluate(SpecModel.Load(Tree.Root), [StandIn]);
+    }
+
+    [Then("that rule's violation is reported at error severity")]
+    public void ThenThatRulesViolationIsReportedAtErrorSeverity() =>
+        _report!.Violations.Should()
+            .ContainSingle()
+            .Which.Should()
+            .Match<SpecViolation>(violation =>
+                violation.RuleId == StandIn.Id && violation.Severity == SpecSeverity.Error && violation.File == _specifications[0]);
+
+    [Then("the violation is reported at {word} severity")]
+    public void ThenTheViolationIsReportedAtSeverity(string severity) =>
         Run.Stdout.Split('\n')
             .Should()
             .ContainSingle(static line => line.Contains(OutOfOrderRule), Run.Stderr)
             .Which.Should()
             .StartWith(_specifications[0])
-            .And.Contain($": warning {OutOfOrderRule}: ");
+            .And.Contain($": {severity} {OutOfOrderRule}: ");
 
     [Then("nothing is reported for that rule")]
     public void ThenNothingIsReportedForThatRule()
@@ -394,6 +434,8 @@ public sealed class ManifestSteps
 
     private string RuleId => _ruleId ?? throw new InvalidOperationException("The manifest sets no rule.");
 
+    private WarningRule StandIn => _standIn ?? throw new InvalidOperationException("No rule was stood in.");
+
     private static string Matrix(string title, string middleHeaders, string middleCells) =>
         $"## {title}\n\n| Claim ID | {middleHeaders} | Status |\n| --- | {string.Join(" | ", middleHeaders.Split('|').Select(static _ => "---"))} | --- |\n"
             + $"| B-001 | {middleCells} | Covered |\n";
@@ -430,6 +472,17 @@ public sealed class ManifestSteps
         _rejection.Should().BeNull();
 
         return _report!.Violations.Where(static violation => violation.RuleId == "SPEC013").Select(static violation => violation.File);
+    }
+
+    private sealed class WarningRule(string id) : ISpecRule
+    {
+        public string Id => id;
+
+        public IReadOnlyList<string> ReportedIds => [id];
+
+        public IEnumerable<SpecViolation> Evaluate(SpecModel model) =>
+            model.Features.Select(feature =>
+                new SpecViolation(id, SpecSeverity.Warning, feature.RelativePath, 1, null, "A stand-in rule reports this specification."));
     }
 
     private const string UnknownKey = "glossary";
@@ -470,4 +523,5 @@ public sealed class ManifestSteps
     private string? _ruleId;
     private int? _rulesEvaluatedByDefault;
     private string? _mark;
+    private WarningRule? _standIn;
 }
