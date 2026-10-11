@@ -20,7 +20,7 @@ depends_on: ["0055/F1", "0055/F2"]
 blocks: ["F2", "F3", "F4"]
 spikes: []
 created: "2026-10-09"
-updated: "2026-10-09"
+updated: "2026-10-11"
 github_issue: null
 synced_at: null
 ---
@@ -164,12 +164,13 @@ Pending: owned by `test-writer`, written after agreement.
 
 ## 10. Lessons / Spec Deltas
 
-<!-- last written by: spec-author, 2026-10-09 -->
+<!-- last written by: spec-author, 2026-10-11 -->
 
 - 2026-10-09, spec-reviewer finding on commit `4b23e76`: B-020 ordered the CI step after a pack step CI does not run; dropped. B-013 packed on every run; it now packs only when a cold-start benchmark is selected, and B-021 states the other case (decision 0002). B-011, B-012, B-013, B-015 and B-020 restated with this Feature as subject; B-015 names decision 0004's sizes; B-016's source corrected from brief § 9 to the owner's decision and AGENTS.md § Invariants; A-1 quotes `0055-F2` C-3 exactly; C-4 restated as an exclusion.
 - 2026-10-09, the owner resolved OQ-1 to OQ-4. OQ-1 to OQ-3 keep their defaults, so B-018, B-017 and B-012 stand. OQ-4 places baseline comparison in this epic as a later Feature, to be defined; § 5 row 2 names it. A-1 is satisfied: `0055-F2` B-004 and C-3 are amended in the same change, and `depends_on` gains `0055/F1` and `0055/F2`. B-013 was briefly amended to pack the baseline package `0109-F4` B-007 measures, and that amendment is withdrawn before commit on a spec-reviewer finding (one owner for packing): the benchmark code generates, packs and installs the baseline tool in its own temporary directory (`0109-F4` C-8), and the benchmark target packs only the tool package (orchestrator default, 2026-10-09, not the owner's). B-013, B-021 and their scenarios read as before; A-3 names the split. B-020 stands: `0055-F2` B-004 listed a `Pack` step that CI does not run, and is corrected there.
 - 2026-10-09, spec-reviewer round 2: C-10 widened to the package output `Pack` writes under `.artifacts/nupkg/`, which B-013 already caused; every write stays inside `.artifacts/`, as B-014 holds.
 - 2026-10-09, spec-reviewer finding against `0055-F2` B-015 (owner, 2026-10-09; `0055-F2` decision 0003; item 0118): a pull request runs no target on windows, and the benchmark target is a target. A-4 records B-015 beside A-2, and B-017's Source cites it. B-017 and the owner's OQ-2 answer are unchanged: the windows leg of a pull request is not a run that builds, so neither asks for a benchmark there. The `@B-017` scenario, which ran a pull request's benchmarks on Linux and on Windows, is now a push to `main`, with a `@boundary` scenario for a pull request.
+- 2026-10-11, the owner decided how this Feature is delivered, and items `0145` to `0149` are cut. No claim changed. Scope: the check measured end to end (`0109-F3`, item `0150`) is the first thing covered, because it is the first feature shipping, and work stops once it is covered; `0146`, `0147` and `0150` are delivered now, and `0148` and `0149` are cut and left in the queue. Order: `0109-F3`'s benchmark is the first measuring item and is delivered before the `Benchmark` target (`0148`), because with no benchmark class the harness selects nothing and cannot be observed, and `benchmarker` refuses a placeholder. Proof: B-015 and B-016 are tested; the build-target and CI claims are proven as `0055-F1` and `0055-F2` are under the owner's 2026-10-08 ruling that the build and CI carry no tests - `Missing` in § 9, with the mechanism recorded in § 8 - and `benchmark-harness.feature` is not linked into `test/acceptance`. Score: this Feature carries value 3, authored on `0145`, and is not on the `.issue/.goal` path.
 
 ## 11. Open Questions
 
@@ -194,7 +195,7 @@ Pending: owned by `test-writer`, written after agreement.
 
 ## Tasks
 
-None yet. Cut from § 3 after agreement. The item that delivers B-017 also closes the `Benchmark` half of `0055-F2` B-004.
+Cut 2026-10-11 into [`../.issue/`](../.issue/): `0145` (the Feature), with `0146` to `0149`. `0149`, which delivers B-017, also closes the `Benchmark` half of `0055-F2` B-004.
 
 ## Scoring
 

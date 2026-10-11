@@ -1,0 +1,82 @@
+id: "0148"
+type: task
+title: Add the Benchmark build target
+
+status: ready-for-architecture
+
+risk: 3
+
+parent: "0145"
+children: []
+
+depends_on: ["0146", "0150"] # runs 0146's project; 0150's benchmark is what a run selects
+spikes: []
+
+spec: .performance/specht.benchmarks/.spec/README.md
+
+claims:
+  - B-003
+  - B-004
+  - B-005
+  - B-006
+  - B-008
+  - B-009
+  - B-010
+  - B-011
+  - B-012
+  - B-013
+  - B-014
+  - B-021
+
+created: "2026-10-11"
+updated: "2026-10-11"
+closed: null
+
+summary: |
+  The `Benchmark` target: every benchmark or only those a filter names,
+  under a named job or the library's default, with a human-readable and a
+  machine-readable result per class under `.artifacts/benchmarks/`. It
+  succeeds whatever it measures and fails when a benchmark throws, and it
+  packs the tool package first only when a cold-start benchmark is
+  selected. No outcome reads a number (C-1); a run writes only where C-10
+  allows; a run is offline beyond restore (C-11).
+
+  Depends on 0146: the target runs that project's entry point. Depends on
+  0150: with no benchmark class a run selects nothing and no claim here
+  can be observed, so `0109-F3`'s benchmark lands first (owner,
+  2026-10-11; 0145). 0149 waits on this. Cut and left in the queue: work
+  stops once the check is covered (owner, 2026-10-11; 0145).
+
+  Proven as `0055-F1` is: no test, `Missing` in § 9, the mechanism
+  recorded in § 8 (owner, 2026-10-11; 0145).
+
+  Risk 3: twelve claims in the shared build file, a pack that is
+  conditional on what was selected, and a failure rule that must tell a
+  throw from a slow number.
+
+acceptance_criteria:
+  - "B-003 — no filter: every benchmark runs"
+  - "B-004 — a filter: only the matching full names"
+  - "B-005 — a named job is the job every selected benchmark runs under"
+  - "B-006 — no job named: the library's default job"
+  - "B-008 — results under `.artifacts/benchmarks/`"
+  - "B-009 — a human-readable summary per class"
+  - "B-010 — a machine-readable result per class"
+  - "B-011 — every benchmark completes: succeeded, whatever was measured"
+  - "B-012 — a benchmark throws: failed"
+  - "B-013 — cold start selected: packed before any benchmark runs"
+  - "B-014 — working tree unchanged outside `.artifacts/`"
+  - "B-021 — no cold start selected: nothing packed"
+  - "§ 9 keeps a row for each id above; `Missing` stands under the owner's 2026-10-11 decision (0145), with the mechanism in § 8."
+
+decisions:
+  - |
+    2026-10-11, the repository owner: delivered after `0109-F3`'s 0150,
+    and not now. Rejected: the target before any benchmark class exists
+    (0145).
+
+out_of_scope:
+  - "The CI step and its artifact — B-017 to B-020, 0149."
+  - "Any gate on a number — § 5 #1."
+  - "Comparing a run with a stored baseline — § 5 #2."
+  - "Packing the baseline tool — A-3, `0109-F4`."

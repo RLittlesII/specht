@@ -1,0 +1,71 @@
+id: "0150"
+type: feature
+title: End-to-end check scaling
+
+status: ready-for-architecture
+
+value: 3
+risk: 2
+
+parent: "0109"
+children: []
+
+depends_on: ["0146", "0147"] # 0146's project, entry point and configuration; 0147's generated trees
+spikes: []
+
+spec: .performance/specht.benchmarks/Check/.spec/README.md
+
+claims:
+  - B-001
+  - B-002
+  - B-003
+  - B-004
+
+created: "2026-10-11"
+updated: "2026-10-11"
+closed: null
+
+summary: |
+  As the maintainer of four repositories, I want the engine's whole check
+  measured over generated trees of 1, 10, 100 and 1000 specifications, so
+  that how its time and allocation grow with the tree is a recorded
+  finding before any consumer's tree is that large.
+
+  `0109-F3`, uncut: one benchmark, one item. The finding is a growth
+  shape, never a threshold (C-1); the measured call is the engine's whole
+  run from a root on disk and nothing of the host (C-2, C-3); each size's
+  tree is generated once and reused (C-4).
+
+  Depends on 0146: the benchmark class lives in that project and runs
+  through its entry point and shared configuration. Depends on 0147: the
+  trees it measures are the generator's. It does not wait on the
+  `Benchmark` target (0148), which waits on this (owner, 2026-10-11).
+
+  Risk 2: one benchmark class over a parameter; the hazard is setup or
+  tree generation leaking into the measurement (C-4).
+
+acceptance_criteria:
+  - "B-001 — one whole check measured at each of the four sizes"
+  - "B-002 — the measured call's report counts every generated specification"
+  - "B-003 — the measured tree is co-located"
+  - "B-004 — each result names its number of specifications"
+  - "§ 9 carries a row naming a test for each id above."
+
+decisions:
+  - |
+    2026-10-11, the repository owner: the validation — the check measured
+    end to end — is the first thing covered, because it is the first
+    feature shipping; work on epic `0109` stops once it is covered.
+  - |
+    2026-10-11, the repository owner: this is the first measuring item,
+    delivered before the `Benchmark` target (0148). With no benchmark
+    class the harness selects nothing and cannot be observed, and
+    `benchmarker` refuses a placeholder.
+  - |
+    2026-10-11, spec-author default, not the owner's: `value: 3`, the
+    value the owner gave the harness this item is the reason for
+    delivering now (0145). The owner named no value for `0109-F3`.
+
+out_of_scope:
+  - "Everything in § 5 of the spec."
+  - "The `Benchmark` target and the CI step — `0109-F1`, 0148 and 0149."
