@@ -5,7 +5,7 @@ type: feature
 id: "F3"
 epic: "0109"
 spec_status: approved
-status: blocked
+status: ready-for-architecture
 priority: med
 value: 0
 risk: 0
@@ -20,7 +20,7 @@ depends_on: ["F1"]
 blocks: []
 spikes: []
 created: "2026-10-09"
-updated: "2026-10-09"
+updated: "2026-10-11"
 github_issue: null
 synced_at: null
 ---
@@ -140,7 +140,7 @@ Pending: owned by `test-writer`, written after agreement.
 
 ## Tasks
 
-None yet. Cut from § 3 after agreement.
+Cut 2026-10-11 into [`../.issue/`](../.issue/): `0150` (the Feature).
 
 ## Scoring
 

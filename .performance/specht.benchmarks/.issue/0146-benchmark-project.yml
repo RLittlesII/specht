@@ -1,0 +1,56 @@
+id: "0146"
+type: task
+title: Add the benchmark project, its central package version, single entry point and shared configuration
+
+status: ready-for-architecture
+
+risk: 2
+
+parent: "0145"
+children: []
+
+depends_on: ["0057"] # joins 0057's solution, central package versions and Compile
+spikes: []
+
+spec: .performance/specht.benchmarks/.spec/README.md
+
+claims:
+  - B-001
+  - B-002
+  - B-007
+
+created: "2026-10-11"
+updated: "2026-10-11"
+closed: null
+
+summary: |
+  The benchmark project at `.performance/specht.benchmarks`, listed in the
+  solution, not packable and not a test project (C-2); the benchmark
+  library's version written once, centrally (C-3); one entry point that
+  selects benchmarks by full name from the command line (C-5); and the
+  shared configuration that reports allocated memory on every benchmark
+  (C-4) and keeps a recorded finding on a Release build under the default
+  out-of-process toolchain (C-6).
+
+  Depends on 0057: the solution, the central package file and the
+  `Compile` target the project joins are the scaffold's. The root of this
+  Feature: 0147 and 0148 wait on it, and so does `0109-F3`'s 0150. It
+  holds no benchmark class, so B-007 is first observable when 0150's
+  lands (owner, 2026-10-11; 0145).
+
+  Risk 2: declarations in three shared files and one new project; the
+  hazard is a project the tier filters select or `Compile` skips (C-2).
+
+acceptance_criteria:
+  - "B-001 — compiled when the solution is"
+  - "B-002 — the default build runs no benchmark"
+  - "B-007 — allocated memory per operation, from the shared configuration"
+  - "§ 9 carries a row naming a test for each id above."
+
+decisions: []
+
+out_of_scope:
+  - "The `Benchmark` target and where results are written — B-003 to B-014, 0148."
+  - "The synthetic tree generator — B-015, B-016, 0147."
+  - "Any benchmark class — § 5 #3; the first is `0109-F3`'s (0150)."
+  - "The CI step — B-017 to B-020, 0149."

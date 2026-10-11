@@ -1,0 +1,53 @@
+id: "0147"
+type: task
+title: Generate a clean synthetic tree of a known size
+
+status: ready-for-architecture
+
+risk: 3
+
+parent: "0145"
+children: []
+
+depends_on: ["0146"] # the generator lives in 0146's project
+spikes: []
+
+spec: .performance/specht.benchmarks/.spec/README.md
+
+claims:
+  - B-015
+  - B-016
+
+created: "2026-10-11"
+updated: "2026-10-11"
+closed: null
+
+summary: |
+  The generator every measuring Feature shares: a tree of 1, 10, 100 or
+  1000 specifications on which the check reports no violation, the same
+  files at the same relative paths with the same contents each time.
+  Every specification is generated and only the shipped schema and
+  manifest are copied (C-7); the tree is a function of its size alone
+  (C-8); every path is relative (C-9).
+
+  Depends on 0146: the generator is code in the project 0146 creates.
+  `0109-F3`'s 0150 waits on this. Both claims are tested (owner,
+  2026-10-11; 0145).
+
+  Risk 3: a generated specification must satisfy every rule the check
+  runs, at four sizes, and one nondeterministic byte breaks B-016.
+
+acceptance_criteria:
+  - "B-015 — each of the four sizes: the check reports no violation"
+  - "B-016 — the same size twice: the same files, paths and contents"
+  - "§ 9 carries a row naming a test for each id above."
+
+decisions:
+  - |
+    2026-10-11, the repository owner: B-015 and B-016 are tested, unlike
+    the build-target and CI claims of this Feature (0145).
+
+out_of_scope:
+  - "A tree with violations — § 5 #7."
+  - "What a benchmark measures over the tree — § 5 #3, `0109-F3` (0150)."
+  - "Running a benchmark — B-003 to B-014, 0148."
