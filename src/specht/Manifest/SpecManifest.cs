@@ -34,8 +34,9 @@ public static class SpecManifest
     /// The manifest carries a key the engine does not know, a <c>schemaVersion</c> that is not a <c>major.minor.patch</c> string, a
     /// role naming a title <c>sections</c> does not list, a <c>tables</c> key that is not a role, a marker whose text is empty,
     /// an empty <c>taskFiles</c>, <c>epicFiles</c> or <c>companionFiles</c> list, an <c>exclusions</c> entry with a
-    /// <c>/</c> inside it and no leading <c>/</c>, or a <c>rules</c> entry whose value is not <c>error</c>, <c>warning</c> or
-    /// <c>off</c>.
+    /// <c>/</c> inside it and no leading <c>/</c>, a <c>layouts</c> entry whose <c>identity</c> holds a member that is not a
+    /// non-negative integer, a member other than <c>epic</c> and <c>feature</c>, or neither of the two, or a <c>rules</c> entry
+    /// whose value is not <c>error</c>, <c>warning</c> or <c>off</c>.
     /// </exception>
     public static SpecStructure Load(IFileSystem fileSystem, string root)
     {
@@ -89,12 +90,12 @@ public static class SpecManifest
             Rules = Levels(manifest["rules"]),
         };
 
-        Check(structure);
+        Check(structure, IdentityFaults(manifest));
 
         return structure;
     }
 
-    private static void Check(SpecStructure structure)
+    private static void Check(SpecStructure structure, IEnumerable<string> identityFaults)
     {
         var roles = Defaults["roles"]!.AsObject();
         var faults = roles
@@ -120,6 +121,7 @@ public static class SpecManifest
                 structure.Discovery.Exclusions
                     .Where(static entry => entry.Contains('/') && !entry.StartsWith('/'))
                     .Select(static entry => $"the exclusion '{entry}' has a '/' inside it and no leading '/'"))
+            .Concat(identityFaults)
             .Concat(
                 structure.Rules
                     .Where(static rule => rule.Value is not ("error" or "warning" or "off"))
@@ -144,7 +146,45 @@ public static class SpecManifest
     {
         var layout = Present(node);
 
-        return new SpecLayout(Present(layout["name"]).GetValue<string>(), Present(layout["glob"]).GetValue<string>());
+        return new SpecLayout(
+            Present(layout["name"]).GetValue<string>(),
+            Present(layout["glob"]).GetValue<string>(),
+            layout["identity"] is { } identity ? new SpecPathIdentity(Segment(identity["epic"]), Segment(identity["feature"])) : null);
+    }
+
+    private static int? Segment(JsonNode? node) =>
+        node is JsonValue value && value.TryGetValue<int>(out var index) && index >= 0 ? index : null;
+
+    private static IEnumerable<string> IdentityFaults(JsonObject manifest)
+    {
+        foreach (var layout in manifest["layouts"]?.AsArray() ?? [])
+        {
+            if (layout!["identity"] is not { } node)
+            {
+                continue;
+            }
+
+            var name = layout["name"]!.GetValue<string>();
+            var identity = node.AsObject();
+
+            foreach (var (member, value) in identity)
+            {
+                if (member is not ("epic" or "feature"))
+                {
+                    yield return $"the layout '{name}' declares the identity member '{member}', which is neither 'epic' nor 'feature'";
+                }
+                else if (Segment(value) is null)
+                {
+                    yield return $"the identity member '{member}' of the layout '{name}' is {value?.ToJsonString() ?? "null"}, "
+                        + "which is not a non-negative integer";
+                }
+            }
+
+            if (!identity.ContainsKey("epic") && !identity.ContainsKey("feature"))
+            {
+                yield return $"the identity of the layout '{name}' declares neither 'epic' nor 'feature'";
+            }
+        }
     }
 
     private static Dictionary<string, string> Filled(JsonObject manifest, string key)

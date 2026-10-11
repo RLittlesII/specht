@@ -2,7 +2,7 @@ id: "0006"
 type: task
 title: Check path identity only for a layout that declares it
 
-status: ready-for-architecture
+status: done
 
 risk: 2
 
@@ -18,8 +18,8 @@ claims:
   - B-004
 
 created: "2026-10-08"
-updated: "2026-10-09"
-closed: null
+updated: "2026-10-10"
+closed: "2026-10-10"
 
 summary: |
   SPEC011 takes the epic and Feature id segments from the layout instead of
@@ -27,7 +27,8 @@ summary: |
   because the layout it reads is declared there.
 
 acceptance_criteria:
-  - "B-004 — SPEC011 against declared segments; silent when none declared"
+  - "B-004 — SPEC011 against declared segments; silent when none declared. § 9 `Partial` at close: its epic-grammar clause is 0001-F5 B-042, not built (decisions, 2026-10-10)"
+  - "0001-F5 B-043 — a malformed path identity is rejected (decision 0009), added 2026-10-10"
   - "§ 9 carries a row naming a test for each id above."
 
 decisions:
@@ -37,6 +38,47 @@ decisions:
     layout by the name `legacy` and a manifest that renames that layout
     turns SPEC011 off for it (decision 0005).
     Rejected: landing 0005 and 0006 in one pull request.
+  - |
+    2026-10-10, spec-author: the entry above names the layout `legacy` as
+    it was named when written. Decision 0008 (2026-10-09) renamed it
+    `epics`, and `epics` is the name the interim selects.
+  - |
+    2026-10-10, spec-author recording three decisions of the repository
+    owner (0001-F6 decision 0009; 0001-F5 decision 0007).
+    1. A layout entry may carry an optional `identity` object of zero-based
+       segment indexes into the root-relative path, `epic` and `feature`.
+       A layout with no `identity` gets no SPEC011 verdict. The default
+       manifest declares `{ "epic": 1, "feature": 2 }` on `epics` and
+       nothing on `features`, so the golden report is unchanged.
+       Rejected: two flat members; a path template with placeholders.
+    2. 0001-F5 OQ-7 resolved: the epic segment is checked only when the
+       manifest declares the epic grammar; `identity.epic` says where the
+       epic sits, never whether it is checked. No second toggle.
+       The shipped manifest ceasing to declare the epic grammar is the item
+       delivering 0001-F5 B-024 to B-035, not this item; so is 0001-F5 B-042.
+    3. A malformed `identity` is rejected, exit 3, in the one manifest
+       rejection, naming the layout and the member (0001-F5 B-043). A
+       misspelt member at layout-entry level stays ignored (0001-F6 OQ-7 (c),
+       open).
+    Not the owner's words, and awaiting the owner's ratification in review
+    of this item's pull request (0001-F6 OQ-17): `epic` and `feature` are
+    each optional and an `identity` declaring neither is rejected; a path
+    with no directory segment at a declared index is not reported; the
+    match stays "the directory name starts with `<value>-`".
+  - |
+    2026-10-10, spec-author recording the spec-reviewer's findings and how
+    the item closes.
+    1. The item closes with 0001-F6 B-004 at `Partial` in § 9. Its clause
+       "the epic segment only when the manifest declares the epic grammar"
+       is 0001-F5 B-042, which is specified and not built: the engine fills
+       the epic grammar whatever the manifest declares. B-042 is owed with
+       the item that delivers 0001-F5 B-024 to B-035, and no such item is
+       cut yet.
+    2. 0001-F5 B-043 is delivered by this item.
+    3. Three questions are left to the repository owner in the pull
+       request: 0001-F6 OQ-17, the three behaviours built unratified,
+       including the rejection of an `identity` declaring neither member;
+       0001-F6 OQ-18; and 0001-F5 OQ-14.
 
 out_of_scope:
   - "Any other rule's handling of a discovered file — § 5 #5, 0001-F1 and 0001-F5."

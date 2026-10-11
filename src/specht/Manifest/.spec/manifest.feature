@@ -368,6 +368,30 @@ Feature: The manifest carries the roles
     Then the manifest is rejected
     And the rejection names the companion file list
 
+  @B-042
+  Scenario: Without epics, path identity checks the Feature folder alone
+    Given the manifest declares no epic grammar
+    And the manifest's epics layout declares which path segments carry the epic and the Feature id
+    And the root holds a specification in that layout whose Feature folder matches its id and whose epic folder is named nothing like its frontmatter
+    And the root holds a second specification in that layout whose Feature folder does not match its id
+    When the check runs
+    Then the path-identity rule reports the second specification for its Feature folder
+    And the path-identity rule reports nothing else
+
+  @B-043
+  Scenario: A path identity that is not a segment position is invalid
+    Given the manifest's epics layout declares the position of its epic segment as "second"
+    When the check runs
+    Then the manifest is rejected
+    And the rejection names the epics layout and its epic segment
+
+  @B-043 @boundary
+  Scenario: A path identity naming anything but the epic and the Feature is invalid
+    Given the manifest's epics layout declares a path segment for a "team" beside its epic and its Feature
+    When the check runs
+    Then the manifest is rejected
+    And the rejection names the epics layout and "team"
+
   @B-045
   Scenario: A rule level outside the three is invalid
     Given the manifest sets the out-of-order-section rule to "loud"

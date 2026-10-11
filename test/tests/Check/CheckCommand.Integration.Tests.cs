@@ -206,6 +206,17 @@ public sealed class CheckCommandIntegrationTests
                 3
             },
             {
+                "a manifest whose layout declares a path identity that is not a segment position (0001-F5 B-043, B-022, B-023)",
+                static tree =>
+                {
+                    tree.WriteRaw(
+                        SpecManifest.RelativePath,
+                        """{ "layouts": [{ "name": "epics", "glob": "epics/**/spec.md", "identity": { "epic": "second", "feature": 2 } }] }""");
+                    return tree.Root;
+                },
+                3
+            },
+            {
                 "a manifest pinning a schema version the tool does not ship (0001-F7 B-003)",
                 static tree =>
                 {

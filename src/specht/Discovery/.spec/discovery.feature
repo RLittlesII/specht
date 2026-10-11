@@ -84,6 +84,23 @@ Feature: Discovery
     Then the specification in the epics layout is reported for the mismatch
     And the specification in the features layout is not
 
+  @B-004
+  Scenario: Path identity is read at the segments a layout declares
+    Given the manifest declares a third layout under a documentation folder, two folders deeper than the epics layout
+    And that layout declares the path segments that carry the epic and the Feature id at their places in it
+    And the root holds a specification in that layout whose epic and Feature folders match its frontmatter
+    And the root holds a second specification in that layout whose Feature folder does not match its frontmatter
+    When the check runs
+    Then the second specification is reported for the mismatch
+    And the first is not
+
+  @B-004 @boundary
+  Scenario: A renamed layout that declares its path identity is still checked
+    Given the manifest renames its epics layout "old-tree" and keeps the path segments that layout declares
+    And the root holds a specification in that layout whose Feature folder does not match its frontmatter
+    When the check runs
+    Then that specification is reported for the mismatch
+
   @B-005
   Scenario: Discovery in a git work tree never opens an ignored directory
     Given the root is a git work tree whose ignore file lists "dist"

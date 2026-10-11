@@ -9,8 +9,9 @@ namespace Specht.Tests.Manifest;
 
 /// <summary>
 /// The manifest loader over an in-memory file system (0001-F5 B-001, B-002, B-003, B-008, B-012, B-015, B-017, B-019, B-020,
-/// B-021, B-039, B-040, B-041, B-045, B-044; 0001-F2 B-005, B-006, B-007; 0001-F7 B-002, B-039): what it rejects and as which failure,
-/// what it ignores, the schema version it reads, what it fills from the default manifest, and that it fills no rule setting.
+/// B-021, B-039, B-040, B-041, B-043, B-044, B-045; 0001-F2 B-005, B-006, B-007; 0001-F7 B-002, B-039): what it rejects and as
+/// which failure, what it ignores, the schema version it reads, what it fills from the default manifest, and that it fills no
+/// rule setting.
 /// </summary>
 [Trait("Tier", "Unit")]
 public sealed class SpecManifestUnitTests
@@ -116,6 +117,18 @@ public sealed class SpecManifestUnitTests
         { "a boolean", "true", "true" },
         { "a null", "null", "null" },
         { "an array", "[1]", "[1]" },
+    };
+
+    /// <summary>
+    /// Gets a layout's <c>identity</c> that is not a path identity, as the manifest's JSON writes it, and the member the
+    /// rejection names (B-043; <c>0001-F6</c> decision 0009).
+    /// </summary>
+    public static TheoryData<string, string, string> MalformedPathIdentities { get; } = new()
+    {
+        { "a member that is a string", """{ "epic": "second", "feature": 2 }""", "epic" },
+        { "a member that is a negative number", """{ "epic": 1, "feature": -1 }""", "feature" },
+        { "a member that is a fraction", """{ "epic": 1.5, "feature": 2 }""", "epic" },
+        { "a member other than the epic and the Feature segment", """{ "epic": 1, "feature": 2, "team": 3 }""", "team" },
     };
 
     [Theory]
@@ -501,6 +514,27 @@ public sealed class SpecManifestUnitTests
 
         // Then
         load.Should().ThrowExactly<SpechtManifestException>().Which.Message.Should().Contain(key);
+    }
+
+    [Theory]
+    [MemberData(nameof(MalformedPathIdentities))]
+    public void AManifestWhoseLayoutDeclaresAMalformedPathIdentity_WhenLoaded_ShouldRejectItNamingTheLayoutAndTheMember(
+        string because,
+        string identity,
+        string member)
+    {
+        // Given
+        var manifest = DefaultManifest();
+        manifest["layouts"] = new JsonArray(
+            new JsonObject { ["name"] = "old-tree", ["glob"] = "epics/**/spec.md", ["identity"] = JsonNode.Parse(identity) });
+        var fileSystem = Holding(manifest);
+
+        // When
+        var load = () => SpecManifest.Load(fileSystem, Root);
+
+        // Then
+        load.Should().ThrowExactly<SpechtManifestException>(because)
+            .Which.Message.Should().Contain("old-tree", because).And.Contain(member, because);
     }
 
     [Theory]

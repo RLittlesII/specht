@@ -41,6 +41,18 @@ test of a command's decision needs the decision outside the command, which is
 the implementer's design call, not a reason to label a pipeline test `Unit`.
 There is no third, "UI", tier; one is the owner's to add.
 
+**A test that runs a command gets its registrar and configuration from the
+factory**, wrapped by the one test-tree wrap
+([ADR-0007](../../../../.spec/adr/0007-each-part-registers-itself-and-one-factory-composes-the-host.md),
+accepted 2026-10-10). The factory is the one the host calls, so a test builds
+the graph that ships. The file system and the console are the only things a
+test hands it. The wrap is the only `new CommandAppTester` in the tree, and it
+sets the default command. A check test supplies a synthetic tree - a
+`SpecTree` - and the real engine runs over it; it never hands the command a
+canned report. The rule binds from item `0144`, which builds the factory and
+moves the existing tests onto it. Today's command tests predate it and still
+build their own tester; do not copy them.
+
 **Reqnroll covers the acceptance tier only.** A green scenario does not relieve
 the mechanism beneath it of unit coverage: a rule's decision, an id grammar, a
 path relativization, a table-header match, an ordering, a file-set filter and an
@@ -202,6 +214,10 @@ wall clock.
 - A hand-rolled file-system fake for code that takes an `IFileSystem`;
   `MockFileSystem` does it.
 - A `Unit` trait on a test that runs a command through `CommandAppTester`.
+- A `ServiceCollection`, `TypeRegistrar` or `CommandAppTester` assembled in a
+  test outside the factory (ADR-0007; from item `0144`).
+- A runner passed into the factory, or a canned report handed to the check
+  command.
 - A hand-rolled factory method for test data an AutoFixture can build.
 - Copied facts that differ only in their data, where a `[Theory]` would do.
 - A test class calling another test class's static helper.

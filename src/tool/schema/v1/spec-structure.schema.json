@@ -3,7 +3,11 @@
   "layouts": [
     {
       "name": "epics",
-      "glob": "epics/**/spec.md"
+      "glob": "epics/**/spec.md",
+      "identity": {
+        "epic": 1,
+        "feature": 2
+      }
     },
     {
       "name": "features",

@@ -12,6 +12,8 @@ accepted - 2026-10-08, by the owner. Asked for by the owner on 2026-10-08
 ("There should be an ADR for using MSFT DI"), as a record separate from
 ADR-0001, and proposed on pull request #18.
 
+Partially superseded by [ADR-0007](0007-each-part-registers-itself-and-one-factory-composes-the-host.md), 2026-10-10: the Decision line "Services are registered by hand in `Program.cs`". Each command slice registers its own services beside its command, one factory composes them, and `Program.cs` only calls the factory. Each list is still hand-written, with no scanning. The rest stands.
+
 ## Context
 
 ADR-0001 decides what the engine resolves from the container, and ADR-0002

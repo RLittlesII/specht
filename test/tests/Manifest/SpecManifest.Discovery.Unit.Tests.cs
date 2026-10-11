@@ -10,7 +10,8 @@ namespace Specht.Tests.Manifest;
 /// The manifest loader's read of the discovery keys over an in-memory file system (<c>0001-F6</c> B-001, B-002, B-003,
 /// A-2, C-7; decisions 0004 and 0008): each of <c>layouts</c>, <c>exclusions</c>, <c>taskFiles</c>, <c>epicFiles</c> and
 /// <c>companionFiles</c> is read as the manifest writes it, and as the default manifest's value when the manifest leaves
-/// it out. The three file-shape keys are lists.
+/// it out. The three file-shape keys are lists. A layout's <c>identity</c> is read as its entry writes it, and the default
+/// manifest declares one on <c>epics</c> alone (B-004; decision 0009).
 /// </summary>
 [Trait("Tier", "Unit")]
 public sealed class SpecManifestDiscoveryUnitTests
@@ -70,7 +71,7 @@ public sealed class SpecManifestDiscoveryUnitTests
 
         // Then
         discovery.Layouts.Should().Equal(
-            new SpecLayout("epics", "epics/**/spec.md"),
+            new SpecLayout("epics", "epics/**/spec.md", new SpecPathIdentity(1, 2)),
             new SpecLayout("features", "**/.spec/README.md"));
     }
 
@@ -95,6 +96,29 @@ public sealed class SpecManifestDiscoveryUnitTests
         discovery.Layouts.Should().Equal(
             new SpecLayout("documentation", "docs/**/specification.md"),
             new SpecLayout("beside-code", "**/.spec/README.md"));
+    }
+
+    [Fact]
+    public void AManifestDeclaringItsLayouts_WhenLoaded_ShouldReadEachPathIdentityAsItsEntryWritesItAndNoneWhereItWritesNone()
+    {
+        // Given
+        var fileSystem = Holding(
+            """
+            {
+              "layouts": [
+                { "name": "documentation", "glob": "docs/archive/tree/**/spec.md", "identity": { "epic": 3, "feature": 4 } },
+                { "name": "epics", "glob": "epics/**/spec.md" }
+              ]
+            }
+            """);
+
+        // When
+        var discovery = SpecManifest.Load(fileSystem, Root).Discovery;
+
+        // Then
+        discovery.Layouts.Should().Equal(
+            new SpecLayout("documentation", "docs/archive/tree/**/spec.md", new SpecPathIdentity(3, 4)),
+            new SpecLayout("epics", "epics/**/spec.md"));
     }
 
     [Fact]
