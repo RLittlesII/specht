@@ -2,7 +2,7 @@ id: "0099"
 type: spike
 title: Decide how a test builds and runs a specht command
 
-status: in-progress
+status: done
 
 value: 3
 risk: 2
@@ -18,8 +18,8 @@ spec: null
 claims: []
 
 created: "2026-10-08"
-updated: "2026-10-09"
-closed: null
+updated: "2026-10-10"
+closed: "2026-10-10"
 
 summary: |
   0026's command tests (test/specht.tests/CheckCommand.Integration.Tests.cs)
@@ -89,6 +89,23 @@ decisions:
     whether one test-tree wrap of the factory's product is the only
     CommandAppTester construction. The acceptance criteria are rewritten to
     this direction.
+  - |
+    2026-10-10, implementer, on the owner's direction in session: the
+    owner accepted ADR-0007 and answered its two questions, and both
+    answers are recorded in place in the record. On the runner: tests run
+    the real engine over a synthetic tree; the file system and the console
+    are the only caller inputs, and the runner is never a factory
+    parameter. On the wrap: yes - one test-tree wrap of the factory's
+    product is the only new CommandAppTester in the tree, and it sets the
+    default command. ADR-0001 and ADR-0003 each carry a status note for
+    the sentence ADR-0007 supersedes. The testing rule and its Never-add
+    items are in specht-conventions references/testing.md, and
+    dotnet-tool references/vertical-slice.md names the factory and the
+    per-slice registrations; both say the rule binds from the migration.
+    The migration is item 0144
+    (.issue/0144-compose-the-host-through-one-factory.yml), which depends
+    on this item. The paths in the third acceptance criterion predate the
+    test-slice move (0138); 0144 names them as they are today.
 
 out_of_scope:
   - "Changing what the check command does - 0001-F2 owns that."

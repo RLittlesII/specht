@@ -12,7 +12,8 @@ There is one host, `src/tool`, and one slice per Spectre command:
 
 ```
 src/tool/
-  Program.cs                    the composition root - a hand-written list, nothing else
+  Program.cs                    the composition root - a hand-written list, nothing else, until
+                                item 0144 moves the list into the factory (ADR-0007)
   Features/
     Check/                      `specht [--root] [--report] [--strict] [--json]` - the default command
       CheckCommand.cs           command class + nested Settings
@@ -75,19 +76,29 @@ Tests are **not** co-located here: they live in `test/tests` and
   and nothing joins them.
 - **Namespaces follow folders.** `Model/` is `Specht.Model`; the root is
   `Specht`. A file that moves folder changes namespace with it.
-- **The composition root is a hand-written list.** `Program.cs` registers
-  services explicitly, in plain `Microsoft.Extensions.DependencyInjection`
-  through Spectre's `TypeRegistrar`. Commands are not in that list: they are
-  configured on Spectre's `IConfigurator` with `AddCommand`/`AddBranch` (or
+- **Each part registers itself, and one factory composes the host.** The
+  decided direction
+  ([ADR-0007](../../../../.spec/adr/0007-each-part-registers-itself-and-one-factory-composes-the-host.md),
+  accepted 2026-10-10): each command slice carries its own registration
+  beside its command - its services on `IServiceCollection` and its
+  `AddCommand` on `IConfigurator` - one static factory lists the parts in one
+  fluent chain, and `Program.cs` only calls the factory. A test builds the
+  same graph by calling the same factory. Item `0144` builds it; until it
+  lands, `Program.cs` still holds the list, and a new command adds its lines
+  there.
+- **Every list is hand-written.** Services are registered explicitly, in
+  plain `Microsoft.Extensions.DependencyInjection` through Spectre's
+  `TypeRegistrar`. Commands are not services: they are configured on
+  Spectre's `IConfigurator` with `AddCommand`/`AddBranch` (or
   `SetDefaultCommand`), and Spectre registers each command and settings type
   through the registrar when it runs. There is no assembly scanning and no
   third-party container (ADR-0003). Once ADR-0001's stage D lands, the
-  engine's services arrive through one `AddSpechtEngine()` call in that list,
-  in place of a line per engine service — owner-approved under lesson 0002.
-  Adding a command means adding one line to the configuration — that is the
-  whole cost, and it is deliberate: the root is readable, ordering is
-  explicit, and a command cannot join the host by accident of being in the
-  assembly.
+  engine's services arrive through one `AddSpechtEngine()` call in the
+  composition, in place of a line per engine service — owner-approved under
+  lesson 0002. Adding a command means adding its registration and one link
+  in the composition — that is the whole cost, and it is deliberate: the
+  composition is readable, ordering is explicit, and a command cannot join
+  the host by accident of being in the assembly.
 - **The slice's README slot is the specification.** A Feature's `.spec/README.md`
   is the twelve-section specification, sitting beside the code it specifies. Do
   not add a second, informal `README.md` beside it.

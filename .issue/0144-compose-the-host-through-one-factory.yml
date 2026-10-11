@@ -1,0 +1,96 @@
+id: "0144"
+type: refactor
+title: Compose the host and every command test through one factory
+
+status: ready-for-architecture
+
+value: 3
+risk: 3
+
+parent: null
+children: []
+
+depends_on: ["0099"] # builds what 0099 decided: ADR-0007's factory and its testing rule
+spikes: []
+
+spec: null
+
+claims: []
+
+created: "2026-10-10"
+updated: "2026-10-10"
+closed: null
+
+summary: |
+  ADR-0007 (accepted 2026-10-10,
+  .spec/adr/0007-each-part-registers-itself-and-one-factory-composes-the-host.md)
+  decided how the host and a command test are composed; this item builds it.
+  Depends on 0099, the spike that produced the decision.
+
+  One static factory builds the app as one fluent chain. Each command slice
+  carries its own registration beside its command, under
+  src/tool/Features/Check/ and src/tool/Features/Init/: its services on
+  IServiceCollection and its AddCommand on IConfigurator. The factory lists
+  the parts and never their internals, and src/tool/Program.cs only calls
+  it. The file system and the console are the factory's only caller inputs;
+  the runner is never one. Until 0107 lands the check slice still registers
+  the runner delegate bound to SpechtRunner.Run.
+
+  The command integration tests move onto the factory through one test-tree
+  wrap, the only new CommandAppTester in the tree, which sets the default
+  command. The check's fold tests, which hand the command a canned report
+  today (`_ => report`), move onto synthetic trees with the real engine.
+  It spans both command slices and both test projects, so it sits at the
+  repository root.
+
+  One point for the architecture pass: two tests in
+  test/tests/Init/InitCommand.Integration.Tests.cs hand InitWriter a
+  one-file shipping copy of their own. ADR-0007 has the init slice register
+  InitWriter over the shipping copy, and names no caller input but the file
+  system and the console.
+
+acceptance_criteria:
+  - "One static factory composes the host; each of `src/tool/Features/Check/`
+    and `src/tool/Features/Init/` holds its slice's registration - services
+    on `IServiceCollection`, `AddCommand` on `IConfigurator`."
+  - "`src/tool/Program.cs` only calls the factory and runs the app."
+  - "`test/tests/Check/CheckCommand.Integration.Tests.cs` and
+    `test/tests/Init/InitCommand.Integration.Tests.cs` get their registrar
+    and configuration from the factory through the one test-tree wrap; no
+    other `new CommandAppTester`, `ServiceCollection` or `TypeRegistrar` is
+    left under `test/`."
+  - "Every check test runs the real engine over a synthetic tree; none hands
+    the command a canned report, and no runner is passed into the factory."
+  - "Removed: the private `Check` helper in
+    `test/tests/Check/CheckCommand.Integration.Tests.cs`, and the two
+    hand-built `CommandAppTester`s in
+    `test/tests/Init/InitCommand.Integration.Tests.cs`."
+  - "Removed: the duplicated private static `NewestVersion` in
+    `test/tests/Init/ShippingCopy.Unit.Tests.cs`,
+    `test/tests/Init/ShippingCopy.Integration.Tests.cs` and
+    `test/acceptance/Init/InitSteps.cs`, and the duplicated private static
+    `Read` in the last two - one copy each, in a home both projects compile."
+  - "Removed: the unused `Spectre.Console.Cli.Testing` reference in
+    `test/acceptance/acceptance.csproj`."
+  - "The unit, integration and acceptance tiers pass, and the tool's stdout,
+    stderr and exit codes are unchanged."
+  - "No .feature change needed: refactor - the composition moves from
+    `Program.cs` and the test classes into one factory and the slices'
+    registrations; no command's behaviour changes."
+  - "Constraints preserved: 0001-F2 C-7, ADR-0003"
+
+decisions:
+  - |
+    2026-10-10, implementer, on the owner's direction in session: cut on
+    the owner's acceptance of ADR-0007, which names this work as its own
+    item depending on 0099. The owner's two answers bind it: tests run the
+    real engine over a synthetic tree, with the file system and the console
+    the only caller inputs and the runner never a factory parameter; and
+    one test-tree wrap of the factory's product is the only new
+    CommandAppTester in the tree and sets the default command.
+
+out_of_scope:
+  - "What any command does - 0001-F2 and 0001-F4 own that."
+  - "`AddSpechtEngine()` and the engine's registrations - 0107 (ADR-0001 stage D)."
+  - "The acceptance tier's composition - its steps launch the built tool and compose nothing (ADR-0007)."
+  - "A new command test, such as the command-tester test 0001-F2 § 9 holds `Partial` for B-012 - test-writer's, once this lands."

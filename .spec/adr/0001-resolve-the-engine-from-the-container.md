@@ -19,6 +19,8 @@ Amended 2026-10-09, by the owner on pull request #29 ([review comment](https://g
 
 Partially superseded by [ADR-0008](0008-evaluate-takes-the-rule-set-and-the-model-carries-the-vocabulary.md), 2026-10-09: the signature `Evaluate(SpecModel)` in the Decision and in the stage B row. `Evaluate` takes the rule set as a second argument and reads the pinned vocabulary from the model. The rest stands.
 
+Partially superseded by [ADR-0007](0007-each-part-registers-itself-and-one-factory-composes-the-host.md), 2026-10-10: the Consequences sentence "`Program.cs` stays the composition root and calls it once". One factory composes the host, `Program.cs` only calls the factory, and the factory calls `AddSpechtEngine()` once. `AddSpechtEngine()` is still one hand-written list. The rest stands.
+
 ## Context
 
 The owner's comment: "All these classes are starting to feel like they should
