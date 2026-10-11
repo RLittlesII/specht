@@ -87,7 +87,11 @@ dry run would hold package write. Cost of rejecting: reading 3.
 
 ## Reversal
 
-None.
+Superseded in part, 2026-10-11, by
+[decision 0003](0003-the-release-names-the-ancestry-check-and-the-release-step.md),
+on two points only: the names (the file is `release.yml`, the second job
+`release`), and "No `Publish` target is built" (an aggregate target `Release`
+exists and pushes nothing). Everything else above stands.
 
 ## Addendum - 2026-10-09
 

@@ -7,27 +7,28 @@ using Nuke.Common.CI.GitHubActions;
 using Nuke.Common.Tooling;
 using Rocket.Surgery.Nuke.GithubActions;
 using static Nuke.Common.Tools.DotNet.DotNetTasks;
+using static Nuke.Common.Tools.Git.GitTasks;
 
 [GitHubActionsSteps(
-    "publish",
+    "release",
     GitHubActionsImage.UbuntuLatest,
     AutoGenerate = true,
     OnPushTags = ["v*"],
     On = [RocketSurgeonGitHubActionsTrigger.WorkflowDispatch],
-    InvokedTargets = [nameof(Publish)],
-    Enhancements = [nameof(PublishMiddleware)]
+    InvokedTargets = [nameof(Release)],
+    Enhancements = [nameof(ReleaseMiddleware)]
 )]
 [SuppressMessage("Design", "RSA2002:Private members should appear after non-private members", Justification = "Build")]
 internal sealed partial class SpechtBuild
 {
-    private Target Publish => definition => definition
+    private Target Release => definition => definition
         .DependsOn(VerifyTag)
         .DependsOn(Pack);
 
     private Target VerifyTag => definition => definition
         .DependsOn(Restore)
         .OnlyWhenDynamic(static () => Environment.GetEnvironmentVariable("GITHUB_REF_TYPE") == "tag")
-        .Executes(static () =>
+        .Executes(() =>
         {
             var tag = Environment.GetEnvironmentVariable("GITHUB_REF_NAME");
             var version = DotNet("nbgv get-version --variable NuGetPackageVersion", RootDirectory, logOutput: false)
@@ -36,9 +37,13 @@ internal sealed partial class SpechtBuild
             Assert.True(
                 tag == $"v{version}",
                 $"The tag '{tag}' is not 'v{version}', the tag of the version '{version}' computed for this commit");
+
+            Assert.True(
+                Run(GitPath, "merge-base --is-ancestor HEAD origin/main"),
+                $"The tag '{tag}' is on a commit that is not on 'main', the branch 'origin/main' does not reach it");
         });
 
-    public static RocketSurgeonGitHubActionsConfiguration PublishMiddleware(
+    public static RocketSurgeonGitHubActionsConfiguration ReleaseMiddleware(
         RocketSurgeonGitHubActionsConfiguration configuration)
     {
         configuration = Middleware(configuration);
@@ -68,13 +73,13 @@ internal sealed partial class SpechtBuild
             Contents = GitHubActionsPermission.Read,
         };
 
-        configuration.Jobs.Add(new RocketSurgeonsGithubActionsJob("publish")
+        configuration.Jobs.Add(new RocketSurgeonsGithubActionsJob("release")
         {
             Needs = ["build"],
             If = "${{ github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v') }}",
             Permissions = Rocket.Surgery.Nuke.GithubActions.GitHubActionsPermissions.None with
             {
-                Contents = GitHubActionsPermission.Read,
+                Contents = GitHubActionsPermission.Write,
                 Packages = GitHubActionsPermission.Write,
             },
             Matrix = ["ubuntu-latest"],
@@ -94,7 +99,17 @@ internal sealed partial class SpechtBuild
                         ["GITHUB_TOKEN"] = "${{ secrets.GITHUB_TOKEN }}",
                     },
                     Run = $"dotnet nuget push \"{PackagePath}/specht.tool.${{GITHUB_REF_NAME#v}}.nupkg\" " +
-                          "--source \"https://nuget.pkg.github.com/rlittlesii/index.json\" --api-key \"$GITHUB_TOKEN\"",
+                          "--source \"https://nuget.pkg.github.com/rlittlesii/index.json\" --api-key \"$GITHUB_TOKEN\" --skip-duplicate",
+                },
+                new RunStep("Release")
+                {
+                    Shell = GithubActionShell.Bash,
+                    Environment = new Dictionary<string, string>
+                    {
+                        ["GH_TOKEN"] = "${{ secrets.GITHUB_TOKEN }}",
+                    },
+                    Run = $"gh release create \"$GITHUB_REF_NAME\" \"{PackagePath}/specht.tool.${{GITHUB_REF_NAME#v}}.nupkg\" " +
+                          "--generate-notes --verify-tag --repo \"$GITHUB_REPOSITORY\"",
                 },
             ],
         });

@@ -9,12 +9,12 @@
 #
 #     - To trigger manual generation invoke:
 #
-#         nuke --generate-configuration GitHubActions_publish --host GitHubActions
+#         nuke --generate-configuration GitHubActions_release --host GitHubActions
 #
 # </auto-generated>
 # ------------------------------------------------------------------------------
 
-name: publish
+name: release
 
 on:
   workflow_dispatch:
@@ -104,18 +104,18 @@ jobs:
           name: 'nupkg'
           path: '.artifacts/nupkg/*.nupkg'
           retention-days: '1'
-      - name: 🚀 Publish
-        id: publish
+      - name: Release
+        id: release
         run: |
-          ./build.cmd --target Publish --skip VerifyTag Pack
-  publish:
+          ./build.cmd --target Release --skip VerifyTag Pack
+  release:
     needs:
       - build
     if: ${{ github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v') }}
     permissions:
       actions: none
       checks: none
-      contents: read
+      contents: write
       deployments: none
       id-token: none
       issues: none
@@ -142,4 +142,10 @@ jobs:
           GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
         shell: bash
         run: |
-          dotnet nuget push ".artifacts/nupkg/specht.tool.${GITHUB_REF_NAME#v}.nupkg" --source "https://nuget.pkg.github.com/rlittlesii/index.json" --api-key "$GITHUB_TOKEN"
+          dotnet nuget push ".artifacts/nupkg/specht.tool.${GITHUB_REF_NAME#v}.nupkg" --source "https://nuget.pkg.github.com/rlittlesii/index.json" --api-key "$GITHUB_TOKEN" --skip-duplicate
+      - name: Release
+        env:
+          GH_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
+        shell: bash
+        run: |
+          gh release create "$GITHUB_REF_NAME" ".artifacts/nupkg/specht.tool.${GITHUB_REF_NAME#v}.nupkg" --generate-notes --verify-tag --repo "$GITHUB_REPOSITORY"
