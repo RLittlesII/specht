@@ -13,7 +13,7 @@ namespace Specht.Benchmarks.Check;
 public class CheckBenchmarks
 {
     /// <summary>Gets or sets how many specifications the measured tree holds.</summary>
-    [Params(1, 10, 100, 1000)]
+    [Params(1, 10, 100, 1000, 10000)]
     public int Specifications { get; set; }
 
     /// <summary>
@@ -28,7 +28,7 @@ public class CheckBenchmarks
         new SpechtTreeStore(new FileSystem()).Save(SpechtTree.Of(Specifications), _root);
         _resolver = new TypeRegistrar(new ServiceCollection().AddSpechtEngine()).Build();
         _runner = (SpechtRunner?)_resolver.Resolve(typeof(SpechtRunner))
-            ?? throw new InvalidOperationException("AddSpechtEngine() registers no SpechtRunner.");
+                  ?? throw new InvalidOperationException("AddSpechtEngine() registers no SpechtRunner.");
 
         var report = _runner.Run(_root);
         if (report.SpecificationCount == Specifications && report.Violations.Count == 0)

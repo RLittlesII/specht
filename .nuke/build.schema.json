@@ -25,6 +25,7 @@
       "type": "string",
       "enum": [
         "AcceptanceTest",
+        "Benchmarks",
         "Build",
         "Compile",
         "ContinuousIntegration",

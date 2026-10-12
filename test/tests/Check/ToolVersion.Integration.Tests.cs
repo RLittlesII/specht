@@ -1,7 +1,6 @@
 using System.Security.Cryptography;
 using AwesomeAssertions;
 using Specht.Acceptance;
-using Specht.Manifest;
 using Specht.Tests.Shared;
 using Specht.Tool;
 

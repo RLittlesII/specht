@@ -142,6 +142,15 @@ internal partial class SpechtBuild : NukeBuild
                 .EnableNoBuild());
         });
 
+    private Target Benchmarks => static definition => definition
+        .Executes(static () =>
+        {
+            DotNetRun(static settings => settings
+                .SetProjectFile("./.performance/benchmarks/benchmarks.csproj")
+                .SetConfiguration("Release")
+                .AddProcessAdditionalArguments("-- --job", "--filter *CheckBenchmarks*"));
+        });
+
     private static string Include(string[]? files) => files is null ? string.Empty : $"--include {Quote(files)}";
 
     private static string Quote(IEnumerable<string> files) => string.Join(' ', files.Select(static file => $"\"{file}\""));
@@ -192,6 +201,5 @@ internal partial class SpechtBuild : NukeBuild
     [Parameter("Files for Format to check, relative to the root - Default is every C# file in the solution and every Markdown file")]
     private readonly string[]? Files;
 
-    [Solution]
-    private readonly Solution Solution = null!;
+    [Solution] private readonly Solution Solution = null!;
 }
