@@ -15,8 +15,9 @@ namespace Specht.Acceptance.Check;
 /// <summary>
 /// Steps for <c>src/tool/Features/Check/.spec/check.feature</c> (0001-F2). A run launches the built tool over a
 /// synthetic tree, so a scenario sees the process's stdout, stderr and exit code as a shell does: stderr is not captured
-/// by Spectre's command tester, which the integration tier uses (C-7). Scoped to the feature: <c>engine.feature</c> words
-/// some of its steps the same way, and its steps are 0001-F1's to bind.
+/// by Spectre's command tester, which the integration tier uses (C-7). The version steps (B-040 to B-043) launch it with
+/// <c>--version</c> alone, inside the root, and compare stdout with the version the launched assembly's metadata states.
+/// Scoped to the feature: <c>engine.feature</c> words some of its steps the same way, and its steps are 0001-F1's to bind.
 /// </summary>
 [Binding]
 [Scope(Feature = "The check command")]
@@ -80,6 +81,9 @@ public sealed partial class CheckSteps
     [Given("the root's manifest is not well-formed JSON")]
     public void GivenTheRootsManifestIsNotWellFormedJson() => Tree.WriteRaw(SpecManifest.RelativePath, "{ \"sections\": ");
 
+    [Given("a directory with no manifest at the manifest path")]
+    public void GivenADirectoryWithNoManifestAtTheManifestPath() => File.Delete(Path.Combine(Tree.Root, SpecManifest.RelativePath));
+
     [Given("a snapshot of every file under the root")]
     public void GivenASnapshotOfEveryFileUnderTheRoot() => _snapshot = Snapshot(Tree.Root);
 
@@ -99,6 +103,11 @@ public sealed partial class CheckSteps
 
     [When("the tool is asked for help")]
     public void WhenTheToolIsAskedForHelp() => Launch(Path.GetTempPath(), "--help");
+
+    [When("the tool is asked for its version")]
+    [When("the tool is asked for its version from inside that directory")]
+    [When("the tool is asked for its version from inside the root")]
+    public void WhenTheToolIsAskedForItsVersion() => Launch(Tree.Root, "--version");
 
     [Then("the standard output carries one line per violation")]
     public void ThenTheStandardOutputCarriesOneLinePerViolation()
@@ -166,6 +175,17 @@ public sealed partial class CheckSteps
 
     [Then("the output names the root option and the strict option")]
     public void ThenTheOutputNamesTheRootOptionAndTheStrictOption() => _stdout.Should().Contain("--root").And.Contain("--strict");
+
+    [Then("the output names the version option")]
+    public void ThenTheOutputNamesTheVersionOption() => _stdout.Should().Contain("--version");
+
+    [Then("the standard output is one line")]
+    public void ThenTheStandardOutputIsOneLine() =>
+        _stdout.TrimEnd('\r', '\n').Split('\n').Should().ContainSingle(_stdout + _stderr).Which.Should().NotBeEmpty(_stderr);
+
+    [Then("that line is the version the tool's program file states")]
+    public void ThenThatLineIsTheVersionTheToolsProgramFileStates() =>
+        _stdout.TrimEnd('\r', '\n').Should().Be(AcceptanceTool.InformationalVersion(), _stderr).And.NotBeEmpty();
 
     [Then("the exit code is {int}")]
     public void ThenTheExitCodeIs(int code) => _exitCode.Should().Be(code, _stderr);

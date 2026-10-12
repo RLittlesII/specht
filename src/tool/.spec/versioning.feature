@@ -536,6 +536,21 @@ Feature: Schema versioning
     When the shipped versions are listed
     Then 0.9.0 is printed before 0.10.0
 
+  @B-084
+  Scenario: Listing marks the version the root pins
+    Given the tool ships schema versions 0.1.0 and 0.2.0
+    And the manifest pins version 0.1.0
+    When the shipped versions are listed
+    Then version 0.1.0 is marked as the pinned one
+    And version 0.2.0 is not marked
+
+  @B-085 @boundary
+  Scenario: Listing without a manifest marks nothing
+    Given the tool ships schema versions 0.1.0 and 0.2.0
+    And the manifest has been removed from the root
+    When the shipped versions are listed
+    Then no version is marked
+
   @B-043
   Scenario: Pinning a newer version moves the pin up
     Given the tool ships schema versions 0.1.0 and 0.2.0

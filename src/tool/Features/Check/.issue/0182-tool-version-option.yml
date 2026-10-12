@@ -1,0 +1,82 @@
+id: "0182"
+type: task
+title: Print the tool's version with --version
+
+status: done
+
+value: 3
+risk: 1
+
+parent: "0025"
+children: []
+
+depends_on: []
+spikes: []
+
+spec: src/tool/Features/Check/.spec/README.md
+
+claims:
+  - B-040
+  - B-041
+  - B-042
+  - B-043
+  - B-044
+
+created: "2026-10-11"
+updated: "2026-10-11"
+closed: "2026-10-11"
+
+summary: |
+  `specht --version` prints the version the tool's own assembly states,
+  the one B-030 holds to name the commit, and exits `0` wherever it is
+  run. The owner asked for a `version` command, withdrew it and ruled on
+  the option, 2026-10-11 (decision 0010).
+
+  Waits on nothing: B-030 is delivered (0172). Value 3: an installed
+  tool cannot say which build it is. Risk 1: the command-line library
+  has a version option, and the assembly already states the string.
+
+  Expected files: `src/tool/Program.cs`; the tests and step definitions
+  for B-040 to B-044; § 6 to § 9 of the specification by their owners;
+  the command lists in `AGENTS.md`, `README.md` and `docs/`.
+
+acceptance_criteria:
+  - "B-040 — one line on stdout: the assembly's informational version"
+  - "B-041 — exit 0"
+  - "B-042 — the same in a directory with no manifest"
+  - "B-043 — no file written"
+  - "B-044 — usage names `--version`"
+  - "§ 9 carries a row naming a test for each id above."
+
+decisions:
+  - |
+    2026-10-11, the repository owner (decision 0010): `--version` on the
+    root command, printing the version and the commit as one string.
+    Rejected by the owner: a `version` command. The id skips 0181, which
+    a branch not yet merged holds.
+  - |
+    2026-10-11, spec-author: B-041 to B-044, and the "one line" and
+    "nothing else" of B-040, are derived, not the owner's words. The `-v` short form (OQ-7) and `--version` beside a command
+    name or another option (OQ-8) are left as the library gives them,
+    with no claim and no test.
+  - |
+    2026-10-11, implementer: `docs/` was first left untouched: it held no
+    command list on this branch, and the CLI reference belonged to the
+    then unmerged `0181/cli-reference`. Item 0181 has since merged (#132),
+    and this change pays the line on the merge of `main`: `docs/cli.md`
+    carries `--version` in the `specht` section - synopsis, option entry,
+    what it prints and its exit code - as `0002-F1` B-007 and C-5 ask.
+    The entry names the long form only (OQ-7). `README.md` and
+    `src/tool/README.md` take 0181's short synopsis with the option's
+    line added; `AGENTS.md` names the option.
+  - |
+    2026-10-11, test-writer: the § 9 rows of B-040 to B-044 are `Covered`.
+    `Program.cs` hands the library the assembly's generated version
+    string and derives nothing, so no claim has a unit test (§ 8). B-043
+    passes on a tool without the option too, and its row says so.
+
+out_of_scope:
+  - "A `version` command — § 5 #24."
+  - "Schema versions in the output — § 5 #25; `specht schema list`, 0121."
+  - "The `-v` short form — § 5 #26, OQ-7."
+  - "`--version` after a command name or beside another option — § 5 #27, OQ-8."

@@ -69,6 +69,7 @@ specht
 ```sh
 specht [--root <dir>] [--strict] [--json]
 specht init [--root <dir>]
+specht --version
 ```
 
 Every command and option, what each prints and the exit codes it returns:

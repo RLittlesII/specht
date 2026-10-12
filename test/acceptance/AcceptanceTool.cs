@@ -1,11 +1,15 @@
 using System.Diagnostics;
+using System.Reflection;
+using System.Reflection.Metadata;
+using System.Reflection.PortableExecutable;
 using Specht.Tool.Features.Check;
 
 namespace Specht.Acceptance;
 
 /// <summary>
 /// The built tool, launched as a shell launches it, so a scenario sees the process's stdout, stderr and exit code; Spectre's
-/// command tester captures stdout alone (0001-F2 C-7).
+/// command tester captures stdout alone (0001-F2 C-7). It also reads the version an assembly states from the file's own
+/// metadata, the launched tool's (0001-F2 B-040) or one a package carries (B-030).
 /// </summary>
 internal static class AcceptanceTool
 {
@@ -34,5 +38,34 @@ internal static class AcceptanceTool
         process.WaitForExit();
 
         return (output, stderr, process.ExitCode);
+    }
+
+    /// <summary>Reads the informational version the launched tool's assembly states.</summary>
+    /// <returns>The version, or <see langword="null"/> when the assembly states none.</returns>
+    public static string? InformationalVersion() => InformationalVersion(File.ReadAllBytes(typeof(CheckCommand).Assembly.Location));
+
+    /// <summary>Reads the informational version an assembly states, from its metadata and without loading it.</summary>
+    /// <param name="assembly">The assembly file's bytes.</param>
+    /// <returns>The version, or <see langword="null"/> when the assembly states none.</returns>
+    public static string? InformationalVersion(byte[] assembly)
+    {
+        using var portable = new PEReader(new MemoryStream(assembly));
+        var reader = portable.GetMetadataReader();
+
+        foreach (var handle in reader.GetAssemblyDefinition().GetCustomAttributes())
+        {
+            var attribute = reader.GetCustomAttribute(handle);
+            if (attribute.Constructor.Kind == HandleKind.MemberReference
+                && reader.GetMemberReference((MemberReferenceHandle)attribute.Constructor).Parent is { Kind: HandleKind.TypeReference } type
+                && reader.GetString(reader.GetTypeReference((TypeReferenceHandle)type).Name) == nameof(AssemblyInformationalVersionAttribute))
+            {
+                var value = reader.GetBlobReader(attribute.Value);
+                value.ReadUInt16();
+
+                return value.ReadSerializedString();
+            }
+        }
+
+        return null;
     }
 }

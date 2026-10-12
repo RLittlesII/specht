@@ -50,7 +50,8 @@ From brief § 2, § 5 and § 6, as of 2026-10-07:
   shipped version, up or down, and changes nothing else; `specht upgrade`
   rewrites the schema and template files to match the pin, never moves it, and
   prints what changed (`0001-F7` decision 0005, amending this list
-  2026-10-09). The pin and list commands' names are `0001-F7` OQ-11.
+  2026-10-09). The list command is `specht schema list` (`0001-F2` decision
+  0010); the pin command's name is `0001-F7` OQ-11.
 - **Templates ship in the tool**, written by `specht init` beside the schema,
   never overwritten. They are part of the generation contract.
 - **The agent-facing contract is `--json`**: violations (rule, severity, file,

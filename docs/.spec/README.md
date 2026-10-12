@@ -120,7 +120,7 @@ The concerns of B-001, B-002, B-004 and B-005 are pending: they are not cut into
 
 ## 7. Technical Design
 
-<!-- last written by: spec-author, 2026-10-07; implementer, 2026-10-11 (B-003 and B-006 to B-011, item 0181) -->
+<!-- last written by: spec-author, 2026-10-07; implementer, 2026-10-11 (B-003 and B-006 to B-011, item 0181; the `--version` entry, item 0182) -->
 
 The design for B-001, B-002, B-004 and B-005 is pending: they are not cut into an item.
 
@@ -133,6 +133,8 @@ The design for B-001, B-002, B-004 and B-005 is pending: they are not cut into a
 **Facts stated once (C-6, § 5 row 4).** The page says which exit codes a command can return and links `docs/exit-codes.md` for what each means; it claims a code for a command only where that command's `ExecuteAsync` returns it: `0` to `3` for `specht`, `0` and `2` for `specht init`. The manifest is `docs/configuration.md`'s, the rules `docs/what-it-checks.md`'s and `docs/rules/v1/`'s, the `--json` document `docs/schema/report.schema.json`'s, and the first run `docs/setup.md`'s. Defaults are the ones the `Settings` classes declare.
 
 **The readmes (B-009 to B-011, C-8; `0001-F2` C-9, C-10, B-026).** `README.md` § Usage keeps a two-line synopsis and links `docs/cli.md`, which is also in its Documentation list; its command table is gone. `src/tool/README.md` keeps the same two lines and links the page at its absolute `https` address, as every link in the packed readme is.
+
+**`--version` (C-5; item 0182, `0001-F2` B-040 to B-044).** `Program.cs` sets the application version, so the help of `specht` lists `-v, --version` and the help of `specht init` does not. The `specht` section gains a second synopsis line, a `--version` row, and one sentence each under stdout and exit codes; each readme's synopsis gains the line `specht --version`, its third. The row names the long form, the one § 8 looks for, and not `-v`, which `0001-F2` OQ-7 leaves open. The page describes the option as the only argument and says nothing of it beside another (`0001-F2` OQ-8).
 
 **Not on the page (C-8).** `specht upgrade`, `--explain`, `--report`, `specht manifest` and `specht rules` have no section, entry or synopsis line. `AGENTS.md` § CLI keeps the specified command line and says which of it is not built.
 

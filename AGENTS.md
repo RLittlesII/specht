@@ -134,6 +134,7 @@ specht [--root <dir>] [--report <path>] [--strict] [--json]
 specht init [--root <dir>]
 specht upgrade [--root <dir>]
 specht --explain SPEC031
+specht --version
 specht manifest [--root <dir>] [--defaults] [--json]
 specht rules [--root <dir>] [--json]
 ```
@@ -146,8 +147,15 @@ violation under `--strict`), `2` missing root or manifest, `3` invalid manifest,
 `4` a thing named on the command line not found (such as an `--explain` rule id
 or a schema version to pin).
 
-A command that lists the shipped schema versions and a command that pins one
-are specified and not yet named (`0001-F7` B-041 to B-051, OQ-11).
+As the only argument, `specht --version` prints one line, the informational
+version the tool's assembly states - the package version and the commit - and
+exits `0`; it needs no manifest and writes nothing (`0001-F2` B-040 to B-043).
+Beside another argument it is not decided (`0001-F2` OQ-8).
+
+`specht schema list`, which lists the shipped schema versions and marks the one
+a root pins, is specified and not built (`0001-F7` B-041, B-042, B-084, B-085).
+A command that pins one is specified, and neither named nor placed
+(`0001-F7` B-043 to B-051, OQ-11).
 
 `specht upgrade`, `--explain` and `--report` are specified and not built
 (`0001-F7`, `0001-F3`). What the tool accepts today is

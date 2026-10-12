@@ -1,7 +1,5 @@
 using System.IO.Compression;
-using System.Reflection;
 using System.Reflection.Metadata;
-using System.Reflection.PortableExecutable;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
@@ -29,7 +27,7 @@ public sealed class PackedProgramSteps(PackedTool tool)
 
         foreach (var program in Programs)
         {
-            var version = InformationalVersion(Carried(package, program + ".dll"));
+            var version = AcceptanceTool.InformationalVersion(Carried(package, program + ".dll"));
             version.Should().Contain("+", $"{program} states a version that names a commit");
             var named = new string([.. version![(version.IndexOf('+') + 1)..].TakeWhile(char.IsAsciiHexDigit)]);
             named.Length.Should().BeGreaterThanOrEqualTo(7, $"{program} names a commit by at least git's shortest abbreviation, in {version}");
@@ -114,28 +112,6 @@ public sealed class PackedProgramSteps(PackedTool tool)
         stream.CopyTo(bytes);
 
         return bytes.ToArray();
-    }
-
-    private static string? InformationalVersion(byte[] assembly)
-    {
-        using var portable = new PEReader(new MemoryStream(assembly));
-        var reader = portable.GetMetadataReader();
-
-        foreach (var handle in reader.GetAssemblyDefinition().GetCustomAttributes())
-        {
-            var attribute = reader.GetCustomAttribute(handle);
-            if (attribute.Constructor.Kind == HandleKind.MemberReference
-                && reader.GetMemberReference((MemberReferenceHandle)attribute.Constructor).Parent is { Kind: HandleKind.TypeReference } type
-                && reader.GetString(reader.GetTypeReference((TypeReferenceHandle)type).Name) == nameof(AssemblyInformationalVersionAttribute))
-            {
-                var value = reader.GetBlobReader(attribute.Value);
-                value.ReadUInt16();
-
-                return value.ReadSerializedString();
-            }
-        }
-
-        return null;
     }
 
     private static (Dictionary<string, Uri> Roots, List<string> Documents) Sources(byte[] debug)

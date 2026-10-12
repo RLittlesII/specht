@@ -15,6 +15,7 @@ See [Quick start](https://github.com/RLittlesII/specht#quick-start) in the repos
 ```sh
 specht [--root <dir>] [--strict] [--json]
 specht init [--root <dir>]
+specht --version
 ```
 
 Every command and option is in the [command-line reference](https://github.com/RLittlesII/specht/blob/main/docs/cli.md).
