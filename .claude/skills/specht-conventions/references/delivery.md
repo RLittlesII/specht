@@ -219,9 +219,27 @@ Squash is configured `COMMIT_OR_PR_TITLE` + **`COMMIT_MESSAGES`** — the squash
 body is built from the commit messages, not the pull-request body.
 
 So a citation that lives only in the pull-request body survives **neither** merge
-path. The commit body opens with `Delivers <id>` — or `Specifies <feature path>`
-when authoring a specification — and cites the claims it satisfies. There is no
-issue for `Closes` to close.
+path. **Every commit on a branch** carries the citation as the first line of
+its body: `Delivers <id>` — or `Specifies <feature path>` when authoring a
+specification — with the claims it satisfies. A commit that is a subject and no
+body is a defect, however long the subject. There is no issue for `Closes` to
+close.
+
+A squash of one commit takes that commit's body. A squash of several builds a
+`* <subject>` list, each entry followed by its commit's body, so the squashed
+body opens with the list and not with the citation. The citation inside that
+list satisfies the rule.
+
+The rule is checked on the merged commit, not on the branch
+([lesson 0007](../../../../.spec/lessons/0007-a-citation-is-checked-on-the-merged-commit.md)):
+
+- **Merge without overriding the squash body** - no `--body`, no cleared text
+  box - and read the squash message before confirming.
+- **An auto-merge stores its body when it is enabled.** Read what it stored:
+  `gh pr view <n> --json autoMergeRequest`.
+- **After the merge**, `git fetch`, then `git log -1 --format=%B origin/main`
+  shows the citation. A miss is recorded, in a lesson or in the item: `main`'s
+  history is not rewritten.
 
 The subject is `<type>(<id>): <summary>` — the delivered item's `type`
 (`feature`, `task`, `test`, `bug`, `spike`, `refactor`) and its id, never a conventional-commit
@@ -301,6 +319,9 @@ act on is answered with why, and left open for the reviewer to close.
 - A `priority`, `rank` or `blocks` field stored on an item.
 - A deleted item — a closed one stays as history.
 - A claim citation that exists only in the pull-request body.
+- A commit that is a subject and no body.
+- A merge that overrides the squash body, or one whose merged message was not
+  read.
 - A merge commit.
 - A pull request that spans two steps of brief § 8, or one whose description
   names no § 2 requirement.

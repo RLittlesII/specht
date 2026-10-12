@@ -535,10 +535,15 @@ Feature, soonest.
   the item, before it is opened** — after the merge nobody is present to flip
   them. A pull request closes every item its work finishes, not only the one it
   was cut for.
-- The commit message body opens with `Delivers <id>`, or
+- Every commit's body opens with `Delivers <id>`, or
   `Specifies <feature path>` when authoring a specification — the commit, not
-  only the pull request, carries the citation (rule 3 above). There is no issue
-  for `Closes` to close.
+  only the pull request, carries the citation (rule 3 above), and a commit with
+  no body carries none. A squash of several commits lists them, and the
+  citation inside that list counts. Merge without overriding the squash body,
+  then read the merged commit on `main`: a citation it lacks is recorded, never
+  restored by rewriting history
+  ([`specht-conventions` § Delivery](.claude/skills/specht-conventions/references/delivery.md)).
+  There is no issue for `Closes` to close.
 - Branch `<id>/<short-description>` from the item id, or `spec/<feature-slug>`
   when authoring a specification, which has no item to take an id from.
 

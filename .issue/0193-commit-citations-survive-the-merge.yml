@@ -1,0 +1,83 @@
+id: "0193"
+type: task
+title: Check a commit's citation on the merged commit
+
+status: done
+
+value: 3
+risk: 1
+
+parent: null
+children: []
+
+depends_on: []
+spikes: []
+
+spec: null
+
+claims: []
+
+created: "2026-10-12"
+updated: "2026-10-12"
+closed: "2026-10-12"
+
+summary: |
+  A process chore. On 2026-10-12 the sixteen merges on `main` from `4fd1cc6`
+  to `261797b` were read against the rule that a merged commit's body opens
+  with `Delivers <id>` or `Specifies <feature path>`. Two have an empty body,
+  and a third, `b4c3392`, sits one merge before them; six open with the
+  `* <subject>` list a squash of several commits builds, the citation further
+  down. Lesson 0007 keeps the incident and what the empty-bodied merges
+  specify; this item records the lesson and corrects the rule in the skill
+  that owns it.
+
+  Scope - process documentation only:
+  - .spec/lessons/0007-a-citation-is-checked-on-the-merged-commit.md - the
+    lesson.
+  - .claude/skills/specht-conventions/references/delivery.md - the rule, under
+    "Cite the item and the claim in the commit message", and two `Never add`
+    rows.
+  - AGENTS.md § SDLC - the same rule, in its one bullet.
+  - .issue/.sequence.
+
+  Value 3: rule 3 of AGENTS.md rests on the merged commit carrying the
+  citation, and three merges in two days did not. Risk 1: prose in three
+  files. Both scores are spec-author's.
+
+acceptance_criteria:
+  - "`.spec/lessons/0007-a-citation-is-checked-on-the-merged-commit.md` states the symptom, the root cause, the delta and the skill changed, names no claim, and records what `b4c3392`, `4fd1cc6` and `03f9cc7` specify."
+  - "The lesson states as not established how the body of `b4c3392` and of `03f9cc7` was lost, and which action stored the empty auto-merge body of pull request #122."
+  - "specht-conventions' delivery reference says every commit on a branch carries the citation as the first line of its body, that the citation inside a squash's `* <subject>` list satisfies the rule, that a merge does not override the squash body, and that the merged commit is read on `main` with a miss recorded."
+  - "`AGENTS.md` § SDLC says the same in its one bullet and links the delivery reference; nothing else in `AGENTS.md` changes."
+  - "The skill does not retell the incident, and the lesson and the skill link each other."
+  - "`.issue/.sequence` reads `0193`."
+  - "No specification, `.feature` file, schema, test or tool behaviour changes, and no commit on `main` is rewritten."
+  - "`./build.sh Format` and `./build.sh Specht` pass."
+
+decisions:
+  - |
+    2026-10-12, the repository owner: "Forward fix only". The three merges
+    keep their empty bodies and lesson 0007 carries what they specify.
+    Rejected: rewriting `main`'s history to restore the bodies, and git notes
+    on the three commits.
+  - |
+    2026-10-12, spec-author: the lesson records `b4c3392` (pull request #121)
+    and `6fe8b27` (pull request #141) beside the sixteen merges audited. The
+    first is the merge before the audit's range and has an empty body; the
+    second merged after it. Not an owner ruling.
+  - |
+    2026-10-12, spec-author: the delivery reference gains one line on
+    auto-merge - read the body the request stored. Pull request #122's
+    request records an empty commit body and #139's the full one. Not an
+    owner ruling.
+  - |
+    2026-10-12, spec-author: `deliver-change` is unchanged. Its step 6 says
+    to cite where the citation survives the merge and names no merge
+    strategy's output, so it does not contradict the corrected rule.
+
+out_of_scope:
+  - "Rewriting `main`'s history to restore the three bodies - the owner's decision above."
+  - "Git notes on the three commits - the owner's decision above."
+  - "A build or continuous-integration check of a commit message or a squash body - no item is cut for it."
+  - "Why the bodies of `b4c3392` and `03f9cc7` were lost - not established, and not investigated further here."
+  - "The repository's squash setting - unchanged."
