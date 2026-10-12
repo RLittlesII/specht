@@ -37,7 +37,7 @@ is never filled: a manifest without it sets no level. A key the engine does
 not know exits `3`; a key starting with `$` is ignored. The other `identifiers`
 entries are accepted and no rule reads them yet. The frontmatter schemas a check
 uses are the tool's embedded copy of the pinned version, not the files under
-`.specht/schema/`.
+`.specht/schema/frontmatter/`.
 
 Claim tags in a `.feature` file are read as `@B-nnn`, with an optional
 lowercase letter suffix, whatever `identifiers.claim` says. A configurable tag
@@ -49,7 +49,7 @@ still literals in the engine; they move into the manifest in
 
 ## Default manifest
 
-It lives at `<root>/.specht/schema/spec-structure.schema.json`. `specht init`
+It lives at `<root>/.specht/manifest.json`. `specht init`
 writes it when the file is absent. The block leaves out the five discovery keys
 (`layouts`, `exclusions`, `taskFiles`, `epicFiles` and `companionFiles`): the
 file carries each at its default, and a manifest without them is read the same
@@ -58,7 +58,7 @@ way. `init` writes no `rules` key; the empty one below is read the same way.
 <!-- prettier-ignore -->
 ```json
 {
-  "$comment": "Not a JSON Schema. The ordered section manifest Specht rule SPEC010 reads, kept beside the schemas so the section contract - the twelve numbered sections plus Tasks and Scoring - lives in one place rather than as a string array in C#.",
+  "$comment": "Not a JSON Schema. The ordered section manifest Specht rule SPEC010 reads, kept as data so the section contract - the twelve numbered sections plus Tasks and Scoring - lives in one place rather than as a string array in C#.",
   "sections": [
     "1. Business Goal",
     "2. User Needs",
@@ -92,9 +92,9 @@ way. `init` writes no `rules` key; the empty one below is read the same way.
     "epic": "^[0-9]{4}$"
   },
   "frontmatterSchemas": {
-    "feature": "feature-spec.frontmatter.schema.json",
-    "task": "task.frontmatter.schema.json",
-    "epic": "epic.frontmatter.schema.json"
+    "feature": "feature.schema.json",
+    "task": "task.schema.json",
+    "epic": "epic.schema.json"
   },
   "roles": {
     "claims": "3. Acceptance Criteria",

@@ -80,9 +80,9 @@ public sealed partial class CheckSteps
     [Given("a root directory with a manifest at the retired manifest path and none at the manifest path")]
     public void GivenARootDirectoryWithAManifestAtTheRetiredManifestPathAndNoneAtTheManifestPath()
     {
-        var retired = Path.GetDirectoryName(Path.Combine(Tree.Root, SpecTree.RetiredManifestPath))!;
+        var retired = Path.Combine(Tree.Root, SpecTree.RetiredManifestPath);
         Directory.CreateDirectory(Path.GetDirectoryName(retired)!);
-        Directory.Move(Path.Combine(Tree.Root, SpecTree.SchemaFolder), retired);
+        File.Move(Path.Combine(Tree.Root, SpecTree.ManifestPath), retired);
         _typed = ".";
     }
 

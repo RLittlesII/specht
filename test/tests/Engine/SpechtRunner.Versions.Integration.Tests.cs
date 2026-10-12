@@ -9,7 +9,7 @@ namespace Specht.Tests.Engine;
 /// The runner over a tree on disk and a version set built in memory from the embedded version 0.1.0 (<c>0001-F7</c>
 /// B-001, B-002, B-014, B-055; C-4): the manifest is the tree's, its pin selects exactly the version it names, and that
 /// version's frontmatter schemas and rule vocabulary are the ones the check uses, whatever the tree's own
-/// <c>.specht/schema/</c> holds.
+/// <c>.specht/schema/frontmatter/</c> holds.
 /// </summary>
 [Trait("Tier", "Integration")]
 public sealed class SpechtRunnerVersionsIntegrationTests

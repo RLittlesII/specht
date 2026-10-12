@@ -54,7 +54,7 @@ it chooses.
 
 ```sh
 dotnet tool install specht.tool      # into the repository's local tool manifest
-dotnet specht init                   # write .specht/schema and .specht/templates
+dotnet specht init                   # write .specht/manifest.json, the schemas and the templates
 dotnet specht                        # check the tree
 ```
 
@@ -75,7 +75,7 @@ specht --version
 Every command and option, what each prints and the exit codes it returns:
 [docs/cli.md](docs/cli.md).
 
-One file configures it: `.specht/schema/spec-structure.schema.json`, which can
+One file configures it: `.specht/manifest.json`, which can
 pin `schemaVersion` - a `major.minor.patch` schema version, numbered apart from
 the tool's own. A patch changes no verdict; from schema `1.0.0` on a minor only
 accepts more and a major can fail a tree that passed, and before it a `0.minor`
@@ -97,8 +97,11 @@ specht/
 ├── .spec/
 │   ├── adr/                # repo-wide decision records
 │   ├── lessons/            # repo-wide lessons
-│   ├── schema/             # schema v1, the same files specht init writes
-│   └── templates/          # blanks for specifications, records and work items
+│   └── templates/          # the work-item blank
+├── .specht/                # the tool's configuration, the same files specht init writes
+│   ├── manifest.json       # the manifest
+│   ├── schema/frontmatter/ # the frontmatter schemas of schema v1
+│   └── templates/          # blanks for specifications and records
 ├── docs/                   # reference pages, rule pages, report schema and documentation site
 ├── src/
 │   ├── specht/             # engine, foldered by Feature over a shared model: discovery, manifest, report, versioning, rules

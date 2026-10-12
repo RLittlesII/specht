@@ -18,15 +18,14 @@ public sealed class SpecSchemasLoaderUnitTests
     public void AManifestInTheInjectedFileSystem_WhenLoaded_ShouldCarryTheStructureThatManifestDeclares()
     {
         // Given
-        var schema = Path.Combine(Root, SpecTree.SchemaFolder);
         var loader = new SpecSchemasLoader(
             new MockFileSystem(
                 new Dictionary<string, MockFileData>
                 {
-                    [Path.Combine(schema, "spec-structure.schema.json")] = new("""{ "exclusions": ["vendor"] }"""),
-                    [Path.Combine(schema, "feature-spec.frontmatter.schema.json")] = new("{}"),
-                    [Path.Combine(schema, "task.frontmatter.schema.json")] = new("{}"),
-                    [Path.Combine(schema, "epic.frontmatter.schema.json")] = new("{}"),
+                    [Path.Combine(Root, SpecTree.ManifestPath)] = new("""{ "exclusions": ["vendor"] }"""),
+                    [Path.Combine(Root, SpecTree.FeatureSchemaPath)] = new("{}"),
+                    [Path.Combine(Root, SpecTree.ItemSchemaPath)] = new("{}"),
+                    [Path.Combine(Root, SpecTree.EpicSchemaPath)] = new("{}"),
                 }));
 
         // When

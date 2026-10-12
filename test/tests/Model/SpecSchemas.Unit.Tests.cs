@@ -23,9 +23,9 @@ public sealed class SpecSchemasUnitTests
     /// <summary>Gets each kind, its default file name, the file name a manifest gives it, and the schema the load reads for it.</summary>
     public static TheoryData<string, string, string, Func<SpecSchemas, JsonSchema>> NamedSchemas { get; } = new()
     {
-        { "feature", "feature-spec.frontmatter.schema.json", "feature.json", static schemas => schemas.Feature },
-        { "task", "task.frontmatter.schema.json", "item.json", static schemas => schemas.Item },
-        { "epic", "epic.frontmatter.schema.json", "epic.json", static schemas => schemas.Epic },
+        { "feature", "feature.schema.json", "feature.json", static schemas => schemas.Feature },
+        { "task", "task.schema.json", "item.json", static schemas => schemas.Item },
+        { "epic", "epic.schema.json", "epic.json", static schemas => schemas.Epic },
     };
 
     [Theory]
@@ -37,13 +37,13 @@ public sealed class SpecSchemasUnitTests
         Func<SpecSchemas, JsonSchema> schemaOf)
     {
         // Given
-        var schema = Path.Combine(Root, SpecTree.SchemaFolder);
+        var schema = Path.Combine(Root, SpecTree.FrontmatterSchemaFolder);
         var files = new Dictionary<string, MockFileData>
         {
-            [Path.Combine(schema, "spec-structure.schema.json")] = new($$"""{ "frontmatterSchemas": { "{{kind}}": "{{name}}" } }"""),
-            [Path.Combine(schema, "feature-spec.frontmatter.schema.json")] = new("{}"),
-            [Path.Combine(schema, "task.frontmatter.schema.json")] = new("{}"),
-            [Path.Combine(schema, "epic.frontmatter.schema.json")] = new("{}"),
+            [Path.Combine(Root, SpecTree.ManifestPath)] = new($$"""{ "frontmatterSchemas": { "{{kind}}": "{{name}}" } }"""),
+            [Path.Combine(schema, "feature.schema.json")] = new("{}"),
+            [Path.Combine(schema, "task.schema.json")] = new("{}"),
+            [Path.Combine(schema, "epic.schema.json")] = new("{}"),
         };
         files.Remove(Path.Combine(schema, defaultName));
         files[Path.Combine(schema, name)] = new("""{ "const": "read from the named file" }""");
@@ -82,14 +82,13 @@ public sealed class SpecSchemasUnitTests
     {
         // Given
         var embedded = SchemaVersions.Embedded.Select(new SemanticVersion(0, 1, 0));
-        var schema = Path.Combine(Root, SpecTree.SchemaFolder);
         var fileSystem = new MockFileSystem(
             new Dictionary<string, MockFileData>
             {
-                [Path.Combine(schema, "spec-structure.schema.json")] = new("""{ "schemaVersion": "0.1.0" }"""),
-                [Path.Combine(schema, "feature-spec.frontmatter.schema.json")] = new("{}"),
-                [Path.Combine(schema, "task.frontmatter.schema.json")] = new("{}"),
-                [Path.Combine(schema, "epic.frontmatter.schema.json")] = new("{}"),
+                [Path.Combine(Root, SpecTree.ManifestPath)] = new("""{ "schemaVersion": "0.1.0" }"""),
+                [Path.Combine(Root, SpecTree.FeatureSchemaPath)] = new("{}"),
+                [Path.Combine(Root, SpecTree.ItemSchemaPath)] = new("{}"),
+                [Path.Combine(Root, SpecTree.EpicSchemaPath)] = new("{}"),
             });
 
         // When
@@ -107,14 +106,13 @@ public sealed class SpecSchemasUnitTests
         const string feature = """{ "title": "the feature schema on disk" }""";
         const string item = """{ "title": "the item schema on disk" }""";
         const string epic = """{ "title": "the epic schema on disk" }""";
-        var schema = Path.Combine(Root, SpecTree.SchemaFolder);
         var fileSystem = new MockFileSystem(
             new Dictionary<string, MockFileData>
             {
-                [Path.Combine(schema, "spec-structure.schema.json")] = new("{}"),
-                [Path.Combine(schema, "feature-spec.frontmatter.schema.json")] = new(feature),
-                [Path.Combine(schema, "task.frontmatter.schema.json")] = new(item),
-                [Path.Combine(schema, "epic.frontmatter.schema.json")] = new(epic),
+                [Path.Combine(Root, SpecTree.ManifestPath)] = new("{}"),
+                [Path.Combine(Root, SpecTree.FeatureSchemaPath)] = new(feature),
+                [Path.Combine(Root, SpecTree.ItemSchemaPath)] = new(item),
+                [Path.Combine(Root, SpecTree.EpicSchemaPath)] = new(epic),
             });
 
         // When

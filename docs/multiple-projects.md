@@ -7,7 +7,7 @@ type: reference
 # Multiple projects
 
 The root is the unit. One run reads one root and one manifest,
-`<root>/.specht/schema/spec-structure.schema.json`.
+`<root>/.specht/manifest.json`.
 
 ## One root per project
 

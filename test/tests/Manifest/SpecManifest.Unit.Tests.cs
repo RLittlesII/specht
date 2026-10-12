@@ -30,9 +30,9 @@ public sealed class SpecManifestUnitTests
     /// <summary>Gets each frontmatter schema kind and the file name the default manifest gives it (decision 0003).</summary>
     public static TheoryData<string, string> DefaultFrontmatterSchemas { get; } = new()
     {
-        { "feature", "feature-spec.frontmatter.schema.json" },
-        { "task", "task.frontmatter.schema.json" },
-        { "epic", "epic.frontmatter.schema.json" },
+        { "feature", "feature.schema.json" },
+        { "task", "task.schema.json" },
+        { "epic", "epic.schema.json" },
     };
 
     /// <summary>Gets each frontmatter schema kind and a file name a manifest declares for it in place of the default.</summary>
@@ -995,9 +995,9 @@ public sealed class SpecManifestUnitTests
                 "epic": "^[0-9]{4}$"
               },
               "frontmatterSchemas": {
-                "feature": "feature-spec.frontmatter.schema.json",
-                "task": "task.frontmatter.schema.json",
-                "epic": "epic.frontmatter.schema.json"
+                "feature": "feature.schema.json",
+                "task": "task.schema.json",
+                "epic": "epic.schema.json"
               }
             }
             """)!.AsObject();

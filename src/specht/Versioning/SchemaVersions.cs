@@ -11,7 +11,7 @@ public sealed class SchemaVersions
     public SchemaVersions(IEnumerable<SchemaVersion> versions) =>
         Versions = versions.OrderBy(static version => version.Number).ToList();
 
-    /// <summary>Every version embedded in the engine, read from its <c>schema/v&lt;n&gt;/</c> and <c>rules/v&lt;n&gt;/</c> resources.</summary>
+    /// <summary>Every version embedded in the engine, read from its <c>schema/v&lt;n&gt;/frontmatter/</c> and <c>rules/v&lt;n&gt;/</c> resources.</summary>
     public static SchemaVersions Embedded { get; } = ReadEmbedded();
 
     /// <summary>The versions, ascending by major, minor and patch.</summary>
@@ -41,9 +41,9 @@ public sealed class SchemaVersions
 
             return new SchemaVersion(
                 number,
-                Read($"{Prefix}{folder}/feature-spec.frontmatter.schema.json"),
-                Read($"{Prefix}{folder}/task.frontmatter.schema.json"),
-                Read($"{Prefix}{folder}/epic.frontmatter.schema.json"),
+                Read($"{Prefix}{folder}/frontmatter/feature.schema.json"),
+                Read($"{Prefix}{folder}/frontmatter/task.schema.json"),
+                Read($"{Prefix}{folder}/frontmatter/epic.schema.json"),
                 ruleIds)
             {
                 RulePages = assembly.GetManifestResourceNames()

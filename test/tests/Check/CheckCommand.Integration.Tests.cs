@@ -91,9 +91,9 @@ public sealed class CheckCommandIntegrationTests
                 "a manifest at the retired manifest path and none at the manifest path (B-037)",
                 static tree =>
                 {
-                    var retired = Path.GetDirectoryName(Path.Combine(tree.Root, SpecTree.RetiredManifestPath))!;
+                    var retired = Path.Combine(tree.Root, SpecTree.RetiredManifestPath);
                     Directory.CreateDirectory(Path.GetDirectoryName(retired)!);
-                    Directory.Move(Path.Combine(tree.Root, SpecTree.SchemaFolder), retired);
+                    File.Move(Path.Combine(tree.Root, SpecTree.ManifestPath), retired);
                     return tree.Root;
                 },
                 2

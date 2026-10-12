@@ -17,7 +17,7 @@ type: rule
 
 ## Cause
 
-The frontmatter of a Feature specification fails `feature-spec.frontmatter.schema.json`, a copy of which sits in `.specht/schema/`. One line is reported for each failure the validator records:
+The frontmatter of a Feature specification fails `feature.schema.json`, a copy of which sits in `.specht/schema/frontmatter/`. One line is reported for each failure the validator records:
 
 | Failure at  | Line reported  | Message                             |
 | ----------- | -------------- | ----------------------------------- |

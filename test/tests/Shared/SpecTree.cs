@@ -7,9 +7,10 @@ namespace Specht.Tests.Shared;
 /// be exercised without reading this repository's real specifications.
 /// </summary>
 /// <remarks>
-/// The schemas are the exception: they are copied from the build output, which
-/// links the live schema set to <c>.specht/schema/</c>. They are the contract
-/// under enforcement, so a forked copy would test the wrong thing.
+/// The manifest and the frontmatter schemas are the exception: they are copied
+/// from the build output, which links this repository's live copy under
+/// <c>.specht/</c> at the paths it has there. They are the contract under
+/// enforcement, so a forked copy would test the wrong thing.
 /// </remarks>
 public sealed class SpecTree : IDisposable
 {
@@ -20,24 +21,37 @@ public sealed class SpecTree : IDisposable
         _temporary = Path.Combine(Path.GetTempPath(), "hooked-specgov-" + Guid.NewGuid().ToString("N"));
         Root = Path.Combine([_temporary, .. nesting ?? []]);
 
-        var schema = Path.Combine(Root, ".specht", "schema");
+        var live = Path.Combine(AppContext.BaseDirectory, ConfigurationFolder);
 
-        Directory.CreateDirectory(schema);
-
-        foreach (var file in Directory.EnumerateFiles(Path.Combine(AppContext.BaseDirectory, ".specht", "schema"), "*.json"))
+        foreach (var file in Directory.EnumerateFiles(live, "*.json", SearchOption.AllDirectories))
         {
-            File.Copy(file, Path.Combine(schema, Path.GetFileName(file)));
+            var copy = Path.Combine(Root, ConfigurationFolder, Path.GetRelativePath(live, file));
+
+            Directory.CreateDirectory(Path.GetDirectoryName(copy)!);
+            File.Copy(file, copy);
         }
     }
 
-    /// <summary>The schema folder under a root, where the manifest and the frontmatter schemas are read (ADR-0011).</summary>
-    public const string SchemaFolder = ".specht/schema";
+    /// <summary>The folder under a root that holds the tool's configuration (ADR-0011).</summary>
+    public const string ConfigurationFolder = ".specht";
+
+    /// <summary>The manifest path under a root (<c>0001-F2</c> A-3; <c>0001-F5</c> C-6, decision 0011).</summary>
+    public const string ManifestPath = ConfigurationFolder + "/manifest.json";
+
+    /// <summary>The folder under a root where the on-disk frontmatter schemas are read (<c>0001-F5</c> B-008, decision 0011).</summary>
+    public const string FrontmatterSchemaFolder = ConfigurationFolder + "/schema/frontmatter";
+
+    /// <summary>The Feature frontmatter schema under a root, by the default manifest's file name.</summary>
+    public const string FeatureSchemaPath = FrontmatterSchemaFolder + "/feature.schema.json";
+
+    /// <summary>The item frontmatter schema under a root, by the default manifest's file name.</summary>
+    public const string ItemSchemaPath = FrontmatterSchemaFolder + "/task.schema.json";
+
+    /// <summary>The epic frontmatter schema under a root, by the default manifest's file name.</summary>
+    public const string EpicSchemaPath = FrontmatterSchemaFolder + "/epic.schema.json";
 
     /// <summary>The templates folder under a root, where the tool writes the templates it ships (ADR-0011).</summary>
-    public const string TemplatesFolder = ".specht/templates";
-
-    /// <summary>The manifest path under a root (<c>0001-F2</c> A-3).</summary>
-    public const string ManifestPath = SchemaFolder + "/spec-structure.schema.json";
+    public const string TemplatesFolder = ConfigurationFolder + "/templates";
 
     /// <summary>The retired manifest path under a root, where no manifest is read (<c>0001-F2</c> A-3, B-037).</summary>
     public const string RetiredManifestPath = ".spec/schema/spec-structure.schema.json";

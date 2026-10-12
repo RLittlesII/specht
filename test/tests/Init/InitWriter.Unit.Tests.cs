@@ -8,7 +8,9 @@ namespace Specht.Tests.Init;
 
 /// <summary>
 /// The init writer over an in-memory file system (<c>0001-F4</c> B-001, B-003, B-006, B-008, B-010; C-1, C-3, C-4): which
-/// shipped version it writes, where each embedded name lands, and the choice between written and skipped, file by file.
+/// shipped version it writes, where each embedded name lands - the manifest at <c>.specht/manifest.json</c>, a frontmatter
+/// schema under <c>.specht/schema/frontmatter/</c>, a template under <c>.specht/templates/</c> (<c>0001-F5</c> decision 0011) -
+/// and the choice between written and skipped, file by file.
 /// </summary>
 [Trait("Tier", "Unit")]
 public sealed class InitWriterUnitTests
@@ -26,8 +28,8 @@ public sealed class InitWriterUnitTests
     public static TheoryData<string, string> Names =>
         new()
         {
-            { "schema/v1/spec-structure.schema.json", ".specht/schema/spec-structure.schema.json" },
-            { "schema/v1/task.frontmatter.schema.json", ".specht/schema/task.frontmatter.schema.json" },
+            { "manifest/v1/manifest.json", ".specht/manifest.json" },
+            { "schema/v1/frontmatter/task.schema.json", ".specht/schema/frontmatter/task.schema.json" },
             { "templates/v1/feature.md", ".specht/templates/feature.md" },
             { "templates/v1/lesson.md", ".specht/templates/lesson.md" },
         };
@@ -46,7 +48,7 @@ public sealed class InitWriterUnitTests
     {
         // Given
         var shippingCopy = versions
-            .SelectMany(static version => new[] { $"schema/v{version}/spec-structure.schema.json", $"templates/v{version}/feature.md" })
+            .SelectMany(static version => new[] { $"manifest/v{version}/manifest.json", $"templates/v{version}/feature.md" })
             .ToDictionary(static name => name, static name => Encoding.UTF8.GetBytes(name));
         var fileSystem = BareRoot();
 
@@ -54,16 +56,16 @@ public sealed class InitWriterUnitTests
         var listing = await new InitWriter(shippingCopy, fileSystem).Write(Root, CancellationToken.None);
 
         // Then
-        listing.Should().Equal((".specht/schema/spec-structure.schema.json", true), (".specht/templates/feature.md", true));
+        listing.Should().Equal((".specht/manifest.json", true), (".specht/templates/feature.md", true));
         fileSystem.File.ReadAllText(Path.Combine(Root, SpecTree.ManifestPath))
             .Should()
-            .Be($"schema/v{newest}/spec-structure.schema.json");
+            .Be($"manifest/v{newest}/manifest.json");
         fileSystem.File.ReadAllText(Path.Combine(Root, SpecTree.TemplatesFolder, "feature.md")).Should().Be($"templates/v{newest}/feature.md");
     }
 
     [Theory]
     [MemberData(nameof(Names))]
-    public async Task AnEmbeddedName_WhenWritten_ShouldLandUnderItsFolderInDotSpechtWithItsBytesUnchanged(string name, string relative)
+    public async Task AnEmbeddedName_WhenWritten_ShouldLandAtItsPathInDotSpechtWithItsBytesUnchanged(string name, string relative)
     {
         // Given
         byte[] bytes = [0xEF, 0xBB, 0xBF, 0x7B, 0x0D, 0x0A, 0x7D];
@@ -108,7 +110,7 @@ public sealed class InitWriterUnitTests
             ["templates/v1/adr.md"] = "# Shipped adr\n"u8.ToArray(),
             ["templates/v1/decision.md"] = "# Shipped decision\n"u8.ToArray(),
             ["templates/v1/feature.md"] = "# Shipped feature\n"u8.ToArray(),
-            ["schema/v1/task.frontmatter.schema.json"] = "{}\n"u8.ToArray(),
+            ["schema/v1/frontmatter/task.schema.json"] = "{}\n"u8.ToArray(),
         };
 
         // When
@@ -137,8 +139,8 @@ public sealed class InitWriterUnitTests
             });
         var shippingCopy = new Dictionary<string, byte[]>
         {
-            ["schema/v1/spec-structure.schema.json"] = "{}\n"u8.ToArray(),
-            ["schema/v1/task.frontmatter.schema.json"] = "{}\n"u8.ToArray(),
+            ["manifest/v1/manifest.json"] = "{}\n"u8.ToArray(),
+            ["schema/v1/frontmatter/task.schema.json"] = "{}\n"u8.ToArray(),
             ["templates/v1/feature.md"] = "# Shipped feature\n"u8.ToArray(),
             ["templates/v1/adr.md"] = "# Shipped adr\n"u8.ToArray(),
         };
@@ -171,30 +173,33 @@ public sealed class InitWriterUnitTests
     }
 
     [Fact]
-    public async Task TheEmbeddedShippingCopy_WhenWrittenIntoABareRoot_ShouldWriteTheEightFilesAndNothingOutsideTheTwoFolders()
+    public async Task TheEmbeddedShippingCopy_WhenWrittenIntoABareRoot_ShouldWriteTheManifestAndTheFilesUnderTheTwoFoldersAndNothingElse()
     {
         // Given
         var fileSystem = BareRoot();
-        var schema = fileSystem.Path.GetFullPath(Path.Combine(Root, SpecTree.SchemaFolder)) + Path.DirectorySeparatorChar;
-        var templates = fileSystem.Path.GetFullPath(Path.Combine(Root, SpecTree.TemplatesFolder)) + Path.DirectorySeparatorChar;
+        var root = fileSystem.Path.GetFullPath(Root);
 
         // When
         var listing = await new InitWriter(InitWriter.ShippingCopy(typeof(InitWriter).Assembly), fileSystem).Write(Root, CancellationToken.None);
 
         // Then
         listing.Should().Equal(
-            (".specht/schema/epic.frontmatter.schema.json", true),
-            (".specht/schema/feature-spec.frontmatter.schema.json", true),
-            (".specht/schema/spec-structure.schema.json", true),
-            (".specht/schema/task.frontmatter.schema.json", true),
+            (".specht/manifest.json", true),
+            (".specht/schema/frontmatter/epic.schema.json", true),
+            (".specht/schema/frontmatter/feature.schema.json", true),
+            (".specht/schema/frontmatter/task.schema.json", true),
             (".specht/templates/adr.md", true),
             (".specht/templates/decision.md", true),
             (".specht/templates/feature.md", true),
             (".specht/templates/lesson.md", true));
-        fileSystem.AllFiles.Should()
+        fileSystem.AllFiles
+            .Select(file => fileSystem.Path.GetRelativePath(root, file).Replace(fileSystem.Path.DirectorySeparatorChar, '/'))
+            .Should()
             .HaveCount(8)
-            .And.AllSatisfy(path => path.Should().Match(file => file.StartsWith(schema, StringComparison.Ordinal)
-                                                                || file.StartsWith(templates, StringComparison.Ordinal)));
+            .And.AllSatisfy(static path => path.Should().Match(static file =>
+                file == SpecTree.ManifestPath
+                || file.StartsWith(SpecTree.FrontmatterSchemaFolder + "/", StringComparison.Ordinal)
+                || file.StartsWith(SpecTree.TemplatesFolder + "/", StringComparison.Ordinal)));
     }
 
     private static MockFileSystem BareRoot()

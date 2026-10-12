@@ -17,7 +17,7 @@ type: rule
 
 ## Cause
 
-The frontmatter of an item file - a Markdown file beside a specification, named `<epic>-<nn>-<slug>.md` - fails `task.frontmatter.schema.json`, a copy of which sits in `.specht/schema/`. One line is reported for each failure the validator records:
+The frontmatter of an item file - a Markdown file beside a specification, named `<epic>-<nn>-<slug>.md` - fails `task.schema.json`, a copy of which sits in `.specht/schema/frontmatter/`. One line is reported for each failure the validator records:
 
 | Failure at  | Line reported  | Message                             |
 | ----------- | -------------- | ----------------------------------- |

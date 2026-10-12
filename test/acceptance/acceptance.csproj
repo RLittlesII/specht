@@ -75,8 +75,8 @@
     <Using Include="System.Collections.Generic" />
     <Using Include="System.IO" />
     <Using Include="System.Linq" />
-    <Content Include="..\..\.specht\schema\*.json"
-             Link=".specht\schema\%(Filename)%(Extension)"
+    <Content Include="..\..\.specht\**\*.json"
+             Link=".specht\%(RecursiveDir)%(Filename)%(Extension)"
              CopyToOutputDirectory="PreserveNewest" />
     <Content Include="..\..\.specht\templates\feature.md;..\..\.specht\templates\decision.md;..\..\.specht\templates\adr.md;..\..\.specht\templates\lesson.md"
              Link=".specht\templates\%(Filename)%(Extension)"

@@ -25,9 +25,9 @@ public sealed class SchemaVersionsUnitTests
     public static TheoryData<string, Func<SchemaVersion, string>> Slots =>
         new()
         {
-            { "feature-spec.frontmatter.schema.json", static version => version.FeatureSchema },
-            { "task.frontmatter.schema.json", static version => version.ItemSchema },
-            { "epic.frontmatter.schema.json", static version => version.EpicSchema },
+            { "feature.schema.json", static version => version.FeatureSchema },
+            { "task.schema.json", static version => version.ItemSchema },
+            { "epic.schema.json", static version => version.EpicSchema },
         };
 
     /// <summary>Gets an epic's title and description, and the frontmatter locations version 0.1.0 rejects (B-022, B-023).</summary>
@@ -89,7 +89,7 @@ public sealed class SchemaVersionsUnitTests
 
         // Then
         ids.Should().NotBeEmpty().And.AllSatisfy(pair =>
-            pair.Id.Should().Be($"https://github.com/rlittlesii/specht/schema/v{pair.Folder}/{file}"));
+            pair.Id.Should().Be($"https://github.com/rlittlesii/specht/schema/v{pair.Folder}/frontmatter/{file}"));
     }
 
     [Fact]

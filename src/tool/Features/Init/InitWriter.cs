@@ -13,15 +13,19 @@ using Specht.Manifest;
 namespace Specht.Tool.Features.Init;
 
 /// <summary>
-/// Writes the newest shipped version of the eight files into <c>&lt;root&gt;/.specht/schema/</c> and
-/// <c>&lt;root&gt;/.specht/templates/</c> (<c>0001-F4</c> B-001, B-003, B-008), leaving every file that exists as it was (C-1).
+/// Writes the newest shipped version of the eight files to <c>&lt;root&gt;/.specht/manifest.json</c> and into
+/// <c>&lt;root&gt;/.specht/schema/frontmatter/</c> and <c>&lt;root&gt;/.specht/templates/</c> (<c>0001-F4</c> B-008), leaving every
+/// file that exists as it was (C-1).
 /// </summary>
-/// <param name="shippingCopy">The embedded files by logical name, <c>schema/v&lt;n&gt;/&lt;file&gt;</c> or <c>templates/v&lt;n&gt;/&lt;file&gt;</c>.</param>
+/// <param name="shippingCopy">
+/// The embedded files by logical name: <c>manifest/v&lt;n&gt;/manifest.json</c>, <c>schema/v&lt;n&gt;/frontmatter/&lt;file&gt;</c> or
+/// <c>templates/v&lt;n&gt;/&lt;file&gt;</c>.
+/// </param>
 /// <param name="fileSystem">The file system the root is written through.</param>
 public sealed partial class InitWriter(IReadOnlyDictionary<string, byte[]> shippingCopy, IFileSystem fileSystem)
 {
     /// <summary>Reads the shipping copy embedded in <paramref name="assembly"/>.</summary>
-    /// <param name="assembly">The assembly carrying the <c>schema/v&lt;n&gt;/</c> and <c>templates/v&lt;n&gt;/</c> resources.</param>
+    /// <param name="assembly">The assembly carrying the <c>manifest/</c>, <c>schema/</c> and <c>templates/</c> resources.</param>
     /// <returns>Each shipped file's bytes by logical name.</returns>
     public static IReadOnlyDictionary<string, byte[]> ShippingCopy(Assembly assembly) =>
         assembly.GetManifestResourceNames()
@@ -73,7 +77,7 @@ public sealed partial class InitWriter(IReadOnlyDictionary<string, byte[]> shipp
         return buffer.ToArray();
     }
 
-    [GeneratedRegex("^(?<folder>schema|templates)/v(?<version>[0-9]+)/(?<file>[^/]+)$")]
+    [GeneratedRegex("^(?:manifest/v(?<version>[0-9]+)/manifest\\.json|(?<folder>schema|templates)/v(?<version>[0-9]+)/(?<path>.+))$")]
     private static partial Regex Shipped();
 
     private IEnumerable<(string Relative, byte[] Bytes)> Newest()
@@ -83,7 +87,9 @@ public sealed partial class InitWriter(IReadOnlyDictionary<string, byte[]> shipp
             .Where(static entry => entry.Name.Success)
             .Select(static entry => (
                 Version: int.Parse(entry.Name.Groups["version"].Value, CultureInfo.InvariantCulture),
-                Relative: $"{SpecManifest.ConfigurationFolder}/{entry.Name.Groups["folder"].Value}/{entry.Name.Groups["file"].Value}",
+                Relative: entry.Name.Groups["folder"].Success
+                    ? $"{SpecManifest.ConfigurationFolder}/{entry.Name.Groups["folder"].Value}/{entry.Name.Groups["path"].Value}"
+                    : SpecManifest.RelativePath,
                 entry.Bytes))
             .ToList();
         var newest = shipped.Max(static entry => entry.Version);

@@ -11,7 +11,7 @@ namespace Specht.Model;
 /// <remarks>
 /// The schemas are data, not code, so that whoever is authoring a
 /// specification can read the contract they are being held to. The section
-/// manifest lives beside them for the same reason - a C# string array would be
+/// manifest is data for the same reason - a C# string array would be
 /// a second, invisible home for the twelve-section rule.
 /// </remarks>
 public sealed class SpecSchemas
@@ -50,8 +50,8 @@ public sealed class SpecSchemas
     public SchemaVersion Version { get; }
 
     /// <summary>
-    /// Loads every schema from <paramref name="root"/>'s <c>.specht/schema/</c>, the manifest first, each frontmatter schema
-    /// from the file the manifest names for its kind (<c>0001-F5</c> B-008).
+    /// Loads every schema from <paramref name="root"/>'s <c>.specht/</c>, the manifest first, each frontmatter schema
+    /// from the file under <c>schema/frontmatter/</c> the manifest names for its kind (<c>0001-F5</c> B-008).
     /// </summary>
     /// <remarks>
     /// The check loads through a version set instead; this reads the on-disk frontmatter schemas, which no check selects
@@ -73,7 +73,7 @@ public sealed class SpecSchemas
     {
         var structure = SpecManifest.Load(fileSystem, root);
         var version = Pinned(SchemaVersions.Embedded, structure);
-        var directory = SpecManifest.Under(fileSystem, root, SpecManifest.SchemaFolder);
+        var directory = SpecManifest.Under(fileSystem, root, SpecManifest.FrontmatterSchemaFolder);
 
         return new SpecSchemas(
             version with
@@ -86,7 +86,7 @@ public sealed class SpecSchemas
     }
 
     /// <summary>
-    /// Loads the manifest from <paramref name="root"/>'s <c>.specht/schema/</c> and the frontmatter schemas of the version it
+    /// Loads the manifest from <paramref name="root"/>'s <c>.specht/</c> and the frontmatter schemas of the version it
     /// pins from <paramref name="versions"/> (<c>0001-F7</c> B-001, C-4).
     /// </summary>
     /// <remarks>Each load gets its own <see cref="SchemaRegistry"/>, for the same reason as the on-disk load.</remarks>
