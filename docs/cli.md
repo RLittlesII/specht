@@ -59,7 +59,7 @@ errors: 1, warnings: 0
 specht init [--root <DIR>]
 ```
 
-Writes the newest schema set and templates under `<DIR>/.spec/`, and never
+Writes the newest schema set and templates under `<DIR>/.specht/`, and never
 overwrites a file that exists. [Setup](setup.md) walks through the first run.
 
 | Option         | Value   | Default               | Does                                          |
@@ -78,10 +78,10 @@ specht init
 ```
 
 ```text
-written .specht/schema/epic.frontmatter.schema.json
-written .specht/schema/feature-spec.frontmatter.schema.json
-written .specht/schema/spec-structure.schema.json
-written .specht/schema/task.frontmatter.schema.json
+written .specht/manifest.json
+written .specht/schema/frontmatter/epic.schema.json
+written .specht/schema/frontmatter/feature.schema.json
+written .specht/schema/frontmatter/task.schema.json
 written .specht/templates/adr.md
 written .specht/templates/decision.md
 written .specht/templates/feature.md

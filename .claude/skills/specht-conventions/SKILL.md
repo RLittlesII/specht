@@ -55,7 +55,8 @@ src/
                                one folder per Feature, and named folders for what several read
   tool/                        specht.tool - the CLI host; PackAsTool, command `specht`
     Features/<Command>/        one folder per Spectre command - dotnet-tool owns the inside
-    schema/v1/                 embedded shipping copy of the schema set
+    manifest/v1/               embedded shipping copy of the manifest
+    schema/v1/frontmatter/     embedded shipping copy of the frontmatter schemas
     templates/v1/              embedded shipping copy of the templates
 
 test/
@@ -82,7 +83,8 @@ epics/                         one folder per epic - ids share the items' number
 
 .spec/                         repo-wide adr/, lessons/, templates/item.yml, and
                                brief.md - the seed brief and design authority (brief § N)
-.specht/                       schema/ and templates/ - the tool's configuration (ADR-0011),
+.specht/                       manifest.json, schema/frontmatter/ and templates/ - the tool's
+                               configuration (ADR-0011),
                                the live copy specht checks itself with - the same bytes as
                                the embedded v1 for the tool-owned files; the manifest on
                                its tool-owned keys
@@ -224,8 +226,8 @@ a commit of `main` creates `v<version>` (`0055-F5` A-1, B-007).
   Both are NUKE-generated.
 - A package version in a `.csproj`.
 - A specification in two places at once.
-- A second copy of a schema file that can drift. `.specht/schema/` and the embedded
-  `schema/v1/` are the same bytes for the tool-owned files, and the manifest
+- A second copy of a schema file that can drift. `.specht/schema/frontmatter/` and the embedded
+  `schema/v1/frontmatter/` are the same bytes for the tool-owned files, and the manifest
   matches on its tool-owned keys; a test says so (`0001-F4` B-004).
 - An absolute path in any output, report, log line or test fixture.
 - A write into a consumer's tree from anything but `init`, `upgrade`, the

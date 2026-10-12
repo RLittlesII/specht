@@ -18,12 +18,13 @@ src/tool/
   Features/
     Check/                      `specht [--root] [--report] [--strict] [--json]` - the default command
       CheckCommand.cs           command class + nested Settings
-    Init/                       `specht init` - writes schema and templates, never overwrites
+    Init/                       `specht init` - writes the manifest, schemas and templates, never overwrites
       InitCommand.cs
     Upgrade/                    `specht upgrade` - specified, not yet built: brings the schema and
                                 template files to the pinned schemaVersion and never moves the pin
                                 (0001-F7 decision 0005)
-  schema/v1/                    embedded - the shipping copy of the schema set
+  manifest/v1/                  embedded - the shipping copy of the manifest
+  schema/v1/frontmatter/        embedded - the shipping copy of the frontmatter schemas
   templates/v1/                 embedded - the shipping copy of the templates
 ```
 

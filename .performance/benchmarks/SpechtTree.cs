@@ -30,7 +30,7 @@ public sealed class SpechtTree
         var names = keys["frontmatterSchemas"]!;
         var version = SchemaVersions.Embedded.Select(
             SemanticVersion.TryParse(keys["schemaVersion"]?.GetValue<string>(), out var pinned) ? pinned : new SemanticVersion(0, 1, 0));
-        var schema = SpecManifest.RelativePath[..(SpecManifest.RelativePath.LastIndexOf('/') + 1)];
+        var schema = SpecManifest.FrontmatterSchemaFolder + "/";
 
         List<SpechtTreeFile> files =
         [

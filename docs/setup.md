@@ -31,10 +31,10 @@ dotnet specht init
 ```
 
 ```text
-written .specht/schema/epic.frontmatter.schema.json
-written .specht/schema/feature-spec.frontmatter.schema.json
-written .specht/schema/spec-structure.schema.json
-written .specht/schema/task.frontmatter.schema.json
+written .specht/manifest.json
+written .specht/schema/frontmatter/epic.schema.json
+written .specht/schema/frontmatter/feature.schema.json
+written .specht/schema/frontmatter/task.schema.json
 written .specht/templates/adr.md
 written .specht/templates/decision.md
 written .specht/templates/feature.md
@@ -71,7 +71,7 @@ exits `2` for want of a manifest.
 
 ## Manifest
 
-One file configures the check: `.specht/schema/spec-structure.schema.json`. Change
+One file configures the check: `.specht/manifest.json`. Change
 a setting by editing it.
 
 ```json

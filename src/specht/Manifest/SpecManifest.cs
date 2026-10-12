@@ -7,7 +7,7 @@ using Specht.Versioning;
 namespace Specht.Manifest;
 
 /// <summary>
-/// Reads the manifest, <c>.specht/schema/spec-structure.schema.json</c>, whole: every key is checked before a structure is
+/// Reads the manifest, <c>.specht/manifest.json</c>, whole: every key is checked before a structure is
 /// returned, so no rule ever sees a manifest that was not accepted (<c>0001-F5</c> C-5).
 /// </summary>
 /// <remarks>
@@ -20,11 +20,11 @@ public static class SpecManifest
     /// <summary>The folder under a root that holds the tool's configuration (ADR-0011).</summary>
     public const string ConfigurationFolder = ".specht";
 
-    /// <summary>The folder under a root that holds the manifest and the frontmatter schemas.</summary>
-    public const string SchemaFolder = ConfigurationFolder + "/schema";
+    /// <summary>The folder under a root that holds the frontmatter schemas (<c>0001-F5</c> B-008).</summary>
+    public const string FrontmatterSchemaFolder = ConfigurationFolder + "/schema/frontmatter";
 
     /// <summary>The manifest's path under a root, as a message names it.</summary>
-    public const string RelativePath = SchemaFolder + "/spec-structure.schema.json";
+    public const string RelativePath = ConfigurationFolder + "/manifest.json";
 
     /// <summary>The path under a root where the manifest was read before ADR-0011, and is not read (<c>0001-F2</c> A-3).</summary>
     public const string RetiredRelativePath = ".spec/schema/spec-structure.schema.json";
@@ -76,7 +76,7 @@ public static class SpecManifest
     /// <summary>Resolves a root-relative path with <c>/</c> separators under <paramref name="root"/>.</summary>
     /// <param name="fileSystem">The file system whose separators the result carries.</param>
     /// <param name="root">The repository root.</param>
-    /// <param name="relative">The path under the root, such as <see cref="SchemaFolder"/>.</param>
+    /// <param name="relative">The path under the root, such as <see cref="FrontmatterSchemaFolder"/>.</param>
     /// <returns>The path under <paramref name="root"/>.</returns>
     public static string Under(IFileSystem fileSystem, string root, string relative) =>
         fileSystem.Path.Combine([root, .. relative.Split('/')]);

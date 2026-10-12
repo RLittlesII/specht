@@ -40,12 +40,13 @@ which checks a legacy spec's `epic`/`id` against the directory it sits in.
 
 Repo-wide blast radius goes to the root instead: `.spec/adr/`, `.spec/lessons/`,
 both numbered repo-wide from `0001`. The root `.specht/templates/` holds the blanks
-and `.specht/schema/` the frontmatter schemas and the manifest.
+`.specht/schema/frontmatter/` the frontmatter schemas, and
+`.specht/manifest.json` is the manifest.
 
-The root `.specht/schema/` and `.specht/templates/` are **the live copy this
+The root `.specht/` is **the live copy this
 repository checks itself with** — exactly what `specht init` writes into a
-consumer. The shipping copy is embedded in `src/tool/schema/v1/` and
-`templates/v1/`; the two are the same bytes for the tool-owned files (the
+consumer. The shipping copy is embedded in `src/tool/manifest/v1/`,
+`schema/v1/frontmatter/` and `templates/v1/`; the two are the same bytes for the tool-owned files (the
 frontmatter schemas and the templates), and the manifest matches on its
 tool-owned keys, rule settings and other consumer configuration excluded; a
 test says so (`0001-F4` B-004).
@@ -54,7 +55,7 @@ test says so (`0001-F4` B-004).
 
 The section titles, their order, and the table headers that gate coverage are
 written once, as data:
-[`.specht/schema/spec-structure.schema.json`](../../../../.specht/schema/spec-structure.schema.json).
+[`.specht/manifest.json`](../../../../.specht/manifest.json).
 Rule `SPEC010` reads that manifest, so the list is not restated here or in C#.
 
 Exact text, exactly once each, in order. Who owns which section is in the
@@ -75,7 +76,7 @@ delete its guidance comments in the copy.
 ## Frontmatter
 
 22 keys, in a fixed order, validated against
-[`.specht/schema/feature-spec.frontmatter.schema.json`](../../../../.specht/schema/feature-spec.frontmatter.schema.json).
+[`.specht/schema/frontmatter/feature.schema.json`](../../../../.specht/schema/frontmatter/feature.schema.json).
 `spec_status` is **document maturity** (`draft` → `in-review` → `approved` →
 `superseded`) and is owned by the file; `status` is the Feature's coarse
 **delivery lifecycle**, authored in place — there is no issue label to mirror it
@@ -124,7 +125,7 @@ specht --root <dir> --strict           # any violation fails
 specht --json                          # the report document on stdout instead of the line stream
 specht --report .artifacts/spec-check/spec-check.json
 specht --explain SPEC031               # a rule's full text; exit 4 for a rule id the pinned version lacks
-specht init                            # write schema and templates into <root>/.specht/, never overwriting
+specht init                            # write the manifest, schemas and templates into <root>/.specht/, never overwriting
 ./build.sh SpecCheck                   # the same command, on this repository's own tree
 ```
 

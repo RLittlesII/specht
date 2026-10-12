@@ -39,9 +39,12 @@
     <ProjectReference Include="..\specht\specht.csproj" />
   </ItemGroup>
 
-  <!-- The shipping copy (0001-F4 C-2), one folder per schema version, named schema/v<n>/<file> and templates/v<n>/<file>. -->
+  <!-- The shipping copy (0001-F4 C-2), one folder per schema version, named manifest/v<n>/manifest.json,
+       schema/v<n>/frontmatter/<file> and templates/v<n>/<file>. -->
   <ItemGroup>
-    <EmbeddedResource Include="schema\v*\*.json"
+    <EmbeddedResource Include="manifest\v*\manifest.json"
+                      LogicalName="manifest/$([MSBuild]::ValueOrDefault('%(RecursiveDir)', '').Replace('\', '/'))%(Filename)%(Extension)" />
+    <EmbeddedResource Include="schema\v*\**\*.json"
                       LogicalName="schema/$([MSBuild]::ValueOrDefault('%(RecursiveDir)', '').Replace('\', '/'))%(Filename)%(Extension)" />
     <EmbeddedResource Include="templates\v*\*.md"
                       LogicalName="templates/$([MSBuild]::ValueOrDefault('%(RecursiveDir)', '').Replace('\', '/'))%(Filename)%(Extension)" />

@@ -114,11 +114,9 @@ B-029 to B-032). Each file comes from the embedded copies - the frontmatter
 schemas from an upstream schema source instead, where the manifest records one
 (`0001-F4` B-014) - and `init` never overwrites a file that exists.
 
-That layout and those options are specified and not built. Until item `0185`
-the manifest is `.specht/schema/spec-structure.schema.json` with the schemas
-beside it as `feature-spec.frontmatter.schema.json`,
-`task.frontmatter.schema.json` and `epic.frontmatter.schema.json`; until item
-`0186` every `init` writes every file. `--epics` has no item (`0001-F5` OQ-18).
+The layout is built (item `0185`). The options are specified and not built:
+until item `0186` every `init` writes every file. `--epics` has no item
+(`0001-F5` OQ-18).
 
 `schemaVersion` is a `major.minor.patch` schema version, numbered apart from
 the `specht.tool` package version; the first is `0.1.0`, and a manifest with no
@@ -302,7 +300,7 @@ Traceability is checked deterministically, not by memory:
 ```
 
 It runs the tool on this repository's own tree, through the local tool manifest,
-exactly as a consumer would. It validates frontmatter against `.specht/schema/`, the
+exactly as a consumer would. It validates frontmatter against `.specht/schema/frontmatter/`, the
 twelve sections and their order, claim-id uniqueness, every `@B-00n` tag
 resolving to a claim, § 9 carrying exactly one row per § 3 claim,
 `children`/`depends_on` resolving to real files, and dependency symmetry. Rules
