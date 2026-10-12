@@ -157,6 +157,10 @@ a root pins, is specified and not built (`0001-F7` B-041, B-042, B-084, B-085).
 A command that pins one is specified, and neither named nor placed
 (`0001-F7` B-043 to B-051, OQ-11).
 
+`specht upgrade`, `--explain` and `--report` are specified and not built
+(`0001-F7`, `0001-F3`). What the tool accepts today is
+[`docs/cli.md`](docs/cli.md), which a test holds to its help (`0002-F1`).
+
 `specht manifest` and `specht rules` are specified and not built (`0001-F9`,
 `0001-F10`). A command that sets one rule's level is specified and not yet
 named (`0001-F11` OQ-1).

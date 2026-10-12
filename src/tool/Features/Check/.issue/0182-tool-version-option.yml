@@ -60,12 +60,15 @@ decisions:
     name or another option (OQ-8) are left as the library gives them,
     with no claim and no test.
   - |
-    2026-10-11, implementer: `docs/` is left untouched, where the summary
-    expects its command list changed. `docs/` holds no command list on
-    this branch; the CLI reference belongs to the unmerged branch
-    `0181/cli-reference`, which owes it the `--version` line. The lists in
-    `AGENTS.md`, `README.md` and `src/tool/README.md` name the option.
-    Rejected: writing a reference page here that the other branch also adds.
+    2026-10-11, implementer: `docs/` was first left untouched: it held no
+    command list on this branch, and the CLI reference belonged to the
+    then unmerged `0181/cli-reference`. Item 0181 has since merged (#132),
+    and this change pays the line on the merge of `main`: `docs/cli.md`
+    carries `--version` in the `specht` section - synopsis, option entry,
+    what it prints and its exit code - as `0002-F1` B-007 and C-5 ask.
+    The entry names the long form only (OQ-7). `README.md` and
+    `src/tool/README.md` take 0181's short synopsis with the option's
+    line added; `AGENTS.md` names the option.
   - |
     2026-10-11, test-writer: the § 9 rows of B-040 to B-044 are `Covered`.
     `Program.cs` hands the library the assembly's generated version

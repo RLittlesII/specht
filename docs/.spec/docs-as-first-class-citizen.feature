@@ -1,11 +1,12 @@
 Feature: Docs as first-class citizen
   As a contributor to specht
   I want documentation generated and checked inside the build
-  So that the public surface and each command's usage doc stay in step with the code, with no separate step and no hosted site
+  So that the public surface and the command-line reference stay in step with the code, with no separate step and no hosted site
 
   # Mechanism only: doc-comment enforcement on the public surface, a
-  # generated API reference as a build artifact, and a co-location
-  # convention for usage docs. The site is 0002-F2, deferred.
+  # generated API reference as a build artifact, and one hand-written
+  # command-line reference page held to the tool's own help. The site is
+  # 0002-F2, deferred.
 
   @B-001
   Scenario: An undocumented public member fails the build
@@ -29,10 +30,10 @@ Feature: Docs as first-class citizen
     And no copy of that reference is tracked in the repository
 
   @B-003
-  Scenario: A command's usage doc sits beside the command
-    Given a command folder under the tool's features
-    Then its usage doc is in that folder, at the location the convention names
-    And it is not the command's specification
+  Scenario: The command-line reference is one page
+    Given the repository's documentation
+    Then the command-line reference is one page of it
+    And it is not a command's specification
 
   @B-004 @boundary
   Scenario: Documentation generation publishes nothing
@@ -44,3 +45,45 @@ Feature: Docs as first-class citizen
   Scenario: The default build runs documentation enforcement and generation
     When the default build runs
     Then the documentation target runs as part of it
+
+  @B-006
+  Scenario: Every command has a section in the reference
+    Given the commands the tool's help lists
+    When the command-line reference is compared with them
+    Then each command has a section of its own in the reference
+
+  @B-007
+  Scenario: Every option has an entry under its command
+    Given the options a command's help lists
+    When the command-line reference is compared with them
+    Then each option has an entry in that command's section
+
+  @B-008
+  Scenario: The reference documents nothing the tool does not accept
+    Given the command-line reference
+    When it is compared with the tool's help
+    Then every command with a section is one the help lists
+    And every option with an entry is one its command's help lists
+
+  @B-008 @boundary
+  Scenario: A command that is specified and not built has no section
+    Given a command a specification describes and the tool's help does not list
+    When the command-line reference is compared with the tool's help
+    Then the reference has no section for that command
+
+  @B-009
+  Scenario: The front page shows only what the tool accepts
+    Given the repository's front page
+    When it is compared with the tool's help
+    Then every command and option it names is one the help lists
+
+  @B-010
+  Scenario: The package readme shows only what the tool accepts
+    Given the readme the package carries
+    When it is compared with the tool's help
+    Then every command and option it names is one the help lists
+
+  @B-011
+  Scenario: The front page links to the reference
+    Given the repository's front page
+    Then it links to the command-line reference

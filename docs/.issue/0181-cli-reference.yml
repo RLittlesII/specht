@@ -1,0 +1,94 @@
+id: "0181"
+type: task
+title: Write the command-line reference page and hold it to the tool's help
+
+status: done
+
+value: 4
+risk: 2
+
+parent: "0002"
+children: []
+
+depends_on: []
+spikes: []
+
+spec: docs/.spec/README.md
+
+claims:
+  - B-003
+  - B-006
+  - B-007
+  - B-008
+  - B-009
+  - B-010
+  - B-011
+
+created: "2026-10-11"
+updated: "2026-10-11"
+closed: "2026-10-11"
+
+summary: |
+  The repository owner, 2026-10-11: "I think the command matrix in the README
+  is horrible as well. I think we should clearly demonstrate the full api
+  surface." `README.md` and `src/tool/README.md` list `--report <path>`,
+  `specht upgrade` and `--explain`, and the tool accepts none of them; it
+  accepts `specht [--root <DIR>] [--strict] [--json]` and
+  `specht init [--root <DIR>]`. The owner's three answers are decision 0001
+  of the Feature.
+
+  Value 4: the page a consumer reads to learn the command line, and two
+  readmes that are wrong today. Risk 2: one page of prose, two readmes and
+  one test over the help. Both scores are spec-author's.
+
+  Expected files: new `docs/cli.md`; `README.md` ("Usage" and the
+  "Documentation" list); `src/tool/README.md` ("Commands"); the tests and
+  step definitions for the claims; § 6 to § 9 of the specification by their
+  owners.
+
+  Delivered files: `docs/cli.md`, `README.md`, `src/tool/README.md`,
+  `AGENTS.md` (§ CLI, one statement), `docs/setup.md` (one link),
+  `docs/.spec/**`, `test/acceptance/Docs/CommandLineReferenceSteps.cs`,
+  `test/acceptance/acceptance.csproj`, `epics/0002-documentation/epic.md`
+  and `.issue/.sequence`.
+
+acceptance_criteria:
+  - "B-003 — the one page, `docs/cli.md`"
+  - "B-006 — a section per command"
+  - "B-007 — an entry per option"
+  - "B-008 — nothing the help does not list"
+  - "B-009 — `README.md` names only the surface"
+  - "B-010 — `src/tool/README.md` names only the surface"
+  - "B-011 — `README.md` links the page"
+  - "`docs/cli.md` opens with YAML frontmatter: `title`, `description` and `type: reference`, and is terse, as the pages beside it."
+  - "Constraints preserved: 0001-F2 C-9, 0001-F2 C-10, 0001-F2 B-026 — the packed readme stays a file written for the package, with absolute `https` links."
+  - "`./build.sh Format`, `./build.sh Specht` and `./build.sh` pass."
+  - "§ 9 carries a row naming a test for each id above."
+
+decisions:
+  - |
+    2026-10-11, the repository owner: one `docs/cli.md` page; hand-written
+    and test-pinned; commands specified and not built are removed until
+    built (0002-F1 decision 0001, which records what was turned down).
+  - |
+    2026-10-11, spec-author: cut as one task under epic `0002`, with no
+    Feature item above it. 0002-F1 stays `needs-decomposition`: B-001,
+    B-002, B-004 and B-005 are not cut. Not an owner ruling.
+  - |
+    2026-10-11, the repository owner, approving the delivery plan:
+    `AGENTS.md` § CLI marks `upgrade`, `--explain` and `--report` as
+    specified and not built, as it already does for `manifest` and `rules`
+    (0002-F1 decision 0001; § 5 row 7 amended).
+  - |
+    2026-10-11, spec-author: `docs/exit-codes.md` lists exit `4`, which
+    `src/tool/ExitCodes.cs` does not define and no built command returns.
+    Recorded as 0002-F1 OQ-3 and not fixed here; the owner has not been
+    asked, and no item is cut for it.
+
+out_of_scope:
+  - "A section or a synopsis line for a command or option that is not built — § 5 row 6; the pull request that delivers each."
+  - "The `--help` text — § 5 row 3, 0001-F2."
+  - "The skills, and `AGENTS.md` beyond the one § CLI statement — § 5 row 7."
+  - "Exit `4` in `docs/exit-codes.md` — 0002-F1 OQ-3, open."
+  - "Doc-comment enforcement and the API reference — B-001, B-002, B-004, B-005; not cut."
+  - "Any change to what the tool does."
