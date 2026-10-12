@@ -118,6 +118,7 @@ a `.issue/` beside that `.spec/`.
 - [Command line](docs/cli.md)
 - [What it checks](docs/what-it-checks.md)
 - [Configuration](docs/configuration.md)
+- [Multiple projects](docs/multiple-projects.md)
 - [Exit codes](docs/exit-codes.md)
 - [Building](docs/building.md)
 - [Rule pages](docs/rules/v1/)
