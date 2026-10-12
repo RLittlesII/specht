@@ -2,7 +2,7 @@ id: "0092"
 type: task
 title: Check under a recorded upstream schema source
 
-status: ready-for-architecture
+status: in-progress
 
 risk: 3
 
@@ -26,7 +26,7 @@ claims:
   - B-081
 
 created: "2026-10-08"
-updated: "2026-10-11"
+updated: "2026-10-12"
 closed: null
 
 summary: |
