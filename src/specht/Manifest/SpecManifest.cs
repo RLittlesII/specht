@@ -262,7 +262,7 @@ public static class SpecManifest
                 else if (Segment(value) is null)
                 {
                     yield return $"the identity member '{member}' of the layout '{name}' is {value?.ToJsonString() ?? "null"}, "
-                        + "which is not a non-negative integer";
+                                 + "which is not a non-negative integer";
                 }
             }
 
