@@ -87,8 +87,7 @@ Feature: The manifest carries the roles
   Scenario Outline: A schema file name that is not a plain file name is rejected
     Given the manifest names the Feature schema file "<value>"
     When the check runs
-    Then the manifest is rejected
-    And the rejection names the Feature kind and "<value>"
+    Then the manifest is rejected as invalid, naming the Feature kind and "<value>"
 
     Examples:
       | value                 |
