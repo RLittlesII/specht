@@ -13,11 +13,11 @@ See [Quick start](https://github.com/RLittlesII/specht#quick-start) in the repos
 ## Commands
 
 ```sh
-specht [--root <dir>] [--report <path>] [--strict] [--json]
+specht [--root <dir>] [--strict] [--json]
 specht init [--root <dir>]
-specht upgrade [--root <dir>]
-specht --explain SPEC031
 ```
+
+Every command and option is in the [command-line reference](https://github.com/RLittlesII/specht/blob/main/docs/cli.md).
 
 Each rule has a page under [`docs/rules/v1/`](https://github.com/RLittlesII/specht/tree/main/docs/rules/v1).
 

@@ -8,7 +8,7 @@ priority: med
 milestone: null
 children: ["0002-F1", "0002-F2"]
 created: "2026-10-07"
-updated: "2026-10-09"
+updated: "2026-10-11"
 github_issue: null
 ---
 
@@ -27,9 +27,10 @@ Features, deliberately sequenced:
 
 - **`0002-F1` (now)**: documentation generated and checked inside the build. An
   XML doc comment on every public type and member, enforced as `CS1591`; an API
-  reference generated from them by a NUKE target as a build artifact; and each
-  command's usage doc co-located with the command and changed with it. This is
-  mechanism, not a publishing surface.
+  reference generated from them by a NUKE target as a build artifact; and one
+  hand-written command-line reference page, `docs/cli.md`, held to the tool's
+  own help by a test and changed with the commands (`0002-F1` decision 0001).
+  This is mechanism, not a publishing surface.
 - **`0002-F2` (later, `status: blocked` on `0002-F1`)**: a static site that
   publishes `0002-F1`'s output to a stable URL. **Deferred by the owner** until
   `specht` itself (epic `0001`) is built. It exists now as a placeholder, so
@@ -43,9 +44,9 @@ B-008 and each command's own Feature), and `0001-F3`
 publishes the report's JSON Schema and prints a rule's full text through
 `--explain`. Both exist so that what a user reads cannot drift from what the
 tool does. This epic applies that principle to the two surfaces nothing yet
-covers: the public API, and the narrative of how each command is used. Both are
-generated or kept beside the code that defines them, not written once and left
-to rot.
+covers: the public API, and the narrative of how each command is used. The
+first is generated from the code that defines it and the second is held to the
+tool's own help by a test; neither is written once and left to rot.
 
 Without it, the public surface ships undocumented by convention. Usage docs, if
 written at all, live wherever their author put them, with nothing keeping them
@@ -67,7 +68,7 @@ framework out, because the framework is `0002-F2` OQ-2.
 
 Both specifications sit under `docs/`, where the documentation and the brief
 § 3 reference copies will live. `0002-F1` touches `Directory.Build.props`,
-`.build/` and every command folder, so no single code folder owns it. The
+`.build/`, `docs/cli.md` and both readmes, so no single code folder owns it. The
 `implementer` may `git mv` either specification with the code, because a
 specification's identity is its frontmatter `epic` and `id` (`SPEC012`).
 
@@ -80,14 +81,14 @@ Not filed. Tasks are GitHub issues, cut from § 3 after agreement, and this
 repository has no remote yet. The ids are reserved in epic order and mirror
 `hooked`'s 0008-01..06:
 
-| Task      | Feature   | Summary                                                                             | Claims       |
-| --------- | --------- | ----------------------------------------------------------------------------------- | ------------ |
-| `0002-01` | `0002-F1` | XML doc-comment enforcement: `CS1591` as an error, scoped to the public surface     | B-001; C-3   |
-| `0002-02` | `0002-F1` | API-reference generation: a NUKE target writing under `.artifacts/`                 | B-002, B-004 |
-| `0002-03` | `0002-F1` | Usage-doc co-location convention, applied to every command folder                   | B-003; C-5   |
-| `0002-04` | `0002-F1` | Build verification: the default build runs both and fails on an undocumented member | B-001, B-005 |
-| `0002-05` | `0002-F2` | Site scaffold over `0002-F1`'s output, after the framework ADR                      | B-001        |
-| `0002-06` | `0002-F2` | CI publish pipeline to a stable public URL                                          | B-002        |
+| Task      | Feature   | Summary                                                                             | Claims                            |
+| --------- | --------- | ----------------------------------------------------------------------------------- | --------------------------------- |
+| `0002-01` | `0002-F1` | XML doc-comment enforcement: `CS1591` as an error, scoped to the public surface     | B-001; C-3                        |
+| `0002-02` | `0002-F1` | API-reference generation: a NUKE target writing under `.artifacts/`                 | B-002, B-004                      |
+| `0002-03` | `0002-F1` | The command-line reference page, held to the tool's help; filed as item `0181`      | B-003, B-006 to B-011; C-5 to C-8 |
+| `0002-04` | `0002-F1` | Build verification: the default build runs both and fails on an undocumented member | B-001, B-005                      |
+| `0002-05` | `0002-F2` | Site scaffold over `0002-F1`'s output, after the framework ADR                      | B-001                             |
+| `0002-06` | `0002-F2` | CI publish pipeline to a stable public URL                                          | B-002                             |
 
 `0002-05` and `0002-06` are not cut until the deferral is lifted (`0002-F2`
 B-003).
@@ -111,11 +112,11 @@ specification makes that claim.
 
 ## Out of this epic
 
-| Item                                                                      | Where it lives instead                                                                                                                  |
-| ------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
-| `--help` text                                                             | `0001-F2`                                                                                                                               |
-| `--explain` rule text and the report's JSON Schema                        | `0001-F3`                                                                                                                               |
-| `hooked`'s own documentation                                              | `hooked`, its Documentation epic (PR #212)                                                                                              |
-| Rewriting `.spec/**` documents as usage docs                              | Rejected: a specification is the agreement                                                                                              |
-| A documentation page per rule, from the rule-catalogue prose (brief § 3)  | `0001-F3` (B-031 to B-033, decision 0003): the text `--explain` prints. Its files sit at `docs/rules/` and stay `0001-F3`'s             |
-| Turning the specification-model prose into user documentation (brief § 3) | Unowned. Neither `0002` Feature claims it; the owner decides whether it is a `0002-F1` claim once OQ-2 settles, or a Feature of its own |
+| Item                                                                      | Where it lives instead                                                                                                                                                           |
+| ------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `--help` text                                                             | `0001-F2`                                                                                                                                                                        |
+| `--explain` rule text and the report's JSON Schema                        | `0001-F3`                                                                                                                                                                        |
+| `hooked`'s own documentation                                              | `hooked`, its Documentation epic (PR #212)                                                                                                                                       |
+| Rewriting `.spec/**` documents as usage docs                              | Rejected: a specification is the agreement                                                                                                                                       |
+| A documentation page per rule, from the rule-catalogue prose (brief § 3)  | `0001-F3` (B-031 to B-033, decision 0003): the text `--explain` prints. Its files sit at `docs/rules/` and stay `0001-F3`'s                                                      |
+| Turning the specification-model prose into user documentation (brief § 3) | Unowned. Neither `0002` Feature claims it, and `0002-F1` OQ-2, resolved 2026-10-11, did not decide it; the owner decides whether it is a `0002-F1` claim or a Feature of its own |
