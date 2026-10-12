@@ -1,0 +1,73 @@
+id: "0184"
+type: task
+title: Document checking several projects, each with its own specifications
+
+status: done
+
+value: 3
+risk: 1
+
+parent: null
+children: []
+
+depends_on: []
+spikes: []
+
+spec: null
+
+claims: []
+
+created: "2026-10-11"
+updated: "2026-10-11"
+closed: "2026-10-11"
+
+summary: |
+  The repository owner, 2026-10-11: "if I have multiple projects with
+  different specs, does specht handle that? If so, document it." It does,
+  with the root as the unit: one run reads one root and one manifest. No
+  page says so, nor what projects under one root share, nor what is not
+  supported.
+
+  No specification governs the page. `0002-F1` (`docs/.spec/README.md`)
+  claims `docs/cli.md` and the two readmes (B-003, B-006 to B-011) and
+  nothing else under `docs/`, so this item delivers no claim and sits at
+  the repository root, as item 0179 did for `docs/setup.md`. The page
+  describes behaviour other Features already specify and changes none.
+
+  Value 3: answers a question a consumer with more than one project asks
+  before adopting the tool. Risk 1: one page of prose and two links. Both
+  scores are implementer's.
+
+  Delivered files: new `docs/multiple-projects.md`; `docs/configuration.md`
+  (one link sentence); `README.md` (one line in its "Documentation" list);
+  `.issue/.sequence`. Nothing under `src/`, `test/` or `.build/`.
+
+acceptance_criteria:
+  - "`docs/multiple-projects.md` exists directly under root `docs/` and opens with YAML frontmatter: `title`, `description` and `type: reference`."
+  - "It states what one run reads, how to check one root per project, what projects under one root share by rule id, and what is not supported."
+  - "Every statement was run against the built tool in synthetic scratch roots on the day it merges: a rule level differing between two roots, `SPEC012` across two projects under one root, exit `2` for a root with no `.specht/`, a nested `.specht/` ignored from the parent, the last of several `--root` options winning, and `SPEC050` for an edge to another root."
+  - "It shows only commands that are built: `specht [--root <dir>]` and `specht init [--root <dir>]`."
+  - 'Terse (owner, pull request #79, 2026-10-09: "more verbose than I''d like can we make them terse?!").'
+  - '`docs/configuration.md` and `README.md`''s "Documentation" list link the page. Every link in the page resolves, and no path in it is absolute.'
+  - "Constraints preserved: 0002-F1 C-8 — `README.md` gains a link and names no command or option."
+  - "`./build.sh`, `./build.sh Format` and `./build.sh Specht` pass."
+
+decisions:
+  - |
+    2026-10-11, the repository owner: document how the tool handles several
+    projects with different specifications.
+  - |
+    2026-10-11, implementer: a root-level task with `spec: null`, on item
+    0179's precedent, not an item under `docs/.issue/`: no claim of 0002-F1
+    governs a page other than `docs/cli.md`. Not an owner ruling.
+  - |
+    2026-10-11, implementer: the page states two things found while proving
+    it that the request did not list. `specht init --root <dir>` exits `2`
+    when the directory does not exist, and of several `--root` options the
+    last is the one checked, with no message. Neither is changed here.
+
+out_of_scope:
+  - "Any change to what the tool does: a manifest below the root, a rule level per path, several roots in one run."
+  - "A claim holding the page to the tool by a test — none exists for any page but `docs/cli.md`; spec-author's to add."
+  - "Commands specified and not built — 0002-F1 § 5 row 6."
+  - "The manifest's key-by-key reference — `docs/configuration.md`."
