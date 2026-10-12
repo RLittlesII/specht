@@ -2,7 +2,7 @@ id: "0179"
 type: task
 title: Write the setup guide's initialisation and manifest parts
 
-status: ready
+status: done
 
 value: 4
 risk: 2
@@ -19,7 +19,7 @@ claims: []
 
 created: "2026-10-11"
 updated: "2026-10-11"
-closed: null
+closed: "2026-10-11"
 
 summary: |
   The repository owner, 2026-10-11: "We also need a "setup guide" proper.

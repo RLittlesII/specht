@@ -114,6 +114,7 @@ a `.issue/` beside that `.spec/`.
 
 ## Documentation
 
+- [Setup](docs/setup.md)
 - [What it checks](docs/what-it-checks.md)
 - [Configuration](docs/configuration.md)
 - [Exit codes](docs/exit-codes.md)
