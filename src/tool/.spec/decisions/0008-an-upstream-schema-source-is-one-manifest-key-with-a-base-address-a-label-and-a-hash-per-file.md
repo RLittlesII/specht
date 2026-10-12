@@ -1,17 +1,22 @@
 ---
 title: "Decision 0008: an upstream schema source is one manifest key with a base address, a label and a hash per file"
-description: "Proposed and not ratified: the manifest records an upstream schema source in one upstreamSchemaSource key holding an HTTPS base address, a version label the tool does not interpret and a SHA-256 hash for each frontmatter schema file; a GitHub repository is addressed as any HTTPS host is; no claim is written against any of it until the repository owner ratifies it"
+description: "Ratified by the repository owner on 2026-10-11 with two changes: the manifest records an upstream schema source in one key, proposed as upstreamSchemaSource and ratified under the name spechtSchema, holding an HTTPS base address, a version label the tool does not interpret and a SHA-256 hash for each frontmatter schema file; a GitHub repository is addressed as any HTTPS host is; the proposed token is not taken, and the first release fetches public sources only"
 type: decision
 ---
 
 # Decision 0008: an upstream schema source is one manifest key with a base address, a label and a hash per file
 
 **Date:** 2026-10-11
-**Decided by:** nobody yet. Proposed by `spec-author` on the owner's ruling of 2026-10-11 that the first release waits for a schema sourced at a URL ([`0055-F6` decision 0004](../../../../.build/Releasing/.spec/decisions/0004-the-first-release-waits-for-a-schema-sourced-at-a-url.md)), awaiting the repository owner's ratification
+**Decided by:** the repository owner, 2026-10-11 (see Ratification). Proposed by `spec-author` on the owner's ruling of 2026-10-11 that the first release waits for a schema sourced at a URL ([`0055-F6` decision 0004](../../../../.build/Releasing/.spec/decisions/0004-the-first-release-waits-for-a-schema-sourced-at-a-url.md)), awaiting the repository owner's ratification
 
 ## Status
 
-**Proposed. Not ratified.** Nothing below is a decision until the repository
+**Ratified 2026-10-11 by the repository owner, with two changes.** What was
+ratified, and what the owner changed, is under
+[Ratification](#ratification). The rest of this section and the sections down
+to "Affects" are the proposal as it was put, and are not rewritten.
+
+As proposed: **Proposed. Not ratified.** Nothing below is a decision until the repository
 owner ratifies it. No claim, constraint or scenario is written against any
 name or shape here, no code reads one, and no manifest carries one.
 Ratification is recorded in this file, dated, with what the owner changed.
@@ -179,6 +184,78 @@ Nothing until ratified. On ratification:
   the schema version that first carries the keys (OQ-40); the report's
   members (`0001-F3` OQ-6).
 
+## Ratification
+
+**Date:** 2026-10-11
+**Ruled by:** the repository owner. Recorded by `spec-author`.
+
+**Ratified as proposed**
+
+- Proposals 1 and 2 (OQ-1, OQ-32), except the key's name, below: one
+  top-level manifest object with the members `location`, `version` and
+  `hashes`; `location` is a base address; each frontmatter schema is fetched
+  from `location` followed by the file name the manifest's
+  `frontmatterSchemas` gives its kind, and written under
+  `<root>/.spec/schema/` by that name; the epic schema is fetched only under
+  the epic grammar; the manifest and the templates are never fetched.
+- Proposal 3 (OQ-33): one SHA-256 for each file, keyed by kind, written
+  `sha256:` and 64 lowercase hexadecimal digits, over the bytes as served; a
+  fetched kind with no hash makes the manifest invalid. This answers call 1:
+  "a content hash" is one hash for each file.
+- Proposal 4 (OQ-34): `version` is a non-empty label the tool compares with
+  nothing, orders against nothing and puts in no address.
+- Proposal 5 (OQ-35): any `https` address and nothing else; GitHub gets no
+  code of its own; a package as the source stays decided (decision 0004) and
+  is not built for the first release.
+- OQ-37, reading (a): with a source recorded and a frontmatter schema file
+  absent under `<root>/.spec/schema/`, the check exits `3`, naming the file
+  and the command that fetches it.
+- OQ-38, reading (a): the check compares the local copy with the recorded
+  hashes, and a file that does not match exits `3`, naming it.
+- OQ-40: the key that records a source is schema `0.1.0`'s; the explicit
+  selection (B-009) ships in a later `0.minor`.
+
+**Changed by the owner**
+
+1. **The key's name.** The owner's words, after the first rulings: "can we
+   call it `spechtSchema` instead of `upstreamSchemaSource`". The key is
+   ratified under the name `spechtSchema`. Its members are unchanged. This
+   record's file name, its title and proposal 1 keep the proposed name, as
+   history. The words "upstream schema source" for the thing the key records
+   were not ruled on and stay.
+2. **The credential (OQ-36).** Proposal 6 is not taken. The owner's words:
+   "public sources for v1. for v2 we should offer pats in the keychain or os
+   equivalent". The first release fetches public sources only, the tool reads
+   no credential, and there is no `SPECHT_SCHEMA_TOKEN` (C-15). Personal
+   access tokens held in the operating system's keychain or its equivalent
+   are the owner's stated direction for a later version, and nothing of their
+   shape is specified (§ 5 row 20; OQ-41). What "v1" and "v2" name was not
+   said; "the first release" and "a later release" is `spec-author`'s reading
+   (OQ-41). The owner took "Public sources only", which "Rejected" lists; its
+   cost stands as written there.
+
+**Proposal 7.** The name `schemaSource` for the explicit selection, with
+`--schema-source`, was shown to the owner only inside OQ-40's option and is
+accepted no further than that. OQ-1 keeps it open as a name.
+
+**Calls left to the owner**
+
+1. Answered: one hash for each file.
+2. Moot while no credential is sent (C-15). It returns with OQ-41.
+3. Not asked. Open as OQ-42.
+4. Not asked. Open as OQ-43.
+
+**Claims written, 2026-10-11.** "Claims owed and not written" is met by
+B-068 to B-083, C-9 as amended and C-15. No claim is written for the token.
+Raised in writing them and not answered: OQ-44 to OQ-47.
+
+**Affects, as it fell.** § 3 B-068 to B-083; § 4 C-9 and C-15; § 5 rows 20
+and 21; § 11 OQ-1, OQ-32 to OQ-38, OQ-40 and OQ-41 to OQ-47; `0001-F5`
+B-022 and B-023; items `0176`, `0092`, `0093` and `0095`. `0001-F5` B-012's
+text is unchanged: the engine knows the key, so the claim does not reach it.
+`docs/configuration.md` is not changed by this record.
+
 ## Reversal
 
-None.
+2026-10-11: proposal 6 was not taken, and proposal 1's key name was changed,
+both by the repository owner at ratification. See Ratification.

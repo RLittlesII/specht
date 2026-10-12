@@ -53,9 +53,15 @@ it chooses.
 > Not published yet. Install steps land with the first release.
 
 ```sh
-dotnet tool install specht.tool   # into the repository's local tool manifest
-specht init                       # write .spec/schema and .spec/templates
-specht                            # check the tree
+dotnet tool install specht.tool      # into the repository's local tool manifest
+dotnet specht init                   # write .spec/schema and .spec/templates
+dotnet specht                        # check the tree
+```
+
+```sh
+dotnet tool install -g specht.tool   # puts specht on PATH
+specht init
+specht
 ```
 
 ## Usage
@@ -75,8 +81,10 @@ accepts more and a major can fail a tree that passed, and before it a `0.minor`
 step can fail one too. The pin is exact; a manifest without the key
 is read as version `0.1.0`.
 
-Install through the local tool manifest: it pins the tool's version beside
-`schemaVersion`, so CI and every clone run the same release.
+A build and CI call the tool through the local tool manifest, which pins the
+tool's version beside `schemaVersion` so every clone runs the same release. A
+global install puts `specht` on PATH for a shell and is not pinned per
+repository.
 
 ## Layout
 

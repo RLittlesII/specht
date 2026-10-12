@@ -330,6 +330,153 @@ Feature: Schema versioning
     And the standard output is empty
     And the exit code is 3
 
+  @B-068
+  Scenario: A manifest records an upstream schema source
+    Given the manifest records an upstream schema source with its address, its version and a content hash for each schema it fetches
+    And the root holds the copy of that source under its schema folder
+    When the check runs with JSON output
+    Then the document says the schemas came from the upstream copy
+
+  @B-069
+  Scenario Outline: An upstream schema source missing a part is invalid
+    Given the manifest records an upstream schema source without its <part>
+    When the check runs
+    Then the manifest is rejected
+    And the rejection names the <part>
+
+    Examples:
+      | part           |
+      | address        |
+      | version        |
+      | content hashes |
+
+  @B-070
+  Scenario Outline: An upstream schema source that is not at a secure web address is invalid
+    Given the manifest records an upstream schema source at <address>
+    When the check runs
+    Then the manifest is rejected
+    And the rejection names the address
+
+    Examples:
+      | address                        |
+      | a web address with no security |
+      | a folder on the machine        |
+      | a package name                 |
+
+  @B-071
+  Scenario: An upstream schema source with an empty version is invalid
+    Given the manifest records an upstream schema source with an empty version
+    When the check runs
+    Then the manifest is rejected
+    And the rejection names the version
+
+  @B-072
+  Scenario: A fetched schema with no content hash is invalid
+    Given the manifest records an upstream schema source with no content hash for the item schema
+    When the check runs
+    Then the manifest is rejected
+    And the rejection names the item schema
+
+  @B-073
+  Scenario Outline: A content hash in another form is invalid
+    Given the manifest records an upstream schema source whose content hash for the item schema is <form>
+    When the check runs
+    Then the manifest is rejected
+    And the rejection names the item schema
+
+    Examples:
+      | form                          |
+      | written without its algorithm |
+      | written in capital digits     |
+      | shorter than the algorithm's  |
+      | another algorithm's           |
+
+  @B-074
+  Scenario: Each schema is fetched from the source's address and its own file name
+    Given the manifest records an upstream schema source with its version and content hash
+    And the manifest names the file of each frontmatter schema
+    And the root's local copy does not match that hash
+    And the source serves content matching that hash
+    When upgrade runs
+    Then each schema was asked for at the source's address followed by that schema's file name
+
+  @B-074 @boundary
+  Scenario: Nothing but the frontmatter schemas is fetched
+    Given the manifest records an upstream schema source with its version and content hash
+    And the root's local copy does not match that hash
+    And the source serves content matching that hash
+    When upgrade runs
+    Then neither the manifest nor a template was asked for at the source
+
+  @B-075 @boundary
+  Scenario: Without epics the epic schema is not fetched
+    Given the manifest records an upstream schema source with content hashes for the Feature and item schemas only
+    And the manifest declares no epic grammar
+    And the root holds the copy of that source under its schema folder
+    When the check runs
+    Then the check completes
+
+  @B-076
+  Scenario: With epics the epic schema is fetched
+    Given the manifest records an upstream schema source with content hashes for the Feature and item schemas only
+    And the manifest declares the epic grammar
+    When the check runs
+    Then the manifest is rejected
+    And the rejection names the epic schema
+
+  @B-077
+  Scenario: The check stops when a recorded source's schema file is absent
+    Given the manifest records an upstream schema source
+    And the root's schema folder does not hold the item schema
+    When the check runs
+    Then the exit code is 3
+
+  @B-078
+  Scenario: The check names the absent schema file
+    Given the manifest records an upstream schema source
+    And the root's schema folder does not hold the item schema
+    When the check runs
+    Then the standard error names the item schema's file
+
+  @B-079
+  Scenario: The check names the command that fetches an absent schema file
+    Given the manifest records an upstream schema source
+    And the root's schema folder does not hold the item schema
+    When the check runs
+    Then the standard error names the command that fetches it
+
+  @B-080
+  Scenario: The check stops when the local copy does not match its hash
+    Given the manifest records an upstream schema source with its version and content hash
+    And the root's copy of the item schema has been edited since it was fetched
+    When the check runs
+    Then the exit code is 3
+
+  @B-081
+  Scenario: The check names the schema file that does not match its hash
+    Given the manifest records an upstream schema source with its version and content hash
+    And the root's copy of the item schema has been edited since it was fetched
+    When the check runs
+    Then the standard error names the item schema's file
+
+  @B-082
+  Scenario: Upgrade writes each fetched schema under its own file name
+    Given the manifest records an upstream schema source with its version and content hash
+    And the manifest names the file of each frontmatter schema
+    And the root's local copy does not match that hash
+    And the source serves content matching that hash
+    When upgrade runs
+    Then each fetched schema is in the root's schema folder under the file name the manifest gives it
+
+  @B-083 @boundary
+  Scenario: Upgrade sends no credential to the source
+    Given the manifest records an upstream schema source with its version and content hash
+    And the root's local copy does not match that hash
+    And the source serves content matching that hash
+    And the machine holds a token the source would accept
+    When upgrade runs
+    Then nothing the tool asked the source for carried a credential
+
   @B-037
   Scenario: Version 0.1.0 accepts a specification with no epic when there are no epics
     Given the manifest pins version 0.1.0

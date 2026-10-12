@@ -41,6 +41,13 @@ Feature: Consuming the package
     Then it names the command that installs the tool locally
     And the command that restores it in a clone
 
+  @B-008
+  Scenario: The document names the global install and how each install is invoked
+    When a consumer reads the install document
+    Then it names the command that installs the tool globally
+    And says a global install puts the command on the shell's path
+    And says a tool manifest install is run through dotnet
+
   @B-007
   Scenario: A contributor without a token can build
     Given a clone of this repository after the first publish

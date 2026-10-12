@@ -2,7 +2,7 @@ id: "0176"
 type: task
 title: Read the manifest key that records an upstream schema source
 
-status: blocked
+status: done
 
 risk: 3
 
@@ -14,37 +14,48 @@ spikes: []
 
 spec: src/tool/.spec/README.md
 
-claims: []
+claims:
+  - B-068
+  - B-069
+  - B-070
+  - B-071
+  - B-072
+  - B-073
+  - B-074
+  - B-075
+  - B-076
 
 created: "2026-10-11"
 updated: "2026-10-11"
-closed: null
+closed: "2026-10-11"
 
 summary: |
   Decision 0004 says a manifest records an upstream schema source as an
-  address or package, a version and a content hash. No key carries it: the
-  manifest schema has none, the engine reads none, and no claim names one.
-  The check (0092), init's fetch (0095) and upgrade's fetch (0093) all read
-  the recording, so it is cut apart and they wait on it.
+  address or package, a version and a content hash. Decision 0008, ratified
+  by the repository owner on 2026-10-11, names the key `spechtSchema` and
+  gives it a base address, a version label and a hash for each fetched
+  file. The manifest schema has no such key and the engine reads none.
+  The check (0092), init's fetch (0095) and upgrade's fetch (0093) all
+  read the recording, so it is cut apart and they wait on it.
 
-  Blocked on the owner: OQ-1 (the key's name), OQ-32 (what the location
-  points at, and which files), OQ-33 (one hash or one per file), OQ-34 (the
-  form of the version), OQ-35 (what counts as a source, GitHub hosting
-  included) and OQ-36 (the credential). Decision 0008 proposes an answer to
-  each and is not ratified. OQ-40, which schema version first carries the
-  key, is answered with them.
-
-  `claims: []` because the claims are owed and not written: decision 0008
-  lists them under "Claims owed and not written", and spec-author writes
-  them, with their scenarios and § 9 rows, when the owner rules. This item
-  is then re-cut to carry them and leaves `blocked`. On the first release's
-  path (0055-F6 C-8). Risk 3: a key in a published manifest schema stays.
+  This item is the manifest schema accepting the key and the engine
+  reading it into the model: the record itself, its rejections, and which
+  kinds are fetched from which address. It fetches nothing. On the first
+  release's path (0055-F6 C-8). Risk 3: a key in a published manifest
+  schema stays.
 
 acceptance_criteria:
-  - "0001-F7 OQ-1 and OQ-32 to OQ-36 are resolved in § 11, and the claims decision 0008 lists as owed are in § 3 with scenarios and § 9 rows"
-  - "The manifest schema accepts the key in the form answered, and the engine reads it into the model the check, init and upgrade read"
+  - "B-068 — a `spechtSchema` object with its three members: read as the recorded source"
+  - "B-069 — a member absent: invalid, the member named"
+  - "B-070 — a location that is not https: invalid"
+  - "B-071 — a version that is not a non-empty string: invalid"
+  - "B-072 — no hash for a fetched kind: invalid, the kind named"
+  - "B-073 — a hash not in the sha256 form: invalid, the kind named"
+  - "B-074 — each fetched kind's address: the location followed by the manifest's file name"
+  - "B-075 — no epic grammar: the Feature and item kinds are fetched"
+  - "B-076 — the epic grammar: the epic kind is fetched too"
   - "A manifest that records no source checks exactly as before: 0001-F1 B-004's golden baseline report is unchanged"
-  - "§ 9 carries a row naming a test for each claim this item is re-cut to carry."
+  - "§ 9 carries a row naming a test for each id above."
 
 decisions:
   - |
@@ -54,9 +65,56 @@ decisions:
     it. Status `blocked`: six open questions, proposed in decision 0008
     and not put to the owner. Rejected: writing the claims against the
     proposal, which would record an undecided point as agreed.
+  - |
+    2026-10-11, spec-author, re-cut after the repository owner ratified
+    decision 0008 with two changes: the key is `spechtSchema`, and no
+    credential is read (C-15). OQ-1, for the record's names, and OQ-32 to
+    OQ-38 and OQ-40 are resolved. This item takes B-068 to B-076 and
+    leaves `blocked` for `ready-for-architecture`, the design pass. The
+    check's claims went to 0092 and upgrade's to 0093. B-074 to B-076 are
+    here, not with the fetch, so the address and the fetched kinds are
+    settled before 0095 fetches; the cut is spec-author's, not an owner
+    ruling. B-074's scenario runs `upgrade`, so until 0093 its proof here
+    is a test of the model.
+  - |
+    2026-10-11, implementer, the design pass; the item is taken. The
+    design is in the specification's § 6 and § 7, from "The upstream
+    schema source is a record on the structure". SpecManifest reads the
+    key in its existing parse onto SpecStructure.SpechtSchema, null when
+    absent: an UpstreamSchemaSource holding Location, Version and Files,
+    one UpstreamSchemaFile (Kind, FileName, Address, Hash) for each
+    fetched kind. Every rejection is code, joined to the faults the
+    loader already collects: the manifest file is data and no JSON
+    Schema describes it. No schema file changes, so 0001-F4 B-004 and
+    0001-F1 B-004 hold as they are. No ADR and no new decision number.
+    Three calls are the implementer's and not an owner ruling. The epic
+    kind is fetched when the manifest's own text declares
+    identifiers.epic, read before the fill, because the loader still
+    fills that grammar (0001-F5 B-019 as amended is unbuilt). A
+    rejection names the member or the kind and never repeats the value,
+    because a location that is a folder is an absolute path. What OQ-46
+    asks about is neither rejected nor carried. Rejected: a JSON Schema
+    for the manifest, which would be a second validator beside the
+    parse; a parser of its own for one key ahead of ADR-0010's stage 5;
+    computing the address in each reader.
+  - |
+    2026-10-11, implementer, the test seam. Unit, in
+    SpecManifestUnitTests over SpecManifest.Load and a mock file system:
+    B-068 the record, and null with no key; B-069 to B-073 one theory
+    each, the message naming the member or the kind; B-074 each file's
+    Address; B-075 and B-076 the kinds in Files with and without
+    identifiers.epic, and under it a missing epic hash rejected naming
+    epic. Integration: rows for B-069 to B-073 in
+    CheckCommandIntegrationTests' input-failure theory, exit 3 and an
+    empty stdout. Acceptance: the scenarios of B-069 to B-073 and B-076
+    bind through the check. B-068's scenario reads the report document
+    and B-075's needs the check to read the local copy; both are 0092's
+    to turn green. B-074's two scenarios run upgrade and wait for 0093.
 
 out_of_scope:
-  - "Reading the schemas from the local copy — 0092."
+  - "Reading the schemas from the local copy, a file absent and a file that does not match its hash — 0092."
   - "Fetching — 0095, 0093."
+  - "A credential — C-15; OQ-41."
+  - "A member or a hash the record does not expect — OQ-46, open; no claim yet."
   - "Recording a source from the command line — 0178."
   - "Selecting the embedded or on-disk source — 0043."

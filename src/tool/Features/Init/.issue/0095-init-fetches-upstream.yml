@@ -50,8 +50,14 @@ decisions:
     waits on the recording (`0176`) instead. B-027 added. `risk` re-scored
     3 to 4 by spec-author, the score 0093 carried for the first network
     path. Not an owner ruling.
+  - |
+    2026-10-11, spec-author, after the repository owner ratified 0001-F7
+    decision 0008: the fetch this item builds sends no credential
+    (0001-F7 C-15), fetches each kind from the address 0001-F7 B-074
+    gives, and reads the record 0176 builds (`spechtSchema`). No claim
+    of this item changed.
 
 out_of_scope:
   - "Fetching without a recorded source — 0001-F7 C-8."
   - "Recording a source from the command line — 0178."
-  - "A credential for a source that asks for one — 0001-F7 OQ-36, open; no claim yet."
+  - "A credential for a source that asks for one — 0001-F7 C-15: none is read or sent; the later one is 0001-F7 OQ-41, open."
