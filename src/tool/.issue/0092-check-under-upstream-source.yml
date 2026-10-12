@@ -34,7 +34,7 @@ summary: |
   schema source selects the on-disk copy, the vocabulary stays the pinned
   embedded version's, and the check never fetches (C-8). It reads the
   recording 0176 defines and builds the read of the frontmatter schemas
-  from `<root>/.spec/schema/`, which 0043 then reuses for the on-disk
+  from `<root>/.specht/schema/frontmatter/`, which 0043 then reuses for the on-disk
   source a consumer selects. On the first release's path (0055-F6 C-8).
 
 acceptance_criteria:
@@ -69,6 +69,36 @@ decisions:
     2026-10-11, spec-author: `0185` added to `depends_on`. B-024, B-077 and
     B-080 as amended read the local copy under
     `.specht/schema/frontmatter/` (0001-F5 decision 0011).
+  - |
+    2026-10-12, three rulings by the repository owner in the planning
+    session for this item. They supersede the entry of 2026-10-11 where
+    it calls OQ-47 open and `specht init` spec-author's reading.
+    (1) OQ-47: the command B-079 names is `specht init`. Rejected:
+    `specht upgrade`; naming both. Whether the message also names
+    `--schemas` was not asked and is OQ-57, open; B-079 holds either way.
+    (2) OQ-39, the check's part only: B-025's "the network is
+    unavailable" and "no network call was attempted" are proven by (a)
+    an integration test asserting that the engine and tool assemblies
+    reference no `System.Net` member, extending the metadata guard in
+    `test/tests/Shared/EngineAssembly.cs`, and (b) an acceptance run of
+    the check with the process's proxy variables pointed at a closed
+    loopback port, which must complete. Item 0095 narrows the guard when
+    it adds the fetch type. Rejected: the dead proxy alone; leaving
+    B-025 Missing. The rest of OQ-39 stays open: where the fetch sits,
+    how a test serves a source, whether an address on the same machine
+    is "the network".
+    (3) Design, for § 6 and § 7, which are the implementer's and are not
+    yet written to: a new instance store reads the bytes of a
+    frontmatter schema file under `<root>/.specht/schema/frontmatter/`
+    and decides nothing, and a pure verifier compares SHA-256 with the
+    recorded hashes. § 7 records the store as a fifth I/O type that folds
+    into `SpecManifestStore` at ADR-0010 stage 5; no ADR is edited in
+    this pull request. Rejected: amending ADR-0010 in this pull request;
+    extending the static `SpecSchemas.Load`.
+    Not a separate ruling - the planner's scoping, approved by the owner
+    with the plan: the report document says `upstream` and names neither
+    the source nor its version, since 0001-F3 OQ-6 is open and B-011
+    stays item 0043's.
 
 out_of_scope:
   - "Fetching the source — 0095, 0093."
