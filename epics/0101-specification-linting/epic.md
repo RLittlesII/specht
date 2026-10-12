@@ -1,6 +1,6 @@
 ---
 title: "Epic 0101: Specification linting"
-description: "Style and ordering rules for a specification - table rows in id order, retired ids kept as marked rows, exact heading and pipe-table form, frontmatter keys in declared order - warnings by default; id uniqueness rules, errors by default; and a specht format command that reorders rows and keys and edits nothing else"
+description: "Style and ordering rules for a specification - table rows in id order, retired ids kept as marked rows, exact heading and pipe-table form, frontmatter keys in declared order, a section stamp holding one role and one date - warnings by default; id uniqueness rules, errors by default; and a specht format command that reorders rows and keys and edits nothing else"
 id: "0101"
 type: epic
 status: blocked
@@ -16,9 +16,10 @@ children:
     "0101-F6",
     "0101-F7",
     "0101-F8",
+    "0101-F9",
   ]
 created: "2026-10-08"
-updated: "2026-10-09"
+updated: "2026-10-11"
 github_issue: null
 ---
 
@@ -48,7 +49,8 @@ in a requirements session; the decisions are recorded beside the Features
 they bind (`0101-F1` decisions 0001 and 0002, `0101-F5` decision 0001).
 Uniqueness was added by the owner on 2026-10-09 (`0101-F6` decisions 0001
 and 0002; `0101-F7` decisions 0001 and 0002; `0101-F8` decisions 0001 to
-0003).
+0003). The section stamp rule was added by the owner on 2026-10-11
+(`0101-F9` decisions 0001 to 0003).
 
 ## Business Value
 
@@ -64,7 +66,7 @@ disables that rule.
 
 ## Features
 
-Decomposed by capability dimension: four style and ordering rule Features
+Decomposed by capability dimension: five style and ordering rule Features
 and three uniqueness rule Features, each with its own finding, and the one
 command that writes.
 
@@ -78,6 +80,7 @@ command that writes.
 | `0101-F6` | In-specification id uniqueness | `src/specht/Rules/DuplicateIds/.spec/README.md`     |
 | `0101-F7` | Record number uniqueness       | `src/specht/Rules/RecordNumbers/.spec/README.md`    |
 | `0101-F8` | Work-item id allocation        | `src/specht/Rules/WorkItemIds/.spec/README.md`      |
+| `0101-F9` | Section stamp form             | `src/specht/Rules/Stamps/.spec/README.md`           |
 
 Where the invariant changes, the Feature is cut:
 
@@ -100,6 +103,12 @@ Where the invariant changes, the Feature is cut:
   ids present. It errors by default (`0101-F8` decision 0001), and it is the
   one rule Feature here that runs only where the manifest declares the files
   it reads (`0101-F8` decision 0004).
+- `0101-F9` judges a comment, not a heading or a table: a section stamp
+  that holds more than one date or names more than one role. It warns by
+  default (`0101-F9` decision 0002) and, like `0101-F3`, is report-only.
+  It is cut from `0101-F3` because it reads what no other rule reads, the
+  comment under a heading, and judges a count where `0101-F3` judges
+  written form.
 
 The AGENTS.md "&" heuristic was applied to `0101-F3`, "Heading and table
 form". Both halves share one invariant - a finding about the text of the
@@ -108,10 +117,10 @@ version 1 rules already cover most of the ground (`0101-F3` OQ-1). They stay
 one Feature; if OQ-1 drops the heading half, the name drops with it.
 
 Every Feature depends on `0001-F7`: a new rule is a new schema version
-(brief § 9; `0001-F1` C-5). The seven rule Features also depend on `0001-F5`,
+(brief § 9; `0001-F1` C-5). The eight rule Features also depend on `0001-F5`,
 whose per-rule severity and disable they are defaulted and switched off by
 (`0101-F1` decision 0001; `0101-F6` decision 0001; `0101-F7` decision 0001;
-`0101-F8` decision 0001). `0101-F7` and `0101-F8` also depend on `0001-F6`,
+`0101-F8` decision 0001; `0101-F9` decision 0002). `0101-F7` and `0101-F8` also depend on `0001-F6`,
 which finds the files they read.
 
 ## Placement
