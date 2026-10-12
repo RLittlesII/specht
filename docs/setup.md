@@ -65,8 +65,9 @@ id. [What it checks](what-it-checks.md) says where a specification is found and
 which rules run.
 
 `--strict` fails on a warning too. `--json` prints the report document in place
-of the lines. [Exit codes](exit-codes.md) lists what the build reads; before
-`init`, the check exits `2` for want of a manifest.
+of the lines. [Command line](cli.md) lists every option, and
+[Exit codes](exit-codes.md) what the build reads; before `init`, the check
+exits `2` for want of a manifest.
 
 ## Manifest
 
