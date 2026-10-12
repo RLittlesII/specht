@@ -10,8 +10,8 @@ The schema is per repository however the tool is installed. `specht` reads the
 manifest from the root it is given, embeds every schema version it ships, and
 checks with the pinned one, so one install can check a `0.1.0` repository and
 a `1.0.0` one. A pin the tool does not ship exits `3`, naming the pin and the
-versions it ships. Install through the local tool manifest anyway; a global
-install is not the documented path.
+versions it ships. A build installs through the local tool manifest, which
+pins the tool's version; a global install puts `specht` on PATH.
 
 ## What is configurable
 
