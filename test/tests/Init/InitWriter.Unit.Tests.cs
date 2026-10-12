@@ -175,8 +175,8 @@ public sealed class InitWriterUnitTests
     {
         // Given
         var fileSystem = BareRoot();
-        var schema = Path.Combine(Root, SpecTree.SchemaFolder) + Path.DirectorySeparatorChar;
-        var templates = Path.Combine(Root, SpecTree.TemplatesFolder) + Path.DirectorySeparatorChar;
+        var schema = fileSystem.Path.GetFullPath(Path.Combine(Root, SpecTree.SchemaFolder)) + Path.DirectorySeparatorChar;
+        var templates = fileSystem.Path.GetFullPath(Path.Combine(Root, SpecTree.TemplatesFolder)) + Path.DirectorySeparatorChar;
 
         // When
         var listing = await new InitWriter(InitWriter.ShippingCopy(typeof(InitWriter).Assembly), fileSystem).Write(Root, CancellationToken.None);
@@ -193,8 +193,8 @@ public sealed class InitWriterUnitTests
             (".specht/templates/lesson.md", true));
         fileSystem.AllFiles.Should()
             .HaveCount(8)
-            .And.AllSatisfy(path => path.Should().Match(file => file.Contains(schema, StringComparison.Ordinal)
-                                                                || file.Contains(templates, StringComparison.Ordinal)));
+            .And.AllSatisfy(path => path.Should().Match(file => file.StartsWith(schema, StringComparison.Ordinal)
+                                                                || file.StartsWith(templates, StringComparison.Ordinal)));
     }
 
     private static MockFileSystem BareRoot()

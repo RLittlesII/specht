@@ -214,6 +214,14 @@ root the test owns. Every path inside a fixture, and every path in an expected
 report, is relative to that root; an absolute path in either is the defect
 brief § 9 names.
 
+**A path a test compares as a string is normalized first**, through the file
+system it came from: `fileSystem.Path.GetFullPath(...)`. The `SpecTree` folder
+constants carry `/` (`.specht/schema`) and `Path.Combine` keeps it, so the
+comparison fails on Windows only - and the pull-request build does not run
+Windows, so `main` is where it shows
+([lesson 0006](../../../../.spec/lessons/0006-a-path-compared-as-a-string-is-normalized-first.md)).
+A path handed to a file-system API needs nothing; the API normalizes it.
+
 Never a copy of a real repository's `.spec/` tree, this one's included: a copied
 tree carries every rule's happy path at once and pins the test to whatever that
 tree happened to contain. No test touches the network, a live provider, or the
@@ -241,3 +249,4 @@ wall clock.
 - A test class calling another test class's static helper.
 - `Thread.Sleep`, a retry loop, or an ambient clock read.
 - A fixture copied from a real `.spec/` tree, or an absolute path in one.
+- A string comparison of a path built with `Path.Combine` and not normalized.

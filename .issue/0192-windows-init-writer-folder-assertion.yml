@@ -1,0 +1,89 @@
+id: "0192"
+type: bug
+title: The init writer's folder assertion fails on Windows
+
+status: done
+
+value: 3
+risk: 1
+
+parent: null
+children: []
+
+depends_on: []
+spikes: []
+
+spec: null
+
+claims: []
+
+created: "2026-10-12"
+updated: "2026-10-12"
+closed: "2026-10-12"
+
+summary: |
+  The push build on `main` has failed on `windows-latest` in the `Unit Test`
+  step on every push since `1286b6b` (item 0183, pull request #135); the
+  last green push was `83d6f80`. Run 38212538483 is one such failure.
+  `ubuntu-latest` passes. One test fails,
+  `InitWriterUnitTests.TheEmbeddedShippingCopy_WhenWrittenIntoABareRoot_ShouldWriteTheEightFilesAndNothingOutsideTheTwoFolders`
+  (`test/tests/Init/InitWriter.Unit.Tests.cs`):
+
+      Expected object to match (file.Contains("repo\.specht/schema\", Ordinal)
+      OrElse file.Contains("repo\.specht/templates\", Ordinal)), but found
+      "C:\repo\.specht\schema\epic.frontmatter.schema.json"
+
+  A test defect, not a product defect: the writer wrote the right files to
+  the right folders on Windows. The test built its two expected prefixes as
+  `Path.Combine(Root, SpecTree.SchemaFolder) + Path.DirectorySeparatorChar`.
+  Item 0183 changed `SpecTree.SchemaFolder` and `SpecTree.TemplatesFolder`
+  (`test/tests/Shared/SpecTree.cs`) from one segment to `.specht/schema` and
+  `.specht/templates`. `Path.Combine` keeps the `/` inside an argument, so on
+  Windows the prefix is `repo\.specht/schema\`, `MockFileSystem.AllFiles`
+  returns normalized paths, and an ordinal comparison never matches. Every
+  other `Path.Combine(Root, SpecTree.SchemaFolder)` in the tests hands its
+  result to a file-system API, which normalizes; only this test compared it
+  as a string.
+
+  It reached `main` because the pull-request workflow runs `ubuntu-latest`
+  alone and the Windows gates run on a push to `main` only (`0055-F2`
+  decision 0003).
+
+  The fix: each prefix is `fileSystem.Path.GetFullPath(...)` of the combined
+  path plus the separator, and the assertion is `StartsWith`, not `Contains`.
+
+  No specification governs the defect: no claim, scenario or `.feature`
+  changes, so the item delivers no claim and sits at the repository root.
+
+  Value 3: `main` is red on Windows on every push, which hides a real
+  Windows regression behind a known failure. Risk 1: three lines in one
+  test. Both scores are implementer's.
+
+  Delivered files: `test/tests/Init/InitWriter.Unit.Tests.cs`;
+  `.spec/lessons/0006-a-path-compared-as-a-string-is-normalized-first.md`;
+  `.claude/skills/specht-conventions/references/testing.md` (the rule and one
+  `Never add` line); `.issue/.sequence`. Nothing under `src/` or `.build/`.
+
+acceptance_criteria:
+  - "The test named in the summary passes on Windows and on Unix."
+  - "No file under `src/` changes."
+  - "`./build.sh`, `./build.sh Format` and `./build.sh Specht` pass."
+
+decisions:
+  - |
+    2026-10-12, the repository owner: reported the failing Windows run on
+    `main`.
+  - |
+    2026-10-12, implementer: a root-level bug with `spec: null` and no claim.
+    The writer's behaviour is as specified on both systems; the expected
+    value in one test was wrong. Not an owner ruling.
+  - |
+    2026-10-12, implementer: a process lesson, repo-wide
+    (`.spec/lessons/0006`), with the rule in `specht-conventions` § Testing.
+    The trap is in a shared test helper, so it binds every Feature's tests.
+
+out_of_scope:
+  - "Adding `windows-latest` to the pull-request workflow, generated from `.build/SpechtBuild.GitHubActions.cs` - it reverses `0055-F2` decision 0003, the owner's call. No item is cut."
+  - "Any change to `InitWriter` or to anything else under `src/`."
+  - "Changing `SpecTree.SchemaFolder` or `SpecTree.TemplatesFolder`."
+  - "A build check that finds a path compared as a string - review enforces the rule."
