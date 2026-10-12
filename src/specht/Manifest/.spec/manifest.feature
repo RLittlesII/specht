@@ -83,6 +83,19 @@ Feature: The manifest carries the roles
     When the check runs
     Then every specification's frontmatter is checked against "feature.json"
 
+  @B-047 @boundary
+  Scenario Outline: A schema file name that is not a plain file name is rejected
+    Given the manifest names the Feature schema file "<value>"
+    When the check runs
+    Then the manifest is rejected as invalid, naming the Feature kind and "<value>"
+
+    Examples:
+      | value                 |
+      | /feature.json         |
+      | ../feature.json       |
+      | nested/feature.json   |
+      | nested\\feature.json  |
+
   @B-009
   Scenario: Messages name the manifest's values
     Given the manifest renames the claims section to "3. Claims" in its section list and its claims role

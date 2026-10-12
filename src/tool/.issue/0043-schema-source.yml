@@ -9,7 +9,7 @@ risk: 3
 parent: "0041"
 children: []
 
-depends_on: ["0042", "0120"] # switches the source of the schemas 0042 selects; the version it names is 0120's semver
+depends_on: ["0042", "0120", "0185"] # switches the source of the schemas 0042 selects; the version it names is 0120's semver; B-009 reads the folder 0185 moves the schemas to
 spikes: []
 
 spec: src/tool/.spec/README.md
@@ -20,7 +20,7 @@ claims:
   - B-011
 
 created: "2026-10-08"
-updated: "2026-10-10"
+updated: "2026-10-11"
 closed: null
 
 summary: |
@@ -47,6 +47,10 @@ decisions:
   - |
     2026-10-09, spec-author, on the plan the owner approved (decision
     0005): now waits on the conversion item 0120. Claims unchanged.
+  - |
+    2026-10-11, spec-author: `0185` added to `depends_on`. B-009 as amended
+    reads the on-disk schemas under `.specht/schema/frontmatter/` (0001-F5
+    decision 0011), the folder 0185 creates.
 
 out_of_scope:
   - "A switch that also moves the manifest — C-4."

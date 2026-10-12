@@ -80,7 +80,7 @@ Feature: Schema versioning
     And the root holds specifications, records and companions
     And a snapshot of every file under the root
     When upgrade runs against it
-    Then the only files changed are under the schema folder and the templates folder
+    Then the only files changed are the manifest and files under the frontmatter schema folder and the templates folder
 
   @B-009
   Scenario: The on-disk source is selected by configuration
@@ -107,7 +107,7 @@ Feature: Schema versioning
   @B-012
   Scenario: Init pins the newest version
     Given the tool ships schema versions 0.9.0 and 0.10.0
-    And a root directory with no schema folder
+    And a root directory with no manifest
     When init runs against it
     Then the written manifest pins version 0.10.0
 

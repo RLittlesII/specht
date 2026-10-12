@@ -1,117 +1,158 @@
 Feature: init
   As the maintainer of a repository adopting the specification model
-  I want one command that writes the schema set and the templates into my repository
-  So that I start from the same bytes every other repository starts from, and keep what I already have
+  I want one command that writes the manifest, and the schemas and the templates only when I ask for them
+  So that I start from the same bytes every other repository starts from, take no file I did not ask for, and keep what I already have
+
+  @B-029
+  Scenario: Init alone writes only the manifest
+    Given a root directory with no configuration folder
+    When init runs against it
+    Then the only file written is the manifest
+
+  @B-030
+  Scenario: Init with schemas adds the frontmatter schemas
+    Given a root directory with no configuration folder
+    When init runs against it with schemas
+    Then the files written are exactly the manifest and the Feature and item frontmatter schemas
+
+  @B-031
+  Scenario: Init with templates adds the templates
+    Given a root directory with no configuration folder
+    When init runs against it with templates
+    Then the files written are exactly the manifest and the four templates
+
+  @B-032
+  Scenario: Init with every part writes what schemas and templates together write
+    Given two root directories with no configuration folder
+    When init runs against the first with every part
+    And init runs against the second with schemas and templates
+    Then the two roots hold the same files with the same content
 
   @B-018
-  Scenario: Init with epics writes the eight files into a bare repository
-    Given a root directory with no schema folder and no templates folder
-    When init runs against it with epics
-    Then the schema folder holds the manifest and the three frontmatter schemas
+  Scenario: Init with every part and epics writes the manifest, the three schemas and the four templates
+    Given a root directory with no configuration folder
+    When init runs against it with every part and epics
+    Then the manifest is written
+    And the frontmatter schema folder holds the Feature, item and epic frontmatter schemas
     And the templates folder holds the four templates
 
   @B-019
   Scenario: Init without epics writes no epic schema
-    Given a root directory with no schema folder and no templates folder
-    When init runs against it
-    Then the schema folder holds the manifest and the Feature and item frontmatter schemas
-    And the schema folder holds no epic frontmatter schema
+    Given a root directory with no configuration folder
+    When init runs against it with every part
+    Then the manifest is written
+    And the frontmatter schema folder holds the Feature and item frontmatter schemas
+    And the frontmatter schema folder holds no epic frontmatter schema
     And the templates folder holds the four templates
 
   @B-020
   Scenario Outline: Init into a bare repository succeeds
-    Given a root directory with no schema folder and no templates folder
-    When init runs against it <with or without> epics
+    Given a root directory with no configuration folder
+    When init runs against it with <options>
     Then the exit code is 0
 
     Examples:
-      | with or without |
-      | with            |
-      | without         |
+      | options              |
+      | no option            |
+      | schemas              |
+      | templates            |
+      | every part           |
+      | epics                |
+      | every part and epics |
 
   @B-021
   Scenario: Init without epics writes a manifest with no epic grammar
-    Given a root directory with no schema folder and no templates folder
+    Given a root directory with no configuration folder
     When init runs against it
     Then the manifest written declares no epic grammar
 
   @B-022
   Scenario: Init without epics writes a task grammar with no epic part
-    Given a root directory with no schema folder and no templates folder
+    Given a root directory with no configuration folder
     When init runs against it
     Then the manifest written has a task grammar with no epic part
 
   @B-024
   Scenario: Init writes a level for every rule of the version it pins
-    Given a root directory with no schema folder and no templates folder
+    Given a root directory with no configuration folder
     When init runs against it
     Then the manifest written sets a level for every rule of the version it pins
 
   @B-025
   Scenario: Init writes each rule at its default level
-    Given a root directory with no schema folder and no templates folder
+    Given a root directory with no configuration folder
     When init runs against it
     Then each level the manifest written sets is that rule's own default severity
 
   @B-026 @boundary
   Scenario: Init writes no level for a rule outside the version it pins
-    Given a root directory with no schema folder and no templates folder
+    Given a root directory with no configuration folder
     When init runs against it
     Then the manifest written sets a level for no rule outside the version it pins
 
   @B-023 @boundary
   Scenario Outline: Init writes no epic schema beside a manifest declaring no epic grammar
-    Given a root directory whose schema folder holds a manifest pinning the newest version the tool ships and declaring no epic grammar
-    And no other schema or template file beside it
-    When init runs against it <with or without> epics
-    Then the schema folder holds no epic frontmatter schema
+    Given a root directory holding only a manifest pinning the newest version the tool ships and declaring no epic grammar
+    When init runs against it with <options>
+    Then the frontmatter schema folder holds no epic frontmatter schema
 
     Examples:
-      | with or without |
-      | with            |
-      | without         |
+      | options           |
+      | schemas           |
+      | schemas and epics |
 
   @B-002 @boundary
   Scenario: Init with epics never adds the epic grammar to an existing manifest
-    Given a root directory whose schema folder holds a manifest declaring no epic grammar
+    Given a root directory holding a manifest declaring no epic grammar
     When init runs against it with epics
     Then the manifest is byte-for-byte as it was
 
   @B-002 @boundary
   Scenario: Init never overwrites an existing file
-    Given a root directory whose schema folder holds a manifest with local edits
-    And no other schema or template file beside it
-    When init runs against it
+    Given a root directory holding only a manifest with local edits
+    When init runs against it with every part
     Then the manifest is byte-for-byte as it was
+
+  @B-002 @boundary
+  Scenario: Init leaves alone an existing file of a part it was not asked for
+    Given a root directory holding only the feature template with local edits
+    When init runs against it
+    Then the feature template is byte-for-byte as it was
 
   @B-003
   Scenario: A written file equals the embedded copy
-    Given a root directory with no schema folder and no templates folder
+    Given a root directory with no configuration folder
     And no upstream schema source is recorded
-    When init runs against it
+    When init runs against it with every part
     Then each written file other than the manifest is byte-identical to the tool's embedded copy
 
   @B-004
   Scenario: The embedded copies equal this repository's live copy on what the tool owns
     Given the tool is built from this repository at one commit
     And this repository's manifest lowers one rule's severity
-    When its embedded copies of the newest version are compared with the files under this repository's schema and templates folders
+    When its embedded copies of the newest version are compared with this repository's live manifest, frontmatter schemas and templates
     Then each embedded frontmatter schema and template is byte-identical to its file
     And the embedded manifest equals the live manifest on every tool-owned key
 
   @B-005
   Scenario: A written schema's id names this repository and the version
-    Given a root directory with no schema folder
+    Given a root directory with no configuration folder
     And no upstream schema source is recorded
-    When init runs against it
-    Then each frontmatter schema written carries an id under this repository's schema address for the version written
+    When init runs against it with schemas
+    Then each frontmatter schema written carries an id made of this repository's schema address, the version written, the frontmatter folder and its own file name
 
   @B-006
   Scenario: Init lists what it wrote and what it skipped
-    Given a root directory whose templates folder already holds the feature template
-    When init runs against it
-    Then the standard output lists every one of the eight files relative to the root
+    Given a root directory holding only the feature template
+    When init runs against it with every part
+    Then the standard output lists the manifest, each frontmatter schema and each template relative to the root
     And marks the feature template as skipped and the rest as written
+
+  @B-033 @boundary
+  Scenario: Init lists nothing it was not asked to write
+    Given a root directory holding only the feature template
+    When init runs against it
+    Then the standard output lists the manifest and no other file
 
   @B-007
   Scenario: A root that is not a directory is a missing-input failure
@@ -123,52 +164,49 @@ Feature: init
 
   @B-008 @boundary
   Scenario: Init writes nowhere else
-    Given a root directory with no schema folder and no templates folder
+    Given a root directory with no configuration folder
     And a snapshot of every file under the root
-    When init runs against it
-    Then the only files created are under the schema folder and the templates folder
+    When init runs against it with every part
+    Then the only files created are the manifest and files under the frontmatter schema folder and the templates folder
     And no other file was modified
 
   @B-028 @boundary
   Scenario: Init leaves the files at the retired location as they were
-    Given a root directory holding a schema set and templates at the retired location and no schema folder and no templates folder
+    Given a root directory holding a schema set and templates at the retired location and no configuration folder
     And a snapshot of every file under the root
-    When init runs against it
+    When init runs against it with every part
     Then no file at the retired location was created, modified or deleted
 
   @B-009
   Scenario: Init defaults the root to the working directory
-    Given a working directory with no schema folder and no templates folder
+    Given a working directory with no configuration folder
     When init runs there without naming a root
-    Then the schema folder and the templates folder are written under the working directory
+    Then the manifest is written under the working directory
 
   @B-010
   Scenario: Init writes what is missing beside an existing file
-    Given a root directory whose schema folder holds a manifest pinning the newest version the tool ships and declaring the epic grammar
-    And no other schema or template file beside it
-    When init runs against it
-    Then the seven other files are written
+    Given a root directory holding only a manifest pinning the newest version the tool ships and declaring the epic grammar
+    When init runs against it with every part
+    Then the three frontmatter schemas and the four templates are written
 
   @B-011
   Scenario: Init succeeds when some files already exist
-    Given a root directory whose schema folder holds a manifest pinning the newest version the tool ships and declaring the epic grammar
-    And no other schema or template file beside it
-    When init runs against it
+    Given a root directory holding only a manifest pinning the newest version the tool ships and declaring the epic grammar
+    When init runs against it with every part
     Then the exit code is 0
 
   @B-012
   Scenario: Init fills a partial tree at its pinned older version
     Given the tool ships schema versions 0.1.0 and 0.2.0
-    And a root directory whose schema folder holds a manifest pinning version 0.1.0 and declaring the epic grammar
-    And no other schema or template file beside it
-    When init runs against it
-    Then the seven other files are written at version 0.1.0
+    And a root directory holding only a manifest pinning version 0.1.0 and declaring the epic grammar
+    When init runs against it with every part
+    Then the three frontmatter schemas and the four templates are written at version 0.1.0
     And the exit code is 0
 
   @B-013 @boundary
   Scenario: Init refuses a version the tool does not ship
     Given the tool ships schema version 0.1.0 only
-    And a root directory whose schema folder holds a manifest pinning version 7.0.0
+    And a root directory holding a manifest pinning version 7.0.0
     And a snapshot of every file under the root
     When init runs against it
     Then no file under the root has changed
@@ -178,9 +216,9 @@ Feature: init
   @B-014
   Scenario: Init writes a fetched upstream schema that matches its hash
     Given a root whose manifest records an upstream schema source with its version and content hash
-    And one frontmatter schema file is present under the root's schema folder and the others are absent
+    And one frontmatter schema file is present under the root and the others are absent
     And the source serves content matching that hash
-    When init runs against it
+    When init runs against it with schemas
     Then the fetched content is written to each absent schema file
     And the present schema file is unchanged
 
@@ -189,7 +227,7 @@ Feature: init
     Given a root whose manifest records an upstream schema source with its version and content hash
     And the source serves content that does not match that hash
     And a snapshot of every file under the root
-    When init runs against it
+    When init runs against it with schemas
     Then no file under the root has changed
     And the standard error names the source
     And the exit code is 3
@@ -197,32 +235,45 @@ Feature: init
   @B-016
   Scenario: Init refuses an upstream source it cannot reach
     Given a root whose manifest records an upstream schema source with its version and content hash
-    And no frontmatter schema file under the root's schema folder
+    And no frontmatter schema file under the root
     And the source cannot be reached
     And a snapshot of every file under the root
-    When init runs against it
+    When init runs against it with schemas
     Then no file under the root has changed
     And the standard error names the source
     And the exit code is 3
 
+  @B-034 @boundary
+  Scenario Outline: Init without schemas fetches nothing from a recorded source
+    Given a root whose manifest records an upstream schema source with its version and content hash
+    And no frontmatter schema file under the root
+    And the network is unavailable
+    When init runs against it with <options>
+    Then no network call was attempted
+
+    Examples:
+      | options   |
+      | no option |
+      | templates |
+
   @B-027 @boundary
   Scenario: Init into a bare root makes no network call
-    Given a root directory with no schema folder and no templates folder
+    Given a root directory with no configuration folder
     And the network is unavailable
-    When init runs against it
+    When init runs against it with every part
     Then no network call was attempted
 
   @B-027 @boundary
   Scenario: Init beside a manifest recording no upstream source makes no network call
     Given a root directory whose manifest records no upstream schema source
-    And no frontmatter schema file under the root's schema folder
+    And no frontmatter schema file under the root
     And the network is unavailable
-    When init runs against it
+    When init runs against it with schemas
     Then no network call was attempted
 
   @B-017
   Scenario: Init beside a manifest that does not parse fails as the check does
-    Given a root directory whose schema folder holds a manifest that is not well-formed JSON
+    Given a root directory holding a manifest that is not well-formed JSON
     And a snapshot of every file under the root
     When init runs against it
     Then no file under the root has changed
@@ -231,7 +282,7 @@ Feature: init
 
   @B-017
   Scenario: Init beside a rejected manifest fails as the check does
-    Given a root directory whose schema folder holds a manifest carrying a key the tool does not know
+    Given a root directory holding a manifest carrying a key the tool does not know
     And a snapshot of every file under the root
     When init runs against it
     Then no file under the root has changed

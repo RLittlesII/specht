@@ -9,7 +9,7 @@ risk: 2
 parent: "0050"
 children: []
 
-depends_on: ["0052", "0042", "0120"] # extends 0052's write; an older pin needs 0042's version set, in the semver 0120 converts it to
+depends_on: ["0052", "0042", "0120", "0186"] # extends 0052's write; an older pin needs 0042's version set, in the semver 0120 converts it to; B-002 and B-012 are stated over the selection 0186 builds
 spikes: []
 
 spec: src/tool/Features/Init/.spec/README.md
@@ -20,13 +20,13 @@ claims:
   - B-013
 
 created: "2026-10-08"
-updated: "2026-10-10"
+updated: "2026-10-11"
 closed: null
 
 summary: |
   Init beside what already exists: an existing file is left byte-for-byte;
   beside a manifest pinning an older shipped version, the absent files are
-  written at that version, keeping one version in `.spec/`; beside a pin the
+  written at that version, keeping one version in `.specht/`; beside a pin the
   tool does not ship, init writes nothing and exits 3, as the check does.
   Depends on 0042 because writing an older version needs the embedded
   version set, and on 0120 because the pin it reads against that set is
@@ -53,6 +53,12 @@ decisions:
     item could start beside 0120 and be built on the integer pin.
     Rejected: replacing the 0042 edge, which is still what ships the
     version set.
+  - |
+    2026-10-11, spec-author, after the repository owner's ruling of the
+    same day (decision 0004): `0186` added to `depends_on`. B-002 now holds
+    "whatever the run's selection" and B-012 writes the absent files of
+    the selection, so neither can be proven before the part options exist.
+    The summary's folder is `.specht/` (ADR-0011).
 
 out_of_scope:
   - "A version argument — § 5 #6."
