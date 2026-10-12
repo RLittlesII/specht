@@ -78,6 +78,22 @@ claims:
   - B-063
   - B-065
   - B-067
+  - B-068
+  - B-069
+  - B-070
+  - B-071
+  - B-072
+  - B-073
+  - B-074
+  - B-075
+  - B-076
+  - B-077
+  - B-078
+  - B-079
+  - B-080
+  - B-081
+  - B-082
+  - B-083
 
 created: "2026-10-08"
 updated: "2026-10-11"
@@ -117,10 +133,12 @@ summary: |
 
   The repository owner, 2026-10-11: the first release waits for a
   schema sourced at a URL (0055-F6 decision 0004). The manifest key
-  that records a source is cut apart (0176) and is `blocked` on OQ-1
-  and OQ-32 to OQ-36, proposed in decision 0008 and not ratified; the
-  check (0092) reads it; B-036 is cut apart (0177); upgrade's fetch
-  (0093) reuses init's (0095) and carries B-067.
+  that records a source is cut apart (0176); the check (0092) reads
+  it; B-036 is cut apart (0177); upgrade's fetch (0093) reuses init's
+  (0095) and carries B-067. The owner ratified decision 0008 the same
+  day, naming the key `spechtSchema` and taking no credential (C-15):
+  0176 carries B-068 to B-076, 0092 B-077 to B-081 and 0093 B-082 and
+  B-083.
 
 acceptance_criteria:
   - "B-001 — pinned version checks with its embedded frontmatter schemas (0120)"
@@ -185,6 +203,22 @@ acceptance_criteria:
   - "B-063 — upgrade touches no template file the pinned version does not ship (0131)"
   - "B-065 — a named template leaves the check's report unchanged (0130)"
   - "B-067 — upgrade, no upstream source recorded: no network call (0093)"
+  - "B-068 — a `spechtSchema` object: read as the recorded source (0176)"
+  - "B-069 — a member absent: invalid (0176)"
+  - "B-070 — a location that is not https: invalid (0176)"
+  - "B-071 — a version that is not a non-empty string: invalid (0176)"
+  - "B-072 — no hash for a fetched kind: invalid (0176)"
+  - "B-073 — a hash not in the sha256 form: invalid (0176)"
+  - "B-074 — each fetched kind's address: the location followed by the manifest's file name (0176)"
+  - "B-075 — no epic grammar: the Feature and item kinds are fetched (0176)"
+  - "B-076 — the epic grammar: the epic kind is fetched too (0176)"
+  - "B-077 — upstream recorded, a schema file absent: exit 3 (0092)"
+  - "B-078 — that check names the absent file (0092)"
+  - "B-079 — that check names the command that fetches it (0092)"
+  - "B-080 — upstream recorded, a local file not matching its hash: exit 3 (0092)"
+  - "B-081 — that check names the file (0092)"
+  - "B-082 — upgrade writes each fetched schema under the manifest's file name (0093)"
+  - "B-083 — upgrade sends no credential (0093)"
   - "§ 9 carries a row naming a test for each id above."
 
 decisions:
@@ -234,6 +268,12 @@ decisions:
     so 0092 does not wait on 0043. Rejected: the recording inside 0092,
     which would block four claims that need no further answer once the
     key has a name.
+  - |
+    2026-10-11, spec-author, after the repository owner ratified
+    decision 0008 with two changes (the key is `spechtSchema`; public
+    sources only, C-15): B-068 to B-083 added and cut to 0176, 0092 and
+    0093; 0176 leaves `blocked`. The cut is spec-author's, not an owner
+    ruling.
 
 out_of_scope:
   - "Everything in § 5 of the spec."
