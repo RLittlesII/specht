@@ -67,21 +67,12 @@ specht
 ## Usage
 
 ```sh
-specht [--root <dir>] [--report <path>] [--strict] [--json]
+specht [--root <dir>] [--strict] [--json]
 specht init [--root <dir>]
-specht upgrade [--root <dir>]
-specht --explain SPEC031
 ```
 
-| Command                 | Does                                                                                          |
-| ----------------------- | --------------------------------------------------------------------------------------------- |
-| `specht`                | Check the tree. One MSBuild-shaped line per violation, then a summary.                        |
-| `--json`                | Print the report document instead, with what each rule expected.                              |
-| `--report <path>`       | Also write the JSON report to a path.                                                         |
-| `--strict`              | Fail on any violation, of any severity.                                                       |
-| `specht init`           | Write the schema set and templates into `<root>/.spec/`. Never overwrites.                    |
-| `specht upgrade`        | Bring `.spec/schema/` and `.spec/templates/` to the pinned version; list each file rewritten. |
-| `specht --explain <id>` | Print a rule's full text.                                                                     |
+Every command and option, what each prints and the exit codes it returns:
+[docs/cli.md](docs/cli.md).
 
 One file configures it: `.spec/schema/spec-structure.schema.json`, which can
 pin `schemaVersion` - a `major.minor.patch` schema version, numbered apart from
@@ -123,6 +114,7 @@ a `.issue/` beside that `.spec/`.
 ## Documentation
 
 - [Setup](docs/setup.md)
+- [Command line](docs/cli.md)
 - [What it checks](docs/what-it-checks.md)
 - [Configuration](docs/configuration.md)
 - [Exit codes](docs/exit-codes.md)
