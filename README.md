@@ -71,6 +71,7 @@ specht [--root <dir>] [--report <path>] [--strict] [--json]
 specht init [--root <dir>]
 specht upgrade [--root <dir>]
 specht --explain SPEC031
+specht --version
 ```
 
 | Command                 | Does                                                                                          |
@@ -82,6 +83,7 @@ specht --explain SPEC031
 | `specht init`           | Write the schema set and templates into `<root>/.spec/`. Never overwrites.                    |
 | `specht upgrade`        | Bring `.spec/schema/` and `.spec/templates/` to the pinned version; list each file rewritten. |
 | `specht --explain <id>` | Print a rule's full text.                                                                     |
+| `specht --version`      | Print the tool's version and the commit it was built from.                                    |
 
 One file configures it: `.spec/schema/spec-structure.schema.json`, which can
 pin `schemaVersion` - a `major.minor.patch` schema version, numbered apart from

@@ -93,17 +93,18 @@ A manifest states only what its author wrote; every key it leaves out is read fr
 
 ## 5. Out of Scope
 
-<!-- last written by: spec-author, 2026-10-11 -->
+<!-- last written by: spec-author, 2026-10-11, 2026-10-11 (row 8, `0001-F2` decision 0010) -->
 
-| #   | Item                                                     | Exclusion Reason                                                                                                               |
-| --- | -------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
-| 1   | Editing the manifest: a rule's level, or any other key   | `0001-F11` sets one rule's level; `schemaVersion` is the pin command's (`0001-F7` B-043); every other key is a hand edit. C-1. |
-| 2   | Listing the rules with their family and default severity | `0001-F10`. This command prints the rule settings as the manifest holds them and nothing about a rule.                         |
-| 3   | Printing the frontmatter schemas or the templates        | `init` writes them as files (`0001-F4`); whether they need a printing command is epic `0132`'s open question and the owner's.  |
-| 4   | Printing the report schema                               | `0001-F3` A-1: it is a published file, the tool's contract.                                                                    |
-| 5   | A diff of the manifest against the default               | Not asked for; a caller compares the `--json` outputs of the two forms.                                                        |
-| 6   | Checking the tree, or any rule                           | `0001-F2`. The command stops at the loaded manifest.                                                                           |
-| 7   | The default manifest of a version other than the newest  | Not decided (OQ-3).                                                                                                            |
+| #   | Item                                                                  | Exclusion Reason                                                                                                                                                                                                                                                                                    |
+| --- | --------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | Editing the manifest: a rule's level, or any other key                | `0001-F11` sets one rule's level; `schemaVersion` is the pin command's (`0001-F7` B-043); every other key is a hand edit. C-1.                                                                                                                                                                      |
+| 2   | Listing the rules with their family and default severity              | `0001-F10`. This command prints the rule settings as the manifest holds them and nothing about a rule.                                                                                                                                                                                              |
+| 3   | Printing the frontmatter schemas or the templates                     | `init` writes them as files (`0001-F4`); whether they need a printing command is epic `0132`'s open question and the owner's.                                                                                                                                                                       |
+| 4   | Printing the report schema                                            | `0001-F3` A-1: it is a published file, the tool's contract.                                                                                                                                                                                                                                         |
+| 5   | A diff of the manifest against the default                            | Not asked for; a caller compares the `--json` outputs of the two forms.                                                                                                                                                                                                                             |
+| 6   | Checking the tree, or any rule                                        | `0001-F2`. The command stops at the loaded manifest.                                                                                                                                                                                                                                                |
+| 7   | The default manifest of a version other than the newest               | Not decided (OQ-3).                                                                                                                                                                                                                                                                                 |
+| 8   | A `--version` option that prints the schema version the manifest pins | Considered by the owner and not chosen, 2026-10-11 (`0001-F2` decision 0010): the pinned version is marked in `specht schema list` (`0001-F7` B-084), and the effective manifest carries `schemaVersion` (B-006). A boolean `--version` would also take the name OQ-3 may want for a version value. |
 
 ## 6. Concern Separation
 
@@ -151,9 +152,9 @@ Pending: owned by `test-writer`, written after agreement.
 
 ## 10. Lessons / Spec Deltas
 
-<!-- last written by: spec-author, 2026-10-11 -->
+<!-- last written by: spec-author, 2026-10-11, 2026-10-11 (§ 5 row 8) -->
 
-None.
+- 2026-10-11, § 5 row 8 added: the owner considered a `--version` option on this command for the pinned schema version and did not choose it (`0001-F2` decision 0010). No claim, constraint or scenario changed.
 
 ## 11. Open Questions
 

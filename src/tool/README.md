@@ -17,6 +17,7 @@ specht [--root <dir>] [--report <path>] [--strict] [--json]
 specht init [--root <dir>]
 specht upgrade [--root <dir>]
 specht --explain SPEC031
+specht --version
 ```
 
 Each rule has a page under [`docs/rules/v1/`](https://github.com/RLittlesII/specht/tree/main/docs/rules/v1).

@@ -20,7 +20,7 @@ depends_on: ["F1"]
 blocks: ["F6"]
 spikes: []
 created: "2026-10-08"
-updated: "2026-10-09"
+updated: "2026-10-11"
 github_issue: null
 synced_at: null
 ---
@@ -78,15 +78,15 @@ Nothing sets the package's version, so every `Pack` would produce the same defau
 
 ## 5. Out of Scope
 
-<!-- last written by: spec-author, 2026-10-08 -->
+<!-- last written by: spec-author, 2026-10-08, 2026-10-11 (row 3 withdrawn, `0001-F2` decision 0010) -->
 
-| #   | Item                                                  | Exclusion Reason                                                                       |
-| --- | ----------------------------------------------------- | -------------------------------------------------------------------------------------- |
-| 1   | Schema versions, `schemaVersion` and `specht upgrade` | `0001-F7`.                                                                             |
-| 2   | Publishing on a tag                                   | `0055-F6`.                                                                             |
-| 3   | A `--version` option on the command                   | The command's surface is epic `0001`'s; not asked for.                                 |
-| 4   | When the first tag is cut                             | `0055-F6` C-2.                                                                         |
-| 5   | Versioning any assembly other than the packed tool's  | Only `specht.tool` packs (`0001-F2` C-5); the rest takes the same version, unasserted. |
+| #   | Item                                                                                                                              | Exclusion Reason                                                                                                                                                     |
+| --- | --------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | Schema versions, `schemaVersion` and `specht upgrade`                                                                             | `0001-F7`.                                                                                                                                                           |
+| 2   | Publishing on a tag                                                                                                               | `0055-F6`.                                                                                                                                                           |
+| 3   | Withdrawn 2026-10-11: the owner asked for a `--version` option on the command, and `0001-F2` B-040 claims it. Was: not asked for. | The command's surface is epic `0001`'s (`0001-F2` decision 0010); what it prints is the version this Feature computes, as each assembly states it (`0001-F2` B-030). |
+| 4   | When the first tag is cut                                                                                                         | `0055-F6` C-2.                                                                                                                                                       |
+| 5   | Versioning any assembly other than the packed tool's                                                                              | Only `specht.tool` packs (`0001-F2` C-5); the rest takes the same version, unasserted.                                                                               |
 
 ## 6. Concern Separation
 
@@ -191,11 +191,12 @@ Item 0079 built what the list below describes, and item 0080 built B-005 under i
 
 ## 10. Lessons / Spec Deltas
 
-<!-- last written by: spec-author, 2026-10-09 -->
+<!-- last written by: spec-author, 2026-10-09, 2026-10-11 (§ 5 row 3) -->
 
 - 2026-10-09, the owner chose an executable proof for B-005 over a recorded hand check, while item 0080 was being delivered ([decision 0002](decisions/0002-b-005-has-an-executable-proof.md)). The standing decision that the build has no tests (`0055-F2` § 8) is narrowed for B-005 only: `versioning.feature` is linked into the acceptance tier and the `@B-005` scenario is bound. B-005's text and its scenario are unchanged, and B-001 to B-004 and B-006 to B-008 keep their § 9 rows. § 8 and § 9 follow with the test.
 - 2026-10-09, item 0080 as built stops every build target in a shallow clone, where C-2 rules out a shallow checkout only in a build that packs. OQ-2 raised; C-2 is unchanged until it is answered.
 - 2026-10-09, B-005 is the `nbgv` tool and the Nerdbank.GitVersioning package agreeing, and their two pins sit in files `0055-F4` updates in separate pull requests. OQ-3 raised.
+- 2026-10-11, § 5 row 3 withdrawn: the owner asked for `specht --version` (`0001-F2` decision 0010), claimed by `0001-F2` B-040 to B-044. No claim, constraint or scenario of this Feature changed.
 - 2026-10-09, decision 0002 records that the owner was told `Pack` runs inside the acceptance tier; what was built issues the target's `dotnet pack` command and never runs the target, so the proof does not watch `Pack` itself (§ 7, § 8). An addendum to [decision 0002](decisions/0002-b-005-has-an-executable-proof.md) says so, raised by spec-reviewer round 4 (§ 12). The call, B-005 and its scenario are unchanged. Not yet put to the owner.
 
 ## 11. Open Questions

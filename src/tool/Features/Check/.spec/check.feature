@@ -244,3 +244,35 @@ Feature: The check command
   Scenario: The packed readme names no package feed
     When the tool is packed
     Then the readme the package carries holds no package feed's address
+
+  @B-040
+  Scenario: The tool states its version
+    When the tool is asked for its version
+    Then the standard output is one line
+    And that line is the version the tool's program file states
+
+  @B-041
+  Scenario: Asking for the version succeeds
+    Given the root holds a specification with one violation
+    When the tool is asked for its version
+    Then the exit code is 0
+
+  @B-042 @boundary
+  Scenario: The version does not depend on where the tool is run
+    Given a directory with no manifest at the manifest path
+    When the tool is asked for its version from inside that directory
+    Then the standard output is one line
+    And that line is the version the tool's program file states
+    And the exit code is 0
+
+  @B-043 @boundary
+  Scenario: Asking for the version writes nothing
+    Given the root holds a specification with one violation
+    And a snapshot of every file under the root
+    When the tool is asked for its version from inside the root
+    Then no file under the root was created, modified or deleted
+
+  @B-044
+  Scenario: Help names the version option
+    When the tool is asked for help
+    Then the output names the version option

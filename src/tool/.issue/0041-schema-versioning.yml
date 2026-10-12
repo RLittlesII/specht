@@ -94,6 +94,8 @@ claims:
   - B-081
   - B-082
   - B-083
+  - B-084
+  - B-085
 
 created: "2026-10-08"
 updated: "2026-10-11"
@@ -139,6 +141,11 @@ summary: |
   day, naming the key `spechtSchema` and taking no credential (C-15):
   0176 carries B-068 to B-076, 0092 B-077 to B-081 and 0093 B-082 and
   B-083.
+
+  The repository owner, 2026-10-11 (0001-F2 decision 0010): the list
+  command is `specht schema list`, it marks the version a root pins and
+  is a plain list where the root has no manifest. 0121 gains B-084 and
+  B-085.
 
 acceptance_criteria:
   - "B-001 — pinned version checks with its embedded frontmatter schemas (0120)"
@@ -219,6 +226,8 @@ acceptance_criteria:
   - "B-081 — that check names the file (0092)"
   - "B-082 — upgrade writes each fetched schema under the manifest's file name (0093)"
   - "B-083 — upgrade sends no credential (0093)"
+  - "B-084 — list marks the pinned version (0121)"
+  - "B-085 — list with no manifest marks nothing (0121)"
   - "§ 9 carries a row naming a test for each id above."
 
 decisions:

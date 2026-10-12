@@ -65,3 +65,9 @@ owners. Cost of rejecting: the benchmark code packs a package of its own.
 ## Reversal
 
 None.
+
+Noted 2026-10-11, not a reversal: the owner has asked for `specht --version`
+as a product change of epic `0001` (`0001-F2` B-040, decision 0010), so "the
+tool has no `--version`" above is true of 2026-10-09 only. The call stands:
+the host row is `specht --help` (B-008). Whether it moves to `--version` is
+OQ-3, not asked of the owner.
