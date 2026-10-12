@@ -8,7 +8,7 @@ value: 4
 risk: 4
 
 parent: "0001"
-children: ["0042", "0043", "0044", "0045", "0046", "0047", "0048", "0049", "0092", "0093", "0094", "0120", "0121", "0122", "0123", "0124", "0125", "0126", "0130", "0131", "0176", "0177"]
+children: ["0042", "0043", "0044", "0045", "0046", "0047", "0048", "0049", "0092", "0093", "0094", "0120", "0121", "0122", "0123", "0124", "0125", "0126", "0130", "0131", "0176", "0177", "0188", "0189"]
 
 depends_on: []
 spikes: []
@@ -96,9 +96,24 @@ claims:
   - B-083
   - B-084
   - B-085
+  - B-086
+  - B-087
+  - B-088
+  - B-089
+  - B-090
+  - B-091
+  - B-092
+  - B-093
+  - B-094
+  - B-095
+  - B-096
+  - B-097
+  - B-098
+  - B-099
+  - B-100
 
 created: "2026-10-08"
-updated: "2026-10-11"
+updated: "2026-10-12"
 closed: null
 
 summary: |
@@ -146,6 +161,15 @@ summary: |
   command is `specht schema list`, it marks the version a root pins and
   is a plain list where the root has no manifest. 0121 gains B-084 and
   B-085.
+
+  The repository owner, 2026-10-11 (decision 0009): a version's folder
+  is `v<major.minor.patch>` and the `$id` segment is the same, so 0126
+  leaves `blocked` and carries B-086 and B-087; one number covers the
+  schema set, the templates and the rule pages; and a committed version
+  lock freezes a version. 0044 checks the shipped set against the lock
+  (B-088 to B-091), 0188 writes it (B-092, B-093) and 0189 cuts the next
+  version (B-094 to B-100). The tag check that refuses an unlocked
+  version is 0055-F6's (0190).
 
 acceptance_criteria:
   - "B-001 — pinned version checks with its embedded frontmatter schemas (0120)"
@@ -228,6 +252,21 @@ acceptance_criteria:
   - "B-083 — upgrade sends no credential (0093)"
   - "B-084 — list marks the pinned version (0121)"
   - "B-085 — list with no manifest marks nothing (0121)"
+  - "B-086 — a version's folder is `v<major.minor.patch>` in every tree its files sit in (0126)"
+  - "B-087 — each embedded `$id` carries the folder name (0126)"
+  - "B-088 — a template-only or page-only change: the patch alone (0044)"
+  - "B-089 — a locked version matches the lock's digest (0044)"
+  - "B-090 — at most one version unlocked (0044)"
+  - "B-091 — the unlocked version is the newest (0044)"
+  - "B-092 — the lock target records the newest version (0188)"
+  - "B-093 — locking again leaves the lock as it was (0188)"
+  - "B-094 — cut with a version unlocked: fails, nothing created (0189)"
+  - "B-095 — cut to a number not higher: fails, nothing created (0189)"
+  - "B-096 — cut creates the version's folders from the newest (0189)"
+  - "B-097 — a cut schema's `$id` names the new version (0189)"
+  - "B-098 — a cut rule page gives the new version (0189)"
+  - "B-099 — a cut file is otherwise byte-identical (0189)"
+  - "B-100 — the cut touches nothing outside the new folders (0189)"
   - "§ 9 carries a row naming a test for each id above."
 
 decisions:
@@ -283,6 +322,15 @@ decisions:
     sources only, C-15): B-068 to B-083 added and cut to 0176, 0092 and
     0093; 0176 leaves `blocked`. The cut is spec-author's, not an owner
     ruling.
+  - |
+    2026-10-11, the repository owner (decision 0009): the folder is the
+    version; one number covers the set; a working folder and a hash
+    lock. spec-author's cut, not an owner ruling: 0126 gains B-086 and
+    B-087; the checks on the lock join 0044; the lock target (0188) and
+    the cut target (0189) are items of this Feature, not of a `.build/`
+    Feature, because the claims are this Feature's (decision 0009).
+    Rejected: one item for both targets, which would hold the lock 0044
+    and 0190 wait on behind the cut.
 
 out_of_scope:
   - "Everything in § 5 of the spec."

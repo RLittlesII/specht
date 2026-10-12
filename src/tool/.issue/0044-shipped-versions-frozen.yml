@@ -9,7 +9,7 @@ risk: 2
 parent: "0041"
 children: []
 
-depends_on: ["0042", "0120"] # guards the embedded set 0042 builds, in the semver form 0120 gives it
+depends_on: ["0042", "0120", "0126", "0188"] # guards the embedded set 0042 builds, in the semver form 0120 gives it, in the folders 0126 names, against the lock 0188 writes
 spikes: []
 
 spec: src/tool/.spec/README.md
@@ -20,9 +20,13 @@ claims:
   - B-015
   - B-040
   - B-066
+  - B-088
+  - B-089
+  - B-090
+  - B-091
 
 created: "2026-10-08"
-updated: "2026-10-11"
+updated: "2026-10-12"
 closed: null
 
 summary: |
@@ -36,12 +40,26 @@ summary: |
   tool may stop shipping it. What `0.1.0` holds at the first publish is
   OQ-30. Waits on 0120 for versions numbered in semver.
 
+  The mechanism is the version lock (decision 0009; A-4): one committed
+  file recording a digest for each locked version. The test computes
+  each locked version's digest over its schema set, templates and rule
+  pages and compares it (B-089, which is how B-013 is held), and fails
+  when more than one shipped version is unlocked (B-090) or the unlocked
+  one is not the newest (B-091). A template-only or page-only change is
+  a patch (B-088). Waits on 0126 for the folders the digest reads and on
+  0188 for the lock and its digest. What the test does with a locked
+  version that has no folder is OQ-55, open.
+
 acceptance_criteria:
   - "B-004 — every version published from `1.0.0` on still in the embedded set; 0120 converts the enumeration"
   - "B-013 — a published version this tool ships: schema, manifest and template files byte-identical"
   - "B-015 — a published version this tool ships: its vocabulary's rule ids unchanged"
   - "B-040 — from `1.0.0` on, a rule id the lower version lacks: a higher major"
   - "B-066 — below `1.0.0`, a rule id the lower version lacks: a higher minor"
+  - "B-088 — neighbouring versions differing only in a template or a rule page's text: the patch alone"
+  - "B-089 — a locked version's digest over every tree its files sit in equals the lock's"
+  - "B-090 — at most one shipped version unlocked"
+  - "B-091 — the unlocked version is the newest"
   - "§ 9 carries a row naming a test for each id above."
 
 decisions:
@@ -55,6 +73,15 @@ decisions:
     0007): B-004, B-013, B-015 and B-040 are amended and B-066 is added
     to this item, derived by spec-author. The summary and criteria follow
     the amended claims.
+  - |
+    2026-10-11, the repository owner (decision 0009): a working folder
+    and a hash lock - publishing records the version in one committed
+    lock file, and a test fails if a locked version's bytes change or if
+    more than one version is unlocked. Rejected by the owner: the freeze
+    held by review alone; leaving it undecided. spec-author's cut: B-088
+    to B-091 join this item, and it waits on 0126 and 0188.
 
 out_of_scope:
   - "The content of any version after `0.1.0` — § 5 #3."
+  - "Writing the lock — 0188. Cutting a version — 0189."
+  - "Refusing a release tag over an unlocked version — 0190 (0055-F6 B-013)."

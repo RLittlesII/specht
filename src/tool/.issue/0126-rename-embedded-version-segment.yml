@@ -2,7 +2,7 @@ id: "0126"
 type: task
 title: Name the embedded version folder and the `$id` version segment
 
-status: blocked
+status: ready-for-architecture
 
 risk: 2
 
@@ -14,43 +14,55 @@ spikes: []
 
 spec: src/tool/.spec/README.md
 
-claims: []
+claims:
+  - B-086
+  - B-087
 
 created: "2026-10-09"
-updated: "2026-10-10"
+updated: "2026-10-12"
 closed: null
 
 summary: |
   The embedded folder for one schema version and the version segment of
   the `$id` of specht's own frontmatter schemas are both the integer `v1`
-  today, and decision 0005 names no form for a `major.minor.patch`
-  version. Once the owner answers OQ-22, give both the form answered -
-  nothing to rename if the answer keeps today's - and bring into line the
-  layout lines in the skills and AGENTS.md, the README badge, and
-  0001-F4 § 7 and § 8, which state `v<n>`.
+  today. The owner answered OQ-22 on 2026-10-11 (decision 0009): the
+  folder is `v<major.minor.patch>` and the `$id` segment is the same.
+  Rename `src/tool/schema/v1/`, `src/tool/templates/v1/` and
+  `docs/rules/v1/` to `v0.1.0`, the embedded resource names with them,
+  and rewrite the `$id` of each frontmatter schema, embedded and live:
+  `https://github.com/rlittlesii/specht/schema/v0.1.0/frontmatter/<file>`,
+  the `/frontmatter/` being 0001-F5 decision 0011's. The live copy is
+  `.specht/manifest.json`, `.specht/schema/frontmatter/` and
+  `.specht/templates/`, which item 0185 moves; where one version's
+  manifest sits in the shipping copy is OQ-52, open.
+  The version is then read from the folder's name, so the mapping from a
+  folder to its version goes (C-16). Bring into line the layout lines in
+  the skills and AGENTS.md, the README badge, `docs/`, and 0001-F7 § 6
+  and § 7, 0001-F4 § 7 and § 8 and 0001-F5 § 7, which state `v1` or
+  `v<n>`.
 
-  The rule pages follow the same answer (0001-F3 A-4, decision 0003):
-  the page folder `docs/rules/v<n>/`, the `rules/v<n>/`
-  resource name the engine embeds them under, and the Schema version
-  each page's metadata gives (0001-F3 B-033), with 0001-F3 § 7 and § 8,
-  which state `v1`.
+  The rule pages follow (0001-F3 A-4, decision 0003): the page folder,
+  the `rules/` resource name the engine embeds them under, and the
+  Schema version each page's metadata gives, which becomes `0.1.0`
+  (0001-F3 B-033), with 0001-F3 § 7 and § 8, which state `v1`.
 
-  Blocked on the owner: OQ-22. Depends on 0120, which converts the
-  version set this names and closes without the answer. It must land
-  before the first publish, which freezes the bytes (decision 0002).
+  Depends on 0120, which converted the version set this names. It must
+  land before the first publish: after it the renamed bytes are a
+  published version's (C-1; OQ-30).
 
-  `claims: []` because the claim is another Feature's and the rest is a
-  constraint: this item re-proves 0001-F4 B-005, which 0051 delivered
-  against `v<n>` and 0050 rolls up, and keeps 0001-F7 C-6. Both are
-  provisional on OQ-22, as is 0001-F4 A-2.
+  B-086 and B-087 are this item's. It also re-proves 0001-F4 B-005,
+  which 0051 delivered against `v<n>` and 0050 rolls up, and 0001-F3
+  B-033, and keeps 0001-F7 C-6 and C-16.
 
 acceptance_criteria:
-  - "0001-F4 B-005 — the `$id` a written schema carries names the version in the form OQ-22 answers"
-  - "0001-F7 C-6 — every embedded frontmatter schema's `$id` in that form"
-  - "0001-F4 A-2 — one embedded folder for each version, named in that form"
-  - "0001-F3 A-4 — the rule-page folder and its `rules/` resource name carry the same segment as the schema folder"
-  - "0001-F3 B-033 — each page's Schema version is the version in the form 0120 converts to"
-  - "0001-F4 § 9 carries a row naming a test for B-005 in that form."
+  - "B-086 — each version's folder, in every tree its files sit in, is `v<major.minor.patch>`"
+  - "B-087 — each embedded frontmatter schema's `$id` carries that folder name, then `/frontmatter/` and the file's name"
+  - "0001-F4 B-005 — the `$id` a written schema carries names the version as `v<major.minor.patch>`"
+  - "0001-F7 C-6, C-16 — the segment and the folder name; no folder-to-version mapping in code"
+  - "0001-F4 A-2 — one embedded folder for each version, named `v<major.minor.patch>`"
+  - "0001-F3 A-4 — the rule-page folder and its `rules/` resource name carry the same folder name"
+  - "0001-F3 B-033 — each page's Schema version is `major.minor.patch`"
+  - "§ 9 carries a row naming a test for B-086 and B-087; 0001-F4 § 9 for B-005 and 0001-F3 § 9 for B-033 name tests of the new form."
 
 decisions:
   - |
@@ -68,8 +80,24 @@ decisions:
     2026-10-09, the repository owner (0001-F3 decision 0003, amended):
     the pages moved to the repository-root `docs/`, so the folder named
     here is `docs/rules/v<n>/`. No edge added.
+  - |
+    2026-10-11, the repository owner (0001-F7 decision 0009), answering
+    OQ-22: the folder is `v<major.minor.patch>` and the `$id` segment is
+    the same. Rejected by the owner: the bare version with no `v`;
+    keeping the integer folder with a version metadata file in each
+    folder. spec-author's cut: the item leaves `blocked` and gains B-086
+    and B-087. B-012, amended to name the folder's version, stays 0049's.
+  - |
+    2026-10-12, spec-author, after 0001-F5 decision 0011 merged: the
+    `$id` this item writes carries `/frontmatter/` after the version
+    segment, and the live copy is named at its new paths. No edge to
+    0185 is added: either order holds, and the second to land rewrites
+    the `$id` the first wrote.
 
 out_of_scope:
   - "Converting the pin, the version set and the report to semver — 0120."
   - "Proving a published version is still embedded byte-for-byte — 0044."
+  - "The version lock and its targets — 0188, 0189."
+  - "The engine's hand-written rule vocabulary for a version — § 5 #25."
+  - "A version stated inside a template — § 5 #22."
   - "Versions hosted on the web, and the `$id` that would follow — § 5 #13, OQ-9."

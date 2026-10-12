@@ -113,3 +113,19 @@ pull request that delivered them. The sections above are as written.
   B-031 to B-033 are unchanged. `0001-F7` item `0126` names the new folder.
   Epic `0002` and `0002-F1` § 5 row 4 say the pages under `docs/` are
   `0001-F3`'s.
+
+**2026-10-11, the "Not decided" note under The call is answered by the
+repository owner**
+([`0001-F7` decision 0009](../../../../tool/.spec/decisions/0009-a-versions-folder-is-its-number-one-number-covers-the-set-and-a-version-lock-freezes-it.md)).
+The sections above are as written.
+
+- **The folder.** A page's file sits at
+  `docs/rules/v<major.minor.patch>/SPEC###.md`, `docs/rules/v0.1.0/` for
+  `0.1.0`: the page folder takes the name the schema folder takes
+  (`0001-F7` B-086). The author's inference in that note is now the owner's
+  decision.
+- **The number.** A rule page gets no version of its own; one number covers
+  the schema set, the templates and the pages. The `Schema version` row gives
+  it as `major.minor.patch` - `0.1.0`, not `1`.
+- **Unchanged.** The page shape, C-6, and everything else above.
+- **Affects.** `0001-F3` A-4 and B-033 (amended).

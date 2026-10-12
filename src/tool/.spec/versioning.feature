@@ -113,7 +113,7 @@ Feature: Schema versioning
 
   @B-013 @boundary
   Scenario: A shipped version never changes
-    Given the embedded schemas, manifest and templates for version 0.1.0 as the first published package shipped them
+    Given the embedded schemas, manifest, templates and rule pages for version 0.1.0 as the first published package shipped them
     And a later tool that ships version 0.1.0
     When that tool's embedded files for version 0.1.0 are read
     Then they are byte-identical
@@ -748,3 +748,145 @@ Feature: Schema versioning
     And the report the check gives while the manifest names no template as the consumer's
     When the manifest names the feature template as the consumer's and the check runs again
     Then the report is the same
+
+  @B-086
+  Scenario: A shipped version's folder is named for its number
+    Given the tool ships schema version 0.1.0
+    When the folders holding its schemas, its templates and its rule pages are read
+    Then each is named v0.1.0
+
+  @B-087
+  Scenario: A shipped schema's address names its version folder
+    Given the tool ships schema version 0.1.0
+    When the address each of its frontmatter schemas declares is read
+    Then it is this repository's schema address, then v0.1.0, then the frontmatter folder and the file's name
+
+  @B-088
+  Scenario Outline: A change to a template or a rule page alone is a patch
+    Given the tool ships schema version 0.1.0 and the next version above it
+    And the two differ only in <what>, the version each states aside
+    When the two version numbers are compared
+    Then they differ in their patch alone
+
+    Examples:
+      | what                    |
+      | a template              |
+      | the text of a rule page |
+
+  @B-089
+  Scenario: A locked version still matches its digest
+    Given the tool ships schema version 0.1.0 and the version lock records it
+    And none of its schemas, templates or rule pages has changed since
+    When the shipped versions are checked against the version lock
+    Then version 0.1.0 matches the digest the lock records
+
+  @B-089 @boundary
+  Scenario Outline: A changed file under a locked version is caught
+    Given the tool ships schema version 0.1.0 and the version lock records it
+    And <file> of version 0.1.0 has been edited since
+    When the shipped versions are checked against the version lock
+    Then version 0.1.0 does not match the digest the lock records
+
+    Examples:
+      | file                 |
+      | a frontmatter schema |
+      | the manifest         |
+      | a template           |
+      | a rule page          |
+
+  @B-090
+  Scenario: Only one version is open to change
+    Given the tool ships schema versions 0.1.0, 0.1.1 and 0.2.0
+    And the version lock records version 0.1.0 only
+    When the shipped versions are checked against the version lock
+    Then the check fails because two versions are unlocked
+
+  @B-091
+  Scenario: The version open to change is the newest
+    Given the tool ships schema versions 0.9.0 and 0.10.0
+    And the version lock records version 0.10.0 only
+    When the shipped versions are checked against the version lock
+    Then the check fails because the unlocked version is not the newest
+
+  @B-092
+  Scenario: Locking records the newest version
+    Given the tool ships schema versions 0.1.0 and 0.1.1
+    And the version lock records version 0.1.0 only
+    When the newest version is locked
+    Then the version lock records version 0.1.1 with the digest of its files
+
+  @B-093
+  Scenario: Locking again changes nothing
+    Given the tool ships schema versions 0.1.0 and 0.1.1 and the version lock records both
+    When the newest version is locked
+    Then the version lock is as it was
+
+  @B-093 @boundary
+  Scenario: Locking again does not accept a changed version
+    Given the tool ships schema version 0.1.0 and the version lock records it
+    And a template of version 0.1.0 has been edited since
+    When the newest version is locked
+    Then the version lock still records the digest version 0.1.0 was locked with
+
+  @B-094
+  Scenario: A cut is refused while a version is unlocked
+    Given the tool ships schema version 0.1.0 and the version lock does not record it
+    When version 0.1.1 is cut
+    Then the cut fails
+    And no file is created
+
+  @B-095
+  Scenario Outline: A cut is refused for a number that is not higher
+    Given the tool ships schema versions 0.1.0 and 0.2.0 and the version lock records both
+    When version <named> is cut
+    Then the cut fails
+    And no file is created
+
+    Examples:
+      | named |
+      | 0.2.0 |
+      | 0.1.5 |
+      | 2     |
+
+  @B-096
+  Scenario: A cut copies the newest version to the new number
+    Given the tool ships schema versions 0.1.0 and 0.2.0 and the version lock records both
+    When version 0.3.0 is cut
+    Then a version 0.3.0 folder stands beside each folder of version 0.2.0
+    And each holds a file for every file of version 0.2.0's folder and no other
+
+  @B-097
+  Scenario: A cut schema's address names the new version
+    Given the tool ships schema version 0.1.0 and the version lock records it
+    When version 0.1.1 is cut
+    Then each frontmatter schema of version 0.1.1 declares the address of version 0.1.1
+
+  @B-098
+  Scenario: A cut rule page gives the new version
+    Given the tool ships schema version 0.1.0 and the version lock records it
+    When version 0.1.1 is cut
+    Then each rule page of version 0.1.1 gives schema version 0.1.1
+
+  @B-099
+  Scenario: A cut changes nothing but the stated version
+    Given the tool ships schema version 0.1.0 and the version lock records it
+    When version 0.1.1 is cut
+    Then each file of version 0.1.1 equals version 0.1.0's file of the same name, the stated version aside
+
+  @B-099 @boundary
+  Scenario: A cut template states no version
+    Given the tool ships schema version 0.1.0 and the version lock records it
+    When version 0.1.1 is cut
+    Then each template of version 0.1.1 is byte-identical to version 0.1.0's
+
+  @B-100
+  Scenario: A cut touches nothing outside the new version
+    Given the tool ships schema version 0.1.0 and the version lock records it
+    When version 0.1.1 is cut
+    Then no file outside version 0.1.1's folders is created, changed or deleted
+
+  @B-100 @boundary
+  Scenario: A cut does not lock the new version
+    Given the tool ships schema version 0.1.0 and the version lock records it
+    When version 0.1.1 is cut
+    Then the version lock does not record version 0.1.1

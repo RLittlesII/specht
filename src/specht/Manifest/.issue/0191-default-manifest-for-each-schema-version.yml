@@ -1,0 +1,53 @@
+id: "0191"
+type: task
+title: Fill an omitted manifest value from the pinned version's default manifest
+
+status: blocked
+
+risk: 3
+
+parent: "0010"
+children: []
+
+depends_on: ["0011", "0126"] # the fill 0011 builds; the version folders 0126 names
+spikes: []
+
+spec: src/specht/Manifest/.spec/README.md
+
+claims: []
+
+created: "2026-10-11"
+updated: "2026-10-12"
+closed: null
+
+summary: |
+  A value a manifest omits takes the default manifest's (B-019), and the
+  engine holds one default manifest. Once the tool ships more than one
+  schema version, each version ships its own manifest (0001-F7 B-013,
+  decision 0009), and nothing says which one fills what a
+  manifest pinned to an older version leaves out.
+
+  Blocked on the owner: OQ-23. Its default is that the fill comes from
+  the pinned version's shipped manifest, so a pinned tree's verdict does
+  not move when the tool is updated (0001-F7 C-4). Nothing is built on
+  the default: with one shipped version the two readings give the same
+  result.
+
+  `claims: []` because no claim is written until OQ-23 is answered; the
+  answer adds one, and this item takes it.
+
+acceptance_criteria:
+  - "OQ-23 answered and resolved in place, and the claim it adds cited here."
+  - "§ 9 carries a row naming a test for that claim."
+
+decisions:
+  - |
+    2026-10-11, spec-author: cut blocked, on the repository owner's
+    instruction to raise the question and not decide it. It waits on
+    0011 for the fill and on 0126 for the version folders; both edges
+    are spec-author's reading.
+
+out_of_scope:
+  - "Naming a version's folder — 0126 (0001-F7 B-086)."
+  - "What `upgrade` adds to a consumer's manifest — 0001-F7 decision 0006."
+  - "Which copy of the default manifest the engine and the host each embed — 0001-F4 OQ-5."
