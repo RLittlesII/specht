@@ -1,0 +1,54 @@
+id: "0187"
+type: task
+title: Reject a schema file name that is not a plain file name
+
+status: ready-for-architecture
+
+risk: 1
+
+parent: "0010"
+children: []
+
+depends_on: ["0185"] # the folder a plain file name is read under is the one 0185 creates
+spikes: []
+
+spec: src/specht/Manifest/.spec/README.md
+
+claims:
+  - B-047
+
+created: "2026-10-11"
+updated: "2026-10-11"
+closed: null
+
+summary: |
+  A `frontmatterSchemas` value is a plain file name, read under
+  `<root>/.specht/schema/frontmatter/` (decision 0011). Today a value
+  that is absolute, or holds `..`, `/` or `\`, is read from outside that
+  folder (OQ-2 (a)). This item rejects such a manifest at load, naming
+  the kind and the value, with exit `3` and the rejection as the only
+  output (B-022, B-023).
+
+  The rejection is derived by spec-author, not stated by the owner: a
+  default spec-author proposed, contained in a plan the owner approved
+  on 2026-10-11. Risk 1: one check at the manifest's load, beside the
+  rejections 0011 and 0013 built.
+
+acceptance_criteria:
+  - "B-047 — a value that is an absolute path, or holds `..`, `/` or `\\`, is rejected as an invalid manifest, naming the kind and the value"
+  - "B-022, B-023 — that rejection exits `3` and is the only output, on stderr"
+  - "B-008 — a plain file name is still read under `.specht/schema/frontmatter/`"
+  - "§ 9 carries a row naming a test for B-047."
+
+decisions:
+  - |
+    2026-10-11, spec-author's cut, after review: apart from 0185 because
+    the rejection is new behaviour and the move is not, and after it
+    because the claim names the folder 0185 creates. The risk is
+    spec-author's estimate. Rejected: inside 0185, which would hold the
+    move behind a rejection it does not need.
+
+out_of_scope:
+  - "The move and the new names — 0185."
+  - "An empty or `.` file name — 0001-F5 OQ-22, open; proposed: rejected as B-047 rejects."
+  - "A value naming a file that does not exist — 0001-F5 OQ-2 (b), open."

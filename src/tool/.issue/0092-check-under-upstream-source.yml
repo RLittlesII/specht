@@ -9,7 +9,7 @@ risk: 3
 parent: "0041"
 children: []
 
-depends_on: ["0176"] # reads the recording 0176 defines
+depends_on: ["0176", "0185"] # reads the recording 0176 defines; the local copy is under the folder 0185 moves the schemas to
 spikes: []
 
 spec: src/tool/.spec/README.md
@@ -65,6 +65,10 @@ decisions:
     check with a schema file absent and with a local copy that does not
     match its hash. The cut is spec-author's. Which command B-079 names
     is OQ-47, open; `specht init` is spec-author's reading.
+  - |
+    2026-10-11, spec-author: `0185` added to `depends_on`. B-024, B-077 and
+    B-080 as amended read the local copy under
+    `.specht/schema/frontmatter/` (0001-F5 decision 0011).
 
 out_of_scope:
   - "Fetching the source — 0095, 0093."

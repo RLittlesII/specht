@@ -1,0 +1,86 @@
+id: "0185"
+type: task
+title: Move the manifest to manifest.json and the frontmatter schemas to their own folder
+
+status: ready-for-architecture
+
+risk: 3
+
+parent: "0010"
+children: []
+
+depends_on: [] # every item that built the earlier paths is done (0017, 0051, 0052, 0183)
+spikes: []
+
+spec: src/specht/Manifest/.spec/README.md
+
+claims:
+  - B-008
+
+created: "2026-10-11"
+updated: "2026-10-11"
+closed: null
+
+summary: |
+  The repository owner, 2026-10-11 (decision 0011): the manifest is
+  `<root>/.specht/manifest.json`, the frontmatter schemas sit under
+  `<root>/.specht/schema/frontmatter/`, and their default names are
+  `feature.schema.json`, `task.schema.json` and `epic.schema.json`. The
+  templates stay at `.specht/templates/`.
+
+  One move, in one pull request: the embedded copies, this repository's
+  live copy, the engine's read of the manifest and of the on-disk
+  schemas, what `init` writes, each embedded schema's `$id`, and every
+  test, document and skill that names a path. The earlier location,
+  `.specht/schema/spec-structure.schema.json`, never shipped, so nothing
+  reads it and nothing diagnoses it; the retired `.spec/` location of
+  ADR-0011 is unchanged.
+
+  B-008 is the one claim of this Feature the item delivers: 0017
+  delivered it at the earlier folder and names, and it is amended. The
+  other criteria are claims and constraints of other Features that name
+  the paths. Risk 3: one rename across the engine, the tool, the live
+  tree and the tests, with the golden baseline (0001-F5 B-016, 0001-F1
+  B-004) as the guard.
+
+  The first publish is item 0084. It waits on 0092 and 0095, and this
+  change makes 0092 wait on this item and 0095 wait on 0186, which waits
+  on this item.
+
+acceptance_criteria:
+  - "B-008 — the on-disk schema for a kind is read from `.specht/schema/frontmatter/` by the file name the manifest gives it; a kind the manifest leaves out reads the default manifest's name, `feature.schema.json`, `task.schema.json` or `epic.schema.json` (decision 0003's fill, decision 0011's names)"
+  - "0001-F2 A-3, 0001-F1 C-8 — the manifest is read from `.specht/manifest.json`; B-005 to B-007 and B-037 to B-039 of 0001-F2 hold at that path"
+  - "0001-F4 A-1, B-008, C-3 — init writes the manifest and the files under the two folders at the new paths and names, and nowhere else"
+  - "0001-F4 B-004 — this repository's live copy sits at the new paths and equals the embedded copy on what the tool owns"
+  - "0001-F4 B-005, 0001-F7 C-6 — each embedded schema's `$id` ends in the version segment, `frontmatter/` and its file name"
+  - "0001-F7 C-2, C-4 — no command writes or reads a schema file outside the paths they name"
+  - "0101-F5 C-2 — nothing here gives a command other than init and upgrade a write to `.specht/manifest.json`"
+  - "0001-F5 B-016, 0001-F1 B-004 — the golden baseline report is unchanged"
+  - "§ 6 to § 8 of 0001-F1, 0001-F2, 0001-F4, 0001-F5 and 0001-F7, of the discovery specification and of the benchmark specifications name the new paths where they state a current path"
+  - "§ 9, re-stated by test-writer: every row of 0001-F1, 0001-F2, 0001-F4, 0001-F5 and 0001-F7 whose tests name the earlier paths or names, or `the eight files`, names a test at the new ones or reads `Missing`; no row stays `Covered` on a test that proves the claim as it read before decisions 0011 and 0004"
+  - "The skills name the new paths: `.claude/skills/specht-conventions/SKILL.md` and its `references/specs.md`; `.claude/skills/dotnet-tool/references/conventions.md`, `installation-and-distribution.md`, `project-setup.md`, `vertical-slice.md` and `testing.md`"
+  - "`README.md`, `src/tool/README.md`, the pages under `docs/` and AGENTS.md § Configuration name the new paths, and AGENTS.md no longer says the layout waits on this item"
+  - "No tracked file but a dated record names `spec-structure.schema.json`, `feature-spec.frontmatter.schema.json`, `task.frontmatter.schema.json` or `epic.frontmatter.schema.json` as a current path"
+
+decisions:
+  - |
+    2026-10-11, spec-author's cut, on the repository owner's ruling of the
+    same day (decision 0011). One item for the whole move: the live copy,
+    the embedded copy and the engine's read must change in one commit or
+    the self-check fails between them (0001-F4 B-004). The risk is
+    spec-author's estimate. Rejected: one item per Feature, which leaves
+    the tree unreadable by its own tool between two pull requests.
+  - |
+    2026-10-11, spec-author, after review: B-033 and B-047 left `claims`.
+    B-033, no epic schema file needed without the epic grammar, is the
+    epics opt-in's and has no item (OQ-18); 0017 delivered B-008 only.
+    B-047 is new behaviour and is 0187. The sentence that this item must
+    merge before the first release is replaced by the edges that exist.
+
+out_of_scope:
+  - "Rejecting a value that is not a plain file name, B-047 — 0187."
+  - "A root with no epic frontmatter schema file under a manifest declaring no epic grammar, B-033 — no item (0001-F5 OQ-18)."
+  - "Which parts init writes — 0186."
+  - "The `$id` version segment — 0126, 0001-F7 OQ-22."
+  - "Reading or diagnosing `.specht/schema/spec-structure.schema.json` — never shipped (decision 0011)."
+  - "The seed brief, `.spec/brief.md` — not edited (decision 0011)."

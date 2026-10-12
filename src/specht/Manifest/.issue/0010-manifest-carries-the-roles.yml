@@ -20,6 +20,8 @@ children:
     "0018",
     "0019",
     "0134",
+    "0185",
+    "0187",
   ]
 
 depends_on: []
@@ -60,9 +62,10 @@ claims:
   - B-044
   - B-045
   - B-046
+  - B-047
 
 created: "2026-10-08"
-updated: "2026-10-10"
+updated: "2026-10-11"
 closed: null
 
 summary: |
@@ -85,7 +88,7 @@ acceptance_criteria:
   - "B-005 — identity and edge forms (0016)"
   - "B-006 — task grammar named groups (0016)"
   - "B-007 — claim grammar for tags (0134)"
-  - "B-008 — schema files by manifest name (0017)"
+  - "B-008 — schema files by manifest name (0017; at the new folder and names, 0185)"
   - "B-009 — messages name manifest values (0018)"
   - "B-010 — severity lowered to warning (0014)"
   - "B-011 — rule disabled (0014)"
@@ -110,6 +113,7 @@ acceptance_criteria:
   - "B-044 — rule with no level set keeps its own severity (0014)"
   - "B-045 — rule level outside the three rejected (0014)"
   - "B-046 — severity raised to error (0014)"
+  - "B-047 — a schema file name that is not a plain file name rejected (0187)"
   - "§ 9 carries a row naming a test for each id above."
 
 decisions:

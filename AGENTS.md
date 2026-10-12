@@ -99,13 +99,26 @@ B-004, decision 0004). Until that step the engine is exactly `hooked`'s, renamed
 
 ## Configuration
 
-A consumer configures the tool with one file: `.specht/schema/spec-structure.schema.json`,
-the manifest. It carries `schemaVersion` and will carry the roles above. Beside
-it sit the three frontmatter schemas (`feature-spec`, `task`, `epic`) and
-`.specht/templates/`. `specht init` writes all of them from the embedded copies -
-the frontmatter schemas from an upstream schema source instead, where the
-manifest records one (`0001-F4` B-014) - and never overwrites a file that
-exists.
+A consumer configures the tool with one file: `.specht/manifest.json`, the
+manifest. It carries `schemaVersion` and will carry the roles above. It is
+configuration, not a JSON Schema. The three frontmatter schemas sit under
+`.specht/schema/frontmatter/`, one `<kind>.schema.json` each (`feature`,
+`task`, `epic`), and the templates under `.specht/templates/` (`0001-F5`
+decision 0011).
+
+`specht init` writes the manifest and nothing else. `--schemas` adds the
+frontmatter schemas, `--templates` adds the templates and `--all` adds both;
+the epic schema is written only with the schemas, and only with `--epics` or
+beside a manifest that declares the epic grammar (`0001-F4` decision 0004,
+B-029 to B-032). Each file comes from the embedded copies - the frontmatter
+schemas from an upstream schema source instead, where the manifest records one
+(`0001-F4` B-014) - and `init` never overwrites a file that exists.
+
+That layout and those options are specified and not built. Until item `0185`
+the manifest is `.specht/schema/spec-structure.schema.json` with the schemas
+beside it as `feature-spec.frontmatter.schema.json`,
+`task.frontmatter.schema.json` and `epic.frontmatter.schema.json`; until item
+`0186` every `init` writes every file. `--epics` has no item (`0001-F5` OQ-18).
 
 `schemaVersion` is a `major.minor.patch` schema version, numbered apart from
 the `specht.tool` package version; the first is `0.1.0`, and a manifest with no
@@ -121,7 +134,7 @@ as the consumer's, to match the pin and prints what changed. In the manifest
 `upgrade` adds only the keys the pinned version defines that are missing, so
 consumer settings survive (`0001-F7` decisions 0001, 0005 and 0006).
 
-This repository's own `.specht/schema/` and `.specht/templates/` are that live copy
+This repository's own `.specht/` is that live copy
 — the same bytes as the newest embedded version for the tool-owned files (the three
 frontmatter schemas and the templates), and the same manifest on its tool-owned
 keys, with rule settings and other consumer configuration excluded; a test says
@@ -131,7 +144,7 @@ so (`0001-F4` B-004).
 
 ```
 specht [--root <dir>] [--report <path>] [--strict] [--json]
-specht init [--root <dir>]
+specht init [--root <dir>] [--schemas] [--templates] [--all] [--epics]
 specht upgrade [--root <dir>]
 specht --explain SPEC031
 specht --version
@@ -157,8 +170,8 @@ a root pins, is specified and not built (`0001-F7` B-041, B-042, B-084, B-085).
 A command that pins one is specified, and neither named nor placed
 (`0001-F7` B-043 to B-051, OQ-11).
 
-`specht upgrade`, `--explain` and `--report` are specified and not built
-(`0001-F7`, `0001-F3`). What the tool accepts today is
+`specht upgrade`, `--explain`, `--report` and the four `init` options are
+specified and not built (`0001-F7`, `0001-F3`, `0001-F4`). What the tool accepts today is
 [`docs/cli.md`](docs/cli.md), which a test holds to its help (`0002-F1`).
 
 `specht manifest` and `specht rules` are specified and not built (`0001-F9`,

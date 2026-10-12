@@ -9,7 +9,7 @@ risk: 4
 parent: "0050"
 children: []
 
-depends_on: ["0052", "0176"] # a case of 0052's write; reads the recording 0176 defines
+depends_on: ["0052", "0176", "0186"] # a case of 0052's write; reads the recording 0176 defines; fetches only when 0186's selection holds the schemas
 spikes: []
 
 spec: src/tool/Features/Init/.spec/README.md
@@ -19,6 +19,7 @@ claims:
   - B-015
   - B-016
   - B-027
+  - B-034
 
 created: "2026-10-08"
 updated: "2026-10-11"
@@ -39,7 +40,8 @@ acceptance_criteria:
   - "B-014 — fetched content matches: absent schema files written, present ones kept"
   - "B-015 — fetched content mismatches the hash: stderr, nothing written, exit 3"
   - "B-016 — source unreachable for an absent file: stderr, nothing written, exit 3"
-  - "B-027 — no upstream source recorded, or a bare root and no option but `--root` and `--epics`: no network call"
+  - "B-027 — no upstream source recorded, or a root with no manifest and no option but those B-027 names: no network call"
+  - "B-034 — a recorded source and the schemas not in the selection: no network call"
   - "§ 9 carries a row naming a test for each id above."
 
 decisions:
@@ -56,6 +58,12 @@ decisions:
     (0001-F7 C-15), fetches each kind from the address 0001-F7 B-074
     gives, and reads the record 0176 builds (`spechtSchema`). No claim
     of this item changed.
+  - |
+    2026-10-11, spec-author, after the repository owner's ruling of the
+    same day (decision 0004): B-014 to B-016 now begin "the frontmatter
+    schemas are in the run's selection", and B-034 is added for a run
+    without them. The item waits on 0186, which builds the selection.
+    Rejected: B-034 in 0186, where no fetch exists to be withheld.
 
 out_of_scope:
   - "Fetching without a recorded source — 0001-F7 C-8."

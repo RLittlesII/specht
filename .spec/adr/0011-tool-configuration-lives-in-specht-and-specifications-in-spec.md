@@ -13,6 +13,17 @@ owner made the three decisions under Decision. Four points were not put to the
 owner. Each is listed under Open points with a default, and each default
 stands unless the owner overrules it in review.
 
+Amended 2026-10-11, by the owner, in session, after this record was accepted:
+the default of open point 1 is overruled. The manifest is
+`<root>/.specht/manifest.json`, and the three frontmatter schemas are
+`feature.schema.json`, `task.schema.json` and `epic.schema.json` under
+`<root>/.specht/schema/frontmatter/`. The templates folder and its file names
+are unchanged. Decisions 1 and 2 are read with those names; the retired path
+Decision 2 names is unchanged, and no path used between this record and the
+amendment is a retired one, since none shipped. Open points 2 to 4 stand. The
+body below is unedited. Recorded in
+[`0001-F5` decision 0011](../../src/specht/Manifest/.spec/decisions/0011-the-manifest-is-manifest-json-and-the-frontmatter-schemas-sit-in-their-own-folder.md).
+
 ## Context
 
 Read from commit `60de077` when this record was written.

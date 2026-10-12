@@ -8,7 +8,7 @@ value: 4
 risk: 3
 
 parent: "0001"
-children: ["0051", "0052", "0053", "0054", "0095", "0096", "0175", "0178"]
+children: ["0051", "0052", "0053", "0054", "0095", "0096", "0175", "0178", "0186"]
 
 depends_on: []
 spikes: []
@@ -33,7 +33,14 @@ claims:
   - B-015
   - B-016
   - B-017
+  - B-019
   - B-027
+  - B-029
+  - B-030
+  - B-031
+  - B-032
+  - B-033
+  - B-034
 
 created: "2026-10-08"
 updated: "2026-10-11"
@@ -72,7 +79,7 @@ acceptance_criteria:
   - "B-005 — written schema `$id` names this repository and the version (0051)"
   - "B-006 — stdout lists each file as written or skipped (0052)"
   - "B-007 — root not a directory: stderr, nothing written, exit 2 (0053)"
-  - "B-008 — nothing outside schema/ and templates/ (0052)"
+  - "B-008 — nothing but the manifest, the frontmatter schema folder and the templates folder (0052; at the new paths, 0185)"
   - "B-009 — no `--root`: working directory (0052)"
   - "B-010 — partial tree: absent files written (0053)"
   - "B-011 — partial tree: exit 0 (0053)"
@@ -82,7 +89,14 @@ acceptance_criteria:
   - "B-015 — upstream content mismatches the hash: exit 3 (0095)"
   - "B-016 — upstream source unreachable: exit 3 (0095)"
   - "B-017 — a manifest the check rejects: nothing written, exit 3 (0096)"
+  - "B-019 — `--all` without `--epics` into a bare root: no epic frontmatter schema (0186)"
   - "B-027 — nothing asks for a fetch: no network call (0095)"
+  - "B-029 — bare init writes only the manifest (0186)"
+  - "B-030 — `--schemas` adds the frontmatter schemas (0186)"
+  - "B-031 — `--templates` adds the templates (0186)"
+  - "B-032 — `--all` is `--schemas --templates` (0186)"
+  - "B-033 — stdout names no file outside the selection (0186)"
+  - "B-034 — no fetch without the schemas in the selection (0095)"
   - "§ 9 carries a row naming a test for each id above."
 
 decisions:
@@ -105,6 +119,12 @@ decisions:
     builds it (0095 -> 0176), and init recording a source is its own item
     (0178), blocked on OQ-6. Rejected: the recording inside 0095, which
     would block three claims that need no answer.
+  - |
+    2026-10-11, spec-author, on the repository owner's ruling of the same
+    day (decision 0004): the opt-in parts are their own item, 0186, under
+    this one. It waits on 0185, which moves the files init writes (0001-F5
+    decision 0011). B-034 joins 0095. Rejected: the parts inside 0185,
+    which changes no behaviour of init but the paths.
 
 out_of_scope:
   - "Everything in § 5 of the spec."

@@ -59,4 +59,16 @@ rejecting: a longer key.
 
 ## Reversal
 
-None.
+2026-10-11, the repository owner
+([decision 0011](0011-the-manifest-is-manifest-json-and-the-frontmatter-schemas-sit-in-their-own-folder.md)):
+the default file names and the folder are superseded. The defaults are
+`feature.schema.json`, `task.schema.json` and `epic.schema.json`, and each value
+is read under `<root>/.specht/schema/frontmatter/`. The `task` stem no longer
+matches a longer file name; it is the file name's stem whole.
+
+What stands: the key `frontmatterSchemas`, its three kinds, the per-kind fill
+from the default manifest, that the key is tool-owned, and that the names are
+read only under the on-disk source.
+
+Considered and not chosen: keeping the `*.frontmatter.schema.json` names; a
+value that is a path. Both are in decision 0011.
