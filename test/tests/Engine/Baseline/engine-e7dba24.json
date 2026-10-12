@@ -253,7 +253,7 @@
     "file": "epics/0001-epic/F4-feature/spec.md",
     "line": 0,
     "identifier": "8. Testing Strategy",
-    "message": "missing section '## 8. Testing Strategy' - the contracted sections are in .spec/schema/spec-structure.schema.json"
+    "message": "missing section '## 8. Testing Strategy' - the contracted sections are in .specht/schema/spec-structure.schema.json"
   },
   {
     "ruleId": "SPEC012",
@@ -573,7 +573,7 @@
     "file": "src/section-missing/.spec/README.md",
     "line": 0,
     "identifier": "8. Testing Strategy",
-    "message": "missing section '## 8. Testing Strategy' - the contracted sections are in .spec/schema/spec-structure.schema.json"
+    "message": "missing section '## 8. Testing Strategy' - the contracted sections are in .specht/schema/spec-structure.schema.json"
   },
   {
     "ruleId": "SPEC010",

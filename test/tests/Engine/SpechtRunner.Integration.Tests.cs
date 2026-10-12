@@ -7,7 +7,7 @@ namespace Specht.Tests.Engine;
 
 /// <summary>
 /// Exercises the whole pipeline over a tree on disk: discovery across both
-/// layouts, schema loading from <c>.spec/schema/</c>, and the written report.
+/// layouts, schema loading from <c>.specht/schema/</c>, and the written report.
 /// </summary>
 [Trait("Tier", "Integration")]
 public sealed class SpechtRunnerIntegrationTests
@@ -51,9 +51,10 @@ public sealed class SpechtRunnerIntegrationTests
     [Fact]
     public void ARepositoryWideSpecDirectory_WhenChecked_ShouldNotBeTreatedAsASpecification()
     {
-        // Given - the root .spec/ holds adr/, lessons/, templates/ and schema/.
+        // Given - the root .spec/ holds the brief, adr/ and lessons/.
         using var tree = new SpecTree();
         tree.WriteFeature("0001", "F1");
+        Directory.CreateDirectory(Path.Combine(tree.Root, ".spec"));
         File.WriteAllText(Path.Combine(tree.Root, ".spec", "README.md"), "# Records\n");
 
         // When

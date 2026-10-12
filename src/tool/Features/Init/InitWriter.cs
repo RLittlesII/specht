@@ -8,12 +8,13 @@ using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
+using Specht.Manifest;
 
 namespace Specht.Tool.Features.Init;
 
 /// <summary>
-/// Writes the newest shipped version of the eight files into <c>&lt;root&gt;/.spec/schema/</c> and
-/// <c>&lt;root&gt;/.spec/templates/</c> (<c>0001-F4</c> B-001, B-003, B-008), leaving every file that exists as it was (C-1).
+/// Writes the newest shipped version of the eight files into <c>&lt;root&gt;/.specht/schema/</c> and
+/// <c>&lt;root&gt;/.specht/templates/</c> (<c>0001-F4</c> B-001, B-003, B-008), leaving every file that exists as it was (C-1).
 /// </summary>
 /// <param name="shippingCopy">The embedded files by logical name, <c>schema/v&lt;n&gt;/&lt;file&gt;</c> or <c>templates/v&lt;n&gt;/&lt;file&gt;</c>.</param>
 /// <param name="fileSystem">The file system the root is written through.</param>
@@ -82,7 +83,7 @@ public sealed partial class InitWriter(IReadOnlyDictionary<string, byte[]> shipp
             .Where(static entry => entry.Name.Success)
             .Select(static entry => (
                 Version: int.Parse(entry.Name.Groups["version"].Value, CultureInfo.InvariantCulture),
-                Relative: $".spec/{entry.Name.Groups["folder"].Value}/{entry.Name.Groups["file"].Value}",
+                Relative: $"{SpecManifest.ConfigurationFolder}/{entry.Name.Groups["folder"].Value}/{entry.Name.Groups["file"].Value}",
                 entry.Bytes))
             .ToList();
         var newest = shipped.Max(static entry => entry.Version);

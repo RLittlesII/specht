@@ -75,11 +75,11 @@
     <Using Include="System.Collections.Generic" />
     <Using Include="System.IO" />
     <Using Include="System.Linq" />
-    <Content Include="..\..\.spec\schema\*.json"
-             Link=".spec\schema\%(Filename)%(Extension)"
+    <Content Include="..\..\.specht\schema\*.json"
+             Link=".specht\schema\%(Filename)%(Extension)"
              CopyToOutputDirectory="PreserveNewest" />
-    <Content Include="..\..\.spec\templates\feature.md;..\..\.spec\templates\decision.md;..\..\.spec\templates\adr.md;..\..\.spec\templates\lesson.md"
-             Link=".spec\templates\%(Filename)%(Extension)"
+    <Content Include="..\..\.specht\templates\feature.md;..\..\.specht\templates\decision.md;..\..\.specht\templates\adr.md;..\..\.specht\templates\lesson.md"
+             Link=".specht\templates\%(Filename)%(Extension)"
              CopyToOutputDirectory="PreserveNewest" />
     <Content Include="..\..\docs\schema\*.json"
              Link="docs\schema\%(Filename)%(Extension)"

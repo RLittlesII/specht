@@ -50,7 +50,7 @@ public sealed class SpecSchemas
     public SchemaVersion Version { get; }
 
     /// <summary>
-    /// Loads every schema from <paramref name="root"/>'s <c>.spec/schema/</c>, the manifest first, each frontmatter schema
+    /// Loads every schema from <paramref name="root"/>'s <c>.specht/schema/</c>, the manifest first, each frontmatter schema
     /// from the file the manifest names for its kind (<c>0001-F5</c> B-008).
     /// </summary>
     /// <remarks>
@@ -73,7 +73,7 @@ public sealed class SpecSchemas
     {
         var structure = SpecManifest.Load(fileSystem, root);
         var version = Pinned(SchemaVersions.Embedded, structure);
-        var directory = fileSystem.Path.Combine(root, ".spec", "schema");
+        var directory = SpecManifest.Under(fileSystem, root, SpecManifest.SchemaFolder);
 
         return new SpecSchemas(
             version with
@@ -86,7 +86,7 @@ public sealed class SpecSchemas
     }
 
     /// <summary>
-    /// Loads the manifest from <paramref name="root"/>'s <c>.spec/schema/</c> and the frontmatter schemas of the version it
+    /// Loads the manifest from <paramref name="root"/>'s <c>.specht/schema/</c> and the frontmatter schemas of the version it
     /// pins from <paramref name="versions"/> (<c>0001-F7</c> B-001, C-4).
     /// </summary>
     /// <remarks>Each load gets its own <see cref="SchemaRegistry"/>, for the same reason as the on-disk load.</remarks>

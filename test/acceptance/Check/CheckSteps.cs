@@ -3,7 +3,6 @@ using System.Security.Cryptography;
 using System.Text.RegularExpressions;
 using AwesomeAssertions;
 using Reqnroll;
-using Specht.Manifest;
 using Specht.Model;
 using Specht.Report;
 using Specht.Tests.Shared;
@@ -74,15 +73,31 @@ public sealed partial class CheckSteps
     [Given("a root directory with no manifest at the manifest path")]
     public void GivenARootDirectoryWithNoManifestAtTheManifestPath()
     {
-        File.Delete(Path.Combine(Tree.Root, SpecManifest.RelativePath));
+        File.Delete(Path.Combine(Tree.Root, SpecTree.ManifestPath));
         _typed = ".";
     }
 
+    [Given("a root directory with a manifest at the retired manifest path and none at the manifest path")]
+    public void GivenARootDirectoryWithAManifestAtTheRetiredManifestPathAndNoneAtTheManifestPath()
+    {
+        var retired = Path.GetDirectoryName(Path.Combine(Tree.Root, SpecTree.RetiredManifestPath))!;
+        Directory.CreateDirectory(Path.GetDirectoryName(retired)!);
+        Directory.Move(Path.Combine(Tree.Root, SpecTree.SchemaFolder), retired);
+        _typed = ".";
+    }
+
+    [Given("a file that is not a manifest at the retired manifest path")]
+    public void GivenAFileThatIsNotAManifestAtTheRetiredManifestPath()
+    {
+        _without = AcceptanceTool.Launch(Tree.Root, "--root", ".");
+        Tree.WriteRaw(SpecTree.RetiredManifestPath, "not a manifest\n");
+    }
+
     [Given("the root's manifest is not well-formed JSON")]
-    public void GivenTheRootsManifestIsNotWellFormedJson() => Tree.WriteRaw(SpecManifest.RelativePath, "{ \"sections\": ");
+    public void GivenTheRootsManifestIsNotWellFormedJson() => Tree.WriteRaw(SpecTree.ManifestPath, "{ \"sections\": ");
 
     [Given("a directory with no manifest at the manifest path")]
-    public void GivenADirectoryWithNoManifestAtTheManifestPath() => File.Delete(Path.Combine(Tree.Root, SpecManifest.RelativePath));
+    public void GivenADirectoryWithNoManifestAtTheManifestPath() => File.Delete(Path.Combine(Tree.Root, SpecTree.ManifestPath));
 
     [Given("a snapshot of every file under the root")]
     public void GivenASnapshotOfEveryFileUnderTheRoot() => _snapshot = Snapshot(Tree.Root);
@@ -206,11 +221,19 @@ public sealed partial class CheckSteps
     public void ThenTheStandardErrorNamesThatPathAsItWasTyped() => _stderr.Should().Contain(_typed);
 
     [Then("the standard error names the manifest path")]
-    public void ThenTheStandardErrorNamesTheManifestPath() => _stderr.Should().Contain(SpecManifest.RelativePath);
+    public void ThenTheStandardErrorNamesTheManifestPath() => _stderr.Should().Contain(SpecTree.ManifestPath);
+
+    [Then("the standard error says the manifest at the retired manifest path is not read")]
+    public void ThenTheStandardErrorSaysTheManifestAtTheRetiredManifestPathIsNotRead() =>
+        _stderr.Should().Contain(SpecTree.RetiredManifestPath).And.Contain("not read");
+
+    [Then("the standard output, the standard error and the exit code are those of the same root without that file")]
+    public void ThenTheStandardOutputTheStandardErrorAndTheExitCodeAreThoseOfTheSameRootWithoutThatFile() =>
+        (_stdout, _stderr, _exitCode).Should().Be(_without ?? throw new InvalidOperationException("The root was not checked without the file."));
 
     [Then("the standard error names the manifest path relative to the root")]
     public void ThenTheStandardErrorNamesTheManifestPathRelativeToTheRoot() =>
-        _stderr.Should().Contain(SpecManifest.RelativePath).And.NotContain(Tree.Root);
+        _stderr.Should().Contain(SpecTree.ManifestPath).And.NotContain(Tree.Root);
 
     [Then("the standard output is empty")]
     public void ThenTheStandardOutputIsEmpty() => _stdout.Should().BeEmpty();
@@ -321,6 +344,7 @@ public sealed partial class CheckSteps
     private string? _nested;
     private string? _typed;
     private Dictionary<string, string>? _snapshot;
+    private (string Stdout, string Stderr, int ExitCode)? _without;
     private string _stdout = string.Empty;
     private string _stderr = string.Empty;
     private int _exitCode = -1;

@@ -3,7 +3,7 @@ using Specht.Versioning;
 
 namespace Specht.Manifest;
 
-/// <summary>The ordered section contract and the id grammars, read from <c>.spec/schema/</c>.</summary>
+/// <summary>The ordered section contract and the id grammars, read from <c>.specht/schema/</c>.</summary>
 /// <param name="Sections">The <c>## </c> headings a specification must carry, in order.</param>
 /// <param name="Tables">Expected header cells, keyed by role.</param>
 /// <param name="Identifiers">Id grammars, keyed by name.</param>
@@ -17,7 +17,7 @@ public sealed record SpecStructure(
     /// <summary>What discovery finds and skips (<c>0001-F6</c> B-001, B-002, B-003, decision 0004).</summary>
     public SpecDiscoveryInputs Discovery { get; init; } = new([], [], [], [], []);
 
-    /// <summary>The frontmatter schema file names under <c>.spec/schema/</c>, keyed by kind (B-008, decision 0003).</summary>
+    /// <summary>The frontmatter schema file names under <c>.specht/schema/</c>, keyed by kind (B-008, decision 0003).</summary>
     public IReadOnlyDictionary<string, string> FrontmatterSchemas { get; init; } = new Dictionary<string, string>(StringComparer.Ordinal);
 
     /// <summary>The section title each role names, keyed by role (B-001, decision 0006).</summary>

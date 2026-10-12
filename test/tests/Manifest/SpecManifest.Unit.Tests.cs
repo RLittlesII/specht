@@ -3,6 +3,7 @@ using System.Text.Json.Nodes;
 using System.Text.RegularExpressions;
 using AwesomeAssertions;
 using Specht.Manifest;
+using Specht.Tests.Shared;
 using Specht.Versioning;
 
 namespace Specht.Tests.Manifest;
@@ -236,7 +237,50 @@ public sealed class SpecManifestUnitTests
         var load = () => SpecManifest.Load(fileSystem, Root);
 
         // Then
-        load.Should().ThrowExactly<SpechtManifestNotFoundException>().Which.Message.Should().Contain(SpecManifest.RelativePath);
+        load.Should().ThrowExactly<SpechtManifestNotFoundException>().Which.Message.Should().Contain(SpecTree.ManifestPath);
+    }
+
+    [Fact]
+    public void AManifestAtTheRetiredManifestPathAlone_WhenLoaded_ShouldThrowManifestNotFound()
+    {
+        // Given
+        var fileSystem = new MockFileSystem(
+            new Dictionary<string, MockFileData> { [Path.Combine(Root, SpecTree.RetiredManifestPath)] = new(DefaultManifest().ToJsonString()) });
+
+        // When
+        var load = () => SpecManifest.Load(fileSystem, Root);
+
+        // Then
+        load.Should().ThrowExactly<SpechtManifestNotFoundException>();
+    }
+
+    [Fact]
+    public void AManifestAtTheRetiredManifestPathAlone_WhenLoaded_ShouldSayThatManifestIsNotRead()
+    {
+        // Given
+        var fileSystem = new MockFileSystem(
+            new Dictionary<string, MockFileData> { [Path.Combine(Root, SpecTree.RetiredManifestPath)] = new(DefaultManifest().ToJsonString()) });
+
+        // When
+        var load = () => SpecManifest.Load(fileSystem, Root);
+
+        // Then
+        load.Should().ThrowExactly<SpechtManifestNotFoundException>()
+            .Which.Message.Should().Contain(SpecTree.ManifestPath).And.Contain(SpecTree.RetiredManifestPath).And.Contain("not read");
+    }
+
+    [Fact]
+    public void AFileAtTheRetiredManifestPathBesideAManifest_WhenLoaded_ShouldGiveTheStructureTheRootGivesWithoutThatFile()
+    {
+        // Given
+        var fileSystem = Holding(DefaultManifest());
+        fileSystem.AddFile(Path.Combine(Root, SpecTree.RetiredManifestPath), new MockFileData("not a manifest\n"));
+
+        // When
+        var structure = SpecManifest.Load(fileSystem, Root);
+
+        // Then
+        structure.Should().BeEquivalentTo(SpecManifest.Load(Holding(DefaultManifest()), Root));
     }
 
     [Theory]
@@ -251,7 +295,7 @@ public sealed class SpecManifestUnitTests
 
         // Then
         var thrown = load.Should().ThrowExactly<SpechtManifestUnreadableException>().Which;
-        thrown.Message.Should().Contain(SpecManifest.RelativePath).And.NotContain(Root + "/");
+        thrown.Message.Should().Contain(SpecTree.ManifestPath).And.NotContain(Root + "/");
         thrown.InnerException.Should().NotBeNull();
     }
 
@@ -915,7 +959,7 @@ public sealed class SpecManifestUnitTests
     private static MockFileSystem Holding(string manifest) =>
         new(new Dictionary<string, MockFileData>
         {
-            [Path.Combine(Root, ".spec", "schema", "spec-structure.schema.json")] = new(manifest),
+            [Path.Combine(Root, SpecTree.ManifestPath)] = new(manifest),
         });
 
     private static JsonObject DefaultManifest() =>

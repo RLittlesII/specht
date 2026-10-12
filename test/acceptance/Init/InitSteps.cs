@@ -10,7 +10,7 @@ namespace Specht.Acceptance.Init;
 
 /// <summary>
 /// Steps for <c>src/tool/Features/Init/.spec/init.feature</c> (0001-F4). B-004 compares the tool's embedded copies
-/// of the newest version with this repository's live <c>.spec/schema/</c> and <c>.spec/templates/</c>, copied into the
+/// of the newest version with this repository's live <c>.specht/schema/</c> and <c>.specht/templates/</c>, copied into the
 /// output; the live manifest is read and given a rule setting in memory, which the comparison must ignore. B-005, B-006,
 /// B-008, B-009, B-010 and B-011 launch the built tool over a synthetic root inside a temporary sandbox, from the sandbox
 /// so writing beside the root is seen, or from the root when no root is named. B-007's sandbox holds no root: the root is
@@ -49,6 +49,18 @@ public sealed partial class InitSteps
         File.WriteAllText(Written(FeatureTemplate), "# A synthetic feature template with local edits\n");
     }
 
+    [Given("a root directory holding a schema set and templates at the retired location and no schema folder and no templates folder")]
+    public void GivenARootDirectoryHoldingASchemaSetAndTemplatesAtTheRetiredLocationAndNoSchemaFolderAndNoTemplatesFolder()
+    {
+        Prepare();
+        foreach (var file in EightFiles)
+        {
+            var path = Path.Combine([Root, ".spec", .. file.Split('/')]);
+            Directory.CreateDirectory(Path.GetDirectoryName(path)!);
+            File.WriteAllText(path, $"A synthetic {file} at the retired location\n");
+        }
+    }
+
     [Given("a root path that does not exist")]
     public void GivenARootPathThatDoesNotExist()
     {
@@ -76,10 +88,10 @@ public sealed partial class InitSteps
     [Given("no other schema or template file beside it")]
     public void GivenNoOtherSchemaOrTemplateFileBesideIt() =>
         Snapshot().Keys
-            .Where(static path => path.StartsWith("repo/.spec/schema/", StringComparison.Ordinal)
-                                  || path.StartsWith("repo/.spec/templates/", StringComparison.Ordinal))
+            .Where(static path => path.StartsWith("repo/.specht/schema/", StringComparison.Ordinal)
+                                  || path.StartsWith("repo/.specht/templates/", StringComparison.Ordinal))
             .Should()
-            .Equal($"repo/.spec/{Manifest}");
+            .Equal($"repo/.specht/{Manifest}");
 
     [Given("a snapshot of every file under the root")]
     public void GivenASnapshotOfEveryFileUnderTheRoot() => _snapshot = Snapshot();
@@ -106,14 +118,14 @@ public sealed partial class InitSteps
         EightFiles.Where(static file => file.StartsWith("schema/", StringComparison.Ordinal))
             .Should()
             .HaveCount(4)
-            .And.AllSatisfy(file => File.Exists(Written(file)).Should().BeTrue($"init writes .spec/{file}; {_stdout}{_stderr}"));
+            .And.AllSatisfy(file => File.Exists(Written(file)).Should().BeTrue($"init writes .specht/{file}; {_stdout}{_stderr}"));
 
     [Then("the templates folder holds the four templates")]
     public void ThenTheTemplatesFolderHoldsTheFourTemplates() =>
         EightFiles.Where(static file => file.StartsWith("templates/", StringComparison.Ordinal))
             .Should()
             .HaveCount(4)
-            .And.AllSatisfy(file => File.Exists(Written(file)).Should().BeTrue($"init writes .spec/{file}; {_stdout}{_stderr}"));
+            .And.AllSatisfy(file => File.Exists(Written(file)).Should().BeTrue($"init writes .specht/{file}; {_stdout}{_stderr}"));
 
     [Then("the exit code is {int}")]
     public void ThenTheExitCodeIs(int code) => _exitCode.Should().Be(code, _stdout + _stderr);
@@ -124,8 +136,8 @@ public sealed partial class InitSteps
         var version = NewestVersion();
         foreach (var file in EightFiles)
         {
-            File.Exists(Written(file)).Should().BeTrue($"init writes .spec/{file}; {_stdout}{_stderr}");
-            File.ReadAllBytes(Written(file)).Should().Equal(Read(Embedded(file, version)), $"init writes .spec/{file} from the embedded copy");
+            File.Exists(Written(file)).Should().BeTrue($"init writes .specht/{file}; {_stdout}{_stderr}");
+            File.ReadAllBytes(Written(file)).Should().Equal(Read(Embedded(file, version)), $"init writes .specht/{file} from the embedded copy");
         }
     }
 
@@ -135,7 +147,7 @@ public sealed partial class InitSteps
         var version = NewestVersion();
         foreach (var file in ToolOwnedFiles.Where(static file => file.EndsWith(".frontmatter.schema.json", StringComparison.Ordinal)))
         {
-            File.Exists(Written(file)).Should().BeTrue($"init writes .spec/{file}; {_stdout}{_stderr}");
+            File.Exists(Written(file)).Should().BeTrue($"init writes .specht/{file}; {_stdout}{_stderr}");
             JsonNode.Parse(File.ReadAllText(Written(file)))!["$id"]!.GetValue<string>()
                 .Should()
                 .Be($"https://github.com/rlittlesii/specht/schema/v{version}/{Path.GetFileName(file)}");
@@ -147,7 +159,7 @@ public sealed partial class InitSteps
     {
         foreach (var file in EightFiles)
         {
-            Listing(file).Should().ContainSingle($"stdout lists .spec/{file} once; {_stdout}{_stderr}");
+            Listing(file).Should().ContainSingle($"stdout lists .specht/{file} once; {_stdout}{_stderr}");
         }
 
         _stdout.Should().NotContain(Sandbox).And.NotContain("\\");
@@ -170,8 +182,20 @@ public sealed partial class InitSteps
         var created = Snapshot().Keys.Except(before.Keys).ToList();
         created.Should().NotBeEmpty($"init ran against a bare root; {_stdout}{_stderr}");
         created.Should().AllSatisfy(static path =>
-            path.Should().Match(static path => path.StartsWith("repo/.spec/schema/", StringComparison.Ordinal)
-                                               || path.StartsWith("repo/.spec/templates/", StringComparison.Ordinal)));
+            path.Should().Match(static path => path.StartsWith("repo/.specht/schema/", StringComparison.Ordinal)
+                                               || path.StartsWith("repo/.specht/templates/", StringComparison.Ordinal)));
+    }
+
+    [Then("no file at the retired location was created, modified or deleted")]
+    public void ThenNoFileAtTheRetiredLocationWasCreatedModifiedOrDeleted()
+    {
+        var before = UnderDotSpec(_snapshot ?? throw new InvalidOperationException("No snapshot was taken."));
+        var after = UnderDotSpec(Snapshot());
+        after.Keys.Should().BeEquivalentTo(before.Keys, _stdout + _stderr);
+        foreach (var (path, bytes) in before)
+        {
+            after[path].Should().Equal(bytes, $"init leaves {path} as it was");
+        }
     }
 
     [Then("no other file was modified")]
@@ -210,8 +234,8 @@ public sealed partial class InitSteps
         var version = NewestVersion();
         foreach (var file in ToolOwnedFiles)
         {
-            File.Exists(Written(file)).Should().BeTrue($"init writes .spec/{file}; {_stdout}{_stderr}");
-            File.ReadAllBytes(Written(file)).Should().Equal(Read(Embedded(file, version)), $"init writes .spec/{file} from the embedded copy");
+            File.Exists(Written(file)).Should().BeTrue($"init writes .specht/{file}; {_stdout}{_stderr}");
+            File.ReadAllBytes(Written(file)).Should().Equal(Read(Embedded(file, version)), $"init writes .specht/{file} from the embedded copy");
         }
 
         File.ReadAllBytes(Written(Manifest)).Should().Equal(_manifest, "init leaves the manifest that was there as it was");
@@ -220,7 +244,7 @@ public sealed partial class InitSteps
     [Then("the schema folder and the templates folder are written under the working directory")]
     public void ThenTheSchemaFolderAndTheTemplatesFolderAreWrittenUnderTheWorkingDirectory() =>
         EightFiles.Should()
-            .AllSatisfy(file => File.Exists(Written(file)).Should().BeTrue($"init writes .spec/{file} under the working directory; {_stdout}{_stderr}"));
+            .AllSatisfy(file => File.Exists(Written(file)).Should().BeTrue($"init writes .specht/{file} under the working directory; {_stdout}{_stderr}"));
 
     [Then("each embedded frontmatter schema and template is byte-identical to its file")]
     public void ThenEachEmbeddedFrontmatterSchemaAndTemplateIsByteIdenticalToItsFile()
@@ -228,7 +252,7 @@ public sealed partial class InitSteps
         foreach (var (file, (embedded, live)) in Files)
         {
             embedded.Should().NotBeNull($"the tool embeds {file} at the newest version");
-            embedded.Should().Equal(live, $"the embedded {file} ships the bytes of .spec/{file}");
+            embedded.Should().Equal(live, $"the embedded {file} ships the bytes of .specht/{file}");
         }
     }
 
@@ -239,7 +263,7 @@ public sealed partial class InitSteps
         var live = _liveManifest ?? throw new InvalidOperationException("No live manifest was read.");
         foreach (var (key, value) in _embeddedManifest!)
         {
-            live.ContainsKey(key).Should().BeTrue($".spec/{Manifest} carries the tool-owned key {key}");
+            live.ContainsKey(key).Should().BeTrue($".specht/{Manifest} carries the tool-owned key {key}");
             JsonNode.DeepEquals(value, live[key]).Should().BeTrue($"the embedded and live manifests agree on the tool-owned key {key}");
         }
     }
@@ -264,7 +288,7 @@ public sealed partial class InitSteps
     private Dictionary<string, (byte[]? Embedded, byte[] Live)> Files =>
         _files ?? throw new InvalidOperationException("Nothing was compared.");
 
-    private static string Live(string file) => Path.Combine([AppContext.BaseDirectory, ".spec", .. file.Split('/')]);
+    private static string Live(string file) => Path.Combine([AppContext.BaseDirectory, ".specht", .. file.Split('/')]);
 
     private static string Embedded(string file, int version) => file.Replace("/", $"/v{version}/", StringComparison.Ordinal);
 
@@ -295,6 +319,10 @@ public sealed partial class InitSteps
         return versions.Max();
     }
 
+    private static Dictionary<string, byte[]> UnderDotSpec(Dictionary<string, byte[]> snapshot) =>
+        snapshot.Where(static entry => entry.Key.StartsWith("repo/.spec/", StringComparison.Ordinal))
+            .ToDictionary(static entry => entry.Key, static entry => entry.Value, StringComparer.Ordinal);
+
     private void Prepare()
     {
         _sandbox = Path.Combine(Path.GetTempPath(), "specht-init-" + Guid.NewGuid().ToString("N"));
@@ -304,11 +332,11 @@ public sealed partial class InitSteps
         File.WriteAllText(Path.Combine(Root, ".spec", "README.md"), "# A synthetic specification\n");
     }
 
-    private string Written(string file) => Path.Combine([Root, ".spec", .. file.Split('/')]);
+    private string Written(string file) => Path.Combine([Root, ".specht", .. file.Split('/')]);
 
     private string[] Listing(string file) =>
         _stdout.Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
-            .Where(line => line.Contains($".spec/{file}", StringComparison.Ordinal))
+            .Where(line => line.Contains($".specht/{file}", StringComparison.Ordinal))
             .ToArray();
 
     private Dictionary<string, byte[]> Snapshot() =>

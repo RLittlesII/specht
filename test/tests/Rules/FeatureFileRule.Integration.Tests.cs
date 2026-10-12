@@ -17,7 +17,7 @@ public sealed class FeatureFileRuleIntegrationTests
     {
         // Given
         using var tree = new SpecTree();
-        var path = Path.Combine(tree.Root, ".spec", "schema", "spec-structure.schema.json");
+        var path = Path.Combine(tree.Root, SpecTree.ManifestPath);
         var manifest = JsonNode.Parse(File.ReadAllText(path))!.AsObject();
         var titles = manifest["sections"]!.AsArray();
         titles[titles.Select(static title => title!.GetValue<string>()).ToList().IndexOf("3. Acceptance Criteria")] = "3. Claims";

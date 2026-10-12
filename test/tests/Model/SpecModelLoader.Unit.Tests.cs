@@ -2,6 +2,7 @@ using System.IO.Abstractions.TestingHelpers;
 using AwesomeAssertions;
 using Specht.Discovery;
 using Specht.Model;
+using Specht.Tests.Shared;
 
 namespace Specht.Tests.Model;
 
@@ -21,7 +22,7 @@ public sealed class SpecModelLoaderUnitTests
         var fileSystem = new MockFileSystem(
             new Dictionary<string, MockFileData>
             {
-                [Path.Combine("repo", ".spec", "schema", "spec-structure.schema.json")] = new("{}"),
+                [Path.Combine("repo", SpecTree.ManifestPath)] = new("{}"),
                 [Path.Combine("repo", "src", "area", ".spec", "README.md")] = new("---\nepic: \"0001\"\nid: F1\n---\n\n# Specification: F1\n"),
                 [Path.Combine("repo", "src", "area", ".spec", "area.feature")] = new("Feature: it\n"),
                 [Path.Combine("repo", "src", "area", ".spec", "0001-01-do.md")] = new("---\nid: \"0001-01\"\n---\n\n# Item\n"),

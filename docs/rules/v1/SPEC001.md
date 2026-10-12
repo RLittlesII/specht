@@ -48,5 +48,5 @@ epic: "0007"
 
 ## How to fix violations
 
-- **No block.** Add one as the first thing in the file, with the keys the file's schema requires; for a Feature, start from `.spec/templates/feature.md`.
+- **No block.** Add one as the first thing in the file, with the keys the file's schema requires; for a Feature, start from `.specht/templates/feature.md`.
 - **A block that is not read.** Remove any text above the opening `---`, add the closing `---`, or quote the value that stops the YAML parsing.

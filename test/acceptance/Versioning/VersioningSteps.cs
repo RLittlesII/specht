@@ -3,7 +3,6 @@ using System.Text.Json.Nodes;
 using System.Text.RegularExpressions;
 using AwesomeAssertions;
 using Reqnroll;
-using Specht.Manifest;
 using Specht.Report;
 using Specht.Tests.Shared;
 using Specht.Versioning;
@@ -136,7 +135,7 @@ public sealed class VersioningSteps
 
     [Given("the manifest declares the epic grammar")]
     public void GivenTheManifestDeclaresTheEpicGrammar() =>
-        (JsonNode.Parse(File.ReadAllText(Path.Combine(Tree.Root, SpecManifest.RelativePath)))!["identifiers"]?["epic"])
+        (JsonNode.Parse(File.ReadAllText(Path.Combine(Tree.Root, SpecTree.ManifestPath)))!["identifiers"]?["epic"])
             .Should()
             .NotBeNull("the manifest declares the epic grammar");
 
@@ -240,7 +239,7 @@ public sealed class VersioningSteps
 
     private void WriteSchemaVersion(JsonNode? value)
     {
-        var path = Path.Combine(Tree.Root, SpecManifest.RelativePath);
+        var path = Path.Combine(Tree.Root, SpecTree.ManifestPath);
         var manifest = JsonNode.Parse(File.ReadAllText(path))!.AsObject();
         manifest.Remove("schemaVersion");
         if (value is not null)
@@ -253,7 +252,7 @@ public sealed class VersioningSteps
 
     private void WriteUpstreamSchemaSource(Action<JsonObject> fault)
     {
-        var path = Path.Combine(Tree.Root, SpecManifest.RelativePath);
+        var path = Path.Combine(Tree.Root, SpecTree.ManifestPath);
         var manifest = JsonNode.Parse(File.ReadAllText(path))!.AsObject();
         var source = new JsonObject
         {

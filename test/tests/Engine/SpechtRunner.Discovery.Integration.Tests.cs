@@ -167,7 +167,7 @@ public sealed class SpechtRunnerDiscoveryIntegrationTests
 
     private static void Declare(SpecTree tree, string key, JsonNode value)
     {
-        var path = Path.Combine(tree.Root, ".spec", "schema", "spec-structure.schema.json");
+        var path = Path.Combine(tree.Root, SpecTree.ManifestPath);
         var manifest = JsonNode.Parse(File.ReadAllText(path))!.AsObject();
         manifest[key] = value;
         File.WriteAllText(path, manifest.ToJsonString());

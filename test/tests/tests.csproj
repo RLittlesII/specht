@@ -35,16 +35,16 @@
   <!-- The live schema set, copied into the output as hooked's test project did: the tests run against the contract the
        rules enforce, not a fixture copy of it. -->
   <ItemGroup>
-    <Content Include="..\..\.spec\schema\*.json"
-             Link=".spec\schema\%(Filename)%(Extension)"
+    <Content Include="..\..\.specht\schema\*.json"
+             Link=".specht\schema\%(Filename)%(Extension)"
              CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
   <!-- The live templates the tool ships (0001-F4 A-1, B-004), copied the same way; item.yml is this repository's own and
        not one of them. -->
   <ItemGroup>
-    <Content Include="..\..\.spec\templates\feature.md;..\..\.spec\templates\decision.md;..\..\.spec\templates\adr.md;..\..\.spec\templates\lesson.md"
-             Link=".spec\templates\%(Filename)%(Extension)"
+    <Content Include="..\..\.specht\templates\feature.md;..\..\.specht\templates\decision.md;..\..\.specht\templates\adr.md;..\..\.specht\templates\lesson.md"
+             Link=".specht\templates\%(Filename)%(Extension)"
              CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 

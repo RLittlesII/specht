@@ -1,5 +1,4 @@
 using AwesomeAssertions;
-using Specht.Manifest;
 using Specht.Tests.Engine.Baseline;
 using Specht.Tests.Shared;
 
@@ -30,7 +29,7 @@ public sealed class SpecManifestBaselineIntegrationTests
 
         if (manifest is not null)
         {
-            tree.WriteRaw(SpecManifest.RelativePath, manifest);
+            tree.WriteRaw(SpecTree.ManifestPath, manifest);
         }
 
         BaselineTree.Write(tree);

@@ -35,7 +35,7 @@ is never filled: a manifest without it sets no level. A key the engine does
 not know exits `3`; a key starting with `$` is ignored. The other `identifiers`
 entries are accepted and no rule reads them yet. The frontmatter schemas a check
 uses are the tool's embedded copy of the pinned version, not the files under
-`.spec/schema/`.
+`.specht/schema/`.
 
 Claim tags in a `.feature` file are read as `@B-nnn`, with an optional
 lowercase letter suffix, whatever `identifiers.claim` says. A configurable tag
@@ -47,7 +47,7 @@ still literals in the engine; they move into the manifest in
 
 ## Default manifest
 
-It lives at `<root>/.spec/schema/spec-structure.schema.json`. `specht init`
+It lives at `<root>/.specht/schema/spec-structure.schema.json`. `specht init`
 writes it when the file is absent. The block leaves out the five discovery keys
 (`layouts`, `exclusions`, `taskFiles`, `epicFiles` and `companionFiles`): the
 file carries each at its default, and a manifest without them is read the same

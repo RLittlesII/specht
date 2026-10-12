@@ -42,13 +42,13 @@ public override async Task<int> ExecuteAsync(CommandContext context, Settings se
 `specht`'s codes are decided (brief § 5) and CI and, from 0062, the pre-commit
 hook depend on them:
 
-| Code | Means                                                                              |
-| ---- | ---------------------------------------------------------------------------------- |
-| `0`  | clean                                                                              |
-| `1`  | violations — any violation at all under `--strict`, otherwise at least one error   |
-| `2`  | the root or the manifest (`.spec/schema/spec-structure.schema.json`) was not found |
-| `3`  | the manifest is invalid, including a pinned version the tool does not ship         |
-| `4`  | a thing named on the command line was not found, such as an `--explain` rule id    |
+| Code | Means                                                                                |
+| ---- | ------------------------------------------------------------------------------------ |
+| `0`  | clean                                                                                |
+| `1`  | violations — any violation at all under `--strict`, otherwise at least one error     |
+| `2`  | the root or the manifest (`.specht/schema/spec-structure.schema.json`) was not found |
+| `3`  | the manifest is invalid, including a pinned version the tool does not ship           |
+| `4`  | a thing named on the command line was not found, such as an `--explain` rule id      |
 
 A new category gets a new constant and a decision record (`0001-F2` decision
 0003 added `4`); a code is never reused for a second meaning.

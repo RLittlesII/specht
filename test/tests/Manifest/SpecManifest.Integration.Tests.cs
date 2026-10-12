@@ -28,7 +28,7 @@ public sealed class SpecManifestIntegrationTests
             spec,
             "Feature: it\n\n  @B-001\n  Scenario: It does the thing\n    Given a thing\n\n  @B-404\n  Scenario: Phantom\n    Given nothing\n");
         tree.Run().Violations.Should().HaveCount(3);
-        var path = Path.Combine(tree.Root, ".spec", "schema", "spec-structure.schema.json");
+        var path = Path.Combine(tree.Root, SpecTree.ManifestPath);
         var manifest = JsonNode.Parse(File.ReadAllText(path))!.AsObject();
         manifest["glossary"] = "synthetic";
         File.WriteAllText(path, manifest.ToJsonString());

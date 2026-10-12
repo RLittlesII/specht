@@ -1,3 +1,4 @@
+using Specht.Manifest;
 using Specht.Model;
 
 namespace Specht.Rules;
@@ -36,7 +37,7 @@ public sealed class SectionStructureRule : ISpecRule
                         feature.RelativePath,
                         0,
                         title,
-                        $"missing section '## {title}' - the contracted sections are in .spec/schema/spec-structure.schema.json");
+                        $"missing section '## {title}' - the contracted sections are in {SpecManifest.RelativePath}");
                 }
                 else if (count > 1)
                 {

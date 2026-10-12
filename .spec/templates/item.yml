@@ -15,7 +15,7 @@
 # This file is the schema for a work item — the local stand-in for a GitHub
 # issue. It owns DELIVERY STATE; a Feature's .spec/README.md owns CONTENT.
 # Neither duplicates the other. It is this repository's tracker only: specht
-# does not ship it, so it lives here and not in .spec/templates/, whose files
+# does not ship it, so it lives here and not in .specht/templates/, whose files
 # are the embedded v1 copy (0001-F7 B-004).
 #
 # A FEATURE ITEM IS CUT FROM AN EXISTING SPEC, never the reverse: the spec is
