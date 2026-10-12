@@ -19,8 +19,11 @@ namespace Specht.Acceptance.Versioning;
 /// stderr and exit code and B-002, B-022 and B-023 read the document it printed. "The tool ships schema version 0.1.0
 /// only" is the real embedded set, asserted, not built. "The manifest's schema version is ..." writes a value of digits
 /// alone as a JSON number, the integer the retired pin was, and any other value as a JSON string. B-004's three steps stay
-/// unbound: its proof against what was published is item 0044's. The rest of the file's scenarios stay pending for their
-/// items; a step one of them shares with a scenario above is bound, and its other steps are not.
+/// unbound: its proof against what was published is item 0044's. Item 0176 binds B-069 to B-073 and B-076: each writes a
+/// synthetic <c>spechtSchema</c> into the root's manifest with one fault and launches the built tool, and the rejection is
+/// read from its stderr as the manifest's own name for the member or the kind, in quotes. B-068 and B-075 are item 0092's
+/// and B-074 is item 0093's. The rest of the file's scenarios stay pending for their items; a step one of them shares with
+/// a scenario above is bound, and its other steps are not.
 /// </summary>
 [Binding]
 [Scope(Feature = "Schema versioning")]
@@ -94,6 +97,49 @@ public sealed class VersioningSteps
     public void GivenTheRootHoldsAnEpicWhoseFrontmatterCarriesAnEmpty(string key) =>
         Tree.WriteEpic("0001", new Dictionary<string, string> { [key] = "\"\"" });
 
+    [Given(@"^the manifest records an upstream schema source without its (address|version|content hashes)$")]
+    public void GivenTheManifestRecordsAnUpstreamSchemaSourceWithoutIts(string part) =>
+        WriteUpstreamSchemaSource(source => source.Remove(SourceNames[part]));
+
+    [Given(@"^the manifest records an upstream schema source at (a web address with no security|a folder on the machine|a package name)$")]
+    public void GivenTheManifestRecordsAnUpstreamSchemaSourceAt(string address) =>
+        WriteUpstreamSchemaSource(source => source["location"] = address switch
+        {
+            "a web address with no security" => "http://schemas.example/specht/",
+            "a folder on the machine" => "schemas/upstream/",
+            _ => "specht.schemas",
+        });
+
+    [Given("the manifest records an upstream schema source with an empty version")]
+    public void GivenTheManifestRecordsAnUpstreamSchemaSourceWithAnEmptyVersion() =>
+        WriteUpstreamSchemaSource(static source => source["version"] = string.Empty);
+
+    [Given("the manifest records an upstream schema source with no content hash for the item schema")]
+    public void GivenTheManifestRecordsAnUpstreamSchemaSourceWithNoContentHashForTheItemSchema() =>
+        WriteUpstreamSchemaSource(static source => source["hashes"]!.AsObject().Remove("task"));
+
+    [Given(
+        @"^the manifest records an upstream schema source whose content hash for the item schema is "
+            + "(written without its algorithm|written in capital digits|shorter than the algorithm's|another algorithm's)$")]
+    public void GivenTheManifestRecordsAnUpstreamSchemaSourceWhoseContentHashForTheItemSchemaIs(string form) =>
+        WriteUpstreamSchemaSource(source => source["hashes"]!["task"] = form switch
+        {
+            "written without its algorithm" => new string('b', 64),
+            "written in capital digits" => "sha256:" + new string('B', 64),
+            "shorter than the algorithm's" => "sha256:" + new string('b', 63),
+            _ => "sha512:" + new string('b', 128),
+        });
+
+    [Given("the manifest records an upstream schema source with content hashes for the Feature and item schemas only")]
+    public void GivenTheManifestRecordsAnUpstreamSchemaSourceWithContentHashesForTheFeatureAndItemSchemasOnly() =>
+        WriteUpstreamSchemaSource(static source => source["hashes"]!.AsObject().Remove("epic"));
+
+    [Given("the manifest declares the epic grammar")]
+    public void GivenTheManifestDeclaresTheEpicGrammar() =>
+        (JsonNode.Parse(File.ReadAllText(Path.Combine(Tree.Root, SpecManifest.RelativePath)))!["identifiers"]?["epic"])
+            .Should()
+            .NotBeNull("the manifest declares the epic grammar");
+
     [When("the check runs")]
     [When("the check runs with JSON output")]
     public void WhenTheCheckRuns()
@@ -137,6 +183,13 @@ public sealed class VersioningSteps
 
     [Then("the exit code is {int}")]
     public void ThenTheExitCodeIs(int code) => _exitCode.Should().Be(code, _stderr);
+
+    [Then("the manifest is rejected")]
+    public void ThenTheManifestIsRejected() => _exitCode.Should().Be(3, _stderr);
+
+    [Then(@"^the rejection names the (address|version|content hashes|item schema|epic schema)$")]
+    public void ThenTheRejectionNamesThe(string part) =>
+        _stderr.Should().Contain($"'{SourceNames[part]}'", "the rejection names the {0}", part);
 
     [Then("no frontmatter violation is reported for the epic")]
     public void ThenNoFrontmatterViolationIsReportedForTheEpic() =>
@@ -198,6 +251,26 @@ public sealed class VersioningSteps
         File.WriteAllText(path, manifest.ToJsonString());
     }
 
+    private void WriteUpstreamSchemaSource(Action<JsonObject> fault)
+    {
+        var path = Path.Combine(Tree.Root, SpecManifest.RelativePath);
+        var manifest = JsonNode.Parse(File.ReadAllText(path))!.AsObject();
+        var source = new JsonObject
+        {
+            ["location"] = "https://schemas.example/specht/",
+            ["version"] = "2026.10",
+            ["hashes"] = new JsonObject
+            {
+                ["feature"] = "sha256:" + new string('a', 64),
+                ["task"] = "sha256:" + new string('b', 64),
+                ["epic"] = "sha256:" + new string('c', 64),
+            },
+        };
+        fault(source);
+        manifest["spechtSchema"] = source;
+        File.WriteAllText(path, manifest.ToJsonString());
+    }
+
     private const string MissingRule = "SPEC031";
 
     private const string EpicPath = "epics/0001-epic/epic.md";
@@ -207,6 +280,15 @@ public sealed class VersioningSteps
             + "| B-001 | It does the thing. | brd | Active |\n| B-002 | It does another thing. | brd | Active |\n";
 
     private static readonly HashSet<string> FrontmatterRules = new(StringComparer.Ordinal) { "SPEC001", "SPEC002", "SPEC003", "SPEC004" };
+
+    private static readonly Dictionary<string, string> SourceNames = new(StringComparer.Ordinal)
+    {
+        ["address"] = "location",
+        ["version"] = "version",
+        ["content hashes"] = "hashes",
+        ["item schema"] = "task",
+        ["epic schema"] = "epic",
+    };
 
     private SpecTree? _tree;
     private Dictionary<SemanticVersion, SchemaVersion>? _shipped;

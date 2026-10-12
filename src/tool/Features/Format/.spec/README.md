@@ -20,7 +20,7 @@ depends_on: ["F1", "F4", "0001/F7"]
 blocks: []
 spikes: []
 created: "2026-10-08"
-updated: "2026-10-08"
+updated: "2026-10-11"
 github_issue: null
 synced_at: null
 ---
@@ -80,12 +80,12 @@ Once `0101-F1` and `0101-F4` report rows and keys out of order, someone has to m
 
 ## 4. Constraints
 
-<!-- last written by: spec-author, 2026-10-08 -->
+<!-- last written by: spec-author, 2026-10-08, 2026-10-11 (C-2 amended, ADR-0011) -->
 
 | ID  | Constraint                                                                                                                                     | Rules Out                                                                                                                                        |
 | --- | ---------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
 | C-1 | The command moves whole table rows and whole frontmatter keys; it never edits a cell, a heading, a value or prose, and never renumbers an id.  | Renumbering to close a gap; trimming or re-padding a cell; re-quoting a value; retitling a heading; inserting or deleting a row (decision 0001). |
-| C-2 | The command writes only the files it reorders, in place, under the root.                                                                       | A backup or temporary file left in the tree; a new file; a write to `.spec/schema/` or `.spec/templates/`; a write outside the root.             |
+| C-2 | The command writes only the files it reorders, in place, under the root.                                                                       | A backup or temporary file left in the tree; a new file; a write to `.specht/schema/` or `.specht/templates/`; a write outside the root.         |
 | C-3 | The check stays read-only; reordering is this command's alone.                                                                                 | A `--fix` on the check; the check calling this command; any write from a check run (`0001-F2` B-012).                                            |
 | C-4 | The order applied is the one the check's rules declare, read through the same engine.                                                          | A second ordering implementation in the command that can disagree with `0101-F1` or `0101-F4`.                                                   |
 | C-5 | Deterministic and offline: the result is a function of the tree, the manifest and the pinned version, and every derived path is root-relative. | A network call; a clock, locale or machine name in the output; an absolute derived path (brief § 9).                                             |
@@ -151,9 +151,9 @@ Pending: owned by `test-writer`, written after agreement.
 
 ## 10. Lessons / Spec Deltas
 
-<!-- last written by: spec-author, 2026-10-08 -->
+<!-- last written by: spec-author, 2026-10-08, 2026-10-11 (ADR-0011) -->
 
-None.
+- 2026-10-11, C-2 amended in place: what it rules out names `.specht/schema/` and `.specht/templates/`, where the tool's configuration now is ([ADR-0011](../../../../../.spec/adr/0011-tool-configuration-lives-in-specht-and-specifications-in-spec.md)). The rule is unchanged, and no claim changed.
 
 ## 11. Open Questions
 

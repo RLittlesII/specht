@@ -35,7 +35,7 @@ A violation today says what is wrong and not what would be right, so the agent t
 
 ## 2. User Needs
 
-<!-- last written by: spec-author, 2026-10-09 (need 6, A-4 and A-5 added, decision 0003; A-4 amended for the owner's move to `docs/`) -->
+<!-- last written by: spec-author, 2026-10-09 (need 6, A-4 and A-5 added, decision 0003; A-4 amended for the owner's move to `docs/`), 2026-10-11 (A-1 amended, ADR-0011) -->
 
 | #   | Persona                                  | Need                                                                                             | Pain Point Today                                                                         |
 | --- | ---------------------------------------- | ------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------- |
@@ -50,7 +50,7 @@ A violation today says what is wrong and not what would be right, so the agent t
 
 | ID  | Assumption                                                                                                                                                                                                                                                                                                                          |
 | --- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| A-1 | The report's JSON Schema is published at `docs/schema/report.schema.json`. It is the tool's contract, versioned with the tool, so it lives outside `.spec/schema/` and `init` never writes it. The folder name is reversible.                                                                                                       |
+| A-1 | The report's JSON Schema is published at `docs/schema/report.schema.json`. It is the tool's contract, versioned with the tool, so it lives outside `.specht/schema/` and `init` never writes it. The folder name is reversible.                                                                                                     |
 | A-2 | The exit code for `--explain` with a rule id outside the pinned version's vocabulary is `4`, not found (OQ-1, resolved 2026-10-08; `0001-F2` decision 0003). The proposed default `2` was not chosen.                                                                                                                               |
 | A-3 | `--explain` is an option on the check command, as brief § 5 writes it (`specht --explain SPEC031`); it prints and exits without running a check.                                                                                                                                                                                    |
 | A-4 | A rule page's file sits at `docs/rules/v<n>/SPEC###.md` and ships embedded in the engine, which is where C-6 says the text lives (decision 0003, amended 2026-10-09: was `src/specht/Rules/docs/v<n>/`). `docs/` is the owner's; `rules/v<n>/` is the author's reading. `v<n>` is `v1` today; its later form is `0001-F7` OQ-22's.  |
@@ -287,7 +287,7 @@ Item `0034` builds the document and its schema, `0035` writes it under `--json`,
 
 ## 10. Lessons / Spec Deltas
 
-<!-- last written by: spec-author, 2026-10-10 (item 0120: scenario wording and the `schemaVersion` type, `0001-F7` decision 0005; OQ-5 raised, then amended with the additive reading, then its second sentence corrected), 2026-10-11 (§ 5 row 10, `0001-F10` decision 0001), 2026-10-11 (OQ-6 and OQ-7, `0055-F6` decision 0004) -->
+<!-- last written by: spec-author, 2026-10-10 (item 0120: scenario wording and the `schemaVersion` type, `0001-F7` decision 0005; OQ-5 raised, then amended with the additive reading, then its second sentence corrected), 2026-10-11 (§ 5 row 10, `0001-F10` decision 0001), 2026-10-11 (OQ-6 and OQ-7, `0055-F6` decision 0004), 2026-10-11 (ADR-0011) -->
 
 - 2026-10-09, the owner asked for a documentation page per rule and decided that the pages are the rule text C-6 names ([decision 0003](decisions/0003-rule-pages-are-the-rule-text.md)). C-6 and B-019 are untouched. Need 6, A-4, A-5, B-031 to B-033, C-8 and § 5 rows 8 to 11 added; OQ-3 raised for what `--explain` prints of a page's frontmatter.
 - 2026-10-09, the owner reviewed the pages on the pull request and moved them to the repository-root `docs/` and asked for them terse (decision 0003, amended). A-4 amended: a page's file sits at `docs/rules/v<n>/` and still ships embedded in the engine, so C-6, B-019 and B-031 to B-033 are untouched; the `rules/v<n>/` sub-path is the author's reading. § 5 row 12 added for terseness; B-032's shape is unchanged.
@@ -299,6 +299,7 @@ Item `0034` builds the document and its schema, `0035` writes it under `--json`,
 - 2026-10-10, item `0120`, answering `spec-reviewer`'s non-blocking finding in § 12 (the § 10-11 row for item `0120`, round 2): OQ-5's second sentence said item `0120` changes the type "as `0001-F7` decision 0005 and B-002 require", which the same row then denied. It now says what they require, that the document name the version as `major.minor.patch` text, and the later sentence that said so keeps only that neither says the integer member goes. OQ-5 stays open. No claim, constraint or scenario changed.
 - 2026-10-11, § 5 row 10 amended by spec-author for the owner's `specht rules` ([`0001-F10` decision 0001](../../../tool/Features/Rules/.spec/decisions/0001-the-rule-list-is-read-from-the-versions-vocabulary-not-a-second-catalogue.md)): the listing reads the pinned version's vocabulary and its rule pages and keeps no second catalogue, so the row's exclusion of an index file and C-6 stand. No claim, constraint or scenario changed.
 - 2026-10-11, the owner ruled that the first release waits for a schema sourced at a URL ([`0055-F6` decision 0004](../../../../.build/Releasing/.spec/decisions/0004-the-first-release-waits-for-a-schema-sourced-at-a-url.md)). Raised and not answered: OQ-6, the members that name a recorded upstream source and its version (B-005); OQ-7, what `--explain` does before the source is fetched. No claim, constraint or scenario changed.
+- 2026-10-11, A-1 amended in place: the report schema lives outside `.specht/schema/`, where the tool's configuration now is ([ADR-0011](../../../../.spec/adr/0011-tool-configuration-lives-in-specht-and-specifications-in-spec.md)). No claim changed.
 
 ## 11. Open Questions
 

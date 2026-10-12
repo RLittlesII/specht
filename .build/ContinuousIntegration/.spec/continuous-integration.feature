@@ -16,6 +16,12 @@ Feature: Continuous integration
     Then the build runs against the pull request's head
 
   @B-001 @boundary
+  Scenario: A documentation change inside the tool's configuration folder is built
+    Given a pull request that changes only Markdown inside the tool's configuration folder
+    When integration runs
+    Then the build runs against the pull request's head
+
+  @B-001 @boundary
   Scenario: Documentation changed alongside code is built
     Given a pull request that changes documentation and code together
     When integration runs
@@ -34,7 +40,7 @@ Feature: Continuous integration
 
   @B-002 @boundary
   Scenario: A documentation-only push to main is built
-    Given a commit that changes only documentation outside any specification folder
+    Given a commit that changes only documentation outside any specification folder and outside the tool's configuration folder
     When it is pushed to the main branch
     Then the build runs against that commit
 
@@ -105,13 +111,13 @@ Feature: Continuous integration
 
   @B-012
   Scenario: A documentation-only pull request skips the gates
-    Given a pull request that changes only documentation outside any specification folder
+    Given a pull request that changes only documentation outside any specification folder and outside the tool's configuration folder
     When integration runs
     Then none of the build's gates runs
 
   @B-013
   Scenario: A documentation-only pull request passes its checks
-    Given a pull request that changes only documentation outside any specification folder
+    Given a pull request that changes only documentation outside any specification folder and outside the tool's configuration folder
     When integration runs
     Then the Linux and Windows checks each pass
 
@@ -163,7 +169,7 @@ Feature: Continuous integration
 
   @B-017 @boundary
   Scenario: A documentation-only pull request has no merged tree checked
-    Given a pull request that changes only documentation outside any specification folder
+    Given a pull request that changes only documentation outside any specification folder and outside the tool's configuration folder
     When integration runs
     Then the self-check runs over no merged tree
 
