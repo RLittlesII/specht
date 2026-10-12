@@ -26,9 +26,9 @@ internal sealed partial class SpecModelFixture
                     new Dictionary<string, MockFileData>
                     {
                         [Path.Combine("repo", SpecTree.ManifestPath)] = new(manifest.ToJsonString()),
-                        [Path.Combine("repo", SpecTree.SchemaFolder, "feature-spec.frontmatter.schema.json")] = new("{}"),
-                        [Path.Combine("repo", SpecTree.SchemaFolder, "task.frontmatter.schema.json")] = new("{}"),
-                        [Path.Combine("repo", SpecTree.SchemaFolder, "epic.frontmatter.schema.json")] = new("{}"),
+                        [Path.Combine("repo", SpecTree.FeatureSchemaPath)] = new("{}"),
+                        [Path.Combine("repo", SpecTree.ItemSchemaPath)] = new("{}"),
+                        [Path.Combine("repo", SpecTree.EpicSchemaPath)] = new("{}"),
                     }),
                 "repo"));
 

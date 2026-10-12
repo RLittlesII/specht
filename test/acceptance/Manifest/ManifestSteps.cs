@@ -311,9 +311,10 @@ public sealed class ManifestSteps
     [Given("the schema folder holds that file and not the default name")]
     public void GivenTheSchemaFolderHoldsThatFileAndNotTheDefaultName()
     {
-        var schema = Path.Combine(Tree.Root, SpecTree.SchemaFolder);
+        var schema = Path.Combine(Tree.Root, SpecTree.FrontmatterSchemaFolder);
+        Directory.CreateDirectory(schema);
         File.WriteAllText(Path.Combine(schema, FeatureSchema), FeatureSchemaRejectingTheDomain);
-        File.Delete(Path.Combine(schema, "feature-spec.frontmatter.schema.json"));
+        File.Delete(Path.Combine(Tree.Root, SpecTree.FeatureSchemaPath));
     }
 
     [Then("every specification's frontmatter is checked against {string}")]

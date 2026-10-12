@@ -39,7 +39,7 @@ public sealed class InitCommandIntegrationTests : IDisposable
         var root = Path.Combine(_sandbox, "repo");
         var path = Path.Combine([root, .. present.Split('/')]);
         Directory.CreateDirectory(Path.GetDirectoryName(path)!);
-        File.Copy(Path.Combine([AppContext.BaseDirectory, .. present.Split('/')]), path);
+        File.WriteAllText(path, present.EndsWith(".json", StringComparison.Ordinal) ? "{}\n" : "# A synthetic template with local edits\n");
 
         // When
         var (stdout, stderr, exitCode) = AcceptanceTool.Launch(_sandbox, "init", "--root", "repo");
@@ -120,10 +120,10 @@ public sealed class InitCommandIntegrationTests : IDisposable
 
     private static readonly string[] Files =
     [
-        ".specht/schema/spec-structure.schema.json",
-        ".specht/schema/feature-spec.frontmatter.schema.json",
-        ".specht/schema/task.frontmatter.schema.json",
-        ".specht/schema/epic.frontmatter.schema.json",
+        ".specht/manifest.json",
+        ".specht/schema/frontmatter/feature.schema.json",
+        ".specht/schema/frontmatter/task.schema.json",
+        ".specht/schema/frontmatter/epic.schema.json",
         ".specht/templates/feature.md",
         ".specht/templates/decision.md",
         ".specht/templates/adr.md",

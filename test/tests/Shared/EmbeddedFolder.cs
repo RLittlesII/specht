@@ -36,6 +36,6 @@ internal static partial class EmbeddedFolder
             : throw new InvalidOperationException($"Schema version {version.Number} was embedded under {folders.Count} folders, not one.");
     }
 
-    [GeneratedRegex("^schema/v([0-9]+)/feature-spec\\.frontmatter\\.schema\\.json$")]
+    [GeneratedRegex("^schema/v([0-9]+)/frontmatter/feature\\.schema\\.json$")]
     private static partial Regex FeatureSchema();
 }

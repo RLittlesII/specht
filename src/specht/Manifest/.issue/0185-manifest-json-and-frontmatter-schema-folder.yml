@@ -2,7 +2,7 @@ id: "0185"
 type: task
 title: Move the manifest to manifest.json and the frontmatter schemas to their own folder
 
-status: ready-for-architecture
+status: in-progress
 
 risk: 3
 

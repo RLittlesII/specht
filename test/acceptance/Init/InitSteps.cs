@@ -10,12 +10,14 @@ namespace Specht.Acceptance.Init;
 
 /// <summary>
 /// Steps for <c>src/tool/Features/Init/.spec/init.feature</c> (0001-F4). B-004 compares the tool's embedded copies
-/// of the newest version with this repository's live <c>.specht/schema/</c> and <c>.specht/templates/</c>, copied into the
-/// output; the live manifest is read and given a rule setting in memory, which the comparison must ignore. B-005, B-006,
-/// B-008, B-009, B-010 and B-011 launch the built tool over a synthetic root inside a temporary sandbox, from the sandbox
-/// so writing beside the root is seen, or from the root when no root is named. B-007's sandbox holds no root: the root is
-/// typed relative to it, and the sandbox is snapshotted before the run. B-010 and B-011's manifest is the embedded one
-/// with <c>schemaVersion</c> set to the newest version shipped.
+/// of the newest version with this repository's live <c>.specht/manifest.json</c>, <c>.specht/schema/frontmatter/</c> and
+/// <c>.specht/templates/</c> (<c>0001-F5</c> decision 0011), copied into the output; the live manifest is read and given a
+/// rule setting in memory, which the comparison must ignore. B-007 and B-009 launch the built tool over a synthetic root
+/// inside a temporary sandbox, from the sandbox so writing beside the root is seen, or from the root when no root is named.
+/// B-007's sandbox holds no root: the root is typed relative to it, and the sandbox is snapshotted before the run. B-010 and
+/// B-011's manifest is the embedded one with <c>schemaVersion</c> set to the newest version shipped. The steps that run
+/// <c>init</c> with a part named - with schemas, with templates, with every part - are item 0186's and have no binding, so
+/// the scenarios of B-003, B-005, B-006, B-008, B-010, B-011 and B-028 do not run until it binds them.
 /// </summary>
 [Binding]
 [Scope(Feature = "init")]
@@ -28,32 +30,32 @@ public sealed partial class InitSteps
     [Given("this repository's manifest lowers one rule's severity")]
     public void GivenThisRepositorysManifestLowersOneRulesSeverity()
     {
+        File.Exists(Live(Manifest)).Should().BeTrue($"this repository's live manifest is .specht/{Manifest}");
         _liveManifest = JsonNode.Parse(File.ReadAllText(Live(Manifest)))!.AsObject();
         _liveManifest["rules"] = new JsonObject { ["SPEC031"] = "warning" };
     }
 
-    [Given("a root directory with no schema folder and no templates folder")]
-    [Given("a root directory with no schema folder")]
-    [Given("a working directory with no schema folder and no templates folder")]
-    public void GivenARootDirectoryWithNoSchemaFolderAndNoTemplatesFolder() => Prepare();
+    [Given("a root directory with no configuration folder")]
+    [Given("a working directory with no configuration folder")]
+    public void GivenARootDirectoryWithNoConfigurationFolder() => Prepare();
 
     [Given("no upstream schema source is recorded")]
     public void GivenNoUpstreamSchemaSourceIsRecorded() =>
         File.Exists(Written(Manifest)).Should().BeFalse("a root with no manifest records no upstream schema source");
 
-    [Given("a root directory whose templates folder already holds the feature template")]
-    public void GivenARootDirectoryWhoseTemplatesFolderAlreadyHoldsTheFeatureTemplate()
+    [Given("a root directory holding only the feature template")]
+    public void GivenARootDirectoryHoldingOnlyTheFeatureTemplate()
     {
         Prepare();
         Directory.CreateDirectory(Path.GetDirectoryName(Written(FeatureTemplate))!);
         File.WriteAllText(Written(FeatureTemplate), "# A synthetic feature template with local edits\n");
     }
 
-    [Given("a root directory holding a schema set and templates at the retired location and no schema folder and no templates folder")]
-    public void GivenARootDirectoryHoldingASchemaSetAndTemplatesAtTheRetiredLocationAndNoSchemaFolderAndNoTemplatesFolder()
+    [Given("a root directory holding a schema set and templates at the retired location and no configuration folder")]
+    public void GivenARootDirectoryHoldingASchemaSetAndTemplatesAtTheRetiredLocationAndNoConfigurationFolder()
     {
         Prepare();
-        foreach (var file in EightFiles)
+        foreach (var file in RetiredFiles)
         {
             var path = Path.Combine([Root, ".spec", .. file.Split('/')]);
             Directory.CreateDirectory(Path.GetDirectoryName(path)!);
@@ -72,26 +74,20 @@ public sealed partial class InitSteps
         _snapshot = Snapshot();
     }
 
-    [Given("a root directory whose schema folder holds a manifest pinning the newest version the tool ships and declaring the epic grammar")]
-    public void GivenARootDirectoryWhoseSchemaFolderHoldsAManifestPinningTheNewestVersionTheToolShipsAndDeclaringTheEpicGrammar()
+    [Given("a root directory holding only a manifest pinning the newest version the tool ships and declaring the epic grammar")]
+    public void GivenARootDirectoryHoldingOnlyAManifestPinningTheNewestVersionTheToolShipsAndDeclaringTheEpicGrammar()
     {
         Prepare();
         var version = NewestVersion();
-        var manifest = JsonNode.Parse(Read(Embedded(Manifest, version)))!.AsObject();
+        var embedded = Read(Embedded(Manifest, version));
+        embedded.Should().NotBeNull($"the tool embeds {Embedded(Manifest, version)}");
+        var manifest = JsonNode.Parse(embedded)!.AsObject();
         manifest["schemaVersion"] = SchemaVersions.Embedded.Versions[^1].Number.ToString();
         (manifest["identifiers"]?["epic"]).Should().NotBeNull("the manifest declares the epic grammar");
         _manifest = System.Text.Encoding.UTF8.GetBytes(manifest.ToJsonString());
         Directory.CreateDirectory(Path.GetDirectoryName(Written(Manifest))!);
         File.WriteAllBytes(Written(Manifest), _manifest);
     }
-
-    [Given("no other schema or template file beside it")]
-    public void GivenNoOtherSchemaOrTemplateFileBesideIt() =>
-        Snapshot().Keys
-            .Where(static path => path.StartsWith("repo/.specht/schema/", StringComparison.Ordinal)
-                                  || path.StartsWith("repo/.specht/templates/", StringComparison.Ordinal))
-            .Should()
-            .Equal($"repo/.specht/{Manifest}");
 
     [Given("a snapshot of every file under the root")]
     public void GivenASnapshotOfEveryFileUnderTheRoot() => _snapshot = Snapshot();
@@ -102,27 +98,27 @@ public sealed partial class InitSteps
     [When("init runs there without naming a root")]
     public void WhenInitRunsThereWithoutNamingARoot() => (_stdout, _stderr, _exitCode) = AcceptanceTool.Launch(Root, "init");
 
-    [When("its embedded copies of the newest version are compared with the files under this repository's schema and templates folders")]
-    public void WhenItsEmbeddedCopiesOfTheNewestVersionAreComparedWithTheFilesUnderThisRepositorysSchemaAndTemplatesFolders()
+    [When("its embedded copies of the newest version are compared with this repository's live manifest, frontmatter schemas and templates")]
+    public void WhenItsEmbeddedCopiesOfTheNewestVersionAreComparedWithThisRepositorysLiveManifestFrontmatterSchemasAndTemplates()
     {
         var version = NewestVersion();
         _files = ToolOwnedFiles.ToDictionary(
             static file => file,
-            file => (Read(Embedded(file, version)), File.ReadAllBytes(Live(file))));
+            file => (Read(Embedded(file, version)), File.Exists(Live(file)) ? File.ReadAllBytes(Live(file)) : null));
         var manifest = Read(Embedded(Manifest, version));
         _embeddedManifest = manifest is null ? null : JsonNode.Parse(manifest)!.AsObject();
     }
 
-    [Then("the schema folder holds the manifest and the three frontmatter schemas")]
-    public void ThenTheSchemaFolderHoldsTheManifestAndTheThreeFrontmatterSchemas() =>
-        EightFiles.Where(static file => file.StartsWith("schema/", StringComparison.Ordinal))
+    [Then("the frontmatter schema folder holds the Feature, item and epic frontmatter schemas")]
+    public void ThenTheFrontmatterSchemaFolderHoldsTheFeatureItemAndEpicFrontmatterSchemas() =>
+        ToolOwnedFiles.Where(static file => file.StartsWith(FrontmatterSchemas, StringComparison.Ordinal))
             .Should()
-            .HaveCount(4)
+            .HaveCount(3)
             .And.AllSatisfy(file => File.Exists(Written(file)).Should().BeTrue($"init writes .specht/{file}; {_stdout}{_stderr}"));
 
     [Then("the templates folder holds the four templates")]
     public void ThenTheTemplatesFolderHoldsTheFourTemplates() =>
-        EightFiles.Where(static file => file.StartsWith("templates/", StringComparison.Ordinal))
+        ToolOwnedFiles.Where(static file => file.StartsWith("templates/", StringComparison.Ordinal))
             .Should()
             .HaveCount(4)
             .And.AllSatisfy(file => File.Exists(Written(file)).Should().BeTrue($"init writes .specht/{file}; {_stdout}{_stderr}"));
@@ -130,27 +126,34 @@ public sealed partial class InitSteps
     [Then("the exit code is {int}")]
     public void ThenTheExitCodeIs(int code) => _exitCode.Should().Be(code, _stdout + _stderr);
 
-    [Then("each written file is byte-identical to the tool's embedded copy")]
-    public void ThenEachWrittenFileIsByteIdenticalToTheToolsEmbeddedCopy()
+    [Then("each written file other than the manifest is byte-identical to the tool's embedded copy")]
+    public void ThenEachWrittenFileOtherThanTheManifestIsByteIdenticalToTheToolsEmbeddedCopy()
     {
         var version = NewestVersion();
-        foreach (var file in EightFiles)
+        var written = ToolOwnedFiles.Where(file => File.Exists(Written(file))).ToList();
+        written.Should().NotBeEmpty($"init wrote a file other than the manifest; {_stdout}{_stderr}");
+        foreach (var file in written)
         {
-            File.Exists(Written(file)).Should().BeTrue($"init writes .specht/{file}; {_stdout}{_stderr}");
             File.ReadAllBytes(Written(file)).Should().Equal(Read(Embedded(file, version)), $"init writes .specht/{file} from the embedded copy");
         }
     }
 
-    [Then("each frontmatter schema written carries an id under this repository's schema address for the version written")]
-    public void ThenEachFrontmatterSchemaWrittenCarriesAnIdUnderThisRepositorysSchemaAddressForTheVersionWritten()
+    [Then(
+        "each frontmatter schema written carries an id made of this repository's schema address, the version written, "
+        + "the frontmatter folder and its own file name")]
+    public void ThenEachFrontmatterSchemaWrittenCarriesAnId()
     {
         var version = NewestVersion();
-        foreach (var file in ToolOwnedFiles.Where(static file => file.EndsWith(".frontmatter.schema.json", StringComparison.Ordinal)))
+        var written = ToolOwnedFiles
+            .Where(static file => file.StartsWith(FrontmatterSchemas, StringComparison.Ordinal))
+            .Where(file => File.Exists(Written(file)))
+            .ToList();
+        written.Should().NotBeEmpty($"init wrote a frontmatter schema; {_stdout}{_stderr}");
+        foreach (var file in written)
         {
-            File.Exists(Written(file)).Should().BeTrue($"init writes .specht/{file}; {_stdout}{_stderr}");
             JsonNode.Parse(File.ReadAllText(Written(file)))!["$id"]!.GetValue<string>()
                 .Should()
-                .Be($"https://github.com/rlittlesii/specht/schema/v{version}/{Path.GetFileName(file)}");
+                .Be($"https://github.com/rlittlesii/specht/schema/v{version}/frontmatter/{Path.GetFileName(file)}");
         }
     }
 
@@ -175,14 +178,15 @@ public sealed partial class InitSteps
         }
     }
 
-    [Then("the only files created are under the schema folder and the templates folder")]
-    public void ThenTheOnlyFilesCreatedAreUnderTheSchemaFolderAndTheTemplatesFolder()
+    [Then("the only files created are the manifest and files under the frontmatter schema folder and the templates folder")]
+    public void ThenTheOnlyFilesCreatedAreTheManifestAndFilesUnderTheFrontmatterSchemaFolderAndTheTemplatesFolder()
     {
         var before = _snapshot ?? throw new InvalidOperationException("No snapshot was taken.");
         var created = Snapshot().Keys.Except(before.Keys).ToList();
         created.Should().NotBeEmpty($"init ran against a bare root; {_stdout}{_stderr}");
         created.Should().AllSatisfy(static path =>
-            path.Should().Match(static path => path.StartsWith("repo/.specht/schema/", StringComparison.Ordinal)
+            path.Should().Match(static path => path == $"repo/.specht/{Manifest}"
+                                               || path.StartsWith($"repo/.specht/{FrontmatterSchemas}", StringComparison.Ordinal)
                                                || path.StartsWith("repo/.specht/templates/", StringComparison.Ordinal)));
     }
 
@@ -228,8 +232,8 @@ public sealed partial class InitSteps
         Directory.Exists(Root).Should().BeFalse($"init never creates the root; {_stdout}{_stderr}");
     }
 
-    [Then("the seven other files are written")]
-    public void ThenTheSevenOtherFilesAreWritten()
+    [Then("the three frontmatter schemas and the four templates are written")]
+    public void ThenTheThreeFrontmatterSchemasAndTheFourTemplatesAreWritten()
     {
         var version = NewestVersion();
         foreach (var file in ToolOwnedFiles)
@@ -241,10 +245,9 @@ public sealed partial class InitSteps
         File.ReadAllBytes(Written(Manifest)).Should().Equal(_manifest, "init leaves the manifest that was there as it was");
     }
 
-    [Then("the schema folder and the templates folder are written under the working directory")]
-    public void ThenTheSchemaFolderAndTheTemplatesFolderAreWrittenUnderTheWorkingDirectory() =>
-        EightFiles.Should()
-            .AllSatisfy(file => File.Exists(Written(file)).Should().BeTrue($"init writes .specht/{file} under the working directory; {_stdout}{_stderr}"));
+    [Then("the manifest is written under the working directory")]
+    public void ThenTheManifestIsWrittenUnderTheWorkingDirectory() =>
+        File.Exists(Written(Manifest)).Should().BeTrue($"init writes .specht/{Manifest} under the working directory; {_stdout}{_stderr}");
 
     [Then("each embedded frontmatter schema and template is byte-identical to its file")]
     public void ThenEachEmbeddedFrontmatterSchemaAndTemplateIsByteIdenticalToItsFile()
@@ -252,6 +255,7 @@ public sealed partial class InitSteps
         foreach (var (file, (embedded, live)) in Files)
         {
             embedded.Should().NotBeNull($"the tool embeds {file} at the newest version");
+            live.Should().NotBeNull($"this repository's live copy holds .specht/{file}");
             embedded.Should().Equal(live, $"the embedded {file} ships the bytes of .specht/{file}");
         }
     }
@@ -285,12 +289,17 @@ public sealed partial class InitSteps
 
     private string Root => Path.Combine(Sandbox, _typed);
 
-    private Dictionary<string, (byte[]? Embedded, byte[] Live)> Files =>
+    private Dictionary<string, (byte[]? Embedded, byte[]? Live)> Files =>
         _files ?? throw new InvalidOperationException("Nothing was compared.");
 
     private static string Live(string file) => Path.Combine([AppContext.BaseDirectory, ".specht", .. file.Split('/')]);
 
-    private static string Embedded(string file, int version) => file.Replace("/", $"/v{version}/", StringComparison.Ordinal);
+    private static string Embedded(string file, int version)
+    {
+        var folder = file.IndexOf('/', StringComparison.Ordinal);
+
+        return folder < 0 ? $"manifest/v{version}/{file}" : $"{file[..folder]}/v{version}{file[folder..]}";
+    }
 
     [GeneratedRegex("^schema/v([0-9]+)/")]
     private static partial Regex SchemaVersion();
@@ -346,12 +355,26 @@ public sealed partial class InitSteps
                 File.ReadAllBytes,
                 StringComparer.Ordinal);
 
-    private const string Manifest = "schema/spec-structure.schema.json";
+    private const string Manifest = "manifest.json";
+
+    private const string FrontmatterSchemas = "schema/frontmatter/";
 
     private const string FeatureTemplate = "templates/feature.md";
 
     private static readonly string[] ToolOwnedFiles =
     [
+        FrontmatterSchemas + "feature.schema.json",
+        FrontmatterSchemas + "task.schema.json",
+        FrontmatterSchemas + "epic.schema.json",
+        "templates/feature.md",
+        "templates/decision.md",
+        "templates/adr.md",
+        "templates/lesson.md",
+    ];
+
+    private static readonly string[] RetiredFiles =
+    [
+        "schema/spec-structure.schema.json",
         "schema/feature-spec.frontmatter.schema.json",
         "schema/task.frontmatter.schema.json",
         "schema/epic.frontmatter.schema.json",
@@ -362,7 +385,7 @@ public sealed partial class InitSteps
     ];
 
     private JsonObject? _liveManifest;
-    private Dictionary<string, (byte[]? Embedded, byte[] Live)>? _files;
+    private Dictionary<string, (byte[]? Embedded, byte[]? Live)>? _files;
     private JsonObject? _embeddedManifest;
     private string? _sandbox;
     private Dictionary<string, byte[]>? _snapshot;

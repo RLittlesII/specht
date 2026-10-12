@@ -7,7 +7,7 @@ namespace Specht.Tests.Engine;
 
 /// <summary>
 /// Exercises the whole pipeline over a tree on disk: discovery across both
-/// layouts, schema loading from <c>.specht/schema/</c>, and the written report.
+/// layouts, schema loading from <c>.specht/schema/frontmatter/</c>, and the written report.
 /// </summary>
 [Trait("Tier", "Integration")]
 public sealed class SpechtRunnerIntegrationTests
