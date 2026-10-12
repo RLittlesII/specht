@@ -19,6 +19,11 @@ claims:
   - B-025
   - B-028
   - B-032
+  - B-077
+  - B-078
+  - B-079
+  - B-080
+  - B-081
 
 created: "2026-10-08"
 updated: "2026-10-11"
@@ -37,6 +42,11 @@ acceptance_criteria:
   - "B-025 — upstream recorded: no network call from the check"
   - "B-028 — upstream recorded: the pinned embedded version's rule ids"
   - "B-032 — upstream recorded, no source selected: on-disk"
+  - "B-077 — a fetched kind's schema file absent: exit 3"
+  - "B-078 — that check: the absent file named on stderr"
+  - "B-079 — that check: the command that fetches it named on stderr"
+  - "B-080 — a local file that does not match its recorded hash: exit 3"
+  - "B-081 — that check: the file named on stderr"
   - "§ 9 carries a row naming a test for each id above."
 
 decisions:
@@ -49,9 +59,15 @@ decisions:
     local copy that it took from 0043 before. Not an owner ruling.
     Rejected: keeping the edge to 0043, which holds the release behind the
     names of an option (OQ-1) the upstream case never reads.
+  - |
+    2026-10-11, spec-author, after the repository owner ratified decision
+    0008 and ruled OQ-37 and OQ-38 as (a): B-077 to B-081 added, the
+    check with a schema file absent and with a local copy that does not
+    match its hash. The cut is spec-author's. Which command B-079 names
+    is OQ-47, open; `specht init` is spec-author's reading.
 
 out_of_scope:
   - "Fetching the source — 0095, 0093."
   - "Selecting a source by configuration or on the command line — 0043."
   - "An upstream source recorded with the embedded source selected, B-036 — 0177."
-  - "A recorded source whose local file is absent, and verifying the hash in the check — OQ-37 and OQ-38, open; no claim yet."
+  - "A way to edit a fetched schema by hand — OQ-43, open; no claim yet."
