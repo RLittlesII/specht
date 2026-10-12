@@ -62,6 +62,26 @@ Feature: The check command
     And the standard output is empty
     And the exit code is 2
 
+  @B-037
+  Scenario: A manifest left at the retired manifest path is a missing-input failure
+    Given a root directory with a manifest at the retired manifest path and none at the manifest path
+    When the check runs against it
+    Then the exit code is 2
+
+  @B-038
+  Scenario: The failure says the manifest at the retired manifest path is not read
+    Given a root directory with a manifest at the retired manifest path and none at the manifest path
+    When the check runs against it
+    Then the standard error names the manifest path
+    And the standard error says the manifest at the retired manifest path is not read
+
+  @B-039 @boundary
+  Scenario: A manifest at the retired manifest path is never read
+    Given the root holds a specification with one violation
+    And a file that is not a manifest at the retired manifest path
+    When the check runs
+    Then the standard output, the standard error and the exit code are those of the same root without that file
+
   @B-007
   Scenario: A manifest that does not parse is an invalid-configuration failure
     Given the root's manifest is not well-formed JSON
