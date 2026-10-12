@@ -35,8 +35,10 @@ public static class SpecManifest
     /// role naming a title <c>sections</c> does not list, a <c>tables</c> key that is not a role, a marker whose text is empty,
     /// an empty <c>taskFiles</c>, <c>epicFiles</c> or <c>companionFiles</c> list, an <c>exclusions</c> entry with a
     /// <c>/</c> inside it and no leading <c>/</c>, a <c>layouts</c> entry whose <c>identity</c> holds a member that is not a
-    /// non-negative integer, a member other than <c>epic</c> and <c>feature</c>, or neither of the two, or a <c>rules</c> entry
-    /// whose value is not <c>error</c>, <c>warning</c> or <c>off</c>.
+    /// non-negative integer, a member other than <c>epic</c> and <c>feature</c>, or neither of the two, a <c>rules</c> entry
+    /// whose value is not <c>error</c>, <c>warning</c> or <c>off</c>, or a <c>spechtSchema</c> that lacks a member, gives a
+    /// <c>location</c> that is not an <c>https</c> address or a <c>version</c> that is not a non-empty string, or holds for a
+    /// fetched kind no hash or one that is not <c>sha256:</c> and 64 lowercase hexadecimal digits (<c>0001-F7</c> B-069 to B-073).
     /// </exception>
     public static SpecStructure Load(IFileSystem fileSystem, string root)
     {
@@ -77,6 +79,8 @@ public static class SpecManifest
                 $"{RelativePath}: the engine does not know the key {string.Join(", ", unknown)}.");
         }
 
+        var frontmatterSchemas = Filled(manifest, "frontmatterSchemas");
+        var sourceFaults = new List<string>();
         var structure = new SpecStructure(
             Strings(manifest["sections"] ?? Defaults["sections"]!),
             Tables(manifest["tables"] ?? Defaults["tables"]!),
@@ -84,16 +88,81 @@ public static class SpecManifest
             SchemaVersion(manifest))
         {
             Discovery = Discovery(manifest),
-            FrontmatterSchemas = Filled(manifest, "frontmatterSchemas"),
+            FrontmatterSchemas = frontmatterSchemas,
             Roles = Filled(manifest, "roles"),
             Markers = Filled(manifest, "markers"),
             Rules = Levels(manifest["rules"]),
+            SpechtSchema = SpechtSchema(manifest, frontmatterSchemas, sourceFaults),
         };
 
-        Check(structure, IdentityFaults(manifest));
+        Check(structure, IdentityFaults(manifest).Concat(sourceFaults));
 
         return structure;
     }
+
+    private static UpstreamSchemaSource? SpechtSchema(JsonObject manifest, Dictionary<string, string> fileNames, List<string> faults)
+    {
+        if (!manifest.TryGetPropertyValue("spechtSchema", out var node))
+        {
+            return null;
+        }
+
+        var source = Present(node).AsObject();
+
+        faults.AddRange(
+            new[] { "location", "version", "hashes" }
+                .Where(member => !source.ContainsKey(member))
+                .Select(static member => $"spechtSchema has no '{member}'"));
+
+        var location = Text(source["location"]);
+        var version = Text(source["version"]);
+
+        if (source.ContainsKey("location")
+            && !(Uri.TryCreate(location, UriKind.Absolute, out var address) && address.Scheme == Uri.UriSchemeHttps))
+        {
+            faults.Add("the 'location' of spechtSchema is not an https address");
+        }
+
+        if (source.ContainsKey("version") && string.IsNullOrEmpty(version))
+        {
+            faults.Add("the 'version' of spechtSchema is not a non-empty string");
+        }
+
+        var files = new List<UpstreamSchemaFile>();
+
+        if (source.TryGetPropertyValue("hashes", out var declared))
+        {
+            var hashes = Present(declared).AsObject();
+            var kinds = manifest["identifiers"]?["epic"] is null ? new[] { "feature", "task" } : ["feature", "task", "epic"];
+
+            foreach (var kind in kinds)
+            {
+                if (!hashes.TryGetPropertyValue(kind, out var entry))
+                {
+                    faults.Add($"the 'hashes' of spechtSchema holds no entry for the kind '{kind}'");
+                }
+                else if (Text(entry) is not { } hash || !IsSha256(hash))
+                {
+                    faults.Add(
+                        $"the 'hashes' entry of spechtSchema for the kind '{kind}' is not 'sha256:' followed by 64 lowercase hexadecimal digits");
+                }
+                else
+                {
+                    files.Add(new UpstreamSchemaFile(kind, fileNames[kind], location + fileNames[kind], hash));
+                }
+            }
+        }
+
+        return faults.Count == 0 ? new UpstreamSchemaSource(location!, version!, files) : null;
+    }
+
+    private static string? Text(JsonNode? node) =>
+        node is JsonValue value && value.TryGetValue<string>(out var text) ? text : null;
+
+    private static bool IsSha256(string hash) =>
+        hash.Length == 71
+            && hash.StartsWith("sha256:", StringComparison.Ordinal)
+            && hash.AsSpan(7).IndexOfAnyExcept("0123456789abcdef") < 0;
 
     private static void Check(SpecStructure structure, IEnumerable<string> identityFaults)
     {
@@ -270,6 +339,7 @@ public static class SpecManifest
         "roles",
         "markers",
         "rules",
+        "spechtSchema",
     };
 
     private static readonly JsonObject Defaults = ReadDefaults();

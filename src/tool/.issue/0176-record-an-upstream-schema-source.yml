@@ -2,7 +2,7 @@ id: "0176"
 type: task
 title: Read the manifest key that records an upstream schema source
 
-status: in-progress
+status: done
 
 risk: 3
 
@@ -27,7 +27,7 @@ claims:
 
 created: "2026-10-11"
 updated: "2026-10-11"
-closed: null
+closed: "2026-10-11"
 
 summary: |
   Decision 0004 says a manifest records an upstream schema source as an
