@@ -21,6 +21,9 @@ The local tool manifest pins the tool's version in the repository, so CI and
 every clone run the same release after `dotnet tool restore`. A local tool runs
 as `dotnet specht`.
 
+`dotnet tool install -g specht.tool` puts `specht` on PATH for a shell. It is
+not pinned per repository, so a build still uses the manifest.
+
 ## Initialise
 
 ```sh

@@ -104,4 +104,12 @@ specification files as `AdditionalFiles`.
 
 ## Reversal
 
-None.
+2026-10-11, in part, by the repository owner
+([decision 0009](0009-a-global-install-is-a-second-documented-path.md)).
+Nothing above is edited.
+
+- **A global install is documented as a second path, for a shell.** The
+  rejected alternative "A global tool install" is reversed on that point
+  only. Its objection stands: a global install pins nothing beside the
+  repository, so a build, a hook and CI still call the tool through the
+  committed local tool manifest (C-6).

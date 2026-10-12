@@ -28,8 +28,9 @@ One-line goal: _"A repository pins a schema version, its build calls the tool,
 and no repository carries the engine."_
 
 Distribution is the NuGet package `specht.tool`, command `specht`, installed per
-consumer through a local tool manifest. `src/tool` is the one project that
-packs; `IsPackable=false` everywhere else.
+consumer through a local tool manifest; a global install is the second
+documented path, for a shell (`0001-F2` decision 0009). `src/tool` is the one
+project that packs; `IsPackable=false` everywhere else.
 
 `README.md` is the public front page: what the tool is, why, how to install and
 use it, and the layout; the reference pages are under `docs/`. The design

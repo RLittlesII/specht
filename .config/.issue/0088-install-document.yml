@@ -19,6 +19,7 @@ claims:
   - B-004
   - B-005
   - B-006
+  - B-008
 
 created: "2026-10-08"
 updated: "2026-10-11"
@@ -26,14 +27,15 @@ closed: null
 
 summary: |
   A section of `README.md` (C-4): feed, source entry with an environment
-  credential (C-1), a local install (C-2), and nothing of a consumer's
-  build (C-3).
+  credential (C-1), the local and the global install (C-2), and nothing
+  of a consumer's build (C-3).
 
 acceptance_criteria:
   - "B-001 — empty repository following it: `specht.tool` in its local tool manifest"
   - "B-004 — the feed's address and the package source entry"
   - "B-005 — the token scope and how CI supplies it"
   - "B-006 — the install and restore commands"
+  - "B-008 — the global install command, that it puts `specht` on PATH, and that a manifest install runs as `dotnet specht`"
   - "§ 9 carries a row naming a test for each id above."
 
 decisions:
@@ -43,6 +45,11 @@ decisions:
     is not published and the three commands, and writes no feed address,
     source entry or token. This item replaces that notice with the install
     section once 0084 publishes. Its scope and `risk` are unchanged.
+  - |
+    2026-10-11, spec-author: B-008 joined, from `0001-F2` decision 0009 (a
+    global install is a second documented path, for a shell). `risk` is
+    unchanged. `0055-F7` OQ-3 is open on the package source and credential
+    a global install uses; this item writes its proposed default.
 
 out_of_scope:
   - "Moving it into `docs/` — § 5 #7, epic 0002."

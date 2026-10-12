@@ -11,9 +11,9 @@ type: reference
 `specht` ships as `specht.tool` on NuGet.org, command `specht`. A consumer
 installs it **per repository** through a local tool manifest: a committed
 `.config/dotnet-tools.json` pins the tool version beside the schema version the
-repository has chosen, and `dotnet tool restore` in CI brings it back. Nothing
-is installed globally, and no consumer carries the engine as a project reference
-(brief § 2 Must-4, § 6).
+repository has chosen, and `dotnet tool restore` in CI brings it back. No build
+depends on a global install, and no consumer carries the engine as a project
+reference (brief § 2 Must-4, § 6).
 
 This repository is its own first consumer. Its build and, from 0062, its
 pre-commit hook run `dotnet specht` from its own manifest — the same call site
@@ -52,8 +52,9 @@ dotnet tool install -g specht.tool
 Installs to `~/.dotnet/tools` (Linux/macOS) or `%USERPROFILE%\.dotnet\tools` (Windows).
 The command is on `PATH` immediately — invoke as `specht`.
 
-**When to use**: a developer trying the tool on a repository that has not
-adopted it. Not how a consumer repository pins it.
+**When to use**: a shell that wants bare `specht`, or a developer trying the
+tool on a repository that has not adopted it. Documented as a second path
+(`0001-F2` decision 0009). Not how a consumer repository pins it.
 
 ## Local Install (Version-Pinned, Per-Repo) — the consumer path
 

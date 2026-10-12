@@ -18,7 +18,7 @@ claims:
   - B-014
 
 created: "2026-10-08"
-updated: "2026-10-10"
+updated: "2026-10-11"
 closed: null
 
 summary: |
@@ -31,8 +31,12 @@ acceptance_criteria:
   - "B-014 — Specht invokes the tool via `.config/dotnet-tools.json`"
   - "§ 9 carries a row naming a test for each id above."
 
-decisions: []
+decisions:
+  - |
+    2026-10-11, spec-author: the out-of-scope line on a global install
+    follows C-6 as amended by `0001-F2` decision 0009. Scope and `risk` are
+    unchanged.
 
 out_of_scope:
   - "The release workflow that publishes the package — § 5 #7."
-  - "A global install as the documented path — C-6."
+  - "A build, hook or CI run that depends on a globally installed tool — C-6."
