@@ -2,7 +2,7 @@ id: "0176"
 type: task
 title: Read the manifest key that records an upstream schema source
 
-status: ready-for-architecture
+status: done
 
 risk: 3
 
@@ -27,7 +27,7 @@ claims:
 
 created: "2026-10-11"
 updated: "2026-10-11"
-closed: null
+closed: "2026-10-11"
 
 summary: |
   Decision 0004 says a manifest records an upstream schema source as an
@@ -76,6 +76,40 @@ decisions:
     settled before 0095 fetches; the cut is spec-author's, not an owner
     ruling. B-074's scenario runs `upgrade`, so until 0093 its proof here
     is a test of the model.
+  - |
+    2026-10-11, implementer, the design pass; the item is taken. The
+    design is in the specification's § 6 and § 7, from "The upstream
+    schema source is a record on the structure". SpecManifest reads the
+    key in its existing parse onto SpecStructure.SpechtSchema, null when
+    absent: an UpstreamSchemaSource holding Location, Version and Files,
+    one UpstreamSchemaFile (Kind, FileName, Address, Hash) for each
+    fetched kind. Every rejection is code, joined to the faults the
+    loader already collects: the manifest file is data and no JSON
+    Schema describes it. No schema file changes, so 0001-F4 B-004 and
+    0001-F1 B-004 hold as they are. No ADR and no new decision number.
+    Three calls are the implementer's and not an owner ruling. The epic
+    kind is fetched when the manifest's own text declares
+    identifiers.epic, read before the fill, because the loader still
+    fills that grammar (0001-F5 B-019 as amended is unbuilt). A
+    rejection names the member or the kind and never repeats the value,
+    because a location that is a folder is an absolute path. What OQ-46
+    asks about is neither rejected nor carried. Rejected: a JSON Schema
+    for the manifest, which would be a second validator beside the
+    parse; a parser of its own for one key ahead of ADR-0010's stage 5;
+    computing the address in each reader.
+  - |
+    2026-10-11, implementer, the test seam. Unit, in
+    SpecManifestUnitTests over SpecManifest.Load and a mock file system:
+    B-068 the record, and null with no key; B-069 to B-073 one theory
+    each, the message naming the member or the kind; B-074 each file's
+    Address; B-075 and B-076 the kinds in Files with and without
+    identifiers.epic, and under it a missing epic hash rejected naming
+    epic. Integration: rows for B-069 to B-073 in
+    CheckCommandIntegrationTests' input-failure theory, exit 3 and an
+    empty stdout. Acceptance: the scenarios of B-069 to B-073 and B-076
+    bind through the check. B-068's scenario reads the report document
+    and B-075's needs the check to read the local copy; both are 0092's
+    to turn green. B-074's two scenarios run upgrade and wait for 0093.
 
 out_of_scope:
   - "Reading the schemas from the local copy, a file absent and a file that does not match its hash — 0092."

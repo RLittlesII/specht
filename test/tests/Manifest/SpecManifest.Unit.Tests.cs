@@ -9,9 +9,9 @@ namespace Specht.Tests.Manifest;
 
 /// <summary>
 /// The manifest loader over an in-memory file system (0001-F5 B-001, B-002, B-003, B-008, B-012, B-015, B-017, B-019, B-020,
-/// B-021, B-039, B-040, B-041, B-043, B-044, B-045; 0001-F2 B-005, B-006, B-007; 0001-F7 B-002, B-039): what it rejects and as
-/// which failure, what it ignores, the schema version it reads, what it fills from the default manifest, and that it fills no
-/// rule setting.
+/// B-021, B-039, B-040, B-041, B-043, B-044, B-045; 0001-F2 B-005, B-006, B-007; 0001-F7 B-002, B-039, B-068 to B-076): what
+/// it rejects and as which failure, what it ignores, the schema version it reads, the upstream schema source it records, what
+/// it fills from the default manifest, and that it fills no rule setting.
 /// </summary>
 [Trait("Tier", "Unit")]
 public sealed class SpecManifestUnitTests
@@ -129,6 +129,50 @@ public sealed class SpecManifestUnitTests
         { "a member that is a negative number", """{ "epic": 1, "feature": -1 }""", "feature" },
         { "a member that is a fraction", """{ "epic": 1.5, "feature": 2 }""", "epic" },
         { "a member other than the epic and the Feature segment", """{ "epic": 1, "feature": 2, "team": 3 }""", "team" },
+    };
+
+    /// <summary>
+    /// Gets a <c>spechtSchema</c> <c>location</c> that is not an <c>https</c> address, as the manifest's JSON writes it
+    /// (<c>0001-F7</c> B-070).
+    /// </summary>
+    public static TheoryData<string, string> LocationsThatAreNotHttpsAddresses { get; } = new()
+    {
+        { "a web address with no security", "\"http://schemas.example/specht/\"" },
+        { "a folder on the machine", "\"schemas/upstream/\"" },
+        { "a package name", "\"specht.schemas\"" },
+        { "a number", "42" },
+    };
+
+    /// <summary>
+    /// Gets a <c>spechtSchema</c> <c>version</c> that is not a non-empty string, as the manifest's JSON writes it
+    /// (<c>0001-F7</c> B-071).
+    /// </summary>
+    public static TheoryData<string, string> VersionsThatAreNotNonEmptyStrings { get; } = new()
+    {
+        { "an empty string", "\"\"" },
+        { "a number", "1" },
+    };
+
+    /// <summary>
+    /// Gets a <c>hashes</c> value that is not <c>sha256:</c> followed by 64 lowercase hexadecimal digits (<c>0001-F7</c>
+    /// B-073).
+    /// </summary>
+    public static TheoryData<string, string> HashesInAnotherForm { get; } = new()
+    {
+        { "written without its algorithm", new string('b', 64) },
+        { "written in capital digits", "sha256:" + new string('B', 64) },
+        { "shorter than the algorithm's", "sha256:" + new string('b', 63) },
+        { "another algorithm's", "sha512:" + new string('b', 128) },
+    };
+
+    /// <summary>
+    /// Gets whether a manifest declares the epic grammar, and the kinds its upstream schema source fetches (<c>0001-F7</c>
+    /// B-075, B-076).
+    /// </summary>
+    public static TheoryData<string, bool, string[]> FetchedKinds { get; } = new()
+    {
+        { "no epic grammar fetches the Feature and item kinds", false, ["feature", "task"] },
+        { "the epic grammar fetches the epic kind too", true, ["feature", "task", "epic"] },
     };
 
     [Theory]
@@ -678,6 +722,194 @@ public sealed class SpecManifestUnitTests
         structure.Rules.Should().BeEmpty();
     }
 
+    [Fact]
+    public void AManifestRecordingAnUpstreamSchemaSource_WhenLoaded_ShouldReadItsLocationItsVersionAndTheHashOfEachFetchedKind()
+    {
+        // Given
+        var manifest = DefaultManifest();
+        manifest["spechtSchema"] = UpstreamSchemaSource();
+        var fileSystem = Holding(manifest);
+
+        // When
+        var source = SpecManifest.Load(fileSystem, Root).SpechtSchema;
+
+        // Then
+        source.Should().NotBeNull();
+        source!.Location.Should().Be("https://schemas.example/specht/");
+        source.Version.Should().Be("2026.10");
+        source.Files.ToDictionary(static file => file.Kind, static file => file.Hash).Should().Equal(
+            new Dictionary<string, string>
+            {
+                ["feature"] = "sha256:" + new string('a', 64),
+                ["task"] = "sha256:" + new string('b', 64),
+                ["epic"] = "sha256:" + new string('c', 64),
+            });
+    }
+
+    [Fact]
+    public void AManifestWithNoSpechtSchema_WhenLoaded_ShouldRecordNoUpstreamSchemaSource()
+    {
+        // Given
+        var fileSystem = Holding(DefaultManifest());
+
+        // When
+        var structure = SpecManifest.Load(fileSystem, Root);
+
+        // Then
+        structure.SpechtSchema.Should().BeNull();
+    }
+
+    [Theory]
+    [InlineData("location")]
+    [InlineData("version")]
+    [InlineData("hashes")]
+    public void AManifestWhoseSpechtSchemaLacksAMember_WhenLoaded_ShouldRejectItNamingTheMember(string member)
+    {
+        // Given
+        var manifest = DefaultManifest();
+        var source = UpstreamSchemaSource();
+        source.Remove(member);
+        manifest["spechtSchema"] = source;
+        var fileSystem = Holding(manifest);
+
+        // When
+        var load = () => SpecManifest.Load(fileSystem, Root);
+
+        // Then
+        load.Should().ThrowExactly<SpechtManifestException>().Which.Message.Should().Contain($"'{member}'");
+    }
+
+    [Theory]
+    [MemberData(nameof(LocationsThatAreNotHttpsAddresses))]
+    public void AManifestWhoseSpechtSchemaLocationIsNotAnHttpsAddress_WhenLoaded_ShouldRejectItNamingLocation(string because, string location)
+    {
+        // Given
+        var manifest = DefaultManifest();
+        var source = UpstreamSchemaSource();
+        source["location"] = JsonNode.Parse(location);
+        manifest["spechtSchema"] = source;
+        var fileSystem = Holding(manifest);
+
+        // When
+        var load = () => SpecManifest.Load(fileSystem, Root);
+
+        // Then
+        load.Should().ThrowExactly<SpechtManifestException>(because).Which.Message.Should().Contain("'location'", because);
+    }
+
+    [Theory]
+    [MemberData(nameof(VersionsThatAreNotNonEmptyStrings))]
+    public void AManifestWhoseSpechtSchemaVersionIsNotANonEmptyString_WhenLoaded_ShouldRejectItNamingVersion(string because, string version)
+    {
+        // Given
+        var manifest = DefaultManifest();
+        var source = UpstreamSchemaSource();
+        source["version"] = JsonNode.Parse(version);
+        manifest["spechtSchema"] = source;
+        var fileSystem = Holding(manifest);
+
+        // When
+        var load = () => SpecManifest.Load(fileSystem, Root);
+
+        // Then
+        load.Should().ThrowExactly<SpechtManifestException>(because).Which.Message.Should().Contain("'version'", because);
+    }
+
+    [Theory]
+    [InlineData("feature")]
+    [InlineData("task")]
+    [InlineData("epic")]
+    public void AManifestWhoseSpechtSchemaHoldsNoHashForAFetchedKind_WhenLoaded_ShouldRejectItNamingTheKind(string kind)
+    {
+        // Given
+        var manifest = DefaultManifest();
+        var source = UpstreamSchemaSource();
+        source["hashes"]!.AsObject().Remove(kind);
+        manifest["spechtSchema"] = source;
+        var fileSystem = Holding(manifest);
+
+        // When
+        var load = () => SpecManifest.Load(fileSystem, Root);
+
+        // Then
+        load.Should().ThrowExactly<SpechtManifestException>().Which.Message.Should().Contain($"'{kind}'");
+    }
+
+    [Theory]
+    [MemberData(nameof(HashesInAnotherForm))]
+    public void AManifestWhoseSpechtSchemaHashIsNotSha256AndSixtyFourLowercaseHexDigits_WhenLoaded_ShouldRejectItNamingTheKind(
+        string because,
+        string hash)
+    {
+        // Given
+        var manifest = DefaultManifest();
+        var source = UpstreamSchemaSource();
+        source["hashes"]!["task"] = hash;
+        manifest["spechtSchema"] = source;
+        var fileSystem = Holding(manifest);
+
+        // When
+        var load = () => SpecManifest.Load(fileSystem, Root);
+
+        // Then
+        load.Should().ThrowExactly<SpechtManifestException>(because).Which.Message.Should().Contain("'task'", because);
+    }
+
+    [Theory]
+    [MemberData(nameof(DeclaredFrontmatterSchemas))]
+    public void AManifestRecordingAnUpstreamSchemaSource_WhenLoaded_ShouldAddressEachFetchedKindAtTheLocationFollowedByItsFileName(
+        string kind,
+        string name)
+    {
+        // Given
+        var manifest = DefaultManifest();
+        manifest["frontmatterSchemas"] = new JsonObject
+        {
+            ["feature"] = "feature.json",
+            ["task"] = "item.json",
+            ["epic"] = "epic.json",
+        };
+        var source = UpstreamSchemaSource();
+        source["location"] = "https://schemas.example/specht-";
+        manifest["spechtSchema"] = source;
+        var fileSystem = Holding(manifest);
+
+        // When
+        var structure = SpecManifest.Load(fileSystem, Root);
+
+        // Then
+        structure.SpechtSchema.Should().NotBeNull();
+        structure.SpechtSchema!.Files.Should().ContainSingle(file => file.Kind == kind)
+            .Which.Address.Should().Be("https://schemas.example/specht-" + name);
+    }
+
+    [Theory]
+    [MemberData(nameof(FetchedKinds))]
+    public void AManifestRecordingAnUpstreamSchemaSource_WhenLoaded_ShouldFetchTheEpicKindOnlyWhenItDeclaresTheEpicGrammar(
+        string because,
+        bool declaresTheEpicGrammar,
+        string[] kinds)
+    {
+        // Given
+        var manifest = DefaultManifest();
+        var source = UpstreamSchemaSource();
+        if (!declaresTheEpicGrammar)
+        {
+            manifest["identifiers"]!.AsObject().Remove("epic");
+            source["hashes"]!.AsObject().Remove("epic");
+        }
+
+        manifest["spechtSchema"] = source;
+        var fileSystem = Holding(manifest);
+
+        // When
+        var structure = SpecManifest.Load(fileSystem, Root);
+
+        // Then
+        structure.SpechtSchema.Should().NotBeNull(because);
+        structure.SpechtSchema!.Files.Select(static file => file.Kind).Should().BeEquivalentTo(kinds, because);
+    }
+
     private static MockFileSystem Holding(JsonObject manifest) => Holding(manifest.ToJsonString());
 
     private static MockFileSystem Holding(string manifest) =>
@@ -725,6 +957,19 @@ public sealed class SpecManifestUnitTests
               }
             }
             """)!.AsObject();
+
+    private static JsonObject UpstreamSchemaSource() =>
+        new()
+        {
+            ["location"] = "https://schemas.example/specht/",
+            ["version"] = "2026.10",
+            ["hashes"] = new JsonObject
+            {
+                ["feature"] = "sha256:" + new string('a', 64),
+                ["task"] = "sha256:" + new string('b', 64),
+                ["epic"] = "sha256:" + new string('c', 64),
+            },
+        };
 
     private const string Root = "repo";
 }

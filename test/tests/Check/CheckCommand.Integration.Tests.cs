@@ -17,10 +17,10 @@ namespace Specht.Tests.Check;
 
 /// <summary>
 /// The command through Spectre's command tester (<c>0001-F2</c> B-001, B-002, B-003, B-004, B-005, B-006, B-007, B-008, B-009, B-013,
-/// B-016; C-7; <c>0001-F5</c> B-022, B-023; <c>0001-F7</c> B-003): over a runner returning a report built in memory, and over the real runner and a
-/// synthetic tree on disk. The runner is the seam: the engine emits no warning until <c>0001-F5</c>'s rule settings exist,
-/// so a warning-only report is reachable only in memory. The tester captures stdout alone, so an input failure's stderr
-/// message is the acceptance tier's to pin.
+/// B-016; C-7; <c>0001-F5</c> B-022, B-023; <c>0001-F7</c> B-003, B-039, B-069 to B-073): over a runner returning a report
+/// built in memory, and over the real runner and a synthetic tree on disk. The runner is the seam: the engine emits no
+/// warning until <c>0001-F5</c>'s rule settings exist, so a warning-only report is reachable only in memory. The tester
+/// captures stdout alone, so an input failure's stderr message is the acceptance tier's to pin.
 /// </summary>
 [Trait("Tier", "Integration")]
 public sealed class CheckCommandIntegrationTests
@@ -241,6 +241,31 @@ public sealed class CheckCommandIntegrationTests
                 },
                 3
             },
+            {
+                "a manifest whose upstream schema source lacks its version (0001-F7 B-069)",
+                static tree => RecordingAnUpstreamSchemaSource(tree, static source => source.Remove("version")),
+                3
+            },
+            {
+                "a manifest whose upstream schema source is at an address that is not https (0001-F7 B-070)",
+                static tree => RecordingAnUpstreamSchemaSource(tree, static source => source["location"] = "http://schemas.example/specht/"),
+                3
+            },
+            {
+                "a manifest whose upstream schema source has an empty version (0001-F7 B-071)",
+                static tree => RecordingAnUpstreamSchemaSource(tree, static source => source["version"] = string.Empty),
+                3
+            },
+            {
+                "a manifest whose upstream schema source holds no hash for the item kind (0001-F7 B-072)",
+                static tree => RecordingAnUpstreamSchemaSource(tree, static source => source["hashes"]!.AsObject().Remove("task")),
+                3
+            },
+            {
+                "a manifest whose upstream schema source holds a hash written without its algorithm (0001-F7 B-073)",
+                static tree => RecordingAnUpstreamSchemaSource(tree, static source => source["hashes"]!["task"] = new string('b', 64)),
+                3
+            },
         };
 
     [Theory]
@@ -428,6 +453,28 @@ public sealed class CheckCommandIntegrationTests
         app.SetDefaultCommand<CheckCommand>();
 
         return app.Run(args);
+    }
+
+    private static string RecordingAnUpstreamSchemaSource(SpecTree tree, Action<JsonObject> fault)
+    {
+        var path = Path.Combine(tree.Root, SpecManifest.RelativePath);
+        var manifest = JsonNode.Parse(File.ReadAllText(path))!.AsObject();
+        var source = new JsonObject
+        {
+            ["location"] = "https://schemas.example/specht/",
+            ["version"] = "2026.10",
+            ["hashes"] = new JsonObject
+            {
+                ["feature"] = "sha256:" + new string('a', 64),
+                ["task"] = "sha256:" + new string('b', 64),
+                ["epic"] = "sha256:" + new string('c', 64),
+            },
+        };
+        fault(source);
+        manifest["spechtSchema"] = source;
+        File.WriteAllText(path, manifest.ToJsonString());
+
+        return tree.Root;
     }
 
     private const string TwoClaims =
