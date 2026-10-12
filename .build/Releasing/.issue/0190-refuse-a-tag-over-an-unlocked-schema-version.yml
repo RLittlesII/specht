@@ -1,0 +1,50 @@
+id: "0190"
+type: task
+title: Refuse a release tag over an unlocked schema version
+
+status: ready-for-architecture
+
+risk: 2
+
+parent: "0082"
+children: []
+
+depends_on: ["0083", "0188"] # extends the tag check 0083 builds; reads the lock 0188 writes
+spikes: []
+
+spec: .build/Releasing/.spec/README.md
+
+claims:
+  - B-013
+
+created: "2026-10-11"
+updated: "2026-10-11"
+closed: null
+
+summary: |
+  The tag check refuses a `v*` tag while a schema version the tool ships
+  is not in the version lock, so no version is published unfrozen
+  (0001-F7 decision 0009, A-4). It fails before anything is packed, as
+  the version check of B-009 does.
+
+  Waits on 0083, which builds the tag check, and on 0188, which writes
+  the lock and owns the digest. Whether the first tag (0084) waits for
+  this item is OQ-19, open; its default is that it does, and no edge is
+  written on 0084 until the owner answers.
+
+acceptance_criteria:
+  - "B-013 — a `v*` tag, a shipped schema version unlocked: fails before anything is packed"
+  - "§ 9 carries a row naming a test for each id above."
+
+decisions:
+  - |
+    2026-10-11, spec-author's cut, on the repository owner's decision
+    that a version lock freezes a schema version (0001-F7 decision
+    0009): the tag check is this Feature's, because it is a condition of
+    publishing; the lock and its checks are 0001-F7's. Rejected: the
+    claim in 0083, which is in review.
+
+out_of_scope:
+  - "Writing the lock — 0188 (0001-F7 B-092, B-093)."
+  - "Holding a locked version to its digest — 0044 (0001-F7 B-089)."
+  - "Everything in § 5 of the spec."

@@ -271,4 +271,4 @@ Feature: The report contract
   Scenario: A rule page gives the schema version it ships under
     Given the rule pages for a schema version the tool ships
     When each page is read
-    Then the schema version it gives is the version it ships under
+    Then the schema version it gives is the version it ships under, written as major.minor.patch

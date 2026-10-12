@@ -22,6 +22,7 @@ children:
     "0134",
     "0185",
     "0187",
+    "0191",
   ]
 
 depends_on: []
@@ -146,6 +147,10 @@ decisions:
     B-045 and B-046, renumbered before merge because item 0006 merged
     first and holds those two numbers. The entry above and the lists carry
     the new numbers; commits `ec4cbeb` to `1dc570f` cite the old ones.
+  - |
+    2026-10-11, spec-author: 0191 cut, blocked on OQ-23 - which default
+    manifest fills what a manifest pinned to an older schema version
+    leaves out. It carries no claim until the owner answers.
 
 out_of_scope:
   - "Everything in § 5 of the spec."
