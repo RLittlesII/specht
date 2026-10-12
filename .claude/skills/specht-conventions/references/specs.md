@@ -61,6 +61,14 @@ Exact text, exactly once each, in order. Who owns which section is in the
 [companion skill](../SKILL.md) § "Section ownership", and nowhere else. Each
 section carries a `<!-- last written by: <role>, <date> -->` stamp.
 
+A stamp is one role, one date, and an optional trailing note in parentheses:
+`<!-- last written by: spec-author, 2026-10-11 (row 4) -->`. Whoever writes the
+section **replaces** the stamp; nothing is appended to it. The history is the
+commit's and § 10's. § 8's `### Performance` keeps a stamp of its own
+([benchmarking.md](benchmarking.md) § "Recording a finding"). The check will
+warn on a stamp holding more than one date or role (`0101-F9`, specified and
+not built).
+
 Start from [`.spec/templates/feature.md`](../../../../.spec/templates/feature.md) and
 delete its guidance comments in the copy.
 
