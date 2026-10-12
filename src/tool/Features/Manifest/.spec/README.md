@@ -170,11 +170,12 @@ Pending: owned by `test-writer`, written after agreement.
 
 ## 12. Sign-off
 
-<!-- last written by: spec-author, 2026-10-11 -->
+<!-- last written by: spec-author, 2026-10-11; spec-reviewer, 2026-10-11 (§ 5 row 8 only) -->
 
-| Section | Status | Reviewer      | Note                   |
-| ------- | ------ | ------------- | ---------------------- |
-| 1-5     | 🟡     | spec-reviewer | Awaiting first review. |
+| Section   | Status | Reviewer      | Note                                                                                                                                                                                                                                                                    |
+| --------- | ------ | ------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1-5       | 🟡     | spec-reviewer | Awaiting first review.                                                                                                                                                                                                                                                  |
+| 5 (row 8) | 🟢     | spec-reviewer | Row 8 only (2026-10-11), reviewing `origin/main` (`5c22c84`)...`28d0ba6`: it states choice 3 of `0001-F2` decision 0010 and cites `0001-F7` B-084, B-006 and OQ-3, which exist. Everything else in § 1-5 still awaits its first review, so `spec_status` stays `draft`. |
 
 ## Tasks
 
