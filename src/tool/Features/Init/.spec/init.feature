@@ -129,6 +129,13 @@ Feature: init
     Then the only files created are under the schema folder and the templates folder
     And no other file was modified
 
+  @B-028 @boundary
+  Scenario: Init leaves the files at the retired location as they were
+    Given a root directory holding a schema set and templates at the retired location and no schema folder and no templates folder
+    And a snapshot of every file under the root
+    When init runs against it
+    Then no file at the retired location was created, modified or deleted
+
   @B-009
   Scenario: Init defaults the root to the working directory
     Given a working directory with no schema folder and no templates folder
