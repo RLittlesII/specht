@@ -122,7 +122,9 @@ public sealed partial class CommandLineReferenceSteps
     {
         var (stdout, stderr, exitCode) = AcceptanceTool.Launch(Path.GetTempPath(), [.. command, "--help"]);
         exitCode.Should().Be(0, stdout + stderr);
-        return stdout;
+        var help = EscapeSequence().Replace(stdout, string.Empty);
+        Block(help, "OPTIONS:").Should().NotBeEmpty($"the help of every command lists its options, but read {help}");
+        return help;
     }
 
     private static IEnumerable<string> Block(string help, string heading) =>
@@ -191,6 +193,9 @@ public sealed partial class CommandLineReferenceSteps
     }
 
     private static string Copied(string path) => Path.Combine([AppContext.BaseDirectory, .. path.Split('/')]);
+
+    [GeneratedRegex(@"\x1b\[[0-9;]*m")]
+    private static partial Regex EscapeSequence();
 
     [GeneratedRegex(@"^ {4}(\S+)")]
     private static partial Regex CommandEntry();
