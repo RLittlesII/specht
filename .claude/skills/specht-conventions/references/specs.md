@@ -39,10 +39,10 @@ which checks a legacy spec's `epic`/`id` against the directory it sits in.
 ```
 
 Repo-wide blast radius goes to the root instead: `.spec/adr/`, `.spec/lessons/`,
-both numbered repo-wide from `0001`. `.spec/templates/` holds the blanks and
-`.spec/schema/` the frontmatter schemas and the manifest.
+both numbered repo-wide from `0001`. The root `.specht/templates/` holds the blanks
+and `.specht/schema/` the frontmatter schemas and the manifest.
 
-The root `.spec/schema/` and `.spec/templates/` are **the live copy this
+The root `.specht/schema/` and `.specht/templates/` are **the live copy this
 repository checks itself with** — exactly what `specht init` writes into a
 consumer. The shipping copy is embedded in `src/tool/schema/v1/` and
 `templates/v1/`; the two are the same bytes for the tool-owned files (the
@@ -54,7 +54,7 @@ test says so (`0001-F4` B-004).
 
 The section titles, their order, and the table headers that gate coverage are
 written once, as data:
-[`.spec/schema/spec-structure.schema.json`](../../../../.spec/schema/spec-structure.schema.json).
+[`.specht/schema/spec-structure.schema.json`](../../../../.specht/schema/spec-structure.schema.json).
 Rule `SPEC010` reads that manifest, so the list is not restated here or in C#.
 
 Exact text, exactly once each, in order. Who owns which section is in the
@@ -69,13 +69,13 @@ commit's and § 10's. § 8's `### Performance` keeps a stamp of its own
 warn on a stamp holding more than one date or role (`0101-F9`, specified and
 not built).
 
-Start from [`.spec/templates/feature.md`](../../../../.spec/templates/feature.md) and
+Start from [`.specht/templates/feature.md`](../../../../.specht/templates/feature.md) and
 delete its guidance comments in the copy.
 
 ## Frontmatter
 
 22 keys, in a fixed order, validated against
-[`.spec/schema/feature-spec.frontmatter.schema.json`](../../../../.spec/schema/feature-spec.frontmatter.schema.json).
+[`.specht/schema/feature-spec.frontmatter.schema.json`](../../../../.specht/schema/feature-spec.frontmatter.schema.json).
 `spec_status` is **document maturity** (`draft` → `in-review` → `approved` →
 `superseded`) and is owned by the file; `status` is the Feature's coarse
 **delivery lifecycle**, authored in place — there is no issue label to mirror it
@@ -124,7 +124,7 @@ specht --root <dir> --strict           # any violation fails
 specht --json                          # the report document on stdout instead of the line stream
 specht --report .artifacts/spec-check/spec-check.json
 specht --explain SPEC031               # a rule's full text; exit 4 for a rule id the pinned version lacks
-specht init                            # write schema and templates into <root>/.spec/, never overwriting
+specht init                            # write schema and templates into <root>/.specht/, never overwriting
 ./build.sh SpecCheck                   # the same command, on this repository's own tree
 ```
 

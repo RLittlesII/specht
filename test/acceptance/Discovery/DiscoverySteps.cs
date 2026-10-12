@@ -321,7 +321,7 @@ public sealed class DiscoverySteps
 
     private string Subject => _subject ?? throw new InvalidOperationException("No step named that specification.");
 
-    private string ManifestPath => Path.Combine(Tree.Root, ".spec", "schema", "spec-structure.schema.json");
+    private string ManifestPath => Path.Combine(Tree.Root, SpecTree.ManifestPath);
 
     private IEnumerable<string> Reported => Report.Violations.Select(static violation => violation.File).Distinct();
 

@@ -1,6 +1,5 @@
 using System.Text.Json.Nodes;
 using AwesomeAssertions;
-using Specht.Manifest;
 using Specht.Tests.Shared;
 using Specht.Versioning;
 
@@ -10,7 +9,7 @@ namespace Specht.Tests.Engine;
 /// The runner over a tree on disk and a version set built in memory from the embedded version 0.1.0 (<c>0001-F7</c>
 /// B-001, B-002, B-014, B-055; C-4): the manifest is the tree's, its pin selects exactly the version it names, and that
 /// version's frontmatter schemas and rule vocabulary are the ones the check uses, whatever the tree's own
-/// <c>.spec/schema/</c> holds.
+/// <c>.specht/schema/</c> holds.
 /// </summary>
 [Trait("Tier", "Integration")]
 public sealed class SpechtRunnerVersionsIntegrationTests
@@ -105,7 +104,7 @@ public sealed class SpechtRunnerVersionsIntegrationTests
 
     private static void Pin(SpecTree tree, string? version)
     {
-        var path = Path.Combine(tree.Root, SpecManifest.RelativePath);
+        var path = Path.Combine(tree.Root, SpecTree.ManifestPath);
         var manifest = JsonNode.Parse(File.ReadAllText(path))!.AsObject();
         manifest.Remove("schemaVersion");
         if (version is not null)

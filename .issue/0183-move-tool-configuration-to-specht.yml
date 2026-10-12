@@ -1,0 +1,119 @@
+id: "0183"
+type: task
+title: Move the tool's configuration from .spec/ to .specht/
+
+status: done
+
+value: 4
+risk: 3
+
+parent: null
+children: []
+
+depends_on: []
+spikes: []
+
+spec: null # spans 0001-F1, 0001-F2, 0001-F4, 0001-F5 and 0001-F7
+
+claims: [] # the claims are in several Features; the criteria cite each with its Feature
+
+created: "2026-10-11"
+updated: "2026-10-11"
+closed: "2026-10-11"
+
+summary: |
+  Builds ADR-0011
+  (`.spec/adr/0011-tool-configuration-lives-in-specht-and-specifications-in-spec.md`):
+  the manifest, the three frontmatter schemas and the templates the tool
+  ships are read and written under `<root>/.specht/schema/` and
+  `<root>/.specht/templates/`, and nothing under `<root>/.spec/schema/` or
+  `<root>/.spec/templates/` is read. The move is hard: no fallback read and
+  no command that migrates a tree.
+
+  It spans Features, so it sits in the root `.issue/` with `spec: null`:
+  the check (`0001-F2`), init (`0001-F4`), the manifest (`0001-F5`), the
+  engine (`0001-F1`) and versioning (`0001-F7`) each name the location.
+
+  Two steps. The tests first: every test, step and fixture that builds
+  the location names `.specht/`, and the four new claims have scenarios
+  bound and unit tests beneath them, red against an engine that still
+  reads `.spec/schema/`. Then the build: the literals in
+  `src/specht/Manifest/SpecManifest.cs`, `src/specht/Model/SpecSchemas.cs`
+  and `src/tool/Features/Init/InitWriter.cs`, the message B-038 claims,
+  this repository's own two folders, and the documents that name them.
+
+  Expected files: `test/tests/**`, `test/acceptance/**`, the two test
+  projects' `Content` links, `src/specht/**`, `src/tool/**`,
+  `.spec/schema/` and the four shipped templates under `.spec/templates/`
+  moving to `.specht/`, § 6 to § 9 of the Features above, `AGENTS.md`,
+  `README.md`, `docs/` and the skills that name the folders.
+
+acceptance_criteria:
+  - "0001-F2 B-037 — a manifest at the retired manifest path alone exits 2"
+  - "0001-F2 B-038 — the message says that manifest is not read"
+  - "0001-F2 B-039 — a file at the retired manifest path changes nothing"
+  - "0001-F4 B-028 — init leaves the retired location as it was"
+  - "0001-F2 A-3, B-005 to B-007 — the manifest path the messages name"
+  - "0001-F4 B-004, B-008, B-014, B-018 to B-020, C-3 — the two folders init writes, and the live copy"
+  - "0001-F5 A-5, B-008, B-033, C-6 — where the manifest and the frontmatter schemas are read"
+  - "0001-F1 C-8 and 0001-F7 C-4 — the folders as those constraints name them"
+  - "`test/tests/tests.csproj` and `test/acceptance/acceptance.csproj` take the live copy from `.specht/`, and no test reads a file under `.spec/schema/` or `.spec/templates/` except as the retired location."
+  - "The default manifest's `/.spec` exclusion is unchanged, and `.spec/templates/item.yml` stays where it is (ADR-0011, open points 2 and 3)."
+  - "§ 9 of 0001-F2 carries a row naming a test for B-037, B-038 and B-039, and § 9 of 0001-F4 one for B-028; the rows this item left `Partial` are `Covered` once their tests are green."
+  - "`./build.sh Format`, `./build.sh Specht` and `./build.sh` pass."
+
+decisions:
+  - |
+    2026-10-11, test-writer: `value` 4 and `risk` 3 are this role's
+    estimate, not an owner ruling. The risk is the breadth: the engine,
+    the tool, both test projects, this repository's own tree and its
+    documents change together.
+  - |
+    2026-10-11, test-writer: the tests name the location through four
+    constants on `SpecTree` in `test/tests/Shared` and no longer read
+    `SpecManifest.RelativePath`. Rejected: reading the path from the
+    engine, under which no test could show the move. No new file was
+    linked into `test/acceptance`; `SpecTree` already is.
+  - |
+    2026-10-11, test-writer: the two test projects' `Content` items link
+    the live copy into the output under `.specht/` and still take it from
+    `.spec/schema/` and `.spec/templates/`, where the files are until the
+    build moves them. The build flips each `Include`.
+  - |
+    2026-10-11, test-writer: `PackageSteps`' "the package carries no
+    specification file" is unchanged. 0001-F2 B-033 names specification
+    files; the schema set and the templates under `.specht/` are tool
+    configuration, and no claim says the package leaves them out.
+  - |
+    2026-10-11, test-writer: built and green. The two folders are this
+    repository's `.specht/schema/` and `.specht/templates/`, and each test
+    project's `Content` item names them in its `Include` and its `Link`.
+    After the rebase onto `main`, `./build.sh` passes: 421 unit and 213
+    integration tests; of 329 acceptance scenarios 141 pass, none fails
+    and 188 are unbound. `Format`, `Specht` and `Pack` succeed. § 9 of
+    0001-F2 has B-037, B-038 and B-039 `Covered`, and § 9 of 0001-F4 has
+    B-004, B-008 and B-028 `Covered`. 0001-F5 B-008 stays `Partial` for
+    item 0043's rebind, not for the folder.
+  - |
+    2026-10-11, test-writer: two test changes came with the build and the
+    rebase. `SpechtRunnerIntegrationTests.ARepositoryWideSpecDirectory_WhenChecked_ShouldNotBeTreatedAsASpecification`
+    creates `<root>/.spec/` itself, since a `SpecTree` no longer creates
+    it as a side effect. The tests pull request #129 added, in
+    `test/tests/Check/CheckCommand.Integration.Tests.cs` and
+    `test/acceptance/Versioning/VersioningSteps.cs`, read the path from
+    `SpecTree.ManifestPath` like the rest.
+  - |
+    2026-10-11, test-writer: the CI skip filter excepts `.specht/` as it
+    excepts `.spec/`, so a pull request whose changed files are all
+    Markdown still builds when one is under either folder (0055-F2 B-012,
+    amended in the specification pull request #131). The change is in
+    `.build/SpechtBuild.GitHubActions.cs`; `.github/workflows/ci.yml` and
+    `.github/workflows/main.yml` were regenerated from it, and only the
+    filter's lines changed in each.
+
+out_of_scope:
+  - "A fallback read of the retired location, or a command that migrates a tree — 0001-F2 § 5 row 23, 0001-F4 § 5 row 12."
+  - "Renaming the manifest, a frontmatter schema, a template or either sub-folder — ADR-0011, open point 1."
+  - "A `.specht` exclusion in the default manifest, or a change to `schemaVersion` — ADR-0011, open points 3 and 4."
+  - "Moving `hooked`'s two folders — a consumer moves them by hand (ADR-0011, Consequences)."
+  - "Any test of the benchmark project."

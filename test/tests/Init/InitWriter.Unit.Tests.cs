@@ -1,6 +1,7 @@
 using System.IO.Abstractions.TestingHelpers;
 using System.Text;
 using AwesomeAssertions;
+using Specht.Tests.Shared;
 using Specht.Tool.Features.Init;
 
 namespace Specht.Tests.Init;
@@ -25,10 +26,10 @@ public sealed class InitWriterUnitTests
     public static TheoryData<string, string> Names =>
         new()
         {
-            { "schema/v1/spec-structure.schema.json", ".spec/schema/spec-structure.schema.json" },
-            { "schema/v1/task.frontmatter.schema.json", ".spec/schema/task.frontmatter.schema.json" },
-            { "templates/v1/feature.md", ".spec/templates/feature.md" },
-            { "templates/v1/lesson.md", ".spec/templates/lesson.md" },
+            { "schema/v1/spec-structure.schema.json", ".specht/schema/spec-structure.schema.json" },
+            { "schema/v1/task.frontmatter.schema.json", ".specht/schema/task.frontmatter.schema.json" },
+            { "templates/v1/feature.md", ".specht/templates/feature.md" },
+            { "templates/v1/lesson.md", ".specht/templates/lesson.md" },
         };
 
     /// <summary>Gets file systems on which the root is not a directory.</summary>
@@ -53,16 +54,16 @@ public sealed class InitWriterUnitTests
         var listing = await new InitWriter(shippingCopy, fileSystem).Write(Root, CancellationToken.None);
 
         // Then
-        listing.Should().Equal((".spec/schema/spec-structure.schema.json", true), (".spec/templates/feature.md", true));
-        fileSystem.File.ReadAllText(Path.Combine(Root, ".spec", "schema", "spec-structure.schema.json"))
+        listing.Should().Equal((".specht/schema/spec-structure.schema.json", true), (".specht/templates/feature.md", true));
+        fileSystem.File.ReadAllText(Path.Combine(Root, SpecTree.ManifestPath))
             .Should()
             .Be($"schema/v{newest}/spec-structure.schema.json");
-        fileSystem.File.ReadAllText(Path.Combine(Root, ".spec", "templates", "feature.md")).Should().Be($"templates/v{newest}/feature.md");
+        fileSystem.File.ReadAllText(Path.Combine(Root, SpecTree.TemplatesFolder, "feature.md")).Should().Be($"templates/v{newest}/feature.md");
     }
 
     [Theory]
     [MemberData(nameof(Names))]
-    public async Task AnEmbeddedName_WhenWritten_ShouldLandUnderItsFolderInDotSpecWithItsBytesUnchanged(string name, string relative)
+    public async Task AnEmbeddedName_WhenWritten_ShouldLandUnderItsFolderInDotSpechtWithItsBytesUnchanged(string name, string relative)
     {
         // Given
         byte[] bytes = [0xEF, 0xBB, 0xBF, 0x7B, 0x0D, 0x0A, 0x7D];
@@ -80,7 +81,7 @@ public sealed class InitWriterUnitTests
     public async Task AFileThatExists_WhenWritten_ShouldBeListedSkippedAndLeftAsItWas()
     {
         // Given
-        var present = Path.Combine(Root, ".spec", "templates", "feature.md");
+        var present = Path.Combine(Root, SpecTree.TemplatesFolder, "feature.md");
         var fileSystem = new MockFileSystem(new Dictionary<string, MockFileData> { [present] = new("# Local edits\n") });
         var shippingCopy = new Dictionary<string, byte[]>
         {
@@ -92,7 +93,7 @@ public sealed class InitWriterUnitTests
         var listing = await new InitWriter(shippingCopy, fileSystem).Write(Root, CancellationToken.None);
 
         // Then
-        listing.Should().Equal((".spec/templates/adr.md", true), (".spec/templates/feature.md", false));
+        listing.Should().Equal((".specht/templates/adr.md", true), (".specht/templates/feature.md", false));
         fileSystem.File.ReadAllText(present).Should().Be("# Local edits\n");
     }
 
@@ -100,7 +101,7 @@ public sealed class InitWriterUnitTests
     public async Task SomeFilesPresentAndOthersAbsent_WhenWritten_ShouldWriteEachAbsentOneWithItsShippedBytes()
     {
         // Given
-        var present = Path.Combine(Root, ".spec", "templates", "decision.md");
+        var present = Path.Combine(Root, SpecTree.TemplatesFolder, "decision.md");
         var fileSystem = new MockFileSystem(new Dictionary<string, MockFileData> { [present] = new("# Local edits\n") });
         var shippingCopy = new Dictionary<string, byte[]>
         {
@@ -116,10 +117,41 @@ public sealed class InitWriterUnitTests
         // Then
         foreach (var (name, bytes) in shippingCopy.Where(static entry => entry.Key != "templates/v1/decision.md"))
         {
-            var absent = Path.Combine([Root, ".spec", .. name.Replace("/v1/", "/", StringComparison.Ordinal).Split('/')]);
+            var absent = Path.Combine([Root, ".specht", .. name.Replace("/v1/", "/", StringComparison.Ordinal).Split('/')]);
             fileSystem.File.Exists(absent).Should().BeTrue($"{name} was absent");
             fileSystem.File.ReadAllBytes(absent).Should().Equal(bytes, name);
         }
+    }
+
+    [Fact]
+    public async Task FilesAtTheRetiredLocation_WhenWritten_ShouldCreateModifyOrDeleteNoFileUnderTheRootsSpecFolder()
+    {
+        // Given
+        var specFolder = Path.Combine(Root, ".spec") + Path.DirectorySeparatorChar;
+        var fileSystem = new MockFileSystem(
+            new Dictionary<string, MockFileData>
+            {
+                [Path.Combine(Root, SpecTree.RetiredManifestPath)] = new("{ \"sections\": [\"A synthetic section\"] }\n"),
+                [Path.Combine(Root, ".spec", "templates", "feature.md")] = new("# Local edits\n"),
+                [Path.Combine(Root, ".spec", "brief.md")] = new("# A synthetic brief\n"),
+            });
+        var shippingCopy = new Dictionary<string, byte[]>
+        {
+            ["schema/v1/spec-structure.schema.json"] = "{}\n"u8.ToArray(),
+            ["schema/v1/task.frontmatter.schema.json"] = "{}\n"u8.ToArray(),
+            ["templates/v1/feature.md"] = "# Shipped feature\n"u8.ToArray(),
+            ["templates/v1/adr.md"] = "# Shipped adr\n"u8.ToArray(),
+        };
+        Dictionary<string, string> UnderTheSpecFolder() =>
+            fileSystem.AllFiles.Where(file => file.Contains(specFolder, StringComparison.Ordinal))
+                .ToDictionary(static file => file, fileSystem.File.ReadAllText);
+        var before = UnderTheSpecFolder();
+
+        // When
+        await new InitWriter(shippingCopy, fileSystem).Write(Root, CancellationToken.None);
+
+        // Then
+        UnderTheSpecFolder().Should().Equal(before);
     }
 
     [Theory]
@@ -143,22 +175,22 @@ public sealed class InitWriterUnitTests
     {
         // Given
         var fileSystem = BareRoot();
-        var schema = Path.Combine(Root, ".spec", "schema") + Path.DirectorySeparatorChar;
-        var templates = Path.Combine(Root, ".spec", "templates") + Path.DirectorySeparatorChar;
+        var schema = Path.Combine(Root, SpecTree.SchemaFolder) + Path.DirectorySeparatorChar;
+        var templates = Path.Combine(Root, SpecTree.TemplatesFolder) + Path.DirectorySeparatorChar;
 
         // When
         var listing = await new InitWriter(InitWriter.ShippingCopy(typeof(InitWriter).Assembly), fileSystem).Write(Root, CancellationToken.None);
 
         // Then
         listing.Should().Equal(
-            (".spec/schema/epic.frontmatter.schema.json", true),
-            (".spec/schema/feature-spec.frontmatter.schema.json", true),
-            (".spec/schema/spec-structure.schema.json", true),
-            (".spec/schema/task.frontmatter.schema.json", true),
-            (".spec/templates/adr.md", true),
-            (".spec/templates/decision.md", true),
-            (".spec/templates/feature.md", true),
-            (".spec/templates/lesson.md", true));
+            (".specht/schema/epic.frontmatter.schema.json", true),
+            (".specht/schema/feature-spec.frontmatter.schema.json", true),
+            (".specht/schema/spec-structure.schema.json", true),
+            (".specht/schema/task.frontmatter.schema.json", true),
+            (".specht/templates/adr.md", true),
+            (".specht/templates/decision.md", true),
+            (".specht/templates/feature.md", true),
+            (".specht/templates/lesson.md", true));
         fileSystem.AllFiles.Should()
             .HaveCount(8)
             .And.AllSatisfy(path => path.Should().Match(file => file.Contains(schema, StringComparison.Ordinal)

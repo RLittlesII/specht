@@ -31,14 +31,14 @@ dotnet specht init
 ```
 
 ```text
-written .spec/schema/epic.frontmatter.schema.json
-written .spec/schema/feature-spec.frontmatter.schema.json
-written .spec/schema/spec-structure.schema.json
-written .spec/schema/task.frontmatter.schema.json
-written .spec/templates/adr.md
-written .spec/templates/decision.md
-written .spec/templates/feature.md
-written .spec/templates/lesson.md
+written .specht/schema/epic.frontmatter.schema.json
+written .specht/schema/feature-spec.frontmatter.schema.json
+written .specht/schema/spec-structure.schema.json
+written .specht/schema/task.frontmatter.schema.json
+written .specht/templates/adr.md
+written .specht/templates/decision.md
+written .specht/templates/feature.md
+written .specht/templates/lesson.md
 ```
 
 The manifest, the three frontmatter schemas and four blanks. A file that exists
@@ -58,7 +58,7 @@ rules evaluated: 21
 errors: 0, warnings: 0
 ```
 
-Clean, because there is nothing to check yet. Copy `.spec/templates/feature.md`
+Clean, because there is nothing to check yet. Copy `.specht/templates/feature.md`
 to `<area>/.spec/README.md`, fill it in, put its `.feature` file beside it and
 run the check again: each violation is one line with a file, a line and a rule
 id. [What it checks](what-it-checks.md) says where a specification is found and
@@ -71,7 +71,7 @@ exits `2` for want of a manifest.
 
 ## Manifest
 
-One file configures the check: `.spec/schema/spec-structure.schema.json`. Change
+One file configures the check: `.specht/schema/spec-structure.schema.json`. Change
 a setting by editing it.
 
 ```json

@@ -336,7 +336,7 @@ public sealed class SpecDiscoveryManifestUnitTests
         var fileSystem = new MockFileSystem(
             new Dictionary<string, MockFileData>
             {
-                [Path.Combine(Root, ".spec", "schema", "spec-structure.schema.json")] = new(manifest),
+                [Path.Combine(Root, SpecTree.ManifestPath)] = new(manifest),
             });
 
         foreach (var file in files)

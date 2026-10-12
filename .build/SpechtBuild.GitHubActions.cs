@@ -245,7 +245,7 @@ internal sealed partial class SpechtBuild
     private static void GateOnChangedFiles(RocketSurgeonsGithubActionsJob buildJob)
     {
         // B-012, B-014, B-015, C-5: a pull request skips on windows, and on ubuntu when its changed files are all
-        // Markdown outside any .spec/ folder; a push builds, as does ubuntu on no changed files or a failed diff.
+        // Markdown outside any .spec/ or .specht/ folder; a push builds, as does ubuntu on no changed files or a failed diff.
         const string gate = "steps.changes.outputs.build == 'true'";
         var fetchStep = buildJob.Steps.OfType<RunStep>().Single(static z => z.Run == "git fetch --prune");
         var decisionStep = new RunStep("Decide whether the change needs a build")
@@ -264,9 +264,9 @@ internal sealed partial class SpechtBuild
                 build=false
                 echo "::notice title=Windows gates skipped::The Windows gates run on a push to main only."
                 elif [ "$EVENT_NAME" = "pull_request" ] && files="$(git diff --name-only --no-renames "$BASE_SHA...$HEAD_SHA")" && [ -n "$files" ]; then
-                if ! grep -Evq '\.md$' <<< "$files" && ! grep -Eq '(^|/)\.spec/' <<< "$files"; then
+                if ! grep -Evq '\.md$' <<< "$files" && ! grep -Eq '(^|/)\.spec(ht)?/' <<< "$files"; then
                 build=false
-                echo "::notice title=Build skipped::Every changed file is Markdown outside any .spec/ folder."
+                echo "::notice title=Build skipped::Every changed file is Markdown outside any .spec/ or .specht/ folder."
                 fi
                 fi
                 echo "build=$build" >> "$GITHUB_OUTPUT"

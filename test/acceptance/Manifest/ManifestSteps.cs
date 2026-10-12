@@ -311,7 +311,7 @@ public sealed class ManifestSteps
     [Given("the schema folder holds that file and not the default name")]
     public void GivenTheSchemaFolderHoldsThatFileAndNotTheDefaultName()
     {
-        var schema = Path.Combine(Tree.Root, ".spec", "schema");
+        var schema = Path.Combine(Tree.Root, SpecTree.SchemaFolder);
         File.WriteAllText(Path.Combine(schema, FeatureSchema), FeatureSchemaRejectingTheDomain);
         File.Delete(Path.Combine(schema, "feature-spec.frontmatter.schema.json"));
     }
@@ -445,7 +445,7 @@ public sealed class ManifestSteps
 
     private JsonObject Manifest => _manifest ?? throw new InvalidOperationException("No manifest was read.");
 
-    private string ManifestPath => Path.Combine(Tree.Root, ".spec", "schema", "spec-structure.schema.json");
+    private string ManifestPath => Path.Combine(Tree.Root, SpecTree.ManifestPath);
 
     private string FeatureSchema => _featureSchema ?? throw new InvalidOperationException("The manifest names no Feature schema file.");
 

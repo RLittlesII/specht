@@ -2,7 +2,6 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 using AwesomeAssertions;
 using Microsoft.Extensions.DependencyInjection;
-using Specht.Manifest;
 using Specht.Model;
 using Specht.Report;
 using Specht.Tests.Shared;
@@ -83,7 +82,18 @@ public sealed class CheckCommandIntegrationTests
                 "a root with no manifest (B-006)",
                 static tree =>
                 {
-                    File.Delete(Path.Combine(tree.Root, SpecManifest.RelativePath));
+                    File.Delete(Path.Combine(tree.Root, SpecTree.ManifestPath));
+                    return tree.Root;
+                },
+                2
+            },
+            {
+                "a manifest at the retired manifest path and none at the manifest path (B-037)",
+                static tree =>
+                {
+                    var retired = Path.GetDirectoryName(Path.Combine(tree.Root, SpecTree.RetiredManifestPath))!;
+                    Directory.CreateDirectory(Path.GetDirectoryName(retired)!);
+                    Directory.Move(Path.Combine(tree.Root, SpecTree.SchemaFolder), retired);
                     return tree.Root;
                 },
                 2
@@ -92,7 +102,7 @@ public sealed class CheckCommandIntegrationTests
                 "a manifest that is not well-formed JSON (B-007)",
                 static tree =>
                 {
-                    tree.WriteRaw(SpecManifest.RelativePath, "{ \"sections\": ");
+                    tree.WriteRaw(SpecTree.ManifestPath, "{ \"sections\": ");
                     return tree.Root;
                 },
                 3
@@ -101,7 +111,7 @@ public sealed class CheckCommandIntegrationTests
                 "a manifest whose top level is an array (B-007)",
                 static tree =>
                 {
-                    tree.WriteRaw(SpecManifest.RelativePath, "[]");
+                    tree.WriteRaw(SpecTree.ManifestPath, "[]");
                     return tree.Root;
                 },
                 3
@@ -110,7 +120,7 @@ public sealed class CheckCommandIntegrationTests
                 "a manifest whose sections are not an array of strings (B-007)",
                 static tree =>
                 {
-                    tree.WriteRaw(SpecManifest.RelativePath, "{ \"sections\": [1, 2] }");
+                    tree.WriteRaw(SpecTree.ManifestPath, "{ \"sections\": [1, 2] }");
                     return tree.Root;
                 },
                 3
@@ -119,7 +129,7 @@ public sealed class CheckCommandIntegrationTests
                 "a manifest that is the JSON literal null (B-007)",
                 static tree =>
                 {
-                    tree.WriteRaw(SpecManifest.RelativePath, "null");
+                    tree.WriteRaw(SpecTree.ManifestPath, "null");
                     return tree.Root;
                 },
                 3
@@ -128,7 +138,7 @@ public sealed class CheckCommandIntegrationTests
                 "a manifest whose sections hold a null (B-007)",
                 static tree =>
                 {
-                    tree.WriteRaw(SpecManifest.RelativePath, "{ \"sections\": [null] }");
+                    tree.WriteRaw(SpecTree.ManifestPath, "{ \"sections\": [null] }");
                     return tree.Root;
                 },
                 3
@@ -137,7 +147,7 @@ public sealed class CheckCommandIntegrationTests
                 "a well-formed manifest carrying a key the engine does not know (0001-F5 B-022, B-023)",
                 static tree =>
                 {
-                    tree.WriteRaw(SpecManifest.RelativePath, "{ \"glossary\": \"synthetic\" }");
+                    tree.WriteRaw(SpecTree.ManifestPath, "{ \"glossary\": \"synthetic\" }");
                     return tree.Root;
                 },
                 3
@@ -146,7 +156,7 @@ public sealed class CheckCommandIntegrationTests
                 "a manifest whose claims role names a title its sections lack (0001-F5 B-015, B-022, B-023)",
                 static tree =>
                 {
-                    tree.WriteRaw(SpecManifest.RelativePath, "{ \"roles\": { \"claims\": \"3. Nowhere\" } }");
+                    tree.WriteRaw(SpecTree.ManifestPath, "{ \"roles\": { \"claims\": \"3. Nowhere\" } }");
                     return tree.Root;
                 },
                 3
@@ -155,7 +165,7 @@ public sealed class CheckCommandIntegrationTests
                 "a manifest whose table headers are keyed by a section title (0001-F5 B-039, B-022, B-023)",
                 static tree =>
                 {
-                    tree.WriteRaw(SpecManifest.RelativePath, "{ \"tables\": { \"9. Traceability Matrix\": [\"Claim ID\", \"Test\"] } }");
+                    tree.WriteRaw(SpecTree.ManifestPath, "{ \"tables\": { \"9. Traceability Matrix\": [\"Claim ID\", \"Test\"] } }");
                     return tree.Root;
                 },
                 3
@@ -164,7 +174,7 @@ public sealed class CheckCommandIntegrationTests
                 "a manifest whose missing marker is empty (0001-F5 B-040, B-022, B-023)",
                 static tree =>
                 {
-                    tree.WriteRaw(SpecManifest.RelativePath, "{ \"markers\": { \"missing\": \"\" } }");
+                    tree.WriteRaw(SpecTree.ManifestPath, "{ \"markers\": { \"missing\": \"\" } }");
                     return tree.Root;
                 },
                 3
@@ -173,7 +183,7 @@ public sealed class CheckCommandIntegrationTests
                 "a manifest whose companion file list is empty (0001-F5 B-041, B-022, B-023)",
                 static tree =>
                 {
-                    tree.WriteRaw(SpecManifest.RelativePath, "{ \"companionFiles\": [] }");
+                    tree.WriteRaw(SpecTree.ManifestPath, "{ \"companionFiles\": [] }");
                     return tree.Root;
                 },
                 3
@@ -182,7 +192,7 @@ public sealed class CheckCommandIntegrationTests
                 "a manifest whose exclusion entry has a slash inside it and no leading slash (0001-F5 B-021, B-022, B-023)",
                 static tree =>
                 {
-                    tree.WriteRaw(SpecManifest.RelativePath, "{ \"exclusions\": [\"build/output\"] }");
+                    tree.WriteRaw(SpecTree.ManifestPath, "{ \"exclusions\": [\"build/output\"] }");
                     return tree.Root;
                 },
                 3
@@ -191,7 +201,7 @@ public sealed class CheckCommandIntegrationTests
                 "a manifest setting a rule id outside the pinned vocabulary (0001-F5 B-013, B-022, B-023)",
                 static tree =>
                 {
-                    tree.WriteRaw(SpecManifest.RelativePath, "{ \"rules\": { \"SPEC999\": \"warning\" } }");
+                    tree.WriteRaw(SpecTree.ManifestPath, "{ \"rules\": { \"SPEC999\": \"warning\" } }");
                     return tree.Root;
                 },
                 3
@@ -200,7 +210,7 @@ public sealed class CheckCommandIntegrationTests
                 "a manifest setting a rule id to a level outside the three (0001-F5 B-045, B-022, B-023)",
                 static tree =>
                 {
-                    tree.WriteRaw(SpecManifest.RelativePath, "{ \"rules\": { \"SPEC010\": \"loud\" } }");
+                    tree.WriteRaw(SpecTree.ManifestPath, "{ \"rules\": { \"SPEC010\": \"loud\" } }");
                     return tree.Root;
                 },
                 3
@@ -210,7 +220,7 @@ public sealed class CheckCommandIntegrationTests
                 static tree =>
                 {
                     tree.WriteRaw(
-                        SpecManifest.RelativePath,
+                        SpecTree.ManifestPath,
                         """{ "layouts": [{ "name": "epics", "glob": "epics/**/spec.md", "identity": { "epic": "second", "feature": 2 } }] }""");
                     return tree.Root;
                 },
@@ -220,7 +230,7 @@ public sealed class CheckCommandIntegrationTests
                 "a manifest pinning a schema version the tool does not ship (0001-F7 B-003)",
                 static tree =>
                 {
-                    var path = Path.Combine(tree.Root, SpecManifest.RelativePath);
+                    var path = Path.Combine(tree.Root, SpecTree.ManifestPath);
                     var manifest = JsonNode.Parse(File.ReadAllText(path))!.AsObject();
                     var newest = SchemaVersions.Embedded.Versions.Max(static version => version.Number);
                     manifest["schemaVersion"] = new SemanticVersion(newest.Major + 1, 0, 0).ToString();
@@ -233,7 +243,7 @@ public sealed class CheckCommandIntegrationTests
                 "a manifest whose schema version is the integer 1, not major.minor.patch (0001-F7 B-039)",
                 static tree =>
                 {
-                    var path = Path.Combine(tree.Root, SpecManifest.RelativePath);
+                    var path = Path.Combine(tree.Root, SpecTree.ManifestPath);
                     var manifest = JsonNode.Parse(File.ReadAllText(path))!.AsObject();
                     manifest["schemaVersion"] = 1;
                     File.WriteAllText(path, manifest.ToJsonString());
@@ -457,7 +467,7 @@ public sealed class CheckCommandIntegrationTests
 
     private static string RecordingAnUpstreamSchemaSource(SpecTree tree, Action<JsonObject> fault)
     {
-        var path = Path.Combine(tree.Root, SpecManifest.RelativePath);
+        var path = Path.Combine(tree.Root, SpecTree.ManifestPath);
         var manifest = JsonNode.Parse(File.ReadAllText(path))!.AsObject();
         var source = new JsonObject
         {

@@ -17,13 +17,13 @@ type: rule
 
 ## Cause
 
-The `## ` headings of a Feature specification do not match the `sections` list of the manifest, `.spec/schema/spec-structure.schema.json`:
+The `## ` headings of a Feature specification do not match the `sections` list of the manifest, `.specht/schema/spec-structure.schema.json`:
 
-| Condition                       | Reported at                    | Message                                                                                                 |
-| ------------------------------- | ------------------------------ | ------------------------------------------------------------------------------------------------------- |
-| A section has no heading        | The file, with no line         | `missing section '## {title}' - the contracted sections are in .spec/schema/spec-structure.schema.json` |
-| A heading appears twice or more | The file, with no line         | `section '## {title}' appears {count} times - each contracted section appears exactly once`             |
-| The sections are out of order   | The first heading out of place | `section '## {title}' is out of order - '## {expected}' is expected at this position`                   |
+| Condition                       | Reported at                    | Message                                                                                                   |
+| ------------------------------- | ------------------------------ | --------------------------------------------------------------------------------------------------------- |
+| A section has no heading        | The file, with no line         | `missing section '## {title}' - the contracted sections are in .specht/schema/spec-structure.schema.json` |
+| A heading appears twice or more | The file, with no line         | `section '## {title}' appears {count} times - each contracted section appears exactly once`               |
+| The sections are out of order   | The first heading out of place | `section '## {title}' is out of order - '## {expected}' is expected at this position`                     |
 
 A heading matches by its exact text, number included. Only the first section out of place is reported.
 
@@ -40,7 +40,7 @@ A specification carries each section the manifest lists, once, as a `## ` headin
 ```
 
 ```text
-src/orders/.spec/README.md: error SPEC010: missing section '## 5. Out of Scope' - the contracted sections are in .spec/schema/spec-structure.schema.json
+src/orders/.spec/README.md: error SPEC010: missing section '## 5. Out of Scope' - the contracted sections are in .specht/schema/spec-structure.schema.json
 ```
 
 ### Corrected

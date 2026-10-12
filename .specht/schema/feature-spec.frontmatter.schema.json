@@ -32,11 +32,11 @@
   "properties": {
     "title": {
       "type": "string",
-      "description": "Document title, as every template under .spec/templates/ writes it. Optional: the legacy specifications carry none."
+      "description": "Document title, as every template under .specht/templates/ writes it. Optional: the legacy specifications carry none."
     },
     "description": {
       "type": "string",
-      "description": "One-line summary, as every template under .spec/templates/ writes it. Optional, like title."
+      "description": "One-line summary, as every template under .specht/templates/ writes it. Optional, like title."
     },
     "id": {
       "type": "string",

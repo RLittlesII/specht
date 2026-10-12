@@ -37,7 +37,7 @@ public sealed class SpecSchemasUnitTests
         Func<SpecSchemas, JsonSchema> schemaOf)
     {
         // Given
-        var schema = Path.Combine(Root, ".spec", "schema");
+        var schema = Path.Combine(Root, SpecTree.SchemaFolder);
         var files = new Dictionary<string, MockFileData>
         {
             [Path.Combine(schema, "spec-structure.schema.json")] = new($$"""{ "frontmatterSchemas": { "{{kind}}": "{{name}}" } }"""),
@@ -67,7 +67,7 @@ public sealed class SpecSchemasUnitTests
         var fileSystem = new MockFileSystem(
             new Dictionary<string, MockFileData>
             {
-                [Path.Combine(Root, ".spec", "schema", "spec-structure.schema.json")] = new("""{ "schemaVersion": "0.2.0" }"""),
+                [Path.Combine(Root, SpecTree.ManifestPath)] = new("""{ "schemaVersion": "0.2.0" }"""),
             });
 
         // When
@@ -82,7 +82,7 @@ public sealed class SpecSchemasUnitTests
     {
         // Given
         var embedded = SchemaVersions.Embedded.Select(new SemanticVersion(0, 1, 0));
-        var schema = Path.Combine(Root, ".spec", "schema");
+        var schema = Path.Combine(Root, SpecTree.SchemaFolder);
         var fileSystem = new MockFileSystem(
             new Dictionary<string, MockFileData>
             {
@@ -107,7 +107,7 @@ public sealed class SpecSchemasUnitTests
         const string feature = """{ "title": "the feature schema on disk" }""";
         const string item = """{ "title": "the item schema on disk" }""";
         const string epic = """{ "title": "the epic schema on disk" }""";
-        var schema = Path.Combine(Root, ".spec", "schema");
+        var schema = Path.Combine(Root, SpecTree.SchemaFolder);
         var fileSystem = new MockFileSystem(
             new Dictionary<string, MockFileData>
             {
@@ -133,7 +133,7 @@ public sealed class SpecSchemasUnitTests
         var fileSystem = new MockFileSystem(
             new Dictionary<string, MockFileData>
             {
-                [Path.Combine(Root, ".spec", "schema", "spec-structure.schema.json")] = new($$"""{ "schemaVersion": "{{unshipped}}" }"""),
+                [Path.Combine(Root, SpecTree.ManifestPath)] = new($$"""{ "schemaVersion": "{{unshipped}}" }"""),
             });
 
         // When
@@ -151,7 +151,7 @@ public sealed class SpecSchemasUnitTests
         var fileSystem = new MockFileSystem(
             new Dictionary<string, MockFileData>
             {
-                [Path.Combine(Root, ".spec", "schema", "spec-structure.schema.json")] =
+                [Path.Combine(Root, SpecTree.ManifestPath)] =
                     new("""{ "rules": { "FAKE001": "warning", "FAKE404": "off" } }"""),
             });
 
@@ -170,7 +170,7 @@ public sealed class SpecSchemasUnitTests
         var fileSystem = new MockFileSystem(
             new Dictionary<string, MockFileData>
             {
-                [Path.Combine(Root, ".spec", "schema", "spec-structure.schema.json")] =
+                [Path.Combine(Root, SpecTree.ManifestPath)] =
                     new("""{ "rules": { "FAKE001": "warning", "FAKE002": "off" } }"""),
             });
 
@@ -188,7 +188,7 @@ public sealed class SpecSchemasUnitTests
         var fileSystem = new MockFileSystem(
             new Dictionary<string, MockFileData>
             {
-                [Path.Combine(Root, ".spec", "schema", "spec-structure.schema.json")] =
+                [Path.Combine(Root, SpecTree.ManifestPath)] =
                     new("""{ "schemaVersion": "0.1.0", "rules": { "SPEC010": "warning", "SPEC999": "off" } }"""),
             });
 

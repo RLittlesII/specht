@@ -3,6 +3,7 @@ using System.Text.Json.Nodes;
 using AwesomeAssertions;
 using Specht.Discovery;
 using Specht.Manifest;
+using Specht.Tests.Shared;
 
 namespace Specht.Tests.Manifest;
 
@@ -160,7 +161,7 @@ public sealed class SpecManifestDiscoveryUnitTests
     private static MockFileSystem Holding(string manifest) =>
         new(new Dictionary<string, MockFileData>
         {
-            [Path.Combine(Root, ".spec", "schema", "spec-structure.schema.json")] = new(manifest),
+            [Path.Combine(Root, SpecTree.ManifestPath)] = new(manifest),
         });
 
     private const string Root = "repo";

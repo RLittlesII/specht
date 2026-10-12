@@ -17,7 +17,7 @@ type: rule
 
 ## Cause
 
-The frontmatter of a Feature specification fails `feature-spec.frontmatter.schema.json`, a copy of which sits in `.spec/schema/`. One line is reported for each failure the validator records:
+The frontmatter of a Feature specification fails `feature-spec.frontmatter.schema.json`, a copy of which sits in `.specht/schema/`. One line is reported for each failure the validator records:
 
 | Failure at  | Line reported  | Message                             |
 | ----------- | -------------- | ----------------------------------- |
@@ -56,6 +56,6 @@ spec_status: in-review
 ## How to fix violations
 
 - **A line naming a key.** Write a value the schema allows at that key.
-- **`Required properties [...] are not present`.** Add each key listed; `.spec/templates/feature.md` carries them all.
+- **`Required properties [...] are not present`.** Add each key listed; `.specht/templates/feature.md` carries them all.
 - **`All values fail against the false schema`.** Remove the key, or correct its spelling.
 - **A mapping line.** It clears when the keys it lists do.

@@ -7,7 +7,7 @@ namespace Specht.Rules;
 
 /// <summary>
 /// SPEC001-SPEC005 - every specification, item and epic file carries
-/// frontmatter that satisfies its schema in <c>.spec/schema/</c>.
+/// frontmatter that satisfies its schema in <c>.specht/schema/</c>.
 /// </summary>
 /// <remarks>
 /// SPEC005 - a linked specification records when it last mirrored - is

@@ -4,6 +4,7 @@ using Specht.Discovery;
 using Specht.Manifest;
 using Specht.Model;
 using Specht.Rules;
+using Specht.Tests.Shared;
 
 namespace Specht.Tests.Engine;
 
@@ -22,7 +23,7 @@ public sealed class SpechtRunnerRunUnitTests
         var fileSystem = new MockFileSystem(
             new Dictionary<string, MockFileData>
             {
-                [Path.Combine("repo", ".spec", "schema", "spec-structure.schema.json")] = new("""{ "notAKeyTheEngineKnows": true }"""),
+                [Path.Combine("repo", SpecTree.ManifestPath)] = new("""{ "notAKeyTheEngineKnows": true }"""),
             });
         var rule = new RecordingRule();
         var runner = new SpechtRunner(

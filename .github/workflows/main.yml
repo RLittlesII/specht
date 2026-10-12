@@ -65,9 +65,9 @@ jobs:
           build=false
           echo "::notice title=Windows gates skipped::The Windows gates run on a push to main only."
           elif [ "$EVENT_NAME" = "pull_request" ] && files="$(git diff --name-only --no-renames "$BASE_SHA...$HEAD_SHA")" && [ -n "$files" ]; then
-          if ! grep -Evq '\.md$' <<< "$files" && ! grep -Eq '(^|/)\.spec/' <<< "$files"; then
+          if ! grep -Evq '\.md$' <<< "$files" && ! grep -Eq '(^|/)\.spec(ht)?/' <<< "$files"; then
           build=false
-          echo "::notice title=Build skipped::Every changed file is Markdown outside any .spec/ folder."
+          echo "::notice title=Build skipped::Every changed file is Markdown outside any .spec/ or .specht/ folder."
           fi
           fi
           echo "build=$build" >> "$GITHUB_OUTPUT"

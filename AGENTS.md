@@ -12,8 +12,8 @@ Instructions for anyone working in this repository — a person or an agent.
 except `.claude/agents/` and `.claude/skills/`, which are tracked; nothing else
 under `.claude/` can be reviewed in a pull request, so a rule never lives there.
 No `Skillfile` is committed. Repo-owned instructions live in this file,
-[`.claude/agents/`](.claude/agents/README.md), [`.claude/skills/`](.claude/skills/specht-conventions/SKILL.md)
-and [`.spec/`](.spec/templates).
+[`.claude/agents/`](.claude/agents/README.md), [`.claude/skills/`](.claude/skills/specht-conventions/SKILL.md),
+[`.spec/`](.spec/templates) and [`.specht/`](.specht/templates).
 
 ## Project
 
@@ -99,10 +99,10 @@ B-004, decision 0004). Until that step the engine is exactly `hooked`'s, renamed
 
 ## Configuration
 
-A consumer configures the tool with one file: `.spec/schema/spec-structure.schema.json`,
+A consumer configures the tool with one file: `.specht/schema/spec-structure.schema.json`,
 the manifest. It carries `schemaVersion` and will carry the roles above. Beside
 it sit the three frontmatter schemas (`feature-spec`, `task`, `epic`) and
-`.spec/templates/`. `specht init` writes all of them from the embedded copies -
+`.specht/templates/`. `specht init` writes all of them from the embedded copies -
 the frontmatter schemas from an upstream schema source instead, where the
 manifest records one (`0001-F4` B-014) - and never overwrites a file that
 exists.
@@ -121,7 +121,7 @@ as the consumer's, to match the pin and prints what changed. In the manifest
 `upgrade` adds only the keys the pinned version defines that are missing, so
 consumer settings survive (`0001-F7` decisions 0001, 0005 and 0006).
 
-This repository's own `.spec/schema/` and `.spec/templates/` are that live copy
+This repository's own `.specht/schema/` and `.specht/templates/` are that live copy
 — the same bytes as the newest embedded version for the tool-owned files (the three
 frontmatter schemas and the templates), and the same manifest on its tool-owned
 keys, with rule settings and other consumer configuration excluded; a test says
@@ -289,7 +289,7 @@ Traceability is checked deterministically, not by memory:
 ```
 
 It runs the tool on this repository's own tree, through the local tool manifest,
-exactly as a consumer would. It validates frontmatter against `.spec/schema/`, the
+exactly as a consumer would. It validates frontmatter against `.specht/schema/`, the
 twelve sections and their order, claim-id uniqueness, every `@B-00n` tag
 resolving to a claim, § 9 carrying exactly one row per § 3 claim,
 `children`/`depends_on` resolving to real files, and dependency symmetry. Rules
@@ -341,7 +341,7 @@ scenario.
 
 Blast radius picks the location: a Feature's own `lessons/`, or the repo-wide
 `.spec/lessons/`. Start from
-[`.spec/templates/lesson.md`](.spec/templates/lesson.md).
+[`.specht/templates/lesson.md`](.specht/templates/lesson.md).
 
 ### Feature naming heuristic: & as a decomposition signal
 
@@ -411,7 +411,7 @@ only that the targets it declares ran.
 
 Every tracked markdown file opens with YAML frontmatter. Skill and role files
 declare `name` and `description`; everything else declares `title`, `description`
-and `type`. The blanks in [`.spec/templates/`](.spec/templates/) carry the `type`
+and `type`. The blanks in [`.specht/templates/`](.specht/templates/) carry the `type`
 of the file they produce, so a copy needs no frontmatter edit beyond its title and
 description. Runtime prompts, `README.md` and `src/tool/README.md`, the readme
 the package carries, are exempt.

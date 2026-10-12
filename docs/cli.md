@@ -78,12 +78,12 @@ specht init
 ```
 
 ```text
-written .spec/schema/epic.frontmatter.schema.json
-written .spec/schema/feature-spec.frontmatter.schema.json
-written .spec/schema/spec-structure.schema.json
-written .spec/schema/task.frontmatter.schema.json
-written .spec/templates/adr.md
-written .spec/templates/decision.md
-written .spec/templates/feature.md
-written .spec/templates/lesson.md
+written .specht/schema/epic.frontmatter.schema.json
+written .specht/schema/feature-spec.frontmatter.schema.json
+written .specht/schema/spec-structure.schema.json
+written .specht/schema/task.frontmatter.schema.json
+written .specht/templates/adr.md
+written .specht/templates/decision.md
+written .specht/templates/feature.md
+written .specht/templates/lesson.md
 ```

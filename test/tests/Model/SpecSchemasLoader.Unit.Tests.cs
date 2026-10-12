@@ -18,7 +18,7 @@ public sealed class SpecSchemasLoaderUnitTests
     public void AManifestInTheInjectedFileSystem_WhenLoaded_ShouldCarryTheStructureThatManifestDeclares()
     {
         // Given
-        var schema = Path.Combine(Root, ".spec", "schema");
+        var schema = Path.Combine(Root, SpecTree.SchemaFolder);
         var loader = new SpecSchemasLoader(
             new MockFileSystem(
                 new Dictionary<string, MockFileData>
@@ -48,7 +48,7 @@ public sealed class SpecSchemasLoaderUnitTests
             new MockFileSystem(
                 new Dictionary<string, MockFileData>
                 {
-                    [Path.Combine(Root, ".spec", "schema", "spec-structure.schema.json")] = new("""{ "schemaVersion": "0.2.0" }"""),
+                    [Path.Combine(Root, SpecTree.ManifestPath)] = new("""{ "schemaVersion": "0.2.0" }"""),
                 }));
 
         // When

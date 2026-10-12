@@ -20,7 +20,7 @@ app.Configure(static config =>
 {
     config.SetApplicationVersion(ThisAssembly.AssemblyInformationalVersion);
     config.AddCommand<InitCommand>("init")
-        .WithDescription("Write the newest schema set and templates under .spec/, never overwriting a file.");
+        .WithDescription("Write the newest schema set and templates under .specht/, never overwriting a file.");
 });
 
 return await app.RunAsync(args);

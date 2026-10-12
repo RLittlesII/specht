@@ -85,7 +85,7 @@ The manifest lives at `.config/dotnet-tools.json`. **Commit it to the repository
 ```
 
 With a local install, invoke via `dotnet tool run specht` or `dotnet specht`.
-Then `dotnet specht init` writes the schema set and templates into `<root>/.spec/`
+Then `dotnet specht init` writes the schema set and templates into `<root>/.specht/`
 from the embedded copies, never overwriting an existing file.
 
 **When to use**: every consumer repository, and this one. A pinned tool version

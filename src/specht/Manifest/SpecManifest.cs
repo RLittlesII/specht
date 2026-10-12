@@ -7,7 +7,7 @@ using Specht.Versioning;
 namespace Specht.Manifest;
 
 /// <summary>
-/// Reads the manifest, <c>.spec/schema/spec-structure.schema.json</c>, whole: every key is checked before a structure is
+/// Reads the manifest, <c>.specht/schema/spec-structure.schema.json</c>, whole: every key is checked before a structure is
 /// returned, so no rule ever sees a manifest that was not accepted (<c>0001-F5</c> C-5).
 /// </summary>
 /// <remarks>
@@ -17,8 +17,17 @@ namespace Specht.Manifest;
 /// </remarks>
 public static class SpecManifest
 {
+    /// <summary>The folder under a root that holds the tool's configuration (ADR-0011).</summary>
+    public const string ConfigurationFolder = ".specht";
+
+    /// <summary>The folder under a root that holds the manifest and the frontmatter schemas.</summary>
+    public const string SchemaFolder = ConfigurationFolder + "/schema";
+
     /// <summary>The manifest's path under a root, as a message names it.</summary>
-    public const string RelativePath = ".spec/schema/spec-structure.schema.json";
+    public const string RelativePath = SchemaFolder + "/spec-structure.schema.json";
+
+    /// <summary>The path under a root where the manifest was read before ADR-0011, and is not read (<c>0001-F2</c> A-3).</summary>
+    public const string RetiredRelativePath = ".spec/schema/spec-structure.schema.json";
 
     /// <summary>Reads, checks, and fills the manifest under <paramref name="root"/>.</summary>
     /// <param name="fileSystem">The file system the manifest is read through.</param>
@@ -47,11 +56,11 @@ public static class SpecManifest
             throw new SpechtRootNotFoundException();
         }
 
-        var path = fileSystem.Path.Combine(root, ".spec", "schema", "spec-structure.schema.json");
+        var path = Under(fileSystem, root, RelativePath);
 
         if (!fileSystem.File.Exists(path))
         {
-            throw new SpechtManifestNotFoundException();
+            throw new SpechtManifestNotFoundException(fileSystem.File.Exists(Under(fileSystem, root, RetiredRelativePath)));
         }
 
         try
@@ -63,6 +72,14 @@ public static class SpecManifest
             throw new SpechtManifestUnreadableException(exception);
         }
     }
+
+    /// <summary>Resolves a root-relative path with <c>/</c> separators under <paramref name="root"/>.</summary>
+    /// <param name="fileSystem">The file system whose separators the result carries.</param>
+    /// <param name="root">The repository root.</param>
+    /// <param name="relative">The path under the root, such as <see cref="SchemaFolder"/>.</param>
+    /// <returns>The path under <paramref name="root"/>.</returns>
+    public static string Under(IFileSystem fileSystem, string root, string relative) =>
+        fileSystem.Path.Combine([root, .. relative.Split('/')]);
 
     private static SpecStructure Read(string text)
     {

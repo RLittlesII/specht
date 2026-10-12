@@ -8,8 +8,8 @@ namespace Specht.Tests.Shared;
 /// </summary>
 /// <remarks>
 /// The schemas are the exception: they are copied from the build output, which
-/// links the real <c>.spec/schema/</c>. They are the contract under
-/// enforcement, so a forked copy would test the wrong thing.
+/// links the live schema set to <c>.specht/schema/</c>. They are the contract
+/// under enforcement, so a forked copy would test the wrong thing.
 /// </remarks>
 public sealed class SpecTree : IDisposable
 {
@@ -20,15 +20,27 @@ public sealed class SpecTree : IDisposable
         _temporary = Path.Combine(Path.GetTempPath(), "hooked-specgov-" + Guid.NewGuid().ToString("N"));
         Root = Path.Combine([_temporary, .. nesting ?? []]);
 
-        var schema = Path.Combine(Root, ".spec", "schema");
+        var schema = Path.Combine(Root, ".specht", "schema");
 
         Directory.CreateDirectory(schema);
 
-        foreach (var file in Directory.EnumerateFiles(Path.Combine(AppContext.BaseDirectory, ".spec", "schema"), "*.json"))
+        foreach (var file in Directory.EnumerateFiles(Path.Combine(AppContext.BaseDirectory, ".specht", "schema"), "*.json"))
         {
             File.Copy(file, Path.Combine(schema, Path.GetFileName(file)));
         }
     }
+
+    /// <summary>The schema folder under a root, where the manifest and the frontmatter schemas are read (ADR-0011).</summary>
+    public const string SchemaFolder = ".specht/schema";
+
+    /// <summary>The templates folder under a root, where the tool writes the templates it ships (ADR-0011).</summary>
+    public const string TemplatesFolder = ".specht/templates";
+
+    /// <summary>The manifest path under a root (<c>0001-F2</c> A-3).</summary>
+    public const string ManifestPath = SchemaFolder + "/spec-structure.schema.json";
+
+    /// <summary>The retired manifest path under a root, where no manifest is read (<c>0001-F2</c> A-3, B-037).</summary>
+    public const string RetiredManifestPath = ".spec/schema/spec-structure.schema.json";
 
     /// <summary>The canonical section bodies a valid specification carries.</summary>
     public static IReadOnlyList<string> Sections { get; } =

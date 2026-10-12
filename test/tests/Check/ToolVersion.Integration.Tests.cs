@@ -90,7 +90,7 @@ public sealed class ToolVersionIntegrationTests : IDisposable
         _tree.WriteFeature("0001", "F1", featureFile: null);
         if (!manifest)
         {
-            File.Delete(Path.Combine(_tree.Root, SpecManifest.RelativePath));
+            File.Delete(Path.Combine(_tree.Root, SpecTree.ManifestPath));
         }
     }
 

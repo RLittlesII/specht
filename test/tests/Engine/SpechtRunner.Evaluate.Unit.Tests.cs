@@ -129,7 +129,7 @@ public sealed class SpechtRunnerEvaluateUnitTests
     {
         // Given
         var fileSystem = new MockFileSystem(
-            new Dictionary<string, MockFileData> { [Path.Combine("repo", ".spec", "schema", "spec-structure.schema.json")] = new(manifest) });
+            new Dictionary<string, MockFileData> { [Path.Combine("repo", SpecTree.ManifestPath)] = new(manifest) });
         SchemaVersion version = new SchemaVersionFixture();
         List<FeatureSpec> features =
         [
@@ -161,7 +161,7 @@ public sealed class SpechtRunnerEvaluateUnitTests
         var fileSystem = new MockFileSystem(
             new Dictionary<string, MockFileData>
             {
-                [Path.Combine("repo", ".spec", "schema", "spec-structure.schema.json")] = new("""{ "schemaVersion": "0.2.0" }"""),
+                [Path.Combine("repo", SpecTree.ManifestPath)] = new("""{ "schemaVersion": "0.2.0" }"""),
             });
         SpecModel model = new SpecModelFixture().WithSchemas(SpecSchemas.Load(fileSystem, "repo", new SchemaVersions([one, two])));
 
@@ -354,7 +354,7 @@ public sealed class SpechtRunnerEvaluateUnitTests
         SchemaVersion version = new SchemaVersionFixture().WithRuleIds(
             new HashSet<string>(["FAKE001", "FAKE002", "FAKE003"], StringComparer.Ordinal));
         var fileSystem = new MockFileSystem(
-            new Dictionary<string, MockFileData> { [Path.Combine("repo", ".spec", "schema", "spec-structure.schema.json")] = new(manifest) });
+            new Dictionary<string, MockFileData> { [Path.Combine("repo", SpecTree.ManifestPath)] = new(manifest) });
 
         return new SpecModelFixture().WithSchemas(SpecSchemas.Load(fileSystem, "repo", new SchemaVersions([version])));
     }
@@ -363,7 +363,7 @@ public sealed class SpechtRunnerEvaluateUnitTests
     {
         SchemaVersion version = new SchemaVersionFixture().WithRuleIds(new HashSet<string>(ruleIds, StringComparer.Ordinal));
         var fileSystem = new MockFileSystem(
-            new Dictionary<string, MockFileData> { [Path.Combine("repo", ".spec", "schema", "spec-structure.schema.json")] = new("{}") });
+            new Dictionary<string, MockFileData> { [Path.Combine("repo", SpecTree.ManifestPath)] = new("{}") });
 
         return new SpecModelFixture().WithSchemas(SpecSchemas.Load(fileSystem, "repo", new SchemaVersions([version])));
     }

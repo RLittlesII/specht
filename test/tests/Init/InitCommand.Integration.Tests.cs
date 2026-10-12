@@ -2,6 +2,7 @@ using System.IO.Abstractions.TestingHelpers;
 using AwesomeAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using Specht.Acceptance;
+using Specht.Tests.Shared;
 using Specht.Tool;
 using Specht.Tool.Features.Init;
 using Spectre.Console.Cli.Testing;
@@ -78,7 +79,7 @@ public sealed class InitCommandIntegrationTests : IDisposable
 
         // Then
         result.ExitCode.Should().Be(0, result.Output);
-        fileSystem.File.Exists(Path.Combine(workingDirectory, ".spec", "templates", "feature.md")).Should().BeTrue(result.Output);
+        fileSystem.File.Exists(Path.Combine(workingDirectory, SpecTree.TemplatesFolder, "feature.md")).Should().BeTrue(result.Output);
     }
 
     [Theory]
@@ -119,14 +120,14 @@ public sealed class InitCommandIntegrationTests : IDisposable
 
     private static readonly string[] Files =
     [
-        ".spec/schema/spec-structure.schema.json",
-        ".spec/schema/feature-spec.frontmatter.schema.json",
-        ".spec/schema/task.frontmatter.schema.json",
-        ".spec/schema/epic.frontmatter.schema.json",
-        ".spec/templates/feature.md",
-        ".spec/templates/decision.md",
-        ".spec/templates/adr.md",
-        ".spec/templates/lesson.md",
+        ".specht/schema/spec-structure.schema.json",
+        ".specht/schema/feature-spec.frontmatter.schema.json",
+        ".specht/schema/task.frontmatter.schema.json",
+        ".specht/schema/epic.frontmatter.schema.json",
+        ".specht/templates/feature.md",
+        ".specht/templates/decision.md",
+        ".specht/templates/adr.md",
+        ".specht/templates/lesson.md",
     ];
 
     private readonly string _sandbox = Path.Combine(Path.GetTempPath(), "specht-init-" + Guid.NewGuid().ToString("N"));
