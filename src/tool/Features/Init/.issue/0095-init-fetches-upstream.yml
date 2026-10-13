@@ -2,7 +2,7 @@ id: "0095"
 type: task
 title: Write a recorded upstream schema source into absent files on init
 
-status: ready-for-architecture
+status: done
 
 risk: 4
 
@@ -22,8 +22,8 @@ claims:
   - B-034
 
 created: "2026-10-08"
-updated: "2026-10-11"
-closed: null
+updated: "2026-10-12"
+closed: "2026-10-12"
 
 summary: |
   Init's side of 0001-F7 decision 0004: an absent frontmatter schema comes
@@ -64,6 +64,21 @@ decisions:
     schemas are in the run's selection", and B-034 is added for a run
     without them. The item waits on 0186, which builds the selection.
     Rejected: B-034 in 0186, where no fetch exists to be withheld.
+
+  - |
+    2026-10-12, implementer: ADR-0013 records the engine's network boundary
+    and its injected HTTP message-handler seam. The repository owner resolved
+    Init OQ-8 and the init portions of 0001-F7 OQ-44 and OQ-45; Init decision
+    0005 records those choices. The spec-author, test-writer, implementer and
+    spec-reviewer role contracts were used for this delivery.
+  - |
+    2026-10-12, delivery: after integrating item 0126, the full build passes
+    Format, Compile, UnitTest, IntegrationTest and AcceptanceTest with zero
+    compiler warnings. All 448 unit and 219 integration tests pass;
+    167 acceptance cases pass and 209 existing unbound cases are skipped,
+    with no failures. The Specht target
+    completes in its existing non-gating mode. The five delivered claims
+    have Covered traceability rows; the spec-reviewer reports no findings.
 
 out_of_scope:
   - "Fetching without a recorded source — 0001-F7 C-8."

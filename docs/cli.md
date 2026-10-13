@@ -72,13 +72,20 @@ frontmatter schemas and templates. It never overwrites a file that exists.
 | `-h, --help`   | none    | Off                   | Prints the command's help and writes nothing. |
 
 **Stdout.** One line per file, relative to the root: `written` for a file it
-created, `skipped` for one that was already there. A run that exits `2` says
+created, `skipped` for one that was already there. A run that exits `2` or `3` says
 why on stderr.
 
 Into a bare root, the selected schemas are Feature and item. Beside an existing
 manifest that declares the epic grammar, the selection includes the epic schema.
 
-**Exit codes.** `0` or `2`; [Exit codes](exit-codes.md) says what each means.
+When the existing manifest records `spechtSchema`, `--schemas` or `--all`
+fetches each missing schema from that source and verifies its recorded SHA-256
+before writing any file. Present files are preserved. A failed fetch or hash
+check writes nothing and exits `3`. With every schema present, or without the
+schemas selected, no fetch occurs. Sources must be public HTTPS addresses;
+the tool sends no credentials and follows no redirects.
+
+**Exit codes.** `0`, `2` or `3`; [Exit codes](exit-codes.md) says what each means.
 
 ```sh
 specht init

@@ -11,5 +11,5 @@ type: reference
 | `0`  | Clean                                                                 |
 | `1`  | Violations (any violation, under `--strict`)                          |
 | `2`  | Missing root or manifest                                              |
-| `3`  | Invalid manifest                                                      |
+| `3`  | Invalid manifest, or an upstream schema fetch or hash check failed    |
 | `4`  | Something named on the command line, such as a rule id, was not found |

@@ -3,6 +3,7 @@ using System.ComponentModel;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using Specht.Manifest;
 using Spectre.Console;
 using Spectre.Console.Cli;
 
@@ -15,7 +16,8 @@ namespace Specht.Tool.Features.Init;
 /// </summary>
 /// <param name="console">Where the listing goes; injected so the command tester captures it.</param>
 /// <param name="writer">The writer over the embedded shipping copy and the real file system outside a test.</param>
-public sealed class InitCommand(IAnsiConsole console, InitWriter writer) : AsyncCommand<InitCommand.Settings>
+/// <param name="errorWriter">Where failures go; standard error when omitted.</param>
+public sealed class InitCommand(IAnsiConsole console, InitWriter writer, TextWriter? errorWriter = null) : AsyncCommand<InitCommand.Settings>
 {
     /// <inheritdoc />
     public override async Task<int> ExecuteAsync(CommandContext context, Settings settings, CancellationToken cancellationToken)
@@ -33,9 +35,15 @@ public sealed class InitCommand(IAnsiConsole console, InitWriter writer) : Async
         }
         catch (SpechtRootNotFoundException)
         {
-            await Console.Error.WriteLineAsync($"specht: '{settings.Root}' is not a directory.");
+            await (errorWriter ?? Console.Error).WriteLineAsync($"specht: '{settings.Root}' is not a directory.");
 
             return ExitCodes.MissingInput;
+        }
+        catch (Exception exception) when (exception is SpechtUpstreamSchemaException or SpechtManifestException or SpechtManifestUnreadableException)
+        {
+            await (errorWriter ?? Console.Error).WriteLineAsync($"specht: {exception.Message}");
+
+            return ExitCodes.InvalidManifest;
         }
 
         return ExitCodes.Success;

@@ -223,25 +223,73 @@ Feature: init
     And the present schema file is unchanged
 
   @B-015
-  Scenario: Init refuses a fetched upstream schema that does not match its hash
+  Scenario Outline: Init refuses a fetched upstream schema that does not match its hash
     Given a root whose manifest records an upstream schema source with its version and content hash
+    And no frontmatter schema file under the root
     And the source serves content that does not match that hash
     And a snapshot of every file under the root
-    When init runs against it with schemas
+    When init runs against it with <options>
+    Then no file under the root has changed
+    And the standard error names the source
+    And the exit code is 3
+
+    Examples:
+      | options    |
+      | schemas    |
+      | every part |
+
+  @B-015 @boundary
+  Scenario: Init writes nothing when one fetched schema matches and another does not
+    Given a root whose manifest records an upstream schema source with its version and content hash
+    And no frontmatter schema file under the root
+    And the source serves one schema matching its recorded hash and another that does not
+    And a snapshot of every file under the root
+    When init runs against it with every part
     Then no file under the root has changed
     And the standard error names the source
     And the exit code is 3
 
   @B-016
-  Scenario: Init refuses an upstream source it cannot reach
+  Scenario Outline: Init refuses an upstream source it cannot reach
     Given a root whose manifest records an upstream schema source with its version and content hash
     And no frontmatter schema file under the root
     And the source cannot be reached
     And a snapshot of every file under the root
-    When init runs against it with schemas
+    When init runs against it with <options>
     Then no file under the root has changed
     And the standard error names the source
     And the exit code is 3
+
+    Examples:
+      | options    |
+      | schemas    |
+      | every part |
+
+  @B-016
+  Scenario Outline: Init refuses an upstream source that does not serve the requested schema
+    Given a root whose manifest records an upstream schema source with its version and content hash
+    And no frontmatter schema file under the root
+    And the source responds with status <status>
+    And a snapshot of every file under the root
+    When init runs against it with every part
+    Then no file under the root has changed
+    And the standard error names the source
+    And the exit code is 3
+
+    Examples:
+      | status |
+      | 401    |
+      | 404    |
+
+  @B-002 @B-014 @boundary
+  Scenario: Init keeps existing upstream schemas without fetching
+    Given a root whose manifest records an upstream schema source with its version and content hash
+    And every selected frontmatter schema file is present under the root
+    And the network is unavailable
+    And a snapshot of every file under the root
+    When init runs against it with schemas
+    Then no network call was attempted
+    And no file under the root has changed
 
   @B-034 @boundary
   Scenario Outline: Init without schemas fetches nothing from a recorded source
