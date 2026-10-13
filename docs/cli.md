@@ -57,19 +57,24 @@ errors: 1, warnings: 0
 
 ```text
 specht init [--root <DIR>] [--schemas] [--templates] [--all]
+            [--upstream <ADDRESS>] [--upstream-version <LABEL>]
+            [--upstream-hash <KIND=HASH>]...
 ```
 
 Writes the newest manifest under `<DIR>/.specht/`; the part flags add the
 frontmatter schemas and templates. It never overwrites a file that exists.
 [Setup](setup.md) walks through the first run.
 
-| Option         | Value   | Default               | Does                                          |
-| -------------- | ------- | --------------------- | --------------------------------------------- |
-| `--root <DIR>` | `<DIR>` | The working directory | Names the repository root to write under.     |
-| `--schemas`    | none    | Off                   | Adds the selected frontmatter schemas.        |
-| `--templates`  | none    | Off                   | Adds the four templates.                      |
-| `--all`        | none    | Off                   | Adds the frontmatter schemas and templates.   |
-| `-h, --help`   | none    | Off                   | Prints the command's help and writes nothing. |
+| Option                        | Value                   | Default               | Does                                                        |
+| ----------------------------- | ----------------------- | --------------------- | ----------------------------------------------------------- |
+| `--root <DIR>`                | `<DIR>`                 | The working directory | Names the repository root to write under.                   |
+| `--schemas`                   | none                    | Off                   | Adds the selected frontmatter schemas.                      |
+| `--templates`                 | none                    | Off                   | Adds the four templates.                                    |
+| `--all`                       | none                    | Off                   | Adds the frontmatter schemas and templates.                 |
+| `--upstream <ADDRESS>`        | HTTPS base address      | None                  | Records a public schema source in a new manifest.           |
+| `--upstream-version <LABEL>`  | Nonempty label          | None                  | Records the upstream version label; required with a source. |
+| `--upstream-hash <KIND=HASH>` | Repeated kind/hash pair | None                  | Supplies a SHA-256 hash for every declared schema kind.     |
+| `-h, --help`                  | none                    | Off                   | Prints the command's help and writes nothing.               |
 
 **Stdout.** One line per file, relative to the root: `written` for a file it
 created, `skipped` for one that was already there. A run that exits `2` or `3` says
@@ -84,6 +89,19 @@ before writing any file. Present files are preserved. A failed fetch or hash
 check writes nothing and exits `3`. With every schema present, or without the
 schemas selected, no fetch occurs. Sources must be public HTTPS addresses;
 the tool sends no credentials and follows no redirects.
+
+To record a source in a new manifest, supply all three source options. Repeat
+`--upstream-hash` for `feature` and `task`, with values such as
+`feature=sha256:<64 lowercase hexadecimal digits>`. Supply an epic hash when
+the manifest declares that kind. The upstream version is a label; it does not
+change the schema version that pins the rule vocabulary.
+
+Source options alone write the manifest without fetching. Add `--schemas` or
+`--all` to fetch missing schemas. Existing files are preserved without fetching
+them; the check can reject them if they differ from their recorded hashes.
+Invalid source options, including missing hashes, or any source option beside
+an existing manifest, write and fetch nothing and exit `3`. Edit an existing
+manifest by hand to configure its source.
 
 **Exit codes.** `0`, `2` or `3`; [Exit codes](exit-codes.md) says what each means.
 

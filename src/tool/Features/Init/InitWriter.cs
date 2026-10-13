@@ -4,10 +4,13 @@ using System.IO;
 using System.IO.Abstractions;
 using System.Linq;
 using System.Reflection;
+using System.Text.Json;
+using System.Text.Json.Nodes;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Specht.Manifest;
+using Specht.Resources;
 using Specht.Versioning;
 
 namespace Specht.Tool.Features.Init;
@@ -22,11 +25,13 @@ namespace Specht.Tool.Features.Init;
 /// <c>templates/v&lt;major.minor.patch&gt;/&lt;file&gt;</c>.
 /// </param>
 /// <param name="fileSystem">The file system the root is written through.</param>
-/// <param name="upstreamSchemaFetcher">The fetcher needed when an existing manifest selects upstream schemas.</param>
+/// <param name="upstreamSchemaFetcher">The fetcher needed when an upstream source selects schemas.</param>
+/// <param name="manifestParser">The in-memory validator shared with manifest loading.</param>
 public sealed partial class InitWriter(
     IReadOnlyDictionary<string, byte[]> shippingCopy,
     IFileSystem fileSystem,
-    UpstreamSchemaFetcher? upstreamSchemaFetcher = null)
+    UpstreamSchemaFetcher? upstreamSchemaFetcher = null,
+    SpecManifestParser? manifestParser = null)
 {
     /// <summary>Reads the shipping copy embedded in <paramref name="assembly"/>.</summary>
     /// <param name="assembly">The assembly carrying the <c>manifest/</c>, <c>schema/</c> and <c>templates/</c> resources.</param>
@@ -41,13 +46,19 @@ public sealed partial class InitWriter(
     /// <param name="schemas">Whether the frontmatter schemas are selected.</param>
     /// <param name="templates">Whether the templates are selected.</param>
     /// <param name="cancellationToken">Cancels the run between files.</param>
+    /// <param name="upstream">The HTTPS base address to record in a new manifest.</param>
+    /// <param name="upstreamVersion">The upstream version label.</param>
+    /// <param name="upstreamHashes">Repeated kind=hash pairs for the declared schema kinds.</param>
     /// <returns>Each file, relative to the root with <c>/</c> separators in ordinal order, and whether it was written or skipped.</returns>
     /// <exception cref="SpechtRootNotFoundException"><paramref name="root"/> is not a directory.</exception>
     public async Task<IReadOnlyList<(string Path, bool Written)>> Write(
         string root,
         bool schemas,
         bool templates,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken,
+        string? upstream = null,
+        string? upstreamVersion = null,
+        IReadOnlyList<string>? upstreamHashes = null)
     {
         if (!fileSystem.Directory.Exists(root))
         {
@@ -57,10 +68,58 @@ public sealed partial class InitWriter(
         var listing = new List<(string Path, bool Written)>();
         var manifestPresent = fileSystem.File.Exists(fileSystem.Path.Combine([root, .. SpecManifest.RelativePath.Split('/')]));
         var selected = Newest(schemas, templates, manifestPresent).ToList();
-        var source = schemas && manifestPresent ? SpecManifest.Load(fileSystem, root).SpechtSchema : null;
+        var hasSourceOptions = upstream is not null || upstreamVersion is not null || upstreamHashes is { Count: > 0 };
+        UpstreamSchemaSource? source = null;
+
+        if (hasSourceOptions)
+        {
+            if (manifestPresent)
+            {
+                throw new SpechtManifestException($"{SpecManifest.RelativePath}: upstream options require a new manifest.");
+            }
+
+            var hashes = new JsonObject();
+
+            foreach (var pair in upstreamHashes ?? [])
+            {
+                var separator = pair.IndexOf('=');
+
+                if (separator <= 0 || separator == pair.Length - 1)
+                {
+                    throw new SpechtManifestException("--upstream-hash must be written as kind=hash.");
+                }
+
+                var kind = pair[..separator];
+
+                if (hashes.ContainsKey(kind))
+                {
+                    throw new SpechtManifestException("--upstream-hash repeats a kind.");
+                }
+
+                hashes[kind] = pair[(separator + 1)..];
+            }
+
+            var manifestIndex = selected.FindIndex(static entry => entry.Relative == SpecManifest.RelativePath);
+            var manifest = JsonNode.Parse(selected[manifestIndex].Bytes)!.AsObject();
+            manifest["identifiers"]?.AsObject().Remove("epic");
+            manifest["spechtSchema"] = new JsonObject
+            {
+                ["location"] = upstream,
+                ["version"] = upstreamVersion,
+                ["hashes"] = hashes,
+            };
+            var text = manifest.ToJsonString(new JsonSerializerOptions { WriteIndented = true });
+            source = (manifestParser ?? new SpecManifestParser(new SpechtResources().DefaultManifest)).Parse(text).SpechtSchema;
+            selected[manifestIndex] = (SpecManifest.RelativePath, System.Text.Encoding.UTF8.GetBytes(text + "\n"));
+        }
+        else if (schemas && manifestPresent)
+        {
+            source = SpecManifest.Load(fileSystem, root).SpechtSchema;
+        }
+
         var preserved = new HashSet<string>(StringComparer.Ordinal);
 
-        if (source is not null)
+        if (schemas && source is not null)
         {
             selected.RemoveAll(static entry => entry.Relative.StartsWith(SpecManifest.FrontmatterSchemaFolder + "/", StringComparison.Ordinal));
 

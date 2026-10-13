@@ -2,7 +2,7 @@ id: "0178"
 type: task
 title: Record an upstream schema source from init
 
-status: blocked
+status: done
 
 risk: 3
 
@@ -14,47 +14,37 @@ spikes: []
 
 spec: src/tool/Features/Init/.spec/README.md
 
-claims: []
+claims:
+  - B-035
+  - B-036
+  - B-037
+  - B-038
+  - B-039
+  - B-040
 
 created: "2026-10-11"
-updated: "2026-10-11"
-closed: null
+updated: "2026-10-12"
+closed: "2026-10-12"
 
 summary: |
-  Into a bare root `specht init` writes a manifest that records no upstream
-  source, so a consumer reaches a schema sourced at a URL only by writing
-  the manifest by hand before running `init` (B-014). The repository owner,
-  2026-10-11, asked that a consumer can initialise a repository to such a
-  schema (0055-F6 decision 0004).
-
-  Blocked on the owner: OQ-6 (how a bare root is pointed at a source) and
-  OQ-7 (whether a hash is required on first use). Decision 0003 proposes
-  that `init` takes the source on the command line with a required hash,
-  and is not ratified. It also waits on 0001-F7's answers through 0095 and
-  0176.
-
-  `claims: []` because the claims are owed and not written: decision 0003
-  lists them, and spec-author writes them, with their scenarios and § 9
-  rows, when the owner rules. This item is then re-cut to carry them and
-  leaves `blocked`. If the owner rules that a hand-written manifest is the
-  way, this item closes with no code and the setup guide (0180) carries it.
-  On the first release's path (0055-F6 C-8).
+  Record a source supplied to init in the new manifest, reusing 0095's fetch
+  and 0176's manifest validation. The owner ratified decision 0003 on
+  2026-10-12: required hashes, opt-in fetching, exit 3 for invalid source
+  options and preservation of existing schema files.
 
 acceptance_criteria:
-  - "0001-F4 OQ-6 and OQ-7 are resolved in § 11, and the claims decision 0003 lists as owed are in § 3 with scenarios and § 9 rows"
-  - "Init into a bare root, pointed at a source as answered, leaves a tree the check validates with that source's schemas"
-  - "0001-F4 B-027 still holds: nothing asks for a fetch, no network call"
-  - "§ 9 carries a row naming a test for each claim this item is re-cut to carry."
+  - "B-035 to B-040 have passing scenarios and unit tests in § 9."
+  - "B-027 remains offline without source options."
 
 decisions:
   - |
-    2026-10-11, spec-author's cut, after the repository owner's ruling
-    (0055-F6 decision 0004). Status `blocked`: OQ-6 and OQ-7 are open,
-    proposed in decision 0003 and not put to the owner. Rejected: the
-    recording inside 0095, which would block B-014 to B-016 and B-027
-    behind a question they do not ask.
+    2026-10-12: owner ratification resolves OQ-6 and OQ-7; re-cut to
+    B-035 to B-040. Fetching requires --schemas or --all; source options
+    beside an existing manifest are refused; existing schema files are
+    preserved. Epic support remains separate (`0001-F5` OQ-18); no item owns it yet.
 
 out_of_scope:
   - "The fetch and the hash check — 0095."
   - "The manifest key itself — 0176, 0001-F7."
   - "Changing a recorded source in a tree that has a manifest — no claim; 0001-F7 C-10."
+  - "Implementing --epics — separate scope, 0001-F5 OQ-18."
