@@ -42,6 +42,10 @@ public sealed class SpecReportDocumentIntegrationTests
     {
         // Given
         using var tree = new SpecTree();
+        var manifestPath = Path.Combine(tree.Root, SpecTree.ManifestPath);
+        var manifest = JsonNode.Parse(File.ReadAllText(manifestPath))!.AsObject();
+        manifest.Remove("schemaVersion");
+        File.WriteAllText(manifestPath, manifest.ToJsonString());
         tree.WriteFeature("0001", "F1");
 
         // When
