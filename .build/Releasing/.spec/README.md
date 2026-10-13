@@ -603,6 +603,9 @@ with restore and the ordinary build gates skipped. Each unlocked case fails
 with the guard's diagnostic before `Pack` starts or creates its output folder.
 With all shipped versions locked, `VerifyTag` passes. No remote, package push,
 release creation or tool restore is used; child-process telemetry is disabled.
+Missing locks, existing incomplete locks, and fully locked versions have
+separate tests with one assertion path each; only process and repository
+setup is shared.
 The test project carries `NukeTelemetryVersion`, as the build project does,
 so starting its copied build executable does not amend that project.
 
@@ -618,21 +621,21 @@ workflow still places `Verify Tag` before `Format`, `Compile` and `Pack`.
 
 <!-- last written by: test-writer, 2026-10-13 (B-013 automated coverage) -->
 
-| Claim ID | Scenario                                                        | Test                                                                                                                                                                                                                                | Status  |
-| -------- | --------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------- |
-| B-001    | A version tag runs every gate                                   | Missing                                                                                                                                                                                                                             | Missing |
-| B-002    | A failed gate publishes nothing                                 | Missing                                                                                                                                                                                                                             | Missing |
-| B-003    | A green tag publishes the package                               | Missing                                                                                                                                                                                                                             | Missing |
-| B-004    | A published version gets a release                              | Missing                                                                                                                                                                                                                             | Missing |
-| B-005    | Nothing but a version tag publishes                             | Missing                                                                                                                                                                                                                             | Missing |
-| B-006    | A release carries generated notes                               | Missing                                                                                                                                                                                                                             | Missing |
-| B-007    | A release carries the package                                   | Missing                                                                                                                                                                                                                             | Missing |
-| B-008    | A dry run stops before the push                                 | Missing                                                                                                                                                                                                                             | Missing |
-| B-009    | A tag that disagrees with the version publishes nothing         | Missing                                                                                                                                                                                                                             | Missing |
-| B-010    | A release reads the feed with its own token                     | Missing                                                                                                                                                                                                                             | Missing |
-| B-011    | A version tag off the main line publishes nothing               | Missing                                                                                                                                                                                                                             | Missing |
-| B-012    | The first release's notes cover everything merged so far        | Missing                                                                                                                                                                                                                             | Missing |
-| B-013    | A version tag over an unlocked schema version publishes nothing | SchemaReleaseGuardUnitTests.AnUnlockedShippedVersion_WhenPublicationIsChecked_ShouldRefuseAndLeaveTheTreeUnchanged; SchemaReleaseGuardIntegrationTests.ASchemaLock_WhenAReleaseTagIsChecked_ShouldGatePackingWithoutChangingTheLock | Covered |
+| Claim ID | Scenario                                                        | Test                                                                | Status  |
+| -------- | --------------------------------------------------------------- | ------------------------------------------------------------------- | ------- |
+| B-001    | A version tag runs every gate                                   | Missing                                                             | Missing |
+| B-002    | A failed gate publishes nothing                                 | Missing                                                             | Missing |
+| B-003    | A green tag publishes the package                               | Missing                                                             | Missing |
+| B-004    | A published version gets a release                              | Missing                                                             | Missing |
+| B-005    | Nothing but a version tag publishes                             | Missing                                                             | Missing |
+| B-006    | A release carries generated notes                               | Missing                                                             | Missing |
+| B-007    | A release carries the package                                   | Missing                                                             | Missing |
+| B-008    | A dry run stops before the push                                 | Missing                                                             | Missing |
+| B-009    | A tag that disagrees with the version publishes nothing         | Missing                                                             | Missing |
+| B-010    | A release reads the feed with its own token                     | Missing                                                             | Missing |
+| B-011    | A version tag off the main line publishes nothing               | Missing                                                             | Missing |
+| B-012    | The first release's notes cover everything merged so far        | Missing                                                             | Missing |
+| B-013    | A version tag over an unlocked schema version publishes nothing | `SchemaReleaseGuardUnitTests`; `SchemaReleaseGuardIntegrationTests` | Covered |
 
 ## 10. Lessons / Spec Deltas
 
