@@ -75,11 +75,16 @@ Feature: Release
     And no package is published
 
   @B-013 @boundary
-  Scenario: A version tag over an unlocked schema version publishes nothing
-    Given a version tag on a commit whose newest schema version is not yet locked
+  Scenario Outline: A version tag over an unlocked schema version publishes nothing
+    Given a version tag on a commit whose <shipped> schema version is not yet locked
     When the tag is pushed
     Then the run fails before anything is packed
     And no package is published
+
+    Examples:
+      | shipped |
+      | newest  |
+      | older   |
 
   @B-012
   Scenario: The first release's notes cover everything merged so far

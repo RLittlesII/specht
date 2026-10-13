@@ -2,7 +2,7 @@ id: "0190"
 type: task
 title: Refuse a release tag over an unlocked schema version
 
-status: ready-for-architecture
+status: done
 
 risk: 2
 
@@ -18,8 +18,8 @@ claims:
   - B-013
 
 created: "2026-10-11"
-updated: "2026-10-11"
-closed: null
+updated: "2026-10-13"
+closed: "2026-10-13"
 
 summary: |
   The tag check refuses a `v*` tag while a schema version the tool ships
@@ -28,9 +28,8 @@ summary: |
   the version check of B-009 does.
 
   Waits on 0083, which builds the tag check, and on 0188, which writes
-  the lock and owns the digest. Whether the first tag (0084) waits for
-  this item is OQ-19, open; its default is that it does, and no edge is
-  written on 0084 until the owner answers.
+  the lock and owns the digest. The first tag (0084) waits for this item
+  (0055-F6 C-2; OQ-19, resolved by the owner 2026-10-13).
 
 acceptance_criteria:
   - "B-013 — a `v*` tag, a shipped schema version unlocked: fails before anything is packed"

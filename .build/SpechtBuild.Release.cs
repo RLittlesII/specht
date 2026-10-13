@@ -1,11 +1,13 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.IO.Abstractions;
 using System.Linq;
 using Nuke.Common;
 using Nuke.Common.CI.GitHubActions;
 using Nuke.Common.Tooling;
 using Rocket.Surgery.Nuke.GithubActions;
+using Specht.Build;
 using static Nuke.Common.Tools.DotNet.DotNetTasks;
 using static Nuke.Common.Tools.Git.GitTasks;
 
@@ -28,7 +30,7 @@ internal sealed partial class SpechtBuild
     private Target VerifyTag => definition => definition
         .DependsOn(Restore)
         .OnlyWhenDynamic(static () => Environment.GetEnvironmentVariable("GITHUB_REF_TYPE") == "tag")
-        .Executes(() =>
+        .Executes(async () =>
         {
             var tag = Environment.GetEnvironmentVariable("GITHUB_REF_NAME");
             var version = DotNet("nbgv get-version --variable NuGetPackageVersion", RootDirectory, logOutput: false)
@@ -41,6 +43,8 @@ internal sealed partial class SpechtBuild
             Assert.True(
                 Run(GitPath, "merge-base --is-ancestor HEAD origin/main"),
                 $"The tag '{tag}' is on a commit that is not on 'main', the branch 'origin/main' does not reach it");
+
+            await new SchemaVersionLock(new FileSystem(), RootDirectory).RequireAllLockedAsync();
         });
 
     public static RocketSurgeonGitHubActionsConfiguration ReleaseMiddleware(

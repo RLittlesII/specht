@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace Specht.Build;
 
-/// <summary>Locks the newest shipped schema version once (0001-F7 B-092, B-093).</summary>
+/// <summary>Records schema locks and refuses publication of unlocked versions (0001-F7 B-092, B-093; 0055-F6 B-013).</summary>
 public sealed class SchemaVersionLock(IFileSystem fileSystem, string root)
 {
     /// <summary>The committed lock, outside the embedded version folders.</summary>
@@ -20,16 +20,7 @@ public sealed class SchemaVersionLock(IFileSystem fileSystem, string root)
     /// <summary>Records the newest version unless it already has a digest.</summary>
     public async Task LockNewestAsync()
     {
-        var newest = fileSystem.Directory.GetDirectories(fileSystem.Path.Combine(root, "src/tool/schema"), "v*")
-            .Select(path => fileSystem.Path.GetFileName(path)[1..])
-            .Select(static text => Version.TryParse(text, out var version)
-                && version.Build >= 0
-                && version.Revision < 0
-                && string.Equals(text, version.ToString(3), StringComparison.Ordinal)
-                ? version
-                : throw new InvalidOperationException($"schema/v{text}/ has an invalid schema version."))
-            .Max()!
-            .ToString(3);
+        var newest = ReadVersions().Max()!.ToString(3);
         var lockPath = fileSystem.Path.Combine(root, RelativePath);
         var entries = fileSystem.File.Exists(lockPath)
             ? JsonSerializer.Deserialize<Dictionary<string, string>>(await fileSystem.File.ReadAllTextAsync(lockPath))!
@@ -49,6 +40,26 @@ public sealed class SchemaVersionLock(IFileSystem fileSystem, string root)
         finally
         {
             fileSystem.File.Delete(temporary);
+        }
+    }
+
+    /// <summary>Refuses publication while any shipped schema version is unlocked (0055-F6 B-013).</summary>
+    public async Task RequireAllLockedAsync()
+    {
+        var lockPath = fileSystem.Path.Combine(root, RelativePath);
+        var entries = fileSystem.File.Exists(lockPath)
+            ? JsonSerializer.Deserialize<Dictionary<string, string>>(await fileSystem.File.ReadAllTextAsync(lockPath))
+                ?? throw new JsonException($"{RelativePath} must contain a version lock object.")
+            : new Dictionary<string, string>(StringComparer.Ordinal);
+        var unlocked = ReadVersions()
+            .Select(static version => version.ToString(3))
+            .Where(version => !entries.ContainsKey(version))
+            .Order(StringComparer.Ordinal)
+            .ToArray();
+        if (unlocked.Length > 0)
+        {
+            throw new InvalidOperationException(
+                $"Shipped schema versions are not locked in {RelativePath}: {string.Join(", ", unlocked)}.");
         }
     }
 
@@ -77,6 +88,16 @@ public sealed class SchemaVersionLock(IFileSystem fileSystem, string root)
 
         return Convert.ToHexStringLower(digest.GetHashAndReset());
     }
+
+    private IEnumerable<Version> ReadVersions() => fileSystem.Directory
+        .GetDirectories(fileSystem.Path.Combine(root, "src/tool/schema"), "v*")
+        .Select(path => fileSystem.Path.GetFileName(path)[1..])
+        .Select(static text => Version.TryParse(text, out var version)
+            && version.Build >= 0
+            && version.Revision < 0
+            && string.Equals(text, version.ToString(3), StringComparison.Ordinal)
+            ? version
+            : throw new InvalidOperationException($"schema/v{text}/ has an invalid schema version."));
 
     private static readonly JsonSerializerOptions LockJson = new() { WriteIndented = true };
 
