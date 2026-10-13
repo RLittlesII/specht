@@ -1,0 +1,37 @@
+# GitHub generated release notes; this is not the release workflow.
+changelog:
+  categories:
+    - title: "🚀 Features"
+      labels:
+        - "🚀 features"
+    - title: "🐛 Bug fixes"
+      labels:
+        - "🐛 bug fixes"
+    - title: "📚 Documentation"
+      labels:
+        - "📚 documentation"
+    - title: "📐 Specifications"
+      labels:
+        - "📐 specifications"
+    - title: "♻️ Refactoring"
+      labels:
+        - "♻️ refactoring"
+    - title: "🧪 Tests"
+      labels:
+        - "🧪 tests"
+    - title: "📊 Benchmarks"
+      labels:
+        - "📊 benchmarks"
+    - title: "⚙️ Build and CI"
+      labels:
+        - "⚙️ build and ci"
+    - title: "📦 Dependencies"
+      labels:
+        - "📦 dependencies"
+        - "dependencies"
+    - title: "🧹 Chore"
+      labels:
+        - "🧹 chore"
+    - title: "📋 Other changes"
+      labels:
+        - "*"
