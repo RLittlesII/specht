@@ -226,7 +226,8 @@ carries what the rule expected (Must-6). `--report` writes the same JSON to a
 path. `--explain SPEC031` prints the rule's full text. Never an absolute path
 in any output. `specht init` writes the schema set (and templates) into
 `<root>/.specht/` (ADR-0011) from embedded copies, or the frontmatter schemas from an
-upstream schema source the manifest records (`0001-F4` B-014), never
+upstream schema source the manifest records or the same init run will record
+(`0001-F4` B-014, B-035 to B-040; decision 0003, ratified 2026-10-12), never
 overwriting. `specht upgrade`
 brings `.specht/schema/` and `.specht/templates/` to the pinned version and prints
 what changed; it never touches a document. A list command names the shipped
@@ -332,7 +333,8 @@ the owner can reverse; record a reversal as a decision, never silently.
 - Repository-relative paths in every output, every report, every test
   fixture. An absolute path anywhere is a defect.
 - The check is offline. Only `init` and `upgrade` may touch the network, and
-  only to fetch an upstream schema source the manifest records with its
+  only to fetch an upstream schema source the manifest records, or the same
+  init run will record (`0001-F4` decision 0003, ratified 2026-10-12), with its
   version and content hash (`0001-F7` decision 0004).
 - The tool never writes into a consumer's tree except through `init`,
   `upgrade`, the pin command, the set command, the report file the caller

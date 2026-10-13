@@ -142,6 +142,7 @@ so (`0001-F4` B-004).
 ```
 specht [--root <dir>] [--report <path>] [--strict] [--json]
 specht init [--root <dir>] [--schemas] [--templates] [--all] [--epics]
+            [--upstream <address>] [--upstream-version <label>] [--upstream-hash <kind=hash>]...
 specht upgrade [--root <dir>]
 specht --explain SPEC031
 specht --version
@@ -188,7 +189,8 @@ named (`0001-F11` OQ-1).
   (brief § 9; `0101-F5` decision 0001). `init` never overwrites.
 - **Deterministic and offline.** The check never touches the network and never
   calls GitHub; only `init` and `upgrade` may fetch, and only an upstream
-  schema source the manifest records (`0001-F7` decision 0004). The same tree
+  schema source the manifest records or the same init run will record
+  (`0001-F7` decision 0004; `0001-F4` decision 0003, ratified 2026-10-12). The same tree
   gives the same report. `generatedAtUtc` is not in the report for this reason.
 - **The rule vocabulary is fixed per schema version.** A new `SPEC###` is a new
   schema version - a major from schema `1.0.0` on, at least a `0.minor` before

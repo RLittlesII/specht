@@ -28,7 +28,10 @@ public sealed class InitCommand(IAnsiConsole console, InitWriter writer, TextWri
                          Path.GetFullPath(settings.Root),
                          settings.Schemas || settings.All,
                          settings.Templates || settings.All,
-                         cancellationToken))
+                         cancellationToken,
+                         settings.Upstream,
+                         settings.UpstreamVersion,
+                         settings.UpstreamHashes))
             {
                 console.Profile.Out.Writer.WriteLine($"{(written ? "written" : "skipped")} {path}");
             }
@@ -71,5 +74,20 @@ public sealed class InitCommand(IAnsiConsole console, InitWriter writer, TextWri
         [CommandOption("--all")]
         [Description("Write the frontmatter schemas and templates.")]
         public bool All { get; init; }
+
+        /// <summary>Gets the upstream HTTPS base address to record in a new manifest.</summary>
+        [CommandOption("--upstream <ADDRESS>")]
+        [Description("Record an upstream HTTPS schema base address in a new manifest.")]
+        public string? Upstream { get; init; }
+
+        /// <summary>Gets the label identifying the upstream schema version.</summary>
+        [CommandOption("--upstream-version <LABEL>")]
+        [Description("The upstream schema version label.")]
+        public string? UpstreamVersion { get; init; }
+
+        /// <summary>Gets the repeated kind=sha256:hash pairs for the declared schema kinds.</summary>
+        [CommandOption("--upstream-hash <KIND=HASH>")]
+        [Description("A schema kind and its SHA-256 hash; repeat for every declared kind.")]
+        public string[] UpstreamHashes { get; init; } = [];
     }
 }

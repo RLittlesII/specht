@@ -4,6 +4,7 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Specht.Discovery;
 using Specht.Manifest;
 using Specht.Model;
+using Specht.Resources;
 using Specht.Rules;
 
 namespace Specht.Composition;
@@ -21,6 +22,8 @@ public static class SpechtEngineServiceCollectionExtensions
     public static IServiceCollection AddSpechtEngine(this IServiceCollection services)
     {
         services.TryAddSingleton<IFileSystem, FileSystem>();
+        services.AddSingleton<SpechtResources>();
+        services.AddSingleton(static provider => new SpecManifestParser(provider.GetRequiredService<SpechtResources>().DefaultManifest));
         services.AddSingleton<FrontmatterReader>();
         services.AddSingleton<FeatureFileReader>();
         services.AddSingleton<SpecDiscovery>();

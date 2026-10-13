@@ -345,3 +345,79 @@ Feature: init
     Then no file under the root has changed
     And the standard error names the contradiction
     And the exit code is 3
+
+  @B-035 @B-040
+  Scenario Outline: Init records a new source while fetching remains opt-in
+    Given a root directory with no configuration folder
+    And new upstream source options are "valid"
+    And the network is unavailable
+    When init runs against it with <options>
+    Then the manifest records the supplied upstream source
+    And no network call was attempted
+
+    Examples:
+      | options   |
+      | no option |
+      | templates |
+
+  @B-036 @boundary
+  Scenario: Init from a new source preserves a schema already present
+    Given a root directory with no configuration folder
+    And new upstream source options are "valid"
+    And one frontmatter schema file is present under the root and the others are absent
+    When init runs against it with schemas
+    Then the manifest records the supplied upstream source
+    And the missing new-source schemas contain the fetched bytes
+    And the present schema file is unchanged
+    And the present schema was not fetched
+
+  @B-037 @boundary
+  Scenario Outline: Init from a new source writes nothing after a failed fetch
+    Given a root directory with no configuration folder
+    And new upstream source options are "valid"
+    And the source <failure>
+    And a snapshot of every file under the root
+    When init runs against it with every part
+    Then no file under the root has changed
+    And the standard error names the source
+    And the exit code is 3
+
+    Examples:
+      | failure                                  |
+      | cannot be reached                        |
+      | serves content that does not match that hash |
+      | serves one schema matching its recorded hash and another that does not |
+
+  @B-038 @boundary
+  Scenario Outline: Init rejects incomplete or invalid source options before fetching
+    Given a root directory with no configuration folder
+    And new upstream source options are "<fault>"
+    And a snapshot of every file under the root
+    When init runs against it with <options>
+    Then no file under the root has changed
+    And the source options were refused before fetching
+    And the exit code is 3
+
+    Examples:
+      | fault           | options    |
+      | missing source  | every part |
+      | missing version | every part |
+      | missing hash    | every part |
+      | missing hash    | no option  |
+      | missing hash    | templates  |
+      | invalid source  | every part |
+      | invalid version | every part |
+      | invalid hash    | every part |
+      | malformed pair  | every part |
+      | duplicate kind  | every part |
+
+  @B-039 @boundary
+  Scenario: Init refuses source options beside an existing manifest
+    Given a root directory whose manifest records no upstream schema source
+    And new upstream source options are "valid"
+    And a snapshot of every file under the root
+    When init runs against it with every part
+    Then no file under the root has changed
+    And the source options were refused before fetching
+    And the standard error names the existing manifest
+    And the exit code is 3

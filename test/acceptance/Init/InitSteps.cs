@@ -448,6 +448,9 @@ public sealed partial class InitSteps
     [Then("the present schema file is unchanged")]
     public void ThenThePresentSchemaFileIsUnchanged() => File.ReadAllBytes(Written(FeatureSchema)).Should().Equal(ExistingSourceContent);
 
+    [Then("the present schema was not fetched")]
+    public void ThenThePresentSchemaWasNotFetched() => Source.Requests.Should().NotContain(SourceLocation + "feature.schema.json");
+
     [Then("no file under the root has changed")]
     public void ThenNoFileUnderTheRootHasChanged()
     {
@@ -474,6 +477,72 @@ public sealed partial class InitSteps
         Source.Requests.Should().BeEmpty();
         _exitCode.Should().Be(ExitCodes.Success, _stderr);
     }
+
+    [Given("new upstream source options are {string}")]
+    public void GivenNewUpstreamSourceOptionsAre(string fault)
+    {
+        _sourceHandler = new SourceHandler();
+        var hash = "sha256:" + Convert.ToHexStringLower(SHA256.HashData(SourceContent));
+        var options = new List<string>();
+        if (fault != "missing source")
+        {
+            options.AddRange(["--upstream", fault == "invalid source" ? "private-value" : SourceLocation]);
+        }
+
+        if (fault != "missing version")
+        {
+            options.AddRange(["--upstream-version", fault == "invalid version" ? "" : "2026.10"]);
+        }
+
+        options.AddRange(["--upstream-hash", "feature=" + hash]);
+        if (fault != "missing hash")
+        {
+            options.AddRange(["--upstream-hash", fault switch
+            {
+                "invalid hash" => "task=private-value",
+                "malformed pair" => "private-value",
+                _ => "task=" + hash,
+            }]);
+        }
+
+        if (fault == "duplicate kind")
+        {
+            options.AddRange(["--upstream-hash", "feature=" + hash]);
+        }
+
+        _upstreamOptions = options.ToArray();
+    }
+
+    [Then("the manifest records the supplied upstream source")]
+    public void ThenTheManifestRecordsTheSuppliedUpstreamSource()
+    {
+        _exitCode.Should().Be(0, _stderr + _stdout);
+        var source = SpecManifest.Load(new FileSystem(), Root).SpechtSchema;
+        source.Should().NotBeNull();
+        source!.Location.Should().Be(SourceLocation);
+        source.Version.Should().Be("2026.10");
+        source.Files.Select(static file => file.Kind).Should().Equal("feature", "task");
+        source.Files.Should().AllSatisfy(static file => file.Hash.Should().Be("sha256:" + Convert.ToHexStringLower(SHA256.HashData(SourceContent))));
+    }
+
+    [Then("the missing new-source schemas contain the fetched bytes")]
+    public void ThenTheMissingNewSourceSchemasContainTheFetchedBytes()
+    {
+        File.ReadAllBytes(Written(ItemSchema)).Should().Equal(SourceContent);
+        File.Exists(Written(EpicSchema)).Should().BeFalse();
+        Source.Requests.Should().Equal(SourceLocation + "task.schema.json");
+    }
+
+    [Then("the source options were refused before fetching")]
+    public void ThenTheSourceOptionsWereRefusedBeforeFetching()
+    {
+        Source.Requests.Should().BeEmpty();
+        _stdout.Should().BeEmpty();
+        _stderr.Should().NotBeEmpty().And.NotContain("private-value").And.NotContain(Sandbox);
+    }
+
+    [Then("the standard error names the existing manifest")]
+    public void ThenTheStandardErrorNamesTheExistingManifest() => _stderr.Should().Contain(".specht/manifest.json");
 
     private static Assembly Shipped => typeof(ExitCodes).Assembly;
 
@@ -570,6 +639,7 @@ public sealed partial class InitSteps
 
     private void Run(params string[] options)
     {
+        options = [.. options, .. _upstreamOptions];
         if (_sourceHandler is not null)
         {
             RunWithSyntheticSource(options);
@@ -665,6 +735,7 @@ public sealed partial class InitSteps
     ];
 
     private readonly string _secondTyped = "repo-2";
+    private string[] _upstreamOptions = [];
     private SourceHandler? _sourceHandler;
     private JsonObject? _liveManifest;
     private Dictionary<string, (byte[]? Embedded, byte[]? Live)>? _files;

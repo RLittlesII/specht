@@ -122,3 +122,8 @@ way. `init` writes no `rules` key; the empty one below is read the same way.
   "rules": {}
 }
 ```
+
+A root without a manifest can record this source with `init --upstream`,
+`--upstream-version` and repeated `--upstream-hash kind=hash` options. Hashes
+are required before first use. Fetching still requires `--schemas` or `--all`;
+source options beside an existing manifest are refused. See [the CLI reference](cli.md#specht-init).
