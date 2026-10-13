@@ -1,5 +1,9 @@
 <p align="center">
-  <img src=".assets/logos/specht-book-logo.png" width="180" alt="specht" />
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset=".assets/logos/specht-book-logo-dark.svg" />
+    <source media="(prefers-color-scheme: light)" srcset=".assets/logos/specht-book-logo-light.svg" />
+    <img src=".assets/logos/specht-book-logo-light.svg" width="180" alt="specht" />
+  </picture>
 </p>
 
 <h1 align="center">specht</h1>

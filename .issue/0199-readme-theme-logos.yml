@@ -1,0 +1,34 @@
+id: "0199"
+type: task
+title: Adapt the README logo to light and dark themes
+status: done
+value: 1
+risk: 1
+parent: null
+children: []
+depends_on: []
+spikes: []
+spec: null
+claims: []
+created: "2026-10-13"
+updated: "2026-10-13"
+closed: "2026-10-13"
+summary: |
+  The owner requested light and dark logo variants selected automatically by
+  the README. Use the existing SVG artwork with transparent backgrounds.
+acceptance_criteria:
+  - "Light and dark SVG variants retain the original artwork and red accents, with the complete bird separated from the book for color treatment."
+  - "README.md selects the dark variant for a dark theme and the light variant otherwise, with accessible fallback text and the existing size and alignment."
+  - "The dark variant inverts only the book and wordmark; the bird keeps its original black, white and red colors."
+  - "Both themes are visually checked; README formatting and the build pass."
+decisions:
+  - "2026-10-13, implementer: this is a presentation task with no CLI, schema, specification or scenario change; the existing vector source supplies both variants."
+  - "2026-10-13, implementer: use GitHub-supported picture/source media selection with a light img fallback."
+  - "2026-10-13, implementer: browser checks passed for both themes, the light fallback, 180px width, image loading and alt text; SVG geometry, viewBox and red accents match the original."
+  - "2026-10-13, implementer: ./build.sh passed formatting, compilation and 1,035 tests; 194 existing acceptance scenarios skipped. Specht reported 173 existing non-gating violations."
+  - "2026-10-13, repository owner: invert the book and text, but keep the bird in its original colors. The dark SVG separates their shared silhouette at the book top, y=256."
+  - "2026-10-13, implementer: the corrected dark SVG passed browser rendering, pixel equality for the bird across themes, and an exact comparison of every SVG path against the light source."
+  - "2026-10-13, repository owner: the lower wings and tail must also retain bird colors. Replace the horizontal color clip with distinct bird and book shapes, including the tail below the book top."
+  - "2026-10-13, implementer: replaced the horizontal clips with separate vector contours. Seven lower-wing, tail and red-detail pixel samples match the original; six of these fail against the previous dark SVG. Visually inspected the full-size dark rendering."
+out_of_scope:
+  - "Redesigning the logo or changing the avatar and social card."
