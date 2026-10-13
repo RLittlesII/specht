@@ -211,7 +211,6 @@ Design for item `0150` (B-001 to B-004; C-1 to C-4), as built. The numbers are �
 
 <!-- last written by: spec-reviewer, 2026-10-13 (historical rows preserved in the history table) -->
 
-<!-- prettier-ignore -->
 | Section | Status | Reviewer      | Note                                                                                                                                                                                                                                                                                                          |
 | ------- | ------ | ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | 1-5     | 🟢     | spec-reviewer | Round 1 (2026-10-09) - approved, reviewing the uncommitted OQ answers on `cdb0876`. OQ-1 is resolved in place to the owner's co-located-only answer; B-003 stands and cites it; § 5 row 4 cites the decision; § 9 and every `@B` tag resolve, and the `@B-003 @boundary` scenario states the excluded layout. |
@@ -220,10 +219,9 @@ Design for item `0150` (B-001 to B-004; C-1 to C-4), as built. The numbers are �
 
 Earlier review rows are preserved verbatim; later approvals and the current record supersede them.
 
-<!-- prettier-ignore -->
-| Section | Status | Reviewer | Note |
-| ------- | ------ | -------- | ---- |
-| 1-5     | 🟡     | spec-reviewer | Awaiting first review.                                                                                                                                                                                                                                                                                        |
+| Section | Status | Reviewer      | Note                   |
+| ------- | ------ | ------------- | ---------------------- |
+| 1-5     | 🟡     | spec-reviewer | Awaiting first review. |
 
 ## Tasks
 
