@@ -1,10 +1,21 @@
+using System.IO.Abstractions;
+using System.Net;
+using System.Net.Http;
 using System.Reflection;
+using System.Security.Cryptography;
 using System.Text.Json.Nodes;
 using System.Text.RegularExpressions;
+using System.Threading;
+using System.Threading.Tasks;
 using AwesomeAssertions;
+using Microsoft.Extensions.DependencyInjection;
 using Reqnroll;
+using Specht.Manifest;
 using Specht.Tool;
+using Specht.Tool.Features.Init;
 using Specht.Versioning;
+using Spectre.Console.Cli.Testing;
+using Spectre.Console.Testing;
 
 namespace Specht.Acceptance.Init;
 
@@ -100,7 +111,7 @@ public sealed partial class InitSteps
     public void GivenASnapshotOfEveryFileUnderTheRoot() => _snapshot = Snapshot();
 
     [When("init runs against it")]
-    public void WhenInitRunsAgainstIt() => (_stdout, _stderr, _exitCode) = AcceptanceTool.Launch(Sandbox, "init", "--root", _typed);
+    public void WhenInitRunsAgainstIt() => Run();
 
     [When("init runs against it with no option")]
     public void WhenInitRunsAgainstItWithNoOption() => WhenInitRunsAgainstIt();
@@ -349,9 +360,126 @@ public sealed partial class InitSteps
         }
     }
 
+
+    [Given("a root whose manifest records an upstream schema source with its version and content hash")]
+    public void GivenARootWhoseManifestRecordsAnUpstreamSchemaSourceWithItsVersionAndContentHash()
+    {
+        Prepare();
+        var hash = "sha256:" + Convert.ToHexStringLower(SHA256.HashData(SourceContent));
+        _manifest = System.Text.Encoding.UTF8.GetBytes(new JsonObject
+        {
+            ["identifiers"] = new JsonObject { ["feature"] = "^F[0-9]+$", ["epic"] = "^[0-9]{4}$" },
+            ["spechtSchema"] = new JsonObject
+            {
+                ["location"] = SourceLocation,
+                ["version"] = "2026.10",
+                ["hashes"] = new JsonObject { ["feature"] = hash, ["task"] = hash, ["epic"] = hash },
+            },
+        }.ToJsonString());
+        Directory.CreateDirectory(Path.GetDirectoryName(Written(Manifest))!);
+        File.WriteAllBytes(Written(Manifest), _manifest);
+        _sourceHandler = new SourceHandler();
+    }
+
+    [Given("a root directory whose manifest records no upstream schema source")]
+    public void GivenARootDirectoryWhoseManifestRecordsNoUpstreamSchemaSource()
+    {
+        Prepare();
+        Directory.CreateDirectory(Path.GetDirectoryName(Written(Manifest))!);
+        File.WriteAllText(Written(Manifest), "{}\n");
+    }
+
+    [Given("one frontmatter schema file is present under the root and the others are absent")]
+    public void GivenOneFrontmatterSchemaFileIsPresentUnderTheRootAndTheOthersAreAbsent()
+    {
+        Directory.CreateDirectory(Path.GetDirectoryName(Written(FeatureSchema))!);
+        File.WriteAllBytes(Written(FeatureSchema), ExistingSourceContent);
+    }
+
+    [Given("no frontmatter schema file under the root")]
+    public void GivenNoFrontmatterSchemaFileUnderTheRoot() =>
+        Directory.Exists(Path.GetDirectoryName(Written(FeatureSchema))).Should().BeFalse();
+
+    [Given("every selected frontmatter schema file is present under the root")]
+    public void GivenEverySelectedFrontmatterSchemaFileIsPresentUnderTheRoot()
+    {
+        Directory.CreateDirectory(Path.GetDirectoryName(Written(FeatureSchema))!);
+        foreach (var file in new[] { FeatureSchema, ItemSchema, EpicSchema })
+        {
+            File.WriteAllBytes(Written(file), ExistingSourceContent);
+        }
+    }
+
+    [Given("the source serves content matching that hash")]
+    public void GivenTheSourceServesContentMatchingThatHash() => Source.Mode = "matching";
+
+    [Given("the source serves content that does not match that hash")]
+    public void GivenTheSourceServesContentThatDoesNotMatchThatHash() => Source.Mode = "mismatch";
+
+    [Given("the source cannot be reached")]
+    public void GivenTheSourceCannotBeReached() => Source.Mode = "unreachable";
+
+    [Given("the source serves one schema matching its recorded hash and another that does not")]
+    public void GivenTheSourceServesOneSchemaMatchingItsRecordedHashAndAnotherThatDoesNot() => Source.Mode = "mixed";
+
+    [Given("the source responds with status {int}")]
+    public void GivenTheSourceRespondsWithStatus(int status) => Source.Status = (HttpStatusCode)status;
+
+    [Given("the network is unavailable")]
+    public void GivenTheNetworkIsUnavailable()
+    {
+        _sourceHandler ??= new SourceHandler();
+        Source.Mode = "unreachable";
+    }
+
+    [Then("the fetched content is written to each absent schema file")]
+    public void ThenTheFetchedContentIsWrittenToEachAbsentSchemaFile()
+    {
+        foreach (var file in new[] { ItemSchema, EpicSchema })
+        {
+            File.ReadAllBytes(Written(file)).Should().Equal(SourceContent, $"the fetched bytes reach .specht/{file}");
+        }
+
+        Source.Requests.Should().BeEquivalentTo(SourceLocation + "task.schema.json", SourceLocation + "epic.schema.json");
+        File.ReadAllBytes(Written(Manifest)).Should().Equal(_manifest);
+        _exitCode.Should().Be(ExitCodes.Success, _stderr);
+    }
+
+    [Then("the present schema file is unchanged")]
+    public void ThenThePresentSchemaFileIsUnchanged() => File.ReadAllBytes(Written(FeatureSchema)).Should().Equal(ExistingSourceContent);
+
+    [Then("no file under the root has changed")]
+    public void ThenNoFileUnderTheRootHasChanged()
+    {
+        if (_sourceHandler?.Mode == "mixed")
+        {
+            Source.Requests.Should().HaveCount(2, "one source file validates before the later file fails its hash");
+        }
+
+        var before = _snapshot ?? throw new InvalidOperationException("No snapshot was taken.");
+        var after = Snapshot();
+        after.Keys.Should().BeEquivalentTo(before.Keys, _stdout + _stderr);
+        foreach (var (path, bytes) in before)
+        {
+            after[path].Should().Equal(bytes, $"init preserves {path}");
+        }
+    }
+
+    [Then("the standard error names the source")]
+    public void ThenTheStandardErrorNamesTheSource() => _stderr.Should().Contain(SourceLocation).And.NotContain(Sandbox);
+
+    [Then("no network call was attempted")]
+    public void ThenNoNetworkCallWasAttempted()
+    {
+        Source.Requests.Should().BeEmpty();
+        _exitCode.Should().Be(ExitCodes.Success, _stderr);
+    }
+
     private static Assembly Shipped => typeof(ExitCodes).Assembly;
 
     private static string[] FilesWithoutEpics => [Manifest, FeatureSchema, ItemSchema, .. Templates];
+
+    private SourceHandler Source => _sourceHandler ?? throw new InvalidOperationException("No source was prepared.");
 
     private string Sandbox => _sandbox ?? throw new InvalidOperationException("No root was prepared.");
 
@@ -427,8 +555,27 @@ public sealed partial class InitSteps
 
     private string Written(string file) => Path.Combine([Root, ".specht", .. file.Split('/')]);
 
+    private void RunWithSyntheticSource(string[] options)
+    {
+        using var client = new HttpClient(Source);
+        using var errors = new StringWriter();
+        var services = new ServiceCollection();
+        services.AddSingleton(new InitWriter(InitWriter.ShippingCopy(Shipped), new FileSystem(), new UpstreamSchemaFetcher(client)));
+        services.AddSingleton<TextWriter>(errors);
+        var app = new CommandAppTester(new TypeRegistrar(services), console: new TestConsole().Width(80));
+        app.Configure(static config => config.AddCommand<InitCommand>("init"));
+        var result = app.Run(["init", "--root", Root, .. options]);
+        (_stdout, _stderr, _exitCode) = (result.Output, errors.ToString(), result.ExitCode);
+    }
+
     private void Run(params string[] options)
     {
+        if (_sourceHandler is not null)
+        {
+            RunWithSyntheticSource(options);
+            return;
+        }
+
         var arguments = new[] { "init", "--root", _typed }.Concat(options).ToArray();
         (_stdout, _stderr, _exitCode) = AcceptanceTool.Launch(Sandbox, arguments);
     }
@@ -445,6 +592,32 @@ public sealed partial class InitSteps
                 File.ReadAllBytes,
                 StringComparer.Ordinal);
 
+    private sealed class SourceHandler : HttpMessageHandler
+    {
+        public string Mode { get; set; } = "matching";
+
+        public HttpStatusCode? Status { get; set; }
+
+        public List<string> Requests { get; } = [];
+
+        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+        {
+            Requests.Add(request.RequestUri!.AbsoluteUri);
+            if (Mode == "unreachable")
+            {
+                throw new HttpRequestException("Synthetic network unavailable.");
+            }
+
+            return Task.FromResult(new HttpResponseMessage(Status ?? HttpStatusCode.OK)
+            {
+                Content = new ByteArrayContent(Mode == "matching" || (Mode == "mixed" && Requests.Count == 1) ? SourceContent : "{}"u8.ToArray()),
+            });
+        }
+    }
+
+    private const string SourceLocation = "https://schemas.example/specht/";
+
+
     private const string Manifest = "manifest.json";
 
     private const string FrontmatterSchemas = "schema/frontmatter/";
@@ -456,6 +629,9 @@ public sealed partial class InitSteps
     private const string ItemSchema = FrontmatterSchemas + "task.schema.json";
 
     private const string EpicSchema = FrontmatterSchemas + "epic.schema.json";
+
+    private static readonly byte[] SourceContent = [0xEF, 0xBB, 0xBF, 0x7B, 0x0D, 0x0A, 0x7D];
+    private static readonly byte[] ExistingSourceContent = "{\"local\":true}\n"u8.ToArray();
 
     private static readonly string[] Templates =
     [
@@ -489,6 +665,7 @@ public sealed partial class InitSteps
     ];
 
     private readonly string _secondTyped = "repo-2";
+    private SourceHandler? _sourceHandler;
     private JsonObject? _liveManifest;
     private Dictionary<string, (byte[]? Embedded, byte[]? Live)>? _files;
     private JsonObject? _embeddedManifest;

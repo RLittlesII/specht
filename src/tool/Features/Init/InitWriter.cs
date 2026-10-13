@@ -22,7 +22,11 @@ namespace Specht.Tool.Features.Init;
 /// <c>templates/v&lt;major.minor.patch&gt;/&lt;file&gt;</c>.
 /// </param>
 /// <param name="fileSystem">The file system the root is written through.</param>
-public sealed partial class InitWriter(IReadOnlyDictionary<string, byte[]> shippingCopy, IFileSystem fileSystem)
+/// <param name="upstreamSchemaFetcher">The fetcher needed when an existing manifest selects upstream schemas.</param>
+public sealed partial class InitWriter(
+    IReadOnlyDictionary<string, byte[]> shippingCopy,
+    IFileSystem fileSystem,
+    UpstreamSchemaFetcher? upstreamSchemaFetcher = null)
 {
     /// <summary>Reads the shipping copy embedded in <paramref name="assembly"/>.</summary>
     /// <param name="assembly">The assembly carrying the <c>manifest/</c>, <c>schema/</c> and <c>templates/</c> resources.</param>
@@ -52,12 +56,49 @@ public sealed partial class InitWriter(IReadOnlyDictionary<string, byte[]> shipp
 
         var listing = new List<(string Path, bool Written)>();
         var manifestPresent = fileSystem.File.Exists(fileSystem.Path.Combine([root, .. SpecManifest.RelativePath.Split('/')]));
+        var selected = Newest(schemas, templates, manifestPresent).ToList();
+        var source = schemas && manifestPresent ? SpecManifest.Load(fileSystem, root).SpechtSchema : null;
+        var preserved = new HashSet<string>(StringComparer.Ordinal);
 
-        foreach (var (relative, bytes) in Newest(schemas, templates, manifestPresent))
+        if (source is not null)
+        {
+            selected.RemoveAll(static entry => entry.Relative.StartsWith(SpecManifest.FrontmatterSchemaFolder + "/", StringComparison.Ordinal));
+
+            foreach (var file in source.Files)
+            {
+                var relative = $"{SpecManifest.FrontmatterSchemaFolder}/{file.FileName}";
+                var path = SpecManifest.Under(fileSystem, root, relative);
+                var withinSchemas = fileSystem.Path.GetRelativePath(SpecManifest.Under(fileSystem, root, SpecManifest.FrontmatterSchemaFolder), path);
+
+                if (fileSystem.Path.IsPathRooted(file.FileName)
+                    || fileSystem.Path.IsPathRooted(withinSchemas)
+                    || withinSchemas == ".."
+                    || withinSchemas.StartsWith(".." + fileSystem.Path.DirectorySeparatorChar, StringComparison.Ordinal)
+                    || withinSchemas.StartsWith(".." + fileSystem.Path.AltDirectorySeparatorChar, StringComparison.Ordinal))
+                {
+                    throw new SpechtManifestException($"{SpecManifest.RelativePath}: frontmatterSchemas must name files within the frontmatter schema folder.");
+                }
+
+                var exists = fileSystem.File.Exists(path);
+
+                if (exists)
+                {
+                    preserved.Add(relative);
+                }
+
+                var bytes = exists
+                    ? []
+                    : await (upstreamSchemaFetcher ?? throw new InvalidOperationException("An upstream schema fetcher is required."))
+                        .Fetch(file, cancellationToken);
+                selected.Add((relative, bytes));
+            }
+        }
+
+        foreach (var (relative, bytes) in selected.OrderBy(static entry => entry.Relative, StringComparer.Ordinal))
         {
             var path = fileSystem.Path.Combine([root, .. relative.Split('/')]);
 
-            if (fileSystem.File.Exists(path))
+            if (preserved.Contains(relative) || fileSystem.File.Exists(path))
             {
                 listing.Add((relative, false));
                 continue;

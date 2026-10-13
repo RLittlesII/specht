@@ -1,8 +1,10 @@
 using System;
 using System.IO.Abstractions;
+using System.Net.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Specht;
 using Specht.Composition;
+using Specht.Manifest;
 using Specht.Tool;
 using Specht.Tool.Features.Check;
 using Specht.Tool.Features.Init;
@@ -12,7 +14,19 @@ using InitWriter = Specht.Tool.Features.Init.InitWriter;
 var services = new ServiceCollection();
 services.AddSpechtEngine();
 services.AddSingleton<Func<string, SpechtReport>>(static provider => provider.GetRequiredService<SpechtRunner>().Run);
-services.AddSingleton(static _ => new InitWriter(InitWriter.ShippingCopy(typeof(InitWriter).Assembly), new FileSystem()));
+services.AddSingleton(static _ => new HttpClient(new HttpClientHandler
+{
+    AllowAutoRedirect = false,
+    UseCookies = false,
+    UseDefaultCredentials = false,
+    Credentials = null,
+    DefaultProxyCredentials = null,
+}));
+services.AddSingleton<UpstreamSchemaFetcher>();
+services.AddSingleton(static provider => new InitWriter(
+    InitWriter.ShippingCopy(typeof(InitWriter).Assembly),
+    new FileSystem(),
+    provider.GetRequiredService<UpstreamSchemaFetcher>()));
 
 var app = new CommandApp(new TypeRegistrar(services));
 app.SetDefaultCommand<CheckCommand>();
