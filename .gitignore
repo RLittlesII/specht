@@ -452,3 +452,9 @@ graphify-out/
 .idea/.idea.*/.idea/modules.xml
 .idea/.idea.*/.idea/contentModel.xml
 .idea/.idea.*/.idea/.name
+
+.codex/skills/
+
+Skillfile
+
+Skillfile.lock
