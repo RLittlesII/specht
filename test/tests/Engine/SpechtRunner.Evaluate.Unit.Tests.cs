@@ -198,7 +198,7 @@ public sealed class SpechtRunnerEvaluateUnitTests
                 [Path.Combine("repo", SpecTree.ItemSchemaPath)] = new(copy),
             });
         SpecModel model = new SpecModelFixture().WithSchemas(
-            new SpecSchemasLoader(fileSystem, new FrontmatterSchemaStore(fileSystem)).Load("repo"));
+            new SpecSchemasLoader(fileSystem, new FrontmatterSchemaStore(fileSystem), new UpstreamSchemaCopy()).Load("repo"));
 
         // When
         var report = SpechtRunner.Evaluate(model, []);

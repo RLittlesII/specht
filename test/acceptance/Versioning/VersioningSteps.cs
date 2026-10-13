@@ -26,7 +26,8 @@ namespace Specht.Acceptance.Versioning;
 /// "the root holds the copy of that source" makes the Feature schema of that copy require a key the embedded one does not
 /// and records that copy's hashes, and each run launches the built tool. "The network is unavailable" points the launched
 /// process's proxy variables at a closed loopback port, and "no network call was attempted" reads the built engine and
-/// tool assemblies for a <c>System.Net</c> reference (OQ-39, the owner's ruling of 2026-10-12). B-074 is item 0093's. Item 0126 binds B-086 and B-087 over the embedded resources and their declared addresses. The
+/// tool assemblies for a <c>System.Net</c> reference (OQ-39, the owner's ruling of 2026-10-12). B-074 is item 0093's.
+/// Item 0126 binds B-086 and B-087 over the embedded resources and their declared addresses. The
 /// rest of the file's scenarios stay pending for their items; a step one of them shares with a scenario above is bound,
 /// and its other steps are not.
 /// </summary>

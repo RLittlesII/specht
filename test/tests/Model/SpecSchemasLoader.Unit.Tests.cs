@@ -64,7 +64,7 @@ public sealed class SpecSchemasLoaderUnitTests
                 [Path.Combine(Root, SpecTree.ItemSchemaPath)] = new("{}"),
                 [Path.Combine(Root, SpecTree.EpicSchemaPath)] = new("{}"),
             });
-        var loader = new SpecSchemasLoader(fileSystem, new FrontmatterSchemaStore(fileSystem));
+        var loader = new SpecSchemasLoader(fileSystem, new FrontmatterSchemaStore(fileSystem), new UpstreamSchemaCopy());
 
         // When
         var schemas = loader.Load(Root);
@@ -86,7 +86,7 @@ public sealed class SpecSchemasLoaderUnitTests
             {
                 [Path.Combine(Root, SpecTree.ManifestPath)] = new("""{ "schemaVersion": "0.2.0" }"""),
             });
-        var loader = new SpecSchemasLoader(fileSystem, new FrontmatterSchemaStore(fileSystem));
+        var loader = new SpecSchemasLoader(fileSystem, new FrontmatterSchemaStore(fileSystem), new UpstreamSchemaCopy());
 
         // When
         var schemas = loader.Load(Root, new SchemaVersions([one, two]));
@@ -111,7 +111,7 @@ public sealed class SpecSchemasLoaderUnitTests
                 [Path.Combine(Root, SpecTree.ItemSchemaPath)] = new(Local),
                 [Path.Combine(Root, SpecTree.EpicSchemaPath)] = new(Local),
             });
-        var loader = new SpecSchemasLoader(fileSystem, new FrontmatterSchemaStore(fileSystem));
+        var loader = new SpecSchemasLoader(fileSystem, new FrontmatterSchemaStore(fileSystem), new UpstreamSchemaCopy());
 
         // When
         var schemas = loader.Load(Root, new SchemaVersions([pinned]));
@@ -132,7 +132,7 @@ public sealed class SpecSchemasLoaderUnitTests
                 [Path.Combine(Root, SpecTree.FeatureSchemaPath)] = new(Local),
                 [Path.Combine(Root, SpecTree.ItemSchemaPath)] = new(Local),
             });
-        var loader = new SpecSchemasLoader(fileSystem, new FrontmatterSchemaStore(fileSystem));
+        var loader = new SpecSchemasLoader(fileSystem, new FrontmatterSchemaStore(fileSystem), new UpstreamSchemaCopy());
 
         // When
         var schemas = loader.Load(Root, new SchemaVersions([pinned]));
@@ -157,7 +157,7 @@ public sealed class SpecSchemasLoaderUnitTests
                 [Path.Combine(Root, SpecTree.FeatureSchemaPath)] = new(Local),
                 [Path.Combine(Root, SpecTree.ItemSchemaPath)] = new(Local),
             });
-        var loader = new SpecSchemasLoader(fileSystem, new FrontmatterSchemaStore(fileSystem));
+        var loader = new SpecSchemasLoader(fileSystem, new FrontmatterSchemaStore(fileSystem), new UpstreamSchemaCopy());
 
         // When
         var schemas = loader.Load(Root, new SchemaVersions([one, two]));
@@ -187,7 +187,7 @@ public sealed class SpecSchemasLoaderUnitTests
         }
 
         var fileSystem = new MockFileSystem(files);
-        var loader = new SpecSchemasLoader(fileSystem, new FrontmatterSchemaStore(fileSystem));
+        var loader = new SpecSchemasLoader(fileSystem, new FrontmatterSchemaStore(fileSystem), new UpstreamSchemaCopy());
 
         // When
         var schemas = loader.Load(Root, new SchemaVersions([pinned]));
@@ -216,7 +216,7 @@ public sealed class SpecSchemasLoaderUnitTests
 
         var fileSystem = new MockFileSystem(files);
         var root = fileSystem.Path.GetFullPath(Root);
-        var loader = new SpecSchemasLoader(fileSystem, new FrontmatterSchemaStore(fileSystem));
+        var loader = new SpecSchemasLoader(fileSystem, new FrontmatterSchemaStore(fileSystem), new UpstreamSchemaCopy());
 
         // When
         var loading = () => loader.Load(root, new SchemaVersions([pinned]));
@@ -233,7 +233,7 @@ public sealed class SpecSchemasLoaderUnitTests
         // Given
         var fileSystem = new MockFileSystem(
             new Dictionary<string, MockFileData> { [Path.Combine(Root, SpecTree.ManifestPath)] = new("{}") });
-        var loader = new SpecSchemasLoader(fileSystem, new FrontmatterSchemaStore(fileSystem));
+        var loader = new SpecSchemasLoader(fileSystem, new FrontmatterSchemaStore(fileSystem), new UpstreamSchemaCopy());
 
         // When
         var schemas = loader.Load(Root);
@@ -255,7 +255,7 @@ public sealed class SpecSchemasLoaderUnitTests
                 [Path.Combine(Root, SpecTree.ItemSchemaPath)] = new(Local),
                 [Path.Combine(Root, SpecTree.EpicSchemaPath)] = new(Local),
             });
-        var loader = new SpecSchemasLoader(fileSystem, new FrontmatterSchemaStore(fileSystem));
+        var loader = new SpecSchemasLoader(fileSystem, new FrontmatterSchemaStore(fileSystem), new UpstreamSchemaCopy());
 
         // When
         var schemas = loader.Load(Root, new SchemaVersions([pinned]));

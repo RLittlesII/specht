@@ -19,8 +19,8 @@ repository holds several.
 
 | Manifest key        | Read today                                                                                                                                                                                                                                                                                                                                               |
 | ------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `schemaVersion`     | Which embedded version checks the tree: its frontmatter schemas and its rule vocabulary.                                                                                                                                                                                                                                                                 |
-| `spechtSchema`      | The public upstream source used by `init --schemas` or `init --all`: `location` is an HTTPS base address, `version` is a non-empty label, and `hashes` maps each fetched kind to `sha256:` followed by 64 lowercase hexadecimal digits.                                                                                                                  |
+| `schemaVersion`     | Which embedded version supplies the rule vocabulary and, without `spechtSchema`, the frontmatter schemas.                                                                                                                                                                                                                                                |
+| `spechtSchema`      | The public upstream source fetched by `init --schemas` or `init --all`: `location` is an HTTPS base address, `version` is a nonempty label, and `hashes` records SHA-256 by kind. The check verifies and reads the local copy under `.specht/schema/frontmatter/`, and reports `schemaSource: "upstream"`.                                                                                                                                                        |
 | `layouts`           | Where specifications are found: an ordered list, each entry a name and a path glob, which discovery matches and the summary and the report name each entry by. An entry's optional `identity` gives the zero-based path segments `SPEC011` checks for the epic and the Feature id; without one `SPEC011` skips the entry, and a malformed one exits `3`. |
 | `exclusions`        | The directories discovery never looks in: a bare name at any depth, or a path from the root when the entry begins with `/`.                                                                                                                                                                                                                              |
 | `taskFiles`         | The file-name shapes of an item beside a specification, a list of globs, `{task}` standing for `identifiers.task`. A file matching any one is an item the item rules read; an empty list exits `3`.                                                                                                                                                      |
@@ -36,9 +36,20 @@ repository holds several.
 A key left out takes its value from the default manifest, except `rules`, which
 is never filled: a manifest without it sets no level. A key the engine does
 not know exits `3`; a key starting with `$` is ignored. The other `identifiers`
-entries are accepted and no rule reads them yet. The frontmatter schemas a check
-uses are the tool's embedded copy of the pinned version, not the files under
-`.specht/schema/frontmatter/`.
+entries are accepted and no rule reads them yet.
+
+Without `spechtSchema`, the check uses the pinned version's embedded frontmatter
+schemas. With it, the check reads the local files named by `frontmatterSchemas`
+under `.specht/schema/frontmatter/`. The recording requires a nonempty `location`
+and `version`, plus a hash for `feature` and `task`, and for `epic` when the
+manifest explicitly declares `identifiers.epic`. Each hash is `sha256:` followed
+by 64 lowercase hexadecimal digits, computed over the original file bytes.
+The upstream version is independent of the pinned rule vocabulary.
+
+A missing or changed local file exits `3`, naming its relative path on stderr.
+For a missing file, the message names `specht init`; use `specht init --schemas`
+to fetch missing schema files from the recorded source. The check never fetches, and it never writes
+into the root.
 
 Claim tags in a `.feature` file are read as `@B-nnn`, with an optional
 lowercase letter suffix, whatever `identifiers.claim` says. A configurable tag

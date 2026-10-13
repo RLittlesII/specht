@@ -16,7 +16,7 @@ namespace Specht.Model;
 /// </remarks>
 public sealed class SpecSchemas
 {
-    private SpecSchemas(SchemaVersion version, SpecStructure structure)
+    internal SpecSchemas(SchemaVersion version, SpecStructure structure, SpecSchemaSource source = SpecSchemaSource.Embedded)
     {
         var options = new BuildOptions { SchemaRegistry = new SchemaRegistry() };
 
@@ -25,6 +25,7 @@ public sealed class SpecSchemas
         Epic = JsonSchema.FromText(version.EpicSchema, options);
         Structure = structure;
         Version = version;
+        Source = source;
     }
 
     /// <summary>Evaluation options that make <c>format</c> an assertion rather than an annotation.</summary>
@@ -42,6 +43,9 @@ public sealed class SpecSchemas
 
     /// <summary>Schema for an epic file's frontmatter.</summary>
     public JsonSchema Epic { get; }
+
+    /// <summary>Where the frontmatter schemas used by the check came from.</summary>
+    public SpecSchemaSource Source { get; }
 
     /// <summary>The ordered section contract and id grammars.</summary>
     public SpecStructure Structure { get; }

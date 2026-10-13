@@ -1,4 +1,4 @@
-namespace Specht.Report;
+namespace Specht.Model;
 
 /// <summary>Where the schemas a check used came from (B-005).</summary>
 public enum SpecSchemaSource

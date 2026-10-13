@@ -2,6 +2,8 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 
+using Specht.Model;
+
 namespace Specht.Report;
 
 /// <summary>
@@ -33,7 +35,7 @@ public sealed record SpecReportDocument(
     public static SpecReportDocument From(SpechtReport report) =>
         new(
             report.SchemaVersion.ToString(),
-            SpecSchemaSource.Embedded,
+            report.SchemaSource,
             report.Layouts,
             report.ItemCount,
             report.RulesEvaluated,
