@@ -18,7 +18,7 @@ spec: null
 claims: []
 
 created: "2026-10-09"
-updated: "2026-10-10"
+updated: "2026-10-13"
 closed: "2026-10-09"
 
 summary: |
@@ -45,7 +45,7 @@ acceptance_criteria:
   - The section says which manifest keys the engine reads today, and that
     the claim tag form is specified and not built.
   - The `### Default manifest` JSON block is
-    `.spec/schema/spec-structure.schema.json` less its five discovery keys -
+    `.specht/manifest.json` less its `rules` key and its five discovery keys -
     `layouts`, `exclusions`, `taskFiles`, `epicFiles` and `companionFiles` -
     and byte for byte otherwise, and the page says they are left out.
     Amended 2026-10-09 by the repository owner (`0001-F6` decision 0007);
@@ -57,6 +57,7 @@ acceptance_criteria:
   - No tool behaviour changes.
 
 decisions:
+  - "2026-10-13, item 0062: the example now lives in docs/configuration.md after the documentation split; it omits repository-owned rule settings, preserving consumer defaults (0001-F5 B-044)."
   - "2026-10-09, repository owner: give consumers the default manifest's
     JSON on README.md so they can copy it."
   - "2026-10-09, repository owner: do not mention the legacy layout in

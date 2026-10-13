@@ -14,7 +14,7 @@ public sealed class SpecManifestBaselineIntegrationTests
     /// <summary>Gets each way the default manifest reaches the engine, and the manifest written over the tree's copy, if any.</summary>
     public static TheoryData<string, string?> DefaultManifests { get; } = new()
     {
-        { "the default manifest as the repository ships it", null },
+        { "the default manifest without the repository's rule settings", null },
         { "the default manifest's values reached by omission", "{\"$comment\": \"Every value is left out, so each is the default manifest's.\"}" },
     };
 

@@ -20,7 +20,7 @@ depends_on: ["F2", "F3", "F4"]
 blocks: []
 spikes: []
 created: "2026-10-08"
-updated: "2026-10-08"
+updated: "2026-10-13"
 github_issue: null
 synced_at: null
 ---
@@ -145,14 +145,21 @@ Pending: owned by `test-writer`.
 
 ## 12. Sign-off
 
-<!-- last written by: spec-reviewer, 2026-10-08 -->
+<!-- last written by: spec-reviewer, 2026-10-13 (historical rows preserved in the history table) -->
+
+| Section | Status | Reviewer      | Note                                                                                                                                                                                                                        |
+| ------- | ------ | ------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1-5     | 🟢     | spec-reviewer | Round 2 (2026-10-08) - approved, reviewing `acf3cff`..`f32a31d`. B-007 and B-008 follow `0055-F4` OQ-6 and C-8 (the Renovate token secret, no app installation); `depends_on` names `0055-F4`, symmetric with its `blocks`. |
+| Tasks   | 🟢     | spec-reviewer | Item cut (2026-10-08) - approved, reviewing `6113181`..`0657b68`. 0090 and 0091 carry B-001-B-011 once, each waiting on the items that produce the checks and secrets it names (0064, 0071; 0070, 0073).                    |
+
+### Review history
+
+Earlier review rows are preserved verbatim; later approvals and the current record supersede them.
 
 | Section | Status | Reviewer      | Note                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
 | ------- | ------ | ------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | 1-5     | 🟡     | spec-reviewer | Draft; not reviewed                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
 | 1-5     | 🟡     | spec-reviewer | Round 1 (2026-10-08) - reviewed in draft, reviewing commit `04fdc28`; no blocking findings of its own. B-001 to B-011 state the owner's settings and OQ-1 and OQ-2 faithfully; B-002 and B-003 agree with `0055-F2` B-003 and B-007 and `0055-F3` B-003 and B-005; B-011 is what `0055-F4` B-005 needs. B-007 and B-008 wait on `0055-F4` OQ-6: a self-hosted Renovate has no app installation and reads a token secret. Non-blocking (spec-author): B-006 and B-008 serve `0055-F4`, and neither Feature lists the edge; B-005 carries two assertions; with B-003 required, a pull request whose upload failed (`0055-F3` B-007) waits for a re-run, as `0055-F3` OQ-2 intends - one line in the checklist would say so. Left `draft`: the spec-author has not submitted it, and epic `0055` says its eight-Feature split awaits the owner's confirmation. |
-| 1-5     | 🟢     | spec-reviewer | Round 2 (2026-10-08) - approved, reviewing `acf3cff`..`f32a31d`. B-007 and B-008 follow `0055-F4` OQ-6 and C-8 (the Renovate token secret, no app installation); `depends_on` names `0055-F4`, symmetric with its `blocks`.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
-| Tasks   | 🟢     | spec-reviewer | Item cut (2026-10-08) - approved, reviewing `6113181`..`0657b68`. 0090 and 0091 carry B-001-B-011 once, each waiting on the items that produce the checks and secrets it names (0064, 0071; 0070, 0073).                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
 
 ## Tasks
 

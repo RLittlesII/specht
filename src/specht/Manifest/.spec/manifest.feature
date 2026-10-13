@@ -435,3 +435,11 @@ Feature: The manifest carries the roles
     When the tool runs as a command on the root
     Then the violation is reported at error severity
     And the exit code is 1
+
+  @B-044
+  Scenario: A consumer does not inherit this repository's missing-test warning
+    Given the manifest sets no level for the approved-with-missing-coverage rule
+    And the root holds an approved specification with a missing test
+    When the tool runs as a command on the root
+    Then the missing-test violation is reported at error severity
+    And the exit code is 1

@@ -2,7 +2,7 @@ id: "0056"
 type: feature
 title: The build
 
-status: ready-for-architecture
+status: done
 
 value: 5
 risk: 3
@@ -43,8 +43,8 @@ claims:
   - B-025
 
 created: "2026-10-08"
-updated: "2026-10-08"
-closed: null
+updated: "2026-10-13"
+closed: "2026-10-13"
 
 summary: |
   As a contributor, I want one NUKE build to define every gate as a named
@@ -89,9 +89,14 @@ acceptance_criteria:
   - "B-023 — `Specht` before the check exists: reports, exits 0 (0057)"
   - "B-024 — `Missing` row: `SPEC060` warning, exit 0 (0062)"
   - "B-025 — check without rule settings: prints, exits 0 (0061)"
-  - "§ 9 carries a row naming a test for each id above."
+  - "§ 9 retains Missing rows under the owner’s no-build-tests decision; B-023 and B-025 are Superseded under decision 0001."
 
 decisions:
+  - |
+    2026-10-13: closed with the final child 0062; children 0057 through
+    0061 are delivered, and 0098 was closed without delivery by the owner.
+    Build and hook verification remains manual under 0055-F1 § 8.
+    B-023 and B-025 are superseded by decision 0001.
   - |
     2026-10-08, Claude at the owner's request: sliced into the scaffold
     (0057) that every other item and epic 0001 build on, the tier filters
