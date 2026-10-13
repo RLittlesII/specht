@@ -2,7 +2,7 @@ id: "0062"
 type: task
 title: Gate the hook and Specht once rule settings exist
 
-status: ready-for-architecture
+status: done
 
 risk: 3
 
@@ -19,8 +19,8 @@ claims:
   - B-024
 
 created: "2026-10-08"
-updated: "2026-10-10"
-closed: null
+updated: "2026-10-13"
+closed: "2026-10-13"
 
 summary: |
   The step C-7 names: from 0001-F5's arrival, `Specht` exits with the
@@ -34,9 +34,16 @@ summary: |
 acceptance_criteria:
   - "B-013 — staged `.spec/` or `.feature` file and an error-severity violation: commit refused"
   - "B-024 — approved spec with a `Missing` row: `SPEC060` warning, exit 0"
-  - "§ 9 carries a row naming a test for each id above."
+  - "§ 9 remains Missing for B-013 and B-024 under the owner’s no-build-tests decision in § 8; manual verification is recorded in the commit and delivery report."
 
 decisions:
+  - |
+    2026-10-13, repository owner: include specification cleanup needed to
+    enable the gate. Preserve historical reviews in a separate history
+    table, address the engine baseline record gap, and complete the two
+    empty epic frontmatters. The default-manifest example now lives in
+    docs/configuration.md; decision 0009 governs the specified shipping
+    rule map and is not implemented by this item.
   - |
     2026-10-10, spec-author, recorded on delivery of item 0014 (`0001-F5`
     decision 0008 and its addendum); no call of the owner's. The `SPEC060`

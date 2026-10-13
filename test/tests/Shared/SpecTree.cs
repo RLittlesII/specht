@@ -1,4 +1,5 @@
 using System.Text;
+using System.Text.Json.Nodes;
 
 namespace Specht.Tests.Shared;
 
@@ -10,7 +11,8 @@ namespace Specht.Tests.Shared;
 /// The manifest and the frontmatter schemas are the exception: they are copied
 /// from the build output, which links this repository's live copy under
 /// <c>.specht/</c> at the paths it has there. They are the contract under
-/// enforcement, so a forked copy would test the wrong thing.
+/// enforcement, so a forked copy would test the wrong thing. The manifest's repository-owned rule settings are
+/// removed: a synthetic consumer keeps each rule's own severity unless its test sets a level (0001-F5 B-044).
 /// </remarks>
 public sealed class SpecTree : IDisposable
 {
@@ -30,6 +32,11 @@ public sealed class SpecTree : IDisposable
             Directory.CreateDirectory(Path.GetDirectoryName(copy)!);
             File.Copy(file, copy);
         }
+
+        var manifestPath = Path.Combine(Root, ManifestPath);
+        var manifest = JsonNode.Parse(File.ReadAllText(manifestPath))!.AsObject();
+        manifest.Remove("rules");
+        File.WriteAllText(manifestPath, manifest.ToJsonString());
     }
 
     /// <summary>The folder under a root that holds the tool's configuration (ADR-0011).</summary>

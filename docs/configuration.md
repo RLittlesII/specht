@@ -65,7 +65,7 @@ It lives at `<root>/.specht/manifest.json`. Every `specht init` selects it;
 `--schemas`, `--templates` and `--all` add the other parts. The block leaves out the five discovery keys
 (`layouts`, `exclusions`, `taskFiles`, `epicFiles` and `companionFiles`): the
 file carries each at its default, and a manifest without them is read the same
-way. `init` writes no `rules` key; the empty one below is read the same way.
+way. The block also omits this repository's `rules` setting: consumers that leave a rule unset keep that rule's own severity. The shipping manifest currently has no `rules` key; the complete default map is specified in `0001-F5` decision 0009 and is not built yet.
 
 <!-- prettier-ignore -->
 ```json
@@ -118,8 +118,7 @@ way. `init` writes no `rules` key; the empty one below is read the same way.
     "draft": "🟡",
     "blocked": "🔴",
     "approved": "approved"
-  },
-  "rules": {}
+  }
 }
 ```
 
