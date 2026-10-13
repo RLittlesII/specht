@@ -40,14 +40,16 @@ Feature: The manifest carries the roles
 
   @B-004
   Scenario: Frontmatter keys are read from the manifest
+    Given the manifest pins schema version "0.2.0"
     Given the frontmatter schemas are read from the root
-    And the manifest and the root's Feature schema both name the children key "tasks"
+    And the manifest's Feature key roles and the root's Feature schema both name the children key "tasks"
     And the root holds a specification whose "tasks" names an item that does not exist
     When the check runs
     Then the unresolved-child rule reports it
 
   @B-005
   Scenario: Identity and edge forms are read from the manifest
+    Given the manifest pins schema version "0.2.0"
     Given the frontmatter schemas are read from the root
     And the manifest and the root's Feature schema both declare the qualified edge form with a colon between the epic and the Feature id
     And the root holds a specification whose dependency edge is written "0002:F1"
@@ -57,6 +59,7 @@ Feature: The manifest carries the roles
 
   @B-006
   Scenario: Item ids follow the task grammar
+    Given the manifest pins schema version "0.2.0"
     Given the frontmatter schemas are read from the root
     And the manifest's task grammar and the root's frontmatter schemas all carry a three-digit sequence
     And the root holds items "0001-001" and "0001-002" beside a specification
@@ -136,6 +139,7 @@ Feature: The manifest carries the roles
 
   @B-014
   Scenario: A grammar that does not compile is invalid
+    Given the manifest pins schema version "0.2.0"
     Given the manifest's claim grammar is not a valid expression
     When the check runs
     Then the manifest is rejected
@@ -443,3 +447,121 @@ Feature: The manifest carries the roles
     When the tool runs as a command on the root
     Then the missing-test violation is reported at error severity
     And the exit code is 1
+
+
+  @B-004 @boundary
+  Scenario: Feature and item key spellings are independent
+    Given the manifest pins schema version "0.2.0"
+    And the manifest and on-disk schemas name the Feature id key "feature_id" and the item id key "work_id"
+    And the root holds a Feature and an item using those respective keys
+    When the check runs
+    Then the Feature and item identities are read from their own kind's key
+    And no identity mismatch is reported
+
+  @B-048
+  Scenario: Omitted values follow the pinned defaults
+    Given the tool ships two schema versions with different missing-test markers
+    And the manifest pins the older version and omits the missing-test marker
+    When the manifest is loaded
+    Then its missing-test marker is the older version's marker
+
+  @B-048 @boundary
+  Scenario: An explicit value wins over the pinned default
+    Given the tool ships two schema versions with different missing-test markers
+    And the manifest pins the older version and sets its missing-test marker to "TBD"
+    When the manifest is loaded
+    Then its missing-test marker is "TBD"
+
+  @B-049 @boundary
+  Scenario Outline: Older pins keep their manifest interpretation
+    Given the tool ships schema version "0.2.0" alongside "<pin>"
+    And the manifest pins schema version "<pin>"
+    And the root exercises a group-less task grammar, a malformed edge and a custom sequence width
+    When the check runs
+    Then the verdict and manifest rejection behavior equal the recorded behavior for "<pin>"
+
+    Examples:
+      | pin   |
+      | 0.1.0 |
+      | 0.1.1 |
+
+  @B-050 @boundary
+  Scenario: A task grammar requires its sequence group
+    Given the manifest pins schema version "0.2.0"
+    And its task grammar is a valid expression with no named sequence group
+    When the check runs
+    Then the manifest rejection names the task grammar and the missing sequence group
+    And the run exits with the invalid-manifest code
+    And only the rejection is written to stderr
+
+  @B-051 @boundary
+  Scenario: An epic task grammar requires its epic group
+    Given the manifest pins schema version "0.2.0"
+    And the manifest declares the epic grammar
+    And its task grammar names the sequence group but not the epic group
+    When the check runs
+    Then the manifest rejection names the task grammar and the missing epic group
+    And the run exits with the invalid-manifest code
+    And only the rejection is written to stderr
+
+  @B-052 @boundary
+  Scenario Outline: A form requires each expected placeholder exactly once
+    Given the manifest pins schema version "0.2.0"
+    And its "<form>" form is "<value>"
+    When the check runs
+    Then the manifest rejection names "<form>" and "<value>"
+    And the run exits with the invalid-manifest code
+    And only the rejection is written to stderr
+
+    Examples:
+      | form          | value             |
+      | identity      | {id}              |
+      | qualifiedEdge | {epic}/{id}/{id}  |
+      | localEdge     | fixed             |
+
+  @B-019
+  Scenario: An omitted form follows the pinned default
+    Given the manifest pins schema version "0.2.0"
+    And the manifest omits the qualified-edge form
+    When the manifest is loaded
+    Then its qualified-edge form is "{epic}/{id}"
+
+  @B-053
+  Scenario: A sequence gap message follows the captured width
+    Given the manifest pins schema version "0.2.0"
+    And the task grammar and on-disk schemas carry a three-digit sequence
+    And the root holds items "0001-001" and "0001-004" beside a specification
+    When the check runs
+    Then the sequence-gap message names the missing number "002"
+
+  @B-054
+  Scenario: A malformed dependency edge retains its text
+    Given the manifest pins schema version "0.2.0"
+    And the root holds a specification whose dependency edge is "F2x"
+    And that edge matches neither configured edge form
+    When the check runs
+    Then the unresolved-edge rule reports identifier "F2x"
+
+
+  @B-048 @boundary
+  Scenario: An omitted pin selects the original version's defaults
+    Given the tool ships schema version "0.1.0" and a newer version with different defaults
+    And the manifest omits its schema version and missing-test marker
+    When the manifest is loaded
+    Then its schema version is "0.1.0"
+    And its missing-test marker is version "0.1.0"'s marker
+
+  @B-048 @boundary
+  Scenario: A declared table map is not filled with other default entries
+    Given the tool ships two schema versions with different table defaults
+    And the manifest pins the older version and declares only its own matrix table headers
+    When the manifest is loaded
+    Then its table map contains exactly the declared matrix entry and headers
+
+  @B-048 @boundary
+  Scenario: Omitted names in a partial role map follow the pinned defaults
+    Given the tool ships two schema versions with different role titles
+    And the manifest pins the older version and renames only the claims role to "3. Claims"
+    When the manifest is loaded
+    Then the claims role is "3. Claims"
+    And the other roles use the older version's titles
