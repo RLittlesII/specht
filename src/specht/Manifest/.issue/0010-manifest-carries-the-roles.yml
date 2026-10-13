@@ -66,13 +66,13 @@ claims:
   - B-047
 
 created: "2026-10-08"
-updated: "2026-10-11"
+updated: "2026-10-13"
 closed: null
 
 summary: |
   As the maintainer of a sibling repository, I want every literal the engine
   hardcodes about the model read from the manifest, so that I can bring my
-  own schema, tune rules my tree cannot yet pass, and hooked notices nothing.
+  own schema, tune rules my tree cannot yet pass, and existing consumers notice no change.
 
   Risk 4: the default manifest must reproduce the golden baseline verdicts byte
   for byte after every literal moves. OQ-1 (the manifest's key names) is open

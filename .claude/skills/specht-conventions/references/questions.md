@@ -37,7 +37,7 @@ From brief § 2, § 5 and § 6, as of 2026-10-07:
   Everything else about it — sections, grammars, markers — is reversible under
   schema versioning.
 - **One repository, tool and schema together.** No consumer owns the schema;
-  `hooked` is consumer one.
+  every consumer installs the tool.
 - **Delivered as a `dotnet tool`**, package `specht.tool`, command `specht`,
   installed per repository through a local tool manifest and published to
   GitHub Packages on `rlittlesii/specht` first; NuGet.org is the reversal
@@ -83,11 +83,11 @@ From brief § 2, § 5 and § 6, as of 2026-10-07:
   from epic `0101`, `format`, which only moves whole table rows and
   frontmatter keys (brief § 9; `0101-F5` decision 0001). `init` never
   overwrites an existing file.
-- **No rule plugins.** Per-rule disable and `--strict` instead. No Roslyn: the
-  claim bridge and the convention analyzers stay in `hooked`.
-- **The engine is copied from `hooked`, never regenerated**, and the rule
+- **No rule plugins.** Per-rule disable and `--strict` instead. Roslyn claim bridges and convention analyzers
+  are outside the checker's scope; epic `0201` records the deferred need.
+- **The engine baseline is recorded at commit `e7dba24`, never regenerated**, and the rule
   vocabulary is not widened before schema versioning exists (brief § 8 step 6).
-- **`generatedAtUtc` is dropped from the report**, so `hooked`'s run is
+- **`generatedAtUtc` is dropped from the report**, so the baseline run is
   byte-identical before and after the extraction.
 - **Pipe tables only.** A grid table is "no table" (`SPEC013`).
 - **`priority` is authored in the spec**, not mirrored from a label.

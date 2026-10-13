@@ -37,11 +37,11 @@ orchestrator itself from compiling. Product code gets no such exemption.
 
 ## The engine is copied, not written
 
-`src/specht` arrives from `hooked` by `cp` with a namespace rename and nothing
-else (brief § 3, § 8 step 2). Its files have since moved into folders, each
+`src/specht` was imported at commit `e7dba24` with the namespace rename
+and permitted project-file edits (brief § 3, § 8 step 2). Its files have since moved into folders, each
 taking the folder's namespace (item 0137), with no type or member changed; the
 baseline rule is unchanged. The tests that come with it are the behaviour
-baseline: `hooked`'s report must stay identical through every later step
+baseline: the baseline report must stay identical through every later step
 (brief § 2 Should-7). A file in `src/specht` that looks like it should be
 rewritten is a later step with a test, never a fresh draft — and the first
 rewrite is the manifest-roles work in brief § 8 step 5, one rule at a time.
@@ -71,12 +71,12 @@ file and a versionless `PackageReference` in the project, in the same change.
 
 The engine has five dependencies, named by `0001-F1` C-7, each versioned in the
 `Engine` item group. Three — Markdig, YamlDotNet, JsonSchema.Net — are pinned to
-the exact versions `hooked` uses (brief § 3), because Should-7 is a
+the baseline versions in `Directory.Packages.props` (brief § 3), because Should-7 is a
 byte-identical report. A pin with a reason carries the reason **in
 `Directory.Packages.props`**, beside the pin, not in a skill. Read it before
 bumping anything.
 
-The other two are not `hooked`'s and are not pinned to it.
+The other two were added after the import and follow their own version policy.
 `TestableIO.System.IO.Abstractions.Wrappers` is the file-system seam, added by
 owner direction (2026-10-08, `0001-F5` § 7).
 `Microsoft.Extensions.DependencyInjection.Abstractions` carries

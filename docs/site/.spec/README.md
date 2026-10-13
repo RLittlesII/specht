@@ -44,21 +44,21 @@ Once `0002-F1` generates an API reference and the commands carry usage docs, a c
 
 ### Assumptions
 
-| ID  | Assumption                                                                                                                                                                                                                                                                                       |
-| --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| A-1 | astro.build was named as the site framework in an offhand grooming remark in `hooked` (PR #212), not at a decision gate: no alternatives were weighed and no decision was recorded. `hooked` captured that as its lesson L-0001. It is carried here as a candidate only; OQ-2 routes the choice. |
-| A-2 | This Feature consumes `0002-F1`'s generated reference and the commands' usage docs; it generates no documentation content itself.                                                                                                                                                                |
-| A-3 | The hosting target (for example GitHub Pages) is not decided; it is OQ-1, answered when the deferral is lifted.                                                                                                                                                                                  |
+| ID  | Assumption                                                                                                                                                                                                    |
+| --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| A-1 | astro.build was named as the site framework in an offhand grooming remark, not at a decision gate: no alternatives were weighed and no decision was recorded. It is a candidate only; OQ-2 routes the choice. |
+| A-2 | This Feature consumes `0002-F1`'s generated reference and the commands' usage docs; it generates no documentation content itself.                                                                             |
+| A-3 | The hosting target (for example GitHub Pages) is not decided; it is OQ-1, answered when the deferral is lifted.                                                                                               |
 
 ## 3. Acceptance Criteria
 
 <!-- last written by: spec-author, 2026-10-07 -->
 
-| ID    | Claim                                                                                                                                                                         | Source         | Status |
-| ----- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------- | ------ |
-| B-001 | Given `0002-F1`'s generated API reference and the commands' usage docs, this Feature builds a static site whose content comes from them alone, in the framework OQ-2 decides. | hooked PR #212 | Active |
-| B-002 | Given the site builds in CI, this Feature publishes it through a CI pipeline to a public URL that stays the same across releases.                                             | hooked PR #212 | Active |
-| B-003 | Given `0002-F1` has not shipped, or the owner has not lifted the deferral, no work on this Feature starts - no scaffold, no pipeline, no dependency.                          | hooked PR #212 | Active |
+| ID    | Claim                                                                                                                                                                         | Source                         | Status |
+| ----- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------ | ------ |
+| B-001 | Given `0002-F1`'s generated API reference and the commands' usage docs, this Feature builds a static site whose content comes from them alone, in the framework OQ-2 decides. | owner requirements, 2026-09-29 | Active |
+| B-002 | Given the site builds in CI, this Feature publishes it through a CI pipeline to a public URL that stays the same across releases.                                             | owner requirements, 2026-09-29 | Active |
+| B-003 | Given `0002-F1` has not shipped, or the owner has not lifted the deferral, no work on this Feature starts - no scaffold, no pipeline, no dependency.                          | owner requirements, 2026-09-29 | Active |
 
 ## 4. Constraints
 
@@ -73,10 +73,10 @@ Once `0002-F1` generates an API reference and the commands carry usage docs, a c
 
 <!-- last written by: spec-author, 2026-10-07 -->
 
-| #   | Item                                                             | Exclusion Reason                                                          |
-| --- | ---------------------------------------------------------------- | ------------------------------------------------------------------------- |
-| 1   | Generating the API reference or writing usage docs               | `0002-F1`; this Feature only publishes what `0002-F1` produces.           |
-| 2   | Any work before `0002-F1` ships and the owner lifts the deferral | The owner's decision, carried from `hooked`'s 2026-09-29 grooming; B-003. |
+| #   | Item                                                             | Exclusion Reason                                                              |
+| --- | ---------------------------------------------------------------- | ----------------------------------------------------------------------------- |
+| 1   | Generating the API reference or writing usage docs               | `0002-F1`; this Feature only publishes what `0002-F1` produces.               |
+| 2   | Any work before `0002-F1` ships and the owner lifts the deferral | The owner's decision, carried from the consumer's 2026-09-29 grooming; B-003. |
 
 ## 6. Concern Separation
 
@@ -135,7 +135,7 @@ None yet. Cut from § 3 after agreement and after the deferral is lifted; the ca
 
 ## Scoring
 
-| Field | Value | Basis                                                                                                                           |
-| ----- | ----- | ------------------------------------------------------------------------------------------------------------------------------- |
-| value | 3     | Carried from hooked 0008-F2's intake scoring, 2026-09-29: a real but deferred need - a published site, not the tool's function. |
-| risk  | 3     | Carried from the same scoring: undecided framework (C-2) and hosting target (OQ-1, OQ-2). rank = 3×20 − 3×3 + 0×5 = 51.         |
+| Field | Value | Basis                                                                                                                      |
+| ----- | ----- | -------------------------------------------------------------------------------------------------------------------------- |
+| value | 3     | Carried from the owner's intake scoring, 2026-09-29: a real but deferred need - a published site, not the tool's function. |
+| risk  | 3     | Carried from the same scoring: undecided framework (C-2) and hosting target (OQ-1, OQ-2). rank = 3×20 − 3×3 + 0×5 = 51.    |

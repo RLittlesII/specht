@@ -28,11 +28,11 @@ claims:
   - B-011
 
 created: "2026-10-08"
-updated: "2026-10-09"
+updated: "2026-10-13"
 closed: "2026-10-09"
 
 summary: |
-  As the maintainer of four repositories, I want hooked's rule engine moved
+  As the maintainer of four repositories, I want the consumer's rule engine moved
   into this repository as the library specht without its verdict moving, so
   that the extraction is provably a move and every later Feature has a
   baseline to prove itself against (brief § 8 step 2).
@@ -45,7 +45,7 @@ acceptance_criteria:
   - "B-002 — both layouts, SPEC011 legacy only (0023)"
   - "B-003 — co-located identity from frontmatter (0023)"
   - "B-004 — verdicts equal the committed baseline report (0022)"
-  - "B-005 — assembly and namespace `specht`, no `Hooked` (0021)"
+  - "B-005 — assembly and namespace `specht`, no consumer name (0021)"
   - "B-006 — clock, environment, locale, machine, root location do not reach the verdict (0024; decision 0006)"
   - "B-007 — root-relative `/` paths (0024)"
   - "B-008 — grid table read as no table (0024)"

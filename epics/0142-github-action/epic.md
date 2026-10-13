@@ -39,7 +39,7 @@ diff. No problem matcher reads the tool's line (`0055-F2` decision 0002), and
 the one implementation that writes annotations lives in this repository's
 build. A consumer reads the step's log or writes the annotation code again.
 
-**Why now.** `hooked` is about to adopt the tool, and more repositories
+**Why now.** A consumer repository is about to adopt the tool, and more repositories
 follow. Each would otherwise hand-write its own annotation step, which is the
 hand-copied implementation `specht` exists to remove (AGENTS.md § Project),
 one layer up.

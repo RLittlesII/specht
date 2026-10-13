@@ -40,7 +40,7 @@
       "enabled": false
     },
     {
-      "description": "0055-F4 C-1, B-008: the engine's three dependencies stay on hooked's versions. Lifted only by a change after 0001-F1 B-004's golden baseline test is on main that also amends 0001-F1 C-7.",
+      "description": "0055-F4 C-1, B-008: the engine's three dependencies stay on the baseline dependency versions. Lifted only by a change after 0001-F1 B-004's golden baseline test is on main that also amends 0001-F1 C-7.",
       "matchPackageNames": ["Markdig", "YamlDotNet", "JsonSchema.Net"],
       "enabled": false
     }

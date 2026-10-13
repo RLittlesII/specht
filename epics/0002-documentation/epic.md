@@ -21,9 +21,8 @@ something bolted on once `specht` is feature-complete. Epic `0001` is silent on
 documentation as a delivery concern; this epic names it before the gap
 compounds.
 
-It mirrors `hooked`'s Documentation epic (hooked PR #212, grooming of
-2026-09-29), adapted to this repository's surfaces and conventions. Two
-Features, deliberately sequenced:
+The owner requested this work on 2026-09-29. Two Features are deliberately
+sequenced:
 
 - **`0002-F1` (now)**: documentation generated and checked inside the build. An
   XML doc comment on every public type and member, enforced as `CS1591`; an API
@@ -61,8 +60,7 @@ Feature owns that today.
 | `0002-F1` | Docs as first-class citizen | `docs/.spec/README.md`      | `needs-decomposition`, high |
 | `0002-F2` | Documentation site          | `docs/site/.spec/README.md` | `blocked` on `0002-F1`, med |
 
-`hooked` names its F2 "Astro Documentation Site". Here the name leaves the
-framework out, because the framework is `0002-F2` OQ-2.
+The site name leaves the framework out, because the framework is `0002-F2` OQ-2.
 
 ## Placement
 
@@ -78,8 +76,7 @@ version 1's epic glob `epics/**/epic.md` discovers it (`0001-F6` decision 0001).
 ## Candidate task cut
 
 Not filed. Tasks are GitHub issues, cut from § 3 after agreement, and this
-repository has no remote yet. The ids are reserved in epic order and mirror
-`hooked`'s 0008-01..06:
+repository has no remote yet. The candidate tasks are listed in epic order:
 
 | Task      | Feature   | Summary                                                                             | Claims                            |
 | --------- | --------- | ----------------------------------------------------------------------------------- | --------------------------------- |
@@ -100,23 +97,13 @@ and the report schema (`0001-F3`) are separate mechanisms that independently
 satisfy the same principle; this epic neither consumes nor changes them. A
 usage doc links to them and never copies them (`0002-F1` § 5).
 
-**hooked numbering.** Epic `0001`'s "Out of this epic" cites `hooked` `0008-F1`
-and `0008-F2` as the claim bridge and the convention analyzers, while hooked
-PR #212 numbers its Documentation epic `0008` too. This file cites the pull
-request, not the number. The owner should confirm which numbering `hooked`
-settles on before either citation is relied on.
-
-**`hooked`'s 0005-F1 amendment has no counterpart here.** PR #212 rewords a
-`hooked` CLI specification that claimed "no separate docs site"; no `0001`
-specification makes that claim.
-
 ## Out of this epic
 
 | Item                                                                      | Where it lives instead                                                                                                                                                           |
 | ------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `--help` text                                                             | `0001-F2`                                                                                                                                                                        |
 | `--explain` rule text and the report's JSON Schema                        | `0001-F3`                                                                                                                                                                        |
-| `hooked`'s own documentation                                              | `hooked`, its Documentation epic (PR #212)                                                                                                                                       |
+| Consumer documentation                                                    | Each consumer repository                                                                                                                                                         |
 | Rewriting `.spec/**` documents as usage docs                              | Rejected: a specification is the agreement                                                                                                                                       |
 | A documentation page per rule, from the rule-catalogue prose (brief § 3)  | `0001-F3` (B-031 to B-033, decision 0003): the text `--explain` prints. Its files sit at `docs/rules/` and stay `0001-F3`'s                                                      |
 | Turning the specification-model prose into user documentation (brief § 3) | Unowned. Neither `0002` Feature claims it, and `0002-F1` OQ-2, resolved 2026-10-11, did not decide it; the owner decides whether it is a `0002-F1` claim or a Feature of its own |

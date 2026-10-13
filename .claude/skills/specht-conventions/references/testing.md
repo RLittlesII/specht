@@ -26,7 +26,7 @@ one decision, derivation or mapping in memory; an integration test touches the
 disk or a process. In the engine, a unit test runs one rule or one reader over
 documents built in memory, and an integration test runs `SpechtRunner` over
 a `SpecTree` written to a temporary directory and asserts the report. The 56
-tests extracted from `hooked` already draw it this way (brief § 3); follow them.
+baseline tests already draw it this way (brief § 3); follow them.
 
 The tiers are defined by what is under test, not by where it lives. Code
 outside `src/` - the build in `.build/` is the first - has the same unit tier,
@@ -98,7 +98,7 @@ empty formatter and quoted arguments - [lesson 0003](../../../../.spec/lessons/0
   reports by its default name patterns, and a glob in its `files` input breaks
   on Windows (`0055-F3` § 7).
 
-One behaviour worth carrying from `hooked`: an MTP test project that discovers
+An MTP test project that discovers
 **zero** tests exits `8` and fails its tier. A new test project needs at least
 one test per tier it runs in, or the build goes red for a reason the log does
 not explain.
@@ -129,10 +129,10 @@ assembly with one caller; a separate `test/tests` project references it
 directly and needs no `Compile Remove` / `Compile Include` dance to pull test
 files back out of the product.
 
-That dance is why co-location is not introduced casually: `hooked` once scoped
-its re-include glob to one folder, and a `*.Tests.cs` dropped anywhere else was
+That dance is why co-location is not introduced casually: a re-include glob
+scoped to one folder means a `*.Tests.cs` dropped anywhere else is
 removed from production by the unconditional exclude and never linked into the
-test project — it _silently compiled nowhere and no test ran_, while the solution
+test project — it _silently compiles nowhere and no test runs_, while the solution
 built green and `dotnet test` reported success. A separate project cannot fail
 that way. If co-location is ever proposed, that incident is the cost to weigh.
 
@@ -199,7 +199,7 @@ to, and are linked into `test/acceptance` by a **literal
 `ReqnrollFeatureFile` glob** with a `Link=` path, plus
 `ReqnrollUseIntermediateOutputPathForCodeBehind=true`.
 
-Two attempts in `hooked` to generalize such globs failed the same way: Reqnroll's
+Generalized globs can fail silently: Reqnroll's
 static metadata `ItemGroup Update` pass runs before any MSBuild `Target`, so
 batched items produced zero features and `dotnet test` **silently discovered
 zero tests**. Add a glob by writing it out, and verify the discovered test count

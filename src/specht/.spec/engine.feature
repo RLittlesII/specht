@@ -1,6 +1,6 @@
 Feature: The engine, extracted unchanged
   As the maintainer of four repositories on one specification model
-  I want the rule engine moved out of hooked into a library of its own
+  I want the rule engine in a library of its own
   So that the same verdict can be given everywhere, and the move itself changes nothing
 
   Background:
@@ -44,11 +44,10 @@ Feature: The engine, extracted unchanged
     And in the same order
 
   @B-005 @boundary
-  Scenario: Nothing carries the old repository's name
+  Scenario: The library owns its assembly and namespace names
     Given the library is built
     When its assembly name and root namespace are read
     Then both are "specht"
-    And neither contains "Hooked"
 
   @B-006
   Scenario: Nothing about the machine reaches the verdict

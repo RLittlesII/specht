@@ -80,7 +80,7 @@ defines after the pin moves down, which nothing yet answers (OQ-14).
 **An absent key is invalid, exit `3`.** An option offered in the session; the
 owner chose "the first version". Cost of rejecting: a manifest that never pins
 reads as `0.1.0` for good. The author's reason for the choice, not the
-owner's: `hooked`'s manifest has no key and must keep checking unchanged (A-1,
+owner's: the baseline manifest has no key and must keep checking unchanged (A-1,
 Should-7).
 
 **An absent key is the newest shipped version.** An option offered in the

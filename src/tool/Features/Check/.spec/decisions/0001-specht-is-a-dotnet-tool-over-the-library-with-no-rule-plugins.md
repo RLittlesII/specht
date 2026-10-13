@@ -7,7 +7,7 @@ type: decision
 # Decision 0001: specht ships as a dotnet tool over the library, with the layout in the manifest and no rule plugins
 
 **Date:** 2026-10-07
-**Decided by:** the repository owner, raised during the review of `hooked` PR #217; recorded by spec-author there as `0008-F3` decision 0001 and carried across here with the names decided since (brief § 6)
+**Decided by:** the repository owner; recorded by spec-author (brief § 6)
 
 ## The call
 
@@ -48,7 +48,7 @@ a manifest may not add a rule, and no assembly is loaded at run time.
 
 ## Rejected
 
-**Nuke-only - `hooked`'s shape at the time.** The engine stays a project
+**Nuke-only - the consumer's shape at the time.** The engine stays a project
 reference from `.build/` and `./build.sh Specht` is the only entry.
 
 - Reaches no other repository: adopting the model means copying the engine,
@@ -85,8 +85,8 @@ specification files as `AdditionalFiles`.
 
 - An analyzer sees one compilation; the rules are repository-wide.
 - Ties the check to a compile, which the gate was built not to need.
-- Cost of rejecting: none for this repository; `hooked` `0008-F1` is the
-  per-compilation half and stays there.
+- Cost of rejecting: none for the repository-wide checker; per-compilation claim analysis
+  is a separate responsibility (epic `0201`).
 
 **A global tool install** (`dotnet tool install -g`) as the documented path.
 

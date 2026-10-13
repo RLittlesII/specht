@@ -31,7 +31,7 @@ synced_at: null
 
 <!-- last written by: spec-author, 2026-10-12 (upstream source adoption, decision 0003) -->
 
-A repository adopting the model copies `hooked`'s `.spec/schema/` and `.spec/templates/` by hand, from whatever day it looked, and nothing records which day. This Feature removes that failure state: `specht init` writes the manifest, and on request the frontmatter schemas and the templates, from copies embedded in the tool or frontmatter schemas from a supplied upstream source pinned by label and hashes, so the consumer can reproduce the selected source without hand-writing a manifest. It never overwrites, so a repository that already has a file keeps it.
+A repository adopting the model copies the consumer's `.spec/schema/` and `.spec/templates/` by hand, from whatever day it looked, and nothing records which day. This Feature removes that failure state: `specht init` writes the manifest, and on request the frontmatter schemas and the templates, from copies embedded in the tool or frontmatter schemas from a supplied upstream source pinned by label and hashes, so the consumer can reproduce the selected source without hand-writing a manifest. It never overwrites, so a repository that already has a file keeps it.
 
 ## 2. User Needs
 
@@ -39,7 +39,7 @@ A repository adopting the model copies `hooked`'s `.spec/schema/` and `.spec/tem
 
 | #   | Persona                                             | Need                                                                                                            | Pain Point Today                                                                      |
 | --- | --------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------- |
-| 1   | The maintainer adopting the tool                    | One command that gives a bare repository the manifest, and the frontmatter schemas and the templates when asked | `cp -R` from `hooked`, then edit the `$id` URLs by hand                               |
+| 1   | The maintainer adopting the tool                    | One command that gives a bare repository the manifest, and the frontmatter schemas and the templates when asked | `cp -R` from a consumer repository, then edit the `$id` URLs by hand                  |
 | 2   | The agent authoring a specification                 | The templates, beside the schema, as the generation contract (Should-5)                                         | Copies the template from another repository                                           |
 | 3   | A repository with local edits                       | `init` leaves what exists alone and says so                                                                     | A copy overwrites                                                                     |
 | 4   | `0001-F7`                                           | The embedded version set `init` writes from, and a written manifest to pin a version in                         | N/A (internal dependency)                                                             |

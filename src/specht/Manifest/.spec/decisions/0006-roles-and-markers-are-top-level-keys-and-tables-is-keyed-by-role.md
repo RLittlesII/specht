@@ -69,7 +69,7 @@ today. Cost of rejecting: a role's title and its headers sit under two keys.
 
 **`tables` left keyed by section title.** It changes neither manifest copy and
 breaks no manifest. Rejected because it contradicts B-002's "per role". Cost of
-rejecting: every manifest that declares `tables` today, `hooked`'s included,
+rejecting: every manifest that declares `tables` today, the consumer's included,
 is edited once, and is rejected until it is (call 3).
 
 **A `tables` key that is no role is kept and never read.** That is what an
@@ -87,7 +87,7 @@ switch a marker off by emptying it; a rule is switched off by B-011.
 - B-019: `roles` and `markers` join the per-name fill; text unchanged.
 - B-039, B-040: added.
 - B-022, B-023: their list of rejections gains B-039 and B-040.
-- B-016, C-4: the default manifest's values are the literals `hooked`'s engine
+- B-016, C-4: the default manifest's values are the literals the baseline engine
   hardcodes, so the golden report is unchanged.
 - § 11 OQ-1: partly resolved, for roles, markers and the `tables` key.
 - § 11 OQ-10, OQ-11: opened; neither was put to the owner.

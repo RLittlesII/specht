@@ -8,7 +8,7 @@ type: decision
 
 **Date:** 2026-10-09
 **Decided by:** spec-author, from the owner's call that fixtures are synthetic
-(`SpecTree` approach, never a real `.spec/` tree, never `hooked` source); the
+(`SpecTree` approach, never a real `.spec/` tree, never consumer source); the
 owner may reverse the sizes and the shape
 
 ## The call

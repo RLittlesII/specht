@@ -1,0 +1,38 @@
+id: "0202"
+type: refactor
+title: Make repository references self-contained
+status: done
+value: 3
+risk: 2
+parent: null
+children: []
+depends_on: []
+spikes: []
+spec: null
+claims: []
+created: "2026-10-13"
+updated: "2026-10-13"
+closed: "2026-10-13"
+summary: |
+  Remove references to the original consumer repository and machine-specific
+  checkout paths from tracked content and filenames. Point baseline references
+  at this repository's extraction commit and synthetic golden report instead.
+acceptance_criteria:
+  - "No original consumer name remains in tracked content or filenames."
+  - "No personal checkout path remains in tracked content."
+  - "Decision IDs and repository-relative links still resolve."
+  - "No .feature behavior change needed: refactor — prose and fixture-directory naming only; verdicts and CLI behavior are unchanged. Constraints preserved: 0001-F1 C-9, C-10; 0001-F3 C-8."
+  - "Format, Specht, and the default build pass."
+decisions:
+  - |
+    2026-10-13, owner: remove all external consumer-name references and personal
+    filesystem references. Historical records retain IDs but use this
+    repository's commit e7dba24 and synthetic baseline as the reference.
+  - |
+    2026-10-13, verification: the default build passed Format, Compile,
+    598 unit tests, 238 integration tests and 199 acceptance scenarios;
+    194 acceptance scenarios remain skipped. Specht reports the same 173
+    verdicts as the starting commit, ignoring shifted line numbers.
+out_of_scope:
+  - "Rewriting Git history or other repositories."
+  - "Changing rule verdicts, package versions, or consumer adoption requirements."

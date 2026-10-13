@@ -56,10 +56,10 @@ permanent history.
 ## Each step of brief § 8 is a pull request
 
 The order of work is fixed and each step is one pull request whose description
-names the brief § 2 requirement it serves. Step 2 — copying the engine — is
-tagged when it merges: that commit is the behaviour baseline every later step
-is measured against (Should-7), and a diff of `src/specht` against `hooked` at
-that tag must show only the namespace rename.
+names the brief § 2 requirement it serves. Step 2 — importing the engine — is
+recorded at commit `e7dba24`; that commit and the synthetic golden report are
+the baseline every later step is measured against (Should-7; `0001-F1`
+decision 0004). The import comparison is recorded once, at that commit.
 
 ## Status
 

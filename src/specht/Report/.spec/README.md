@@ -37,14 +37,14 @@ A violation today says what is wrong and not what would be right, so the agent t
 
 <!-- last written by: spec-author, 2026-10-11 (A-4 amended, `0001-F7` decision 0009) -->
 
-| #   | Persona                                  | Need                                                                                             | Pain Point Today                                                                         |
-| --- | ---------------------------------------- | ------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------- |
-| 1   | The agent repairing a specification      | Each violation says what the rule wanted - the headers, the grammar, the section order - in data | A message in prose; the expectation lives in the rule's code, the template or the schema |
-| 2   | The agent migrating a pre-schema tree    | The same, on Transporter's tree, for every rule at once                                          | Nothing says what a pre-schema document is missing, only that it fails                   |
-| 3   | A CI step or a script parsing the result | One JSON document on stdout, or at a path, that validates against a schema it can pin            | `hooked` writes an anonymous object; its shape is whatever the code says this week       |
-| 4   | The maintainer reading a rule            | The rule's full text from the tool that enforces it, for the version pinned                      | Prose in a skill file, in another repository                                             |
-| 5   | `0001-F7`                                | A report that names the schema version it checked against and where the schemas came from        | N/A (internal dependency)                                                                |
-| 6   | A person or agent fixing a violation     | One page per rule in one shape: what it checks, a violating example, the correction, the fix     | brief § 4 gives each rule one line; the rest is in the rule's code                       |
+| #   | Persona                                  | Need                                                                                             | Pain Point Today                                                                                |
+| --- | ---------------------------------------- | ------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------- |
+| 1   | The agent repairing a specification      | Each violation says what the rule wanted - the headers, the grammar, the section order - in data | A message in prose; the expectation lives in the rule's code, the template or the schema        |
+| 2   | The agent migrating a pre-schema tree    | The same, on Transporter's tree, for every rule at once                                          | Nothing says what a pre-schema document is missing, only that it fails                          |
+| 3   | A CI step or a script parsing the result | One JSON document on stdout, or at a path, that validates against a schema it can pin            | a consumer repository writes an anonymous object; its shape is whatever the code says this week |
+| 4   | The maintainer reading a rule            | The rule's full text from the tool that enforces it, for the version pinned                      | Prose in a skill file, in another repository                                                    |
+| 5   | `0001-F7`                                | A report that names the schema version it checked against and where the schemas came from        | N/A (internal dependency)                                                                       |
+| 6   | A person or agent fixing a violation     | One page per rule in one shape: what it checks, a violating example, the correction, the fix     | brief § 4 gives each rule one line; the rest is in the rule's code                              |
 
 ### Assumptions
 

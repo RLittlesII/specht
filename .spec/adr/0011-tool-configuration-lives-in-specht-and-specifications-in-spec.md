@@ -46,7 +46,7 @@ Read from commit `60de077` when this record was written.
 - **Nothing is published.** The repository has no git tag, `README.md` says
   "Not published yet", and schema version `0.1.0` is unpublished (`0001-F7`
   decision 0006). The only trees that hold the old folders are this
-  repository's and `hooked`'s.
+  repository's and the consumer's.
 
 ## Decision drivers
 
@@ -133,7 +133,7 @@ Paid:
 - The continuous-integration filter that skips a documentation-only pull
   request excepts `.specht/` as it excepts `.spec/` (`0055-F2` B-012), in the
   same build.
-- A consumer whose tree holds the old folders - `hooked` - moves two folders by
+- A consumer whose tree holds the old folders moves two folders by
   hand. Until it does, the check exits `2` and says where the manifest goes.
 - `init` under a root that still holds the old folders writes a fresh set under
   `.specht/` and leaves the old one as it was (`0001-F4` B-028). A consumer who

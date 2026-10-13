@@ -2,7 +2,7 @@ id: "0148"
 type: task
 title: Add the Benchmark build target
 
-status: ready-for-architecture
+status: in-progress
 
 risk: 3
 
@@ -29,7 +29,7 @@ claims:
   - B-021
 
 created: "2026-10-11"
-updated: "2026-10-11"
+updated: "2026-10-13"
 closed: null
 
 summary: |

@@ -1,7 +1,7 @@
 Feature: The manifest carries the roles
   As the maintainer of a repository on the specification model
   I want the sections, markers, keys and grammars the rules read to come from a manifest I own
-  So that the same rules gate my tree with my names, and hooked's run is unchanged
+  So that the same rules gate my tree with my names, and the baseline run is unchanged
 
   Background:
     Given a repository root holding a manifest and the three frontmatter schemas

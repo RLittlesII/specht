@@ -129,7 +129,7 @@ Nothing in the first two rows publishes a package.
 
 | Item                                                                    | Where it lives instead                                                                |
 | ----------------------------------------------------------------------- | ------------------------------------------------------------------------------------- |
-| `hooked` adopting the tool (brief § 8 step 4)                           | `hooked`, tracked in that repository (owner, 2026-10-08)                              |
+| a consumer repository adopting the tool (brief § 8 step 4)              | a consumer repository, tracked in that repository (owner, 2026-10-08)                 |
 | Transporter installing the tool (brief § 8 step 7)                      | Transporter, tracked in that repository (owner, 2026-10-08)                           |
 | What the `SpecCheck` target's run does, and its three-call-site verdict | `0001-F2` B-010, B-011, B-014                                                         |
 | Schema versions and `schemaVersion`                                     | `0001-F7`; the package version is independent of it (`0055-F5` B-006)                 |

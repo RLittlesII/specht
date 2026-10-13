@@ -1,21 +1,15 @@
 ---
 title: "Seed brief: the specht repository"
-description: "The decided requirements, the extraction from hooked, the rule vocabulary, the drafted design, the open-question decisions, the order of work and the non-negotiables - the design authority cited as brief § N"
+description: "The decided requirements, the repository-owned engine baseline, the rule vocabulary, the drafted design, the open-question decisions, the order of work and the non-negotiables - the design authority cited as brief § N"
 type: reference
 ---
 
 # Seed brief: the `specht` repository
 
-> Hand this to the first agent in the new repository. It carries the decided
-> requirements, what to extract from `hooked`, the draft design already
-> written, the decisions taken on each open question, and the order of work.
-> Source material: `hooked` branch `salvage/spec-check-engine` at `6afe8ab`
-> (PR #217 merged without the engine; the branch keeps the commit). The engine, tests, schemas, and templates there are byte-identical
-> to the earlier seed at `a6d056f`; only the three draft-spec files were removed.
-> Written as `spec-check`; the product was then named `specht` (command
-> `specht`, package `specht.tool`, namespace `specht`), and the brief was
-> revised to match in the second requirements session (`REQUIREMENTS.md`
-> § Revision log, at commit `254aabc`).
+This brief records the decided requirements, the baseline engine, the rule
+vocabulary, the design decisions, and the order of work. The engine import is
+recorded in this repository at commit `e7dba24`. The requirements session is
+retired at `REQUIREMENTS.md`, commit `254aabc`.
 
 ## 1. What this is
 
@@ -25,16 +19,16 @@ violation with a file, a line, and a rule id. One schema and one checker shared
 by every repository in the owner's ecosystem, replacing three hand-copied
 implementations in four repositories.
 The repository holds **both the tool and the schema**. No consumer repository
-owns the schema; `hooked` is consumer one.
+owns the schema; every consumer installs the tool.
 
 ## 2. Requirements, as decided (2026-10-07)
 
 **Problem.** Four repositories are written in parallel on the same `.spec/`
-approach. Three of them hand-copy `hooked`'s schema, templates, and checker.
+approach. Three of them hand-copy the consumer's schema, templates, and checker.
 Every improvement lands four times or drifts.
 **Personas.** The maintainer of four repositories. The agent authoring a
 specification in any of them.
-**Done means.** The tool installed in two repositories (`hooked` and
+**Done means.** The tool installed in two repositories (a consumer repository and
 Transporter), both checked by it, no engine code in either. Transporter
 originated the `.spec/` model and its tree predates the schema, so "done" also
 proves the tool handles a tree it did not write.
@@ -58,15 +52,14 @@ proves the tool handles a tree it did not write.
    Should; promoted in session 2. Number kept: it is cited.)
    **Should.**
 6. The schema doubles as the agent's generation contract: readable JSON Schema
-   plus a manifest, as `hooked/.spec/schema/` is today.
-7. `hooked`'s own run is unchanged by the extraction: same violations, same
+   plus a manifest, shipped with the tool.
+7. The baseline verdict is unchanged by the extraction: same violations, same
    report, on the same tree (all fields but the timestamp).
 8. The schema source is configurable: the embedded schema for the pinned
    version by default; the consumer's on-disk `.specht/schema/` files when the
    manifest or a CLI argument says so. The manifest itself is always read from
    disk.
-   **Out of scope.** Anything Roslyn (`hooked`'s 0008-F1 claim bridge and
-   0008-F2 convention analyzers stay there). Rule plugins. Spec revision history.
+   **Out of scope.** Roslyn claim bridges and convention analyzers. Rule plugins. Spec revision history.
    Autofix: no `--fix`, and `upgrade` never rewrites a document — it touches
    `.specht/schema/` and `.specht/templates/` only; the agent migrates documents from
    the violations (Must-6). Reordering is the one exception, decided 2026-10-08:
@@ -78,8 +71,8 @@ proves the tool handles a tree it did not write.
    | -------------------------------------------------------------------------------------------------------------------------------------------- | --------- |
    | The folder is named `.spec/`                                                                                                                 | Hard      |
    | Own repository; tool and schema together. No consumer owns the schema; each holds a copy `init` wrote                                        | Hard      |
-   | Engine copied from `hooked` `salvage/spec-check-engine` at `6afe8ab`, SHA cited in the first commit                                          | Hard      |
-   | `hooked` consumes the tool _instead of_ merging the engine from PR #217; the engine never lands on `hooked` `main`                           | Hard      |
+   | The engine import is recorded at repository commit `e7dba24` (item `0021`)                                                                   | Hard      |
+   | Consumers install the tool; no engine code lands in a consumer repository                                                                    | Hard      |
    | Consumer build calls the tool, never carries the engine                                                                                      | Hard      |
    | `dotnet tool` delivery (was Soft; everything downstream assumes it)                                                                          | Hard      |
    | A schema version, once shipped in the tool, is never changed in place, and from schema `1.0.0` on is never deleted (`0001-F7` decision 0007) | Hard      |
@@ -87,109 +80,30 @@ proves the tool handles a tree it did not write.
    | Sections, grammars, markers: all reversible under schema versioning                                                                          | Soft      |
    | Deadline: none. Order of work (§ 8) is the only sequencing                                                                                   | —         |
 
-## 3. What to extract from `hooked`
+## 3. The repository-owned baseline
 
-**The code exists on disk. Copy it; do not regenerate it.** The engine, its
-tests, the schemas, and the templates are written, reviewed, and passing. The
-first agent's job is to move files and rename a namespace, not to write a
-checker. Every `.cs` file below is the implementation; read it, keep it.
-Checkout on this machine: `/Users/rlittlesii/source/rlittlesii/hooked`, branch
-`salvage/spec-check-engine` at `6afe8ab` (PR #217 merged without it;
-`hooked` consumes the tool instead). Copy with history noted in the
-first commit message (`extracted from RLittlesII/hooked@6afe8ab`); do not
-subtree-merge. The three draft-spec files under `tools/SpecGovernance/.spec/`
-were removed on that branch; they are cited at `a6d056f`, not copied
-(`0001-F1` A-2; read one with `git show a6d056f:<path>`).
+The engine and its tests were imported at commit `e7dba24` (item `0021`).
+That commit records the namespace rename and permitted project-file edits;
+`0001-F1` C-2 preserves the import boundary. Read the existing implementation
+and its tests before changing it; do not regenerate the checker.
 
-```sh
-HOOKED=/Users/rlittlesii/source/rlittlesii/hooked
-# the engine (library) and its tests - verbatim, then rename Hooked.SpecGovernance to specht
-cp -R "$HOOKED/tools/SpecGovernance"            src/specht
-cp -R "$HOOKED/test/SpecGovernance.Tests"       test/specht.tests
-# schema version 1 and the templates - verbatim, then re-home the $id URLs
-cp -R "$HOOKED/.spec/schema"                    schema/v1
-cp -R "$HOOKED/.spec/templates"                 templates/v1
-# the behaviour contract the CLI must match, and the two call sites
-cp    "$HOOKED/.build/Build.Specht.cs"       docs/reference/hooked-nuke-target.cs
-cp    "$HOOKED/.husky/pre-commit"               docs/reference/hooked-pre-commit.sh
-# the requirements session and the prose model (the draft specification is cited at a6d056f, not copied)
-cp    "$HOOKED/epics/audits/2026-10-07-spec-check-extraction-requirements.md"  docs/reference/
-cp -R "$HOOKED/.skills/spec-and-traceability"                                  docs/reference/spec-and-traceability
-cp    "$HOOKED/.skills/hooked-conventions/references/specs.md"                 docs/reference/hooked-specs-conventions.md
-```
+The source of truth is in this repository:
 
-Remove `tools/SpecGovernance/.spec/` from the copied `src/specht` if present (it
-is the draft spec, cited at `a6d056f`), and drop the `.csproj`
-comments that talk about `hooked`'s `Directory.Build.props`. Everything else in
-those directories is kept.
-Inventory at `a6d056f`, 44 files; at `6afe8ab`, 42 — the three
-`tools/SpecGovernance/.spec/` files are gone (verify with the same `find`
-before copying):
+| Path                                                                          | What                                                                                         |
+| ----------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
+| `src/specht/`                                                                 | The rule engine: discovery, Markdown model, frontmatter, schemas, rules, runner and report   |
+| `test/tests/`                                                                 | Unit and integration tests, including the synthetic `SpecTree` builder and baseline fixtures |
+| `src/tool/schema/v0.1.0/frontmatter/`                                         | The embedded frontmatter schemas                                                             |
+| `src/tool/manifest/v0.1.0/`                                                   | The embedded manifest                                                                        |
+| `src/tool/templates/v0.1.0/`                                                  | The embedded templates                                                                       |
+| `.specht/`                                                                    | The live configuration this repository checks itself with                                    |
+| `.build/SpechtBuild.cs`, `.husky/pre-commit`                                  | Build and pre-commit call sites                                                              |
+| `.claude/skills/spec-and-traceability/`, `.claude/skills/specht-conventions/` | The specification model and repository conventions                                           |
+| `Directory.Packages.props`                                                    | Central dependency versions, including the baseline engine pins                              |
 
-```
-.spec/schema/epic.frontmatter.schema.json
-.spec/schema/feature-spec.frontmatter.schema.json
-.spec/schema/spec-structure.schema.json
-.spec/schema/task.frontmatter.schema.json
-.spec/templates/adr.md
-.spec/templates/decision.md
-.spec/templates/feature.md
-.spec/templates/lesson.md
-test/SpecGovernance.Tests/SpechtRunner.Integration.Tests.cs
-test/SpecGovernance.Tests/SpechtRunner.Unit.Tests.cs
-test/SpecGovernance.Tests/SpechtRunner.Violations.Unit.Tests.cs
-test/SpecGovernance.Tests/SpecGovernance.Tests.csproj
-test/SpecGovernance.Tests/SpecTree.cs
-tools/SpecGovernance/.spec/decisions/0001-spec-check-is-a-dotnet-tool-over-the-library-with-the-layout-in-the-manifest.md
-tools/SpecGovernance/.spec/README.md
-tools/SpecGovernance/.spec/spec-check-tool.feature
-tools/SpecGovernance/ChildItem.cs
-tools/SpecGovernance/EpicFile.cs
-tools/SpecGovernance/FeatureFileReader.cs
-tools/SpecGovernance/FeatureSpec.cs
-tools/SpecGovernance/FeatureTag.cs
-tools/SpecGovernance/Frontmatter.cs
-tools/SpecGovernance/FrontmatterReader.cs
-tools/SpecGovernance/ISpecRule.cs
-tools/SpecGovernance/Rules/ApprovalRule.cs
-tools/SpecGovernance/Rules/ChildItemRule.cs
-tools/SpecGovernance/Rules/ClaimRule.cs
-tools/SpecGovernance/Rules/DependencyRule.cs
-tools/SpecGovernance/Rules/FeatureFileRule.cs
-tools/SpecGovernance/Rules/FrontmatterSchemaRule.cs
-tools/SpecGovernance/Rules/IdentityRule.cs
-tools/SpecGovernance/Rules/SectionStructureRule.cs
-tools/SpecGovernance/SpechtReport.cs
-tools/SpecGovernance/SpechtRunner.cs
-tools/SpecGovernance/SpecDiscovery.cs
-tools/SpecGovernance/SpecDocument.cs
-tools/SpecGovernance/SpecGovernance.csproj
-tools/SpecGovernance/SpecLayout.cs
-tools/SpecGovernance/SpecLocation.cs
-tools/SpecGovernance/SpecModel.cs
-tools/SpecGovernance/SpecSchemas.cs
-tools/SpecGovernance/SpecSection.cs
-tools/SpecGovernance/SpecSeverity.cs
-tools/SpecGovernance/SpecStructure.cs
-tools/SpecGovernance/SpecViolation.cs
-```
-
-By purpose:
-
-| Path in `hooked`                                                                   | What                                                                                                                                                                                        | Notes                                                                                                         |
-| ---------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
-| `tools/SpecGovernance/*.cs`, `Rules/*.cs`                                          | The rule engine: discovery, Markdig document model, YAML frontmatter reader, JSON Schema loader, eight rule classes, runner, report                                                         | ~930 lines. Namespace `Hooked.SpecGovernance` must be renamed (no `Hooked` in assembly, namespace or package) |
-| `test/SpecGovernance.Tests/`                                                       | 56 xunit.v3 tests over a synthetic tree (`SpecTree.cs` builder)                                                                                                                             | Port with the engine; they are the regression net for Should-7                                                |
-| `.spec/schema/`                                                                    | `feature-spec.frontmatter.schema.json`, `task.frontmatter.schema.json`, `epic.frontmatter.schema.json`, `spec-structure.schema.json` (the manifest; "not a JSON Schema" by its own comment) | Becomes **schema version 1**. Schema `$id` URLs point at `hooked`; re-home them                               |
-| `.spec/templates/`                                                                 | `feature.md`, `decision.md`, `lesson.md`, `adr.md`                                                                                                                                          | Ship with the tool (default below)                                                                            |
-| `.build/Build.Specht.cs`                                                           | The Nuke target: log lines, `--strict`, `--report`, exit semantics                                                                                                                          | The CLI's behaviour contract; the target itself stays in `hooked` and will call the tool                      |
-| `.husky/pre-commit` (Specht block)                                                 | Conditional on staged spec paths, deletes and renames included                                                                                                                              | Reference for the pre-commit call site                                                                        |
-| `tools/SpecGovernance/.spec/README.md`                                             | Draft specification 0008-F3: 34 claims, each citing the engine line it changes                                                                                                              | The design input. Its § 11 open questions are § 6 below                                                       |
-| `epics/audits/2026-10-07-spec-check-extraction-requirements.md`                    | The requirements session this brief condenses                                                                                                                                               | Source of § 2                                                                                                 |
-| `.skills/spec-and-traceability/`, `.skills/hooked-conventions/references/specs.md` | The specification model and the SPEC rule catalogue as prose                                                                                                                                | Generalise: strip `hooked` paths; this becomes the tool's user documentation                                  |
-| Dependencies: Markdig (pipe tables), YamlDotNet (representation model, not         |
-| deserialization: it keeps dates as strings), JsonSchema.Net (format                |
-| assertions on). Pin exact versions from `hooked/Directory.Packages.props`.         |
+`0001-F1` decision 0004 defines the synthetic baseline tree and golden report.
+Tests never require a consumer checkout. The requirements and rule vocabulary
+below remain the agreement; a consumer repository is not their authority.
 
 ## 4. The rule vocabulary (fixed; versioned with the schema)
 
@@ -213,7 +127,7 @@ By purpose:
 | Severity: all `Error` today. A manifest severity override and per-rule |
 | disable are part of the design (§ 5).                                  |
 
-## 5. Design already drafted (0008-F3), to build on
+## 5. Drafted design, to build on
 
 **CLI.** `specht [--root <dir>] [--report <path>] [--strict] [--json]`.
 Stdout: one MSBuild-shaped line per violation (`path(line): error SPEC031: …`),
@@ -250,12 +164,12 @@ hardcodes moves into the manifest so rules read _roles_, not literals:
   rule reads instead of its own regex (`FeatureFileReader` and
   `ChildItemRule` duplicate them today);
 - per-rule severity override and disable.
-  The default manifest equals `hooked`'s, so its run is unchanged (Should-7).
+  The default manifest preserves the baseline values, so its run is unchanged (Should-7).
   **Discovery cost.** Inside a git repository: `git ls-files` (tracked, plus
   `--others --exclude-standard`) with the manifest's globs as pathspecs, so
   ignored trees are never opened. Outside git: a walk that prunes on entry
   (`FileSystemEnumerable` with `ShouldRecursePredicate`) using the manifest's
-  exclusion list. Both must return the same set on `hooked`.
+  exclusion list. Both must return the same set for the same repository tree.
   **Tables.** Markdig pipe tables only. A grid table is "no table" (SPEC013).
   State it in the docs.
   **Decision record (carry across).** Shipped as a dotnet tool over a library;
@@ -273,13 +187,13 @@ the owner can reverse; record a reversal as a decision, never silently.
 
 | Question                                                           | Decision                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             | Why                                                                                                                                                                                                                            |
 | ------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Name, package id, command                                          | Product Specht; command `specht`; package `specht.tool`; library namespace `specht`. `Specht` survives only as the NUKE target name and engine type names                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            | Says what it does; no `Hooked` anywhere                                                                                                                                                                                        |
+| Name, package id, command                                          | Product Specht; command `specht`; package `specht.tool`; library namespace `specht`. `Specht` survives only as the NUKE target name and engine type names                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            | Says what it does; the product owns its names                                                                                                                                                                                  |
 | What a "schema version" is in the file                             | The manifest carries `"schemaVersion": "0.1.0"`, a `major.minor.patch` version numbered by verdict and apart from the package version; no key means `0.1.0`; the tool embeds the schema versions it ships and validates with exactly the pinned one; a published version is never changed in place, and from schema `1.0.0` on none is ever deleted, while a later tool may stop shipping a published `0.x.y` (`0001-F7` decision 0007, 2026-10-11); a pin command moves `schemaVersion` to any shipped version, up or down; `specht upgrade` rewrites the schema files, and the templates the manifest does not name as the consumer's (`0001-F7` decision 0006), to match the pin, adds only the manifest keys the pinned version defines that are missing (`0001-F7` decision 0001), prints what changed, and never touches a document. Was an integer moved one step by `upgrade`; reversed 2026-10-09 (`0001-F7` decision 0005) | A repository pins one version, and its number says whether moving can fail the build; the tool, not the consumer, knows the diff between versions; a repository pinned to `0.1.0` restores any later tool and is still checked |
 | Which schema files are authoritative at check time                 | The embedded schema for the pinned version by default; the consumer's on-disk `.specht/schema/` files when a manifest field or a CLI argument selects them (Should-8). Field and argument names: open, `spec-author`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 | Supports "bring your own schema" without making a hand-edited copy the silent default                                                                                                                                          |
 | Install path for four repositories                                 | Local tool manifest per repository (`dotnet tool install --local`, committed `.config/dotnet-tools.json`), package published to GitHub Packages on `rlittlesii/specht` first; NuGet.org later, if ever. A global install (`dotnet tool install -g specht.tool`) is a second documented path, for a shell, and no build depends on it (`0001-F2` decision 0009, 2026-10-11)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           | Pins the tool version beside the schema version; CI restores it with `dotnet tool restore`. Consumers carry a `nuget.config` source and a token with package read                                                              |
 | Templates: in the tool or per repository                           | In the tool, written by `specht init` next to the schema; `init` never overwrites one, and `specht upgrade` rewrites those the manifest does not name as the consumer's to the pinned version and lists each (`0001-F7` decisions 0005 and 0006)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     | They are part of the generation contract (Should-5) and version with the schema                                                                                                                                                |
 | Agent-facing output contract                                       | `--json` document with a published JSON Schema in this repository: violations (rule, severity, file, line, identifier, message, **expected** — what the rule wanted to see), counts, layouts, schema version checked against; `--explain SPEC031` prints the rule's full text. Shape of `expected` per rule: open, `spec-author`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     | The agent repairs, and migrates between schema versions, from the report alone (Must-6)                                                                                                                                        |
-| Where 0008-F3 lives                                                | This repository's first epic (`0001`) is the tool; `hooked` keeps a small Feature "consume the tool": replace the project reference with the tool call, delete `tools/SpecGovernance`. PR #217's engine half never merges                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            | Keeps `hooked`'s scope to consumption                                                                                                                                                                                          |
+| Ownership of the tool                                              | This repository owns epic `0001`; consumer adoption is tracked in each consumer repository                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           | Keeps tool delivery separate from adoption                                                                                                                                                                                     |
 | Schema `$id` URLs                                                  | Under `https://github.com/rlittlesii/specht/schema/`, carrying the schema version as the segment `v<major.minor.patch>`, the name of the version's folder, then `/frontmatter/` and the file's name: `schema/v0.1.0/frontmatter/<file>` (`0001-F7` C-6, B-087; decided 2026-10-11, `0001-F7` decision 0009 and `0001-F5` decision 0011). Was `v1`, its later form open                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               | They move with the schema                                                                                                                                                                                                      |
 | Report timestamp                                                   | Drop `generatedAtUtc` from the report                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                | Determinism; Should-7 becomes byte-identical                                                                                                                                                                                   |
 | Second install, the "done" event                                   | Transporter. Its `.spec/` tree predates the schema                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   | The origin of the model; proves the tool on a tree it did not write                                                                                                                                                            |
@@ -300,17 +214,16 @@ the owner can reverse; record a reversal as a decision, never silently.
 1. **Scaffold.** Repository, `.slnx`, `Directory.Build.props` with
    `TreatWarningsAsErrors`, central package versions, the local tool
    manifest, CI that builds, tests, and packs. `.spec/` with the epic.
-2. **Copy the engine and its tests from disk** (§ 3 script), rename the
-   namespace, nothing else. Prove the 56 tests pass. Tag the commit: this is
-   the behaviour baseline for Should-7. No file in `src/specht` is rewritten
-   in this step; a diff against `hooked` at `6afe8ab` must show only the rename.
+2. **Import the engine and its tests.** Completed at commit `e7dba24`
+   (item `0021`), with the namespace rename and permitted project-file edits
+   recorded there. The synthetic golden report protects Should-7
+   (`0001-F1` decision 0004).
 3. **CLI.** The command, exit codes, `--json`, `--report`, `init`,
    `--help`. Pack as a tool; install it into this repository's own manifest;
    switch its CI and pre-commit to it.
-4. **Consume from `hooked`.** In `hooked`, replace the Nuke target's library call with the tool; delete
-   `tools/SpecGovernance` and its tests there; prove the report on `hooked` is
-   identical to the baseline. This is "installed in one", and it is what
-   `hooked` merges _instead of_ the engine.
+4. **First consumer adoption.** Replace the consumer build's library call
+   with the tool and remove its engine copy and tests. Prove its verdicts
+   match the baseline. Adoption work is tracked in that repository.
 5. **Manifest roles.** Move each hardcoded literal into the manifest, one rule
    at a time, each with a test that the default manifest reproduces the
    baseline report. Discovery via `git ls-files` with the pruned-walk
@@ -323,7 +236,7 @@ the owner can reverse; record a reversal as a decision, never silently.
 
 ## 9. Non-negotiables for the first agent
 
-- The engine is copied from `/Users/rlittlesii/source/rlittlesii/hooked`,
+- The engine baseline is recorded at repository commit `e7dba24`,
   never regenerated. If a file looks like it should be rewritten, the answer
   is a later step with a test, not a fresh draft.
 - Read the extracted tests before the extracted engine. They say what the

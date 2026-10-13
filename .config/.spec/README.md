@@ -31,7 +31,7 @@ synced_at: null
 
 <!-- last written by: spec-author, 2026-10-08 -->
 
-A consumer cannot install a package from a feed it does not know, with a credential nobody told it to create, and brief § 6 only says that consumers "carry a `nuget.config` source and a token with package read". So `hooked`, Transporter and this repository's own self-check (`0001-F2` B-014) would each work out the feed, the source entry and the token on their own, differently. This Feature removes that failure state: one document says what a repository commits and what it supplies at run time to install `specht.tool` through its local tool manifest, and this repository installs its own published package the same way.
+A consumer cannot install a package from a feed it does not know, with a credential nobody told it to create, and brief § 6 only says that consumers "carry a `nuget.config` source and a token with package read". So a consumer repository, Transporter and this repository's own self-check (`0001-F2` B-014) would each work out the feed, the source entry and the token on their own, differently. This Feature removes that failure state: one document says what a repository commits and what it supplies at run time to install `specht.tool` through its local tool manifest, and this repository installs its own published package the same way.
 
 ## 2. User Needs
 
@@ -46,10 +46,10 @@ A consumer cannot install a package from a feed it does not know, with a credent
 
 ### Assumptions
 
-| ID  | Assumption                                                                                                                                                                                  |
-| --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| A-1 | Reading a NuGet package from GitHub Packages requires an authenticated token even when the package is public, so every consumer, this repository included, supplies one (brief § 6).        |
-| A-2 | A consumer's adoption work - `hooked` (brief § 8 step 4) and Transporter (step 7) - is tracked in that repository; this Feature supplies only what they need from here (owner, 2026-10-08). |
+| ID  | Assumption                                                                                                                                                                                               |
+| --- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| A-1 | Reading a NuGet package from GitHub Packages requires an authenticated token even when the package is public, so every consumer, this repository included, supplies one (brief § 6).                     |
+| A-2 | A consumer's adoption work - a consumer repository (brief § 8 step 4) and Transporter (step 7) - is tracked in that repository; this Feature supplies only what they need from here (owner, 2026-10-08). |
 
 ## 3. Acceptance Criteria
 
@@ -84,7 +84,7 @@ A consumer cannot install a package from a feed it does not know, with a credent
 
 | #   | Item                                                           | Exclusion Reason                                                                |
 | --- | -------------------------------------------------------------- | ------------------------------------------------------------------------------- |
-| 1   | `hooked` adopting the tool                                     | Tracked in `hooked` (owner, 2026-10-08).                                        |
+| 1   | a consumer repository adopting the tool                        | Tracked in a consumer repository (owner, 2026-10-08).                           |
 | 2   | Transporter installing the tool                                | Tracked in Transporter (owner, 2026-10-08).                                     |
 | 3   | Publishing the package                                         | `0055-F6`.                                                                      |
 | 4   | Writing the schema and templates into a consumer after install | `specht init`, `0001-F4`.                                                       |
