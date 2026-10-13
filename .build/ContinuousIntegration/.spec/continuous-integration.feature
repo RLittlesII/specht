@@ -59,7 +59,8 @@ Feature: Continuous integration
   Scenario: A pull request still runs every gate on Linux
     Given a pull request that changes code
     When integration runs on Linux
-    Then the format, compile, unit test, integration test, acceptance test and self-check gates and the benchmarks each run as a step of their own
+    Then the format, compile, unit test, integration test, acceptance test and self-check gates each run as a step of their own
+    And no benchmark or benchmark-result upload runs
 
   @B-004 @boundary
   Scenario: A push to main still runs every gate on Windows
