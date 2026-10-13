@@ -213,6 +213,113 @@ Item `0011` builds the loader; the families of keys (`0014`-`0019`) extend this 
 
 ## 7. Technical Design
 
+### Manifest boundary after ADR-0010 D1
+
+**Designed 2026-10-13; implementation pending.** This subsection is the target
+for stage D1, read against `83b1121`. The existing declarations are
+[SpecManifest](../SpecManifest.cs), [SpecManifestParser](../SpecManifestParser.cs),
+[SpechtResources](../../Resources/SpechtResources.cs) and
+[SchemaVersions](../../Versioning/SchemaVersions.cs). Earlier implementation
+accounts below retain names at their cited commits; the ownership map here
+replaces their loader and static-resource wiring. Product rules, claims,
+coverage and shipped bytes are unchanged.
+
+| Existing work                                                     | D1 owner                                                                                  |
+| ----------------------------------------------------------------- | ----------------------------------------------------------------------------------------- |
+| `SpecManifest.Load` file-system calls and path constants          | Concrete `SpecManifestStore`, constructed over `IFileSystem`                              |
+| `SpecManifest.Read`, `KnownKeys`, fill and shape checks           | Pure `SpecManifestParser`; the extraction already exists                                  |
+| `SpecManifest.Defaults`, now constructed inside each static load  | Raw resource snapshot in `Specht.Resources.SpechtResources`, resolved once per provider   |
+| `SchemaVersions.Embedded` and its resource reads                  | The same resource snapshot, then a pure instance `SchemaVersions`                         |
+| `SchemaVersions.Select` and `SpecSchemas.Pinned` rejection policy | A parser operation that resolves the parsed structure's pin and validates rule membership |
+| `FrontmatterSchemaStore.Read`                                     | Byte read on `SpecManifestStore`; the former store is deleted                             |
+
+**Store and sequencing.** The store exposes root existence, manifest existence,
+retired-manifest existence, manifest text and local frontmatter-schema bytes.
+These are observations, with no JSON parse, pin selection, hash verification or
+manifest-specific exception. A missing local schema still returns null; its
+original bytes reach `UpstreamSchemaCopy` unchanged. Folding the fifth store is
+the owner's ruling recorded in `0001-F7` § 7, under the local upstream copy.
+
+Until stage D2 provides `SpecModelReader`, the existing `SpecSchemasLoader`
+sequences the check: root existence, manifest existence, retired-path observation
+only when the manifest is missing, text read, parse, pin/vocabulary validation,
+then schema construction or local upstream verification. It maps the first two
+observations to the existing missing-root/missing-manifest exceptions. It neither
+opens the retired file nor discovers the tree before validation. This temporary
+sequencing is removed with the loaders in D2; no new manifest-loader abstraction
+is introduced.
+
+The four path constants move to the nonstatic store. Path joins use the owning
+I/O type's injected `IFileSystem.Path` with `/`-separated segments; the public
+static `Under` helper goes with `SpecManifest`. Parsers use only the relative
+constant in messages. Store methods remain synchronous under ADR-0010 open
+point 6.
+
+**Parser and failure preservation.** Keep text parsing and resolution of a
+parsed structure's pinned version as distinct pure operations on the parser.
+The latter returns the selected `SchemaVersion`, rejecting a missing lookup
+result with today's manifest-relative message, then rejecting out-of-vocabulary
+rule ids with today's message and manifest order. `SchemaVersions` performs
+exact lookup and returns no result for absence; it imports no engine namespace.
+`SemanticVersion.TryParse` remains the static BCL-style parse exception.
+
+Text parsing keeps its existing library exceptions. The sequencing loader
+wraps exactly `JsonException`, `InvalidOperationException` and `FormatException`
+as `SpechtManifestUnreadableException` around the parse, preserving the old
+static load's JSON/shape failure category. Store I/O exceptions retain their
+existing behavior and are not newly converted to manifest failures. Keep the
+existing parse/check order: unknown top-level keys, structure construction
+(including pin syntax), accumulated structural/level faults, then shipped-pin
+lookup, then vocabulary membership. The refactor neither combines these failure
+phases nor moves selection ahead of shape validation.
+
+`init` currently validates upstream declarations with the text operation alone.
+Repoint its existing-file read to the store and make its parser dependency
+explicit in composition and direct test construction; remove the optional
+fallback that creates resources during execution. Do not add check-only
+pin/vocabulary rejection to `init`. Its existing-file parse keeps the old
+unreadable-manifest wrapper; parsing its newly assembled upstream declaration
+keeps the direct parser's existing exceptions. Its write selection, preservation
+policy, fetcher and host `ShippingCopy` stay as they are. This is required adaptation to
+the removed static entry point, not ADR-0010's later host redesign.
+
+**Resource and catalog composition.** Keep `SpechtResources` in the existing
+`Specht.Resources` namespace, outside the ordered layers: it references only
+BCL types. It captures the engine's default manifest, versioned frontmatter
+schemas and rule pages, once per provider on first composition resolution.
+Expose a raw logical-name-to-text snapshot and the default manifest's original
+bytes for the existing tree generator; no semantic version or manifest model is
+constructed in the reader. Preserve decoding and bytes, including BOM handling.
+
+`SchemaVersions` accepts that in-memory resource snapshot to assemble its
+version values, using folder names and the existing vocabulary mapping. Its
+existing constructor over version values remains the synthetic-test seam.
+Both paths do no I/O. `AddSpechtEngine()` registers one resource reader, one
+catalog, one parser over that catalog and today's live-copy default text, and
+one manifest store. Catalog registration keeps an explicitly supplied instance,
+as the existing file-system registration does. Loaders use these instances;
+runner/model overloads that supply a per-call catalog are replaced by construction with the chosen catalog.
+Tests compose synthetic catalogs before resolving the loader/runner. No service
+location, static cache or second provider is introduced during a run.
+
+`SpecSchemas.Load` remains until D2 but takes an already parsed structure and
+selected version, with the existing file-system input on its on-disk path.
+It no longer loads manifests or selects/validates pins. The existing loader
+gains an explicit on-disk-schema entry point for the direct callers/tests that
+currently use the disk overload. Both loader entry points share the manifest
+read/parse/resolve sequence before calling the retained schema methods. This
+adds no check source selection: the check keeps its existing embedded/upstream
+entry point. The on-disk path still reads the consumer's schema files; the check still uses embedded schemas or a
+verified local upstream copy. Neither path reads a schema before validation.
+
+**Following work.** D1 deliberately keeps `specht.default-manifest.json` linked
+from the live `.specht/manifest.json`; it supplies the same omissions as today.
+[Decision 0012](decisions/0012-pinned-defaults-reuse-the-shipped-version-manifests.md)
+then links versioned manifests and adds each version's manifest text for B-048.
+D1 is the instance/resource prerequisite, not the implementation of B-048 or
+schema `0.2.0`'s keys/forms. No accepted ADR is amended and no new architecture
+rule is adopted.
+
 <!-- last written by: implementer, 2026-10-13 -->
 
 The literals each claim moves are in the baseline engine at repository commit `e7dba24` (`0001-F1` A-2); the claims here own the agreement.
@@ -505,6 +612,30 @@ A shared model read moves as one literal with every affected rule covered, inste
 **Boundaries.** Claim tags and case handling stay with `0134`; broad message wording stays with `0018`; schema source selection stays with `0043`. Epic opt-in, absent-epic identity and untracked claims B-024 to B-035/B-042 remain OQ-18, with no sequence decided here. Empty or duplicate key spellings, extra unknown nested role names and filename shapes without `{task}` gain no rejection claim in this pass. No version is cut, no locked resource is rewritten, and no consumer file is migrated by the design pass.
 
 ## 8. Testing Strategy
+
+### D1 refactor verification plan
+
+**Designed, not implemented.** Repoint the existing manifest tests from the
+static load to the parser for pure fill/validation decisions, and to the store
+plus existing loader for root, missing-file and read failures. Keep existing
+assertions and claim coverage; § 9 names change only when the implementation
+actually renames a test. Historical test narratives below describe their cited
+commits, not an instruction to recreate the static API.
+
+Pin resolution tests assert that a catalog lookup alone returns no version and
+that the parser produces the same unshipped-pin exception, path and ordered
+version list. Keep rule membership tests on both schema-source paths. Preserve
+fault precedence with mixed-fault cases (unknown key plus bad pin; structural
+fault plus unshipped pin; invalid level plus unknown rule id). Use synthetic
+catalogs to prove the injected instance reaches the parser and check; preserve
+`init`'s text-only validation path. A store test uses `MockFileSystem`; parser
+and lookup tests have no file system.
+
+Repoint the upstream-copy tests to the folded store, keeping absent-file and
+byte/hash/BOM assertions. Keep the golden JSON and its comparison assertion
+unchanged, run all three tiers, and compile the benchmark project. Catalog and
+parser reuse across two roots must not select shared mutable per-root state.
+No new tests or coverage stamps are supplied by this design pass.
 
 <!-- last written by: test-writer, 2026-10-13 -->
 

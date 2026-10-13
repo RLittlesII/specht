@@ -142,6 +142,33 @@ Items `0146`, `0147` and `0148` reach these rows; `0149` extends the table.
 
 ## 7. Technical Design
 
+### Resource inputs after ADR-0010 D1
+
+**Designed 2026-10-13; implementation pending.** The earlier generator account
+below describes the implementation at its cited commits. D1 replaces its direct
+assembly read, static version access and repeated pin parsing as follows.
+
+`SpechtTree.Of` receives the size, the resource reader's original default-manifest
+bytes, its already parsed `SpecStructure`, and the selected `SchemaVersion`.
+It still returns a new in-memory tree for the same size; it opens no resource or
+file and holds no container. It uses the parsed frontmatter-schema names, the
+selected schema texts and the store's relative-path constants. No manifest is
+serialized again, so the tree keeps the original manifest bytes. No engine API
+is added solely for the benchmark: the resource reader and parser are already
+check dependencies.
+
+`CheckBenchmarks` builds its existing provider first in `GlobalSetup`, resolves
+the resource snapshot, parser and runner from that provider, parses/resolves the
+default once and passes those values to `Of` before saving the tree. The measured
+`Check` call stays the runner's whole run. Resource loading, service resolution
+and generation stay outside measurement. Other tree callers and tests supply
+the same explicit inputs at setup. Types remain in the benchmark assembly until
+the later tree move; the existing project reference stays.
+
+This replaces `SchemaVersions.Embedded`, `SpecManifest.Load`, the formerly
+private `SpecManifest.Read`, and the direct embedded-resource copy mentioned
+below. D1 neither moves the types nor changes the benchmark workload or scope.
+
 <!-- last written by: implementer, 2026-10-11 (item 0185: the tree's manifest is `.specht/manifest.json` and its schema folder `.specht/schema/frontmatter/`, `0001-F5` decision 0011; item 0183: the tree's configuration folder is `.specht/`, ADR-0011; item 0147: the tree and its store, replacing the static generator, and the test project's reference to this one; item 0146: the project, its package version, the entry point, the shared configuration, the project-file lookup and the hand-run record) -->
 
 Design for item `0146` (B-001, B-002, B-007; C-2 to C-6) and item `0147` (B-015, B-016; C-7 to C-9, under `### The tree generator`), as built. The `Benchmark` target is described below (`0148`); the CI step remains item `0149`.
@@ -236,6 +263,15 @@ Item `0147` (B-015, B-016; C-7 to C-9; [decision 0004](decisions/0004-a-generate
 - **Shown out of process.** On 2026-10-11, macOS 26.4 on Arm64, .NET SDK 10.0.401: a throwaway benchmark class, since deleted, saved `SpechtTree.Of(10)` through a `SpechtTreeStore` over the real file system in `[GlobalSetup]` and returned `SpechtRunner.Run(root)`, throwing unless the report held no violation and ten specifications. `dotnet run --configuration Release --project .performance/benchmarks -- --filter '*' --job Dry --artifacts .artifacts/benchmarks` exited `0` with one summary row; the setup ran inside the generated `specht.benchmarks-Dry-1.dll`. That process wrote 24 files; its four schema files were byte-identical to `.spec/schema/spec-structure.schema.json` and to the three files under `src/tool/schema/v1/`.
 
 ## 8. Testing Strategy
+
+### D1 generator verification
+
+**Pending implementation.** Repoint all tree and store tests to explicit manifest,
+parsed structure and version inputs. Keep file-count, relative-path, byte-content,
+determinism and clean-check assertions. Supply contrasting synthetic version
+texts to make selecting another catalog's schemas fail. Compile the benchmark
+project with the full build; no timing or allocation claim is made by this
+structural change, and no new benchmark finding is required.
 
 <!-- last written by: test-writer, 2026-10-11 (item 0185 as built, `0001-F5` decision 0011: the embedded manifest's source and the copy `init` writes, by their new paths; no test of the tree changed) -->
 
