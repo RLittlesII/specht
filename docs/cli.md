@@ -56,20 +56,27 @@ errors: 1, warnings: 0
 ## `specht init`
 
 ```text
-specht init [--root <DIR>]
+specht init [--root <DIR>] [--schemas] [--templates] [--all]
 ```
 
-Writes the newest schema set and templates under `<DIR>/.specht/`, and never
-overwrites a file that exists. [Setup](setup.md) walks through the first run.
+Writes the newest manifest under `<DIR>/.specht/`; the part flags add the
+frontmatter schemas and templates. It never overwrites a file that exists.
+[Setup](setup.md) walks through the first run.
 
 | Option         | Value   | Default               | Does                                          |
 | -------------- | ------- | --------------------- | --------------------------------------------- |
 | `--root <DIR>` | `<DIR>` | The working directory | Names the repository root to write under.     |
+| `--schemas`    | none    | Off                   | Adds the selected frontmatter schemas.        |
+| `--templates`  | none    | Off                   | Adds the four templates.                      |
+| `--all`        | none    | Off                   | Adds the frontmatter schemas and templates.   |
 | `-h, --help`   | none    | Off                   | Prints the command's help and writes nothing. |
 
 **Stdout.** One line per file, relative to the root: `written` for a file it
 created, `skipped` for one that was already there. A run that exits `2` says
 why on stderr.
+
+Into a bare root, the selected schemas are Feature and item. Beside an existing
+manifest that declares the epic grammar, the selection includes the epic schema.
 
 **Exit codes.** `0` or `2`; [Exit codes](exit-codes.md) says what each means.
 
@@ -79,7 +86,14 @@ specht init
 
 ```text
 written .specht/manifest.json
-written .specht/schema/frontmatter/epic.schema.json
+```
+
+```sh
+specht init --all
+```
+
+```text
+written .specht/manifest.json
 written .specht/schema/frontmatter/feature.schema.json
 written .specht/schema/frontmatter/task.schema.json
 written .specht/templates/adr.md

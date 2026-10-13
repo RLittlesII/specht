@@ -2,7 +2,7 @@ id: "0186"
 type: task
 title: Init writes the manifest, and each other part only when asked
 
-status: ready-for-architecture
+status: done
 
 risk: 2
 
@@ -26,8 +26,8 @@ claims:
   - B-033
 
 created: "2026-10-11"
-updated: "2026-10-11"
-closed: null
+updated: "2026-10-12"
+closed: "2026-10-12"
 
 summary: |
   The repository owner, 2026-10-11 (decision 0004): "the init needs
@@ -85,6 +85,13 @@ decisions:
     built, which A-1 and B-030 do not allow. The sentence that this item
     must merge before the first release is replaced by the edge that
     exists.
+  - |
+    2026-10-12, implementer: the writer snapshots whether the manifest
+    exists before it writes anything. A bare-root schema selection omits
+    the epic schema; a schema selection beside the current default
+    manifest includes it. Reading the manifest's epic grammar remains
+    outside this item with B-023. The full build passes with 426 unit,
+    217 integration and 370 acceptance scenarios, none failing.
 
 out_of_scope:
   - "The paths and file names — 0185."

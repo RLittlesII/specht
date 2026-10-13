@@ -54,7 +54,8 @@ it chooses.
 
 ```sh
 dotnet tool install specht.tool      # into the repository's local tool manifest
-dotnet specht init                   # write .specht/manifest.json, the schemas and the templates
+dotnet specht init                   # write .specht/manifest.json
+dotnet specht init --all             # add the frontmatter schemas and templates
 dotnet specht                        # check the tree
 ```
 
@@ -68,7 +69,7 @@ specht
 
 ```sh
 specht [--root <dir>] [--strict] [--json]
-specht init [--root <dir>]
+specht init [--root <dir>] [--schemas] [--templates] [--all]
 specht --version
 ```
 
@@ -98,7 +99,7 @@ specht/
 │   ├── adr/                # repo-wide decision records
 │   ├── lessons/            # repo-wide lessons
 │   └── templates/          # the work-item blank
-├── .specht/                # the tool's configuration, the same files specht init writes
+├── .specht/                # the tool's configuration, holding the files specht init can write
 │   ├── manifest.json       # the manifest
 │   ├── schema/frontmatter/ # the frontmatter schemas of schema v1
 │   └── templates/          # blanks for specifications and records
