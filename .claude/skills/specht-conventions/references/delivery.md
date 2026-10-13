@@ -305,6 +305,20 @@ No prose, no explanation, no thanks - the diff at that sha is the explanation,
 and the reviewer reopens the thread if it is not. A thread you are not going to
 act on is answered with why, and left open for the reviewer to close.
 
+## Delivery report publication
+
+The report's content and contributor handoffs are owned by
+[`deliver-change`](../../deliver-change/SKILL.md) § "The delivery report".
+Save its source at `.artifacts/<id>/delivery-report.md`, with the Markdown
+frontmatter required by `AGENTS.md`. Keep repository file references relative to
+the root; source reports remain gitignored.
+
+Publish the finished report as an Artifact and hand over its link, as `AGENTS.md`
+§ "Deliverables" requires. Revise the existing publication when delivery
+continues; do not create a second Artifact for the same report. If publication is
+unavailable, retain the source, hand over its accessible file link, and state that
+publication remains pending. Specifications, scenarios and epic files stay in git.
+
 ## Never add
 
 - A GitHub issue, label or milestone as a tracker.

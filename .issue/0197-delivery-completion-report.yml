@@ -1,0 +1,46 @@
+id: "0197"
+type: task
+title: End deliver-change with a report from every contributor
+
+status: done
+
+value: 3
+risk: 1
+
+parent: null
+children: []
+
+depends_on: []
+spikes: []
+
+spec: null
+claims: []
+
+created: "2026-10-13"
+updated: "2026-10-13"
+closed: "2026-10-13"
+
+summary: |
+  A process chore requested by the repository owner: deliver-change ends by
+  creating a report gathering every agent's contribution across the chain,
+  with the effort, decisions and completion note for each process step.
+  The method skill owns the reporting contract; the companion owns the
+  repository's report location and publication conventions.
+
+acceptance_criteria:
+  - "deliver-change ends with creating and handing over a delivery report."
+  - "Each contributor leaves a handoff covering work performed, findings, decisions, evidence and a completion note; the coordinator gathers all contributions."
+  - "Every process step has an owner, effort, decisions, evidence, status and completion note, including pending and inapplicable steps."
+  - "Reports distinguish observed completion from pending review or merge, preserve unresolved findings and do not invent effort measurements."
+  - "specht-conventions names the local report source and publication rules; the method remains portable."
+  - "No tool behaviour, specification, scenario, schema or role ownership changes."
+  - "Skill validation, formatting and the full build pass."
+
+decisions:
+  - "2026-10-13, repository owner: end deliver-change with a report gathering information from each agent, including efforts, decisions and a completion note for every process step."
+  - "2026-10-13, skill editor: effort describes work performed; time or token counts are included only when measured. Small changes can attribute several steps to the same contributor without requiring extra agents."
+  - "2026-10-13, skill editor: both skills passed quick_validate.py and ./build.sh passed, including formatting, compilation, 941 passing tests and 195 skipped acceptance tests. Specht reported 173 existing violations and remained non-gating; no specification files changed."
+
+out_of_scope:
+  - "Requiring separate agents for every role."
+  - "Changing the specification chain, section ownership or the tool's runtime behaviour."
