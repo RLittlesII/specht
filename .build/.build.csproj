@@ -16,8 +16,4 @@
     <PackageReference Include="TestableIO.System.IO.Abstractions.Wrappers" />
   </ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\src\specht\specht.csproj" />
-  </ItemGroup>
-
 </Project>

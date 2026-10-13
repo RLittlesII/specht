@@ -8,7 +8,6 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
-using Specht.Versioning;
 
 namespace Specht.Build;
 
@@ -23,11 +22,14 @@ public sealed class SchemaVersionLock(IFileSystem fileSystem, string root)
     {
         var newest = fileSystem.Directory.GetDirectories(fileSystem.Path.Combine(root, "src/tool/schema"), "v*")
             .Select(path => fileSystem.Path.GetFileName(path)[1..])
-            .Select(static text => SemanticVersion.TryParse(text, out var version)
+            .Select(static text => Version.TryParse(text, out var version)
+                && version.Build >= 0
+                && version.Revision < 0
+                && string.Equals(text, version.ToString(3), StringComparison.Ordinal)
                 ? version
                 : throw new InvalidOperationException($"schema/v{text}/ has an invalid schema version."))
-            .Max()
-            .ToString();
+            .Max()!
+            .ToString(3);
         var lockPath = fileSystem.Path.Combine(root, RelativePath);
         var entries = fileSystem.File.Exists(lockPath)
             ? JsonSerializer.Deserialize<Dictionary<string, string>>(await fileSystem.File.ReadAllTextAsync(lockPath))!
