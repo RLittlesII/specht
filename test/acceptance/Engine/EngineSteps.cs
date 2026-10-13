@@ -1,17 +1,20 @@
 using System.Globalization;
 using System.Reflection.Metadata;
 using System.Reflection.PortableExecutable;
+using System.Text.Json.Nodes;
 using AwesomeAssertions;
 using Reqnroll;
 using Specht.Model;
 using Specht.Tests.Engine.Baseline;
 using Specht.Tests.Shared;
+using Specht.Versioning;
 
 namespace Specht.Acceptance.Engine;
 
 /// <summary>
 /// Steps for <c>src/specht/.spec/engine.feature</c> (0001-F1). The Background is a <see cref="SpecTree"/> holding the live
-/// version 0.1.0 schema set (A-3), which the Background reads back from the root it built. B-001 builds the baseline
+/// version 0.1.0 schema set (A-3), selected from the embedded set and explicitly pinned in the fixture's manifest.
+/// The Background reads it back from the root it built. B-001 builds the baseline
 /// tree on it and reads the rule ids the engine reports; B-004 holds the engine to the golden report on the same tree;
 /// B-010 reads the one violation a missing traceability row gives.
 /// B-002 writes one specification in each layout without its traceability section, B-003 one co-located specification
@@ -31,6 +34,15 @@ public sealed class EngineSteps
     public void GivenARepositoryRootHoldingAManifestAndTheThreeFrontmatterSchemasOfSchemaVersion(string version)
     {
         _tree = new SpecTree();
+        SemanticVersion.TryParse(version, out var number).Should().BeTrue();
+        var schemas = SchemaVersions.Embedded.Select(number);
+        var manifestPath = Path.Combine(_tree.Root, SpecTree.ManifestPath);
+        var manifest = JsonNode.Parse(File.ReadAllText(manifestPath))!.AsObject();
+        manifest["schemaVersion"] = version;
+        File.WriteAllText(manifestPath, manifest.ToJsonString());
+        File.WriteAllText(Path.Combine(_tree.Root, SpecTree.FeatureSchemaPath), schemas.FeatureSchema);
+        File.WriteAllText(Path.Combine(_tree.Root, SpecTree.ItemSchemaPath), schemas.ItemSchema);
+        File.WriteAllText(Path.Combine(_tree.Root, SpecTree.EpicSchemaPath), schemas.EpicSchema);
         EngineServices.Loader().Load(_tree.Root).Schemas.Version.Number.ToString().Should().Be(version);
     }
 

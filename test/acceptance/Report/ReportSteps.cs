@@ -89,7 +89,11 @@ public sealed class ReportSteps
     public void ThenNoDiagnosticLineAndNoSummaryLinePrecedeOrFollowIt() => Json.Should().Be(Document.ToJson(), _stderr);
 
     [Then("the document names the schema version checked against")]
-    public void ThenTheDocumentNamesTheSchemaVersionCheckedAgainst() => Document.SchemaVersion.Should().Be("0.1.0");
+    public void ThenTheDocumentNamesTheSchemaVersionCheckedAgainst()
+    {
+        var manifest = JsonNode.Parse(File.ReadAllText(Path.Combine(Tree.Root, SpecTree.ManifestPath)))!.AsObject();
+        Document.SchemaVersion.Should().Be(manifest["schemaVersion"]!.GetValue<string>());
+    }
 
     [Then("whether the schemas came from the tool or from the repository's own files")]
     public void ThenWhetherTheSchemasCameFromTheToolOrFromTheRepositorysOwnFiles() =>

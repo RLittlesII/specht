@@ -1,5 +1,6 @@
 using System.IO.Abstractions.TestingHelpers;
 using System.Text;
+using System.Text.Json;
 using AwesomeAssertions;
 using Specht.Tests.Shared;
 using Specht.Tool.Features.Init;
@@ -60,6 +61,7 @@ public sealed class InitWriterUnitTests
             { ["0.9.0", "0.10.0"], "0.10.0" },
             { ["0.1.9", "0.1.10"], "0.1.10" },
             { ["0.99.99", "1.0.0"], "1.0.0" },
+            { ["1.0.0", "0.10.0", "0.9.0"], "1.0.0" },
         };
 
     /// <summary>Gets an embedded name and the path relative to the root it must be written to.</summary>
@@ -99,6 +101,24 @@ public sealed class InitWriterUnitTests
             .Should()
             .Be($"manifest/v{newest}/manifest.json");
         fileSystem.File.ReadAllText(Path.Combine(Root, SpecTree.TemplatesFolder, "feature.md")).Should().Be($"templates/v{newest}/feature.md");
+    }
+
+    [Theory]
+    [MemberData(nameof(Versions))]
+    public async Task ShippedManifests_WhenInitWrites_ShouldPinTheNewestVersionBySemverPrecedence(string[] versions, string newest)
+    {
+        // Given
+        var shippingCopy = versions.ToDictionary(
+            static version => $"manifest/v{version}/manifest.json",
+            static version => JsonSerializer.SerializeToUtf8Bytes(new { schemaVersion = version }));
+        var fileSystem = BareRoot();
+
+        // When
+        await new InitWriter(shippingCopy, fileSystem).Write(Root, schemas: false, templates: false, CancellationToken.None);
+
+        // Then
+        using var manifest = JsonDocument.Parse(fileSystem.File.ReadAllText(Path.Combine(Root, SpecTree.ManifestPath)));
+        manifest.RootElement.GetProperty("schemaVersion").GetString().Should().Be(newest);
     }
 
     [Theory]

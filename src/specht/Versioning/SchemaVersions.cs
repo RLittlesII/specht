@@ -66,7 +66,7 @@ public sealed class SchemaVersions
     private static HashSet<string> Shipped(SemanticVersion number) =>
         number switch
         {
-            { Major: 0, Minor: 1, Patch: 0 } =>
+            { Major: 0, Minor: 1, Patch: 0 or 1 } =>
                 [
                     "SPEC001", "SPEC002", "SPEC003", "SPEC004",
                     "SPEC010", "SPEC011", "SPEC012", "SPEC013",

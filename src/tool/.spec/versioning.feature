@@ -22,7 +22,7 @@ Feature: Schema versioning
 
   @B-003
   Scenario: A version the tool does not ship is invalid configuration
-    Given the tool ships schema version 0.1.0 only
+    Given the tool ships schema version 0.1.0
     And the manifest pins version 7.0.0
     When the check runs
     Then the standard error names version 7.0.0 and the versions the tool ships
@@ -182,7 +182,7 @@ Feature: Schema versioning
 
   @B-021 @boundary
   Scenario: Upgrade under a version the tool does not ship rewrites nothing
-    Given the tool ships schema version 0.1.0 only
+    Given the tool ships schema version 0.1.0
     And the manifest pins version 7.0.0
     And a snapshot of every file under the root
     When upgrade runs against it
@@ -596,7 +596,7 @@ Feature: Schema versioning
 
   @B-048
   Scenario Outline: Pinning a version the tool does not ship is a not-found failure
-    Given the tool ships schema version 0.1.0 only
+    Given the tool ships schema version 0.1.0
     And a snapshot of every file under the root
     When version <value> is pinned
     Then the standard error names <value> and the versions the tool ships
