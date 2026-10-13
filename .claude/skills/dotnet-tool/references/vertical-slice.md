@@ -23,9 +23,9 @@ src/tool/
     Upgrade/                    `specht upgrade` - specified, not yet built: brings the schema and
                                 template files to the pinned schemaVersion and never moves the pin
                                 (0001-F7 decision 0005)
-  manifest/v1/                  embedded - the shipping copy of the manifest
-  schema/v1/frontmatter/        embedded - the shipping copy of the frontmatter schemas
-  templates/v1/                 embedded - the shipping copy of the templates
+  manifest/v0.1.0/              embedded - the shipping copy of the manifest
+  schema/v0.1.0/frontmatter/    embedded - the shipping copy of the frontmatter schemas
+  templates/v0.1.0/             embedded - the shipping copy of the templates
 ```
 
 The engine is the shared concern beneath every command and lives in

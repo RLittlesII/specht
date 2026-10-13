@@ -22,7 +22,7 @@
   </ItemGroup>
 
   <!-- Every shipped version's frontmatter schemas (0001-F7 B-004), linked from the tool's shipping copy, not copied,
-       under the same schema/v<n>/frontmatter/<file> names. -->
+       under the same schema/v<major.minor.patch>/frontmatter/<file> names. -->
   <ItemGroup>
     <EmbeddedResource Include="..\tool\schema\v*\frontmatter\*.schema.json"
                       Link="schema\%(RecursiveDir)%(Filename)%(Extension)"
@@ -30,7 +30,7 @@
   </ItemGroup>
 
   <!-- Every shipped version's rule pages (0001-F3 B-031, A-4), linked from docs/rules at the repository root and
-       embedded as rules/v<n>/<file>, as the schemas are as schema/v<n>/<file>. -->
+       embedded as rules/v<major.minor.patch>/<file>, as the schemas are as schema/v<major.minor.patch>/<file>. -->
   <ItemGroup>
     <EmbeddedResource Include="..\..\docs\rules\v*\*.md"
                       Link="rules\%(RecursiveDir)%(Filename)%(Extension)"

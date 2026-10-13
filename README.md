@@ -11,7 +11,7 @@
 <p align="center">
   <a href="https://github.com/RLittlesII/specht/actions/workflows/ci.yml"><img src="https://github.com/RLittlesII/specht/actions/workflows/ci.yml/badge.svg" alt="ci" /></a>
   <img src="https://img.shields.io/badge/.NET-10-512BD4?style=flat&logo=dotnet&logoColor=white" alt=".NET 10" />
-  <img src="https://img.shields.io/badge/schema-v1-1e1e1e?style=flat" alt="schema v1" />
+  <img src="https://img.shields.io/badge/schema-v0.1.0-1e1e1e?style=flat" alt="schema v0.1.0" />
   <img src="https://img.shields.io/badge/status-pre--release-orange?style=flat" alt="pre-release" />
   <a href="LICENSE.md"><img src="https://img.shields.io/badge/license-MIT-blue?style=flat" alt="MIT" /></a>
 </p>
@@ -101,7 +101,7 @@ specht/
 │   └── templates/          # the work-item blank
 ├── .specht/                # the tool's configuration, holding the files specht init can write
 │   ├── manifest.json       # the manifest
-│   ├── schema/frontmatter/ # the frontmatter schemas of schema v1
+│   ├── schema/frontmatter/ # the frontmatter schemas of schema v0.1.0
 │   └── templates/          # blanks for specifications and records
 ├── docs/                   # reference pages, rule pages, report schema and documentation site
 ├── src/
@@ -125,7 +125,7 @@ a `.issue/` beside that `.spec/`.
 - [Multiple projects](docs/multiple-projects.md)
 - [Exit codes](docs/exit-codes.md)
 - [Building](docs/building.md)
-- [Rule pages](docs/rules/v1/)
+- [Rule pages](docs/rules/v0.1.0/)
 
 ## License
 

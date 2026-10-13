@@ -1,9 +1,9 @@
-using System.Globalization;
 using System.Text.RegularExpressions;
 using Markdig;
 using Markdig.Syntax;
 using Markdig.Syntax.Inlines;
 using Specht.Model;
+using Specht.Versioning;
 
 namespace Specht.Tests.Rules;
 
@@ -16,7 +16,7 @@ namespace Specht.Tests.Rules;
 /// </summary>
 internal sealed class RulePage
 {
-    private RulePage(int version, string id, string text, SpecDocument document, IReadOnlyList<(string Heading, int Line)> headings)
+    private RulePage(SemanticVersion version, string id, string text, SpecDocument document, IReadOnlyList<(string Heading, int Line)> headings)
     {
         Version = version;
         Id = id;
@@ -38,7 +38,7 @@ internal sealed class RulePage
     ];
 
     /// <summary>Gets the schema version the page ships under.</summary>
-    public int Version { get; }
+    public SemanticVersion Version { get; }
 
     /// <summary>Gets the rule id the page is kept under.</summary>
     public string Id { get; }
@@ -60,7 +60,7 @@ internal sealed class RulePage
     /// <param name="id">The rule id the page is kept under.</param>
     /// <param name="text">The page's Markdown.</param>
     /// <returns>The page.</returns>
-    public static RulePage Read(int version, string id, string text)
+    public static RulePage Read(SemanticVersion version, string id, string text)
     {
         var headings = Markdown.Parse(text, Pipeline)
             .Descendants<HeadingBlock>()
@@ -111,7 +111,7 @@ internal sealed class RulePage
 
     /// <summary>The schema version the page ships under, as its metadata table writes it.</summary>
     /// <returns>The number, in the invariant culture.</returns>
-    public string VersionText() => Version.ToString(CultureInfo.InvariantCulture);
+    public string VersionText() => Version.ToString();
 
     private static string Flatten(HeadingBlock heading) =>
         heading.Inline is null

@@ -52,22 +52,24 @@ public sealed class InitWriterUnitTests
         };
 
     /// <summary>Gets the versions a shipping copy carries, and the one the writer must write.</summary>
-    public static TheoryData<int[], int> Versions =>
+    public static TheoryData<string[], string> Versions =>
         new()
         {
-            { [1], 1 },
-            { [1, 2], 2 },
-            { [2, 10], 10 },
+            { ["0.1.0"], "0.1.0" },
+            { ["0.1.0", "0.2.0"], "0.2.0" },
+            { ["0.9.0", "0.10.0"], "0.10.0" },
+            { ["0.1.9", "0.1.10"], "0.1.10" },
+            { ["0.99.99", "1.0.0"], "1.0.0" },
         };
 
     /// <summary>Gets an embedded name and the path relative to the root it must be written to.</summary>
     public static TheoryData<string, string> Names =>
         new()
         {
-            { "manifest/v1/manifest.json", ".specht/manifest.json" },
-            { "schema/v1/frontmatter/task.schema.json", ".specht/schema/frontmatter/task.schema.json" },
-            { "templates/v1/feature.md", ".specht/templates/feature.md" },
-            { "templates/v1/lesson.md", ".specht/templates/lesson.md" },
+            { "manifest/v0.1.0/manifest.json", ".specht/manifest.json" },
+            { "schema/v0.1.0/frontmatter/task.schema.json", ".specht/schema/frontmatter/task.schema.json" },
+            { "templates/v0.1.0/feature.md", ".specht/templates/feature.md" },
+            { "templates/v0.1.0/lesson.md", ".specht/templates/lesson.md" },
         };
 
     /// <summary>Gets file systems on which the root is not a directory.</summary>
@@ -80,7 +82,7 @@ public sealed class InitWriterUnitTests
 
     [Theory]
     [MemberData(nameof(Versions))]
-    public async Task AShippingCopyOfSeveralVersions_WhenWritten_ShouldWriteOnlyTheHighestNumberedVersion(int[] versions, int newest)
+    public async Task AShippingCopyOfSeveralVersions_WhenWritten_ShouldWriteOnlyTheHighestNumberedVersion(string[] versions, string newest)
     {
         // Given
         var shippingCopy = versions
@@ -124,8 +126,8 @@ public sealed class InitWriterUnitTests
         var fileSystem = new MockFileSystem(new Dictionary<string, MockFileData> { [present] = new("# Local edits\n") });
         var shippingCopy = new Dictionary<string, byte[]>
         {
-            ["templates/v1/feature.md"] = "# Shipped\n"u8.ToArray(),
-            ["templates/v1/adr.md"] = "# Shipped\n"u8.ToArray(),
+            ["templates/v0.1.0/feature.md"] = "# Shipped\n"u8.ToArray(),
+            ["templates/v0.1.0/adr.md"] = "# Shipped\n"u8.ToArray(),
         };
 
         // When
@@ -144,19 +146,19 @@ public sealed class InitWriterUnitTests
         var fileSystem = new MockFileSystem(new Dictionary<string, MockFileData> { [present] = new("# Local edits\n") });
         var shippingCopy = new Dictionary<string, byte[]>
         {
-            ["templates/v1/adr.md"] = "# Shipped adr\n"u8.ToArray(),
-            ["templates/v1/decision.md"] = "# Shipped decision\n"u8.ToArray(),
-            ["templates/v1/feature.md"] = "# Shipped feature\n"u8.ToArray(),
-            ["schema/v1/frontmatter/task.schema.json"] = "{}\n"u8.ToArray(),
+            ["templates/v0.1.0/adr.md"] = "# Shipped adr\n"u8.ToArray(),
+            ["templates/v0.1.0/decision.md"] = "# Shipped decision\n"u8.ToArray(),
+            ["templates/v0.1.0/feature.md"] = "# Shipped feature\n"u8.ToArray(),
+            ["schema/v0.1.0/frontmatter/task.schema.json"] = "{}\n"u8.ToArray(),
         };
 
         // When
         await new InitWriter(shippingCopy, fileSystem).Write(Root, schemas: true, templates: true, CancellationToken.None);
 
         // Then
-        foreach (var (name, bytes) in shippingCopy.Where(static entry => entry.Key != "templates/v1/decision.md"))
+        foreach (var (name, bytes) in shippingCopy.Where(static entry => entry.Key != "templates/v0.1.0/decision.md"))
         {
-            var absent = Path.Combine([Root, ".specht", .. name.Replace("/v1/", "/", StringComparison.Ordinal).Split('/')]);
+            var absent = Path.Combine([Root, ".specht", .. name.Replace("/v0.1.0/", "/", StringComparison.Ordinal).Split('/')]);
             fileSystem.File.Exists(absent).Should().BeTrue($"{name} was absent");
             fileSystem.File.ReadAllBytes(absent).Should().Equal(bytes, name);
         }
@@ -179,11 +181,11 @@ public sealed class InitWriterUnitTests
 
         var shippingCopy = new Dictionary<string, byte[]>
         {
-            ["manifest/v1/manifest.json"] = "{}\n"u8.ToArray(),
-            ["schema/v1/frontmatter/epic.schema.json"] = "{}\n"u8.ToArray(),
-            ["schema/v1/frontmatter/feature.schema.json"] = "{}\n"u8.ToArray(),
-            ["schema/v1/frontmatter/task.schema.json"] = "{}\n"u8.ToArray(),
-            ["templates/v1/feature.md"] = "# Shipped feature\n"u8.ToArray(),
+            ["manifest/v0.1.0/manifest.json"] = "{}\n"u8.ToArray(),
+            ["schema/v0.1.0/frontmatter/epic.schema.json"] = "{}\n"u8.ToArray(),
+            ["schema/v0.1.0/frontmatter/feature.schema.json"] = "{}\n"u8.ToArray(),
+            ["schema/v0.1.0/frontmatter/task.schema.json"] = "{}\n"u8.ToArray(),
+            ["templates/v0.1.0/feature.md"] = "# Shipped feature\n"u8.ToArray(),
         };
 
         // When
@@ -207,10 +209,10 @@ public sealed class InitWriterUnitTests
             });
         var shippingCopy = new Dictionary<string, byte[]>
         {
-            ["manifest/v1/manifest.json"] = "{}\n"u8.ToArray(),
-            ["schema/v1/frontmatter/task.schema.json"] = "{}\n"u8.ToArray(),
-            ["templates/v1/feature.md"] = "# Shipped feature\n"u8.ToArray(),
-            ["templates/v1/adr.md"] = "# Shipped adr\n"u8.ToArray(),
+            ["manifest/v0.1.0/manifest.json"] = "{}\n"u8.ToArray(),
+            ["schema/v0.1.0/frontmatter/task.schema.json"] = "{}\n"u8.ToArray(),
+            ["templates/v0.1.0/feature.md"] = "# Shipped feature\n"u8.ToArray(),
+            ["templates/v0.1.0/adr.md"] = "# Shipped adr\n"u8.ToArray(),
         };
         Dictionary<string, string> UnderTheSpecFolder() =>
             fileSystem.AllFiles.Where(file => file.Contains(specFolder, StringComparison.Ordinal))
@@ -230,7 +232,7 @@ public sealed class InitWriterUnitTests
     {
         // Given
         var before = fileSystem.AllPaths.ToList();
-        var writer = new InitWriter(new Dictionary<string, byte[]> { ["templates/v1/feature.md"] = [] }, fileSystem);
+        var writer = new InitWriter(new Dictionary<string, byte[]> { ["templates/v0.1.0/feature.md"] = [] }, fileSystem);
 
         // When
         var write = () => writer.Write(Root, schemas: false, templates: false, CancellationToken.None);

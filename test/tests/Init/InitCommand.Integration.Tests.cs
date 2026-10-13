@@ -135,7 +135,7 @@ public sealed class InitCommandIntegrationTests : IDisposable
         var workingDirectory = Directory.GetCurrentDirectory();
         var fileSystem = new MockFileSystem();
         fileSystem.AddDirectory(workingDirectory);
-        var shippingCopy = new Dictionary<string, byte[]> { ["manifest/v1/manifest.json"] = "{}\n"u8.ToArray() };
+        var shippingCopy = new Dictionary<string, byte[]> { ["manifest/v0.1.0/manifest.json"] = "{}\n"u8.ToArray() };
         var services = new ServiceCollection();
         services.AddSingleton(new InitWriter(shippingCopy, fileSystem));
         var app = new CommandAppTester(new TypeRegistrar(services), console: new TestConsole().Width(80));
@@ -165,7 +165,7 @@ public sealed class InitCommandIntegrationTests : IDisposable
         string[] Paths() => fileSystem.AllPaths.Select(path => Path.GetRelativePath(workingDirectory, path)).ToArray();
         var before = Paths();
         var services = new ServiceCollection();
-        services.AddSingleton(new InitWriter(new Dictionary<string, byte[]> { ["templates/v1/feature.md"] = "# Shipped\n"u8.ToArray() }, fileSystem));
+        services.AddSingleton(new InitWriter(new Dictionary<string, byte[]> { ["templates/v0.1.0/feature.md"] = "# Shipped\n"u8.ToArray() }, fileSystem));
         var app = new CommandAppTester(new TypeRegistrar(services), console: new TestConsole().Width(80));
         app.Configure(static config => config.AddCommand<InitCommand>("init"));
 

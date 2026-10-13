@@ -14,8 +14,8 @@ is specific to being a packed tool; everything else comes from the root:
 - `PackAsTool`, `ToolCommandName=specht`, `PackageId=specht.tool`, and
   `IsPackable=true` — overriding the repository-wide `IsPackable=false` default
   in `Directory.Build.props` in this one project.
-- `EmbeddedResource` for `manifest/v1/manifest.json`, `schema/v1/**` and
-  `templates/v1/**` — the versioned
+- `EmbeddedResource` for `manifest/v0.1.0/manifest.json`, `schema/v0.1.0/**` and
+  `templates/v0.1.0/**` — the versioned
   shipping copies that `specht init` writes into a consumer's `.specht/` and that
   the checker validates against (brief § 3, § 6). The tool embeds every schema
   version it knows.

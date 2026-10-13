@@ -21,13 +21,56 @@ namespace Specht.Acceptance.Versioning;
 /// unbound: its proof against what was published is item 0044's. Item 0176 binds B-069 to B-073 and B-076: each writes a
 /// synthetic <c>spechtSchema</c> into the root's manifest with one fault and launches the built tool, and the rejection is
 /// read from its stderr as the manifest's own name for the member or the kind, in quotes. B-068 and B-075 are item 0092's
-/// and B-074 is item 0093's. The rest of the file's scenarios stay pending for their items; a step one of them shares with
+/// and B-074 is item 0093's. Item 0126 binds B-086 and B-087 over the embedded resources and their declared addresses.
+/// The rest of the file's scenarios stay pending for their items; a step one of them shares with
 /// a scenario above is bound, and its other steps are not.
 /// </summary>
 [Binding]
 [Scope(Feature = "Schema versioning")]
 public sealed class VersioningSteps
 {
+    [Given("the tool ships schema version {word}")]
+    public void GivenTheToolShipsSchemaVersion(string version) =>
+        _embedded = SchemaVersions.Embedded.Select(Version(version));
+
+    [When("the folders holding its schemas, its templates and its rule pages are read")]
+    public void WhenTheFoldersHoldingItsSchemasItsTemplatesAndItsRulePagesAreRead()
+    {
+        var names = new[] { typeof(SchemaVersions).Assembly, typeof(Specht.Tool.ExitCodes).Assembly }
+            .SelectMany(static assembly => assembly.GetManifestResourceNames())
+            .Where(static name => name.StartsWith("schema/", StringComparison.Ordinal)
+                                  || name.StartsWith("templates/", StringComparison.Ordinal)
+                                  || name.StartsWith("rules/", StringComparison.Ordinal))
+            .Where(name => string.Equals(name.Split('/')[1], $"v{_embedded!.Number}", StringComparison.Ordinal))
+            .ToList();
+        foreach (var tree in new[] { "schema", "templates", "rules" })
+        {
+            names.Should().Contain(name => name.StartsWith($"{tree}/", StringComparison.Ordinal));
+        }
+
+        _folders = names
+            .Select(static name => name.Split('/')[1])
+            .Distinct()
+            .ToList();
+    }
+
+    [Then("each is named v0.1.0")]
+    public void ThenEachIsNamedVersionZeroOneZero() => _folders.Should().Equal($"v{_embedded!.Number}");
+
+    [When("the address each of its frontmatter schemas declares is read")]
+    public void WhenTheAddressEachOfItsFrontmatterSchemasDeclaresIsRead() =>
+        _addresses = new Dictionary<string, string>
+        {
+            ["feature.schema.json"] = _embedded!.FeatureSchema,
+            ["task.schema.json"] = _embedded.ItemSchema,
+            ["epic.schema.json"] = _embedded.EpicSchema,
+        }.ToDictionary(static pair => pair.Key, static pair => JsonNode.Parse(pair.Value)!["$id"]!.GetValue<string>());
+
+    [Then("it is this repository's schema address, then v0.1.0, then the frontmatter folder and the file's name")]
+    public void ThenItIsThisRepositorysSchemaAddressThenTheVersionAndTheFrontmatterFile() =>
+        _addresses.Should().HaveCount(3).And.AllSatisfy(pair =>
+            pair.Value.Should().Be($"https://github.com/rlittlesii/specht/schema/v{_embedded!.Number}/frontmatter/{pair.Key}"));
+
     [Given("a repository root holding a manifest and the three frontmatter schemas")]
     public void GivenARepositoryRootHoldingAManifestAndTheThreeFrontmatterSchemas() => _tree = new SpecTree();
 
@@ -289,6 +332,9 @@ public sealed class VersioningSteps
         ["epic schema"] = "epic",
     };
 
+    private SchemaVersion? _embedded;
+    private IReadOnlyList<string> _folders = [];
+    private IReadOnlyDictionary<string, string> _addresses = new Dictionary<string, string>();
     private SpecTree? _tree;
     private Dictionary<SemanticVersion, SchemaVersion>? _shipped;
     private SpechtReport? _report;

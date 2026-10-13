@@ -53,6 +53,30 @@ public sealed class SchemaVersionsUnitTests
     }
 
     [Fact]
+    public void ShippedResources_WhenTheirFoldersAreRead_ShouldNameTheirSemanticVersionInEveryTree()
+    {
+        // Given
+        var assemblies = new[] { typeof(SchemaVersions).Assembly, typeof(Specht.Tool.ExitCodes).Assembly };
+        var versions = SchemaVersions.Embedded.Versions.Select(static version => $"v{version.Number}").ToList();
+
+        // When
+        var names = assemblies.SelectMany(static assembly => assembly.GetManifestResourceNames())
+            .Where(static name => name.StartsWith("schema/", StringComparison.Ordinal)
+                                  || name.StartsWith("templates/", StringComparison.Ordinal)
+                                  || name.StartsWith("manifest/", StringComparison.Ordinal)
+                                  || name.StartsWith("rules/", StringComparison.Ordinal))
+            .ToList();
+
+        // Then
+        names.Should().NotBeEmpty().And.AllSatisfy(name => versions.Should().Contain(name.Split('/')[1]));
+        foreach (var tree in new[] { "schema", "templates", "manifest", "rules" })
+        {
+            names.Where(name => name.StartsWith($"{tree}/", StringComparison.Ordinal))
+                .Select(static name => name.Split('/')[1]).Distinct().Should().BeEquivalentTo(versions);
+        }
+    }
+
+    [Fact]
     public void VersionsGivenOutOfOrder_WhenEnumerated_ShouldAscendByMajorThenMinorThenPatch()
     {
         // Given
@@ -84,7 +108,7 @@ public sealed class SchemaVersionsUnitTests
 
         // When
         var ids = versions
-            .Select(version => (Folder: EmbeddedFolder.Of(version), Id: JsonNode.Parse(slot(version))!["$id"]!.GetValue<string>()))
+            .Select(version => (Folder: version.Number, Id: JsonNode.Parse(slot(version))!["$id"]!.GetValue<string>()))
             .ToList();
 
         // Then
