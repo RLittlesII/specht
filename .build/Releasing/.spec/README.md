@@ -53,7 +53,7 @@ Nothing publishes `specht.tool`: `0001-F2` § 5 row 7 hands the release workflow
 
 ## 3. Acceptance Criteria
 
-<!-- last written by: spec-author, 2026-10-11 (B-013 added, `0001-F7` decision 0009) -->
+<!-- last written by: spec-author, 2026-10-13 (B-006 categories, decision 0006) -->
 
 | ID    | Claim                                                                                                                                                                                                                                                                                                                                          | Source                                                                                                                                                                | Status  |
 | ----- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------- |
@@ -62,7 +62,7 @@ Nothing publishes `specht.tool`: `0001-F2` § 5 row 7 hands the release workflow
 | B-003 | Given a pushed `v*` tag and every target of B-001 passing, this Feature pushes the packed `specht.tool` package to GitHub Packages on `rlittlesii/specht`.                                                                                                                                                                                     | owner, 2026-10-08; brief § 2                                                                                                                                          | Active  |
 | B-004 | Given the package for a `v*` tag was pushed, this Feature creates a GitHub Release for that tag.                                                                                                                                                                                                                                               | owner, 2026-10-08                                                                                                                                                     | Active  |
 | B-005 | Given a push of any branch, or of a tag not matching `v*`, this Feature publishes nothing and creates no GitHub Release.                                                                                                                                                                                                                       | owner, 2026-10-08; C-1                                                                                                                                                | Active  |
-| B-006 | Given a GitHub Release this Feature creates, its notes are GitHub's generated notes for the pull requests merged since the previous `v*` tag.                                                                                                                                                                                                  | OQ-2 (owner, 2026-10-08)                                                                                                                                              | Active  |
+| B-006 | Given a GitHub Release this Feature creates, its notes are GitHub's generated notes for the pull requests merged since the previous `v*` tag, grouped by their release category labels under emoji headings, with a rocket for Features and a final catch-all for unmatched pull requests (decision 0006).                                     | OQ-2 (owner, 2026-10-08); owner, 2026-10-13, decision 0006                                                                                                            | Amended |
 | B-007 | Given a GitHub Release this Feature creates, the package it published is attached to the Release as a file.                                                                                                                                                                                                                                    | OQ-3 (owner, 2026-10-08)                                                                                                                                              | Active  |
 | B-008 | Given a dry run triggered without a tag, this Feature runs every step of the `build` job, the package upload included, and skips the `release` job, so it pushes no package and creates no GitHub Release. Amended 2026-10-09 (decision 0001): was every step up to the push. Amended 2026-10-11 (decision 0003): the job was named `publish`. | OQ-4 (owner, 2026-10-08); OQ-8 (owner, 2026-10-09), decision 0001; decision 0003; C-1, C-2, C-6, C-7                                                                  | Amended |
 | B-009 | Given a pushed `v*` tag whose version differs from the version computed for its commit, this Feature fails the run before any push and creates no GitHub Release.                                                                                                                                                                              | OQ-5 (owner, 2026-10-08); `0055-F5` C-3                                                                                                                               | Active  |
@@ -505,6 +505,8 @@ The standing decision is that the build has no tests (`0055-F2` § 8), narrowed 
 - **A record describes the file on the day it was made.** Nothing pins the triggers, the order or the conditions against the next edit, which is the cost decision 0002 records. A test over the file would have proven the file, not a runner: it could not show that GitHub skips the `release` job or stops after a failed step.
 - **An executable proof of B-009's comparison or B-011's check would need a second decision**: where each lives so that a test can reach it. Both are in the target, with the hand checks.
 
+Release note categories are configured in [`.github/release.yml`](../../../.github/release.yml), separate from the generated workflow. GitHub resolves labels in category order; specific categories precede the final catch-all. The generated workflow retains `--generate-notes` (B-006, decision 0006).
+
 ## 8. Testing Strategy
 
 <!-- last written by: test-writer, 2026-10-13 (automated schema-lock release guard coverage) -->
@@ -617,6 +619,8 @@ confirmed invalid JSON and JSON `null` fail closed, a branch skips the target,
 and every run preserves the lock's bytes or absence. The existing generated
 workflow still places `Verify Tag` before `Format`, `Compile` and `Pack`.
 
+- **Category configuration (2026-10-13, decision 0006):** validate the YAML, verify every merged pull request carries exactly one release category label through GitHub, and request a generated-notes preview against the configuration branch. The preview creates no release or tag. B-006 retains record-based proof and its `Missing` traceability status; no automated test or CI observation is inferred from this hand check.
+
 ## 9. Traceability Matrix
 
 <!-- last written by: test-writer, 2026-10-13 (B-013 automated coverage) -->
@@ -653,6 +657,8 @@ workflow still places `Verify Tag` before `Format`, `Compile` and `Pack`.
 - 2026-10-13, the repository owner resolved OQ-19: "the first release waits for 0190." C-2 now holds the first tag until B-013 is delivered, with the lock prerequisites it needs. Rejected: publishing the first schema version before the release guard exists. B-013 and its boundary scenario already state the guard; this dependency ruling changes no runtime behaviour.
 
 - 2026-10-13, decision 0005: the owner chose automated coverage for B-013. § 5 row 9 is narrowed to the original tag checks. The B-013 scenario now explicitly covers both newest and older shipped versions; § 6 and § 7 describe the third tag check.
+
+- 2026-10-13, [decision 0006](decisions/0006-release-notes-group-emoji-category-labels.md): B-006 and its scenarios now group pull requests under emoji headings, with a rocket for Features and a catch-all that keeps unmatched pull requests visible. No package, release trigger or existing release body changes.
 
 ## 11. Open Questions
 

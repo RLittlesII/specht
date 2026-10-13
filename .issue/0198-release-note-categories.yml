@@ -1,0 +1,43 @@
+id: "0198"
+type: task
+title: Categorize generated release notes and label merged pull requests
+
+status: in-progress
+
+value: 3
+risk: 1
+
+parent: null
+children: []
+depends_on: []
+spikes: []
+spec: .build/Releasing/.spec/README.md
+claims: ["B-006"]
+
+created: "2026-10-13"
+updated: "2026-10-13"
+closed: null
+
+summary: |
+  Repository maintenance requested by the owner: give every merged pull request
+  an emoji category label and configure GitHub's generated release notes to
+  group those labels. Features use the rocket emoji. Release metadata labels
+  do not replace the local work-item tracker.
+
+acceptance_criteria:
+  - "B-006 — generated release notes group emoji category labels and retain unmatched PRs."
+  - "Every merged pull request has one release category label, verified through GitHub."
+  - "Category labels and generated-note headings carry emojis; Features uses the rocket."
+  - "The release-note configuration groups categories and retains a final catch-all."
+  - "Contributor conventions explain category selection; Renovate uses the dependency label."
+  - "No package is published and existing release bodies are not rewritten."
+  - "Formatting and the full build pass; a delivery report records the classification and checks."
+
+decisions:
+  - "2026-10-13, repository owner: add labels and categorize every merged PR for generated release notes; use emojis, with a rocket for Features; Maintenance is named Chore."
+  - "2026-10-13, maintainer: B-006 scenario amended before configuration; no checker or schema behaviour change. Constraints preserved: 0001-F1 C-5, C-9; 0055-F6 C-1, C-4, C-7."
+
+out_of_scope:
+  - "Publishing a release, changing package assets or rewriting existing release bodies."
+  - "Using GitHub labels to track delivery state."
+  - "Automating inference of future PR categories from titles alone."
