@@ -1,0 +1,39 @@
+id: "0200"
+type: task
+title: Lead next with Feature completion paths
+
+status: done
+
+value: 3
+risk: 1
+
+parent: null
+children: []
+depends_on: []
+spikes: []
+spec: null
+claims: []
+
+created: "2026-10-13"
+updated: "2026-10-13"
+closed: "2026-10-13"
+
+summary: |
+  The repository owner wants next to remain Feature focused: compare product
+  importance, proximity to completion and blockers so one Feature can be driven
+  to done. Item-level lanes support the Feature choice.
+
+acceptance_criteria:
+  - "The next skill defaults to Feature names and ids, importance, remaining work, blockers and completion paths."
+  - "Product priority, proximity to completion and blocker count remain distinct criteria."
+  - "The existing queue script remains authoritative for scores, priorities, dependency blockers and shared write sets."
+  - "Item lanes are supporting detail; reporting never takes an item or implies shared write sets can run in parallel."
+  - "The installed Codex copy matches the tracked skill."
+  - "Skill validation, formatting and the full build pass."
+
+decisions:
+  - "2026-10-13, repository owner: remember our desire to be feature focus for next."
+  - "2026-10-13, skill editor: both skills pass quick_validate.py, installed copies match their tracked sources, and ./build.sh passes Format, Compile and all three test tiers. Specht reports 173 existing violations in its non-gating mode."
+
+out_of_scope:
+  - "Changing queue scoring, product goals, item statuses outside this delivery, or runtime tool behaviour."
