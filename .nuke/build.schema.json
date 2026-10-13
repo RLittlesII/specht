@@ -25,7 +25,7 @@
       "type": "string",
       "enum": [
         "AcceptanceTest",
-        "Benchmarks",
+        "Benchmark",
         "Build",
         "Compile",
         "ContinuousIntegration",
@@ -112,6 +112,14 @@
   "allOf": [
     {
       "properties": {
+        "BenchmarkFilter": {
+          "type": "string",
+          "description": "BenchmarkDotNet full-name glob - Default is every benchmark"
+        },
+        "BenchmarkJob": {
+          "type": "string",
+          "description": "BenchmarkDotNet job (Dry, Short, Medium, Long, Default) - Default is the library's default"
+        },
         "Configuration": {
           "type": "string",
           "description": "Configuration to build - Default is 'Debug' (local) or 'Release' (server)"

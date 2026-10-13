@@ -136,28 +136,60 @@ internal partial class SpechtBuild : NukeBuild
     private Target Pack => definition => definition
         .DependsOn(Build)
         .Produces(PackageDirectory / "*.nupkg")
+        .Executes(() => PackTool(Configuration));
+
+    private Target Benchmark => definition => definition
+        .DependsOn(Restore)
         .Executes(() =>
         {
-            PackageDirectory.CreateOrCleanDirectory();
-            DotNetPack(s => s
-                .SetProject(Solution)
-                .SetConfiguration(Configuration)
-                .SetOutputDirectory(PackageDirectory)
-                .EnableNoBuild());
-        });
-
-    private Target Benchmarks => static definition => definition
-        .Executes(static () =>
-        {
-            DotNetRun(static settings => settings
-                .SetProjectFile("./.performance/benchmarks/benchmarks.csproj")
+            const string project = ".performance/benchmarks/benchmarks.csproj";
+            DotNetBuild(static settings => settings
+                .SetProjectFile(project)
                 .SetConfiguration("Release")
-                .AddProcessAdditionalArguments("-- --job", "--filter *CheckBenchmarks*"));
+                .EnableNoRestore());
+
+            var arguments = new List<string> { "--filter", BenchmarkFilter ?? "*", "--artifacts", ".artifacts/benchmarks" };
+            if (BenchmarkJob is not null)
+            {
+                arguments.AddRange(["--job", BenchmarkJob]);
+            }
+
+            var settings = new DotNetRunSettings()
+                .SetProjectFile(project)
+                .SetConfiguration("Release")
+                .EnableNoBuild()
+                .SetProcessWorkingDirectory(RootDirectory);
+            var selected = DotNetRun(settings
+                    .SetApplicationArguments(arguments.Concat(["--list", "flat"]))
+                    .DisableProcessOutputLogging()
+                    .DisableProcessInvocationLogging())
+                .Where(static output => output.Type == OutputType.Std)
+                .Select(static output => output.Text)
+                .Where(static name => name.StartsWith("Specht.Benchmarks.", StringComparison.Ordinal))
+                .ToArray();
+
+            Assert.True(selected.Length > 0, "No benchmarks selected; check --benchmark-filter and --benchmark-job.");
+            if (selected.Any(static name => name.StartsWith("Specht.Benchmarks.Startup.", StringComparison.Ordinal)))
+            {
+                PackTool("Release");
+            }
+
+            DotNetRun(settings.SetApplicationArguments(arguments));
         });
 
     private static string Include(string[]? files) => files is null ? string.Empty : $"--include {Quote(files)}";
 
     private static string Quote(IEnumerable<string> files) => string.Join(' ', files.Select(static file => $"\"{file}\""));
+
+    private void PackTool(string configuration)
+    {
+        PackageDirectory.CreateOrCleanDirectory();
+        DotNetPack(settings => settings
+            .SetProject(Solution)
+            .SetConfiguration(configuration)
+            .SetOutputDirectory(PackageDirectory)
+            .EnableNoBuild());
+    }
 
     private AbsolutePath TierCoverageDirectory(string tier)
     {
@@ -204,6 +236,12 @@ internal partial class SpechtBuild : NukeBuild
 
     [Parameter("Files for Format to check, relative to the root - Default is every C# file in the solution and every Markdown file")]
     private readonly string[]? Files;
+
+    [Parameter("BenchmarkDotNet full-name glob - Default is every benchmark")]
+    private readonly string? BenchmarkFilter;
+
+    [Parameter("BenchmarkDotNet job (Dry, Short, Medium, Long, Default) - Default is the library's default")]
+    private readonly string? BenchmarkJob;
 
     [Solution] private readonly Solution Solution = null!;
 }
