@@ -2,7 +2,7 @@ id: "0092"
 type: task
 title: Check under a recorded upstream schema source
 
-status: in-progress
+status: done
 
 risk: 3
 
@@ -27,7 +27,7 @@ claims:
 
 created: "2026-10-08"
 updated: "2026-10-12"
-closed: null
+closed: "2026-10-12"
 
 summary: |
   The check's side of decision 0004: a manifest recording an upstream

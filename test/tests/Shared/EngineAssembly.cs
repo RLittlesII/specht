@@ -72,6 +72,12 @@ public static class EngineAssembly
     public static IReadOnlyList<Reference> NetworkReferencesIn(string path) =>
         [.. ReferencesIn(path).Where(static reference => reference.Member.StartsWith(NetworkNamespace, StringComparison.Ordinal))];
 
+    /// <summary>Gets network references outside the fetch adapter and its credential-free host configuration (ADR-0013).</summary>
+    /// <param name="path">A compiled assembly.</param>
+    /// <returns>Each network reference the check must not carry.</returns>
+    public static IReadOnlyList<Reference> CheckNetworkReferencesIn(string path) =>
+        [.. NetworkReferencesIn(path).Where(static reference => !AllowedNetworkReference(reference))];
+
     /// <summary>The references in <paramref name="references"/> other than <see cref="Exemption"/>.</summary>
     /// <param name="references">Forbidden references and their sites.</param>
     /// <returns>Every reference the exemption does not allow.</returns>
@@ -82,6 +88,13 @@ public static class EngineAssembly
     /// <param name="Member">The type or member, as <see cref="Forbidden"/> names it.</param>
     /// <param name="Site">The referencing method, as <c>Namespace.Type.Method</c>, with <c>+</c> before a nested type.</param>
     public sealed record Reference(string Member, string Site);
+
+    private static bool AllowedNetworkReference(Reference reference) =>
+        (reference.Site.Length == 0 && NetworkConfigurationTypes.Contains(reference.Member))
+        || (reference.Member == "System.Net.Http.HttpClient.GetByteArrayAsync"
+            && reference.Site.StartsWith("Specht.Manifest.UpstreamSchemaFetcher+<Fetch>", StringComparison.Ordinal))
+        || (NetworkConfigurationMembers.Contains(reference.Member)
+            && reference.Site.StartsWith(".Program+<>c.", StringComparison.Ordinal));
 
     private static string BuiltUnder(string project, Assembly assembly)
     {
@@ -214,6 +227,26 @@ public static class EngineAssembly
                              ?? throw new InvalidOperationException("No repository root above the test assembly."));
 
     private const string NetworkNamespace = "System.Net.";
+
+    private static readonly HashSet<string> NetworkConfigurationTypes = new(StringComparer.Ordinal)
+    {
+        "System.Net.Http.HttpClient",
+        "System.Net.Http.HttpClientHandler",
+        "System.Net.Http.HttpMessageHandler",
+        "System.Net.Http.HttpRequestException",
+        "System.Net.ICredentials",
+    };
+
+    private static readonly HashSet<string> NetworkConfigurationMembers = new(StringComparer.Ordinal)
+    {
+        "System.Net.Http.HttpClient..ctor",
+        "System.Net.Http.HttpClientHandler..ctor",
+        "System.Net.Http.HttpClientHandler.AllowAutoRedirect",
+        "System.Net.Http.HttpClientHandler.UseCookies",
+        "System.Net.Http.HttpClientHandler.UseDefaultCredentials",
+        "System.Net.Http.HttpClientHandler.Credentials",
+        "System.Net.Http.HttpClientHandler.DefaultProxyCredentials",
+    };
 
     private static readonly Dictionary<short, OpCode> OpCodesByValue = typeof(OpCodes)
         .GetFields(BindingFlags.Public | BindingFlags.Static)

@@ -274,8 +274,8 @@ public sealed class VersioningSteps
     [Then("no network call was attempted")]
     public void ThenNoNetworkCallWasAttempted()
     {
-        EngineAssembly.NetworkReferencesIn(EngineAssembly.Built).Should().BeEmpty();
-        EngineAssembly.NetworkReferencesIn(EngineAssembly.BuiltTool).Should().BeEmpty();
+        EngineAssembly.CheckNetworkReferencesIn(EngineAssembly.Built).Should().BeEmpty();
+        EngineAssembly.CheckNetworkReferencesIn(EngineAssembly.BuiltTool).Should().BeEmpty();
     }
 
     [Then("the standard error names the item schema's file")]
