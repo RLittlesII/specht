@@ -1,6 +1,7 @@
 using System.IO.Abstractions.TestingHelpers;
 using AwesomeAssertions;
 using Specht.Discovery;
+using Specht.Manifest;
 using Specht.Model;
 using Specht.Tests.Shared;
 
@@ -33,7 +34,7 @@ public sealed class SpecModelLoaderUnitTests
             fileSystem,
             new FrontmatterReader(fileSystem),
             new SpecDiscovery(fileSystem),
-            new SpecSchemasLoader(fileSystem));
+            new SpecSchemasLoader(fileSystem, new FrontmatterSchemaStore(fileSystem), new UpstreamSchemaCopy()));
 
         // When
         var model = loader.Load(root);

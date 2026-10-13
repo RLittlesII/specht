@@ -1,3 +1,4 @@
+using System.Security.Cryptography;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using AwesomeAssertions;
@@ -16,7 +17,7 @@ namespace Specht.Tests.Check;
 
 /// <summary>
 /// The command through Spectre's command tester (<c>0001-F2</c> B-001, B-002, B-003, B-004, B-005, B-006, B-007, B-008, B-009, B-013,
-/// B-016; C-7; <c>0001-F5</c> B-022, B-023; <c>0001-F7</c> B-003, B-039, B-069 to B-073): over a runner returning a report
+/// B-016; C-7; <c>0001-F5</c> B-022, B-023; <c>0001-F7</c> B-003, B-032, B-039, B-069 to B-073, B-077, B-080): over a runner returning a report
 /// built in memory, and over the real runner and a synthetic tree on disk. The runner is the seam: the engine emits no
 /// warning until <c>0001-F5</c>'s rule settings exist, so a warning-only report is reachable only in memory. The tester
 /// captures stdout alone, so an input failure's stderr message is the acceptance tier's to pin.
@@ -276,6 +277,26 @@ public sealed class CheckCommandIntegrationTests
                 static tree => RecordingAnUpstreamSchemaSource(tree, static source => source["hashes"]!["task"] = new string('b', 64)),
                 3
             },
+            {
+                "an upstream schema source recorded and the item schema's file absent under the root (0001-F7 B-077)",
+                static tree =>
+                {
+                    RecordingAnUpstreamSchemaSource(tree, static _ => { });
+                    File.Delete(Path.Combine(tree.Root, SpecTree.ItemSchemaPath));
+                    return tree.Root;
+                },
+                3
+            },
+            {
+                "an upstream schema source recorded and the item schema's file edited after its hash was recorded (0001-F7 B-080)",
+                static tree =>
+                {
+                    RecordingAnUpstreamSchemaSource(tree, static _ => { });
+                    File.AppendAllText(Path.Combine(tree.Root, SpecTree.ItemSchemaPath), "\n");
+                    return tree.Root;
+                },
+                3
+            },
         };
 
     [Theory]
@@ -441,6 +462,22 @@ public sealed class CheckCommandIntegrationTests
     }
 
     [Fact]
+    public void ATreeRecordingAnUpstreamSchemaSourceItsLocalCopyMatches_WhenCheckedWithJson_ShouldExitZeroAndSayTheSchemasCameFromTheUpstreamCopy()
+    {
+        // Given
+        using var tree = new SpecTree();
+        tree.WriteFeature("0001", "F1");
+        RecordingAnUpstreamSchemaSource(tree, static _ => { });
+
+        // When
+        var result = Check(EngineServices.Runner().Run, "--root", tree.Root, "--json");
+
+        // Then
+        result.ExitCode.Should().Be(0);
+        JsonNode.Parse(result.Output)!["schemaSource"]!.GetValue<string>().Should().Be("upstream");
+    }
+
+    [Fact]
     public void AHelpRequest_WhenChecked_ShouldNameTheRootAndStrictOptionsAndExitZero()
     {
         // Given
@@ -475,9 +512,9 @@ public sealed class CheckCommandIntegrationTests
             ["version"] = "2026.10",
             ["hashes"] = new JsonObject
             {
-                ["feature"] = "sha256:" + new string('a', 64),
-                ["task"] = "sha256:" + new string('b', 64),
-                ["epic"] = "sha256:" + new string('c', 64),
+                ["feature"] = HashOf(tree, SpecTree.FeatureSchemaPath),
+                ["task"] = HashOf(tree, SpecTree.ItemSchemaPath),
+                ["epic"] = HashOf(tree, SpecTree.EpicSchemaPath),
             },
         };
         fault(source);
@@ -486,6 +523,9 @@ public sealed class CheckCommandIntegrationTests
 
         return tree.Root;
     }
+
+    private static string HashOf(SpecTree tree, string schemaPath) =>
+        "sha256:" + Convert.ToHexStringLower(SHA256.HashData(File.ReadAllBytes(Path.Combine(tree.Root, schemaPath))));
 
     private const string TwoClaims =
         "## 3. Acceptance Criteria\n\n| ID | Claim | Source | Status |\n| -- | ----- | ------ | ------ |\n"

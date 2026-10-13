@@ -1,6 +1,9 @@
 using System.IO.Abstractions.TestingHelpers;
+using System.Security.Cryptography;
+using System.Text;
 using AwesomeAssertions;
 using Specht.Discovery;
+using Specht.Manifest;
 using Specht.Model;
 using Specht.Report;
 using Specht.Rules;
@@ -17,8 +20,8 @@ namespace Specht.Tests.Engine;
 /// The report's layouts are the manifest's, by name and in its order, each with its count (<c>0001-F6</c> B-001, B-009, C-7).
 /// The manifest's rule settings take an id set <c>off</c> out of the rules run, the violations kept and the count,
 /// report an id set <c>warning</c> at warning severity and an id set <c>error</c> at error severity, and leave an id they do
-/// not name at the severity the rule gave (<c>0001-F5</c> B-010, B-011, B-046, B-044; item 0014).
-/// No tree on disk and no container.
+/// not name at the severity the rule gave (<c>0001-F5</c> B-010, B-011, B-046, B-044; item 0014). The report says where
+/// the model's schemas came from (<c>0001-F7</c> B-032; item 0092). No tree on disk and no container.
 /// </summary>
 [Trait("Tier", "Unit")]
 public sealed class SpechtRunnerEvaluateUnitTests
@@ -170,6 +173,38 @@ public sealed class SpechtRunnerEvaluateUnitTests
 
         // Then
         report.SchemaVersion.Should().Be(new SemanticVersion(0, 2, 0));
+    }
+
+    [Fact]
+    public void AModelWhoseSchemasCameFromAnUpstreamCopy_WhenEvaluated_ShouldSayInTheReportTheSchemasCameFromTheUpstreamCopy()
+    {
+        // Given
+        var copy = Encoding.UTF8.GetBytes("{}");
+        var hash = "sha256:" + Convert.ToHexStringLower(SHA256.HashData(copy));
+        var fileSystem = new MockFileSystem(
+            new Dictionary<string, MockFileData>
+            {
+                [Path.Combine("repo", SpecTree.ManifestPath)] = new(
+                    $$"""
+                    {
+                      "spechtSchema": {
+                        "location": "https://schemas.example/specht/",
+                        "version": "2026.10",
+                        "hashes": { "feature": "{{hash}}", "task": "{{hash}}" }
+                      }
+                    }
+                    """),
+                [Path.Combine("repo", SpecTree.FeatureSchemaPath)] = new(copy),
+                [Path.Combine("repo", SpecTree.ItemSchemaPath)] = new(copy),
+            });
+        SpecModel model = new SpecModelFixture().WithSchemas(
+            new SpecSchemasLoader(fileSystem, new FrontmatterSchemaStore(fileSystem), new UpstreamSchemaCopy()).Load("repo"));
+
+        // When
+        var report = SpechtRunner.Evaluate(model, []);
+
+        // Then
+        report.SchemaSource.Should().Be(SpecSchemaSource.Upstream);
     }
 
     [Theory]

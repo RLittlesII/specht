@@ -3,12 +3,14 @@ using System.Reflection.Emit;
 using System.Reflection.Metadata;
 using System.Reflection.Metadata.Ecma335;
 using System.Reflection.PortableExecutable;
+using Specht.Tool;
 
 namespace Specht.Tests.Shared;
 
 /// <summary>
-/// The library <c>src/specht</c> builds, read from its metadata rather than loaded (<c>0001-F1</c> B-005, B-006). It reads
-/// the file the build wrote, never the loaded assembly: a coverage run instruments the copy the test process loads
+/// The library <c>src/specht</c> builds, read from its metadata rather than loaded (<c>0001-F1</c> B-005, B-006), and the
+/// tool's own assembly beside it, read the same way for the references a network call needs (<c>0001-F7</c> B-025). It
+/// reads the file the build wrote, never the loaded assembly: a coverage run instruments the copy the test process loads
 /// (<c>0055-F3</c> B-001) and adds references of its own to it.
 /// </summary>
 public static class EngineAssembly
@@ -44,24 +46,13 @@ public static class EngineAssembly
         new("System.Globalization.CultureInfo.CurrentCulture", "Specht.Rules.FrontmatterSchemaRule.EvaluateInvariant");
 
     /// <summary>Gets the path of the library <c>src/specht</c> built for this configuration and target framework.</summary>
-    public static string Built
-    {
-        get
-        {
-            var output = AppContext.BaseDirectory.TrimEnd(Path.DirectorySeparatorChar);
-            var configuration = typeof(EngineAssembly).Assembly.GetCustomAttribute<AssemblyConfigurationAttribute>()?.Configuration
-                                ?? throw new InvalidOperationException("The test assembly names no configuration.");
+    public static string Built => BuiltUnder("specht", typeof(SpechtRunner).Assembly);
 
-            return Path.Combine(
-                FindRepository(output),
-                "src",
-                "specht",
-                "bin",
-                configuration,
-                Path.GetFileName(output),
-                Path.GetFileName(typeof(SpechtRunner).Assembly.Location));
-        }
-    }
+    /// <summary>
+    /// Gets the path of the assembly <c>src/tool</c> built for this configuration and target framework: the tool's own
+    /// code, not the libraries it is published beside.
+    /// </summary>
+    public static string BuiltTool => BuiltUnder("tool", typeof(TypeRegistrar).Assembly);
 
     /// <summary>
     /// The entries of <see cref="Forbidden"/> the assembly at <paramref name="path"/> references, each with the method whose
@@ -69,7 +60,59 @@ public static class EngineAssembly
     /// </summary>
     /// <param name="path">A compiled assembly.</param>
     /// <returns>Each forbidden reference and its site, once, in ordinal order.</returns>
-    public static IReadOnlyList<Reference> ForbiddenReferencesIn(string path)
+    public static IReadOnlyList<Reference> ForbiddenReferencesIn(string path) =>
+        [.. ReferencesIn(path).Where(static reference => Forbidden.Contains(reference.Member))];
+
+    /// <summary>
+    /// The types and members of a <c>System.Net</c> namespace the assembly at <paramref name="path"/> references, each with
+    /// the method whose body references it: what a network call needs (<c>0001-F7</c> B-025, OQ-39).
+    /// </summary>
+    /// <param name="path">A compiled assembly.</param>
+    /// <returns>Each network reference and its site, once, in ordinal order.</returns>
+    public static IReadOnlyList<Reference> NetworkReferencesIn(string path) =>
+        [.. ReferencesIn(path).Where(static reference => reference.Member.StartsWith(NetworkNamespace, StringComparison.Ordinal))];
+
+    /// <summary>Gets network references outside the fetch adapter and its credential-free host configuration (ADR-0013).</summary>
+    /// <param name="path">A compiled assembly.</param>
+    /// <returns>Each network reference the check must not carry.</returns>
+    public static IReadOnlyList<Reference> CheckNetworkReferencesIn(string path) =>
+        [.. NetworkReferencesIn(path).Where(static reference => !AllowedNetworkReference(reference))];
+
+    /// <summary>The references in <paramref name="references"/> other than <see cref="Exemption"/>.</summary>
+    /// <param name="references">Forbidden references and their sites.</param>
+    /// <returns>Every reference the exemption does not allow.</returns>
+    public static IReadOnlyList<Reference> Unexempted(IEnumerable<Reference> references) =>
+        [.. references.Where(static reference => reference != Exemption)];
+
+    /// <summary>A referenced type or member, and the method whose body references it, or empty where no body does.</summary>
+    /// <param name="Member">The type or member, as <see cref="Forbidden"/> names it.</param>
+    /// <param name="Site">The referencing method, as <c>Namespace.Type.Method</c>, with <c>+</c> before a nested type.</param>
+    public sealed record Reference(string Member, string Site);
+
+    private static bool AllowedNetworkReference(Reference reference) =>
+        (reference.Site.Length == 0 && NetworkConfigurationTypes.Contains(reference.Member))
+        || (reference.Member == "System.Net.Http.HttpClient.GetByteArrayAsync"
+            && reference.Site.StartsWith("Specht.Manifest.UpstreamSchemaFetcher+<Fetch>", StringComparison.Ordinal))
+        || (NetworkConfigurationMembers.Contains(reference.Member)
+            && reference.Site.StartsWith(".Program+<>c.", StringComparison.Ordinal));
+
+    private static string BuiltUnder(string project, Assembly assembly)
+    {
+        var output = AppContext.BaseDirectory.TrimEnd(Path.DirectorySeparatorChar);
+        var configuration = typeof(EngineAssembly).Assembly.GetCustomAttribute<AssemblyConfigurationAttribute>()?.Configuration
+                            ?? throw new InvalidOperationException("The test assembly names no configuration.");
+
+        return Path.Combine(
+            FindRepository(output),
+            "src",
+            project,
+            "bin",
+            configuration,
+            Path.GetFileName(output),
+            Path.GetFileName(assembly.Location));
+    }
+
+    private static List<Reference> ReferencesIn(string path)
     {
         using var file = new PEReader(File.OpenRead(path));
         var metadata = file.GetMetadataReader();
@@ -99,22 +142,10 @@ public static class EngineAssembly
         references.AddRange(metadata.TypeReferences.Select(type => new Reference(TypeName(metadata, type), string.Empty)));
 
         return [.. references
-            .Where(static reference => Forbidden.Contains(reference.Member))
             .Distinct()
             .OrderBy(static reference => reference.Member, StringComparer.Ordinal)
             .ThenBy(static reference => reference.Site, StringComparer.Ordinal)];
     }
-
-    /// <summary>The references in <paramref name="references"/> other than <see cref="Exemption"/>.</summary>
-    /// <param name="references">Forbidden references and their sites.</param>
-    /// <returns>Every reference the exemption does not allow.</returns>
-    public static IReadOnlyList<Reference> Unexempted(IEnumerable<Reference> references) =>
-        [.. references.Where(static reference => reference != Exemption)];
-
-    /// <summary>A forbidden type or member, and the method whose body references it, or empty where no body does.</summary>
-    /// <param name="Member">The type or member, as <see cref="Forbidden"/> names it.</param>
-    /// <param name="Site">The referencing method, as <c>Namespace.Type.Method</c>, with <c>+</c> before a nested type.</param>
-    public sealed record Reference(string Member, string Site);
 
     private static IEnumerable<MemberReferenceHandle> Operands(MetadataReader metadata, MethodBodyBlock body)
     {
@@ -194,6 +225,28 @@ public static class EngineAssembly
             ? directory
             : FindRepository(Path.GetDirectoryName(directory.TrimEnd(Path.DirectorySeparatorChar))
                              ?? throw new InvalidOperationException("No repository root above the test assembly."));
+
+    private const string NetworkNamespace = "System.Net.";
+
+    private static readonly HashSet<string> NetworkConfigurationTypes = new(StringComparer.Ordinal)
+    {
+        "System.Net.Http.HttpClient",
+        "System.Net.Http.HttpClientHandler",
+        "System.Net.Http.HttpMessageHandler",
+        "System.Net.Http.HttpRequestException",
+        "System.Net.ICredentials",
+    };
+
+    private static readonly HashSet<string> NetworkConfigurationMembers = new(StringComparer.Ordinal)
+    {
+        "System.Net.Http.HttpClient..ctor",
+        "System.Net.Http.HttpClientHandler..ctor",
+        "System.Net.Http.HttpClientHandler.AllowAutoRedirect",
+        "System.Net.Http.HttpClientHandler.UseCookies",
+        "System.Net.Http.HttpClientHandler.UseDefaultCredentials",
+        "System.Net.Http.HttpClientHandler.Credentials",
+        "System.Net.Http.HttpClientHandler.DefaultProxyCredentials",
+    };
 
     private static readonly Dictionary<short, OpCode> OpCodesByValue = typeof(OpCodes)
         .GetFields(BindingFlags.Public | BindingFlags.Static)

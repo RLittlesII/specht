@@ -31,6 +31,10 @@ public sealed class SpecReportDocumentIntegrationTests
                         new SpecViolationFixture().WithIdentifier("B-002").WithLine(12),
                         new SpecViolationFixture().WithSeverity(SpecSeverity.Warning).WithFile("src/area/.spec/README.md").WithLine(0))
             },
+            {
+                "a run over the local copy of an upstream schema source (0001-F7 B-032)",
+                (SpechtReport)new SpechtReportFixture() with { SchemaSource = SpecSchemaSource.Upstream }
+            },
         };
 
     [Fact]

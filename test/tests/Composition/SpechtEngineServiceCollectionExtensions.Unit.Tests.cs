@@ -3,7 +3,9 @@ using System.IO.Abstractions.TestingHelpers;
 using AwesomeAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using Specht.Composition;
+using Specht.Manifest;
 using Specht.Rules;
+using Specht.Tests.Shared;
 using Specht.Tool;
 
 namespace Specht.Tests.Composition;
@@ -13,7 +15,8 @@ namespace Specht.Tests.Composition;
 /// are the rule list, so every rule the engine assembly declares is resolved once, in the order the runner evaluated
 /// them in when they were a hand-written list, reporting the twenty-one ids of the vocabulary; resolving the runner
 /// constructs every loader, reader and rule beneath it, so a registration one of them needs and the engine leaves out
-/// fails the resolve; and a file system registered first is the one the engine reads through. Each provider is built by
+/// fails the resolve; and a file system registered first is the one the engine reads through, the frontmatter schema store
+/// it registers included (<c>0001-F7</c> B-024, item 0092). Each provider is built by
 /// <see cref="TypeRegistrar.Build"/>, the one call site that builds one (ADR-0003). Nothing here touches the disk.
 /// </summary>
 [Trait("Tier", "Unit")]
@@ -95,5 +98,22 @@ public sealed class SpechtEngineServiceCollectionExtensionsUnitTests
 
         // Then
         resolved.Should().BeSameAs(registered);
+    }
+
+    [Fact]
+    public void AFileSystemRegisteredBeforeTheEngine_WhenTheEnginesFrontmatterSchemaStoreReads_ShouldReadThroughThatFileSystem()
+    {
+        // Given
+        byte[] bytes = [(byte)'{', (byte)'}'];
+        var registered = new MockFileSystem(
+            new Dictionary<string, MockFileData> { [Path.Combine("repo", SpecTree.ItemSchemaPath)] = new(bytes) });
+        using var resolver = (TypeResolver)new TypeRegistrar(
+            new ServiceCollection().AddSingleton<IFileSystem>(registered).AddSpechtEngine()).Build();
+
+        // When
+        var store = resolver.Resolve(typeof(FrontmatterSchemaStore));
+
+        // Then
+        store.Should().BeOfType<FrontmatterSchemaStore>().Which.Read("repo", "task.schema.json").Should().Equal(bytes);
     }
 }

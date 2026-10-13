@@ -19,6 +19,9 @@ public sealed record SpechtReport(
     int RulesEvaluated,
     IReadOnlyList<SpecViolation> Violations)
 {
+    /// <summary>Where the check's frontmatter schemas came from (0001-F7 B-032).</summary>
+    public SpecSchemaSource SchemaSource { get; init; } = SpecSchemaSource.Embedded;
+
     /// <summary>How many violations fail the target.</summary>
     public int ErrorCount => Violations.Count(static violation => violation.Severity == SpecSeverity.Error);
 

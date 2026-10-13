@@ -47,7 +47,8 @@ public sealed class SpechtRunner(SpecModelLoader loader, IEnumerable<ISpecRule> 
             ],
             model.Items.Count,
             evaluated.SelectMany(static rule => rule.ReportedIds).Count(enabled.Contains),
-            Order(violations));
+            Order(violations))
+        { SchemaSource = model.Schemas.Source };
     }
 
     /// <summary>

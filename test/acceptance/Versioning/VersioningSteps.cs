@@ -1,4 +1,5 @@
 using System.Globalization;
+using System.Security.Cryptography;
 using System.Text.Json.Nodes;
 using System.Text.RegularExpressions;
 using AwesomeAssertions;
@@ -20,10 +21,15 @@ namespace Specht.Acceptance.Versioning;
 /// alone as a JSON number, the integer the retired pin was, and any other value as a JSON string. B-004's three steps stay
 /// unbound: its proof against what was published is item 0044's. Item 0176 binds B-069 to B-073 and B-076: each writes a
 /// synthetic <c>spechtSchema</c> into the root's manifest with one fault and launches the built tool, and the rejection is
-/// read from its stderr as the manifest's own name for the member or the kind, in quotes. B-068 and B-075 are item 0092's
-/// and B-074 is item 0093's. Item 0126 binds B-086 and B-087 over the embedded resources and their declared addresses.
-/// The rest of the file's scenarios stay pending for their items; a step one of them shares with
-/// a scenario above is bound, and its other steps are not.
+/// read from its stderr as the manifest's own name for the member or the kind, in quotes. Item 0092 binds B-024, B-025,
+/// B-028, B-032, B-068, B-075 and B-077 to B-081: a recorded source carries the SHA-256 of each schema file the root holds,
+/// "the root holds the copy of that source" makes the Feature schema of that copy require a key the embedded one does not
+/// and records that copy's hashes, and each run launches the built tool. "The network is unavailable" points the launched
+/// process's proxy variables at a closed loopback port, and "no network call was attempted" reads the built engine and
+/// tool assemblies for a <c>System.Net</c> reference (OQ-39, the owner's ruling of 2026-10-12). B-074 is item 0093's.
+/// Item 0126 binds B-086 and B-087 over the embedded resources and their declared addresses. The
+/// rest of the file's scenarios stay pending for their items; a step one of them shares with a scenario above is bound,
+/// and its other steps are not.
 /// </summary>
 [Binding]
 [Scope(Feature = "Schema versioning")]
@@ -182,6 +188,53 @@ public sealed class VersioningSteps
             .Should()
             .NotBeNull("the manifest declares the epic grammar");
 
+    [Given("the manifest declares no epic grammar")]
+    public void GivenTheManifestDeclaresNoEpicGrammar() =>
+        EditManifest(static manifest => manifest["identifiers"]!.AsObject().Remove("epic"));
+
+    [Given("the manifest records an upstream schema source")]
+    [Given("the manifest records an upstream schema source and selects no source")]
+    [Given("the manifest records an upstream schema source with its version and content hash")]
+    [Given("the manifest records an upstream schema source with its address, its version and a content hash for each schema it fetches")]
+    public void GivenTheManifestRecordsAnUpstreamSchemaSource() => WriteUpstreamSchemaSource(static _ => { });
+
+    [Given("the manifest pins version {word} and records an upstream schema source")]
+    public void GivenTheManifestPinsVersionAndRecordsAnUpstreamSchemaSource(string version)
+    {
+        WriteSchemaVersion(JsonValue.Create(version));
+        WriteUpstreamSchemaSource(static _ => { });
+    }
+
+    [Given("the root holds the copy of that source under its schema folder")]
+    public void GivenTheRootHoldsTheCopyOfThatSourceUnderItsSchemaFolder()
+    {
+        var path = Path.Combine(Tree.Root, SpecTree.FeatureSchemaPath);
+        var schema = JsonNode.Parse(File.ReadAllText(path))!.AsObject();
+        schema["required"]!.AsArray().Add(UpstreamKey);
+        File.WriteAllText(path, schema.ToJsonString());
+        EditManifest(manifest =>
+        {
+            var hashes = manifest["spechtSchema"]!["hashes"]!.AsObject();
+            foreach (var kind in hashes.Select(static hash => hash.Key).ToList())
+            {
+                hashes[kind] = HashOf(SchemaPaths[kind]);
+            }
+        });
+        Tree.WriteFeature("0001", "F1");
+    }
+
+    [Given("the root's schema folder does not hold the item schema")]
+    public void GivenTheRootsSchemaFolderDoesNotHoldTheItemSchema() => File.Delete(Path.Combine(Tree.Root, SpecTree.ItemSchemaPath));
+
+    [Given("the root's copy of the item schema has been edited since it was fetched")]
+    public void GivenTheRootsCopyOfTheItemSchemaHasBeenEditedSinceItWasFetched() =>
+        File.AppendAllText(Path.Combine(Tree.Root, SpecTree.ItemSchemaPath), "\n");
+
+    [Given("the network is unavailable")]
+    public void GivenTheNetworkIsUnavailable() =>
+        _environment = new[] { "HTTP_PROXY", "HTTPS_PROXY", "ALL_PROXY", "http_proxy", "https_proxy", "all_proxy" }
+            .ToDictionary(static name => name, static _ => ClosedLoopbackPort, StringComparer.Ordinal);
+
     [When("the check runs")]
     [When("the check runs with JSON output")]
     public void WhenTheCheckRuns()
@@ -192,8 +245,44 @@ public sealed class VersioningSteps
             return;
         }
 
-        (_stdout, _stderr, _exitCode) = AcceptanceTool.Launch(Tree.Root, "--root", ".", "--json");
+        (_stdout, _stderr, _exitCode) = AcceptanceTool.Launch(Tree.Root, _environment, "--root", ".", "--json");
     }
+
+    [Then("the frontmatter is validated against the local copy")]
+    public void ThenTheFrontmatterIsValidatedAgainstTheLocalCopy() =>
+        Violations
+            .Where(static violation => violation["file"]!.GetValue<string>() == FeaturePath
+                                       && FrontmatterRules.Contains(violation["ruleId"]!.GetValue<string>()))
+            .Should()
+            .NotBeEmpty("the local copy requires the key '{0}', which the embedded schema does not and the Feature lacks", UpstreamKey);
+
+    [Then("the document says the schemas came from the upstream copy")]
+    public void ThenTheDocumentSaysTheSchemasCameFromTheUpstreamCopy() =>
+        Document["schemaSource"]!.GetValue<string>().Should().Be("upstream");
+
+    [Then(@"^exactly version (\S+)'s rule ids are evaluated$")]
+    public void ThenExactlyThatVersionsRuleIdsAreEvaluated(string version) =>
+        Document["rulesEvaluated"]!.GetValue<int>().Should().Be(SchemaVersions.Embedded.Select(Version(version)).RuleIds.Count);
+
+    [Then("the check completes")]
+    public void ThenTheCheckCompletes()
+    {
+        _exitCode.Should().BeOneOf([0, 1], _stderr);
+        Document["violations"].Should().NotBeNull("the check wrote its report");
+    }
+
+    [Then("no network call was attempted")]
+    public void ThenNoNetworkCallWasAttempted()
+    {
+        EngineAssembly.CheckNetworkReferencesIn(EngineAssembly.Built).Should().BeEmpty();
+        EngineAssembly.CheckNetworkReferencesIn(EngineAssembly.BuiltTool).Should().BeEmpty();
+    }
+
+    [Then("the standard error names the item schema's file")]
+    public void ThenTheStandardErrorNamesTheItemSchemasFile() => _stderr.Should().Contain(SpecTree.ItemSchemaPath);
+
+    [Then("the standard error names the command that fetches it")]
+    public void ThenTheStandardErrorNamesTheCommandThatFetchesIt() => _stderr.Should().Contain("specht init");
 
     [Then("no frontmatter violation is reported")]
     public void ThenNoFrontmatterViolationIsReported() =>
@@ -293,29 +382,39 @@ public sealed class VersioningSteps
         File.WriteAllText(path, manifest.ToJsonString());
     }
 
-    private void WriteUpstreamSchemaSource(Action<JsonObject> fault)
+    private void WriteUpstreamSchemaSource(Action<JsonObject> fault) =>
+        EditManifest(manifest =>
+        {
+            var source = new JsonObject
+            {
+                ["location"] = "https://schemas.example/specht/",
+                ["version"] = "2026.10",
+                ["hashes"] = new JsonObject(SchemaPaths.Select(schema => KeyValuePair.Create(schema.Key, (JsonNode?)HashOf(schema.Value)))),
+            };
+            fault(source);
+            manifest["spechtSchema"] = source;
+        });
+
+    private void EditManifest(Action<JsonObject> edit)
     {
         var path = Path.Combine(Tree.Root, SpecTree.ManifestPath);
         var manifest = JsonNode.Parse(File.ReadAllText(path))!.AsObject();
-        var source = new JsonObject
-        {
-            ["location"] = "https://schemas.example/specht/",
-            ["version"] = "2026.10",
-            ["hashes"] = new JsonObject
-            {
-                ["feature"] = "sha256:" + new string('a', 64),
-                ["task"] = "sha256:" + new string('b', 64),
-                ["epic"] = "sha256:" + new string('c', 64),
-            },
-        };
-        fault(source);
-        manifest["spechtSchema"] = source;
+        edit(manifest);
         File.WriteAllText(path, manifest.ToJsonString());
     }
+
+    private string HashOf(string schemaPath) =>
+        "sha256:" + Convert.ToHexStringLower(SHA256.HashData(File.ReadAllBytes(Path.Combine(Tree.Root, schemaPath))));
 
     private const string MissingRule = "SPEC031";
 
     private const string EpicPath = "epics/0001-epic/epic.md";
+
+    private const string FeaturePath = "epics/0001-epic/F1-feature/spec.md";
+
+    private const string UpstreamKey = "upstream_copy";
+
+    private const string ClosedLoopbackPort = "http://127.0.0.1:9";
 
     private const string TwoClaims =
         "## 3. Acceptance Criteria\n\n| ID | Claim | Source | Status |\n| -- | ----- | ------ | ------ |\n"
@@ -332,6 +431,14 @@ public sealed class VersioningSteps
         ["epic schema"] = "epic",
     };
 
+    private static readonly Dictionary<string, string> SchemaPaths = new(StringComparer.Ordinal)
+    {
+        ["feature"] = SpecTree.FeatureSchemaPath,
+        ["task"] = SpecTree.ItemSchemaPath,
+        ["epic"] = SpecTree.EpicSchemaPath,
+    };
+
+    private Dictionary<string, string> _environment = new(StringComparer.Ordinal);
     private SchemaVersion? _embedded;
     private IReadOnlyList<string> _folders = [];
     private IReadOnlyDictionary<string, string> _addresses = new Dictionary<string, string>();

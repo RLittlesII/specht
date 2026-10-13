@@ -2,6 +2,7 @@ using System.IO.Abstractions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Specht.Discovery;
+using Specht.Manifest;
 using Specht.Model;
 using Specht.Rules;
 
@@ -23,6 +24,8 @@ public static class SpechtEngineServiceCollectionExtensions
         services.AddSingleton<FrontmatterReader>();
         services.AddSingleton<FeatureFileReader>();
         services.AddSingleton<SpecDiscovery>();
+        services.AddSingleton<FrontmatterSchemaStore>();
+        services.AddSingleton<UpstreamSchemaCopy>();
         services.AddSingleton<SpecSchemasLoader>();
         services.AddSingleton<SpecModelLoader>();
         services.AddSingleton<SpechtRunner>();
