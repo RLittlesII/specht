@@ -516,7 +516,8 @@ claude.ai/code/artifacts.
 ## SDLC
 
 **Work is tracked locally.** A `<id>-<slug>.yml` item stands in for a GitHub
-issue, and there are **no issues, labels or milestones** in this workflow. The
+issue, and there are **no GitHub issues or milestones** in this workflow. PR labels
+categorize release notes only; they never track delivery state. The
 item owns delivery state; the Feature's `.spec/README.md` owns content. The
 schema, the status vocabulary and the rank definition are in
 [`.spec/templates/item.yml`](.spec/templates/item.yml): rank is computed on

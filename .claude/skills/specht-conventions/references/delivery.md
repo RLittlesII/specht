@@ -10,7 +10,8 @@ Extends [`deliver-change`](../../deliver-change/SKILL.md).
 
 ## The tracker is local `.issue/` items
 
-There are **no GitHub issues, labels or milestones** in this workflow. A
+There are **no GitHub issues or milestones** in this workflow. PR labels
+categorize release notes only; the local item owns delivery state. A
 `<id>-<slug>.yml` work item stands in for an issue: the item owns delivery state,
 the Feature's `.spec/README.md` owns content, and neither duplicates the other.
 The schema, the status vocabulary and the rank definition live in
@@ -287,6 +288,15 @@ automates the check; review enforces it.
 ./build.sh SpecCheck   # if the change touched a specification, a schema or a template
 ./build.sh             # Compile + Test
 ```
+
+Apply exactly one emoji release category label to the pull request, selected by
+its delivered result rather than its title prefix. The category vocabulary and
+ordering are authoritative in [`.github/release.yml`](../../../../.github/release.yml).
+An agreement or ADR belongs under Specifications; guides and contributor rules
+belong under Documentation. A benchmark records measurement, not an improvement.
+Renovate also retains its plain `dependencies` label (`0055-F4 B-011`), which
+maps to the same category. The catch-all keeps an unmatched PR visible but is
+not a substitute for choosing a category before merge.
 
 Set the item `in-review` — and `done` with its `closed:` date, if this pull
 request finishes it — then open the pull request and **watch the checks**. A

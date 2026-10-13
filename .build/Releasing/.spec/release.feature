@@ -38,6 +38,31 @@ Feature: Release
     When a version tag is published
     Then its release notes list both pull requests
 
+  @B-006
+  Scenario Outline: A release groups labelled pull requests
+    Given a pull request merged since the previous version tag carries the label "<label>"
+    When a version tag is published
+    Then its release notes list that pull request under "<category>"
+
+    Examples:
+      | label              | category            |
+      | 🚀 features         | 🚀 Features          |
+      | 🐛 bug fixes        | 🐛 Bug fixes         |
+      | 📚 documentation    | 📚 Documentation     |
+      | 📐 specifications   | 📐 Specifications    |
+      | ♻️ refactoring      | ♻️ Refactoring       |
+      | 🧪 tests            | 🧪 Tests             |
+      | 📊 benchmarks       | 📊 Benchmarks        |
+      | ⚙️ build and ci     | ⚙️ Build and CI      |
+      | 📦 dependencies     | 📦 Dependencies      |
+      | 🧹 chore            | 🧹 Chore             |
+
+  @B-006 @boundary
+  Scenario: A release retains a pull request with no category label
+    Given a pull request merged since the previous version tag has no recognized category label
+    When a version tag is published
+    Then its release notes list that pull request under "📋 Other changes"
+
   @B-007
   Scenario: A release carries the package
     When a version tag is published

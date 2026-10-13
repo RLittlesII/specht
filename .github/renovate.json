@@ -3,7 +3,7 @@
   "extends": ["config:recommended"],
   "timezone": "America/Chicago",
   "schedule": ["before 6am on monday"],
-  "labels": ["dependencies"],
+  "labels": ["dependencies", "📦 dependencies"],
   "dependencyDashboard": false,
   "nuget": {
     "enabled": true

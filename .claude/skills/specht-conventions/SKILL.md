@@ -74,8 +74,8 @@ test/
 .husky/                        git hooks - pre-commit verifies staged .cs and .md through Format; specht from 0062
 .github/                       workflows (ci, release), renovate.json, settings checklist; issue
                                templates for outside reports only - github_mode stays false and a
-                               maintainer turns a report into a .issue/ item; the only label is
-                               Renovate's `dependencies` on update pull requests (epic 0055)
+                               maintainer turns a report into a .issue/ item. PR labels group release notes;
+                               Renovate keeps `dependencies` beside its emoji category (epic 0055)
 .issue/                        item.yml (the work-item schema), .sequence, and items
                                belonging to no Feature; a Feature's items sit in
                                <home>/.issue/ beside its .spec/
@@ -169,8 +169,8 @@ still uses ordinals.
 ## The spec / item split
 
 **Delivery state is tracked in `.issue/` work items; content is tracked in the
-specification.** There are no GitHub issues, labels or milestones. The item
-cites claim ids and never their text; the specification never carries an item's
+specification.** There are no GitHub issues or milestones. PR labels categorize
+release notes, never delivery state. The item cites claim ids and never their text; the specification never carries an item's
 status. Which fields are authored where, and which are derived and must never be
 hand-edited, is in [references/delivery.md](references/delivery.md) § "What is
 authored, and what is derived". The item schema is
