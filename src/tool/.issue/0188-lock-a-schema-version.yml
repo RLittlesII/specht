@@ -2,7 +2,7 @@ id: "0188"
 type: task
 title: Lock a schema version
 
-status: ready-for-architecture
+status: done
 
 risk: 2
 
@@ -19,8 +19,8 @@ claims:
   - B-093
 
 created: "2026-10-11"
-updated: "2026-10-11"
-closed: null
+updated: "2026-10-13"
+closed: "2026-10-13"
 
 summary: |
   The version lock (A-4, decision 0009): one committed file recording a

@@ -28,12 +28,13 @@ namespace Specht.Acceptance.Versioning;
 /// process's proxy variables at a closed loopback port, and "no network call was attempted" reads the built engine and
 /// tool assemblies for a <c>System.Net</c> reference (OQ-39, the owner's ruling of 2026-10-12). B-074 is item 0093's.
 /// Item 0126 binds B-086 and B-087 over the embedded resources and their declared addresses. The
+/// partial lock bindings execute B-092 and B-093 over synthetic shipping files on disk. The
 /// rest of the file's scenarios stay pending for their items; a step one of them shares with a scenario above is bound,
 /// and its other steps are not.
 /// </summary>
 [Binding]
 [Scope(Feature = "Schema versioning")]
-public sealed class VersioningSteps
+public sealed partial class VersioningSteps
 {
     [Given("the tool ships schema version {word}")]
     public void GivenTheToolShipsSchemaVersion(string version) =>

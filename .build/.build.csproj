@@ -13,6 +13,11 @@
   <ItemGroup>
     <PackageReference Include="Nuke.Common" />
     <PackageReference Include="Rocket.Surgery.Nuke" />
+    <PackageReference Include="TestableIO.System.IO.Abstractions.Wrappers" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\src\specht\specht.csproj" />
   </ItemGroup>
 
 </Project>
