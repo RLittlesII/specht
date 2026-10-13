@@ -273,6 +273,40 @@ Item `0042` built the version set and the pin as an integer; item `0120` convert
 
 ## 7. Technical Design
 
+### Version catalog after ADR-0010 D1
+
+**Designed 2026-10-13; implementation pending.** The following migration map
+replaces the older wiring described below; historical names remain attached to
+their original implementation accounts. Manifest § 7 owns the shared sequencing
+and failure-preservation design.
+
+| Existing entry point                               | D1 replacement                                                                                           |
+| -------------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
+| `SchemaVersions.Embedded`, `ReadEmbedded`          | `Specht.Resources.SpechtResources` reads raw resources; an instance catalog assembles versions in memory |
+| `SchemaVersions.Select`                            | Exact, nullable lookup on the catalog; no manifest exception or path dependency                          |
+| `SpecManifest.Load` pin/upstream parsing           | Pure `SpecManifestParser` over the resource default and injected catalog                                 |
+| `SpecSchemas.Pinned`                               | Parser pin-resolution operation, after text/shape checks                                                 |
+| `SpecSchemas.Load` manifest read                   | `SpecSchemasLoader` sequences the store/parser; the retained schema methods receive parsed values        |
+| `Run(root, versions)` and loader per-call catalogs | One chosen catalog in the constructed engine, including synthetic catalogs in tests                      |
+| `FrontmatterSchemaStore`                           | Local-byte read on `SpecManifestStore`                                                                   |
+
+Keep folder-derived versions, exact equality, numeric enumeration order, schema
+texts, rule pages, vocabulary and all failure messages. The catalog's constructors
+accept only in-memory resources or version values and reference no other engine
+namespace. The parser owns a failed lookup's manifest-relative diagnostic and
+rule-membership diagnostic. Unknown keys and shape/level failures still precede
+lookup. The host's existing catches retain exits 2 and 3 and empty stdout.
+
+The local upstream store is folded as the owner already required on
+2026-10-12, recorded below under the local upstream copy. Verification still compares unchanged original bytes, reports
+all absent/mismatched files in the same order, and never fetches during a check.
+The fifth-store exception described below ends with D1. The verifier and schema
+compiler split are otherwise untouched.
+
+The live-copy default remains the omission source through this refactor.
+Manifest decision 0012 supplies versioned omission defaults afterwards; neither
+a shipped manifest nor a version-lock digest changes here.
+
 <!-- last written by: implementer, 2026-10-13 -->
 
 **A version number is three integers (item `0120`, decision 0005).** [`SemanticVersion`](../../specht/Versioning/SemanticVersion.cs) is a value of major, minor and patch. It compares by major, then minor, then patch, each as a number, so `0.10.0` follows `0.9.0`; two versions are equal when all three are; it writes itself as `major.minor.patch` in the invariant culture. `TryParse` accepts text that is exactly three parts separated by dots, each part a non-negative decimal integer, and nothing else. The engine declares the type itself. A versioning package would be a dependency outside the five `0001-F1` C-7 names, for one comparison and one parse; `System.Version` reads `0.1` and `0.1.0.0` as versions, which B-039 rejects.
@@ -347,6 +381,18 @@ The rationale for content identity, schema/tool version independence, the Git co
 The digest covers every file recursively under `src/tool/schema/v<version>/`, `src/tool/manifest/v<version>/`, `src/tool/templates/v<version>/` and `docs/rules/v<version>/`. These are the existing shipping trees (reuse: `SchemaVersions.ReadEmbedded`, `InitWriter`, and the engine and host resource declarations); the manifest stays in its current separate tree. Each path is relative to the repository root, uses `/`, and is sorted ordinally. For each file the hash receives its UTF-8 path length as an eight-byte big-endian integer, its path bytes, its content length in the same form, then its unchanged content bytes. Length framing prevents different file boundaries from yielding the same input. No timestamp, absolute root or platform newline conversion enters the hash. A new lock is written to a temporary sibling and moved into place; a recorded digest is never recomputed by locking. Validation of the shipped set against the lock, release gating and cutting a version remain outside this change.
 
 ## 8. Testing Strategy
+
+### D1 test migration
+
+**Pending implementation.** Keep the existing schema contents, exact-selection,
+ordering, version-resource and process-exit assertions below. Change the absent
+lookup test to assert no result, and exercise its former rejection assertion
+through the parser's pin-resolution operation. Inject the test's catalog when
+composing its runner rather than passing it to `Run`; both schema-source paths
+must reject before local schema reads. Resource tests construct or resolve the
+one reader/catalog and keep their shipped-folder assertions. The upstream tests
+exercise the folded store without changing digest expectations. § 9 retains
+existing names and coverage until those tests actually move.
 
 <!-- last written by: test-writer, 2026-10-13 -->
 

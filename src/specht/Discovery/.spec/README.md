@@ -123,6 +123,18 @@ Item `0005` declares the inputs and item `0006` the path identity; the walk (`00
 
 ## 7. Technical Design
 
+### Manifest dependency after ADR-0010 D1
+
+**Designed 2026-10-13; implementation pending.** The older design and test
+accounts below name the loader as it existed at their cited commits. Their
+current replacement is `SpecManifestStore` for file observations and text,
+[SpecManifestParser](../../Manifest/SpecManifestParser.cs) for `Discovery`,
+`Layout`, fill and validation, and the injected `SpecSchemasLoader` for the
+read/parse sequence. The parser retains whole-list replacement for all five
+discovery keys and the existing path-identity checks. Discovery receives the
+same `SpecDiscoveryInputs` after manifest validation; no glob helper, layout
+identity rule, exclusion semantics or finding order changes in D1.
+
 <!-- last written by: implementer, 2026-10-11 (item 0185: the two manifest copies are `.specht/manifest.json` and `src/tool/manifest/v1/manifest.json`, `0001-F5` decision 0011; item 0183: the live manifest copy is under `.specht/`, ADR-0011; item 0107: `SpecDiscovery` is a sealed instance class over an injected `IFileSystem`, and the path mapping is `SpecPath.Relative`, ADR-0001 stage D; every other paragraph as its item left it) -->
 
 Design for item `0005` (B-001, B-002, B-003, B-009, B-012) and item `0006` (B-004), as built. brief § 5 "Discovery cost" is the drafted direction for `0007` and `0008`, which are not designed here.
@@ -301,6 +313,14 @@ The layout list is computed where the report is built, from the model alone: for
 **The repository-root `README.md`.** It carries the default manifest as a block and a table of the manifest keys read today. Item `0119` held the block byte for byte to the live manifest, now `.specht/manifest.json`, and its owner decision keeps the `epics/**/spec.md` layout, then named `legacy`, off the page, so the two could not both hold once the file carried `layouts`. The owner resolved it ([decision 0007](decisions/0007-the-readmes-default-manifest-block-omits-the-discovery-keys.md), OQ-11): the block is the schema file less the five discovery keys, the table lists the five, and no layout is named on the page. Decision 0008 leaves that standing; the table's rows for `taskFiles`, `epicFiles` and `companionFiles` now describe a list of globs that must not be empty.
 
 ## 8. Testing Strategy
+
+### D1 test migration
+
+**Pending implementation.** Repoint manifest-reading discovery tests to the pure parser when only the five
+keys are under test; retain loader/store composition where a test proves the
+manifest-to-discovery seam. Keep current test names in § 9 until they are
+actually renamed during implementation. The default and every-key-omitted
+golden comparisons remain the evidence for unchanged discovery inputs.
 
 <!-- last written by: test-writer, 2026-10-11 (item 0107: the unit tests build `new SpecDiscovery(fileSystem)`; no row or expectation changed) -->
 
