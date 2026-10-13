@@ -27,12 +27,11 @@ not pinned per repository, so a build still uses the manifest.
 ## Initialise
 
 ```sh
-dotnet specht init
+dotnet specht init --all
 ```
 
 ```text
 written .specht/manifest.json
-written .specht/schema/frontmatter/epic.schema.json
 written .specht/schema/frontmatter/feature.schema.json
 written .specht/schema/frontmatter/task.schema.json
 written .specht/templates/adr.md
@@ -41,9 +40,14 @@ written .specht/templates/feature.md
 written .specht/templates/lesson.md
 ```
 
-The manifest, the three frontmatter schemas and four blanks. A file that exists
-is listed as `skipped` and left as it was, so `init` is safe to run again.
-`--root <dir>` writes under another directory.
+The manifest, the Feature and item frontmatter schemas and four blanks. Without `--all`,
+`init` writes only the manifest; `--schemas` adds the frontmatter schemas and
+`--templates` adds the blanks. A file in the selection that exists is listed as
+`skipped` and left as it was, so `init` is safe to run again. `--root <dir>`
+writes under another directory.
+
+Beside an existing manifest that declares the epic grammar, `--schemas` and
+`--all` also select the epic frontmatter schema.
 
 ## First check
 

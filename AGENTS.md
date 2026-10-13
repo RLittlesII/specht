@@ -114,9 +114,8 @@ B-029 to B-032). Each file comes from the embedded copies - the frontmatter
 schemas from an upstream schema source instead, where the manifest records one
 (`0001-F4` B-014) - and `init` never overwrites a file that exists.
 
-The layout is built (item `0185`). The options are specified and not built:
-until item `0186` every `init` writes every file. `--epics` has no item
-(`0001-F5` OQ-18).
+The layout and the three part options are built (items `0185` and `0186`).
+`--epics` is specified and not built; it has no item (`0001-F5` OQ-18).
 
 `schemaVersion` is a `major.minor.patch` schema version, numbered apart from
 the `specht.tool` package version; the first is `0.1.0`, and a manifest with no
@@ -168,7 +167,7 @@ a root pins, is specified and not built (`0001-F7` B-041, B-042, B-084, B-085).
 A command that pins one is specified, and neither named nor placed
 (`0001-F7` B-043 to B-051, OQ-11).
 
-`specht upgrade`, `--explain`, `--report` and the four `init` options are
+`specht upgrade`, `--explain`, `--report` and the `init --epics` option are
 specified and not built (`0001-F7`, `0001-F3`, `0001-F4`). What the tool accepts today is
 [`docs/cli.md`](docs/cli.md), which a test holds to its help (`0002-F1`).
 

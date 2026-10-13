@@ -15,9 +15,9 @@ namespace Specht.Acceptance.Init;
 /// rule setting in memory, which the comparison must ignore. B-007 and B-009 launch the built tool over a synthetic root
 /// inside a temporary sandbox, from the sandbox so writing beside the root is seen, or from the root when no root is named.
 /// B-007's sandbox holds no root: the root is typed relative to it, and the sandbox is snapshotted before the run. B-010 and
-/// B-011's manifest is the embedded one with <c>schemaVersion</c> set to the newest version shipped. The steps that run
-/// <c>init</c> with a part named - with schemas, with templates, with every part - are item 0186's and have no binding, so
-/// the scenarios of B-003, B-005, B-006, B-008, B-010, B-011 and B-028 do not run until it binds them.
+/// B-011's manifest is the embedded one with <c>schemaVersion</c> set to the newest version shipped. Item 0186 binds the
+/// part selections: no option, schemas, templates, every part and schemas plus templates. Bare roots omit the epic schema;
+/// beside the existing epic-declaring manifest, the schemas selection includes it.
 /// </summary>
 [Binding]
 [Scope(Feature = "init")]
@@ -38,6 +38,13 @@ public sealed partial class InitSteps
     [Given("a root directory with no configuration folder")]
     [Given("a working directory with no configuration folder")]
     public void GivenARootDirectoryWithNoConfigurationFolder() => Prepare();
+
+    [Given("two root directories with no configuration folder")]
+    public void GivenTwoRootDirectoriesWithNoConfigurationFolder()
+    {
+        Prepare();
+        Directory.CreateDirectory(SecondRoot);
+    }
 
     [Given("no upstream schema source is recorded")]
     public void GivenNoUpstreamSchemaSourceIsRecorded() =>
@@ -95,6 +102,25 @@ public sealed partial class InitSteps
     [When("init runs against it")]
     public void WhenInitRunsAgainstIt() => (_stdout, _stderr, _exitCode) = AcceptanceTool.Launch(Sandbox, "init", "--root", _typed);
 
+    [When("init runs against it with no option")]
+    public void WhenInitRunsAgainstItWithNoOption() => WhenInitRunsAgainstIt();
+
+    [When("init runs against it with schemas")]
+    public void WhenInitRunsAgainstItWithSchemas() => Run("--schemas");
+
+    [When("init runs against it with templates")]
+    public void WhenInitRunsAgainstItWithTemplates() => Run("--templates");
+
+    [When("init runs against it with every part")]
+    public void WhenInitRunsAgainstItWithEveryPart() => Run("--all");
+
+    [When("init runs against the first with every part")]
+    public void WhenInitRunsAgainstTheFirstWithEveryPart() => Run("--all");
+
+    [When("init runs against the second with schemas and templates")]
+    public void WhenInitRunsAgainstTheSecondWithSchemasAndTemplates() =>
+        (_stdout, _stderr, _exitCode) = AcceptanceTool.Launch(Sandbox, "init", "--root", _secondTyped, "--schemas", "--templates");
+
     [When("init runs there without naming a root")]
     public void WhenInitRunsThereWithoutNamingARoot() => (_stdout, _stderr, _exitCode) = AcceptanceTool.Launch(Root, "init");
 
@@ -122,6 +148,42 @@ public sealed partial class InitSteps
             .Should()
             .HaveCount(4)
             .And.AllSatisfy(file => File.Exists(Written(file)).Should().BeTrue($"init writes .specht/{file}; {_stdout}{_stderr}"));
+
+    [Then("the only file written is the manifest")]
+    public void ThenTheOnlyFileWrittenIsTheManifest() => ConfiguredFiles(Root).Should().Equal(Manifest);
+
+    [Then("the files written are exactly the manifest and the Feature and item frontmatter schemas")]
+    public void ThenTheFilesWrittenAreExactlyTheManifestAndTheFeatureAndItemFrontmatterSchemas() =>
+        ConfiguredFiles(Root).Should().Equal(Manifest, FeatureSchema, ItemSchema);
+
+    [Then("the files written are exactly the manifest and the four templates")]
+    public void ThenTheFilesWrittenAreExactlyTheManifestAndTheFourTemplates() =>
+        ConfiguredFiles(Root).Should().Equal([Manifest, .. Templates]);
+
+    [Then("the two roots hold the same files with the same content")]
+    public void ThenTheTwoRootsHoldTheSameFilesWithTheSameContent()
+    {
+        var first = ConfiguredSnapshot(Root);
+        var second = ConfiguredSnapshot(SecondRoot);
+        second.Keys.Should().Equal(first.Keys);
+        foreach (var (path, bytes) in first)
+        {
+            second[path].Should().Equal(bytes, path);
+        }
+    }
+
+    [Then("the manifest is written")]
+    public void ThenTheManifestIsWritten() => File.Exists(Written(Manifest)).Should().BeTrue(_stdout + _stderr);
+
+    [Then("the frontmatter schema folder holds the Feature and item frontmatter schemas")]
+    public void ThenTheFrontmatterSchemaFolderHoldsTheFeatureAndItemFrontmatterSchemas() =>
+        ConfiguredFiles(Root).Where(static file => file.StartsWith(FrontmatterSchemas, StringComparison.Ordinal))
+            .Should()
+            .Equal(FeatureSchema, ItemSchema);
+
+    [Then("the frontmatter schema folder holds no epic frontmatter schema")]
+    public void ThenTheFrontmatterSchemaFolderHoldsNoEpicFrontmatterSchema() =>
+        File.Exists(Written(EpicSchema)).Should().BeFalse(_stdout + _stderr);
 
     [Then("the exit code is {int}")]
     public void ThenTheExitCodeIs(int code) => _exitCode.Should().Be(code, _stdout + _stderr);
@@ -157,10 +219,10 @@ public sealed partial class InitSteps
         }
     }
 
-    [Then("the standard output lists every one of the eight files relative to the root")]
-    public void ThenTheStandardOutputListsEveryOneOfTheEightFilesRelativeToTheRoot()
+    [Then("the standard output lists the manifest, each frontmatter schema and each template relative to the root")]
+    public void ThenTheStandardOutputListsTheManifestEachFrontmatterSchemaAndEachTemplateRelativeToTheRoot()
     {
-        foreach (var file in EightFiles)
+        foreach (var file in FilesWithoutEpics)
         {
             Listing(file).Should().ContainSingle($"stdout lists .specht/{file} once; {_stdout}{_stderr}");
         }
@@ -171,12 +233,18 @@ public sealed partial class InitSteps
     [Then("marks the feature template as skipped and the rest as written")]
     public void ThenMarksTheFeatureTemplateAsSkippedAndTheRestAsWritten()
     {
-        foreach (var file in EightFiles)
+        foreach (var file in FilesWithoutEpics)
         {
             var (marker, other) = file == FeatureTemplate ? ("skipped", "written") : ("written", "skipped");
             Listing(file).Should().ContainSingle(_stdout).Which.Should().Contain(marker).And.NotContain(other);
         }
     }
+
+    [Then("the standard output lists the manifest and no other file")]
+    public void ThenTheStandardOutputListsTheManifestAndNoOtherFile() =>
+        _stdout.Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+            .Should()
+            .Equal($"written .specht/{Manifest}");
 
     [Then("the only files created are the manifest and files under the frontmatter schema folder and the templates folder")]
     public void ThenTheOnlyFilesCreatedAreTheManifestAndFilesUnderTheFrontmatterSchemaFolderAndTheTemplatesFolder()
@@ -283,11 +351,13 @@ public sealed partial class InitSteps
 
     private static Assembly Shipped => typeof(ExitCodes).Assembly;
 
-    private static string[] EightFiles => [Manifest, .. ToolOwnedFiles];
+    private static string[] FilesWithoutEpics => [Manifest, FeatureSchema, ItemSchema, .. Templates];
 
     private string Sandbox => _sandbox ?? throw new InvalidOperationException("No root was prepared.");
 
     private string Root => Path.Combine(Sandbox, _typed);
+
+    private string SecondRoot => Path.Combine(Sandbox, _secondTyped);
 
     private Dictionary<string, (byte[]? Embedded, byte[]? Live)> Files =>
         _files ?? throw new InvalidOperationException("Nothing was compared.");
@@ -332,6 +402,18 @@ public sealed partial class InitSteps
         snapshot.Where(static entry => entry.Key.StartsWith("repo/.spec/", StringComparison.Ordinal))
             .ToDictionary(static entry => entry.Key, static entry => entry.Value, StringComparer.Ordinal);
 
+    private static string[] ConfiguredFiles(string root) =>
+        Directory.EnumerateFiles(Path.Combine(root, ".specht"), "*", SearchOption.AllDirectories)
+            .Select(file => Path.GetRelativePath(Path.Combine(root, ".specht"), file).Replace(Path.DirectorySeparatorChar, '/'))
+            .Order(StringComparer.Ordinal)
+            .ToArray();
+
+    private static Dictionary<string, byte[]> ConfiguredSnapshot(string root) =>
+        ConfiguredFiles(root).ToDictionary(
+            static file => file,
+            file => File.ReadAllBytes(Path.Combine([root, ".specht", .. file.Split('/')])),
+            StringComparer.Ordinal);
+
     private void Prepare()
     {
         _sandbox = Path.Combine(Path.GetTempPath(), "specht-init-" + Guid.NewGuid().ToString("N"));
@@ -342,6 +424,12 @@ public sealed partial class InitSteps
     }
 
     private string Written(string file) => Path.Combine([Root, ".specht", .. file.Split('/')]);
+
+    private void Run(params string[] options)
+    {
+        var arguments = new[] { "init", "--root", _typed }.Concat(options).ToArray();
+        (_stdout, _stderr, _exitCode) = AcceptanceTool.Launch(Sandbox, arguments);
+    }
 
     private string[] Listing(string file) =>
         _stdout.Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
@@ -360,6 +448,20 @@ public sealed partial class InitSteps
     private const string FrontmatterSchemas = "schema/frontmatter/";
 
     private const string FeatureTemplate = "templates/feature.md";
+
+    private const string FeatureSchema = FrontmatterSchemas + "feature.schema.json";
+
+    private const string ItemSchema = FrontmatterSchemas + "task.schema.json";
+
+    private const string EpicSchema = FrontmatterSchemas + "epic.schema.json";
+
+    private static readonly string[] Templates =
+    [
+        "templates/adr.md",
+        "templates/decision.md",
+        "templates/feature.md",
+        "templates/lesson.md",
+    ];
 
     private static readonly string[] ToolOwnedFiles =
     [
@@ -384,6 +486,7 @@ public sealed partial class InitSteps
         "templates/lesson.md",
     ];
 
+    private readonly string _secondTyped = "repo-2";
     private JsonObject? _liveManifest;
     private Dictionary<string, (byte[]? Embedded, byte[]? Live)>? _files;
     private JsonObject? _embeddedManifest;

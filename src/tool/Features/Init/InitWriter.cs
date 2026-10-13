@@ -13,9 +13,8 @@ using Specht.Manifest;
 namespace Specht.Tool.Features.Init;
 
 /// <summary>
-/// Writes the newest shipped version of the eight files to <c>&lt;root&gt;/.specht/manifest.json</c> and into
-/// <c>&lt;root&gt;/.specht/schema/frontmatter/</c> and <c>&lt;root&gt;/.specht/templates/</c> (<c>0001-F4</c> B-008), leaving every
-/// file that exists as it was (C-1).
+/// Writes the newest shipped manifest, and the selected schemas and templates, under <c>&lt;root&gt;/.specht/</c>
+/// (<c>0001-F4</c> B-029 to B-033), leaving every file that exists as it was (C-1).
 /// </summary>
 /// <param name="shippingCopy">
 /// The embedded files by logical name: <c>manifest/v&lt;n&gt;/manifest.json</c>, <c>schema/v&lt;n&gt;/frontmatter/&lt;file&gt;</c> or
@@ -32,12 +31,18 @@ public sealed partial class InitWriter(IReadOnlyDictionary<string, byte[]> shipp
             .Where(static name => Shipped().IsMatch(name))
             .ToDictionary(static name => name, name => Read(assembly, name), StringComparer.Ordinal);
 
-    /// <summary>Writes each of the newest version's files that is absent under <paramref name="root"/>.</summary>
+    /// <summary>Writes the newest version's manifest and each selected part that is absent under <paramref name="root"/>.</summary>
     /// <param name="root">The repository root, which must be a directory.</param>
+    /// <param name="schemas">Whether the frontmatter schemas are selected.</param>
+    /// <param name="templates">Whether the templates are selected.</param>
     /// <param name="cancellationToken">Cancels the run between files.</param>
     /// <returns>Each file, relative to the root with <c>/</c> separators in ordinal order, and whether it was written or skipped.</returns>
     /// <exception cref="SpechtRootNotFoundException"><paramref name="root"/> is not a directory.</exception>
-    public async Task<IReadOnlyList<(string Path, bool Written)>> Write(string root, CancellationToken cancellationToken)
+    public async Task<IReadOnlyList<(string Path, bool Written)>> Write(
+        string root,
+        bool schemas,
+        bool templates,
+        CancellationToken cancellationToken)
     {
         if (!fileSystem.Directory.Exists(root))
         {
@@ -45,8 +50,9 @@ public sealed partial class InitWriter(IReadOnlyDictionary<string, byte[]> shipp
         }
 
         var listing = new List<(string Path, bool Written)>();
+        var manifestPresent = fileSystem.File.Exists(fileSystem.Path.Combine([root, .. SpecManifest.RelativePath.Split('/')]));
 
-        foreach (var (relative, bytes) in Newest())
+        foreach (var (relative, bytes) in Newest(schemas, templates, manifestPresent))
         {
             var path = fileSystem.Path.Combine([root, .. relative.Split('/')]);
 
@@ -80,22 +86,33 @@ public sealed partial class InitWriter(IReadOnlyDictionary<string, byte[]> shipp
     [GeneratedRegex("^(?:manifest/v(?<version>[0-9]+)/manifest\\.json|(?<folder>schema|templates)/v(?<version>[0-9]+)/(?<path>.+))$")]
     private static partial Regex Shipped();
 
-    private IEnumerable<(string Relative, byte[] Bytes)> Newest()
+    private IEnumerable<(string Relative, byte[] Bytes)> Newest(bool schemas, bool templates, bool manifestPresent)
     {
         var shipped = shippingCopy
             .Select(static entry => (Name: Shipped().Match(entry.Key), Bytes: entry.Value))
             .Where(static entry => entry.Name.Success)
             .Select(static entry => (
                 Version: int.Parse(entry.Name.Groups["version"].Value, CultureInfo.InvariantCulture),
-                Relative: entry.Name.Groups["folder"].Success
-                    ? $"{SpecManifest.ConfigurationFolder}/{entry.Name.Groups["folder"].Value}/{entry.Name.Groups["path"].Value}"
-                    : SpecManifest.RelativePath,
+                Folder: entry.Name.Groups["folder"].Success ? entry.Name.Groups["folder"].Value : null,
+                Path: entry.Name.Groups["path"].Success ? entry.Name.Groups["path"].Value : null,
                 entry.Bytes))
             .ToList();
         var newest = shipped.Max(static entry => entry.Version);
 
         return shipped
             .Where(entry => entry.Version == newest)
+            .Where(entry => entry.Folder switch
+            {
+                null => true,
+                "schema" => schemas && (manifestPresent || entry.Path != "frontmatter/epic.schema.json"),
+                "templates" => templates,
+                _ => false,
+            })
+            .Select(static entry => (
+                Relative: entry.Folder is null
+                    ? SpecManifest.RelativePath
+                    : $"{SpecManifest.ConfigurationFolder}/{entry.Folder}/{entry.Path}",
+                entry.Bytes))
             .OrderBy(static entry => entry.Relative, StringComparer.Ordinal)
             .Select(static entry => (entry.Relative, entry.Bytes));
     }

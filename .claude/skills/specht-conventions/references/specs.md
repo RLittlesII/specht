@@ -44,7 +44,7 @@ both numbered repo-wide from `0001`. The root `.specht/templates/` holds the bla
 `.specht/manifest.json` is the manifest.
 
 The root `.specht/` is **the live copy this
-repository checks itself with** — exactly what `specht init` writes into a
+repository checks itself with** — the files `specht init` can select for a
 consumer. The shipping copy is embedded in `src/tool/manifest/v1/`,
 `schema/v1/frontmatter/` and `templates/v1/`; the two are the same bytes for the tool-owned files (the
 frontmatter schemas and the templates), and the manifest matches on its
@@ -125,7 +125,9 @@ specht --root <dir> --strict           # any violation fails
 specht --json                          # the report document on stdout instead of the line stream
 specht --report .artifacts/spec-check/spec-check.json
 specht --explain SPEC031               # a rule's full text; exit 4 for a rule id the pinned version lacks
-specht init                            # write the manifest, schemas and templates into <root>/.specht/, never overwriting
+specht init                            # write the manifest into <root>/.specht/, never overwriting
+specht init --schemas --templates      # add the frontmatter schemas and templates
+specht init --all                      # the same two parts as --schemas --templates
 ./build.sh SpecCheck                   # the same command, on this repository's own tree
 ```
 

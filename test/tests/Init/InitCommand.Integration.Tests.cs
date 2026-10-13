@@ -22,7 +22,51 @@ namespace Specht.Tests.Init;
 [Trait("Tier", "Integration")]
 public sealed class InitCommandIntegrationTests : IDisposable
 {
-    public static TheoryData<string> EightFiles => new(Files);
+    public static TheoryData<string> SelectedFiles => new(Files);
+
+    public static TheoryData<string[], string[]> Selections =>
+        new()
+        {
+            { [], [".specht/manifest.json"] },
+            {
+                ["--schemas"],
+                [".specht/manifest.json", ".specht/schema/frontmatter/feature.schema.json", ".specht/schema/frontmatter/task.schema.json"]
+            },
+            {
+                ["--templates"],
+                [
+                    ".specht/manifest.json",
+                    ".specht/templates/adr.md",
+                    ".specht/templates/decision.md",
+                    ".specht/templates/feature.md",
+                    ".specht/templates/lesson.md",
+                ]
+            },
+            {
+                ["--all"],
+                [
+                    ".specht/manifest.json",
+                    ".specht/schema/frontmatter/feature.schema.json",
+                    ".specht/schema/frontmatter/task.schema.json",
+                    ".specht/templates/adr.md",
+                    ".specht/templates/decision.md",
+                    ".specht/templates/feature.md",
+                    ".specht/templates/lesson.md",
+                ]
+            },
+            {
+                ["--schemas", "--templates"],
+                [
+                    ".specht/manifest.json",
+                    ".specht/schema/frontmatter/feature.schema.json",
+                    ".specht/schema/frontmatter/task.schema.json",
+                    ".specht/templates/adr.md",
+                    ".specht/templates/decision.md",
+                    ".specht/templates/feature.md",
+                    ".specht/templates/lesson.md",
+                ]
+            },
+        };
 
     public static TheoryData<string, string[]> RootsThatAreNotDirectories =>
         new()
@@ -32,8 +76,8 @@ public sealed class InitCommandIntegrationTests : IDisposable
         };
 
     [Theory]
-    [MemberData(nameof(EightFiles))]
-    public void OneOfTheEightFilesPresent_WhenInitRuns_ShouldListItSkippedAndEveryOtherWrittenRelativeToTheRoot(string present)
+    [MemberData(nameof(SelectedFiles))]
+    public void OneSelectedFilePresent_WhenInitRunsWithEveryPart_ShouldListItSkippedAndEveryOtherSelectedFileWritten(string present)
     {
         // Given
         var root = Path.Combine(_sandbox, "repo");
@@ -42,7 +86,7 @@ public sealed class InitCommandIntegrationTests : IDisposable
         File.WriteAllText(path, present.EndsWith(".json", StringComparison.Ordinal) ? "{}\n" : "# A synthetic template with local edits\n");
 
         // When
-        var (stdout, stderr, exitCode) = AcceptanceTool.Launch(_sandbox, "init", "--root", "repo");
+        var (stdout, stderr, exitCode) = AcceptanceTool.Launch(_sandbox, "init", "--root", "repo", "--all");
 
         // Then
         exitCode.Should().Be(ExitCodes.Success, stdout + stderr);
@@ -61,6 +105,29 @@ public sealed class InitCommandIntegrationTests : IDisposable
         stdout.Should().NotContain(_sandbox).And.NotContain("\\");
     }
 
+    [Theory]
+    [MemberData(nameof(Selections))]
+    public void APartSelection_WhenInitRuns_ShouldWriteAndListExactlyTheSelection(string[] options, string[] expected)
+    {
+        // Given
+        var root = Path.Combine(_sandbox, "repo");
+        Directory.CreateDirectory(root);
+        var arguments = new[] { "init", "--root", "repo" }.Concat(options).ToArray();
+
+        // When
+        var (stdout, stderr, exitCode) = AcceptanceTool.Launch(_sandbox, arguments);
+
+        // Then
+        exitCode.Should().Be(ExitCodes.Success, stdout + stderr);
+        var files = Directory.EnumerateFiles(Path.Combine(root, ".specht"), "*", SearchOption.AllDirectories)
+            .Select(file => Path.GetRelativePath(root, file).Replace(Path.DirectorySeparatorChar, '/'))
+            .Order(StringComparer.Ordinal);
+        files.Should().Equal(expected);
+        stdout.Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+            .Should()
+            .Equal(expected.Select(static file => $"written {file}"));
+    }
+
     [Fact]
     public void NoRootOption_WhenInitRuns_ShouldWriteUnderTheWorkingDirectory()
     {
@@ -68,7 +135,7 @@ public sealed class InitCommandIntegrationTests : IDisposable
         var workingDirectory = Directory.GetCurrentDirectory();
         var fileSystem = new MockFileSystem();
         fileSystem.AddDirectory(workingDirectory);
-        var shippingCopy = new Dictionary<string, byte[]> { ["templates/v1/feature.md"] = "# Shipped\n"u8.ToArray() };
+        var shippingCopy = new Dictionary<string, byte[]> { ["manifest/v1/manifest.json"] = "{}\n"u8.ToArray() };
         var services = new ServiceCollection();
         services.AddSingleton(new InitWriter(shippingCopy, fileSystem));
         var app = new CommandAppTester(new TypeRegistrar(services), console: new TestConsole().Width(80));
@@ -79,7 +146,7 @@ public sealed class InitCommandIntegrationTests : IDisposable
 
         // Then
         result.ExitCode.Should().Be(0, result.Output);
-        fileSystem.File.Exists(Path.Combine(workingDirectory, SpecTree.TemplatesFolder, "feature.md")).Should().BeTrue(result.Output);
+        fileSystem.File.Exists(Path.Combine(workingDirectory, SpecTree.ManifestPath)).Should().BeTrue(result.Output);
     }
 
     [Theory]
@@ -123,7 +190,6 @@ public sealed class InitCommandIntegrationTests : IDisposable
         ".specht/manifest.json",
         ".specht/schema/frontmatter/feature.schema.json",
         ".specht/schema/frontmatter/task.schema.json",
-        ".specht/schema/frontmatter/epic.schema.json",
         ".specht/templates/feature.md",
         ".specht/templates/decision.md",
         ".specht/templates/adr.md",

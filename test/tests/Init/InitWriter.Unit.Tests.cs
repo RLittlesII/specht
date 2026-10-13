@@ -15,6 +15,42 @@ namespace Specht.Tests.Init;
 [Trait("Tier", "Unit")]
 public sealed class InitWriterUnitTests
 {
+    /// <summary>Gets the selected parts, whether a manifest already exists, and the files the writer must list.</summary>
+    public static TheoryData<bool, bool, bool, string[]> PartSelections =>
+        new()
+        {
+            { false, false, false, [".specht/manifest.json"] },
+            {
+                true,
+                false,
+                false,
+                [".specht/manifest.json", ".specht/schema/frontmatter/feature.schema.json", ".specht/schema/frontmatter/task.schema.json"]
+            },
+            { false, true, false, [".specht/manifest.json", ".specht/templates/feature.md"] },
+            {
+                true,
+                true,
+                false,
+                [
+                    ".specht/manifest.json",
+                    ".specht/schema/frontmatter/feature.schema.json",
+                    ".specht/schema/frontmatter/task.schema.json",
+                    ".specht/templates/feature.md",
+                ]
+            },
+            {
+                true,
+                false,
+                true,
+                [
+                    ".specht/manifest.json",
+                    ".specht/schema/frontmatter/epic.schema.json",
+                    ".specht/schema/frontmatter/feature.schema.json",
+                    ".specht/schema/frontmatter/task.schema.json",
+                ]
+            },
+        };
+
     /// <summary>Gets the versions a shipping copy carries, and the one the writer must write.</summary>
     public static TheoryData<int[], int> Versions =>
         new()
@@ -53,7 +89,7 @@ public sealed class InitWriterUnitTests
         var fileSystem = BareRoot();
 
         // When
-        var listing = await new InitWriter(shippingCopy, fileSystem).Write(Root, CancellationToken.None);
+        var listing = await new InitWriter(shippingCopy, fileSystem).Write(Root, schemas: true, templates: true, CancellationToken.None);
 
         // Then
         listing.Should().Equal((".specht/manifest.json", true), (".specht/templates/feature.md", true));
@@ -72,7 +108,8 @@ public sealed class InitWriterUnitTests
         var fileSystem = BareRoot();
 
         // When
-        var listing = await new InitWriter(new Dictionary<string, byte[]> { [name] = bytes }, fileSystem).Write(Root, CancellationToken.None);
+        var listing = await new InitWriter(new Dictionary<string, byte[]> { [name] = bytes }, fileSystem)
+            .Write(Root, schemas: true, templates: true, CancellationToken.None);
 
         // Then
         listing.Should().Equal((relative, true));
@@ -92,7 +129,7 @@ public sealed class InitWriterUnitTests
         };
 
         // When
-        var listing = await new InitWriter(shippingCopy, fileSystem).Write(Root, CancellationToken.None);
+        var listing = await new InitWriter(shippingCopy, fileSystem).Write(Root, schemas: true, templates: true, CancellationToken.None);
 
         // Then
         listing.Should().Equal((".specht/templates/adr.md", true), (".specht/templates/feature.md", false));
@@ -114,7 +151,7 @@ public sealed class InitWriterUnitTests
         };
 
         // When
-        await new InitWriter(shippingCopy, fileSystem).Write(Root, CancellationToken.None);
+        await new InitWriter(shippingCopy, fileSystem).Write(Root, schemas: true, templates: true, CancellationToken.None);
 
         // Then
         foreach (var (name, bytes) in shippingCopy.Where(static entry => entry.Key != "templates/v1/decision.md"))
@@ -123,6 +160,37 @@ public sealed class InitWriterUnitTests
             fileSystem.File.Exists(absent).Should().BeTrue($"{name} was absent");
             fileSystem.File.ReadAllBytes(absent).Should().Equal(bytes, name);
         }
+    }
+
+    [Theory]
+    [MemberData(nameof(PartSelections))]
+    public async Task SelectedParts_WhenWritten_ShouldListOnlyTheManifestAndAskedForParts(
+        bool schemas,
+        bool templates,
+        bool manifestPresent,
+        string[] expected)
+    {
+        // Given
+        var fileSystem = BareRoot();
+        if (manifestPresent)
+        {
+            fileSystem.AddFile(Path.Combine(Root, SpecTree.ManifestPath), new MockFileData("{ \"identifiers\": { \"epic\": \"^[0-9]+$\" } }"));
+        }
+
+        var shippingCopy = new Dictionary<string, byte[]>
+        {
+            ["manifest/v1/manifest.json"] = "{}\n"u8.ToArray(),
+            ["schema/v1/frontmatter/epic.schema.json"] = "{}\n"u8.ToArray(),
+            ["schema/v1/frontmatter/feature.schema.json"] = "{}\n"u8.ToArray(),
+            ["schema/v1/frontmatter/task.schema.json"] = "{}\n"u8.ToArray(),
+            ["templates/v1/feature.md"] = "# Shipped feature\n"u8.ToArray(),
+        };
+
+        // When
+        var listing = await new InitWriter(shippingCopy, fileSystem).Write(Root, schemas, templates, CancellationToken.None);
+
+        // Then
+        listing.Select(static entry => entry.Path).Should().Equal(expected);
     }
 
     [Fact]
@@ -150,7 +218,7 @@ public sealed class InitWriterUnitTests
         var before = UnderTheSpecFolder();
 
         // When
-        await new InitWriter(shippingCopy, fileSystem).Write(Root, CancellationToken.None);
+        await new InitWriter(shippingCopy, fileSystem).Write(Root, schemas: true, templates: true, CancellationToken.None);
 
         // Then
         UnderTheSpecFolder().Should().Equal(before);
@@ -165,7 +233,7 @@ public sealed class InitWriterUnitTests
         var writer = new InitWriter(new Dictionary<string, byte[]> { ["templates/v1/feature.md"] = [] }, fileSystem);
 
         // When
-        var write = () => writer.Write(Root, CancellationToken.None);
+        var write = () => writer.Write(Root, schemas: false, templates: false, CancellationToken.None);
 
         // Then
         await write.Should().ThrowExactlyAsync<SpechtRootNotFoundException>(because);
@@ -180,12 +248,12 @@ public sealed class InitWriterUnitTests
         var root = fileSystem.Path.GetFullPath(Root);
 
         // When
-        var listing = await new InitWriter(InitWriter.ShippingCopy(typeof(InitWriter).Assembly), fileSystem).Write(Root, CancellationToken.None);
+        var listing = await new InitWriter(InitWriter.ShippingCopy(typeof(InitWriter).Assembly), fileSystem)
+            .Write(Root, schemas: true, templates: true, CancellationToken.None);
 
         // Then
         listing.Should().Equal(
             (".specht/manifest.json", true),
-            (".specht/schema/frontmatter/epic.schema.json", true),
             (".specht/schema/frontmatter/feature.schema.json", true),
             (".specht/schema/frontmatter/task.schema.json", true),
             (".specht/templates/adr.md", true),
@@ -195,7 +263,7 @@ public sealed class InitWriterUnitTests
         fileSystem.AllFiles
             .Select(file => fileSystem.Path.GetRelativePath(root, file).Replace(fileSystem.Path.DirectorySeparatorChar, '/'))
             .Should()
-            .HaveCount(8)
+            .HaveCount(7)
             .And.AllSatisfy(static path => path.Should().Match(static file =>
                 file == SpecTree.ManifestPath
                 || file.StartsWith(SpecTree.FrontmatterSchemaFolder + "/", StringComparison.Ordinal)

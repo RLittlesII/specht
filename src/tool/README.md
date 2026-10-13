@@ -14,7 +14,7 @@ See [Quick start](https://github.com/RLittlesII/specht#quick-start) in the repos
 
 ```sh
 specht [--root <dir>] [--strict] [--json]
-specht init [--root <dir>]
+specht init [--root <dir>] [--schemas] [--templates] [--all]
 specht --version
 ```
 

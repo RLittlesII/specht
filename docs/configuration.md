@@ -49,8 +49,8 @@ still literals in the engine; they move into the manifest in
 
 ## Default manifest
 
-It lives at `<root>/.specht/manifest.json`. `specht init`
-writes it when the file is absent. The block leaves out the five discovery keys
+It lives at `<root>/.specht/manifest.json`. Every `specht init` selects it;
+`--schemas`, `--templates` and `--all` add the other parts. The block leaves out the five discovery keys
 (`layouts`, `exclusions`, `taskFiles`, `epicFiles` and `companionFiles`): the
 file carries each at its default, and a manifest without them is read the same
 way. `init` writes no `rules` key; the empty one below is read the same way.
