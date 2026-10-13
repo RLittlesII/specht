@@ -47,7 +47,7 @@ decided by the owner on 2026-10-09 (item 0108). The project file is
 A finding goes in the Feature's § 8, in a `### Performance` subsection owned by
 `benchmarker` (§ "Section ownership" in [SKILL.md](../SKILL.md)). The first
 finding for a Feature adds the subsection; `.specht/templates/feature.md` does not
-carry it, because the templates are the embedded v1 copy `specht init` writes
+carry it, because the templates are the embedded v0.1.0 copy `specht init` writes
 into a consumer (`0001-F4` B-004). The subsection carries its own
 `<!-- last written by: benchmarker, <date> -->` stamp under its heading; the
 benchmarker never rewrites the stamp `test-writer` keeps under § 8's.

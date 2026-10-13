@@ -1,4 +1,3 @@
-using System.Globalization;
 using Specht.Manifest;
 
 namespace Specht.Versioning;
@@ -11,7 +10,7 @@ public sealed class SchemaVersions
     public SchemaVersions(IEnumerable<SchemaVersion> versions) =>
         Versions = versions.OrderBy(static version => version.Number).ToList();
 
-    /// <summary>Every version embedded in the engine, read from its <c>schema/v&lt;n&gt;/frontmatter/</c> and <c>rules/v&lt;n&gt;/</c> resources.</summary>
+    /// <summary>Every version embedded in the engine, read from the versioned schema and rule-page resource folders.</summary>
     public static SchemaVersions Embedded { get; } = ReadEmbedded();
 
     /// <summary>The versions, ascending by major, minor and patch.</summary>
@@ -32,12 +31,15 @@ public sealed class SchemaVersions
         var assembly = typeof(SchemaVersions).Assembly;
         var folders = assembly.GetManifestResourceNames()
             .Where(static name => name.StartsWith(Prefix, StringComparison.Ordinal))
-            .Select(static name => int.Parse(name[Prefix.Length..name.IndexOf('/', Prefix.Length)], CultureInfo.InvariantCulture))
+            .Select(static name => name[Prefix.Length..name.IndexOf('/', Prefix.Length)])
             .Distinct();
 
         return new SchemaVersions(folders.Select(folder =>
         {
-            var (number, ruleIds) = Shipped(folder);
+            var number = SemanticVersion.TryParse(folder, out var version)
+                ? version
+                : throw new InvalidOperationException($"schema/v{folder}/ is embedded with an invalid schema version.");
+            var ruleIds = Shipped(number);
 
             return new SchemaVersion(
                 number,
@@ -61,12 +63,10 @@ public sealed class SchemaVersions
         }
     }
 
-    private static (SemanticVersion Number, HashSet<string> RuleIds) Shipped(int folder) =>
-        folder switch
+    private static HashSet<string> Shipped(SemanticVersion number) =>
+        number switch
         {
-            1 =>
-            (
-                new SemanticVersion(0, 1, 0),
+            { Major: 0, Minor: 1, Patch: 0 } =>
                 [
                     "SPEC001", "SPEC002", "SPEC003", "SPEC004",
                     "SPEC010", "SPEC011", "SPEC012", "SPEC013",
@@ -75,9 +75,8 @@ public sealed class SchemaVersions
                     "SPEC040", "SPEC041", "SPEC043", "SPEC044",
                     "SPEC050", "SPEC051", "SPEC052",
                     "SPEC060", "SPEC061",
-                ]
-            ),
-            _ => throw new InvalidOperationException($"schema/v{folder}/ is embedded with no schema version or rule vocabulary."),
+                ],
+            _ => throw new InvalidOperationException($"schema/v{number}/ is embedded with no rule vocabulary."),
         };
 
     private const string Prefix = "schema/v";

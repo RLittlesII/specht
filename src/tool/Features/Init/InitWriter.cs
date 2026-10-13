@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.IO;
 using System.IO.Abstractions;
 using System.Linq;
@@ -9,6 +8,7 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Specht.Manifest;
+using Specht.Versioning;
 
 namespace Specht.Tool.Features.Init;
 
@@ -17,8 +17,9 @@ namespace Specht.Tool.Features.Init;
 /// (<c>0001-F4</c> B-029 to B-033), leaving every file that exists as it was (C-1).
 /// </summary>
 /// <param name="shippingCopy">
-/// The embedded files by logical name: <c>manifest/v&lt;n&gt;/manifest.json</c>, <c>schema/v&lt;n&gt;/frontmatter/&lt;file&gt;</c> or
-/// <c>templates/v&lt;n&gt;/&lt;file&gt;</c>.
+/// The embedded files by logical name: <c>manifest/v&lt;major.minor.patch&gt;/manifest.json</c>,
+/// <c>schema/v&lt;major.minor.patch&gt;/frontmatter/&lt;file&gt;</c> or
+/// <c>templates/v&lt;major.minor.patch&gt;/&lt;file&gt;</c>.
 /// </param>
 /// <param name="fileSystem">The file system the root is written through.</param>
 public sealed partial class InitWriter(IReadOnlyDictionary<string, byte[]> shippingCopy, IFileSystem fileSystem)
@@ -83,7 +84,9 @@ public sealed partial class InitWriter(IReadOnlyDictionary<string, byte[]> shipp
         return buffer.ToArray();
     }
 
-    [GeneratedRegex("^(?:manifest/v(?<version>[0-9]+)/manifest\\.json|(?<folder>schema|templates)/v(?<version>[0-9]+)/(?<path>.+))$")]
+    [GeneratedRegex(
+        "^(?:manifest/v(?<version>[0-9]+\\.[0-9]+\\.[0-9]+)/manifest\\.json|"
+        + "(?<folder>schema|templates)/v(?<version>[0-9]+\\.[0-9]+\\.[0-9]+)/(?<path>.+))$")]
     private static partial Regex Shipped();
 
     private IEnumerable<(string Relative, byte[] Bytes)> Newest(bool schemas, bool templates, bool manifestPresent)
@@ -92,7 +95,9 @@ public sealed partial class InitWriter(IReadOnlyDictionary<string, byte[]> shipp
             .Select(static entry => (Name: Shipped().Match(entry.Key), Bytes: entry.Value))
             .Where(static entry => entry.Name.Success)
             .Select(static entry => (
-                Version: int.Parse(entry.Name.Groups["version"].Value, CultureInfo.InvariantCulture),
+                Version: SemanticVersion.TryParse(entry.Name.Groups["version"].Value, out var version)
+                    ? version
+                    : throw new InvalidOperationException($"{entry.Name.Value} is embedded with an invalid schema version."),
                 Folder: entry.Name.Groups["folder"].Success ? entry.Name.Groups["folder"].Value : null,
                 Path: entry.Name.Groups["path"].Success ? entry.Name.Groups["path"].Value : null,
                 entry.Bytes))

@@ -2,7 +2,7 @@ id: "0126"
 type: task
 title: Name the embedded version folder and the `$id` version segment
 
-status: ready-for-architecture
+status: done
 
 risk: 2
 
@@ -20,7 +20,7 @@ claims:
 
 created: "2026-10-09"
 updated: "2026-10-12"
-closed: null
+closed: "2026-10-12"
 
 summary: |
   The embedded folder for one schema version and the version segment of

@@ -31,7 +31,7 @@ pins. [What it checks](what-it-checks.md) lists the rules, and
 **Stdout.** One line per violation, with a file, a line in parentheses when it
 has one, a severity, a rule id, a message and, in square brackets, the
 identifier it is about when it has one; then four summary lines. Each rule id
-has a page under [`rules/v1/`](rules/v1/). Under `--json`, the report document
+has a page under [`rules/v0.1.0/`](rules/v0.1.0/). Under `--json`, the report document
 alone, as [`schema/report.schema.json`](schema/report.schema.json) describes it.
 Every path is relative to the root. A run that exits `2` or `3` says why on
 stderr. As the only argument, `--version` prints one line instead: the tool's

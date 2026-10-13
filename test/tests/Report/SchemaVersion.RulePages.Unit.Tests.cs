@@ -2,7 +2,6 @@ using System.Text.RegularExpressions;
 using AwesomeAssertions;
 using AwesomeAssertions.Execution;
 using Specht.Tests.Rules;
-using Specht.Tests.Shared;
 using Specht.Versioning;
 
 namespace Specht.Tests.Report;
@@ -76,7 +75,7 @@ public sealed class SchemaVersionRulePagesUnitTests
         var text = Page(version, id);
 
         // When
-        var page = RulePage.Read(EmbeddedFolder.Of(version), id, text);
+        var page = RulePage.Read(version.Number, id, text);
 
         // Then
         using var scope = new AssertionScope();
@@ -147,7 +146,7 @@ public sealed class SchemaVersionRulePagesUnitTests
     {
         var version = Version(number);
 
-        return RulePage.Read(EmbeddedFolder.Of(version), id, Page(version, id));
+        return RulePage.Read(version.Number, id, Page(version, id));
     }
 
     private static string Page(SchemaVersion version, string id)

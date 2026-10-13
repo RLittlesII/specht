@@ -1,23 +1,23 @@
 ---
-title: "SPEC004: Epic frontmatter satisfies its schema"
-description: The frontmatter of an epic file fails the epic frontmatter schema.
+title: "SPEC003: Item frontmatter satisfies its schema"
+description: The frontmatter of a task, test, bug or spike file beside a specification fails the item frontmatter schema.
 type: rule
 ---
 
-# SPEC004: Epic frontmatter satisfies its schema
+# SPEC003: Item frontmatter satisfies its schema
 
 ## Metadata
 
 | Property         | Value       |
 | ---------------- | ----------- |
-| Rule ID          | SPEC004     |
+| Rule ID          | SPEC003     |
 | Family           | Frontmatter |
 | Default severity | Error       |
-| Schema version   | 1           |
+| Schema version   | 0.1.0       |
 
 ## Cause
 
-The frontmatter of an `epic.md` under `epics/` fails `epic.schema.json`, a copy of which sits in `.specht/schema/frontmatter/`. One line is reported for each failure the validator records:
+The frontmatter of an item file - a Markdown file beside a specification, named `<epic>-<nn>-<slug>.md` - fails `task.schema.json`, a copy of which sits in `.specht/schema/frontmatter/`. One line is reported for each failure the validator records:
 
 | Failure at  | Line reported  | Message                             |
 | ----------- | -------------- | ----------------------------------- |
@@ -32,25 +32,25 @@ The frontmatter carries every key the schema requires, no key it does not name, 
 
 ### Example violation
 
-The first lines of an `epic.md`:
+The first lines of `0007-01-validate-order-lines.md`:
 
 ```yaml
 ---
-id: "0007"
-type: epic
-status: ready
-priority: urgent
+id: "0007-01"
+parent: "0007-F1"
+type: task
+status: started
 ```
 
 ```text
-epics/0007-orders/epic.md(1): error SPEC004: frontmatter Some properties did not match the required schema: ["priority"]
-epics/0007-orders/epic.md(5): error SPEC004: frontmatter 'priority' Value should match one of the values specified by the enum
+epics/0007-orders/F1-checkout/0007-01-validate-order-lines.md(1): error SPEC003: frontmatter Some properties did not match the required schema: ["status"]
+epics/0007-orders/F1-checkout/0007-01-validate-order-lines.md(5): error SPEC003: frontmatter 'status' Value should match one of the values specified by the enum
 ```
 
 ### Corrected
 
 ```yaml
-priority: critical
+status: in-progress
 ```
 
 ## How to fix violations
@@ -59,3 +59,4 @@ priority: critical
 - **`Required properties [...] are not present`.** Add each key listed.
 - **`All values fail against the false schema`.** Remove the key, or correct its spelling.
 - **A mapping line.** It clears when the keys it lists do.
+- **The file is not an item.** Rename it so its name does not start `<epic>-<nn>-`.

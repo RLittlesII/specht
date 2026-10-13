@@ -45,8 +45,8 @@ both numbered repo-wide from `0001`. The root `.specht/templates/` holds the bla
 
 The root `.specht/` is **the live copy this
 repository checks itself with** — the files `specht init` can select for a
-consumer. The shipping copy is embedded in `src/tool/manifest/v1/`,
-`schema/v1/frontmatter/` and `templates/v1/`; the two are the same bytes for the tool-owned files (the
+consumer. The shipping copy is embedded in `src/tool/manifest/v0.1.0/`,
+`schema/v0.1.0/frontmatter/` and `templates/v0.1.0/`; the two are the same bytes for the tool-owned files (the
 frontmatter schemas and the templates), and the manifest matches on its
 tool-owned keys, rule settings and other consumer configuration excluded; a
 test says so (`0001-F4` B-004).

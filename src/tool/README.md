@@ -20,7 +20,7 @@ specht --version
 
 Every command and option is in the [command-line reference](https://github.com/RLittlesII/specht/blob/main/docs/cli.md).
 
-Each rule has a page under [`docs/rules/v1/`](https://github.com/RLittlesII/specht/tree/main/docs/rules/v1).
+Each rule has a page under [`docs/rules/v0.1.0/`](https://github.com/RLittlesII/specht/tree/main/docs/rules/v0.1.0).
 
 ## License
 

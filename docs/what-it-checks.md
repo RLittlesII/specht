@@ -8,7 +8,7 @@ type: reference
 
 Rules are `SPEC001`–`SPEC061`.
 [brief § 4](../.spec/brief.md#4-the-rule-vocabulary-fixed-versioned-with-the-schema)
-summarises them, each has a page under [`rules/v1/`](rules/v1/), and each
+summarises them, each has a page under [`rules/v0.1.0/`](rules/v0.1.0/), and each
 finding says what the rule expected.
 
 A specification is a `<area>/.spec/README.md` beside the code it covers, with

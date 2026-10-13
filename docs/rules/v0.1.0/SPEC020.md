@@ -13,7 +13,7 @@ type: rule
 | Rule ID          | SPEC020      |
 | Family           | Feature file |
 | Default severity | Error        |
-| Schema version   | 1            |
+| Schema version   | 0.1.0        |
 
 ## Cause
 

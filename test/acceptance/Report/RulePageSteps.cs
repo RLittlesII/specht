@@ -2,7 +2,6 @@ using System.Text.RegularExpressions;
 using AwesomeAssertions;
 using Reqnroll;
 using Specht.Tests.Rules;
-using Specht.Tests.Shared;
 using Specht.Versioning;
 
 namespace Specht.Acceptance.Report;
@@ -35,7 +34,7 @@ public sealed class RulePageSteps
     [When("each page is read")]
     public void WhenEachPageIsRead() =>
         _pages = _versions
-            .SelectMany(static version => version.RulePages.Select(page => RulePage.Read(EmbeddedFolder.Of(version), page.Key, page.Value)))
+            .SelectMany(static version => version.RulePages.Select(page => RulePage.Read(version.Number, page.Key, page.Value)))
             .ToList();
 
     [Then("every rule in that version's vocabulary has exactly one page")]
@@ -109,7 +108,7 @@ public sealed class RulePageSteps
             Regex.Count(page.Text, "severity", RegexOptions.IgnoreCase).Should().Be(1, "the metadata row is the one place a page names a severity");
         });
 
-    [Then("the schema version it gives is the version it ships under")]
+    [Then("the schema version it gives is the version it ships under, written as major.minor.patch")]
     public void ThenTheSchemaVersionItGivesIsTheVersionItShipsUnder() =>
         _pages.Should().AllSatisfy(static page => page.Value("Schema version").Should().Be(page.VersionText()));
 

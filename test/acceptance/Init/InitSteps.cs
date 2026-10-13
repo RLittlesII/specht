@@ -364,14 +364,14 @@ public sealed partial class InitSteps
 
     private static string Live(string file) => Path.Combine([AppContext.BaseDirectory, ".specht", .. file.Split('/')]);
 
-    private static string Embedded(string file, int version)
+    private static string Embedded(string file, SemanticVersion version)
     {
         var folder = file.IndexOf('/', StringComparison.Ordinal);
 
         return folder < 0 ? $"manifest/v{version}/{file}" : $"{file[..folder]}/v{version}{file[folder..]}";
     }
 
-    [GeneratedRegex("^schema/v([0-9]+)/")]
+    [GeneratedRegex("^schema/v([0-9]+\\.[0-9]+\\.[0-9]+)/")]
     private static partial Regex SchemaVersion();
 
     private static byte[]? Read(string name)
@@ -387,14 +387,16 @@ public sealed partial class InitSteps
         return buffer.ToArray();
     }
 
-    private static int NewestVersion()
+    private static SemanticVersion NewestVersion()
     {
         var versions = Shipped.GetManifestResourceNames()
             .Select(static name => SchemaVersion().Match(name))
             .Where(static match => match.Success)
-            .Select(static match => int.Parse(match.Groups[1].Value, System.Globalization.CultureInfo.InvariantCulture))
+            .Select(static match => SemanticVersion.TryParse(match.Groups[1].Value, out var version)
+                ? version
+                : throw new InvalidOperationException("Invalid version folder."))
             .ToList();
-        versions.Should().NotBeEmpty("the tool embeds at least one schema/v<n>/ resource");
+        versions.Should().NotBeEmpty("the tool embeds at least one schema/v<major.minor.patch>/ resource");
         return versions.Max();
     }
 
