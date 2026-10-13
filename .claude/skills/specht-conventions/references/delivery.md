@@ -174,6 +174,16 @@ and prints the answer:
 python3 .claude/skills/specht-conventions/scripts/next.py   # --top N, --width N, --root DIR
 ```
 
+The default answer is Feature focused, as `next` defines. The script's item
+tables support that answer. Use `--top 100000` when comparing Features so the
+default eight-item view does not hide their remaining work. For a Feature
+rollup, reuse the script's `read_items`, `rank`, `reach` and `score` functions:
+open children come from `parent`, and the closure includes their transitive
+prerequisites. Keep own children and external prerequisite items separate;
+preserve `blocked`, `in-progress` and `in-review` states. Resolve the Feature's
+stable id from its specification frontmatter; the container item's number is
+not the Feature id. Do not implement a second scoring formula in the answer.
+
 It prints a choice, not one item: first a "Pick one per lane" table, one row
 per lane with its head, the items queued behind it and the write set it holds,
 then the startable table, the blocked list, the "Blocked by status" list and
