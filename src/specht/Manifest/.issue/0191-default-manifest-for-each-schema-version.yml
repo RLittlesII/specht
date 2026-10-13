@@ -2,7 +2,7 @@ id: "0191"
 type: task
 title: Fill an omitted manifest value from the pinned version's default manifest
 
-status: blocked
+status: ready-for-architecture
 
 risk: 3
 
@@ -14,33 +14,30 @@ spikes: []
 
 spec: src/specht/Manifest/.spec/README.md
 
-claims: []
+claims:
+  - B-048
 
 created: "2026-10-11"
-updated: "2026-10-12"
+updated: "2026-10-13"
 closed: null
 
 summary: |
-  A value a manifest omits takes the default manifest's (B-019), and the
-  engine holds one default manifest. Once the tool ships more than one
-  schema version, each version ships its own manifest (0001-F7 B-013,
-  decision 0009), and nothing says which one fills what a
-  manifest pinned to an older version leaves out.
-
-  Blocked on the owner: OQ-23. Its default is that the fill comes from
-  the pinned version's shipped manifest, so a pinned tree's verdict does
-  not move when the tool is updated (0001-F7 C-4). Nothing is built on
-  the default: with one shipped version the two readings give the same
-  result.
-
-  `claims: []` because no claim is written until OQ-23 is answered; the
-  answer adds one, and this item takes it.
+  The tool ships more than one schema version but the engine still fills
+  omissions from one embedded live-copy default. Read the pinned version's
+  shipped default instead, per omitted value, leaving consumer declarations
+  and rule levels as written. Manifest B-048 and decision 0010 own the
+  agreement, resolved by the owner on 2026-10-13. This supplies the omission
+  mechanism required before 0016's versioned 0.2.0 interpretation is built.
 
 acceptance_criteria:
-  - "OQ-23 answered and resolved in place, and the claim it adds cited here."
+  - "B-048 — missing values use pinned defaults, explicit values win, and rule levels are not inherited."
   - "§ 9 carries a row naming a test for that claim."
 
 decisions:
+  - |
+    2026-10-13, the repository owner: OQ-23 resolved in Manifest decision 0010.
+    This item carries B-048 and is ready for its architecture pass; it is not
+    taken and no implementation was added by the 0016 design pass.
   - |
     2026-10-11, spec-author: cut blocked, on the repository owner's
     instruction to raise the question and not decide it. It waits on
