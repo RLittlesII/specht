@@ -26,7 +26,7 @@ This epic adds a benchmark project, `.performance/benchmarks`, built
 on [BenchmarkDotNet](https://benchmarkdotnet.org/). It measures each engine
 stage, a full check as the tree grows, and the packed tool's cold start, and
 it measures memory on every benchmark. It runs locally through a build target
-and in CI, where the results are published as a build artifact. Nothing it
+and on pushes to main in CI, where the results are published as a build artifact. Nothing it
 measures fails a build.
 
 The need and its scope were decided by the repository owner on 2026-10-09

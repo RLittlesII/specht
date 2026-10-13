@@ -95,11 +95,10 @@ Feature: Benchmark harness
     Then the benchmarks run on Linux and on Windows
 
   @B-017 @boundary
-  Scenario: A pull request runs no benchmark on Windows
+  Scenario: A pull request runs no automatic benchmark
     Given a pull request that changes code
     When integration runs
-    Then the benchmarks run on Linux
-    And no benchmark runs on Windows
+    Then no benchmark runs on Linux or Windows
 
   @B-018
   Scenario: CI uses the short job
