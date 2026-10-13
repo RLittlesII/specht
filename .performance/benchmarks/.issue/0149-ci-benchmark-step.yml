@@ -2,7 +2,7 @@ id: "0149"
 type: task
 title: Run the benchmarks in CI and publish the results per operating system
 
-status: ready-for-architecture
+status: done
 
 risk: 3
 
@@ -21,8 +21,8 @@ claims:
   - B-020
 
 created: "2026-10-11"
-updated: "2026-10-11"
-closed: null
+updated: "2026-10-13"
+closed: "2026-10-13"
 
 summary: |
   The CI benchmark step: the `Benchmark` target under the short job on

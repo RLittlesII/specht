@@ -61,7 +61,8 @@ internal sealed partial class SpechtBuild
 {
     private Target ContinuousIntegration => _ => _
         .OnlyWhenStatic(GitHubActionsTasks.IsRunningOnGitHubActions)
-        .DependsOn(Build);
+        .DependsOn(Build)
+        .DependsOn(Benchmark);
 
     public static RocketSurgeonGitHubActionsConfiguration ContinuousIntegrationMiddleware(
         RocketSurgeonGitHubActionsConfiguration configuration)
@@ -91,6 +92,7 @@ internal sealed partial class SpechtBuild
         buildJob.FailFast = false;
 
         AddCodecovUpload(buildJob);
+        AddBenchmarkResults(buildJob);
         PassAnnotationContext(buildJob);
         GateOnChangedFiles(buildJob);
 
@@ -220,6 +222,30 @@ internal sealed partial class SpechtBuild
         };
 
         buildJob.Steps.InsertRange(buildJob.Steps.IndexOf(acceptanceTestStep) + 1, [uploadStep, warningStep]);
+    }
+
+    /// <summary>Runs benchmarks after the gates and publishes only their exporter results per operating system.</summary>
+    private static void AddBenchmarkResults(RocketSurgeonsGithubActionsJob buildJob)
+    {
+        var benchmarkStep = buildJob.Steps.OfType<RunStep>().Single(static step => step.Id == "benchmark");
+        benchmarkStep.Run += " --benchmark-job Short";
+        buildJob.Steps.Remove(benchmarkStep);
+        var buildStep = buildJob.Steps.Cast<BaseGitHubActionsStep>().Single(static step => step.Id == "build");
+        var uploadStep = new UsingStep("Upload benchmark results")
+        {
+            Id = "benchmarkResults",
+            If = "${{ !cancelled() && (steps.benchmark.outcome == 'success' || steps.benchmark.outcome == 'failure') }}",
+            Uses = "actions/upload-artifact@v7",
+            With = new Dictionary<string, string>
+            {
+                ["name"] = "benchmarks-${{ runner.os }}",
+                ["path"] = ".artifacts/benchmarks/results/*-report-*",
+                ["include-hidden-files"] = "true",
+                ["if-no-files-found"] = "error",
+            },
+        };
+
+        buildJob.Steps.InsertRange(buildJob.Steps.IndexOf(buildStep) + 1, [benchmarkStep, uploadStep]);
     }
 
     /// <summary>

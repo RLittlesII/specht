@@ -2,7 +2,7 @@ id: "0145"
 type: feature
 title: Benchmark harness
 
-status: ready-for-architecture
+status: done
 
 value: 3
 risk: 3
@@ -39,8 +39,8 @@ claims:
   - B-021
 
 created: "2026-10-11"
-updated: "2026-10-11"
-closed: null
+updated: "2026-10-13"
+closed: "2026-10-13"
 
 summary: |
   As the maintainer of four repositories, I want one benchmark project that
@@ -131,6 +131,13 @@ decisions:
     specification delta. spec-author's reading, not the owner's words:
     until 0153 the tests 0147 wrote stay as they are, with no further
     work (spec § 10; OQ-5).
+
+  - |
+    2026-10-13, the repository owner: "Let's finish 0148 first, then tackle
+    0149." Resumes the queued target and CI work after the 2026-10-11
+    stopping point. 0148 was implemented and verified locally and in CI
+    before 0149 began. 0148 merged in pull request #165 before 0149 was
+    published in its own pull request.
 
 out_of_scope:
   - "Everything in § 5 of the spec."

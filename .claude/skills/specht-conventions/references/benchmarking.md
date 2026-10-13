@@ -1,6 +1,6 @@
 ---
 title: Benchmarking in specht
-description: Where benchmarks live, why they sit outside the test tiers, how a finding is recorded in a specification, where each harness decision is recorded, and what is not built yet
+description: Where benchmarks live, why they sit outside the test tiers, how a finding is recorded in a specification, where each harness decision is recorded, and how to run locally and in CI
 type: reference
 ---
 
@@ -96,8 +96,13 @@ the library's default. The target builds Release, packs only when cold start is
 selected, and writes Markdown and JSON exports under `.artifacts/benchmarks/`.
 A broken benchmark fails the target; a measured number never does.
 
-## Not built yet
+## CI results
 
-- the CI step that runs it and publishes the results, and where that step lands in
-  the generated `ci.yml` (item 0149; regenerate with `./build.sh Compile`, then
-  diff the step order).
+The generated integration workflows run the Short job after the gates on every
+operating system that builds: Linux on code pull requests, Linux and Windows on
+pushes to main. Skipped documentation pull requests run no benchmark. Each run
+publishes exporter reports as `benchmarks-<operating system>`; logs and generated
+projects are excluded. Broken benchmarks fail the check; measured numbers do not.
+
+Both workflows are generated from `.build/SpechtBuild.GitHubActions.cs`.
+Regenerate with `./build.sh Compile` and inspect the step order before committing.
