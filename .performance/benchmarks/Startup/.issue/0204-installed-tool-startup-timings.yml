@@ -1,0 +1,51 @@
+id: "0204"
+type: task
+title: Measure installed-tool baseline help and check timings
+
+status: ready-for-implementation
+
+risk: 4
+
+parent: "0203"
+children: []
+depends_on: ["0148", "0147"]
+spikes: []
+
+spec: .performance/benchmarks/Startup/.spec/README.md
+claims: [B-001, B-002, B-003, B-004, B-005, B-007, B-008, B-009]
+
+created: "2026-10-13"
+updated: "2026-10-13"
+closed: null
+
+summary: |
+  Deliver the timing slice designed in 0109-F4 § 7 on the existing benchmark
+  project. Depends on 0148 for conditional Release packing and on 0147 for
+  the synthetic one-specification tree. Both are delivered. The existing
+  project/configuration is the scaffold; no placeholder benchmark ships.
+
+  The process-session lifecycle and three rows form one verifiable slice.
+  A separate setup-only item would leave no consumer invocation to measure.
+  The memory claim remains explicitly undelivered until 0206; this item can
+  close without a sibling landing first.
+
+acceptance_criteria:
+  - "B-001 — package identity and isolated local install"
+  - "B-002 — one-specification check"
+  - "B-003 — fresh invocation processes"
+  - "B-004 — nonzero exit failure"
+  - "B-005 — cleanup and isolation"
+  - "B-007 — generated empty-tool baseline"
+  - "B-008 — help host row"
+  - "B-009 — baseline ratios"
+  - "§ 8 records inspected mechanisms, manual positive/failure/isolation probes and a default-job finding; § 9 retains Missing under the owner's no-tests ruling with evidence pointers."
+  - "The existing main workflow publishes the three timing rows on Linux and Windows, with no change to PR benchmark policy."
+
+decisions:
+  - "2026-10-13, implementer: design in § 6-7; reuse existing out-of-process configuration, target, package output and tree types. Do not change the selected job or add a timing loop."
+  - "2026-10-13, spec-author: timing may deliver before B-006, but must label benchmark-process allocations and cannot close the Feature or claim a tool-memory result."
+
+out_of_scope:
+  - "B-006 — 0206 after feasibility spike 0205."
+  - "Everything in § 5 of the specification."
+  - "Moving tree types, adding benchmark tests, new build targets or workflows."

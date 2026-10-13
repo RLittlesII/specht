@@ -1,0 +1,57 @@
+id: "0203"
+type: feature
+title: Tool cold start
+
+status: ready-for-architecture
+
+value: 3
+risk: 1
+
+parent: "0109"
+children: ["0204", "0205", "0206"]
+depends_on: []
+spikes: []
+
+spec: .performance/benchmarks/Startup/.spec/README.md
+claims: [B-001, B-002, B-003, B-004, B-005, B-006, B-007, B-008, B-009]
+
+created: "2026-10-13"
+updated: "2026-10-13"
+closed: null
+
+summary: |
+  As the maintainer of repositories using the tool, I want its fixed cost
+  measured through a local tool manifest so launch, host and check costs
+  have recorded findings. This is the delivery container for 0109-F4.
+
+  The owner requested decomposition and design on 2026-10-13, not benchmark
+  implementation. The approved agreement supplies the scope. Only the
+  timing child needs the already delivered harness target and generator;
+  the memory investigation can establish feasibility with synthetic tools.
+  No dependency on the production-tree refactor is introduced.
+
+acceptance_criteria:
+  - "B-001 to B-005 — installed tool, invocation and lifecycle (0204)"
+  - "B-006 — tool-process memory (0206, informed by 0205)"
+  - "B-007 to B-009 — empty baseline, host row and ratios (0204)"
+  - "§ 9 records inspected mechanisms and manual delivery evidence for all claims under the owner's benchmark no-tests ruling; § 8 Performance records an actual finding."
+  - "Linux and Windows main runs publish the completed three-row findings; pull-request benchmark policy remains unchanged."
+
+decisions:
+  - |
+    2026-10-13, spec-author: value 3 is a provisional default matching the
+    harness, not an owner-assigned value for F4. Container risk 1 represents
+    final evidence reconciliation. Child risks 4, 3 and 4 are design
+    estimates for isolated installation/timing, observer investigation and
+    cross-platform memory reporting; they are not elapsed-time estimates.
+  - |
+    2026-10-13, spec-author: split independently deliverable timing from
+    memory, with a feasibility spike before adopting an observer. Rejected:
+    giving setup its own item with no measured row, or assuming the dotnet
+    launcher's memory meets B-006. Neither implementation item is taken.
+  - "2026-10-13, spec-author: OQ-3 proceeds with --help as its recorded reading states; no owner resolution is invented."
+
+out_of_scope:
+  - "Everything in § 5 of the specification."
+  - "Engine-stage measurement — 0109-F2; tree move — 0153."
+  - "Implementation in the decomposition/design pull request."

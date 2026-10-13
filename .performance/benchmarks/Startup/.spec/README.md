@@ -5,7 +5,7 @@ type: feature
 id: "F4"
 epic: "0109"
 spec_status: approved
-status: blocked
+status: ready-for-architecture
 priority: med
 value: 0
 risk: 0
@@ -99,21 +99,202 @@ Every call site starts the tool as a new process - the pre-commit hook on every 
 
 ## 6. Concern Separation
 
-<!-- last written by: spec-author, 2026-10-09 -->
+<!-- last written by: implementer, 2026-10-13 -->
 
-Pending: owned by `implementer`, written after agreement.
+| Concern                                                         | Kind      | Owner / boundary                                                                                            |
+| --------------------------------------------------------------- | --------- | ----------------------------------------------------------------------------------------------------------- |
+| Consumer-visible launch, host and one-specification check costs | Business  | Three rows, fixed input, ratios to the empty tool; C-1                                                      |
+| Package identity and isolated installation                      | Both      | Setup reads the packed package and installs both tools in one temporary local manifest; B-001, B-005, B-007 |
+| Synthetic clean input                                           | Both      | Reuse the harness tree and store; no consumer tree; A-2                                                     |
+| Fresh processes, argument forwarding and exit failures          | Technical | One launch per benchmark call, async draining and waiting; B-002 to B-004                                   |
+| Statistical timing, allocations and exporters                   | Technical | Existing BenchmarkDotNet configuration and target; no second timing loop                                    |
+| Tool-process identity and lifetime peak memory                  | Both      | External observation of the actual tool process; B-006, C-7; mechanism must be proven before implementation |
+| Main-only execution and result publication                      | Technical | Existing harness integration, unchanged; 0109-F1 B-017 to B-020                                             |
 
 ## 7. Technical Design
 
-<!-- last written by: spec-author, 2026-10-09 -->
+<!-- last written by: implementer, 2026-10-13 -->
 
-Pending: owned by `implementer`, written after agreement.
+### Boundary and existing mechanisms
+
+This is a design for code not yet built. The timing slice is specified below; the
+memory mechanism remains gated by the feasibility criteria in
+[ADR-0001](adr/0001-observe-the-installed-tool-process.md). No benchmark or
+production code is introduced by this design.
+
+Reuse [the existing project](../../benchmarks.csproj),
+[shared configuration](../../BenchmarkConfiguration.cs),
+[project generator](../../BenchmarkProjectGenerator.cs), and
+[entry point](../../Program.cs). The target in
+[SpechtBuild.cs](../../../../.build/SpechtBuild.cs) already selects Startup
+benchmarks by the `Specht.Benchmarks.Startup` namespace, packs the real tool in
+Release, and supplies filtering, jobs and report paths. No new build target,
+workflow, command, product seam or test-project reference is required.
+
+The existing acceptance helper `test/acceptance/PackedTool.cs` shows package
+metadata reading and asynchronous process draining, but also packs the solution
+and uses test assertions. Do not reference or move it into the benchmark: this
+Feature consumes the package already produced by the target. Read its one root
+`.nuspec` with `ZipArchive` and `XDocument`; select the package by its declared
+`specht.tool` identity, not by an assumed version or the first wildcard match.
+Missing or ambiguous matching packages fail setup. Find the repository by walking
+ancestors of the benchmark assembly location until both build.sh and the
+benchmark project exist, following the existing project generator's
+assembly-location approach. Fail if no root is found; the generated process's
+current directory is not a reliable root.
+
+### Timing slice
+
+One public `ColdStartBenchmarks` class in `Specht.Benchmarks.Startup` has three
+async benchmark methods: `EmptyTool` marked `Baseline = true`, `Help`, and
+`Check`. All use the same launch helper and environment; only the installed tool
+command and its forwarded arguments differ. Keep the existing out-of-process
+toolchain and the job selected by the caller. Do not add a competing SimpleJob
+or replace the default/Short job. Each method starts a new process even when
+BenchmarkDotNet invokes the method multiple times in one iteration. Neither
+IterationSetup nor a Stopwatch loop is needed to make the tool process fresh.
+
+BenchmarkDotNet measures the complete consumer invocation: creating and waiting
+for `dotnet tool run <command> -- <arguments>`, including local-tool resolution,
+the child tool, output draining and harness process-launch overhead. It is not a
+claim to isolate the child's internal start/exit timestamps. The common baseline
+carries the same wrapper cost; ratios are not algebraic attribution of host and
+engine time. The finding must name this boundary, redirected output, the warm
+OS file cache and runtime/SDK versions.
+
+`GlobalSetup` creates one private temporary session per benchmark case. A
+concrete disposable `ColdStartSession` is shared by all three methods and owns:
+
+1. The selected package identity/version and an isolated local package source.
+   Copy the selected package into that source so stale unrelated packages cannot
+   affect installation. The target remains the only owner of packing specht.
+2. A generated SDK console tool project with no package/project references,
+   `PackAsTool`, a fixed synthetic package id/command and version, the benchmark's
+   framework, and a body containing only `return 0;`. Generate, restore from
+   SDK-provided framework assets, and pack Release inside the temporary session.
+   No template, product assembly or source file is copied into this tool.
+3. A local tool manifest with `isRoot: true`, an explicit NuGet configuration
+   whose sources are cleared and replaced by the session's package directory,
+   and private NuGet package, HTTP, scratch, process-temp and dotnet CLI home directories.
+   Use child-process environment settings (`DOTNET_CLI_HOME`, `NUGET_PACKAGES`,
+   `NUGET_HTTP_CACHE_PATH`, `NUGET_SCRATCH`, platform temp settings, telemetry
+   opt-out and no logo), without
+   changing the parent shell's home or repository configuration. Validate that
+   resolver-cache writes also stay within the private CLI home. Use the same
+   resolved dotnet executable and SDK policy for baseline build and all launches;
+   copy the repository's global.json into the session to preserve roll-forward.
+4. Both tools installed from that local source with explicit exact versions,
+   `--local`, `--tool-manifest`, `--configfile` and manifest auto-creation disabled.
+   The clear-source configuration, not `--add-source` or ignore-failed-sources,
+   prevents feed access. Baseline restore uses that same configuration; pack
+   follows with `--no-restore`.
+5. A one-specification tree saved by `SpechtTree.Of(1)` and `SpechtTreeStore`,
+   reused as [CheckBenchmarks](../../Check/CheckBenchmarks.cs) uses them. If the
+   production-tree move lands first, use its new declarations; do not duplicate
+   its generator or turn that structural refactor into a prerequisite here.
+6. Untimed smoke invocations of all three rows. The check must count exactly one
+   specification and report no violations, using its JSON report; timed checks
+   use the ordinary text invocation. All setup commands must exit zero.
+
+The launch helper takes an argument list, uses `ProcessStartInfo.ArgumentList`
+without a shell, and sets the working directory to the session holding the root
+manifest. The measured check forwards `--root` with the session-relative tree
+path. The host forwards `--help`; OQ-3 explicitly proceeds with that row. Redirect
+and concurrently drain stdout/stderr, close stdin, await exit, and throw on a
+nonzero code before returning. Keep successful output out of benchmark logs;
+failure messages identify the row and exit code and sanitize session/repository
+absolute prefixes before publishing command diagnostics. Dispose every process.
+
+`GlobalCleanup` disposes the session and removes its entire temporary directory.
+Setup also disposes partial state on failure because GlobalCleanup is not a
+substitute for exception-safe setup. No global install, user-cache fallback,
+repository manifest edit or package-cache copy back is allowed. All retained
+results stay under `.artifacts/benchmarks/` through existing exporters.
+
+### Tool-process memory
+
+The existing MemoryDiagnoser remains enabled and reports **benchmark-process
+managed allocation**. It cannot satisfy B-006. An observer must identify the
+actual installed tool process for each invocation and obtain that process's
+lifetime resident-memory high-water mark, normalize it to bytes, and associate it
+with the row. A maximum of periodic working-set samples, the launcher's peak,
+process-tree aggregate, managed heap size or zero for an unavailable reading is
+not an acceptable substitute.
+
+The OS mechanism is deliberately not assumed. The local-tool command and tool
+can be distinct processes; rapid exits can make discovery and post-exit reads
+race. In particular, the .NET Process documentation reports PeakWorkingSet64 as
+zero on macOS. The feasibility investigation must prove identity, complete
+lifetime coverage and retrieval after a very short invocation on Linux and
+Windows CI and document macOS behavior. See ADR-0001 for candidate mechanisms,
+rejected shortcuts and the go/no-go evidence.
+
+Once proven, the observer belongs to this Feature, outside `src/`. Prefer a
+concrete observer used by the three launch paths, with OS-specific operations
+only where the evidence requires them; do not introduce a generic process
+framework. Capture raw per-invocation peaks outside the timed result processing.
+Publish the maximum observed tool peak per row, the observation count, unit and
+scope through BenchmarkDotNet metrics/columns and its Full JSON and Markdown
+exporters. Prove the chosen extension actually reaches both exports before
+relying on the existing main upload glob. It must not replace the allocation
+column or add a second report with incompatible units silently.
+
+The observer's overhead and any change to the launched process must be recorded.
+If only an injected startup hook, a suspended runtime or a separate diagnostic
+pass makes the measurement possible, document the perturbation and revisit
+B-006's per-invocation meaning before adopting it; this design grants no silent
+exception to the approved claim. An unsupported platform or missing observation
+fails the memory-enabled run with an actionable reason; it reports no invented
+peak. The timing-only slice may be delivered first with B-006 explicitly still
+Missing. The Feature is not complete until the memory claim is delivered.
+
+### Delivery sequence
+
+The Tasks table owns claim allocation. Timing/package work can be completed and
+verified independently of the memory investigation. The memory implementation
+requires both the working timing session and the proven observer decision. They
+share this specification and may edit the same Startup files, so only one item
+is taken in this Feature at a time; no parallel-write claim is made here.
+
+The finished Feature uses the existing main-only Short runs on Linux and Windows;
+no automatic benchmark is added to pull requests. Local Dry establishes that the
+three cases run, and the default job provides a recorded finding. Neither Dry nor
+shared-runner Short results establish a regression threshold.
+
+### References checked for this design
+
+- [BenchmarkDotNet setup/cleanup](https://benchmarkdotnet.org/articles/features/setup-and-cleanup.html)
+  and [baselines](https://benchmarkdotnet.org/articles/features/baselines.html):
+  setup stays outside measurement and the baseline method supplies ratios.
+- [.NET local tool installation](https://learn.microsoft.com/en-us/dotnet/core/tools/dotnet-tool-install)
+  and [CLI environment](https://learn.microsoft.com/en-us/dotnet/core/tools/dotnet-environment-variables):
+  explicit manifest, exact version, sole local source and private CLI/cache paths.
+- [Process platform notes](https://learn.microsoft.com/en-US/dotnet/api/System.Diagnostics.Process):
+  peak-working-set portability cannot be presumed.
 
 ## 8. Testing Strategy
 
-<!-- last written by: spec-author, 2026-10-09 -->
+<!-- last written by: test-writer, 2026-10-13 -->
 
-Pending: owned by `test-writer`, written after agreement.
+This is a verification plan, not evidence of implemented code. Apply the owner's
+benchmark-code proof ruling recorded in 0109-F1 § 10 and item 0145: no tests of
+benchmark code and no new acceptance link or step class. Keep every § 9 row
+Missing for this design. At delivery, name the inspected mechanism and manual
+evidence in the Test cell and retain Missing in Status under that ruling. A queue
+item may close only for the claims it delivers; the container waits for all nine and an actual finding.
+
+| Claims                     | Manual delivery evidence required                                                                                                                                                                                                                                                                         |
+| -------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| B-001, B-005               | Inspect both installed package identities/versions, manifest and private caches; run setup with feed access unavailable; observe unchanged repository/user manifests and no leaked install after normal cleanup and a deliberately failed setup.                                                          |
+| B-002, B-003, B-007, B-008 | Run `./build.sh Benchmark --benchmark-filter '*ColdStartBenchmarks*' --benchmark-job Dry`; inspect all three rows and observe distinct launcher/tool process identities across repeated invocations. Confirm baseline source has no output, product dependency or tree read.                              |
+| B-004                      | Use a temporary synthetic broken tree and a failing generated tool to observe nonzero exits fail the target; remove probes before commit. Drain large output in a throwaway probe to demonstrate no pipe deadlock.                                                                                        |
+| B-006                      | Prove the selected observer on a rapid no-op and contrasting synthetic allocations; distinguish launcher and tool peaks; verify exact high-water semantics, units and per-invocation attribution. Run both CI operating systems and document local macOS limits. Zero/unavailable readings must not pass. |
+| B-009                      | A default-job run emits baseline, help and check ratios in Markdown and Full JSON; record environment, boundary, output policy, variance and observer overhead in Performance.                                                                                                                            |
+
+At implementation, inspect filtered and unfiltered target selection, conditional
+packing and unchanged PR workflows, then verify the first merged main run's
+Linux/Windows exporter artifacts. Raw reports remain gitignored. No timing or
+memory value is a pass/fail threshold. No measurement was run for this design.
 
 ## 9. Traceability Matrix
 
@@ -133,12 +314,17 @@ Pending: owned by `test-writer`, written after agreement.
 
 ## 10. Lessons / Spec Deltas
 
-<!-- last written by: spec-author, 2026-10-09, 2026-10-11 (`0001-F2` decision 0010) -->
+<!-- last written by: spec-author, 2026-10-13 -->
 
 - 2026-10-09, spec-reviewer finding on commit `4b23e76`: B-003 restated with this Feature as subject. A-1 follows `0109-F1` B-013, which now packs only when this Feature's benchmark is selected.
 - 2026-10-09, the owner resolved OQ-1 and OQ-2. OQ-1 reverses its default: the tool process's memory is measured; B-006 added, C-7 restated, § 5 row 4 withdrawn. OQ-2: the fixed cost is measured in three rows - a generated tool that does nothing as the baseline, `specht --help`, and the check; B-007 to B-009 and C-8 added, C-1 restated, A-3 added, § 5 row 5 withdrawn and row 8 added. `--help` is the host row because the tool has no `--version`, and adding one is a product change (§ 5 row 8). B-004's source cites the owner's answer to `0109-F1` OQ-3. `0109-F1` C-4 holds unchanged: the allocation column stays, and B-006 reports beside it. Decision 0001 is unchanged: the checked invocation B-002 measures is still the one a call site runs, and B-008 is a row beside it, not a replacement; decision 0002 records the three-row call. On spec-reviewer findings before commit: B-006 and C-7 name the measured tool's own process, apart from the `dotnet` launcher and the benchmark process, and leave how and when it is read to § 7; C-8 gives packing the baseline tool to the benchmark code, not the benchmark target (orchestrator default, 2026-10-09, not the owner's), so A-1 and `0109-F1` B-013 are unchanged.
 
 - 2026-10-11, the owner asked for `specht --version` (`0001-F2` decision 0010; `0001-F2` B-040 to B-044), so "the tool has no `--version`" in the entry above and in decision 0002 is true of 2026-10-09 only. § 5 row 8 and decision 0002 annotated. No claim, constraint or scenario changed: B-008 measures `--help`. OQ-3 raised.
+
+- 2026-10-13, decomposition and design added for the approved agreement. No claim,
+  constraint or scenario changed. The design retains OQ-3's --help reading and
+  requires evidence of a tool-process memory observer before its implementation;
+  it does not treat launcher allocation as B-006.
 
 ## 11. Open Questions
 
@@ -170,7 +356,16 @@ Earlier review rows are preserved verbatim; later approvals and the current reco
 
 ## Tasks
 
-None yet. Cut from § 3 after agreement.
+<!-- last written by: spec-author, 2026-10-13 -->
+
+Cut from the approved agreement into [`../.issue/`](../.issue/):
+
+| Item | Scope                                                               | Claims                            |
+| ---- | ------------------------------------------------------------------- | --------------------------------- |
+| 0203 | Feature container                                                   | B-001 to B-009                    |
+| 0204 | Installed tools, three timing rows, ratios and cleanup              | B-001 to B-005, B-007 to B-009    |
+| 0205 | Feasibility investigation of tool identity and lifetime peak memory | No delivered claim; informs B-006 |
+| 0206 | Proven tool-process memory observation and exports                  | B-006                             |
 
 ## Scoring
 
