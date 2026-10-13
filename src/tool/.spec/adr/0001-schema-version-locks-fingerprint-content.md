@@ -12,6 +12,11 @@ Accepted — 2026-10-13, repository owner. Records the technical rationale for
 [decision 0009](../decisions/0009-a-versions-folder-is-its-number-one-number-covers-the-set-and-a-version-lock-freezes-it.md);
 it does not supersede that decision.
 
+Superseded — 2026-10-13 by
+[ADR-0002](0002-schema-locks-are-independent-of-tool-versions.md), which makes
+schema/tool version independence explicit and removes the NuGet dependency-lock
+analogy from the active record.
+
 ## Context
 
 A frozen schema version must keep the same shipping files as the tool evolves
