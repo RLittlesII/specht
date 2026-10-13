@@ -35,17 +35,21 @@ internal partial class SpechtBuild : NukeBuild
         }
     }
 
-    // B-025: until 0001-F5's rule settings exist, the check's violations print and never fail the target (C-7, 0001-F2 A-2).
     private Target Specht => definition => definition
         .Executes(() =>
         {
-            var clean = true;
+            var exitCode = 0;
             AnnotateChangedFiles(DotNet(
                 "run --project src/tool -- --root .",
                 RootDirectory,
                 logger: ProcessTasks.DefaultLogger,
-                exitHandler: process => clean = process.ExitCode == 0));
-            Log.Information("Specht: {Verdict}; the check does not gate until 0001-F5's rule settings exist", clean ? "clean" : "violations reported");
+                exitHandler: process => exitCode = process.ExitCode));
+            if (exitCode != 0)
+            {
+                ExitCode = exitCode;
+            }
+
+            Assert.True(exitCode == 0, $"Specht exited with code {exitCode}");
         });
 
     // B-003, B-017: C# and Markdown, verified and never fixed (C-2, B-004); B-020: given --files, those and no other.

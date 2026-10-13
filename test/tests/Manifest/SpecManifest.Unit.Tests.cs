@@ -3,6 +3,7 @@ using System.Text.Json.Nodes;
 using System.Text.RegularExpressions;
 using AwesomeAssertions;
 using Specht.Manifest;
+using Specht.Resources;
 using Specht.Tests.Shared;
 using Specht.Versioning;
 
@@ -764,6 +765,24 @@ public sealed class SpecManifestUnitTests
 
         // Then
         structure.Rules.Should().BeEmpty();
+    }
+
+    [Theory]
+    [InlineData("{}")]
+    [InlineData("{\"rules\":{}}")]
+    [InlineData("{\"rules\":{\"SPEC010\":\"error\"}}")]
+    public void AConsumerLeavingOutARuleLevel_WhenParsedAgainstAWarningDefault_ShouldNotInheritThatLevel(string manifest)
+    {
+        // Given
+        var defaults = JsonNode.Parse(new SpechtResources().DefaultManifest)!.AsObject();
+        defaults["rules"] = new JsonObject { ["SPEC060"] = "warning" };
+        var parser = new SpecManifestParser(defaults.ToJsonString());
+
+        // When
+        var structure = parser.Parse(manifest);
+
+        // Then
+        structure.Rules.Should().NotContainKey("SPEC060");
     }
 
     [Fact]

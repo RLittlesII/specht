@@ -83,5 +83,7 @@
     "blocked": "🔴",
     "approved": "approved"
   },
-  "rules": {}
+  "rules": {
+    "SPEC060": "warning"
+  }
 }

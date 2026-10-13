@@ -2,8 +2,9 @@
 . "$(dirname "$0")/_/husky.sh"
 
 staged=$(git -c core.quotePath=false diff --cached --name-only --diff-filter=AMR -- '*.cs' '*.md')
+specification=$(git diff --cached --name-only --diff-filter=AMRD -- ':(glob)**/.spec/**' '*.feature')
 
-if [ -z "$staged" ]; then
+if [ -z "$staged" ] && [ -z "$specification" ]; then
     exit 0
 fi
 
@@ -37,7 +38,14 @@ tmp=$(cd "$tmp" && pwd -P)
 
 git checkout-index -a --prefix="$tmp/"
 
-if "$top/build.sh" Format --root "$tmp" --files "$@"; then
+if [ -z "$staged" ] || "$top/build.sh" Format --skip Specht --root "$tmp" --files "$@"; then
+    if [ -n "$specification" ]; then
+        "$top/build.sh" Specht --root "$tmp" && exit 0
+        checker_exit=$?
+        echo "pre-commit: Specht rejected the staged specification tree."
+        echo "Bypass with: git commit --no-verify"
+        exit "$checker_exit"
+    fi
     exit 0
 fi
 
