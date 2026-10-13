@@ -84,9 +84,20 @@ escalated by the benchmarker; it is not a red build.
 - The project, its entry point and its shared configuration as built:
   [`0109-F1` § 7](../../../../.performance/benchmarks/.spec/README.md).
 
+## Running locally
+
+```sh
+./build.sh Benchmark
+./build.sh Benchmark --benchmark-filter '*CheckBenchmarks*' --benchmark-job Short
+```
+
+Both parameters are optional: no filter selects every benchmark; no job keeps
+the library's default. The target builds Release, packs only when cold start is
+selected, and writes Markdown and JSON exports under `.artifacts/benchmarks/`.
+A broken benchmark fails the target; a measured number never does.
+
 ## Not built yet
 
-- the `Benchmark` NUKE target and its parameter names (item 0148);
 - the CI step that runs it and publishes the results, and where that step lands in
   the generated `ci.yml` (item 0149; regenerate with `./build.sh Compile`, then
   diff the step order).

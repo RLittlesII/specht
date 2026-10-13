@@ -2,7 +2,7 @@ id: "0148"
 type: task
 title: Add the Benchmark build target
 
-status: in-progress
+status: done
 
 risk: 3
 
@@ -30,7 +30,7 @@ claims:
 
 created: "2026-10-11"
 updated: "2026-10-13"
-closed: null
+closed: "2026-10-13"
 
 summary: |
   The `Benchmark` target: every benchmark or only those a filter names,

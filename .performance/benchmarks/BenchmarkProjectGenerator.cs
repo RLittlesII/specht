@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using BenchmarkDotNet.Loggers;
+using BenchmarkDotNet.Running;
 using BenchmarkDotNet.Toolchains.CsProj;
 using BenchmarkDotNet.Toolchains.DotNetCli;
 
@@ -13,6 +14,9 @@ internal sealed class BenchmarkProjectGenerator(NetCoreAppSettings settings)
         settings.PackagesPath!,
         settings.RuntimeFrameworkVersion!)
 {
+    protected override string GetBuildArtifactsDirectoryPath(BuildPartition buildPartition, string programName) =>
+        Path.GetFullPath(Path.Combine(buildPartition.RepresentativeBenchmarkCase.Config.ArtifactsPath, "build", programName));
+
     protected override FileInfo GetProjectFilePath(Type benchmarkTarget, ILogger logger)
     {
         for (var directory = new FileInfo(benchmarkTarget.Assembly.Location).Directory; directory is not null; directory = directory.Parent)
