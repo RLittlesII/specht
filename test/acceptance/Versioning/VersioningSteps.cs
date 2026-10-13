@@ -1,11 +1,16 @@
 using System.Globalization;
+using System.IO.Abstractions;
 using System.Security.Cryptography;
+using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.RegularExpressions;
+using System.Threading;
+using System.Threading.Tasks;
 using AwesomeAssertions;
 using Reqnroll;
 using Specht.Report;
 using Specht.Tests.Shared;
+using Specht.Tool.Features.Init;
 using Specht.Versioning;
 
 namespace Specht.Acceptance.Versioning;
@@ -16,8 +21,8 @@ namespace Specht.Acceptance.Versioning;
 /// a synthetic version set in memory, each member the embedded version 0.1.0 under the number the step names, so B-001,
 /// B-014 and B-055 run the engine's runner over that set and B-055 reads the document the engine makes from its report;
 /// every other run launches the built tool with <c>--json</c> over a synthetic root, so B-003 and B-039 see the process's
-/// stderr and exit code and B-002, B-022 and B-023 read the document it printed. "The tool ships schema version 0.1.0
-/// only" is the real embedded set, asserted, not built. "The manifest's schema version is ..." writes a value of digits
+/// stderr and exit code and B-002, B-022 and B-023 read the document it printed. "The tool ships schema version 0.1.0"
+/// selects the real embedded version. "The manifest's schema version is ..." writes a value of digits
 /// alone as a JSON number, the integer the retired pin was, and any other value as a JSON string. B-004's three steps stay
 /// unbound: its proof against what was published is item 0044's. Item 0176 binds B-069 to B-073 and B-076: each writes a
 /// synthetic <c>spechtSchema</c> into the root's manifest with one fault and launches the built tool, and the rejection is
@@ -28,7 +33,8 @@ namespace Specht.Acceptance.Versioning;
 /// process's proxy variables at a closed loopback port, and "no network call was attempted" reads the built engine and
 /// tool assemblies for a <c>System.Net</c> reference (OQ-39, the owner's ruling of 2026-10-12). B-074 is item 0093's.
 /// Item 0126 binds B-086 and B-087 over the embedded resources and their declared addresses. The
-/// partial lock bindings execute B-092 and B-093 over synthetic shipping files on disk. The
+/// partial lock bindings execute B-092 and B-093 over synthetic shipping files on disk.
+/// B-012 runs the existing init writer over synthetic versioned manifests on disk and reads the written pin. The
 /// rest of the file's scenarios stay pending for their items; a step one of them shares with a scenario above is bound,
 /// and its other steps are not.
 /// </summary>
@@ -90,9 +96,24 @@ public sealed partial class VersioningSteps
             number => embedded with { Number = number });
     }
 
-    [Given("the tool ships schema version {word} only")]
-    public void GivenTheToolShipsSchemaVersionOnly(string version) =>
-        SchemaVersions.Embedded.Versions.Select(static shipped => shipped.Number.ToString()).Should().Equal(version);
+    [Given("a root directory with no manifest")]
+    public void GivenARootDirectoryWithNoManifest() => File.Delete(Path.Combine(Tree.Root, SpecTree.ManifestPath));
+
+    [When("init runs against it")]
+    public async Task WhenInitRunsAgainstIt()
+    {
+        var shippingCopy = Shipped.Keys.ToDictionary(
+            static version => $"manifest/v{version}/manifest.json",
+            static version => JsonSerializer.SerializeToUtf8Bytes(new { schemaVersion = version.ToString() }));
+        await new InitWriter(shippingCopy, new FileSystem()).Write(Tree.Root, schemas: false, templates: false, CancellationToken.None);
+    }
+
+    [Then("the written manifest pins version {word}")]
+    public void ThenTheWrittenManifestPinsVersion(string version)
+    {
+        var manifest = JsonNode.Parse(File.ReadAllText(Path.Combine(Tree.Root, SpecTree.ManifestPath)))!.AsObject();
+        manifest["schemaVersion"]!.GetValue<string>().Should().Be(version);
+    }
 
     [Given(@"^version (\S+) holds a rule version (\S+) does not$")]
     public void GivenVersionHoldsARuleVersionDoesNot(string holder, string lacking)

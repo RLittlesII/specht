@@ -1,10 +1,12 @@
 using System.IO.Abstractions.TestingHelpers;
+using System.Text.Json;
 using AwesomeAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using Specht.Acceptance;
 using Specht.Tests.Shared;
 using Specht.Tool;
 using Specht.Tool.Features.Init;
+using Specht.Versioning;
 using Spectre.Console.Cli.Testing;
 using Spectre.Console.Testing;
 
@@ -126,6 +128,22 @@ public sealed class InitCommandIntegrationTests : IDisposable
         stdout.Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
             .Should()
             .Equal(expected.Select(static file => $"written {file}"));
+    }
+
+    [Fact]
+    public void ABareRoot_WhenInitRuns_ShouldPinTheNewestEmbeddedSchemaVersion()
+    {
+        // Given
+        Directory.CreateDirectory(_sandbox);
+        var newest = SchemaVersions.Embedded.Versions.Max(static version => version.Number);
+
+        // When
+        var (stdout, stderr, exitCode) = AcceptanceTool.Launch(_sandbox, "init", "--root", ".");
+
+        // Then
+        exitCode.Should().Be(ExitCodes.Success, stdout + stderr);
+        using var manifest = JsonDocument.Parse(File.ReadAllText(Path.Combine(_sandbox, SpecTree.ManifestPath)));
+        manifest.RootElement.GetProperty("schemaVersion").GetString().Should().Be(newest.ToString());
     }
 
     [Fact]
