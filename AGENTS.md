@@ -22,7 +22,7 @@ repository's `.spec/` specification tree against a versioned schema and reports
 every violation with a file, a line, and a rule id. One schema and one checker
 shared by every repository in the owner's ecosystem, replacing hand-copied
 implementations. This repository holds **both the tool and the schema**; no
-consumer owns the schema, and `hooked` is consumer one.
+consumer owns the schema; every consumer installs the tool.
 
 One-line goal: _"A repository pins a schema version, its build calls the tool,
 and no repository carries the engine."_
@@ -35,8 +35,8 @@ project that packs; `IsPackable=false` everywhere else.
 `README.md` is the public front page: what the tool is, why, how to install and
 use it, and the layout; the reference pages are under `docs/`. The design
 authority is the seed brief,
-[`.spec/brief.md`](.spec/brief.md), cited as `brief § N`: requirements (§ 2), what
-was extracted from `hooked` (§ 3), the rule vocabulary (§ 4), the drafted design
+[`.spec/brief.md`](.spec/brief.md), cited as `brief § N`: requirements (§ 2), the
+repository-owned baseline (§ 3), the rule vocabulary (§ 4), the drafted design
 (§ 5), open questions with their defaults (§ 6), the order of work (§ 8) and the
 non-negotiables (§ 9). The requirements session it condenses, `REQUIREMENTS.md`,
 was retired once the specifications absorbed it; citations pin it to commit
@@ -70,7 +70,7 @@ Every target, the tier filters, and what CI actually runs:
 
 Two projects, one direction of dependency:
 
-- **`src/specht`** — the rule engine, copied from `hooked` (brief § 3). A
+- **`src/specht`** — the rule engine, imported at commit `e7dba24` (brief § 3). A
   pipeline: `SpecDiscovery` finds specifications (co-located `**/.spec/README.md`
   and consumers' legacy `epics/**/spec.md`) → `FrontmatterReader` reads YAML
   through YamlDotNet's representation model, so dates stay strings →
@@ -95,7 +95,7 @@ The design direction (brief § 5) moves every literal the engine hardcodes —
 layouts, section roles, table headers, markers, frontmatter key roles, id
 grammars, per-rule severity — into the manifest, one rule at a time, each with a
 test that the default manifest reproduces the golden baseline report (`0001-F1`
-B-004, decision 0004). Until that step the engine is exactly `hooked`'s, renamed.
+B-004, decision 0004). Until that step the engine preserves the imported baseline verdicts.
 
 ## Configuration
 
@@ -393,11 +393,11 @@ none of them changes:
 - **`.github/workflows/ci.yml` is generated.** Regenerate it with
   `./build.sh Compile`, commit the regeneration, and **diff the step order** — the
   generator orders CI steps by dependency-graph depth, not declaration order, and
-  has in `hooked` pushed `Format` to step 14 of 16.
+  can push `Format` late in the workflow.
 - **Every test class declares exactly one `Tier` trait.** Why is in
   [`specht-conventions` § Testing](.claude/skills/specht-conventions/references/testing.md).
 - **Never pin a package version in a `.csproj`.** Versions are central. The
-  engine's three `hooked` dependencies are pinned to `hooked`'s exact versions
+  engine's three baseline dependencies are pinned to the baseline dependency versions
   for a reason that is written beside them; its fourth, System.IO.Abstractions,
   is not.
 - **An item stores no `priority`, `rank` or `blocks`.** The queue script
@@ -471,11 +471,9 @@ load-bearing is copied into `.claude/skills/` and rewritten for this repository,
 with the parts that do not apply marked as such rather than deleted. A
 `Skillfile` keeps only what is genuinely incidental.
 
-The tracked skills were seeded from [`hooked`](https://github.com/RLittlesII/hooked)
-pull request #217 and rewritten for this repository: `hooked`'s product skills
-(webhooks, the event store, the two-host slice layout) were dropped, and
-everything that said "not this repository's path" about shipping a `dotnet tool`
-now says the opposite.
+The tracked skills are maintained for this repository and ship with it.
+Their paths, commands and delivery rules describe `specht`; no consumer
+repository or local checkout supplies these instructions.
 
 **The optional installed set.** Eighteen library and tooling skills (`xunit`,
 `reqnroll`, `rocket-surgery-testing-autofixtures`, `central-package-management`,

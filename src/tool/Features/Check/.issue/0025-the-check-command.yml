@@ -33,14 +33,14 @@ claims:
   - B-016
 
 created: "2026-10-08"
-updated: "2026-10-11"
+updated: "2026-10-13"
 closed: null
 
 summary: |
   As a pre-commit hook, a CI build or an agent mid-write, I want one specht
   command that prints MSBuild-shaped lines and exits with a code all three
   understand, so that every call site gets the same verdict from a tool
-  instead of hooked's Nuke target (Must-1).
+  instead of the consumer's Nuke target (Must-1).
 
   Reaches the engine through 0026 -> 0021. The summary (0028) takes its
   counts from the report document: 0028 -> 0034 (0001-F3 B-005).

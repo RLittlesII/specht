@@ -17,19 +17,19 @@ same manifest and the same tool version produce identical documents.
 
 ## Why
 
-- Should-7 asks that `hooked`'s run be unchanged by the extraction. With the
+- Should-7 asks that the baseline run be unchanged by the extraction. With the
   stamp gone the comparison is byte equality instead of "every field but one",
   and the test that proves it has no exclusion list to maintain.
 - The tool is deterministic and offline by design (brief § 9). A stamp is the
-  one field that contradicted that, and nothing consumed it: `hooked`'s target
+  one field that contradicted that, and nothing consumed it: the consumer's target
   logged the report path, not the time.
 - A committed report with a stamp is a diff on every run. The reports are
-  gitignored, but the lesson `format.json` taught `hooked` is that a generated
+  gitignored, but the lesson `format.json` taught a consumer repository is that a generated
   file with machine-specific content gets committed eventually.
 
 ## Rejected
 
-**Keep the stamp and exclude it from comparison.** The `hooked` draft
+**Keep the stamp and exclude it from comparison.** The original draft
 specification wrote its baseline claim that way ("in every field but
 `generatedAtUtc`").
 
@@ -49,7 +49,7 @@ specification wrote its baseline claim that way ("in every field but
 
 - `0001-F3` § 3 B-006, § 4 C-3.
 - `0001-F1` § 3 B-004: the baseline comparison still names the field, because
-  `hooked`'s report at `6afe8ab` carries it; after this Feature the exclusion
+  the baseline report before the import carries it; after this Feature the exclusion
   is one-sided.
 
 ## Reversal

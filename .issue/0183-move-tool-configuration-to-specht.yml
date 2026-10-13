@@ -18,7 +18,7 @@ spec: null # spans 0001-F1, 0001-F2, 0001-F4, 0001-F5 and 0001-F7
 claims: [] # the claims are in several Features; the criteria cite each with its Feature
 
 created: "2026-10-11"
-updated: "2026-10-11"
+updated: "2026-10-13"
 closed: "2026-10-11"
 
 summary: |
@@ -115,5 +115,5 @@ out_of_scope:
   - "A fallback read of the retired location, or a command that migrates a tree — 0001-F2 § 5 row 23, 0001-F4 § 5 row 12."
   - "Renaming the manifest, a frontmatter schema, a template or either sub-folder — ADR-0011, open point 1."
   - "A `.specht` exclusion in the default manifest, or a change to `schemaVersion` — ADR-0011, open points 3 and 4."
-  - "Moving `hooked`'s two folders — a consumer moves them by hand (ADR-0011, Consequences)."
+  - "Moving the consumer's two folders — a consumer moves them by hand (ADR-0011, Consequences)."
   - "Any test of the benchmark project."

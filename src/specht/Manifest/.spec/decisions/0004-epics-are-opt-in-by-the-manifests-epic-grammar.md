@@ -14,7 +14,7 @@ type: decision
 Epics are opt-in. Resolves OQ-3.
 
 - **The signal** is the manifest's epic grammar, `identifiers.epic`. Every
-  manifest that exists today declares it, including `hooked`'s and this
+  manifest that exists today declares it, including the consumer's and this
   repository's, so every existing run is unchanged and B-016 still reproduces
   the golden report. A manifest without it has no epic tier.
 - **Identity.** With the epic grammar, a Feature's identity is

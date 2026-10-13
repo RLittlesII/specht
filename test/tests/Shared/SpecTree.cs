@@ -20,7 +20,7 @@ public sealed class SpecTree : IDisposable
     /// <param name="nesting">Folders between the temporary directory and the root, outermost first; none by default.</param>
     public SpecTree(IReadOnlyList<string>? nesting = null)
     {
-        _temporary = Path.Combine(Path.GetTempPath(), "hooked-specgov-" + Guid.NewGuid().ToString("N"));
+        _temporary = Path.Combine(Path.GetTempPath(), "specht-spec-" + Guid.NewGuid().ToString("N"));
         Root = Path.Combine([_temporary, .. nesting ?? []]);
 
         var live = Path.Combine(AppContext.BaseDirectory, ConfigurationFolder);

@@ -20,7 +20,7 @@ claims:
   - B-011
 
 created: "2026-10-08"
-updated: "2026-10-08"
+updated: "2026-10-13"
 closed: null
 
 summary: |
@@ -38,5 +38,5 @@ acceptance_criteria:
 decisions: []
 
 out_of_scope:
-  - "Parity on hooked's tree — § 5 #6, pending OQ-3."
+  - "Parity on a consumer's tree — § 5 #6, pending OQ-3."
   - "A tree holding a submodule — § 5 #4; C-3 does not cover it."

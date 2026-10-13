@@ -18,13 +18,13 @@ claims:
   - B-009
 
 created: "2026-10-08"
-updated: "2026-10-08"
+updated: "2026-10-13"
 closed: null
 
 summary: |
   A message naming a section, a key or the manifest's path spells it as the
   manifest does. Depends on 0015, 0016 and 0017, which make those values
-  readable; 0012 stays green because the default values equal hooked's.
+  readable; 0012 stays green because the default values preserve the baseline.
 
 acceptance_criteria:
   - "B-009 — section, key and manifest path named by the manifest's value"

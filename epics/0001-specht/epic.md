@@ -36,19 +36,19 @@ checker live here, once; every consumer pins a schema version, installs the
 tool through a local tool manifest, and carries no engine.
 
 The need is decided in `REQUIREMENTS.md` (at commit `254aabc`) and the design direction in
-brief § 5. This epic is the tool. `hooked` consuming it and Transporter
+brief § 5. This epic is the tool. A consumer repository consuming it and Transporter
 installing it are the two "done" events (brief § 2) and are not Features of
 this repository: each is a change in that consumer.
 
 The infrastructure in brief § 8 steps 1 and 3 - the build, CI, coverage,
 dependency updates, versioning and the release that publishes the package -
-is epic `0055`. Steps 4 and 7 are tracked in `hooked` and Transporter, not
+is epic `0055`. Steps 4 and 7 are tracked in a consumer repository and Transporter, not
 here (owner, 2026-10-08).
 
 ## Business Value
 
 Four repositories are written in parallel on one `.spec/` model, and three of
-them hand-copy `hooked`'s schema, templates and checker. Every improvement
+them hand-copy the consumer's schema, templates and checker. Every improvement
 lands four times or drifts. With this epic delivered, an improvement lands once,
 a repository upgrades when it chooses, and an agent authoring a specification in
 any of them has the same read-only oracle and the same generation contract.
@@ -72,8 +72,7 @@ request; a Feature is a thing the tool does, with its own invariant.
 | `0001-F10` | The rules command               | `src/tool/Features/Rules/.spec/README.md`       | after 6        |
 | `0001-F11` | Setting a rule's level          | `src/tool/Features/Rules/Set/.spec/README.md`   | after 6        |
 
-Why these and not `hooked`'s one draft (`0008-F3`, 34 claims): that draft
-bundled the command, `init`, the manifest roles, discovery and the baseline in
+The initial draft bundled the command, `init`, the manifest roles, discovery and the baseline in
 one Feature. Each of those has a different invariant - the command never
 writes except the report the caller names, `init` never overwrites, the manifest never adds a rule, discovery
 never opens what it excludes, the engine never changes before step 5 - and a
@@ -108,12 +107,12 @@ epic glob `epics/**/epic.md` discovers it (`0001-F6` decision 0001).
 
 ## Out of this epic
 
-| Item                                                   | Where it lives instead                                                                                       |
-| ------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------ |
-| `hooked` replacing its engine with the tool            | `hooked`, a Feature of its own                                                                               |
-| Installing in Transporter and repairing its tree       | Transporter; the repair is the agent's, from the report (Must-6)                                             |
-| The claim bridge and the convention analyzers (Roslyn) | `hooked` `0008-F1`, `0008-F2`                                                                                |
-| Rule plugins                                           | Rejected: `0001-F2` decision 0001                                                                            |
-| Autofix: `--fix`, or `upgrade` rewriting a document    | Out of scope (brief § 2); reordering rows and keys is `specht format`, epic `0101` (`0101-F5` decision 0001) |
-| Style and ordering rules                               | Epic `0101`, as schema version 2                                                                             |
-| A second schema version's content                      | After `0001-F7`, as its own epic                                                                             |
+| Item                                                     | Where it lives instead                                                                                       |
+| -------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
+| a consumer repository replacing its engine with the tool | a consumer repository, a Feature of its own                                                                  |
+| Installing in Transporter and repairing its tree         | Transporter; the repair is the agent's, from the report (Must-6)                                             |
+| The claim bridge and the convention analyzers (Roslyn)   | Outside the checker's scope (brief § 2); deferred code bindings are recorded in epic `0201`                  |
+| Rule plugins                                             | Rejected: `0001-F2` decision 0001                                                                            |
+| Autofix: `--fix`, or `upgrade` rewriting a document      | Out of scope (brief § 2); reordering rows and keys is `specht format`, epic `0101` (`0101-F5` decision 0001) |
+| Style and ordering rules                                 | Epic `0101`, as schema version 2                                                                             |
+| A second schema version's content                        | After `0001-F7`, as its own epic                                                                             |

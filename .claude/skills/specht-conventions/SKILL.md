@@ -23,8 +23,8 @@ method skill your work belongs to _and_ this one.
 
 - `.spec/brief.md` — the seed brief and the project-level design authority,
   cited as `brief § N`: what the
-  tool is (§ 1), the requirements as decided (§ 2), what was extracted from
-  `hooked` and why it is never regenerated (§ 3, § 9), the rule vocabulary
+  tool is (§ 1), the requirements as decided (§ 2), the repository-owned
+  baseline and why it is never regenerated (§ 3, § 9), the rule vocabulary
   (§ 4), the drafted design (§ 5), the open questions and their defaults (§ 6),
   and the order of work (§ 8).
 - `AGENTS.md` — the artifact chain and the four non-discretionary rules.
@@ -34,9 +34,8 @@ method skill your work belongs to _and_ this one.
 ## Layout
 
 The target layout. brief § 8 step 1 creates the scaffold; until it lands, a
-path below that does not exist yet is a plan, not a fact. brief § 3 names the
-engine project `src/SpecCheck`; the decided name is `specht` (brief § 6, first
-row).
+path below that does not exist yet is a plan, not a fact. The engine project
+is `src/specht` (brief § 3).
 
 ```
 specht.slnx                    the solution - a project not listed here is not built
@@ -49,7 +48,7 @@ build.sh / build.cmd           entry to the NUKE build
 
 src/
   specht/                      specht - the rule engine: discovery, readers, schema loader,
-                               rules, runner, report. Copied from hooked (brief § 3).
+                               rules, runner, report. Baseline at `e7dba24` (brief § 3).
     .spec/                     this Feature's specification, .feature and records (epic 0001)
     Model/ Discovery/ Manifest/ Report/ Versioning/ Composition/ Rules/
                                one folder per Feature, and named folders for what several read

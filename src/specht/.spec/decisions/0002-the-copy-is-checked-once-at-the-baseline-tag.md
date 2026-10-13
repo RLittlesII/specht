@@ -11,13 +11,13 @@ type: decision
 
 ## The call
 
-1. **B-009 is withdrawn.** "A diff against `hooked` shows the namespace rename
+1. **B-009 is withdrawn.** "A diff against a consumer repository shows the namespace rename
    and nothing else" is a one-time comparison with another repository; no test
    in this suite can fail it. It becomes C-2, checked once at the brief § 8
    step 2 tag, with the diff recorded in that commit.
 2. **C-2 names what the copy may differ by:** the namespace rename in each
    copied `*.cs` file; `AssemblyName` and `RootNamespace` set to `specht` and
-   the comments about `hooked`'s `Directory.Build.props` dropped in the copied
+   the comments about the consumer's `Directory.Build.props` dropped in the copied
    `.csproj`; the copied `.spec/` removed. These are brief § 3's own edits and
    B-005's rename. `src/specht/.spec/`, which holds this specification, is not
    part of the copy.
@@ -25,7 +25,7 @@ type: decision
    step 5, no edit changes a violation's rule id, severity, file, line,
    identifier, message or order. `0001-F3` may reshape the report around them at
    step 3 (drop `generatedAtUtc`, add `expected`).
-4. **The tag is `baseline/hooked-6afe8ab`** (added 2026-10-08), on the commit
+4. **The tag is the proposed baseline tag** (added 2026-10-08), on the commit
    that lands the copy on `main` - item 0021's merge commit, not a branch
    commit a squash merge discards. Item 0022 places it. (2026-10-08: no tag
    is placed - decision 0004. That commit is `e7dba24`, and C-2 and C-9 cite
@@ -43,7 +43,7 @@ type: decision
 
 ## Rejected
 
-- Keeping B-009 as a claim with a test that reads `hooked`'s checkout: a test
+- Keeping B-009 as a claim with a test that reads a consumer's checkout: a test
   whose input is another repository's working copy fails for reasons that are
   not this Feature's.
 - Freezing every copied file until step 5: contradicts `0001-F3` B-006 and

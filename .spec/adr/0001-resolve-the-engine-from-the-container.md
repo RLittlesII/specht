@@ -29,7 +29,7 @@ The owner's comment: "All these classes are starting to feel like they should
 be resolved from a container so they can be tested properly. We have access to
 MSFT DI. We can inject interfaces."
 
-The engine is `hooked`'s, copied and renamed (brief § 3, § 9), and it composes
+The engine is the imported baseline, with its namespace renamed (brief § 3, § 9), and it composes
 itself with statics and `new`:
 
 | Stage                                    | Today                                                                                                                                                                                                                                                                                                                   |

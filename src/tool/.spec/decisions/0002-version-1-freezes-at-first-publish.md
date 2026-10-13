@@ -23,7 +23,7 @@ exception.
   tool manifest; step 5 then adds manifest keys. If step 3's package counted
   as shipping, step 5 would change a shipped version, contradicting C-1, or
   make every manifest role a version 2 change before any consumer exists.
-- Steps 3 and 4 consume the tool locally and in `hooked`'s branch; neither
+- Steps 3 and 4 consume the tool locally and in the consumer's branch; neither
   needs a published package to pin.
 
 ## Rejected

@@ -19,7 +19,7 @@ claims:
   - B-011
 
 created: "2026-10-08"
-updated: "2026-10-10"
+updated: "2026-10-13"
 closed: null
 
 summary: |
@@ -45,4 +45,4 @@ out_of_scope:
   - "The exit code before 0001-F5's rule settings exist — § 5 #11, 0055-F1 B-025 (0061)."
   - "Wiring the hook's `Specht` call and the gate — 0055-F1 B-013, C-7 (0062)."
   - "Calling the tool through the local tool manifest — 0032."
-  - "hooked's Nuke target — § 5 #6."
+  - "the consumer's Nuke target — § 5 #6."

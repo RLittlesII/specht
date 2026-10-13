@@ -17,7 +17,7 @@ process. No git library enters the package set.
 ## Why
 
 - brief § 3 names the engine's dependencies as exactly three - Markdig,
-  YamlDotNet, JsonSchema.Net - pinned to `hooked`'s versions. A fourth is a
+  YamlDotNet, JsonSchema.Net - pinned to the baseline dependency versions. A fourth is a
   change to that list, not a detail of discovery.
 - brief § 5 drafts discovery as `git ls-files`, which is the executable's
   command, with its ignore handling (`--exclude-standard`) exactly as the

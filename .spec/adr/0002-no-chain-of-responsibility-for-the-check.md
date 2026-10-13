@@ -47,7 +47,7 @@ Two places a chain could sit:
   model).
 
 The direction in brief § 5 moves literals into the manifest, one rule at a
-time, with the default manifest reproducing `hooked`'s baseline report. It
+time, with the default manifest reproducing the baseline report. It
 makes the rules read roles instead of literals; it does not make the stages or
 the rule set configurable.
 

@@ -67,7 +67,7 @@
       <Link>Baseline\engine-e7dba24.json</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <!-- The fixture is hooked's, copied unchanged (0001-F1 C-2), and leans on implicit usings; these are the ones it reads. -->
+    <!-- The imported fixture relies on these implicit usings (0001-F1 C-2). -->
     <Using Include="System" />
     <Using Include="System.Collections.Generic" />
     <Using Include="System.IO" />

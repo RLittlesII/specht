@@ -40,7 +40,7 @@ decided by the owner on 2026-10-09 (item 0108). The project file is
   `SpechtTreeStore.Save`, into a temporary directory the benchmark creates and
   deletes, with relative paths throughout
   ([`0109-F1` § 7](../../../../.performance/benchmarks/.spec/README.md)). Never a
-  copy of this repository's `.spec/` tree, and never `hooked`'s.
+  copy of this repository's `.spec/` tree, and never the consumer's.
 
 ## Recording a finding
 

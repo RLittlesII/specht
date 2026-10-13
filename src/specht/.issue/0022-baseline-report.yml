@@ -19,7 +19,7 @@ claims:
   - B-010
 
 created: "2026-10-08"
-updated: "2026-10-08"
+updated: "2026-10-13"
 closed: "2026-10-08"
 
 summary: |
@@ -42,12 +42,12 @@ decisions:
     0003): B-004's input is a synthetic tree built with SpecTree, and its
     golden report is the engine's output on it at commit e7dba24, committed
     as test data. No git tag is placed; C-2 and C-9 cite commit e7dba24.
-    Rejected: hooked's checkout as the test input, which inverts the
-    dependency (specht is upstream of hooked) and cannot run in CI; a tag
-    baseline/hooked-6afe8ab, which a commit citation replaces; withdrawing
+    Rejected: a consumer's checkout as the test input, which inverts the
+    dependency (specht is upstream of its consumers) and cannot run in CI; a tag
+    the proposed baseline tag, which a commit citation replaces; withdrawing
     B-004, which leaves C-9 and 0012 with no baseline.
 
 out_of_scope:
   - "A new report field or the `--json` document — § 5 #2, 0001-F3."
-  - "hooked consuming the tool — § 5 #8."
-  - "Running the engine on hooked's tree — § 5 #11."
+  - "Consumer adoption of the tool — § 5 #8."
+  - "Running the engine on a consumer's tree — § 5 #11."

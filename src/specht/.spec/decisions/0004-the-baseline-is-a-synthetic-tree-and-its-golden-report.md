@@ -22,11 +22,10 @@ type: decision
    and message, in order (C-9). It is an intentional fixture, not a generated
    report, and not under `docs/reference/` or `.artifacts/`.
 3. **No git tag is placed.** Wherever decision 0002 and the specifications
-   name the baseline tag or `baseline/hooked-6afe8ab`, the start of C-9 and the
+   name the baseline tag or the proposed baseline tag, the start of C-9 and the
    commit C-2's diff is recorded against are cited as commit `e7dba24`.
-4. **Provenance is unchanged.** The engine was copied from `hooked`
-   `salvage/spec-check-engine` at `6afe8ab` (A-2). That is where the code came
-   from, not a test input.
+4. **The import is recorded in this repository.** Commit `e7dba24`
+   records the engine import (A-2). A consumer checkout is not a test input.
 5. **`0001-F5` B-016 reuses this golden report** (guard item 0012), on the
    same verdict definition.
 
@@ -34,9 +33,9 @@ This supersedes decision 0003, and replaces item 4 of decision 0002.
 
 ## Why
 
-- `specht` is upstream of `hooked`, its first consumer. A test here that reads
-  `hooked`'s source inverts the dependency direction.
-- `hooked` is a private repository. A test that needs its checkout cannot run
+- `specht` is upstream of its consumers. A test here that reads
+  consumer source inverts the dependency direction.
+- A consumer may be private. A test that needs its checkout cannot run
   in this repository's CI.
 - C-9 protects the verdicts of the copy. A tree that breaks every rule in both
   layouts exercises every verdict the copy can give, and the engine's output at
@@ -44,9 +43,9 @@ This supersedes decision 0003, and replaces item 4 of decision 0002.
 
 ## Rejected
 
-- A `hooked` checkout as the test input (decision 0003): inverts the
+- A consumer checkout as the test input (decision 0003): inverts the
   dependency, and cannot run in CI without checking out a private repository.
-- A git tag `baseline/hooked-6afe8ab`: a commit citation does the same job, as
+- A git tag the proposed baseline tag: a commit citation does the same job, as
   `REQUIREMENTS.md` is cited at commit `254aabc`, and needs no outward-facing
   ref to create and protect.
 - Withdrawing B-004: leaves C-9 and guard 0012 (`0001-F5` B-016) with no

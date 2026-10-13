@@ -21,8 +21,8 @@ does not change.
 - At `.spec/epics/` the epic sat inside the root `.spec/`, which the default
   manifest excludes (C-4), and outside `epics/**/epic.md`. Its frontmatter was
   never checked, by either cause on its own.
-- `epics/**/epic.md` is `hooked`'s glob. Keeping it keeps the default manifest
-  equal to `hooked`'s (`0001-F5` C-4) and needs no schema change before version 1
+- `epics/**/epic.md` is the baseline glob. Keeping it keeps the default manifest
+  equal to the baseline (`0001-F5` C-4) and needs no schema change before version 1
   freezes at first publish.
 
 ## Rejected
@@ -32,7 +32,7 @@ does not change.
 
 - It would also have needed a carve-out from the root `.spec/` exclusion, which
   is the hardcoded special case C-4 rules out.
-- A default that differs from `hooked`'s for this repository's sake.
+- A default that differs from the baseline for this repository's sake.
 - Cost of rejecting: a consumer that keeps epics elsewhere declares its own glob
   in its manifest (B-003). Taken.
 
