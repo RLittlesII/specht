@@ -541,3 +541,27 @@ Feature: The manifest carries the roles
     And that edge matches neither configured edge form
     When the check runs
     Then the unresolved-edge rule reports identifier "F2x"
+
+
+  @B-048 @boundary
+  Scenario: An omitted pin selects the original version's defaults
+    Given the tool ships schema version "0.1.0" and a newer version with different defaults
+    And the manifest omits its schema version and missing-test marker
+    When the manifest is loaded
+    Then its schema version is "0.1.0"
+    And its missing-test marker is version "0.1.0"'s marker
+
+  @B-048 @boundary
+  Scenario: A declared table map is not filled with other default entries
+    Given the tool ships two schema versions with different table defaults
+    And the manifest pins the older version and declares only its own matrix table headers
+    When the manifest is loaded
+    Then its table map contains exactly the declared matrix entry and headers
+
+  @B-048 @boundary
+  Scenario: Omitted names in a partial role map follow the pinned defaults
+    Given the tool ships two schema versions with different role titles
+    And the manifest pins the older version and renames only the claims role to "3. Claims"
+    When the manifest is loaded
+    Then the claims role is "3. Claims"
+    And the other roles use the older version's titles
