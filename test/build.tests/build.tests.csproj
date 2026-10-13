@@ -3,6 +3,7 @@
     <RootNamespace>Specht.Build.Tests</RootNamespace>
     <ImplicitUsings>enable</ImplicitUsings>
     <IsTestProject>true</IsTestProject>
+    <NukeTelemetryVersion>1</NukeTelemetryVersion>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="xunit.v3" />
