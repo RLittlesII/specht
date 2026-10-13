@@ -1,12 +1,13 @@
 ---
 name: deliver-change
-description: Deliver a change through a work item, a branch, the specification, the build, and a pull request. Use when picking up work, filing an item, committing, or opening and watching a pull request.
+description: Deliver a change through a work item, a branch, the specification, the build, a pull request, and a completion report. Use when picking up work, filing an item, committing, or opening and watching a pull request.
 ---
 
 # Deliver a change
 
 **Project rules.** This skill is portable. Its companion names the tracker, the
-branch and worktree conventions, the build commands and the merge strategy —
+branch and worktree conventions, the build commands, the merge strategy and
+report publication —
 [`specht-conventions`](../specht-conventions/SKILL.md) § "Delivery". Read both.
 
 ## The shape of it
@@ -41,6 +42,62 @@ branch and worktree conventions, the build commands and the merge strategy —
    reply naming only that commit. Nothing else goes in the thread - the diff is
    the answer, and a reviewer who wants more reopens it. A comment you disagree
    with is answered in the thread before any resolve, and stays open.
+10. **End with a delivery report.** Gather every contributor's handoff across
+    the chain, create the report described below, publish it using the companion's
+    conventions, and hand over its link. Update the same report after subsequent
+    review rounds.
+
+## Gather handoffs as the work proceeds
+
+The coordinating agent collects a brief handoff from each participating agent
+before it finishes or its context is lost. Include contributors to rework and
+review rounds as well as the first pass. When one person or agent performs several
+steps, attribute each step to that contributor; a report does not require extra
+agents.
+
+Each handoff records the step and contributor, work performed and findings,
+decisions with their reasons, artifacts changed or produced, validation commands
+and observed results, unresolved concerns, and a completion note stating what was
+finished and what remains. Effort means the work performed; add time or token
+counts only when measured, naming the measurement source. If a handoff is missing,
+recover what the artifacts and available outputs establish and label the gap.
+
+These handoffs supply the report. They do not replace the upstream artifacts each
+role must read or the decision records it must write.
+
+## The delivery report
+
+Identify the item, scope, specification claims or exemption, contributors, branch,
+commits and pull request where available. State the overall outcome and any next
+action or blocker.
+
+Cover every process step in order: taking and scoping the item, specification and
+scenarios (or the exemption), tests, implementation, benchmarking when applicable,
+verification, review and rework, and pull-request delivery and check monitoring.
+For **each step**, include:
+
+- **Contributor:** the agent or person responsible, including separate
+  contributions when more than one participated.
+- **Effort and findings:** what each contributor investigated, authored, changed
+  or checked, and what they found.
+- **Decisions:** the choices and reasons, linking the authoritative records;
+  state when no new decision was needed.
+- **Evidence:** links to the relevant artifacts, claims, tests, commits or review
+  findings, with observed validation results.
+- **Status and completion note:** complete, pending, blocked or not applicable,
+  followed by what finished, what remains and why. Explain inapplicable steps
+  instead of silently omitting them.
+
+Reconcile the handoffs against the delivered artifacts and checks. Preserve
+unresolved findings and disagreements; distinguish an agent's reported result
+from a result independently verified. Never infer sign-off, passing CI or a merge
+from a local green build or an open pull request. If work stops before delivery
+finishes, publish the report with the unfinished steps and blockers visible.
+
+The report is a delivery summary; specifications and the tracker remain the
+authorities for content and delivery state. Keep their facts linked rather than
+creating another agreement in the report. The final handover links the published
+report and states the observed delivery outcome.
 
 ## Exemptions
 
@@ -69,3 +126,6 @@ prevented it — the skill holds the rule, the lesson keeps the incident.
 - A green build read as proof of coverage.
 - A review thread resolved without a pushed commit, or with prose beyond the
   commit that addressed it.
+- A final handover without a delivery report, or a report that silently drops a
+  contributor, an unfinished step or an unresolved finding.
+- Invented effort measurements, validation results or completion claims.
