@@ -2,7 +2,7 @@ id: "0198"
 type: task
 title: Categorize generated release notes and label merged pull requests
 
-status: in-progress
+status: done
 
 value: 3
 risk: 1
@@ -16,7 +16,7 @@ claims: ["B-006"]
 
 created: "2026-10-13"
 updated: "2026-10-13"
-closed: null
+closed: "2026-10-13"
 
 summary: |
   Repository maintenance requested by the owner: give every merged pull request
@@ -36,6 +36,9 @@ acceptance_criteria:
 decisions:
   - "2026-10-13, repository owner: add labels and categorize every merged PR for generated release notes; use emojis, with a rocket for Features; Maintenance is named Chore."
   - "2026-10-13, maintainer: B-006 scenario amended before configuration; no checker or schema behaviour change. Constraints preserved: 0001-F1 C-5, C-9; 0055-F6 C-1, C-4, C-7."
+
+  - "2026-10-13, verification: fresh GitHub query confirms all 153 merged PRs carry exactly one expected emoji category. YAML parses as 11 categories with a final catch-all. ./build.sh passes: 941 succeeded, 195 skipped, 0 failed; Format and compilation pass. Specht reports the same 173 non-gating diagnostics, none in the release specification."
+  - "2026-10-13, GitHub preview: generate-notes reads .github/release.yml from branch 0198/release-note-categories and groups PR 156 under Documentation for the range after v0.1.90. It creates no tag or release. GitHub rejected a commit ID as previous_tag, so the preview uses the real v0.1.90 tag and does not claim to cover the first release retroactively."
 
 out_of_scope:
   - "Publishing a release, changing package assets or rewriting existing release bodies."

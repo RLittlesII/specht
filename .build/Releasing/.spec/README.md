@@ -619,7 +619,7 @@ confirmed invalid JSON and JSON `null` fail closed, a branch skips the target,
 and every run preserves the lock's bytes or absence. The existing generated
 workflow still places `Verify Tag` before `Format`, `Compile` and `Pack`.
 
-- **Category configuration (2026-10-13, decision 0006):** validate the YAML, verify every merged pull request carries exactly one release category label through GitHub, and request a generated-notes preview against the configuration branch. The preview creates no release or tag. B-006 retains record-based proof and its `Missing` traceability status; no automated test or CI observation is inferred from this hand check.
+- **Category configuration (2026-10-13, decision 0006):** validate the YAML, verify every merged pull request carries exactly one release category label through GitHub, and request a generated-notes preview against the configuration branch. The preview creates no release or tag. Observed on 2026-10-13: GitHub read this configuration from `0198/release-note-categories`, and the preview since `v0.1.90` listed PR #156 under Documentation. A fresh GitHub query verified one expected emoji category on each of the 153 merged PRs; the YAML parsed as eleven categories with the catch-all last. The preview covers the next-release range, not all historical PRs. B-006 retains record-based proof and its `Missing` traceability status; no automated test or CI observation is inferred from this hand check.
 
 ## 9. Traceability Matrix
 
