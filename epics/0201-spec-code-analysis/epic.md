@@ -34,6 +34,25 @@ name `spec.code`. That name does not yet choose a package, assembly or command.
 This is an epic draft: no Feature is agreed, no work item is cut and no analyzer
 is implemented here. The candidate cut and open questions guide decomposition.
 
+### Illustrative code binding
+
+XML documentation comments can express the intended shape: a type names its
+specification location and a member cites a requirement within that agreement.
+
+```csharp
+/// <spec path="/.spec/features/Authentication" />
+public sealed class Authentication
+{
+    /// <requirement>@REQ-AU-054</requirement>
+    public void Foo() {}
+}
+```
+
+This example informs OQ-2 and OQ-3. The exact XML contract, the meaning of the
+leading slash and directory-form path, and the relationship between requirement
+identifiers such as `REQ-AU-054` and the configured claim grammar remain open.
+OQ-12 covers how the member obtains its specification scope.
+
 ## Business Value
 
 **The problem.** A structurally valid specification and a green build can coexist
@@ -128,19 +147,20 @@ None of these choices is settled by the epic. The answers belong in the Feature
 agreement that owns them, with decisions recording rejected alternatives and
 their costs.
 
-| OQ    | Question                                                                                                                                                                                                                  | Who answers       |
-| ----- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------- |
-| OQ-1  | Is `spec.code` the public product or package name, or a working name for a `specht` capability? How is the analyzer installed and versioned relative to the tool?                                                         | Owner             |
-| OQ-2  | How are code bindings declared: attributes, structured comments or another form? Which languages and code elements are supported, and can one declaration bind to several targets?                                        | Owner with design |
-| OQ-3  | What is the common reference form for Feature specifications, claims and repository- or Feature-scoped ADRs, including repositories without an epic tier? Which additional record kinds does "other such things" include? | Owner             |
-| OQ-4  | How do Gherkin Feature-level and Scenario-level bindings interact with existing local claim tags? Are bindings inherited, repeated or qualified explicitly?                                                               | Owner             |
-| OQ-5  | Which claims require implementation, scenario and test bindings, and which code requires a claim binding? How are shared infrastructure, generated code, test code and exemptions treated?                                | Owner             |
-| OQ-6  | How are scenario-to-test bindings established, and which inputs and aggregation boundary prove completeness across projects and compilations?                                                                             | Design after OQ-5 |
-| OQ-7  | Which document and ADR lifecycle states are valid binding targets, and what happens when a referenced claim is withdrawn or an ADR is superseded?                                                                         | Owner             |
-| OQ-8  | How are the pinned manifest and specification records supplied to Roslyn analysis, and how are missing or invalid inputs diagnosed consistently in editor and build?                                                      | Design            |
-| OQ-9  | Which diagnostic namespace, severities, suppression rules and versioning policy apply to analyzer findings and reconciliation gaps?                                                                                       | Owner with design |
-| OQ-10 | Does adoption reuse or extract `hooked`'s existing claim bridge, and which repository retains ownership of its convention analyzers?                                                                                      | Owner             |
-| OQ-11 | Where is the reconciled evidence presented, and does it extend the existing report contract or have its own surface?                                                                                                      | Owner with design |
+| OQ    | Question                                                                                                                                                                                                                                  | Who answers       |
+| ----- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------- |
+| OQ-1  | Is `spec.code` the public product or package name, or a working name for a `specht` capability? How is the analyzer installed and versioned relative to the tool?                                                                         | Owner             |
+| OQ-2  | How are code bindings declared: XML documentation comments as illustrated above, attributes, other structured comments or another form? Which languages and code elements are supported, and can one declaration bind to several targets? | Owner with design |
+| OQ-3  | What is the common reference form for Feature specifications, claims and repository- or Feature-scoped ADRs, including repositories without an epic tier? Which additional record kinds does "other such things" include?                 | Owner             |
+| OQ-4  | How do Gherkin Feature-level and Scenario-level bindings interact with existing local claim tags? Are bindings inherited, repeated or qualified explicitly?                                                                               | Owner             |
+| OQ-5  | Which claims require implementation, scenario and test bindings, and which code requires a claim binding? How are shared infrastructure, generated code, test code and exemptions treated?                                                | Owner             |
+| OQ-6  | How are scenario-to-test bindings established, and which inputs and aggregation boundary prove completeness across projects and compilations?                                                                                             | Design after OQ-5 |
+| OQ-7  | Which document and ADR lifecycle states are valid binding targets, and what happens when a referenced claim is withdrawn or an ADR is superseded?                                                                                         | Owner             |
+| OQ-8  | How are the pinned manifest and specification records supplied to Roslyn analysis, and how are missing or invalid inputs diagnosed consistently in editor and build?                                                                      | Design            |
+| OQ-9  | Which diagnostic namespace, severities, suppression rules and versioning policy apply to analyzer findings and reconciliation gaps?                                                                                                       | Owner with design |
+| OQ-10 | Does adoption reuse or extract `hooked`'s existing claim bridge, and which repository retains ownership of its convention analyzers?                                                                                                      | Owner             |
+| OQ-11 | Where is the reconciled evidence presented, and does it extend the existing report contract or have its own surface?                                                                                                                      | Owner with design |
+| OQ-12 | How does a member’s requirement reference obtain its specification scope: from an enclosing type’s `<spec>` binding, an explicit member binding or another rule?                                                                          | Owner with design |
 
 ## Out of this epic
 
