@@ -79,3 +79,16 @@ part of the call above is redirected, and the sections above stand as written.
 
 Every other part of the call stands: the project is outside `test/` and its
 tier governance, and nothing gates on a measurement.
+
+**Amended 2026-10-13 by the repository owner; recorded by spec-author.**
+Automatic benchmarks and result publication run only on pushes to main, on Linux
+and Windows. Pull requests keep the correctness gates and run neither benchmarks
+nor benchmark-result uploads. Explicit local runs remain available. This revises
+OQ-2's 2026-10-09 every-build decision and amends B-017, B-018, B-020 and
+`0055-F2` B-004.
+
+Rejected: automatic measurements on every pull-request build. They add runner work
+and shared-runner noise to the pull-request feedback loop. Cost of rejecting:
+a pull request has no fresh automatic benchmark result; performance work runs the
+local target, and automatic results arrive after the change reaches main. No new
+schedule or pull-request opt-in mechanism is added.

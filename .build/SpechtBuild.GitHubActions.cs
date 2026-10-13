@@ -40,7 +40,7 @@ using static Nuke.Common.Tools.Git.GitTasks;
     GitHubActionsImage.WindowsLatest,
     AutoGenerate = true,
     OnPushBranches = ["main"],
-    InvokedTargets = [nameof(ContinuousIntegration)],
+    InvokedTargets = [nameof(ContinuousIntegration), nameof(Benchmark)],
     NonEntryTargets =
     [
         nameof(ICIEnvironment.CIEnvironment),
@@ -61,8 +61,7 @@ internal sealed partial class SpechtBuild
 {
     private Target ContinuousIntegration => _ => _
         .OnlyWhenStatic(GitHubActionsTasks.IsRunningOnGitHubActions)
-        .DependsOn(Build)
-        .DependsOn(Benchmark);
+        .DependsOn(Build);
 
     public static RocketSurgeonGitHubActionsConfiguration ContinuousIntegrationMiddleware(
         RocketSurgeonGitHubActionsConfiguration configuration)
@@ -227,7 +226,12 @@ internal sealed partial class SpechtBuild
     /// <summary>Runs benchmarks after the gates and publishes only their exporter results per operating system.</summary>
     private static void AddBenchmarkResults(RocketSurgeonsGithubActionsJob buildJob)
     {
-        var benchmarkStep = buildJob.Steps.OfType<RunStep>().Single(static step => step.Id == "benchmark");
+        var benchmarkStep = buildJob.Steps.OfType<RunStep>().SingleOrDefault(static step => step.Id == "benchmark");
+        if (benchmarkStep is null)
+        {
+            return;
+        }
+
         benchmarkStep.Run += " --benchmark-job Short";
         buildJob.Steps.Remove(benchmarkStep);
         var buildStep = buildJob.Steps.Cast<BaseGitHubActionsStep>().Single(static step => step.Id == "build");

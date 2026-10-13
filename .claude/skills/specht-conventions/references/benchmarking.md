@@ -98,9 +98,9 @@ A broken benchmark fails the target; a measured number never does.
 
 ## CI results
 
-The generated integration workflows run the Short job after the gates on every
-operating system that builds: Linux on code pull requests, Linux and Windows on
-pushes to main. Skipped documentation pull requests run no benchmark. Each run
+The generated main workflow runs the Short job after the gates on Linux and
+Windows for pushes to main. Pull requests run correctness gates without any
+benchmark or result upload. Explicit local runs remain available. Each main run
 publishes exporter reports as `benchmarks-<operating system>`; logs and generated
 projects are excluded. Broken benchmarks fail the check; measured numbers do not.
 

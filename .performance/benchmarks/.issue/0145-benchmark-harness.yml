@@ -44,7 +44,7 @@ closed: "2026-10-13"
 
 summary: |
   As the maintainer of four repositories, I want one benchmark project that
-  a build target runs locally and CI runs on every build, with memory
+  a build target runs locally and CI runs on pushes to main, with memory
   measured on every benchmark and the results kept as files, so that a cost
   a specification names has a number, and no number ever fails a build.
 

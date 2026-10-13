@@ -137,22 +137,8 @@ jobs:
         if: ${{ steps.changes.outputs.build == 'true' }}
         run: |
           ./build.cmd --target Build --skip Test
-      - name: Benchmark
-        id: benchmark
-        if: ${{ steps.changes.outputs.build == 'true' }}
-        run: |
-          ./build.cmd --target Benchmark --skip Restore --benchmark-job Short
-      - name: Upload benchmark results
-        id: benchmarkResults
-        if: ${{ (!cancelled() && (steps.benchmark.outcome == 'success' || steps.benchmark.outcome == 'failure')) && steps.changes.outputs.build == 'true' }}
-        uses: actions/upload-artifact@v7
-        with:
-          name: 'benchmarks-${{ runner.os }}'
-          path: '.artifacts/benchmarks/results/*-report-*'
-          include-hidden-files: 'true'
-          if-no-files-found: 'error'
       - name: Continuous Integration
         id: continuousIntegration
         if: ${{ steps.changes.outputs.build == 'true' }}
         run: |
-          ./build.cmd --target ContinuousIntegration --skip Build Benchmark
+          ./build.cmd --target ContinuousIntegration --skip Build

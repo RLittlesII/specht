@@ -157,4 +157,4 @@ jobs:
         id: continuousIntegration
         if: ${{ steps.changes.outputs.build == 'true' }}
         run: |
-          ./build.cmd --target ContinuousIntegration --skip Build Benchmark
+          ./build.cmd --target ContinuousIntegration --skip Build
