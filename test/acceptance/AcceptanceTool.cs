@@ -17,7 +17,21 @@ internal static class AcceptanceTool
     /// <param name="workingDirectory">The directory the process starts in.</param>
     /// <param name="args">The arguments, each passed as one.</param>
     /// <returns>What the process wrote to stdout and to stderr, and its exit code.</returns>
-    public static (string Stdout, string Stderr, int ExitCode) Launch(string workingDirectory, params string[] args)
+    public static (string Stdout, string Stderr, int ExitCode) Launch(string workingDirectory, params string[] args) =>
+        Launch(workingDirectory, new Dictionary<string, string>(StringComparer.Ordinal), args);
+
+    /// <summary>
+    /// Runs the tool in <paramref name="workingDirectory"/> with <paramref name="args"/>, its process carrying
+    /// <paramref name="environment"/> over what this process hands it, and waits for it to exit.
+    /// </summary>
+    /// <param name="workingDirectory">The directory the process starts in.</param>
+    /// <param name="environment">The environment variables set for the process, by name.</param>
+    /// <param name="args">The arguments, each passed as one.</param>
+    /// <returns>What the process wrote to stdout and to stderr, and its exit code.</returns>
+    public static (string Stdout, string Stderr, int ExitCode) Launch(
+        string workingDirectory,
+        IReadOnlyDictionary<string, string> environment,
+        params string[] args)
     {
         var start = new ProcessStartInfo("dotnet")
         {
@@ -25,6 +39,11 @@ internal static class AcceptanceTool
             RedirectStandardOutput = true,
             RedirectStandardError = true,
         };
+        foreach (var (name, value) in environment)
+        {
+            start.Environment[name] = value;
+        }
+
         start.ArgumentList.Add(typeof(CheckCommand).Assembly.Location);
         foreach (var arg in args)
         {

@@ -11,8 +11,9 @@ namespace Specht.Tests.Report;
 
 /// <summary>
 /// The report document made from a report built in memory (<c>0001-F3</c> B-005, B-006, B-007; <c>0001-F2</c> B-002;
-/// <c>0001-F6</c> B-009, C-7): what it counts, the name and the order it gives each layout, what a violation carries, that
-/// nothing in it comes from the clock or the machine, and the run summary it makes.
+/// <c>0001-F6</c> B-009, C-7; <c>0001-F7</c> B-032): what it counts, the name and the order it gives each layout, where it
+/// says the schemas came from, what a violation carries, that nothing in it comes from the clock or the machine, and the
+/// run summary it makes.
 /// </summary>
 [Trait("Tier", "Unit")]
 public sealed partial class SpecReportDocumentUnitTests
@@ -101,6 +102,19 @@ public sealed partial class SpecReportDocumentUnitTests
         // Then
         document.SchemaVersion.Should().Be("0.2.0");
         document.SchemaSource.Should().Be(SpecSchemaSource.Embedded);
+    }
+
+    [Fact]
+    public void AReportOfACheckOverAnUpstreamCopy_WhenMadeADocument_ShouldSayTheSchemasCameFromTheUpstreamCopy()
+    {
+        // Given
+        var report = (SpechtReport)new SpechtReportFixture() with { SchemaSource = SpecSchemaSource.Upstream };
+
+        // When
+        var document = SpecReportDocument.From(report);
+
+        // Then
+        document.SchemaSource.Should().Be(SpecSchemaSource.Upstream);
     }
 
     [Theory]
