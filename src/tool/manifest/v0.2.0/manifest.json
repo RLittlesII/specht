@@ -84,7 +84,7 @@
     "approved": "approved"
   },
   "claim": {
-    "claimTagForm": "@{claim}",
-    "claimTagIgnoreCase": false
+    "tag": "@{claim}",
+    "tagIgnoreCase": false
   }
 }

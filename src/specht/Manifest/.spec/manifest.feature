@@ -454,6 +454,8 @@ Feature: The manifest carries the roles
 
     Examples:
       | key                |
+      | tag                |
+      | tagIgnoreCase      |
       | claimTagForm       |
       | claimTagIgnoreCase |
 

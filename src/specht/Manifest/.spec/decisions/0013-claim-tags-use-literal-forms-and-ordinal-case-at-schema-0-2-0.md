@@ -22,3 +22,7 @@ Resolves 0001-F5 OQ-1's remaining tag names, OQ-8 and OQ-9. Amends B-007 and B-0
 The owner requested a `claim` object in [review 5512818512](https://github.com/RLittlesII/specht/pull/177#pullrequestreview-5512818512). The two accepted settings now live at `claim.claimTagForm` and `claim.claimTagIgnoreCase`; their names, defaults, case scope and diagnostic behavior are unchanged. Omission fills each member from the exact pin's default, including when the consumer declares only one member.
 
 This supersedes the original top-level placement, which is not retained as an alias in the unreleased `0.2.0` working set. Older pins reject `claim` as well as the two original flat keys. The claim grammar remains solely at `identifiers.claim`; it is not copied into the new object.
+
+## Member names refined on 2026-10-13
+
+In [review 5512940197](https://github.com/RLittlesII/specht/pull/177#pullrequestreview-5512940197), the owner named the members `tag` and `tagIgnoreCase`. The final paths are `claim.tag` and `claim.tagIgnoreCase`. This supersedes the repeated claim prefix in the preceding placement refinement; defaults, per-member fill and tag behavior are unchanged.

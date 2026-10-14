@@ -33,7 +33,7 @@ repository holds several.
 | `rules`             | Each rule id's level: `error` or `warning` re-grades its violations, `off` drops them. A rule left out keeps its own severity; an id outside the pinned vocabulary, or any other level, exits `3`.                                                                                                                                                       |
 | `identifiers.claim` | The claim id grammar `SPEC030` enforces in § 3, and the § 3 ids a tag may resolve to under `SPEC021`.                                                                                                                                                                                                                                                    |
 
-Under schema `0.2.0`, `claim.claimTagForm` is literal text around exactly one `{claim}` placeholder, default `@{claim}`. `claim.claimTagIgnoreCase` is Boolean, default `false`; when true it covers the entire tag and resolution uses ordinal comparison. Missing values come from the pinned version's shipped manifest. Older pins reject `claim`; flat tag keys are rejected at every pin. Each missing member of `claim` uses the pinned default, including a partially declared object.
+Under schema `0.2.0`, `claim.tag` is literal text around exactly one `{claim}` placeholder, default `@{claim}`. `claim.tagIgnoreCase` is Boolean, default `false`; when true it covers the entire tag and resolution uses ordinal comparison. Missing values come from the pinned version's shipped manifest. Older pins reject `claim`; flat tag keys are rejected at every pin. Each missing member of `claim` uses the pinned default, including a partially declared object.
 
 A key left out takes its value from the default manifest, except `rules`, which
 is never filled: a manifest without it sets no level. A key the engine does
@@ -119,8 +119,8 @@ way. The block also omits this repository's `rules` setting: consumers that leav
     "approved": "approved"
   },
   "claim": {
-    "claimTagForm": "@{claim}",
-    "claimTagIgnoreCase": false
+    "tag": "@{claim}",
+    "tagIgnoreCase": false
   }
 }
 ```

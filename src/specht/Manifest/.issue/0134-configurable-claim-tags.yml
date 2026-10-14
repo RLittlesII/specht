@@ -49,6 +49,10 @@ acceptance_criteria:
 
 decisions:
   - |
+    2026-10-13, owner review 5512940197: use tag and tagIgnoreCase inside
+    claim. Decision 0013 records the final member names; defaults and
+    behavior remain unchanged.
+  - |
     2026-10-13, owner review 5512818512: wrap the two existing tag settings
     in a claim object. Decision 0013 records the placement refinement;
     defaults and tag semantics are unchanged, and partial objects fill each

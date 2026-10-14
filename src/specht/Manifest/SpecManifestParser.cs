@@ -46,8 +46,8 @@ public sealed class SpecManifestParser(SchemaVersions versions)
             Roles = Filled(manifest, defaults, "roles"),
             Markers = Filled(manifest, defaults, "markers"),
             Rules = Levels(manifest["rules"]),
-            ClaimTagForm = tags ? Present(claim?["claimTagForm"] ?? claimDefaults?["claimTagForm"]).GetValue<string>() : null,
-            ClaimTagIgnoreCase = tags && Present(claim?["claimTagIgnoreCase"] ?? claimDefaults?["claimTagIgnoreCase"]).GetValue<bool>(),
+            ClaimTagForm = tags ? Present(claim?["tag"] ?? claimDefaults?["tag"]).GetValue<string>() : null,
+            ClaimTagIgnoreCase = tags && Present(claim?["tagIgnoreCase"] ?? claimDefaults?["tagIgnoreCase"]).GetValue<bool>(),
             SpechtSchema = SpechtSchema(manifest, frontmatterSchemas, sourceFaults),
         };
 
@@ -83,7 +83,7 @@ public sealed class SpecManifestParser(SchemaVersions versions)
 
         if (form.Split("{claim}", StringSplitOptions.None).Length != 2)
         {
-            yield return $"claim.claimTagForm '{form}' must hold '{{claim}}' exactly once";
+            yield return $"claim.tag '{form}' must hold '{{claim}}' exactly once";
         }
 
         var grammar = structure.Identifiers["claim"];

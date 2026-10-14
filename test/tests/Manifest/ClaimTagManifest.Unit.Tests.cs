@@ -11,6 +11,8 @@ namespace Specht.Tests.Manifest;
 public sealed class ClaimTagManifestUnitTests
 {
     [Theory]
+    [InlineData("tag", "\"@{claim}\"")]
+    [InlineData("tagIgnoreCase", "true")]
     [InlineData("claimTagForm", "\"@{claim}\"")]
     [InlineData("claimTagIgnoreCase", "true")]
     public void AFlatTagSetting_WhenParsed_ShouldBeRejectedAsAnUnknownKey(string key, string json)
@@ -34,10 +36,10 @@ public sealed class ClaimTagManifestUnitTests
         // Given
         var original = EngineServices.Versions().Find(new SemanticVersion(0, 1, 0))!;
         var older = JsonNode.Parse(original.Manifest)!.AsObject();
-        older["claim"] = new JsonObject { ["claimTagForm"] = "@old:{claim}", ["claimTagIgnoreCase"] = false };
+        older["claim"] = new JsonObject { ["tag"] = "@old:{claim}", ["tagIgnoreCase"] = false };
         var newer = older.DeepClone().AsObject();
-        newer["claim"]!["claimTagForm"] = "@NEW:{claim}";
-        newer["claim"]!["claimTagIgnoreCase"] = true;
+        newer["claim"]!["tag"] = "@NEW:{claim}";
+        newer["claim"]!["tagIgnoreCase"] = true;
         var parser = new SpecManifestParser(new SchemaVersions([
             original,
             new SchemaVersionFixture().WithNumber(new SemanticVersion(0, 2, 0)).WithManifest(older.ToJsonString()),
@@ -49,18 +51,18 @@ public sealed class ClaimTagManifestUnitTests
         var explicitSettings = parser.Parse(new JsonObject
         {
             ["schemaVersion"] = pin,
-            ["claim"] = new JsonObject { ["claimTagForm"] = "@consumer:{claim}", ["claimTagIgnoreCase"] = !ignoreCase },
+            ["claim"] = new JsonObject { ["tag"] = "@consumer:{claim}", ["tagIgnoreCase"] = !ignoreCase },
         }.ToJsonString());
 
         var onlyForm = parser.Parse(new JsonObject
         {
             ["schemaVersion"] = pin,
-            ["claim"] = new JsonObject { ["claimTagForm"] = "@partial:{claim}" },
+            ["claim"] = new JsonObject { ["tag"] = "@partial:{claim}" },
         }.ToJsonString());
         var onlyCase = parser.Parse(new JsonObject
         {
             ["schemaVersion"] = pin,
-            ["claim"] = new JsonObject { ["claimTagIgnoreCase"] = !ignoreCase },
+            ["claim"] = new JsonObject { ["tagIgnoreCase"] = !ignoreCase },
         }.ToJsonString());
 
         // Then
@@ -82,18 +84,18 @@ public sealed class ClaimTagManifestUnitTests
     {
         // Given
         var parser = EngineServices.Parser();
-        var manifest = new JsonObject { ["schemaVersion"] = "0.2.0", ["claim"] = new JsonObject { ["claimTagForm"] = form } };
+        var manifest = new JsonObject { ["schemaVersion"] = "0.2.0", ["claim"] = new JsonObject { ["tag"] = form } };
 
         // When
         var parse = () => parser.Parse(manifest.ToJsonString());
 
         // Then
-        parse.Should().Throw<SpechtManifestException>().Which.Message.Should().Contain("claimTagForm").And.Contain($"'{form}'");
+        parse.Should().Throw<SpechtManifestException>().Which.Message.Should().Contain("claim.tag").And.Contain($"'{form}'");
     }
 
     [Theory]
-    [InlineData("0.1.0", "claim", "{\"claimTagForm\":\"@{claim}\"}")]
-    [InlineData("0.1.1", "claim", "{\"claimTagIgnoreCase\":true}")]
+    [InlineData("0.1.0", "claim", "{\"tag\":\"@{claim}\"}")]
+    [InlineData("0.1.1", "claim", "{\"tagIgnoreCase\":true}")]
     [InlineData("0.1.0", "claimTagForm", "\"@{claim}\"")]
     [InlineData("0.1.1", "claimTagForm", "\"@{claim}\"")]
     [InlineData("0.1.0", "claimTagIgnoreCase", "true")]
