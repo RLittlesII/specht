@@ -239,6 +239,19 @@ fails the memory-enabled run with an actionable reason; it reports no invented
 peak. The timing-only slice may be delivered first with B-006 explicitly still
 Missing. The Feature is not complete until the memory claim is delivered.
 
+### Memory feasibility outcome
+
+The [ADR investigation](adr/0001-observe-the-installed-tool-process.md#feasibility-result)
+records reproducible Linux/Windows hosted probes and local macOS behavior.
+Native lifecycle observers captured every immediate silent tool in the tested
+runs, but no observer is adopted: Linux full-lifetime metric scope and terminal
+thread coverage remain unresolved, and both candidates stop execution at
+lifecycle events. Their timing impact requires review before entering measured
+invocations. macOS has no proven tool-only resident peak and must fail explicitly
+if memory observation is requested. The export contract above remains proposed;
+source inspection of Full JSON Metrics is not end-to-end exporter proof. B-006
+remains Missing; this investigation changes no approved scenario or benchmark.
+
 ### Delivery sequence
 
 The Tasks table owns claim allocation. Timing/package work can be completed and

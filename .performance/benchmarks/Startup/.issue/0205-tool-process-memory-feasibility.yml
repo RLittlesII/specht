@@ -2,7 +2,7 @@ id: "0205"
 type: spike
 title: Prove installed-tool identity and lifetime peak memory observation
 
-status: in-progress
+status: done
 
 risk: 3
 
@@ -16,7 +16,7 @@ claims: []
 
 created: "2026-10-13"
 updated: "2026-10-13"
-closed: null
+closed: "2026-10-13"
 
 summary: |
   Establish whether an external observer can attribute lifetime peak
@@ -40,6 +40,16 @@ acceptance_criteria:
 
 decisions:
   - "2026-10-13, implementer: reject launcher PeakWorkingSet64 and periodic working-set maxima as a default; investigate native lifecycle observation first. Platform capability is evidence to gather, not an owner decision to invent."
+
+  - |
+    2026-10-13, implementer: investigation completed with a negative adoption
+    result. ADR-0001 records reproducible probes at 825ef4ca, hosted run
+    38498985256 and local macOS evidence. Native observers captured all
+    30 Linux and 30 Windows invocations, including immediate silent exits.
+    Linux complete-lifetime scope/terminal thread coverage, observer
+    suspension and timing impact, fail-closed behavior and both-exporter
+    transport remain design gates. No observer or claim implementation
+    is delivered; 0206 remains on a status hold.
 
 out_of_scope:
   - "Claim B-006 implementation and report integration — 0206."
