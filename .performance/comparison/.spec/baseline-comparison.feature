@@ -23,6 +23,12 @@ Feature: Release baseline comparison
     When the original release comparison is rerun
     Then it compares the original release pair
 
+  @B-002 @boundary
+  Scenario: An unreadable catalog does not select from a partial list
+    Given the release catalog could not be read completely
+    When a release comparison selects its baseline
+    Then no predecessor is selected from the incomplete catalog
+
   @B-003 @boundary
   Scenario: The first release has no baseline
     Given no earlier eligible published release exists
@@ -76,6 +82,22 @@ Feature: Release baseline comparison
     Given a benchmark exists only in the previous release's measurement set
     When the comparison is generated
     Then it is reported as "Removed" without a regression judgment
+
+  @B-007 @boundary
+  Scenario: An added input size remains visible beside common sizes
+    Given both releases provide measurements of the same workload
+    And the current release also provides another input size
+    When the comparison is generated
+    Then the common input size remains comparable
+    And the additional input size is reported as "Added"
+
+  @B-008 @boundary
+  Scenario: A removed input size remains visible beside common sizes
+    Given both releases provide measurements of the same workload
+    And the previous release also provides another input size
+    When the comparison is generated
+    Then the common input size remains comparable
+    And the additional input size is reported as "Removed"
 
   @B-009
   Scenario: Comparable measurements show their change

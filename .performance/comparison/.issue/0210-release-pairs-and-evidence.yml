@@ -2,7 +2,7 @@ id: "0210"
 type: task
 title: Select release pairs and normalise benchmark evidence
 
-status: ready-for-implementation
+status: done
 
 risk: 4
 
@@ -15,8 +15,8 @@ spec: .performance/comparison/.spec/README.md
 claims: ["B-002", "B-005", "B-006", "B-007", "B-008"]
 
 created: "2026-10-13"
-updated: "2026-10-13"
-closed: null
+updated: "2026-10-14"
+closed: "2026-10-14"
 
 summary: |
   Implement the release-catalog and measurement-evidence boundary from the
