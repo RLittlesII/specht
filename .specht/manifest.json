@@ -86,6 +86,8 @@
   "rules": {
     "SPEC060": "warning"
   },
-  "claimTagForm": "@{claim}",
-  "claimTagIgnoreCase": false
+  "claim": {
+    "claimTagForm": "@{claim}",
+    "claimTagIgnoreCase": false
+  }
 }

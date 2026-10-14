@@ -17,11 +17,11 @@ type: rule
 
 ## Cause
 
-A claim tag in a specification's `.feature` file - the literal `claimTagForm` around `identifiers.claim` - names an id that is not a claim in the specification's claims section. That section is the one the manifest's `claims` role names, `## 3. Acceptance Criteria` in the default manifest; the message says § 3 whatever its title. Reported in the `.feature` file, at the tag's line:
+A claim tag in a specification's `.feature` file - the literal `claim.claimTagForm` around `identifiers.claim` - names an id that is not a claim in the specification's claims section. That section is the one the manifest's `claims` role names, `## 3. Acceptance Criteria` in the default manifest; the message says § 3 whatever its title. Reported in the `.feature` file, at the tag's line:
 
 `scenario tag '{original-tag}' does not resolve to a claim in § 3 of {specification}`
 
-The default form is `@{claim}` and exact case. With `claimTagIgnoreCase: true`, the entire tag and its claim resolution ignore case; claim and matrix validation stay exact. The identifier is the captured claim id and the diagnostic preserves the original tag spelling. Full-line comments are skipped.
+The default form is `@{claim}` and exact case. With `claim.claimTagIgnoreCase: true`, the entire tag and its claim resolution ignore case; claim and matrix validation stay exact. The identifier is the captured claim id and the diagnostic preserves the original tag spelling. Full-line comments are skipped.
 
 Tags are checked only when exactly one `.feature` file sits beside the specification (SPEC020).
 

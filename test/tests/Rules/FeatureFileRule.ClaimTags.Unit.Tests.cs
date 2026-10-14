@@ -25,8 +25,7 @@ public sealed class FeatureFileRuleClaimTagsUnitTests
         {
             ["schemaVersion"] = "0.2.0",
             ["identifiers"] = new JsonObject { ["claim"] = grammar },
-            ["claimTagForm"] = form,
-            ["claimTagIgnoreCase"] = ignoreCase,
+            ["claim"] = new JsonObject { ["claimTagForm"] = form, ["claimTagIgnoreCase"] = ignoreCase },
         };
         var companion = Path.Combine("repo", "src", "sample", ".spec", "sample.feature");
         var fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>
@@ -94,7 +93,7 @@ public sealed class FeatureFileRuleClaimTagsUnitTests
         SpecModel model = new SpecModelFixture().WithManifest(new JsonObject
         {
             ["schemaVersion"] = "0.2.0",
-            ["claimTagForm"] = form,
+            ["claim"] = new JsonObject { ["claimTagForm"] = form },
         }).WithFeatures(feature);
 
         // When

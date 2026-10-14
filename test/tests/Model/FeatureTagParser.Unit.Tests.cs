@@ -16,7 +16,7 @@ public sealed class FeatureTagParserUnitTests
     {
         // Given
         var structure = EngineServices.Parser().Parse("""
-            {"schemaVersion":"0.2.0","claimTagForm":"@ISSUE:{claim}","claimTagIgnoreCase":true,
+            {"schemaVersion":"0.2.0","claim":{"claimTagForm":"@ISSUE:{claim}","claimTagIgnoreCase":true},
              "identifiers":{"claim":"^I-[0-9]{3}$"}}
             """);
         var parser = new FeatureTagParser();

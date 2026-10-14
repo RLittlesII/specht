@@ -72,18 +72,20 @@ public sealed class ManifestSteps
     public void GivenTheClaimTagPin(string pin)
     {
         Manifest["schemaVersion"] = pin;
-        Manifest.Remove("claimTagForm");
-        Manifest.Remove("claimTagIgnoreCase");
+        Manifest.Remove("claim");
     }
 
     [Given("the manifest's claim grammar accepts a four-digit claim number")]
     public void GivenAFourDigitClaimGrammar() => Manifest["identifiers"]!["claim"] = "^B-[0-9]{4}$";
 
     [Given("the manifest's claim tag form is {string}")]
-    public void GivenTheClaimTagForm(string form) => Manifest["claimTagForm"] = form;
+    public void GivenTheClaimTagForm(string form) => Named("claim")["claimTagForm"] = form;
+
+    [Given("the manifest declares the flat tag setting {string}")]
+    public void GivenTheFlatTagSetting(string key) => Manifest[key] = key == "claimTagForm" ? JsonValue.Create("@{claim}") : JsonValue.Create(true);
 
     [Given("the manifest reads claim tags ignoring letter case")]
-    public void GivenIgnoringClaimTagCase() => Manifest["claimTagIgnoreCase"] = true;
+    public void GivenIgnoringClaimTagCase() => Named("claim")["claimTagIgnoreCase"] = true;
 
     [Given("its companion carries a scenario tagged {string}")]
     public void GivenOneClaimTag(string tag)
@@ -143,7 +145,8 @@ public sealed class ManifestSteps
     }
 
     [Then("the rejection names the claim tag form")]
-    public void ThenTheRejectedClaimTagForm() => _rejection!.Message.Should().Contain("claimTagForm").And.Contain(Manifest["claimTagForm"]!.GetValue<string>());
+    public void ThenTheRejectedClaimTagForm() =>
+        _rejection!.Message.Should().Contain("claimTagForm").And.Contain(Manifest["claim"]!["claimTagForm"]!.GetValue<string>());
 
     [Then("the tag rejection on stderr names {string}")]
     public void ThenTheTagRejectionOnStderr(string text) =>

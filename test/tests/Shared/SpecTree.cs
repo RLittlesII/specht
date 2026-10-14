@@ -38,8 +38,7 @@ public sealed class SpecTree : IDisposable
         var manifestPath = Path.Combine(Root, ManifestPath);
         var manifest = JsonNode.Parse(File.ReadAllText(manifestPath))!.AsObject();
         manifest.Remove("rules");
-        manifest.Remove("claimTagForm");
-        manifest.Remove("claimTagIgnoreCase");
+        manifest.Remove("claim");
         File.WriteAllText(manifestPath, manifest.ToJsonString());
     }
 

@@ -16,3 +16,9 @@ Accepted by the repository owner on 2026-10-13 in the 0134 delivery chat.
 Rejected: folding only the claim substring, which makes literal text follow a different case policy; reconstructing the tag in diagnostics, which discards its original spelling; adding keys or scanner semantics to an older pin, which changes that pin's verdict. The cost is a retained compatibility path and a new versioned shipping set. The separate `0.2.0` frontmatter key/form work remains outside this change.
 
 Resolves 0001-F5 OQ-1's remaining tag names, OQ-8 and OQ-9. Amends B-007 and B-036 to B-038's version boundary and B-036/B-037's diagnostic and case contract; preserves C-2, C-4, C-5, C-12 and 0001-F7 C-4/C-11.
+
+## Review refinement on 2026-10-13
+
+The owner requested a `claim` object in [review 5512818512](https://github.com/RLittlesII/specht/pull/177#pullrequestreview-5512818512). The two accepted settings now live at `claim.claimTagForm` and `claim.claimTagIgnoreCase`; their names, defaults, case scope and diagnostic behavior are unchanged. Omission fills each member from the exact pin's default, including when the consumer declares only one member.
+
+This supersedes the original top-level placement, which is not retained as an alias in the unreleased `0.2.0` working set. Older pins reject `claim` as well as the two original flat keys. The claim grammar remains solely at `identifiers.claim`; it is not copied into the new object.

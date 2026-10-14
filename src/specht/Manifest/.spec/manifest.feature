@@ -422,7 +422,7 @@ Feature: The manifest carries the roles
     When the tool runs as a command on the root
     Then the exit code is 3
     And the standard output is empty
-    And the tag rejection on stderr names "claimTagForm"
+    And the tag rejection on stderr names "claim"
 
     Examples:
       | pin   |
@@ -442,6 +442,20 @@ Feature: The manifest carries the roles
       | form             |
       | @req:            |
       | @{claim}:{claim} |
+
+  @B-012 @B-022 @B-023 @boundary
+  Scenario Outline: Claim tag settings belong to the claim object
+    Given the manifest pins the claim-tag schema version "0.2.0"
+    And the manifest declares the flat tag setting "<key>"
+    When the tool runs as a command on the root
+    Then the exit code is 3
+    And the standard output is empty
+    And the tag rejection on stderr names "<key>"
+
+    Examples:
+      | key                |
+      | claimTagForm       |
+      | claimTagIgnoreCase |
 
   @B-039
   Scenario: Table headers keyed by a section title are invalid

@@ -19,7 +19,7 @@ public sealed class SpecManifestParser(SchemaVersions versions)
         var tags = number.CompareTo(ClaimTagVersion) >= 0 && versions.Find(number) is not null;
         var unknown = manifest
             .Select(static entry => entry.Key)
-            .Where(key => !key.StartsWith('$') && !KnownKeys.Contains(key) && !(tags && key is "claimTagForm" or "claimTagIgnoreCase"))
+            .Where(key => !key.StartsWith('$') && !KnownKeys.Contains(key) && !(tags && key == "claim"))
             .Select(static key => $"'{key}'")
             .ToList();
 
@@ -32,6 +32,8 @@ public sealed class SpecManifestParser(SchemaVersions versions)
         var selected = versions.Find(number) ?? versions.Find(OriginalVersion) ?? Version(number);
         var defaults = JsonNode.Parse(selected.Manifest)!.AsObject();
         var frontmatterSchemas = Filled(manifest, defaults, "frontmatterSchemas");
+        var claim = tags ? manifest["claim"]?.AsObject() : null;
+        var claimDefaults = tags ? Present(defaults["claim"]).AsObject() : null;
         var sourceFaults = new List<string>();
         var structure = new SpecStructure(
             Strings(manifest["sections"] ?? defaults["sections"]!),
@@ -44,8 +46,8 @@ public sealed class SpecManifestParser(SchemaVersions versions)
             Roles = Filled(manifest, defaults, "roles"),
             Markers = Filled(manifest, defaults, "markers"),
             Rules = Levels(manifest["rules"]),
-            ClaimTagForm = tags ? Present(manifest["claimTagForm"] ?? defaults["claimTagForm"]).GetValue<string>() : null,
-            ClaimTagIgnoreCase = tags && Present(manifest["claimTagIgnoreCase"] ?? defaults["claimTagIgnoreCase"]).GetValue<bool>(),
+            ClaimTagForm = tags ? Present(claim?["claimTagForm"] ?? claimDefaults?["claimTagForm"]).GetValue<string>() : null,
+            ClaimTagIgnoreCase = tags && Present(claim?["claimTagIgnoreCase"] ?? claimDefaults?["claimTagIgnoreCase"]).GetValue<bool>(),
             SpechtSchema = SpechtSchema(manifest, frontmatterSchemas, sourceFaults),
         };
 
@@ -81,7 +83,7 @@ public sealed class SpecManifestParser(SchemaVersions versions)
 
         if (form.Split("{claim}", StringSplitOptions.None).Length != 2)
         {
-            yield return $"claimTagForm '{form}' must hold '{{claim}}' exactly once";
+            yield return $"claim.claimTagForm '{form}' must hold '{{claim}}' exactly once";
         }
 
         var grammar = structure.Identifiers["claim"];

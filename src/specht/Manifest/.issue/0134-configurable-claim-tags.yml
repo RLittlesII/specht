@@ -49,6 +49,11 @@ acceptance_criteria:
 
 decisions:
   - |
+    2026-10-13, owner review 5512818512: wrap the two existing tag settings
+    in a claim object. Decision 0013 records the placement refinement;
+    defaults and tag semantics are unchanged, and partial objects fill each
+    omitted member from the pin. Flat keys are rejected in the working version.
+  - |
     2026-10-13, owner: use claimTagForm and claimTagIgnoreCase, fold the whole
     tag, preserve original diagnostic text and captured claim identifiers,
     and establish working schema 0.2.0 while retaining older pins (decision 0013).

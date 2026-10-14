@@ -83,6 +83,8 @@
     "blocked": "🔴",
     "approved": "approved"
   },
-  "claimTagForm": "@{claim}",
-  "claimTagIgnoreCase": false
+  "claim": {
+    "claimTagForm": "@{claim}",
+    "claimTagIgnoreCase": false
+  }
 }
