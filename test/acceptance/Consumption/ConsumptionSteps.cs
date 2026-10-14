@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using System.Text.Json.Nodes;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using AwesomeAssertions;
@@ -7,7 +8,7 @@ using Reqnroll;
 
 namespace Specht.Acceptance.Consumption;
 
-/// <summary>Offline package restore and token-free build proofs for 0055-F7 B-002, B-003 and B-007.</summary>
+/// <summary>Installation documentation and offline package-consumption proofs for 0055-F7.</summary>
 [Binding]
 [Scope(Feature = "Consuming the package")]
 public sealed class ConsumptionSteps : IDisposable
@@ -43,6 +44,103 @@ public sealed class ConsumptionSteps : IDisposable
 
     [Given("no token for the package feed")]
     public void GivenNoTokenForThePackageFeed() => _credential = false;
+
+    [Given("an empty repository with the documented package source")]
+    public void GivenAnEmptyRepositoryWithTheDocumentedPackageSource()
+    {
+        ReadInstallDocument();
+        _documentSource = ReadDocumentSource();
+        ReadManifest();
+        foreach (var name in _manifest!["tools"]!.AsObject().Select(static tool => tool.Key).Where(static name => name != "specht.tool").ToArray())
+        {
+            _manifest["tools"]!.AsObject().Remove(name);
+        }
+
+        _install = true;
+    }
+
+    [Given("no local tool manifest exists")]
+    public void GivenNoLocalToolManifestExists() => File.Exists(Path.Combine(_root, ".config/dotnet-tools.json")).Should().BeFalse();
+
+    [When("the documented install command runs")]
+    public async Task WhenTheDocumentedInstallCommandRuns()
+    {
+        await Prepare();
+        File.Exists(Path.Combine(_root, ".config/dotnet-tools.json")).Should().BeFalse();
+        _result = await Run(DocumentCommand("dotnet new tool-manifest").Split(' ').Skip(1).ToArray());
+        _result.ExitCode.Should().Be(0, _result.Output);
+        _result = await Run(DocumentCommand("dotnet tool install --local ").Split(' ').Skip(1).ToArray());
+    }
+
+    [When("a consumer reads the install document")]
+    public void WhenAConsumerReadsTheInstallDocument() => ReadInstallDocument();
+
+    [Then("the tool is added to the repository's local tool manifest")]
+    public void ThenTheToolIsAddedToTheRepositorysLocalToolManifest()
+    {
+        _result.ExitCode.Should().Be(0, _result.Output);
+        var installed = JsonNode.Parse(File.ReadAllText(Path.Combine(_root, ".config/dotnet-tools.json")))!;
+        installed["tools"]!["specht.tool"]!["version"]!.GetValue<string>()
+            .Should().Be(_manifest!["tools"]!["specht.tool"]!["version"]!.GetValue<string>());
+        installed["tools"]!["specht.tool"]!["commands"]!.AsArray()
+            .Select(static command => command!.GetValue<string>()).Should().Equal("specht");
+    }
+
+    [Then("it names the feed's address")]
+    public void ThenItNamesTheFeedsAddress() => _installDocument.Should().Contain("https://nuget.pkg.github.com/rlittlesii/index.json");
+
+    [Then("the package source entry to commit")]
+    public void ThenThePackageSourceEntryToCommit()
+    {
+        var source = ReadDocumentSource();
+        source.Root!.Element("packageSources")!.Elements("add")
+            .Single(static entry => (string?)entry.Attribute("key") == "specht")
+            .Attribute("value")!.Value.Should().Be("https://nuget.pkg.github.com/rlittlesii/index.json");
+        source.Descendants("packageSourceCredentials").Should().BeEmpty();
+        _installDocument.Should().Contain("nuget.config").And.Contain("Commit");
+    }
+
+    [Then("it names the permission the token needs")]
+    public void ThenItNamesThePermissionTheTokenNeeds() =>
+        _installDocument.Should().Contain("personal access token (classic)").And.Contain("read:packages");
+
+    [Then("how a CI run supplies the token")]
+    public void ThenHowACIRunSuppliesTheToken() => _installDocument.Should()
+        .Contain("NuGetPackageSourceCredentials_specht:")
+        .And.Contain("${{ secrets.SPECHT_PACKAGES_TOKEN }}")
+        .And.Contain("${{ github.token }}")
+        .And.Contain("packages: read");
+
+    [Then("it names the command that creates the local tool manifest")]
+    public void ThenItNamesTheCommandThatCreatesTheLocalToolManifest() =>
+        DocumentCommand("dotnet new tool-manifest").Should().Be("dotnet new tool-manifest --output .config");
+
+    [Then("it names the command that installs the tool locally")]
+    public void ThenItNamesTheCommandThatInstallsTheToolLocally() =>
+        DocumentCommand("dotnet tool install --local ").Should().Be("dotnet tool install --local specht.tool");
+
+    [Then("the command that restores it in a clone")]
+    public void ThenTheCommandThatRestoresItInAClone() => DocumentCommand("dotnet tool restore").Should().Be("dotnet tool restore");
+
+    [Then("it names the command that installs the tool globally")]
+    public void ThenItNamesTheCommandThatInstallsTheToolGlobally() => DocumentCommand("dotnet tool install --global ").Should()
+        .Be("dotnet tool install --global specht.tool --add-source https://nuget.pkg.github.com/rlittlesii/index.json");
+
+    [Then("names the source and environment credential for a shell outside a repository")]
+    public void ThenNamesTheSourceAndEnvironmentCredentialForAShellOutsideARepository()
+    {
+        DocumentCommand("dotnet nuget add source ").Should()
+            .Be("dotnet nuget add source https://nuget.pkg.github.com/rlittlesii/index.json --name specht");
+        _installDocument.Should().Contain("user-level").And.Contain("outside a repository")
+            .And.Contain("export NuGetPackageSourceCredentials_specht=")
+            .And.Contain("Username=$GITHUB_USER;Password=$SPECHT_PACKAGES_TOKEN;ValidAuthenticationTypes=Basic");
+    }
+
+    [Then("says a global install puts the command on the shell's path")]
+    public void ThenSaysAGlobalInstallPutsTheCommandOnTheShellsPath() => _installDocument.Should().Contain("`specht` on PATH");
+
+    [Then("says a tool manifest install is run through dotnet")]
+    public void ThenSaysAToolManifestInstallIsRunThroughDotnet() => _installDocument.Should().Contain("`dotnet specht`");
 
     [When("the local tools are restored")]
     public async Task WhenTheLocalToolsAreRestored()
@@ -87,12 +185,32 @@ public sealed class ConsumptionSteps : IDisposable
         _manifest["tools"]!.AsObject().Should().ContainKey("specht.tool", "the published checker must be pinned before consumption");
     }
 
+    private void ReadInstallDocument()
+    {
+        var readme = File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "README.md"));
+        var start = readme.IndexOf("## Quick start", StringComparison.Ordinal);
+        var end = readme.IndexOf("## Usage", StringComparison.Ordinal);
+        start.Should().BeGreaterThanOrEqualTo(0);
+        end.Should().BeGreaterThan(start);
+        _installDocument = readme[start..end];
+    }
+
+    private XDocument ReadDocumentSource() =>
+        XDocument.Parse(Regex.Match(_installDocument, "<configuration>.*?</configuration>", RegexOptions.Singleline).Value);
+
+    private string DocumentCommand(string prefix) => _installDocument.Split('\n').Select(static line => line.Trim())
+        .Single(line => line.StartsWith(prefix, StringComparison.Ordinal));
+
     private async Task Prepare()
     {
         Directory.CreateDirectory(Path.Combine(_root, ".config"));
         Directory.CreateDirectory(Path.Combine(_root, "feeds/public"));
-        await Write(".config/dotnet-tools.json", _manifest!.ToJsonString());
-        var config = XDocument.Load(Path.Combine(AppContext.BaseDirectory, "Consumption/nuget.config"));
+        if (!_install)
+        {
+            await Write(".config/dotnet-tools.json", _manifest!.ToJsonString());
+        }
+
+        var config = _documentSource ?? XDocument.Load(Path.Combine(AppContext.BaseDirectory, "Consumption/nuget.config"));
         foreach (var source in config.Root!.Element("packageSources")!.Elements("add"))
         {
             source.SetAttributeValue("value", (string?)source.Attribute("key") == "specht" ? "feeds/checker" : "feeds/public");
@@ -126,7 +244,7 @@ public sealed class ConsumptionSteps : IDisposable
         await Write("package/Program.cs", """
             System.Console.WriteLine(System.Reflection.Assembly.GetExecutingAssembly().GetName().Version!.ToString(3));
             """);
-        foreach (var tool in _manifest["tools"]!.AsObject())
+        foreach (var tool in _manifest!["tools"]!.AsObject())
         {
             var source = tool.Key == "specht.tool" ? "checker" : "public";
             Directory.CreateDirectory(Path.Combine(_root, "feeds", source));
@@ -188,5 +306,8 @@ public sealed class ConsumptionSteps : IDisposable
     private JsonNode? _manifest;
     private string? _publishedVersion;
     private bool _credential;
+    private bool _install;
+    private string _installDocument = string.Empty;
+    private XDocument? _documentSource;
     private (int ExitCode, string Output) _result;
 }

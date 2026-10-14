@@ -6,6 +6,7 @@ Feature: Consuming the package
   @B-001
   Scenario: A new repository installs the tool from the feed
     Given an empty repository with the documented package source
+    And no local tool manifest exists
     And a token allowed to read packages
     When the documented install command runs
     Then the tool is added to the repository's local tool manifest
@@ -38,13 +39,15 @@ Feature: Consuming the package
   @B-006
   Scenario: The document names the install and restore commands
     When a consumer reads the install document
-    Then it names the command that installs the tool locally
+    Then it names the command that creates the local tool manifest
+    And it names the command that installs the tool locally
     And the command that restores it in a clone
 
   @B-008
   Scenario: The document names the global install and how each install is invoked
     When a consumer reads the install document
     Then it names the command that installs the tool globally
+    And names the source and environment credential for a shell outside a repository
     And says a global install puts the command on the shell's path
     And says a tool manifest install is run through dotnet
 
