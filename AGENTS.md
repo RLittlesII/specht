@@ -106,6 +106,14 @@ configuration, not a JSON Schema. The three frontmatter schemas sit under
 `task`, `epic`), and the templates under `.specht/templates/` (`0001-F5`
 decision 0011).
 
+The check selects local frontmatter schemas with `--schema-source disk`, or
+with `"schemaSource": "disk"` in a manifest pinned to schema `0.2.0` or later.
+The CLI selection overrides a valid manifest selection and works with every
+shipped pin. Files live under `.specht/schema/frontmatter/` with names from
+`frontmatterSchemas`; Feature and task are required, epic only when the manifest
+explicitly declares its grammar. A recorded `spechtSchema` retains hash
+verification under `disk`; explicit `embedded` contradicts that record.
+
 `specht init` writes the manifest and nothing else. `--schemas` adds the
 frontmatter schemas, `--templates` adds the templates and `--all` adds both;
 the epic schema is written only with the schemas, and only with `--epics` or
@@ -140,7 +148,7 @@ so (`0001-F4` B-004).
 ## CLI
 
 ```
-specht [--root <dir>] [--report <path>] [--strict] [--json]
+specht [--root <dir>] [--report <path>] [--strict] [--json] [--schema-source <embedded|disk>]
 specht init [--root <dir>] [--schemas] [--templates] [--all] [--epics]
             [--upstream <address>] [--upstream-version <label>] [--upstream-hash <kind=hash>]...
 specht upgrade [--root <dir>]

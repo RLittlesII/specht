@@ -986,10 +986,16 @@ Feature: Schema versioning
     And the exit code is 3
 
   @B-105 @B-106 @B-107 @boundary
-  Scenario: An invalid disk schema is an input failure
+  Scenario Outline: An invalid disk schema is an input failure
     Given the manifest records no upstream schema source
-    And a required named local schema cannot be compiled as a JSON Schema
+    And a required named local schema has "<fault>"
     When the check runs with command-line schema source "disk"
     Then the standard error names that schema by its root-relative path
     And the standard output is empty
     And the exit code is 3
+
+    Examples:
+      | fault                         |
+      | malformed JSON                |
+      | an invalid keyword type       |
+      | an unresolved local reference |

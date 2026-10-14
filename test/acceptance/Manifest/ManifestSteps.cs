@@ -1,4 +1,3 @@
-using System.IO.Abstractions;
 using System.Text.Json.Nodes;
 using AwesomeAssertions;
 using Reqnroll;
@@ -15,8 +14,8 @@ namespace Specht.Acceptance.Manifest;
 /// default copy and written when the check or the tool runs, so a tree's violations are counted under the default manifest
 /// first. "The check runs" is the engine's runner; "the tool runs as a command" launches the built tool, the only place a
 /// rejection's exit code and streams are seen (B-022, B-023). Under "the frontmatter schemas are read from the root" the
-/// check is the model the runner loads, with its schemas loaded from the root's files, evaluated by the frontmatter rule
-/// (B-008): the runner selects no on-disk source until <c>0001-F7</c> B-009. A role, a role's headers and a marker are
+/// check uses the normal runner entry with explicit disk selection (B-008, <c>0001-F7</c> B-009).
+/// A role, a role's headers and a marker are
 /// written into the manifest under <c>roles</c>, <c>tables</c> and <c>markers</c> (B-001 to B-003, B-015, B-039, B-040;
 /// decision 0006). An empty file-shape list is written under <c>companionFiles</c> (B-041; <c>0001-F6</c> decision 0008).
 /// An exclusion entry is written as the whole <c>exclusions</c> list (B-021; <c>0001-F6</c> decision 0003). A path
@@ -466,9 +465,10 @@ public sealed class ManifestSteps
         {
             if (_fromRoot)
             {
-                var loaded = EngineServices.Loader().Load(Tree.Root);
-                _model = new SpecModel(loaded.Root, loaded.Features, loaded.Items, loaded.Epics, EngineServices.LoadOnDiskSchemas(new FileSystem(), Tree.Root));
-                _frontmatterViolations = new FrontmatterSchemaRule().Evaluate(_model).ToList();
+                _model = EngineServices.Loader().Load(Tree.Root, SchemaSourceSelection.Disk);
+                _report = EngineServices.Runner().Run(Tree.Root, SchemaSourceSelection.Disk);
+                _frontmatterViolations = _report.Violations.Where(static violation =>
+                    violation.RuleId is "SPEC001" or "SPEC002" or "SPEC003" or "SPEC004").ToList();
             }
             else
             {

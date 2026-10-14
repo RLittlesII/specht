@@ -16,10 +16,17 @@ public sealed class SpecManifestParser(SchemaVersions versions)
     {
         var manifest = Present(JsonNode.Parse(text)).AsObject();
         var number = ReadVersion(manifest["schemaVersion"]) ?? OriginalVersion;
+        if (manifest.ContainsKey("schemaSource") && versions.Find(number) is null)
+        {
+            _ = Version(number);
+        }
+
         var tags = number.CompareTo(ClaimTagVersion) >= 0 && versions.Find(number) is not null;
+        var selection = number.CompareTo(SchemaSourceVersion) >= 0 && versions.Find(number) is not null;
         var unknown = manifest
             .Select(static entry => entry.Key)
-            .Where(key => !key.StartsWith('$') && !KnownKeys.Contains(key) && !(tags && key == "claim"))
+            .Where(key => !key.StartsWith('$') && !KnownKeys.Contains(key)
+                && !(tags && key == "claim") && !(selection && key == "schemaSource"))
             .Select(static key => $"'{key}'")
             .ToList();
 
@@ -55,8 +62,15 @@ public sealed class SpecManifestParser(SchemaVersions versions)
                 }))),
             ClaimTagForm = tags ? Present(claim?["tag"] ?? claimDefaults?["tag"]).GetValue<string>() : null,
             ClaimTagIgnoreCase = tags && Present(claim?["tagIgnoreCase"] ?? claimDefaults?["tagIgnoreCase"]).GetValue<bool>(),
+            SchemaSource = SourceSelection(manifest, sourceFaults),
+            DeclaresEpicGrammar = manifest["identifiers"]?["epic"] is not null,
             SpechtSchema = SpechtSchema(manifest, frontmatterSchemas, sourceFaults),
         };
+
+        if (structure.SchemaSource == SchemaSourceSelection.Embedded && structure.SpechtSchema is not null)
+        {
+            sourceFaults.Add("schemaSource 'embedded' contradicts the recorded spechtSchema source");
+        }
 
         Check(structure, defaults, IdentityFaults(manifest).Concat(sourceFaults).Concat(ClaimTagFaults(structure)), levels);
 
@@ -107,6 +121,25 @@ public sealed class SpecManifestParser(SchemaVersions versions)
         if (fault is not null)
         {
             yield return fault;
+        }
+    }
+
+    private static SchemaSourceSelection? SourceSelection(JsonObject manifest, List<string> faults)
+    {
+        if (!manifest.TryGetPropertyValue("schemaSource", out var node))
+        {
+            return null;
+        }
+
+        switch (Text(node))
+        {
+            case "embedded":
+                return SchemaSourceSelection.Embedded;
+            case "disk":
+                return SchemaSourceSelection.Disk;
+            default:
+                faults.Add("schemaSource must be 'embedded' or 'disk'");
+                return null;
         }
     }
 
@@ -362,6 +395,8 @@ public sealed class SpecManifestParser(SchemaVersions versions)
     };
 
     private static readonly SemanticVersion ClaimTagVersion = new(0, 2, 0);
+
+    private static readonly SemanticVersion SchemaSourceVersion = new(0, 2, 0);
 
     private static readonly SemanticVersion OriginalVersion = new(0, 1, 0);
 }

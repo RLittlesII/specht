@@ -73,6 +73,21 @@ of the lines. [Command line](cli.md) lists every option, and
 [Exit codes](exit-codes.md) what the build reads; before `init`, the check
 exits `2` for want of a manifest.
 
+## Schemas maintained in your repository
+
+Start with `dotnet specht init --schemas`, then edit the frontmatter schemas under
+`.specht/schema/frontmatter/`. Select them when checking:
+
+```sh
+dotnet specht --schema-source disk
+```
+
+To keep using them, add `"schemaSource": "disk"` to `.specht/manifest.json` with
+a `schemaVersion` of `0.2.0` or later. Feature and task schema files are required;
+epic is required when the manifest explicitly declares `identifiers.epic`.
+Use `frontmatterSchemas` to change filenames within the same folder.
+[Configuration](configuration.md) describes source selection and upstream hashes.
+
 ## Manifest
 
 One file configures the check: `.specht/manifest.json`. Change

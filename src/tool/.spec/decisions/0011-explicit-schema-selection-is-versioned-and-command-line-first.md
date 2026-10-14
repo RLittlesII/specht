@@ -73,3 +73,12 @@ address/version fields and `upgrade` behavior are not decided here.
 ## Reversal
 
 None.
+
+## Implementation clarification 2026-10-14
+
+Review found that JsonSchema.Net can accept an unresolved `$ref` while compiling
+and throw only when the schema evaluates a document. Spec-author amended B-105
+to include that deferred failure, with B-106 and B-107 retaining relative stderr
+and empty stdout. This clarification is derived from the controlled invalid-schema
+contract; it is not a new owner ruling. Valid references retain their existing
+semantics, and this change adds no reference fetching.
