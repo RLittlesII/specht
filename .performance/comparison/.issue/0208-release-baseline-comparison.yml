@@ -1,0 +1,68 @@
+id: "0208"
+type: feature
+title: Release baseline comparison
+
+status: ready-for-architecture
+
+value: 3
+risk: 1
+
+parent: "0109"
+children: ["0209", "0210", "0211", "0212", "0213", "0214"]
+depends_on: []
+spikes: []
+
+spec: .performance/comparison/.spec/README.md
+claims:
+  [
+    "B-001",
+    "B-002",
+    "B-003",
+    "B-004",
+    "B-005",
+    "B-006",
+    "B-007",
+    "B-008",
+    "B-009",
+    "B-010",
+    "B-011",
+    "B-012",
+    "B-013",
+    "B-014",
+    "B-015",
+    "B-016",
+    "B-017",
+    "B-018",
+    "B-019",
+    "B-020",
+    "B-021",
+    "B-022",
+    "B-023",
+    "B-024",
+  ]
+
+created: "2026-10-13"
+updated: "2026-10-13"
+closed: null
+
+summary: |
+  As the release maintainer I want advisory performance evidence against the
+  previous published release, including prereleases, so meaningful regressions
+  receive review. This is the delivery container for 0109-F5.
+
+  The agreement has been reviewed before this cut. The design child establishes
+  the execution and evidence contracts before implementation; the remaining
+  children separately own evidence reading, verdicts, collection, report output
+  and release integration. No child is taken by this decomposition.
+
+acceptance_criteria:
+  - "B-001 to B-024 — delivered by the child claim partition in Tasks."
+  - "Every child is done and § 9 names the actual evidence for every delivered claim; a Missing cell does not become coverage by closing the container."
+
+decisions:
+  - "2026-10-13, spec-author: value 3 is provisional, matching the harness and cold-start containers; risk 1 covers final reconciliation. These are estimates, not owner-assigned scores."
+  - "2026-10-13, spec-author: only the release integration child waits on successful publication delivery; core comparison and report work can proceed against synthetic evidence. No dependency on unbuilt stage or startup benchmarks is added."
+
+out_of_scope:
+  - "Everything in § 5 of the specification."
+  - "Release workflow wiring — 0214; no release is published by this item."

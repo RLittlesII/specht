@@ -17,7 +17,7 @@ author: "spec-author"
 milestone: null
 children: []
 depends_on: ["F1", "F5"]
-blocks: ["F7"]
+blocks: ["F7", "0109/F5"]
 spikes: []
 created: "2026-10-08"
 updated: "2026-10-13"
@@ -103,6 +103,7 @@ Nothing publishes `specht.tool`: `0001-F2` § 5 row 7 hands the release workflow
 | 9   | Tests of the generated workflow or of the tag name and ancestry checks                             | The original claims retain their record-based proof (decision 0002). B-013 has automated coverage by the owner's 2026-10-13 decision (decision 0005).                                                                                                                       |
 | 10  | An input or parameter that lets a manually started run publish                                     | C-1. Whether the manual trigger carries any input is OQ-7.                                                                                                                                                                                                                  |
 | 11  | Building the upstream schema source, or writing the setup guide                                    | `0001-F7` and `0001-F4` own the source; the guide is a documentation item under no Feature. This Feature only orders the first tag after the source (C-8); whether after the guide too is OQ-18.                                                                            |
+| 12  | Performance comparison with the previous release                                                   | `0109-F5` owns automatic advisory reporting after successful publication, including review flags and incomplete evidence; it cannot gate or roll back this Feature's release.                                                                                               |
 
 ## 6. Concern Separation
 

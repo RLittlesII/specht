@@ -1,0 +1,45 @@
+id: "0213"
+type: task
+title: Render and retain release comparison reports
+
+status: ready-for-architecture
+
+risk: 3
+
+parent: "0208"
+children: []
+depends_on: ["0211"]
+spikes: []
+
+spec: .performance/comparison/.spec/README.md
+claims: ["B-015", "B-016", "B-022"]
+
+created: "2026-10-13"
+updated: "2026-10-13"
+closed: null
+
+summary: |
+  Render and persist the comparison document produced by 0211 using the design's
+  report/evidence contract. Produce human-readable and machine-readable forms from
+  one result, with coherent policy, release-pair and raw evidence references.
+  Define the report bundle consumed by release attachment; a durable publication
+  adapter and offline publication fixture exercise the retention contract without
+  contacting GitHub. This supplies the publication capability; 0214 only wires its
+  authorised invocation into the release run.
+
+  Publication failures stay observable, and no report points to nonexistent raw
+  evidence or claims an attachment succeeded when it did not. Local rendering and
+  publication-adapter proofs let this slice close before workflow wiring.
+
+acceptance_criteria:
+  - "B-015 — equivalent report forms"
+  - "B-016 — policy and evidence identity"
+  - "B-022 — release retention"
+  - "Unit and offline integration/acceptance tests compare both report forms, evidence references, relative paths and durable publication after transient artifact expiry; § 9 names each assigned claim's proof."
+  - "The adapter does not grant credentials; preserve C-8 and C-10."
+
+decisions: []
+
+out_of_scope:
+  - "Everything in § 5 of the specification."
+  - "Release workflow wiring — 0214; no release is published by this item."

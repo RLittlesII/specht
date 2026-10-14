@@ -1,0 +1,45 @@
+id: "0211"
+type: task
+title: Evaluate advisory performance regressions
+
+status: ready-for-architecture
+
+risk: 3
+
+parent: "0208"
+children: []
+depends_on: ["0210"]
+spikes: []
+
+spec: .performance/comparison/.spec/README.md
+claims: ["B-009", "B-010", "B-011", "B-012", "B-013", "B-019", "B-020", "B-021"]
+
+created: "2026-10-13"
+updated: "2026-10-13"
+closed: null
+
+summary: |
+  Implement verdicts over the normalised evidence supplied by 0210, without
+  starting benchmarks or contacting a provider. The strict numeric policy is
+  decision 0002 and the evidence boundaries are decision 0003.
+
+  This slice is independently deliverable as comparison behaviour over supplied
+  measurements; it does not need process collection or release attachment. Tests
+  must fail on an incorrect result rather than restating configuration values.
+
+acceptance_criteria:
+  - "B-009 — normalised deltas"
+  - "B-010 — zero allocation boundaries"
+  - "B-011 — timing screen"
+  - "B-012 — allocation screen"
+  - "B-013 — invalid timing evidence"
+  - "B-019 — flagged overall judgment"
+  - "B-020 — incomplete overall judgment"
+  - "B-021 — unflagged complete judgment"
+  - "Unit and acceptance tests cover unrounded strict limits, touching intervals, missing confidence data, invalid/duplicate cases, empty inventory and simultaneous flags/gaps; § 9 names each assigned claim's proof."
+
+decisions: []
+
+out_of_scope:
+  - "Everything in § 5 of the specification."
+  - "Release workflow wiring — 0214; no release is published by this item."

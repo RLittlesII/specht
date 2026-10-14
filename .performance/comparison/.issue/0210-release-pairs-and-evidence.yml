@@ -1,0 +1,47 @@
+id: "0210"
+type: task
+title: Select release pairs and normalise benchmark evidence
+
+status: ready-for-architecture
+
+risk: 4
+
+parent: "0208"
+children: []
+depends_on: ["0209"]
+spikes: []
+
+spec: .performance/comparison/.spec/README.md
+claims: ["B-002", "B-005", "B-006", "B-007", "B-008"]
+
+created: "2026-10-13"
+updated: "2026-10-13"
+closed: null
+
+summary: |
+  Implement the release-catalog and measurement-evidence boundary from the
+  reviewed design. Depends on 0209 for the comparison contracts and workload
+  identity rules. Release pagination, stable/prerelease eligibility, publication
+  ordering and deterministic ties, resolved commits and saved rerun pairs belong
+  here; the caller supplies the catalog and evidence so tests need no network.
+
+  Read synthetic exporter payloads into validated workload cases and conditions,
+  without treating a display name as identity. The output is independently useful
+  to local callers and the verdict item, and reports unavailable or incompatible
+  cases explicitly. Completion does not claim collection, rendering or GitHub
+  attachment.
+
+acceptance_criteria:
+  - "B-002 — predecessor identity and reruns"
+  - "B-005 — matching measurement cases"
+  - "B-006 — mismatch or unknown equivalence"
+  - "B-007 — added cases"
+  - "B-008 — removed cases"
+  - "Unit and synthetic acceptance tests pin ordering, eligibility, conversion boundaries and case pairing; disk/transport integration tests use synthetic input and no live provider."
+  - "§ 9 names the tests for the five assigned claims; preserve C-2, C-5, C-6 and C-7."
+
+decisions: []
+
+out_of_scope:
+  - "Everything in § 5 of the specification."
+  - "Release workflow wiring — 0214; no release is published by this item."

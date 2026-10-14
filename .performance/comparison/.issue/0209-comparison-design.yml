@@ -1,0 +1,50 @@
+id: "0209"
+type: task
+title: Design the advisory comparison execution and evidence contracts
+
+status: ready-for-architecture
+
+risk: 3
+
+parent: "0208"
+children: []
+depends_on: []
+spikes: []
+
+spec: .performance/comparison/.spec/README.md
+claims: []
+
+created: "2026-10-13"
+updated: "2026-10-13"
+closed: null
+
+summary: |
+  Establish 0109-F5 § 6-7 and have test-writer author § 8 before implementation.
+  Choose where the comparator is compiled and tested, its input/output contracts,
+  workload identity, unit normalisation, confidence metadata and retained evidence.
+
+  Prove an acyclic collection/publication path under C-10 and 0055-F6 C-7: both
+  product revisions must execute without publishing credentials, attachment stays
+  inside the existing release authority, and failures after publication remain
+  advisory. Name the trigger, runner ownership, cancellation/timeout outcome and
+  how the originally selected predecessor survives retries. A minimal disposable
+  probe may establish generator or isolation capability; it is not production
+  implementation. If the existing boundary cannot support the design, record the
+  specific conflict and escalate it before any implementation child starts.
+
+  This item delivers a reviewed design rather than a behaviour claim. The five
+  implementation children depend on that contract.
+
+acceptance_criteria:
+  - "§ 6-7 identify composition, I/O boundaries, same-session collection and an acyclic workflow preserving C-1 to C-10."
+  - "§ 8 maps B-001 to B-024 to their mechanisms and synthetic acceptance/unit/integration proof, distinguishing comparator code from benchmarks and workflow declarations."
+  - "The design explains unknown historical workloads/export formats, duplicate observations, invalid values, baseline persistence and coherent retained report/evidence references."
+  - "Review the design and reconcile the child scopes/dependencies before marking them ready-for-implementation; do not invent a credential exception."
+
+decisions:
+  - "2026-10-13, spec-author: no claims are assigned to this design-only task. Its completion gate is the reviewed design and testability contract; this does not close any behavioural claim."
+
+out_of_scope:
+  - "Everything in § 5 of the specification."
+  - "Release workflow wiring — 0214; no release is published by this item."
+  - "Production implementation — 0210 to 0214."
