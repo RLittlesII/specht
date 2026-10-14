@@ -2,7 +2,7 @@ id: "0212"
 type: task
 title: Collect both published revisions in one comparison session
 
-status: ready-for-architecture
+status: ready-for-implementation
 
 risk: 4
 
@@ -31,13 +31,20 @@ summary: |
   A local manual paired collection supplies measurement-boundary evidence. This
   item can close with a local collector before release automation is added.
 
+  Contract: .performance/comparison/.spec/README.md § 7-8 and
+  .performance/comparison/.spec/adr/0001-read-only-collection-with-a-release-job-rendezvous.md.
+  Implement receipt-driven CollectionPlan execution, expected native inventories,
+  bounded process-tree lifetime, allowlisted child environments and session
+  metadata. Unknown native harnesses remain unavailable; do not transplant one.
+
 acceptance_criteria:
   - "B-004 — paired session and environments"
   - "Preserve C-2, C-3, C-8 and C-10; measure without publishing credentials and retain only relative result paths."
   - "Synthetic orchestration unit/integration tests pin invocation identity, metadata, cleanup, failures and cancellation; § 9 identifies the B-004 proof and § 8 records the manual paired measurement boundary."
   - "Do not change the existing Benchmark target's broken-benchmark failure semantics."
 
-decisions: []
+decisions:
+  - "2026-10-13, Codex: design contract reviewed under 0209; scope and prerequisites retained. Ready-for-implementation names design maturity, not permission to bypass depends_on or the one-writer Feature lane."
 
 out_of_scope:
   - "Everything in § 5 of the specification."

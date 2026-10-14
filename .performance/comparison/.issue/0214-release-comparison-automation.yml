@@ -2,7 +2,7 @@ id: "0214"
 type: task
 title: Automate advisory reporting in the release workflow
 
-status: ready-for-architecture
+status: ready-for-implementation
 
 risk: 4
 
@@ -37,6 +37,15 @@ summary: |
   logic as applicable, and record generated declaration verification separately
   rather than calling it comparator coverage.
 
+  Contract: .performance/comparison/.spec/README.md § 7-8 and
+  .performance/comparison/.spec/adr/0001-read-only-collection-with-a-release-job-rendezvous.md.
+  Extend ReleaseMiddleware with a read-only peer job, both peers needing build.
+  Build and hand off the trusted comparator separately from the product package.
+  Persist the pair before the same-run/attempt request artifact; bound both waits
+  and attach the matching result only in release. Handle already-published release
+  recovery without bypassing package-publication failure. Do not use a completed
+  release job or needs.release.outputs as the early collection signal.
+
 acceptance_criteria:
   - "B-001 — automatic eligible release trigger"
   - "B-003 — first release outcome"
@@ -48,7 +57,8 @@ acceptance_criteria:
   - "§ 9 names evidence for each assigned claim; failure-injection checks cover collection, parsing, comparison, rendering and attachment while preserving pre-existing failing gates."
   - "Generated workflow validation confirms C-10 and 0055-F6 C-7; no package or release is created by validation."
 
-decisions: []
+decisions:
+  - "2026-10-13, Codex: design contract reviewed under 0209; scope and prerequisites retained. Ready-for-implementation names design maturity, not permission to bypass depends_on or the one-writer Feature lane."
 
 out_of_scope:
   - "Everything in § 5 of the specification."

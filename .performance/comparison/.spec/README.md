@@ -129,52 +129,352 @@ Percentage change is `100 × (current − previous) / previous` for a positive p
 
 ## 6. Concern Separation
 
-<!-- last written by: spec-author, 2026-10-13 -->
+<!-- last written by: implementer, 2026-10-13 -->
 
-Pending: owned by `implementer`, written after agreement.
+| #   | Concern                                                                           | Classification |
+| --- | --------------------------------------------------------------------------------- | -------------- |
+| 1   | Eligible publication order and a predecessor fixed for retries                    | Business       |
+| 2   | Workload equivalence, coverage and strict advisory review screens                 | Business       |
+| 3   | Exact product revisions measured together without publishing authority            | Both           |
+| 4   | Export decoding, dimensional units and observer boundaries                        | Both           |
+| 5   | Reproducible reports and durable release evidence                                 | Both           |
+| 6   | Pure comparison functions separated from disk, process and provider I/O           | Technical      |
+| 7   | A bounded same-run handoff after publication without a job dependency cycle       | Technical      |
+| 8   | Advisory failure handling that preserves earlier correctness/publication verdicts | Both           |
 
 ## 7. Technical Design
 
-<!-- last written by: spec-author, 2026-10-13 -->
+<!-- last written by: implementer, 2026-10-13 -->
 
-Pending: owned by `implementer`, written after agreement. This specification does not choose a workflow layout, comparator library or storage encoding.
+This is an agreed implementation contract, not a description of delivered code.
+[ADR-0001](adr/0001-read-only-collection-with-a-release-job-rendezvous.md)
+records the architecture and rejected alternatives. No behaviour is implemented
+by this design. The contracts below become links to declarations as they land.
+
+### Composition and existing reuse
+
+A non-packable console assembly, `.performance/comparison/comparison.csproj`,
+with namespace `Specht.Comparison`, will contain the comparator and its internal
+repository-tooling entry point. It joins `specht.slnx`; it references neither the
+benchmark assembly nor the product host. `System.Text.Json`, `HttpClient`,
+`TimeProvider` and the existing `System.IO.Abstractions` substitution provide its
+boundaries. It adds no public `specht` command or consumer configuration.
+
+`Program` composes concrete readers, selection, evaluation, rendering and
+collection. Pure functions receive immutable values. Provider access, filesystem
+access and child processes are asynchronous and cancellable; `HttpMessageHandler`,
+`IFileSystem` and a process delegate supply the existing test seams. No interface
+is introduced for an in-memory calculation. The publisher consumes data files,
+never executes a downloaded report, and validates the bundle before uploading.
+
+Reuse `.performance/benchmarks/BenchmarkConfiguration.cs` and the measuring
+Features' native harness at each revision: Release, out-of-process BenchmarkDotNet,
+`MemoryDiagnoser`, full JSON and GitHub Markdown. Reuse the `Benchmark` target's
+selection and conditional packing, without changing its failure semantics.
+`ColdStartSession` already installs packed tools locally and keeps fixture setup
+outside measurement; its allocation is the harness process's, not the child
+product's. Its current inherited process environment needs the collection
+boundary's sanitisation. Do not transplant a current harness into an older product
+or add missing stage/startup benchmarks under this Feature.
+
+Workflow composition stays in `.build/SpechtBuild.Release.cs`'s existing
+`ReleaseMiddleware`; its `configuration.Jobs`, per-job `Permissions`, explicit
+step insertion and `ContinueOnError` are the extension points. The gates and
+package artifact retain `0055-F6`'s existing order and authority. The comparator
+executable and dependencies are a separate artifact built from the gated current
+commit; the release job can use that coordinator without checking out or executing
+either measured revision. No publishing operation becomes a NUKE target.
+
+### Value contracts
+
+| Value                          | Required content and invariant                                                                                                                                                                      |
+| ------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `ReleaseRecord`                | Repository and immutable release id, tag, first observed publication timestamp, draft/prerelease flags, peeled commit or explicit resolution failure; catalog completeness is explicit.             |
+| `ReleasePair` version 1        | Current record, selected predecessor record or explicit no-baseline, selection policy version, catalog snapshot digest and selecting run identity; immutable after persistence.                     |
+| `SessionManifest` version 1    | Pair digest, comparator commit/version, run id and attempt, session id, runner identity, per-side product commit, harness/export versions, invocation, environment and expected case inventory.     |
+| `WorkloadCase`                 | Stable operation and fixture contract ids/revisions, typed canonical parameter map, measurement boundary and metric requirements. Display name and BenchmarkDotNet job display id are labels only.  |
+| `Observation`                  | Side and case key, metric kind/dimension, observer process, raw value/unit, uncertainty level/bounds for timing, conditions, source file and record locator, or a typed unavailable/invalid reason. |
+| `ComparisonDocument` version 1 | Pair/session identity, full policy, ordered union of cases, per-metric values/deltas/status/reason, overall judgment, coverage gaps and evidence manifest.                                          |
+| `ReportingOutcome`             | Stage, completed/incomplete reporting state, known comparison judgment/flags if computed, actionable reason and confirmed publication references only.                                              |
+| `EvidenceManifest` version 1   | Bundle-relative files with media type, SHA-256, length, role, side and case/source linkage; paths cannot escape the bundle.                                                                         |
+
+Wire JSON uses explicit format versions, invariant numeric values and sorted case,
+parameter and file order. Unsupported versions yield unavailable evidence, never a
+best-effort clean result. Failure text is sanitised; absent values are null with
+reasons, never zero. Session/environment facts are evidence, not a wall-clock
+field that changes deterministic evaluation of the same supplied inputs.
+
+### Selection and persistence
+
+The provider reader follows every release-catalog page before selection. A failed
+page is an incomplete catalog, not evidence that no predecessor exists. Select
+published non-drafts, including prereleases, by `(publishedAt, immutableReleaseId)`;
+choose the immediately preceding eligible record in that order, never semantic
+version or tag creation order. The current first-publication ordering key is
+captured once. Resolve annotated tags to exact commits; preserve an unresolved
+selected predecessor's identity with its failure. Do not choose the next usable
+older release. Concurrent equal timestamps use the agreed immutable-id tie-breaker.
+
+After successful package and Release publication, the existing release job creates
+`comparison-pair-v1.json` as a durable asset on the current Release, before issuing
+a collection receipt. The value includes the selection snapshot and resolved
+commits. Creation is insert-only: an existing asset is read and validated, never
+clobbered. On a concurrent creation conflict, read the winning value and use it;
+an invalid or unreadable existing asset is `Incomplete`. Reruns, including a new
+workflow run for the same Release, load this value instead of selecting again.
+An explicit null predecessor is durable too. If saving the pair fails, collection
+does not start. No result claims a fixed pair that was only stored transiently.
+
+The pair is established before the first collection attempt; a failure before its
+creation has made no selection durable. The selection predicate still uses the
+current Release's original publication key when retrying that stage. Release
+creation/push recovery is owned by `0055-F6`; comparison wiring must accept an
+already successfully published current Release without requiring its creation to
+succeed a second time, and must not bypass a failed package publication.
+
+### Acyclic execution and credential boundary
+
+The generated release workflow will have `build`, `release` and `comparison` jobs.
+Both latter jobs need only `build`; neither needs the other's completion. Both
+retain the tag-push predicate, excluding workflow dispatch. `comparison` has only
+contents-read and actions-read; packages and all write scopes are absent. `release`
+keeps the sole package-write/contents-write grant and gains actions-read solely for
+the same-run return artifact. No new secret, dispatch credential or write job is
+introduced. Ordinary PR/main workflows stay outside this path.
+
+```mermaid
+flowchart TD
+    G[build: correctness gates and artifacts] --> P[release: package and Release publication]
+    G --> W[comparison: wait for same-run receipt]
+    P --> S[release: persist pair and upload receipt]
+    S --> C[comparison: collect both revisions on its runner]
+    W --> C
+    C --> E[comparison: evaluate, render and upload bundle]
+    E --> A[release: bounded wait, validate and attach bundle]
+    S --> A
+```
+
+The temporal chain is publication → saved pair → receipt → collection → bundle →
+attachment. There is no completion edge back to publication. The release job
+uploads `comparison-request-<runId>-<attempt>` after saving the pair, then waits
+for `comparison-result-<runId>-<attempt>`. The comparison job polls the same run's
+artifact list for that exact receipt, validates repository, run, attempt, current
+commit and pair digest, then starts work. The receipt proves successful publication
+in this run; observing a tag or an old Release alone cannot trigger measurement.
+The release job similarly accepts only the result for that receipt, never an old
+attempt. A rerun of only failed jobs cannot consume an old receipt/result: missing
+participants produce `Incomplete`; rerunning all jobs resumes with the saved pair.
+
+Artifact upload must finish before its reader proceeds, but job completion is not
+required. This relies on the immediate availability of immutable v4 artifacts,
+[documented by upload-artifact](https://raw.githubusercontent.com/actions/upload-artifact/v4/README.md),
+and the [run-artifact read API](https://docs.github.com/en/rest/actions/artifacts).
+Do not use `needs.release.outputs` as an early signal. Insertion of a read-only
+third job uses the existing generator; it does not use its built-in publisher or
+a second workflow. The disposable probe and its observed limits are recorded in
+the ADR; generated declarations are evidence about generation, not a live run.
+
+The comparison runner owns both sequential revision checkouts/builds and benchmark
+process trees for one session. Use separate workspace/cache/output folders under
+`.artifacts/benchmarks/comparison/<sessionId>/` or its temporary workspace. Checkout
+credentials are not persisted. No publisher artifact, publishing token or mutable
+publisher workspace is shared with it. Child environments are built from an
+allowlist of SDK/runtime and session paths; omit GitHub tokens, Actions runtime
+credentials, user tool manifests and credential-bearing NuGet configuration.
+Restore dependencies before measurement with read-only access where needed.
+Record actual SDK/runtime/OS/architecture/toolchain/GC/job settings on both sides;
+a historical SDK mismatch is visible rather than fixed by silently retargeting.
+
+The receipt wait is bounded to 30 minutes; paired preparation/collection to 60
+minutes total, with each revision capped at 25 minutes and failures leaving time
+to render. The release-side result wait is bounded to 100 minutes from receipt,
+including runner queue delay. Use injected `TimeProvider`, cancellable waits and
+process-tree termination. Normal deadlines are handled in code before the platform's job safety
+timeout; they do not depend on an unprobed generator timeout property. A queued, failed or cancelled collector causes a
+bounded incomplete outcome, never indefinite waiting.
+
+Every comparison-owned step after successful publication, including receipt save,
+transport, rendering and attachment, has advisory failure handling. The comparison
+job's setup/upload steps also continue on error and a final summary runs on failure.
+Earlier gates and publication retain their failure semantics. Pre-write an
+`Incomplete: comparison pending` summary before waits; replace it on completion.
+On graceful cancellation kill both process trees and retain available evidence.
+An explicit user cancellation or platform hard kill can prevent any final step;
+it leaves the workflow cancelled, the published release intact and the prewritten
+summary/pair as available evidence, never a fabricated success. No design can turn
+a platform cancellation into a successful run. Recovery is a rerun with the saved
+pair, not a retry loop that changes the baseline.
+
+### Evidence reading, identity and evaluation
+
+Discover the union of expected native harness cases on both revisions, including
+failed cases. Missing historical harness/export/identity metadata is an explicit
+gap. The importer supports explicitly recognised BenchmarkDotNet full-JSON shapes
+and a session sidecar; unknown shapes cannot be treated as empty valid inventories.
+A supported exporter adapter must declare the value/unit fields and how it decodes
+confidence levels. BenchmarkDotNet's [JSON sample](https://benchmarkdotnet.org/articles/samples/IntroExportJson.html)
+serialises an enum-like confidence `Level`; never read it as a percentage or use
+standard deviation as a confidence interval. Support is bound to the producer
+version and tested with invented payloads of that shape; no current default is
+silently assigned to historical uncertainty. An audited mapping can establish a
+historical workload contract from its source revision, fixture definition and
+measured operation; matching names alone cannot.
+Store that mapping and its source digest with the evidence. Unavailable discovery
+is distinct from a known empty inventory and cannot imply `Added` or `Removed`.
+
+Case pairing uses operation identity plus canonical parameters; differing fixture
+contract, input, boundary or conditions produces `Not comparable`. A known
+one-sided case is `Added`/`Removed`; each size stays separate. Every case carries
+the required metrics its measuring contract supplies. Mean time and managed bytes
+per operation are separate; child peak memory is informational with its own
+observer, never substituted for managed allocation. Harness allocation remains
+labelled as harness allocation for startup cases.
+
+Validation order is decode and duplicate detection → per-metric validity →
+equivalence → unit conversion → arithmetic → review screen → overall reduction.
+Two records for the same side/case/metric are invalid duplicate evidence, not
+last-write-wins or an average; keep both locators. Other valid metrics may still
+flag. Non-finite, negative or missing values cannot prove a clean result. Timing
+means must be positive, intervals finite and ordered around the mean, and the
+confidence level known and valid. Absent/invalid uncertainty is `Insufficient
+evidence`; differing valid confidence levels are `Not comparable`.
+
+Normalise recognised ns/µs/us/ms/s scales to ns per operation and B/KB/MB or
+B/KiB/MiB to bytes per operation with explicit decimal/binary factors. Unknown
+units or incompatible dimensions/observers are `Not comparable`; conversion
+failure or overflow is invalid evidence. Never infer a scale from display width.
+Calculate on unrounded values and round only rendered numbers. Apply decision
+0002's strict thresholds and zero-allocation policy per metric, then reduce:
+any flag → `Review required`; otherwise any required gap or empty union →
+`Incomplete`; otherwise → `No regression flagged`. No predecessor → `No baseline`
+with no regression judgment. Reporting failure is tracked separately so an
+already-computed review flag survives an incomplete attachment.
+
+### Rendering and durable publication
+
+Render Markdown and JSON from one immutable `ComparisonDocument`. A bundle
+contains `report.md`, `report.json`, `pair.json`, `session.json`,
+`evidence-manifest.json`, raw exporter documents and supported identity mappings.
+Preserve raw numerical evidence; sanitise only path-bearing metadata at ingestion,
+recording that transformation. Reject unknown payloads that cannot be safely
+retained; do not attach arbitrary logs, generated projects or absolute paths.
+Keep original local exports in the workspace only. Every referenced evidence file
+must exist with its recorded digest; reject rooted paths, traversal and symlinks.
+
+Use one self-contained ZIP per attempt, named
+`comparison-<releaseId>-<runId>-<attempt>.zip`, with bundle-relative links valid
+after extraction. The pair asset remains separate for rerun recovery. The
+release job validates the returned bundle and attaches it through the existing
+workflow token. Verify the uploaded asset before linking it as retained evidence;
+failed or partial uploads are `Incomplete`. Insert-only attempt names prevent
+reruns from making earlier report references stale. The summary lists flagged
+cases/reasons and the confirmed Release asset link; before successful attachment
+it states the incomplete reporting stage and retains known flags without a
+successful report link. Expiring workflow artifacts removes transport only;
+reports and their entire evidence closure remain in the Release bundle.
 
 ## 8. Testing Strategy
 
-<!-- last written by: spec-author, 2026-10-13 -->
+<!-- last written by: test-writer, 2026-10-13 -->
 
-Pending: owned by `test-writer`, written after agreement. No executable coverage is claimed.
+The verdict is testable with synthetic release catalogs, exporter payloads and
+process outcomes. No executable proof is delivered by this design. The plan below
+names mechanisms to implement and falsifiable checks; § 9 remains `Missing` until
+actual discovered tests prove them. No test runs a benchmark or asserts elapsed
+time, allocation, a real release, a credential or a live provider response.
+
+`test/comparison.tests/comparison.tests.csproj` will reference the comparator;
+it joins `specht.slnx`, declares `IsTestProject`, and uses the existing xUnit v3,
+AwesomeAssertions, AutoFixtures and tier guard conventions. In-memory tests have
+exactly one Unit trait, filesystem/process tests exactly one Integration trait.
+Both NUKE filtered tiers must discover tests in the new project; do not add an
+empty project before its first tests. Add a project reference and a literal
+`ReqnrollFeatureFile` link for this Feature to `test/acceptance/acceptance.csproj`,
+with `ComparisonSteps` exercising the real comparator over invented inputs.
+Verify discovery increases; an unlinked `.feature` proves nothing executable.
+
+| Claim | Mechanism and planned unit proof                                                                                             | Synthetic acceptance/integration proof                                                                                                              |
+| ----- | ---------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+| B-001 | Publication-receipt eligibility rejects anything short of both successful publications.                                      | `ComparisonSteps` supplies a successful receipt and observes collection; scripted transport verifies run/attempt binding.                           |
+| B-002 | `ReleaseSelection` orders complete catalogs, filters drafts, includes prereleases, breaks ties and honours saved pairs.      | Multi-page invented catalog, equal timestamps, changed later catalog and disk reload retain the same predecessor.                                   |
+| B-003 | No-predecessor result has no regression judgment.                                                                            | First-release receipt yields both report forms marked `No baseline`, without starting a benchmark.                                                  |
+| B-004 | `CollectionPlan` pins both commits, one session/runner and separate sequential invocations.                                  | Fake process delegate records two revision arguments and conditions; temporary workspace proves isolation and cleanup.                              |
+| B-005 | `CasePairing` matches stable operation/fixture contracts, parameters, observers and conditions.                              | Independently invented full-JSON exports and sidecars yield the expected paired rows.                                                               |
+| B-006 | Valid evidence with unknown/different identity or conditions yields reasons, never comparison.                               | Scenario outline varies each equivalence field, including valid unequal confidence levels and unsupported historical formats.                       |
+| B-007 | Known current-only case is Added and contributes a required coverage gap.                                                    | Invented asymmetric inventory retains the current-only case without a delta judgment.                                                               |
+| B-008 | Known predecessor-only case is Removed and contributes a required coverage gap.                                              | Invented asymmetric inventory retains the predecessor-only case without a delta judgment.                                                           |
+| B-009 | `UnitConversion` and unrounded delta arithmetic respect decimal/binary scales and dimensions.                                | Equivalent ns/µs and byte scales produce matching reports; incompatible dimensions remain visible.                                                  |
+| B-010 | Zero-allocation policy distinguishes zero/zero and zero/positive without dividing by zero.                                   | Both scenario examples retain null percentage with `Not defined` and the appropriate metric/overall judgment.                                       |
+| B-011 | Timing screen requires strictly more than 10% and strictly separated intervals.                                              | Boundary tables cover just below/equal/above 10%, touching/overlapping intervals and a displayed rounded 10% whose raw value exceeds it.            |
+| B-012 | Allocation screen uses strict unrounded increase over positive baseline.                                                     | Just below/equal/above limits and simultaneous timing improvement prove independent allocation flags.                                               |
+| B-013 | Timing validity precedes equivalence; absent/invalid confidence, non-finite values and malformed intervals are insufficient. | Synthetic malformed payloads preserve reasons and independent valid metric flags; duplicates preserve both source locators.                         |
+| B-014 | Summary projection includes every known flag and only confirmed report links.                                                | Fake publisher success/failure retains flags, links only a verified asset and escapes hostile display text.                                         |
+| B-015 | Both renderers project the same document without recalculating verdicts.                                                     | Parse JSON and inspect Markdown for the same ordered cases, reasons, units, gaps and judgments.                                                     |
+| B-016 | Evidence closure binds release/commit, environment, policy, case and source digests.                                         | Round-trip temporary bundle; mutation or deletion of a referenced file is rejected before publication.                                              |
+| B-017 | Advisory outcome mapping cannot change prior passed correctness/publication gates to failure.                                | Fake stages returning a regression leave the orchestration successful; a pre-existing gate failure stays failed.                                    |
+| B-018 | Stage outcome mapping, deadlines and cancellation preserve incomplete reasons and known flags.                               | Inject collection, parse, evaluation, rendering, receipt, upload and attachment failures; fake clock advances deadlines without sleeps.             |
+| B-019 | Overall reduction gives any flag precedence over gaps.                                                                       | A flagged metric plus missing/Added/Removed/duplicate evidence keeps review and every gap.                                                          |
+| B-020 | Overall reduction rejects empty inventories or any required missing/incompatible/insufficient metric absent a flag.          | Invented empty, failed discovery and partial inventories cannot produce a clean report.                                                             |
+| B-021 | Overall reduction requires a nonempty union and complete comparable required metrics for no flag.                            | A complete invented pair produces `No regression flagged` in both forms.                                                                            |
+| B-022 | Publication adapter validates closure and inserts a durable self-contained release asset.                                    | Fake HTTP handler models release storage independently of transport; delete the temporary run artifact, retrieve and verify every bundle reference. |
+| B-023 | Receipt trigger predicate rejects PR, main push and dispatch/dry-run contexts.                                               | Scenario examples observe zero collector invocations; generated workflow is inspected separately for the event predicate.                           |
+| B-024 | Selection/collection failures keep the immediate predecessor; unavailable never selects again.                               | Unresolvable commit, missing harness and process failure retain the same pair and actionable incomplete reason.                                     |
+
+The unit tier pins all listed decisions; none is excused as workflow-only or
+benchmark-only logic. Integration tests exercise disk persistence, safe extraction,
+process invocation and failure cleanup with invented files/process stubs. Provider
+tests use a fake `HttpMessageHandler`, follow pagination and inspect requests for
+insert-only pair/asset semantics and wrong-run rejection. Retry tests fail unless
+pair persistence survives catalog changes and transport expiry. Independently test
+receipt-before-collection and bundle-before-attachment with controlled events;
+do not model a completed release job as the collection trigger.
+
+Workflow declaration verification belongs to the integration delivery: regenerate
+through NUKE, inspect build-before-publication, explicit step ordering, two
+`needs: build` edges, the only write grant in `release`, actions-read grants,
+advisory step outcomes and bounded waits. This is generation evidence, not
+execution or comparator unit coverage. Existing `0055-F6` decisions on its own
+by-record claims remain unchanged. Comparison build argument construction, if
+introduced, needs unit tests in `test/build.tests` and solution registration;
+that project exists on disk but is not currently listed in the solution.
+
+A manual paired collection later demonstrates the native measurement boundaries,
+actual environment capture and path sanitisation on one runner; it does not prove
+a review policy or credential isolation by timing. No benchmark or published
+performance finding is required for a design-only change. Platform hard kill
+cannot guarantee final output; test graceful cancellation and bounded missing-peer
+outcomes, and record that live platform limitation honestly.
 
 ## 9. Traceability Matrix
 
-<!-- last written by: spec-author, 2026-10-13 (initial unimplemented inventory for test-writer) -->
+<!-- last written by: test-writer, 2026-10-13 (tag anchors; no executable coverage) -->
 
-| Claim ID | Scenario                                                                           | Test    | Status  |
-| -------- | ---------------------------------------------------------------------------------- | ------- | ------- |
-| B-001    | A published release starts an advisory comparison                                  | Missing | Missing |
-| B-002    | The previous eligible release is selected                                          | Missing | Missing |
-| B-003    | The first release has no baseline                                                  | Missing | Missing |
-| B-004    | Both releases are measured together                                                | Missing | Missing |
-| B-005    | Matching workloads produce comparable rows                                         | Missing | Missing |
-| B-006    | Changed measurement conditions are visible                                         | Missing | Missing |
-| B-007    | A new benchmark remains visible                                                    | Missing | Missing |
-| B-008    | A removed benchmark remains visible                                                | Missing | Missing |
-| B-009    | Comparable measurements show their change                                          | Missing | Missing |
-| B-010    | Zero allocation does not produce an invented percentage                            | Missing | Missing |
-| B-011    | Timing review requires both a material increase and separated confidence intervals | Missing | Missing |
-| B-012    | Allocation review uses a strict percentage increase                                | Missing | Missing |
-| B-013    | Uncertain or invalid timings cannot establish a clean comparison                   | Missing | Missing |
-| B-014    | Review flags remain visible in the release run                                     | Missing | Missing |
-| B-015    | People and automation receive the same findings                                    | Missing | Missing |
-| B-016    | A report identifies the evidence behind its judgment                               | Missing | Missing |
-| B-017    | A meaningful regression leaves the build successful                                | Missing | Missing |
-| B-018    | A reporting failure leaves an incomplete advisory outcome                          | Missing | Missing |
-| B-019    | One review flag determines the overall review status                               | Missing | Missing |
-| B-020    | Comparison gaps prevent an overall clean judgment                                  | Missing | Missing |
-| B-021    | A complete comparison can report no review flags                                   | Missing | Missing |
-| B-022    | An expired historical run does not remove a release report                         | Missing | Missing |
-| B-023    | Ordinary builds do not start release comparisons                                   | Missing | Missing |
-| B-024    | A missing immediate baseline is not silently replaced                              | Missing | Missing |
+| Claim ID | Scenario | Test    | Status  |
+| -------- | -------- | ------- | ------- |
+| B-001    | `@B-001` | Missing | Missing |
+| B-002    | `@B-002` | Missing | Missing |
+| B-003    | `@B-003` | Missing | Missing |
+| B-004    | `@B-004` | Missing | Missing |
+| B-005    | `@B-005` | Missing | Missing |
+| B-006    | `@B-006` | Missing | Missing |
+| B-007    | `@B-007` | Missing | Missing |
+| B-008    | `@B-008` | Missing | Missing |
+| B-009    | `@B-009` | Missing | Missing |
+| B-010    | `@B-010` | Missing | Missing |
+| B-011    | `@B-011` | Missing | Missing |
+| B-012    | `@B-012` | Missing | Missing |
+| B-013    | `@B-013` | Missing | Missing |
+| B-014    | `@B-014` | Missing | Missing |
+| B-015    | `@B-015` | Missing | Missing |
+| B-016    | `@B-016` | Missing | Missing |
+| B-017    | `@B-017` | Missing | Missing |
+| B-018    | `@B-018` | Missing | Missing |
+| B-019    | `@B-019` | Missing | Missing |
+| B-020    | `@B-020` | Missing | Missing |
+| B-021    | `@B-021` | Missing | Missing |
+| B-022    | `@B-022` | Missing | Missing |
+| B-023    | `@B-023` | Missing | Missing |
+| B-024    | `@B-024` | Missing | Missing |
 
 ## 10. Lessons / Spec Deltas
 
@@ -197,9 +497,10 @@ Pending: owned by `test-writer`, written after agreement. No executable coverage
 
 <!-- last written by: spec-reviewer, 2026-10-13 -->
 
-| Section | Status | Reviewer             | Note                                                                                                                                                                                                                                                                                                                                                                      |
-| ------- | ------ | -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 1-5     | 🟢     | Codex, spec-reviewer | Round 2 self-review: decision 0003 and the amended scenarios resolve the equivalence, unit/invalid-evidence and advisory-failure gaps. Owner decisions 0001-0002 stand. All 24 claims have scenario tags and one Missing traceability row each. Agreement approved for decomposition; § 6-8 remain pending, and neither implementation nor independent review is claimed. |
+| Section | Status | Reviewer             | Note                                                                                                                                                                                                                                                                                                                                                                                                   |
+| ------- | ------ | -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 1-5     | 🟢     | Codex, spec-reviewer | Round 2 self-review: decision 0003 and the amended scenarios resolve the equivalence, unit/invalid-evidence and advisory-failure gaps. Owner decisions 0001-0002 stand. All 24 claims have scenario tags and one Missing traceability row each. Agreement approved for decomposition; § 6-8 remain pending, and neither implementation nor independent review is claimed.                              |
+| 6-9     | 🟢     | Codex, spec-reviewer | Design self-review: ADR-0001 preserves C-1 to C-10 and 0055-F6 C-7 through a read-only peer and bounded same-run receipts. § 8 maps all 24 claims to mechanisms and synthetic proof; § 9 remains Missing. Generator capability was probed locally, not on a live runner. Child scopes and prerequisites are reconciled. Full build passed; no independent sign-off or behavioural delivery is claimed. |
 
 ### Review history
 
