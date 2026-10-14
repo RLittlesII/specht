@@ -146,3 +146,31 @@ OQ-14.
 ## Reversal
 
 None.
+
+## Addendum - 2026-10-14: close the first publication on its evidence
+
+The owner directed: "Reconcile the tracker with what shipped in 0.1.90,
+close the items the evidence satisfies, and rerun next so we can see the
+actual remaining work."
+
+For this reconciliation, OQ-16's proposed record-based closing rule is
+adopted for B-003, B-004, B-006, B-007, B-011 and B-012. The published
+`v0.1.90`, its successful run, the existing ancestry-refusal hand run and
+the manual dry run on `main` are recorded in § 8. Their § 9 rows remain
+`Missing`: these are records, not automated tests. This is the same scoped
+exception decision 0002 gives the earlier workflow claims, not a change to
+the traceability vocabulary or a general waiver for other items.
+
+The publication happened on 2026-10-13. Its follow-up dry run and tracker
+reconciliation occur on 2026-10-14; the record does not imply that the dry
+run preceded the tag. No new tag, package or Release is required to close
+the historical first-publication item. The original ancestry check retains
+its record-based proof, including its non-zero-exit decision; no new test
+requirement is introduced for B-011.
+
+The tagged tree already contains the completed upstream-source prerequisites
+and both setup-guide items. OQ-17 and OQ-18 therefore hold no remaining
+first-release work. This observation chooses no general rule about future
+release scope. Feed installation, build and workflow consumption, the
+package-version independence proof and later capabilities remain separate
+items; none is closed from a successful publication alone.
