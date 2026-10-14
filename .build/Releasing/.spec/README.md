@@ -127,7 +127,13 @@ Nothing publishes `specht.tool`: `0001-F2` § 5 row 7 hands the release workflow
 
 ## 7. Technical Design
 
-<!-- last written by: implementer, 2026-10-13 (unlocked schema release guard) -->
+<!-- last written by: implementer, 2026-10-14 -->
+
+On 2026-10-14, B-010 uses the native NuGet environment credential
+`NuGetPackageSourceCredentials_specht`, supplied at the generated release build
+job from `github.actor` and `secrets.GITHUB_TOKEN`. The workflow grants
+`packages: read`; no stored read token or custom restore logic is used.
+The existing Restore target restores the committed manifest unchanged.
 
 **Built by item 0083 for B-001, B-002, B-005, B-008 and B-009, and by item 0084 for B-003, B-004, B-006, B-007, B-011 and B-012**, in the shape decisions 0001 and 0003 record: the generated file `release.yml`, the targets `Release` and `VerifyTag`, the job `build` on `ubuntu-latest` and the job `release`. No test proves it: for item 0083's five claims by decision 0002 and § 5 #9, and for item 0084's six by § 5 #9 alone, since decision 0002 names only the five. Decision 0003's 2026-10-14 addendum resolves OQ-16 for the first-publication reconciliation; § 8 records the evidence. The manual trigger carries no input, which is OQ-7's proposed default; OQ-7 and OQ-14 are open and block nothing here. B-010 is item 0085's; where this design leaves room for it, it says so and builds nothing.
 
@@ -512,7 +518,7 @@ Release note categories are configured in [`.github/release.yml`](../../../.gith
 
 <!-- last written by: test-writer, 2026-10-14 -->
 
-- **The release workflow has no tests (owner, 2026-10-09, [decision 0002](decisions/0002-the-release-workflow-is-proven-by-records-and-its-dry-run-follows-the-merge.md)).** The standing decision that the build has no tests, quoted in [`0055-F1` § 8](../../.spec/README.md), is kept for B-001, B-002, B-005, B-008 and B-009 and is not narrowed for them. § 5 #9 puts tests of the generated workflow and of the tag check out of scope as it stands, so item 0084's six claims, B-003, B-004, B-006, B-007, B-011 and B-012, get none either. `release.feature` is not linked into `test/acceptance` and no step class binds it. B-013 has the automated coverage described below; the other § 9 rows remain `Missing`, the form [`0055-F1` § 9](../../.spec/README.md) and [`0055-F2` § 9](../../ContinuousIntegration/.spec/README.md) use for a claim proven by record. B-010 is item 0085's and is not built.
+- **The release workflow has no tests (owner, 2026-10-09, [decision 0002](decisions/0002-the-release-workflow-is-proven-by-records-and-its-dry-run-follows-the-merge.md)).** The standing decision that the build has no tests, quoted in [`0055-F1` § 8](../../.spec/README.md), is kept for B-001, B-002, B-005, B-008 and B-009 and is not narrowed for them. § 5 #9 puts tests of the generated workflow and of the tag check out of scope as it stands, so item 0084's six claims, B-003, B-004, B-006, B-007, B-011 and B-012, get none either. `release.feature` is not linked into `test/acceptance` and no step class binds it. B-013 has the automated coverage described below; the other § 9 rows remain `Missing`, the form [`0055-F1` § 9](../../.spec/README.md) and [`0055-F2` § 9](../../ContinuousIntegration/.spec/README.md) use for a claim proven by record. B-010 uses the native workflow credential (0085); its provider proof is recorded separately below.
 - **What stands in for a test** is three records (decision 0002): the generated `release.yml` read against § 7, hand runs of `VerifyTag`, and the dry run on `main`. Item 0084's claims have a fourth, the run of the first tag (OQ-13). The first two are below. Both were made on 2026-10-11, on macOS, in the working tree of branch `0084/first-release` over `4fd1cc6`, which was also `origin/main` that day. The file and the build project were uncommitted when they were read and run; the commit that delivers item 0084 carries them. They replace the records of 2026-10-09, made over `publish.yml` at commits `a17dbd2` and `e4c62a5`, which this file holds at commit `4fd1cc6`.
 - **The follow-up dry run** is recorded under the first-release reconciliation below. It supplies the runner observation owed by decision 0002 and OQ-13; the older hand-run records remain dated observations.
 - **The first tag was published on 2026-10-13.** The first-release reconciliation below records `v0.1.90`; statements of unobserved runner behavior in the 2026-10-11 readings describe that earlier day.
@@ -580,7 +586,7 @@ Release note categories are configured in [`.github/release.yml`](../../../.gith
   - B-003, B-004, B-006, B-007, B-012: no mechanism of this repository's. Each is a string literal in a `RunStep` of `ReleaseMiddleware`, generated unchanged into lines 145 and 151; their order is the order of the `Steps` list. What pushes is `dotnet nuget push`, and what creates the Release, writes its notes and attaches the file is `gh` and GitHub.
   - B-005: no mechanism of its own. The trigger list is the attribute's `OnPushTags` and `On`, each a literal setting.
   - C-7: two `with` expressions over `GitHubActionsPermissions.None`, one with `Contents = Read`, one with `Contents = Write` and `Packages = Write`. These are declarations.
-  - B-010: not built (item 0085).
+  - B-010: the build job grants package read and passes its workflow token through NuGet’s native environment credential (item 0085). Provider verification is recorded separately.
 - **Verdict.**
   - The generated file is testable as it stands. A step class of the shape `ContinuousIntegrationSteps` has could read the committed `release.yml` and assert each line cited above; § 7 lists what it could assert per claim. It has no such test because the owner decided the build needs none, not because the design prevents it.
   - `ReleaseMiddleware` is testable as it stands: it is a public static method that takes a configuration and returns one. The build now has `test/build.tests`, introduced for schema locking; B-013 uses it under decision 0005. No test of the middleware is added.

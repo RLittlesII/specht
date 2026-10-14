@@ -20,7 +20,7 @@ depends_on: ["F1"]
 blocks: ["F3", "F4", "F8", "0109/F1"]
 spikes: []
 created: "2026-10-08"
-updated: "2026-10-13"
+updated: "2026-10-14"
 github_issue: null
 synced_at: null
 ---
@@ -155,7 +155,13 @@ No workflow exists, so the first pull request on GitHub would merge on the autho
 
 ## 7. Technical Design
 
-<!-- last written by: implementer, 2026-10-10, 2026-10-11 (item 0183: the decision step builds a Markdown change under a `.specht/` folder as it does one under `.spec/`, ADR-0011) -->
+<!-- last written by: implementer, 2026-10-14 -->
+
+On 2026-10-14, B-011 uses the native NuGet environment credential
+`NuGetPackageSourceCredentials_specht`, supplied at the generated CI and main build
+job from `github.actor` and `secrets.GITHUB_TOKEN`. The workflow grants
+`packages: read`; no stored read token or custom restore logic is used.
+The existing Restore target restores the committed manifest unchanged.
 
 Delivered so far by items 0064, 0102, 0066, 0114, 0118, 0140 and 0183.
 
@@ -191,7 +197,7 @@ Only the main-push declaration invokes `Benchmark`, alongside `ContinuousIntegra
   - B-012, B-014, B-015, exercised by hand; § 7 records the implementer's run. Repeated for this section on 2026-10-09 on macOS: the `changes` step's script was extracted from the committed `ci.yml` and run under `bash -eo pipefail` with `GITHUB_OUTPUT` pointed at a scratch file, over the same two ranges, `daa02e6~1...daa02e6` (five files, three of them not Markdown) and `58db716~1...58db716` (`README.md` alone). As `pull_request` with `RUNNER_OS=Windows`, it wrote `build=false` and the "Windows gates skipped" notice for the code range, the Markdown range, empty commits and unknown commits. As `pull_request` with `RUNNER_OS=Linux`, it wrote `build=true` and no notice for the code range, empty commits and unknown commits, and `build=false` with the "Build skipped" notice for the Markdown range. As `push`, it wrote `build=true` and no notice with either value, with empty commits and with the Markdown range. Every run exited 0. That is evidence for the script's decision and nothing else. It is not evidence that a windows runner sets `RUNNER_OS` to `Windows`, that Git Bash runs the script as bash did here, that the gated steps are skipped, or that the check passes: no runner was under test. B-015 and B-016 are first shown live by the windows leg of the pull request that delivers 0118, and B-004's push half - every gate on windows - by the first push to `main` after it merges. Until that push, a defect that stopped the windows leg building on `main` too would show on no pull request. A check by hand pins nothing for the next change, so the rows stay `Missing`.
   - B-006: `PassAnnotationContext` gives the `specCheck` step `EVENT_NAME`, `BASE_SHA` and `HEAD_SHA` in its `env`, and nothing naming the leg. In [`SpechtBuild.cs`](../../SpechtBuild.cs), `Specht` runs `specht` through `DotNetTasks.DotNet` and hands the lines it returns to `AnnotateChangedFiles`. Its guard returns unless the host is GitHub Actions, the event is `pull_request`, the runner's own `RUNNER_OS` is `Linux` and both commits are set. The guard reads `RUNNER_OS`, which the runner sets in every step, and not `matrix.os`, which is empty in a workflow generated with one image and no matrix (item 0140). It then takes the changed files from `git diff --name-only --no-renames <base>...<head>`, run through `GitTasks.Git`, keeps each output line the `Diagnostic` regex matches whose path is in that set, and writes it as a `::error` or `::warning` command, escaping the message with `EscapeData` and each property with `EscapeProperty`. This is a filter and a mapping.
   - B-006, exercised by hand on 2026-10-09 by simulating the GitHub Actions host locally against `534940a~1...534940a`. As `pull_request` on `ubuntu-latest`, the run wrote 10 annotations, every one on `test/.spec/README.md` and none on another file; the first was `::error file=test/.spec/README.md,line=161,title=SPEC060::…`. On `windows-latest`, on `push`, and with an unknown base commit, it wrote none. Every run printed the same 251 violation lines and succeeded. A plain local run printed no `::` line. Observed live on pull request #47, which delivers 0066: run 37980148873 at `114a0aa` passed both checks. `build (ubuntu-latest)` carried 10 `failure` annotations, every one titled `SPEC060` on this specification at lines 165 to 175 - the per-step cap, the file carrying more. `build (windows-latest)` carried none from `Specht`, only GitHub's own `.github` warning. The `@B-006 @boundary` scenario is unbound, like the rest of the feature.
-  - B-011 (`0067`): not built yet.
+  - B-011 (`0067`): native NuGet credential and package-read permission are generated; live runner verification is recorded below.
   - B-009: withdrawn (decision 0001), with item `0065`; no mechanism and no test.
 - **Verdict.** B-004's reordering, skip of `Test` and rewrite are testable as they stand, given the generated step list. B-006's parsing and filtering are testable as they stand, given the output lines and the changed-file set. The B-012, B-014 and B-015 decision is a bash script held as a string literal inside `GateOnChangedFiles`, not a member that takes an event, a system and a file list and returns a verdict. A test of it would have to run bash over a git repository, which is a process and so the integration tier, or the decision would need a seam outside the script, which is the implementer's call. B-013 and B-016's gating is testable as it stands, given the generated step list. None has a test because the owner decided CI needs none, not because the design prevents it.
 

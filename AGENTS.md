@@ -48,6 +48,11 @@ dotnet tool restore && dotnet husky install   # once per clone
 python3 .agents/install.py                   # shared skills and role registrations
 ```
 
+The complete tool restore reads the published checker from GitHub Packages;
+supply the source credential through `NuGetPackageSourceCredentials_specht`.
+Without that credential, `dotnet restore specht.slnx` and `dotnet build specht.slnx`
+still restore and build the solution. The NUKE build also restores local tools.
+
 Until that runs, `core.hooksPath` is unset, so neither the formatting pre-commit
 hook nor the self-check fires. The .NET SDK is pinned in `global.json`
 (`10.0.100`), with `"test": { "runner": "Microsoft.Testing.Platform" }`.

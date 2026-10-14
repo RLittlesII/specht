@@ -20,7 +20,7 @@ depends_on: ["F6"]
 blocks: []
 spikes: []
 created: "2026-10-08"
-updated: "2026-10-13"
+updated: "2026-10-14"
 github_issue: null
 synced_at: null
 ---
@@ -94,43 +94,82 @@ A consumer cannot install a package from a feed it does not know, with a credent
 
 ## 6. Concern Separation
 
-<!-- last written by: spec-author, 2026-10-08 -->
+<!-- last written by: implementer, 2026-10-14 -->
 
-Pending: owned by `implementer`, written after agreement.
+| #   | Concern                                                  | Classification |
+| --- | -------------------------------------------------------- | -------------- |
+| 1   | Published checker version and source routing             | Both           |
+| 2   | Environment credentials for tool restore                 | Technical      |
+| 3   | Native solution restore without tool-feed authentication | Technical      |
 
 ## 7. Technical Design
 
-<!-- last written by: spec-author, 2026-10-08 -->
+<!-- last written by: implementer, 2026-10-14 -->
 
-Pending: owned by `implementer`, written after agreement.
+[Decision 0001](decisions/0001-use-native-package-and-tool-restore.md) uses
+native restore commands. The root tool manifest adds published `specht.tool`
+0.1.90. Root `nuget.config` maps exactly that package to the `specht` source,
+GitHub Packages; all other packages and audit data use nuget.org. NuGet reads
+`NuGetPackageSourceCredentials_specht` from the process environment, in its
+native `Username=...;Password=...;ValidAuthenticationTypes=Basic` format.
+
+`dotnet tool restore` restores all tools with a read credential. Without one,
+`dotnet restore specht.slnx` and `dotnet build specht.slnx` still restore and
+build the solution. NUKE retains its existing tool restore followed by solution
+restore, so full NUKE invocations need the tool-feed credential. The generated CI and release build jobs receive the native NuGet environment
+credential from their workflow token, granted package read (0067 and 0085).
+No custom manifest generation or restore-target change is required.
 
 ## 8. Testing Strategy
 
-<!-- last written by: spec-author, 2026-10-08 -->
+<!-- last written by: test-writer, 2026-10-14 -->
 
-Pending: owned by `test-writer`.
+`ConsumptionSteps` exercises the committed manifest and source configuration
+with only feed endpoints replaced by local folders and fresh package caches.
+B-002 restores and invokes a synthetic checker at the pinned version. B-003
+checks the pin against 0.1.90, whose publication is recorded in `0055-F6` § 8.
+B-007 removes credential environment variables, provides no checker package,
+and runs native solution restore followed by build. No automated test uses a
+network or real credential. These are NuGet declarations and native commands;
+there is no custom selection mechanism needing a unit test. Five documentation
+scenarios remain pending for 0088.
+
+The real root tool restore passed on 2026-10-14 with the existing login's
+credential scoped to the process, including a fresh-cache repeat. The installed
+command printed `0.1.90+b213a0522a`. No credential change was needed. The
+repository's schema pin is unchanged.
+
+The three package-consumption scenarios pass; five documentation scenarios remain
+pending for 0088. Native solution restore and build also pass on the actual
+repository with credential environment variables removed. The full build passes with native tool-feed credentials: 904 unit tests,
+304 integration tests and 317 acceptance scenarios; 214 scenarios remain pending.
+Format passes and the self-check reports zero errors and 157 existing warnings.
+Generated workflow changes are limited to package-read permission and the native
+credential; step order is unchanged.
 
 ## 9. Traceability Matrix
 
-<!-- last written by: spec-author, 2026-10-11 (B-008 row) -->
+<!-- last written by: test-writer, 2026-10-14 -->
 
-| Claim ID | Scenario                                                              | Test    | Status  |
-| -------- | --------------------------------------------------------------------- | ------- | ------- |
-| B-001    | A new repository installs the tool from the feed                      | Missing | Missing |
-| B-002    | A clone restores the pinned tool                                      | Missing | Missing |
-| B-003    | This repository installs its own published tool                       | Missing | Missing |
-| B-004    | The document names the feed and the source entry                      | Missing | Missing |
-| B-005    | The document names the token and how CI supplies it                   | Missing | Missing |
-| B-006    | The document names the install and restore commands                   | Missing | Missing |
-| B-007    | A contributor without a token can build                               | Missing | Missing |
-| B-008    | The document names the global install and how each install is invoked | Missing | Missing |
+| Claim ID | Scenario                                                              | Test               | Status  |
+| -------- | --------------------------------------------------------------------- | ------------------ | ------- |
+| B-001    | A new repository installs the tool from the feed                      | Missing            | Missing |
+| B-002    | A clone restores the pinned tool                                      | `ConsumptionSteps` | Covered |
+| B-003    | This repository installs its own published tool                       | `ConsumptionSteps` | Covered |
+| B-004    | The document names the feed and the source entry                      | Missing            | Missing |
+| B-005    | The document names the token and how CI supplies it                   | Missing            | Missing |
+| B-006    | The document names the install and restore commands                   | Missing            | Missing |
+| B-007    | A contributor without a token can build                               | `ConsumptionSteps` | Covered |
+| B-008    | The document names the global install and how each install is invoked | Missing            | Missing |
 
 ## 10. Lessons / Spec Deltas
 
-<!-- last written by: spec-author, 2026-10-11 (C-2, B-008, OQ-3) -->
+<!-- last written by: spec-author, 2026-10-14 -->
 
 - 2026-10-11, C-2 amended in place and B-008 added on the owner's decision that a global install is documented as a second path, for a shell ([`0001-F2` decision 0009](../../src/tool/Features/Check/.spec/decisions/0009-a-global-install-is-a-second-documented-path.md)): a manifest install puts no command on PATH. C-2 ruled out a global install as the documented path; it now rules out one as the only path or as a prerequisite of a build. § 2 row 4 added. B-001 to B-007 are unchanged. The `@B-008` scenario is new and its § 9 row is `Missing`; owed to the `test-writer`.
 - 2026-10-11, OQ-3 raised on a note from the `spec-reviewer`: nothing says which package source and credential a global install uses outside a repository that commits the source (`0055-F6` C-3, A-1). B-008's Source cites it. No claim or constraint changes; C-1 holds.
+
+- 2026-10-14, decision 0001: use native solution and tool restore commands. OQ-2 permits tool restore to need a credential while solution restore and build remain token-free. No claim, constraint or scenario changes; no NUKE selection machinery is required.
 
 ## 11. Open Questions
 
@@ -144,7 +183,7 @@ Pending: owned by `test-writer`.
 
 ## 12. Sign-off
 
-<!-- last written by: spec-reviewer, 2026-10-13 (historical rows preserved in the history table) -->
+<!-- last written by: spec-reviewer, 2026-10-14 (historical rows preserved) -->
 
 | Section | Status | Reviewer      | Note                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
 | ------- | ------ | ------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -152,6 +191,8 @@ Pending: owned by `test-writer`.
 | Tasks   | 🟢     | spec-reviewer | Item cut (2026-10-08) - approved, reviewing `6113181`..`0657b68`. 0087 and 0088 carry B-001-B-007 once; 0087 delivers B-003, and 0032, 0067, 0077 and 0085 wait on it.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
 | 1-5     | 🟢     | spec-reviewer | Round 3 (2026-10-11) - approved, reviewing the uncommitted diff on `60de077`. C-2 is amended in place with its id kept and agrees with `0001-F2` C-6 and its decision 0009; B-008 is a new id, with one § 9 row and one `@B-008` scenario that state the same three things; § 10 records the delta. Non-blocking (spec-author): `0055-F6` C-3 and A-1 make the feed GitHub Packages with a token, and no claim says where a global install outside a repository finds the source and the token, as B-001's Given does for the manifest install; brief § 6's install row and decision 0009 do not name the owner's 2026-10-09 decision in item 0111 that this reverses. |
 | Tasks   | 🟢     | spec-reviewer | B-008 joined (2026-10-11) - approved, reviewing the same diff. 0086 and 0088 carry B-008 once each as parent and child, 0087 is unchanged, and no item stores `priority`, `rank` or `blocks`.                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+
+| 6-10 | 🟢 | spec-reviewer | 2026-10-14, self-review of 0087: native solution restore/build satisfies B-007 without credentials; native tool restore satisfies B-002 with an environment credential; the published pin satisfies B-003. Three executable scenarios pass. The Restore target is unchanged and workflow authentication uses the workflow token. No independent review is claimed. |
 
 ### Review history
 
