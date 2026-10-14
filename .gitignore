@@ -434,10 +434,8 @@ FodyWeavers.xsd
 # macOS
 .DS_Store
 
-# Claude
+# Tool-local resources are installed from .agents/ through Skillfile.
 .claude/*
-!.claude/agents/
-!.claude/skills/
 
 # Jet Brains
 .idea/
@@ -454,7 +452,4 @@ graphify-out/
 .idea/.idea.*/.idea/.name
 
 .codex/skills/
-
-Skillfile
-
-Skillfile.lock
+.codex/agents/

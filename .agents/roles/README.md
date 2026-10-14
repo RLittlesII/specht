@@ -55,7 +55,7 @@ files — a second copy is a second thing to drift.
   [`coding-conventions`](../skills/coding-conventions/SKILL.md) §§ "Design" and
   "Say it once, and briefly" - each role file names only what that means for the
   artifact it owns.
-- **These are contracts, not loadable agents.** The directory is
-  `.claude/agents/`, which `.gitignore` excepts from ignoring `.claude/`, so
-  they are tracked; a rule placed anywhere else under `.claude/` cannot be
-  reviewed in a pull request, so no rule lives there.
+- **These are the authoritative contracts.** Run `python3 .agents/install.py`
+  to install tool-local agents from them. The adapter registers each role with
+  a pointer back to its source; edit contracts here and reinstall. Installed
+  copies are gitignored. See [shared setup](../README.md).

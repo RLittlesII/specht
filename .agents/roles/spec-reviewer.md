@@ -44,7 +44,7 @@ reports; it does not rewrite.
 - A test class with no `Tier` trait, or a `*.Tests.cs` file under `src/` where
   no test project compiles it — both go green while testing nothing.
 - An absolute path in the tool's output, a report, a log line or a fixture.
-- A rule added to the gitignored part of `.claude/`, instead of `.claude/skills/`.
+- A rule added to the gitignored part of `.claude/`, instead of `.agents/skills/`.
 - A renumbered id anywhere.
 
 ## Report

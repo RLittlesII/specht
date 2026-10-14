@@ -1,0 +1,42 @@
+id: "0215"
+type: task
+title: Install shared repository skills and role contracts into both assistants
+status: done
+value: 3
+risk: 2
+parent: null
+children: []
+depends_on: []
+spikes: []
+spec: null
+claims: []
+created: "2026-10-14"
+updated: "2026-10-14"
+closed: "2026-10-14"
+summary: |
+  Repository-owned skills and role contracts currently live in one tool's
+  installation directory. The untracked dependency manifest targets only the
+  second tool, omits coding-conventions, and duplicates dotnet-tool. Move
+  authoritative sources to a shared tracked location and make installation
+  repeatable for both tools. This is contributor tooling; the product's
+  scenarios, schema, baseline verdicts and consumer writes are unchanged.
+acceptance_criteria:
+  - "Shared tracked sources contain all ten repository skills and five role contracts."
+  - "Setup driven by a tracked Skillfile installs local skills and roles into both supported tools."
+  - "The setup command supplies native agent registrations where the dependency manager skips agents."
+  - "Repeated setup succeeds, and installation works from a fresh checkout."
+  - "Repository instructions and relative links point to the shared sources."
+  - "Product behaviour and scenarios remain unchanged. Constraints preserved: 0001-F1 C-9."
+  - "Installation verification and the full build pass."
+decisions:
+  - |
+    2026-10-14: Use .agents/skills and .agents/roles as authoritative sources.
+    The dependency manager deploys tool-local copies; a small setup adapter
+    supplies native role registrations unsupported by the installed manager.
+  - |
+    2026-10-14, repository owner: Keep private dependencies optional; default
+    to repository-owned skills. Preserve the original untracked manifest and
+    lockfile in .artifacts/0215/; no personal global installation is changed.
+out_of_scope:
+  - "Changing product behaviour, shipped schemas or specifications."
+  - "Changing personal global installations or enabling automatic delegation."

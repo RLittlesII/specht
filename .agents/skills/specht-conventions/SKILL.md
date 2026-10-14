@@ -87,9 +87,11 @@ epics/                         one folder per epic - ids share the items' number
                                the live copy specht checks itself with - the same bytes as
                                the embedded v0.1.0 for the tool-owned files; the manifest on
                                its tool-owned keys
-.claude/agents/                the five role contracts - tracked
-.claude/skills/                these skills - tracked; the rest of .claude/ is gitignored
-                               (no Skillfile is committed)
+.agents/roles/                 the five role contracts - tracked shared sources
+.agents/skills/                these skills - tracked shared sources
+.agents/install.py             installs the Skillfile and registers native roles
+Skillfile / Skillfile.lock      tracked local dependencies and both project-local targets
+.claude/ / .codex/              generated installations - gitignored
 docs/                          reference pages the front page links: what it checks, configuration,
                                exit codes, building
   rules/v0.1.0/                    rule pages, one SPEC###.md per rule id of the version - embedded in
@@ -130,7 +132,7 @@ does not write there.
 | Scoring                                 | derived — recompute, never hand-edit    |
 
 The `.feature` file belongs to `spec-author`; its step definitions belong to
-`test-writer`. Role contracts are in [`.claude/agents/`](../../agents/README.md).
+`test-writer`. Role contracts are in [`.agents/roles/`](../../roles/README.md).
 
 ## ID schemes
 
@@ -216,8 +218,8 @@ a commit of `main` creates `v<version>` (`0055-F5` A-1, B-007).
 
 ## Never add
 
-- A rule in `.claude/` outside the tracked `agents/` and `skills/`. The rest of
-  that tree is gitignored, so a rule there cannot be reviewed in a pull request.
+- An authoritative rule in a tool-local installation. Edit `.agents/` and
+  reinstall; installed copies are gitignored and cannot be reviewed.
 - A renumbered claim, constraint, question, task or rule id.
 - A GitHub issue, label or milestone as a tracker.
 - A hand edit to any derived field.

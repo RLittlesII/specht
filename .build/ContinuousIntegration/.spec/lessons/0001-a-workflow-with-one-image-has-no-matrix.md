@@ -62,7 +62,7 @@ No test pins either, so the rule under § Skill and review are what keep them.
 
 ## Skill
 
-[`specht-conventions` § Coding](../../../../.claude/skills/specht-conventions/references/coding.md)
+[`specht-conventions` § Coding](../../../../.agents/skills/specht-conventions/references/coding.md)
 § "Generated and never hand-edited" gains the trap: a workflow with one image
 is generated with no matrix, so a decision reads the runner (`runner.os`,
 `RUNNER_OS`) and never `matrix.*`, and a change to a workflow's images starts

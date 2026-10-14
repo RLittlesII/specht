@@ -82,7 +82,7 @@ item that already carries it. Bump `updated:` on every edit.
 before it is opened** — after the merge nobody is present to flip them. A pull
 request closes every item its work finishes, not only the one it was cut for.
 
-The design sections are owned by [`implementer`](../../../agents/implementer.md);
+The design sections are owned by [`implementer`](../../../roles/implementer.md);
 any text naming another role for them is historical, and the role contract is
 authoritative.
 
@@ -171,7 +171,7 @@ Extends [`next`](../../next/SKILL.md). One command reads every `.issue/` item
 and prints the answer:
 
 ```sh
-python3 .claude/skills/specht-conventions/scripts/next.py   # --top N, --width N, --root DIR
+python3 .agents/skills/specht-conventions/scripts/next.py   # --top N, --width N, --root DIR
 ```
 
 The default answer is Feature focused, as `next` defines. The script's item

@@ -8,11 +8,10 @@ type: instructions
 
 Instructions for anyone working in this repository — a person or an agent.
 
-**This file is tracked and authoritative.** `.gitignore` ignores `.claude/`
-except `.claude/agents/` and `.claude/skills/`, which are tracked; nothing else
-under `.claude/` can be reviewed in a pull request, so a rule never lives there.
-No `Skillfile` is committed. Repo-owned instructions live in this file,
-[`.claude/agents/`](.claude/agents/README.md), [`.claude/skills/`](.claude/skills/specht-conventions/SKILL.md),
+**This file is tracked and authoritative.** Shared sources live under `.agents/`.
+`Skillfile` and `Skillfile.lock` are tracked; tool-local installed copies under
+`.claude/` and `.codex/` are gitignored. Repo-owned instructions live in this file,
+[`.agents/roles/`](.agents/roles/README.md), [`.agents/skills/`](.agents/skills/specht-conventions/SKILL.md),
 [`.spec/`](.spec/templates) and [`.specht/`](.specht/templates).
 
 ## Project
@@ -46,6 +45,7 @@ was retired once the specifications absorbed it; citations pin it to commit
 
 ```sh
 dotnet tool restore && dotnet husky install   # once per clone
+python3 .agents/install.py                   # shared skills and role registrations
 ```
 
 Until that runs, `core.hooksPath` is unset, so neither the formatting pre-commit
@@ -64,7 +64,7 @@ NUKE drives everything. `specht.slnx` is the solution.
 ```
 
 Every target, the tier filters, and what CI actually runs:
-[`specht-conventions`](.claude/skills/specht-conventions/SKILL.md) § "Build and test".
+[`specht-conventions`](.agents/skills/specht-conventions/SKILL.md) § "Build and test".
 
 ## Architecture
 
@@ -79,7 +79,7 @@ Two projects, one direction of dependency:
   only → the `ISpecRule`s run → `SpechtRunner` collects → `SpechtReport`
   carries violations and counts. It is foldered by Feature, with a shared
   `Model/`; the layout is
-  [`dotnet-tool` § Vertical Slice](.claude/skills/dotnet-tool/references/vertical-slice.md).
+  [`dotnet-tool` § Vertical Slice](.agents/skills/dotnet-tool/references/vertical-slice.md).
 - **`src/tool`** — the Spectre.Console.Cli host. One folder per command;
   a command parses, calls the runner, and folds the report into an exit code.
   Nothing else lives in a command.
@@ -340,18 +340,18 @@ its consumers have it. This repository never will.
 
 Five documented role contracts own the chain, each trusting only the artifact the
 role before it produced — never a chat summary of it. They live in
-[`.claude/agents/`](.claude/agents/README.md):
+[`.agents/roles/`](.agents/roles/README.md):
 
-| Role                                               | Turns          | Into                                             |
-| -------------------------------------------------- | -------------- | ------------------------------------------------ |
-| [`spec-author`](.claude/agents/spec-author.md)     | a decided need | the agreement, and the `.feature` file           |
-| [`test-writer`](.claude/agents/test-writer.md)     | a claim        | a failing scenario and failing tests             |
-| [`implementer`](.claude/agents/implementer.md)     | a failing test | production code, and the design that explains it |
-| [`benchmarker`](.claude/agents/benchmarker.md)     | a concern      | a benchmark, and the finding it measured         |
-| [`spec-reviewer`](.claude/agents/spec-reviewer.md) | a diff         | a sign-off, or findings                          |
+| Role                                              | Turns          | Into                                             |
+| ------------------------------------------------- | -------------- | ------------------------------------------------ |
+| [`spec-author`](.agents/roles/spec-author.md)     | a decided need | the agreement, and the `.feature` file           |
+| [`test-writer`](.agents/roles/test-writer.md)     | a claim        | a failing scenario and failing tests             |
+| [`implementer`](.agents/roles/implementer.md)     | a failing test | production code, and the design that explains it |
+| [`benchmarker`](.agents/roles/benchmarker.md)     | a concern      | a benchmark, and the finding it measured         |
+| [`spec-reviewer`](.agents/roles/spec-reviewer.md) | a diff         | a sign-off, or findings                          |
 
 Which role owns which section is written in exactly one place:
-[`specht-conventions`](.claude/skills/specht-conventions/SKILL.md) § "Section ownership".
+[`specht-conventions`](.agents/skills/specht-conventions/SKILL.md) § "Section ownership".
 
 No role is mandatory for a small change; the ordering is.
 
@@ -391,13 +391,13 @@ Each class of rule has one home. Read the owner, not a copy of it:
 | Framework, nullability, strictness, packability           | `Directory.Build.props`                                                  |
 | Package versions                                          | `Directory.Packages.props`                                               |
 | Build targets, CI generation                              | `.build/SpechtBuild.cs`, `.build/SpechtBuild.GitHubActions.cs`           |
-| Project layout, test conventions, commands, ID schemes    | [`specht-conventions`](.claude/skills/specht-conventions/SKILL.md)       |
-| Command layout, packaging, what sits below a command      | [`dotnet-tool`](.claude/skills/dotnet-tool/SKILL.md)                     |
-| When an abstraction is earned, and how terse to be        | [`coding-conventions`](.claude/skills/coding-conventions/SKILL.md)       |
-| The specification model, claims, records, blast radius    | [`spec-and-traceability`](.claude/skills/spec-and-traceability/SKILL.md) |
+| Project layout, test conventions, commands, ID schemes    | [`specht-conventions`](.agents/skills/specht-conventions/SKILL.md)       |
+| Command layout, packaging, what sits below a command      | [`dotnet-tool`](.agents/skills/dotnet-tool/SKILL.md)                     |
+| When an abstraction is earned, and how terse to be        | [`coding-conventions`](.agents/skills/coding-conventions/SKILL.md)       |
+| The specification model, claims, records, blast radius    | [`spec-and-traceability`](.agents/skills/spec-and-traceability/SKILL.md) |
 
 A skill that needs a fact another skill owns **links it**. The role contracts in
-`.claude/agents/` name what a role produces and refuses; they are not where a rule is
+`.agents/roles/` name what a role produces and refuses; they are not where a rule is
 written down.
 
 Seven traps are worth carrying here, because each costs real damage when missed and
@@ -408,7 +408,7 @@ none of them changes:
   generator orders CI steps by dependency-graph depth, not declaration order, and
   can push `Format` late in the workflow.
 - **Every test class declares exactly one `Tier` trait.** Why is in
-  [`specht-conventions` § Testing](.claude/skills/specht-conventions/references/testing.md).
+  [`specht-conventions` § Testing](.agents/skills/specht-conventions/references/testing.md).
 - **Never pin a package version in a `.csproj`.** Versions are central. The
   engine's three baseline dependencies are pinned to the baseline dependency versions
   for a reason that is written beside them; its fourth, System.IO.Abstractions,
@@ -420,7 +420,7 @@ none of them changes:
 - **An id is not reserved until it merges.** Before a branch takes a number,
   check `main` _and_ every open pull request: two branches cut from one `main`
   take the same next id, and git reports nothing. The rule is in
-  [`specht-conventions` § Delivery](.claude/skills/specht-conventions/references/delivery.md).
+  [`specht-conventions` § Delivery](.agents/skills/specht-conventions/references/delivery.md).
 - **Never commit a generated report.** `format.json` is `dotnet format`'s output
   and `.artifacts/spec-check/*.json` is the tool's; both carry machine-specific
   or already-stale content and both are gitignored.
@@ -448,7 +448,7 @@ the package carries, are exempt.
 
 ## Skills
 
-**Project skills live in [`.claude/skills/`](.claude/skills/)**, one directory per skill, each a
+**Project skills live in [`.agents/skills/`](.agents/skills/)**, one directory per skill, each a
 `SKILL.md` declaring `name` and `description`. A skill holds the rule, the trap, and
 the `Never add` list; facts live where they are authoritative and the skill links
 them.
@@ -460,52 +460,43 @@ Each one's **Project rules** preamble points at the companion:
 
 | Skill                                                                    | Covers                                                                  |
 | ------------------------------------------------------------------------ | ----------------------------------------------------------------------- |
-| [`deliver-change`](.claude/skills/deliver-change/SKILL.md)               | issue → branch → specification → build → pull request                   |
-| [`next`](.claude/skills/next/SKILL.md)                                   | the next item, what it waits on, and which items can run in parallel    |
-| [`coding-conventions`](.claude/skills/coding-conventions/SKILL.md)       | orient, stop on a gap, keep the design direct, put a rule where it runs |
-| [`test-from-scenarios`](.claude/skills/test-from-scenarios/SKILL.md)     | a claim first, an injected clock, synthetic fixtures, both tiers        |
-| [`clarify-requirements`](.claude/skills/clarify-requirements/SKILL.md)   | when to ask versus decide, and writing the answer back                  |
-| [`spec-and-traceability`](.claude/skills/spec-and-traceability/SKILL.md) | the specification model; claims, records and blast radius               |
+| [`deliver-change`](.agents/skills/deliver-change/SKILL.md)               | issue → branch → specification → build → pull request                   |
+| [`next`](.agents/skills/next/SKILL.md)                                   | the next item, what it waits on, and which items can run in parallel    |
+| [`coding-conventions`](.agents/skills/coding-conventions/SKILL.md)       | orient, stop on a gap, keep the design direct, put a rule where it runs |
+| [`test-from-scenarios`](.agents/skills/test-from-scenarios/SKILL.md)     | a claim first, an injected clock, synthetic fixtures, both tiers        |
+| [`clarify-requirements`](.agents/skills/clarify-requirements/SKILL.md)   | when to ask versus decide, and writing the answer back                  |
+| [`spec-and-traceability`](.agents/skills/spec-and-traceability/SKILL.md) | the specification model; claims, records and blast radius               |
 
 **Companion** — the only skill that names this repository:
 
 | Skill                                                              | Covers                                                                                                              |
 | ------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------- |
-| [`specht-conventions`](.claude/skills/specht-conventions/SKILL.md) | paths and layout, section ownership, the ID schemes, the spec/issue mirror, the tiers, the commands, the self-check |
+| [`specht-conventions`](.agents/skills/specht-conventions/SKILL.md) | paths and layout, section ownership, the ID schemes, the spec/issue mirror, the tiers, the commands, the self-check |
 
 **Technology** — about a library this tool is built on, with the repository's
 own decisions marked where they apply:
 
 | Skill                                                        | Covers                                                                                                                                       |
 | ------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------- |
-| [`spectre-cli`](.claude/skills/spectre-cli/SKILL.md)         | commands and settings, branching, help, async and exit codes, DI, testing, the execution pipeline                                            |
-| [`dotnet-tool`](.claude/skills/dotnet-tool/SKILL.md)         | the tool's shape — project setup, command folders, conventions, packing and the local tool manifest                                          |
-| [`benchmarkdotnet`](.claude/skills/benchmarkdotnet/SKILL.md) | measuring .NET code — benchmark classes, parameters, setup, toolchains, the memory diagnoser, reading the summary, and the measurement traps |
+| [`spectre-cli`](.agents/skills/spectre-cli/SKILL.md)         | commands and settings, branching, help, async and exit codes, DI, testing, the execution pipeline                                            |
+| [`dotnet-tool`](.agents/skills/dotnet-tool/SKILL.md)         | the tool's shape — project setup, command folders, conventions, packing and the local tool manifest                                          |
+| [`benchmarkdotnet`](.agents/skills/benchmarkdotnet/SKILL.md) | measuring .NET code — benchmark classes, parameters, setup, toolchains, the memory diagnoser, reading the summary, and the measurement traps |
 
-**A skill needed to deliver a feature lives here, not in a `Skillfile`.** Such
-a manifest pulls from a private repository (none is committed today), so a
-clone without access to it must still be able to do the work: anything
-load-bearing is copied into `.claude/skills/` and rewritten for this repository,
-with the parts that do not apply marked as such rather than deleted. A
-`Skillfile` keeps only what is genuinely incidental.
+**A skill needed to deliver a feature lives in `.agents/skills/`.** The tracked
+`Skillfile` declares those local directories and the contracts in `.agents/roles/`
+for both project-local tools. Run `python3 .agents/install.py` after a clone or
+an edit to these sources; it runs Skillfile and supplies native role registrations
+where the manager does not support them. See [shared setup](.agents/README.md).
 
 The tracked skills are maintained for this repository and ship with it.
 Their paths, commands and delivery rules describe `specht`; no consumer
 repository or local checkout supplies these instructions.
 
-**The optional installed set.** Eighteen library and tooling skills (`xunit`,
-`reqnroll`, `rocket-surgery-testing-autofixtures`, `central-package-management`,
-`nuke`, `msbuild`, `dotnet-build`, `github-actions`, `logging`, the git and
-GitHub operations set, `code-evidence`, `code-reader`, `engram`, `neo4j`), plus
-six agents, come from `littlestechnology/.agents` through a `Skillfile` pinned in
-`Skillfile.lock` — neither committed here — installed with the
-[`skillfile`](https://github.com/anthropics/skillfile) CLI by `skillfile install`
-from the repository root, into the gitignored part of `.claude/`. That
-repository is **private**: without access, the install fails and none of those
-skills land. Everything in `.claude/skills/`, `.claude/agents/` and `.spec/`
-still works, and so do `./build.sh` and `./build.sh Specht`. What is lost is
-the general guide to xUnit, Reqnroll or NUKE; this repository's own traps for
-those surfaces live in `specht-conventions`, which is tracked.
+**Optional library guides** may come from the private `littlestechnology/.agents`
+repository, but the default installation has no remote dependencies. Maintain
+optional personal guides separately from the repository's required local set;
+they must never replace a repository-owned skill with the same name. The
+repository's own traps for library surfaces live in `specht-conventions`.
 
 Repo-specific traps about a library live in `specht-conventions`, not in a
 second copy of the library's own skill.
@@ -560,7 +551,7 @@ Feature, soonest.
   citation inside that list counts. Merge without overriding the squash body,
   then read the merged commit on `main`: a citation it lacks is recorded, never
   restored by rewriting history
-  ([`specht-conventions` § Delivery](.claude/skills/specht-conventions/references/delivery.md)).
+  ([`specht-conventions` § Delivery](.agents/skills/specht-conventions/references/delivery.md)).
   There is no issue for `Closes` to close.
 - Branch `<id>/<short-description>` from the item id, or `spec/<feature-slug>`
   when authoring a specification, which has no item to take an id from.

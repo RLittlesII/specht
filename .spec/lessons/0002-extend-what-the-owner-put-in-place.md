@@ -43,7 +43,7 @@ middleware as the generator, and pull request #2 was redone on it.
 
 ## Skill
 
-[`coding-conventions`](../../.claude/skills/coding-conventions/SKILL.md)
+[`coding-conventions`](../../.agents/skills/coding-conventions/SKILL.md)
 § "Before implementing" — **Extend what is already in place**: a library, tool
 or approach the repository already holds is made to fit through its own
 extension points; replacing it is the owner's decision, asked before the change

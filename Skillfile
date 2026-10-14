@@ -1,0 +1,22 @@
+# Repository-owned sources; install into both project-local tool directories.
+install  claude-code  local
+install  codex  local
+
+# Role contracts (native registration adapter: python3 .agents/install.py).
+local  agent  .agents/roles/benchmarker.md
+local  agent  .agents/roles/implementer.md
+local  agent  .agents/roles/spec-author.md
+local  agent  .agents/roles/spec-reviewer.md
+local  agent  .agents/roles/test-writer.md
+
+# Skills, including their references and scripts.
+local  skill  .agents/skills/benchmarkdotnet
+local  skill  .agents/skills/clarify-requirements
+local  skill  .agents/skills/coding-conventions
+local  skill  .agents/skills/deliver-change
+local  skill  .agents/skills/dotnet-tool
+local  skill  .agents/skills/next
+local  skill  .agents/skills/spec-and-traceability
+local  skill  .agents/skills/specht-conventions
+local  skill  .agents/skills/spectre-cli
+local  skill  .agents/skills/test-from-scenarios

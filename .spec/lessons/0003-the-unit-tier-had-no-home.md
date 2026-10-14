@@ -64,7 +64,7 @@ The `test-writer` contract made acceptance-only coverage the easiest legal outco
 
 ## Skill
 
-[`specht-conventions` § Testing](../../.claude/skills/specht-conventions/references/testing.md):
+[`specht-conventions` § Testing](../../.agents/skills/specht-conventions/references/testing.md):
 tiers are defined by what is under test, not where it lives. Code outside `src/`
 has a unit tier in its own `*.Tests` project. Acceptance-only coverage is named
 as the failure mode, and Never add gains "a claim `Covered` by a scenario alone".
