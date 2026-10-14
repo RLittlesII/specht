@@ -162,6 +162,34 @@ public sealed class InitCommandIntegrationTests : IDisposable
         File.ReadAllText(manifestPath).Should().Be(manifest);
     }
 
+    [Theory]
+    [ClassData(typeof(RejectedInitManifests))]
+    public void ARejectedManifest_WhenInitRuns_ShouldExitThreeWithOnlyTheReasonAndWriteNothing(string manifest, string reason)
+    {
+        // Given
+        var root = Path.Combine(_sandbox, "repo");
+        var manifestPath = Path.Combine(root, SpecTree.ManifestPath);
+        Directory.CreateDirectory(Path.GetDirectoryName(manifestPath)!);
+        File.WriteAllText(manifestPath, manifest);
+        File.WriteAllText(Path.Combine(root, "README.md"), "Synthetic repository\r\n");
+        var before = Directory.EnumerateFiles(root, "*", SearchOption.AllDirectories)
+            .ToDictionary(path => Path.GetRelativePath(root, path), File.ReadAllBytes);
+
+        // When
+        var (stdout, stderr, code) = AcceptanceTool.Launch(_sandbox, "init", "--root", "repo", "--all");
+
+        // Then
+        code.Should().Be(ExitCodes.InvalidManifest, stdout + stderr);
+        stdout.Should().BeEmpty();
+        stderr.Should().Contain(".specht/manifest.json").And.Contain(reason).And.NotContain(_sandbox);
+        Directory.EnumerateFiles(root, "*", SearchOption.AllDirectories)
+            .Select(path => Path.GetRelativePath(root, path)).Should().BeEquivalentTo(before.Keys);
+        foreach (var (path, bytes) in before)
+        {
+            File.ReadAllBytes(Path.Combine(root, path)).Should().Equal(bytes);
+        }
+    }
+
     [Fact]
     public void ABareRoot_WhenInitRuns_ShouldPinTheNewestEmbeddedSchemaVersion()
     {
