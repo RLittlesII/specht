@@ -17,7 +17,7 @@ if pid == 0:
     os.kill(os.getpid(), signal.SIGSTOP)
     os.execvp('dotnet', ['dotnet', 'tool', 'run', 'peak-probe', '--'] + sys.argv[1:])
 os.waitpid(pid, 0)
-ptrace(0x4200, pid, data=2 | 4 | 8 | 16 | 64 | 0x100000)
+ptrace(0x4200, pid, data=2 | 4 | 16 | 64 | 0x100000)
 ptrace(7, pid)
 live = {pid}
 tools = set()
@@ -30,7 +30,7 @@ while live:
         live.discard(current)
         continue
     event = status >> 16
-    if event in (1, 2, 3):
+    if event in (1, 2):
         child = ctypes.c_ulong()
         ptrace(0x4201, current, data=ctypes.addressof(child))
         live.add(child.value)
