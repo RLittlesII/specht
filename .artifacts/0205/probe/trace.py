@@ -46,7 +46,10 @@ while live:
         observations[current] = peak
         emit(kind='exit-stop', pid=current, vmHwm=peak)
     stop = os.WSTOPSIG(status)
-    ptrace(7, current, data=0 if event or stop in (signal.SIGSTOP, signal.SIGTRAP) else stop)
+    try:
+        ptrace(7, current, data=0 if event or stop in (signal.SIGSTOP, signal.SIGTRAP) else stop)
+    except ProcessLookupError:
+        emit(kind="continue-esrch", pid=current)
 emit(kind='coverage', identifiedTools=len(tools), observedTools=len(observations))
 if len(tools) != 1 or len(observations) != 1:
     sys.exit(3)
