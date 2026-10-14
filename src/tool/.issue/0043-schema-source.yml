@@ -2,7 +2,7 @@ id: "0043"
 type: task
 title: Select the embedded or on-disk schema source
 
-status: ready-for-architecture
+status: ready-for-implementation
 
 risk: 3
 
@@ -18,17 +18,25 @@ claims:
   - B-009
   - B-010
   - B-011
+  - B-101
+  - B-102
+  - B-103
+  - B-104
+  - B-105
+  - B-106
+  - B-107
 
 created: "2026-10-08"
-updated: "2026-10-11"
+updated: "2026-10-13"
 closed: null
 
 summary: |
-  The embedded set is the default; a manifest field or a command-line
-  argument selects `<root>/.spec/schema/` instead, for the frontmatter
-  schemas only (C-4), and the report names the source chosen. The field
-  and argument names are OQ-1, for architecture to propose in § 7 and a
-  decision record to ratify. Manifest's 0017 loads the on-disk files by
+  The embedded set is the default without a recorded upstream source.
+  The manifest key schemaSource or --schema-source selects the frontmatter
+  schemas under .specht/schema/frontmatter/ only (C-4); decision 0011 owns
+  the names, CLI precedence, compatibility and controlled disk failures.
+  The report carries the selected provenance. Manifest's 0017 loads the
+  on-disk files by
   their manifest names once this selects disk. Waits on 0120: the
   version the report names beside the source is `major.minor.patch`
   (decision 0005).
@@ -39,11 +47,26 @@ acceptance_criteria:
   - "B-011 — report names the source selected"
   - "0001-F5 B-008 rebind — once the runner selects the on-disk source
     (B-009), the @B-008 'the check runs' step in
-    test/specht.acceptance/Manifest/ManifestSteps.cs goes through that
+    test/acceptance/Manifest/ManifestSteps.cs goes through that
     runner entry, and Manifest § 9's B-008 row moves Partial to Covered"
+  - "B-101 to B-103 — CLI precedence and manifest/CLI compatibility boundaries."
+  - "B-104 to B-107 — controlled selected-disk failures and relative diagnostics."
+  - "Design: F7 § 6-8 and decision 0011 define per-run selection, source resolution, store reuse, compilation failures and the proof handoff."
+  - "Selection ships with 0177's B-036 guard; explicit disk cannot bypass recorded hashes."
+  - "Built-command coverage of schemaSource uses a shipped 0.2.0 snapshot; no locked version is edited."
   - "§ 9 carries a row naming a test for each id above."
 
 decisions:
+  - |
+    2026-10-13, architecture pass: the owner ratified decision 0011.
+    F7 § 6-8 now define the engine/CLI path and proof handoff; claims
+    B-101 to B-107 and their scenarios are authored before implementation.
+    Status returns ready-for-implementation, not done: production code,
+    bindings and automated tests remain. No schema version or lock is cut.
+    Deliver 0177's contradiction guard before exposing source selection,
+    and provide the 0.2.0 snapshot for manifest-key command coverage.
+    The Manifest specification is held by 0134; reconcile its OQ-2(b)
+    row with decision 0011 when that writer is finished.
   - |
     2026-10-09, spec-author, on the plan the owner approved (decision
     0005): now waits on the conversion item 0120. Claims unchanged.
@@ -54,3 +77,5 @@ decisions:
 
 out_of_scope:
   - "A switch that also moves the manifest — C-4."
+  - "Production code and automated tests in this architecture pass."
+  - "Upgrade behavior, template ownership, pin policies and broader epic opt-in rules."

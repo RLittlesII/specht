@@ -890,3 +890,106 @@ Feature: Schema versioning
     Given the tool ships schema version 0.1.0 and the version lock records it
     When version 0.1.1 is cut
     Then the version lock does not record version 0.1.1
+
+  @B-009
+  Scenario: The manifest selects the local frontmatter schemas
+    Given the manifest pins schema version "0.2.0"
+    And the manifest selects the disk schema source
+    And the manifest records no upstream schema source
+    And the local Feature schema requires a key absent from the specification
+    When the check runs without a command-line schema source
+    Then the specification is reported for the missing key
+
+  @B-009 @boundary
+  Scenario: Disk selection needs no epic schema without an epic grammar
+    Given the manifest pins schema version "0.2.0"
+    And the manifest declares no epic grammar
+    And the root holds the Feature and task schemas and no epic schema
+    And the manifest selects the disk schema source
+    When the check runs
+    Then the check completes using the Feature and task schemas
+
+  @B-101
+  Scenario Outline: A command-line source overrides a manifest source
+    Given a valid manifest pinning schema version "0.2.0"
+    And the manifest selects the "<manifest>" schema source
+    And the local and embedded Feature schemas require different keys
+    When the check runs with command-line schema source "<argument>"
+    Then the verdict uses the "<argument>" Feature schema
+
+    Examples:
+      | manifest | argument |
+      | embedded | disk     |
+      | disk     | embedded |
+
+  @B-102 @boundary
+  Scenario Outline: Older pins reject the manifest source key
+    Given the manifest pins schema version "<version>"
+    And the manifest selects the disk schema source
+    When the check runs
+    Then the manifest is rejected for the source selection key
+
+    Examples:
+      | version |
+      | 0.1.0   |
+      | 0.1.1   |
+
+  @B-103
+  Scenario: The command-line source works with an older pin
+    Given the manifest pins schema version "0.1.0"
+    And the manifest records no upstream schema source
+    And the local Feature schema requires a key absent from the specification
+    When the check runs with command-line schema source "disk"
+    Then the specification is reported for the missing key
+    And the pinned version remains "0.1.0"
+
+  @B-009 @B-011 @B-024
+  Scenario: Explicit disk selection retains the recorded source
+    Given the manifest records an upstream schema source
+    And the root holds a matching local copy of that source
+    When the check runs with command-line schema source "disk" and JSON output
+    Then the document says the schemas came from the upstream source
+
+  @B-009 @B-080 @boundary
+  Scenario: Explicit disk selection cannot bypass the recorded hash
+    Given the manifest records an upstream schema source
+    And a local schema differs from its recorded hash
+    When the check runs with command-line schema source "disk"
+    Then the standard output is empty
+    And the exit code is 3
+
+  @B-036 @boundary
+  Scenario: A command-line embedded selection contradicts a recorded source
+    Given the manifest records an upstream schema source
+    When the check runs with command-line schema source "embedded"
+    Then the standard error names the contradiction
+    And the standard output is empty
+    And the exit code is 3
+
+  @B-036 @boundary
+  Scenario: A command-line selection cannot repair an invalid manifest
+    Given the manifest pins schema version "0.2.0"
+    And the manifest records an upstream schema source
+    And the manifest explicitly selects the embedded source
+    When the check runs with command-line schema source "disk"
+    Then the standard error names the contradiction
+    And the standard output is empty
+    And the exit code is 3
+
+  @B-104 @B-106 @B-107 @boundary
+  Scenario: A missing disk schema is an input failure
+    Given the manifest records no upstream schema source
+    And a required named local schema file is absent
+    When the check runs with command-line schema source "disk"
+    Then the standard error names that schema by its root-relative path
+    And the standard output is empty
+    And the exit code is 3
+
+  @B-105 @B-106 @B-107 @boundary
+  Scenario: An invalid disk schema is an input failure
+    Given the manifest records no upstream schema source
+    And a required named local schema cannot be compiled as a JSON Schema
+    When the check runs with command-line schema source "disk"
+    Then the standard error names that schema by its root-relative path
+    And the standard output is empty
+    And the exit code is 3
