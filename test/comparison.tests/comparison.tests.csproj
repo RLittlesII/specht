@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <RootNamespace>Specht.Comparison.Tests</RootNamespace>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <IsTestProject>true</IsTestProject>
+    <!-- AutoFixtures 10.0.6 emits nullable annotations without a nullable directive in its generated base. -->
+    <NoWarn>$(NoWarn);CS8669</NoWarn>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="xunit.v3" />
+    <PackageReference Include="AwesomeAssertions" />
+    <PackageReference Include="Rocket.Surgery.Extensions.Testing.AutoFixtures" />
+    <PackageReference Include="TestableIO.System.IO.Abstractions.TestingHelpers" />
+    <ProjectReference Include="../../.performance/comparison/comparison.csproj" />
+    <Using Include="Xunit" />
+  </ItemGroup>
+</Project>

@@ -20,7 +20,7 @@ depends_on: ["F1", "0055/F6"]
 blocks: []
 spikes: []
 created: "2026-10-13"
-updated: "2026-10-13"
+updated: "2026-10-14"
 github_issue: null
 synced_at: null
 ---
@@ -129,7 +129,7 @@ Percentage change is `100 × (current − previous) / previous` for a positive p
 
 ## 6. Concern Separation
 
-<!-- last written by: implementer, 2026-10-13 -->
+<!-- last written by: implementer, 2026-10-14 -->
 
 | #   | Concern                                                                           | Classification |
 | --- | --------------------------------------------------------------------------------- | -------------- |
@@ -144,19 +144,15 @@ Percentage change is `100 × (current − previous) / previous` for a positive p
 
 ## 7. Technical Design
 
-<!-- last written by: implementer, 2026-10-13 -->
+<!-- last written by: implementer, 2026-10-14 -->
 
-This is an agreed implementation contract, not a description of delivered code.
+The selection, persistence, wire-value and evidence-pairing boundaries below are implemented. The remaining collection, evaluation, rendering and workflow sections are the agreed implementation contract.
 [ADR-0001](adr/0001-read-only-collection-with-a-release-job-rendezvous.md)
-records the architecture and rejected alternatives. No behaviour is implemented
-by this design. The contracts below become links to declarations as they land.
+records the architecture and rejected alternatives. The declarations linked below are authoritative for the delivered contracts; downstream orchestration remains pending.
 
 ### Composition and existing reuse
 
-A non-packable console assembly, `.performance/comparison/comparison.csproj`,
-with namespace `Specht.Comparison`, will contain the comparator and its internal
-repository-tooling entry point. It joins `specht.slnx`; it references neither the
-benchmark assembly nor the product host. `System.Text.Json`, `HttpClient`,
+The non-packable [comparison assembly](../comparison.csproj), namespace `Specht.Comparison`, joins `specht.slnx` without referencing the benchmark assembly or product host. It currently exposes the selection and evidence APIs as a library; its internal repository-tooling console entry point lands with orchestration. No empty executable is introduced. `System.Text.Json`, `HttpClient`,
 `TimeProvider` and the existing `System.IO.Abstractions` substitution provide its
 boundaries. It adds no public `specht` command or consumer configuration.
 
@@ -187,16 +183,16 @@ either measured revision. No publishing operation becomes a NUKE target.
 
 ### Value contracts
 
-| Value                          | Required content and invariant                                                                                                                                                                      |
-| ------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `ReleaseRecord`                | Repository and immutable release id, tag, first observed publication timestamp, draft/prerelease flags, peeled commit or explicit resolution failure; catalog completeness is explicit.             |
-| `ReleasePair` version 1        | Current record, selected predecessor record or explicit no-baseline, selection policy version, catalog snapshot digest and selecting run identity; immutable after persistence.                     |
-| `SessionManifest` version 1    | Pair digest, comparator commit/version, run id and attempt, session id, runner identity, per-side product commit, harness/export versions, invocation, environment and expected case inventory.     |
-| `WorkloadCase`                 | Stable operation and fixture contract ids/revisions, typed canonical parameter map, measurement boundary and metric requirements. Display name and BenchmarkDotNet job display id are labels only.  |
-| `Observation`                  | Side and case key, metric kind/dimension, observer process, raw value/unit, uncertainty level/bounds for timing, conditions, source file and record locator, or a typed unavailable/invalid reason. |
-| `ComparisonDocument` version 1 | Pair/session identity, full policy, ordered union of cases, per-metric values/deltas/status/reason, overall judgment, coverage gaps and evidence manifest.                                          |
-| `ReportingOutcome`             | Stage, completed/incomplete reporting state, known comparison judgment/flags if computed, actionable reason and confirmed publication references only.                                              |
-| `EvidenceManifest` version 1   | Bundle-relative files with media type, SHA-256, length, role, side and case/source linkage; paths cannot escape the bundle.                                                                         |
+| Value                                                      | Required content and invariant                                                                                                                                                                      |
+| ---------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [`ReleaseRecord`](../Model/ReleaseRecord.cs)               | Repository and immutable release id, tag, first observed publication timestamp, draft/prerelease flags, peeled commit or explicit resolution failure; catalog completeness is explicit.             |
+| [`ReleasePair`](../Model/ReleasePair.cs) version 1         | Current record, selected predecessor record or explicit no-baseline, selection policy version, catalog snapshot digest and selecting run identity; immutable after persistence.                     |
+| [`SessionManifest`](../Model/SessionManifest.cs) version 1 | Pair digest, comparator commit/version, run id and attempt, session id, runner identity, per-side product commit, harness/export versions, invocation, environment and expected case inventory.     |
+| [`WorkloadCase`](../Model/WorkloadCase.cs)                 | Stable operation and fixture contract ids/revisions, typed canonical parameter map, measurement boundary and metric requirements. Display name and BenchmarkDotNet job display id are labels only.  |
+| [`Observation`](../Model/Observation.cs)                   | Side and case key, metric kind/dimension, observer process, raw value/unit, uncertainty level/bounds for timing, conditions, source file and record locator, or a typed unavailable/invalid reason. |
+| `ComparisonDocument` version 1                             | Pair/session identity, full policy, ordered union of cases, per-metric values/deltas/status/reason, overall judgment, coverage gaps and evidence manifest.                                          |
+| `ReportingOutcome`                                         | Stage, completed/incomplete reporting state, known comparison judgment/flags if computed, actionable reason and confirmed publication references only.                                              |
+| `EvidenceManifest` version 1                               | Bundle-relative files with media type, SHA-256, length, role, side and case/source linkage; paths cannot escape the bundle.                                                                         |
 
 Wire JSON uses explicit format versions, invariant numeric values and sorted case,
 parameter and file order. Unsupported versions yield unavailable evidence, never a
@@ -231,6 +227,14 @@ current Release's original publication key when retrying that stage. Release
 creation/push recovery is owned by `0055-F6`; comparison wiring must accept an
 already successfully published current Release without requiring its creation to
 succeed a second time, and must not bypass a failed package publication.
+
+### Implemented selection and evidence boundaries
+
+[`ReleaseSelection`](../Selection/ReleaseSelection.cs) consumes a complete catalog and the current first-publication record. [`ReleaseCatalogReader`](../Selection/ReleaseCatalogReader.cs) reads all provider pages and peels annotated tags; a failed page leaves an incomplete catalog, and an unresolved tag retains its release identity. [`ReleasePairStore`](../Selection/ReleasePairStore.cs) uses a completed temporary file and an insert-only move for local persistence. [`ReleasePairAssetStore`](../Selection/ReleasePairAssetStore.cs) reads or inserts the durable release asset, reloads a concurrent winner and verifies a successful upload. Its `HttpClient` and authority are supplied by the caller; nothing invokes it automatically or creates credentials.
+
+[`ComparisonJson`](../Model/ComparisonJson.cs) owns version-1 pair/session encoding, canonical object-key order, digests, duplicate-property rejection and read validation. [`WorkloadIdentity`](../Evidence/WorkloadIdentity.cs) keys operations with typed canonical parameters. [`BenchmarkEvidenceReader`](../Evidence/BenchmarkEvidenceReader.cs) decodes the pinned native full JSON against caller-supplied audited mappings, preserving source locators and per-metric invalidity. [`CasePairing`](../Evidence/CasePairing.cs) retains the union, expected missing results and duplicate metric locators. Matching observed and expected keys retain the union of required metrics; contradictory operation, fixture or boundary contracts remain not comparable. Unidentified records cannot establish Added/Removed coverage, including when labels change. Saved pairs reject an equal current/predecessor immutable release id regardless of timestamp. Common parameter keys pair independently. A one-sided parameter case is Added or Removed; when both sides instead have unmatched input keys for the same operation, those cases remain not comparable with an input-parameter reason. [`MetricUnits`](../Evidence/MetricUnits.cs) recognises dimensional scales; delta arithmetic and review screens remain downstream.
+
+The supported producer is BenchmarkDotNet 0.15.8. Its [pinned exporter](https://github.com/dotnet/BenchmarkDotNet/blob/v0.15.8/src/BenchmarkDotNet/Exporters/Json/JsonExporterBase.cs) supplies nanosecond statistics and bytes per operation. The cached pinned assembly's serializer was probed with invented statistics: its legacy confidence enum encodes `L999` as numeric `Level: 12`; the importer uses the version-bound enum mapping rather than treating that number as a percentage. Unsupported producers, ambiguous JSON and missing full-export metadata remain unavailable. Raw exports are caller-owned inputs; retention sanitisation and report-bundle construction remain downstream. No benchmark was run for this probe.
 
 ### Acyclic execution and credential boundary
 
@@ -375,23 +379,15 @@ reports and their entire evidence closure remain in the Release bundle.
 
 ## 8. Testing Strategy
 
-<!-- last written by: test-writer, 2026-10-13 -->
+<!-- last written by: test-writer, 2026-10-14 -->
 
-The verdict is testable with synthetic release catalogs, exporter payloads and
-process outcomes. No executable proof is delivered by this design. The plan below
-names mechanisms to implement and falsifiable checks; § 9 remains `Missing` until
-actual discovered tests prove them. No test runs a benchmark or asserts elapsed
+Selection and evidence pairing are tested with synthetic catalogs, invented exporter JSON, generated fixtures, real temporary pair files and a fake HTTP handler. The five delivered claim rows in § 9 name their executable proofs. The remaining plan below describes downstream mechanisms; their rows stay `Missing`. No test runs a benchmark or asserts elapsed
 time, allocation, a real release, a credential or a live provider response.
 
-`test/comparison.tests/comparison.tests.csproj` will reference the comparator;
-it joins `specht.slnx`, declares `IsTestProject`, and uses the existing xUnit v3,
-AwesomeAssertions, AutoFixtures and tier guard conventions. In-memory tests have
+[`comparison.tests`](../../../test/comparison.tests/comparison.tests.csproj) references the comparator, joins `specht.slnx`, declares `IsTestProject`, and uses the existing xUnit v3, AwesomeAssertions, AutoFixtures and tier guard conventions. In-memory tests have
 exactly one Unit trait, filesystem/process tests exactly one Integration trait.
 Both NUKE filtered tiers must discover tests in the new project; do not add an
-empty project before its first tests. Add a project reference and a literal
-`ReqnrollFeatureFile` link for this Feature to `test/acceptance/acceptance.csproj`,
-with `ComparisonSteps` exercising the real comparator over invented inputs.
-Verify discovery increases; an unlinked `.feature` proves nothing executable.
+empty project before its first tests. [`acceptance.csproj`](../../../test/acceptance/acceptance.csproj) now has the project reference and literal `ReqnrollFeatureFile` link; [`ComparisonSteps`](../../../test/acceptance/Comparison/ComparisonSteps.cs) exercises the real selector, saved-pair store, importer and pairing over invented inputs. The unimplemented scenarios remain pending under the existing runner policy. Verify discovery increases; an unlinked `.feature` proves nothing executable.
 
 | Claim | Mechanism and planned unit proof                                                                                             | Synthetic acceptance/integration proof                                                                                                              |
 | ----- | ---------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -445,36 +441,52 @@ performance finding is required for a design-only change. Platform hard kill
 cannot guarantee final output; test graceful cancellation and bounded missing-peer
 outcomes, and record that live platform limitation honestly.
 
+### Independent review regression proof
+
+`IndependentReviewUnitTests` pins declared metric requirements across same-key records, conflicts between observed records, expected/observed operation/fixture/boundary reconciliation, unmapped renamed records and saved self-pair rejection. `InvalidSavedPairIntegrationTests` proves that both existing pair stores reject a corrupt self-pair without reselection or replacement; the asset seam sends only reads. The tagged regression scenarios run through `ComparisonSteps`. Independent review exposed these gaps in the initial implementation even though its original tests passed; the regression tests and scenarios failed before the fixes.
+
+### Delivered mechanism proof
+
+| Claim | Mechanism                                                                                          | Unit and boundary proof                                                                                                                                                                                                                                                                                                                                                                                                    |
+| ----- | -------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| B-002 | Complete-catalog publication ordering, tag resolution and insert-only pair persistence             | `ReleaseSelectionUnitTests` pins eligibility, tie ordering, missing commits, incomplete catalogs and canonical snapshots; `ReleaseCatalogReaderIntegrationTests` pins pagination and annotated-tag peeling; `ReleasePairStoreIntegrationTests` and `ReleasePairAssetStoreIntegrationTests` pin reruns, concurrent winners and invalid saved evidence. `ComparisonSteps` executes the tagged selection and rerun scenarios. |
+| B-005 | Audited identity mapping, typed parameter keys, metric requirements and independent metric pairing | `BenchmarkEvidenceReaderUnitTests`, `EvidenceContractsUnitTests` and `CasePairingUnitTests.MatchingCases_WhenPairing_ShouldKeepSeparateSizesAndBothMetrics`; the matching scenario invokes the importer and pairing together.                                                                                                                                                                                              |
+| B-006 | Validity before equivalence, condition/observer/fixture checks and unknown identities              | `CasePairingUnitTests.ChangedOrUnknownEquivalence_WhenPairing_ShouldNameTheCondition`, its invalid-timing ordering proof and `EvidenceBoundariesUnitTests`; the condition outline and unknown-identity scenario run through `ComparisonSteps`.                                                                                                                                                                             |
+| B-007 | Known current-only inventory retained as Added                                                     | `CasePairingUnitTests.KnownOneSidedWorkload_WhenPairing_ShouldRetainItWithoutJudgment` and `EvidenceBoundariesUnitTests.OneParameterCaseAddedOrRemoved_WhenPairing_ShouldKeepItsOneSidedStatus`; the tagged Added scenarios run in `ComparisonSteps`.                                                                                                                                                                      |
+| B-008 | Known predecessor-only inventory retained as Removed                                               | The other rows of those theories and the tagged Removed scenarios in `ComparisonSteps`.                                                                                                                                                                                                                                                                                                                                    |
+
+The fixtures are independently invented, never captured exports. `ExportData` carries the pinned producer's wire shape. Contract tests distinguish decimal/binary units and typed parameter identity; actual conversion/delta arithmetic remains the evaluation slice. Timing uncertainty may cross zero as long as the mean is positive and finite bounds contain it. No test starts a benchmark, uses a live release, credential or network, or asserts elapsed time or measured allocation. The provider adapters run against `HttpMessageHandler`; persistence tests use owned temporary directories. All test classes carry their one tier trait, and the new project discovers the shared governance test. The full-build result is recorded in the delivery report rather than duplicated here.
+
 ## 9. Traceability Matrix
 
-<!-- last written by: test-writer, 2026-10-13 (tag anchors; no executable coverage) -->
+<!-- last written by: test-writer, 2026-10-14 (selection and evidence proof) -->
 
-| Claim ID | Scenario | Test    | Status  |
-| -------- | -------- | ------- | ------- |
-| B-001    | `@B-001` | Missing | Missing |
-| B-002    | `@B-002` | Missing | Missing |
-| B-003    | `@B-003` | Missing | Missing |
-| B-004    | `@B-004` | Missing | Missing |
-| B-005    | `@B-005` | Missing | Missing |
-| B-006    | `@B-006` | Missing | Missing |
-| B-007    | `@B-007` | Missing | Missing |
-| B-008    | `@B-008` | Missing | Missing |
-| B-009    | `@B-009` | Missing | Missing |
-| B-010    | `@B-010` | Missing | Missing |
-| B-011    | `@B-011` | Missing | Missing |
-| B-012    | `@B-012` | Missing | Missing |
-| B-013    | `@B-013` | Missing | Missing |
-| B-014    | `@B-014` | Missing | Missing |
-| B-015    | `@B-015` | Missing | Missing |
-| B-016    | `@B-016` | Missing | Missing |
-| B-017    | `@B-017` | Missing | Missing |
-| B-018    | `@B-018` | Missing | Missing |
-| B-019    | `@B-019` | Missing | Missing |
-| B-020    | `@B-020` | Missing | Missing |
-| B-021    | `@B-021` | Missing | Missing |
-| B-022    | `@B-022` | Missing | Missing |
-| B-023    | `@B-023` | Missing | Missing |
-| B-024    | `@B-024` | Missing | Missing |
+| Claim ID | Scenario | Test                                                                                                                                                                                                                                   | Status  |
+| -------- | -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------- |
+| B-001    | `@B-001` | Missing                                                                                                                                                                                                                                | Missing |
+| B-002    | `@B-002` | `ComparisonSteps`; `ReleaseSelectionUnitTests`; `ReleaseCatalogReaderIntegrationTests`; `ReleasePairStoreIntegrationTests`; `ReleasePairAssetStoreIntegrationTests` ; `IndependentReviewUnitTests`; `InvalidSavedPairIntegrationTests` | Covered |
+| B-003    | `@B-003` | Missing                                                                                                                                                                                                                                | Missing |
+| B-004    | `@B-004` | Missing                                                                                                                                                                                                                                | Missing |
+| B-005    | `@B-005` | `ComparisonSteps`; `CasePairingUnitTests.MatchingCases_WhenPairing_ShouldKeepSeparateSizesAndBothMetrics`; `BenchmarkEvidenceReaderUnitTests`; `EvidenceContractsUnitTests` ; `IndependentReviewUnitTests`                             | Covered |
+| B-006    | `@B-006` | `ComparisonSteps`; `CasePairingUnitTests.ChangedOrUnknownEquivalence_WhenPairing_ShouldNameTheCondition`; `EvidenceBoundariesUnitTests` ; `IndependentReviewUnitTests`                                                                 | Covered |
+| B-007    | `@B-007` | `ComparisonSteps`; `CasePairingUnitTests.KnownOneSidedWorkload_WhenPairing_ShouldRetainItWithoutJudgment` ; `EvidenceBoundariesUnitTests.OneParameterCaseAddedOrRemoved_WhenPairing_ShouldKeepItsOneSidedStatus`                       | Covered |
+| B-008    | `@B-008` | `ComparisonSteps`; `CasePairingUnitTests.KnownOneSidedWorkload_WhenPairing_ShouldRetainItWithoutJudgment` ; `EvidenceBoundariesUnitTests.OneParameterCaseAddedOrRemoved_WhenPairing_ShouldKeepItsOneSidedStatus`                       | Covered |
+| B-009    | `@B-009` | Missing                                                                                                                                                                                                                                | Missing |
+| B-010    | `@B-010` | Missing                                                                                                                                                                                                                                | Missing |
+| B-011    | `@B-011` | Missing                                                                                                                                                                                                                                | Missing |
+| B-012    | `@B-012` | Missing                                                                                                                                                                                                                                | Missing |
+| B-013    | `@B-013` | Missing                                                                                                                                                                                                                                | Missing |
+| B-014    | `@B-014` | Missing                                                                                                                                                                                                                                | Missing |
+| B-015    | `@B-015` | Missing                                                                                                                                                                                                                                | Missing |
+| B-016    | `@B-016` | Missing                                                                                                                                                                                                                                | Missing |
+| B-017    | `@B-017` | Missing                                                                                                                                                                                                                                | Missing |
+| B-018    | `@B-018` | Missing                                                                                                                                                                                                                                | Missing |
+| B-019    | `@B-019` | Missing                                                                                                                                                                                                                                | Missing |
+| B-020    | `@B-020` | Missing                                                                                                                                                                                                                                | Missing |
+| B-021    | `@B-021` | Missing                                                                                                                                                                                                                                | Missing |
+| B-022    | `@B-022` | Missing                                                                                                                                                                                                                                | Missing |
+| B-023    | `@B-023` | Missing                                                                                                                                                                                                                                | Missing |
+| B-024    | `@B-024` | Missing                                                                                                                                                                                                                                | Missing |
 
 ## 10. Lessons / Spec Deltas
 
@@ -483,6 +495,10 @@ outcomes, and record that live platform limitation honestly.
 - 2026-10-13, owner requested the deferred comparison capability from `0109-F1` OQ-4: compare every release with its predecessor, automate the report and flag meaningful regressions without failing the build. This Feature takes `0109-F5`; the epic and harness scope now link to it. No implementation was included in that definition.
 
 - 2026-10-13, review rework: B-005, B-006, B-009, B-013 and B-018 now make equivalence, unit conversion, invalid timing evidence and failures beyond benchmark collection explicit. C-5 covers duplicate evidence. Decision 0003 records these refinements; the owner's numeric thresholds and inclusion of prereleases are unchanged.
+
+- 2026-10-14: B-002 gains an explicit unreadable-catalog boundary scenario. B-007 and B-008 gain input-size boundary scenarios so an added or removed parameter case remains visible beside common cases; differing inputs without a common case continue to follow B-006. Claims and scope are unchanged.
+
+- 2026-10-14: independent review adds B-002 self-pair rejection, B-005 declared-metric preservation and B-006 expected-contract/unknown-identity boundary scenarios. [Lesson 0001](lessons/0001-expected-contracts-and-identity-remain-evidence.md) records the symptom, root cause and regression proof. No claim or scope is added.
 
 ## 11. Open Questions
 
@@ -497,17 +513,21 @@ outcomes, and record that live platform limitation honestly.
 
 <!-- last written by: spec-reviewer, 2026-10-13 -->
 
-| Section | Status | Reviewer      | Note                                                                                                                                                                                                                                                                                                                                                                                                   |
-| ------- | ------ | ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| 1-5     | 🟢     | spec-reviewer | Round 2 self-review: decision 0003 and the amended scenarios resolve the equivalence, unit/invalid-evidence and advisory-failure gaps. Owner decisions 0001-0002 stand. All 24 claims have scenario tags and one Missing traceability row each. Agreement approved for decomposition; § 6-8 remain pending, and neither implementation nor independent review is claimed.                              |
-| 6-9     | 🟢     | spec-reviewer | Design self-review: ADR-0001 preserves C-1 to C-10 and 0055-F6 C-7 through a read-only peer and bounded same-run receipts. § 8 maps all 24 claims to mechanisms and synthetic proof; § 9 remains Missing. Generator capability was probed locally, not on a live runner. Child scopes and prerequisites are reconciled. Full build passed; no independent sign-off or behavioural delivery is claimed. |
+| Section                    | Status | Reviewer      | Note                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
+| -------------------------- | ------ | ------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1-5                        | 🟢     | spec-reviewer | Round 2 self-review: decision 0003 and the amended scenarios resolve the equivalence, unit/invalid-evidence and advisory-failure gaps. Owner decisions 0001-0002 stand. All 24 claims have scenario tags and one Missing traceability row each. Agreement approved for decomposition; § 6-8 remain pending, and neither implementation nor independent review is claimed.                                                                                                                                                                                                                       |
+| 6-9                        | 🟢     | spec-reviewer | Design self-review: ADR-0001 preserves C-1 to C-10 and 0055-F6 C-7 through a read-only peer and bounded same-run receipts. § 8 maps all 24 claims to mechanisms and synthetic proof; § 9 remains Missing. Generator capability was probed locally, not on a live runner. Child scopes and prerequisites are reconciled. Full build passed; no independent sign-off or behavioural delivery is claimed.                                                                                                                                                                                          |
+| 6-9 selection and evidence | 🟢     | spec-reviewer | Implementation self-review: B-002 and B-005 to B-008 have discovered acceptance and mechanism proof. Versioned pair persistence is insert-only locally and on the release-asset seam; unsupported or ambiguous evidence stays visible. C-2, C-5, C-6 and C-7 are preserved. The selection/evidence library is complete; collection, evaluation, console composition and release wiring remain downstream. No independent review or live-provider execution is claimed.                                                                                                                          |
+| 6-9 selection and evidence | 🟢     | spec-reviewer | Independent round 3 reviewed 1b29b1f plus the working diff. All three original P2 findings and the same-key grouping proof gap are resolved. B-002 and B-005 to B-008 have acceptance and mechanism proof; C-2, C-5, C-6 and C-7 are preserved. Comparator 89/89 passed independently; comparison acceptance evidence shows 26 passed, 40 downstream pending, zero failed. The central Xml patch matches main. Final fresh restore/full build remain delivery gates; collection, evaluation, reporting and release wiring remain downstream. No live-provider or performance result is claimed. |
 
 ### Review history
 
-| Section | Status | Reviewer      | Note                                                                                                                                                                                                                                                                                   |
-| ------- | ------ | ------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 1-5     | 🟡     | spec-reviewer | Original draft: owner answered OQ-1 and OQ-2; specification review pending.                                                                                                                                                                                                            |
-| 1-5     | 🔴     | spec-reviewer | Round 1: B-005/B-006 leave unknown measurement equivalence implicit; B-009/B-013 leave unit conversion and invalid timing values implicit; B-018 covers collection failures but not subsequent reporting failures. Routed to spec-author and resolved by decision 0003 in this review. |
+| Section                    | Status | Reviewer      | Note                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
+| -------------------------- | ------ | ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 6-9 selection and evidence | 🔴     | spec-reviewer | Independent review at 1b29b1f: three P2 findings block completion—expected contracts can lose required metrics or conceal fixture/boundary disagreement; unknown identities can become Added/Removed; saved pairs can name the current immutable release as predecessor. B-002 and B-005 to B-008 need fixes and regression proof. Comparator Unit 66/66 and Integration 10/10 passed; targeted acceptance rerun remained pending. Collection, evaluation, reporting and release wiring remain downstream.                      |
+| 6-9 selection and evidence | 🔴     | spec-reviewer | Independent round 2 reviewed 1b29b1f plus the working diff. All three original P2 findings are resolved and regression-tested. One test-writer finding remains: same-key multi-record contract conflict detection and required-metric unioning lack unit proof under B-005/B-006 and C-5/C-7. Comparator 86/86 passed independently; comparison acceptance log shows 26 passed, 40 downstream pending, zero failed. Full build completion remains pending; collection, evaluation, reporting and release wiring are downstream. |
+| 1-5                        | 🟡     | spec-reviewer | Original draft: owner answered OQ-1 and OQ-2; specification review pending.                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| 1-5                        | 🔴     | spec-reviewer | Round 1: B-005/B-006 leave unknown measurement equivalence implicit; B-009/B-013 leave unit conversion and invalid timing values implicit; B-018 covers collection failures but not subsequent reporting failures. Routed to spec-author and resolved by decision 0003 in this review.                                                                                                                                                                                                                                          |
 
 ## Tasks
 
