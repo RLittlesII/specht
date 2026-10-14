@@ -1,6 +1,7 @@
 using System.IO.Abstractions;
 using AwesomeAssertions;
 using Specht.Benchmarks;
+using Specht.Manifest;
 using Specht.Tests.Shared;
 
 namespace Specht.Tests.Benchmarks;
@@ -17,8 +18,12 @@ public sealed class SpechtTreeIntegrationTests : IDisposable
     public void ATreeOfAStatedSize_WhenChecked_ShouldReportNoViolationOverExactlyThatManySpecifications(int specifications)
     {
         // Given
+        var resources = new Specht.Resources.SpechtResources();
+        var parser = new SpecManifestParser(resources.DefaultManifest, new Specht.Versioning.SchemaVersions(resources.Texts));
+        var structure = parser.Parse(resources.DefaultManifest);
         var root = Directory.CreateDirectory(Path.Combine(_temporary, "tree")).FullName;
-        new SpechtTreeStore(new FileSystem()).Save(SpechtTree.Of(specifications), root);
+        new SpechtTreeStore(new FileSystem()).Save(
+            SpechtTree.Of(specifications, resources.DefaultManifestBytes, structure, parser.PinnedVersion(structure)), root);
 
         // When
         var report = EngineServices.Runner().Run(root);

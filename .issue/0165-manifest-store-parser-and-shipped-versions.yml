@@ -2,7 +2,7 @@ id: "0165"
 type: refactor
 title: Split the manifest into a store and a parser and make the shipped versions an instance
 
-status: ready-for-implementation
+status: done
 
 value: 3
 risk: 4
@@ -19,7 +19,7 @@ claims: []
 
 created: "2026-10-11"
 updated: "2026-10-13"
-closed: null
+closed: "2026-10-13"
 
 summary: |
   ADR-0010 (accepted 2026-10-11,
@@ -89,6 +89,17 @@ acceptance_criteria:
 
 decisions:
   - |
+    2026-10-13, owner review on PR 170, review 5511895957, asks for
+    AutoFixture setup and shared composition. The implementation uses
+    AutoFixtureBase builders with concrete defaults;
+    command tests share the init slice's service and command registrations
+    with Program.cs. This extracts only the init registration early from
+    ADR-0007; 0144 retains the complete host factory. Init's design and
+    testing sections describe the resulting graph. Item 0207 records the
+    requested later EngineServices refactor. No .feature change needed:
+    refactor; constraints preserved: 0001-F1 C-9, C-10; 0001-F2 C-7;
+    0001-F4 C-1, C-3, C-4; 0001-F5 C-5.
+  - |
     2026-10-11, spec-author: cut from ADR-0010 on the repository owner's
     acceptance of it the same day, as stage 5 (D1). Item 0154 is the session
     that produced the record and holds the owner's decisions. Status
@@ -122,6 +133,18 @@ decisions:
     resource-loading work to the measured Check call; reserializing bytes.
     This prepares the refactor that 0191 depends on. It does not satisfy
     that dependency until the code and its verification are delivered.
+  - |
+    2026-10-13, implementation: D1 delivered. The store owns observations,
+    manifest text and unchanged schema bytes; the pure parser owns pin and
+    vocabulary failures; the single resource snapshot feeds an instance
+    catalog at composition. LoadManifest is shared by the retained loader's
+    embedded/upstream and explicit on-disk paths. Init has required parser
+    and store dependencies, with its former text-only validation unchanged.
+    Tree generation takes explicit bytes, structure and selected version.
+    Six mixed-fault cases passed before the refactor; the migrated suite,
+    interleaved-root/catalog check, tree-input checks and init compatibility
+    checks pass. The golden JSON and its comparison test are unedited.
+    Versioned omission defaults remain 0191's behavior, not part of D1.
 
 out_of_scope:
   - "`SpecSchemas` as data, `SpecSchemaCompiler`, and removing the loaders and `SpecSchemas.Load` - item 0166."

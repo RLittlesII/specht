@@ -381,7 +381,7 @@ public sealed class ManifestSteps
             if (_fromRoot)
             {
                 var loaded = EngineServices.Loader().Load(Tree.Root);
-                _model = new SpecModel(loaded.Root, loaded.Features, loaded.Items, loaded.Epics, SpecSchemas.Load(new FileSystem(), Tree.Root));
+                _model = new SpecModel(loaded.Root, loaded.Features, loaded.Items, loaded.Epics, EngineServices.LoadOnDiskSchemas(new FileSystem(), Tree.Root));
                 _frontmatterViolations = new FrontmatterSchemaRule().Evaluate(_model).ToList();
             }
             else

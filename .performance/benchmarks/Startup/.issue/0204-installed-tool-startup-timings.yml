@@ -2,7 +2,7 @@ id: "0204"
 type: task
 title: Measure installed-tool baseline help and check timings
 
-status: done
+status: in-progress
 
 risk: 4
 
@@ -16,7 +16,7 @@ claims: [B-001, B-002, B-003, B-004, B-005, B-007, B-008, B-009]
 
 created: "2026-10-13"
 updated: "2026-10-13"
-closed: "2026-10-13"
+closed: null
 
 summary: |
   Deliver the timing slice designed in 0109-F4 § 7 on the existing benchmark

@@ -1,5 +1,7 @@
 using AwesomeAssertions;
 using Specht.Benchmarks;
+using Specht.Manifest;
+using Specht.Tests.Shared;
 
 namespace Specht.Tests.Benchmarks;
 
@@ -16,10 +18,13 @@ public sealed class SpechtTreeUnitTests
     public void TheSameSizeBuiltTwice_WhenTheTreesAreCompared_ShouldHoldTheSameRelativePathsInTheSameOrderWithTheSameContents(int specifications)
     {
         // Given
-        var first = SpechtTree.Of(specifications);
+        var resources = new Specht.Resources.SpechtResources();
+        var parser = new SpecManifestParser(resources.DefaultManifest, new Specht.Versioning.SchemaVersions(resources.Texts));
+        var structure = parser.Parse(resources.DefaultManifest);
+        var first = SpechtTree.Of(specifications, resources.DefaultManifestBytes, structure, parser.PinnedVersion(structure));
 
         // When
-        var second = SpechtTree.Of(specifications);
+        var second = SpechtTree.Of(specifications, resources.DefaultManifestBytes, structure, parser.PinnedVersion(structure));
 
         // Then
         first.Files.Should().NotBeEmpty();
@@ -35,8 +40,11 @@ public sealed class SpechtTreeUnitTests
     public void ATreeOfAStatedSize_WhenBuilt_ShouldNameEveryFileByAForwardSlashedPathRelativeToItsRoot(int specifications)
     {
         // Given
+        var resources = new Specht.Resources.SpechtResources();
+        var parser = new SpecManifestParser(resources.DefaultManifest, new Specht.Versioning.SchemaVersions(resources.Texts));
+        var structure = parser.Parse(resources.DefaultManifest);
         // When
-        var tree = SpechtTree.Of(specifications);
+        var tree = SpechtTree.Of(specifications, resources.DefaultManifestBytes, structure, parser.PinnedVersion(structure));
 
         // Then
         tree.Files.Should().AllSatisfy(static file =>
@@ -51,11 +59,34 @@ public sealed class SpechtTreeUnitTests
     public void ATreeOfAStatedSize_WhenBuilt_ShouldHoldTheFourSchemaFilesAndTwoFilesForEachSpecificationAtDistinctPaths(int specifications)
     {
         // Given
+        var resources = new Specht.Resources.SpechtResources();
+        var parser = new SpecManifestParser(resources.DefaultManifest, new Specht.Versioning.SchemaVersions(resources.Texts));
+        var structure = parser.Parse(resources.DefaultManifest);
         // When
-        var tree = SpechtTree.Of(specifications);
+        var tree = SpechtTree.Of(specifications, resources.DefaultManifestBytes, structure, parser.PinnedVersion(structure));
 
         // Then
         tree.Files.Should().HaveCount(4 + (2 * specifications));
         tree.Files.Select(static file => file.RelativePath).Should().OnlyHaveUniqueItems();
+    }
+    [Fact]
+    public void ExplicitManifestBytesAndASelectedVersion_WhenATreeIsBuilt_ShouldPreserveThoseBytesAndSchemaTexts()
+    {
+        // Given
+        var resources = new Specht.Resources.SpechtResources();
+        var parser = new SpecManifestParser(resources.DefaultManifest, EngineServices.Versions());
+        const string manifest = "{ \"frontmatterSchemas\": { \"feature\": \"custom.json\" } }\r\n";
+        var structure = parser.Parse(manifest);
+        const string schema = """{"title":"selected schema text"}""";
+        var selected = EngineServices.Versions().Find(structure.SchemaVersion)! with { FeatureSchema = schema };
+        var bytes = System.Text.Encoding.UTF8.GetBytes(manifest);
+
+        // When
+        var tree = SpechtTree.Of(1, bytes, structure, selected);
+
+        // Then
+        tree.Files.Single(static file => file.RelativePath == SpecTree.ManifestPath).Content.ToArray().Should().Equal(bytes);
+        System.Text.Encoding.UTF8.GetString(tree.Files.Single(static file =>
+            file.RelativePath == SpecTree.FrontmatterSchemaFolder + "/custom.json").Content.Span).Should().Be(schema);
     }
 }

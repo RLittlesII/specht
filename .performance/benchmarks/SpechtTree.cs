@@ -1,9 +1,8 @@
+using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.IO;
 using System.Linq;
 using System.Text;
-using System.Text.Json.Nodes;
 using Specht.Manifest;
 using Specht.Versioning;
 
@@ -22,22 +21,21 @@ public sealed class SpechtTree
 
     /// <summary>Builds the tree that holds <paramref name="specifications"/> specifications.</summary>
     /// <param name="specifications">How many specifications the tree holds.</param>
+    /// <param name="manifest">The original manifest bytes read at setup.</param>
+    /// <param name="structure">The parsed manifest.</param>
+    /// <param name="version">The selected version.</param>
     /// <returns>A new tree, holding the same files with the same contents for the same size.</returns>
-    public static SpechtTree Of(int specifications)
+    public static SpechtTree Of(int specifications, ReadOnlyMemory<byte> manifest, SpecStructure structure, SchemaVersion version)
     {
-        var manifest = ShippedManifest();
-        var keys = JsonNode.Parse(manifest)!;
-        var names = keys["frontmatterSchemas"]!;
-        var version = SchemaVersions.Embedded.Select(
-            SemanticVersion.TryParse(keys["schemaVersion"]?.GetValue<string>(), out var pinned) ? pinned : new SemanticVersion(0, 1, 0));
-        var schema = SpecManifest.FrontmatterSchemaFolder + "/";
+        var names = structure.FrontmatterSchemas;
+        var schema = SpecManifestStore.FrontmatterSchemaFolder + "/";
 
         List<SpechtTreeFile> files =
         [
-            new(SpecManifest.RelativePath, manifest),
-            Text(schema + names["feature"]!.GetValue<string>(), version.FeatureSchema),
-            Text(schema + names["task"]!.GetValue<string>(), version.ItemSchema),
-            Text(schema + names["epic"]!.GetValue<string>(), version.EpicSchema),
+            new(SpecManifestStore.RelativePath, manifest.ToArray()),
+            Text(schema + names["feature"], version.FeatureSchema),
+            Text(schema + names["task"], version.ItemSchema),
+            Text(schema + names["epic"], version.EpicSchema),
         ];
 
         for (var index = 1; index <= specifications; index++)
@@ -50,16 +48,6 @@ public sealed class SpechtTree
         }
 
         return new SpechtTree(files);
-    }
-
-    private static byte[] ShippedManifest()
-    {
-        using var shipped = typeof(SpecManifest).Assembly.GetManifestResourceStream(DefaultManifest)!;
-        using var bytes = new MemoryStream();
-
-        shipped.CopyTo(bytes);
-
-        return bytes.ToArray();
     }
 
     private static SpechtTreeFile Text(string relativePath, string text) => new(relativePath, Utf8.GetBytes(text));
@@ -202,7 +190,6 @@ public sealed class SpechtTree
     private const int Claims = 3;
     private const string Epic = "0001";
     private const string Date = "2026-01-01";
-    private const string DefaultManifest = "specht.default-manifest.json";
 
     private static readonly UTF8Encoding Utf8 = new(encoderShouldEmitUTF8Identifier: false);
 }

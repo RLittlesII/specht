@@ -47,14 +47,14 @@ public sealed class SpechtRunnerVersionsIntegrationTests
         using var tree = new SpecTree();
         tree.WriteFeature("0001", "F1", new Dictionary<string, string> { ["priority"] = "med" });
         Pin(tree, pinned);
-        var shipped = SchemaVersions.Embedded.Select(new SemanticVersion(0, 1, 0));
+        var shipped = EngineServices.Versions().Find(new SemanticVersion(0, 1, 0))!;
         var schema = JsonNode.Parse(shipped.FeatureSchema)!.AsObject();
         schema["properties"]!["priority"]!["enum"] = new JsonArray("critical");
         var versions = new SchemaVersions(
             [shipped, shipped with { Number = new SemanticVersion(1, 0, 0), FeatureSchema = schema.ToJsonString() }]);
 
         // When
-        var report = EngineServices.Runner().Run(tree.Root, versions);
+        var report = EngineServices.Runner(versions).Run(tree.Root);
 
         // Then
         var frontmatter = report.Violations
@@ -72,12 +72,12 @@ public sealed class SpechtRunnerVersionsIntegrationTests
         using var tree = new SpecTree();
         tree.WriteFeature("0001", "F1");
         Pin(tree, pinned);
-        var shipped = SchemaVersions.Embedded.Select(new SemanticVersion(0, 1, 0));
+        var shipped = EngineServices.Versions().Find(new SemanticVersion(0, 1, 0))!;
         var versions = new SchemaVersions(
             [shipped, shipped with { Number = new SemanticVersion(0, 1, 1) }, shipped with { Number = new SemanticVersion(0, 2, 0) }]);
 
         // When
-        var report = EngineServices.Runner().Run(tree.Root, versions);
+        var report = EngineServices.Runner(versions).Run(tree.Root);
 
         // Then
         report.SchemaVersion.Should().Be(expected, because);
@@ -91,11 +91,11 @@ public sealed class SpechtRunnerVersionsIntegrationTests
         using var tree = new SpecTree();
         tree.WriteFeature("0001", "F1", sections: SpecTree.SectionsWith("3. Acceptance Criteria", TwoClaims));
         Pin(tree, "0.1.0");
-        var shipped = SchemaVersions.Embedded.Select(new SemanticVersion(0, 1, 0));
+        var shipped = EngineServices.Versions().Find(new SemanticVersion(0, 1, 0))!;
         var pinned = shipped with { RuleIds = shipped.RuleIds.Except(removed, StringComparer.Ordinal).ToHashSet(StringComparer.Ordinal) };
 
         // When
-        var report = EngineServices.Runner().Run(tree.Root, new SchemaVersions([pinned]));
+        var report = EngineServices.Runner(new SchemaVersions([pinned])).Run(tree.Root);
 
         // Then
         report.Violations.Select(static violation => violation.RuleId).Should().Equal(expected, because);

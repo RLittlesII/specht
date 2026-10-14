@@ -173,8 +173,11 @@ only to child processes. Resolver-cache isolation was observed in the manual
 probe. No feed, global install, user-cache fallback or repository manifest edit
 is part of setup.
 
-The session reuses SpechtTree.Of(1) and SpechtTreeStore to save its synthetic
-input, without copying a consumer tree or moving generator types. Setup smoke
+The session resolves the registered SpechtResources and SpecManifestParser
+outside measurement, supplying the shipped manifest bytes, parsed structure and
+pinned version to SpechtTree, then saves it through SpechtTreeStore. This follows
+CheckBenchmarks after the manifest-resource refactor; no consumer tree or
+generator type is copied or moved. Setup smoke
 runs the empty tool and help, then checks JSON from the installed tool for
 exactly one specification and no violations. Timed checks use normal text
 output. The production-tree refactor remains separate work.

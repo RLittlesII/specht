@@ -1,8 +1,10 @@
+using System.IO.Abstractions;
 using System.IO.Abstractions.TestingHelpers;
 using System.Text.Json;
 using AwesomeAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using Specht.Acceptance;
+using Specht.Composition;
 using Specht.Tests.Shared;
 using Specht.Tool;
 using Specht.Tool.Features.Init;
@@ -135,7 +137,7 @@ public sealed class InitCommandIntegrationTests : IDisposable
     {
         // Given
         Directory.CreateDirectory(_sandbox);
-        var newest = SchemaVersions.Embedded.Versions.Max(static version => version.Number);
+        var newest = EngineServices.Versions().Versions.Max(static version => version.Number);
 
         // When
         var (stdout, stderr, exitCode) = AcceptanceTool.Launch(_sandbox, "init", "--root", ".");
@@ -153,11 +155,11 @@ public sealed class InitCommandIntegrationTests : IDisposable
         var workingDirectory = Directory.GetCurrentDirectory();
         var fileSystem = new MockFileSystem();
         fileSystem.AddDirectory(workingDirectory);
-        var shippingCopy = new Dictionary<string, byte[]> { ["manifest/v0.1.0/manifest.json"] = "{}\n"u8.ToArray() };
         var services = new ServiceCollection();
-        services.AddSingleton(new InitWriter(shippingCopy, fileSystem));
+        services.AddSingleton<IFileSystem>(fileSystem);
+        services.AddSpechtEngine().AddInit();
         var app = new CommandAppTester(new TypeRegistrar(services), console: new TestConsole().Width(80));
-        app.Configure(static config => config.AddCommand<InitCommand>("init"));
+        app.Configure(static config => config.AddInit());
 
         // When
         var result = app.Run("init");
@@ -183,9 +185,10 @@ public sealed class InitCommandIntegrationTests : IDisposable
         string[] Paths() => fileSystem.AllPaths.Select(path => Path.GetRelativePath(workingDirectory, path)).ToArray();
         var before = Paths();
         var services = new ServiceCollection();
-        services.AddSingleton(new InitWriter(new Dictionary<string, byte[]> { ["templates/v0.1.0/feature.md"] = "# Shipped\n"u8.ToArray() }, fileSystem));
+        services.AddSingleton<IFileSystem>(fileSystem);
+        services.AddSpechtEngine().AddInit();
         var app = new CommandAppTester(new TypeRegistrar(services), console: new TestConsole().Width(80));
-        app.Configure(static config => config.AddCommand<InitCommand>("init"));
+        app.Configure(static config => config.AddInit());
 
         // When
         var result = app.Run("init", "--root", "repo");

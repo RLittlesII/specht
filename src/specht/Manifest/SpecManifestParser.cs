@@ -6,7 +6,8 @@ namespace Specht.Manifest;
 
 /// <summary>Parses and validates a manifest in memory using the embedded defaults (ADR-0010).</summary>
 /// <param name="defaultManifest">The default manifest text read at the resource boundary.</param>
-public sealed class SpecManifestParser(string defaultManifest)
+/// <param name="versions">The instance catalog used by check-only pin resolution.</param>
+public sealed class SpecManifestParser(string defaultManifest, SchemaVersions versions)
 {
     /// <summary>Returns the validated structure with omitted values supplied by the default manifest.</summary>
     /// <param name="text">The manifest JSON to validate.</param>
@@ -23,7 +24,7 @@ public sealed class SpecManifestParser(string defaultManifest)
         if (unknown.Count > 0)
         {
             throw new SpechtManifestException(
-                $"{SpecManifest.RelativePath}: the engine does not know the key {string.Join(", ", unknown)}.");
+                $"{SpecManifestStore.RelativePath}: the engine does not know the key {string.Join(", ", unknown)}.");
         }
 
         var frontmatterSchemas = Filled(manifest, "frontmatterSchemas");
@@ -45,6 +46,27 @@ public sealed class SpecManifestParser(string defaultManifest)
         Check(structure, IdentityFaults(manifest).Concat(sourceFaults));
 
         return structure;
+    }
+
+    /// <summary>Resolves a parsed manifest's pin and validates its rule ids before schema reads (0001-F5 C-5).</summary>
+    /// <param name="structure">The parsed and shape-validated manifest.</param>
+    /// <returns>The selected version.</returns>
+    /// <exception cref="SpechtManifestException">The pin is not shipped or a rule id is outside its vocabulary.</exception>
+    public SchemaVersion PinnedVersion(SpecStructure structure)
+    {
+        var version = versions.Find(structure.SchemaVersion)
+            ?? throw new SpechtManifestException(
+                $"{SpecManifestStore.RelativePath}: schemaVersion {structure.SchemaVersion} is not shipped; this tool ships "
+                + $"{string.Join(", ", versions.Versions.Select(static version => version.Number))}.");
+        var outside = structure.Rules.Keys.Where(id => !version.RuleIds.Contains(id)).Select(static id => $"'{id}'").ToList();
+        if (outside.Count > 0)
+        {
+            throw new SpechtManifestException(
+                $"{SpecManifestStore.RelativePath}: rules names the rule id {string.Join(", ", outside)}, "
+                + $"which schemaVersion {version.Number} does not hold.");
+        }
+
+        return version;
     }
 
     private static UpstreamSchemaSource? SpechtSchema(JsonObject manifest, Dictionary<string, string> fileNames, List<string> faults)
@@ -172,7 +194,7 @@ public sealed class SpecManifestParser(string defaultManifest)
         }
 
         throw new SpechtManifestException(
-            $"{SpecManifest.RelativePath}: schemaVersion {node?.ToJsonString() ?? "null"} is not a major.minor.patch version such as \"0.1.0\".");
+            $"{SpecManifestStore.RelativePath}: schemaVersion {node?.ToJsonString() ?? "null"} is not a major.minor.patch version such as \"0.1.0\".");
     }
 
     private static List<string> Strings(JsonNode node) =>
@@ -238,7 +260,7 @@ public sealed class SpecManifestParser(string defaultManifest)
 
         if (faults.Count > 0)
         {
-            throw new SpechtManifestException($"{SpecManifest.RelativePath}: {string.Join("; ", faults)}.");
+            throw new SpechtManifestException($"{SpecManifestStore.RelativePath}: {string.Join("; ", faults)}.");
         }
     }
 

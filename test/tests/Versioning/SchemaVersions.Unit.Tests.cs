@@ -43,7 +43,7 @@ public sealed class SchemaVersionsUnitTests
     public void TheEmbeddedSet_WhenEnumerated_ShouldHoldVersionZeroOneZeroAndAscendByPrecedence()
     {
         // Given
-        var embedded = SchemaVersions.Embedded;
+        var embedded = EngineServices.Versions();
 
         // When
         var numbers = embedded.Versions.Select(static version => version.Number).ToList();
@@ -57,7 +57,7 @@ public sealed class SchemaVersionsUnitTests
     {
         // Given
         var assemblies = new[] { typeof(SchemaVersions).Assembly, typeof(Specht.Tool.ExitCodes).Assembly };
-        var versions = SchemaVersions.Embedded.Versions.Select(static version => $"v{version.Number}").ToList();
+        var versions = EngineServices.Versions().Versions.Select(static version => $"v{version.Number}").ToList();
 
         // When
         var names = assemblies.SelectMany(static assembly => assembly.GetManifestResourceNames())
@@ -104,7 +104,7 @@ public sealed class SchemaVersionsUnitTests
     public void EachEmbeddedVersion_WhenItsSlotIsRead_ShouldHoldThatFilesSchemaForThatVersion(string file, Func<SchemaVersion, string> slot)
     {
         // Given
-        var versions = SchemaVersions.Embedded.Versions;
+        var versions = EngineServices.Versions().Versions;
 
         // When
         var ids = versions
@@ -120,10 +120,10 @@ public sealed class SchemaVersionsUnitTests
     public void EmbeddedVersionZeroOneZero_WhenItsVocabularyIsRead_ShouldNameExactlyItsTwentyOneRuleIds()
     {
         // Given
-        var embedded = SchemaVersions.Embedded;
+        var embedded = EngineServices.Versions();
 
         // When
-        var ids = embedded.Select(new SemanticVersion(0, 1, 0)).RuleIds;
+        var ids = embedded.Find(new SemanticVersion(0, 1, 0))!.RuleIds;
 
         // Then
         ids.Should().BeEquivalentTo(
@@ -141,7 +141,7 @@ public sealed class SchemaVersionsUnitTests
     {
         // Given
         var schema = JsonSchema.FromText(
-            SchemaVersions.Embedded.Select(new SemanticVersion(0, 1, 0)).EpicSchema,
+            EngineServices.Versions().Find(new SemanticVersion(0, 1, 0))!.EpicSchema,
             new BuildOptions { SchemaRegistry = new SchemaRegistry() });
         var epic = new JsonObject
         {
@@ -183,10 +183,23 @@ public sealed class SchemaVersionsUnitTests
         var versions = new SchemaVersions([laterMinor, laterPatch, pinned]);
 
         // When
-        var selected = versions.Select(new SemanticVersion(0, 1, 0));
+        var selected = versions.Find(new SemanticVersion(0, 1, 0))!;
 
         // Then
         selected.Should().BeSameAs(pinned);
+    }
+
+    [Fact]
+    public void AVersionTheSetDoesNotHold_WhenLookedUp_ShouldReturnNoVersion()
+    {
+        // Given
+        var versions = new SchemaVersions(Array.Empty<SchemaVersion>());
+
+        // When
+        var found = versions.Find(new SemanticVersion(7, 0, 0));
+
+        // Then
+        found.Should().BeNull();
     }
 
     [Fact]
@@ -196,10 +209,13 @@ public sealed class SchemaVersionsUnitTests
         var versions = new SchemaVersions([new SchemaVersionFixture(), new SchemaVersionFixture().WithNumber(new SemanticVersion(0, 2, 0))]);
 
         // When
-        var select = () => versions.Select(new SemanticVersion(7, 0, 0));
+        var parser = new SpecManifestParser(new Specht.Resources.SpechtResources().DefaultManifest, versions);
+        var structure = parser.Parse("""{"schemaVersion":"7.0.0"}""");
+        var select = () => parser.PinnedVersion(structure);
 
         // Then
         var message = select.Should().ThrowExactly<SpechtManifestException>().Which.Message;
+        message.Should().Be(".specht/manifest.json: schemaVersion 7.0.0 is not shipped; this tool ships 0.1.0, 0.2.0.");
         foreach (var named in new[] { "7.0.0", "0.1.0", "0.2.0" })
         {
             message.Should().MatchRegex($@"(?<![\w.]){Regex.Escape(named)}(?!\.?\w)", "the message names version {0}", named);

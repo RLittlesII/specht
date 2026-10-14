@@ -94,7 +94,7 @@ public static class EngineAssembly
         || (reference.Member == "System.Net.Http.HttpClient.GetByteArrayAsync"
             && reference.Site.StartsWith("Specht.Manifest.UpstreamSchemaFetcher+<Fetch>", StringComparison.Ordinal))
         || (NetworkConfigurationMembers.Contains(reference.Member)
-            && reference.Site.StartsWith(".Program+<>c.", StringComparison.Ordinal));
+            && reference.Site.StartsWith("Specht.Tool.Features.Init.InitRegistration+<>c.<AddInit>", StringComparison.Ordinal));
 
     private static string BuiltUnder(string project, Assembly assembly)
     {
