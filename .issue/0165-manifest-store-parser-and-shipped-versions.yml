@@ -89,6 +89,17 @@ acceptance_criteria:
 
 decisions:
   - |
+    2026-10-13, owner review on PR 170, review 5511895957, asks for
+    AutoFixture setup and shared composition. The implementation uses
+    AutoFixtureBase builders with concrete defaults;
+    command tests share the init slice's service and command registrations
+    with Program.cs. This extracts only the init registration early from
+    ADR-0007; 0144 retains the complete host factory. Init's design and
+    testing sections describe the resulting graph. Item 0207 records the
+    requested later EngineServices refactor. No .feature change needed:
+    refactor; constraints preserved: 0001-F1 C-9, C-10; 0001-F2 C-7;
+    0001-F4 C-1, C-3, C-4; 0001-F5 C-5.
+  - |
     2026-10-11, spec-author: cut from ADR-0010 on the repository owner's
     acceptance of it the same day, as stage 5 (D1). Item 0154 is the session
     that produced the record and holds the owner's decisions. Status

@@ -4,7 +4,6 @@ using System.Security.Cryptography;
 using System.Text.Json.Nodes;
 using AwesomeAssertions;
 using Specht.Manifest;
-using Specht.Tests.Shared;
 using Specht.Tool.Features.Init;
 
 namespace Specht.Tests.Init;
@@ -39,14 +38,13 @@ public sealed class UpstreamInitWriterUnitTests
             return new HttpResponseMessage(HttpStatusCode.OK) { Content = new ByteArrayContent(Content) };
         }));
 
+        InitWriter writer = new InitWriterFixture()
+            .WithFileSystem(fileSystem)
+            .WithShippingCopy(ShippingCopy)
+            .WithUpstreamSchemaFetcher(new UpstreamSchemaFetcher(client));
+
         // When
-        var listing = await new InitWriter(
-            ShippingCopy,
-            fileSystem,
-            EngineServices.Parser(),
-            new SpecManifestStore(fileSystem),
-            new UpstreamSchemaFetcher(client))
-            .Write("repo", schemas: true, templates: false, CancellationToken.None);
+        var listing = await writer.Write("repo", schemas: true, templates: false, CancellationToken.None);
 
         // Then
         listing.Should().Equal(
@@ -91,12 +89,10 @@ public sealed class UpstreamInitWriterUnitTests
                 _ => throw new HttpRequestException("Synthetic source is unreachable."),
             };
         }));
-        var writer = new InitWriter(
-            ShippingCopy,
-            fileSystem,
-            EngineServices.Parser(),
-            new SpecManifestStore(fileSystem),
-            new UpstreamSchemaFetcher(client));
+        InitWriter writer = new InitWriterFixture()
+            .WithFileSystem(fileSystem)
+            .WithShippingCopy(ShippingCopy)
+            .WithUpstreamSchemaFetcher(new UpstreamSchemaFetcher(client));
 
         // When
         var write = () => writer.Write("repo", schemas: true, templates: true, CancellationToken.None);
@@ -143,14 +139,13 @@ public sealed class UpstreamInitWriterUnitTests
             throw new HttpRequestException("Network unavailable.");
         }));
 
+        InitWriter writer = new InitWriterFixture()
+            .WithFileSystem(fileSystem)
+            .WithShippingCopy(ShippingCopy)
+            .WithUpstreamSchemaFetcher(new UpstreamSchemaFetcher(client));
+
         // When
-        await new InitWriter(
-            ShippingCopy,
-            fileSystem,
-            EngineServices.Parser(),
-            new SpecManifestStore(fileSystem),
-            new UpstreamSchemaFetcher(client))
-            .Write("repo", schemas, templates, CancellationToken.None);
+        await writer.Write("repo", schemas, templates, CancellationToken.None);
 
         // Then
         requests.Should().Be(0);
@@ -179,12 +174,10 @@ public sealed class UpstreamInitWriterUnitTests
             requests++;
             return new HttpResponseMessage(HttpStatusCode.OK) { Content = new ByteArrayContent(Content) };
         }));
-        var writer = new InitWriter(
-            ShippingCopy,
-            fileSystem,
-            EngineServices.Parser(),
-            new SpecManifestStore(fileSystem),
-            new UpstreamSchemaFetcher(client));
+        InitWriter writer = new InitWriterFixture()
+            .WithFileSystem(fileSystem)
+            .WithShippingCopy(ShippingCopy)
+            .WithUpstreamSchemaFetcher(new UpstreamSchemaFetcher(client));
 
         // When
         var write = () => writer.Write("repo", schemas: true, templates: true, CancellationToken.None);
@@ -214,14 +207,13 @@ public sealed class UpstreamInitWriterUnitTests
             return new HttpResponseMessage(HttpStatusCode.OK) { Content = new ByteArrayContent(Content) };
         }));
 
+        InitWriter writer = new InitWriterFixture()
+            .WithFileSystem(fileSystem)
+            .WithShippingCopy(ShippingCopy)
+            .WithUpstreamSchemaFetcher(new UpstreamSchemaFetcher(client));
+
         // When
-        var listing = await new InitWriter(
-            ShippingCopy,
-            fileSystem,
-            EngineServices.Parser(),
-            new SpecManifestStore(fileSystem),
-            new UpstreamSchemaFetcher(client))
-            .Write("repo", schemas: true, templates: false, CancellationToken.None);
+        var listing = await writer.Write("repo", schemas: true, templates: false, CancellationToken.None);
 
         // Then
         listing.Should().Contain((".specht/schema/frontmatter/custom-feature.json", false));

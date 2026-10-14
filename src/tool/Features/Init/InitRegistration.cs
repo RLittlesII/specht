@@ -1,0 +1,41 @@
+using System.IO.Abstractions;
+using System.Net.Http;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
+using Specht.Manifest;
+using Spectre.Console.Cli;
+
+namespace Specht.Tool.Features.Init;
+
+/// <summary>Registers the init slice's services and command.</summary>
+public static class InitRegistration
+{
+    /// <summary>Adds init over the engine's manifest services and the caller's HTTP client.</summary>
+    public static IServiceCollection AddInit(this IServiceCollection services)
+    {
+        services.TryAddSingleton(static _ => new HttpClient(new HttpClientHandler
+        {
+            AllowAutoRedirect = false,
+            UseCookies = false,
+            UseDefaultCredentials = false,
+            Credentials = null,
+            DefaultProxyCredentials = null,
+        }));
+        services.AddSingleton<UpstreamSchemaFetcher>();
+        services.AddSingleton(static provider => new InitWriter(
+            InitWriter.ShippingCopy(typeof(InitWriter).Assembly),
+            provider.GetRequiredService<IFileSystem>(),
+            provider.GetRequiredService<SpecManifestParser>(),
+            provider.GetRequiredService<SpecManifestStore>(),
+            provider.GetRequiredService<UpstreamSchemaFetcher>()));
+        return services;
+    }
+
+    /// <summary>Adds the init command and its help description.</summary>
+    public static IConfigurator AddInit(this IConfigurator configuration)
+    {
+        configuration.AddCommand<InitCommand>("init")
+            .WithDescription("Write the newest manifest and selected schemas and templates under .specht/, never overwriting a file.");
+        return configuration;
+    }
+}

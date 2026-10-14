@@ -18,7 +18,7 @@ public sealed class SpecManifestStoreUnitTests
     {
         // Given
         byte[] bytes = [0xEF, 0xBB, 0xBF, (byte)'{', (byte)'}', (byte)'\r', (byte)'\n'];
-        var store = new SpecManifestStore(
+        SpecManifestStore store = new SpecManifestStoreFixture().WithFileSystem(
             new MockFileSystem(new Dictionary<string, MockFileData> { [Path.Combine(Root, SpecTree.ItemSchemaPath)] = new(bytes) }));
 
         // When
@@ -32,7 +32,7 @@ public sealed class SpecManifestStoreUnitTests
     public void AFileOfThatNameOnlyOutsideTheRootsFrontmatterSchemaFolder_WhenReadByItsName_ShouldBeNull()
     {
         // Given
-        var store = new SpecManifestStore(
+        SpecManifestStore store = new SpecManifestStoreFixture().WithFileSystem(
             new MockFileSystem(
                 new Dictionary<string, MockFileData>
                 {
@@ -53,7 +53,7 @@ public sealed class SpecManifestStoreUnitTests
     {
         // Given
         const string text = "not JSON\r\n";
-        var store = new SpecManifestStore(new MockFileSystem(new Dictionary<string, MockFileData>
+        SpecManifestStore store = new SpecManifestStoreFixture().WithFileSystem(new MockFileSystem(new Dictionary<string, MockFileData>
         {
             [Path.Combine(Root, SpecTree.ManifestPath)] = new(text),
         }));

@@ -19,9 +19,9 @@ public sealed class InitManifestCompatibilityUnitTests
         {
             [Path.Combine("repo", SpecTree.ManifestPath)] = new(manifest),
         });
-        var writer = new InitWriter(
-            new Dictionary<string, byte[]> { ["schema/v0.1.0/frontmatter/task.schema.json"] = "{}"u8.ToArray() },
-            fileSystem, EngineServices.Parser(), new SpecManifestStore(fileSystem));
+        InitWriter writer = new InitWriterFixture()
+            .WithFileSystem(fileSystem)
+            .WithShippingCopy(new Dictionary<string, byte[]> { ["schema/v0.1.0/frontmatter/task.schema.json"] = "{}"u8.ToArray() });
 
         // When
         await writer.Write("repo", schemas: true, templates: false, CancellationToken.None);
@@ -41,9 +41,9 @@ public sealed class InitManifestCompatibilityUnitTests
         {
             [Path.Combine("repo", SpecTree.ManifestPath)] = new(manifest),
         });
-        var writer = new InitWriter(
-            new Dictionary<string, byte[]> { ["schema/v0.1.0/frontmatter/task.schema.json"] = "{}"u8.ToArray() },
-            fileSystem, EngineServices.Parser(), new SpecManifestStore(fileSystem));
+        InitWriter writer = new InitWriterFixture()
+            .WithFileSystem(fileSystem)
+            .WithShippingCopy(new Dictionary<string, byte[]> { ["schema/v0.1.0/frontmatter/task.schema.json"] = "{}"u8.ToArray() });
 
         // When
         var write = () => writer.Write("repo", schemas: true, templates: false, CancellationToken.None);

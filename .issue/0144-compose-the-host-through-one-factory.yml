@@ -18,7 +18,7 @@ spec: null
 claims: []
 
 created: "2026-10-10"
-updated: "2026-10-11"
+updated: "2026-10-13"
 closed: null
 
 summary: |
@@ -56,11 +56,14 @@ summary: |
   whether the registration tests' collection is the one named exception or
   moves behind the factory is the architecture pass's to decide.
 
-  One point for the architecture pass: two tests in
-  test/tests/Init/InitCommand.Integration.Tests.cs hand InitWriter a
-  one-file shipping copy of their own. ADR-0007 has the init slice register
-  InitWriter over the shipping copy, and names no caller input but the file
-  system and the console.
+  Item 0165's PR 170 review extracts the init slice's service and command
+  registrations into InitRegistration.AddInit, shared by Program.cs and
+  the init command integration tests. Those tests now use the real shipping
+  copy; the former custom one-file copies are gone. This item retains the
+  complete host factory and the one command-tester wrapper, reusing that
+  slice registration rather than rebuilding it. Item 0207 tracks the
+  owner's later EngineServices simplification and coordinates its remaining
+  test-fixture responsibilities with this item and 0168.
 
   Reshaped 2026-10-11 on ADR-0010 (accepted 2026-10-11,
   .spec/adr/0010-layered-engine-boundaries-with-io-at-the-edge-and-a-mediator.md),
@@ -152,6 +155,13 @@ acceptance_criteria:
   - "Constraints preserved: 0001-F2 C-2, 0001-F2 C-3, 0001-F2 C-7, ADR-0003"
 
 decisions:
+  - |
+    2026-10-13, owner review on PR 170, review 5511895957: init command
+    tests should use a composition method. Item 0165 extracts only init's
+    existing service and command registration; the complete factory and
+    command-tester wrapper stay here. The two init command tests no longer
+    supply custom shipping copies. Item 0207 records the requested later
+    EngineServices refactor and does not duplicate this item's factory.
   - |
     2026-10-10, implementer, on the owner's direction in session: cut on
     the owner's acceptance of ADR-0007, which names this work as its own

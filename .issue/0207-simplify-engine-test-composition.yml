@@ -1,0 +1,54 @@
+id: "0207"
+type: refactor
+title: Simplify the shared engine test composition
+
+status: ready-for-architecture
+
+value: 2
+risk: 2
+
+parent: null
+children: []
+
+depends_on: ["0165"] # review the instance-based manifest graph delivered by 0165
+spikes: []
+
+spec: null
+claims: []
+
+created: "2026-10-13"
+updated: "2026-10-13"
+closed: null
+
+summary: |
+  PR 170 review 5511895957 asks for a later refactor of
+  test/tests/Shared/EngineServices.cs. The helper now owns too many
+  composition responsibilities: resources, catalogs, parsers, stores,
+  loaders and runners, with a new service provider behind each resolution.
+  Design a smaller way for unit, integration and acceptance tests to obtain
+  the collaborators they need, with explicit ownership of provider lifetime.
+
+  Coordinate with 0144, which owns the shared host factory and migration of
+  EngineServices onto it, and 0168, which owns the shared test-support
+  project. This item does not duplicate either delivery. The architecture
+  pass records which remaining test-fixture responsibilities belong here
+  and the order needed for the chosen design.
+
+acceptance_criteria:
+  - "Record the design and its boundary with 0144 and 0168 before implementation."
+  - "Reduce EngineServices' coupled composition responsibilities; tests arrange only dependencies relevant to the behavior they assert."
+  - "Service-provider ownership and disposal are explicit; tests can use distinct schema catalogs without sharing mutable configuration."
+  - "The unit, integration and acceptance tiers pass with their existing assertions and synthetic trees."
+  - "The golden report and its comparison test remain unchanged; no new source-file links or mocking dependency are introduced."
+  - "No .feature change needed: refactor — only test setup and collaborator lifetime change; no tool behavior or expected report changes. Constraints preserved: 0001-F1 C-9, 0001-F1 C-10, 0001-F5 C-5, ADR-0003."
+
+decisions:
+  - |
+    2026-10-13, owner, PR 170 review 5511895957, discussion 4265745840:
+    create a refactor task and find a better way later. Item 0165 retains
+    EngineServices; this item owns the follow-up design.
+
+out_of_scope:
+  - "Production engine behavior and rule evaluation."
+  - "The host factory and command-test migration owned by 0144."
+  - "The test-support project and removal of source links owned by 0168."

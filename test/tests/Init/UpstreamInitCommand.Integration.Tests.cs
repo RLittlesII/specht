@@ -1,10 +1,11 @@
+using System.IO.Abstractions;
 using System.IO.Abstractions.TestingHelpers;
 using System.Net;
 using System.Security.Cryptography;
 using System.Text.Json.Nodes;
 using AwesomeAssertions;
 using Microsoft.Extensions.DependencyInjection;
-using Specht.Manifest;
+using Specht.Composition;
 using Specht.Tests.Shared;
 using Specht.Tool;
 using Specht.Tool.Features.Init;
@@ -40,15 +41,12 @@ public sealed class UpstreamInitCommandIntegrationTests
         using var client = new HttpClient(new SyntheticHandler(unreachable));
         using var errors = new StringWriter();
         var services = new ServiceCollection();
-        services.AddSingleton(new InitWriter(
-            InitWriter.ShippingCopy(typeof(InitWriter).Assembly),
-            fileSystem,
-            EngineServices.Parser(),
-            new SpecManifestStore(fileSystem),
-            new UpstreamSchemaFetcher(client)));
+        services.AddSingleton<IFileSystem>(fileSystem);
+        services.AddSingleton(client);
+        services.AddSpechtEngine().AddInit();
         services.AddSingleton<TextWriter>(errors);
         var app = new CommandAppTester(new TypeRegistrar(services), console: new TestConsole().Width(80));
-        app.Configure(static config => config.AddCommand<InitCommand>("init"));
+        app.Configure(static config => config.AddInit());
 
         // When
         var result = app.Run("init", "--root", root, "--all");
