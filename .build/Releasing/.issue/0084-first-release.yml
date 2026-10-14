@@ -2,7 +2,7 @@ id: "0084"
 type: task
 title: Publish the first release to GitHub Packages with a GitHub Release
 
-status: in-review
+status: done
 
 risk: 4
 
@@ -23,28 +23,25 @@ claims:
   - B-012
 
 created: "2026-10-08"
-updated: "2026-10-13"
-closed: null
+updated: "2026-10-14"
+closed: "2026-10-14"
 
 summary: |
-  The push, the GitHub Release and the first `v*` tag. Proven only by a
-  real publish. The first publish embeds schema `0.1.0`, a published
-  `0.x.y`: never changed in place, and a later tool may stop shipping it
-  (0001-F7 C-1, decision 0007). It no longer waits on 0001-F5 and 0001-F6
-  (C-2, amended 2026-10-11). Risk 4: irreversible - a published version
-  stays (§ 5 #4).
+  First publication delivered as v0.1.90 on 2026-10-13, tagged commit
+  b213a0522ad9568ca8e713fd9915b58a7b47925f. The successful tag run pushed
+  specht.tool.0.1.90.nupkg and created its GitHub Release with the package
+  attached. The notes cover all 150 merged pull requests reachable from
+  the tag. Every recorded metadata, upstream-source and schema-lock
+  prerequisite was already done in the tagged tree, as were both
+  setup-guide parts.
 
-  The first `v*` tag waits until a consumer can initialise a repository
-  to a schema sourced at a URL and have the check validate with it (C-8,
-  decision 0004; owner, 2026-10-11). Which claims are that ability is
-  OQ-17, open: this item waits on the smallest set proposed there -
-  the check under a recorded source (0092), init's fetch (0095) and init
-  recording a source (0178). Whether the setup guide (0179, 0180) also
-  holds the tag is OQ-18, open; this item does not wait on it.
-
-  The first release also waits on 0190, the unlocked-schema tag guard
-  (0055-F6 C-2; OQ-19, resolved by the owner 2026-10-13). Its dependency
-  on 0188 carries the schema lock prerequisite.
+  Reconciled on 2026-10-14 after the successful manual dry run on main:
+  every build step passed, its artifact contained one package and the
+  publishing job was skipped. The Feature's section 8 holds the run,
+  asset, notes-range and prerequisite evidence. Decision 0003's addendum
+  resolves OQ-16 for closure on these records, retaining honest Missing
+  automated-coverage rows. Publication does not deliver the separate
+  installation, feed-restore or version-independence items.
 
 acceptance_criteria:
   - "B-003 — every target passing: `specht.tool` pushed to GitHub Packages on `rlittlesii/specht`"
@@ -54,12 +51,20 @@ acceptance_criteria:
   - "B-011 — a `v*` tag on a commit not reachable from `main`: the run fails before anything is packed or pushed"
   - "B-012 — no earlier `v*` tag: the Release notes cover every pull request merged up to the tag"
   - "0055-F6 OQ-11 is resolved (2026-10-11): `src/tool/tool.csproj` sets `RepositoryUrl`, and items `0171`, `0172` and `0174` are `done` before the first tag is pushed"
-  - "0055-F6 C-8 — items `0092`, `0095` and `0178` are `done` before the first tag is pushed; the set is 0055-F6 OQ-17's, open"
+  - "0055-F6 C-8 — items `0092`, `0095` and `0178` are `done` before the first tag is pushed; the tagged-tree evidence resolves the historical hold in 0055-F6 OQ-17"
   - "0055-F6 C-2; OQ-19 — item `0190` and its prerequisites are delivered on `main` before the first tag is pushed"
   - "0055-F6 OQ-13 — the delivering pull request merges with this item `in-review`; a follow-up pull request records the dry run and the tag's run in § 8 and writes this item `done`"
-  - "§ 9 carries a row for each id above and none names a test (§ 5 #9); § 8 records the generated file read against § 7 and the hand runs of `VerifyTag`, and the follow-up pull request adds the dry run and the tag's run (0055-F6 OQ-13). Whether this item closes while those rows read `Missing` is 0055-F6 OQ-16, open."
+  - "§ 9 carries a row for each id above and none names a test (§ 5 #9); § 8 records the generated file read against § 7 and the hand runs of `VerifyTag`, and the follow-up pull request adds the dry run and the tag's run (0055-F6 OQ-13). 0055-F6 OQ-16 is resolved by decision 0003's 2026-10-14 addendum: this item closes on the recorded evidence while those rows honestly remain `Missing`."
 
 decisions:
+  - |
+    2026-10-14, repository owner directed reconciliation with 0.1.90 and
+    closure of the items its evidence satisfies. The historical first
+    publication is closed on the recorded tag run, Release and package,
+    complete notes inventory, existing ancestry-refusal hand run and
+    successful follow-up dry run. The scoped record-based exception is
+    0055-F6 decision 0003's addendum; no new tag or publication is made.
+    closed names the reconciliation date, not the earlier publication.
   - |
     2026-10-13, repository owner: "the first release waits for 0190."
     OQ-19 is resolved; 0190 joins depends_on. Its prerequisites carry

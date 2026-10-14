@@ -22,7 +22,7 @@ claims:
   - B-009
 
 created: "2026-10-08"
-updated: "2026-10-09"
+updated: "2026-10-14"
 closed: "2026-10-09"
 
 summary: |
@@ -41,6 +41,12 @@ acceptance_criteria:
   - "After the merge: a dry run is started on `main` under `workflow_dispatch`, and a follow-up pull request records in § 8 all eleven steps of `build` green on `ubuntu-latest`, the upload finding exactly one file in `.artifacts/nupkg`, and `publish` shown as skipped; a dry run that fails reopens this item (OQ-10, decision 0002)."
 
 decisions:
+  - |
+    2026-10-14, follow-up evidence recorded in 0055-F6 section 8: manual
+    release run 38639888367 on main at 97c5248a passed every build step,
+    uploaded exactly one package and skipped the publishing job. This
+    pays the post-merge dry-run criterion and decision 0002's owed record.
+    The original done status and 2026-10-09 closed date are unchanged.
   - |
     2026-10-09, owner: the push runs in a second job, `publish`, of the
     generated `publish.yml`, which alone holds package write; no `Publish`
