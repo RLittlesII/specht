@@ -43,7 +43,7 @@ public sealed class FeatureFileRuleUnitTests
         SpecModel model = new SpecModelFixture().WithManifest(manifest).WithFeatures(feature);
 
         // When
-        var violations = new FeatureFileRule(new FeatureFileReader(fileSystem)).Evaluate(model).ToList();
+        var violations = new FeatureFileRule(new FeatureFileReader(fileSystem, new FeatureTagParser())).Evaluate(model).ToList();
 
         // Then
         violations.Select(static violation => (violation.RuleId, violation.Identifier)).Should().Equal(("SPEC021", "B-404"));

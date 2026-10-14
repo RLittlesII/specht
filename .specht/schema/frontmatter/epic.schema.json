@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://github.com/rlittlesii/specht/schema/v0.1.1/frontmatter/epic.schema.json",
+  "$id": "https://github.com/rlittlesii/specht/schema/v0.2.0/frontmatter/epic.schema.json",
   "title": "Epic frontmatter",
   "type": "object",
   "additionalProperties": false,

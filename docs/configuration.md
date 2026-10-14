@@ -33,6 +33,8 @@ repository holds several.
 | `rules`             | Each rule id's level: `error` or `warning` re-grades its violations, `off` drops them. A rule left out keeps its own severity; an id outside the pinned vocabulary, or any other level, exits `3`.                                                                                                                                                       |
 | `identifiers.claim` | The claim id grammar `SPEC030` enforces in § 3, and the § 3 ids a tag may resolve to under `SPEC021`.                                                                                                                                                                                                                                                    |
 
+Under schema `0.2.0`, `claim.tag` is literal text around exactly one `{claim}` placeholder, default `@{claim}`. `claim.tagIgnoreCase` is Boolean, default `false`; when true it covers the entire tag and resolution uses ordinal comparison. Missing values come from the pinned version's shipped manifest. Older pins reject `claim`; flat tag keys are rejected at every pin. Each missing member of `claim` uses the pinned default, including a partially declared object.
+
 A key left out takes its value from the default manifest, except `rules`, which
 is never filled: a manifest without it sets no level. A key the engine does
 not know exits `3`; a key starting with `$` is ignored. The other `identifiers`
@@ -51,13 +53,9 @@ For a missing file, the message names `specht init`; use `specht init --schemas`
 to fetch missing schema files from the recorded source. The check never fetches, and it never writes
 into the root.
 
-Claim tags in a `.feature` file are read as `@B-nnn`, with an optional
-lowercase letter suffix, whatever `identifiers.claim` says. A configurable tag
-form and letter case are specified
-([`src/specht/Manifest/.spec/README.md`](../src/specht/Manifest/.spec/README.md)
-B-007, B-036–B-038) and not built yet. The frontmatter keys the rules read are
-still literals in the engine; they move into the manifest in
-[brief § 8](../.spec/brief.md#8-order-of-work) step 5.
+Under schema `0.2.0`, companion claim tags follow `identifiers.claim` inside the literal tag form. For example, `@req:{claim}` recognizes `@req:B-001`; punctuation in the form is literal. SPEC021 quotes an unresolved tag exactly as written and carries the claim id alone as its identifier. Claim and matrix ids remain case-sensitive even when tags ignore case. Full-line comments are skipped.
+
+Pins `0.1.0` and `0.1.1` retain the original `@B-nnn` scanner with an optional lowercase suffix. The frontmatter keys remain literals pending the separate frontmatter contract.
 
 ## Default manifest
 
@@ -70,6 +68,7 @@ way. The block also omits this repository's `rules` setting: consumers that leav
 <!-- prettier-ignore -->
 ```json
 {
+  "schemaVersion": "0.2.0",
   "$comment": "Not a JSON Schema. The ordered section manifest Specht rule SPEC010 reads, kept as data so the section contract - the twelve numbered sections plus Tasks and Scoring - lives in one place rather than as a string array in C#.",
   "sections": [
     "1. Business Goal",
@@ -118,6 +117,10 @@ way. The block also omits this repository's `rules` setting: consumers that leav
     "draft": "🟡",
     "blocked": "🔴",
     "approved": "approved"
+  },
+  "claim": {
+    "tag": "@{claim}",
+    "tagIgnoreCase": false
   }
 }
 ```

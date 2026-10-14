@@ -48,10 +48,11 @@ public sealed class SpechtRunnerVersionsIntegrationTests
         tree.WriteFeature("0001", "F1", new Dictionary<string, string> { ["priority"] = "med" });
         Pin(tree, pinned);
         var shipped = EngineServices.Versions().Find(new SemanticVersion(0, 1, 0))!;
+        var tagDefaults = EngineServices.Versions().Find(new SemanticVersion(0, 2, 0))!.Manifest;
         var schema = JsonNode.Parse(shipped.FeatureSchema)!.AsObject();
         schema["properties"]!["priority"]!["enum"] = new JsonArray("critical");
         var versions = new SchemaVersions(
-            [shipped, shipped with { Number = new SemanticVersion(1, 0, 0), FeatureSchema = schema.ToJsonString() }]);
+            [shipped, shipped with { Number = new SemanticVersion(1, 0, 0), FeatureSchema = schema.ToJsonString(), Manifest = tagDefaults }]);
 
         // When
         var report = EngineServices.Runner(versions).Run(tree.Root);
@@ -73,8 +74,10 @@ public sealed class SpechtRunnerVersionsIntegrationTests
         tree.WriteFeature("0001", "F1");
         Pin(tree, pinned);
         var shipped = EngineServices.Versions().Find(new SemanticVersion(0, 1, 0))!;
+        var tagDefaults = EngineServices.Versions().Find(new SemanticVersion(0, 2, 0))!.Manifest;
         var versions = new SchemaVersions(
-            [shipped, shipped with { Number = new SemanticVersion(0, 1, 1) }, shipped with { Number = new SemanticVersion(0, 2, 0) }]);
+            [shipped, shipped with { Number = new SemanticVersion(0, 1, 1) },
+                shipped with { Number = new SemanticVersion(0, 2, 0), Manifest = tagDefaults }]);
 
         // When
         var report = EngineServices.Runner(versions).Run(tree.Root);

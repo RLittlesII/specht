@@ -70,12 +70,14 @@ Feature: The manifest carries the roles
 
   @B-007
   Scenario: Claim tags follow the claim grammar
-    Given the manifest's claim grammar accepts a four-digit claim number
+    Given the manifest pins the claim-tag schema version "0.2.0"
+    And the manifest's claim grammar accepts a four-digit claim number
     And the root holds a specification declaring claim "B-0001"
     And its companion carries a scenario tagged "@B-0001"
+    And its companion also carries a scenario tagged "@B-0002"
     When the check runs
     Then the tag resolves to the claim
-    And no unresolved-tag violation is reported
+    And the unresolved-tag rule reports "@B-0002" with identifier "B-0002"
 
   @B-008
   Scenario: Frontmatter schemas are loaded by the manifest's file names
@@ -319,7 +321,8 @@ Feature: The manifest carries the roles
 
   @B-036
   Scenario: Claim tags follow the manifest's tag form
-    Given the manifest's claim tag form is "@req:{claim}"
+    Given the manifest pins the claim-tag schema version "0.2.0"
+    And the manifest's claim tag form is "@req:{claim}"
     And the root holds a specification declaring claim "B-001"
     And its companion carries a scenario tagged "@req:B-001" and a scenario tagged "@req:B-002"
     When the check runs
@@ -328,7 +331,8 @@ Feature: The manifest carries the roles
 
   @B-036 @boundary
   Scenario: A tag outside the manifest's tag form is not a claim tag
-    Given the manifest's claim tag form is "@req:{claim}"
+    Given the manifest pins the claim-tag schema version "0.2.0"
+    And the manifest's claim tag form is "@req:{claim}"
     And the root holds a specification declaring claim "B-001"
     And its companion carries a scenario tagged "@B-002"
     When the check runs
@@ -336,7 +340,8 @@ Feature: The manifest carries the roles
 
   @B-037
   Scenario: Claim tags resolve ignoring case when the manifest says so
-    Given the manifest reads claim tags ignoring letter case
+    Given the manifest pins the claim-tag schema version "0.2.0"
+    And the manifest reads claim tags ignoring letter case
     And the root holds a specification declaring claim "B-001"
     And its companion carries a scenario tagged "@b-001" and a scenario tagged "@b-002"
     When the check runs
@@ -345,31 +350,114 @@ Feature: The manifest carries the roles
 
   @B-037 @boundary
   Scenario: Claim tags are read in exact case unless the manifest says otherwise
-    Given the root holds a specification declaring claim "B-001"
+    Given the manifest pins the claim-tag schema version "0.2.0"
+    And the root holds a specification declaring claim "B-001"
     And its companion carries a scenario tagged "@b-002"
     When the check runs
     Then no unresolved-tag violation is reported
 
   @B-037 @boundary
   Scenario: Reading tags ignoring case leaves a claim's own id exact
-    Given the manifest reads claim tags ignoring letter case
+    Given the manifest pins the claim-tag schema version "0.2.0"
+    And the manifest reads claim tags ignoring letter case
     And the root holds a specification declaring claim "b-001"
     When the check runs
     Then the malformed-claim-id rule reports "b-001"
 
   @B-038
   Scenario: A tag form without a claim placeholder is invalid
-    Given the manifest's claim tag form is "@req:"
+    Given the manifest pins the claim-tag schema version "0.2.0"
+    And the manifest's claim tag form is "@req:"
     When the check runs
     Then the manifest is rejected
     And the rejection names the claim tag form
 
   @B-038 @boundary
   Scenario: A tag form cannot carry two claims
-    Given the manifest's claim tag form is "@{claim}:{claim}"
+    Given the manifest pins the claim-tag schema version "0.2.0"
+    And the manifest's claim tag form is "@{claim}:{claim}"
     When the check runs
     Then the manifest is rejected
     And the rejection names the claim tag form
+
+  @B-037 @B-036
+  Scenario: Case folding includes the literal tag form and diagnostics preserve spelling
+    Given the manifest pins the claim-tag schema version "0.2.0"
+    And the manifest's claim tag form is "@req:{claim}"
+    And the manifest reads claim tags ignoring letter case
+    And the root holds a specification declaring claim "B-001"
+    And its companion carries a scenario tagged "@REQ:b-001" and a scenario tagged "@REQ:b-002"
+    When the check runs
+    Then the first tag resolves to the claim
+    And the unresolved-tag rule reports "@REQ:b-002" with identifier "b-002"
+
+  @B-036 @boundary
+  Scenario: Literal punctuation in a tag form is not a regular expression
+    Given the manifest pins the claim-tag schema version "0.2.0"
+    And the manifest's claim tag form is "@req.[{claim}]"
+    And the root holds a specification declaring claim "B-001"
+    And its companion carries a scenario tagged "@req.[B-001]" and a scenario tagged "@req.[B-002]"
+    When the check runs
+    Then the first tag resolves to the claim
+    And the unresolved-tag rule reports "@req.[B-002]" with identifier "B-002"
+
+  @B-049 @boundary
+  Scenario Outline: Older pins retain their claim tag scanner
+    Given the manifest pins the claim-tag schema version "<pin>"
+    And the manifest's claim grammar accepts a four-digit claim number
+    And the root holds a specification declaring claim "B-0001"
+    And its companion carries a scenario tagged "@B-0001" and a scenario tagged "@B-002"
+    When the check runs
+    Then the unresolved-tag rule reports "@B-002" with identifier "B-002"
+
+    Examples:
+      | pin   |
+      | 0.1.0 |
+      | 0.1.1 |
+
+  @B-049 @B-022 @B-023 @boundary
+  Scenario Outline: Older pins reject the new tag keys
+    Given the manifest pins the claim-tag schema version "<pin>"
+    And the manifest's claim tag form is "@req:{claim}"
+    When the tool runs as a command on the root
+    Then the exit code is 3
+    And the standard output is empty
+    And the tag rejection on stderr names "claim"
+
+    Examples:
+      | pin   |
+      | 0.1.0 |
+      | 0.1.1 |
+
+  @B-038 @B-022 @B-023
+  Scenario Outline: Invalid tag forms are rejected before a check
+    Given the manifest pins the claim-tag schema version "0.2.0"
+    And the manifest's claim tag form is "<form>"
+    When the tool runs as a command on the root
+    Then the exit code is 3
+    And the standard output is empty
+    And the tag rejection on stderr names "<form>"
+
+    Examples:
+      | form             |
+      | @req:            |
+      | @{claim}:{claim} |
+
+  @B-012 @B-022 @B-023 @boundary
+  Scenario Outline: Claim tag settings belong to the claim object
+    Given the manifest pins the claim-tag schema version "0.2.0"
+    And the manifest declares the flat tag setting "<key>"
+    When the tool runs as a command on the root
+    Then the exit code is 3
+    And the standard output is empty
+    And the tag rejection on stderr names "<key>"
+
+    Examples:
+      | key                |
+      | tag                |
+      | tagIgnoreCase      |
+      | claimTagForm       |
+      | claimTagIgnoreCase |
 
   @B-039
   Scenario: Table headers keyed by a section title are invalid

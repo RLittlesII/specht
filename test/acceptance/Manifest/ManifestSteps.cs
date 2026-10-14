@@ -60,13 +60,99 @@ public sealed class ManifestSteps
 
     [Given("the root holds a specification declaring claim {string}")]
     public void GivenTheRootHoldsASpecificationDeclaringClaim(string claim) =>
-        Tree.WriteFeature(
+        _tagSpecification = Tree.WriteFeature(
             "0001",
             "F1",
             sections: SpecTree.SectionsWith(
                 "3. Acceptance Criteria",
                 "## 3. Acceptance Criteria\n\n| ID | Claim | Source | Status |\n| -- | ----- | ------ | ------ |\n"
                     + $"| {claim} | It does the thing. | brd | Active |\n"));
+
+    [Given("the manifest pins the claim-tag schema version {string}")]
+    public void GivenTheClaimTagPin(string pin)
+    {
+        Manifest["schemaVersion"] = pin;
+        Manifest.Remove("claim");
+    }
+
+    [Given("the manifest's claim grammar accepts a four-digit claim number")]
+    public void GivenAFourDigitClaimGrammar() => Manifest["identifiers"]!["claim"] = "^B-[0-9]{4}$";
+
+    [Given("the manifest's claim tag form is {string}")]
+    public void GivenTheClaimTagForm(string form) => Named("claim")["tag"] = form;
+
+    [Given("the manifest declares the flat tag setting {string}")]
+    public void GivenTheFlatTagSetting(string key) =>
+        Manifest[key] = key is "claimTagForm" or "tag" ? JsonValue.Create("@{claim}") : JsonValue.Create(true);
+
+    [Given("the manifest reads claim tags ignoring letter case")]
+    public void GivenIgnoringClaimTagCase() => Named("claim")["tagIgnoreCase"] = true;
+
+    [Given("its companion carries a scenario tagged {string}")]
+    public void GivenOneClaimTag(string tag)
+    {
+        _claimTags = [tag];
+        WriteClaimTags();
+    }
+
+    [Given("its companion also carries a scenario tagged {string}")]
+    public void GivenAnotherClaimTag(string tag)
+    {
+        _claimTags.Add(tag);
+        WriteClaimTags();
+    }
+
+    [Given("its companion carries a scenario tagged {string} and a scenario tagged {string}")]
+    public void GivenTwoClaimTags(string first, string second)
+    {
+        _claimTags = [first, second];
+        WriteClaimTags();
+    }
+
+    [Then("the tag resolves to the claim")]
+    [Then("the first tag resolves to the claim")]
+    public void ThenTheFirstClaimTagResolves()
+    {
+        _rejection.Should().BeNull();
+        _report!.Violations.Where(static violation => violation.RuleId == "SPEC021")
+            .Should().NotContain(violation => violation.Message.Contains($"'{_claimTags[0]}'", StringComparison.Ordinal));
+    }
+
+    [Then("no unresolved-tag violation is reported")]
+    public void ThenNoUnresolvedClaimTag()
+    {
+        _rejection.Should().BeNull();
+        _report!.Violations.Should().NotContain(static violation => violation.RuleId == "SPEC021");
+    }
+
+    [Then("the unresolved-tag rule reports the second tag and nothing else")]
+    public void ThenOnlyTheSecondClaimTag() => ThenTheUnknownClaimTag(_claimTags[1], _claimTags[1].Split(':').Last().TrimStart('@'));
+
+    [Then("the unresolved-tag rule reports {string} with identifier {string}")]
+    public void ThenTheUnknownClaimTag(string tag, string identifier)
+    {
+        _rejection.Should().BeNull();
+        var violation = _report!.Violations.Where(static violation => violation.RuleId == "SPEC021").Should().ContainSingle().Subject;
+        violation.Identifier.Should().Be(identifier);
+        violation.Message.Should().Contain($"scenario tag '{tag}'");
+        violation.Line.Should().BeGreaterThan(0);
+    }
+
+    [Then("the malformed-claim-id rule reports {string}")]
+    public void ThenMalformedClaimId(string id)
+    {
+        _rejection.Should().BeNull();
+        _report!.Violations.Should().ContainSingle(violation => violation.RuleId == "SPEC030" && violation.Identifier == id);
+    }
+
+    [Then("the rejection names the claim tag form")]
+    public void ThenTheRejectedClaimTagForm() =>
+        _rejection!.Message.Should().Contain("claim.tag").And.Contain(Manifest["claim"]!["tag"]!.GetValue<string>());
+
+    [Then("the tag rejection on stderr names {string}")]
+    public void ThenTheTagRejectionOnStderr(string text) =>
+        Run.Stderr.Split('\n', StringSplitOptions.RemoveEmptyEntries).Should().ContainSingle().Which.Should()
+            .StartWith("specht: .specht/manifest.json:").And.Contain(text);
 
     [Given("the manifest renames the {word} section to {string} in its section list and its {word} role")]
     public void GivenTheManifestRenamesTheSectionInItsSectionListAndItsRole(string section, string title, string role)
@@ -516,6 +602,10 @@ public sealed class ManifestSteps
         return _report!.Violations.Where(static violation => violation.RuleId == "SPEC013").Select(static violation => violation.File);
     }
 
+    private void WriteClaimTags() => Tree.WriteFeatureFile(
+        _tagSpecification ?? throw new InvalidOperationException("No claim specification was written."),
+        "Feature: synthetic tags\n\n" + string.Join("\n", _claimTags.Select(static tag => $"  {tag}\n  Scenario: synthetic\n    Given a sample\n")));
+
     private sealed class WarningRule(string id) : ISpecRule
     {
         public string Id => id;
@@ -551,6 +641,8 @@ public sealed class ManifestSteps
     };
 
     private readonly List<string> _specifications = [];
+    private string? _tagSpecification;
+    private List<string> _claimTags = [];
     private SpecTree? _tree;
     private JsonObject? _manifest;
     private SpechtReport? _report;
