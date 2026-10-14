@@ -2,6 +2,7 @@ using System.Text.RegularExpressions;
 using AwesomeAssertions;
 using AwesomeAssertions.Execution;
 using Specht.Tests.Rules;
+using Specht.Tests.Shared;
 using Specht.Versioning;
 
 namespace Specht.Tests.Report;
@@ -17,7 +18,7 @@ namespace Specht.Tests.Report;
 public sealed class SchemaVersionRulePagesUnitTests
 {
     /// <summary>Gets the number of every schema version the engine embeds, as <c>major.minor.patch</c>.</summary>
-    public static TheoryData<string> Shipped => [.. SchemaVersions.Embedded.Versions.Select(static version => version.Number.ToString())];
+    public static TheoryData<string> Shipped => [.. EngineServices.Versions().Versions.Select(static version => version.Number.ToString())];
 
     /// <summary>Gets every shipped version's number with each rule id in its vocabulary.</summary>
     public static TheoryData<string, string> Rules
@@ -26,7 +27,7 @@ public sealed class SchemaVersionRulePagesUnitTests
         {
             var rules = new TheoryData<string, string>();
 
-            foreach (var version in SchemaVersions.Embedded.Versions)
+            foreach (var version in EngineServices.Versions().Versions)
             {
                 foreach (var id in version.RuleIds.Order(StringComparer.Ordinal))
                 {
@@ -56,7 +57,7 @@ public sealed class SchemaVersionRulePagesUnitTests
     public void TheEngine_WhenItsEmbeddedMarkdownIsCounted_ShouldEmbedNoPageAShippedVersionDoesNotGive()
     {
         // Given
-        var given = SchemaVersions.Embedded.Versions.Sum(static version => version.RulePages.Count);
+        var given = EngineServices.Versions().Versions.Sum(static version => version.RulePages.Count);
 
         // When
         var embedded = typeof(SchemaVersions).Assembly.GetManifestResourceNames()
@@ -140,7 +141,7 @@ public sealed class SchemaVersionRulePagesUnitTests
     }
 
     private static SchemaVersion Version(string number) =>
-        SchemaVersions.Embedded.Versions.Single(version => string.Equals(version.Number.ToString(), number, StringComparison.Ordinal));
+        EngineServices.Versions().Versions.Single(version => string.Equals(version.Number.ToString(), number, StringComparison.Ordinal));
 
     private static RulePage Read(string number, string id)
     {

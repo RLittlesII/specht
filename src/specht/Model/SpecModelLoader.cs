@@ -1,7 +1,6 @@
 using System.IO.Abstractions;
 using Specht.Discovery;
 using Specht.Manifest;
-using Specht.Versioning;
 
 namespace Specht.Model;
 
@@ -16,31 +15,10 @@ public sealed class SpecModelLoader(
     SpecDiscovery discovery,
     SpecSchemasLoader schemas)
 {
-    /// <summary>Loads the model rooted at <paramref name="root"/> with the embedded version set.</summary>
-    /// <param name="root">The repository root.</param>
-    /// <returns>The resolved tree.</returns>
-    /// <exception cref="SpechtRootNotFoundException"><paramref name="root"/> is not a directory; nothing in the tree is read.</exception>
-    /// <exception cref="SpechtManifestNotFoundException">There is no manifest; nothing in the tree is read.</exception>
-    /// <exception cref="SpechtManifestUnreadableException">The manifest does not parse; nothing in the tree is read.</exception>
-    /// <exception cref="SpechtManifestException">The manifest is rejected; nothing in the tree is read.</exception>
-    public SpecModel Load(string root) => Load(root, SchemaVersions.Embedded);
-
-    /// <summary>
-    /// Loads the model rooted at <paramref name="root"/>, the manifest and the pinned version's schemas from
-    /// <paramref name="versions"/> before the tree.
-    /// </summary>
-    /// <param name="root">The repository root.</param>
-    /// <param name="versions">The version set the pin selects from.</param>
-    /// <returns>The resolved tree.</returns>
-    /// <exception cref="SpechtRootNotFoundException"><paramref name="root"/> is not a directory; nothing in the tree is read.</exception>
-    /// <exception cref="SpechtManifestNotFoundException">There is no manifest; nothing in the tree is read.</exception>
-    /// <exception cref="SpechtManifestUnreadableException">The manifest does not parse; nothing in the tree is read.</exception>
-    /// <exception cref="SpechtManifestException">
-    /// The manifest is rejected, or pins a version <paramref name="versions"/> does not hold; nothing in the tree is read.
-    /// </exception>
-    public SpecModel Load(string root, SchemaVersions versions)
+    /// <summary>Loads the resolved tree through its injected manifest and schema stage.</summary>
+    public SpecModel Load(string root)
     {
-        var loaded = schemas.Load(root, versions);
+        var loaded = schemas.Load(root);
         var inputs = loaded.Structure.Discovery;
         var locations = discovery.FindSpecifications(root, inputs);
         var features = new List<FeatureSpec>();

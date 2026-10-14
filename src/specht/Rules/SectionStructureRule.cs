@@ -37,7 +37,7 @@ public sealed class SectionStructureRule : ISpecRule
                         feature.RelativePath,
                         0,
                         title,
-                        $"missing section '## {title}' - the contracted sections are in {SpecManifest.RelativePath}");
+                        $"missing section '## {title}' - the contracted sections are in {SpecManifestStore.RelativePath}");
                 }
                 else if (count > 1)
                 {

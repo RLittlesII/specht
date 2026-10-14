@@ -4,6 +4,7 @@ using System.Security.Cryptography;
 using AwesomeAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using Specht.Manifest;
+using Specht.Tests.Shared;
 using Specht.Tool;
 using Specht.Tool.Features.Init;
 using Spectre.Console.Cli.Testing;
@@ -44,7 +45,12 @@ public sealed class NewSourceInitCommandIntegrationTests
         }));
         using var errors = new StringWriter();
         var services = new ServiceCollection();
-        services.AddSingleton(new InitWriter(InitWriter.ShippingCopy(typeof(InitWriter).Assembly), fileSystem, new UpstreamSchemaFetcher(client)));
+        services.AddSingleton(new InitWriter(
+            InitWriter.ShippingCopy(typeof(InitWriter).Assembly),
+            fileSystem,
+            EngineServices.Parser(),
+            new SpecManifestStore(fileSystem),
+            new UpstreamSchemaFetcher(client)));
         services.AddSingleton<TextWriter>(errors);
         var app = new CommandAppTester(new TypeRegistrar(services), console: new TestConsole().Width(80));
         app.Configure(static config => config.AddCommand<InitCommand>("init"));
@@ -71,7 +77,7 @@ public sealed class NewSourceInitCommandIntegrationTests
         if (exit == 0)
         {
             errors.ToString().Should().BeEmpty();
-            var source = SpecManifest.Load(fileSystem, root).SpechtSchema;
+            var source = EngineServices.Manifest(fileSystem, root).SpechtSchema;
             source.Should().NotBeNull();
             source!.Files.Should().HaveCount(2).And.AllSatisfy(file => file.Hash.Should().Be(hash));
             result.Output.Should().Contain("written .specht/manifest.json");

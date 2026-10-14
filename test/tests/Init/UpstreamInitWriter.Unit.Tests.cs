@@ -4,6 +4,7 @@ using System.Security.Cryptography;
 using System.Text.Json.Nodes;
 using AwesomeAssertions;
 using Specht.Manifest;
+using Specht.Tests.Shared;
 using Specht.Tool.Features.Init;
 
 namespace Specht.Tests.Init;
@@ -39,7 +40,12 @@ public sealed class UpstreamInitWriterUnitTests
         }));
 
         // When
-        var listing = await new InitWriter(ShippingCopy, fileSystem, new UpstreamSchemaFetcher(client))
+        var listing = await new InitWriter(
+            ShippingCopy,
+            fileSystem,
+            EngineServices.Parser(),
+            new SpecManifestStore(fileSystem),
+            new UpstreamSchemaFetcher(client))
             .Write("repo", schemas: true, templates: false, CancellationToken.None);
 
         // Then
@@ -85,7 +91,12 @@ public sealed class UpstreamInitWriterUnitTests
                 _ => throw new HttpRequestException("Synthetic source is unreachable."),
             };
         }));
-        var writer = new InitWriter(ShippingCopy, fileSystem, new UpstreamSchemaFetcher(client));
+        var writer = new InitWriter(
+            ShippingCopy,
+            fileSystem,
+            EngineServices.Parser(),
+            new SpecManifestStore(fileSystem),
+            new UpstreamSchemaFetcher(client));
 
         // When
         var write = () => writer.Write("repo", schemas: true, templates: true, CancellationToken.None);
@@ -133,7 +144,12 @@ public sealed class UpstreamInitWriterUnitTests
         }));
 
         // When
-        await new InitWriter(ShippingCopy, fileSystem, new UpstreamSchemaFetcher(client))
+        await new InitWriter(
+            ShippingCopy,
+            fileSystem,
+            EngineServices.Parser(),
+            new SpecManifestStore(fileSystem),
+            new UpstreamSchemaFetcher(client))
             .Write("repo", schemas, templates, CancellationToken.None);
 
         // Then
@@ -163,7 +179,12 @@ public sealed class UpstreamInitWriterUnitTests
             requests++;
             return new HttpResponseMessage(HttpStatusCode.OK) { Content = new ByteArrayContent(Content) };
         }));
-        var writer = new InitWriter(ShippingCopy, fileSystem, new UpstreamSchemaFetcher(client));
+        var writer = new InitWriter(
+            ShippingCopy,
+            fileSystem,
+            EngineServices.Parser(),
+            new SpecManifestStore(fileSystem),
+            new UpstreamSchemaFetcher(client));
 
         // When
         var write = () => writer.Write("repo", schemas: true, templates: true, CancellationToken.None);
@@ -194,7 +215,12 @@ public sealed class UpstreamInitWriterUnitTests
         }));
 
         // When
-        var listing = await new InitWriter(ShippingCopy, fileSystem, new UpstreamSchemaFetcher(client))
+        var listing = await new InitWriter(
+            ShippingCopy,
+            fileSystem,
+            EngineServices.Parser(),
+            new SpecManifestStore(fileSystem),
+            new UpstreamSchemaFetcher(client))
             .Write("repo", schemas: true, templates: false, CancellationToken.None);
 
         // Then

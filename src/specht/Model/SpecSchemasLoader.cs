@@ -1,53 +1,68 @@
 using System.IO.Abstractions;
+using System.Text.Json;
 using Specht.Manifest;
-using Specht.Versioning;
 
 namespace Specht.Model;
 
-/// <summary>Loads the manifest and the pinned schemas, or the verified local upstream copy (0001-F7 B-024, B-028).</summary>
-/// <param name="fileSystem">The file system the manifest is read through.</param>
-/// <param name="store">The reader of local frontmatter schema bytes.</param>
-/// <param name="copy">The verifier of the recorded hashes.</param>
-public sealed class SpecSchemasLoader(IFileSystem fileSystem, FrontmatterSchemaStore store, UpstreamSchemaCopy copy)
+/// <summary>Sequences manifest validation and schema loading until ADR-0010 D2 supplies the model reader.</summary>
+/// <param name="fileSystem">The file system for the retained on-disk schema path.</param>
+/// <param name="store">The manifest and local schema store.</param>
+/// <param name="parser">The pure manifest parser and pin resolver.</param>
+/// <param name="copy">The verifier of local upstream bytes.</param>
+public sealed class SpecSchemasLoader(
+    IFileSystem fileSystem, SpecManifestStore store, SpecManifestParser parser, UpstreamSchemaCopy copy)
 {
-    /// <summary>Loads the manifest and resolves its frontmatter schemas using the embedded version set.</summary>
-    /// <param name="root">The repository root.</param>
-    /// <returns>The schemas and the structure the manifest declares.</returns>
-    /// <exception cref="SpechtRootNotFoundException"><paramref name="root"/> is not a directory.</exception>
-    /// <exception cref="SpechtManifestNotFoundException">There is no manifest.</exception>
-    /// <exception cref="SpechtManifestUnreadableException">The manifest does not parse.</exception>
-    /// <exception cref="SpechtManifestException">The manifest is rejected.</exception>
-    public SpecSchemas Load(string root) => Load(root, SchemaVersions.Embedded);
-
-    /// <summary>
-    /// Loads the manifest under <paramref name="root"/> and the schemas of the version it pins from
-    /// <paramref name="versions"/> (<c>0001-F7</c> B-001, C-4).
-    /// </summary>
-    /// <param name="root">The repository root.</param>
-    /// <param name="versions">The version set the pin selects from.</param>
-    /// <returns>The schemas and the structure the manifest declares.</returns>
-    /// <exception cref="SpechtRootNotFoundException"><paramref name="root"/> is not a directory.</exception>
-    /// <exception cref="SpechtManifestNotFoundException">There is no manifest.</exception>
-    /// <exception cref="SpechtManifestUnreadableException">The manifest does not parse.</exception>
-    /// <exception cref="SpechtManifestException">The manifest or its upstream copy is rejected, or the pin is not shipped.</exception>
-    public SpecSchemas Load(string root, SchemaVersions versions)
+    /// <summary>Loads embedded schemas or the verified local upstream copy after manifest validation.</summary>
+    public SpecSchemas Load(string root)
     {
-        var embedded = SpecSchemas.Load(fileSystem, root, versions);
-        var source = embedded.Structure.SpechtSchema;
+        var structure = LoadManifest(root);
+        var selected = parser.PinnedVersion(structure);
+        var embedded = SpecSchemas.Load(structure, selected);
+        var source = structure.SpechtSchema;
         if (source is null)
         {
             return embedded;
         }
 
-        var files = source.Files.ToDictionary(static file => file.Kind, file => store.Read(root, file.FileName), StringComparer.Ordinal);
+        var files = source.Files.ToDictionary(
+            static file => file.Kind, file => store.ReadFrontmatterSchema(root, file.FileName), StringComparer.Ordinal);
         var texts = copy.Verify(source, files);
-        var version = embedded.Version with
+        var version = selected with
         {
             FeatureSchema = texts["feature"],
             ItemSchema = texts["task"],
-            EpicSchema = texts.GetValueOrDefault("epic", embedded.Version.EpicSchema),
+            EpicSchema = texts.GetValueOrDefault("epic", selected.EpicSchema),
         };
+        return new SpecSchemas(version, structure, SpecSchemaSource.Upstream);
+    }
 
-        return new SpecSchemas(version, embedded.Structure, SpecSchemaSource.Upstream);
+    /// <summary>Loads the explicitly requested local schema files after the same manifest validation.</summary>
+    public SpecSchemas LoadOnDisk(string root)
+    {
+        var structure = LoadManifest(root);
+        return SpecSchemas.Load(fileSystem, root, structure, parser.PinnedVersion(structure));
+    }
+
+    /// <summary>Reads and parses a manifest, retaining the existing root, missing-file and shape failures.</summary>
+    public SpecStructure LoadManifest(string root)
+    {
+        if (!store.RootExists(root))
+        {
+            throw new SpechtRootNotFoundException();
+        }
+
+        if (!store.ManifestExists(root))
+        {
+            throw new SpechtManifestNotFoundException(store.RetiredManifestExists(root));
+        }
+
+        try
+        {
+            return parser.Parse(store.ReadManifest(root));
+        }
+        catch (Exception exception) when (exception is JsonException or InvalidOperationException or FormatException)
+        {
+            throw new SpechtManifestUnreadableException(exception);
+        }
     }
 }

@@ -25,9 +25,10 @@ services.AddSingleton(static _ => new HttpClient(new HttpClientHandler
 services.AddSingleton<UpstreamSchemaFetcher>();
 services.AddSingleton(static provider => new InitWriter(
     InitWriter.ShippingCopy(typeof(InitWriter).Assembly),
-    new FileSystem(),
-    provider.GetRequiredService<UpstreamSchemaFetcher>(),
-    provider.GetRequiredService<SpecManifestParser>()));
+    provider.GetRequiredService<IFileSystem>(),
+    provider.GetRequiredService<SpecManifestParser>(),
+    provider.GetRequiredService<SpecManifestStore>(),
+    provider.GetRequiredService<UpstreamSchemaFetcher>()));
 
 var app = new CommandApp(new TypeRegistrar(services));
 app.SetDefaultCommand<CheckCommand>();

@@ -34,7 +34,7 @@ public sealed class SpecModelLoaderUnitTests
             fileSystem,
             new FrontmatterReader(fileSystem),
             new SpecDiscovery(fileSystem),
-            new SpecSchemasLoader(fileSystem, new FrontmatterSchemaStore(fileSystem), new UpstreamSchemaCopy()));
+            EngineServices.Schemas(fileSystem));
 
         // When
         var model = loader.Load(root);

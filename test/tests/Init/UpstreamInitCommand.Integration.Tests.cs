@@ -5,6 +5,7 @@ using System.Text.Json.Nodes;
 using AwesomeAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using Specht.Manifest;
+using Specht.Tests.Shared;
 using Specht.Tool;
 using Specht.Tool.Features.Init;
 using Spectre.Console.Cli.Testing;
@@ -39,7 +40,12 @@ public sealed class UpstreamInitCommandIntegrationTests
         using var client = new HttpClient(new SyntheticHandler(unreachable));
         using var errors = new StringWriter();
         var services = new ServiceCollection();
-        services.AddSingleton(new InitWriter(InitWriter.ShippingCopy(typeof(InitWriter).Assembly), fileSystem, new UpstreamSchemaFetcher(client)));
+        services.AddSingleton(new InitWriter(
+            InitWriter.ShippingCopy(typeof(InitWriter).Assembly),
+            fileSystem,
+            EngineServices.Parser(),
+            new SpecManifestStore(fileSystem),
+            new UpstreamSchemaFetcher(client)));
         services.AddSingleton<TextWriter>(errors);
         var app = new CommandAppTester(new TypeRegistrar(services), console: new TestConsole().Width(80));
         app.Configure(static config => config.AddCommand<InitCommand>("init"));

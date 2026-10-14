@@ -1,27 +1,55 @@
+using System.IO.Abstractions;
 using Microsoft.Extensions.DependencyInjection;
 using Specht.Composition;
+using Specht.Manifest;
 using Specht.Model;
 using Specht.Tool;
+using Specht.Versioning;
 
 namespace Specht.Tests.Shared;
 
-/// <summary>
-/// The engine as <see cref="SpechtEngineServiceCollectionExtensions.AddSpechtEngine"/> registers it (ADR-0001 stage D,
-/// item 0107), over the real file system: the graph the host resolves, so a test that runs the engine over a tree on
-/// disk runs the one that ships. Each read builds its own provider through <see cref="TypeRegistrar.Build"/>, the one
-/// call site that builds one (ADR-0003), as each run of the tool does.
-/// </summary>
+/// <summary>Composes the real engine graph with optional in-memory file system and catalog substitutions.</summary>
 public static class EngineServices
 {
-    /// <summary>Resolves the runner.</summary>
-    /// <returns>The runner.</returns>
-    public static SpechtRunner Runner() => (SpechtRunner)Resolve(typeof(SpechtRunner));
+    /// <summary>Resolves a runner with the chosen catalog.</summary>
+    public static SpechtRunner Runner(SchemaVersions? versions = null) => (SpechtRunner)Resolve(typeof(SpechtRunner), versions: versions);
 
     /// <summary>Resolves the model loader.</summary>
-    /// <returns>The loader.</returns>
     public static SpecModelLoader Loader() => (SpecModelLoader)Resolve(typeof(SpecModelLoader));
 
-    private static object Resolve(Type service) =>
-        new TypeRegistrar(new ServiceCollection().AddSpechtEngine()).Build().Resolve(service)
-        ?? throw new InvalidOperationException($"AddSpechtEngine() registers no {service.Name}.");
+    /// <summary>Resolves the shipped instance catalog.</summary>
+    public static SchemaVersions Versions() => (SchemaVersions)Resolve(typeof(SchemaVersions));
+
+    /// <summary>Resolves the pure manifest parser.</summary>
+    public static SpecManifestParser Parser() => (SpecManifestParser)Resolve(typeof(SpecManifestParser));
+
+    /// <summary>Resolves the schema stage over the supplied file system and catalog.</summary>
+    public static SpecSchemasLoader Schemas(IFileSystem fileSystem, SchemaVersions? versions = null) =>
+        (SpecSchemasLoader)Resolve(typeof(SpecSchemasLoader), fileSystem, versions);
+
+    /// <summary>Reads and parses a manifest without check-only pin resolution.</summary>
+    public static SpecStructure Manifest(IFileSystem fileSystem, string root) => Schemas(fileSystem).LoadManifest(root);
+
+    /// <summary>Loads the embedded or verified upstream schemas.</summary>
+    public static SpecSchemas LoadSchemas(IFileSystem fileSystem, string root, SchemaVersions versions) => Schemas(fileSystem, versions).Load(root);
+
+    /// <summary>Loads the explicitly requested local schemas.</summary>
+    public static SpecSchemas LoadOnDiskSchemas(IFileSystem fileSystem, string root) => Schemas(fileSystem).LoadOnDisk(root);
+
+    private static object Resolve(Type service, IFileSystem? fileSystem = null, SchemaVersions? versions = null)
+    {
+        var services = new ServiceCollection();
+        if (fileSystem is not null)
+        {
+            services.AddSingleton(fileSystem);
+        }
+
+        if (versions is not null)
+        {
+            services.AddSingleton(versions);
+        }
+
+        return new TypeRegistrar(services.AddSpechtEngine()).Build().Resolve(service)
+            ?? throw new InvalidOperationException($"AddSpechtEngine() registers no {service.Name}.");
+    }
 }

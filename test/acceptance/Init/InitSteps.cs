@@ -11,6 +11,7 @@ using AwesomeAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using Reqnroll;
 using Specht.Manifest;
+using Specht.Tests.Shared;
 using Specht.Tool;
 using Specht.Tool.Features.Init;
 using Specht.Versioning;
@@ -100,7 +101,7 @@ public sealed partial class InitSteps
         var embedded = Read(Embedded(Manifest, version));
         embedded.Should().NotBeNull($"the tool embeds {Embedded(Manifest, version)}");
         var manifest = JsonNode.Parse(embedded)!.AsObject();
-        manifest["schemaVersion"] = SchemaVersions.Embedded.Versions[^1].Number.ToString();
+        manifest["schemaVersion"] = EngineServices.Versions().Versions[^1].Number.ToString();
         (manifest["identifiers"]?["epic"]).Should().NotBeNull("the manifest declares the epic grammar");
         _manifest = System.Text.Encoding.UTF8.GetBytes(manifest.ToJsonString());
         Directory.CreateDirectory(Path.GetDirectoryName(Written(Manifest))!);
@@ -517,7 +518,7 @@ public sealed partial class InitSteps
     public void ThenTheManifestRecordsTheSuppliedUpstreamSource()
     {
         _exitCode.Should().Be(0, _stderr + _stdout);
-        var source = SpecManifest.Load(new FileSystem(), Root).SpechtSchema;
+        var source = EngineServices.Manifest(new FileSystem(), Root).SpechtSchema;
         source.Should().NotBeNull();
         source!.Location.Should().Be(SourceLocation);
         source.Version.Should().Be("2026.10");
@@ -629,7 +630,12 @@ public sealed partial class InitSteps
         using var client = new HttpClient(Source);
         using var errors = new StringWriter();
         var services = new ServiceCollection();
-        services.AddSingleton(new InitWriter(InitWriter.ShippingCopy(Shipped), new FileSystem(), new UpstreamSchemaFetcher(client)));
+        services.AddSingleton(new InitWriter(
+            InitWriter.ShippingCopy(Shipped),
+            new FileSystem(),
+            EngineServices.Parser(),
+            new SpecManifestStore(new FileSystem()),
+            new UpstreamSchemaFetcher(client)));
         services.AddSingleton<TextWriter>(errors);
         var app = new CommandAppTester(new TypeRegistrar(services), console: new TestConsole().Width(80));
         app.Configure(static config => config.AddCommand<InitCommand>("init"));

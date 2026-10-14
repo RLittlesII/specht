@@ -6,6 +6,7 @@ using Specht.Manifest;
 using Specht.Model;
 using Specht.Resources;
 using Specht.Rules;
+using Specht.Versioning;
 
 namespace Specht.Composition;
 
@@ -23,11 +24,13 @@ public static class SpechtEngineServiceCollectionExtensions
     {
         services.TryAddSingleton<IFileSystem, FileSystem>();
         services.AddSingleton<SpechtResources>();
-        services.AddSingleton(static provider => new SpecManifestParser(provider.GetRequiredService<SpechtResources>().DefaultManifest));
+        services.TryAddSingleton(static provider => new SchemaVersions(provider.GetRequiredService<SpechtResources>().Texts));
+        services.AddSingleton(static provider => new SpecManifestParser(
+            provider.GetRequiredService<SpechtResources>().DefaultManifest, provider.GetRequiredService<SchemaVersions>()));
         services.AddSingleton<FrontmatterReader>();
         services.AddSingleton<FeatureFileReader>();
         services.AddSingleton<SpecDiscovery>();
-        services.AddSingleton<FrontmatterSchemaStore>();
+        services.AddSingleton<SpecManifestStore>();
         services.AddSingleton<UpstreamSchemaCopy>();
         services.AddSingleton<SpecSchemasLoader>();
         services.AddSingleton<SpecModelLoader>();

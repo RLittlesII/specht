@@ -4,6 +4,7 @@ using System.Security.Cryptography;
 using System.Text.Json.Nodes;
 using AwesomeAssertions;
 using Specht.Manifest;
+using Specht.Tests.Shared;
 using Specht.Tool.Features.Init;
 
 namespace Specht.Tests.Init;
@@ -34,13 +35,18 @@ public sealed class NewSourceInitWriterUnitTests
             requests.Add(request.RequestUri!.AbsoluteUri);
             return new HttpResponseMessage(HttpStatusCode.OK) { Content = new ByteArrayContent(Content) };
         }));
-        var writer = new InitWriter(Copy, fileSystem, new UpstreamSchemaFetcher(client));
+        var writer = new InitWriter(
+            Copy,
+            fileSystem,
+            EngineServices.Parser(),
+            new SpecManifestStore(fileSystem),
+            new UpstreamSchemaFetcher(client));
 
         // When
         await writer.Write("repo", schemas, templates, CancellationToken.None, Location, "release-label", Hashes);
 
         // Then
-        var manifest = SpecManifest.Load(fileSystem, "repo");
+        var manifest = EngineServices.Manifest(fileSystem, "repo");
         manifest.SpechtSchema.Should().NotBeNull();
         manifest.SpechtSchema!.Location.Should().Be(Location);
         manifest.SpechtSchema.Version.Should().Be("release-label");
@@ -93,7 +99,12 @@ public sealed class NewSourceInitWriterUnitTests
             requests++;
             throw new HttpRequestException("No request expected.");
         }));
-        var writer = new InitWriter(Copy, fileSystem, new UpstreamSchemaFetcher(client));
+        var writer = new InitWriter(
+            Copy,
+            fileSystem,
+            EngineServices.Parser(),
+            new SpecManifestStore(fileSystem),
+            new UpstreamSchemaFetcher(client));
         var location = fault == "missing source" ? null : fault == "invalid source" ? "private-value" : Location;
         var version = fault == "missing version" ? null : fault == "invalid version" ? "" : "release-label";
         string[] hashes = fault switch
@@ -149,7 +160,12 @@ public sealed class NewSourceInitWriterUnitTests
                 Content = new ByteArrayContent(failure == "later mismatch" && requests == 1 ? Content : "wrong bytes"u8.ToArray()),
             };
         }));
-        var writer = new InitWriter(Copy, fileSystem, new UpstreamSchemaFetcher(client));
+        var writer = new InitWriter(
+            Copy,
+            fileSystem,
+            EngineServices.Parser(),
+            new SpecManifestStore(fileSystem),
+            new UpstreamSchemaFetcher(client));
 
         // When
         var write = () => writer.Write("repo", true, true, CancellationToken.None, Location, "release-label", Hashes);
