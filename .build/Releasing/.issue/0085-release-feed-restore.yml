@@ -2,7 +2,7 @@ id: "0085"
 type: task
 title: Restore the tool from the feed in the release run
 
-status: ready-for-architecture
+status: in-progress
 
 risk: 2
 
@@ -18,7 +18,7 @@ claims:
   - B-010
 
 created: "2026-10-08"
-updated: "2026-10-08"
+updated: "2026-10-14"
 closed: null
 
 summary: |

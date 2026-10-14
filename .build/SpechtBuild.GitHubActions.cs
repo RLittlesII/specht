@@ -84,6 +84,7 @@ internal sealed partial class SpechtBuild
         configuration.Permissions = Rocket.Surgery.Nuke.GithubActions.GitHubActionsPermissions.None with
         {
             Contents = GitHubActionsPermission.Read,
+            Packages = GitHubActionsPermission.Read,
         };
 
         // B-003, B-005, B-010: each image is a matrix leg and its own check; a failure on one leg never cancels
@@ -103,6 +104,8 @@ internal sealed partial class SpechtBuild
     {
         var buildJob = configuration.Jobs.Cast<RocketSurgeonsGithubActionsJob>()
             .First(static z => z.Name.Equals("build", StringComparison.OrdinalIgnoreCase));
+        buildJob.Environment["NuGetPackageSourceCredentials_specht"] =
+            "Username=${{ github.actor }};Password=${{ secrets.GITHUB_TOKEN }};ValidAuthenticationTypes=Basic";
         var checkoutStep = buildJob.Steps.OfType<CheckoutStep>().Single();
         // For fetch all
         checkoutStep.FetchDepth = 0;

@@ -44,9 +44,6 @@ public sealed class ConsumptionSteps : IDisposable
     [Given("no token for the package feed")]
     public void GivenNoTokenForThePackageFeed() => _credential = false;
 
-    [Given("the published checker is unavailable")]
-    public void GivenThePublishedCheckerIsUnavailable() => _checkerAvailable = false;
-
     [When("the local tools are restored")]
     public async Task WhenTheLocalToolsAreRestored()
     {
@@ -57,20 +54,10 @@ public sealed class ConsumptionSteps : IDisposable
     [When("the solution is restored and built")]
     public async Task WhenTheSolutionIsRestoredAndBuilt()
     {
-        _checkerAvailable = false;
         await Prepare();
-        _result = await Run(typeof(BuildToolManifest).Assembly.Location,
-            "--root", Path.GetFullPath(_root), "--target", "Restore", "--skip", "Specht");
+        _result = await Run("restore", "fixture.slnx");
         _result.ExitCode.Should().Be(0, _result.Output);
         _result = await Run("build", "fixture.slnx", "--no-restore");
-    }
-
-    [When("the build prerequisites are restored")]
-    public async Task WhenTheBuildPrerequisitesAreRestored()
-    {
-        await Prepare();
-        _result = await Run(typeof(BuildToolManifest).Assembly.Location,
-            "--root", Path.GetFullPath(_root), "--target", "Restore", "--skip", "Specht");
     }
 
     [Then("the tool is available at the pinned version")]
@@ -94,26 +81,6 @@ public sealed class ConsumptionSteps : IDisposable
     [Then("the build succeeds")]
     public void ThenTheBuildSucceeds() => _result.ExitCode.Should().Be(0, _result.Output);
 
-    [Then("the development tools are available at their pinned versions")]
-    public async Task ThenTheDevelopmentToolsAreAvailableAtTheirPinnedVersions()
-    {
-        _result.ExitCode.Should().Be(0, _result.Output);
-        foreach (var tool in _manifest!["tools"]!.AsObject().Where(static tool => tool.Key != "specht.tool"))
-        {
-            var command = tool.Value!["commands"]![0]!.GetValue<string>();
-            var result = await Run("tool", "run", command);
-            result.ExitCode.Should().Be(0, result.Output);
-            result.Output.Trim().Should().Be(tool.Value["version"]!.GetValue<string>());
-        }
-    }
-
-    [Then("the published checker has not been restored")]
-    public async Task ThenThePublishedCheckerHasNotBeenRestored()
-    {
-        var result = await Run("tool", "run", "specht");
-        result.ExitCode.Should().NotBe(0);
-    }
-
     private void ReadManifest()
     {
         _manifest = JsonNode.Parse(File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "Consumption/dotnet-tools.json")))!;
@@ -123,7 +90,6 @@ public sealed class ConsumptionSteps : IDisposable
     private async Task Prepare()
     {
         Directory.CreateDirectory(Path.Combine(_root, ".config"));
-        Directory.CreateDirectory(Path.Combine(_root, ".nuke"));
         Directory.CreateDirectory(Path.Combine(_root, "feeds/public"));
         await Write(".config/dotnet-tools.json", _manifest!.ToJsonString());
         var config = XDocument.Load(Path.Combine(AppContext.BaseDirectory, "Consumption/nuget.config"));
@@ -141,12 +107,16 @@ public sealed class ConsumptionSteps : IDisposable
         await Write("Directory.Build.props", "<Project />");
         await Write("Directory.Packages.props", "<Project />");
         await Write("fixture.slnx", "<Solution><Project Path=\"app/app.csproj\" /></Solution>");
-        await Write(".nuke/parameters.json", "{\"Solution\":\"fixture.slnx\"}");
         await Write("app/app.csproj", """
             <Project Sdk="Microsoft.NET.Sdk"><PropertyGroup><TargetFramework>net10.0</TargetFramework>
             <NuGetAudit>false</NuGetAudit></PropertyGroup></Project>
             """);
         await Write("app/Class.cs", "public sealed class SyntheticApplication { }");
+        if (!_credential)
+        {
+            return;
+        }
+
         await Write("package/package.csproj", """
             <Project Sdk="Microsoft.NET.Sdk"><PropertyGroup>
               <TargetFramework>net10.0</TargetFramework><OutputType>Exe</OutputType>
@@ -158,11 +128,6 @@ public sealed class ConsumptionSteps : IDisposable
             """);
         foreach (var tool in _manifest["tools"]!.AsObject())
         {
-            if (tool.Key == "specht.tool" && !_checkerAvailable)
-            {
-                continue;
-            }
-
             var source = tool.Key == "specht.tool" ? "checker" : "public";
             Directory.CreateDirectory(Path.Combine(_root, "feeds", source));
             var result = await Run("pack", "package/package.csproj", "--output", "feeds/" + source,
@@ -223,6 +188,5 @@ public sealed class ConsumptionSteps : IDisposable
     private JsonNode? _manifest;
     private string? _publishedVersion;
     private bool _credential;
-    private bool _checkerAvailable = true;
     private (int ExitCode, string Output) _result;
 }

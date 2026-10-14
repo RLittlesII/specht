@@ -20,7 +20,7 @@ depends_on: []
 blocks: ["F2", "F3", "F4", "F5", "F6", "0109/F1"]
 spikes: []
 created: "2026-10-08"
-updated: "2026-10-14"
+updated: "2026-10-13"
 github_issue: null
 synced_at: null
 ---
@@ -129,7 +129,7 @@ The repository has a solution and central package versions but no build project,
 
 ## 7. Technical Design
 
-<!-- last written by: implementer, 2026-10-14 -->
+<!-- last written by: implementer, 2026-10-13 -->
 
 Delivered so far by items 0057, the scaffold, 0059, the `Format` target, 0060, the pre-commit hook, 0061, which replaced the `Specht` placeholder with the check's run, and 0058, the per-tier targets. `Specht` now gates the build and specification commits (B-013, B-024, C-7).
 
@@ -143,7 +143,7 @@ Delivered so far by items 0057, the scaffold, 0059, the `Format` target, 0060, t
 - **The specification gate** runs `build.sh Specht --root <exported index>` only when a staged `.spec/` or `.feature` change is present, after formatting succeeds. Skipping `Specht` in the formatting invocation prevents `Format` → `Restore` → `Specht` from running it for unrelated source or Markdown changes. The specification check reads the entire exported index, so an unstaged repair cannot hide a staged error, and a deletion can expose a missing companion. It refuses a non-zero exit without changing the index (B-013, B-015).
 - **The exported directory** is resolved with `pwd -P` before use. On macOS `mktemp` returns a `/var` path, a symlink to `/private/var`; the solution then loads its files under one spelling and `--include` names the other, so `dotnet format` matches nothing and passes, and restore races on one `obj/` file under both spellings. A trap removes the directory on exit, or on a signal with that signal's exit code, so a run leaves nothing behind. No tracked file and no index entry is written (B-015, C-2); `build.sh` builds `.build/` in place, into its gitignored `bin/` and `obj/`. The file list is split on newline alone, with globbing off, so a name with a space stays one argument. Git still quotes a name holding a double quote, a backslash or a control character, which `--include` would never match, so the hook refuses a commit that stages one and names it. `Format` depends on `Restore`, so every hook run restores the tool manifest and the solution in the exported tree, about 20 seconds in all.
 - **On failure** the hook names the files itself, because the formatters print paths inside the exported directory: it lists the repository-relative staged files it checked, the commands that fix them - `dotnet format specht.slnx --include ...`, which does apply analyzer fixes such as xUnit1026's, and `npx --yes prettier@<pinned> --write ...` - and `git commit --no-verify` to bypass the hook.
-- **The local tool manifest** [`.config/dotnet-tools.json`](../../.config/dotnet-tools.json) is the source of every tool pin. `Restore` derives a development-only manifest under `.artifacts/tool-restore/`, excluding the separately authenticated checker, and restores it before the solution (`0055-F7` B-007, [decision 0001](../../.config/.spec/decisions/0001-isolate-package-consumption-from-development-tool-restore.md)). Root `dotnet tool restore` still restores the complete committed manifest with a feed credential (B-010, C-3). The selection mechanism is tested under `0055-F7`; no build claim changes.
+- **The local tool manifest** [`.config/dotnet-tools.json`](../../.config/dotnet-tools.json) pins Husky.Net with `rollForward: false` (B-010, C-3). The build itself invokes no dotnet tool. `0087` adds `specht`.
 
 ## 8. Testing Strategy
 

@@ -54,12 +54,3 @@ Feature: Consuming the package
     And no token for the package feed
     When the solution is restored and built
     Then the build succeeds
-
-  @B-007 @boundary
-  Scenario: Build prerequisites do not require the published checker
-    Given a clone of this repository after the first publish
-    And no token for the package feed
-    And the published checker is unavailable
-    When the build prerequisites are restored
-    Then the development tools are available at their pinned versions
-    And the published checker has not been restored

@@ -29,7 +29,7 @@ permissions:
   id-token: none
   issues: none
   discussions: none
-  packages: none
+  packages: read
   pages: none
   pull-requests: none
   repository-projects: none
@@ -38,6 +38,8 @@ permissions:
 
 jobs:
   build:
+    env:
+      NuGetPackageSourceCredentials_specht: 'Username=${{ github.actor }};Password=${{ secrets.GITHUB_TOKEN }};ValidAuthenticationTypes=Basic'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout

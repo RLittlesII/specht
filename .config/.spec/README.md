@@ -96,84 +96,71 @@ A consumer cannot install a package from a feed it does not know, with a credent
 
 <!-- last written by: implementer, 2026-10-14 -->
 
-| #   | Concern                                                        | Classification |
-| --- | -------------------------------------------------------------- | -------------- |
-| 1   | Published checker version and source routing                   | Both           |
-| 2   | Environment credentials for package reads                      | Technical      |
-| 3   | Development prerequisite selection without feed authentication | Technical      |
-| 4   | Separate self-check and workflow adoption                      | Business       |
+| #   | Concern                                                  | Classification |
+| --- | -------------------------------------------------------- | -------------- |
+| 1   | Published checker version and source routing             | Both           |
+| 2   | Environment credentials for tool restore                 | Technical      |
+| 3   | Native solution restore without tool-feed authentication | Technical      |
 
 ## 7. Technical Design
 
 <!-- last written by: implementer, 2026-10-14 -->
 
-[Decision 0001](decisions/0001-isolate-package-consumption-from-development-tool-restore.md)
-keeps all pins in [the root tool manifest](../dotnet-tools.json), adding the
-published `specht.tool` version `0.1.90`. Root `nuget.config` uses the source
-key `specht`, an exact package mapping for the checker, a public fallback
-for all other packages and a public audit source. Credentials are supplied
-through `NuGetPackageSourceCredentials_specht`, using NuGet's native
-`Username=...;Password=...;ValidAuthenticationTypes=Basic` value format.
+[Decision 0001](decisions/0001-use-native-package-and-tool-restore.md) uses
+native restore commands. The root tool manifest adds published `specht.tool`
+0.1.90. Root `nuget.config` maps exactly that package to the `specht` source,
+GitHub Packages; all other packages and audit data use nuget.org. NuGet reads
+`NuGetPackageSourceCredentials_specht` from the process environment, in its
+native `Username=...;Password=...;ValidAuthenticationTypes=Basic` format.
 
-[`BuildToolManifest`](../../.build/BuildToolManifest.cs) derives the public
-build-tool manifest without I/O. The build's `Restore` target writes it
-atomically under `.artifacts/tool-restore/`, restores only those tools, then
-restores the solution. Complete root `dotnet tool restore` still restores
-the checker when the caller supplies its read credential. No committed
-configuration is rewritten and no restore failure is swallowed.
+`dotnet tool restore` restores all tools with a read credential. Without one,
+`dotnet restore specht.slnx` and `dotnet build specht.slnx` still restore and
+build the solution. NUKE retains its existing tool restore followed by solution
+restore, so full NUKE invocations need the tool-feed credential. The generated CI and release build jobs receive the native NuGet environment
+credential from their workflow token, granted package read (0067 and 0085).
+No custom manifest generation or restore-target change is required.
 
 ## 8. Testing Strategy
 
 <!-- last written by: test-writer, 2026-10-14 -->
 
-B-002 and B-007 use synthetic .NET tools on local folder feeds, fresh tool
-and package caches and scoped process environments. B-002 restores and
-invokes the pinned synthetic checker through the committed manifest and
-source policy with only endpoints replaced by folder feeds. B-007 runs the
-actual compiled build's `Restore` target against a synthetic solution with
-an unavailable checker feed, then builds that solution without a token.
-The boundary scenario verifies the development commands are restored while
-the checker is not. No scenario recurses into this repository's Test target.
+`ConsumptionSteps` exercises the committed manifest and source configuration
+with only feed endpoints replaced by local folders and fresh package caches.
+B-002 restores and invokes a synthetic checker at the pinned version. B-003
+checks the pin against 0.1.90, whose publication is recorded in `0055-F6` § 8.
+B-007 removes credential environment variables, provides no checker package,
+and runs native solution restore followed by build. No automated test uses a
+network or real credential. These are NuGet declarations and native commands;
+there is no custom selection mechanism needing a unit test. Five documentation
+scenarios remain pending for 0088.
 
-`BuildToolManifestUnitTests` pins the selection mechanism: remove only the
-published checker and preserve all other tool settings. Source mappings
-and the package pin are declarations consumed by NuGet; the local-feed
-acceptance proof exercises their effect instead of duplicating XML parsing
-in a convention test. B-003 checks the committed pin against `0.1.90`, whose
-actual publication is the `0055-F6` section 8 record. The actual GitHub read
-is a separate manual proof; no automated test uses a real credential or
-network. The documentation claims remain with 0088.
+The real root tool restore passed on 2026-10-14 with the existing login's
+credential scoped to the process, including a fresh-cache repeat. The installed
+command printed `0.1.90+b213a0522a`. No credential change was needed. The
+repository's schema pin is unchanged.
 
-The selection unit test failed with the checker retained; both no-token
-acceptance scenarios failed when Restore used the complete manifest. After
-implementation, both unit cases and all four package-consumption scenarios
-pass. Five documentation scenarios remain pending for 0088.
-
-On 2026-10-14, root `dotnet tool restore` with the existing login's credential
-supplied only through the process environment restored the real published
-package, including a repeat with fresh NuGet and HTTP caches. `dotnet specht --version` printed `0.1.90+b213a0522a`, identifying
-the first release commit. The root schema pin remains unchanged.
-
-The complete build with package credentials removed passed: 906 unit tests,
-304 integration tests and 318 acceptance scenarios; 214 scenarios are pending,
-including the five documentation scenarios for 0088. Format passed and the
-self-check reported zero errors and 157 existing coverage warnings. Workflow
-regeneration changed no generated file.
+The three package-consumption scenarios pass; five documentation scenarios remain
+pending for 0088. Native solution restore and build also pass on the actual
+repository with credential environment variables removed. The full build passes with native tool-feed credentials: 904 unit tests,
+304 integration tests and 317 acceptance scenarios; 214 scenarios remain pending.
+Format passes and the self-check reports zero errors and 157 existing warnings.
+Generated workflow changes are limited to package-read permission and the native
+credential; step order is unchanged.
 
 ## 9. Traceability Matrix
 
 <!-- last written by: test-writer, 2026-10-14 -->
 
-| Claim ID | Scenario                                                                                          | Test                                             | Status  |
-| -------- | ------------------------------------------------------------------------------------------------- | ------------------------------------------------ | ------- |
-| B-001    | A new repository installs the tool from the feed                                                  | Missing                                          | Missing |
-| B-002    | A clone restores the pinned tool                                                                  | `ConsumptionSteps`                               | Covered |
-| B-003    | This repository installs its own published tool                                                   | `ConsumptionSteps`                               | Covered |
-| B-004    | The document names the feed and the source entry                                                  | Missing                                          | Missing |
-| B-005    | The document names the token and how CI supplies it                                               | Missing                                          | Missing |
-| B-006    | The document names the install and restore commands                                               | Missing                                          | Missing |
-| B-007    | A contributor without a token can build; Build prerequisites do not require the published checker | `ConsumptionSteps`; `BuildToolManifestUnitTests` | Covered |
-| B-008    | The document names the global install and how each install is invoked                             | Missing                                          | Missing |
+| Claim ID | Scenario                                                              | Test               | Status  |
+| -------- | --------------------------------------------------------------------- | ------------------ | ------- |
+| B-001    | A new repository installs the tool from the feed                      | Missing            | Missing |
+| B-002    | A clone restores the pinned tool                                      | `ConsumptionSteps` | Covered |
+| B-003    | This repository installs its own published tool                       | `ConsumptionSteps` | Covered |
+| B-004    | The document names the feed and the source entry                      | Missing            | Missing |
+| B-005    | The document names the token and how CI supplies it                   | Missing            | Missing |
+| B-006    | The document names the install and restore commands                   | Missing            | Missing |
+| B-007    | A contributor without a token can build                               | `ConsumptionSteps` | Covered |
+| B-008    | The document names the global install and how each install is invoked | Missing            | Missing |
 
 ## 10. Lessons / Spec Deltas
 
@@ -182,7 +169,7 @@ regeneration changed no generated file.
 - 2026-10-11, C-2 amended in place and B-008 added on the owner's decision that a global install is documented as a second path, for a shell ([`0001-F2` decision 0009](../../src/tool/Features/Check/.spec/decisions/0009-a-global-install-is-a-second-documented-path.md)): a manifest install puts no command on PATH. C-2 ruled out a global install as the documented path; it now rules out one as the only path or as a prerequisite of a build. § 2 row 4 added. B-001 to B-007 are unchanged. The `@B-008` scenario is new and its § 9 row is `Missing`; owed to the `test-writer`.
 - 2026-10-11, OQ-3 raised on a note from the `spec-reviewer`: nothing says which package source and credential a global install uses outside a repository that commits the source (`0055-F6` C-3, A-1). B-008's Source cites it. No claim or constraint changes; C-1 holds.
 
-- 2026-10-14, decision 0001: record package-source isolation and development-only restore as the implementation of OQ-2. B-007 gains a boundary scenario proving an unavailable published checker does not prevent restoring build prerequisites. No claim or constraint changes; package consumption in the self-check and workflows remains separate work.
+- 2026-10-14, decision 0001: use native solution and tool restore commands. OQ-2 permits tool restore to need a credential while solution restore and build remain token-free. No claim, constraint or scenario changes; no NUKE selection machinery is required.
 
 ## 11. Open Questions
 
@@ -205,7 +192,7 @@ regeneration changed no generated file.
 | 1-5     | 🟢     | spec-reviewer | Round 3 (2026-10-11) - approved, reviewing the uncommitted diff on `60de077`. C-2 is amended in place with its id kept and agrees with `0001-F2` C-6 and its decision 0009; B-008 is a new id, with one § 9 row and one `@B-008` scenario that state the same three things; § 10 records the delta. Non-blocking (spec-author): `0055-F6` C-3 and A-1 make the feed GitHub Packages with a token, and no claim says where a global install outside a repository finds the source and the token, as B-001's Given does for the manifest install; brief § 6's install row and decision 0009 do not name the owner's 2026-10-09 decision in item 0111 that this reverses. |
 | Tasks   | 🟢     | spec-reviewer | B-008 joined (2026-10-11) - approved, reviewing the same diff. 0086 and 0088 carry B-008 once each as parent and child, 0087 is unchanged, and no item stores `priority`, `rank` or `blocks`.                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
 
-| 6-10 | 🟢 | spec-reviewer | 2026-10-14, self-review of 0087: B-002, B-003 and B-007 trace to executable scenarios; development-only selection has a unit proof and an unavailable-checker boundary. The real published package restores and reports the release version. No credential is tracked. Documentation, self-check adoption and workflow authentication remain separate items. No independent review is claimed. |
+| 6-10 | 🟢 | spec-reviewer | 2026-10-14, self-review of 0087: native solution restore/build satisfies B-007 without credentials; native tool restore satisfies B-002 with an environment credential; the published pin satisfies B-003. Three executable scenarios pass. The Restore target is unchanged and workflow authentication uses the workflow token. No independent review is claimed. |
 
 ### Review history
 
