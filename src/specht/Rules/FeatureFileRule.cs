@@ -1,4 +1,3 @@
-using System.Text.RegularExpressions;
 using Specht.Model;
 
 namespace Specht.Rules;
@@ -7,8 +6,7 @@ namespace Specht.Rules;
 /// SPEC020 and SPEC021 - a specification has exactly one companion Gherkin
 /// file beside it, and every claim tag in that file resolves to a § 3 claim.
 /// </summary>
-/// <param name="reader">The reader of a companion file's claim tags.</param>
-public sealed class FeatureFileRule(FeatureFileReader reader) : ISpecRule
+public sealed class FeatureFileRule : ISpecRule
 {
     /// <inheritdoc />
     public string Id => "SPEC020";
@@ -19,8 +17,7 @@ public sealed class FeatureFileRule(FeatureFileReader reader) : ISpecRule
     /// <inheritdoc />
     public IEnumerable<SpecViolation> Evaluate(SpecModel model)
     {
-        var grammar = new Regex(model.Schemas.Structure.Identifiers["claim"], RegexOptions.Compiled);
-
+        model.EnsureClaimGrammar();
         foreach (var feature in model.Features)
         {
             if (feature.FeatureFiles.Count != 1)
@@ -36,18 +33,17 @@ public sealed class FeatureFileRule(FeatureFileReader reader) : ISpecRule
                 continue;
             }
 
-            var claims = ClaimIds(model, feature, grammar);
-            var path = feature.FeatureFiles[0];
-            var relative = SpecPath.Relative(model.Root, path);
+            var claims = model.Claims[feature].TagIds;
+            var companion = feature.FeatureFiles[0];
 
-            foreach (var tag in reader.ReadTags(path, model.Schemas.Structure))
+            foreach (var tag in companion.Tags)
             {
                 if (!claims.Contains(tag.Id))
                 {
                     yield return new SpecViolation(
                         "SPEC021",
                         SpecSeverity.Error,
-                        relative,
+                        companion.RelativePath,
                         tag.Line,
                         tag.Id,
                         $"scenario tag '{tag.Text ?? "@" + tag.Id}' does not resolve to a claim in § 3 of {feature.RelativePath}");
@@ -56,26 +52,4 @@ public sealed class FeatureFileRule(FeatureFileReader reader) : ISpecRule
         }
     }
 
-    private static HashSet<string> ClaimIds(SpecModel model, FeatureSpec feature, Regex grammar)
-    {
-        var section = feature.Document.Section(model.Schemas.Structure.Roles["claims"]);
-        var ids = new HashSet<string>(model.Schemas.Structure.ClaimTagIgnoreCase ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal);
-
-        if (section is null)
-        {
-            return ids;
-        }
-
-        foreach (var row in section.Rows.Where(static row => row.Count > 0))
-        {
-            var id = row[0].Trim();
-
-            if (grammar.IsMatch(id))
-            {
-                ids.Add(id);
-            }
-        }
-
-        return ids;
-    }
 }

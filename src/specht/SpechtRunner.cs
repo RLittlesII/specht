@@ -1,4 +1,5 @@
 using System.IO.Abstractions;
+using Specht.Manifest;
 using Specht.Model;
 using Specht.Report;
 using Specht.Rules;
@@ -77,14 +78,14 @@ public sealed class SpechtRunner(SpecModelLoader loader, IEnumerable<ISpecRule> 
         fileSystem.File.WriteAllText(path, SpecReportDocument.From(report).ToJson());
     }
 
-    private static HashSet<string> Enabled(IReadOnlySet<string> vocabulary, IReadOnlyDictionary<string, string> settings) =>
-        vocabulary.Where(id => settings.GetValueOrDefault(id) != "off").ToHashSet(StringComparer.Ordinal);
+    private static HashSet<string> Enabled(IReadOnlySet<string> vocabulary, SpecRuleSettings settings) =>
+        vocabulary.Where(id => !settings.TryGetValue(id, out var level) || level != SpecRuleLevel.Off).ToHashSet(StringComparer.Ordinal);
 
-    private static SpecViolation Graded(SpecViolation violation, IReadOnlyDictionary<string, string> settings) =>
-        settings.GetValueOrDefault(violation.RuleId) switch
+    private static SpecViolation Graded(SpecViolation violation, SpecRuleSettings settings) =>
+        settings.TryGetValue(violation.RuleId, out var level) ? level switch
         {
-            "warning" => violation with { Severity = SpecSeverity.Warning },
-            "error" => violation with { Severity = SpecSeverity.Error },
+            SpecRuleLevel.Warning => violation with { Severity = SpecSeverity.Warning },
+            SpecRuleLevel.Error => violation with { Severity = SpecSeverity.Error },
             _ => violation,
-        };
+        } : violation;
 }

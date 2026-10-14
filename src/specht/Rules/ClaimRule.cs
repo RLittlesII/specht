@@ -1,4 +1,3 @@
-using System.Text.RegularExpressions;
 using Specht.Model;
 
 namespace Specht.Rules;
@@ -24,31 +23,30 @@ public sealed class ClaimRule : ISpecRule
     /// <inheritdoc />
     public IEnumerable<SpecViolation> Evaluate(SpecModel model)
     {
-        var grammar = new Regex(model.Schemas.Structure.Identifiers["claim"], RegexOptions.Compiled);
+        model.EnsureClaimGrammar();
+        var grammar = model.Schemas.Structure.Identifiers["claim"];
 
         foreach (var feature in model.Features)
         {
-            var claims = feature.Document.Section(model.Schemas.Structure.Roles["claims"]);
-            var matrix = feature.Document.Section(model.Schemas.Structure.Roles["matrix"]);
+            var claims = model.Claims[feature];
+            var matrix = model.MatrixSections[feature];
 
-            if (claims is null)
+            if (claims.Section is null)
             {
                 continue;
             }
 
-            var seen = new Dictionary<string, int>(StringComparer.Ordinal);
-
-            for (var index = 0; index < claims.Rows.Count; index++)
+            foreach (var claim in claims.Rows)
             {
-                var id = FirstCell(claims.Rows[index]);
-                var line = claims.RowLines[index];
+                var id = claim.Id;
+                var line = claim.Line;
 
                 if (id.Length == 0)
                 {
                     continue;
                 }
 
-                if (!grammar.IsMatch(id))
+                if (!claim.IsValid)
                 {
                     yield return new SpecViolation(
                         "SPEC030",
@@ -61,7 +59,7 @@ public sealed class ClaimRule : ISpecRule
                     continue;
                 }
 
-                if (!seen.TryAdd(id, line))
+                if (claim.FirstDeclarationLine is { } firstDeclarationLine)
                 {
                     yield return new SpecViolation(
                         "SPEC030",
@@ -69,7 +67,7 @@ public sealed class ClaimRule : ISpecRule
                         feature.RelativePath,
                         line,
                         id,
-                        $"claim '{id}' is declared twice in § 3 (also at line {seen[id]})");
+                        $"claim '{id}' is declared twice in § 3 (also at line {firstDeclarationLine})");
                 }
             }
 
@@ -78,7 +76,7 @@ public sealed class ClaimRule : ISpecRule
                 continue;
             }
 
-            foreach (var violation in CheckMatrix(feature, seen, matrix))
+            foreach (var violation in CheckMatrix(feature, claims.Ids, matrix))
             {
                 yield return violation;
             }

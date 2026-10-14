@@ -64,8 +64,7 @@ public sealed class IdentityRule : ISpecRule
             }
         }
 
-        var duplicates = model.Features
-            .Where(static feature => feature.Epic is not null && feature.Id is not null)
+        var duplicates = model.FeaturesWithIdentity
             .GroupBy(static feature => feature.Identity, StringComparer.Ordinal)
             .Where(static group => group.Count() > 1);
 

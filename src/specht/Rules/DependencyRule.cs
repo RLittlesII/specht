@@ -22,19 +22,10 @@ public sealed class DependencyRule : ISpecRule
     /// <inheritdoc />
     public IEnumerable<SpecViolation> Evaluate(SpecModel model)
     {
-        var features = model.Features
-            .Where(static feature => feature.Epic is not null && feature.Id is not null)
-            .ToList();
-
-        var identities = features.Select(static feature => feature.Identity).ToHashSet(StringComparer.Ordinal);
-        var dependsOn = new Dictionary<string, HashSet<string>>(StringComparer.Ordinal);
-        var blocks = new Dictionary<string, HashSet<string>>(StringComparer.Ordinal);
-
-        foreach (var feature in features)
-        {
-            dependsOn[feature.Identity] = Resolve(feature, "depends_on");
-            blocks[feature.Identity] = Resolve(feature, "blocks");
-        }
+        var features = model.FeaturesWithIdentity;
+        var identities = model.DependencyGraph.Identities;
+        var dependsOn = model.DependencyGraph.DependsOn;
+        var blocks = model.DependencyGraph.Blocks;
 
         foreach (var feature in features)
         {
@@ -50,28 +41,11 @@ public sealed class DependencyRule : ISpecRule
         }
     }
 
-    /// <summary>Expands an edge to its qualified <c>&lt;epic&gt;-F&lt;n&gt;</c> form.</summary>
-    /// <remarks>
-    /// An edge is written either locally (<c>F2</c>) or qualified
-    /// (<c>0002/F1</c>), and both mean the same thing.
-    /// </remarks>
-    private static HashSet<string> Resolve(FeatureSpec feature, string key)
-    {
-        var resolved = new HashSet<string>(StringComparer.Ordinal);
-
-        foreach (var raw in feature.Strings(key))
-        {
-            resolved.Add(raw.Contains('/') ? raw.Replace("/", "-") : $"{feature.Epic}-{raw}");
-        }
-
-        return resolved;
-    }
-
     private static IEnumerable<SpecViolation> CheckEdges(
         FeatureSpec feature,
         IReadOnlySet<string> identities,
-        IReadOnlyDictionary<string, HashSet<string>> dependsOn,
-        IReadOnlyDictionary<string, HashSet<string>> blocks)
+        IReadOnlyDictionary<string, IReadOnlySet<string>> dependsOn,
+        IReadOnlyDictionary<string, IReadOnlySet<string>> blocks)
     {
         foreach (var (key, edges, reverse) in Edges(feature, dependsOn, blocks))
         {
@@ -119,10 +93,10 @@ public sealed class DependencyRule : ISpecRule
         }
     }
 
-    private static IEnumerable<(string Key, HashSet<string> Edges, IReadOnlyDictionary<string, HashSet<string>> Reverse)> Edges(
+    private static IEnumerable<(string Key, IReadOnlySet<string> Edges, IReadOnlyDictionary<string, IReadOnlySet<string>> Reverse)> Edges(
         FeatureSpec feature,
-        IReadOnlyDictionary<string, HashSet<string>> dependsOn,
-        IReadOnlyDictionary<string, HashSet<string>> blocks)
+        IReadOnlyDictionary<string, IReadOnlySet<string>> dependsOn,
+        IReadOnlyDictionary<string, IReadOnlySet<string>> blocks)
     {
         yield return ("depends_on", dependsOn[feature.Identity], blocks);
         yield return ("blocks", blocks[feature.Identity], dependsOn);
@@ -130,7 +104,7 @@ public sealed class DependencyRule : ISpecRule
 
     private static IEnumerable<SpecViolation> CheckCycles(
         IReadOnlyList<FeatureSpec> features,
-        IReadOnlyDictionary<string, HashSet<string>> dependsOn)
+        IReadOnlyDictionary<string, IReadOnlySet<string>> dependsOn)
     {
         var reported = new HashSet<string>(StringComparer.Ordinal);
 
@@ -155,7 +129,7 @@ public sealed class DependencyRule : ISpecRule
 
     private static bool HasCycle(
         string identity,
-        IReadOnlyDictionary<string, HashSet<string>> dependsOn,
+        IReadOnlyDictionary<string, IReadOnlySet<string>> dependsOn,
         HashSet<string> visiting,
         List<string> path)
     {

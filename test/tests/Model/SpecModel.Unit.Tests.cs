@@ -1,4 +1,3 @@
-using System.IO.Abstractions.TestingHelpers;
 using System.Text.Json.Nodes;
 using AwesomeAssertions;
 using Specht.Discovery;
@@ -18,7 +17,7 @@ public sealed class SpecModelUnitTests
     public static TheoryData<string[]> CompanionCountsOtherThanOne { get; } = new()
     {
         Array.Empty<string>(),
-        new[] { "repo/src/sample/.spec/first.feature", "repo/src/sample/.spec/second.feature" },
+        new[] { "src/sample/.spec/first.feature", "src/sample/.spec/second.feature" },
     };
 
     /// <summary>
@@ -65,11 +64,11 @@ public sealed class SpecModelUnitTests
             .WithDocument(
                 new SpecDocumentFixture().WithFrontmatter(
                     new FrontmatterFixture().WithNode(new JsonObject { ["epic"] = "0009", ["id"] = "F1" })))
-            .WithFeatureFiles(featureFiles);
+            .WithFeatureFiles(featureFiles.Select(static path => (FeatureFile)new FeatureFileFixture().WithRelativePath(path)).ToArray());
         SpecModel model = new SpecModelFixture().WithFeatures(feature);
 
         // When
-        var violations = new FeatureFileRule(new FeatureFileReader(new MockFileSystem(), new FeatureTagParser())).Evaluate(model).ToList();
+        var violations = new FeatureFileRule().Evaluate(model).ToList();
 
         // Then
         violations.Should().Equal(

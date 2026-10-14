@@ -27,7 +27,7 @@ public sealed record SpecStructure(
     public IReadOnlyDictionary<string, string> Markers { get; init; } = new Dictionary<string, string>(StringComparer.Ordinal);
 
     /// <summary>The level each rule id is set to, <c>error</c>, <c>warning</c> or <c>off</c>, keyed by rule id (B-010, B-011, decision 0008).</summary>
-    public IReadOnlyDictionary<string, string> Rules { get; init; } = new Dictionary<string, string>(StringComparer.Ordinal);
+    public SpecRuleSettings Rules { get; init; } = new([]);
 
     /// <summary>The literal claim-tag form at schema 0.2.0 and later; null selects the legacy scanner.</summary>
     public string? ClaimTagForm { get; init; }
