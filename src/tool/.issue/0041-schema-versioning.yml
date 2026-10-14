@@ -111,6 +111,13 @@ claims:
   - B-098
   - B-099
   - B-100
+  - B-101
+  - B-102
+  - B-103
+  - B-104
+  - B-105
+  - B-106
+  - B-107
 
 created: "2026-10-08"
 updated: "2026-10-13"
@@ -125,8 +132,8 @@ summary: |
   a move can fail my build.
 
   Risk 4: every shipped version stays embedded and byte-identical forever
-  (C-1), so a mistake is permanent once published. OQ-1, the source
-  option's names, is architecture's to propose in § 7. The embedded
+  (C-1), so a mistake is permanent once published. Source selection names
+  and compatibility are ratified in decision 0011 and designed in § 7. The embedded
   version set builds on init's shipping copy (0042 -> 0051), and init
   pinning the newest version waits on init's write (0049 -> 0052).
 
