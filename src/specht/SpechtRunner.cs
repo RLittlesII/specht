@@ -67,7 +67,10 @@ public sealed class SpechtRunner(SpecModelLoader loader, IEnumerable<ISpecRule> 
             .ToList();
 
     /// <summary>Loads and evaluates the tree using the catalog supplied at composition.</summary>
-    public SpechtReport Run(string root) => Evaluate(loader.Load(root), rules);
+    public SpechtReport Run(string root) => Run(root, null);
+
+    /// <summary>Loads and evaluates the tree with the frontmatter source selected for this invocation.</summary>
+    public SpechtReport Run(string root, SchemaSourceSelection? selection) => Evaluate(loader.Load(root, selection), rules);
 
     /// <summary>Writes <paramref name="report"/> to <paramref name="path"/> as the report document (<c>0001-F3</c> B-008).</summary>
     /// <param name="report">The run's report.</param>

@@ -2,7 +2,7 @@ id: "0177"
 type: task
 title: Reject an upstream schema source recorded with the embedded source selected
 
-status: ready-for-architecture
+status: done
 
 risk: 1
 
@@ -18,8 +18,8 @@ claims:
   - B-036
 
 created: "2026-10-11"
-updated: "2026-10-11"
-closed: null
+updated: "2026-10-14"
+closed: "2026-10-14"
 
 summary: |
   A manifest that records an upstream schema source and also selects the
@@ -33,6 +33,11 @@ acceptance_criteria:
   - "§ 9 carries a row naming a test for each id above."
 
 decisions:
+  - |
+    2026-10-14: delivered with 0043 selection. The parser rejects a
+    contradictory manifest before any CLI override; the loader rejects
+    an effective embedded selection beside a valid recorded source.
+    Unit, built-command and acceptance proofs pass under decision 0011.
   - |
     2026-10-11, spec-author's cut: B-036 moved here from `0092`, so the
     check under a recorded source does not wait on the names of the

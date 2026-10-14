@@ -19,7 +19,8 @@ repository holds several.
 
 | Manifest key        | Read today                                                                                                                                                                                                                                                                                                                                               |
 | ------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `schemaVersion`     | Which embedded version supplies the rule vocabulary and, without `spechtSchema`, the frontmatter schemas.                                                                                                                                                                                                                                                |
+| `schemaVersion`     | Which embedded version supplies the rule vocabulary and, with neither `spechtSchema` nor a disk selection, the frontmatter schemas.                                                                                                                                                                                                                      |
+| `schemaSource`      | Under schema `0.2.0` or later, `embedded` or `disk` selects the frontmatter schemas. The check argument `--schema-source` overrides a valid manifest selection for one run. Omission keeps the automatic source choice. Older pins reject the key.                                                                                                       |
 | `spechtSchema`      | The public upstream source fetched by `init --schemas` or `init --all`: `location` is an HTTPS base address, `version` is a nonempty label, and `hashes` records SHA-256 by kind. The check verifies and reads the local copy under `.specht/schema/frontmatter/`, and reports `schemaSource: "upstream"`.                                               |
 | `layouts`           | Where specifications are found: an ordered list, each entry a name and a path glob, which discovery matches and the summary and the report name each entry by. An entry's optional `identity` gives the zero-based path segments `SPEC011` checks for the epic and the Feature id; without one `SPEC011` skips the entry, and a malformed one exits `3`. |
 | `exclusions`        | The directories discovery never looks in: a bare name at any depth, or a path from the root when the entry begins with `/`.                                                                                                                                                                                                                              |
@@ -40,8 +41,31 @@ is never filled: a manifest without it sets no level. A key the engine does
 not know exits `3`; a key starting with `$` is ignored. The other `identifiers`
 entries are accepted and no rule reads them yet.
 
-Without `spechtSchema`, the check uses the pinned version's embedded frontmatter
-schemas. With it, the check reads the local files named by `frontmatterSchemas`
+Without `spechtSchema` or an explicit selection, the check uses the pinned version's embedded frontmatter schemas. Select `disk` to maintain your own local files:
+
+```json
+{
+  "schemaVersion": "0.2.0",
+  "schemaSource": "disk",
+  "frontmatterSchemas": {
+    "feature": "feature.schema.json",
+    "task": "task.schema.json"
+  }
+}
+```
+
+Place those files under `.specht/schema/frontmatter/`. The Feature and task files
+are required, and epic only when the original manifest declares `identifiers.epic`.
+Names must be plain filenames. A missing or invalid selected schema exits `3`,
+with a relative file diagnostic and no stdout. Local schemas need no URL or hash.
+For a one-run selection with any shipped pin, use `specht --schema-source disk`.
+The JSON report says `"schemaSource": "disk"`. Source selection changes only
+frontmatter schemas; the manifest, version pin and rule vocabulary stay the same.
+
+A recorded `spechtSchema` takes the verified upstream path even under explicit
+`disk`; explicit `embedded` contradicts that record and exits `3`.
+
+With a recorded source, the check reads the local files named by `frontmatterSchemas`
 under `.specht/schema/frontmatter/`. The recording requires a nonempty `location`
 and `version`, plus a hash for `feature` and `task`, and for `epic` when the
 manifest explicitly declares `identifiers.epic`. Each hash is `sha256:` followed

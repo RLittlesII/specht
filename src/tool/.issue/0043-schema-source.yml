@@ -2,7 +2,7 @@ id: "0043"
 type: task
 title: Select the embedded or on-disk schema source
 
-status: ready-for-implementation
+status: done
 
 risk: 3
 
@@ -27,8 +27,8 @@ claims:
   - B-107
 
 created: "2026-10-08"
-updated: "2026-10-13"
-closed: null
+updated: "2026-10-14"
+closed: "2026-10-14"
 
 summary: |
   The embedded set is the default without a recorded upstream source.
@@ -58,6 +58,14 @@ acceptance_criteria:
 
 decisions:
   - |
+    2026-10-14: implementation completes the agreed selection contract
+    and sibling 0177 guard. Unit, built-command and acceptance proofs
+    pass, and the normal runner now proves Manifest B-008. Decision
+    0011 governs precedence, compatibility and retained upstream hashes.
+    The full NUKE build passes with invocation-only NuGetAudit=false;
+    the ordinary build and current main CI share pre-existing dependency
+    advisories. No dependency or audit-policy file changes.
+  - |
     2026-10-13, architecture pass: the owner ratified decision 0011.
     F7 § 6-8 now define the engine/CLI path and proof handoff; claims
     B-101 to B-107 and their scenarios are authored before implementation.
@@ -77,5 +85,4 @@ decisions:
 
 out_of_scope:
   - "A switch that also moves the manifest — C-4."
-  - "Production code and automated tests in this architecture pass."
   - "Upgrade behavior, template ownership, pin policies and broader epic opt-in rules."

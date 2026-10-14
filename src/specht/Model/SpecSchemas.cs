@@ -1,4 +1,3 @@
-using System.IO.Abstractions;
 using Json.Schema;
 using Specht.Manifest;
 using Specht.Versioning;
@@ -23,6 +22,17 @@ public sealed class SpecSchemas
         Feature = JsonSchema.FromText(version.FeatureSchema, options);
         Item = JsonSchema.FromText(version.ItemSchema, options);
         Epic = JsonSchema.FromText(version.EpicSchema, options);
+        Structure = structure;
+        Version = version;
+        Source = source;
+    }
+
+    internal SpecSchemas(
+        SchemaVersion version, SpecStructure structure, SpecSchemaSource source, JsonSchema feature, JsonSchema item, JsonSchema epic)
+    {
+        Feature = feature;
+        Item = item;
+        Epic = epic;
         Structure = structure;
         Version = version;
         Source = source;
@@ -53,22 +63,6 @@ public sealed class SpecSchemas
     /// <summary>The schema version these schemas were built from, and whose rule ids a check over them evaluates (ADR-0008).</summary>
     public SchemaVersion Version { get; }
 
-    /// <summary>Compiles the named local schemas after the caller validates the manifest and resolves its pin.</summary>
-    public static SpecSchemas Load(IFileSystem fileSystem, string root, SpecStructure structure, SchemaVersion version)
-    {
-        var directory = fileSystem.Path.Combine([root, .. SpecManifestStore.FrontmatterSchemaFolder.Split('/')]);
-        return new SpecSchemas(
-            version with
-            {
-                FeatureSchema = Read(fileSystem, directory, structure.FrontmatterSchemas["feature"]),
-                ItemSchema = Read(fileSystem, directory, structure.FrontmatterSchemas["task"]),
-                EpicSchema = Read(fileSystem, directory, structure.FrontmatterSchemas["epic"]),
-            }, structure);
-    }
-
     /// <summary>Compiles the selected version after the caller validates the manifest and resolves its pin.</summary>
     public static SpecSchemas Load(SpecStructure structure, SchemaVersion version) => new(version, structure);
-
-    private static string Read(IFileSystem fileSystem, string directory, string name) =>
-        fileSystem.File.ReadAllText(fileSystem.Path.Combine(directory, name));
 }

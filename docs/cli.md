@@ -12,7 +12,7 @@ needs. Installed as a local tool, each runs as `dotnet specht`.
 ## `specht`
 
 ```text
-specht [--root <DIR>] [--strict] [--json]
+specht [--root <DIR>] [--strict] [--json] [--schema-source <embedded|disk>]
 specht --version
 ```
 
@@ -20,13 +20,23 @@ Checks the specifications under a root against the schema version its manifest
 pins. [What it checks](what-it-checks.md) lists the rules, and
 [Configuration](configuration.md) the manifest.
 
-| Option         | Value   | Default               | Does                                                                              |
-| -------------- | ------- | --------------------- | --------------------------------------------------------------------------------- |
-| `--root <DIR>` | `<DIR>` | The working directory | Names the repository root to check.                                               |
-| `--strict`     | none    | Off                   | Fails on a violation of any severity, not only an error.                          |
-| `--json`       | none    | Off                   | Writes the report document to stdout in place of the violation lines and summary. |
-| `-h, --help`   | none    | Off                   | Prints the command's help and checks nothing.                                     |
-| `--version`    | none    | Off                   | As the only argument, prints the tool's version and checks nothing.               |
+| Option                             | Value                | Default                            | Does                                                                              |
+| ---------------------------------- | -------------------- | ---------------------------------- | --------------------------------------------------------------------------------- |
+| `--root <DIR>`                     | `<DIR>`              | The working directory              | Names the repository root to check.                                               |
+| `--schema-source <embedded\|disk>` | `embedded` or `disk` | Manifest selection, then automatic | Selects frontmatter schemas for this run; overrides a valid manifest selection.   |
+| `--strict`                         | none                 | Off                                | Fails on a violation of any severity, not only an error.                          |
+| `--json`                           | none                 | Off                                | Writes the report document to stdout in place of the violation lines and summary. |
+| `-h, --help`                       | none                 | Off                                | Prints the command's help and checks nothing.                                     |
+| `--version`                        | none                 | Off                                | As the only argument, prints the tool's version and checks nothing.               |
+
+Use `--schema-source disk` to read schemas maintained in the consumer repository under
+`.specht/schema/frontmatter/`, with filenames from `frontmatterSchemas`. Feature and
+task schemas are required; epic is required only when the manifest declares
+`identifiers.epic`. The option works with every shipped pin. To persist the choice,
+set `"schemaSource": "disk"` in a manifest pinned to schema `0.2.0` or later.
+Missing or invalid selected files exit `3`, with their relative path on stderr
+and no stdout. A recorded `spechtSchema` still requires hash verification under
+`disk`; selecting `embedded` beside that record is an invalid input.
 
 **Stdout.** One line per violation, with a file, a line in parentheses when it
 has one, a severity, a rule id, a message and, in square brackets, the

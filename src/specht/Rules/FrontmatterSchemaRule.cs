@@ -1,6 +1,7 @@
 using System.Globalization;
 using System.Text.Json;
 using Json.Schema;
+using Specht.Manifest;
 using Specht.Model;
 
 namespace Specht.Rules;
@@ -28,7 +29,8 @@ public sealed class FrontmatterSchemaRule : ISpecRule
     {
         foreach (var feature in model.Features)
         {
-            foreach (var violation in Check(feature.RelativePath, feature.Document.Frontmatter, model.Schemas.Feature, "SPEC002"))
+            foreach (var violation in Check(
+                feature.RelativePath, feature.Document.Frontmatter, model.Schemas.Feature, "SPEC002", SchemaPath(model.Schemas, "feature")))
             {
                 yield return violation;
             }
@@ -36,7 +38,7 @@ public sealed class FrontmatterSchemaRule : ISpecRule
 
         foreach (var item in model.Items)
         {
-            foreach (var violation in Check(item.RelativePath, item.Frontmatter, model.Schemas.Item, "SPEC003"))
+            foreach (var violation in Check(item.RelativePath, item.Frontmatter, model.Schemas.Item, "SPEC003", SchemaPath(model.Schemas, "task")))
             {
                 yield return violation;
             }
@@ -44,14 +46,14 @@ public sealed class FrontmatterSchemaRule : ISpecRule
 
         foreach (var epic in model.Epics)
         {
-            foreach (var violation in Check(epic.RelativePath, epic.Frontmatter, model.Schemas.Epic, "SPEC004"))
+            foreach (var violation in Check(epic.RelativePath, epic.Frontmatter, model.Schemas.Epic, "SPEC004", SchemaPath(model.Schemas, "epic")))
             {
                 yield return violation;
             }
         }
     }
 
-    private static IEnumerable<SpecViolation> Check(string path, Frontmatter frontmatter, JsonSchema schema, string ruleId)
+    private static IEnumerable<SpecViolation> Check(string path, Frontmatter frontmatter, JsonSchema schema, string ruleId, string? schemaPath)
     {
         if (frontmatter.Node is null)
         {
@@ -67,7 +69,7 @@ public sealed class FrontmatterSchemaRule : ISpecRule
         }
 
         var instance = JsonSerializer.SerializeToElement(frontmatter.Node);
-        var result = EvaluateInvariant(schema, instance);
+        var result = EvaluateInvariant(schema, instance, schemaPath);
 
         if (result.IsValid)
         {
@@ -88,7 +90,7 @@ public sealed class FrontmatterSchemaRule : ISpecRule
         }
     }
 
-    private static EvaluationResults EvaluateInvariant(JsonSchema schema, JsonElement instance)
+    private static EvaluationResults EvaluateInvariant(JsonSchema schema, JsonElement instance, string? schemaPath)
     {
         var culture = CultureInfo.CurrentCulture;
 
@@ -98,11 +100,18 @@ public sealed class FrontmatterSchemaRule : ISpecRule
 
             return schema.Evaluate(instance, SpecSchemas.Options);
         }
+        catch (RefResolutionException) when (schemaPath is not null)
+        {
+            throw new SpechtManifestException($"{schemaPath}: the selected local schema contains a reference that could not be resolved.");
+        }
         finally
         {
             CultureInfo.CurrentCulture = culture;
         }
     }
+
+    private static string? SchemaPath(SpecSchemas schemas, string kind) => schemas.Source == SpecSchemaSource.Embedded
+        ? null : SpecManifestStore.FrontmatterSchemaFolder + "/" + schemas.Structure.FrontmatterSchemas[kind];
 
     private static IEnumerable<EvaluationResults> Failures(EvaluationResults results)
     {

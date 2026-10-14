@@ -40,7 +40,8 @@ public sealed class SpecSchemasUnitTests
         var schema = Path.Combine(Root, SpecTree.FrontmatterSchemaFolder);
         var files = new Dictionary<string, MockFileData>
         {
-            [Path.Combine(Root, SpecTree.ManifestPath)] = new($$"""{ "frontmatterSchemas": { "{{kind}}": "{{name}}" } }"""),
+            [Path.Combine(Root, SpecTree.ManifestPath)] =
+                new($$"""{ "identifiers": { "epic": "^[0-9]{4}$" }, "frontmatterSchemas": { "{{kind}}": "{{name}}" } }"""),
             [Path.Combine(schema, "feature.schema.json")] = new("{}"),
             [Path.Combine(schema, "task.schema.json")] = new("{}"),
             [Path.Combine(schema, "epic.schema.json")] = new("{}"),
@@ -109,7 +110,7 @@ public sealed class SpecSchemasUnitTests
         var fileSystem = new MockFileSystem(
             new Dictionary<string, MockFileData>
             {
-                [Path.Combine(Root, SpecTree.ManifestPath)] = new("{}"),
+                [Path.Combine(Root, SpecTree.ManifestPath)] = new("""{ "identifiers": { "epic": "^[0-9]{4}$" } }"""),
                 [Path.Combine(Root, SpecTree.FeatureSchemaPath)] = new(feature),
                 [Path.Combine(Root, SpecTree.ItemSchemaPath)] = new(item),
                 [Path.Combine(Root, SpecTree.EpicSchemaPath)] = new(epic),

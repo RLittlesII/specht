@@ -35,6 +35,12 @@ public sealed record SpecStructure(
     /// <summary>Whether claim tags, including literal form text, ignore letter case (B-037).</summary>
     public bool ClaimTagIgnoreCase { get; init; }
 
+    /// <summary>The explicit frontmatter schema source, null when the manifest leaves selection automatic.</summary>
+    public SchemaSourceSelection? SchemaSource { get; init; }
+
+    /// <summary>Whether the original manifest declares an epic grammar before omitted identifiers are filled.</summary>
+    public bool DeclaresEpicGrammar { get; init; }
+
     /// <summary>The upstream schema source the manifest records, null when it records none (<c>0001-F7</c> B-068).</summary>
     public UpstreamSchemaSource? SpechtSchema { get; init; }
 }
