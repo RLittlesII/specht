@@ -26,7 +26,7 @@ claims:
   - B-008
 
 created: "2026-10-08"
-updated: "2026-10-08"
+updated: "2026-10-13"
 closed: null
 
 summary: |
@@ -47,7 +47,7 @@ acceptance_criteria:
 
 decisions:
   - |
-    2026-10-08, Claude at the owner's request: sliced into computing the
+    2026-10-08, at the owner's request: sliced into computing the
     version (0079), carrying it into the package (0080), which the release
     needs, and the independence test (0081), which needs epic 0001's schema
     versioning and so must not hold the release back.

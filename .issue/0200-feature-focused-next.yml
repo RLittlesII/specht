@@ -28,7 +28,7 @@ acceptance_criteria:
   - "Product priority, proximity to completion and blocker count remain distinct criteria."
   - "The existing queue script remains authoritative for scores, priorities, dependency blockers and shared write sets."
   - "Item lanes are supporting detail; reporting never takes an item or implies shared write sets can run in parallel."
-  - "The installed Codex copy matches the tracked skill."
+  - "The installed copy matches the tracked skill."
   - "Skill validation, formatting and the full build pass."
 
 decisions:

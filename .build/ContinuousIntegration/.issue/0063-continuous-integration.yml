@@ -65,7 +65,7 @@ acceptance_criteria:
 
 decisions:
   - |
-    2026-10-08, Claude at the owner's request: sliced into the workflow
+    2026-10-08, at the owner's request: sliced into the workflow
     itself (0064), which epic 0001 waits on, and three later additions that
     it does not: the stale-workflow check (0065), annotations, which need
     0001-F2's diagnostics (0066), and the feed restore, which needs a

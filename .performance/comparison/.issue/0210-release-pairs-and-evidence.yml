@@ -2,7 +2,7 @@ id: "0210"
 type: task
 title: Select release pairs and normalise benchmark evidence
 
-status: ready-for-architecture
+status: ready-for-implementation
 
 risk: 4
 
@@ -31,6 +31,14 @@ summary: |
   cases explicitly. Completion does not claim collection, rendering or GitHub
   attachment.
 
+  Contract: .performance/comparison/.spec/README.md § 7-8 and
+  .performance/comparison/.spec/adr/0001-read-only-collection-with-a-release-job-rendezvous.md.
+  Establish comparison.csproj, its solution entry and the nonempty
+  test/comparison.tests project first. Own ReleasePair/SessionManifest wire
+  contracts, recognised exporter decoding, identity mappings, metric validation
+  diagnostics and insert-only pair persistence. Provider I/O uses HttpClient's
+  handler seam; no publishing credential is created by this capability.
+
 acceptance_criteria:
   - "B-002 — predecessor identity and reruns"
   - "B-005 — matching measurement cases"
@@ -40,7 +48,8 @@ acceptance_criteria:
   - "Unit and synthetic acceptance tests pin ordering, eligibility, conversion boundaries and case pairing; disk/transport integration tests use synthetic input and no live provider."
   - "§ 9 names the tests for the five assigned claims; preserve C-2, C-5, C-6 and C-7."
 
-decisions: []
+decisions:
+  - "2026-10-13: design contract reviewed under 0209; scope and prerequisites retained. Ready-for-implementation names design maturity, not permission to bypass depends_on or the one-writer Feature lane."
 
 out_of_scope:
   - "Everything in § 5 of the specification."

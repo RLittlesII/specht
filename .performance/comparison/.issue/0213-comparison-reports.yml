@@ -2,7 +2,7 @@ id: "0213"
 type: task
 title: Render and retain release comparison reports
 
-status: ready-for-architecture
+status: ready-for-implementation
 
 risk: 3
 
@@ -31,6 +31,13 @@ summary: |
   evidence or claims an attachment succeeded when it did not. Local rendering and
   publication-adapter proofs let this slice close before workflow wiring.
 
+  Contract: .performance/comparison/.spec/README.md § 7-8 and
+  .performance/comparison/.spec/adr/0001-read-only-collection-with-a-release-job-rendezvous.md.
+  Own EvidenceManifest, self-contained per-attempt ZIP validation and the
+  insert-only release-asset adapter invoked only with caller-provided authority.
+  Sanitize path metadata while retaining numerical evidence; verify every digest
+  and referenced file before claiming durable publication.
+
 acceptance_criteria:
   - "B-015 — equivalent report forms"
   - "B-016 — policy and evidence identity"
@@ -38,7 +45,8 @@ acceptance_criteria:
   - "Unit and offline integration/acceptance tests compare both report forms, evidence references, relative paths and durable publication after transient artifact expiry; § 9 names each assigned claim's proof."
   - "The adapter does not grant credentials; preserve C-8 and C-10."
 
-decisions: []
+decisions:
+  - "2026-10-13: design contract reviewed under 0209; scope and prerequisites retained. Ready-for-implementation names design maturity, not permission to bypass depends_on or the one-writer Feature lane."
 
 out_of_scope:
   - "Everything in § 5 of the specification."

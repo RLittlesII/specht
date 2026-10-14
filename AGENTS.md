@@ -421,6 +421,11 @@ only that the targets it declares ran.
 
 ## Documentation structure
 
+No vendor-specific AI names in any artifacts: documentation, work items, decision
+records, review/sign-off rows, reports, comments and commit messages. Required
+role fields and ownership stamps describe responsibilities, never vendor branding
+or authorship credits.
+
 Every tracked markdown file opens with YAML frontmatter. Skill and role files
 declare `name` and `description`; everything else declares `title`, `description`
 and `type`. The blanks in [`.specht/templates/`](.specht/templates/) carry the `type`

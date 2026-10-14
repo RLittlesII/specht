@@ -52,8 +52,10 @@ report publication —
 The coordinating agent collects a brief handoff from each participating agent
 before it finishes or its context is lost. Include contributors to rework and
 review rounds as well as the first pass. When one person or agent performs several
-steps, attribute each step to that contributor; a report does not require extra
-agents.
+steps, retain the work and findings for each step; a report does not require extra
+agents. Artifacts contain no vendor-specific AI names. Use functional roles when
+separate contributions need distinguishing; omit authorship bylines for a single
+contributor.
 
 Each handoff records the step and contributor, work performed and findings,
 decisions with their reasons, artifacts changed or produced, validation commands
@@ -76,8 +78,9 @@ scenarios (or the exemption), tests, implementation, benchmarking when applicabl
 verification, review and rework, and pull-request delivery and check monitoring.
 For **each step**, include:
 
-- **Contributor:** the agent or person responsible, including separate
-  contributions when more than one participated.
+- **Responsibility:** distinguish functional roles when several contributors
+  participated. Never use vendor-specific AI names; a single contributor needs
+  no byline.
 - **Effort and findings:** what each contributor investigated, authored, changed
   or checked, and what they found.
 - **Decisions:** the choices and reasons, linking the authoritative records;
@@ -117,6 +120,7 @@ prevented it — the skill holds the rule, the lesson keeps the incident.
 
 ## Never add
 
+- Vendor-specific AI names in any artifact, including attribution and sign-off.
 - A second item in progress alongside the first.
 - A branch or an edit before the item is signalled as taken.
 - A claim, a status, or a rule duplicated into the item from the specification.

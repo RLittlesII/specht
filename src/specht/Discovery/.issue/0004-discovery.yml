@@ -57,7 +57,7 @@ acceptance_criteria:
 
 decisions:
   - |
-    2026-10-08, Claude at the owner's request: sliced by discovery input and
+    2026-10-08, at the owner's request: sliced by discovery input and
     discovery mode — manifest inputs, path identity, walk, git, then parity —
     so the two modes are built against one input contract and proven equal
     last. Rejected: one item per claim, which would split B-005 from B-010

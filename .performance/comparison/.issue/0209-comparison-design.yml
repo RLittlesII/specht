@@ -2,7 +2,7 @@ id: "0209"
 type: task
 title: Design the advisory comparison execution and evidence contracts
 
-status: ready-for-architecture
+status: done
 
 risk: 3
 
@@ -16,7 +16,7 @@ claims: []
 
 created: "2026-10-13"
 updated: "2026-10-13"
-closed: null
+closed: "2026-10-13"
 
 summary: |
   Establish 0109-F5 § 6-7 and have test-writer author § 8 before implementation.
@@ -43,6 +43,10 @@ acceptance_criteria:
 
 decisions:
   - "2026-10-13, spec-author: no claims are assigned to this design-only task. Its completion gate is the reviewed design and testability contract; this does not close any behavioural claim."
+  - "2026-10-13: § 6-8 and Feature ADR-0001 establish the execution, evidence and testability contract. Self-review only; no behavioural claim closes."
+  - "2026-10-13: 0210 to 0214 are ready-for-implementation with existing prerequisites retained; 0214 still waits for 0084. No credential exception or production workflow change."
+  - "2026-10-13: pre-existing stash-conflict markers were resolved to the approved HEAD agreement; originals are retained in .artifacts/0209/pre-existing. The unrelated 0043 edit is excluded."
+  - "2026-10-13: owner review removed vendor-specific AI attribution across artifacts; process lesson 0008 and delivery guidance make the prohibition permanent. Design and behaviour are unchanged."
 
 out_of_scope:
   - "Everything in § 5 of the specification."

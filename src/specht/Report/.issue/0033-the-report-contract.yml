@@ -50,7 +50,7 @@ claims:
   - B-033
 
 created: "2026-10-08"
-updated: "2026-10-09"
+updated: "2026-10-13"
 closed: null
 
 summary: |
@@ -105,7 +105,7 @@ acceptance_criteria:
 
 decisions:
   - |
-    2026-10-08, Claude at the owner's request: sliced into the document and
+    2026-10-08, at the owner's request: sliced into the document and
     its schema (0034) first, then the two ways it is written (0035 stdout,
     0036 file, with the claims spanning both in 0036), then `expected` in
     three items by rule family so each lands on a document whose shape is
