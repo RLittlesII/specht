@@ -2,7 +2,7 @@ id: "0085"
 type: task
 title: Restore the tool from the feed in the release run
 
-status: in-progress
+status: done
 
 risk: 2
 
@@ -19,7 +19,7 @@ claims:
 
 created: "2026-10-08"
 updated: "2026-10-14"
-closed: null
+closed: "2026-10-14"
 
 summary: |
   Once this repository's tool manifest names `specht.tool` (0055-F7
@@ -28,9 +28,15 @@ summary: |
 
 acceptance_criteria:
   - "B-010 — release or dry run restores `specht.tool` with the workflow's token, package read"
-  - "§ 9 carries a row naming a test for each id above."
+  - "§ 8 records the generated credential/permission and successful live restore; § 9 remains Missing under the standing no-workflow-tests decision."
 
-decisions: []
+decisions:
+  - |
+    2026-10-14: native NuGet environment credentials and package-read
+    permission are delivered with 0087 so the existing tool restore keeps
+    working. release dry run run 38648171100 at 1328d33 completed Restore
+    successfully on a clean runner. Closure uses this provider record,
+    keeping the owner's no-workflow-tests decision and § 9 Missing rows.
 
 out_of_scope:
   - "A stored read token — 0055-F7 C-5."
