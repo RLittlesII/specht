@@ -31,11 +31,12 @@ internal sealed class SchemaVersionFixture : AutoFixtureBase<SchemaVersionFixtur
 
     public static implicit operator SchemaVersion(SchemaVersionFixture fixture) => fixture.Build();
 
-    private SchemaVersion Build() => new(_number, "{}", "{}", "{}", _ruleIds, _manifest);
+    private SchemaVersion Build() => new(_number, "{}", "{}", "{}", _ruleIds,
+        _manifest ?? EngineServices.Versions().Find(_number)?.Manifest ?? EngineServices.Versions().Find(new SemanticVersion(0, 1, 0))!.Manifest);
 
     private SemanticVersion _number = new(0, 1, 0);
 
     private IReadOnlySet<string> _ruleIds = new HashSet<string>(StringComparer.Ordinal);
 
-    private string _manifest = EngineServices.Versions().Find(new SemanticVersion(0, 1, 0))!.Manifest;
+    private string? _manifest;
 }

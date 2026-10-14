@@ -1,4 +1,5 @@
 using System.Text.Json.Nodes;
+using System.Text.RegularExpressions;
 using Specht.Discovery;
 using Specht.Versioning;
 
@@ -14,9 +15,11 @@ public sealed class SpecManifestParser(SchemaVersions versions)
     public SpecStructure Parse(string text)
     {
         var manifest = Present(JsonNode.Parse(text)).AsObject();
+        var number = ReadVersion(manifest["schemaVersion"]) ?? OriginalVersion;
+        var tags = number.CompareTo(ClaimTagVersion) >= 0 && versions.Find(number) is not null;
         var unknown = manifest
             .Select(static entry => entry.Key)
-            .Where(static key => !key.StartsWith('$') && !KnownKeys.Contains(key))
+            .Where(key => !key.StartsWith('$') && !KnownKeys.Contains(key) && !(tags && key is "claimTagForm" or "claimTagIgnoreCase"))
             .Select(static key => $"'{key}'")
             .ToList();
 
@@ -26,7 +29,6 @@ public sealed class SpecManifestParser(SchemaVersions versions)
                 $"{SpecManifestStore.RelativePath}: the engine does not know the key {string.Join(", ", unknown)}.");
         }
 
-        var number = ReadVersion(manifest["schemaVersion"]) ?? OriginalVersion;
         var selected = versions.Find(number) ?? versions.Find(OriginalVersion) ?? Version(number);
         var defaults = JsonNode.Parse(selected.Manifest)!.AsObject();
         var frontmatterSchemas = Filled(manifest, defaults, "frontmatterSchemas");
@@ -42,10 +44,12 @@ public sealed class SpecManifestParser(SchemaVersions versions)
             Roles = Filled(manifest, defaults, "roles"),
             Markers = Filled(manifest, defaults, "markers"),
             Rules = Levels(manifest["rules"]),
+            ClaimTagForm = tags ? Present(manifest["claimTagForm"] ?? defaults["claimTagForm"]).GetValue<string>() : null,
+            ClaimTagIgnoreCase = tags && Present(manifest["claimTagIgnoreCase"] ?? defaults["claimTagIgnoreCase"]).GetValue<bool>(),
             SpechtSchema = SpechtSchema(manifest, frontmatterSchemas, sourceFaults),
         };
 
-        Check(structure, defaults, IdentityFaults(manifest).Concat(sourceFaults));
+        Check(structure, defaults, IdentityFaults(manifest).Concat(sourceFaults).Concat(ClaimTagFaults(structure)));
 
         return structure;
     }
@@ -66,6 +70,35 @@ public sealed class SpecManifestParser(SchemaVersions versions)
         }
 
         return version;
+    }
+
+    private static IEnumerable<string> ClaimTagFaults(SpecStructure structure)
+    {
+        if (structure.ClaimTagForm is not { } form)
+        {
+            yield break;
+        }
+
+        if (form.Split("{claim}", StringSplitOptions.None).Length != 2)
+        {
+            yield return $"claimTagForm '{form}' must hold '{{claim}}' exactly once";
+        }
+
+        var grammar = structure.Identifiers["claim"];
+        string? fault = null;
+        try
+        {
+            _ = new Regex(grammar, RegexOptions.CultureInvariant);
+        }
+        catch (ArgumentException)
+        {
+            fault = $"the claim grammar '{grammar}' does not compile";
+        }
+
+        if (fault is not null)
+        {
+            yield return fault;
+        }
     }
 
     private static UpstreamSchemaSource? SpechtSchema(JsonObject manifest, Dictionary<string, string> fileNames, List<string> faults)
@@ -317,6 +350,8 @@ public sealed class SpecManifestParser(SchemaVersions versions)
         "rules",
         "spechtSchema",
     };
+
+    private static readonly SemanticVersion ClaimTagVersion = new(0, 2, 0);
 
     private static readonly SemanticVersion OriginalVersion = new(0, 1, 0);
 }

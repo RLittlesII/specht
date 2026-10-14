@@ -1,40 +1,18 @@
 using System.IO.Abstractions;
-using System.Text.RegularExpressions;
+using Specht.Manifest;
+using Specht.Model;
 
 namespace Specht.Rules;
 
-/// <summary>Scans a Gherkin file for the claim tags its scenarios carry.</summary>
-/// <remarks>
-/// Comment-aware by necessity: a <c>#</c>-commented line in one of this
-/// repository's feature files contains three <c>@B-0nn</c> tokens that are
-/// prose, not tags. Treating them as tags reports three phantom orphans.
-/// </remarks>
-/// <param name="fileSystem">The file system the feature files are read from.</param>
-public sealed class FeatureFileReader(IFileSystem fileSystem)
+/// <summary>Reads companion text for the pure tag parser until ADR-0010 moves the read to model loading.</summary>
+/// <param name="fileSystem">The file system the companion is read from.</param>
+/// <param name="parser">The pure claim-tag parser.</param>
+public sealed class FeatureFileReader(IFileSystem fileSystem, FeatureTagParser parser)
 {
-    /// <summary>Reads every claim tag in the file at <paramref name="absolutePath"/>.</summary>
-    public IReadOnlyList<FeatureTag> ReadTags(string absolutePath)
-    {
-        var tags = new List<FeatureTag>();
-        var lines = fileSystem.File.ReadAllLines(absolutePath);
-
-        for (var index = 0; index < lines.Length; index++)
-        {
-            var line = lines[index];
-
-            if (line.AsSpan().TrimStart().StartsWith("#"))
-            {
-                continue;
-            }
-
-            foreach (var match in ClaimTag.Matches(line).Cast<Match>())
-            {
-                tags.Add(new FeatureTag(match.Groups[1].Value, index + 1));
-            }
-        }
-
-        return tags;
-    }
-
-    private static readonly Regex ClaimTag = new(@"@(B-\d{3}[a-z]?)\b", RegexOptions.Compiled);
+    /// <summary>Reads the file's claim tags using the supplied manifest, or the legacy contract when absent.</summary>
+    /// <param name="absolutePath">The companion file to read.</param>
+    /// <param name="structure">The effective manifest.</param>
+    /// <returns>Claim tags with original spelling and one-based line numbers.</returns>
+    public IReadOnlyList<FeatureTag> ReadTags(string absolutePath, SpecStructure? structure = null) =>
+        parser.Parse(fileSystem.File.ReadAllText(absolutePath), structure);
 }

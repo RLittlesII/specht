@@ -1,5 +1,6 @@
 using System.IO.Abstractions.TestingHelpers;
 using AwesomeAssertions;
+using Specht.Model;
 using Specht.Rules;
 
 namespace Specht.Tests.Rules;
@@ -22,7 +23,7 @@ public sealed class FeatureFileReaderUnitTests
                     [RelativePath] = new(
                         "Feature: it\n\n  @B-001\n  Scenario: It does the thing\n    Given a thing\n\n"
                             + "  @B-002 @B-006b @boundary\n  Scenario: It does two more\n    Given a thing\n"),
-                }));
+                }), new FeatureTagParser());
 
         // When
         var tags = reader.ReadTags(RelativePath);
@@ -41,7 +42,7 @@ public sealed class FeatureFileReaderUnitTests
                 {
                     [RelativePath] = new(
                         "Feature: it\n\n  # Superseded: @B-404 and @B-405 were withdrawn\n  @B-001\n  Scenario: It does the thing\n"),
-                }));
+                }), new FeatureTagParser());
 
         // When
         var tags = reader.ReadTags(RelativePath);

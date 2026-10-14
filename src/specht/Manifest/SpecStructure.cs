@@ -29,6 +29,12 @@ public sealed record SpecStructure(
     /// <summary>The level each rule id is set to, <c>error</c>, <c>warning</c> or <c>off</c>, keyed by rule id (B-010, B-011, decision 0008).</summary>
     public IReadOnlyDictionary<string, string> Rules { get; init; } = new Dictionary<string, string>(StringComparer.Ordinal);
 
+    /// <summary>The literal claim-tag form at schema 0.2.0 and later; null selects the legacy scanner.</summary>
+    public string? ClaimTagForm { get; init; }
+
+    /// <summary>Whether claim tags, including literal form text, ignore letter case (B-037).</summary>
+    public bool ClaimTagIgnoreCase { get; init; }
+
     /// <summary>The upstream schema source the manifest records, null when it records none (<c>0001-F7</c> B-068).</summary>
     public UpstreamSchemaSource? SpechtSchema { get; init; }
 }

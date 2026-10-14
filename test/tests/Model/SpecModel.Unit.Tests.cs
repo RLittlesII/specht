@@ -69,7 +69,7 @@ public sealed class SpecModelUnitTests
         SpecModel model = new SpecModelFixture().WithFeatures(feature);
 
         // When
-        var violations = new FeatureFileRule(new FeatureFileReader(new MockFileSystem())).Evaluate(model).ToList();
+        var violations = new FeatureFileRule(new FeatureFileReader(new MockFileSystem(), new FeatureTagParser())).Evaluate(model).ToList();
 
         // Then
         violations.Should().Equal(

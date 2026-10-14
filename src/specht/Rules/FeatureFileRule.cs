@@ -40,7 +40,7 @@ public sealed class FeatureFileRule(FeatureFileReader reader) : ISpecRule
             var path = feature.FeatureFiles[0];
             var relative = SpecPath.Relative(model.Root, path);
 
-            foreach (var tag in reader.ReadTags(path))
+            foreach (var tag in reader.ReadTags(path, model.Schemas.Structure))
             {
                 if (!claims.Contains(tag.Id))
                 {
@@ -50,7 +50,7 @@ public sealed class FeatureFileRule(FeatureFileReader reader) : ISpecRule
                         relative,
                         tag.Line,
                         tag.Id,
-                        $"scenario tag '@{tag.Id}' does not resolve to a claim in § 3 of {feature.RelativePath}");
+                        $"scenario tag '{tag.Text ?? "@" + tag.Id}' does not resolve to a claim in § 3 of {feature.RelativePath}");
                 }
             }
         }
@@ -59,7 +59,7 @@ public sealed class FeatureFileRule(FeatureFileReader reader) : ISpecRule
     private static HashSet<string> ClaimIds(SpecModel model, FeatureSpec feature, Regex grammar)
     {
         var section = feature.Document.Section(model.Schemas.Structure.Roles["claims"]);
-        var ids = new HashSet<string>(StringComparer.Ordinal);
+        var ids = new HashSet<string>(model.Schemas.Structure.ClaimTagIgnoreCase ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal);
 
         if (section is null)
         {
