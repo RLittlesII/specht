@@ -2,7 +2,7 @@ id: "0204"
 type: task
 title: Measure installed-tool baseline help and check timings
 
-status: ready-for-implementation
+status: done
 
 risk: 4
 
@@ -16,7 +16,7 @@ claims: [B-001, B-002, B-003, B-004, B-005, B-007, B-008, B-009]
 
 created: "2026-10-13"
 updated: "2026-10-13"
-closed: null
+closed: "2026-10-13"
 
 summary: |
   Deliver the timing slice designed in 0109-F4 § 7 on the existing benchmark
@@ -44,6 +44,35 @@ acceptance_criteria:
 decisions:
   - "2026-10-13, implementer: design in § 6-7; reuse existing out-of-process configuration, target, package output and tree types. Do not change the selected job or add a timing loop."
   - "2026-10-13, spec-author: timing may deliver before B-006, but must label benchmark-process allocations and cannot close the Feature or claim a tool-memory result."
+  - |
+    2026-10-13, benchmarker: implemented the eight timing/lifecycle claims,
+    verified the real target with Dry and the default job, and recorded
+    the finding in § 8. Temporary probes verified distinct tool PIDs,
+    exit-1/exit-7 propagation, 1 MiB on each output pipe, private caches,
+    normal/failed-setup cleanup and restricted-network operation. A
+    temporary failing benchmark made the target fail and was removed.
+    No test of benchmark code was added; § 9 records mechanisms and
+    manual evidence with Missing retained under the owner ruling.
+  - |
+    2026-10-13, implementer: the full build passes all gates and test
+    tiers. Existing workflows/target/configuration are unchanged. Linux
+    and Windows result publication is verified only after the PR merges
+    and main runs; it is not inferred from the local macOS finding.
+    The Feature stays open for B-006 and its feasibility work.
+  - |
+    2026-10-13, implementer: inspected the Full JSON exporter. It contains
+    raw measurements/statistics and managed-allocation metrics, not the
+    formatted ratio column. § 7-8 reflect that fact; the library's
+    Markdown ratios satisfy B-009. Rejected: a second ratio formula or
+    replacing the existing exporter for an unstated JSON field.
+  - |
+    2026-10-13, implementer: merged main's manifest-resource refactor
+    (#170), supplying the tree with registered resources, parsed structure
+    and the selected version outside measurement. Refreshed the default
+    finding on 405d05c, repeated all manual probes with restricted network
+    access and reran the full build: 614 Unit, 238 Integration, acceptance
+    200 passed / 210 skipped; zero specification errors, 141 warnings.
+    The earlier finding is superseded, not compared as a regression.
 
 out_of_scope:
   - "B-006 — 0206 after feasibility spike 0205."

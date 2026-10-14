@@ -115,101 +115,92 @@ Every call site starts the tool as a new process - the pre-commit hook on every 
 
 <!-- last written by: implementer, 2026-10-13 -->
 
-### Boundary and existing mechanisms
+### Implemented timing slice
 
-This is a design for code not yet built. The timing slice is specified below; the
-memory mechanism remains gated by the feasibility criteria in
-[ADR-0001](adr/0001-observe-the-installed-tool-process.md). No benchmark or
-production code is introduced by this design.
+The timing slice is implemented by [ColdStartBenchmarks](../ColdStartBenchmarks.cs)
+and [ColdStartSession](../ColdStartSession.cs). The memory mechanism remains
+proposed in [ADR-0001](adr/0001-observe-the-installed-tool-process.md); B-006 is
+not implemented. The existing project, BenchmarkConfiguration,
+BenchmarkProjectGenerator and Program remain the harness. No product code,
+workflow, target, dependency or test-project reference was added.
 
-Reuse [the existing project](../../benchmarks.csproj),
-[shared configuration](../../BenchmarkConfiguration.cs),
-[project generator](../../BenchmarkProjectGenerator.cs), and
-[entry point](../../Program.cs). The target in
-[SpechtBuild.cs](../../../../.build/SpechtBuild.cs) already selects Startup
-benchmarks by the `Specht.Benchmarks.Startup` namespace, packs the real tool in
-Release, and supplies filtering, jobs and report paths. No new build target,
-workflow, command, product seam or test-project reference is required.
+The three methods share the session launcher: EmptyTool is BenchmarkDotNet's
+baseline, Help forwards --help, and Check forwards --root tree. Each async call
+starts and awaits a fresh `dotnet tool run` invocation. The caller-selected job
+and existing out-of-process toolchain are unchanged. GlobalSetup and
+GlobalCleanup own session installation and disposal; no IterationSetup,
+SimpleJob override or second timing loop is used. The method descriptions label
+Allocated as benchmark-process allocation in both exporters. Tool-process peak
+memory is unmeasured, not a zero or an allocation proxy.
 
-The existing acceptance helper `test/acceptance/PackedTool.cs` shows package
-metadata reading and asynchronous process draining, but also packs the solution
-and uses test assertions. Do not reference or move it into the benchmark: this
-Feature consumes the package already produced by the target. Read its one root
-`.nuspec` with `ZipArchive` and `XDocument`; select the package by its declared
-`specht.tool` identity, not by an assumed version or the first wildcard match.
-Missing or ambiguous matching packages fail setup. Find the repository by walking
-ancestors of the benchmark assembly location until both build.sh and the
-benchmark project exist, following the existing project generator's
-assembly-location approach. Fail if no root is found; the generated process's
-current directory is not a reliable root.
+The measured boundary includes process creation, local-manifest resolution,
+child tool execution and output draining. It does not isolate the tool child's
+internal timestamps. The common empty baseline includes the same launch wrapper;
+ratios are not a subtraction of host and engine costs. The OS file cache is warm
+from setup. Redirected output, SDK/runtime and harness allocation are named in
+the finding.
 
-### Timing slice
+### Installation and ownership
 
-One public `ColdStartBenchmarks` class in `Specht.Benchmarks.Startup` has three
-async benchmark methods: `EmptyTool` marked `Baseline = true`, `Help`, and
-`Check`. All use the same launch helper and environment; only the installed tool
-command and its forwarded arguments differ. Keep the existing out-of-process
-toolchain and the job selected by the caller. Do not add a competing SimpleJob
-or replace the default/Short job. Each method starts a new process even when
-BenchmarkDotNet invokes the method multiple times in one iteration. Neither
-IterationSetup nor a Stopwatch loop is needed to make the tool process fresh.
+ColdStartSession finds the repository by walking ancestors of its assembly
+location until build.sh and the benchmark project exist, following the existing
+project generator's approach. It uses DOTNET_HOST_PATH, the current dotnet host,
+or PATH to resolve one executable shared by setup and measured calls. The
+repository's global.json is copied into the session so SDK roll-forward policy
+also applies outside the repository.
 
-BenchmarkDotNet measures the complete consumer invocation: creating and waiting
-for `dotnet tool run <command> -- <arguments>`, including local-tool resolution,
-the child tool, output draining and harness process-launch overhead. It is not a
-claim to isolate the child's internal start/exit timestamps. The common baseline
-carries the same wrapper cost; ratios are not algebraic attribution of host and
-engine time. The finding must name this boundary, redirected output, the warm
-OS file cache and runtime/SDK versions.
+The target already packs Release when it selects the Startup namespace. Setup
+reads each package's root nuspec and selects exactly one specht.tool identity,
+then copies that package into a private source directory. Missing or ambiguous
+packages fail setup; versions are read from metadata, not inferred from names.
+The test-only PackedTool helper is not referenced: unlike that helper this code
+never packs the real tool or asserts through a test library.
 
-`GlobalSetup` creates one private temporary session per benchmark case. A
-concrete disposable `ColdStartSession` is shared by all three methods and owns:
+Within the private session, setup generates a console tool with no dependency or
+project references, fixed synthetic package identity/version and a body of only
+`return 0;`. The generated project targets net10.0, matching the benchmark
+project. It restores from installed SDK framework assets using the sole local
+package source, disables audit for that restore, and packs Release with no
+restore and shared compilation disabled. The build target does not pack this
+empty tool.
 
-1. The selected package identity/version and an isolated local package source.
-   Copy the selected package into that source so stale unrelated packages cannot
-   affect installation. The target remains the only owner of packing specht.
-2. A generated SDK console tool project with no package/project references,
-   `PackAsTool`, a fixed synthetic package id/command and version, the benchmark's
-   framework, and a body containing only `return 0;`. Generate, restore from
-   SDK-provided framework assets, and pack Release inside the temporary session.
-   No template, product assembly or source file is copied into this tool.
-3. A local tool manifest with `isRoot: true`, an explicit NuGet configuration
-   whose sources are cleared and replaced by the session's package directory,
-   and private NuGet package, HTTP, scratch, process-temp and dotnet CLI home directories.
-   Use child-process environment settings (`DOTNET_CLI_HOME`, `NUGET_PACKAGES`,
-   `NUGET_HTTP_CACHE_PATH`, `NUGET_SCRATCH`, platform temp settings, telemetry
-   opt-out and no logo), without
-   changing the parent shell's home or repository configuration. Validate that
-   resolver-cache writes also stay within the private CLI home. Use the same
-   resolved dotnet executable and SDK policy for baseline build and all launches;
-   copy the repository's global.json into the session to preserve roll-forward.
-4. Both tools installed from that local source with explicit exact versions,
-   `--local`, `--tool-manifest`, `--configfile` and manifest auto-creation disabled.
-   The clear-source configuration, not `--add-source` or ignore-failed-sources,
-   prevents feed access. Baseline restore uses that same configuration; pack
-   follows with `--no-restore`.
-5. A one-specification tree saved by `SpechtTree.Of(1)` and `SpechtTreeStore`,
-   reused as [CheckBenchmarks](../../Check/CheckBenchmarks.cs) uses them. If the
-   production-tree move lands first, use its new declarations; do not duplicate
-   its generator or turn that structural refactor into a prerequisite here.
-6. Untimed smoke invocations of all three rows. The check must count exactly one
-   specification and report no violations, using its JSON report; timed checks
-   use the ordinary text invocation. All setup commands must exit zero.
+The local manifest is explicit and isRoot, and the NuGet configuration clears
+all inherited sources in favor of the session source alone. Both installs name
+an exact version, --local, the explicit manifest/config and disabled manifest
+auto-creation. DOTNET_CLI_HOME and NuGet package/HTTP/plugin/scratch caches and
+process temporary directories belong to the session; environment changes apply
+only to child processes. Resolver-cache isolation was observed in the manual
+probe. No feed, global install, user-cache fallback or repository manifest edit
+is part of setup.
 
-The launch helper takes an argument list, uses `ProcessStartInfo.ArgumentList`
-without a shell, and sets the working directory to the session holding the root
-manifest. The measured check forwards `--root` with the session-relative tree
-path. The host forwards `--help`; OQ-3 explicitly proceeds with that row. Redirect
-and concurrently drain stdout/stderr, close stdin, await exit, and throw on a
-nonzero code before returning. Keep successful output out of benchmark logs;
-failure messages identify the row and exit code and sanitize session/repository
-absolute prefixes before publishing command diagnostics. Dispose every process.
+The session resolves the registered SpechtResources and SpecManifestParser
+outside measurement, supplying the shipped manifest bytes, parsed structure and
+pinned version to SpechtTree, then saves it through SpechtTreeStore. This follows
+CheckBenchmarks after the manifest-resource refactor; no consumer tree or
+generator type is copied or moved. Setup smoke
+runs the empty tool and help, then checks JSON from the installed tool for
+exactly one specification and no violations. Timed checks use normal text
+output. The production-tree refactor remains separate work.
 
-`GlobalCleanup` disposes the session and removes its entire temporary directory.
-Setup also disposes partial state on failure because GlobalCleanup is not a
-substitute for exception-safe setup. No global install, user-cache fallback,
-repository manifest edit or package-cache copy back is allowed. All retained
-results stay under `.artifacts/benchmarks/` through existing exporters.
+### Process and cleanup behavior
+
+ColdStartSession passes an ArgumentList without a shell, runs from the private
+root manifest, closes stdin and concurrently drains stdout/stderr while awaiting
+exit. A nonzero exit throws with the row/stage and exit code. Session/repository
+path prefixes in command diagnostics are sanitized. Successful output is returned
+to the benchmark without being logged. Every process is disposed.
+
+CreateAsync owns cleanup when setup throws; GlobalCleanup disposes a successful
+session. All manifests, installed packages, resolver caches, generated source,
+compiled baseline and synthetic input are removed with that session. Retained
+benchmark results use the existing .artifacts/benchmarks exporters and uploads.
+
+BenchmarkDotNet's Markdown summary reports the ratios against EmptyTool. Its
+Full JSON exporter supplies raw measurements, statistics and managed-allocation
+metrics, with the allocation scope in MethodTitle; it does not export the
+formatted ratio column. No ratio formula or replacement exporter is introduced.
+Machine consumers can read the raw results; stored-baseline comparison remains
+the later Feature the epic names.
 
 ### Tool-process memory
 
@@ -276,41 +267,102 @@ shared-runner Short results establish a regression threshold.
 
 <!-- last written by: test-writer, 2026-10-13 -->
 
-This is a verification plan, not evidence of implemented code. Apply the owner's
-benchmark-code proof ruling recorded in 0109-F1 § 10 and item 0145: no tests of
-benchmark code and no new acceptance link or step class. Keep every § 9 row
-Missing for this design. At delivery, name the inspected mechanism and manual
-evidence in the Test cell and retain Missing in Status under that ruling. A queue
-item may close only for the claims it delivers; the container waits for all nine and an actual finding.
+The owner's benchmark-code proof ruling recorded in 0109-F1 § 10 applies:
+no tests of benchmark code or acceptance wiring were added. The timing claims
+are recorded as inspected mechanisms and manual observations below, with Missing
+retained in § 9 Status. B-006 remains unimplemented. The Feature is unfinished.
 
-| Claims                     | Manual delivery evidence required                                                                                                                                                                                                                                                                         |
-| -------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| B-001, B-005               | Inspect both installed package identities/versions, manifest and private caches; run setup with feed access unavailable; observe unchanged repository/user manifests and no leaked install after normal cleanup and a deliberately failed setup.                                                          |
-| B-002, B-003, B-007, B-008 | Run `./build.sh Benchmark --benchmark-filter '*ColdStartBenchmarks*' --benchmark-job Dry`; inspect all three rows and observe distinct launcher/tool process identities across repeated invocations. Confirm baseline source has no output, product dependency or tree read.                              |
-| B-004                      | Use a temporary synthetic broken tree and a failing generated tool to observe nonzero exits fail the target; remove probes before commit. Drain large output in a throwaway probe to demonstrate no pipe deadlock.                                                                                        |
-| B-006                      | Prove the selected observer on a rapid no-op and contrasting synthetic allocations; distinguish launcher and tool peaks; verify exact high-water semantics, units and per-invocation attribution. Run both CI operating systems and document local macOS limits. Zero/unavailable readings must not pass. |
-| B-009                      | A default-job run emits baseline, help and check ratios in Markdown and Full JSON; record environment, boundary, output policy, variance and observer overhead in Performance.                                                                                                                            |
+### Manual verification
 
-At implementation, inspect filtered and unfiltered target selection, conditional
-packing and unchanged PR workflows, then verify the first merged main run's
-Linux/Windows exporter artifacts. Raw reports remain gitignored. No timing or
-memory value is a pass/fail threshold. No measurement was run for this design.
+- The real target `./build.sh Benchmark --benchmark-filter '*ColdStartBenchmarks*'
+--benchmark-job Dry` selected all three cases, packed specht first, installed
+  both tools, completed all cases and wrote Markdown and Full JSON. Dry verifies
+  execution only; the default-job finding below is separate evidence. The same
+  three cases also passed the Short job main CI selects.
+- A temporary manual probe called the same session and launcher. It inspected
+  both installed package identities and the private resolver cache, ran all
+  three invocations, and observed unchanged user resolver-cache contents and no
+  empty-tool installation in the user's NuGet cache after cleanup.
+- The probe changed the synthetic specification to invalid frontmatter: the
+  installed check exited 1 and the launcher threw with sanitized diagnostics.
+  A temporary replacement of the installed synthetic tool exited 7 and likewise
+  threw. A temporary benchmark using the same session corrupted its clean input
+  after setup; the real Benchmark target failed with exit 1, and that probe class
+  was removed before delivery. An immediate-exit variant printing its PID produced distinct tool PIDs
+  on repeated calls. A variant writing 1 MiB each to stdout and stderr completed
+  with its output intact. These variants are manual probes only; the shipped
+  empty tool body remains `return 0;`.
+- Normal disposal deleted the session. With package output temporarily absent,
+  setup failed and left no new session directory. Probe variants were removed
+  with the private session; no probe or functional test ships.
+- A default-job run records timing and allocation below. Markdown ratios and
+  Full JSON's raw measurements/statistics/allocation scope are inspected, without
+  claiming a formatted ratio field the library does not export.
+
+The manual probes also passed with network access restricted. The full local
+build passed Format, Compile and all three test tiers: 614 Unit, 238 Integration,
+and acceptance 200 passed / 210 skipped. Specht reported zero errors and the same
+141 existing warnings. PR checks are recorded in the delivery report. The existing main-only Short run will publish these cases on Linux and
+Windows after merge; platform evidence is not inferred from a local macOS run.
+The PR workflow remains free of automatic benchmark and upload steps.
+
+### Performance
+
+<!-- last written by: benchmarker, 2026-10-13 -->
+
+| Concern                                                 | Source             | Benchmark                                  | Finding                                                                                                                                                |
+| ------------------------------------------------------- | ------------------ | ------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Fixed consumer invocation cost against the launch floor | C-1, C-3, C-6      | ColdStartBenchmarks.EmptyTool, Help, Check | Empty tool 199.7 ms; help 339.8 ms (1.70 ratio); one-specification check 508.6 ms (2.55 ratio). Includes manifest-mediated launch and output draining. |
+| Benchmark-process managed allocation per invocation     | C-7; 0109-F1 B-007 | ColdStartBenchmarks.EmptyTool, Help, Check | 75.59 KB, 81.63 KB and 76.66 KB respectively; these are wrapper allocations, not tool-process memory.                                                  |
+| Tool-process peak memory                                | B-006, C-7         | Not implemented                            | Not measured. Observer feasibility and reporting are separate work; no substitute figure is reported.                                                  |
+
+Measured 2026-10-13 using the library's default job, Release, out of process,
+without an attached debugger: `./build.sh Benchmark --benchmark-filter
+'*ColdStartBenchmarks*'`. All three cases succeeded. BenchmarkDotNet 0.15.8;
+macOS Tahoe 26.4 (25E246), Darwin 25.4.0; Apple M1 Max, 10 logical/physical cores;
+.NET SDK 10.0.401; .NET 10.0.12 (10.0.12, 10.0.1226.42308), Arm64 RyuJIT;
+Concurrent Workstation GC. The runner could not raise process priority. This
+finding was refreshed after integrating the manifest-resource refactor from main
+at 204337d; the measured implementation was at 405d05c, before documentation
+closure. It supersedes the pre-integration run retained in ignored artifacts.
+
+| Invocation               | Mean     | Error (99.9% CI half-width) | StdDev   | Ratio | RatioSD | Benchmark allocated |
+| ------------------------ | -------- | --------------------------- | -------- | ----- | ------- | ------------------- |
+| Empty tool               | 199.7 ms | 3.94 ms                     | 4.21 ms  | 1.00  | 0.03    | 75.59 KB            |
+| Help                     | 339.8 ms | 6.51 ms                     | 7.75 ms  | 1.70  | 0.05    | 81.63 KB            |
+| Check, one specification | 508.6 ms | 8.72 ms                     | 17.01 ms | 2.55  | 0.10    | 76.66 KB            |
+
+Setup packs/installs the empty tool, installs the real package, saves the tree
+and smoke-runs each path before timing. Every measured call starts a new process;
+OS file caches, SDK/tool-resolution state and package files are warm. Stdout and
+stderr are redirected and drained; help includes formatting its usage output and
+check includes its ordinary text report. The allocation column covers the
+benchmark's launcher/tasks/output buffers, not either child's managed heap or
+resident memory. No tool-memory observer is installed.
+
+The library retained 18, 21 and 47 measurements respectively and removed
+0, 4 and 12 outliers. The check's removed outliers ranged from about 587 ms to
+1.15 s, so this is one environment's finding, not a latency guarantee. Ratios are the
+library's ratio-distribution means, not a separately computed ratio of means.
+The host and check rows exceed the empty tool in this run; subtraction does not
+isolate composition or engine time. No previous cold-start finding is available
+for a regression comparison and no number gates the build.
 
 ## 9. Traceability Matrix
 
-<!-- last written by: spec-author, 2026-10-09 -->
+<!-- last written by: test-writer, 2026-10-13 -->
 
-| Claim ID | Scenario                                                    | Test    | Status  |
-| -------- | ----------------------------------------------------------- | ------- | ------- |
-| B-001    | The packed tool is installed the way a consumer installs it | Missing | Missing |
-| B-002    | A check by the packed tool is measured start to exit        | Missing | Missing |
-| B-003    | Every measured invocation is a fresh process                | Missing | Missing |
-| B-004    | A tool that fails is not timed                              | Missing | Missing |
-| B-005    | A run leaves no tool installed behind it                    | Missing | Missing |
-| B-006    | Every measured invocation reports the tool's own memory     | Missing | Missing |
-| B-007    | A tool that does nothing is measured as the baseline        | Missing | Missing |
-| B-008    | The tool's help is measured start to exit                   | Missing | Missing |
-| B-009    | Each measurement is reported against the baseline           | Missing | Missing |
+| Claim ID | Scenario                                                    | Test                                                                                            | Status  |
+| -------- | ----------------------------------------------------------- | ----------------------------------------------------------------------------------------------- | ------- |
+| B-001    | The packed tool is installed the way a consumer installs it | No test. ColdStartSession.InstallAsync selects metadata and installs locally; § 8 manual probe. | Missing |
+| B-002    | A check by the packed tool is measured start to exit        | No test. ColdStartBenchmarks.Check and RunAsync; § 8 Dry/default runs.                          | Missing |
+| B-003    | Every measured invocation is a fresh process                | No test. DotNetAsync starts a process per call; § 8 distinct-PID probe.                         | Missing |
+| B-004    | A tool that fails is not timed                              | No test. DotNetAsync exit guard; § 8 broken-tree and exit-7 probes.                             | Missing |
+| B-005    | A run leaves no tool installed behind it                    | No test. CreateAsync failure cleanup and Dispose; § 8 cache/cleanup probes.                     | Missing |
+| B-006    | Every measured invocation reports the tool's own memory     | Missing                                                                                         | Missing |
+| B-007    | A tool that does nothing is measured as the baseline        | No test. InstallAsync generated no-op and EmptyTool baseline; § 8 runs/probe.                   | Missing |
+| B-008    | The tool's help is measured start to exit                   | No test. ColdStartBenchmarks.Help; § 8 Dry/default runs.                                        | Missing |
+| B-009    | Each measurement is reported against the baseline           | No test. EmptyTool baseline and library Markdown ratio; § 8 default finding.                    | Missing |
 
 ## 10. Lessons / Spec Deltas
 
@@ -325,6 +377,12 @@ memory value is a pass/fail threshold. No measurement was run for this design.
   constraint or scenario changed. The design retains OQ-3's --help reading and
   requires evidence of a tool-process memory observer before its implementation;
   it does not treat launcher allocation as B-006.
+
+- 2026-10-13, timing implementation added without changing any claim, constraint
+  or scenario. Inspection corrected the design's assumption that Full JSON
+  exports the formatted ratio column: Markdown carries ratios and JSON carries
+  raw measurements and allocation metrics. B-009 remains satisfied by the
+  summary; B-006 remains separate, unimplemented memory work.
 
 ## 11. Open Questions
 
