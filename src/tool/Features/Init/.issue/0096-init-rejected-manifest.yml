@@ -2,7 +2,7 @@ id: "0096"
 type: task
 title: Refuse a manifest the check rejects from init with exit 3
 
-status: ready-for-architecture
+status: done
 
 risk: 1
 
@@ -18,8 +18,8 @@ claims:
   - B-017
 
 created: "2026-10-08"
-updated: "2026-10-11"
-closed: null
+updated: "2026-10-14"
+closed: "2026-10-14"
 
 summary: |
   Every command answers a rejected manifest with 3 (0001-F2 decision
@@ -32,6 +32,13 @@ acceptance_criteria:
   - "§ 9 carries a row naming a test for each id above."
 
 decisions:
+  - |
+    2026-10-14, implementation: reuse InitWriter.Write's existing shared
+    parser and pin validation, and InitCommand's typed exit-3 fold. The
+    behavior already exists; this change binds the three B-017 scenarios,
+    pins the refusal before writes at unit and CLI tiers, and corrects
+    the design and coverage records. No architecture migration is needed.
+    Malformed schema-version values remain outside this item's cases (OQ-3).
   - |
     2026-10-11, spec-author: the contradiction this item refuses, 0001-F7
     B-036, moved from `0092` to `0177`; the edge follows it.

@@ -328,31 +328,55 @@ Feature: init
     Then no network call was attempted
 
   @B-017
-  Scenario: Init beside a manifest that does not parse fails as the check does
+  Scenario Outline: Init beside a manifest that does not parse fails as the check does
     Given a root directory holding a manifest that is not well-formed JSON
     And a snapshot of every file under the root
-    When init runs against it
+    When init runs against it with <options>
     Then no file under the root has changed
     And the standard error names the reason
     And the exit code is 3
+    And the rejected init has no standard output
+
+    Examples:
+      | options    |
+      | no option  |
+      | schemas    |
+      | templates  |
+      | every part |
 
   @B-017
-  Scenario: Init beside a rejected manifest fails as the check does
+  Scenario Outline: Init beside a rejected manifest fails as the check does
     Given a root directory holding a manifest carrying a key the tool does not know
     And a snapshot of every file under the root
-    When init runs against it
+    When init runs against it with <options>
     Then no file under the root has changed
     And the standard error names the reason
     And the exit code is 3
+    And the rejected init has no standard output
+
+    Examples:
+      | options    |
+      | no option  |
+      | schemas    |
+      | templates  |
+      | every part |
 
   @B-017
-  Scenario: Init beside a contradictory schema source fails as the check does
+  Scenario Outline: Init beside a contradictory schema source fails as the check does
     Given a root directory whose manifest records an upstream schema source and explicitly selects the embedded source
     And a snapshot of every file under the root
-    When init runs against it
+    When init runs against it with <options>
     Then no file under the root has changed
     And the standard error names the contradiction
     And the exit code is 3
+    And the rejected init has no standard output
+
+    Examples:
+      | options    |
+      | no option  |
+      | schemas    |
+      | templates  |
+      | every part |
 
   @B-035 @B-040
   Scenario Outline: Init records a new source while fetching remains opt-in
