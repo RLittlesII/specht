@@ -2,7 +2,7 @@ id: "0187"
 type: task
 title: Reject a schema file name that is not a plain file name
 
-status: ready-for-architecture
+status: done
 
 risk: 1
 
@@ -18,8 +18,8 @@ claims:
   - B-047
 
 created: "2026-10-11"
-updated: "2026-10-11"
-closed: null
+updated: "2026-10-13"
+closed: "2026-10-13"
 
 summary: |
   A `frontmatterSchemas` value is a plain file name, read under

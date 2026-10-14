@@ -411,6 +411,11 @@ public sealed class ManifestSteps
     [Then("the standard output is empty")]
     public void ThenTheStandardOutputIsEmpty() => Run.Stdout.Should().BeEmpty();
 
+    [Then("the standard error carries only the schema file name rejection for {string} and {string}")]
+    public void ThenTheStandardErrorCarriesOnlyTheSchemaFileNameRejectionFor(string kind, string value) =>
+        Run.Stderr.Should().Be(
+            $"specht: .specht/manifest.json: the frontmatterSchemas kind '{kind}' names '{value}', which is not a plain file name.{Environment.NewLine}");
+
     [Given("the baseline tree the engine's tests build")]
     public void GivenTheBaselineTreeTheEnginesTestsBuild() => BaselineTree.Write(Tree);
 

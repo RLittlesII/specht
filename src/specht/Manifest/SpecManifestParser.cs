@@ -255,6 +255,12 @@ public sealed class SpecManifestParser(SchemaVersions versions)
                     .Select(static entry => $"the exclusion '{entry}' has a '/' inside it and no leading '/'"))
             .Concat(identityFaults)
             .Concat(
+                structure.FrontmatterSchemas
+                    .Where(static schema => schema.Value.Contains("..", StringComparison.Ordinal)
+                        || schema.Value.Contains('/') || schema.Value.Contains('\\'))
+                    .Select(static schema =>
+                        $"the frontmatterSchemas kind '{schema.Key}' names '{schema.Value}', which is not a plain file name"))
+            .Concat(
                 structure.Rules
                     .Where(static rule => rule.Value is not ("error" or "warning" or "off"))
                     .Select(static rule => $"the rule '{rule.Key}' in rules is set to '{rule.Value}', which is not 'error', 'warning' or 'off'"))
