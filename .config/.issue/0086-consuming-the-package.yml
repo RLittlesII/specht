@@ -2,7 +2,7 @@ id: "0086"
 type: feature
 title: Consuming the package
 
-status: ready-for-architecture
+status: done
 
 value: 4
 risk: 3
@@ -26,8 +26,8 @@ claims:
   - B-008
 
 created: "2026-10-08"
-updated: "2026-10-13"
-closed: null
+updated: "2026-10-14"
+closed: "2026-10-14"
 
 summary: |
   As a consumer repository, I want to install the tool from the feed

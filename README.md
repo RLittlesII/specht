@@ -54,20 +54,98 @@ it chooses.
 
 ## Quick start
 
-> Published on [GitHub Packages](https://github.com/RLittlesII/specht/pkgs/nuget/specht.tool). Package reads require authentication.
+Requires the .NET 10 SDK. `specht.tool` is published on
+[GitHub Packages](https://github.com/RLittlesII/specht/pkgs/nuget/specht.tool).
+Package reads require authentication, including for this public package.
 
-```sh
-dotnet tool install specht.tool      # into the repository's local tool manifest
-dotnet specht init                   # write .specht/manifest.json
-dotnet specht init --all             # add the frontmatter schemas and templates
-dotnet specht                        # check the tree
+Commit this `nuget.config` in the consumer repository. The named `specht`
+source supplies the tool; nuget.org supplies other packages and audit data.
+Merge these entries into an existing configuration if the repository has one.
+
+```xml
+<configuration>
+  <packageSources>
+    <clear />
+    <add key="nuget.org" value="https://api.nuget.org/v3/index.json" />
+    <add key="specht" value="https://nuget.pkg.github.com/rlittlesii/index.json" />
+  </packageSources>
+  <packageSourceMapping>
+    <clear />
+    <packageSource key="nuget.org">
+      <package pattern="*" />
+    </packageSource>
+    <packageSource key="specht">
+      <package pattern="specht.tool" />
+    </packageSource>
+  </packageSourceMapping>
+  <auditSources>
+    <clear />
+    <add key="nuget.org" value="https://api.nuget.org/v3/index.json" />
+  </auditSources>
+</configuration>
 ```
 
+Use a GitHub personal access token (classic) with `read:packages` and access to
+the package. Supply your GitHub username as `GITHUB_USER` and the token as
+`SPECHT_PACKAGES_TOKEN` through your shell's environment, then export NuGet's
+credential for the source named `specht`:
+
 ```sh
-dotnet tool install -g specht.tool   # puts specht on PATH
+export NuGetPackageSourceCredentials_specht="Username=$GITHUB_USER;Password=$SPECHT_PACKAGES_TOKEN;ValidAuthenticationTypes=Basic"
+```
+
+Keep the token in the runtime environment; commit no credential. See
+[GitHub's authentication requirements](https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-nuget-registry)
+and [NuGet's environment credential format](https://learn.microsoft.com/en-us/nuget/consume-packages/consuming-packages-authenticated-feeds).
+
+For a new repository, create the manifest and install locally:
+
+```sh
+dotnet new tool-manifest --output .config
+dotnet tool install --local specht.tool
+dotnet specht init
+dotnet specht init --all
+dotnet specht
+```
+
+Commit `.config/dotnet-tools.json` alongside `nuget.config` to pin the tool
+version. A clone supplies the same environment credential, then runs:
+
+```sh
+dotnet tool restore
+dotnet specht
+```
+
+A local tool manifest install runs as `dotnet specht`.
+
+For CI, store the read token in the consumer repository's
+`SPECHT_PACKAGES_TOKEN` secret, store its owner's username in the
+`SPECHT_PACKAGES_USER` repository variable, and supply NuGet's credential as a
+job environment variable. The token's owner must have package access:
+
+```yaml
+env:
+  NuGetPackageSourceCredentials_specht: Username=${{ vars.SPECHT_PACKAGES_USER }};Password=${{ secrets.SPECHT_PACKAGES_TOKEN }};ValidAuthenticationTypes=Basic
+```
+
+This repository's own workflows use `${{ github.token }}` with `packages: read`
+instead of a stored read token. Another repository can use its workflow token
+only when it has been granted read access to the package.
+
+For a workstation shell outside a repository, use the same environment
+credential and register the named source in user-level NuGet configuration.
+Run this once, unless `dotnet nuget list source` already lists `specht`:
+
+```sh
+dotnet nuget add source https://nuget.pkg.github.com/rlittlesii/index.json --name specht
+dotnet tool install --global specht.tool --add-source https://nuget.pkg.github.com/rlittlesii/index.json
 specht init
 specht
 ```
+
+A global install puts `specht` on PATH; ensure the SDK's global tools directory
+is on your shell's PATH. The local manifest is the install path for a repository
+and its build; a global install is a second path for a shell.
 
 ## Usage
 

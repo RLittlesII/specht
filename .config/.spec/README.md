@@ -5,7 +5,7 @@ type: feature
 id: "F7"
 epic: "0055"
 spec_status: approved
-status: ready-for-architecture
+status: done
 priority: high
 value: 0
 risk: 0
@@ -101,6 +101,7 @@ A consumer cannot install a package from a feed it does not know, with a credent
 | 1   | Published checker version and source routing             | Both           |
 | 2   | Environment credentials for tool restore                 | Technical      |
 | 3   | Native solution restore without tool-feed authentication | Technical      |
+| 4   | Repeatable local and global installation guidance        | Both           |
 
 ## 7. Technical Design
 
@@ -120,32 +121,42 @@ restore, so full NUKE invocations need the tool-feed credential. The generated C
 credential from their workflow token, granted package read (0067 and 0085).
 No custom manifest generation or restore-target change is required.
 
+The install section of `README.md` owns the source XML, runtime credential, local manifest creation/install/restore commands and the global path. Decision 0002 applies OQ-3's permitted default. Documentation scenarios read that section; the empty-repository scenario executes its native manifest-creation and install commands against synthetic folder feeds.
+
 ## 8. Testing Strategy
 
 <!-- last written by: test-writer, 2026-10-14 -->
 
-`ConsumptionSteps` exercises the committed manifest and source configuration
-with only feed endpoints replaced by local folders and fresh package caches.
-B-002 restores and invokes a synthetic checker at the pinned version. B-003
-checks the pin against 0.1.90, whose publication is recorded in `0055-F6` § 8.
-B-007 removes credential environment variables, provides no checker package,
+`ConsumptionSteps` binds all eight scenarios. The five installation scenarios
+were run before the README change: five failed for missing guidance and the
+three existing scenarios passed. After the README change, all eight pass and
+none are skipped.
+
+B-001 reads the README's source XML and executes its manifest-creation and local
+install commands against synthetic folder feeds with fresh caches. It starts
+without a manifest and checks the installed package, version and command in
+`.config/dotnet-tools.json`. The explicit `--output .config` makes the documented
+manifest destination independent of the SDK template's default. B-004 to B-006
+and B-008 read the same install section for the named source, runtime credential,
+CI setup, install/restore commands and authenticated global path.
+
+B-002 restores and invokes a synthetic checker at the committed pin. B-003
+checks that pin against 0.1.90, whose publication is recorded in `0055-F6` § 8.
+B-007 removes credential environment variables, supplies no checker package,
 and runs native solution restore followed by build. No automated test uses a
-network or real credential. These are NuGet declarations and native commands;
-there is no custom selection mechanism needing a unit test. Five documentation
-scenarios remain pending for 0088.
+network or real credential.
 
-The real root tool restore passed on 2026-10-14 with the existing login's
-credential scoped to the process, including a fresh-cache repeat. The installed
-command printed `0.1.90+b213a0522a`. No credential change was needed. The
-repository's schema pin is unchanged.
+No new unit tier is needed: `README.md`, `nuget.config`, the tool manifest and
+`ConsumptionSteps` were read; the change adds documentation and its acceptance
+harness, not a production decision, derivation or selection algorithm. The native
+NuGet commands are observed at the process boundary.
 
-The three package-consumption scenarios pass; five documentation scenarios remain
-pending for 0088. Native solution restore and build also pass on the actual
-repository with credential environment variables removed. The full build passes with native tool-feed credentials: 904 unit tests,
-304 integration tests and 317 acceptance scenarios; 214 scenarios remain pending.
-Format passes and the self-check reports zero errors and 157 existing warnings.
-Generated workflow changes are limited to package-read permission and the native
-credential; step order is unchanged.
+The real root tool restore and token-free native solution build were verified on
+2026-10-14 for the existing consumption design. The installed package printed
+`0.1.90+b213a0522a`. CI and release authentication are covered by their own
+Features; self-check adoption and Renovate remain separate scope.
+
+Full verification on 2026-10-14: `./build.sh` passed Format, Compile, 904 unit tests, 304 integration tests and 322 acceptance scenarios (209 pending elsewhere). The self-check reported zero errors and 152 existing warnings. The focused Feature run passed all eight scenarios with none skipped.
 
 ## 9. Traceability Matrix
 
@@ -153,14 +164,14 @@ credential; step order is unchanged.
 
 | Claim ID | Scenario                                                              | Test               | Status  |
 | -------- | --------------------------------------------------------------------- | ------------------ | ------- |
-| B-001    | A new repository installs the tool from the feed                      | Missing            | Missing |
+| B-001    | A new repository installs the tool from the feed                      | `ConsumptionSteps` | Covered |
 | B-002    | A clone restores the pinned tool                                      | `ConsumptionSteps` | Covered |
 | B-003    | This repository installs its own published tool                       | `ConsumptionSteps` | Covered |
-| B-004    | The document names the feed and the source entry                      | Missing            | Missing |
-| B-005    | The document names the token and how CI supplies it                   | Missing            | Missing |
-| B-006    | The document names the install and restore commands                   | Missing            | Missing |
+| B-004    | The document names the feed and the source entry                      | `ConsumptionSteps` | Covered |
+| B-005    | The document names the token and how CI supplies it                   | `ConsumptionSteps` | Covered |
+| B-006    | The document names the install and restore commands                   | `ConsumptionSteps` | Covered |
 | B-007    | A contributor without a token can build                               | `ConsumptionSteps` | Covered |
-| B-008    | The document names the global install and how each install is invoked | Missing            | Missing |
+| B-008    | The document names the global install and how each install is invoked | `ConsumptionSteps` | Covered |
 
 ## 10. Lessons / Spec Deltas
 
@@ -171,15 +182,17 @@ credential; step order is unchanged.
 
 - 2026-10-14, decision 0001: use native solution and tool restore commands. OQ-2 permits tool restore to need a credential while solution restore and build remain token-free. No claim, constraint or scenario changes; no NUKE selection machinery is required.
 
+- 2026-10-14, decision 0002 applies OQ-3's permitted default. B-001's scenario explicitly starts without a tool manifest; B-006 names its creation; B-008 names the global source and environment credential. Claim and constraint ids are unchanged.
+
 ## 11. Open Questions
 
-<!-- last written by: spec-author, 2026-10-11 (OQ-3 raised) -->
+<!-- last written by: spec-author, 2026-10-14 (OQ-3 default applied) -->
 
-| ID   | Question                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  | Blocks              | Resolution                                                                                                                                     |
-| ---- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
-| OQ-1 | Where does the install document live: this repository's `README.md`, or a page under `docs/`, where `0002-F1` places usage documentation?                                                                                                                                                                                                                                                                                                                                                                                                                 | B-004, B-005, B-006 | Resolved 2026-10-08 by the repository owner: a section of `README.md`, moving into epic `0002`'s documentation later. C-4 and § 5 row 7 added. |
-| OQ-2 | Once this repository's own sources include the authenticated feed (B-003), can a contributor without a GitHub token still restore and build the solution, with only the tool restore needing it? Proposed default: yes, as a claim.                                                                                                                                                                                                                                                                                                                       | B-003               | Resolved 2026-10-08: proposed default accepted by the repository owner. B-007 added.                                                           |
-| OQ-3 | Which package source and credential does a global install use? `0055-F6` C-3 makes GitHub Packages the only feed and A-1 requires a token for every read, so `dotnet tool install -g specht.tool` run outside a repository that commits the source has neither. C-1 holds: no credential in a committed file or in a documented example. Raised by `spec-reviewer`, 2026-10-11. Proposed default: the document tells the reader to pass the feed with `--add-source` and to supply the token from the environment through user-level NuGet configuration. | B-008               | Open. Owner not asked. The item that delivers B-008 writes the proposed default; does not block it.                                            |
+| ID   | Question                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  | Blocks              | Resolution                                                                                                                                                                                                                                     |
+| ---- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| OQ-1 | Where does the install document live: this repository's `README.md`, or a page under `docs/`, where `0002-F1` places usage documentation?                                                                                                                                                                                                                                                                                                                                                                                                                 | B-004, B-005, B-006 | Resolved 2026-10-08 by the repository owner: a section of `README.md`, moving into epic `0002`'s documentation later. C-4 and § 5 row 7 added.                                                                                                 |
+| OQ-2 | Once this repository's own sources include the authenticated feed (B-003), can a contributor without a GitHub token still restore and build the solution, with only the tool restore needing it? Proposed default: yes, as a claim.                                                                                                                                                                                                                                                                                                                       | B-003               | Resolved 2026-10-08: proposed default accepted by the repository owner. B-007 added.                                                                                                                                                           |
+| OQ-3 | Which package source and credential does a global install use? `0055-F6` C-3 makes GitHub Packages the only feed and A-1 requires a token for every read, so `dotnet tool install -g specht.tool` run outside a repository that commits the source has neither. C-1 holds: no credential in a committed file or in a documented example. Raised by `spec-reviewer`, 2026-10-11. Proposed default: the document tells the reader to pass the feed with `--add-source` and to supply the token from the environment through user-level NuGet configuration. | B-008               | Resolved 2026-10-14 by applying the explicitly permitted default, not a new owner decision: named user-level source, environment credential and `--add-source` ([decision 0002](decisions/0002-document-the-authenticated-global-install.md)). |
 
 ## 12. Sign-off
 
@@ -191,6 +204,7 @@ credential; step order is unchanged.
 | Tasks   | 🟢     | spec-reviewer | Item cut (2026-10-08) - approved, reviewing `6113181`..`0657b68`. 0087 and 0088 carry B-001-B-007 once; 0087 delivers B-003, and 0032, 0067, 0077 and 0085 wait on it.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
 | 1-5     | 🟢     | spec-reviewer | Round 3 (2026-10-11) - approved, reviewing the uncommitted diff on `60de077`. C-2 is amended in place with its id kept and agrees with `0001-F2` C-6 and its decision 0009; B-008 is a new id, with one § 9 row and one `@B-008` scenario that state the same three things; § 10 records the delta. Non-blocking (spec-author): `0055-F6` C-3 and A-1 make the feed GitHub Packages with a token, and no claim says where a global install outside a repository finds the source and the token, as B-001's Given does for the manifest install; brief § 6's install row and decision 0009 do not name the owner's 2026-10-09 decision in item 0111 that this reverses. |
 | Tasks   | 🟢     | spec-reviewer | B-008 joined (2026-10-11) - approved, reviewing the same diff. 0086 and 0088 carry B-008 once each as parent and child, 0087 is unchanged, and no item stores `priority`, `rank` or `blocks`.                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| 1-11    | 🟢     | spec-reviewer | 2026-10-14, self-review of installation delivery: all eight claims have one tagged scenario and one Covered row; all eight scenarios execute and pass. README setup satisfies C-1 to C-4; C-5's existing workflow configuration is preserved. Decision 0002 applies the permitted OQ-3 default. Full build and formatting pass; no production architecture or consumer build wiring was added. No independent review is claimed.                                                                                                                                                                                                                                       |
 
 | 6-10 | 🟢 | spec-reviewer | 2026-10-14, self-review of 0087: native solution restore/build satisfies B-007 without credentials; native tool restore satisfies B-002 with an environment credential; the published pin satisfies B-003. Three executable scenarios pass. The Restore target is unchanged and workflow authentication uses the workflow token. No independent review is claimed. |
 

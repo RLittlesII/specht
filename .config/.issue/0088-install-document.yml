@@ -2,7 +2,7 @@ id: "0088"
 type: task
 title: Write the install section of README.md
 
-status: ready-for-architecture
+status: done
 
 risk: 1
 
@@ -22,8 +22,8 @@ claims:
   - B-008
 
 created: "2026-10-08"
-updated: "2026-10-11"
-closed: null
+updated: "2026-10-14"
+closed: "2026-10-14"
 
 summary: |
   A section of `README.md` (C-4): feed, source entry with an environment
