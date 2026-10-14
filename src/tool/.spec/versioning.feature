@@ -570,13 +570,22 @@ Feature: Schema versioning
     And the exit code is 0
 
   @B-045
-  Scenario: Pinning changes only the version in the manifest
+  Scenario Outline: Pinning changes only the version in the manifest
     Given the tool ships schema versions 0.1.0 and 0.2.0
     And the manifest pins version 0.1.0
     And its manifest lowers one rule to a warning, disables another and renames the claims section
+    And the manifest uses encoding <encoding>
     And a snapshot of the manifest
     When specht schema pin 0.2.0 runs
     Then the manifest differs from the snapshot only in the version it pins
+
+    Examples:
+      | encoding |
+      | utf-8    |
+      | utf-16   |
+      | utf-16BE |
+      | utf-32   |
+      | utf-32BE |
 
   @B-046 @boundary
   Scenario: Pinning touches no other file

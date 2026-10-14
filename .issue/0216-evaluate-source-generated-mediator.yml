@@ -1,0 +1,30 @@
+id: "0216"
+type: spike
+title: Evaluate source-generated Mediator against direct calls
+status: ready
+value: 4
+risk: 3
+parent: null
+children: []
+depends_on: []
+spikes: []
+spec: null
+claims: []
+created: "2026-10-14"
+updated: "2026-10-14"
+closed: null
+summary: |
+  ADR-0014 records the owner's benchmark gate and names
+  https://github.com/martinothamar/Mediator as the candidate. Compare
+  direct-call baseline and candidate trial branches under equivalent
+  workloads/configurations, including actual CLI startup, dispatch and
+  allocations. Record revisions, candidate version, evidence, complexity
+  and a recommendation before production architecture is chosen.
+acceptance_criteria:
+  - "Publish reproducible repository measurements and their conditions."
+  - "Evaluate the named source-generated candidate, not a handwritten substitute."
+  - "Record whether measured benefit justifies complexity and maintenance cost."
+  - "Record the owner's evidence decision and revise the migration design before adoption."
+out_of_scope:
+  - "Adopting a mediator or structural migration without the evidence decision."
+  - "Changing schema command behavior or consumer files."

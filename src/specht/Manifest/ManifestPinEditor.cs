@@ -10,12 +10,19 @@ namespace Specht.Manifest;
 /// <param name="versions">The shipped catalog used for validation and repair.</param>
 public sealed class ManifestPinEditor(SpecManifestParser parser, SchemaVersions versions)
 {
+    /// <summary>Decodes the BOM encodings accepted by the existing manifest reader, or UTF-8 without a BOM.</summary>
+    public string Decode(byte[] bytes)
+    {
+        var (encoding, offset) = Format(bytes);
+        return encoding.GetString(bytes.AsSpan(offset));
+    }
+
     /// <summary>Validates settings under the current shipped version, or newest when that pin is unusable.</summary>
     public void Validate(byte[] bytes)
     {
         try
         {
-            var manifest = JsonNode.Parse(Encoding.UTF8.GetString(bytes).TrimStart('\uFEFF'))?.AsObject()
+            var manifest = JsonNode.Parse(Decode(bytes))?.AsObject()
                 ?? throw new InvalidOperationException("The manifest must be a JSON object.");
             var current = new SemanticVersion(0, 1, 0);
             if (manifest.ContainsKey("schemaVersion"))
@@ -39,8 +46,10 @@ public sealed class ManifestPinEditor(SpecManifestParser parser, SchemaVersions 
     /// <summary>Replaces only the root pin value, or adds the missing key without changing other values.</summary>
     public byte[] Change(byte[] bytes, SemanticVersion target)
     {
-        var offset = bytes.AsSpan().StartsWith(new byte[] { 0xEF, 0xBB, 0xBF }) ? 3 : 0;
-        var reader = new Utf8JsonReader(bytes.AsSpan(offset));
+        var (encoding, offset) = Format(bytes);
+        var text = encoding.GetString(bytes.AsSpan(offset));
+        var utf8 = Encoding.UTF8.GetBytes(text);
+        var reader = new Utf8JsonReader(utf8);
         var properties = false;
         while (reader.Read())
         {
@@ -50,19 +59,45 @@ public sealed class ManifestPinEditor(SpecManifestParser parser, SchemaVersions 
                 if (reader.ValueTextEquals("schemaVersion"))
                 {
                     reader.Read();
-                    var start = checked((int)reader.TokenStartIndex) + offset;
+                    var start = OriginalOffset(reader.TokenStartIndex, utf8, text, encoding, offset);
                     reader.Skip();
-                    var end = checked((int)reader.BytesConsumed) + offset;
-                    return [.. bytes.AsSpan(0, start), .. JsonSerializer.SerializeToUtf8Bytes(target.ToString()), .. bytes.AsSpan(end)];
+                    var end = OriginalOffset(reader.BytesConsumed, utf8, text, encoding, offset);
+                    return [.. bytes.AsSpan(0, start), .. encoding.GetBytes(JsonSerializer.Serialize(target.ToString())), .. bytes.AsSpan(end)];
                 }
             }
             if (reader.TokenType == JsonTokenType.EndObject && reader.CurrentDepth == 0)
             {
-                var end = checked((int)reader.TokenStartIndex) + offset;
-                var addition = Encoding.UTF8.GetBytes($"{(properties ? "," : string.Empty)}\"schemaVersion\":\"{target}\"");
+                var end = OriginalOffset(reader.TokenStartIndex, utf8, text, encoding, offset);
+                var addition = encoding.GetBytes($"{(properties ? "," : string.Empty)}\"schemaVersion\":\"{target}\"");
                 return [.. bytes.AsSpan(0, end), .. addition, .. bytes.AsSpan(end)];
             }
         }
         throw new SpechtManifestException($"{SpecManifestStore.RelativePath}: expected a manifest object.");
     }
+
+    private static int OriginalOffset(long utf8Offset, byte[] utf8, string text, Encoding encoding, int preamble) =>
+        preamble + encoding.GetByteCount(text.AsSpan(0, Encoding.UTF8.GetCharCount(utf8.AsSpan(0, checked((int)utf8Offset)))));
+
+    private static (Encoding Encoding, int Offset) Format(byte[] bytes)
+    {
+        ReadOnlySpan<byte> value = bytes;
+        if (value.StartsWith(new byte[] { 0xFF, 0xFE, 0x00, 0x00 }))
+        {
+            return (Encoding.UTF32, 4);
+        }
+        if (value.StartsWith(new byte[] { 0x00, 0x00, 0xFE, 0xFF }))
+        {
+            return (new UTF32Encoding(bigEndian: true, byteOrderMark: true), 4);
+        }
+        if (value.StartsWith(new byte[] { 0xFF, 0xFE }))
+        {
+            return (Encoding.Unicode, 2);
+        }
+        if (value.StartsWith(new byte[] { 0xFE, 0xFF }))
+        {
+            return (Encoding.BigEndianUnicode, 2);
+        }
+        return (Encoding.UTF8, value.StartsWith(new byte[] { 0xEF, 0xBB, 0xBF }) ? 3 : 0);
+    }
+
 }

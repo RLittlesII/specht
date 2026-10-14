@@ -32,6 +32,15 @@ public sealed partial class VersioningSteps
     public void GivenTheManifestHasInvalidSettings() =>
         EditManifest(static manifest => manifest["rules"] = new JsonObject { ["SPEC031"] = "invalid" });
 
+    [Given("the manifest uses encoding {word}")]
+    public void GivenTheManifestUsesEncoding(string name)
+    {
+        _manifestEncoding = Encoding.GetEncoding(name);
+        var path = Path.Combine(Tree.Root, SpecTree.ManifestPath);
+        var text = File.ReadAllText(path);
+        File.WriteAllBytes(path, [.. _manifestEncoding.GetPreamble(), .. _manifestEncoding.GetBytes(text)]);
+    }
+
     [Given("a snapshot of the manifest")]
     public void GivenASnapshotOfTheManifest() => _manifestBefore = File.ReadAllBytes(Path.Combine(Tree.Root, SpecTree.ManifestPath));
 
@@ -75,12 +84,13 @@ public sealed partial class VersioningSteps
     [Then("the manifest differs from the snapshot only in the version it pins")]
     public void ThenOnlyThePinChangedInTheManifest()
     {
-        var original = Encoding.UTF8.GetString(_manifestBefore!);
+        var preamble = _manifestEncoding.GetPreamble();
+        var original = _manifestEncoding.GetString(_manifestBefore!.AsSpan(preamble.Length));
         var before = JsonNode.Parse(original)!;
         var needle = "\"schemaVersion\":" + before["schemaVersion"]!.ToJsonString();
         original.Should().Contain(needle);
         var expected = original.Replace(needle, "\"schemaVersion\":" + JsonSerializer.Serialize(_pinTarget), StringComparison.Ordinal);
-        File.ReadAllBytes(Path.Combine(Tree.Root, SpecTree.ManifestPath)).Should().Equal(Encoding.UTF8.GetBytes(expected));
+        File.ReadAllBytes(Path.Combine(Tree.Root, SpecTree.ManifestPath)).Should().Equal([.. preamble, .. _manifestEncoding.GetBytes(expected)]);
     }
 
     [Then("the only file changed is the manifest")]
@@ -134,4 +144,5 @@ public sealed partial class VersioningSteps
     private Dictionary<string, byte[]>? _filesBefore;
     private byte[]? _manifestBefore;
     private string? _pinTarget;
+    private Encoding _manifestEncoding = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false);
 }

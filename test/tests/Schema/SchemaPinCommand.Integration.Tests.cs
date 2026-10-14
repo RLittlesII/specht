@@ -9,6 +9,34 @@ namespace Specht.Tests.Schema;
 [Trait("Tier", "Integration")]
 public sealed class SchemaPinCommandIntegrationTests
 {
+    [Theory]
+    [InlineData("utf-8")]
+    [InlineData("utf-16")]
+    [InlineData("utf-16BE")]
+    [InlineData("utf-32")]
+    [InlineData("utf-32BE")]
+    public void SupportedManifestEncoding_WhenListingAndPinning_ShouldMatchTheCheckAndPreserveBytes(string name)
+    {
+        // Given
+        using var tree = new SpecTree();
+        var encoding = Encoding.GetEncoding(name);
+        const string text = "{\r\n\"$comment\":\"😀\",\r\n\"schemaVersion\":\"0.1.0\"\r\n}";
+        var path = Path.Combine(tree.Root, SpecTree.ManifestPath);
+        File.WriteAllBytes(path, [.. encoding.GetPreamble(), .. encoding.GetBytes(text)]);
+
+        // When
+        var check = AcceptanceTool.Launch(tree.Root);
+        var list = AcceptanceTool.Launch(tree.Root, "schema", "list");
+        var pin = AcceptanceTool.Launch(tree.Root, "schema", "pin", "0.2.0");
+
+        // Then
+        check.ExitCode.Should().Be(0, check.Stderr);
+        list.ExitCode.Should().Be(0, list.Stderr);
+        list.Stdout.Should().Contain("0.1.0 (pinned)");
+        pin.ExitCode.Should().Be(0, pin.Stderr);
+        File.ReadAllBytes(path).Should().Equal([.. encoding.GetPreamble(), .. encoding.GetBytes(text.Replace("0.1.0", "0.2.0"))]);
+    }
+
     [Fact]
     public void NewerSettings_WhenDowngrading_ShouldSurviveEvenWhenTheSubsequentCheckRejectsThem()
     {

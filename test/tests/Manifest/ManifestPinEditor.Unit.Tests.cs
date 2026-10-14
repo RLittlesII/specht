@@ -12,6 +12,30 @@ namespace Specht.Tests.Manifest;
 public sealed class ManifestPinEditorUnitTests
 {
     [Theory]
+    [InlineData("utf-8")]
+    [InlineData("utf-16")]
+    [InlineData("utf-16BE")]
+    [InlineData("utf-32")]
+    [InlineData("utf-32BE")]
+    public void SupportedEncoding_WhenPinning_ShouldPreserveItsBomAndEveryOtherByte(string name)
+    {
+        // Given
+        var encoding = Encoding.GetEncoding(name);
+        const string text = "{\r\n  \"$comment\": \"😀 before pin\",\r\n  \"schemaVersion\" : \"0.1.0\",\r\n  \"$nested\": {\"schemaVersion\":\"0.1.0\"}\r\n}";
+        byte[] bytes = [.. encoding.GetPreamble(), .. encoding.GetBytes(text)];
+        var editor = new ManifestPinEditor(EngineServices.Parser(), EngineServices.Versions());
+
+        // When
+        editor.Validate(bytes);
+        var changed = editor.Change(bytes, new SemanticVersion(0, 2, 0));
+
+        // Then
+        var expected = text.Replace("\"schemaVersion\" : \"0.1.0\"", "\"schemaVersion\" : \"0.2.0\"", StringComparison.Ordinal);
+        changed.Should().Equal([.. encoding.GetPreamble(), .. encoding.GetBytes(expected)]);
+        bytes.Should().Equal([.. encoding.GetPreamble(), .. encoding.GetBytes(text)]);
+    }
+
+    [Theory]
     [InlineData("{\"schemaVersion\" : \"0.1.0\", \"$metadata\":{\"schemaVersion\":\"0.1.0\"}}",
         "{\"schemaVersion\" : \"0.2.0\", \"$metadata\":{\"schemaVersion\":\"0.1.0\"}}")]
     [InlineData("{\"\\u0073chemaVersion\":\"0.1.0\",\"$comment\":\"😀\"}\r\n",

@@ -2,7 +2,7 @@ id: "0164"
 type: refactor
 title: Collapse the rule interface to one id and make the evaluator an instance
 
-status: ready-for-implementation
+status: blocked
 
 value: 4
 risk: 4
@@ -10,7 +10,7 @@ risk: 4
 parent: null
 children: []
 
-depends_on: ["0156", "0157", "0158", "0159", "0160", "0161", "0162", "0163"] # every rule reports one id before the interface says so
+depends_on: ["0156", "0157", "0158", "0159", "0160", "0161", "0162", "0163", "0216"] # every rule reports one id before the interface says so
 spikes: []
 
 spec: src/specht/.spec/README.md
@@ -18,10 +18,13 @@ spec: src/specht/.spec/README.md
 claims: []
 
 created: "2026-10-11"
-updated: "2026-10-11"
+updated: "2026-10-14"
 closed: null
 
 summary: |
+  Paused by ADR-0014: benchmark evaluation 0216 must establish that the
+  architecture benefit justifies its cost before this migration proceeds.
+
   ADR-0010 (accepted 2026-10-11,
   .spec/adr/0010-layered-engine-boundaries-with-io-at-the-edge-and-a-mediator.md),
   stage 4 (C) of "The order of work". Its scope is the record's § "One rule

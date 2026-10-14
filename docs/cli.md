@@ -199,6 +199,7 @@ with Enter. The Spectre.Console selector offers every shipped version.
 
 Only the root `schemaVersion` value changes. If the key is absent, it is added.
 Other manifest bytes, schemas, templates and specification files are preserved.
+UTF-8 and BOM-marked UTF-16/UTF-32 manifests retain their original encoding.
 The command is offline. A downgrade preserves newer settings; the subsequent
 check may reject them until you edit them. Pinning can repair an unsupported or
 malformed current pin when the other settings are valid.

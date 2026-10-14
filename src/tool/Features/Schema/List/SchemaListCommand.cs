@@ -4,8 +4,6 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Specht.Check;
-using Specht.Cqrs;
 using Specht.Manifest;
 using Specht.Versioning;
 using Spectre.Console;
@@ -14,7 +12,7 @@ using Spectre.Console.Cli;
 namespace Specht.Tool.Features.Schema.List;
 
 /// <summary>Lists the catalog and marks the pin, keeping failures off stdout (0001-F7 B-109).</summary>
-public sealed class SchemaListCommand(IAnsiConsole console, ICqrs cqrs, SchemaVersions versions, TextWriter? errorWriter = null)
+public sealed class SchemaListCommand(IAnsiConsole console, SchemaVersionManager schemas, SchemaVersions versions, TextWriter? errorWriter = null)
     : AsyncCommand<SchemaListCommand.Settings>
 {
     /// <inheritdoc />
@@ -22,7 +20,7 @@ public sealed class SchemaListCommand(IAnsiConsole console, ICqrs cqrs, SchemaVe
     {
         try
         {
-            var result = await cqrs.Send(new SchemaList.Query(Path.GetFullPath(settings.Root)), cancellationToken);
+            var result = schemas.List(Path.GetFullPath(settings.Root));
             foreach (var version in result.Versions)
             {
                 console.Profile.Out.Writer.WriteLine($"{version}{(version == result.Pinned ? " (pinned)" : string.Empty)}");

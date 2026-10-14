@@ -1,8 +1,6 @@
 using System.IO.Abstractions.TestingHelpers;
 using AwesomeAssertions;
-using Specht.Check;
 using Specht.Manifest;
-using Specht.Model;
 using Specht.Tests.Shared;
 using Specht.Versioning;
 
@@ -33,12 +31,12 @@ public sealed class SchemaPinUnitTests
             files.AddFile("repo/.specht/manifest.json", new MockFileData(manifest));
         }
         var versions = EngineServices.Versions();
-        var handler = new SchemaPin.Handler(new SpecModelReader(new SpecManifestStore(files)),
+        var handler = new SchemaVersionManager(new SpecManifestStore(files), new SpecManifestParser(versions),
             new ManifestPinEditor(new SpecManifestParser(versions), versions), versions);
         var before = files.AllFiles.ToDictionary(static path => path, files.File.ReadAllBytes);
 
         // When
-        Func<Task> action = () => handler.Handle(new SchemaPin.Command("repo", target), CancellationToken.None);
+        Func<Task> action = () => handler.Pin("repo", target, CancellationToken.None);
 
         // Then
         await action.Should().ThrowAsync<Exception>().Where(exception => exception.GetType() == fault);

@@ -2,7 +2,7 @@ id: "0100"
 type: task
 title: Prefix the engine's types with Specht rather than Spec
 
-status: ready-for-implementation
+status: blocked
 
 value: 2
 risk: 2
@@ -10,7 +10,7 @@ risk: 2
 parent: null
 children: []
 
-depends_on: ["0150"] # ADR-0010 runs this as stage 1, after pull request #118, which delivers 0150
+depends_on: ["0150", "0216"] # ADR-0010 runs this as stage 1, after pull request #118, which delivers 0150
 spikes: []
 
 spec: null
@@ -18,10 +18,13 @@ spec: null
 claims: []
 
 created: "2026-10-08"
-updated: "2026-10-13"
+updated: "2026-10-14"
 closed: null
 
 summary: |
+  Paused by ADR-0014: benchmark evaluation 0216 must establish that the
+  architecture benefit justifies its cost before this migration proceeds.
+
   A rename chore, raised by the owner on PR #11 (review comment on
   src/specht/SpecManifest.cs: "Likely a tech debt for later. Add an item that
   brings all these types consistent with `Specht` rather than `Spec`"). The

@@ -2,7 +2,7 @@ id: "0144"
 type: refactor
 title: Compose the host and every command test through one factory
 
-status: ready-for-architecture
+status: blocked
 
 value: 3
 risk: 3
@@ -10,7 +10,7 @@ risk: 3
 parent: null
 children: []
 
-depends_on: ["0099", "0167", "0168"] # ADR-0007's factory from 0099; the mediator and `Check.Query` from 0167; the home both test projects compile from 0168
+depends_on: ["0099", "0167", "0168", "0216"] # ADR-0007's factory from 0099; the mediator and `Check.Query` from 0167; the home both test projects compile from 0168
 spikes: []
 
 spec: null
@@ -18,10 +18,13 @@ spec: null
 claims: []
 
 created: "2026-10-10"
-updated: "2026-10-13"
+updated: "2026-10-14"
 closed: null
 
 summary: |
+  Paused by ADR-0014: benchmark evaluation 0216 must establish that the
+  architecture benefit justifies its cost before this migration proceeds.
+
   ADR-0007 (accepted 2026-10-10,
   .spec/adr/0007-each-part-registers-itself-and-one-factory-composes-the-host.md)
   decided how the host and a command test are composed; this item builds it.

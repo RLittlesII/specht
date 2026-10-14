@@ -2,7 +2,7 @@ id: "0166"
 type: refactor
 title: Build the model from text through a builder, parsers and one reader
 
-status: ready-for-implementation
+status: blocked
 
 value: 3
 risk: 5
@@ -10,7 +10,7 @@ risk: 5
 parent: null
 children: []
 
-depends_on: ["0155", "0165", "0153"] # the model's content, the manifest store and shipped versions, and the tree and its store in the engine
+depends_on: ["0155", "0165", "0153", "0216"] # the model's content, the manifest store and shipped versions, and the tree and its store in the engine
 spikes: []
 
 spec: null
@@ -18,10 +18,13 @@ spec: null
 claims: []
 
 created: "2026-10-11"
-updated: "2026-10-11"
+updated: "2026-10-14"
 closed: null
 
 summary: |
+  Paused by ADR-0014: benchmark evaluation 0216 must establish that the
+  architecture benefit justifies its cost before this migration proceeds.
+
   ADR-0010 (accepted 2026-10-11,
   .spec/adr/0010-layered-engine-boundaries-with-io-at-the-edge-and-a-mediator.md),
   stage 6 (D2) of "The order of work", which the record runs with item

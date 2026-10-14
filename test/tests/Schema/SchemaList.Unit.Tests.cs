@@ -1,8 +1,6 @@
 using System.IO.Abstractions.TestingHelpers;
 using AwesomeAssertions;
-using Specht.Check;
 using Specht.Manifest;
-using Specht.Model;
 using Specht.Tests.Shared;
 using Specht.Versioning;
 
@@ -16,7 +14,7 @@ public sealed class SchemaListUnitTests
     [InlineData(false, "{}", typeof(SpechtRootNotFoundException))]
     [InlineData(true, "{", typeof(SpechtManifestUnreadableException))]
     [InlineData(true, "{\"schemaVersion\":\"7.0.0\"}", typeof(SpechtManifestException))]
-    public async Task InvalidInput_WhenListing_ShouldRejectItBeforeProducingAResult(bool rootExists, string manifest, Type fault)
+    public void InvalidInput_WhenListing_ShouldRejectItBeforeProducingAResult(bool rootExists, string manifest, Type fault)
     {
         // Given
         var files = new MockFileSystem();
@@ -25,20 +23,21 @@ public sealed class SchemaListUnitTests
             files.AddFile("repo/.specht/manifest.json", new MockFileData(manifest));
         }
         var versions = EngineServices.Versions();
-        var handler = new SchemaList.Handler(new SpecModelReader(new SpecManifestStore(files)), new SpecManifestParser(versions), versions);
+        var handler = new SchemaVersionManager(new SpecManifestStore(files), new SpecManifestParser(versions),
+            new ManifestPinEditor(new SpecManifestParser(versions), versions), versions);
 
         // When
-        Func<Task> action = () => handler.Handle(new SchemaList.Query("repo"), CancellationToken.None);
+        Action action = () => handler.List("repo");
 
         // Then
-        await action.Should().ThrowAsync<Exception>().Where(exception => exception.GetType() == fault);
+        action.Should().Throw<Exception>().Where(exception => exception.GetType() == fault);
     }
 
     [Theory]
     [InlineData(null, null)]
     [InlineData("{}", "0.1.0")]
     [InlineData("{\"schemaVersion\":\"0.2.0\"}", "0.2.0")]
-    public async Task OptionalManifest_WhenListing_ShouldResolveOnlyItsDeclaredOrDefaultPin(string? manifest, string? pin)
+    public void OptionalManifest_WhenListing_ShouldResolveOnlyItsDeclaredOrDefaultPin(string? manifest, string? pin)
     {
         // Given
         var files = new MockFileSystem();
@@ -48,10 +47,11 @@ public sealed class SchemaListUnitTests
             files.AddFile("repo/.specht/manifest.json", new MockFileData(manifest));
         }
         var versions = EngineServices.Versions();
-        var handler = new SchemaList.Handler(new SpecModelReader(new SpecManifestStore(files)), new SpecManifestParser(versions), versions);
+        var handler = new SchemaVersionManager(new SpecManifestStore(files), new SpecManifestParser(versions),
+            new ManifestPinEditor(new SpecManifestParser(versions), versions), versions);
 
         // When
-        var result = await handler.Handle(new SchemaList.Query("repo"), CancellationToken.None);
+        var result = handler.List("repo");
 
         // Then
         result.Pinned?.ToString().Should().Be(pin);

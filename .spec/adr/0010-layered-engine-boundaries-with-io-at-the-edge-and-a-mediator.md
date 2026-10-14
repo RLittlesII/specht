@@ -16,6 +16,12 @@ accepted on those answers, as
 was. Seven points were left open. Each is listed at the end with a default,
 and each default stands unless the owner overrules it in review.
 
+Execution timing and mediator choice superseded 2026-10-14 by
+[ADR-0014](0014-architecture-rollout-requires-benchmark-evidence.md): further
+rollout waits for repository benchmark evidence, including evaluation of the
+source-generated martinothamar/Mediator candidate. Acceptance of this target
+does not authorize production migration before that gate.
+
 Supersedes in part, each record's body unedited and its Status gaining one
 line pointing here:
 [ADR-0001](0001-resolve-the-engine-from-the-container.md),

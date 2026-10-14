@@ -3,8 +3,6 @@ using System.ComponentModel;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
-using Specht.Check;
-using Specht.Cqrs;
 using Specht.Manifest;
 using Specht.Versioning;
 using Spectre.Console;
@@ -13,7 +11,8 @@ using Spectre.Console.Cli;
 namespace Specht.Tool.Features.Schema.Pin;
 
 /// <summary>Pins the caller's selected schema version and maps input failures to their CLI exit codes.</summary>
-public sealed class SchemaPinCommand(IAnsiConsole console, ICqrs cqrs, TextWriter? errorWriter = null) : AsyncCommand<SchemaPinCommand.Settings>
+public sealed class SchemaPinCommand(IAnsiConsole console, SchemaVersionManager schemas, TextWriter? errorWriter = null)
+    : AsyncCommand<SchemaPinCommand.Settings>
 {
     /// <inheritdoc />
     public override async Task<int> ExecuteAsync(CommandContext context, Settings settings, CancellationToken cancellationToken)
@@ -24,7 +23,7 @@ public sealed class SchemaPinCommand(IAnsiConsole console, ICqrs cqrs, TextWrite
             var version = settings.Version;
             if (version is null)
             {
-                var choices = await cqrs.Send(new SchemaPinOptions.Query(root), cancellationToken);
+                var choices = schemas.Choices(root);
                 if (!console.Profile.Capabilities.Interactive)
                 {
                     await (errorWriter ?? Console.Error).WriteLineAsync(
@@ -35,7 +34,7 @@ public sealed class SchemaPinCommand(IAnsiConsole console, ICqrs cqrs, TextWrite
                     .Title("Select schema version")
                     .AddChoices(choices)).ToString();
             }
-            var selected = await cqrs.Send(new SchemaPin.Command(root, version), cancellationToken);
+            var selected = await schemas.Pin(root, version, cancellationToken);
             console.Profile.Out.Writer.WriteLine($"pinned schemaVersion {selected} in {SpecManifestStore.RelativePath}");
             return ExitCodes.Success;
         }

@@ -43,6 +43,11 @@ acceptance_criteria:
 
 decisions:
   - |
+    2026-10-14, independent review rejected premature architecture scope
+    and unsupported UTF-16/UTF-32 input handling. Both findings were fixed;
+    independent re-review approved the scoped commands and the full build passed.
+
+  - |
     2026-10-09, the repository owner approved a written plan (decision
     0005, OQ-13) naming a list item apart from the pin item. The claims
     it carries are spec-author's cut. Status blocked: OQ-11 and OQ-19 are open.

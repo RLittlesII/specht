@@ -84,12 +84,13 @@ Two projects, one direction of dependency:
   a command parses, calls the runner, and folds the report into an exit code.
   Nothing else lives in a command.
 
-That is the engine as built. Its decided shape is
-[ADR-0010](.spec/adr/0010-layered-engine-boundaries-with-io-at-the-edge-and-a-mediator.md):
-one assembly of namespaces that depend downward only, I/O confined to four
-stores, an immutable model built before any rule runs, one rule per rule id,
-and a host that sends a request to a handler in the engine. New engine code
-follows it; the existing code moves in its stages.
+That is the engine as built. ADR-0010 describes a target architecture;
+[ADR-0014](.spec/adr/0014-architecture-rollout-requires-benchmark-evidence.md)
+gates further engine and host migration on repository benchmark evidence that
+justifies the added cost. The source-generated mediator candidate is
+martinothamar/Mediator, to be evaluated before adoption. A feature does not
+waive the gate or the staged prerequisites. Existing stores, parsers and
+composition remain the implementation basis until that evidence is agreed.
 
 The design direction (brief § 5) moves every literal the engine hardcodes —
 layouts, section roles, table headers, markers, frontmatter key roles, id

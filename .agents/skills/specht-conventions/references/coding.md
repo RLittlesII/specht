@@ -85,6 +85,13 @@ implementation package's, and transitive pinning applies it graph-wide
 (ADR-0003). It landed with ADR-0001's stage D (item `0107`). No sixth engine dependency joins
 without an ADR.
 
+## Architecture execution
+
+[ADR-0014](../../../../.spec/adr/0014-architecture-rollout-requires-benchmark-evidence.md)
+owns the benchmark gate and the source-generated mediator evaluation. Read it
+before applying ADR-0010's target or moving a staged architecture item into a
+feature. Its acceptance is not permission to skip evidence or prerequisites.
+
 ## File access goes through `IFileSystem`
 
 Engine code that reads the file system takes an injected `IFileSystem`; it does
