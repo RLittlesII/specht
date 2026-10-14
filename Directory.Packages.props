@@ -27,7 +27,7 @@
     <PackageVersion Include="Nerdbank.GitVersioning" Version="3.10.94" />
     <PackageVersion Include="NuGet.Packaging" Version="7.9.0" />
     <PackageVersion Include="Rocket.Surgery.Nuke" Version="2.9.12"/>
-    <PackageVersion Include="System.Security.Cryptography.Xml" Version="9.0.20" />
+    <PackageVersion Include="System.Security.Cryptography.Xml" Version="9.0.21" />
   </ItemGroup>
 
   <ItemGroup Label="Testing">

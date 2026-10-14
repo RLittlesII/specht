@@ -203,10 +203,18 @@ Feature: init
     Then the three frontmatter schemas and the four templates are written at version 0.1.0
     And the exit code is 0
 
+  @B-002 @B-012 @boundary
+  Scenario: Rerunning init restores deleted schemas at the pin and preserves local edits
+    Given an initialized root pinned to version 0.1.0 with local edits to a schema and a template
+    And the other frontmatter schemas have been deleted
+    When init runs against it with every part
+    Then the missing frontmatter schemas are restored at version 0.1.0
+    And every file that existed before the rerun is byte-for-byte unchanged
+    And the exit code is 0
+
   @B-013 @boundary
   Scenario: Init refuses a version the tool does not ship
-    Given the tool ships schema version 0.1.0 only
-    And a root directory holding a manifest pinning version 7.0.0
+    Given a root directory holding a manifest pinning version 7.0.0
     And a snapshot of every file under the root
     When init runs against it
     Then no file under the root has changed

@@ -63,6 +63,7 @@ public sealed partial class InitSteps
         File.Exists(Written(Manifest)).Should().BeFalse("a root with no manifest records no upstream schema source");
 
     [Given("a root directory holding only the feature template")]
+    [Given("a root directory holding only the feature template with local edits")]
     public void GivenARootDirectoryHoldingOnlyTheFeatureTemplate()
     {
         Prepare();

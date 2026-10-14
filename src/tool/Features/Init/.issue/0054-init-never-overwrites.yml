@@ -2,7 +2,7 @@ id: "0054"
 type: task
 title: Respect existing files and the manifest's pinned version in init
 
-status: ready-for-architecture
+status: done
 
 risk: 2
 
@@ -20,8 +20,8 @@ claims:
   - B-013
 
 created: "2026-10-08"
-updated: "2026-10-11"
-closed: null
+updated: "2026-10-14"
+closed: "2026-10-14"
 
 summary: |
   Init beside what already exists: an existing file is left byte-for-byte;
@@ -60,6 +60,16 @@ decisions:
     the selection, so neither can be proven before the part options exist.
     The summary's folder is `.specht/` (ADR-0011).
 
+  - |
+    2026-10-14: the pre-commit hook's fresh staged-tree restore rejected the
+    existing System.Security.Cryptography.Xml and Pkcs 9.0.20 dependencies
+    with NU1902/NU1903. The existing central Xml pin moves to 9.0.21, the
+    patched version on the same release line, to unblock delivery without
+    suppressing the audit. No .feature change is needed for this dependency
+    bump; constraints preserved: 0001-F4 C-1, C-3, C-4 and C-7. Advisory:
+    https://github.com/advisories/GHSA-c399-9853-6jmj
+
 out_of_scope:
   - "A version argument — § 5 #6."
   - "A `--force` or any overwrite — § 5 #5."
+  - "The unbuilt `--epics` option and its B-002 boundary — 0001-F5 OQ-18; preservation is delivered for the current part selections."
