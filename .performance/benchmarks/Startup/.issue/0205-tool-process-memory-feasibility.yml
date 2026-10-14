@@ -1,0 +1,48 @@
+id: "0205"
+type: spike
+title: Prove installed-tool identity and lifetime peak memory observation
+
+status: ready
+
+risk: 3
+
+parent: "0203"
+children: []
+depends_on: []
+spikes: []
+
+spec: .performance/benchmarks/Startup/.spec/README.md
+claims: []
+
+created: "2026-10-13"
+updated: "2026-10-13"
+closed: null
+
+summary: |
+  Establish whether an external observer can attribute lifetime peak
+  resident memory to the actual tool launched through a local manifest,
+  including the rapidly exiting generated baseline. The design cannot
+  assume that the directly started dotnet process is the tool or that its
+  memory APIs work after exit on every platform. This spike delivers
+  evidence and an observer decision, not B-006 or production code.
+
+  It needs no unfinished item: temporary synthetic tools can probe process
+  identity and memory independently of the timing implementation. ADR-0001
+  in the Feature records the acceptance conditions and candidate approaches.
+
+acceptance_criteria:
+  - "Record reproducible probes for Linux and Windows hosted-runner environments and local macOS behavior, with effective SDK/runtime versions and process identities."
+  - "Distinguish launcher and tool using synthetic contrasting memory usage; include an immediate exit and repeated launches so a missed short-lived process cannot look like a valid zero peak."
+  - "Prove an OS lifetime resident high-water mark, retrieval lifetime, units and attribution for each invocation; sampled maxima or a process-tree aggregate do not satisfy 0109-F4 C-7."
+  - "Record permissions, required dependencies, overhead and failure behavior; keep probes out of product code and retained reports free of absolute paths."
+  - "Update the proposed Feature ADR and § 7 with an evidenced mechanism and export contract, or record the negative result and the exact remaining requirement/design decision. A negative result completes this investigation but does not release 0206 for implementation."
+  - "Do not silently adopt startup injection, startup suspension or separate diagnostic invocations as equivalent to the approved per-invocation claim."
+
+decisions:
+  - "2026-10-13, implementer: reject launcher PeakWorkingSet64 and periodic working-set maxima as a default; investigate native lifecycle observation first. Platform capability is evidence to gather, not an owner decision to invent."
+
+out_of_scope:
+  - "Claim B-006 implementation and report integration — 0206."
+  - "Timing delivery — 0204."
+  - "Everything in § 5 of the specification."
+  - "Tests of benchmark code, product instrumentation, privileged CI policy changes."

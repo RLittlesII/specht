@@ -1,0 +1,47 @@
+id: "0206"
+type: task
+title: Report the measured tool process peak memory for each startup row
+
+status: ready-for-architecture
+
+risk: 4
+
+parent: "0203"
+children: []
+depends_on: ["0204", "0205"]
+spikes: ["0205"]
+
+spec: .performance/benchmarks/Startup/.spec/README.md
+claims: [B-006]
+
+created: "2026-10-13"
+updated: "2026-10-13"
+closed: null
+
+summary: |
+  Deliver the memory claim on the working three-row startup session.
+  Depends on 0204 for the actual installed-tool invocations and on 0205 for
+  an evidenced observer mechanism. Its architecture pass adopts that
+  evidence before code; the proposed ADR is not a proof of feasibility.
+  A completed spike with a negative result does not make this ready to
+  implement: record the unresolved mechanism as a status hold then.
+
+  Publish tool-process peaks separately from benchmark-process allocations
+  in the existing Markdown/Full JSON results. No new memory threshold or
+  build gate is introduced.
+
+acceptance_criteria:
+  - "B-006 — actual tool-process lifetime peak memory"
+  - "The chosen mechanism and any claim interpretation changes are reviewed in § 7 and the Feature ADR before implementation."
+  - "§ 8 records per-row identity, observer evidence and actual memory findings; § 9 records the mechanism and hand-run evidence under the owner's no-tests ruling."
+  - "Both existing exporters and both main CI operating-system artifacts carry the scoped byte values and observation counts; missing/unsupported observation fails without an invented zero."
+  - "The allocation column remains labelled as the benchmark process's; timings disclose observer overhead or any approved diagnostic-pass separation."
+
+decisions:
+  - "2026-10-13, spec-author: retain ready-for-architecture pending 0205; do not advertise B-006 as designed for implementation while its OS mechanism is unproven."
+  - "2026-10-13, implementer: keep observation outside src; use the existing exporters and upload path after proving metric serialization, without changing automatic benchmark scheduling."
+
+out_of_scope:
+  - "Timing/session setup delivery — 0204; mechanism feasibility — 0205."
+  - "Everything in § 5 of the specification."
+  - "Managed allocation reported as tool memory, tree aggregate peaks, sampled maxima, hidden unsupported-platform fallback."
