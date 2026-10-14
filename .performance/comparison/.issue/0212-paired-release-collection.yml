@@ -1,0 +1,44 @@
+id: "0212"
+type: task
+title: Collect both published revisions in one comparison session
+
+status: ready-for-architecture
+
+risk: 4
+
+parent: "0208"
+children: []
+depends_on: ["0210", "0148"]
+spikes: []
+
+spec: .performance/comparison/.spec/README.md
+claims: ["B-004"]
+
+created: "2026-10-13"
+updated: "2026-10-13"
+closed: null
+
+summary: |
+  Implement the collection boundary from the design using the release pair and
+  metadata contracts from 0210 and the delivered harness target from 0148.
+  Run the exact published product revisions on one runner in one session with
+  matching conditions, preserving the measuring Features' setup boundaries.
+  Historical revisions without a usable harness or equivalent workload yield
+  explicit unavailable evidence; never substitute a newer product or older release.
+
+  Orchestration tests use fake process outcomes and synthetic files; they do not
+  test benchmark classes, assert a measured timing or depend on a real release.
+  A local manual paired collection supplies measurement-boundary evidence. This
+  item can close with a local collector before release automation is added.
+
+acceptance_criteria:
+  - "B-004 — paired session and environments"
+  - "Preserve C-2, C-3, C-8 and C-10; measure without publishing credentials and retain only relative result paths."
+  - "Synthetic orchestration unit/integration tests pin invocation identity, metadata, cleanup, failures and cancellation; § 9 identifies the B-004 proof and § 8 records the manual paired measurement boundary."
+  - "Do not change the existing Benchmark target's broken-benchmark failure semantics."
+
+decisions: []
+
+out_of_scope:
+  - "Everything in § 5 of the specification."
+  - "Release workflow wiring — 0214; no release is published by this item."

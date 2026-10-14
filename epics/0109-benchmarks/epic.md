@@ -6,9 +6,9 @@ type: epic
 status: ready-for-architecture
 priority: med
 milestone: null
-children: ["0109-F1", "0109-F2", "0109-F3", "0109-F4"]
+children: ["0109-F1", "0109-F2", "0109-F3", "0109-F4", "0109-F5"]
 created: "2026-10-09"
-updated: "2026-10-09"
+updated: "2026-10-13"
 github_issue: null
 ---
 
@@ -26,8 +26,9 @@ This epic adds a benchmark project, `.performance/benchmarks`, built
 on [BenchmarkDotNet](https://benchmarkdotnet.org/). It measures each engine
 stage, a full check as the tree grows, and the packed tool's cold start, and
 it measures memory on every benchmark. It runs locally through a build target
-and on pushes to main in CI, where the results are published as a build artifact. Nothing it
-measures fails a build.
+and on pushes to main in CI, where the results are published as a build artifact.
+Release baseline comparison adds an automatic report against the preceding release,
+with meaningful regressions flagged for review. Nothing it measures fails a build.
 
 The need and its scope were decided by the repository owner on 2026-10-09
 (item `0108`, which added the `benchmarker` role and the `benchmarkdotnet`
@@ -49,12 +50,13 @@ comparable run to run on one machine, and a regression is something the
 Decomposed by capability dimension. Each Feature measures a different cost on
 a different input, and the cut is made where the invariant changes.
 
-| Feature   | Name                     | Specification                                     | Invariant                                                                     |
-| --------- | ------------------------ | ------------------------------------------------- | ----------------------------------------------------------------------------- |
-| `0109-F1` | Benchmark harness        | `.performance/benchmarks/.spec/README.md`         | Benchmarks run, report memory and publish results; nothing gates on a number  |
-| `0109-F2` | Engine stage benchmarks  | `.performance/benchmarks/Stages/.spec/README.md`  | Each stage's cost is measured alone, its setup outside the measurement        |
-| `0109-F3` | End-to-end check scaling | `.performance/benchmarks/Check/.spec/README.md`   | A whole check is measured against tree size, so its growth shape is a finding |
-| `0109-F4` | Tool cold start          | `.performance/benchmarks/Startup/.spec/README.md` | The packed tool is measured as a consumer runs it, one fresh process each     |
+| Feature   | Name                        | Specification                                     | Invariant                                                                                                   |
+| --------- | --------------------------- | ------------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
+| `0109-F1` | Benchmark harness           | `.performance/benchmarks/.spec/README.md`         | Benchmarks run, report memory and publish results; nothing gates on a number                                |
+| `0109-F2` | Engine stage benchmarks     | `.performance/benchmarks/Stages/.spec/README.md`  | Each stage's cost is measured alone, its setup outside the measurement                                      |
+| `0109-F3` | End-to-end check scaling    | `.performance/benchmarks/Check/.spec/README.md`   | A whole check is measured against tree size, so its growth shape is a finding                               |
+| `0109-F4` | Tool cold start             | `.performance/benchmarks/Startup/.spec/README.md` | The packed tool is measured as a consumer runs it, one fresh process each                                   |
+| `0109-F5` | Release baseline comparison | `.performance/comparison/.spec/README.md`         | Each release receives an advisory comparison against its predecessor; meaningful regressions request review |
 
 The starting hypothesis was confirmed unchanged. Where it was tested:
 
@@ -75,12 +77,19 @@ The starting hypothesis was confirmed unchanged. Where it was tested:
   harness it has nothing to run.
 - **The "&" heuristic** found no conjunction in any Feature name.
 
-Baseline comparison - a later Feature of this epic, to be defined (owner,
-2026-10-09; `0109-F1` OQ-4), comparing a run against a stored result; not
-`0109-F4`'s in-run baseline row. Like every Feature here it reports and never
-gates (`0109-F1` decision 0001), and it reads `0109-F1` B-010's
-machine-readable result. It takes a Feature id when it is specified, and
-joins `children` then, so that every child resolves to a file.
+Release baseline comparison is `0109-F5`, specified at the owner's request on
+2026-10-13 after its deferral in `0109-F1` OQ-4. It consumes `0109-F1` B-010's
+machine-readable results and compares published product revisions under matching
+measurement conditions, rather than treating unrelated shared-runner artifacts
+as comparable. It reports meaningful regressions for review and never gates
+(`0109-F1` decision 0001); it is distinct from `0109-F4`'s empty-tool baseline
+within one run. The owner resolved `0109-F5` OQ-1 and OQ-2 on 2026-10-13: include
+prereleases; flag time increases above 10% only with non-overlapping confidence
+intervals, and managed allocation increases above 10%.
+
+`0109-F5` depends on `0109-F1` for the harness and `0055-F6` for release
+publication. Its measurements come from whichever of `0109-F2` to `0109-F4`
+are available, so it does not wait for all three measuring Features.
 
 `0109-F2`, `0109-F3` and `0109-F4` depend on `0109-F1`. `0109-F1` depends on
 `0055-F1` (the build it adds a target to, whose `Pack` `0109-F4` measures) and
@@ -94,22 +103,25 @@ benchmark step (`0109-F1` A-1).
 
 ## Placement
 
-Every specification sits in the benchmark project the owner placed at
+The measuring specifications sit in the benchmark project the owner placed at
 `.performance/benchmarks`, outside `test/` and its tier governance
 (`specht-conventions` § Benchmarking). The harness's specification is the
 project's root; each measuring Feature has the folder its benchmark classes
 will occupy. The `implementer` may move a specification with its code
 (`git mv`): a specification's identity is its frontmatter `epic` and `id`
-(`SPEC012`).
+(`SPEC012`). Release comparison is repository tooling beside that project,
+co-located at `.performance/comparison/.spec/`; it evaluates measurements and
+is not itself a benchmark.
 
 This epic file lives at `epics/0109-benchmarks/epic.md`, where schema version
 1's epic glob `epics/**/epic.md` discovers it (`0001-F6` decision 0001).
 
 ## Status
 
-`ready-for-architecture`: every Feature has its agreement half - § 1-5 and its
-`.feature` - and the next owner is the `implementer`, for § 6 and § 7. The
-owner answered every open question on 2026-10-09, and none remains.
+The original measuring Features have their agreement half and companion
+scenarios. `0109-F5` adds a draft agreement and scenarios on 2026-10-13;
+its § 11 records the owner's eligibility and regression-policy answers. Design,
+executable coverage and implementation remain downstream of that agreement.
 
 ## Out of this epic
 

@@ -1,0 +1,54 @@
+id: "0214"
+type: task
+title: Automate advisory reporting in the release workflow
+
+status: ready-for-architecture
+
+risk: 4
+
+parent: "0208"
+children: []
+depends_on: ["0212", "0213", "0083", "0084"]
+spikes: []
+
+spec: .performance/comparison/.spec/README.md
+claims: ["B-001", "B-003", "B-014", "B-017", "B-018", "B-023", "B-024"]
+
+created: "2026-10-13"
+updated: "2026-10-13"
+closed: null
+
+summary: |
+  Wire the reviewed design into the existing generated release workflow.
+  Depends on 0212 for collection, 0213 for rendering/retention, 0083 for the release
+  workflow and 0084 for successful package/Release publication. The 0084 delivery
+  state remains authoritative; this decomposition does not declare it done.
+
+  Only an eligible successfully published release triggers the comparison.
+  Review flags and failures from every comparison-owned stage remain advisory,
+  while earlier correctness and publication failures keep their original verdict.
+  The release-run summary exposes the result and valid report link, or an
+  actionable incomplete outcome when reporting/attachment fails. No older release
+  is substituted when the selected predecessor cannot be measured.
+
+  Regenerate workflows through NUKE and inspect step order and credentials. Verify
+  orchestration with synthetic release catalogs, process outcomes and publisher
+  responses; do not create a trial release to test this item. Test build-owned
+  logic as applicable, and record generated declaration verification separately
+  rather than calling it comparator coverage.
+
+acceptance_criteria:
+  - "B-001 — automatic eligible release trigger"
+  - "B-003 — first release outcome"
+  - "B-014 — review summary"
+  - "B-017 — regression remains advisory"
+  - "B-018 — failures throughout reporting"
+  - "B-023 — excluded build events"
+  - "B-024 — unavailable immediate predecessor"
+  - "§ 9 names evidence for each assigned claim; failure-injection checks cover collection, parsing, comparison, rendering and attachment while preserving pre-existing failing gates."
+  - "Generated workflow validation confirms C-10 and 0055-F6 C-7; no package or release is created by validation."
+
+decisions: []
+
+out_of_scope:
+  - "Everything in § 5 of the specification."
