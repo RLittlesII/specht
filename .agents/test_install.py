@@ -11,6 +11,16 @@ import unittest
 
 
 class InstallationTests(unittest.TestCase):
+    def test_skillfile_manages_only_skills(self):
+        manifest = Path(__file__).resolve().parents[1] / "Skillfile"
+        entries = [
+            line.split()
+            for line in manifest.read_text().splitlines()
+            if line.strip() and not line.startswith("#") and not line.startswith("install ")
+        ]
+        self.assertTrue(entries)
+        self.assertTrue(all(entry[1] == "skill" for entry in entries))
+
     def test_fresh_install_refreshes_sources_and_preserves_unrelated_agents(self):
         source = Path(__file__).resolve().parents[1]
         with tempfile.TemporaryDirectory() as directory:
@@ -21,6 +31,9 @@ class InstallationTests(unittest.TestCase):
             personal = root / ".codex/agents/personal.toml"
             personal.parent.mkdir(parents=True)
             personal.write_text("# unrelated personal registration\n")
+            personal_markdown = root / ".claude/agents/personal.md"
+            personal_markdown.parent.mkdir(parents=True)
+            personal_markdown.write_text("Unrelated personal role.\n")
 
             def install():
                 result = subprocess.run(
@@ -68,7 +81,16 @@ class InstallationTests(unittest.TestCase):
                     (root / tool / "skills/coding-conventions/SKILL.md").read_bytes(),
                     updated.read_bytes(),
                 )
+            role = root / ".agents/roles/implementer.md"
+            role.write_text(role.read_text().replace(
+                "description: Make a failing test pass", "description: Updated role guidance. Make a failing test pass"
+            ))
+            install()
+            self.assertEqual((root / ".claude/agents/implementer.md").read_bytes(), role.read_bytes())
+            agent = tomllib.loads((root / ".codex/agents/implementer.toml").read_text())
+            self.assertTrue(agent["description"].startswith("Updated role guidance."))
             self.assertEqual(personal.read_text(), "# unrelated personal registration\n")
+            self.assertEqual(personal_markdown.read_text(), "Unrelated personal role.\n")
 
 
 if __name__ == "__main__":

@@ -483,10 +483,11 @@ own decisions marked where they apply:
 | [`benchmarkdotnet`](.agents/skills/benchmarkdotnet/SKILL.md) | measuring .NET code — benchmark classes, parameters, setup, toolchains, the memory diagnoser, reading the summary, and the measurement traps |
 
 **A skill needed to deliver a feature lives in `.agents/skills/`.** The tracked
-`Skillfile` declares those local directories and the contracts in `.agents/roles/`
-for both project-local tools. Run `python3 .agents/install.py` after a clone or
-an edit to these sources; it runs Skillfile and supplies native role registrations
-where the manager does not support them. See [shared setup](.agents/README.md).
+`Skillfile` declares only those local skill directories for both project-local
+tools. Run `python3 .agents/install.py` after a clone or an edit to these sources;
+it runs Skillfile for skills and installs the contracts in `.agents/roles/`
+directly as Markdown and native TOML agents. Agent installation does not depend
+on Skillfile. See [shared setup](.agents/README.md).
 
 The tracked skills are maintained for this repository and ship with it.
 Their paths, commands and delivery rules describe `specht`; no consumer

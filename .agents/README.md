@@ -17,10 +17,12 @@ and Python 3.11 or later, then run from the repository root:
 python3 .agents/install.py
 ```
 
-This validates and installs the tracked `Skillfile` with `--update` into `.claude/skills/`,
-`.claude/agents/` and `.codex/skills/`, then generates `.codex/agents/*.toml`.
-Skillfile 1.7.1 skips Codex agents, so the adapter supplies their native
-registrations. Each registration gets its name and description from the shared
+Skillfile manages only skills: setup validates the tracked `Skillfile` and runs
+`install --update` into `.claude/skills/` and `.codex/skills/`. Agent installation
+is handled directly by the setup script, independently of Skillfile's agent
+support: it copies shared role contracts to `.claude/agents/*.md` and generates
+native `.codex/agents/*.toml` files. Plain `skillfile install` does not install
+agents in this repository. Each TOML registration gets its name and description from the shared
 contract and instructs the agent to read that contract before acting. No model,
 permissions or delegation policy is set here. Codex also discovers the shared
 `.agents/skills/` sources directly.

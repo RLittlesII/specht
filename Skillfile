@@ -2,12 +2,7 @@
 install  claude-code  local
 install  codex  local
 
-# Role contracts (native registration adapter: python3 .agents/install.py).
-local  agent  .agents/roles/benchmarker.md
-local  agent  .agents/roles/implementer.md
-local  agent  .agents/roles/spec-author.md
-local  agent  .agents/roles/spec-reviewer.md
-local  agent  .agents/roles/test-writer.md
+# Agents are installed directly by python3 .agents/install.py.
 
 # Skills, including their references and scripts.
 local  skill  .agents/skills/benchmarkdotnet

@@ -23,7 +23,7 @@ summary: |
 acceptance_criteria:
   - "Shared tracked sources contain all ten repository skills and five role contracts."
   - "Setup driven by a tracked Skillfile installs local skills and roles into both supported tools."
-  - "The setup command supplies native agent registrations where the dependency manager skips agents."
+  - "Skillfile manages only skills; setup installs Markdown and native TOML agents directly."
   - "Repeated setup succeeds, and installation works from a fresh checkout."
   - "Repository instructions and relative links point to the shared sources."
   - "Product behaviour and scenarios remain unchanged. Constraints preserved: 0001-F1 C-9."
@@ -37,6 +37,10 @@ decisions:
     2026-10-14, repository owner: Keep private dependencies optional; default
     to repository-owned skills. Preserve the original untracked manifest and
     lockfile in .artifacts/0215/; no personal global installation is changed.
+  - |
+    2026-10-14, repository owner: Account for unreliable agent installation
+    in the dependency manager; use native TOML for the target that requires it.
+    Setup owns both agent formats directly, with no agent entries in Skillfile.
 out_of_scope:
   - "Changing product behaviour, shipped schemas or specifications."
   - "Changing personal global installations or enabling automatic delegation."

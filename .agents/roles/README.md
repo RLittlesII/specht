@@ -56,6 +56,6 @@ files — a second copy is a second thing to drift.
   "Say it once, and briefly" - each role file names only what that means for the
   artifact it owns.
 - **These are the authoritative contracts.** Run `python3 .agents/install.py`
-  to install tool-local agents from them. The adapter registers each role with
-  a pointer back to its source; edit contracts here and reinstall. Installed
+  to install tool-local agents from them. Setup copies Markdown contracts and
+  generates native TOML registrations pointing to their sources; edit contracts here and reinstall. Installed
   copies are gitignored. See [shared setup](../README.md).

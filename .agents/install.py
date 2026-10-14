@@ -24,22 +24,25 @@ def main():
             f".agents/roles/{source.name}. Resolve its relative links from that source file. "
             "Read the skills the contract names before acting in this role."
         )
-        registrations[name] = (
+        registration = (
             f"name = {json.dumps(name)}\n"
             f"description = {json.dumps(description, ensure_ascii=False)}\n"
             f"developer_instructions = {json.dumps(instructions)}\n"
         )
+        registrations[name] = (source, registration)
 
     subprocess.run(["skillfile", "validate"], cwd=root, check=True)
     subprocess.run(["skillfile", "install", "--update"], cwd=root, check=True)
-    destination = root / ".codex/agents"
-    destination.mkdir(parents=True, exist_ok=True)
-    for name, content in registrations.items():
-        target = destination / f"{name}.toml"
-        temporary = target.with_suffix(".toml.tmp")
-        temporary.write_text(content, encoding="utf-8")
-        temporary.replace(target)
-    print(f"Registered {len(registrations)} roles in .codex/agents/.")
+    for name, (source, registration) in registrations.items():
+        for target, content in (
+            (root / ".claude/agents" / f"{name}.md", source.read_bytes()),
+            (root / ".codex/agents" / f"{name}.toml", registration.encode("utf-8")),
+        ):
+            target.parent.mkdir(parents=True, exist_ok=True)
+            temporary = target.with_suffix(target.suffix + ".tmp")
+            temporary.write_bytes(content)
+            temporary.replace(target)
+    print(f"Installed {len(registrations)} roles in .claude/agents/ and .codex/agents/.")
 
 
 if __name__ == "__main__":
