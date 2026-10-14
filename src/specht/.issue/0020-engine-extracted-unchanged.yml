@@ -55,7 +55,7 @@ acceptance_criteria:
 
 decisions:
   - |
-    2026-10-08, Claude at the owner's request: sliced into the copy (0021),
+    2026-10-08, at the owner's request: sliced into the copy (0021),
     the baseline report that freezes its verdicts (0022), then two test items
     proving the remaining claims against the copied engine (0023, 0024). The
     copy is alone so commit e7dba24, where C-9 starts, is a pure move

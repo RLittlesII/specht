@@ -278,7 +278,7 @@ acceptance_criteria:
 
 decisions:
   - |
-    2026-10-08, Claude at the owner's request: sliced into the pinned,
+    2026-10-08, at the owner's request: sliced into the pinned,
     embedded version set (0042) that everything reads, then the source switch
     and the freeze test beside it, then `upgrade` as its core move (0045)
     with its failures (0046) apart, and each claim an open question blocks
@@ -286,12 +286,12 @@ decisions:
     as one item, which would sit blocked on three questions for claims that
     need none.
   - |
-    2026-10-08, Claude: the report's version and source fields are defined
+    2026-10-08: the report's version and source fields are defined
     by Report's 0034 and filled with their true values here (0042, 0043),
     not the reverse — 0034 waiting on this Feature while 0043 waits on 0034
     would be a cycle.
   - |
-    2026-10-08, Claude at the owner's request: B-024 to B-036 cut into
+    2026-10-08, at the owner's request: B-024 to B-036 cut into
     three items by command and by source - the check under a recorded
     upstream source (0092), upgrade's fetch (0093), and upgrade with the
     on-disk source (0094). Rejected: folding them into 0043 or 0045,

@@ -29,7 +29,7 @@ claims:
   - B-013
 
 created: "2026-10-08"
-updated: "2026-10-11"
+updated: "2026-10-13"
 closed: null
 
 summary: |
@@ -53,7 +53,7 @@ acceptance_criteria:
 
 decisions:
   - |
-    2026-10-08, Claude at the owner's request: sliced into the workflow with
+    2026-10-08, at the owner's request: sliced into the workflow with
     its gates, refusals and dry run (0083), which can be proven before any
     publish, and the first real publish (0084), which C-2 holds until
     0001-F5 (0010) and 0001-F6 (0004) have landed. The feed restore (0085)

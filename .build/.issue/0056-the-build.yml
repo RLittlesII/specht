@@ -98,7 +98,7 @@ decisions:
     Build and hook verification remains manual under 0055-F1 § 8.
     B-023 and B-025 are superseded by decision 0001.
   - |
-    2026-10-08, Claude at the owner's request: sliced into the scaffold
+    2026-10-08, at the owner's request: sliced into the scaffold
     (0057) that every other item and epic 0001 build on, the tier filters
     (0058), `Format` (0059), the hook (0060), and `Specht`'s two later
     states apart (0061, 0062), so the scaffold waits on nothing. Rejected:

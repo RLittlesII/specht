@@ -7,7 +7,7 @@ type: decision
 # Decision 0003: Make comparison evidence and advisory failures explicit
 
 **Date:** 2026-10-13
-**Decided by:** Codex, acting as spec-author during the owner's requested review and decomposition; these refinements preserve decisions 0001 and 0002.
+**Decision record:** Owner-requested review refinements preserve decisions 0001 and 0002.
 
 ## The call
 

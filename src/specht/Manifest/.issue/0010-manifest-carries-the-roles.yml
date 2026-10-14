@@ -131,7 +131,7 @@ decisions:
     0191; B-049 to B-054 by 0016. The latter follows 0164, 0166 and 0191.
     Epic opt-in remains separate under OQ-18.
   - |
-    2026-10-08, Claude at the owner's request: sliced into a whole-manifest
+    2026-10-08, at the owner's request: sliced into a whole-manifest
     loader (0011) and a baseline guard (0012) first, then one item per family
     of literal — rule settings, section roles, keys and grammars, schema file
     names, messages — each family's rejection claim travelling with the keys
@@ -139,7 +139,7 @@ decisions:
     requires every move to keep it green. Rejected: the baseline proof as the
     final item, which would let a move land unguarded.
   - |
-    2026-10-08, Claude: B-021 is its own item (0019) because the exclusion
+    2026-10-08: B-021 is its own item (0019) because the exclusion
     list it validates is declared by Discovery's 0005, which itself needs
     this Feature's loader; folding B-021 into 0011 would make 0005 and 0011
     wait on each other.

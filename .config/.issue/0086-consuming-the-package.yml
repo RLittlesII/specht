@@ -26,7 +26,7 @@ claims:
   - B-008
 
 created: "2026-10-08"
-updated: "2026-10-11"
+updated: "2026-10-13"
 closed: null
 
 summary: |
@@ -48,7 +48,7 @@ acceptance_criteria:
 
 decisions:
   - |
-    2026-10-08, Claude at the owner's request: sliced into this repository
+    2026-10-08, at the owner's request: sliced into this repository
     consuming its own package (0087), which epic 0001's 0032 and the feed
     restores in CI, release and Renovate (0067, 0085, 0077) wait on, and
     the install section of `README.md` (0088). Both wait on the first
