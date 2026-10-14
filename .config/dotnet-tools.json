@@ -15,6 +15,13 @@
         "nbgv"
       ],
       "rollForward": false
+    },
+    "specht.tool": {
+      "version": "0.1.90",
+      "commands": [
+        "specht"
+      ],
+      "rollForward": false
     }
   }
 }

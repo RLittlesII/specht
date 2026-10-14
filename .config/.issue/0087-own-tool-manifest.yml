@@ -2,7 +2,7 @@ id: "0087"
 type: task
 title: Name the published package in this repository's tool manifest
 
-status: ready-for-architecture
+status: done
 
 risk: 3
 
@@ -20,8 +20,8 @@ claims:
   - B-007
 
 created: "2026-10-08"
-updated: "2026-10-08"
-closed: null
+updated: "2026-10-14"
+closed: "2026-10-14"
 
 summary: |
   Add the feed as a package source whose credential comes from the
@@ -36,7 +36,8 @@ acceptance_criteria:
   - "B-007 — no token: the solution restores and builds"
   - "§ 9 carries a row naming a test for each id above."
 
-decisions: []
+decisions:
+  - .config/.spec/decisions/0001-isolate-package-consumption-from-development-tool-restore.md
 
 out_of_scope:
   - "What `SpecCheck` does with it — § 5 #5, 0001-F2 B-014 (0032)."

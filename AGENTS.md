@@ -44,9 +44,14 @@ was retired once the specifications absorbed it; citations pin it to commit
 ## Setup
 
 ```sh
-dotnet tool restore && dotnet husky install   # once per clone
+./build.sh Restore && dotnet husky install   # once per clone; development tools need no feed token
 python3 .agents/install.py                   # shared skills and role registrations
 ```
+
+The build restores development tools from the committed pins without fetching
+`specht.tool`. Root `dotnet tool restore` also restores the published checker
+and needs the `specht` source's read credential in the environment, through
+`NuGetPackageSourceCredentials_specht`.
 
 Until that runs, `core.hooksPath` is unset, so neither the formatting pre-commit
 hook nor the self-check fires. The .NET SDK is pinned in `global.json`

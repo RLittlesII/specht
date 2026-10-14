@@ -9,7 +9,6 @@ type: reference
 Requires the .NET SDK pinned in [`global.json`](../global.json).
 
 ```sh
-dotnet tool restore
 ./build.sh             # compile and test
 ./build.sh Pack        # specht.tool.<version>.nupkg
 ./build.sh Benchmark --benchmark-job Short # every benchmark, Release

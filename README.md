@@ -54,7 +54,7 @@ it chooses.
 
 ## Quick start
 
-> Not published yet. Install steps land with the first release.
+> Published on [GitHub Packages](https://github.com/RLittlesII/specht/pkgs/nuget/specht.tool). Package reads require authentication.
 
 ```sh
 dotnet tool install specht.tool      # into the repository's local tool manifest

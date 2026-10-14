@@ -84,7 +84,12 @@ internal partial class SpechtBuild : NukeBuild
         .Executes(() =>
         {
             // B-010: the tools the build and the hook invoke, at the versions the local tool manifest pins.
-            DotNetToolRestore(static s => s.SetProcessWorkingDirectory(RootDirectory));
+            var manifest = ArtifactsDirectory / "tool-restore" / "dotnet-tools.json";
+            Directory.CreateDirectory(manifest.Parent);
+            var temporary = $"{manifest}.tmp";
+            File.WriteAllText(temporary, new BuildToolManifest().ForBuild(File.ReadAllText(RootDirectory / ".config" / "dotnet-tools.json")));
+            File.Move(temporary, manifest, overwrite: true);
+            DotNetToolRestore(s => s.SetProcessWorkingDirectory(RootDirectory).SetToolManifest(manifest));
             DotNetRestore(s => s.SetProjectFile(Solution));
         });
 
