@@ -2,7 +2,7 @@ id: "0155"
 type: refactor
 title: Put the shared derivations, typed rule settings and companion tags on the model
 
-status: ready-for-implementation
+status: done
 
 value: 3
 risk: 4
@@ -18,8 +18,8 @@ spec: null
 claims: []
 
 created: "2026-10-11"
-updated: "2026-10-11"
-closed: null
+updated: "2026-10-14"
+closed: "2026-10-14"
 
 summary: |
   ADR-0010 (accepted 2026-10-11,

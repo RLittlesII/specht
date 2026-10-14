@@ -35,11 +35,12 @@ public sealed class FeatureFileRuleClaimTagsUnitTests
         FeatureSpec feature = new FeatureSpecFixture()
             .WithDocument(SpecDocument.Parse($"## 3. Acceptance Criteria\n\n| ID | Claim |\n| -- | ----- |\n| {claim} | Declared. |\n",
                 "src/sample/.spec/README.md"))
-            .WithFeatureFiles(companion);
+            .WithFeatureFiles(new FeatureFileFixture().WithTags(new FeatureTagParser().Parse(
+                fileSystem.File.ReadAllText(companion), EngineServices.Parser().Parse(manifest.ToJsonString()))));
         SpecModel model = new SpecModelFixture().WithManifest(manifest).WithFeatures(feature);
 
         // When
-        var violations = new FeatureFileRule(new FeatureFileReader(fileSystem, new FeatureTagParser())).Evaluate(model).ToList();
+        var violations = new FeatureFileRule().Evaluate(model).ToList();
 
         // Then
         var violation = violations.Should().ContainSingle().Subject;
@@ -64,7 +65,7 @@ public sealed class FeatureFileRuleClaimTagsUnitTests
         FeatureSpec feature = new FeatureSpecFixture()
             .WithDocument(SpecDocument.Parse("## 3. Acceptance Criteria\n\n| ID | Claim |\n| -- | ----- |\n| B-0001 | Declared. |\n",
                 "src/sample/.spec/README.md"))
-            .WithFeatureFiles(companion);
+            .WithFeatureFiles(new FeatureFileFixture().WithTags(new FeatureTagParser().Parse(fileSystem.File.ReadAllText(companion))));
         SpecModel model = new SpecModelFixture().WithManifest(new JsonObject
         {
             ["schemaVersion"] = pin,
@@ -72,7 +73,7 @@ public sealed class FeatureFileRuleClaimTagsUnitTests
         }).WithFeatures(feature);
 
         // When
-        var violations = new FeatureFileRule(new FeatureFileReader(fileSystem, new FeatureTagParser())).Evaluate(model).ToList();
+        var violations = new FeatureFileRule().Evaluate(model).ToList();
 
         // Then
         violations.Should().ContainSingle().Which.Identifier.Should().Be("B-002");
@@ -89,15 +90,17 @@ public sealed class FeatureFileRuleClaimTagsUnitTests
         // Given
         var companion = Path.Combine("repo", "src", "sample", ".spec", "sample.feature");
         var fileSystem = new MockFileSystem(new Dictionary<string, MockFileData> { [companion] = new(tag) });
-        FeatureSpec feature = new FeatureSpecFixture().WithFeatureFiles(companion);
-        SpecModel model = new SpecModelFixture().WithManifest(new JsonObject
+        var manifest = new JsonObject
         {
             ["schemaVersion"] = "0.2.0",
             ["claim"] = new JsonObject { ["tag"] = form },
-        }).WithFeatures(feature);
+        };
+        FeatureSpec feature = new FeatureSpecFixture().WithFeatureFiles(new FeatureFileFixture().WithTags(new FeatureTagParser().Parse(
+            fileSystem.File.ReadAllText(companion), EngineServices.Parser().Parse(manifest.ToJsonString()))));
+        SpecModel model = new SpecModelFixture().WithManifest(manifest).WithFeatures(feature);
 
         // When
-        var violations = new FeatureFileRule(new FeatureFileReader(fileSystem, new FeatureTagParser())).Evaluate(model);
+        var violations = new FeatureFileRule().Evaluate(model);
 
         // Then
         violations.Should().BeEmpty();

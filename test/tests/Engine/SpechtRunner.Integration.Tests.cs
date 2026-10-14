@@ -109,7 +109,7 @@ public sealed class SpechtRunnerIntegrationTests
     {
         // Given
         using var tree = new SpecTree();
-        var path = SpecPath.Relative(
+        var path = Path.GetRelativePath(
             tree.Root,
             tree.WriteFeature(
                 "0001",
@@ -123,7 +123,7 @@ public sealed class SpechtRunnerIntegrationTests
                         + "| B-001    | It does the thing | Missing | Missing |\n"
                         + "+----------+-------------------+---------+---------+\n"
                         + "| B-999    | A grid-only row   | Missing | Missing |\n"
-                        + "+----------+-------------------+---------+---------+\n")));
+                        + "+----------+-------------------+---------+---------+\n"))).Replace(Path.DirectorySeparatorChar, '/');
 
         // When
         var violations = tree.Run().Violations;

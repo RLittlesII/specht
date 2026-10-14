@@ -9,7 +9,7 @@ namespace Specht.Tests.Rules;
 
 /// <summary>
 /// The feature-file rule over a model built in memory under a manifest that renames the claims section (<c>0001-F5</c>
-/// B-001, decision 0006), its companion's tags read through an injected file system (ADR-0001 stage D, item 0107): a
+/// B-001, decision 0006), its companion’s parsed tags supplied in memory (ADR-0010 stage 2): a
 /// scenario tag resolves against the section the claims role names, and the title the engine once hardcoded is a section
 /// like any other.
 /// </summary>
@@ -39,11 +39,11 @@ public sealed class FeatureFileRuleUnitTests
                     "## 3. Acceptance Criteria\n\n| ID | Claim |\n| -- | ----- |\n| B-404 | Under the title no role names. |\n\n"
                         + "## 3. Claims\n\n| ID | Claim |\n| -- | ----- |\n| B-001 | Under the claims role's section. |\n",
                     "src/sample/.spec/README.md"))
-            .WithFeatureFiles(companion);
+            .WithFeatureFiles(new FeatureFileFixture().WithTags(new FeatureTagParser().Parse(fileSystem.File.ReadAllText(companion))));
         SpecModel model = new SpecModelFixture().WithManifest(manifest).WithFeatures(feature);
 
         // When
-        var violations = new FeatureFileRule(new FeatureFileReader(fileSystem, new FeatureTagParser())).Evaluate(model).ToList();
+        var violations = new FeatureFileRule().Evaluate(model).ToList();
 
         // Then
         violations.Select(static violation => (violation.RuleId, violation.Identifier)).Should().Equal(("SPEC021", "B-404"));

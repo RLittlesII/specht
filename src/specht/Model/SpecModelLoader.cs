@@ -9,11 +9,13 @@ namespace Specht.Model;
 /// <param name="frontmatter">The frontmatter reader.</param>
 /// <param name="discovery">The discovery stage.</param>
 /// <param name="schemas">The manifest stage.</param>
+/// <param name="tags">The pure companion-tag parser.</param>
 public sealed class SpecModelLoader(
     IFileSystem fileSystem,
     FrontmatterReader frontmatter,
     SpecDiscovery discovery,
-    SpecSchemasLoader schemas)
+    SpecSchemasLoader schemas,
+    FeatureTagParser tags)
 {
     /// <summary>Loads the resolved tree through its injected manifest and schema stage.</summary>
     public SpecModel Load(string root)
@@ -28,7 +30,9 @@ public sealed class SpecModelLoader(
             features.Add(new FeatureSpec(
                 location,
                 SpecDocument.Parse(fileSystem.File.ReadAllText(location.AbsolutePath), location.RelativePath),
-                discovery.FindCompanions(location, inputs)));
+                discovery.FindCompanions(location, inputs)
+                    .Select(path => new FeatureFile(Relative(root, path), tags.Parse(fileSystem.File.ReadAllText(path), loaded.Structure)))
+                    .ToList()));
         }
 
         var items = new List<ChildItem>();
@@ -36,7 +40,7 @@ public sealed class SpecModelLoader(
         foreach (var path in discovery.FindChildItems(locations, inputs, loaded.Structure.Identifiers["task"]))
         {
             items.Add(new ChildItem(
-                SpecPath.Relative(root, path),
+                Relative(root, path),
                 fileSystem.Path.GetFileName(path),
                 frontmatter.Read(path),
                 fileSystem.Path.GetDirectoryName(path)!));
@@ -46,9 +50,12 @@ public sealed class SpecModelLoader(
 
         foreach (var path in discovery.FindEpics(root, inputs))
         {
-            epics.Add(new EpicFile(SpecPath.Relative(root, path), frontmatter.Read(path)));
+            epics.Add(new EpicFile(Relative(root, path), frontmatter.Read(path)));
         }
 
         return new SpecModel(root, features, items, epics, loaded);
     }
+
+    private static string Relative(string root, string path) =>
+        Path.GetRelativePath(root, path).Replace(Path.DirectorySeparatorChar, '/');
 }

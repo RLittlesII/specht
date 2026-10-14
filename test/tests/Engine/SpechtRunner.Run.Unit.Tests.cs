@@ -31,7 +31,7 @@ public sealed class SpechtRunnerRunUnitTests
                 fileSystem,
                 new FrontmatterReader(fileSystem),
                 new SpecDiscovery(fileSystem),
-                EngineServices.Schemas(fileSystem)),
+                EngineServices.Schemas(fileSystem), new FeatureTagParser()),
             [rule],
             fileSystem);
 

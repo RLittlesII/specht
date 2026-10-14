@@ -84,7 +84,12 @@ public sealed class SectionStructureRule : ISpecRule
         foreach (var (role, headers) in model.Schemas.Structure.Tables)
         {
             var title = model.Schemas.Structure.Roles[role];
-            var section = feature.Document.Section(title);
+            var section = role switch
+            {
+                "claims" => model.Claims[feature].Section,
+                "matrix" => model.MatrixSections[feature],
+                _ => feature.Document.Section(title),
+            };
 
             if (section is null)
             {

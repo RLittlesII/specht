@@ -17,5 +17,5 @@ internal sealed partial class FeatureSpecFixture
     /// <remarks>The generator names the list's setter <c>WithList</c>, after its type; this names it after the Feature's.</remarks>
     /// <param name="featureFiles">The files.</param>
     /// <returns>The fixture.</returns>
-    public FeatureSpecFixture WithFeatureFiles(params IReadOnlyList<string> featureFiles) => WithList(featureFiles);
+    public FeatureSpecFixture WithFeatureFiles(params IReadOnlyList<FeatureFile> featureFiles) => WithList(featureFiles);
 }

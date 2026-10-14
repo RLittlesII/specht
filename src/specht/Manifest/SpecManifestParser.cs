@@ -35,6 +35,7 @@ public sealed class SpecManifestParser(SchemaVersions versions)
         var claim = tags ? manifest["claim"]?.AsObject() : null;
         var claimDefaults = tags ? Present(defaults["claim"]).AsObject() : null;
         var sourceFaults = new List<string>();
+        Dictionary<string, string> levels = [];
         var structure = new SpecStructure(
             Strings(manifest["sections"] ?? defaults["sections"]!),
             Tables(manifest["tables"] ?? defaults["tables"]!),
@@ -45,13 +46,19 @@ public sealed class SpecManifestParser(SchemaVersions versions)
             FrontmatterSchemas = frontmatterSchemas,
             Roles = Filled(manifest, defaults, "roles"),
             Markers = Filled(manifest, defaults, "markers"),
-            Rules = Levels(manifest["rules"]),
+            Rules = new SpecRuleSettings((levels = Levels(manifest["rules"])).Where(static entry => entry.Value is "error" or "warning" or "off")
+                .Select(static entry => new KeyValuePair<string, SpecRuleLevel>(entry.Key, entry.Value switch
+                {
+                    "warning" => SpecRuleLevel.Warning,
+                    "off" => SpecRuleLevel.Off,
+                    _ => SpecRuleLevel.Error,
+                }))),
             ClaimTagForm = tags ? Present(claim?["tag"] ?? claimDefaults?["tag"]).GetValue<string>() : null,
             ClaimTagIgnoreCase = tags && Present(claim?["tagIgnoreCase"] ?? claimDefaults?["tagIgnoreCase"]).GetValue<bool>(),
             SpechtSchema = SpechtSchema(manifest, frontmatterSchemas, sourceFaults),
         };
 
-        Check(structure, defaults, IdentityFaults(manifest).Concat(sourceFaults).Concat(ClaimTagFaults(structure)));
+        Check(structure, defaults, IdentityFaults(manifest).Concat(sourceFaults).Concat(ClaimTagFaults(structure)), levels);
 
         return structure;
     }
@@ -262,7 +269,8 @@ public sealed class SpecManifestParser(SchemaVersions versions)
     private static JsonNode Present(JsonNode? node) =>
         node ?? throw new InvalidOperationException("A JSON null stands where the manifest's shape requires a value.");
 
-    private static void Check(SpecStructure structure, JsonObject defaults, IEnumerable<string> identityFaults)
+    private static void Check(
+        SpecStructure structure, JsonObject defaults, IEnumerable<string> identityFaults, IReadOnlyDictionary<string, string> levels)
     {
         var roles = defaults["roles"]!.AsObject();
         var faults = roles
@@ -296,7 +304,7 @@ public sealed class SpecManifestParser(SchemaVersions versions)
                     .Select(static schema =>
                         $"the frontmatterSchemas kind '{schema.Key}' names '{schema.Value}', which is not a plain file name"))
             .Concat(
-                structure.Rules
+                levels
                     .Where(static rule => rule.Value is not ("error" or "warning" or "off"))
                     .Select(static rule => $"the rule '{rule.Key}' in rules is set to '{rule.Value}', which is not 'error', 'warning' or 'off'"))
             .ToList();

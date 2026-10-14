@@ -28,7 +28,6 @@ public static class SpechtEngineServiceCollectionExtensions
         services.AddSingleton<SpecManifestParser>();
         services.AddSingleton<FrontmatterReader>();
         services.AddSingleton<FeatureTagParser>();
-        services.AddSingleton<FeatureFileReader>();
         services.AddSingleton<SpecDiscovery>();
         services.AddSingleton<SpecManifestStore>();
         services.AddSingleton<UpstreamSchemaCopy>();
