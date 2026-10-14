@@ -12,9 +12,12 @@ public static class ExitCodes
     /// <summary>An error-severity violation, or any violation under <c>--strict</c>.</summary>
     public const int Violations = 1;
 
-    /// <summary>The root is not a directory, or it has no manifest.</summary>
+    /// <summary>The root or manifest is missing, or a version is required without an interactive terminal.</summary>
     public const int MissingInput = 2;
 
     /// <summary>The manifest is not well-formed JSON, not the manifest's shape, or a manifest the engine rejects.</summary>
     public const int InvalidManifest = 3;
+
+    /// <summary>A target named on the command line is not found in the shipped catalog.</summary>
+    public const int NotFound = 4;
 }

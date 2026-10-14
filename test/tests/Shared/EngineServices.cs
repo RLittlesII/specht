@@ -1,16 +1,33 @@
 using System.IO.Abstractions;
 using Microsoft.Extensions.DependencyInjection;
 using Specht.Composition;
+using Specht.Cqrs;
 using Specht.Manifest;
 using Specht.Model;
 using Specht.Tool;
+using Specht.Tool.Features.Check;
 using Specht.Versioning;
+using Spectre.Console.Cli.Testing;
+using Spectre.Console.Testing;
 
 namespace Specht.Tests.Shared;
 
 /// <summary>Composes the real engine graph with optional in-memory file system and catalog substitutions.</summary>
 public static class EngineServices
 {
+    /// <summary>Wraps the production registrar and configuration for simulated terminal input.</summary>
+    public static CommandAppTester CommandApp(IFileSystem fileSystem, TestConsole console)
+    {
+        var (registrar, configure) = ToolApplication.Create(fileSystem, console);
+        var app = new CommandAppTester(registrar, console: console);
+        app.SetDefaultCommand<CheckCommand>();
+        app.Configure(configure);
+        return app;
+    }
+
+    /// <summary>Resolves the real request dispatcher with an optional synthetic catalog.</summary>
+    public static ICqrs Commands(SchemaVersions? versions = null) => (ICqrs)Resolve(typeof(ICqrs), versions: versions);
+
     /// <summary>Resolves a runner with the chosen catalog.</summary>
     public static SpechtRunner Runner(SchemaVersions? versions = null) => (SpechtRunner)Resolve(typeof(SpechtRunner), versions: versions);
 

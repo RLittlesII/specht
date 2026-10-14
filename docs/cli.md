@@ -6,8 +6,8 @@ type: reference
 
 # Command line
 
-Two commands: `specht` checks a tree, `specht init` writes the files a check
-needs. Installed as a local tool, each runs as `dotnet specht`.
+`specht` checks a tree, `specht init` writes the files a check needs, and
+`schema` groups commands for the repository's schema version. Installed as a local tool, each runs as `dotnet specht`.
 
 ## `specht`
 
@@ -142,4 +142,81 @@ written .specht/templates/adr.md
 written .specht/templates/decision.md
 written .specht/templates/feature.md
 written .specht/templates/lesson.md
+```
+
+## `specht schema`
+
+```text
+specht schema <COMMAND> [--help]
+```
+
+Groups the schema-version commands. Use `specht schema list` to see the versions
+this tool ships.
+
+| Option       | Value | Does                      |
+| ------------ | ----- | ------------------------- |
+| `-h, --help` | none  | Prints the branch's help. |
+
+## `specht schema list`
+
+```text
+specht schema list [--root <DIR>]
+```
+
+Prints shipped schema versions in ascending semantic-version order. With a
+manifest, the selected version has the suffix ` (pinned)`; without a manifest,
+the list is unmarked. An omitted `schemaVersion` means `0.1.0`.
+
+| Option         | Value   | Default               | Does                                      |
+| -------------- | ------- | --------------------- | ----------------------------------------- |
+| `--root <DIR>` | `<DIR>` | The working directory | Names the repository whose pin is marked. |
+| `-h, --help`   | none    | none                  | Prints help.                              |
+
+A missing root exits `2`. An unreadable or rejected manifest exits `3`, with
+empty stdout and the problem, shipped versions and a recovery hint on stderr.
+Listing reads no schema or specification files and fetches nothing.
+
+```text
+0.1.0
+0.1.1
+0.2.0 (pinned)
+```
+
+## `specht schema pin`
+
+```text
+specht schema pin [version] [--root <DIR>]
+```
+
+Pins any shipped version, up or down. Supply the version for scripts; omit it
+at an interactive terminal to select a version with the arrow keys and confirm
+with Enter. The Spectre.Console selector offers every shipped version.
+
+| Option         | Value   | Default               | Does                                            |
+| -------------- | ------- | --------------------- | ----------------------------------------------- |
+| `--root <DIR>` | `<DIR>` | The working directory | Names the repository whose manifest is changed. |
+| `-h, --help`   | none    | none                  | Prints help.                                    |
+
+Only the root `schemaVersion` value changes. If the key is absent, it is added.
+Other manifest bytes, schemas, templates and specification files are preserved.
+The command is offline. A downgrade preserves newer settings; the subsequent
+check may reject them until you edit them. Pinning can repair an unsupported or
+malformed current pin when the other settings are valid.
+
+**Stdout.** A successful explicit pin prints the selected version and the
+relative manifest path. Interactive runs also display the selection prompt.
+
+**Exit codes.** `0` on success; `2` for a missing root or manifest, or no version
+without an interactive terminal; `3` for invalid manifest settings; `4` for a
+malformed or unshipped target. Failures write nothing and explain the problem
+on stderr. Root and manifest validation precede target validation. Without a
+terminal, supply a version as shown below.
+
+```sh
+specht schema list
+specht schema pin 0.2.0
+```
+
+```text
+pinned schemaVersion 0.2.0 in .specht/manifest.json
 ```

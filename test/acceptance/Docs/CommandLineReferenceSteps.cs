@@ -107,12 +107,17 @@ public sealed partial class CommandLineReferenceSteps
 
     private static Dictionary<string, string[][]> ReadSurface()
     {
-        var root = Help();
-        var surface = new Dictionary<string, string[][]>(StringComparer.Ordinal) { [DefaultCommand] = Options(root) };
-        foreach (var listed in Block(root, "COMMANDS:").Select(static line => CommandEntry().Match(line)).Where(static match => match.Success))
+        var surface = new Dictionary<string, string[][]>(StringComparer.Ordinal);
+        var pending = new Queue<string[]>();
+        pending.Enqueue([]);
+        while (pending.TryDequeue(out var command))
         {
-            var command = listed.Groups[1].Value;
-            surface[$"{DefaultCommand} {command}"] = Options(Help(command));
+            var help = Help(command);
+            surface[string.Join(" ", new[] { DefaultCommand }.Concat(command))] = Options(help);
+            foreach (var listed in Block(help, "COMMANDS:").Select(static line => CommandEntry().Match(line)).Where(static match => match.Success))
+            {
+                pending.Enqueue([.. command, listed.Groups[1].Value]);
+            }
         }
 
         return surface;
@@ -233,7 +238,15 @@ public sealed partial class CommandLineReferenceSteps
             {
                 var typed = line.Groups[1].Value;
                 var first = typed.Split(' ', StringSplitOptions.RemoveEmptyEntries).FirstOrDefault();
-                var command = first is not null && CommandName().IsMatch(first) ? $"{DefaultCommand} {first}" : DefaultCommand;
+                var command = Surface.Keys
+                    .Where(candidate => candidate == DefaultCommand || typed == candidate[(DefaultCommand.Length + 1)..]
+                        || typed.StartsWith(candidate[(DefaultCommand.Length + 1)..] + " ", StringComparison.Ordinal))
+                    .OrderByDescending(static candidate => candidate.Length)
+                    .First();
+                if (command == DefaultCommand && first is not null && CommandName().IsMatch(first))
+                {
+                    command = $"{DefaultCommand} {first}";
+                }
                 if (!Surface.TryGetValue(command, out var options))
                 {
                     yield return command;

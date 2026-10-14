@@ -15,6 +15,12 @@ pins the tool's version; a global install puts `specht` on PATH.
 [Multiple projects](multiple-projects.md) says what one run reads when a
 repository holds several.
 
+Use `specht schema list` to see the shipped versions and the selected pin.
+Run `specht schema pin <version>` to change only that pin, or `specht schema pin`
+to select with arrow keys and Enter at an interactive terminal. Pinning preserves
+all other manifest settings and files. A downgrade can leave newer settings
+that the next check rejects; edit those settings after pinning.
+
 ## What is configurable
 
 | Manifest key        | Read today                                                                                                                                                                                                                                                                                                                                               |

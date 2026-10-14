@@ -1,6 +1,8 @@
 using System.IO.Abstractions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Specht.Check;
+using Specht.Cqrs;
 using Specht.Discovery;
 using Specht.Manifest;
 using Specht.Model;
@@ -30,6 +32,15 @@ public static class SpechtEngineServiceCollectionExtensions
         services.AddSingleton<FeatureTagParser>();
         services.AddSingleton<SpecDiscovery>();
         services.AddSingleton<SpecManifestStore>();
+        services.AddSingleton<SpecModelReader>();
+        services.AddSingleton<SchemaList.Handler>();
+        services.AddSingleton<ManifestPinEditor>();
+        services.AddSingleton<SchemaPin.Handler>();
+        services.AddSingleton<SchemaPinOptions.Handler>();
+        services.AddSingleton<ICqrs>(static provider => new CqrsDispatcher()
+            .Register<SchemaList.Query, SchemaList.Result>(provider.GetRequiredService<SchemaList.Handler>())
+            .Register<SchemaPin.Command, SemanticVersion>(provider.GetRequiredService<SchemaPin.Handler>())
+            .Register<SchemaPinOptions.Query, IReadOnlyList<SemanticVersion>>(provider.GetRequiredService<SchemaPinOptions.Handler>()));
         services.AddSingleton<UpstreamSchemaCopy>();
         services.AddSingleton<SpecSchemasLoader>();
         services.AddSingleton<SpecModelLoader>();

@@ -30,11 +30,34 @@ public sealed class SpecManifestStore(IFileSystem fileSystem)
     /// <summary>Reads the current manifest's uninterpreted text.</summary>
     public string ReadManifest(string root) => fileSystem.File.ReadAllText(Under(root, RelativePath));
 
+    /// <summary>Reads unchanged manifest bytes for byte-preserving pin edits.</summary>
+    public byte[] ReadManifestBytes(string root) => fileSystem.File.ReadAllBytes(Under(root, RelativePath));
+
     /// <summary>Reads unchanged local schema bytes, or null when that file is absent (0001-F7 B-024, B-077).</summary>
     public byte[]? ReadFrontmatterSchema(string root, string fileName)
     {
         var path = fileSystem.Path.Combine(Under(root, FrontmatterSchemaFolder), fileName);
         return fileSystem.File.Exists(path) ? fileSystem.File.ReadAllBytes(path) : null;
+    }
+
+    /// <summary>Atomically replaces a manifest after a complete staged write, cleaning the staging file on failure.</summary>
+    public async Task WriteManifest(string root, byte[] bytes, CancellationToken cancellationToken)
+    {
+        var path = Under(root, RelativePath);
+        var temporary = path + "." + Guid.NewGuid().ToString("N") + ".tmp";
+        try
+        {
+            await fileSystem.File.WriteAllBytesAsync(temporary, bytes, cancellationToken);
+            cancellationToken.ThrowIfCancellationRequested();
+            fileSystem.File.Move(temporary, path, overwrite: true);
+        }
+        finally
+        {
+            if (fileSystem.File.Exists(temporary))
+            {
+                fileSystem.File.Delete(temporary);
+            }
+        }
     }
 
     private string Under(string root, string relative) => fileSystem.Path.Combine([root, .. relative.Split('/')]);
