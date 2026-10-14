@@ -79,8 +79,15 @@ public sealed class ComparisonSteps : IDisposable
     };
 
     [When("the original release comparison is rerun")]
-    public async Task WhenRerunning() => _pair = await new ReleasePairStore(new FileSystem(), _directory)
-        .GetOrCreateAsync(_release, static _ => throw new InvalidOperationException("Saved pair must bypass selection"), CancellationToken.None);
+    public async Task WhenRerunning()
+    {
+        try
+        {
+            _pair = await new ReleasePairStore(new FileSystem(), _directory)
+                .GetOrCreateAsync(_release, static _ => throw new InvalidOperationException("Saved pair must bypass selection"), CancellationToken.None);
+        }
+        catch (InvalidDataException exception) { _selectionFailure = exception; }
+    }
 
     [Then("it compares the original release pair")]
     public void ThenPreservesPair() => _pair.Should().BeEquivalentTo(_original);
@@ -211,6 +218,86 @@ public sealed class ComparisonSteps : IDisposable
     [Then("it is reported as {string} without a regression judgment")]
     public void ThenOneSided(string status) => _pairs.Should().ContainSingle().Which.Status.ToString().Should().Be(status);
 
+    [Given("the releases have renamed records without audited identities")]
+    public void GivenUnidentifiedRenames()
+    {
+        _previous = BenchmarkEvidenceReader.Read(ExportJson, "previous/full.json", _session.Previous, []);
+        var renamed = ExportJson.Replace("Invented.Check(1)", "Renamed.Check(1)", StringComparison.Ordinal);
+        _current = BenchmarkEvidenceReader.Read(renamed, "current/full.json", _session.Current, []);
+    }
+
+    [Then("every unidentified row is marked {string} with an identity reason")]
+    public void ThenUnknownIdentityRows(string status)
+    {
+        status.Should().Be("Not comparable");
+        _pairs.Should().HaveCount(2).And.OnlyContain(static pair => pair.Status == PairingStatus.NotComparable);
+        _pairs.Should().OnlyContain(static pair => pair.Reason!.Contains("identity", StringComparison.OrdinalIgnoreCase));
+    }
+
+    [Then("no unidentified row is classified as added or removed")]
+    public void ThenNoInventedCoverage() => _pairs.Should().NotContain(static pair =>
+        pair.Status == PairingStatus.Added || pair.Status == PairingStatus.Removed);
+
+    [Given("the session expects timing and allocation but both observed contracts provide timing only")]
+    public void GivenExpectedAllocation()
+    {
+        var expected = _current.Cases[0].Case;
+        _previous = _previous with
+        {
+            Cases = [_previous.Cases[0] with
+            { Case = expected with { RequiredMetrics = [MetricKind.Time] }, Observations = [_previous.Cases[0].Observations[0]] }]
+        };
+        _current = _current with
+        {
+            Cases = [_current.Cases[0] with
+            { Case = expected with { RequiredMetrics = [MetricKind.Time] }, Observations = [_current.Cases[0].Observations[0]] }]
+        };
+        _session = _session with
+        {
+            Previous = _session.Previous with { ExpectedCases = [expected] },
+            Current = _session.Current with { ExpectedCases = [expected] },
+        };
+    }
+
+    [Then("the required allocation remains visible as insufficient evidence")]
+    public void ThenMissingAllocation() => _pairs.Single().Metrics.Single(static metric => metric.Metric == MetricKind.ManagedAllocation)
+        .Status.Should().Be(PairingStatus.InsufficientEvidence);
+
+    [Then("the valid timing remains comparable")]
+    public void ThenIndependentTiming() => _pairs.Single().Metrics.Single(static metric => metric.Metric == MetricKind.Time)
+        .Status.Should().Be(PairingStatus.Comparable);
+
+    [Given("the current expected contract has a different (.*)")]
+    public void GivenExpectedContractConflict(string field)
+    {
+        var original = _current.Cases[0].Case;
+        var expected = field switch
+        {
+            "operation revision" => original with { OperationRevision = "2" },
+            "fixture revision" => original with { FixtureRevision = "2" },
+            _ => original with { Boundary = "other" },
+        };
+        _session = _session with { Current = _session.Current with { ExpectedCases = [expected] } };
+    }
+
+    [Given("a saved pair names the current release as its own predecessor")]
+    public async Task GivenSavedSelfPair()
+    {
+        var pair = ReleaseSelection.Select(_release, new ReleaseCatalog([], true, null), "run-1");
+        pair = pair with { Previous = _release with { PublishedAt = _release.PublishedAt!.Value.AddDays(-1) } };
+        _invalidSavedJson = ComparisonJson.Write(pair);
+        Directory.CreateDirectory(_directory);
+        await File.WriteAllTextAsync(Path.Combine(_directory, "comparison-pair-v1.json"), _invalidSavedJson, CancellationToken.None);
+    }
+
+    [Then("the saved pair is rejected without reselection or overwrite")]
+    public async Task ThenSavedSelfPairRejected()
+    {
+        _selectionFailure.Should().BeOfType<InvalidDataException>();
+        _pair.Should().BeNull();
+        (await File.ReadAllTextAsync(Path.Combine(_directory, "comparison-pair-v1.json"), CancellationToken.None)).Should().Be(_invalidSavedJson);
+    }
+
     public void Dispose()
     {
         if (Directory.Exists(_directory)) Directory.Delete(_directory, true);
@@ -255,4 +342,5 @@ public sealed class ComparisonSteps : IDisposable
     private ImmutableArray<PairedCase> _pairs = [];
     private string? _condition;
     private InvalidDataException? _selectionFailure;
+    private string? _invalidSavedJson;
 }

@@ -99,6 +99,39 @@ Feature: Release baseline comparison
     Then the common input size remains comparable
     And the additional input size is reported as "Removed"
 
+  @B-006 @boundary
+  Scenario: Renamed records without audited identities do not establish coverage changes
+    Given the releases have renamed records without audited identities
+    When the comparison is generated
+    Then every unidentified row is marked "Not comparable" with an identity reason
+    And no unidentified row is classified as added or removed
+
+  @B-005 @boundary
+  Scenario: Expected metric requirements survive incomplete observed contracts
+    Given the session expects timing and allocation but both observed contracts provide timing only
+    When the comparison is generated
+    Then the required allocation remains visible as insufficient evidence
+    And the valid timing remains comparable
+
+  @B-006 @boundary
+  Scenario Outline: Expected native contracts cannot silently contradict observed contracts
+    Given both releases provide measurements of the same workload
+    But the current expected contract has a different <contract field>
+    When the comparison is generated
+    Then the pair is marked "Not comparable" with the reason
+
+    Examples:
+      | contract field     |
+      | operation revision |
+      | fixture revision   |
+      | boundary           |
+
+  @B-002 @boundary
+  Scenario: A saved release pair cannot use the current release as its predecessor
+    Given a saved pair names the current release as its own predecessor
+    When the original release comparison is rerun
+    Then the saved pair is rejected without reselection or overwrite
+
   @B-009
   Scenario: Comparable measurements show their change
     Given comparable measurements with a positive previous value

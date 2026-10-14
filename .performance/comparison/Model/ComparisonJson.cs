@@ -55,7 +55,7 @@ public static class ComparisonJson
             throw new InvalidDataException("Saved release pair does not identify this published release.");
         if (pair.Previous is not { } previous) return;
         ValidateRelease(previous);
-        if (previous.Draft || previous.PublishedAt is null || previous.Repository != pair.Current.Repository
+        if (previous.Id == pair.Current.Id || previous.Draft || previous.PublishedAt is null || previous.Repository != pair.Current.Repository
             || previous.PublishedAt > pair.Current.PublishedAt
             || previous.PublishedAt == pair.Current.PublishedAt && previous.Id >= pair.Current.Id)
             throw new InvalidDataException("Saved predecessor does not precede the current publication.");

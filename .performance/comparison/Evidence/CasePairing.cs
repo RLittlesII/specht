@@ -23,6 +23,10 @@ public static class CasePairing
                 var present = left ?? right!;
                 var others = left is null ? before : after;
                 var sameSide = left is null ? after : before;
+                if (!present.IdentityKnown || others.Values.Any(static evidence => !evidence.IdentityKnown))
+                    return new PairedCase(key, PairingStatus.NotComparable, left, right, [],
+                        present.IdentityKnown ? "Unknown workload identity prevents establishing one-sided coverage."
+                            : present.Failure ?? "Unknown workload identity prevents establishing one-sided coverage.");
                 if (others.Any(entry => !sameSide.ContainsKey(entry.Key) && entry.Value.Case.OperationId == present.Case.OperationId))
                     return new PairedCase(key, PairingStatus.NotComparable, left, right, [], "Workload input parameters differ.");
                 return new PairedCase(key, left is null ? PairingStatus.Added : PairingStatus.Removed, left, right, [], null);
@@ -40,31 +44,48 @@ public static class CasePairing
 
     private static Dictionary<string, CaseEvidence> Group(ImmutableArray<CaseEvidence> cases, ImmutableArray<WorkloadCase> expected)
     {
-        var result = cases.GroupBy(static e => WorkloadIdentity.Key(e.Case), StringComparer.Ordinal).ToDictionary(static g => g.Key, static g =>
-        {
-            var first = g.First();
-            return first with
+        var result = cases.GroupBy(static evidence => WorkloadIdentity.Key(evidence.Case), StringComparer.Ordinal)
+            .ToDictionary(static group => group.Key, static group =>
             {
-                Observations = g.SelectMany(static e => e.Observations).ToImmutableArray(),
-                IdentityKnown = g.All(static e => e.IdentityKnown),
-                Failure = g.Select(static e => e.Failure).FirstOrDefault(static failure => failure is not null),
-            };
-        }, StringComparer.Ordinal);
+                var first = group.First();
+                var conflict = group.Where(evidence => first.IdentityKnown && evidence.IdentityKnown)
+                    .Select(evidence => ContractMismatch(first.Case, evidence.Case)).FirstOrDefault(static reason => reason is not null);
+                return first with
+                {
+                    Case = first.Case with
+                    {
+                        RequiredMetrics = group.SelectMany(static evidence => evidence.Case.RequiredMetrics)
+                        .Distinct().Order().ToImmutableArray()
+                    },
+                    Observations = group.SelectMany(static evidence => evidence.Observations).ToImmutableArray(),
+                    IdentityKnown = group.All(static evidence => evidence.IdentityKnown) && conflict is null,
+                    Failure = conflict ?? group.Select(static evidence => evidence.Failure).FirstOrDefault(static reason => reason is not null),
+                };
+            }, StringComparer.Ordinal);
         foreach (var workload in expected)
-            result.TryAdd(WorkloadIdentity.Key(workload), new CaseEvidence(workload, [], true, "Expected measurement is missing."));
+        {
+            var key = WorkloadIdentity.Key(workload);
+            if (!result.TryGetValue(key, out var observed))
+            {
+                result.Add(key, new CaseEvidence(workload, [], true, "Expected measurement is missing."));
+                continue;
+            }
+            var conflict = ContractMismatch(observed.Case, workload);
+            result[key] = observed with
+            {
+                Case = observed.Case with { RequiredMetrics = observed.Case.RequiredMetrics.Union(workload.RequiredMetrics).Order().ToImmutableArray() },
+                IdentityKnown = observed.IdentityKnown && conflict is null,
+                Failure = conflict ?? observed.Failure,
+            };
+        }
         return result;
     }
 
     private static string? Equivalence(CaseEvidence left, CaseEvidence right, SessionManifest session)
     {
-        if (!left.IdentityKnown || !right.IdentityKnown) return "Unknown identity mapping.";
-        if (string.IsNullOrWhiteSpace(left.Case.OperationRevision) || left.Case.OperationRevision != right.Case.OperationRevision)
-            return "Workload operation revision is unknown or differs.";
-        if (string.IsNullOrWhiteSpace(left.Case.FixtureId) || string.IsNullOrWhiteSpace(left.Case.FixtureRevision)
-            || left.Case.FixtureId != right.Case.FixtureId || left.Case.FixtureRevision != right.Case.FixtureRevision)
-            return "Workload fixture is unknown or differs.";
-        if (string.IsNullOrWhiteSpace(left.Case.Boundary) || left.Case.Boundary != right.Case.Boundary)
-            return "Measurement boundary is unknown or differs.";
+        if (!left.IdentityKnown || !right.IdentityKnown) return left.Failure ?? right.Failure ?? "Unknown identity mapping.";
+        var contract = ContractMismatch(left.Case, right.Case);
+        if (contract is not null) return contract;
         var a = session.Previous.Conditions;
         var b = session.Current.Conditions;
         foreach (var (name, first, second) in new[]
@@ -75,6 +96,18 @@ public static class CasePairing
         })
             if (string.IsNullOrWhiteSpace(first) || string.IsNullOrWhiteSpace(second) || first != second)
                 return $"Measurement {name} is unknown or differs.";
+        return null;
+    }
+
+    private static string? ContractMismatch(WorkloadCase left, WorkloadCase right)
+    {
+        if (string.IsNullOrWhiteSpace(left.OperationRevision) || left.OperationRevision != right.OperationRevision)
+            return "Workload operation revision is unknown or differs.";
+        if (string.IsNullOrWhiteSpace(left.FixtureId) || string.IsNullOrWhiteSpace(left.FixtureRevision)
+            || left.FixtureId != right.FixtureId || left.FixtureRevision != right.FixtureRevision)
+            return "Workload fixture is unknown or differs.";
+        if (string.IsNullOrWhiteSpace(left.Boundary) || left.Boundary != right.Boundary)
+            return "Measurement boundary is unknown or differs.";
         return null;
     }
 
