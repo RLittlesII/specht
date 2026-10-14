@@ -65,6 +65,13 @@ Writes the newest manifest under `<DIR>/.specht/`; the part flags add the
 frontmatter schemas and templates. It never overwrites a file that exists.
 [Setup](setup.md) walks through the first run.
 
+Beside an existing manifest, missing embedded schemas and templates come from its exact
+`schemaVersion`, with an omitted pin meaning `0.1.0`. Rerun `specht init --schemas`
+to restore deleted schemas, or `specht init --all` to fill missing schemas and
+templates. Existing files are skipped byte-for-byte, even if edited or truncated;
+init does not validate or repair their contents. An unshipped pin exits `3`,
+lists the shipped versions on stderr and writes nothing, whatever parts are selected.
+
 | Option                        | Value                   | Default               | Does                                                        |
 | ----------------------------- | ----------------------- | --------------------- | ----------------------------------------------------------- |
 | `--root <DIR>`                | `<DIR>`                 | The working directory | Names the repository root to write under.                   |
