@@ -2,7 +2,7 @@ id: "0204"
 type: task
 title: Measure installed-tool baseline help and check timings
 
-status: in-progress
+status: done
 
 risk: 4
 
@@ -16,7 +16,7 @@ claims: [B-001, B-002, B-003, B-004, B-005, B-007, B-008, B-009]
 
 created: "2026-10-13"
 updated: "2026-10-13"
-closed: null
+closed: "2026-10-13"
 
 summary: |
   Deliver the timing slice designed in 0109-F4 § 7 on the existing benchmark
@@ -65,6 +65,14 @@ decisions:
     formatted ratio column. § 7-8 reflect that fact; the library's
     Markdown ratios satisfy B-009. Rejected: a second ratio formula or
     replacing the existing exporter for an unstated JSON field.
+  - |
+    2026-10-13, implementer: merged main's manifest-resource refactor
+    (#170), supplying the tree with registered resources, parsed structure
+    and the selected version outside measurement. Refreshed the default
+    finding on 405d05c, repeated all manual probes with restricted network
+    access and reran the full build: 614 Unit, 238 Integration, acceptance
+    200 passed / 210 skipped; zero specification errors, 141 warnings.
+    The earlier finding is superseded, not compared as a regression.
 
 out_of_scope:
   - "B-006 — 0206 after feasibility spike 0205."

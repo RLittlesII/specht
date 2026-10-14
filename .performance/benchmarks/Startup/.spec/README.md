@@ -300,7 +300,7 @@ retained in § 9 Status. B-006 remains unimplemented. The Feature is unfinished.
   claiming a formatted ratio field the library does not export.
 
 The manual probes also passed with network access restricted. The full local
-build passed Format, Compile and all three test tiers: 601 Unit, 238 Integration,
+build passed Format, Compile and all three test tiers: 614 Unit, 238 Integration,
 and acceptance 200 passed / 210 skipped. Specht reported zero errors and the same
 141 existing warnings. PR checks are recorded in the delivery report. The existing main-only Short run will publish these cases on Linux and
 Windows after merge; platform evidence is not inferred from a local macOS run.
@@ -312,8 +312,8 @@ The PR workflow remains free of automatic benchmark and upload steps.
 
 | Concern                                                 | Source             | Benchmark                                  | Finding                                                                                                                                                |
 | ------------------------------------------------------- | ------------------ | ------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Fixed consumer invocation cost against the launch floor | C-1, C-3, C-6      | ColdStartBenchmarks.EmptyTool, Help, Check | Empty tool 203.6 ms; help 338.0 ms (1.66 ratio); one-specification check 522.9 ms (2.57 ratio). Includes manifest-mediated launch and output draining. |
-| Benchmark-process managed allocation per invocation     | C-7; 0109-F1 B-007 | ColdStartBenchmarks.EmptyTool, Help, Check | 75.59 KB, 81.64 KB and 76.66 KB respectively; these are wrapper allocations, not tool-process memory.                                                  |
+| Fixed consumer invocation cost against the launch floor | C-1, C-3, C-6      | ColdStartBenchmarks.EmptyTool, Help, Check | Empty tool 199.7 ms; help 339.8 ms (1.70 ratio); one-specification check 508.6 ms (2.55 ratio). Includes manifest-mediated launch and output draining. |
+| Benchmark-process managed allocation per invocation     | C-7; 0109-F1 B-007 | ColdStartBenchmarks.EmptyTool, Help, Check | 75.59 KB, 81.63 KB and 76.66 KB respectively; these are wrapper allocations, not tool-process memory.                                                  |
 | Tool-process peak memory                                | B-006, C-7         | Not implemented                            | Not measured. Observer feasibility and reporting are separate work; no substitute figure is reported.                                                  |
 
 Measured 2026-10-13 using the library's default job, Release, out of process,
@@ -321,13 +321,16 @@ without an attached debugger: `./build.sh Benchmark --benchmark-filter
 '*ColdStartBenchmarks*'`. All three cases succeeded. BenchmarkDotNet 0.15.8;
 macOS Tahoe 26.4 (25E246), Darwin 25.4.0; Apple M1 Max, 10 logical/physical cores;
 .NET SDK 10.0.401; .NET 10.0.12 (10.0.12, 10.0.1226.42308), Arm64 RyuJIT;
-Concurrent Workstation GC. The runner could not raise process priority.
+Concurrent Workstation GC. The runner could not raise process priority. This
+finding was refreshed after integrating the manifest-resource refactor from main
+at 204337d; the measured implementation was at 405d05c, before documentation
+closure. It supersedes the pre-integration run retained in ignored artifacts.
 
 | Invocation               | Mean     | Error (99.9% CI half-width) | StdDev   | Ratio | RatioSD | Benchmark allocated |
 | ------------------------ | -------- | --------------------------- | -------- | ----- | ------- | ------------------- |
-| Empty tool               | 203.6 ms | 2.40 ms                     | 2.01 ms  | 1.00  | 0.01    | 75.59 KB            |
-| Help                     | 338.0 ms | 6.70 ms                     | 9.39 ms  | 1.66  | 0.05    | 81.64 KB            |
-| Check, one specification | 522.9 ms | 7.33 ms                     | 11.83 ms | 2.57  | 0.06    | 76.66 KB            |
+| Empty tool               | 199.7 ms | 3.94 ms                     | 4.21 ms  | 1.00  | 0.03    | 75.59 KB            |
+| Help                     | 339.8 ms | 6.51 ms                     | 7.75 ms  | 1.70  | 0.05    | 81.63 KB            |
+| Check, one specification | 508.6 ms | 8.72 ms                     | 17.01 ms | 2.55  | 0.10    | 76.66 KB            |
 
 Setup packs/installs the empty tool, installs the real package, saves the tree
 and smoke-runs each path before timing. Every measured call starts a new process;
@@ -337,9 +340,9 @@ check includes its ordinary text report. The allocation column covers the
 benchmark's launcher/tasks/output buffers, not either child's managed heap or
 resident memory. No tool-memory observer is installed.
 
-The library retained 13, 27 and 34 measurements respectively and removed 2, 1
-and 11 outliers. The check's removed outliers ranged from about 599 ms to 1.70 s,
-so this is one environment's finding, not a latency guarantee. Ratios are the
+The library retained 18, 21 and 47 measurements respectively and removed
+0, 4 and 12 outliers. The check's removed outliers ranged from about 587 ms to
+1.15 s, so this is one environment's finding, not a latency guarantee. Ratios are the
 library's ratio-distribution means, not a separately computed ratio of means.
 The host and check rows exceed the empty tool in this run; subtraction does not
 isolate composition or engine time. No previous cold-start finding is available
