@@ -776,7 +776,7 @@ public sealed class SpecManifestUnitTests
         // Given
         var defaults = JsonNode.Parse(new SpechtResources().DefaultManifest)!.AsObject();
         defaults["rules"] = new JsonObject { ["SPEC060"] = "warning" };
-        var parser = new SpecManifestParser(defaults.ToJsonString(), EngineServices.Versions());
+        var parser = new SpecManifestParser(new SchemaVersions([new SchemaVersionFixture().WithManifest(defaults.ToJsonString())]));
 
         // When
         var structure = parser.Parse(manifest);

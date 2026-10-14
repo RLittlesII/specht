@@ -19,7 +19,7 @@ public sealed class SpechtTreeIntegrationTests : IDisposable
     {
         // Given
         var resources = new Specht.Resources.SpechtResources();
-        var parser = new SpecManifestParser(resources.DefaultManifest, new Specht.Versioning.SchemaVersions(resources.Texts));
+        var parser = new SpecManifestParser(new Specht.Versioning.SchemaVersions(resources.Texts));
         var structure = parser.Parse(resources.DefaultManifest);
         var root = Directory.CreateDirectory(Path.Combine(_temporary, "tree")).FullName;
         new SpechtTreeStore(new FileSystem()).Save(

@@ -21,6 +21,13 @@
                       LogicalName="specht.default-manifest.json" />
   </ItemGroup>
 
+  <!-- B-048: omission defaults and init share each version's existing manifest source. -->
+  <ItemGroup>
+    <EmbeddedResource Include="..\tool\manifest\v*\manifest.json"
+                      Link="manifest\%(RecursiveDir)%(Filename)%(Extension)"
+                      LogicalName="manifest/$([MSBuild]::ValueOrDefault('%(RecursiveDir)', '').Replace('\', '/'))%(Filename)%(Extension)" />
+  </ItemGroup>
+
   <!-- Every shipped version's frontmatter schemas (0001-F7 B-004), linked from the tool's shipping copy, not copied,
        under the same schema/v<major.minor.patch>/frontmatter/<file> names. -->
   <ItemGroup>

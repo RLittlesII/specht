@@ -24,11 +24,18 @@ internal sealed class SchemaVersionFixture : AutoFixtureBase<SchemaVersionFixtur
     /// <returns>The fixture.</returns>
     public SchemaVersionFixture WithRuleIds(IReadOnlySet<string> ruleIds) => With(ref _ruleIds, ruleIds);
 
+    /// <summary>Sets the version's omission defaults.</summary>
+    /// <param name="manifest">The manifest text.</param>
+    /// <returns>The fixture.</returns>
+    public SchemaVersionFixture WithManifest(string manifest) => With(ref _manifest, manifest);
+
     public static implicit operator SchemaVersion(SchemaVersionFixture fixture) => fixture.Build();
 
-    private SchemaVersion Build() => new(_number, "{}", "{}", "{}", _ruleIds);
+    private SchemaVersion Build() => new(_number, "{}", "{}", "{}", _ruleIds, _manifest);
 
     private SemanticVersion _number = new(0, 1, 0);
 
     private IReadOnlySet<string> _ruleIds = new HashSet<string>(StringComparer.Ordinal);
+
+    private string _manifest = EngineServices.Versions().Find(new SemanticVersion(0, 1, 0))!.Manifest;
 }

@@ -12,9 +12,9 @@ owner's decision 0010, ratified 2026-10-13
 
 ## Status
 
-Designed, not built. This record chooses the mechanism for B-048 and adds
-no new consumer behavior or interpretation beyond decision 0010.
-Implementation follows ADR-0010 stage D1, item `0165`.
+Implemented by item `0191` after ADR-0010 stage D1 (`0165`). This record
+chooses the mechanism for B-048 and adds no consumer behavior or
+interpretation beyond decision 0010.
 
 ## The call
 
@@ -36,6 +36,22 @@ Implementation follows ADR-0010 stage D1, item `0165`.
 6. Repoint all parser construction paths, including the host's injected
    parser and optional fallback, to the same versioned catalog. This
    changes no `init` write policy, `ShippingCopy` behavior or schema source.
+
+### Compatibility boundary confirmed before implementation
+
+The delivered `0165` tests distinguish text parsing from check-only pin
+resolution. `ManifestCompatibilityUnitTests` requires an empty marker to
+precede an unavailable pin; `InitManifestCompatibilityUnitTests` requires
+init's existing text-only validation to accept that pin. `0191` preserves
+both, as its scope requires. A malformed pin also retains its existing
+position after collection shape reads.
+
+The parser therefore chooses the matching version locally when available.
+For a malformed or unavailable pin, the original `0.1.0` manifest supplies
+only the existing structural-validation context; the check's pin resolver
+still rejects the unavailable version before schemas or rules run. This
+does not select an available version for the check, adopt a default pin,
+or fall back to the newest version. Init's later pin policy remains `0054`.
 
 ## Why
 
@@ -75,13 +91,13 @@ defaults must make the wrong-version choice fail in memory and acceptance.
 
 ## Affects
 
-Manifest § 6, § 7 and § 8; B-048's scenarios and Missing traceability row;
+Manifest § 6, § 7 and § 8; B-048's scenarios and Covered traceability row;
 item `0191`'s dependency on `0165`. The earlier `0016` design remains
 blocked on `0191` as well as its other prerequisites.
 
-The later implementation changes the engine's resource links, the version
-contract, parser default selection and callers. No such code, resource
-bytes, schema version or test binding is changed by this design pass.
+The implementation changes the engine's resource links, version contract,
+parser selection, callers and test bindings. Shipped resource bytes,
+schema versions and lock digests remain unchanged.
 
 ## Reversal
 

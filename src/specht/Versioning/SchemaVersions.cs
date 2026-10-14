@@ -37,7 +37,8 @@ public sealed class SchemaVersions
                 resources[$"{Prefix}{folder}/frontmatter/feature.schema.json"],
                 resources[$"{Prefix}{folder}/frontmatter/task.schema.json"],
                 resources[$"{Prefix}{folder}/frontmatter/epic.schema.json"],
-                Shipped(number))
+                Shipped(number),
+                resources[$"manifest/v{folder}/manifest.json"])
             {
                 RulePages = resources.Keys
                     .Where(name => name.StartsWith($"{PagePrefix}{folder}/", StringComparison.Ordinal))

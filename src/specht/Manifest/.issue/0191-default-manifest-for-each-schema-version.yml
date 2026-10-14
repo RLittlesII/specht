@@ -2,7 +2,7 @@ id: "0191"
 type: task
 title: Fill an omitted manifest value from the pinned version's default manifest
 
-status: ready-for-implementation
+status: done
 
 risk: 3
 
@@ -19,7 +19,7 @@ claims:
 
 created: "2026-10-11"
 updated: "2026-10-13"
-closed: null
+closed: "2026-10-13"
 
 summary: |
   The tool ships more than one schema version but the engine still fills
@@ -59,6 +59,17 @@ decisions:
     resource snapshot, catalog lookup and parser injection now exist; this
     item is ready for implementation once that pull request merges. B-048
     and its tests remain unimplemented and its closed date remains null.
+  - |
+    2026-10-13, implementer: B-048 is implemented after 0165. Versioned
+    manifest sources are linked into the engine and carried by the shared
+    instance catalog; each parse selects local defaults. Explicit values,
+    merge boundaries, rule levels, init's parse-only policy and the existing
+    failure order are preserved. Decision 0012 records the validation context
+    for malformed/unavailable pins. Twelve new unit cases, six bound
+    acceptance scenarios and four command cases pass. Full build passes:
+    626 unit, 242 integration and 206 acceptance tests; 205 unrelated
+    acceptance cases remain pending. B-048 is Covered; shipped resource bytes
+    and lock digests are unchanged.
 
 out_of_scope:
   - "Naming a version's folder — 0126 (0001-F7 B-086)."

@@ -565,3 +565,11 @@ Feature: The manifest carries the roles
     When the manifest is loaded
     Then the claims role is "3. Claims"
     And the other roles use the older version's titles
+
+  @B-048 @boundary
+  Scenario: A consumer inherits no pinned default rule levels
+    Given the tool ships two schema versions with different missing-test markers
+    And the older version's default sets the missing-test rule to warning
+    And the manifest pins the older version and declares an empty rule map
+    When the manifest is loaded
+    Then its rule map is empty

@@ -209,7 +209,7 @@ public sealed class SchemaVersionsUnitTests
         var versions = new SchemaVersions([new SchemaVersionFixture(), new SchemaVersionFixture().WithNumber(new SemanticVersion(0, 2, 0))]);
 
         // When
-        var parser = new SpecManifestParser(new Specht.Resources.SpechtResources().DefaultManifest, versions);
+        var parser = new SpecManifestParser(versions);
         var structure = parser.Parse("""{"schemaVersion":"7.0.0"}""");
         var select = () => parser.PinnedVersion(structure);
 
