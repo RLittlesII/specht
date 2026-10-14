@@ -145,7 +145,7 @@ public sealed class SpechtRunnerEvaluateUnitTests
                 .Select(static layout => (FeatureSpec)new FeatureSpecFixture().WithLocation(new SpecLocationFixture().WithLayout(layout))),
         ];
         SpecModel model = new SpecModelFixture()
-            .WithSchemas(SpecSchemas.Load(fileSystem, "repo", new SchemaVersions([version])))
+            .WithSchemas(EngineServices.LoadSchemas(fileSystem, "repo", new SchemaVersions([version])))
             .WithFeatures(features);
 
         // When
@@ -166,7 +166,7 @@ public sealed class SpechtRunnerEvaluateUnitTests
             {
                 [Path.Combine("repo", SpecTree.ManifestPath)] = new("""{ "schemaVersion": "0.2.0" }"""),
             });
-        SpecModel model = new SpecModelFixture().WithSchemas(SpecSchemas.Load(fileSystem, "repo", new SchemaVersions([one, two])));
+        SpecModel model = new SpecModelFixture().WithSchemas(EngineServices.LoadSchemas(fileSystem, "repo", new SchemaVersions([one, two])));
 
         // When
         var report = SpechtRunner.Evaluate(model, []);
@@ -198,7 +198,7 @@ public sealed class SpechtRunnerEvaluateUnitTests
                 [Path.Combine("repo", SpecTree.ItemSchemaPath)] = new(copy),
             });
         SpecModel model = new SpecModelFixture().WithSchemas(
-            new SpecSchemasLoader(fileSystem, new FrontmatterSchemaStore(fileSystem), new UpstreamSchemaCopy()).Load("repo"));
+            EngineServices.Schemas(fileSystem).Load("repo"));
 
         // When
         var report = SpechtRunner.Evaluate(model, []);
@@ -391,7 +391,7 @@ public sealed class SpechtRunnerEvaluateUnitTests
         var fileSystem = new MockFileSystem(
             new Dictionary<string, MockFileData> { [Path.Combine("repo", SpecTree.ManifestPath)] = new(manifest) });
 
-        return new SpecModelFixture().WithSchemas(SpecSchemas.Load(fileSystem, "repo", new SchemaVersions([version])));
+        return new SpecModelFixture().WithSchemas(EngineServices.LoadSchemas(fileSystem, "repo", new SchemaVersions([version])));
     }
 
     private static SpecModelFixture ModelWithVocabulary(params string[] ruleIds)
@@ -400,7 +400,7 @@ public sealed class SpechtRunnerEvaluateUnitTests
         var fileSystem = new MockFileSystem(
             new Dictionary<string, MockFileData> { [Path.Combine("repo", SpecTree.ManifestPath)] = new("{}") });
 
-        return new SpecModelFixture().WithSchemas(SpecSchemas.Load(fileSystem, "repo", new SchemaVersions([version])));
+        return new SpecModelFixture().WithSchemas(EngineServices.LoadSchemas(fileSystem, "repo", new SchemaVersions([version])));
     }
 
     private sealed class AskedRule(string id, IReadOnlyList<string> reportedIds, Action asked) : ISpecRule

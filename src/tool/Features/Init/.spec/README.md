@@ -146,7 +146,7 @@ A repository adopting the model copies the consumer's `.spec/schema/` and `.spec
 
 ## 6. Concern Separation
 
-<!-- last written by: implementer, 2026-10-12 (item 0178: source adoption and shared in-memory validation) -->
+<!-- last written by: implementer, 2026-10-13 -->
 
 | Concern                                                                                                                                                                                                                    | Classification | Where                                                                      |
 | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------- | -------------------------------------------------------------------------- |
@@ -160,12 +160,14 @@ A repository adopting the model copies the consumer's `.spec/schema/` and `.spec
 | Preparing all absent upstream schemas before any selected file is written (B-015, B-016)                                                                                                                                   | Business       | `Features/Init/InitWriter.cs`                                              |
 | Recording and validating a new source before fetching or writing (B-035 to B-040)                                                                                                                                          | Both           | `Features/Init/InitWriter.cs`, `src/specht/Manifest/SpecManifestParser.cs` |
 | Reading the embedded default manifest for the pure parser                                                                                                                                                                  | Technical      | `src/specht/Resources/SpechtResources.cs`                                  |
-| Which commands exist and what they are handed                                                                                                                                                                              | Technical      | `Program.cs`, a hand-written list                                          |
+| Reading manifest text and local schema bytes without parsing                                                                                                                                                               | Technical      | `src/specht/Manifest/SpecManifestStore.cs`                                 |
+| Parsing and validating manifest text without I/O                                                                                                                                                                           | Both           | `src/specht/Manifest/SpecManifestParser.cs`                                |
+| Which commands exist and what they are handed                                                                                                                                                                              | Technical      | `Program.cs`, `Features/Init/InitRegistration.cs`                          |
 | The exit codes                                                                                                                                                                                                             | Business       | `ExitCodes.cs`, shared with the check (`0001-F2` C-2)                      |
 
 ## 7. Technical Design
 
-<!-- last written by: implementer, 2026-10-12 (item 0178: source adoption and shared in-memory validation) -->
+<!-- last written by: implementer, 2026-10-13 -->
 
 **The shipping copy (B-004, B-005, C-2).** `src/tool/manifest/v<major.minor.patch>/` holds the manifest, `manifest.json`; `src/tool/schema/v<major.minor.patch>/frontmatter/` the three frontmatter schemas (`feature.schema.json`, `task.schema.json`, `epic.schema.json`), each with an `$id` ending in `schema/v<major.minor.patch>/frontmatter/<file>` (B-005); and `src/tool/templates/v<major.minor.patch>/` the four templates (`feature.md`, `decision.md`, `adr.md`, `lesson.md`); `item.yml` is not shipped. `tool.csproj` embeds them under the logical names `manifest/v<major.minor.patch>/manifest.json`, `schema/v<major.minor.patch>/frontmatter/<file>` and `templates/v<major.minor.patch>/<file>`, `/`-separated on every OS (item `0185`, `0001-F5` decision 0011). The newest version is the highest by major, minor and patch, parsed with the engine's `SemanticVersion`. `v0.1.0` is a byte copy of the live `.specht/`.
 
@@ -181,7 +183,7 @@ No path the writer builds is under `<root>/.spec/`, so the retired location (A-5
 
 It returns `(Path, Written)` pairs whose paths are already root-relative with `/`, so nothing absolute reaches stdout (C-4). The map, not the `Assembly`, is the constructor argument, so a unit test hands it two versions before a second one ships.
 
-**The upstream preparation (B-014 to B-016, B-027, B-034).** For an existing manifest, the writer reads `SpecManifest.Load(...).SpechtSchema` only when schemas are selected. A new source is validated and recorded in memory regardless of selection; only selected schemas reach the fetch preparation. No source retains the embedded selection. With a source, its `Files` replace the selected embedded schema entries: the authoritative `UpstreamSchemaFile` records supply the file names, addresses and hashes, including the epic kind only when declared. Each output path is confined to `SpecManifest.FrontmatterSchemaFolder` before fetching or writing. Schemas present at preparation are skipped without a fetch and remain skipped if removed before the write loop; the writer never substitutes empty bytes for an unfetched file. Every absent schema is fetched and verified into memory before the write loop begins, so a refused fetch writes neither schemas nor selected templates. A source's version label changes no address. An upstream source without a configured fetcher fails explicitly; it never falls back to the embedded bytes.
+**The upstream preparation (B-014 to B-016, B-027, B-034).** For an existing manifest, the writer reads the raw text through `SpecManifestStore` and parses its source through `SpecManifestParser` only when schemas are selected. JSON and shape failures retain their manifest-failure wrapper; this path does not validate the pin or rule vocabulary. A new source is validated and recorded in memory regardless of selection; only selected schemas reach the fetch preparation. No source retains the embedded selection. With a source, its `Files` replace the selected embedded schema entries: the authoritative `UpstreamSchemaFile` records supply the file names, addresses and hashes, including the epic kind only when declared. Each output path is confined to `SpecManifest.FrontmatterSchemaFolder` before fetching or writing. Schemas present at preparation are skipped without a fetch and remain skipped if removed before the write loop; the writer never substitutes empty bytes for an unfetched file. Every absent schema is fetched and verified into memory before the write loop begins, so a refused fetch writes neither schemas nor selected templates. A source's version label changes no address. An upstream source without a configured fetcher fails explicitly; it never falls back to the embedded bytes.
 
 [`UpstreamSchemaFetcher`](../../../../specht/Manifest/UpstreamSchemaFetcher.cs) takes an injected `HttpClient`, reads the response as bytes and compares `sha256:` plus its lowercase SHA-256 with the recorded hash. It returns those exact bytes or throws [`SpechtUpstreamSchemaException`](../../../../specht/Manifest/SpechtUpstreamSchemaException.cs) naming the source and the failure. URI user information is stripped before requests and diagnostics; transport exception details are not emitted. It owns no file system and is never called by the check. [ADR-0013](../../../../../.spec/adr/0013-upstream-schema-fetches-use-an-injected-http-client.md) records the adapter and offline `HttpMessageHandler` substitution.
 
@@ -189,7 +191,7 @@ It returns `(Path, Written)` pairs whose paths are already root-relative with `/
 
 **Not built, as of 2026-10-12.** The command has no `--epics`. The embedded-source writer uses the manifest's presence, not its epic grammar, for the existing-manifest branch; the no-epic existing-manifest cases B-023 and C-6 wait with `--epics` on `0001-F5` OQ-18. Leaving an existing file alone beyond this item's selected cases is B-002 and item `0054`, with the pin (B-012, B-013). A rejected manifest (B-017) is `0096`. The `schemaVersion` the written manifest carries (`0001-F7` B-012) is `0049`.
 
-**The composition root.** `Program.cs` registers a singleton `HttpClient` with credentials, default credentials, cookies and redirects disabled, then `UpstreamSchemaFetcher` and `InitWriter` as singletons. The writer takes `InitWriter.ShippingCopy(typeof(InitWriter).Assembly)`, `new FileSystem()`, that fetcher and the registered `SpecManifestParser`. The root adds `init` with `AddCommand` beside the default `CheckCommand`, so `specht --root <dir>` still reaches the check. `TestableIO.System.IO.Abstractions.Wrappers` reaches the tool through its reference to the engine; no package is added.
+**The composition root.** `Program.cs` calls the init slice's `AddInit` methods on `IServiceCollection` and `IConfigurator`. The service registration supplies a singleton `HttpClient` with credentials, default credentials, cookies and redirects disabled unless the caller supplies a client; command integration tests supply a synthetic transport. It registers `UpstreamSchemaFetcher` and `InitWriter` as singletons over the engine's registered `IFileSystem`, `SpecManifestParser` and `SpecManifestStore`, and the embedded shipping copy. The configuration registration adds `init` with the same help description beside the default `CheckCommand`, so `specht --root <dir>` still reaches the check. This shares the init slice with command tests; item `0144` still owns the complete host factory. No package is added.
 
 The engine's default manifest (`src/specht/specht.csproj`, `specht.default-manifest.json`) stays a link to the live `.specht/manifest.json`, not a third copy (C-2). Drift between the shipping copy and the live copy is caught by the B-004 tests, not by a build step that generates one from the other (C-2).
 
@@ -205,16 +207,16 @@ The verified bytes replace the embedded schemas only when schemas are selected;
 the existing preparation and no-overwrite loop is reused. Without schemas,
 the source record is written and no fetch occurs.
 
-[`SpecManifestParser`](../../../../specht/Manifest/SpecManifestParser.cs) extracts
-the existing parser and validator into an instance with two callers: the legacy
-`SpecManifest.Load` file entry point and `InitWriter`. Its constructor takes the
-default manifest text; it performs no I/O. The instance
-[`SpechtResources`](../../../../specht/Resources/SpechtResources.cs) reads that
-embedded text at the resource boundary. `AddSpechtEngine` registers both and the
-host supplies the parser to the writer; direct writer callers may omit it and
-receive the same parser and embedded defaults. The legacy loader retains its
-public API and JSON failure wrapping. This follows ADR-0010 without migrating
-the remaining stores, resource readers or schema versioning in this item.
+[`SpecManifestParser`](../../../../specht/Manifest/SpecManifestParser.cs) turns
+text into a manifest without I/O. Its constructor takes the default manifest
+text and the shipped version catalog. `InitWriter` uses its text-only `Parse`
+operation, preserving init's existing handling of an unshipped pin or unknown
+rule id. Check's loader separately calls `PinnedVersion` before loading schemas.
+[`SpechtResources`](../../../../specht/Resources/SpechtResources.cs) reads the
+embedded text at the resource boundary. `AddSpechtEngine` registers the
+resources, catalog, parser and store; the init registration supplies the latter
+two to the writer. Both are required dependencies; no static default parser or
+legacy `SpecManifest.Load` remains (item `0165`).
 
 Source validation stays in the writer so direct callers receive the same
 validation and the command folds the typed failure to the owner's required
@@ -225,7 +227,9 @@ ADR-0013's transport policy still applies. `--epics` remains unbuilt.
 
 ## 8. Testing Strategy
 
-<!-- last written by: test-writer, 2026-10-12 (item 0178: new upstream source recording and validation) -->
+<!-- last written by: test-writer, 2026-10-13 -->
+
+- **Item `0165`, PR 170 review.** `InitWriterFixture` builds unit-test writers over one in-memory file system shared with the manifest store; each test overrides its relevant tree, shipping bytes or fetcher. It uses `AutoFixtureBase` with concrete defaults, avoiding generated interface substitutes in this repository without a mocking library. Init command tests call the same service and command `AddInit` registrations as `Program.cs`, with a synthetic HTTP client where upstream behavior is exercised. Their output, exit-code and no-write assertions are retained. The network-reference guard exempts client configuration only at the new `InitRegistration.AddInit` site instead of `Program`, retaining its allowed-member list and forbidden-fetch assertions. Item `0207` records the deferred `EngineServices` refactor.
 
 - **Item `0126`.** The resource readers parse the version folder with `SemanticVersion.TryParse`, without a folder-to-version mapping. B-005's unit and acceptance assertions now require `/v0.1.0/frontmatter/<file>`, and `InitWriterUnitTests` supplies semantic version resource names to pin the highest-version choice and the unchanged bytes written.
 - **The seams.** The `ShippingCopy` tests and B-004's steps read the shipping copy straight from the `specht.tool` assembly, `typeof(ExitCodes).Assembly`, through `GetManifestResourceNames` and `GetManifestResourceStream`; the newest version is the highest `major.minor.patch` by semantic precedence among the `schema/v<major.minor.patch>/` names. `InitWriter` (§ 7) takes the shipping copy as a name-to-bytes map and an `IFileSystem`, so its unit tests hand it any set of versions over a `MockFileSystem` with the repository-relative root `repo`; `InitCommand` takes the writer injected, so a command test runs it through `CommandAppTester`. The live copy is this repository's manifest, `.specht/manifest.json`, its three frontmatter schemas under `.specht/schema/frontmatter/` and its four shipped templates under `.specht/templates/` (`0001-F5` decision 0011). Each test project copies every `*.json` under `.specht/` and the four templates into its output at the path the file has under `.specht/`; `item.yml` stays under `.spec/templates/` and is not copied.

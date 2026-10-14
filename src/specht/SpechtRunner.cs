@@ -2,7 +2,6 @@ using System.IO.Abstractions;
 using Specht.Model;
 using Specht.Report;
 using Specht.Rules;
-using Specht.Versioning;
 
 namespace Specht;
 
@@ -66,15 +65,8 @@ public sealed class SpechtRunner(SpecModelLoader loader, IEnumerable<ISpecRule> 
             .ThenBy(static violation => violation.RuleId, StringComparer.Ordinal)
             .ToList();
 
-    /// <summary>Loads the tree under <paramref name="root"/> and evaluates its rules with the embedded version set.</summary>
-    public SpechtReport Run(string root) => Run(root, SchemaVersions.Embedded);
-
-    /// <summary>
-    /// Loads the tree under <paramref name="root"/> and evaluates the rules of the version its manifest pins from
-    /// <paramref name="versions"/>: a rule outside that version's vocabulary is not evaluated, and a violation it would
-    /// report is dropped (<c>0001-F7</c> B-014).
-    /// </summary>
-    public SpechtReport Run(string root, SchemaVersions versions) => Evaluate(loader.Load(root, versions), rules);
+    /// <summary>Loads and evaluates the tree using the catalog supplied at composition.</summary>
+    public SpechtReport Run(string root) => Evaluate(loader.Load(root), rules);
 
     /// <summary>Writes <paramref name="report"/> to <paramref name="path"/> as the report document (<c>0001-F3</c> B-008).</summary>
     /// <param name="report">The run's report.</param>

@@ -233,7 +233,7 @@ public sealed class CheckCommandIntegrationTests
                 {
                     var path = Path.Combine(tree.Root, SpecTree.ManifestPath);
                     var manifest = JsonNode.Parse(File.ReadAllText(path))!.AsObject();
-                    var newest = SchemaVersions.Embedded.Versions.Max(static version => version.Number);
+                    var newest = EngineServices.Versions().Versions.Max(static version => version.Number);
                     manifest["schemaVersion"] = new SemanticVersion(newest.Major + 1, 0, 0).ToString();
                     File.WriteAllText(path, manifest.ToJsonString());
                     return tree.Root;

@@ -1,4 +1,3 @@
-using System.IO.Abstractions.TestingHelpers;
 using System.Text.Json.Nodes;
 using AwesomeAssertions;
 using Specht.Discovery;
@@ -38,10 +37,10 @@ public sealed class SpecManifestDiscoveryUnitTests
     public void AManifestLeavingOutAFileShape_WhenLoaded_ShouldReadTheDefaultManifestsShape(string key, string[] shapes)
     {
         // Given
-        var fileSystem = Holding("{}");
+        var manifest = "{}";
 
         // When
-        var discovery = SpecManifest.Load(fileSystem, Root).Discovery;
+        var discovery = EngineServices.Parser().Parse(manifest).Discovery;
 
         // Then
         Shape(discovery, key).Should().BeEquivalentTo(shapes);
@@ -52,10 +51,10 @@ public sealed class SpecManifestDiscoveryUnitTests
     public void AManifestDeclaringAFileShape_WhenLoaded_ShouldReadItAsWritten(string key, string[] shapes)
     {
         // Given
-        var fileSystem = Holding(new JsonObject { [key] = new JsonArray([.. shapes]) }.ToJsonString());
+        var manifest = new JsonObject { [key] = new JsonArray([.. shapes]) }.ToJsonString();
 
         // When
-        var discovery = SpecManifest.Load(fileSystem, Root).Discovery;
+        var discovery = EngineServices.Parser().Parse(manifest).Discovery;
 
         // Then
         Shape(discovery, key).Should().BeEquivalentTo(shapes);
@@ -65,10 +64,10 @@ public sealed class SpecManifestDiscoveryUnitTests
     public void AManifestLeavingOutItsLayouts_WhenLoaded_ShouldReadTheDefaultManifestsTwoInItsOrder()
     {
         // Given
-        var fileSystem = Holding("{}");
+        var manifest = "{}";
 
         // When
-        var discovery = SpecManifest.Load(fileSystem, Root).Discovery;
+        var discovery = EngineServices.Parser().Parse(manifest).Discovery;
 
         // Then
         discovery.Layouts.Should().Equal(
@@ -80,7 +79,7 @@ public sealed class SpecManifestDiscoveryUnitTests
     public void AManifestDeclaringItsLayouts_WhenLoaded_ShouldReadEachNameAndGlobAsWrittenInTheOrderDeclared()
     {
         // Given
-        var fileSystem = Holding(
+        var manifest =
             """
             {
               "layouts": [
@@ -88,10 +87,10 @@ public sealed class SpecManifestDiscoveryUnitTests
                 { "name": "beside-code", "glob": "**/.spec/README.md" }
               ]
             }
-            """);
+            """;
 
         // When
-        var discovery = SpecManifest.Load(fileSystem, Root).Discovery;
+        var discovery = EngineServices.Parser().Parse(manifest).Discovery;
 
         // Then
         discovery.Layouts.Should().Equal(
@@ -103,7 +102,7 @@ public sealed class SpecManifestDiscoveryUnitTests
     public void AManifestDeclaringItsLayouts_WhenLoaded_ShouldReadEachPathIdentityAsItsEntryWritesItAndNoneWhereItWritesNone()
     {
         // Given
-        var fileSystem = Holding(
+        var manifest =
             """
             {
               "layouts": [
@@ -111,10 +110,10 @@ public sealed class SpecManifestDiscoveryUnitTests
                 { "name": "epics", "glob": "epics/**/spec.md" }
               ]
             }
-            """);
+            """;
 
         // When
-        var discovery = SpecManifest.Load(fileSystem, Root).Discovery;
+        var discovery = EngineServices.Parser().Parse(manifest).Discovery;
 
         // Then
         discovery.Layouts.Should().Equal(
@@ -126,10 +125,10 @@ public sealed class SpecManifestDiscoveryUnitTests
     public void AManifestLeavingOutItsExclusions_WhenLoaded_ShouldReadTheDefaultManifestsNine()
     {
         // Given
-        var fileSystem = Holding("{}");
+        var manifest = "{}";
 
         // When
-        var discovery = SpecManifest.Load(fileSystem, Root).Discovery;
+        var discovery = EngineServices.Parser().Parse(manifest).Discovery;
 
         // Then
         discovery.Exclusions.Should().BeEquivalentTo(
@@ -140,10 +139,10 @@ public sealed class SpecManifestDiscoveryUnitTests
     public void AManifestDeclaringItsExclusions_WhenLoaded_ShouldReadTheListItDeclares()
     {
         // Given
-        var fileSystem = Holding("""{ "exclusions": ["vendor", "/generated"] }""");
+        var manifest = """{ "exclusions": ["vendor", "/generated"] }""";
 
         // When
-        var discovery = SpecManifest.Load(fileSystem, Root).Discovery;
+        var discovery = EngineServices.Parser().Parse(manifest).Discovery;
 
         // Then
         discovery.Exclusions.Should().BeEquivalentTo("vendor", "/generated");
@@ -158,11 +157,4 @@ public sealed class SpecManifestDiscoveryUnitTests
             _ => throw new ArgumentOutOfRangeException(nameof(key), key, "Not a file-shape key."),
         };
 
-    private static MockFileSystem Holding(string manifest) =>
-        new(new Dictionary<string, MockFileData>
-        {
-            [Path.Combine(Root, SpecTree.ManifestPath)] = new(manifest),
-        });
-
-    private const string Root = "repo";
 }

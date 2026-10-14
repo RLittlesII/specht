@@ -147,7 +147,7 @@ The project, tree, target and CI integration reach these rows.
 
 ### Resource inputs after ADR-0010 D1
 
-**Designed 2026-10-13; implementation pending.** The earlier generator account
+**Implemented 2026-10-13.** The earlier generator account
 below describes the implementation at its cited commits. D1 replaces its direct
 assembly read, static version access and repeated pin parsing as follows.
 
@@ -279,10 +279,11 @@ Item `0147` (B-015, B-016; C-7 to C-9; [decision 0004](decisions/0004-a-generate
 
 ### D1 generator verification
 
-**Pending implementation.** Repoint all tree and store tests to explicit manifest,
+**Implemented.** All tree and store tests now supply explicit manifest,
 parsed structure and version inputs. Keep file-count, relative-path, byte-content,
-determinism and clean-check assertions. Supply contrasting synthetic version
-texts to make selecting another catalog's schemas fail. Compile the benchmark
+determinism and clean-check assertions. `SpechtTreeUnitTests.ExplicitManifestBytesAndASelectedVersion_WhenATreeIsBuilt_ShouldPreserveThoseBytesAndSchemaTexts`
+uses different manifest bytes, a custom schema name and a contrasting selected
+schema text, so ignoring any supplied input fails. Compile the benchmark
 project with the full build; no timing or allocation claim is made by this
 structural change, and no new benchmark finding is required.
 

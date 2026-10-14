@@ -2,7 +2,7 @@ id: "0191"
 type: task
 title: Fill an omitted manifest value from the pinned version's default manifest
 
-status: blocked
+status: ready-for-implementation
 
 risk: 3
 
@@ -54,6 +54,11 @@ decisions:
     instruction to raise the question and not decide it. It waits on
     0011 for the fill and on 0126 for the version folders; both edges
     are spec-author's reading.
+  - |
+    2026-10-13: prerequisite 0165 is delivered by the same branch. The instance
+    resource snapshot, catalog lookup and parser injection now exist; this
+    item is ready for implementation once that pull request merges. B-048
+    and its tests remain unimplemented and its closed date remains null.
 
 out_of_scope:
   - "Naming a version's folder — 0126 (0001-F7 B-086)."

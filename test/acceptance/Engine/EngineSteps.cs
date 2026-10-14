@@ -35,7 +35,7 @@ public sealed class EngineSteps
     {
         _tree = new SpecTree();
         SemanticVersion.TryParse(version, out var number).Should().BeTrue();
-        var schemas = SchemaVersions.Embedded.Select(number);
+        var schemas = EngineServices.Versions().Find(number)!;
         var manifestPath = Path.Combine(_tree.Root, SpecTree.ManifestPath);
         var manifest = JsonNode.Parse(File.ReadAllText(manifestPath))!.AsObject();
         manifest["schemaVersion"] = version;

@@ -1,6 +1,7 @@
 using System.IO.Abstractions.TestingHelpers;
 using AwesomeAssertions;
 using Specht.Benchmarks;
+using Specht.Manifest;
 
 namespace Specht.Tests.Benchmarks;
 
@@ -16,7 +17,10 @@ public sealed class SpechtTreeStoreUnitTests
     public void ATree_WhenSavedUnderARoot_ShouldWriteExactlyItsFilesUnderThatRootWithItsContents()
     {
         // Given
-        var tree = SpechtTree.Of(10);
+        var resources = new Specht.Resources.SpechtResources();
+        var parser = new SpecManifestParser(resources.DefaultManifest, new Specht.Versioning.SchemaVersions(resources.Texts));
+        var structure = parser.Parse(resources.DefaultManifest);
+        var tree = SpechtTree.Of(10, resources.DefaultManifestBytes, structure, parser.PinnedVersion(structure));
         var fileSystem = new MockFileSystem();
         fileSystem.AddDirectory(Root);
         var store = new SpechtTreeStore(fileSystem);

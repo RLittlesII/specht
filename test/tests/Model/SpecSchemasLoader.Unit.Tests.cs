@@ -64,7 +64,7 @@ public sealed class SpecSchemasLoaderUnitTests
                 [Path.Combine(Root, SpecTree.ItemSchemaPath)] = new("{}"),
                 [Path.Combine(Root, SpecTree.EpicSchemaPath)] = new("{}"),
             });
-        var loader = new SpecSchemasLoader(fileSystem, new FrontmatterSchemaStore(fileSystem), new UpstreamSchemaCopy());
+        var loader = EngineServices.Schemas(fileSystem);
 
         // When
         var schemas = loader.Load(Root);
@@ -86,10 +86,10 @@ public sealed class SpecSchemasLoaderUnitTests
             {
                 [Path.Combine(Root, SpecTree.ManifestPath)] = new("""{ "schemaVersion": "0.2.0" }"""),
             });
-        var loader = new SpecSchemasLoader(fileSystem, new FrontmatterSchemaStore(fileSystem), new UpstreamSchemaCopy());
+        var loader = EngineServices.Schemas(fileSystem, new SchemaVersions([one, two]));
 
         // When
-        var schemas = loader.Load(Root, new SchemaVersions([one, two]));
+        var schemas = loader.Load(Root);
 
         // Then
         schemas.Version.Should().Be(two);
@@ -111,10 +111,10 @@ public sealed class SpecSchemasLoaderUnitTests
                 [Path.Combine(Root, SpecTree.ItemSchemaPath)] = new(Local),
                 [Path.Combine(Root, SpecTree.EpicSchemaPath)] = new(Local),
             });
-        var loader = new SpecSchemasLoader(fileSystem, new FrontmatterSchemaStore(fileSystem), new UpstreamSchemaCopy());
+        var loader = EngineServices.Schemas(fileSystem, new SchemaVersions([pinned]));
 
         // When
-        var schemas = loader.Load(Root, new SchemaVersions([pinned]));
+        var schemas = loader.Load(Root);
 
         // Then
         schemaOf(schemas).Evaluate(JsonSerializer.SerializeToElement("read from the pinned version")).IsValid.Should().BeFalse(kind);
@@ -132,10 +132,10 @@ public sealed class SpecSchemasLoaderUnitTests
                 [Path.Combine(Root, SpecTree.FeatureSchemaPath)] = new(Local),
                 [Path.Combine(Root, SpecTree.ItemSchemaPath)] = new(Local),
             });
-        var loader = new SpecSchemasLoader(fileSystem, new FrontmatterSchemaStore(fileSystem), new UpstreamSchemaCopy());
+        var loader = EngineServices.Schemas(fileSystem, new SchemaVersions([pinned]));
 
         // When
-        var schemas = loader.Load(Root, new SchemaVersions([pinned]));
+        var schemas = loader.Load(Root);
 
         // Then
         schemas.Source.Should().Be(SpecSchemaSource.Upstream);
@@ -157,10 +157,10 @@ public sealed class SpecSchemasLoaderUnitTests
                 [Path.Combine(Root, SpecTree.FeatureSchemaPath)] = new(Local),
                 [Path.Combine(Root, SpecTree.ItemSchemaPath)] = new(Local),
             });
-        var loader = new SpecSchemasLoader(fileSystem, new FrontmatterSchemaStore(fileSystem), new UpstreamSchemaCopy());
+        var loader = EngineServices.Schemas(fileSystem, new SchemaVersions([one, two]));
 
         // When
-        var schemas = loader.Load(Root, new SchemaVersions([one, two]));
+        var schemas = loader.Load(Root);
 
         // Then
         schemas.Version.Number.Should().Be(new SemanticVersion(0, 2, 0));
@@ -187,10 +187,10 @@ public sealed class SpecSchemasLoaderUnitTests
         }
 
         var fileSystem = new MockFileSystem(files);
-        var loader = new SpecSchemasLoader(fileSystem, new FrontmatterSchemaStore(fileSystem), new UpstreamSchemaCopy());
+        var loader = EngineServices.Schemas(fileSystem, new SchemaVersions([pinned]));
 
         // When
-        var schemas = loader.Load(Root, new SchemaVersions([pinned]));
+        var schemas = loader.Load(Root);
 
         // Then
         schemas.Epic.Evaluate(JsonSerializer.SerializeToElement("read from the pinned version")).IsValid.Should().BeTrue(because);
@@ -216,10 +216,10 @@ public sealed class SpecSchemasLoaderUnitTests
 
         var fileSystem = new MockFileSystem(files);
         var root = fileSystem.Path.GetFullPath(Root);
-        var loader = new SpecSchemasLoader(fileSystem, new FrontmatterSchemaStore(fileSystem), new UpstreamSchemaCopy());
+        var loader = EngineServices.Schemas(fileSystem, new SchemaVersions([pinned]));
 
         // When
-        var loading = () => loader.Load(root, new SchemaVersions([pinned]));
+        var loading = () => loader.Load(root);
 
         // Then
         loading.Should().Throw<SpechtManifestException>(because)
@@ -233,7 +233,7 @@ public sealed class SpecSchemasLoaderUnitTests
         // Given
         var fileSystem = new MockFileSystem(
             new Dictionary<string, MockFileData> { [Path.Combine(Root, SpecTree.ManifestPath)] = new("{}") });
-        var loader = new SpecSchemasLoader(fileSystem, new FrontmatterSchemaStore(fileSystem), new UpstreamSchemaCopy());
+        var loader = EngineServices.Schemas(fileSystem);
 
         // When
         var schemas = loader.Load(Root);
@@ -255,10 +255,10 @@ public sealed class SpecSchemasLoaderUnitTests
                 [Path.Combine(Root, SpecTree.ItemSchemaPath)] = new(Local),
                 [Path.Combine(Root, SpecTree.EpicSchemaPath)] = new(Local),
             });
-        var loader = new SpecSchemasLoader(fileSystem, new FrontmatterSchemaStore(fileSystem), new UpstreamSchemaCopy());
+        var loader = EngineServices.Schemas(fileSystem, new SchemaVersions([pinned]));
 
         // When
-        var schemas = loader.Load(Root, new SchemaVersions([pinned]));
+        var schemas = loader.Load(Root);
 
         // Then
         schemas.Feature.Evaluate(JsonSerializer.SerializeToElement("read from the pinned version")).IsValid.Should().BeTrue();

@@ -50,7 +50,7 @@ public sealed class SpecSchemasUnitTests
         var fileSystem = new MockFileSystem(files);
 
         // When
-        var schemas = SpecSchemas.Load(fileSystem, Root);
+        var schemas = EngineServices.LoadOnDiskSchemas(fileSystem, Root);
 
         // Then
         schemaOf(schemas).Evaluate(JsonSerializer.SerializeToElement("read from elsewhere")).IsValid.Should().BeFalse();
@@ -71,7 +71,7 @@ public sealed class SpecSchemasUnitTests
             });
 
         // When
-        var schemas = SpecSchemas.Load(fileSystem, Root, new SchemaVersions([one, two]));
+        var schemas = EngineServices.LoadSchemas(fileSystem, Root, new SchemaVersions([one, two]));
 
         // Then
         schemas.Version.Should().Be(two);
@@ -81,7 +81,7 @@ public sealed class SpecSchemasUnitTests
     public void AnOnDiskSchemaSet_WhenLoaded_ShouldKeepTheEmbeddedVersionItsManifestPinsWithThatVersionsRuleIds()
     {
         // Given
-        var embedded = SchemaVersions.Embedded.Select(new SemanticVersion(0, 1, 0));
+        var embedded = EngineServices.Versions().Find(new SemanticVersion(0, 1, 0))!;
         var fileSystem = new MockFileSystem(
             new Dictionary<string, MockFileData>
             {
@@ -92,7 +92,7 @@ public sealed class SpecSchemasUnitTests
             });
 
         // When
-        var schemas = SpecSchemas.Load(fileSystem, Root);
+        var schemas = EngineServices.LoadOnDiskSchemas(fileSystem, Root);
 
         // Then
         schemas.Version.Number.Should().Be(new SemanticVersion(0, 1, 0));
@@ -116,7 +116,7 @@ public sealed class SpecSchemasUnitTests
             });
 
         // When
-        var schemas = SpecSchemas.Load(fileSystem, Root);
+        var schemas = EngineServices.LoadOnDiskSchemas(fileSystem, Root);
 
         // Then
         (schemas.Version.FeatureSchema, schemas.Version.ItemSchema, schemas.Version.EpicSchema).Should().Be((feature, item, epic));
@@ -126,7 +126,7 @@ public sealed class SpecSchemasUnitTests
     public void AnOnDiskManifestPinningAVersionTheToolDoesNotShip_WhenLoaded_ShouldRejectTheManifestNamingThePinBeforeReadingAFrontmatterSchema()
     {
         // Given
-        var newest = SchemaVersions.Embedded.Versions.Max(static version => version.Number);
+        var newest = EngineServices.Versions().Versions.Max(static version => version.Number);
         var unshipped = new SemanticVersion(newest.Major + 1, 0, 0).ToString();
         var fileSystem = new MockFileSystem(
             new Dictionary<string, MockFileData>
@@ -135,7 +135,7 @@ public sealed class SpecSchemasUnitTests
             });
 
         // When
-        var load = () => SpecSchemas.Load(fileSystem, Root);
+        var load = () => EngineServices.LoadOnDiskSchemas(fileSystem, Root);
 
         // Then
         load.Should().ThrowExactly<SpechtManifestException>().Which.Message.Should().MatchRegex($@"(?<![\w.]){Regex.Escape(unshipped)}(?!\.?\w)");
@@ -154,7 +154,7 @@ public sealed class SpecSchemasUnitTests
             });
 
         // When
-        var load = () => SpecSchemas.Load(fileSystem, Root, new SchemaVersions([version]));
+        var load = () => EngineServices.LoadSchemas(fileSystem, Root, new SchemaVersions([version]));
 
         // Then
         load.Should().ThrowExactly<SpechtManifestException>().Which.Message.Should().Contain("FAKE404");
@@ -173,7 +173,7 @@ public sealed class SpecSchemasUnitTests
             });
 
         // When
-        var load = () => SpecSchemas.Load(fileSystem, Root, new SchemaVersions([version]));
+        var load = () => EngineServices.LoadSchemas(fileSystem, Root, new SchemaVersions([version]));
 
         // Then
         load.Should().NotThrow();
@@ -191,7 +191,7 @@ public sealed class SpecSchemasUnitTests
             });
 
         // When
-        var load = () => SpecSchemas.Load(fileSystem, Root);
+        var load = () => EngineServices.LoadOnDiskSchemas(fileSystem, Root);
 
         // Then
         load.Should().ThrowExactly<SpechtManifestException>().Which.Message.Should().Contain("SPEC999");

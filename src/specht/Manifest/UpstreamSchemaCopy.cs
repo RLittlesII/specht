@@ -17,7 +17,7 @@ public sealed class UpstreamSchemaCopy
         var faults = new List<string>();
         foreach (var file in source.Files)
         {
-            var path = SpecManifest.FrontmatterSchemaFolder + "/" + file.FileName;
+            var path = SpecManifestStore.FrontmatterSchemaFolder + "/" + file.FileName;
             var bytes = files.GetValueOrDefault(file.Kind);
             if (bytes is null)
             {
@@ -35,7 +35,7 @@ public sealed class UpstreamSchemaCopy
 
         if (faults.Count > 0)
         {
-            throw new SpechtManifestException($"{SpecManifest.RelativePath}: {string.Join("; ", faults)}.");
+            throw new SpechtManifestException($"{SpecManifestStore.RelativePath}: {string.Join("; ", faults)}.");
         }
 
         return texts;

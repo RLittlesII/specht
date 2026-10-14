@@ -2,6 +2,7 @@ using System.Text.RegularExpressions;
 using AwesomeAssertions;
 using Reqnroll;
 using Specht.Tests.Rules;
+using Specht.Tests.Shared;
 using Specht.Versioning;
 
 namespace Specht.Acceptance.Report;
@@ -17,7 +18,7 @@ namespace Specht.Acceptance.Report;
 public sealed class RulePageSteps
 {
     [Given("a schema version the tool ships")]
-    public void GivenASchemaVersionTheToolShips() => _versions = SchemaVersions.Embedded.Versions;
+    public void GivenASchemaVersionTheToolShips() => _versions = EngineServices.Versions().Versions;
 
     [Given("the rule pages for a schema version the tool ships")]
     public void GivenTheRulePagesForASchemaVersionTheToolShips()

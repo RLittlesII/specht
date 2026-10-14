@@ -4,9 +4,12 @@ using AwesomeAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using Specht.Composition;
 using Specht.Manifest;
+using Specht.Model;
+using Specht.Resources;
 using Specht.Rules;
 using Specht.Tests.Shared;
 using Specht.Tool;
+using Specht.Versioning;
 
 namespace Specht.Tests.Composition;
 
@@ -101,7 +104,7 @@ public sealed class SpechtEngineServiceCollectionExtensionsUnitTests
     }
 
     [Fact]
-    public void AFileSystemRegisteredBeforeTheEngine_WhenTheEnginesFrontmatterSchemaStoreReads_ShouldReadThroughThatFileSystem()
+    public void AFileSystemRegisteredBeforeTheEngine_WhenTheEnginesSpecManifestStoreReads_ShouldReadThroughThatFileSystem()
     {
         // Given
         byte[] bytes = [(byte)'{', (byte)'}'];
@@ -111,9 +114,40 @@ public sealed class SpechtEngineServiceCollectionExtensionsUnitTests
             new ServiceCollection().AddSingleton<IFileSystem>(registered).AddSpechtEngine()).Build();
 
         // When
-        var store = resolver.Resolve(typeof(FrontmatterSchemaStore));
+        var store = resolver.Resolve(typeof(SpecManifestStore));
 
         // Then
-        store.Should().BeOfType<FrontmatterSchemaStore>().Which.Read("repo", "task.schema.json").Should().Equal(bytes);
+        store.Should().BeOfType<SpecManifestStore>().Which.ReadFrontmatterSchema("repo", "task.schema.json").Should().Equal(bytes);
+    }
+    [Fact]
+    public void ACatalogRegisteredBeforeTheEngine_WhenTwoRootsAreChecked_ShouldUseThatCatalogForBothRoots()
+    {
+        // Given
+        SchemaVersion first = new SchemaVersionFixture();
+        SchemaVersion second = new SchemaVersionFixture().WithNumber(new SemanticVersion(0, 2, 0));
+        var catalog = new SchemaVersions([first, second]);
+        var fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>
+        {
+            [Path.Combine("one", SpecTree.ManifestPath)] = new("{}"),
+            [Path.Combine("two", SpecTree.ManifestPath)] = new("""{"schemaVersion":"0.2.0"}"""),
+        });
+        using var resolver = (TypeResolver)new TypeRegistrar(new ServiceCollection()
+            .AddSingleton<IFileSystem>(fileSystem).AddSingleton(catalog).AddSpechtEngine()).Build();
+        var runner = (SpechtRunner)resolver.Resolve(typeof(SpechtRunner))!;
+        var parser = (SpecManifestParser)resolver.Resolve(typeof(SpecManifestParser))!;
+        var resources = resolver.Resolve(typeof(SpechtResources));
+
+        // When
+        var one = runner.Run("one");
+        var two = runner.Run("two");
+        var again = runner.Run("one");
+
+        // Then
+        one.SchemaVersion.Should().Be(first.Number);
+        two.SchemaVersion.Should().Be(second.Number);
+        again.SchemaVersion.Should().Be(first.Number);
+        resolver.Resolve(typeof(SchemaVersions)).Should().BeSameAs(catalog);
+        resolver.Resolve(typeof(SpecManifestParser)).Should().BeSameAs(parser);
+        resolver.Resolve(typeof(SpechtResources)).Should().BeSameAs(resources);
     }
 }

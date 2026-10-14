@@ -65,8 +65,7 @@ public sealed class SpechtRunnerDeterminismUnitTests
 
     private static SpecModel ModelExpectingAnInteger()
     {
-        var schemas = SpecSchemas.Load(
-            new MockFileSystem(
+        var schemas = EngineServices.LoadOnDiskSchemas(new MockFileSystem(
                 new Dictionary<string, MockFileData>
                 {
                     [Path.Combine("repo", SpecTree.ManifestPath)] = new("{}"),
@@ -74,8 +73,7 @@ public sealed class SpechtRunnerDeterminismUnitTests
                         new("""{ "properties": { "github_issue": { "type": "integer" } } }"""),
                     [Path.Combine("repo", SpecTree.ItemSchemaPath)] = new("{}"),
                     [Path.Combine("repo", SpecTree.EpicSchemaPath)] = new("{}"),
-                }),
-            "repo");
+                }), "repo");
         FeatureSpec feature = new FeatureSpecFixture().WithDocument(
             new SpecDocumentFixture().WithFrontmatter(new FrontmatterFixture().WithNode(new JsonObject { ["github_issue"] = "null" })));
 

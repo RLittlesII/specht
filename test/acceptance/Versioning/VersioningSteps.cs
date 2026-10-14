@@ -8,6 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using AwesomeAssertions;
 using Reqnroll;
+using Specht.Manifest;
 using Specht.Report;
 using Specht.Tests.Shared;
 using Specht.Tool.Features.Init;
@@ -44,7 +45,7 @@ public sealed partial class VersioningSteps
 {
     [Given("the tool ships schema version {word}")]
     public void GivenTheToolShipsSchemaVersion(string version) =>
-        _embedded = SchemaVersions.Embedded.Select(Version(version));
+        _embedded = EngineServices.Versions().Find(Version(version))!;
 
     [When("the folders holding its schemas, its templates and its rule pages are read")]
     public void WhenTheFoldersHoldingItsSchemasItsTemplatesAndItsRulePagesAreRead()
@@ -90,7 +91,7 @@ public sealed partial class VersioningSteps
     [Given(@"^the tool ships schema versions (.+) and (\S+)$")]
     public void GivenTheToolShipsSchemaVersions(string earlier, string last)
     {
-        var embedded = SchemaVersions.Embedded.Select(new SemanticVersion(0, 1, 0));
+        var embedded = EngineServices.Versions().Find(new SemanticVersion(0, 1, 0))!;
         _shipped = earlier.Split(", ").Append(last).Select(Version).ToDictionary(
             static number => number,
             number => embedded with { Number = number });
@@ -105,7 +106,11 @@ public sealed partial class VersioningSteps
         var shippingCopy = Shipped.Keys.ToDictionary(
             static version => $"manifest/v{version}/manifest.json",
             static version => JsonSerializer.SerializeToUtf8Bytes(new { schemaVersion = version.ToString() }));
-        await new InitWriter(shippingCopy, new FileSystem()).Write(Tree.Root, schemas: false, templates: false, CancellationToken.None);
+        await new InitWriter(
+            shippingCopy,
+            new FileSystem(),
+            EngineServices.Parser(),
+            new SpecManifestStore(new FileSystem())).Write(Tree.Root, schemas: false, templates: false, CancellationToken.None);
     }
 
     [Then("the written manifest pins version {word}")]
@@ -263,7 +268,7 @@ public sealed partial class VersioningSteps
     {
         if (_shipped is not null)
         {
-            _report = EngineServices.Runner().Run(Tree.Root, new SchemaVersions(_shipped.Values));
+            _report = EngineServices.Runner(new SchemaVersions(_shipped.Values)).Run(Tree.Root);
             return;
         }
 
@@ -284,7 +289,7 @@ public sealed partial class VersioningSteps
 
     [Then(@"^exactly version (\S+)'s rule ids are evaluated$")]
     public void ThenExactlyThatVersionsRuleIdsAreEvaluated(string version) =>
-        Document["rulesEvaluated"]!.GetValue<int>().Should().Be(SchemaVersions.Embedded.Select(Version(version)).RuleIds.Count);
+        Document["rulesEvaluated"]!.GetValue<int>().Should().Be(EngineServices.Versions().Find(Version(version))!.RuleIds.Count);
 
     [Then("the check completes")]
     public void ThenTheCheckCompletes()
@@ -320,7 +325,7 @@ public sealed partial class VersioningSteps
     [Then("the standard error names version {word} and the versions the tool ships")]
     public void ThenTheStandardErrorNamesVersionAndTheVersionsTheToolShips(string version)
     {
-        var shipped = SchemaVersions.Embedded.Versions.Select(static shippedVersion => shippedVersion.Number.ToString());
+        var shipped = EngineServices.Versions().Versions.Select(static shippedVersion => shippedVersion.Number.ToString());
         foreach (var named in shipped.Prepend(version))
         {
             _stderr.Should().MatchRegex(Naming(named), "the standard error names version {0}", named);

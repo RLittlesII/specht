@@ -92,8 +92,12 @@ public sealed class InitWriterUnitTests
             .ToDictionary(static name => name, static name => Encoding.UTF8.GetBytes(name));
         var fileSystem = BareRoot();
 
+        InitWriter writer = new InitWriterFixture()
+            .WithFileSystem(fileSystem)
+            .WithShippingCopy(shippingCopy);
+
         // When
-        var listing = await new InitWriter(shippingCopy, fileSystem).Write(Root, schemas: true, templates: true, CancellationToken.None);
+        var listing = await writer.Write(Root, schemas: true, templates: true, CancellationToken.None);
 
         // Then
         listing.Should().Equal((".specht/manifest.json", true), (".specht/templates/feature.md", true));
@@ -113,8 +117,12 @@ public sealed class InitWriterUnitTests
             static version => JsonSerializer.SerializeToUtf8Bytes(new { schemaVersion = version }));
         var fileSystem = BareRoot();
 
+        InitWriter writer = new InitWriterFixture()
+            .WithFileSystem(fileSystem)
+            .WithShippingCopy(shippingCopy);
+
         // When
-        await new InitWriter(shippingCopy, fileSystem).Write(Root, schemas: false, templates: false, CancellationToken.None);
+        await writer.Write(Root, schemas: false, templates: false, CancellationToken.None);
 
         // Then
         using var manifest = JsonDocument.Parse(fileSystem.File.ReadAllText(Path.Combine(Root, SpecTree.ManifestPath)));
@@ -129,9 +137,12 @@ public sealed class InitWriterUnitTests
         byte[] bytes = [0xEF, 0xBB, 0xBF, 0x7B, 0x0D, 0x0A, 0x7D];
         var fileSystem = BareRoot();
 
+        InitWriter writer = new InitWriterFixture()
+            .WithFileSystem(fileSystem)
+            .WithShippingCopy(new Dictionary<string, byte[]> { [name] = bytes });
+
         // When
-        var listing = await new InitWriter(new Dictionary<string, byte[]> { [name] = bytes }, fileSystem)
-            .Write(Root, schemas: true, templates: true, CancellationToken.None);
+        var listing = await writer.Write(Root, schemas: true, templates: true, CancellationToken.None);
 
         // Then
         listing.Should().Equal((relative, true));
@@ -150,8 +161,12 @@ public sealed class InitWriterUnitTests
             ["templates/v0.1.0/adr.md"] = "# Shipped\n"u8.ToArray(),
         };
 
+        InitWriter writer = new InitWriterFixture()
+            .WithFileSystem(fileSystem)
+            .WithShippingCopy(shippingCopy);
+
         // When
-        var listing = await new InitWriter(shippingCopy, fileSystem).Write(Root, schemas: true, templates: true, CancellationToken.None);
+        var listing = await writer.Write(Root, schemas: true, templates: true, CancellationToken.None);
 
         // Then
         listing.Should().Equal((".specht/templates/adr.md", true), (".specht/templates/feature.md", false));
@@ -172,8 +187,12 @@ public sealed class InitWriterUnitTests
             ["schema/v0.1.0/frontmatter/task.schema.json"] = "{}\n"u8.ToArray(),
         };
 
+        InitWriter writer = new InitWriterFixture()
+            .WithFileSystem(fileSystem)
+            .WithShippingCopy(shippingCopy);
+
         // When
-        await new InitWriter(shippingCopy, fileSystem).Write(Root, schemas: true, templates: true, CancellationToken.None);
+        await writer.Write(Root, schemas: true, templates: true, CancellationToken.None);
 
         // Then
         foreach (var (name, bytes) in shippingCopy.Where(static entry => entry.Key != "templates/v0.1.0/decision.md"))
@@ -208,8 +227,12 @@ public sealed class InitWriterUnitTests
             ["templates/v0.1.0/feature.md"] = "# Shipped feature\n"u8.ToArray(),
         };
 
+        InitWriter writer = new InitWriterFixture()
+            .WithFileSystem(fileSystem)
+            .WithShippingCopy(shippingCopy);
+
         // When
-        var listing = await new InitWriter(shippingCopy, fileSystem).Write(Root, schemas, templates, CancellationToken.None);
+        var listing = await writer.Write(Root, schemas, templates, CancellationToken.None);
 
         // Then
         listing.Select(static entry => entry.Path).Should().Equal(expected);
@@ -239,8 +262,12 @@ public sealed class InitWriterUnitTests
                 .ToDictionary(static file => file, fileSystem.File.ReadAllText);
         var before = UnderTheSpecFolder();
 
+        InitWriter writer = new InitWriterFixture()
+            .WithFileSystem(fileSystem)
+            .WithShippingCopy(shippingCopy);
+
         // When
-        await new InitWriter(shippingCopy, fileSystem).Write(Root, schemas: true, templates: true, CancellationToken.None);
+        await writer.Write(Root, schemas: true, templates: true, CancellationToken.None);
 
         // Then
         UnderTheSpecFolder().Should().Equal(before);
@@ -252,7 +279,9 @@ public sealed class InitWriterUnitTests
     {
         // Given
         var before = fileSystem.AllPaths.ToList();
-        var writer = new InitWriter(new Dictionary<string, byte[]> { ["templates/v0.1.0/feature.md"] = [] }, fileSystem);
+        InitWriter writer = new InitWriterFixture()
+            .WithFileSystem(fileSystem)
+            .WithShippingCopy(new Dictionary<string, byte[]> { ["templates/v0.1.0/feature.md"] = [] });
 
         // When
         var write = () => writer.Write(Root, schemas: false, templates: false, CancellationToken.None);
@@ -269,9 +298,11 @@ public sealed class InitWriterUnitTests
         var fileSystem = BareRoot();
         var root = fileSystem.Path.GetFullPath(Root);
 
+        InitWriter writer = new InitWriterFixture()
+            .WithFileSystem(fileSystem);
+
         // When
-        var listing = await new InitWriter(InitWriter.ShippingCopy(typeof(InitWriter).Assembly), fileSystem)
-            .Write(Root, schemas: true, templates: true, CancellationToken.None);
+        var listing = await writer.Write(Root, schemas: true, templates: true, CancellationToken.None);
 
         // Then
         listing.Should().Equal(
