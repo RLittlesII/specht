@@ -5,9 +5,8 @@ using Specht.Versioning;
 namespace Specht.Manifest;
 
 /// <summary>Parses and validates a manifest in memory using the embedded defaults (ADR-0010).</summary>
-/// <param name="defaultManifest">The default manifest text read at the resource boundary.</param>
-/// <param name="versions">The instance catalog used by check-only pin resolution.</param>
-public sealed class SpecManifestParser(string defaultManifest, SchemaVersions versions)
+/// <param name="versions">The instance catalog carrying each pin's shipped defaults and rule vocabulary.</param>
+public sealed class SpecManifestParser(SchemaVersions versions)
 {
     /// <summary>Returns the validated structure with omitted values supplied by the default manifest.</summary>
     /// <param name="text">The manifest JSON to validate.</param>
@@ -27,23 +26,26 @@ public sealed class SpecManifestParser(string defaultManifest, SchemaVersions ve
                 $"{SpecManifestStore.RelativePath}: the engine does not know the key {string.Join(", ", unknown)}.");
         }
 
-        var frontmatterSchemas = Filled(manifest, "frontmatterSchemas");
+        var number = ReadVersion(manifest["schemaVersion"]) ?? OriginalVersion;
+        var selected = versions.Find(number) ?? versions.Find(OriginalVersion) ?? Version(number);
+        var defaults = JsonNode.Parse(selected.Manifest)!.AsObject();
+        var frontmatterSchemas = Filled(manifest, defaults, "frontmatterSchemas");
         var sourceFaults = new List<string>();
         var structure = new SpecStructure(
-            Strings(manifest["sections"] ?? _defaults["sections"]!),
-            Tables(manifest["tables"] ?? _defaults["tables"]!),
-            Filled(manifest, "identifiers"),
+            Strings(manifest["sections"] ?? defaults["sections"]!),
+            Tables(manifest["tables"] ?? defaults["tables"]!),
+            Filled(manifest, defaults, "identifiers"),
             SchemaVersion(manifest))
         {
-            Discovery = Discovery(manifest),
+            Discovery = Discovery(manifest, defaults),
             FrontmatterSchemas = frontmatterSchemas,
-            Roles = Filled(manifest, "roles"),
-            Markers = Filled(manifest, "markers"),
+            Roles = Filled(manifest, defaults, "roles"),
+            Markers = Filled(manifest, defaults, "markers"),
             Rules = Levels(manifest["rules"]),
             SpechtSchema = SpechtSchema(manifest, frontmatterSchemas, sourceFaults),
         };
 
-        Check(structure, IdentityFaults(manifest).Concat(sourceFaults));
+        Check(structure, defaults, IdentityFaults(manifest).Concat(sourceFaults));
 
         return structure;
     }
@@ -54,10 +56,7 @@ public sealed class SpecManifestParser(string defaultManifest, SchemaVersions ve
     /// <exception cref="SpechtManifestException">The pin is not shipped or a rule id is outside its vocabulary.</exception>
     public SchemaVersion PinnedVersion(SpecStructure structure)
     {
-        var version = versions.Find(structure.SchemaVersion)
-            ?? throw new SpechtManifestException(
-                $"{SpecManifestStore.RelativePath}: schemaVersion {structure.SchemaVersion} is not shipped; this tool ships "
-                + $"{string.Join(", ", versions.Versions.Select(static version => version.Number))}.");
+        var version = Version(structure.SchemaVersion);
         var outside = structure.Rules.Keys.Where(id => !version.RuleIds.Contains(id)).Select(static id => $"'{id}'").ToList();
         if (outside.Count > 0)
         {
@@ -185,10 +184,10 @@ public sealed class SpecManifestParser(string defaultManifest, SchemaVersions ve
     {
         if (!manifest.TryGetPropertyValue("schemaVersion", out var node))
         {
-            return new SemanticVersion(0, 1, 0);
+            return OriginalVersion;
         }
 
-        if (node is JsonValue value && value.TryGetValue<string>(out var text) && SemanticVersion.TryParse(text, out var version))
+        if (ReadVersion(node) is { } version)
         {
             return version;
         }
@@ -196,6 +195,9 @@ public sealed class SpecManifestParser(string defaultManifest, SchemaVersions ve
         throw new SpechtManifestException(
             $"{SpecManifestStore.RelativePath}: schemaVersion {node?.ToJsonString() ?? "null"} is not a major.minor.patch version such as \"0.1.0\".");
     }
+
+    private static SemanticVersion? ReadVersion(JsonNode? node) =>
+        node is JsonValue value && value.TryGetValue<string>(out var text) && SemanticVersion.TryParse(text, out var version) ? version : null;
 
     private static List<string> Strings(JsonNode node) =>
         node.AsArray().Select(static element => Present(element).GetValue<string>()).ToList();
@@ -225,16 +227,16 @@ public sealed class SpecManifestParser(string defaultManifest, SchemaVersions ve
     private static JsonNode Present(JsonNode? node) =>
         node ?? throw new InvalidOperationException("A JSON null stands where the manifest's shape requires a value.");
 
-    private void Check(SpecStructure structure, IEnumerable<string> identityFaults)
+    private static void Check(SpecStructure structure, JsonObject defaults, IEnumerable<string> identityFaults)
     {
-        var roles = _defaults["roles"]!.AsObject();
+        var roles = defaults["roles"]!.AsObject();
         var faults = roles
             .Select(static entry => entry.Key)
             .Where(role => !structure.Sections.Contains(structure.Roles[role], StringComparer.Ordinal))
             .Select(role => $"the role '{role}' names '{structure.Roles[role]}', which sections does not list")
             .Concat(structure.Tables.Keys.Where(key => !roles.ContainsKey(key)).Select(static key => $"the tables key '{key}' is not a role"))
             .Concat(
-                _defaults["markers"]!.AsObject()
+                defaults["markers"]!.AsObject()
                     .Select(static entry => entry.Key)
                     .Where(marker => structure.Markers[marker].Length == 0)
                     .Select(static marker => $"the marker '{marker}' in markers is empty"))
@@ -264,17 +266,17 @@ public sealed class SpecManifestParser(string defaultManifest, SchemaVersions ve
         }
     }
 
-    private SpecDiscoveryInputs Discovery(JsonObject manifest) =>
+    private static SpecDiscoveryInputs Discovery(JsonObject manifest, JsonObject defaults) =>
         new(
-            (manifest["layouts"] ?? _defaults["layouts"]!).AsArray().Select(Layout).ToList(),
-            Strings(manifest["exclusions"] ?? _defaults["exclusions"]!),
-            Strings(manifest["taskFiles"] ?? _defaults["taskFiles"]!),
-            Strings(manifest["epicFiles"] ?? _defaults["epicFiles"]!),
-            Strings(manifest["companionFiles"] ?? _defaults["companionFiles"]!));
+            (manifest["layouts"] ?? defaults["layouts"]!).AsArray().Select(Layout).ToList(),
+            Strings(manifest["exclusions"] ?? defaults["exclusions"]!),
+            Strings(manifest["taskFiles"] ?? defaults["taskFiles"]!),
+            Strings(manifest["epicFiles"] ?? defaults["epicFiles"]!),
+            Strings(manifest["companionFiles"] ?? defaults["companionFiles"]!));
 
-    private Dictionary<string, string> Filled(JsonObject manifest, string key)
+    private static Dictionary<string, string> Filled(JsonObject manifest, JsonObject defaults, string key)
     {
-        var values = Named(_defaults[key]!);
+        var values = Named(defaults[key]!);
 
         if (manifest[key] is { } declared)
         {
@@ -286,6 +288,11 @@ public sealed class SpecManifestParser(string defaultManifest, SchemaVersions ve
 
         return values;
     }
+
+    private SchemaVersion Version(SemanticVersion number) =>
+        versions.Find(number) ?? throw new SpechtManifestException(
+            $"{SpecManifestStore.RelativePath}: schemaVersion {number} is not shipped; this tool ships "
+            + $"{string.Join(", ", versions.Versions.Select(static version => version.Number))}.");
 
     private static readonly HashSet<string> KnownKeys = new(StringComparer.Ordinal)
     {
@@ -305,5 +312,5 @@ public sealed class SpecManifestParser(string defaultManifest, SchemaVersions ve
         "spechtSchema",
     };
 
-    private readonly JsonObject _defaults = JsonNode.Parse(defaultManifest)!.AsObject();
+    private static readonly SemanticVersion OriginalVersion = new(0, 1, 0);
 }

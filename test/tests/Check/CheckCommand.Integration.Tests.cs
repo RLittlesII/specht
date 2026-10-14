@@ -5,6 +5,7 @@ using AwesomeAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using Specht.Model;
 using Specht.Report;
+using Specht.Tests.Manifest;
 using Specht.Tests.Shared;
 using Specht.Tool;
 using Specht.Tool.Features.Check;
@@ -489,6 +490,54 @@ public sealed class CheckCommandIntegrationTests
         // Then
         result.Output.Should().Contain("--root").And.Contain("--strict");
         result.ExitCode.Should().Be(0);
+    }
+
+    [Theory]
+    [InlineData(null, null, 1)]
+    [InlineData("0.1.0", null, 1)]
+    [InlineData("0.1.1", null, 0)]
+    [InlineData("0.1.1", "OlderMissing", 1)]
+    public void APinnedMissingTestDefault_WhenChecked_ShouldDetermineTheVerdictWithoutInheritingRuleLevels(
+        string? pin, string? explicitMarker, int expectedExit)
+    {
+        // Given
+        using var tree = new SpecTree();
+        tree.WriteFeature("0001", "F1", new Dictionary<string, string> { ["spec_status"] = "approved" },
+            SpecTree.SectionsWith("9. Traceability Matrix",
+                "## 9. Traceability Matrix\n\n| Claim ID | Scenario | Test | Status |\n| --- | --- | --- | --- |\n"
+                + "| B-001 | It does the thing | OlderMissing | Covered |\n")
+                .Select(static section => section.Replace("🟡", "🟢", StringComparison.Ordinal)).ToArray());
+        var path = Path.Combine(tree.Root, SpecTree.ManifestPath);
+        var manifest = JsonNode.Parse(File.ReadAllText(path))!.AsObject();
+        manifest.Remove("schemaVersion");
+        if (pin is not null)
+        {
+            manifest["schemaVersion"] = pin;
+        }
+
+        manifest.Remove("rules");
+        manifest["markers"]!.AsObject().Remove("missing");
+        if (explicitMarker is not null)
+        {
+            manifest["markers"]!["missing"] = explicitMarker;
+        }
+
+        File.WriteAllText(path, manifest.ToJsonString());
+        var data = new PinnedDefaultsData();
+
+        // When
+        var result = Check(EngineServices.Runner(data.Versions).Run, "--root", tree.Root);
+
+        // Then
+        result.ExitCode.Should().Be(expectedExit);
+        if (expectedExit == 1)
+        {
+            result.Output.Should().Contain(": error SPEC060:");
+        }
+        else
+        {
+            result.Output.Should().NotContain("SPEC060");
+        }
     }
 
     private static CommandAppResult Check(Func<string, SpechtReport> run, params string[] args)

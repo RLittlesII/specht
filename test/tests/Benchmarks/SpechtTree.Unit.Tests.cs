@@ -19,7 +19,7 @@ public sealed class SpechtTreeUnitTests
     {
         // Given
         var resources = new Specht.Resources.SpechtResources();
-        var parser = new SpecManifestParser(resources.DefaultManifest, new Specht.Versioning.SchemaVersions(resources.Texts));
+        var parser = new SpecManifestParser(new Specht.Versioning.SchemaVersions(resources.Texts));
         var structure = parser.Parse(resources.DefaultManifest);
         var first = SpechtTree.Of(specifications, resources.DefaultManifestBytes, structure, parser.PinnedVersion(structure));
 
@@ -41,7 +41,7 @@ public sealed class SpechtTreeUnitTests
     {
         // Given
         var resources = new Specht.Resources.SpechtResources();
-        var parser = new SpecManifestParser(resources.DefaultManifest, new Specht.Versioning.SchemaVersions(resources.Texts));
+        var parser = new SpecManifestParser(new Specht.Versioning.SchemaVersions(resources.Texts));
         var structure = parser.Parse(resources.DefaultManifest);
         // When
         var tree = SpechtTree.Of(specifications, resources.DefaultManifestBytes, structure, parser.PinnedVersion(structure));
@@ -60,7 +60,7 @@ public sealed class SpechtTreeUnitTests
     {
         // Given
         var resources = new Specht.Resources.SpechtResources();
-        var parser = new SpecManifestParser(resources.DefaultManifest, new Specht.Versioning.SchemaVersions(resources.Texts));
+        var parser = new SpecManifestParser(new Specht.Versioning.SchemaVersions(resources.Texts));
         var structure = parser.Parse(resources.DefaultManifest);
         // When
         var tree = SpechtTree.Of(specifications, resources.DefaultManifestBytes, structure, parser.PinnedVersion(structure));
@@ -74,7 +74,7 @@ public sealed class SpechtTreeUnitTests
     {
         // Given
         var resources = new Specht.Resources.SpechtResources();
-        var parser = new SpecManifestParser(resources.DefaultManifest, EngineServices.Versions());
+        var parser = new SpecManifestParser(EngineServices.Versions());
         const string manifest = "{ \"frontmatterSchemas\": { \"feature\": \"custom.json\" } }\r\n";
         var structure = parser.Parse(manifest);
         const string schema = """{"title":"selected schema text"}""";

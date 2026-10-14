@@ -25,8 +25,7 @@ public static class SpechtEngineServiceCollectionExtensions
         services.TryAddSingleton<IFileSystem, FileSystem>();
         services.AddSingleton<SpechtResources>();
         services.TryAddSingleton(static provider => new SchemaVersions(provider.GetRequiredService<SpechtResources>().Texts));
-        services.AddSingleton(static provider => new SpecManifestParser(
-            provider.GetRequiredService<SpechtResources>().DefaultManifest, provider.GetRequiredService<SchemaVersions>()));
+        services.AddSingleton<SpecManifestParser>();
         services.AddSingleton<FrontmatterReader>();
         services.AddSingleton<FeatureFileReader>();
         services.AddSingleton<SpecDiscovery>();

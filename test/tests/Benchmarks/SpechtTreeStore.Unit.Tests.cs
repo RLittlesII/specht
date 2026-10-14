@@ -18,7 +18,7 @@ public sealed class SpechtTreeStoreUnitTests
     {
         // Given
         var resources = new Specht.Resources.SpechtResources();
-        var parser = new SpecManifestParser(resources.DefaultManifest, new Specht.Versioning.SchemaVersions(resources.Texts));
+        var parser = new SpecManifestParser(new Specht.Versioning.SchemaVersions(resources.Texts));
         var structure = parser.Parse(resources.DefaultManifest);
         var tree = SpechtTree.Of(10, resources.DefaultManifestBytes, structure, parser.PinnedVersion(structure));
         var fileSystem = new MockFileSystem();

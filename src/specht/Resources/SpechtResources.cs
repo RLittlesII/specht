@@ -11,6 +11,7 @@ public sealed class SpechtResources
         var assembly = typeof(SpechtResources).Assembly;
         var bytes = assembly.GetManifestResourceNames()
             .Where(static name => name == ManifestName
+                || name.StartsWith("manifest/v", StringComparison.Ordinal)
                 || name.StartsWith("schema/v", StringComparison.Ordinal)
                 || name.StartsWith("rules/v", StringComparison.Ordinal))
             .ToDictionary(static name => name, name =>
