@@ -161,3 +161,30 @@ not settled by this command-name decision.
 The owner supplied this spelling directly; no alternative spelling was put to
 the owner in this decision. B-043 to B-051 and B-057, their scenarios, C-13 and
 § 5 row 11 name the command. Existing IDs and coverage states are retained.
+
+## Interactive pin selection required 2026-10-14
+
+After naming the command, the repository owner required `specht schema pin`
+without a version argument to use the Spectre selection widget to offer the
+available schema versions. This supersedes the earlier Could classification
+of B-057 and B-058, including the command-name addendum above.
+
+At an interactive terminal, `specht schema pin` presents one choice per shipped
+version. The user navigates with the arrow keys and presses Enter to pin the
+selected version. `specht schema pin <version>` remains the direct form for
+scripts and callers that already know the version.
+
+The widget is Spectre.Console's
+[single-choice selection prompt](https://spectreconsole.net/console/prompts/selection-prompt/);
+Spectre.Console.Cli hosts the command. The owner's phrase "Spectre.Cli widgets"
+is recorded with those library responsibilities, rather than requiring a
+bespoke menu. The prompt's title, default highlight and appearance are not
+settled by this decision. OQ-17 still asks what happens without an interactive
+terminal when no version is supplied.
+
+Both forms preserve C-13: pinning changes only the manifest's `schemaVersion`;
+`upgrade` remains the operation that synchronizes schema files and templates.
+B-057 and B-058 and their existing scenarios are amended; an additional B-046
+boundary scenario covers interactive pinning. Item `0125` records the required
+scope and matches its parent Feature's value of 4. Existing IDs and coverage
+states stay in place.

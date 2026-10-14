@@ -152,7 +152,7 @@ specht [--root <dir>] [--report <path>] [--strict] [--json] [--schema-source <em
 specht init [--root <dir>] [--schemas] [--templates] [--all] [--epics]
             [--upstream <address>] [--upstream-version <label>] [--upstream-hash <kind=hash>]...
 specht schema list
-specht schema pin <version> [--root <dir>]
+specht schema pin [<version>] [--root <dir>]
 specht upgrade [--root <dir>]
 specht --explain SPEC031
 specht --version
@@ -175,9 +175,11 @@ Beside another argument it is not decided (`0001-F2` OQ-8).
 
 `specht schema list`, which lists the shipped schema versions and marks the one
 a root pins, is specified and not built (`0001-F7` B-041, B-042, B-084, B-085).
-`specht schema pin <version>`, which changes only the manifest's `schemaVersion`,
-is specified and not built (`0001-F7` B-043 to B-051; decision 0005,
-command-name addendum 2026-10-14).
+`specht schema pin [<version>]` changes only the manifest's `schemaVersion`.
+Without a version, an interactive terminal offers the shipped versions in a
+Spectre.Console selection prompt; arrow keys navigate and Enter selects. Both
+forms are specified and not built (`0001-F7` B-043 to B-051, B-057, B-058;
+decision 0005, addenda 2026-10-14).
 
 `specht upgrade`, `--explain`, `--report` and the `init --epics` option are
 specified and not built (`0001-F7`, `0001-F3`, `0001-F4`). What the tool accepts today is

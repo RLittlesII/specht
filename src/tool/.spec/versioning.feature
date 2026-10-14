@@ -674,15 +674,25 @@ Feature: Schema versioning
     Given the tool ships schema versions 0.1.0 and 0.2.0
     And an interactive terminal
     When specht schema pin runs without a version
-    Then versions 0.1.0 and 0.2.0 are offered as a list to choose from with the arrow keys
+    Then versions 0.1.0 and 0.2.0 are offered as a single-choice list navigated with the arrow keys
 
   @B-058
   Scenario: The version chosen from the list is pinned
     Given the tool ships schema versions 0.1.0 and 0.2.0
     And the manifest pins version 0.1.0
     And an interactive terminal
-    When specht schema pin runs without a version and 0.2.0 is chosen
+    When specht schema pin runs without a version and 0.2.0 is confirmed with Enter
     Then the manifest pins version 0.2.0
+
+  @B-046 @boundary
+  Scenario: Interactive pinning leaves schema files and templates alone
+    Given the tool ships schema versions 0.1.0 and 0.2.0
+    And the root is pinned to version 0.1.0 and its frontmatter schemas and templates are version 0.1.0's
+    And an interactive terminal
+    And a snapshot of every file under the root
+    When specht schema pin runs without a version and 0.2.0 is confirmed with Enter
+    Then the only file changed is the manifest
+    And the frontmatter schemas and the templates are still version 0.1.0's
 
   @B-059
   Scenario: Upgrade that only adds a manifest key succeeds

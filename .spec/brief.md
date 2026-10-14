@@ -146,8 +146,11 @@ overwriting. `specht upgrade`
 brings `.specht/schema/` and `.specht/templates/` to the pinned version and prints
 what changed; it never touches a document. `specht schema list` names the shipped
 schema versions and `specht schema pin <version>` moves `schemaVersion` to one
-of them, up or down (`0001-F7` decision 0005, command-name addendum 2026-10-14). `--help` from the
-command framework.
+of them, up or down (`0001-F7` decision 0005, command-name addendum 2026-10-14).
+Without a version, `specht schema pin` uses the Spectre.Console selection prompt
+at an interactive terminal: arrow keys navigate the shipped versions and Enter
+selects one (`0001-F7` decision 0005, interactive-selection addendum 2026-10-14).
+`--help` comes from the command framework.
 **Manifest-driven layout ("bring your own schema").** Everything the engine
 hardcodes moves into the manifest so rules read _roles_, not literals:
 
