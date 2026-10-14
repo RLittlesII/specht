@@ -26,7 +26,7 @@ claims:
   - B-008
 
 created: "2026-10-08"
-updated: "2026-10-09"
+updated: "2026-10-13"
 closed: "2026-10-08"
 
 summary: |
@@ -47,7 +47,7 @@ acceptance_criteria:
 
 decisions:
   - |
-    2026-10-08, Claude at the owner's request: sliced by where each claim
+    2026-10-08, at the owner's request: sliced by where each claim
     runs - the build writes the reports (0069), CI uploads them (0070),
     Codecov's configuration decides the statuses (0071).
   - |

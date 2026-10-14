@@ -8,7 +8,7 @@ type: adr
 
 ## Status
 
-Accepted design, 2026-10-13. Codex self-review; no independent review or live
+Accepted design, 2026-10-13. Self-review only; no independent review or live
 workflow execution is claimed. Implementation and its verification remain pending.
 
 ## Context

@@ -44,7 +44,7 @@ acceptance_criteria:
   - "Do not change the existing Benchmark target's broken-benchmark failure semantics."
 
 decisions:
-  - "2026-10-13, Codex: design contract reviewed under 0209; scope and prerequisites retained. Ready-for-implementation names design maturity, not permission to bypass depends_on or the one-writer Feature lane."
+  - "2026-10-13: design contract reviewed under 0209; scope and prerequisites retained. Ready-for-implementation names design maturity, not permission to bypass depends_on or the one-writer Feature lane."
 
 out_of_scope:
   - "Everything in § 5 of the specification."

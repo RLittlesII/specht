@@ -43,7 +43,7 @@ claims:
   - B-034
 
 created: "2026-10-08"
-updated: "2026-10-11"
+updated: "2026-10-13"
 closed: null
 
 summary: |
@@ -101,7 +101,7 @@ acceptance_criteria:
 
 decisions:
   - |
-    2026-10-08, Claude at the owner's request: sliced into the embedded
+    2026-10-08, at the owner's request: sliced into the embedded
     shipping copy (0051), which schema versioning also builds on, then the
     write into a bare root (0052), then partial trees and the bad-root
     failure (0053), and B-002 alone (0054) because OQ-1 blocks it and nothing
@@ -109,7 +109,7 @@ decisions:
     behind a question about multi-version trees that do not exist until a
     second version ships.
   - |
-    2026-10-08, Claude at the owner's request: B-014 to B-016 in one
+    2026-10-08, at the owner's request: B-014 to B-016 in one
     item that reuses upgrade's fetch (0095 -> 0093), and B-017 alone
     (0096). Rejected: B-017 inside 0054, which would hold B-002 and
     the pinned-version write behind 0013 and 0092.

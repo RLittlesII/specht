@@ -58,7 +58,7 @@ acceptance_criteria:
   - "Generated workflow validation confirms C-10 and 0055-F6 C-7; no package or release is created by validation."
 
 decisions:
-  - "2026-10-13, Codex: design contract reviewed under 0209; scope and prerequisites retained. Ready-for-implementation names design maturity, not permission to bypass depends_on or the one-writer Feature lane."
+  - "2026-10-13: design contract reviewed under 0209; scope and prerequisites retained. Ready-for-implementation names design maturity, not permission to bypass depends_on or the one-writer Feature lane."
 
 out_of_scope:
   - "Everything in § 5 of the specification."

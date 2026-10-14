@@ -65,7 +65,7 @@ acceptance_criteria:
 
 decisions:
   - |
-    2026-10-08, Claude at the owner's request: sliced into the command's
+    2026-10-08, at the owner's request: sliced into the command's
     core run (0026) and the pieces that hang off it — input failures, the
     summary, help, the read-only proof — then the build wiring: call-site
     parity and the self-check (0031), and the tool-manifest switch (0032),

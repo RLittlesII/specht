@@ -49,7 +49,7 @@ acceptance_criteria:
   - "§ 9 names the tests for the five assigned claims; preserve C-2, C-5, C-6 and C-7."
 
 decisions:
-  - "2026-10-13, Codex: design contract reviewed under 0209; scope and prerequisites retained. Ready-for-implementation names design maturity, not permission to bypass depends_on or the one-writer Feature lane."
+  - "2026-10-13: design contract reviewed under 0209; scope and prerequisites retained. Ready-for-implementation names design maturity, not permission to bypass depends_on or the one-writer Feature lane."
 
 out_of_scope:
   - "Everything in § 5 of the specification."

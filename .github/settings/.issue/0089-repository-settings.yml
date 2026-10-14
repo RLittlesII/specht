@@ -29,7 +29,7 @@ claims:
   - B-011
 
 created: "2026-10-08"
-updated: "2026-10-08"
+updated: "2026-10-13"
 closed: null
 
 summary: |
@@ -53,7 +53,7 @@ acceptance_criteria:
 
 decisions:
   - |
-    2026-10-08, Claude at the owner's request: sliced into branch protection
+    2026-10-08, at the owner's request: sliced into branch protection
     and merging (0090), which names the checks 0055-F2 and 0055-F3 produce,
     and secrets, installations and repository-wide settings (0091), which
     name what 0055-F3 and 0055-F4 read. Applying the checklist after the
