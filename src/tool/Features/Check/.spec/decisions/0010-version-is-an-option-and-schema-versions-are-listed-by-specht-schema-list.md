@@ -83,3 +83,11 @@ prints the pinned version alone; a caller reads the mark in the list, or
 ## Reversal
 
 None.
+
+## Pin command naming resolved 2026-10-14
+
+The repository owner named and placed the command as `specht schema pin <version>`
+([`0001-F7` decision 0005, command-name addendum](../../../../.spec/decisions/0005-a-schema-version-is-semver-pinned-exactly-moved-by-pin.md)).
+The pin command's name and placement, listed above as undecided on 2026-10-11,
+are now agreed. The list marker, unreadable-pin behaviour and pin-policy
+questions remain open.

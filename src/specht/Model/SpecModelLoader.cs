@@ -18,9 +18,12 @@ public sealed class SpecModelLoader(
     FeatureTagParser tags)
 {
     /// <summary>Loads the resolved tree through its injected manifest and schema stage.</summary>
-    public SpecModel Load(string root)
+    public SpecModel Load(string root) => Load(root, null);
+
+    /// <summary>Loads the resolved tree with the frontmatter source selected for this invocation.</summary>
+    public SpecModel Load(string root, SchemaSourceSelection? selection)
     {
-        var loaded = schemas.Load(root);
+        var loaded = schemas.Load(root, selection);
         var inputs = loaded.Structure.Discovery;
         var locations = discovery.FindSpecifications(root, inputs);
         var features = new List<FeatureSpec>();

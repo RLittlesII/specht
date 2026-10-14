@@ -106,6 +106,14 @@ configuration, not a JSON Schema. The three frontmatter schemas sit under
 `task`, `epic`), and the templates under `.specht/templates/` (`0001-F5`
 decision 0011).
 
+The check selects local frontmatter schemas with `--schema-source disk`, or
+with `"schemaSource": "disk"` in a manifest pinned to schema `0.2.0` or later.
+The CLI selection overrides a valid manifest selection and works with every
+shipped pin. Files live under `.specht/schema/frontmatter/` with names from
+`frontmatterSchemas`; Feature and task are required, epic only when the manifest
+explicitly declares its grammar. A recorded `spechtSchema` retains hash
+verification under `disk`; explicit `embedded` contradicts that record.
+
 `specht init` writes the manifest and nothing else. `--schemas` adds the
 frontmatter schemas, `--templates` adds the templates and `--all` adds both;
 the epic schema is written only with the schemas, and only with `--epics` or
@@ -124,7 +132,7 @@ only accepts more and a major can fail a tree that passed, and before it a
 `0.minor` step can fail one too. A published version is never changed in
 place; from schema `1.0.0` on it is in every later tool, and before it a later
 tool may stop shipping a `0.x.y` (`0001-F7` C-1, C-11, decision 0007). A pin is
-exact. A pin command moves it to
+exact. `specht schema pin <version>` moves it to
 any shipped version, up or down, and changes nothing else; `specht upgrade`
 then rewrites the schema files, and every template the manifest does not name
 as the consumer's, to match the pin and prints what changed. In the manifest
@@ -140,9 +148,11 @@ so (`0001-F4` B-004).
 ## CLI
 
 ```
-specht [--root <dir>] [--report <path>] [--strict] [--json]
+specht [--root <dir>] [--report <path>] [--strict] [--json] [--schema-source <embedded|disk>]
 specht init [--root <dir>] [--schemas] [--templates] [--all] [--epics]
             [--upstream <address>] [--upstream-version <label>] [--upstream-hash <kind=hash>]...
+specht schema list
+specht schema pin [<version>] [--root <dir>]
 specht upgrade [--root <dir>]
 specht --explain SPEC031
 specht --version
@@ -165,8 +175,11 @@ Beside another argument it is not decided (`0001-F2` OQ-8).
 
 `specht schema list`, which lists the shipped schema versions and marks the one
 a root pins, is specified and not built (`0001-F7` B-041, B-042, B-084, B-085).
-A command that pins one is specified, and neither named nor placed
-(`0001-F7` B-043 to B-051, OQ-11).
+`specht schema pin [<version>]` changes only the manifest's `schemaVersion`.
+Without a version, an interactive terminal offers the shipped versions in a
+Spectre.Console selection prompt; arrow keys navigate and Enter selects. Both
+forms are specified and not built (`0001-F7` B-043 to B-051, B-057, B-058;
+decision 0005, addenda 2026-10-14).
 
 `specht upgrade`, `--explain`, `--report` and the `init --epics` option are
 specified and not built (`0001-F7`, `0001-F3`, `0001-F4`). What the tool accepts today is

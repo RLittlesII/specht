@@ -15,7 +15,7 @@ using Specht.Versioning;
 namespace Specht.Tool.Features.Init;
 
 /// <summary>
-/// Writes the newest shipped manifest, and the selected schemas and templates, under <c>&lt;root&gt;/.specht/</c>
+/// Writes the manifest and selected schemas and templates at the existing pin, or newest shipped version, under <c>&lt;root&gt;/.specht/</c>
 /// (<c>0001-F4</c> B-029 to B-033), leaving every file that exists as it was (C-1).
 /// </summary>
 /// <param name="shippingCopy">
@@ -42,7 +42,7 @@ public sealed partial class InitWriter(
             .Where(static name => Shipped().IsMatch(name))
             .ToDictionary(static name => name, name => Read(assembly, name), StringComparer.Ordinal);
 
-    /// <summary>Writes the newest version's manifest and each selected part that is absent under <paramref name="root"/>.</summary>
+    /// <summary>Writes each absent selected file at the manifest pin, or newest shipped version for a new manifest.</summary>
     /// <param name="root">The repository root, which must be a directory.</param>
     /// <param name="schemas">Whether the frontmatter schemas are selected.</param>
     /// <param name="templates">Whether the templates are selected.</param>
@@ -68,17 +68,33 @@ public sealed partial class InitWriter(
 
         var listing = new List<(string Path, bool Written)>();
         var manifestPresent = manifestStore.ManifestExists(root);
-        var selected = Newest(schemas, templates, manifestPresent).ToList();
         var hasSourceOptions = upstream is not null || upstreamVersion is not null || upstreamHashes is { Count: > 0 };
         UpstreamSchemaSource? source = null;
+        SemanticVersion? pinned = null;
+
+        if (hasSourceOptions && manifestPresent)
+        {
+            throw new SpechtManifestException($"{SpecManifestStore.RelativePath}: upstream options require a new manifest.");
+        }
+
+        if (manifestPresent)
+        {
+            try
+            {
+                var structure = manifestParser.Parse(manifestStore.ReadManifest(root));
+                pinned = manifestParser.PinnedVersion(structure).Number;
+                source = structure.SpechtSchema;
+            }
+            catch (Exception exception) when (exception is JsonException or InvalidOperationException or FormatException)
+            {
+                throw new SpechtManifestUnreadableException(exception);
+            }
+        }
+
+        var selected = Selected(schemas, templates, manifestPresent, pinned).ToList();
 
         if (hasSourceOptions)
         {
-            if (manifestPresent)
-            {
-                throw new SpechtManifestException($"{SpecManifestStore.RelativePath}: upstream options require a new manifest.");
-            }
-
             var hashes = new JsonObject();
 
             foreach (var pair in upstreamHashes ?? [])
@@ -112,27 +128,6 @@ public sealed partial class InitWriter(
             var text = manifest.ToJsonString(new JsonSerializerOptions { WriteIndented = true });
             source = manifestParser.Parse(text).SpechtSchema;
             selected[manifestIndex] = (SpecManifestStore.RelativePath, System.Text.Encoding.UTF8.GetBytes(text + "\n"));
-        }
-        else if (schemas && manifestPresent)
-        {
-            if (!manifestStore.RootExists(root))
-            {
-                throw new SpechtRootNotFoundException();
-            }
-
-            if (!manifestStore.ManifestExists(root))
-            {
-                throw new SpechtManifestNotFoundException(manifestStore.RetiredManifestExists(root));
-            }
-
-            try
-            {
-                source = manifestParser.Parse(manifestStore.ReadManifest(root)).SpechtSchema;
-            }
-            catch (Exception exception) when (exception is JsonException or InvalidOperationException or FormatException)
-            {
-                throw new SpechtManifestUnreadableException(exception);
-            }
         }
 
         var preserved = new HashSet<string>(StringComparer.Ordinal);
@@ -209,7 +204,7 @@ public sealed partial class InitWriter(
         + "(?<folder>schema|templates)/v(?<version>[0-9]+\\.[0-9]+\\.[0-9]+)/(?<path>.+))$")]
     private static partial Regex Shipped();
 
-    private IEnumerable<(string Relative, byte[] Bytes)> Newest(bool schemas, bool templates, bool manifestPresent)
+    private IEnumerable<(string Relative, byte[] Bytes)> Selected(bool schemas, bool templates, bool manifestPresent, SemanticVersion? pinned)
     {
         var shipped = shippingCopy
             .Select(static entry => (Name: Shipped().Match(entry.Key), Bytes: entry.Value))
@@ -222,10 +217,10 @@ public sealed partial class InitWriter(
                 Path: entry.Name.Groups["path"].Success ? entry.Name.Groups["path"].Value : null,
                 entry.Bytes))
             .ToList();
-        var newest = shipped.Max(static entry => entry.Version);
+        var version = pinned ?? shipped.Max(static entry => entry.Version);
 
         return shipped
-            .Where(entry => entry.Version == newest)
+            .Where(entry => entry.Version == version)
             .Where(entry => entry.Folder switch
             {
                 null => true,

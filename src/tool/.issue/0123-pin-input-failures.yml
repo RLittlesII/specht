@@ -20,7 +20,7 @@ claims:
   - B-051
 
 created: "2026-10-09"
-updated: "2026-10-10"
+updated: "2026-10-14"
 closed: null
 
 summary: |
@@ -28,7 +28,8 @@ summary: |
   directory or has no manifest, and 3 for a manifest the check rejects
   for a reason other than its `schemaVersion` — the codes the check and
   `upgrade` give (0027 and 0013, both delivered; 0046). Waits on 0122
-  for the command, and through it on OQ-11. Which failure wins when one
+  for `specht schema pin <version>`; its name is agreed in decision 0005
+  (command-name addendum 2026-10-14). Which failure wins when one
   of these meets an unshipped version (B-048) is OQ-23, the owner's.
 
 acceptance_criteria:

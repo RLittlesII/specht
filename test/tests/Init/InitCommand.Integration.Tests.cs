@@ -132,6 +132,36 @@ public sealed class InitCommandIntegrationTests : IDisposable
             .Equal(expected.Select(static file => $"written {file}"));
     }
 
+    [Theory]
+    [InlineData(null)]
+    [InlineData("--schemas")]
+    [InlineData("--templates")]
+    [InlineData("--all")]
+    public void AnUnshippedPin_WhenInitRuns_ShouldExitThreeWithoutWriting(string? option)
+    {
+        // Given
+        var root = Path.Combine(_sandbox, "repo");
+        var manifestPath = Path.Combine(root, SpecTree.ManifestPath);
+        const string manifest = "{\r\n  \"schemaVersion\": \"7.0.0\"\r\n}\r\n";
+        Directory.CreateDirectory(Path.GetDirectoryName(manifestPath)!);
+        File.WriteAllText(manifestPath, manifest);
+
+        // When
+        var (stdout, stderr, code) = AcceptanceTool.Launch(_sandbox, ["init", "--root", "repo", .. option is null ? Array.Empty<string>() : [option]]);
+
+        // Then
+        code.Should().Be(ExitCodes.InvalidManifest, stdout + stderr);
+        stdout.Should().BeEmpty();
+        stderr.Should().Contain("schemaVersion 7.0.0 is not shipped").And.Contain(".specht/manifest.json").And.NotContain(_sandbox);
+        foreach (var version in EngineServices.Versions().Versions)
+        {
+            stderr.Should().Contain(version.Number.ToString());
+        }
+
+        Directory.EnumerateFiles(root, "*", SearchOption.AllDirectories).Should().ContainSingle();
+        File.ReadAllText(manifestPath).Should().Be(manifest);
+    }
+
     [Fact]
     public void ABareRoot_WhenInitRuns_ShouldPinTheNewestEmbeddedSchemaVersion()
     {

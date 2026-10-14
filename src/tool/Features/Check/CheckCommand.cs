@@ -17,7 +17,7 @@ namespace Specht.Tool.Features.Check;
 /// </summary>
 /// <param name="console">Where the product goes; injected so the command tester captures it.</param>
 /// <param name="run">The engine's runner, <see cref="SpechtRunner.Run"/> outside a test.</param>
-public sealed class CheckCommand(IAnsiConsole console, Func<string, SpechtReport> run) : AsyncCommand<CheckCommand.Settings>
+public sealed class CheckCommand(IAnsiConsole console, Func<string, SchemaSourceSelection?, SpechtReport> run) : AsyncCommand<CheckCommand.Settings>
 {
     /// <inheritdoc />
     public override Task<int> ExecuteAsync(CommandContext context, Settings settings, CancellationToken cancellationToken)
@@ -26,7 +26,12 @@ public sealed class CheckCommand(IAnsiConsole console, Func<string, SpechtReport
 
         try
         {
-            report = run(Path.GetFullPath(settings.Root));
+            report = run(Path.GetFullPath(settings.Root), settings.SchemaSource switch
+            {
+                "embedded" => SchemaSourceSelection.Embedded,
+                "disk" => SchemaSourceSelection.Disk,
+                _ => null,
+            });
         }
         catch (SpechtRootNotFoundException)
         {
@@ -86,6 +91,16 @@ public sealed class CheckCommand(IAnsiConsole console, Func<string, SpechtReport
         [CommandOption("--json")]
         [Description("Write the report document to stdout in place of the violation lines and the summary.")]
         public bool Json { get; init; }
+
+        /// <summary>Gets the explicit frontmatter source for this invocation, overriding a valid manifest selection.</summary>
+        [CommandOption("--schema-source <embedded|disk>")]
+        [Description("Select embedded or local disk frontmatter schemas for this check.")]
+        public string? SchemaSource { get; init; }
+
+        /// <inheritdoc />
+        public override ValidationResult Validate() => SchemaSource is null or "embedded" or "disk"
+            ? ValidationResult.Success()
+            : ValidationResult.Error("The schema source must be 'embedded' or 'disk'.");
     }
 
     private static Task<int> Fail(int code, string message)

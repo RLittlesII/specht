@@ -4,7 +4,7 @@ title: Offer an interactive version pick
 
 status: blocked
 
-value: 2
+value: 4
 risk: 2
 
 parent: "0041"
@@ -20,16 +20,17 @@ claims:
   - B-058
 
 created: "2026-10-09"
-updated: "2026-10-10"
+updated: "2026-10-14"
 closed: null
 
 summary: |
-  A Could (decision 0005): with no version argument at an interactive
-  terminal, the pin command offers the shipped versions as an arrow-key
-  list and pins the one chosen as 0122 does. Value 2 for that reason,
-  where the Feature's is 4. Blocked on OQ-17, the owner's: what the
-  command does with no argument where there is no interactive terminal.
-  Waits on 0122 for the command, and through it on OQ-11.
+  Required interactive path (decision 0005, interactive-selection addendum
+  2026-10-14): `specht schema pin` without a version at an interactive
+  terminal offers the shipped versions through the Spectre.Console
+  single-choice selection prompt. Arrow keys navigate and Enter pins the
+  selected version through 0122. Value 4 matches the parent Feature now
+  that this path is required. Blocked on OQ-17: the no-terminal behaviour.
+  Waits on 0122 for the pin operation; command naming is agreed.
 
 acceptance_criteria:
   - "B-057 — no version argument, interactive terminal: every shipped version offered as a list"
@@ -43,6 +44,12 @@ decisions:
     in round 7, so no Must item waits on a Could. The claims it carries
     are spec-author's cut. Status blocked: OQ-17 is
     open.
+
+  - |
+    2026-10-14, the owner required the Spectre selection widget when
+    `specht schema pin` is run without a version. The earlier Could
+    classification is superseded (decision 0005, interactive-selection
+    addendum). Value 4 matches the parent Feature; OQ-17 remains open.
 
 out_of_scope:
   - "No interactive terminal — OQ-17."

@@ -6,12 +6,12 @@ using Specht.Tool.Features.Init;
 
 namespace Specht.Tests.Init;
 
-/// <summary>Pins init's existing text-only validation and shape-failure category (0001-F1 C-9; 0001-F5 C-5).</summary>
+/// <summary>Pins init's version refusal and retained shape-failure category (0001-F4 B-013; 0001-F5 C-5).</summary>
 [Trait("Tier", "Unit")]
 public sealed class InitManifestCompatibilityUnitTests
 {
     [Fact]
-    public async Task AnExistingManifestWithAnUnshippedPinAndRuleId_WhenSchemasAreInitialized_ShouldKeepTextOnlyValidation()
+    public async Task AnExistingManifestWithAnUnshippedPinAndRuleId_WhenSchemasAreInitialized_ShouldRejectThePinBeforeWriting()
     {
         // Given
         const string manifest = """{"schemaVersion":"7.0.0","rules":{"SPEC999":"off"}}""";
@@ -24,11 +24,12 @@ public sealed class InitManifestCompatibilityUnitTests
             .WithShippingCopy(new Dictionary<string, byte[]> { ["schema/v0.1.0/frontmatter/task.schema.json"] = "{}"u8.ToArray() });
 
         // When
-        await writer.Write("repo", schemas: true, templates: false, CancellationToken.None);
+        var write = () => writer.Write("repo", schemas: true, templates: false, CancellationToken.None);
 
         // Then
+        (await write.Should().ThrowExactlyAsync<SpechtManifestException>()).Which.Message.Should().Contain("schemaVersion 7.0.0 is not shipped");
         fileSystem.File.ReadAllText(Path.Combine("repo", SpecTree.ManifestPath)).Should().Be(manifest);
-        fileSystem.File.ReadAllText(Path.Combine("repo", SpecTree.ItemSchemaPath)).Should().Be("{}");
+        fileSystem.File.Exists(Path.Combine("repo", SpecTree.ItemSchemaPath)).Should().BeFalse();
     }
 
     [Theory]

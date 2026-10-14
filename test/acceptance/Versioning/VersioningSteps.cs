@@ -272,7 +272,8 @@ public sealed partial class VersioningSteps
             return;
         }
 
-        (_stdout, _stderr, _exitCode) = AcceptanceTool.Launch(Tree.Root, _environment, "--root", ".", "--json");
+        string[] args = _selection is null ? ["--root", ".", "--json"] : ["--root", ".", "--json", "--schema-source", _selection];
+        (_stdout, _stderr, _exitCode) = AcceptanceTool.Launch(Tree.Root, _environment, args);
     }
 
     [Then("the frontmatter is validated against the local copy")]
