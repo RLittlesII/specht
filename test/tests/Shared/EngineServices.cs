@@ -4,13 +4,32 @@ using Specht.Composition;
 using Specht.Manifest;
 using Specht.Model;
 using Specht.Tool;
+using Specht.Tool.Features.Schema;
 using Specht.Versioning;
+using Spectre.Console;
+using Spectre.Console.Cli.Testing;
+using Spectre.Console.Testing;
 
 namespace Specht.Tests.Shared;
 
 /// <summary>Composes the real engine graph with optional in-memory file system and catalog substitutions.</summary>
 public static class EngineServices
 {
+    /// <summary>Exercises the schema slice's production registrations with simulated terminal input.</summary>
+    public static CommandAppTester CommandApp(IFileSystem fileSystem, TestConsole console)
+    {
+        var services = new ServiceCollection();
+        services.AddSingleton(fileSystem);
+        services.AddSingleton<IAnsiConsole>(console);
+        var app = new CommandAppTester(new TypeRegistrar(services.AddSpechtEngine()), console: console);
+        app.Configure(static configuration => configuration.AddSchema());
+        return app;
+    }
+
+    /// <summary>Resolves direct schema operations with an optional synthetic catalog.</summary>
+    public static SchemaVersionManager Commands(SchemaVersions? versions = null) =>
+        (SchemaVersionManager)Resolve(typeof(SchemaVersionManager), versions: versions);
+
     /// <summary>Resolves a runner with the chosen catalog.</summary>
     public static SpechtRunner Runner(SchemaVersions? versions = null) => (SpechtRunner)Resolve(typeof(SpechtRunner), versions: versions);
 

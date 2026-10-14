@@ -2,7 +2,7 @@ id: "0125"
 type: task
 title: Offer an interactive version pick
 
-status: blocked
+status: done
 
 value: 4
 risk: 2
@@ -18,10 +18,11 @@ spec: src/tool/.spec/README.md
 claims:
   - B-057
   - B-058
+  - B-113
 
 created: "2026-10-09"
 updated: "2026-10-14"
-closed: null
+closed: "2026-10-14"
 
 summary: |
   Required interactive path (decision 0005, interactive-selection addendum
@@ -29,7 +30,8 @@ summary: |
   terminal offers the shipped versions through the Spectre.Console
   single-choice selection prompt. Arrow keys navigate and Enter pins the
   selected version through 0122. Value 4 matches the parent Feature now
-  that this path is required. Blocked on OQ-17: the no-terminal behaviour.
+  that this path is required. Decision 0012 resolves OQ-17: without a
+  terminal, require a version, print a hint and exit 2 without writing.
   Waits on 0122 for the pin operation; command naming is agreed.
 
 acceptance_criteria:
@@ -38,6 +40,11 @@ acceptance_criteria:
   - "§ 9 carries a row naming a test for each id above."
 
 decisions:
+  - |
+    2026-10-14, decision 0012 resolves the remaining input semantics.
+    CLI and acceptance tests pass for this item; its claim rows name
+    the executable proof.
+
   - |
     2026-10-09, the repository owner approved a written plan (decision
     0005, OQ-13) naming this item; the spec-reviewer asked for the same
@@ -52,5 +59,4 @@ decisions:
     addendum). Value 4 matches the parent Feature; OQ-17 remains open.
 
 out_of_scope:
-  - "No interactive terminal — OQ-17."
   - "Pinning a named version — 0122."

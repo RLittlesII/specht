@@ -2,7 +2,7 @@ id: "0153"
 type: refactor
 title: Move SpechtTree and its store out of the benchmarks into the engine
 
-status: ready-for-architecture
+status: blocked
 
 value: 3
 risk: 3
@@ -10,7 +10,7 @@ risk: 3
 parent: null
 children: []
 
-depends_on: ["0147"] # the three types this moves are built by 0147; nothing to move until it lands
+depends_on: ["0147", "0216"] # the three types this moves are built by 0147; nothing to move until it lands
 spikes: []
 
 spec: null
@@ -18,10 +18,13 @@ spec: null
 claims: []
 
 created: "2026-10-11"
-updated: "2026-10-11"
+updated: "2026-10-14"
 closed: null
 
 summary: |
+  Paused by ADR-0014: benchmark evaluation 0216 must establish that the
+  architecture benefit justifies its cost before this migration proceeds.
+
   The refactor story the repository owner asked for on pull request #114,
   2026-10-11, reviewing `test/tests/Benchmarks/SpechtTree.Integration.Tests.cs`:
 

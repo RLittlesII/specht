@@ -2,7 +2,7 @@ id: "0156"
 type: refactor
 title: Split FrontmatterSchemaRule into one rule per id
 
-status: ready-for-implementation
+status: blocked
 
 value: 3
 risk: 3
@@ -10,7 +10,7 @@ risk: 3
 parent: null
 children: []
 
-depends_on: ["0155"] # the split rules read the model 0155 leaves
+depends_on: ["0155", "0216"] # the split rules read the model 0155 leaves
 spikes: []
 
 spec: src/specht/.spec/README.md
@@ -18,10 +18,13 @@ spec: src/specht/.spec/README.md
 claims: []
 
 created: "2026-10-11"
-updated: "2026-10-11"
+updated: "2026-10-14"
 closed: null
 
 summary: |
+  Paused by ADR-0014: benchmark evaluation 0216 must establish that the
+  architecture benefit justifies its cost before this migration proceeds.
+
   ADR-0010 (accepted 2026-10-11,
   .spec/adr/0010-layered-engine-boundaries-with-io-at-the-edge-and-a-mediator.md),
   stage 3 (B) of "The order of work": the owner's decision 1, one rule per

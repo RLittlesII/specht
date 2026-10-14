@@ -6,6 +6,7 @@ using Specht.Manifest;
 using Specht.Tool;
 using Specht.Tool.Features.Check;
 using Specht.Tool.Features.Init;
+using Specht.Tool.Features.Schema;
 using Spectre.Console.Cli;
 
 var services = new ServiceCollection();
@@ -18,7 +19,7 @@ app.SetDefaultCommand<CheckCommand>();
 app.Configure(static config =>
 {
     config.SetApplicationVersion(ThisAssembly.AssemblyInformationalVersion);
-    config.AddInit();
+    config.AddInit().AddSchema();
 });
 
 return await app.RunAsync(args);

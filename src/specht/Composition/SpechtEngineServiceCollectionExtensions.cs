@@ -30,6 +30,8 @@ public static class SpechtEngineServiceCollectionExtensions
         services.AddSingleton<FeatureTagParser>();
         services.AddSingleton<SpecDiscovery>();
         services.AddSingleton<SpecManifestStore>();
+        services.AddSingleton<ManifestPinEditor>();
+        services.AddSingleton<SchemaVersionManager>();
         services.AddSingleton<UpstreamSchemaCopy>();
         services.AddSingleton<SpecSchemasLoader>();
         services.AddSingleton<SpecModelLoader>();

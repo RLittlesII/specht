@@ -84,12 +84,13 @@ Two projects, one direction of dependency:
   a command parses, calls the runner, and folds the report into an exit code.
   Nothing else lives in a command.
 
-That is the engine as built. Its decided shape is
-[ADR-0010](.spec/adr/0010-layered-engine-boundaries-with-io-at-the-edge-and-a-mediator.md):
-one assembly of namespaces that depend downward only, I/O confined to four
-stores, an immutable model built before any rule runs, one rule per rule id,
-and a host that sends a request to a handler in the engine. New engine code
-follows it; the existing code moves in its stages.
+That is the engine as built. ADR-0010 describes a target architecture;
+[ADR-0014](.spec/adr/0014-architecture-rollout-requires-benchmark-evidence.md)
+gates further engine and host migration on repository benchmark evidence that
+justifies the added cost. The source-generated mediator candidate is
+martinothamar/Mediator, to be evaluated before adoption. A feature does not
+waive the gate or the staged prerequisites. Existing stores, parsers and
+composition remain the implementation basis until that evidence is agreed.
 
 The design direction (brief § 5) moves every literal the engine hardcodes —
 layouts, section roles, table headers, markers, frontmatter key roles, id
@@ -153,6 +154,8 @@ specht init [--root <dir>] [--schemas] [--templates] [--all] [--epics]
             [--upstream <address>] [--upstream-version <label>] [--upstream-hash <kind=hash>]...
 specht schema list
 specht schema pin [<version>] [--root <dir>]
+specht schema list [--root <dir>]
+specht schema pin [version] [--root <dir>]
 specht upgrade [--root <dir>]
 specht --explain SPEC031
 specht --version
@@ -173,13 +176,12 @@ version the tool's assembly states - the package version and the commit - and
 exits `0`; it needs no manifest and writes nothing (`0001-F2` B-040 to B-043).
 Beside another argument it is not decided (`0001-F2` OQ-8).
 
-`specht schema list`, which lists the shipped schema versions and marks the one
-a root pins, is specified and not built (`0001-F7` B-041, B-042, B-084, B-085).
-`specht schema pin [<version>]` changes only the manifest's `schemaVersion`.
-Without a version, an interactive terminal offers the shipped versions in a
-Spectre.Console selection prompt; arrow keys navigate and Enter selects. Both
-forms are specified and not built (`0001-F7` B-043 to B-051, B-057, B-058;
-decision 0005, addenda 2026-10-14).
+`specht schema list` lists the shipped versions in semantic-version order and
+marks the root's selected version with ` (pinned)`. Without a manifest the list is
+unmarked. `specht schema pin <version>` changes only the manifest's exact pin,
+up or down. With no version, an interactive Spectre.Console selector uses arrow
+keys and Enter; without a terminal the command prints an explicit-version hint
+and exits `2`. Both commands are built (`0001-F7`, items `0121` to `0123`, `0125`).
 
 `specht upgrade`, `--explain`, `--report` and the `init --epics` option are
 specified and not built (`0001-F7`, `0001-F3`, `0001-F4`). What the tool accepts today is

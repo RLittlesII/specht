@@ -98,6 +98,7 @@ public sealed partial class VersioningSteps
     }
 
     [Given("a root directory with no manifest")]
+    [Given("the manifest has been removed from the root")]
     public void GivenARootDirectoryWithNoManifest() => File.Delete(Path.Combine(Tree.Root, SpecTree.ManifestPath));
 
     [When("init runs against it")]
@@ -324,6 +325,7 @@ public sealed partial class VersioningSteps
         Document["schemaVersion"]!.GetValue<string>().Should().Be(version);
 
     [Then("the standard error names version {word} and the versions the tool ships")]
+    [Then("the standard error names {word} and the versions the tool ships")]
     public void ThenTheStandardErrorNamesVersionAndTheVersionsTheToolShips(string version)
     {
         var shipped = EngineServices.Versions().Versions.Select(static shippedVersion => shippedVersion.Number.ToString());

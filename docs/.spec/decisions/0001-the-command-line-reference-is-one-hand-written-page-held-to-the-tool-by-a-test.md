@@ -105,3 +105,11 @@ All three sets were put to the owner and turned down.
 - `docs-as-first-class-citizen.feature`: `@B-003` reworded, `@B-006` to
   `@B-011` added, one of them a `@boundary`.
 - Epic `0002`: the summary, the placement and the candidate task `0002-03`.
+
+## Command branches 2026-10-14
+
+The schema branch adds the first nested commands. The help-derived surface
+recurses through command branches, including each branch and leaf, so B-006
+to B-008 continue to cover every shipped command. The command-line reference
+remains one hand-written page. This is the schema-command implementation's
+application of the existing help-derived contract, not a new command source.

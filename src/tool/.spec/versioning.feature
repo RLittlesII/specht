@@ -526,6 +526,7 @@ Feature: Schema versioning
   @B-041
   Scenario: Listing names every shipped version
     Given the tool ships schema versions 0.1.0 and 0.2.0
+    And the manifest has been removed from the root
     When the shipped versions are listed
     Then the standard output is 0.1.0 and 0.2.0, one to a line
     And the exit code is 0
@@ -533,6 +534,7 @@ Feature: Schema versioning
   @B-042
   Scenario: Listing orders versions by precedence
     Given the tool ships schema versions 0.9.0 and 0.10.0
+    And the manifest has been removed from the root
     When the shipped versions are listed
     Then 0.9.0 is printed before 0.10.0
 
@@ -568,13 +570,22 @@ Feature: Schema versioning
     And the exit code is 0
 
   @B-045
-  Scenario: Pinning changes only the version in the manifest
+  Scenario Outline: Pinning changes only the version in the manifest
     Given the tool ships schema versions 0.1.0 and 0.2.0
     And the manifest pins version 0.1.0
     And its manifest lowers one rule to a warning, disables another and renames the claims section
+    And the manifest uses encoding <encoding>
     And a snapshot of the manifest
     When specht schema pin 0.2.0 runs
     Then the manifest differs from the snapshot only in the version it pins
+
+    Examples:
+      | encoding |
+      | utf-8    |
+      | utf-16   |
+      | utf-16BE |
+      | utf-32   |
+      | utf-32BE |
 
   @B-046 @boundary
   Scenario: Pinning touches no other file
@@ -1009,3 +1020,59 @@ Feature: Schema versioning
       | malformed JSON                |
       | an invalid keyword type       |
       | an unresolved local reference |
+
+  @B-108
+  Scenario: Listing requires an existing root
+    When schema versions are listed against a path that is not a directory
+    Then the standard output is empty
+    And the exit code is 2
+
+  @B-109
+  Scenario: Listing an invalid pin provides recovery information
+    Given the manifest pins version 7.0.0
+    When the shipped versions are listed
+    Then the standard output is empty
+    And the standard error names version 7.0.0 and the versions the tool ships
+    And the standard error suggests pinning a shipped version
+    And the exit code is 3
+
+  @B-110
+  Scenario Outline: Pinning repairs an unusable current pin
+    Given the manifest's schema version is <value>
+    When specht schema pin 0.2.0 runs
+    Then the manifest pins version 0.2.0
+    And the exit code is 0
+
+    Examples:
+      | value |
+      | 7.0.0 |
+      | wrong |
+
+  @B-111
+  Scenario: Pinning validates the root before the target
+    When specht schema pin 7.0.0 runs against a path that is not a directory
+    Then nothing is written
+    And the exit code is 2
+
+  @B-112 @boundary
+  Scenario: Downgrading preserves newer manifest settings
+    Given the manifest pins version 0.2.0
+    And its manifest configures claim tags
+    And a snapshot of the manifest
+    When specht schema pin 0.1.0 runs
+    Then the manifest differs from the snapshot only in the version it pins
+    And the manifest pins version 0.1.0
+
+  @B-113 @boundary
+  Scenario: Pinning without a terminal requires an explicit version
+    Given there is no interactive terminal
+    And a snapshot of every file under the root
+    When specht schema pin runs without a version
+    Then no file under the root has changed
+    And the standard error suggests supplying a version
+    And the exit code is 2
+
+  @B-114
+  Scenario: Pinning confirms the selected version and manifest
+    When specht schema pin 0.2.0 runs
+    Then the output confirms version 0.2.0 and the manifest

@@ -11,6 +11,9 @@ analyzer settings, the package policy and the commands —
 
 ## Before implementing
 
+- **An accepted target is not execution permission.** Check benchmark gates,
+  prerequisites and adoption decisions before introducing architecture. A feature
+  does not waive them; keep trial code out of production until evidence permits it.
 - **Orient first.** Read the claim, the scenario, the sections that own the
   design, and the code that already exists. Most apparent gaps are a sibling's
   stated scope.

@@ -2,7 +2,7 @@ id: "0167"
 type: refactor
 title: Run the check as a query a mediator dispatches, and delete the runner
 
-status: ready-for-implementation
+status: blocked
 
 value: 4
 risk: 4
@@ -10,7 +10,7 @@ risk: 4
 parent: null
 children: []
 
-depends_on: ["0164", "0166"] # the handler is the reader of 0166 and the evaluator of 0164, and nothing else
+depends_on: ["0164", "0166", "0216"] # reader/evaluator prerequisites and the benchmark adoption gate
 spikes: []
 
 spec: null
@@ -18,15 +18,22 @@ spec: null
 claims: []
 
 created: "2026-10-11"
-updated: "2026-10-11"
+updated: "2026-10-14"
 closed: null
 
 summary: |
+  Paused by ADR-0014: benchmark evaluation 0216 must establish that the
+  architecture benefit justifies its cost before this migration proceeds.
+
   ADR-0010 (accepted 2026-10-11,
   .spec/adr/0010-layered-engine-boundaries-with-io-at-the-edge-and-a-mediator.md),
   stage 7 (E) of "The order of work". Its scope, from the record's § "A
   host sends a request", § "I/O is confined", § "The guard" and § "The
   whole-check benchmark":
+
+  The handwritten dispatcher below is the historical ADR-0010 proposal,
+  superseded by ADR-0014. Evaluate martinothamar/Mediator through 0216
+  and revise these contracts and registrations before implementation.
 
   - `Specht.Cqrs`: `ICqrs`, `IQuery<T>`, `ICommand<T>`, the two handler
     contracts and the dispatcher, which resolves a handler from
