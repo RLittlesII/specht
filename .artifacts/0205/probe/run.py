@@ -48,7 +48,13 @@ try:
                 print(json.dumps({'mode':mode,'repeat':repeat}), flush=True)
                 run(['dotnet',assembly,'debug',shutil.which('dotnet')] + mode, True)
     else:
-        print('{"nativeLifecycle":"not implemented on macOS; no accepted external resident-peak mechanism"}')
+        os.chdir(session)
+        for mode in [['noop'],['held','0'],['held','128']]:
+            child = os.posix_spawnp('dotnet', ['dotnet','tool','run','peak-probe','--'] + mode, env)
+            waited, status, usage = os.wait4(child, 0)
+            print(json.dumps({'mode':mode,'launcherPid':waited,'wait4PeakBytes':usage.ru_maxrss,'scope':'launcher wait; not attributed to tool','exit':os.waitstatus_to_exitcode(status)}), flush=True)
+        os.chdir(original)
+        print('{"nativeLifecycle":"no accepted per-tool resident-peak mechanism on macOS"}')
 finally:
     shutil.rmtree(session)
     print('{"cleanup":"session removed"}', flush=True)

@@ -112,7 +112,7 @@ static class WindowsDebug
                 var command = CommandLine(evt.process);
                 var isTool = command.Contains("Probe.dll", StringComparison.OrdinalIgnoreCase) && !command.Contains("tool run");
                 if (isTool) tools.Add(evt.pid);
-                Console.WriteLine(JsonSerializer.Serialize(new { kind = "create", pid = evt.pid, root = root.pid, isTool, command = command.Replace(Environment.CurrentDirectory, "<session>") }));
+                Console.WriteLine(JsonSerializer.Serialize(new { kind = "create", pid = evt.pid, root = root.pid, isTool, command = command.Replace(Environment.CurrentDirectory, "<session>").Replace(host, "<dotnet>", StringComparison.OrdinalIgnoreCase) }));
                 if (evt.file != IntPtr.Zero) CloseHandle(evt.file);
             }
             if (evt.code == 6 && evt.file != IntPtr.Zero) CloseHandle(evt.file);

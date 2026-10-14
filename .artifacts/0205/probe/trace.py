@@ -39,7 +39,7 @@ while live:
         is_tool = 'Probe.dll' in command and 'tool run' not in command
         if is_tool:
             tools.add(current)
-        emit(kind='exec', pid=current, root=pid, isTool=is_tool, command=command.replace(os.getcwd(), '<session>'))
+        emit(kind='exec', pid=current, root=pid, isTool=is_tool, command=command.replace(os.getcwd(), '<session>').replace(command.split(' ')[0], '<dotnet>'))
     if event == 6 and current in tools:
         status_text = open(f'/proc/{current}/status').read().splitlines()
         peak = next((line for line in status_text if line.startswith('VmHWM:')), None)
