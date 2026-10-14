@@ -94,7 +94,7 @@ message; whoever merges enforces the rule under § Skill.
 
 ## Skill
 
-[`specht-conventions` § Delivery](../../.claude/skills/specht-conventions/references/delivery.md),
+[`specht-conventions` § Delivery](../../.agents/skills/specht-conventions/references/delivery.md),
 "Cite the item and the claim in the commit message", now says: every commit on
 a branch carries the citation as the first line of its body; the citation
 inside a squash's `* <subject>` list satisfies the rule; a merge does not
@@ -104,5 +104,5 @@ commit is read on `main`, a miss being recorded and not repaired. Its
 squash body.
 
 `AGENTS.md` § SDLC carries the same rule in one bullet and links the skill.
-[`deliver-change`](../../.claude/skills/deliver-change/SKILL.md) step 6
+[`deliver-change`](../../.agents/skills/deliver-change/SKILL.md) step 6
 already says to cite where the citation survives the merge, and is unchanged.

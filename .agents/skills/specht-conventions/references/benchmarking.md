@@ -7,7 +7,7 @@ type: reference
 # Benchmarking
 
 The library and its traps are [`benchmarkdotnet`](../../benchmarkdotnet/SKILL.md);
-the role that writes benchmarks is [`benchmarker`](../../../agents/benchmarker.md).
+the role that writes benchmarks is [`benchmarker`](../../../roles/benchmarker.md).
 This page says where that lands here.
 
 ## Where benchmarks live

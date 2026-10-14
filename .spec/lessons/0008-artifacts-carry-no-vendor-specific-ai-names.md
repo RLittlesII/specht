@@ -38,7 +38,7 @@ names and checks formatting and specification structure.
 
 ## Skill
 
-[`deliver-change`](../../.claude/skills/deliver-change/SKILL.md) prohibits
+[`deliver-change`](../../.agents/skills/deliver-change/SKILL.md) prohibits
 vendor-specific AI names in every artifact. Handoffs retain work, findings and
 responsibility; functional roles distinguish multiple contributions without
 vendor attribution, and a single contributor needs no authorship byline.

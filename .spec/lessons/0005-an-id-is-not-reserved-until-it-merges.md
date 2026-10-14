@@ -90,7 +90,7 @@ delivers a check, review is what enforces the rule under § Skill.
 
 ## Skill
 
-[`specht-conventions` § Delivery](../../.claude/skills/specht-conventions/references/delivery.md)
+[`specht-conventions` § Delivery](../../.agents/skills/specht-conventions/references/delivery.md)
 gains **"Reserve an id before a branch claims it"**: check `main` and every open
 pull request before taking a number, reserve item ids by landing the
 `.issue/.sequence` bump first, keep one writer per specification, and renumber
@@ -98,8 +98,8 @@ an unmerged clash on the branch before merging `main`. Its `Never add` gains
 the id claimed from `main` alone and the renumber after a merge.
 
 The portable half is one sentence each in
-[`spec-and-traceability`](../../.claude/skills/spec-and-traceability/SKILL.md)
+[`spec-and-traceability`](../../.agents/skills/spec-and-traceability/SKILL.md)
 § "Identifiers are claimed after rebasing" - a change in review holds ids too -
-and [`deliver-change`](../../.claude/skills/deliver-change/SKILL.md) step 3 -
+and [`deliver-change`](../../.agents/skills/deliver-change/SKILL.md) step 3 -
 two changes to one specification's agreement are sequenced. `AGENTS.md` carries
 the trap in its short list and links the skill.

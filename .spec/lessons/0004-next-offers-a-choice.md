@@ -37,7 +37,7 @@ single next item.
 
 ## Skill
 
-[`next`](../../.claude/skills/next/SKILL.md):
+[`next`](../../.agents/skills/next/SKILL.md):
 
 - The description answers "as a choice - one startable item per parallel
   lane".
@@ -51,5 +51,5 @@ single next item.
   lane can start."
 
 The companion's
-[`delivery.md`](../../.claude/skills/specht-conventions/references/delivery.md)
+[`delivery.md`](../../.agents/skills/specht-conventions/references/delivery.md)
 states the new output order, and its `scripts/next.py` prints it.

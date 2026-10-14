@@ -70,7 +70,7 @@ claims it already cited. Review is what enforces the rule under § Skill.
 
 ## Skill
 
-[`specht-conventions` § Testing](../../.claude/skills/specht-conventions/references/testing.md)
+[`specht-conventions` § Testing](../../.agents/skills/specht-conventions/references/testing.md)
 § Fixtures gains **"A path a test compares as a string is normalized first"**:
 pass it through the file system it came from, `fileSystem.Path.GetFullPath`,
 before the comparison, because the `SpecTree` folder constants carry `/`,
