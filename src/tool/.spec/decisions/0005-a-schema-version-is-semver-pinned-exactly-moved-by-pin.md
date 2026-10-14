@@ -143,3 +143,21 @@ version numbers to read; C-12 keeps them apart.
 ## Reversal
 
 None.
+
+## Command name agreed 2026-10-14
+
+The repository owner named the command `specht schema pin <version>`. It sits
+under the same `schema` branch as `specht schema list`, whose name was agreed
+in [`0001-F2` decision 0010](../../Features/Check/.spec/decisions/0010-version-is-an-option-and-schema-versions-are-listed-by-specht-schema-list.md).
+This resolves `0001-F7` OQ-11 for the pin command's name and placement.
+
+The existing split stands: `schema list` shows the shipped versions and marks
+the root's pin; `schema pin <version>` changes only `schemaVersion`; `upgrade`
+brings the schema files and tool-owned templates to that pin. The optional
+interactive pick remains a Could (B-057 and B-058), and the pin-policy names
+remain open. The pin's success message and the list marker's appearance are
+not settled by this command-name decision.
+
+The owner supplied this spelling directly; no alternative spelling was put to
+the owner in this decision. B-043 to B-051 and B-057, their scenarios, C-13 and
+§ 5 row 11 name the command. Existing IDs and coverage states are retained.

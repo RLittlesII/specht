@@ -555,7 +555,7 @@ Feature: Schema versioning
   Scenario: Pinning a newer version moves the pin up
     Given the tool ships schema versions 0.1.0 and 0.2.0
     And the manifest pins version 0.1.0
-    When version 0.2.0 is pinned
+    When specht schema pin 0.2.0 runs
     Then the manifest pins version 0.2.0
     And the exit code is 0
 
@@ -563,7 +563,7 @@ Feature: Schema versioning
   Scenario: Pinning an older version moves the pin down
     Given the tool ships schema versions 0.1.0 and 0.2.0
     And the manifest pins version 0.2.0
-    When version 0.1.0 is pinned
+    When specht schema pin 0.1.0 runs
     Then the manifest pins version 0.1.0
     And the exit code is 0
 
@@ -573,7 +573,7 @@ Feature: Schema versioning
     And the manifest pins version 0.1.0
     And its manifest lowers one rule to a warning, disables another and renames the claims section
     And a snapshot of the manifest
-    When version 0.2.0 is pinned
+    When specht schema pin 0.2.0 runs
     Then the manifest differs from the snapshot only in the version it pins
 
   @B-046 @boundary
@@ -582,7 +582,7 @@ Feature: Schema versioning
     And the root is pinned to version 0.1.0 and its frontmatter schemas and templates are version 0.1.0's
     And the root holds specifications, records and companions
     And a snapshot of every file under the root
-    When version 0.2.0 is pinned
+    When specht schema pin 0.2.0 runs
     Then the only file changed is the manifest
     And the frontmatter schemas and the templates are still version 0.1.0's
 
@@ -590,7 +590,7 @@ Feature: Schema versioning
   Scenario: Pinning adds a version to a manifest that has none
     Given the tool ships schema versions 0.1.0 and 0.2.0
     And the manifest carries no schema version
-    When version 0.2.0 is pinned
+    When specht schema pin 0.2.0 runs
     Then the manifest pins version 0.2.0
     And every other manifest key keeps its value
 
@@ -598,7 +598,7 @@ Feature: Schema versioning
   Scenario Outline: Pinning a version the tool does not ship is a not-found failure
     Given the tool ships schema version 0.1.0
     And a snapshot of every file under the root
-    When version <value> is pinned
+    When specht schema pin <value> runs
     Then the standard error names <value> and the versions the tool ships
     And no file under the root has changed
     And the exit code is 4
@@ -610,21 +610,21 @@ Feature: Schema versioning
 
   @B-049
   Scenario: Pinning under a missing root is a missing-input failure
-    When a version is pinned against a path that is not a directory
+    When specht schema pin 0.1.0 runs against a path that is not a directory
     Then nothing is written
     And the exit code is 2
 
   @B-050
   Scenario: Pinning without a manifest is a missing-input failure
     Given the manifest has been removed from the root
-    When a version is pinned
+    When specht schema pin 0.1.0 runs
     Then nothing is written
     And the exit code is 2
 
   @B-051
   Scenario: Pinning in an invalid manifest is invalid configuration
     Given the root's manifest is not valid for a reason other than its schema version
-    When a version is pinned
+    When specht schema pin 0.1.0 runs
     Then nothing is written
     And the exit code is 3
 
@@ -673,7 +673,7 @@ Feature: Schema versioning
   Scenario: Pinning without a version offers the shipped versions
     Given the tool ships schema versions 0.1.0 and 0.2.0
     And an interactive terminal
-    When a version is pinned without naming one
+    When specht schema pin runs without a version
     Then versions 0.1.0 and 0.2.0 are offered as a list to choose from with the arrow keys
 
   @B-058
@@ -681,7 +681,7 @@ Feature: Schema versioning
     Given the tool ships schema versions 0.1.0 and 0.2.0
     And the manifest pins version 0.1.0
     And an interactive terminal
-    When a version is pinned without naming one and 0.2.0 is chosen
+    When specht schema pin runs without a version and 0.2.0 is chosen
     Then the manifest pins version 0.2.0
 
   @B-059

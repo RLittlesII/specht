@@ -20,7 +20,7 @@ claims:
   - B-058
 
 created: "2026-10-09"
-updated: "2026-10-10"
+updated: "2026-10-14"
 closed: null
 
 summary: |
@@ -29,7 +29,8 @@ summary: |
   list and pins the one chosen as 0122 does. Value 2 for that reason,
   where the Feature's is 4. Blocked on OQ-17, the owner's: what the
   command does with no argument where there is no interactive terminal.
-  Waits on 0122 for the command, and through it on OQ-11.
+  Waits on 0122 for `specht schema pin <version>`; its name is agreed in decision 0005
+  (command-name addendum 2026-10-14).
 
 acceptance_criteria:
   - "B-057 — no version argument, interactive terminal: every shipped version offered as a list"

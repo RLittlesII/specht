@@ -23,16 +23,16 @@ claims:
   - B-048
 
 created: "2026-10-09"
-updated: "2026-10-10"
+updated: "2026-10-14"
 closed: null
 
 summary: |
-  A command that sets the manifest's `schemaVersion` to a named shipped
+  `specht schema pin <version>` sets the manifest's `schemaVersion` to a named shipped
   version, above or below the current one, changing that key's value and
   nothing else in the manifest or the tree (C-13); a version the tool
   does not ship is a not-found failure. Risk 3: it writes into a
   consumer's manifest and must leave every other byte of it alone.
-  Blocked on the owner: OQ-11, the command's name; OQ-14, a key only a
+  Blocked on the owner: OQ-14, a key only a
   higher version defines after a move down; OQ-20, whether it repairs a
   manifest whose current version the tool cannot use. OQ-23, which
   failure wins when two apply, is shared with 0123. Waits on 0120 for
@@ -54,6 +54,11 @@ decisions:
     pick (0125). Splitting the pin's input failures into 0123, and the
     claims this item carries, are spec-author's cut. Status blocked:
     OQ-11, OQ-14 and OQ-20 are open.
+
+  - |
+    2026-10-14, the owner named and placed the command as
+    `specht schema pin <version>` (decision 0005, command-name addendum).
+    OQ-11 no longer blocks this item; OQ-14, OQ-20 and OQ-23 remain open.
 
 out_of_scope:
   - "Rewriting the schema set or the templates — § 5 #11; that is upgrade's, 0045."
