@@ -86,11 +86,13 @@ Feature: The manifest carries the roles
     When the check runs
     Then every specification's frontmatter is checked against "feature.json"
 
-  @B-047 @boundary
+  @B-047 @B-022 @B-023 @boundary
   Scenario Outline: A schema file name that is not a plain file name is rejected
     Given the manifest names the Feature schema file "<value>"
-    When the check runs
-    Then the manifest is rejected as invalid, naming the Feature kind and "<value>"
+    When the tool runs as a command on the root
+    Then the exit code is 3
+    And the standard error carries only the schema file name rejection for "feature" and "<value>"
+    And the standard output is empty
 
     Examples:
       | value                 |
@@ -98,6 +100,11 @@ Feature: The manifest carries the roles
       | ../feature.json       |
       | nested/feature.json   |
       | nested\\feature.json  |
+      | feature..json         |
+      | ..                    |
+      | C:\\feature.json      |
+      | \\feature.json        |
+      | \\\\host\\feature.json |
 
   @B-009
   Scenario: Messages name the manifest's values
