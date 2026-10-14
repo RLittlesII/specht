@@ -65,4 +65,4 @@ file-system noise, which their finding states.
 
 ## Reversal
 
-None.
+2026-10-14: ADR-0010 stage 2 supersedes the statement that rules and evaluation read companion files during measurement. The production loader now owns those reads and the model carries parsed tags. Their benchmarks measure the loaded snapshot; disk-reading stages still use a real generated tree under C-10. C-11 continues to prohibit production seams added for benchmarks: this change implements the accepted engine boundary.

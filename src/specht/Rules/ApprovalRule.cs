@@ -33,7 +33,7 @@ public sealed class ApprovalRule : ISpecRule
                 continue;
             }
 
-            var matrix = feature.Document.Section(roles["matrix"]);
+            var matrix = model.MatrixSections[feature];
 
             if (matrix is not null)
             {

@@ -7,11 +7,11 @@ namespace Specht.Model;
 public sealed class FeatureSpec
 {
     /// <summary>A Feature's specification from its parts.</summary>
-    public FeatureSpec(SpecLocation location, SpecDocument document, IReadOnlyList<string> featureFiles)
+    public FeatureSpec(SpecLocation location, SpecDocument document, IReadOnlyList<FeatureFile> featureFiles)
     {
         Location = location;
         Document = document;
-        FeatureFiles = featureFiles;
+        FeatureFiles = Array.AsReadOnly(featureFiles.ToArray());
     }
 
     /// <summary>Where it was discovered, and in which layout.</summary>
@@ -21,7 +21,7 @@ public sealed class FeatureSpec
     public SpecDocument Document { get; }
 
     /// <summary>The Gherkin files beside it - exactly one is expected.</summary>
-    public IReadOnlyList<string> FeatureFiles { get; }
+    public IReadOnlyList<FeatureFile> FeatureFiles { get; }
 
     /// <summary>Path relative to the repository root.</summary>
     public string RelativePath => Location.RelativePath;

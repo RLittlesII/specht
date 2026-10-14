@@ -64,23 +64,23 @@ public sealed class EngineSteps
 
     [Given("the root holds one specification in the epics layout missing its traceability section")]
     public void GivenTheRootHoldsOneSpecificationInTheEpicsLayoutMissingItsTraceabilitySection() =>
-        _specifications.Add(SpecPath.Relative(Tree.Root, Tree.WriteFeature("0001", "F1", sections: WithoutTraceability)));
+        _specifications.Add(Relative(Tree.WriteFeature("0001", "F1", sections: WithoutTraceability)));
 
     [Given("one specification in the features layout missing its traceability section")]
     public void GivenOneSpecificationInTheFeaturesLayoutMissingItsTraceabilitySection() =>
         _specifications.Add(
-            SpecPath.Relative(Tree.Root, Tree.WriteCoLocatedFeature("src/area", "0002", "F1", sections: WithoutTraceability)));
+            Relative(Tree.WriteCoLocatedFeature("src/area", "0002", "F1", sections: WithoutTraceability)));
 
     [Given("the root holds a co-located specification declaring epic {string} and id {string} under a folder named nothing like it")]
     public void GivenTheRootHoldsACoLocatedSpecificationUnderAFolderNamedNothingLikeIt(string epic, string id) =>
-        _specifications.Add(SpecPath.Relative(Tree.Root, Tree.WriteCoLocatedFeature("src/unrelated/area", epic, id)));
+        _specifications.Add(Relative(Tree.WriteCoLocatedFeature("src/unrelated/area", epic, id)));
 
     [Given("the root holds two specifications both declaring epic {string} and id {string}")]
     public void GivenTheRootHoldsTwoSpecificationsBothDeclaring(string epic, string id)
     {
         _identity = $"{epic}-{id}";
-        _specifications.Add(SpecPath.Relative(Tree.Root, Tree.WriteCoLocatedFeature("src/first", epic, id)));
-        _specifications.Add(SpecPath.Relative(Tree.Root, Tree.WriteCoLocatedFeature("src/second", epic, id)));
+        _specifications.Add(Relative(Tree.WriteCoLocatedFeature("src/first", epic, id)));
+        _specifications.Add(Relative(Tree.WriteCoLocatedFeature("src/second", epic, id)));
     }
 
     [When("the engine runs")]
@@ -323,6 +323,8 @@ public sealed class EngineSteps
         };
     }
 
+    private string Relative(string path) => Path.GetRelativePath(Tree.Root, path).Replace(Path.DirectorySeparatorChar, '/');
+
     private const string Traceability = "9. Traceability Matrix";
 
     private static readonly string[] Vocabulary =
@@ -335,11 +337,18 @@ public sealed class EngineSteps
         [.. SpecTree.Sections.Where(static section => !section.StartsWith($"## {Traceability}\n", StringComparison.Ordinal))];
 
     private readonly List<string> _specifications = [];
+
     private SpecTree? _tree;
+
     private SpechtReport? _report;
+
     private IReadOnlyList<GoldenReport.Verdict>? _golden;
+
     private string? _library;
+
     private string? _assemblyName;
+
     private string[] _namespaces = [];
+
     private string? _identity;
 }

@@ -20,7 +20,7 @@ depends_on: ["F5"]
 blocks: ["0101/F7", "0101/F8"]
 spikes: []
 created: "2026-10-07"
-updated: "2026-10-10"
+updated: "2026-10-14"
 github_issue: null
 synced_at: null
 ---
@@ -135,7 +135,7 @@ discovery keys and the existing path-identity checks. Discovery receives the
 same `SpecDiscoveryInputs` after manifest validation; no glob helper, layout
 identity rule, exclusion semantics or finding order changes in D1.
 
-<!-- last written by: implementer, 2026-10-11 (item 0185: the two manifest copies are `.specht/manifest.json` and `src/tool/manifest/v1/manifest.json`, `0001-F5` decision 0011; item 0183: the live manifest copy is under `.specht/`, ADR-0011; item 0107: `SpecDiscovery` is a sealed instance class over an injected `IFileSystem`, and the path mapping is `SpecPath.Relative`, ADR-0001 stage D; every other paragraph as its item left it) -->
+<!-- last written by: implementer, 2026-10-11 (item 0185: the two manifest copies are `.specht/manifest.json` and `src/tool/manifest/v1/manifest.json`, `0001-F5` decision 0011; item 0183: the live manifest copy is under `.specht/`, ADR-0011; item 0107: `SpecDiscovery` is a sealed instance class over an injected `IFileSystem`, and path mapping uses the file system at discovery and a private helper at model load, ADR-0001 stage D; every other paragraph as its item left it) -->
 
 Design for item `0005` (B-001, B-002, B-003, B-009, B-012) and item `0006` (B-004), as built. brief § 5 "Discovery cost" is the drafted direction for `0007` and `0008`, which are not designed here.
 
@@ -169,7 +169,7 @@ Why these shapes, as decisions 0004 and 0008 record them:
 - **`taskFiles` says `task`**, the kind name `0001-F5` decision 0003 ratified for `frontmatterSchemas.task` and `identifiers.task` already carries; B-003's "item" is the same kind.
 - **`{task}`, not a second grammar.** `0001-F5` C-2 gives each identifier one grammar in the manifest. B-003's shape `<epic>-<nn>-*.md` is the task id followed by `-*.md`, so the shape names the grammar and does not restate it: `0001-F5` B-006's three-digit sequence then needs one edit, not two. With the default grammar `^[0-9]{4}-[0-9]{2}$` the shape accepts exactly the names `SpecDiscovery.IsItemFileName` accepts today. A task grammar with no epic part, which `init` writes without `--epics` (`0001-F4` B-022; its form is `0001-F5` OQ-5), needs nothing more of this key: the shape follows whatever the grammar is.
 
-**The glob dialect** (C-6, decision 0004). A glob is `/`-separated and compared ordinally, case-sensitively, against a root-relative path with `/` separators, which discovery computes through its file system as [`SpecPath.Relative`](../../Model/SpecPath.cs) does. A segment that is exactly `**` matches zero or more directories; `*` matches any run of characters inside one segment; every other character is itself. A file-name glob (`taskFiles`, `companionFiles`) has no `/` and is matched against the file name alone. Git's `:(glob)` pathspec reads these tokens the same way, so `0008` can pass a glob to git as written (C-2, C-3). `?`, `[...]` and a leading `!` are not part of the dialect. Decision 0004 did not say what one of them does, so `0005` reads each as the literal character it is and rejects nothing (OQ-7, open). Two more readings are the code's and no claim's: a `**` that is the last segment matches no file, where git's matches every file below, and a `**` beside other characters in a segment is two `*`.
+**The glob dialect** (C-6, decision 0004). A glob is `/`-separated and compared ordinally, case-sensitively, against a root-relative path with `/` separators, which discovery computes through its file system; the model loader independently maps loaded paths at its boundary. A segment that is exactly `**` matches zero or more directories; `*` matches any run of characters inside one segment; every other character is itself. A file-name glob (`taskFiles`, `companionFiles`) has no `/` and is matched against the file name alone. Git's `:(glob)` pathspec reads these tokens the same way, so `0008` can pass a glob to git as written (C-2, C-3). `?`, `[...]` and a leading `!` are not part of the dialect. Decision 0004 did not say what one of them does, so `0005` reads each as the literal character it is and rejects nothing (OQ-7, open). Two more readings are the code's and no claim's: a `**` that is the last segment matches no file, where git's matches every file below, and a `**` beside other characters in a segment is two `*`.
 
 **Where the keys are read.** [`SpecManifest`](https://github.com/RLittlesII/specht/blob/97277d3c85f59a4b0a3b3973ee31b492f9adb1ee/src/specht/Manifest/SpecManifest.cs) stays the one reader of the manifest (`0001-F5` § 7). Item `0005` adds to it, and only this:
 
