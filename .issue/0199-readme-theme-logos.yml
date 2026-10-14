@@ -19,7 +19,7 @@ summary: |
 acceptance_criteria:
   - "Light and dark SVG variants retain the original artwork and red accents, with the complete bird separated from the book for color treatment."
   - "README.md selects the dark variant for a dark theme and the light variant otherwise, with accessible fallback text and the existing size and alignment."
-  - "The dark variant inverts only the book and wordmark; the bird keeps its original black, white and red colors."
+  - "The dark variant uses a champagne gold (#D6B879) book and warm ivory (#EEE6D8) wordmark; the bird keeps its original black, white and red colors."
   - "Both themes are visually checked; README formatting and the build pass."
 decisions:
   - "2026-10-13, implementer: this is a presentation task with no CLI, schema, specification or scenario change; the existing vector source supplies both variants."
@@ -30,5 +30,7 @@ decisions:
   - "2026-10-13, implementer: the corrected dark SVG passed browser rendering, pixel equality for the bird across themes, and an exact comparison of every SVG path against the light source."
   - "2026-10-13, repository owner: the lower wings and tail must also retain bird colors. Replace the horizontal color clip with distinct bird and book shapes, including the tail below the book top."
   - "2026-10-13, implementer: replaced the horizontal clips with separate vector contours. Seven lower-wing, tail and red-detail pixel samples match the original; six of these fail against the previous dark SVG. Visually inspected the full-size dark rendering."
+  - "2026-10-13, repository owner: selected the champagne gold book (#D6B879) with warm ivory text (#EEE6D8) for the dark theme. Apply only these two fills. This continues the presentation task without CLI, schema or scenario changes."
+  - "2026-10-13, implementer: XML comparison confirms all path geometry and every bird attribute are unchanged; only the book and wordmark fills changed."
 out_of_scope:
   - "Redesigning the logo or changing the avatar and social card."
