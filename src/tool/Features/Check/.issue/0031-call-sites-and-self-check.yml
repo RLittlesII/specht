@@ -46,6 +46,11 @@ decisions:
     B-010 as amended in place by `0001-F2` decision 0012, which also adds
     A-4 and has B-010 and B-011 tested at the acceptance tier. No wiring
     change. Scope and `risk` are unchanged.
+  - |
+    2026-10-14, spec-author: B-011's repository root is read through a
+    file-for-file copy of the working tree, by `0001-F2` decision 0013; the
+    B-011 criterion and the summary are unchanged. Scope and `risk` are
+    unchanged.
 
 out_of_scope:
   - "The exit code before 0001-F5's rule settings exist — § 5 #11, 0055-F1 B-025 (0061)."

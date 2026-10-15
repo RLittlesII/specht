@@ -101,4 +101,10 @@ recorded by spec-author. The `@B-011` scenario's wording is spec-author's.
 
 ## Reversal
 
-None.
+**Narrowed 2026-10-14 by the repository owner
+([decision 0013](0013-the-self-check-reads-the-repository-root-through-a-copy-of-the-working-tree.md)).**
+Nothing above is edited. The last rejected alternative, exporting a commit for
+the self-check, stands: its root is not the repository root B-011 names. Its
+reason no longer reaches a file-for-file copy of the working tree as it
+stands, which B-011's self-check reads, because a child NUKE run cannot start
+beside a parent build over the same root.
