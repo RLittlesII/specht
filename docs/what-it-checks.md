@@ -33,6 +33,22 @@ under `.git`, `.artifacts`, `.claude`, `.skillfile`, `graphify-out`, `bin`,
 `3. Acceptance Criteria`, `9. Traceability Matrix` and `12. Sign-off`. A
 `Missing` cell in § 9 is not a violation until the specification is approved.
 
+## Missing coverage on an approved specification
+
+`SPEC060` is an error by default: an approved agreement says its coverage is
+known. A repository whose policy is that a `Missing` row blocks a work item
+reaching done, and not a specification reaching approved, lowers the rule in
+its manifest:
+
+```json
+"rules": { "SPEC060": "warning" }
+```
+
+That is the sanctioned way to choose otherwise. `warning` still fails a run
+under `--strict`; `off` stops the rule. This repository sets `warning`. A
+command that sets one rule's level is specified and not built; until it is,
+edit `rules` by hand ([configuration](configuration.md)).
+
 ## Work items are optional
 
 `specht` never reads `.issue/`. The item rules run only on
