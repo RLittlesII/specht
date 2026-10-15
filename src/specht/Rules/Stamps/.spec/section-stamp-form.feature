@@ -46,6 +46,7 @@ Feature: Section stamp form
   @B-004 @boundary
   Scenario: A stamp naming a role that does not own the section is not reported
     Given a specification whose acceptance criteria are stamped "implementer, 2026-10-11"
+    And the manifest names no owners for the acceptance criteria
     When the check runs
     Then no stamp finding is reported
 
@@ -226,3 +227,68 @@ Feature: Section stamp form
     Given a specification with a section that carries no stamp
     When the check runs
     Then no stamp finding is reported
+
+  @B-024
+  Scenario: A stamp whose role does not own its section is reported
+    Given the manifest pins schema version 0.2.0
+    And the manifest names spec-author as the only owner of the acceptance criteria
+    And a specification whose acceptance criteria are stamped "implementer, 2026-10-11"
+    When the check runs
+    Then the section-owner rule reports that stamp, as a warning
+
+  @B-024 @boundary
+  Scenario: A stamp whose role owns its section is not reported
+    Given the manifest pins schema version 0.2.0
+    And the manifest names spec-author and test-writer as the owners of the acceptance criteria
+    And a specification whose acceptance criteria are stamped "test-writer, 2026-10-11"
+    When the check runs
+    Then the section-owner rule reports nothing
+
+  @B-025 @boundary
+  Scenario: A section the manifest names no owners for is not reported
+    Given the manifest pins schema version 0.2.0
+    And the manifest names spec-author as the only owner of the acceptance criteria
+    And a specification whose constraints are stamped "implementer, 2026-10-11"
+    When the check runs
+    Then the section-owner rule reports nothing
+
+  @B-025 @boundary
+  Scenario: An owned section with no stamp is not reported
+    Given the manifest pins schema version 0.2.0
+    And the manifest names spec-author as the only owner of the acceptance criteria
+    And a specification whose acceptance criteria carry no stamp
+    When the check runs
+    Then the section-owner rule reports nothing
+
+  @B-026
+  Scenario Outline: The owner check reads the role before the first comma
+    Given the manifest pins schema version 0.2.0
+    And the manifest names spec-author as the only owner of the acceptance criteria
+    And a specification whose acceptance criteria are stamped "<stamp>"
+    When the check runs
+    Then the section-owner rule reports <findings>
+
+    Examples:
+      | stamp                                       | findings    |
+      | spec-author, 2026-10-11 (for implementer)   | nothing     |
+      | implementer, 2026-10-11 (for spec-author)   | one finding |
+      | Spec-Author, 2026-10-11                     | one finding |
+      | spec-author , 2026-10-11                    | nothing     |
+
+  @B-026
+  Scenario: A stamp under a sub-heading is judged by its section's owners
+    Given the manifest pins schema version 0.2.0
+    And the manifest names test-writer and spec-author as the owners of the testing strategy
+    And a specification whose testing strategy is stamped "test-writer, 2026-10-11"
+    And its testing strategy's "Performance" sub-heading is stamped "spec-author, 2026-10-11"
+    When the check runs
+    Then the section-owner rule reports nothing
+
+  @B-026
+  Scenario: A sub-heading stamp whose role does not own its section is reported
+    Given the manifest pins schema version 0.2.0
+    And the manifest names test-writer and spec-author as the owners of the testing strategy
+    And a specification whose testing strategy is stamped "test-writer, 2026-10-11"
+    And its testing strategy's "Performance" sub-heading is stamped "implementer, 2026-10-11"
+    When the check runs
+    Then the section-owner rule reports the "Performance" sub-heading's stamp, as a warning
