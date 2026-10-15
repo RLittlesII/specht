@@ -42,7 +42,24 @@ acceptance_criteria:
   - "B-060 — requiredSpecifications, empty by default"
   - "§ 9 carries a row naming a test for each id above."
 
-decisions: []
+decisions:
+  - |
+    2026-10-15, implementer: the five status markers changed
+    src/tool/manifest/v0.2.0/manifest.json, which the 0.2.0 lock digest
+    covers, so 0.2.0 is relocked in this pull request. 0.2.0 has never been
+    carried by a published package, so 0001-F7 decision 0014 allows the
+    relock; its procedure was followed: the 0.2.0 entry of
+    src/tool/schema/versions.lock.json removed by hand, then
+    ./build.sh LockSchemaVersion (0001-F7 B-092, C-17). 0.2.0 moved from
+    5d087a05... to 3e86b57f...; 0.1.0 is unchanged. Spec-review round 1,
+    finding 1.
+  - |
+    2026-10-15, implementer: a recorded miss. Commits 82832be and fe5ecd4
+    carry the subject test(0222) and 339d1f1 carries feat(0001-F5), where
+    the delivery convention requires the item's type, task(0222). Pushed
+    history was not rewritten. The pull request title is task(0222): ...,
+    and the pull request is squash-merged so that title becomes the subject
+    on main. Spec-review round 1, finding 2.
 
 out_of_scope:
   - "B-061, off-level rules and SPEC034/SPEC035 default off: a later item."
