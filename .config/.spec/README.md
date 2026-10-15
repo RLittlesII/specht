@@ -125,7 +125,7 @@ The install section of `README.md` owns the source XML, runtime credential, loca
 
 ## 8. Testing Strategy
 
-<!-- last written by: test-writer, 2026-10-14 -->
+<!-- last written by: test-writer, 2026-10-14 (the synthetic projects' target framework, `0001-F2` B-045) -->
 
 `ConsumptionSteps` binds all eight scenarios. The five installation scenarios
 were run before the README change: five failed for missing guidance and the
@@ -155,6 +155,8 @@ The real root tool restore and token-free native solution build were verified on
 2026-10-14 for the existing consumption design. The installed package printed
 `0.1.90+b213a0522a`. CI and release authentication are covered by their own
 Features; self-check adoption and Renovate remain separate scope.
+
+The synthetic application and checker projects target `net$(BundledNETCoreAppTargetFrameworkVersion)`, the framework of the SDK that builds them, where they named `net10.0`. Since `global.json` pins the .NET 11 SDK (`0001-F2` B-045, its decision 0011), that SDK bundles no `net10.0` targeting pack, and the fixture's isolated folder feeds cannot supply one, so a `net10.0` fixture failed to restore. No assertion changed; the fixture's target framework is no part of B-001 to B-008.
 
 Full verification on 2026-10-14: `./build.sh` passed Format, Compile, 904 unit tests, 304 integration tests and 322 acceptance scenarios (209 pending elsewhere). The self-check reported zero errors and 152 existing warnings. The focused Feature run passed all eight scenarios with none skipped.
 

@@ -92,7 +92,8 @@ empty formatter and quoted arguments - [lesson 0003](../../../../.spec/lessons/0
   directive, so `tests.csproj` carries `NoWarn` `CS8669`, the one
   diagnostic only generated code raises.
 - `Microsoft.Testing.Extensions.CodeCoverage`; each test project writes one
-  report, `.artifacts/coverage/<project>.coverage.cobertura.xml`, named by
+  report per target framework,
+  `.artifacts/coverage/<project>.<tfm>.coverage.cobertura.xml`, named by
   `TestingPlatformCommandLineArguments` in `test/Directory.Build.props`, and CI
   uploads the folder to Codecov. Keep `coverage` in the name: the uploader finds
   reports by its default name patterns, and a glob in its `files` input breaks

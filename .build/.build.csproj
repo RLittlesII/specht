@@ -8,6 +8,8 @@
     <NukeRootDirectory>..</NukeRootDirectory>
     <NukeScriptDirectory>..</NukeScriptDirectory>
     <NukeTelemetryVersion>1</NukeTelemetryVersion>
+    <!-- NUKE requires its assembly at an unsuffixed bin/, so the build host keeps one target framework (0001-F2 B-045). -->
+    <TargetFrameworks>net10.0</TargetFrameworks>
   </PropertyGroup>
 
   <ItemGroup>

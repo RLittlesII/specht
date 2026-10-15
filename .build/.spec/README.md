@@ -20,7 +20,7 @@ depends_on: []
 blocks: ["F2", "F3", "F4", "F5", "F6", "0109/F1"]
 spikes: []
 created: "2026-10-08"
-updated: "2026-10-13"
+updated: "2026-10-14"
 github_issue: null
 synced_at: null
 ---
@@ -35,7 +35,7 @@ The repository has a solution and central package versions but no build project,
 
 ## 2. User Needs
 
-<!-- last written by: spec-author, 2026-10-08 -->
+<!-- last written by: spec-author, 2026-10-14 (A-2 amended, `0001-F2` decision 0011) -->
 
 | #   | Persona                         | Need                                                                         | Pain Point Today                                                                                                                          |
 | --- | ------------------------------- | ---------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
@@ -50,7 +50,7 @@ The repository has a solution and central package versions but no build project,
 | ID  | Assumption                                                                                                                                                                                                                                                                                                                                              |
 | --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | A-1 | `Test` runs the unit, integration and acceptance tiers; `UnitTest`, `IntegrationTest` and `AcceptanceTest` run one tier each (`specht-conventions` § Build and test).                                                                                                                                                                                   |
-| A-2 | Until the first package is published, `Specht` runs `dotnet run --project src/tool -- --root .` (`0001-F2` A-2).                                                                                                                                                                                                                                        |
+| A-2 | Until the first package is published, `Specht` runs `dotnet run --project src/tool --framework net10.0 -- --root .` (`0001-F2` A-2; amended 2026-10-14, `0001-F2` decision 0011).                                                                                                                                                                       |
 | A-3 | The `.husky/pre-commit` at `857f00d` checks staged C# with `dotnet format --verify-no-changes` and staged Markdown with `prettier --check`, each called directly on the working-tree copy of the staged files, and runs no specification check; this Feature's hook replaces those calls with the build's targets (C-1, B-021).                         |
 | A-4 | The hook's formatting checks cover only the staged files, so a commit is never refused for formatting drift in a file it does not touch; its specification check covers the whole tree, because a specification's rules span files and the hook prints what a shell prints (`0001-F2` B-010). CI checks the whole tree (`0055-F2`). Amended 2026-10-08. |
 
@@ -129,12 +129,12 @@ The repository has a solution and central package versions but no build project,
 
 ## 7. Technical Design
 
-<!-- last written by: implementer, 2026-10-13 -->
+<!-- last written by: implementer, 2026-10-14 (the `Specht` command's framework, `0001-F2` decision 0011) -->
 
 Delivered so far by items 0057, the scaffold, 0059, the `Format` target, 0060, the pre-commit hook, 0061, which replaced the `Specht` placeholder with the check's run, and 0058, the per-tier targets. `Specht` now gates the build and specification commits (B-013, B-024, C-7).
 
 - **The build project** is [`.build/.build.csproj`](../.build.csproj), NUKE's `Nuke.Common`, its version in `Directory.Packages.props` (C-4). Two packages it brings in transitively are pinned there as well: `System.Security.Cryptography.Xml` past its advisories, and `NuGet.Packaging` at the SDK's own NuGet version, because an older `NuGet.Frameworks` loaded beside the SDK's MSBuild fails to evaluate the solution. It is listed in `specht.slnx` with `Build="false"`, so a solution build and test never build it.
-- **The targets** are declared in [`.build/SpechtBuild.cs`](../SpechtBuild.cs). The default `Build` reaches `Test` after `Compile`; `Test` runs the unit, integration and acceptance tiers in order, failing on any tier failure (B-001, B-005). `UnitTest` and `IntegrationTest` iterate `Solution.GetTestProjects()` with the appropriate `Tier` filter; `AcceptanceTest` runs the acceptance project unfiltered. Windows skips integration and acceptance; the unit tier remains active. Each tier empties its own coverage directory under `.artifacts/coverage/` and requests Cobertura coverage. `Pack` empties `.artifacts/nupkg/` and packs the solution, whose only packable project is `specht.tool` (B-009). `Specht` runs `dotnet run --project src/tool -- --root .` from the repository root (A-2), streams diagnostics and emits pull-request annotations before retaining a non-zero checker exit in NUKE's `ExitCode` and failing (C-7). This repository's manifest sets `SPEC060` to `warning`, so missing coverage alone succeeds (B-024, C-6).
+- **The targets** are declared in [`.build/SpechtBuild.cs`](../SpechtBuild.cs). The default `Build` reaches `Test` after `Compile`; `Test` runs the unit, integration and acceptance tiers in order, failing on any tier failure (B-001, B-005). `UnitTest` and `IntegrationTest` iterate `Solution.GetTestProjects()` with the appropriate `Tier` filter; `AcceptanceTest` runs the acceptance project unfiltered. Windows skips integration and acceptance; the unit tier remains active. Each tier empties its own coverage directory under `.artifacts/coverage/` and requests Cobertura coverage. `Pack` empties `.artifacts/nupkg/` and packs the solution, whose only packable project is `specht.tool` (B-009). `Specht` runs `dotnet run --project src/tool --framework net10.0 -- --root .` from the repository root (A-2), since the tool builds for `net10.0` and `net11.0` and `dotnet run` needs one named (`0001-F2` B-045), streams diagnostics and emits pull-request annotations before retaining a non-zero checker exit in NUKE's `ExitCode` and failing (C-7). This repository's manifest sets `SPEC060` to `warning`, so missing coverage alone succeeds (B-024, C-6).
 - **The entry scripts** `build.sh`, `build.ps1` and `build.cmd` are NUKE 10.1.0's generated scripts, with its enterprise-feed block removed. `build.cmd` is a cmd/bash polyglot that runs `build.ps1` on Windows, so both entries pass their arguments to the same build (B-002).
 - **The root** is marked by `.nuke/`: `parameters.json` names the solution, and NUKE writes `build.schema.json` from the targets and parameters; it is committed. NUKE's own log goes to the gitignored `.nuke/temp/`, which no target writes (C-5). NUKE's `--root` points the build at another tree, which is how the acceptance scenarios run it.
 - **`Format`** depends on `Restore` and runs two checks, both before it fails, so one formatter's failure never hides the other's files. C# goes through `dotnet format <solution> --verify-no-changes --no-restore`, which reports and writes nothing, so no analyzer code fix applies (B-003, B-004, C-2). Markdown goes through `prettier --check` (B-017). Given `--files`, the `.cs` files go to `dotnet format --include` and the `.md` files to `prettier`, and a formatter given none of its kind does not run (B-020); without it, the whole solution and `**/*.md`, which `prettier` narrows by `.gitignore`. Each formatter prints the paths it rejects, and the target fails naming which formatter rejected them.
@@ -205,8 +205,9 @@ Delivered so far by items 0057, the scaffold, 0059, the `Format` target, 0060, t
 
 ## 10. Lessons / Spec Deltas
 
-<!-- last written by: spec-author, 2026-10-13 -->
+<!-- last written by: spec-author, 2026-10-14 (`0001-F2` decision 0011) -->
 
+- 2026-10-14, A-2 amended in place: the command `Specht` runs gains `--framework net10.0`, since every project now builds for `net10.0` and `net11.0` ([`0001-F2` decision 0011](../../src/tool/Features/Check/.spec/decisions/0011-the-tool-targets-net10-and-net11.md) and its amendment). The build project itself keeps one target, `net10.0`, which NUKE requires (`0001-F2` § 7). No claim, constraint or scenario changed.
 - 2026-10-13, B-025 is superseded by B-013 and B-024 under decision 0001; its scenario is removed. The gate uses the staged tree, including specification and companion deletions. Build and hook verification remains manual under § 8's owner decision.
 - 2026-10-09, `blocks` gains `0109/F1`, which adds a `Benchmark` target to this build and packs the tool through `Pack` for `0109-F4` (`0109-F1` B-013). No claim changed.
 

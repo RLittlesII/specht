@@ -16,7 +16,9 @@ copy of it.
 
 ## Strictness is on, repo-wide
 
-`Directory.Build.props` (scaffold, brief § 8 step 1): `net10.0`,
+`Directory.Build.props` (scaffold, brief § 8 step 1): `net10.0;net11.0` for
+every project (`0001-F2` B-045) except `.build`, which NUKE holds to
+`net10.0`,
 `LangVersion latest`, `Nullable enable`, `ImplicitUsings enable`,
 `TreatWarningsAsErrors true`, `EnforceCodeStyleInBuild true`,
 `IsPackable false`. `Rocket.Surgery.Airframe.CodeAnalysis` is wired

@@ -73,10 +73,11 @@ jobs:
           fi
           fi
           echo "build=$build" >> "$GITHUB_OUTPUT"
-      - name: 🔨 Use .NET 10 SDK
+      - name: 🔨 Use .NET 10 and 11 SDKs
         if: ${{ steps.changes.outputs.build == 'true' }}
         uses: actions/setup-dotnet@v4
         with:
+          global-json-file: 'global.json'
           dotnet-version: '10.0.401'
       - name: Specht
         id: specht

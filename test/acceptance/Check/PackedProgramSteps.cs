@@ -25,9 +25,9 @@ public sealed class PackedProgramSteps(PackedTool tool)
         var package = await tool.PackageAsync();
         var commit = await tool.CommitAsync();
 
-        foreach (var program in Programs)
+        foreach (var (program, file) in Carried(package, ".dll"))
         {
-            var version = AcceptanceTool.InformationalVersion(Carried(package, program + ".dll"));
+            var version = AcceptanceTool.InformationalVersion(file);
             version.Should().Contain("+", $"{program} states a version that names a commit");
             var named = new string([.. version![(version.IndexOf('+') + 1)..].TakeWhile(char.IsAsciiHexDigit)]);
             named.Length.Should().BeGreaterThanOrEqualTo(7, $"{program} names a commit by at least git's shortest abbreviation, in {version}");
@@ -40,9 +40,9 @@ public sealed class PackedProgramSteps(PackedTool tool)
     {
         var package = await tool.PackageAsync();
 
-        foreach (var program in Programs)
+        foreach (var (program, debug) in Carried(package, ".pdb"))
         {
-            var (roots, documents) = Sources(Carried(package, program + ".pdb"));
+            var (roots, documents) = Sources(debug);
             documents.Should().OnlyContain(
                 document => roots.Keys.Any(root => document.StartsWith(root.TrimEnd('*'), StringComparison.Ordinal)),
                 $"every source file of {program} is mapped");
@@ -59,9 +59,9 @@ public sealed class PackedProgramSteps(PackedTool tool)
         var package = await tool.PackageAsync();
         var commit = await tool.CommitAsync();
 
-        foreach (var program in Programs)
+        foreach (var (program, debug) in Carried(package, ".pdb"))
         {
-            var roots = Sources(Carried(package, program + ".pdb")).Roots;
+            var roots = Sources(debug).Roots;
             roots.Values.Should().NotBeEmpty($"{program}'s debug information maps its sources").And.OnlyContain(
                 address => address.Segments.Length > 3 && address.Segments[3].TrimEnd('/') == commit,
                 $"{program}'s sources are at the commit it was built from");
@@ -77,9 +77,9 @@ public sealed class PackedProgramSteps(PackedTool tool)
     [Then("no program file of the tool in the package names a directory of the machine that built it")]
     public void ThenNoProgramFileOfTheToolInThePackageNamesADirectoryOfTheMachineThatBuiltIt()
     {
-        foreach (var program in Programs)
+        foreach (var (program, file) in Carried(Built, ".dll"))
         {
-            Names(Carried(Built, program + ".dll"), tool.Repository).Should().BeFalse(
+            Names(file, tool.Repository).Should().BeFalse(
                 $"{program}.dll names no directory of the machine that built it");
         }
     }
@@ -87,9 +87,8 @@ public sealed class PackedProgramSteps(PackedTool tool)
     [Then("no debug information in the package names one")]
     public void ThenNoDebugInformationInThePackageNamesOne()
     {
-        foreach (var program in Programs)
+        foreach (var (program, debug) in Carried(Built, ".pdb"))
         {
-            var debug = Carried(Built, program + ".pdb");
             Sources(debug).Documents.Should().NotContain(
                 document => document.StartsWith(tool.Repository, StringComparison.Ordinal),
                 $"{program}.pdb names no source file by a directory of the machine that built it");
@@ -103,15 +102,23 @@ public sealed class PackedProgramSteps(PackedTool tool)
 
     private string Built => _built ?? throw new InvalidOperationException("No build was packed.");
 
-    private static byte[] Carried(string package, string name)
+    private static IEnumerable<(string Program, byte[] File)> Carried(string package, string extension) =>
+        Programs.SelectMany(program => Carried(package, program, extension).Select(file => (program, file)));
+
+    private static List<byte[]> Carried(string package, string program, string extension)
     {
         using var archive = ZipFile.OpenRead(package);
-        var entry = archive.Entries.Where(carried => carried.Name == name).Should().ContainSingle($"the package carries {name}").Subject;
-        using var stream = entry.Open();
-        using var bytes = new MemoryStream();
-        stream.CopyTo(bytes);
+        var entries = archive.Entries.Where(carried => carried.Name == program + extension).ToList();
+        entries.Should().NotBeEmpty($"the package carries {program}{extension}");
 
-        return bytes.ToArray();
+        return [.. entries.Select(static entry =>
+        {
+            using var stream = entry.Open();
+            using var bytes = new MemoryStream();
+            stream.CopyTo(bytes);
+
+            return bytes.ToArray();
+        })];
     }
 
     private static (Dictionary<string, Uri> Roots, List<string> Documents) Sources(byte[] debug)

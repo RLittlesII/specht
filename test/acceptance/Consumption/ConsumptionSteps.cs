@@ -226,7 +226,7 @@ public sealed class ConsumptionSteps : IDisposable
         await Write("Directory.Packages.props", "<Project />");
         await Write("fixture.slnx", "<Solution><Project Path=\"app/app.csproj\" /></Solution>");
         await Write("app/app.csproj", """
-            <Project Sdk="Microsoft.NET.Sdk"><PropertyGroup><TargetFramework>net10.0</TargetFramework>
+            <Project Sdk="Microsoft.NET.Sdk"><PropertyGroup><TargetFramework>net$(BundledNETCoreAppTargetFrameworkVersion)</TargetFramework>
             <NuGetAudit>false</NuGetAudit></PropertyGroup></Project>
             """);
         await Write("app/Class.cs", "public sealed class SyntheticApplication { }");
@@ -237,7 +237,7 @@ public sealed class ConsumptionSteps : IDisposable
 
         await Write("package/package.csproj", """
             <Project Sdk="Microsoft.NET.Sdk"><PropertyGroup>
-              <TargetFramework>net10.0</TargetFramework><OutputType>Exe</OutputType>
+              <TargetFramework>net$(BundledNETCoreAppTargetFrameworkVersion)</TargetFramework><OutputType>Exe</OutputType>
               <PackAsTool>true</PackAsTool><NuGetAudit>false</NuGetAudit>
             </PropertyGroup></Project>
             """);

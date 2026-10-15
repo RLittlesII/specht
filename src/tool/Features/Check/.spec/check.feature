@@ -265,6 +265,12 @@ Feature: The check command
     When the tool is packed
     Then the readme the package carries holds no package feed's address
 
+  @B-045
+  Scenario: The package carries the tool for both target frameworks
+    When the tool is packed
+    Then the package carries the tool for net10.0
+    And it carries the tool for net11.0
+
   @B-040
   Scenario: The tool states its version
     When the tool is asked for its version
