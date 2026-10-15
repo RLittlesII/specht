@@ -95,11 +95,9 @@ public sealed class ClaimTagManifestUnitTests
 
     [Theory]
     [InlineData("0.1.0", "claim", "{\"tag\":\"@{claim}\"}")]
-    [InlineData("0.1.1", "claim", "{\"tagIgnoreCase\":true}")]
+    [InlineData("0.1.0", "claim", "{\"tagIgnoreCase\":true}")]
     [InlineData("0.1.0", "claimTagForm", "\"@{claim}\"")]
-    [InlineData("0.1.1", "claimTagForm", "\"@{claim}\"")]
     [InlineData("0.1.0", "claimTagIgnoreCase", "true")]
-    [InlineData("0.1.1", "claimTagIgnoreCase", "true")]
     public void ANewTagKeyUnderAnOlderPin_WhenParsed_ShouldRemainUnknown(string pin, string key, string json)
     {
         // Given

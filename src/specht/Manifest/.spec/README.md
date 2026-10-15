@@ -218,13 +218,13 @@ Item `0011` builds the loader; the families of keys (`0014`-`0019`) extend this 
 
 ### Claim tag contract at schema 0.2.0
 
-<!-- last written by: implementer, 2026-10-13 -->
+<!-- last written by: implementer, 2026-10-14 (item `0219`) -->
 
 `SpecManifestParser` fills `claim.tag` and `claim.tagIgnoreCase` from the exact pin's manifest and validates one literal `{claim}` placeholder before any rule runs. The `claim` object is unknown under older pins; flat tag keys are unknown under every pin. A pure instance parser in `Model/` takes companion text and the effective structure. It extracts the claim between literal prefix/suffix strings, matches that entire substring against `identifiers.claim`, skips full-line comments, and keeps original token text and one-based lines. No second claim expression is introduced for `0.2.0`. Literal matching and claim resolution use ordinal comparison; tag grammar case folding is culture invariant. The configured case never reaches claim/matrix validation. The retained reader only reads text and delegates; the rule consumes the resulting tags. ADR-0010's later stages still move that existing read into model loading.
 
 Declarations: [tag parser](../../Model/FeatureTagParser.cs), [tag data](../../Model/FeatureTag.cs), [manifest parser](../SpecManifestParser.cs), [structure](../SpecStructure.cs), [model loader](../../Model/SpecModelLoader.cs), [rule](../../Rules/FeatureFileRule.cs).
 
-Legacy pins keep their scanner expression and message byte-for-byte. The new working schema copies `0.1.1`'s schemas, templates and rule vocabulary; only version metadata, tag defaults and SPEC021 guidance change. The live copy follows the new newest version. No published resource or schema lock is rewritten.
+Legacy pins keep their scanner expression and message byte-for-byte. Schema `0.2.0` copies `0.1.0`'s schemas, templates and rule vocabulary; only version metadata, tag defaults and SPEC021 guidance change. `0.1.1`, the working version it was first copied from, stopped shipping under [`0001-F7` decision 0013](../../../tool/.spec/decisions/0013-schema-0-1-1-stops-shipping.md). The live copy follows the new newest version. No published resource or schema lock is rewritten.
 
 **Schema file name validation (B-047).** [`SpecManifestParser.Check`](../SpecManifestParser.cs) validates every effective `frontmatterSchemas` value after per-kind default fill and before any schema read or rule evaluation. A value containing `..`, `/` or `\` joins the existing fault list, naming its kind and original value. These checks also reject Unix, Windows drive-rooted and UNC absolute paths on every platform, without consulting host-specific path APIs. The existing `SpechtManifestException` and command catch provide exit `3`, stderr only (B-022, B-023). Empty names, `.` and missing files remain the unresolved boundaries of OQ-22 and OQ-2 (b); no new policy is added for them.
 
@@ -334,7 +334,7 @@ The live `specht.default-manifest.json` resource remains tree-generator input.
 D1 supplies the instance/resource prerequisite; `0016` still owns schema
 `0.2.0`'s keys/forms. No accepted ADR is amended.
 
-<!-- last written by: implementer, 2026-10-13 -->
+<!-- last written by: implementer, 2026-10-14 (item `0219`) -->
 
 The literals each claim moves are in the baseline engine at repository commit `e7dba24` (`0001-F1` A-2); the claims here own the agreement.
 
@@ -536,7 +536,7 @@ An explicitly empty file-shape list still fails B-041; it is not replaced with t
 
 **Caller migration.** The catalog-only parser is registered by `AddSpechtEngine()` and injected into `SpecSchemasLoader` and `InitWriter`. D1 already removed init's optional parser fallback, so this item changes no init write selection or `ShippingCopy` policy. Benchmark tree tests use the same catalog-only constructor. The live manifest remains available as benchmark tree input, not as parser defaults.
 
-The shipped `0.1.0` and `0.1.1` defaults agree on every filled setting, so the source change preserves their existing verdicts. Synthetic catalog tests make the version choice observable. No version is cut and no locked resource or digest is rewritten.
+The shipped `0.1.0` defaults agree with the live copy on every setting a `0.1.0` pin fills, so the source change preserves its existing verdicts; `0.1.1`, which agreed too, no longer ships (`0001-F7` decision 0013). Synthetic catalog tests make the version choice observable. No version is cut and no locked resource or digest is rewritten.
 
 **Verification.** `SpecManifestParserPinnedDefaultsUnitTests` pins exact and omitted pins, all filled setting families, explicit and partial overrides, whole collection replacement, unfilled rules, empty-list rejection, alternating/concurrent parses, and engine/host byte identity. `PinnedDefaultsSteps` binds the six B-048 scenarios. The command integration theory uses the registered engine with distinct missing-test markers and asserts exits and error severity; an unrelated approved-spec sign-off is valid so only the missing-test marker changes the verdict. The existing baseline, failure-ordering and init-compatibility tests retain their assertions.
 
@@ -576,10 +576,10 @@ The example omits unrelated settings. A placeholder is a semantic part (`epic` o
 
 **The compatibility boundary.** Read the consumer's JSON, read its exact pin (omission still means `0.1.0`), select that shipped contract, validate its accepted keys and shapes, fill missing values from its shipped manifest, and validate the effective values before discovery or rules. Consumer values always win; `rules` remains read as written and never inherits levels (B-044). Omission fills each kind and each role within it, not the entire `keys` object in place of a partially declared one.
 
-| Pinned schema    | Manifest interpretation                                                           | Required preservation                                                                                                               |
-| ---------------- | --------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
-| `0.1.0`, `0.1.1` | Existing key names, task grammar handling, edge expansion and validation behavior | No new `keys` or `forms` acceptance, named-group rejection, raw-edge identifier or sequence-width behavior is applied retroactively |
-| `0.2.0`          | Grouped keys, forms, named task groups and whole-manifest grammar validation      | Missing settings use this pin's defaults; explicit settings win; malformed declarations fail before any rule runs                   |
+| Pinned schema | Manifest interpretation                                                           | Required preservation                                                                                                               |
+| ------------- | --------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| `0.1.0`       | Existing key names, task grammar handling, edge expansion and validation behavior | No new `keys` or `forms` acceptance, named-group rejection, raw-edge identifier or sequence-width behavior is applied retroactively |
+| `0.2.0`       | Grouped keys, forms, named task groups and whole-manifest grammar validation      | Missing settings use this pin's defaults; explicit settings win; malformed declarations fail before any rule runs                   |
 
 Changing a verdict requires the new `0.minor` under `0001-F7` C-11. Published files and version-lock digests are unchanged. Item `0191` supplies the version's default manifest alongside its schemas and vocabulary on [SchemaVersion.Manifest](../../Versioning/SchemaVersion.cs). [SchemaVersions](../../Versioning/SchemaVersions.cs) and [SpechtResources](../../Resources/SpechtResources.cs) load resources at composition; the parser receives in-memory contracts and performs no I/O. `0001-F7` C-4 now includes the manifest interpretation selected by the pin, while the consumer's on-disk manifest remains authoritative. Item `0191` owns the omission-fill mechanism; this item owns its new interpretation and preservation of older interpretation (B-049).
 

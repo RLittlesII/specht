@@ -13,7 +13,7 @@ public sealed class PinnedInitWriterUnitTests
 {
     [Theory]
     [InlineData("0.1.0", true, true)]
-    [InlineData("0.1.1", true, false)]
+    [InlineData("0.2.0", true, false)]
     [InlineData("0.1.0", false, true)]
     [InlineData("0.1.0", false, false)]
     [InlineData(null, true, true)]
@@ -31,7 +31,7 @@ public sealed class PinnedInitWriterUnitTests
             [Path.Combine("repo", SpecTree.FeatureSchemaPath)] = new(localSchema),
             [Path.Combine("repo", SpecTree.TemplatesFolder, "feature.md")] = new(localTemplate),
         });
-        var shipping = new[] { "0.1.0", "0.1.1", "0.2.0" }
+        var shipping = new[] { "0.1.0", "0.2.0", "0.3.0" }
             .SelectMany(number => new[]
             {
                 "schema/frontmatter/feature.schema.json", "schema/frontmatter/task.schema.json", "templates/feature.md", "templates/adr.md",

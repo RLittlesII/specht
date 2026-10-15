@@ -17,7 +17,6 @@ public sealed class SchemaSourceIntegrationTests
     [InlineData("0.2.0", "embedded", "disk", "disk", true)]
     [InlineData("0.2.0", "disk", "embedded", "embedded", false)]
     [InlineData("0.1.0", null, "disk", "disk", true)]
-    [InlineData("0.1.1", null, "disk", "disk", true)]
     [InlineData("0.2.0", null, null, "embedded", false)]
     public void AValidSourceSelection_WhenChecked_ShouldUseItsSchemasAndReportItsProvenance(
         string pin, string? manifestSource, string? argument, string expectedSource, bool missingKey)

@@ -496,8 +496,8 @@ public sealed class CheckCommandIntegrationTests
     [Theory]
     [InlineData(null, null, 1)]
     [InlineData("0.1.0", null, 1)]
-    [InlineData("0.1.1", null, 0)]
-    [InlineData("0.1.1", "OlderMissing", 1)]
+    [InlineData("0.2.0", null, 0)]
+    [InlineData("0.2.0", "OlderMissing", 1)]
     public void APinnedMissingTestDefault_WhenChecked_ShouldDetermineTheVerdictWithoutInheritingRuleLevels(
         string? pin, string? explicitMarker, int expectedExit)
     {

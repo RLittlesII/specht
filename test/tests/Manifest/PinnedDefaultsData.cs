@@ -12,7 +12,7 @@ internal sealed class PinnedDefaultsData
         var shipped = new SpechtResources();
         OriginalManifest = shipped.DefaultManifest;
         var resources = shipped.Texts.ToDictionary(StringComparer.Ordinal);
-        foreach (var (pin, label) in new[] { ("0.1.0", "Older"), ("0.1.1", "Newer") })
+        foreach (var (pin, label) in new[] { ("0.1.0", "Older"), ("0.2.0", "Newer") })
         {
             var defaults = JsonNode.Parse(OriginalManifest)!.AsObject();
             defaults["schemaVersion"] = pin;

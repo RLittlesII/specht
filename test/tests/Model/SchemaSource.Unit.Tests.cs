@@ -105,7 +105,6 @@ public sealed class SchemaSourceUnitTests
     [InlineData("0.2.0", "upstream", false)]
     [InlineData("0.2.0", "Disk", false)]
     [InlineData("0.1.0", "disk", false)]
-    [InlineData("0.1.1", "disk", false)]
     public void AManifestSourceSelection_WhenParsed_ShouldRespectItsVersionAndAllowedValues(string version, string source, bool valid)
     {
         // Given

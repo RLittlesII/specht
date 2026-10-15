@@ -22,12 +22,12 @@ public sealed class SpechtRunnerVersionsIntegrationTests
             { "1.0.0", true },
         };
 
-    /// <summary>Gets a manifest's pin, absent when null, and the version the report names over 0.1.0, 0.1.1 and 0.2.0.</summary>
+    /// <summary>Gets a manifest's pin, absent when null, and the version the report names over 0.1.0, 0.2.0 and 1.0.0.</summary>
     public static TheoryData<string, string?, SemanticVersion> ReportedPins =>
         new()
         {
             { "a manifest with no schemaVersion is version 0.1.0, not the newest", null, new SemanticVersion(0, 1, 0) },
-            { "a pin of 0.1.0 is exact beside a later patch and a later minor", "0.1.0", new SemanticVersion(0, 1, 0) },
+            { "a pin of 0.1.0 is exact beside a later minor and a later major", "0.1.0", new SemanticVersion(0, 1, 0) },
             { "a manifest pinning 0.2.0", "0.2.0", new SemanticVersion(0, 2, 0) },
         };
 
@@ -76,8 +76,8 @@ public sealed class SpechtRunnerVersionsIntegrationTests
         var shipped = EngineServices.Versions().Find(new SemanticVersion(0, 1, 0))!;
         var tagDefaults = EngineServices.Versions().Find(new SemanticVersion(0, 2, 0))!.Manifest;
         var versions = new SchemaVersions(
-            [shipped, shipped with { Number = new SemanticVersion(0, 1, 1) },
-                shipped with { Number = new SemanticVersion(0, 2, 0), Manifest = tagDefaults }]);
+            [shipped, shipped with { Number = new SemanticVersion(0, 2, 0), Manifest = tagDefaults },
+                shipped with { Number = new SemanticVersion(1, 0, 0), Manifest = tagDefaults }]);
 
         // When
         var report = EngineServices.Runner(versions).Run(tree.Root);

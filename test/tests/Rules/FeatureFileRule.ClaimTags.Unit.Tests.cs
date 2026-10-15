@@ -53,7 +53,6 @@ public sealed class FeatureFileRuleClaimTagsUnitTests
 
     [Theory]
     [InlineData("0.1.0")]
-    [InlineData("0.1.1")]
     public void OlderPins_WhenEvaluated_ShouldKeepTheLegacyScannerDespiteADifferentClaimGrammar(string pin)
     {
         // Given
