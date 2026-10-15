@@ -5,7 +5,7 @@ type: feature
 id: "F12"
 epic: "0001"
 spec_status: approved
-status: blocked
+status: ready-for-architecture
 priority: med
 value: 0
 risk: 0
@@ -189,7 +189,7 @@ Pending: owned by `test-writer`, written after agreement.
 
 ## Tasks
 
-None yet. Cut from § 3 after agreement.
+Cut 2026-10-15 into [`../.issue/`](../.issue/): `0224` (the Feature), with `0225`, the resolver this Feature's rules and `0001-F13` share (B-001, B-003 to B-005). The rule items, for B-002 and B-006 to B-021, are cut later.
 
 ## Scoring
 

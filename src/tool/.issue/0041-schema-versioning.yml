@@ -8,7 +8,7 @@ value: 4
 risk: 4
 
 parent: "0001"
-children: ["0042", "0043", "0044", "0045", "0046", "0047", "0048", "0049", "0092", "0093", "0094", "0120", "0121", "0122", "0123", "0124", "0125", "0126", "0130", "0131", "0176", "0177", "0188", "0189"]
+children: ["0042", "0043", "0044", "0045", "0046", "0047", "0048", "0049", "0092", "0093", "0094", "0120", "0121", "0122", "0123", "0124", "0125", "0126", "0130", "0131", "0176", "0177", "0188", "0189", "0226"]
 
 depends_on: []
 spikes: []
@@ -118,9 +118,10 @@ claims:
   - B-105
   - B-106
   - B-107
+  - B-115
 
 created: "2026-10-08"
-updated: "2026-10-13"
+updated: "2026-10-15"
 closed: null
 
 summary: |
@@ -274,9 +275,16 @@ acceptance_criteria:
   - "B-098 — a cut rule page gives the new version (0189)"
   - "B-099 — a cut file is otherwise byte-identical (0189)"
   - "B-100 — the cut touches nothing outside the new folders (0189)"
+  - "B-115 — 0.2.0's vocabulary gains nine rule ids (0226)"
   - "§ 9 carries a row naming a test for each id above."
 
 decisions:
+  - |
+    2026-10-15, spec-author, at the owner's request: 0226 cut for B-115,
+    the nine rule ids schema 0.2.0 adds (decision 0014), with their rule
+    pages and the relock. It lands before the rules: 0001-F5's 0223 and
+    every rule item for those ids depend on it. B-116 and B-117 have no
+    item.
   - |
     2026-10-08, at the owner's request: sliced into the pinned,
     embedded version set (0042) that everything reads, then the source switch

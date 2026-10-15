@@ -1,0 +1,71 @@
+id: "0223"
+type: task
+title: Let a rule's own level be off, and set the waiver and retired-claim rules off by default
+
+status: ready-for-architecture
+
+risk: 3
+
+parent: "0010"
+children: []
+
+depends_on: ["0226"] # SPEC034 and SPEC035 in the 0.2.0 vocabulary
+spikes: []
+
+spec: src/specht/Manifest/.spec/README.md
+
+claims:
+  - B-061
+
+created: "2026-10-15"
+updated: "2026-10-15"
+closed: null
+
+summary: |
+  A rule may ship with its own level off: it reports nothing until the
+  manifest's `rules` raises it to error or warning, and a manifest that
+  names no level for it keeps that off level (B-044, decision 0009). The
+  schema 0.2.0 default manifest gains a `rules` map listing SPEC034 and
+  SPEC035 as off. Matrix resolution's waiver and retired-claim rules
+  (0001-F12 B-018 to B-020) are the first rules at that level.
+
+  Risk 3: no rule declares a level of its own today - a violation carries
+  its severity, and SpecSeverity has no off - so selection in the runner
+  changes beside the one 0014 built for a manifest's `off`. The 0.2.0
+  default manifest changes, so 0.2.0, never published, is relocked by
+  0001-F7 decision 0014's procedure, as 0222 did. Item 0164's rule
+  interface carries a default severity, but it is gated by ADR-0014 and
+  is not a prerequisite.
+
+  Depends on 0226: the 0.2.0 default manifest cannot list SPEC034 and
+  SPEC035 until they are in 0.2.0's rule vocabulary (0001-F7 B-115), or
+  B-013 rejects them. The @B-061 scenarios observe the waiver rule
+  (0001-F12 B-018), which the later 0001-F12 item for SPEC034 and SPEC035
+  builds; that item depends on this one, for B-020, so the scenarios bind
+  there. Until then this item's tests are unit and integration tier, and
+  B-061's § 9 row stays Partial.
+
+acceptance_criteria:
+  - "B-061 — own level off, reports only when raised; 0.2.0 default lists SPEC034 and SPEC035 off"
+  - "0.2.0 relocked by 0001-F7 decision 0014's procedure; 0.1.0's digest unchanged (0001-F7 C-17)."
+  - "§ 9 carries a row naming a test for each id above."
+
+decisions:
+  - |
+    2026-10-15, spec-author: cut for B-061, which 0222 left to a later
+    item because it touches the same manifest files. Its default manifest
+    half needs SPEC034 and SPEC035 in the 0.2.0 vocabulary (0001-F7
+    B-115), and SchemaVersions holds 0.1.0's 21 ids for 0.2.0 today. Value
+    omitted, so it inherits 0010's.
+  - |
+    2026-10-15, spec-author, at the owner's request: first cut blocked,
+    with no item to name; 0226 was then cut for B-115, so this item
+    depends on 0226 and is ready-for-architecture. Rejected: depending on
+    the SPEC034 and SPEC035 rule item for the scenarios, since that item
+    needs this one's off level (0001-F12 B-020) and the two would wait on
+    each other.
+
+out_of_scope:
+  - "SPEC034 and SPEC035 themselves, and what they judge: 0001-F12 B-018, B-019 (a later 0001-F12 item, under 0224)."
+  - "Adding SPEC034 and SPEC035 to the 0.2.0 vocabulary: 0001-F7 B-115, item 0226."
+  - "Everything in § 5 of the spec."

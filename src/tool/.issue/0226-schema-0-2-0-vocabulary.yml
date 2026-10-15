@@ -1,0 +1,81 @@
+id: "0226"
+type: task
+title: Add the nine schema 0.2.0 rule ids to its vocabulary, with their rule pages
+
+status: ready-for-architecture
+
+risk: 3
+
+parent: "0041"
+children: []
+
+depends_on: []
+spikes: []
+
+spec: src/tool/.spec/README.md
+
+claims:
+  - B-115
+
+created: "2026-10-15"
+updated: "2026-10-15"
+closed: null
+
+summary: |
+  Schema 0.2.0's vocabulary gains SPEC014, SPEC015, SPEC022, SPEC023,
+  SPEC024, SPEC032, SPEC033, SPEC034 and SPEC035 (decision 0014 call 3);
+  0.1.0 keeps its 21 ids and its digest. Today SchemaVersions gives both
+  versions the same 21. A vocabulary id needs a rule page under
+  docs/rules/v0.2.0/ (0001-F3 B-031), so the nine pages land here, in the
+  one page shape (0001-F3 B-032, B-033, A-5), each giving its rule's
+  default severity as its specification states it. docs/rules is a tree
+  the lock digests, so 0.2.0, never published, is relocked by decision
+  0014's procedure (C-17, B-092), as 0222 did.
+
+  The vocabulary lands before the rules. An id no rule reports adds no
+  violation and no evaluated rule: the runner selects rules by the ids
+  they report within the vocabulary, so a 0.2.0 tree's report does not
+  move with this item alone. Every rule item for these ids depends on
+  this one, because a rule whose id is outside the vocabulary never runs,
+  and 0001-F5's 0223 does, because the 0.2.0 default manifest cannot list
+  SPEC034 and SPEC035 before they are in it (0001-F5 B-013). The rules:
+  SPEC022, SPEC023 and SPEC032 to SPEC035 under 0001-F12 (item 0224),
+  SPEC014 and SPEC024 under 0001-F6 (B-013 to B-015, no item), and
+  SPEC015 under 0101-F9 (B-024 to B-026; that specification is draft).
+  None is built.
+
+  Risk 3: the relock, nine pages written for rules not yet built, which
+  a rule item may revise and relock again; and a release cut while some
+  of the nine are in the vocabulary with no rule behind them would
+  publish 0.2.0 so, and the later rules would then move a pinned tree's
+  verdict under the same pin. Whether a release may do so is 0001-F7
+  OQ-58, open; this item does not decide it.
+
+acceptance_criteria:
+  - "B-115 — 0.2.0 holds 0.1.0's 21 ids and the nine; 0.1.0 holds its 21"
+  - "Nine pages under docs/rules/v0.2.0/, one per new id (0001-F3 B-031)."
+  - "0.2.0 relocked by decision 0014's procedure; 0.1.0's digest unchanged (C-17, B-092)."
+  - "§ 9 carries a row naming a test for each id above."
+
+decisions:
+  - |
+    2026-10-15, spec-author, at the owner's request: cut so 0223 and the
+    rule items have a real prerequisite. The vocabulary lands first, ahead
+    of the rules, on the runner's reading above. Rejected: B-115 last,
+    after the nine rules. 0223 needs SPEC034 and SPEC035 in the vocabulary;
+    the SPEC034 and SPEC035 rules need 0223's off level (0001-F12 B-020);
+    so B-115 last makes 0223, 0226 and that rule item wait on each other.
+    Value omitted, inheriting 0041's. No depends_on: 0219 locked 0.2.0,
+    0188 built the lock target and 0129 the page set, all done.
+  - |
+    2026-10-15, spec-author, at the owner's request: the release window
+    in the summary is raised as 0001-F7 OQ-58, recommending that no
+    release carry 0.2.0 until every id in its vocabulary has a rule behind
+    it. Not decided here; the answer may add a claim this item or the
+    release guard (0055-F6 B-013) takes.
+
+out_of_scope:
+  - "The nine rules themselves: 0001-F12 (0224), 0001-F6 B-013 to B-015, 0101-F9 B-024 to B-026."
+  - "What each rule's expected carries: 0001-F3 B-034 to B-042."
+  - "The 0.2.0 template's § 9 guidance: B-117, no item."
+  - "Upgrade keeping the consumer's matrix, test, owner and required-specification settings: B-116, no item."

@@ -1,0 +1,74 @@
+id: "0225"
+type: task
+title: Resolve a matrix row's test names against the declared test files as text
+
+status: ready-for-architecture
+
+risk: 3
+
+parent: "0224"
+children: []
+
+depends_on: []
+spikes: []
+
+spec: src/specht/Rules/Matrix/.spec/README.md
+
+claims:
+  - B-001
+  - B-003
+  - B-004
+  - B-005
+
+created: "2026-10-15"
+updated: "2026-10-15"
+closed: null
+
+summary: |
+  The one resolver the matrix rules and the trace command share (C-3;
+  0001-F13 C-1): it reads each § 9 row's cells by column position, takes
+  the test names from the Test cell, and says for each name whether a
+  declared test file holds it, as text through IFileSystem. It reports
+  nothing itself; each rule item, and the trace command, reads its answer.
+
+  Risk 3: its answer is fixed for two Features at once, so it carries
+  what the trace command prints - a resolving test's file and line
+  (0001-F13 B-003) - or the trace would read the tree a second time; the
+  whole-word and declared-form matching must hold for names inside longer
+  words and mentions outside a form (B-005's boundaries).
+
+  Waits on nothing open: the tests and matrix keys and the five status
+  markers are 0222's, done; `tables.matrix` is 0015's, and the exclusion
+  list 0005's and 0019's, all done. A declared test file is one the
+  `tests.files` globs match outside `exclusions` (A-2; B-002).
+
+acceptance_criteria:
+  - "B-001 — § 9 columns by their position in tables.matrix; a renamed header keeps its role"
+  - "B-003 — test names are inline-code spans, split on , and ;"
+  - "B-004 — dotted names: last segment declared, earlier segments as whole words, in one file"
+  - "B-005 — whole word with no declarations; only a declared form with them"
+  - "Text only, nothing compiled, run or fetched (C-1); files read through IFileSystem, paths relative to the root (C-2)."
+  - "One resolver; no second reading of a § 9 cell or a test file is added (C-3; 0001-F13 C-1)."
+  - "§ 9 carries a row naming a test for each id above."
+
+decisions:
+  - |
+    2026-10-15, spec-author: cut with the four claims whose behaviour is
+    resolution itself. B-002, B-006 and B-007 are SPEC032's reports, and
+    B-002's set of rows whose Test cell is read is that rule's, so they go
+    to the SPEC032 item, not cut. Every @B-001 and @B-003 to @B-005
+    scenario observes the resolver through SPEC032, so they bind in that
+    item; until then this item's tests are unit and integration tier, and
+    each § 9 row stays Partial. Rejected: the resolver and SPEC032 in one
+    item, which waits on the 0.2.0 vocabulary (0001-F7 B-115, item 0226)
+    and would hold the trace command behind it.
+  - |
+    2026-10-15, spec-author: value omitted, inheriting 0224's. No
+    depends_on: 0222 is done, and the ADR-0014 stages (0164, 0166) are not
+    prerequisites, since this adds a reader and migrates nothing.
+
+out_of_scope:
+  - "Any SPEC### report, and which rows a rule exempts: the later 0001-F12 rule items under 0224."
+  - "Resolving a Scenario cell or a claim tag to scenarios (A-1; B-008, B-009, B-011): the SPEC022 and SPEC023 items, which extend this resolver."
+  - "Printing a row's resolution: 0001-F13 (§ 5 row 9)."
+  - "Everything in § 5 of the spec."
