@@ -1,0 +1,94 @@
+id: "0220"
+type: bug
+title: The cold-start baseline restore fails under the .NET 11 SDK
+
+status: done
+
+value: 3
+risk: 1
+
+parent: "0203"
+children: []
+
+depends_on: []
+spikes: []
+
+spec: .performance/benchmarks/Startup/.spec/README.md
+
+claims: [B-007]
+
+created: "2026-10-14"
+updated: "2026-10-14"
+closed: "2026-10-14"
+
+summary: |
+  The `Benchmark` step of the `main` workflow has failed on `ubuntu-latest`
+  and `windows-latest` on every push since `73ff7ab` (item 0217, dual target
+  `net10.0` and `net11.0`, `global.json` pinning SDK
+  `11.0.100-rc.2.26504.105`). Run 38665634106 is one such failure:
+
+      System.InvalidOperationException: Cold-start setup failed: Cold-start
+      baseline restore exited 1: <session>\baseline\empty.csproj : error
+      NU1101: Unable to find package Microsoft.NETCore.App.Ref. No packages
+      exist with this id in source(s): C:\Program Files\dotnet\library-packs, local
+
+  `Microsoft.AspNetCore.App.Ref`, `Microsoft.WindowsDesktop.App.Ref` and
+  the apphost pack failed the same way.
+
+  `ColdStartSession` generated the baseline tool with a literal
+  `<TargetFramework>net10.0</TargetFramework>` and restored it with every
+  inherited source cleared and a private package folder (C-8, `0109-F4`
+  § 7). SDK 11 asks for the `net10.0` targeting and apphost packs at
+  `10.0.13`; it bundles none, the installed SDK 10 brings its own `10.0.12`,
+  and the session's one source cannot supply either. Item 0217 fixed the same
+  failure in the consumption fixture (`0055-F7` § 7) and missed this project.
+  The failure reproduces on a developer machine with SDK 10.0.401 beside
+  SDK 11.
+
+  It reached `main` because the `Benchmark` step runs on a push to `main`
+  only; the pull-request workflow runs no benchmark (`0109-F1` A-4).
+
+  The fix: the generated project targets
+  `net$(BundledNETCoreAppTargetFrameworkVersion)`, the framework of the SDK
+  that builds it, whose packs that SDK carries. `dotnet tool run` starts
+  `specht` from its `net11.0` asset under that SDK, so the baseline and
+  `specht` run on the same runtime.
+
+  No claim, constraint or scenario changes: B-007 and C-8 hold as written,
+  and the generated project was wrong. Value 3: `main` is red on both
+  images on every push. Risk 1: one line of generated project text.
+
+  Delivered files: `.performance/benchmarks/Startup/ColdStartSession.cs`;
+  § 7 and § 10 of `0109-F4`; that Feature's lesson 0001;
+  `.agents/skills/specht-conventions/references/testing.md`;
+  `.issue/.sequence`.
+
+acceptance_criteria:
+  - "B-007 — the generated baseline restores from the session's one source and is measured."
+  - "`./build.sh Benchmark --benchmark-filter '*ColdStart*' --benchmark-job Short` completes its setup and reports all three rows."
+  - "`./build.sh`, `./build.sh Format` and `./build.sh Specht` pass."
+  - "No .feature change needed: bug fix - the baseline is generated, packed and installed in the session as before, and only its target framework changed. Constraints preserved: 0109-F4 C-4, 0109-F4 C-5, 0109-F4 C-8"
+
+decisions:
+  - |
+    2026-10-14, the repository owner: reported the failing `Benchmark` step
+    on `main`.
+  - |
+    2026-10-14, implementer: a bug under 0203 delivering B-007 again, since
+    the claim's setup failed. Rejected: naming `net11.0` literally, which
+    breaks at the next SDK pin; and adding a remote source to the session,
+    which C-4 rules out.
+  - |
+    2026-10-14, implementer: a process lesson in this Feature's `lessons/`,
+    with the rule in `specht-conventions` § Testing, because every project a
+    test or benchmark generates at run time carries the same trap.
+  - |
+    2026-10-14, implementer: the generated projects in
+    `test/acceptance/Build/BuildSteps.cs` keep `net10.0`. They restore from
+    the inherited sources and the user's package folder, not an isolated
+    feed, so the SDK downloads the pack it lacks.
+
+out_of_scope:
+  - "Refreshing the § 8 Performance finding, measured under SDK 10.0.401 - benchmarker's."
+  - "Running a benchmark in the pull-request workflow - `0109-F1` A-4, the owner's call. No item is cut."
+  - "Everything in § 5 of the specification."

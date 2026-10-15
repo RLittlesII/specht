@@ -139,7 +139,7 @@ internal sealed class ColdStartSession : IDisposable
             "<Project Sdk=\"Microsoft.NET.Sdk\">",
             "  <PropertyGroup>",
             "    <OutputType>Exe</OutputType>",
-            "    <TargetFramework>net10.0</TargetFramework>",
+            "    <TargetFramework>net$(BundledNETCoreAppTargetFrameworkVersion)</TargetFramework>",
             "    <PackAsTool>true</PackAsTool>",
             "    <ToolCommandName>specht-empty</ToolCommandName>",
             "    <PackageId>specht.benchmark.empty</PackageId>",

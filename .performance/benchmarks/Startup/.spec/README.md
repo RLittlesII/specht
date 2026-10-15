@@ -20,7 +20,7 @@ depends_on: ["F1"]
 blocks: []
 spikes: []
 created: "2026-10-09"
-updated: "2026-10-13"
+updated: "2026-10-14"
 github_issue: null
 synced_at: null
 ---
@@ -113,7 +113,7 @@ Every call site starts the tool as a new process - the pre-commit hook on every 
 
 ## 7. Technical Design
 
-<!-- last written by: implementer, 2026-10-13; implementer, 2026-10-14 (the benchmark project builds for two targets and runs `net10.0`, `0001-F2` decision 0011) -->
+<!-- last written by: implementer, 2026-10-13; implementer, 2026-10-14 (the benchmark project builds for two targets and runs `net10.0`, `0001-F2` decision 0011); implementer, 2026-10-14 (the baseline targets the SDK's bundled framework, item 0220) -->
 
 ### Implemented timing slice
 
@@ -158,9 +158,17 @@ never packs the real tool or asserts through a test library.
 
 Within the private session, setup generates a console tool with no dependency or
 project references, fixed synthetic package identity/version and a body of only
-`return 0;`. The generated project targets net10.0, matching the benchmark
-project's run, which the `Benchmark` target makes for `net10.0` (`0001-F2`
-decision 0011). It restores from installed SDK framework assets using the sole local
+`return 0;`. The generated project targets
+`net$(BundledNETCoreAppTargetFrameworkVersion)`, the framework of the SDK
+`global.json` pins, `net11.0` under SDK 11. That SDK carries its own framework's
+packs and no other's, and the session's one source cannot supply another, so a
+literal `net10.0` failed to restore ([lesson 0001](lessons/0001-a-generated-project-targets-the-bundled-framework.md)).
+`specht.tool` ships `net10.0` and `net11.0` assets, and `dotnet tool run` starts
+the highest one the installed runtime supports: under SDK 11, `tools/net11.0/any`
+on the 11.0 runtime, as the host trace shows. The baseline and `specht` run on
+the same runtime. The benchmark process runs `net10.0`, as the `Benchmark` target
+builds it (`0001-F2` decision 0011); it launches both tools and is neither.
+It restores from installed SDK framework assets using the sole local
 package source, disables audit for that restore, and packs Release with no
 restore and shared compilation disabled. The build target does not pack this
 empty tool.
@@ -380,7 +388,7 @@ for a regression comparison and no number gates the build.
 
 ## 10. Lessons / Spec Deltas
 
-<!-- last written by: spec-author, 2026-10-13 -->
+<!-- last written by: spec-author, 2026-10-13, 2026-10-14 (lesson 0001, item 0220) -->
 
 - 2026-10-09, spec-reviewer finding on commit `4b23e76`: B-003 restated with this Feature as subject. A-1 follows `0109-F1` B-013, which now packs only when this Feature's benchmark is selected.
 - 2026-10-09, the owner resolved OQ-1 and OQ-2. OQ-1 reverses its default: the tool process's memory is measured; B-006 added, C-7 restated, § 5 row 4 withdrawn. OQ-2: the fixed cost is measured in three rows - a generated tool that does nothing as the baseline, `specht --help`, and the check; B-007 to B-009 and C-8 added, C-1 restated, A-3 added, § 5 row 5 withdrawn and row 8 added. `--help` is the host row because the tool has no `--version`, and adding one is a product change (§ 5 row 8). B-004's source cites the owner's answer to `0109-F1` OQ-3. `0109-F1` C-4 holds unchanged: the allocation column stays, and B-006 reports beside it. Decision 0001 is unchanged: the checked invocation B-002 measures is still the one a call site runs, and B-008 is a row beside it, not a replacement; decision 0002 records the three-row call. On spec-reviewer findings before commit: B-006 and C-7 name the measured tool's own process, apart from the `dotnet` launcher and the benchmark process, and leave how and when it is read to § 7; C-8 gives packing the baseline tool to the benchmark code, not the benchmark target (orchestrator default, 2026-10-09, not the owner's), so A-1 and `0109-F1` B-013 are unchanged.
@@ -397,6 +405,12 @@ for a regression comparison and no number gates the build.
   exports the formatted ratio column: Markdown carries ratios and JSON carries
   raw measurements and allocation metrics. B-009 remains satisfied by the
   summary; B-006 remains separate, unimplemented memory work.
+
+- 2026-10-14, [lesson 0001](lessons/0001-a-generated-project-targets-the-bundled-framework.md),
+  item 0220: the baseline's restore failed on `main` once `global.json` pinned
+  SDK 11, because the generated project named `net10.0`. It now targets the
+  SDK's bundled framework (§ 7). No claim, constraint or scenario changed;
+  B-007 and C-8 hold.
 
 ## 11. Open Questions
 

@@ -223,6 +223,15 @@ Windows, so `main` is where it shows
 ([lesson 0006](../../../../.spec/lessons/0006-a-path-compared-as-a-string-is-normalized-first.md)).
 A path handed to a file-system API needs nothing; the API normalizes it.
 
+**A project generated at run time targets the bundled framework.** A project a
+test or benchmark writes and restores from an isolated feed targets
+`net$(BundledNETCoreAppTargetFrameworkVersion)`, never a literal framework: the
+pinned SDK carries packs for its own framework only, and an isolated feed cannot
+supply another's. A change to `global.json` or `TargetFrameworks` searches the
+tree for `<TargetFramework>` in generated project text. A literal `net10.0`
+reached `main` once, where the benchmark alone builds it
+([`0109-F4` lesson 0001](../../../../.performance/benchmarks/Startup/.spec/lessons/0001-a-generated-project-targets-the-bundled-framework.md)).
+
 Never a copy of a real repository's `.spec/` tree, this one's included: a copied
 tree carries every rule's happy path at once and pins the test to whatever that
 tree happened to contain. No test touches the network, a live provider, or the
@@ -251,3 +260,5 @@ wall clock.
 - `Thread.Sleep`, a retry loop, or an ambient clock read.
 - A fixture copied from a real `.spec/` tree, or an absolute path in one.
 - A string comparison of a path built with `Path.Combine` and not normalized.
+- A literal `<TargetFramework>` in a project generated at run time and restored
+  from an isolated feed.
