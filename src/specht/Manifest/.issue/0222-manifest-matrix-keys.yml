@@ -2,7 +2,7 @@ id: "0222"
 type: task
 title: Read the tests, matrix, owners and required-specification keys at schema 0.2.0
 
-status: in-progress
+status: done
 
 risk: 3
 
@@ -24,7 +24,7 @@ claims:
 
 created: "2026-10-15"
 updated: "2026-10-15"
-closed: null
+closed: "2026-10-15"
 
 summary: |
   Matrix resolution (0001-F12) and the trace command (0001-F13) read their
