@@ -107,16 +107,18 @@ Feature: The check command
   Scenario: Three call sites get one verdict
     Given the tool honours rule settings in the manifest
     And a prepared root holding one error-severity and one warning-severity violation
+    And the root carries this repository's source, which the build target builds the tool from
     When the check runs against that root from a shell
     And the check runs against that root through the build target
     And the check runs against that root through the pre-commit hook
-    Then all three print the same lines
+    Then all three carry the lines the check prints, unchanged and in order
+    And a log prefix on each line and a call site's own lines around them are all that differ
     And all three exit with the same code
 
   @B-011
   Scenario: This repository checks itself with the tool
     Given the tool honours rule settings in the manifest
-    And this repository's tree at one commit
+    And this repository's own tree
     When the build's Specht target runs
     Then the check runs against this repository's root
     And the target exits with the check's exit code
