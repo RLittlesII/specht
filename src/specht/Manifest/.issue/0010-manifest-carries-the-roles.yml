@@ -23,6 +23,7 @@ children:
     "0185",
     "0187",
     "0191",
+    "0222",
   ]
 
 depends_on: []
@@ -73,7 +74,7 @@ claims:
   - B-054
 
 created: "2026-10-08"
-updated: "2026-10-13"
+updated: "2026-10-15"
 closed: null
 
 summary: |
