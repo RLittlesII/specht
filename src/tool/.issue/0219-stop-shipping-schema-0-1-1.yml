@@ -1,0 +1,80 @@
+id: "0219"
+type: task
+title: Stop shipping schema 0.1.1 and lock 0.2.0
+
+status: done
+
+risk: 2
+
+parent: "0041"
+children: []
+
+depends_on: []
+spikes: []
+
+spec: src/tool/.spec/README.md
+
+claims:
+  - B-002
+  - B-055
+  - B-092
+  - B-093
+  - B-102
+
+created: "2026-10-14"
+updated: "2026-10-14"
+closed: "2026-10-14"
+
+summary: |
+  Delivers decision 0013: schema `0.1.1`, unlocked and never published,
+  stops shipping, and `0.2.0` is locked so the release guard (`0055-F6`
+  B-013) lets the next tool pre-release be tagged. No byte of `0.1.0` or
+  `0.2.0` changes.
+
+  Delete, by hand, every `v0.1.1` folder: `src/tool/schema/v0.1.1/`,
+  `src/tool/manifest/v0.1.1/`, `src/tool/templates/v0.1.1/` and
+  `docs/rules/v0.1.1/`. Then run `./build.sh LockSchemaVersion` and commit
+  the `0.2.0` entry it adds to `src/tool/schema/versions.lock.json`; the
+  `0.1.0` entry stays as it is. The shipped set then holds no unlocked
+  version, which B-090 and B-091 allow; their check is 0044's.
+
+  Rebind the scenarios the specification delta changed:
+  `test/acceptance/Versioning/VersioningSteps.Lock.cs` (B-093's version
+  set) and `test/acceptance/Manifest/PinnedDefaultsSteps.cs` (the newer
+  synthetic version). Move every test that names `0.1.1` as a shipped or
+  pinned version to the shipped set `0.1.0` and `0.2.0`, or to a synthetic
+  version that is not `0.1.1`: the check, schema source, runner, init,
+  claim-tag, pinned-default, feature-file and pin-selector tests under
+  `test/tests/`. `SemanticVersion` unit tests that parse or order `0.1.1`
+  as a value name no shipped version and may stay.
+
+  Bring § 7 (implementer) and § 9 (test-writer) of `src/tool/.spec/` and
+  `src/specht/Manifest/.spec/` to the shipped set, and the reference pages
+  `docs/cli.md` and `docs/configuration.md`.
+
+acceptance_criteria:
+  - "Decision 0013 — no `v0.1.1` folder in any tree; `0.1.0` and `0.2.0` byte-identical to before"
+  - "B-002 — the runner test over `0.1.0` and `0.2.0`"
+  - "B-055 — the exact-pin unit and runner tests over a set without `0.1.1`"
+  - "B-092 — `0.2.0` locked by the lock target, not by hand (C-17)"
+  - "B-093 — the amended both-locked scenario bound again; it is pending until then"
+  - "B-102 — older pins reject the source key, `0.1.0` alone"
+  - "`0001-F5` B-049 — older-pin scenarios and tests over `0.1.0` alone"
+  - "`0055-F6` B-013 — the release guard passes on this tree"
+  - "§ 9 carries a row naming a test for each id above."
+
+decisions:
+  - |
+    2026-10-14, spec-author's cut, on the repository owner's decision
+    0013: one item for the deletion, the lock and the test moves. The lock
+    target locks only the newest version, so `0.1.1` stays unlocked beside
+    a locked `0.2.0` and the guard still refuses the tag; and deleting
+    `0.1.1` fails the tests that name it.
+    Rejected: an item for the lock alone.
+
+out_of_scope:
+  - "Renaming an unlocked version — OQ-53, open in part."
+  - "Checking the shipped set against the lock in the build — 0044 (B-089 to B-091)."
+  - "Cutting the next version — 0189."
+  - "Tagging the pre-release — `0055-F6`."
+  - "The content of any version after `0.1.0` — § 5 #3."

@@ -17,11 +17,11 @@ public sealed partial class VersioningSteps
         WriteLock(new Dictionary<string, string> { [version] = "previous-digest" });
     }
 
-    [Given("the tool ships schema versions 0.1.0 and 0.1.1 and the version lock records both")]
+    [Given("the tool ships schema versions 0.1.0 and 0.2.0 and the version lock records both")]
     public void GivenBothShippedVersionsAreLocked()
     {
-        PrepareLockTree(["0.1.0", "0.1.1"]);
-        WriteLock(new Dictionary<string, string> { ["0.1.0"] = "earlier-digest", ["0.1.1"] = "newest-digest" });
+        PrepareLockTree(["0.1.0", "0.2.0"]);
+        WriteLock(new Dictionary<string, string> { ["0.1.0"] = "earlier-digest", ["0.2.0"] = "newest-digest" });
     }
 
     [Given("the tool ships schema version {word} and the version lock records it")]

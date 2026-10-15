@@ -413,7 +413,6 @@ Feature: The manifest carries the roles
     Examples:
       | pin   |
       | 0.1.0 |
-      | 0.1.1 |
 
   @B-049 @B-022 @B-023 @boundary
   Scenario Outline: Older pins reject the new tag keys
@@ -427,7 +426,6 @@ Feature: The manifest carries the roles
     Examples:
       | pin   |
       | 0.1.0 |
-      | 0.1.1 |
 
   @B-038 @B-022 @B-023
   Scenario Outline: Invalid tag forms are rejected before a check
@@ -578,7 +576,6 @@ Feature: The manifest carries the roles
     Examples:
       | pin   |
       | 0.1.0 |
-      | 0.1.1 |
 
   @B-050 @boundary
   Scenario: A task grammar requires its sequence group

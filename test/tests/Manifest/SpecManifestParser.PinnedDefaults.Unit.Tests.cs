@@ -15,7 +15,7 @@ public sealed class SpecManifestParserPinnedDefaultsUnitTests
     {
         { "{}", "Older" },
         { """{"schemaVersion":"0.1.0"}""", "Older" },
-        { """{"schemaVersion":"0.1.1"}""", "Newer" },
+        { """{"schemaVersion":"0.2.0"}""", "Newer" },
     };
 
     [Theory]
@@ -30,7 +30,7 @@ public sealed class SpecManifestParserPinnedDefaultsUnitTests
         var structure = parser.Parse(manifest);
 
         // Then
-        structure.SchemaVersion.Should().Be(new SemanticVersion(0, 1, label == "Older" ? 0 : 1));
+        structure.SchemaVersion.Should().Be(label == "Older" ? new SemanticVersion(0, 1, 0) : new SemanticVersion(0, 2, 0));
         structure.Sections.Should().Equal($"3. {label} claims", $"9. {label} matrix", $"12. {label} sign-off");
         structure.Roles["matrix"].Should().Be($"9. {label} matrix");
         structure.Markers["missing"].Should().Be($"{label}Missing");
@@ -130,7 +130,7 @@ public sealed class SpecManifestParserPinnedDefaultsUnitTests
         // Given
         var data = new PinnedDefaultsData();
         var parser = new SpecManifestParser(data.Versions);
-        var inputs = Enumerable.Range(0, 64).Select(index => new JsonObject { ["schemaVersion"] = index % 2 == 0 ? "0.1.0" : "0.1.1" })
+        var inputs = Enumerable.Range(0, 64).Select(index => new JsonObject { ["schemaVersion"] = index % 2 == 0 ? "0.1.0" : "0.2.0" })
             .Select(static manifest => manifest.ToJsonString()).ToArray();
 
         // When

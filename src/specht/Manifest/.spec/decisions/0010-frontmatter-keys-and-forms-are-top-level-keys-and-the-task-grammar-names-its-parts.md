@@ -198,3 +198,10 @@ absent-epic identity behavior, or decides the claim-tag names owned by `0134`.
 The exact grammar-composition mechanics must be checked against the source
 after the prerequisite stages, including anchor and capture interactions;
 ratification is not evidence that an untested composition algorithm works.
+
+## Schema 0.1.1 withdrawn on 2026-10-14
+
+Schema `0.1.1` stops shipping before it is published
+([`0001-F7` decision 0013](../../../../tool/.spec/decisions/0013-schema-0-1-1-stops-shipping.md)).
+The version boundary above holds for `0.1.0` alone: it is the only older pin
+that retains the existing parsing and validation. Nothing else here changes.

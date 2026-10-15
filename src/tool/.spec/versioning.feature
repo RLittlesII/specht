@@ -648,10 +648,10 @@ Feature: Schema versioning
 
   @B-053
   Scenario: A latest-patch policy floats to the newest patch
-    Given the tool ships schema versions 0.1.0, 0.1.1 and 0.2.0
-    And the manifest pins version 0.1.0 with the pin policy latest-patch
+    Given the tool ships schema versions 0.2.0, 0.2.1 and 0.3.0
+    And the manifest pins version 0.2.0 with the pin policy latest-patch
     When the check runs with JSON output
-    Then the document names schema version 0.1.1
+    Then the document names schema version 0.2.1
 
   @B-054
   Scenario: A latest-minor policy floats to the newest minor
@@ -662,7 +662,7 @@ Feature: Schema versioning
 
   @B-055 @boundary
   Scenario: A pin is exact unless a policy floats it
-    Given the tool ships schema versions 0.1.0, 0.1.1 and 0.2.0
+    Given the tool ships schema versions 0.1.0, 0.2.0 and 1.0.0
     And the manifest pins version 0.1.0 with no pin policy
     When the check runs with JSON output
     Then the document names schema version 0.1.0
@@ -817,7 +817,7 @@ Feature: Schema versioning
 
   @B-090
   Scenario: Only one version is open to change
-    Given the tool ships schema versions 0.1.0, 0.1.1 and 0.2.0
+    Given the tool ships schema versions 0.1.0, 0.2.0 and 0.3.0
     And the version lock records version 0.1.0 only
     When the shipped versions are checked against the version lock
     Then the check fails because two versions are unlocked
@@ -831,14 +831,14 @@ Feature: Schema versioning
 
   @B-092
   Scenario: Locking records the newest version
-    Given the tool ships schema versions 0.1.0 and 0.1.1
+    Given the tool ships schema versions 0.1.0 and 0.2.0
     And the version lock records version 0.1.0 only
     When the newest version is locked
-    Then the version lock records version 0.1.1 with the digest of its files
+    Then the version lock records version 0.2.0 with the digest of its files
 
   @B-093
   Scenario: Locking again changes nothing
-    Given the tool ships schema versions 0.1.0 and 0.1.1 and the version lock records both
+    Given the tool ships schema versions 0.1.0 and 0.2.0 and the version lock records both
     When the newest version is locked
     Then the version lock is as it was
 
@@ -851,8 +851,8 @@ Feature: Schema versioning
 
   @B-094
   Scenario: A cut is refused while a version is unlocked
-    Given the tool ships schema version 0.1.0 and the version lock does not record it
-    When version 0.1.1 is cut
+    Given the tool ships schema version 0.2.0 and the version lock does not record it
+    When version 0.3.0 is cut
     Then the cut fails
     And no file is created
 
@@ -878,39 +878,39 @@ Feature: Schema versioning
 
   @B-097
   Scenario: A cut schema's address names the new version
-    Given the tool ships schema version 0.1.0 and the version lock records it
-    When version 0.1.1 is cut
-    Then each frontmatter schema of version 0.1.1 declares the address of version 0.1.1
+    Given the tool ships schema version 0.2.0 and the version lock records it
+    When version 0.3.0 is cut
+    Then each frontmatter schema of version 0.3.0 declares the address of version 0.3.0
 
   @B-098
   Scenario: A cut rule page gives the new version
-    Given the tool ships schema version 0.1.0 and the version lock records it
-    When version 0.1.1 is cut
-    Then each rule page of version 0.1.1 gives schema version 0.1.1
+    Given the tool ships schema version 0.2.0 and the version lock records it
+    When version 0.3.0 is cut
+    Then each rule page of version 0.3.0 gives schema version 0.3.0
 
   @B-099
   Scenario: A cut changes nothing but the stated version
-    Given the tool ships schema version 0.1.0 and the version lock records it
-    When version 0.1.1 is cut
-    Then each file of version 0.1.1 equals version 0.1.0's file of the same name, the stated version aside
+    Given the tool ships schema version 0.2.0 and the version lock records it
+    When version 0.3.0 is cut
+    Then each file of version 0.3.0 equals version 0.2.0's file of the same name, the stated version aside
 
   @B-099 @boundary
   Scenario: A cut template states no version
-    Given the tool ships schema version 0.1.0 and the version lock records it
-    When version 0.1.1 is cut
-    Then each template of version 0.1.1 is byte-identical to version 0.1.0's
+    Given the tool ships schema version 0.2.0 and the version lock records it
+    When version 0.3.0 is cut
+    Then each template of version 0.3.0 is byte-identical to version 0.2.0's
 
   @B-100
   Scenario: A cut touches nothing outside the new version
-    Given the tool ships schema version 0.1.0 and the version lock records it
-    When version 0.1.1 is cut
-    Then no file outside version 0.1.1's folders is created, changed or deleted
+    Given the tool ships schema version 0.2.0 and the version lock records it
+    When version 0.3.0 is cut
+    Then no file outside version 0.3.0's folders is created, changed or deleted
 
   @B-100 @boundary
   Scenario: A cut does not lock the new version
-    Given the tool ships schema version 0.1.0 and the version lock records it
-    When version 0.1.1 is cut
-    Then the version lock does not record version 0.1.1
+    Given the tool ships schema version 0.2.0 and the version lock records it
+    When version 0.3.0 is cut
+    Then the version lock does not record version 0.3.0
 
   @B-009
   Scenario: The manifest selects the local frontmatter schemas
@@ -953,7 +953,6 @@ Feature: Schema versioning
     Examples:
       | version |
       | 0.1.0   |
-      | 0.1.1   |
 
   @B-103
   Scenario: The command-line source works with an older pin

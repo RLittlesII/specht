@@ -94,7 +94,7 @@ public sealed class PinnedDefaultsSteps
         var resources = new SpechtResources();
         var texts = resources.Texts.ToDictionary(static pair => pair.Key, static pair => pair.Value, StringComparer.Ordinal);
         texts["manifest/v0.1.0/manifest.json"] = _older.ToJsonString();
-        texts["manifest/v0.1.1/manifest.json"] = _newer.ToJsonString();
+        texts["manifest/v0.2.0/manifest.json"] = _newer.ToJsonString();
         var parser = new SpecManifestParser(new SchemaVersions(texts));
         _structure = parser.Parse(_manifest.ToJsonString());
     }
