@@ -8,8 +8,9 @@ namespace Specht.Acceptance;
 
 /// <summary>
 /// The built tool, launched as a shell launches it, so a scenario sees the process's stdout, stderr and exit code; Spectre's
-/// command tester captures stdout alone (0001-F2 C-7). It also reads the version an assembly states from the file's own
-/// metadata, the launched tool's (0001-F2 B-040) or one a package carries (B-030).
+/// command tester captures stdout alone (0001-F2 C-7). Any other process a scenario runs the same way, such as the build's
+/// entry script and the pre-commit hook a check is called through (B-010, B-011). It also reads the version an assembly
+/// states from the file's own metadata, the launched tool's (0001-F2 B-040) or one a package carries (B-030).
 /// </summary>
 internal static class AcceptanceTool
 {
@@ -33,12 +34,7 @@ internal static class AcceptanceTool
         IReadOnlyDictionary<string, string> environment,
         params string[] args)
     {
-        var start = new ProcessStartInfo("dotnet")
-        {
-            WorkingDirectory = workingDirectory,
-            RedirectStandardOutput = true,
-            RedirectStandardError = true,
-        };
+        var start = new ProcessStartInfo("dotnet") { WorkingDirectory = workingDirectory };
         foreach (var (name, value) in environment)
         {
             start.Environment[name] = value;
@@ -50,7 +46,26 @@ internal static class AcceptanceTool
             start.ArgumentList.Add(arg);
         }
 
-        using var process = Process.Start(start) ?? throw new InvalidOperationException("dotnet did not start.");
+        return Run(start);
+    }
+
+    /// <summary>
+    /// Runs the process <paramref name="start"/> describes and waits for it to exit. A process whose standard input is
+    /// redirected reads none: the input is closed as soon as it starts.
+    /// </summary>
+    /// <param name="start">The process to run; its stdout and stderr are redirected here.</param>
+    /// <returns>What the process wrote to stdout and to stderr, and its exit code.</returns>
+    public static (string Stdout, string Stderr, int ExitCode) Run(ProcessStartInfo start)
+    {
+        start.RedirectStandardOutput = true;
+        start.RedirectStandardError = true;
+
+        using var process = Process.Start(start) ?? throw new InvalidOperationException($"{start.FileName} did not start.");
+        if (start.RedirectStandardInput)
+        {
+            process.StandardInput.Close();
+        }
+
         var stdout = process.StandardOutput.ReadToEndAsync();
         var stderr = process.StandardError.ReadToEnd();
         var output = stdout.GetAwaiter().GetResult();
