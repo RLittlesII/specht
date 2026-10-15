@@ -17,6 +17,17 @@ internal partial class SpechtBuild : NukeBuild
     // B-001: `./build.sh` with no target name runs Compile, then Test.
     public static int Main() => Execute<SpechtBuild>(static x => x.Build);
 
+    // 0001-F2 B-045: the project model registers the SDK matching this process's runtime and exports its paths; a child
+    // dotnet resolves the SDK global.json pins only once they are gone.
+    protected override void OnBuildInitialized()
+    {
+        base.OnBuildInitialized();
+        foreach (var variable in (string[])["MSBUILD_EXE_PATH", "MSBuildSDKsPath", "MSBuildExtensionsPath"])
+        {
+            Environment.SetEnvironmentVariable(variable, null);
+        }
+    }
+
     private static string NpxPath => ToolPathResolver.GetPathExecutable("npx");
 
     private AbsolutePath ArtifactsDirectory => RootDirectory / ".artifacts";
@@ -40,7 +51,7 @@ internal partial class SpechtBuild : NukeBuild
         {
             var exitCode = 0;
             AnnotateChangedFiles(DotNet(
-                "run --project src/tool -- --root .",
+                "run --project src/tool --framework net10.0 -- --root .",
                 RootDirectory,
                 logger: ProcessTasks.DefaultLogger,
                 exitHandler: process => exitCode = process.ExitCode));
@@ -125,7 +136,7 @@ internal partial class SpechtBuild : NukeBuild
             var coverage = TierCoverageDirectory("Acceptance");
             DotNet(
                 $"test --project {RootDirectory / "test" / "acceptance" / "acceptance.csproj"} --configuration {Configuration} --no-build " +
-                $"--coverage --coverage-output-format cobertura --results-directory {coverage}",
+                $"--max-parallel-test-modules 1 --coverage --coverage-output-format cobertura --results-directory {coverage}",
                 workingDirectory: RootDirectory);
         });
 
@@ -145,6 +156,7 @@ internal partial class SpechtBuild : NukeBuild
             const string project = ".performance/benchmarks/benchmarks.csproj";
             DotNetBuild(static settings => settings
                 .SetProjectFile(project)
+                .SetFramework("net10.0")
                 .SetConfiguration("Release")
                 .EnableNoRestore());
 
@@ -156,6 +168,7 @@ internal partial class SpechtBuild : NukeBuild
 
             var settings = new DotNetRunSettings()
                 .SetProjectFile(project)
+                .SetFramework("net10.0")
                 .SetConfiguration("Release")
                 .EnableNoBuild()
                 .SetProcessWorkingDirectory(RootDirectory);

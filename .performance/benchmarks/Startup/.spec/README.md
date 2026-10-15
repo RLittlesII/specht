@@ -113,7 +113,7 @@ Every call site starts the tool as a new process - the pre-commit hook on every 
 
 ## 7. Technical Design
 
-<!-- last written by: implementer, 2026-10-13 -->
+<!-- last written by: implementer, 2026-10-13; implementer, 2026-10-14 (the benchmark project builds for two targets and runs `net10.0`, `0001-F2` decision 0011) -->
 
 ### Implemented timing slice
 
@@ -159,7 +159,8 @@ never packs the real tool or asserts through a test library.
 Within the private session, setup generates a console tool with no dependency or
 project references, fixed synthetic package identity/version and a body of only
 `return 0;`. The generated project targets net10.0, matching the benchmark
-project. It restores from installed SDK framework assets using the sole local
+project's run, which the `Benchmark` target makes for `net10.0` (`0001-F2`
+decision 0011). It restores from installed SDK framework assets using the sole local
 package source, disables audit for that restore, and packs Release with no
 restore and shared compilation disabled. The build target does not pack this
 empty tool.

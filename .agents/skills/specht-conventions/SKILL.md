@@ -203,7 +203,7 @@ none.
 
 `Specht` runs `specht` exactly as a consumer would — through the local tool
 manifest, never through a project reference (brief § 7). Until the first
-package is published it runs `dotnet run --project src/tool -- --root .`
+package is published it runs `dotnet run --project src/tool --framework net10.0 -- --root .`
 instead; the manifest replaces that the moment a package exists. From 0062,
 pre-commit calls the same thing when a staged file is under a `.spec/` directory
 or is a `.feature`.

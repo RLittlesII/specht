@@ -1,0 +1,113 @@
+id: "0218"
+type: refactor
+title: Replace the test and tooling projects' cross-project references with real ones
+
+status: ready-for-architecture
+
+value: 3
+risk: 3
+
+parent: null
+children: []
+
+depends_on: ["0217"] # the references below are read as 0217 leaves them, every project on two targets
+spikes: []
+
+spec: null
+
+claims: []
+
+created: "2026-10-14"
+updated: "2026-10-14"
+closed: null
+
+summary: |
+  The repository owner, 2026-10-14, after item 0217: "can we get a
+  refactor task to clean up all those cross references and find a better
+  way."
+
+  The incident: under dual targeting, `test/tests` references the
+  benchmark project, an executable that references the tool, and the
+  benchmarks' `net10.0` runtime configuration for the tool overwrote the
+  test project's own `net11.0` one (`0001-F2` § 7, "Two target
+  frameworks"). One project's targets broke another's output through a
+  reference neither needed for what it runs.
+
+  The constraint driving this: the owner's ruling on pull request #114,
+  "no `<Compile Include>` of another project's files; use a real
+  reference", and `specht-conventions` § Testing, "Do not add a ninth
+  link".
+
+  The cross-project references, as found at 0217:
+
+  - `test/tests/tests.csproj`: a `ProjectReference` to
+    `.performance/benchmarks/benchmarks.csproj`, an executable the tests do
+    not launch; and `test/acceptance/AcceptanceTool.cs` compiled in by link.
+  - `test/acceptance/acceptance.csproj`: `ProjectReference`s to
+    `.build/.build.csproj` (`Versioning/VersioningSteps.Lock.cs` uses
+    `Specht.Build`), which pins `.build` to one target framework every test
+    target must be compatible with, and to
+    `.performance/comparison/comparison.csproj`; six sources from
+    `test/tests` compiled in by link (`BaselineTree`, `GoldenReport`,
+    `EngineAssembly`, `EngineServices`, `RulePage`, `SpecTree`) with the
+    `System*` `<Using>` patch they need; `Content` copies, with `Link`, of
+    `.specht/**/*.json`, four templates, `docs/schema/*.json`, `docs/*.md`,
+    `README.md`, `src/tool/README.md`, `.config/dotnet-tools.json`,
+    `nuget.config` and the golden report, the first three and the golden
+    report declared again, item for item, in `tests.csproj`; and eleven
+    `ReqnrollFeatureFile` links, one per Feature's `.feature`.
+  - `test/build.tests/build.tests.csproj`: a `ProjectReference` to
+    `.build/.build.csproj`.
+  - `test/Directory.Build.props`: `test/Shared/TestTierGovernanceTests.cs`
+    linked into every project whose name ends in `tests`.
+
+  Two items already own slices of this: `0168`, the test-support project
+  ADR-0010 track T decided, for the linked sources; and `0153`, blocked on
+  `0216` under ADR-0014, whose move of the tree generator into the engine
+  removes the reason `test/tests` references the benchmarks. This item
+  decides the whole shape first, then delivers what neither owns, and the
+  decision record says whether `0168` and `0153` deliver inside that shape
+  as they stand, or are re-scoped with the owner.
+
+  Expected files: a new ADR under `.spec/adr/`, numbered when written;
+  `test/tests/tests.csproj`, `test/acceptance/acceptance.csproj`,
+  `test/build.tests/build.tests.csproj`, `test/Directory.Build.props`;
+  the test-support project the record names, under `test/`, and
+  `specht.slnx`; `.build/.build.csproj` only if the record moves the
+  build's coupling; `specht-conventions` § Testing and its layout; the
+  § 7 and § 8 paths of every specification that names a moved file, by
+  their owners.
+
+acceptance_criteria:
+  - "1. Before any project file changes, an ADR under `.spec/adr/` chooses the better way for every reference listed in the summary, with the rejected options, and states its boundary with `0168` and `0153`; the owner accepts it."
+  - "2. No `<Compile Include>` in the repository names a file of another project; sources two test projects share live in a test-support library project (`0168`'s, or the record's equivalent real reference) that both reference."
+  - "3. No test project references an executable it does not launch; `test/tests` no longer references `.performance/benchmarks`."
+  - "4. Test content two projects need - the live `.specht/` files, the templates, `docs/schema`, the golden report - is declared once and reaches each project from that one declaration, not from per-project copies of it."
+  - "5. `.build`'s coupling to the acceptance tier and to `test/build.tests` is reviewed in the record: either the tests reach what they need without referencing the build project, or the record states why the reference stays and what it costs the build's target framework."
+  - "6. How the `.feature` files reach `test/acceptance` is reviewed in the record; one literal entry per file stays unless the record shows a form Reqnroll discovers without silently finding zero tests (`specht-conventions` § Testing)."
+  - "7. The golden report is unchanged byte for byte and is one tracked file (`0001-F1` B-004, C-10); the count of tests each tier runs, on each target framework, is the count it ran before; the package's contents are unchanged."
+  - "8. `specht-conventions` § Testing and its layout say what is true after the change."
+  - "No .feature change needed: refactor - test and tooling project references and shared test content are restructured; no test is added, removed or changed in what it asserts, and the tool, its package and the build's targets are unchanged."
+  - "Constraints preserved: 0001-F1 C-10, 0001-F2 C-5, 0001-F2 C-7, 0055-F3 C-3, 0055-F3 C-4"
+
+decisions:
+  - |
+    2026-10-14, the repository owner: cut a refactor item for the
+    cross-project references 0217 exposed, and find a better way. The
+    driving constraint is the owner's ruling on pull request #114: no
+    `<Compile Include>` of another project's files; use a real reference.
+  - |
+    2026-10-14, spec-author: id `0218` taken above `.issue/.sequence` on
+    `main`, `0216`, and this branch's `0217`; no open pull request holds an
+    id. At the repository root with `spec: null`: it restructures the test,
+    build and benchmark projects and belongs to no one Feature. Status
+    `ready-for-architecture`: the ADR in criterion 1 comes before any code
+    moves. `0168` and `0153` are left as they are; the record decides their
+    boundary with this item.
+
+out_of_scope:
+  - "Moving the tree generator into the engine - item 0153, gated by ADR-0014 and item 0216."
+  - "The composition inside `EngineServices` - item 0207."
+  - "The shared host factory - item 0144."
+  - "The package's target frameworks - `0001-F2` B-045, item 0217."
+  - "Any change to what a test asserts, and any new helper or fixture."

@@ -127,7 +127,7 @@ Nothing publishes `specht.tool`: `0001-F2` § 5 row 7 hands the release workflow
 
 ## 7. Technical Design
 
-<!-- last written by: implementer, 2026-10-14 -->
+<!-- last written by: implementer, 2026-10-14 (the `build` job's step 3, `0001-F2` B-045 and its decision 0011) -->
 
 On 2026-10-14, B-010 uses the native NuGet environment credential
 `NuGetPackageSourceCredentials_specht`, supplied at the generated release build
@@ -315,28 +315,28 @@ Both lines are built from the one constant `PackagePath`, as the upload's glob a
 
 ### The file generated
 
-Two jobs, both on `ubuntu-latest`, in this order. Both tables were read off the file the regeneration of 2026-10-11 wrote (`0055-F2` C-1). Against the `publish.yml` it replaces, that regeneration changed the workflow's name, the name, `id` and target of the last step of `build`, the second job's name, its `contents` scope, the end of the push line, and added the Release step; no step moved.
+Two jobs, both on `ubuntu-latest`, in this order. Both tables were read off the file the regeneration of 2026-10-11 wrote (`0055-F2` C-1). Step 3 of `build` was read again off the regeneration of 2026-10-14, which renamed it from `Use .NET 10 SDK` and added `global-json-file: 'global.json'` beside `dotnet-version: '10.0.401'` (`0001-F2` § 7, "Two target frameworks"); nothing else in the file changed. Against the `publish.yml` it replaces, that regeneration changed the workflow's name, the name, `id` and target of the last step of `build`, the second job's name, its `contents` scope, the end of the push line, and added the Release step; no step moved.
 
 Job `build`: no `needs`, no `if`, the workflow's read-only token.
 
-| #   | Step                                        | Runs                                                                               | Condition                                           |
-| --- | ------------------------------------------- | ---------------------------------------------------------------------------------- | --------------------------------------------------- |
-| 1   | Checkout                                    | `actions/checkout`, `fetch-depth: '0'`                                             | none                                                |
-| 2   | Fetch all history for all tags and branches | `git fetch --prune`                                                                | none                                                |
-| 3   | Use .NET 10 SDK                             | `actions/setup-dotnet`                                                             | none                                                |
-| 4   | Specht                                      | `./build.cmd --target Specht`                                                      | none                                                |
-| 5   | Restore                                     | `./build.cmd --target Restore --skip Specht`                                       | none                                                |
-| 6   | Verify Tag                                  | `./build.cmd --target VerifyTag --skip Restore`                                    | none in the file; the target skips itself off a tag |
-| 7   | Format                                      | `./build.cmd --target Format --skip Restore`                                       | none                                                |
-| 8   | Compile                                     | `./build.cmd --target Compile --skip Restore Format`                               | none                                                |
-| 9   | Unit Test                                   | `./build.cmd --target UnitTest --skip Compile`                                     | none                                                |
-| 10  | Integration Test                            | `./build.cmd --target IntegrationTest --skip UnitTest`                             | none                                                |
-| 11  | Acceptance Test                             | `./build.cmd --target AcceptanceTest --skip IntegrationTest`                       | none                                                |
-| 12  | Test                                        | `./build.cmd --target Test --skip Compile UnitTest IntegrationTest AcceptanceTest` | none                                                |
-| 13  | Build                                       | `./build.cmd --target Build --skip Test`                                           | none                                                |
-| 14  | Pack                                        | `./build.cmd --target Pack --skip Build`                                           | none                                                |
-| 15  | Upload the package                          | `actions/upload-artifact`, the one `.nupkg`                                        | none                                                |
-| 16  | Release                                     | `./build.cmd --target Release --skip VerifyTag Pack`                               | none                                                |
+| #   | Step                                        | Runs                                                                                | Condition                                           |
+| --- | ------------------------------------------- | ----------------------------------------------------------------------------------- | --------------------------------------------------- |
+| 1   | Checkout                                    | `actions/checkout`, `fetch-depth: '0'`                                              | none                                                |
+| 2   | Fetch all history for all tags and branches | `git fetch --prune`                                                                 | none                                                |
+| 3   | Use .NET 10 and 11 SDKs                     | `actions/setup-dotnet`, `10.0.401` and the SDK `global.json` pins (`0001-F2` B-045) | none                                                |
+| 4   | Specht                                      | `./build.cmd --target Specht`                                                       | none                                                |
+| 5   | Restore                                     | `./build.cmd --target Restore --skip Specht`                                        | none                                                |
+| 6   | Verify Tag                                  | `./build.cmd --target VerifyTag --skip Restore`                                     | none in the file; the target skips itself off a tag |
+| 7   | Format                                      | `./build.cmd --target Format --skip Restore`                                        | none                                                |
+| 8   | Compile                                     | `./build.cmd --target Compile --skip Restore Format`                                | none                                                |
+| 9   | Unit Test                                   | `./build.cmd --target UnitTest --skip Compile`                                      | none                                                |
+| 10  | Integration Test                            | `./build.cmd --target IntegrationTest --skip UnitTest`                              | none                                                |
+| 11  | Acceptance Test                             | `./build.cmd --target AcceptanceTest --skip IntegrationTest`                        | none                                                |
+| 12  | Test                                        | `./build.cmd --target Test --skip Compile UnitTest IntegrationTest AcceptanceTest`  | none                                                |
+| 13  | Build                                       | `./build.cmd --target Build --skip Test`                                            | none                                                |
+| 14  | Pack                                        | `./build.cmd --target Pack --skip Build`                                            | none                                                |
+| 15  | Upload the package                          | `actions/upload-artifact`, the one `.nupkg`                                         | none                                                |
+| 16  | Release                                     | `./build.cmd --target Release --skip VerifyTag Pack`                                | none                                                |
 
 Steps 12, 13 and 16 run aggregate targets with every dependency skipped: each starts the entry script and executes nothing. Step 16 is the trailing step the 2026-10-09 probe found, and it follows the upload. `Specht` is first because `Restore` depends on it; until `0001-F5` lands it reports and passes (C-6).
 
@@ -699,7 +699,7 @@ its date is preserved rather than backdated.
 
 ## 10. Lessons / Spec Deltas
 
-<!-- last written by: spec-author, 2026-10-14 -->
+<!-- last written by: spec-author, 2026-10-14 (`0001-F2` B-045, its decision 0011) -->
 
 - 2026-10-09, decision 0001: B-008 and C-4 amended, C-7 and § 5 #7, #8 and #10 added. Decision 0002: § 5 #9 added.
 - 2026-10-09, after spec-reviewer round 4 (§ 12): C-7's source restated as derived from the owner's choice of option A and awaiting the owner's confirmation; OQ-7, OQ-11 and OQ-12 restated, none answered; decisions 0001 and 0002 each gained an addendum carrying the owner's answers as selected. Whether § 9 gains a by-record value is `0001-F5` OQ-12. No claim changed.
@@ -717,6 +717,8 @@ its date is preserved rather than backdated.
 - 2026-10-13, [decision 0006](decisions/0006-release-notes-group-emoji-category-labels.md): B-006 and its scenarios now group pull requests under emoji headings, with a rocket for Features and a catch-all that keeps unmatched pull requests visible. No package, release trigger or existing release body changes.
 
 - 2026-10-14, [decision 0003 addendum](decisions/0003-the-release-names-the-ancestry-check-and-the-release-step.md): the owner directed reconciliation with `0.1.90` and closure on satisfied evidence. OQ-16 adopts the scoped record-based closing rule; § 8 records the first publish and its follow-up dry run. OQ-17 and OQ-18 have no remaining first-tag hold because the tagged tree contains both the recorded source prerequisites and both setup-guide parts. No runtime claim or scenario changes; § 9 retains honest automated-coverage statuses.
+
+- 2026-10-14, the owner decided that `specht.tool` targets `net10.0` and `net11.0` together ([`0001-F2` decision 0011](../../../src/tool/Features/Check/.spec/decisions/0011-the-tool-targets-net10-and-net11.md), `0001-F2` B-045). The `build` job's SDK step is renamed from `Use .NET 10 SDK` to `Use .NET 10 and 11 SDKs` and installs two SDKs: `10.0.401`, whose runtime a `net10.0` test run needs, and `11.0.100-rc.2.26504.105`, the release candidate `global.json` pins, read through the step's `global-json-file` so a bump of the pin reaches the workflow with no regeneration. The `release` job's SDK step, which only pushes the package and checks out no `global.json`, keeps its name and `10.0.401`. No claim, constraint or scenario of this Feature changed: the release still runs the full build and `Pack`, and pushes the one package. Owed to the `implementer`: § 7 names the `build` job's step 3 `Use .NET 10 SDK`.
 
 ## 11. Open Questions
 

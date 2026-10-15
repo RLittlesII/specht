@@ -205,7 +205,7 @@ Run on 2026-10-11, macOS 26.4 on Arm64, .NET SDK 10.0.401, from the repository r
 
 ### The Benchmark target
 
-<!-- last written by: implementer, 2026-10-13 (item 0148) -->
+<!-- last written by: implementer, 2026-10-14 (item 0217: the target framework, `0001-F2` B-045 and decision 0011's amendment) -->
 
 - `./build.sh Benchmark [--benchmark-filter '<glob>'] [--benchmark-job Short]` replaces PR #143's partial `Benchmarks` target. Both parameters are optional. An absent filter becomes `*`, avoiding the switcher's interactive prompt; an absent job is omitted, retaining the library's default (B-003 to B-006).
 - The target restores through `Restore` and builds the benchmark project in Release. The normal build never depends on `Benchmark` (B-002, C-6).
@@ -215,6 +215,7 @@ Run on 2026-10-11, macOS 26.4 on Arm64, .NET SDK 10.0.401, from the repository r
 - The run reuses the selection arguments and the Release build, passes `--artifacts .artifacts/benchmarks`, and preserves the shared memory diagnoser and exporters. `DotNetRun` fails on the entry point's nonzero exit; no time or allocation is inspected (B-008 to B-012).
 - Paths passed by the target are root-relative and the process runs from the root. Packaging and benchmark outputs stay under `.artifacts/`; the prerequisite build uses the existing ignored bin/obj directories. Generated workflow and NUKE schema changes are reviewed (B-014). The target does not join CI until `0149`.
 - Cold-start benchmarks do not exist yet. Manual verification exercises packing with a temporary benchmark in the Startup namespace, removed before committing. No placeholder ships.
+- Since item `0217` the project builds for `net10.0` and `net11.0`, as every project but `.build` does from `Directory.Build.props` (`0001-F2` § 7, "Two target frameworks"; decision 0011's amendment). The target passes `net10.0` as the framework to its build and its run, and the toolchain keeps the library's `net10.0` settings, so a run measures the `net10.0` build as before. `./build.sh Compile` writes `bin/Debug/net10.0/specht.benchmarks.dll`, the assembly B-001 names, and `bin/Debug/net11.0/specht.benchmarks.dll` beside it.
 
 ### CI benchmark results
 

@@ -113,7 +113,7 @@ internal sealed partial class SpechtBuild
             buildJob.Steps.IndexOf(checkoutStep) + 1,
             [
                 new RunStep("Fetch all history for all tags and branches") { Run = "git fetch --prune" },
-                new SetupDotNetStep("Use .NET 10 SDK") { DotNetVersion = "10.0.401" }
+                new SetupDotNetStep("Use .NET 10 and 11 SDKs") { DotNetVersion = "10.0.401", With = { ["global-json-file"] = "global.json" } }
             ]
         );
 

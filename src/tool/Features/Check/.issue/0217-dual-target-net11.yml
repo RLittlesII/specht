@@ -1,0 +1,91 @@
+id: "0217"
+type: task
+title: Pack the tool for net10.0 and net11.0
+
+status: done
+
+value: 3
+risk: 2
+
+parent: "0025"
+children: []
+
+depends_on: []
+spikes: []
+
+spec: src/tool/Features/Check/.spec/README.md
+
+claims:
+  - B-045
+
+created: "2026-10-14"
+updated: "2026-10-14"
+closed: "2026-10-14"
+
+summary: |
+  `specht.tool` carries the tool for `net10.0` and for `net11.0`, on the
+  owner's decision of 2026-10-14 (decision 0011). As ratified and widened
+  the same day (decision 0011's addendum), `Directory.Build.props` builds
+  every project for both; `.build` alone keeps `net10.0`, which NUKE
+  requires. `global.json` pins the .NET 11
+  release candidate 2 SDK, `11.0.100-rc.2.26504.105`, with prerelease SDKs
+  allowed, and continuous integration installs it and `10.0.401`.
+
+  Waits on nothing. Value 3: consumers on .NET 11 get a native build
+  while the long-term-support target stays. Risk 2: a release-candidate
+  SDK, every multi-targeted test project running twice, and test modules
+  run one at a time because the acceptance tests pack the solution once
+  per run and two packs together collide.
+
+  Expected files: `Directory.Build.props`, `test/Directory.Build.props`,
+  `global.json`, `.build/` and the regenerated workflows; the step
+  definition for B-045 in `test/acceptance/Check/PackageSteps.cs`; § 6 to
+  § 9 of the specification by their owners; `0055-F6` § 7 by its owner.
+
+  After .NET 11 general availability, 2026-11-10, `global.json` moves from
+  the release candidate to the released SDK. That bump may need a pull
+  request by hand: the dependency bot may not propose a release candidate
+  to release move.
+
+acceptance_criteria:
+  - "B-045 — the package carries the tool for `net10.0` and for `net11.0`"
+  - "§ 9 carries a row naming a test for B-045."
+
+decisions:
+  - |
+    2026-10-14, the repository owner (decision 0011): dual target
+    `net10.0` and `net11.0`, on the release candidate 2 SDK, with the
+    project scope above. Rejected by the owner: a chore exemption in place
+    of a claim. Rejected in decision 0011: `net11.0` alone, which is
+    ADR-0009's separate gate 3, and every project on both targets.
+  - |
+    2026-10-14, spec-author: id `0217` taken above `.issue/.sequence` on
+    `main`, `0216`; no open pull request holds an id.
+  - |
+    2026-10-14, implementer: `.performance/benchmarks` builds for both
+    targets too, beyond the summary's scope. `test/tests` references it,
+    and its `net10.0` runtime configuration for the tool overwrote the
+    `net11.0` one in the `net11.0` test output. The `Benchmark` target
+    still builds and runs `net10.0`. Owed to spec-author and the owner for
+    ratification (`0001-F2` § 7, "Two target frameworks").
+  - |
+    2026-10-14, the repository owner (decision 0011, addendum): the
+    `benchmarks` deviation above is ratified, and the scope widened: "put
+    it in the directory props so _all_ the things do it".
+    `Directory.Build.props` sets `TargetFrameworks` `net10.0;net11.0` for
+    every project and selects none by name; `SpechtMultiTarget` is gone.
+    `.build` alone sets `net10.0`: measured, NUKE's static constructor
+    rejects a two-target build assembly, whose targets share one
+    `bin/Debug/`, and refuses a suffixed one. It stays `net10.0` and not
+    `net11.0` because `test/acceptance` and `test/build.tests` reference it
+    and build for both. The `Benchmark` target still builds and runs
+    `net10.0`. Full `./build.sh` green on both targets, 2026-10-14.
+    Rejected in the decision's original text, now superseded: every project
+    on both targets.
+  - |
+    2026-10-14, spec-author: the cross-project references that let the
+    benchmarks' target break the tests' output are item `0218`.
+
+out_of_scope:
+  - "Any other target framework — § 5 #28."
+  - "Dropping `net10.0` — § 5 #29; ADR-0009 gate 3."

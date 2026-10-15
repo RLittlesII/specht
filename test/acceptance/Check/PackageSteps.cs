@@ -10,8 +10,8 @@ using Reqnroll;
 namespace Specht.Acceptance.Check;
 
 /// <summary>
-/// Steps for the package scenarios of <c>src/tool/Features/Check/.spec/check.feature</c> (0001-F2 B-017 to B-029 and B-033
-/// to B-036): what the packed tool says about itself, what it carries and what it does not. The program files in it are
+/// Steps for the package scenarios of <c>src/tool/Features/Check/.spec/check.feature</c> (0001-F2 B-017 to B-029, B-033
+/// to B-036 and B-045): what the packed tool says about itself, what it carries and what it does not. The program files in it are
 /// <see cref="PackedProgramSteps"/>'s. "The tool is packed" is <see cref="PackedToolSteps"/>'s. Every
 /// expected value is the claim's, written here, and none is read back from the project that packs. A step reads the
 /// package's manifest as a feed does; no step opens the package by its id, so each claim fails on its own.
@@ -112,6 +112,10 @@ public sealed partial class PackageSteps(PackedTool tool)
     [Then("the readme the package carries holds no package feed's address")]
     public async Task ThenTheReadmeThePackageCarriesHoldsNoPackageFeedsAddress() =>
         (await ReadmeTextAsync()).Should().NotContainEquivalentOf("nuget.pkg.github.com");
+
+    [Then(@"^(?:the package|it) carries the tool for (net\d+\.\d+)$")]
+    public async Task ThenThePackageCarriesTheToolFor(string framework) =>
+        (await tool.FilesAsync()).Should().Contain($"tools/{framework}/any/specht.tool.dll");
 
     private static ReadOnlySpan<byte> Png => [0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A];
 
