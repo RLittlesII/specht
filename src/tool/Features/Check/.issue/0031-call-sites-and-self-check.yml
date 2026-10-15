@@ -2,7 +2,7 @@ id: "0031"
 type: task
 title: Prove Specht, the hook and a shell give one verdict once rule settings exist
 
-status: ready-for-architecture
+status: in-progress
 
 risk: 3
 
@@ -19,7 +19,7 @@ claims:
   - B-011
 
 created: "2026-10-08"
-updated: "2026-10-13"
+updated: "2026-10-14"
 closed: null
 
 summary: |
