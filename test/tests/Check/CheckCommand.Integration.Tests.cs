@@ -219,6 +219,44 @@ public sealed class CheckCommandIntegrationTests
                 3
             },
             {
+                "a manifest pinning schema 0.1.0 and declaring tests, a key that version does not know (0001-F5 B-055, B-022, B-023)",
+                static tree =>
+                {
+                    tree.WriteRaw(SpecTree.ManifestPath, """{ "schemaVersion": "0.1.0", "tests": { "files": ["test/**/*.cs"] } }""");
+                    return tree.Root;
+                },
+                3
+            },
+            {
+                "a manifest whose declaration form holds no test placeholder (0001-F5 B-056, B-022, B-023)",
+                static tree =>
+                {
+                    tree.WriteRaw(
+                        SpecTree.ManifestPath,
+                        """{ "schemaVersion": "0.2.0", "tests": { "files": ["test/**/*.cs"], "declarations": ["void Test("] } }""");
+                    return tree.Root;
+                },
+                3
+            },
+            {
+                "a manifest whose owners name a title its sections lack (0001-F5 B-059, B-022, B-023)",
+                static tree =>
+                {
+                    tree.WriteRaw(SpecTree.ManifestPath, """{ "schemaVersion": "0.2.0", "owners": { "3. Claims": ["spec-author"] } }""");
+                    return tree.Root;
+                },
+                3
+            },
+            {
+                "a manifest whose owners give a section an empty list of roles (0001-F5 B-059, B-022, B-023)",
+                static tree =>
+                {
+                    tree.WriteRaw(SpecTree.ManifestPath, """{ "schemaVersion": "0.2.0", "owners": { "3. Acceptance Criteria": [] } }""");
+                    return tree.Root;
+                },
+                3
+            },
+            {
                 "a manifest whose layout declares a path identity that is not a segment position (0001-F5 B-043, B-022, B-023)",
                 static tree =>
                 {

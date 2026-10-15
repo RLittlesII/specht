@@ -30,7 +30,7 @@ namespace Specht.Acceptance.Manifest;
 /// </summary>
 [Binding]
 [Scope(Feature = "The manifest carries the roles")]
-public sealed class ManifestSteps
+public sealed partial class ManifestSteps
 {
     [Given("a repository root holding a manifest and the three frontmatter schemas")]
     public void GivenARepositoryRootHoldingAManifestAndTheThreeFrontmatterSchemas() => _tree = new SpecTree();
