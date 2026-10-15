@@ -1,0 +1,134 @@
+id: "0220"
+type: spike
+title: Weigh how rule pages are versioned without a full copy per schema version
+
+status: ready
+
+value: 3
+risk: 3
+
+parent: null
+children: []
+
+depends_on: []
+spikes: []
+
+spec: null
+
+claims: []
+
+created: "2026-10-14"
+updated: "2026-10-14"
+closed: null
+
+summary: |
+  2026-10-14, the repository owner: "add a spike item to ensure we find a
+  better way to handle the versioning of rules than keeping massive amounts
+  of md documents IN the repo? Maybe the website helps us with that?"
+
+  Today every schema version the tool ships carries a whole copy of the
+  rule pages, `docs/rules/v<major.minor.patch>/SPEC###.md` (`0001-F3` A-4,
+  B-031 to B-033; `0001-F7` B-086). At commit `73ff7ab` that is 21 pages
+  per version, about 42 KB, in `v0.1.0`, `v0.1.1` and `v0.2.0`. Of the 21
+  pages in `v0.2.0`, 20 differ from `v0.1.0` only in the metadata row that
+  gives the schema version (`0001-F3` B-033); `SPEC021` alone changed its
+  text. The cut of a new version (`0001-F7` B-096 to B-099, item 0189)
+  copies every page again and rewrites that row (B-098), so the tree grows
+  by a full set with each version. The templates follow the same copy rule:
+  `src/tool/templates/v*/` holds four files per version, byte-identical
+  across all three folders at `73ff7ab`.
+
+  The copies are what the specifications chose, not an accident:
+  - `0001-F3` C-6: a rule's full text lives once, in the engine, versioned
+    with the schema, and `--explain` prints it. `src/specht/specht.csproj`
+    embeds `docs/rules/v*/*.md` as `rules/v<version>/<file>`. `--explain`
+    (`0001-F3` B-019) is specified and not built; the embedded pages are
+    held to each version's vocabulary by B-031.
+  - `0001-F3` decision 0003 rejected rule text held in C# descriptors with
+    the pages generated from it, and a `docs/` catalogue `--explain` does
+    not read.
+  - `0001-F7` § 5 row 26 excludes a delta between version folders and a
+    fallback to an older version's folder: each folder is a whole snapshot
+    (B-096, B-099), the cost `0001-F7` decision 0007 accepted.
+  - `0001-F7` B-089 and that Feature's ADR-0002
+    (`src/tool/.spec/adr/0002-schema-locks-are-independent-of-tool-versions.md`):
+    a locked version's digest covers every file of that version in every
+    tree, and `.build/SchemaVersionLock.cs` `ShippingTrees` names
+    `docs/rules`. `src/tool/schema/versions.lock.json` records `0.1.0`'s
+    digest, so its pages are part of a locked version (`0001-F7` A-4, C-1;
+    `0055-F6` B-013).
+  - The check and `--explain` are offline (brief § 9; AGENTS.md
+    § Invariants).
+
+  The question. How should per-version rule documentation be sourced,
+  stored, versioned and shipped so that the repository does not hold a
+  whole Markdown copy per schema version, while `--explain` stays offline,
+  a published version stays immutable and locked, and the documentation
+  site (`0002-F2`, `docs/site/.spec/README.md`) can publish versioned rule
+  pages.
+
+  Directions to weigh, none decided:
+  - (a) Today's whole snapshot per version, the baseline.
+  - (b) One source per rule, carrying per-version differences or the range
+    of versions a text holds for, with each version's pages generated at
+    build or pack time into the embedded set.
+  - (c) Rule metadata held as data - in the manifest or in code - rendering
+    both the `--explain` text and the site's pages; this reopens decision
+    0003's second rejected option.
+  - (d) The site building versioned pages from git history - the commits
+    the version lock's digests were recorded at - instead of tracked
+    copies. A schema version has no tag of its own: the `v*` tags are
+    package versions, numbered apart from schema versions (`0001-F7`
+    ADR-0002; `0055-F6` B-013).
+  - (e) Only the working version's pages in the tree, each locked version's
+    reconstructed from its commit when the tool is built.
+
+  Directions (b), (c) and (e) cut across `0001-F7` § 5 row 26, B-096 to
+  B-099 and decision 0007, and (c) across `0001-F3` decision 0003. The
+  spike reports what each would amend; it amends nothing.
+
+  It is a spike in the manner of items 0151 and 0170: trial code on
+  branches `0220/trial-<candidate>` that never merge, evidence traced to
+  commands run on named commits, and a proposed ADR the owner rules on. It
+  changes no shipped behaviour and amends no claim. It changes nothing
+  under `src/`, `test/`, `docs/`, `.build/` or `.specht/` on `main`.
+
+  It spans `0001-F3`, `0001-F7`, `0002-F2` and the build's version lock,
+  so it sits at the repository root with `spec: null`.
+
+  Ordering, for the owner: item 0189 builds the cut that copies every
+  page (B-096, B-098), and item 0044 proves a locked version's digest over
+  those pages (B-089). Neither waits on this spike. If the recommendation
+  replaces the snapshot, 0189 built first is work redone; whether 0189
+  waits on this spike is the owner's call, and this item does not edit
+  0189 or 0044.
+
+acceptance_criteria:
+  - "A proposed ADR in the repository-wide `.spec/adr/`, with the owner as decider, weighs directions (a) to (e) and any the trials add. It recommends one, or recommends keeping (a). If it adopts anything it names the specification deltas owed and the decisions it would reverse, and edits no accepted record."
+  - "Each finding is traced to a command run on a named commit: of `main` for the baseline, of a branch `0220/trial-<candidate>` that is never merged for each candidate."
+  - "1. Growth: files and bytes each new schema version adds under `docs/rules`, today and under each candidate, and how many of a version's pages differ from the previous version's beyond the schema-version row."
+  - "2. Offline: whether the tool built from each candidate embeds every shipped version's rule text with no network at run time (brief § 9), and whether `0001-F3` B-031 to B-033 hold with their tests unedited."
+  - "3. Immutability: how a locked version's content is verified under each candidate (`0001-F7` B-089 and its ADR-0002), whether that verification runs without a historical git checkout, and what happens to the digest recorded for `0.1.0` in `src/tool/schema/versions.lock.json` (`0001-F7` C-1)."
+  - "4. The cut: what cutting a version (`0001-F7` B-096 to B-100, item 0189) and a page-only patch (`0001-F7` B-088) cost under each candidate."
+  - "5. Build: whether each candidate builds in CI and in a fresh clone, including a shallow one where it reads git history, and what it adds to the build."
+  - "6. The site: whether each candidate gives `0002-F2` a source for versioned rule pages, and what it asks of that Feature's open hosting and framework questions (OQ-1, OQ-2), without starting `0002-F2` (B-003)."
+  - "7. Templates: whether the recommendation also fits the per-version template copies under `src/tool/templates/`; recorded, not acted on."
+  - "8. Specification text that would change if the recommendation were taken: `0001-F3` A-4, C-6, C-8, B-031 to B-033, § 5 rows 9 and 10, decision 0003; `0001-F7` B-086, B-088, B-089, B-096 to B-100, C-16, § 5 row 26, decisions 0007 and 0009, and its ADR-0002; and the links `README.md`, `docs/cli.md`, `docs/what-it-checks.md` and `src/tool/README.md` make to `docs/rules/v0.1.0`."
+  - "A candidate that cannot be made to build or to pass is recorded as a finding, with the reason."
+
+decisions:
+  - |
+    2026-10-14, spec-author: filed on the repository owner's request the
+    same day, shaped as items 0151 and 0170 were - trial branches that
+    never merge, evidence cited at commits, and a proposed ADR as the
+    product. Status `ready`: a spike has no design to precede it and
+    waits on no item.
+
+out_of_scope:
+  - "Changing how `main` stores, generates, embeds or locks rule pages - a follow-up item cut after the owner rules on the ADR."
+  - "Deciding the site's hosting or framework - `0002-F2` OQ-1 and OQ-2; the spike's findings may feed them."
+  - "Building, scaffolding or publishing the documentation site - `0002-F2` B-003 holds it until the owner lifts the deferral."
+  - "Building `--explain` - `0001-F3` B-019."
+  - "Changing a rule's text or the page shape - `0001-F3` § 5 rows 5 and 12, B-032."
+  - "Which shipped versions a tool keeps embedding - `0001-F7` C-1 and decision 0007."
+  - "Editing an accepted ADR or decision record - a new record answers it."
