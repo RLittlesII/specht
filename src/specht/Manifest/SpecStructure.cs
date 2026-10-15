@@ -43,4 +43,17 @@ public sealed record SpecStructure(
 
     /// <summary>The upstream schema source the manifest records, null when it records none (<c>0001-F7</c> B-068).</summary>
     public UpstreamSchemaSource? SpechtSchema { get; init; }
+
+    /// <summary>The test files and declaration forms at schema 0.2.0 and later; null when the manifest declares none (B-055).</summary>
+    public SpecTestSettings? Tests { get; init; }
+
+    /// <summary>Whether matrix resolution also matches scenario titles; false unless the manifest turns it on (B-057).</summary>
+    public bool MatrixScenarioTitles { get; init; }
+
+    /// <summary>The roles that own each <c>sections</c> title, as the manifest wrote them; empty when it names none (B-059).</summary>
+    public IReadOnlyDictionary<string, IReadOnlyList<string>> Owners { get; init; } =
+        new Dictionary<string, IReadOnlyList<string>>(StringComparer.Ordinal);
+
+    /// <summary>The directory globs that must hold a specification; empty when the manifest names none (B-060).</summary>
+    public IReadOnlyList<string> RequiredSpecifications { get; init; } = [];
 }

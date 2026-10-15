@@ -187,7 +187,7 @@ Half of the model's contract is not in the schema files: which section holds the
 
 ## 6. Concern Separation
 
-<!-- last written by: implementer, 2026-10-13 -->
+<!-- last written by: implementer, 2026-10-15 (item `0222`) -->
 
 Item `0011` builds the loader; the families of keys (`0014`-`0019`) extend this table.
 
@@ -223,6 +223,7 @@ Item `0011` builds the loader; the families of keys (`0014`-`0019`) extend this 
 | A shared literal moves once with all affected rules covered (A-2, B-016)                                                                                                               | Technical      | The delivery slices in § 7, following ADR-0010 stages `0164` and `0166` and omission work `0191`                                                                                                                                                                                                                             |
 | Schema file name containment (B-047)                                                                                                                                                   | Business       | `SpecManifestParser.Check` validates filled names before schema reads; the existing exception reaches the command catch.                                                                                                                                                                                                     |
 | Claim-tag grammar, literal form, case and original diagnostics (B-007, B-036 to B-038)                                                                                                 | Both           | `SpecManifestParser`, the pure `FeatureTagParser`, `FeatureTag` and `FeatureFileRule`; decision 0013                                                                                                                                                                                                                         |
+| The `tests`, `matrix`, `owners` and `requiredSpecifications` keys and the five status markers at schema `0.2.0`; consumer settings with no `owners` default (B-055 to B-060, C-13)     | Business       | `SpecManifestParser.Parse` reads them into `SpecStructure`; `MatrixKeyFaults` validates declaration forms and owners; the `0.2.0` shipped manifest carries the markers (§ 7)                                                                                                                                                 |
 
 ## 7. Technical Design
 
@@ -630,6 +631,14 @@ A shared model read moves as one literal with every affected rule covered, inste
 **Boundaries.** Claim tags and case handling stay with `0134`; broad message wording stays with `0018`; schema source selection stays with `0043`. Epic opt-in, absent-epic identity and untracked claims B-024 to B-035/B-042 remain OQ-18, with no sequence decided here. Empty or duplicate key spellings, extra unknown nested role names and filename shapes without `{task}` gain no rejection claim in this pass. No version is cut, no locked resource is rewritten, and no consumer file is migrated by the design pass.
 
 The model snapshot now supplies claims and companion tags to `FeatureFileRule`; `SpecModelLoader` owns companion reads. Rule tests arrange parsed tags in memory, and the loader’s snapshot regression proves evaluation succeeds after the companion is removed. Claim-tag parsing and older-pin behavior retain the 0134 tests.
+
+### Matrix-resolution keys at schema 0.2.0
+
+<!-- last written by: implementer, 2026-10-15 (item `0222`) -->
+
+[`SpecManifestParser.Parse`](../SpecManifestParser.cs) accepts `tests`, `matrix`, `owners` and `requiredSpecifications` under a shipped pin of `0.2.0` or later, by the same version gate as `claim` and `schemaSource`; under `0.1.0` each stays an unknown key (B-049). It reads them into [`SpecStructure`](../SpecStructure.cs) as `Tests` ([`SpecTestSettings`](../SpecTestSettings.cs)), `MatrixScenarioTitles`, `Owners` and `RequiredSpecifications`, reusing the parser's `Strings` and `Tables` readers. None is filled from a default (C-13): each left out reads as null, false or empty. `MatrixKeyFaults` joins the existing fault list, so a declaration form without exactly one `{test}`, an `owners` title absent from the effective `sections` or an empty role list exits `3` with every other fault (B-022, B-023).
+
+The five status markers are entries in the `0.2.0` shipped manifest's `markers`, filled per name by B-048's mechanism; `.specht/manifest.json` carries them too, because `markers` is a tool-owned key (`0001-F4` B-004). The `0.2.0` version-lock digest is stale until `0.2.0` is relocked (`0001-F7` C-17, decision 0014). No rule or command reads these settings yet (`0001-F12`, `0001-F13`); B-061 is a later item.
 
 ## 8. Testing Strategy
 
