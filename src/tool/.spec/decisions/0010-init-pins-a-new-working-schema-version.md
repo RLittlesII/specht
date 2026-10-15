@@ -47,3 +47,11 @@ satisfies both claims and C-17's lock guarantee.
 - B-012; C-11 and C-17; sections 6 to 9.
 - The working version is `0.1.1`; the frozen version remains `0.1.0`.
 - `0001-F4` B-003 and B-004 remain in force.
+
+## Reversal
+
+2026-10-14, by the repository owner ([decision 0013](0013-schema-0-1-1-stops-shipping.md)):
+schema `0.1.1` stops shipping before it is published, and its folders are
+deleted. The call above is reversed for `0.1.1` alone. B-012 now holds through
+`0.2.0`, whose shipping manifest carries `schemaVersion: "0.2.0"`; locked
+`0.1.0` and its lock entry stay unchanged, as this decision required.
