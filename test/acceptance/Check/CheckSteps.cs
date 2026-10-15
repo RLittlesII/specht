@@ -16,8 +16,8 @@ namespace Specht.Acceptance.Check;
 /// synthetic tree, so a scenario sees the process's stdout, stderr and exit code as a shell does: stderr is not captured
 /// by Spectre's command tester, which the integration tier uses (C-7). The version steps (B-040 to B-043) launch it with
 /// <c>--version</c> alone, inside the root, and compare stdout with the version the launched assembly's metadata states.
-/// The call-site steps (B-010, B-011) run the tool, this repository's <c>build.sh Specht</c> and the pre-commit hook as
-/// processes, and compare the lines each carries, after its log prefix, with the tool's own stdout.
+/// The call-site steps (B-010, B-011) run the tool, <c>build.sh Specht</c> and the pre-commit hook as processes, over a root
+/// that copies this repository's files, and compare the lines each carries, after its log prefix, with the tool's own stdout.
 /// Scoped to the feature: <c>engine.feature</c> words some of its steps the same way, and its steps are 0001-F1's to bind.
 /// </summary>
 [Binding]

@@ -37,13 +37,12 @@ public sealed partial class CheckSteps(IUnitTestRuntimeProvider runtime, PackedT
     [Given("the root carries this repository's source, which the build target builds the tool from")]
     public void GivenTheRootCarriesThisRepositorysSourceWhichTheBuildTargetBuildsTheToolFrom()
     {
-        var tracked = Succeed(packed.Repository, "git", "ls-files", "-z").Split('\0', StringSplitOptions.RemoveEmptyEntries);
-        foreach (var file in tracked.Where(static file => !file.Split('/').Any(static part => part is ".spec" or ".issue")))
-        {
-            var copy = Path.Combine(Tree.Root, file);
-            Directory.CreateDirectory(Path.GetDirectoryName(copy)!);
-            File.Copy(Path.Combine(packed.Repository, file), copy, overwrite: true);
-        }
+        CopyFromRepository(
+            Listed().Where(static file => file.Split('/') is var parts && parts[0] != "epics" && !parts.Any(static part => part is ".spec" or ".issue")));
+        var manifestPath = Path.Combine(Tree.Root, SpecTree.ManifestPath);
+        var manifest = JsonNode.Parse(File.ReadAllText(manifestPath))!.AsObject();
+        manifest["rules"] = new JsonObject { ["SPEC060"] = "warning" };
+        File.WriteAllText(manifestPath, manifest.ToJsonString());
 
         Succeed(Tree.Root, "git", "init", "--quiet");
         Succeed(Tree.Root, "git", "add", "--all");
@@ -56,7 +55,12 @@ public sealed partial class CheckSteps(IUnitTestRuntimeProvider runtime, PackedT
     }
 
     [Given("this repository's own tree")]
-    public void GivenThisRepositorysOwnTree() => Launch(packed.Repository, "--root", packed.Repository);
+    public void GivenThisRepositorysOwnTree()
+    {
+        CopyFromRepository(Listed("--cached", "--others", "--exclude-standard"));
+        _source = Succeed(Tree.Root, "pwd", "-P").TrimEnd('\n');
+        Launch(Source, "--root", Source);
+    }
 
     [When("the check runs against that root from a shell")]
     public void WhenTheCheckRunsAgainstThatRootFromAShell() => Launch(Source, "--root", Source);
@@ -69,8 +73,7 @@ public sealed partial class CheckSteps(IUnitTestRuntimeProvider runtime, PackedT
     public void WhenTheCheckRunsAgainstThatRootThroughThePreCommitHook() => _hook = RunProcess(Source, "sh", ".husky/pre-commit");
 
     [When("the build's Specht target runs")]
-    public void WhenTheBuildsSpechtTargetRuns() =>
-        _target = RunProcess(packed.Repository, "bash", Path.Combine(packed.Repository, "build.sh"), "Specht");
+    public void WhenTheBuildsSpechtTargetRuns() => _target = RunProcess(Source, "bash", Path.Combine(Source, "build.sh"), "Specht");
 
     [Then("all three carry the lines the check prints, unchanged and in order")]
     public void ThenAllThreeCarryTheLinesTheCheckPrintsUnchangedAndInOrder()
@@ -166,6 +169,19 @@ public sealed partial class CheckSteps(IUnitTestRuntimeProvider runtime, PackedT
         exitCode.Should().Be(0, stdout + stderr);
 
         return stdout;
+    }
+
+    private string[] Listed(params string[] options) =>
+        Succeed(packed.Repository, "git", ["ls-files", "-z", .. options]).Split('\0', StringSplitOptions.RemoveEmptyEntries);
+
+    private void CopyFromRepository(IEnumerable<string> files)
+    {
+        foreach (var file in files.Where(file => File.Exists(Path.Combine(packed.Repository, file))))
+        {
+            var copy = Path.Combine(Tree.Root, file);
+            Directory.CreateDirectory(Path.GetDirectoryName(copy)!);
+            File.Copy(Path.Combine(packed.Repository, file), copy, overwrite: true);
+        }
     }
 
     private const string SignedOff =
