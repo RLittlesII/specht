@@ -88,4 +88,7 @@ under one heading both pass.
 
 ## Reversal
 
-None.
+2026-10-14, in part, by the owner ([decision 0004](0004-a-stamp-whose-role-does-not-own-its-section-is-reported-from-the-manifests-owners.md)):
+a stamp whose role does not own its section is reported, by `SPEC015` and
+from the manifest's `owners` key, not by the form rule. The rest of this
+decision stands; the form rule still reports nothing for that role (C-12).

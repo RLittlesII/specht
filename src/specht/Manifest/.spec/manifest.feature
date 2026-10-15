@@ -665,3 +665,124 @@ Feature: The manifest carries the roles
     And the manifest pins the older version and declares an empty rule map
     When the manifest is loaded
     Then its rule map is empty
+
+  @B-055
+  Scenario: The test files and their declaration forms are a manifest setting
+    Given the manifest pins schema version "0.2.0"
+    And the manifest declares the test files "test/**/*.cs" and the declaration form "void {test}("
+    When the check runs
+    Then the manifest is accepted
+
+  @B-055
+  Scenario: The declaration forms may be left out
+    Given the manifest pins schema version "0.2.0"
+    And the manifest declares the test files "test/**/*.cs" and no declaration forms
+    When the check runs
+    Then the manifest is accepted
+
+  @B-055 @boundary
+  Scenario: Under schema 0.1.0 the test files are an unknown key
+    Given the manifest pins schema version "0.1.0"
+    And the manifest declares the test files "test/**/*.cs"
+    When the check runs
+    Then the manifest is rejected
+    And the rejection names the tests key
+    And the run exits with the invalid-manifest code
+
+  @B-056
+  Scenario Outline: A declaration form without exactly one test placeholder is invalid
+    Given the manifest pins schema version "0.2.0"
+    And the manifest declares the test files "test/**/*.cs" and the declaration form "<form>"
+    When the check runs
+    Then the manifest rejection names "<form>"
+    And the run exits with the invalid-manifest code
+
+    Examples:
+      | form                |
+      | void Test(          |
+      | {test} and {test}   |
+
+  @B-057
+  Scenario: Scenario title matching is a manifest setting that defaults to off
+    Given the manifest pins schema version "0.2.0"
+    And the manifest says nothing of scenario title matching
+    When the manifest is loaded
+    Then scenario title matching is off
+
+  @B-057
+  Scenario: Scenario title matching can be turned on
+    Given the manifest pins schema version "0.2.0"
+    And the manifest turns scenario title matching on
+    When the manifest is loaded
+    Then scenario title matching is on
+
+  @B-058
+  Scenario: The status markers default to their own names
+    Given the manifest pins schema version "0.2.0"
+    And the manifest names no covered, partial, waived, withdrawn or superseded marker
+    When the manifest is loaded
+    Then those markers are "Covered", "Partial", "Waived", "Withdrawn" and "Superseded"
+
+  @B-058
+  Scenario: A status marker the manifest names replaces its default
+    Given the manifest pins schema version "0.2.0"
+    And the manifest's covered marker is "Done"
+    When the manifest is loaded
+    Then the covered marker is "Done"
+    And the partial marker is "Partial"
+
+  @B-059
+  Scenario: Section owners name only sections the manifest lists
+    Given the manifest pins schema version "0.2.0"
+    And the manifest names spec-author as the owner of "3. Acceptance Criteria"
+    When the check runs
+    Then the manifest is accepted
+
+  @B-059
+  Scenario Outline: An owner entry the sections do not bear out is invalid
+    Given the manifest pins schema version "0.2.0"
+    And the manifest's owners map "<title>" to <roles>
+    When the check runs
+    Then the manifest rejection names "<title>"
+    And the run exits with the invalid-manifest code
+
+    Examples:
+      | title                  | roles           |
+      | 3. Claims              | spec-author     |
+      | 3. Acceptance Criteria | an empty list   |
+
+  @B-059 @boundary
+  Scenario: The manifest has no default section owners
+    Given the manifest pins schema version "0.2.0"
+    And the manifest names no owners
+    When the manifest is loaded
+    Then no section has an owner
+
+  @B-060
+  Scenario: Required specification directories default to none
+    Given the manifest pins schema version "0.2.0"
+    And the manifest names no required specification directories
+    When the manifest is loaded
+    Then the required specification directories are an empty list
+
+  @B-061
+  Scenario: A rule whose own level is off reports only when raised
+    Given the manifest pins schema version "0.2.0"
+    And the manifest sets no level for the waiver rule
+    And the root holds a specification with a waived row that names no approver
+    When the check runs
+    Then the waiver rule reports nothing
+
+  @B-061
+  Scenario: A rule whose own level is off reports when the manifest raises it
+    Given the manifest pins schema version "0.2.0"
+    And the manifest sets the waiver rule to warning
+    And the root holds a specification with a waived row that names no approver
+    When the check runs
+    Then the waiver rule reports that row at warning severity
+
+  @B-061
+  Scenario: The default manifest sets the waiver and retired-claim rules to off
+    Given the default manifest of schema version "0.2.0"
+    When its rule settings are read
+    Then the waiver rule and the retired-claim rule are set to off
