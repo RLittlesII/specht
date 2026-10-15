@@ -1,0 +1,58 @@
+id: "0221"
+type: task
+title: Document the SPEC060 default and its manifest override
+
+status: done
+
+value: 2
+risk: 1
+
+parent: null
+children: []
+
+depends_on: []
+spikes: []
+
+spec: null
+
+claims: []
+
+created: "2026-10-15"
+updated: "2026-10-15"
+closed: "2026-10-15"
+
+summary: |
+  2026-10-14, the repository owner, who maintains a consumer, asked whether
+  `SPEC060` failing an approved specification whose § 9 has `Missing` cells
+  is the intended default, and whether lowering the rule is the sanctioned
+  override. The owner asked for the answer to go in `docs/what-it-checks.md`.
+
+  The answer. `SPEC060` is an error by default. A consumer lowers it in the
+  manifest's `rules`: `warning` reports its violations at warning severity,
+  failing the run only under `--strict` (`0001-F5` B-010), and `off` reports
+  nothing for it (`0001-F5` B-011). This repository sets `warning` in its
+  own `.specht/manifest.json`. A command that sets one rule's level is
+  specified and not built, and has no name yet (`0001-F11` OQ-1); until it
+  is built, `rules` is edited by hand.
+
+  The change is one section of `docs/what-it-checks.md`, "Missing coverage
+  on an approved specification". It belongs to no Feature, so the item sits
+  at the repository root with `spec: null`.
+
+acceptance_criteria:
+  - "`docs/what-it-checks.md` states that `SPEC060` is an error by default."
+  - "The page shows the manifest override, `\"rules\": { \"SPEC060\": \"warning\" }`, as the sanctioned way to choose otherwise, and links the configuration page."
+  - "The page notes that `warning` still fails a run under `--strict` and that `off` stops the rule."
+  - "The page says that a command setting one rule's level is specified and not built, and names it in prose only, never in code formatting (`0002-F1` A-7)."
+  - "No .feature change needed: documentation only - one section added to `docs/what-it-checks.md`; the tool's behaviour, its help and its report are unchanged. `docs/cli.md`, `README.md` and `src/tool/README.md` are not edited, so none gains a section, entry or synopsis line for the unbuilt set command. Constraints preserved: 0001-F5 B-010, B-011; 0002-F1 C-8"
+
+decisions:
+  - |
+    2026-10-15, the repository owner: this page moved out of pull request
+    #197, the matrix-resolution specification, into its own item and pull
+    request, so that its commit body opens with `Delivers 0221`. Recorded by
+    spec-author.
+
+out_of_scope:
+  - "The command that sets one rule's level - `0001-F11`, specified and not built; its name is `0001-F11` OQ-1."
+  - "The rule pages for schema `0.2.0` - not edited by this item."
