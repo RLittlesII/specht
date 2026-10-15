@@ -177,13 +177,13 @@ public sealed class SchemaVersionsUnitTests
     public void AVersionHeldBesideALaterPatchAndALaterMinor_WhenSelected_ShouldBeExactlyTheVersionNamed()
     {
         // Given
-        SchemaVersion pinned = new SchemaVersionFixture();
-        SchemaVersion laterPatch = new SchemaVersionFixture().WithNumber(new SemanticVersion(0, 1, 1));
-        SchemaVersion laterMinor = new SchemaVersionFixture().WithNumber(new SemanticVersion(0, 2, 0));
+        SchemaVersion pinned = new SchemaVersionFixture().WithNumber(new SemanticVersion(0, 2, 0));
+        SchemaVersion laterPatch = new SchemaVersionFixture().WithNumber(new SemanticVersion(0, 2, 1));
+        SchemaVersion laterMinor = new SchemaVersionFixture().WithNumber(new SemanticVersion(0, 3, 0));
         var versions = new SchemaVersions([laterMinor, laterPatch, pinned]);
 
         // When
-        var selected = versions.Find(new SemanticVersion(0, 1, 0))!;
+        var selected = versions.Find(new SemanticVersion(0, 2, 0))!;
 
         // Then
         selected.Should().BeSameAs(pinned);

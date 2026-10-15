@@ -26,3 +26,10 @@ This supersedes the original top-level placement, which is not retained as an al
 ## Member names refined on 2026-10-13
 
 In [review 5512940197](https://github.com/RLittlesII/specht/pull/177#pullrequestreview-5512940197), the owner named the members `tag` and `tagIgnoreCase`. The final paths are `claim.tag` and `claim.tagIgnoreCase`. This supersedes the repeated claim prefix in the preceding placement refinement; defaults, per-member fill and tag behavior are unchanged.
+
+## Schema 0.1.1 withdrawn on 2026-10-14
+
+Schema `0.1.1` stops shipping before it is published
+([`0001-F7` decision 0013](../../../../tool/.spec/decisions/0013-schema-0-1-1-stops-shipping.md)).
+The older pin that keeps the original scanner, messages and unknown-key
+rejection is `0.1.0` alone. Nothing else here changes.

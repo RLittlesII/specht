@@ -178,7 +178,6 @@ Listing reads no schema or specification files and fetches nothing.
 
 ```text
 0.1.0
-0.1.1
 0.2.0 (pinned)
 ```
 

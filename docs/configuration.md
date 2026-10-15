@@ -85,7 +85,7 @@ into the root.
 
 Under schema `0.2.0`, companion claim tags follow `identifiers.claim` inside the literal tag form. For example, `@req:{claim}` recognizes `@req:B-001`; punctuation in the form is literal. SPEC021 quotes an unresolved tag exactly as written and carries the claim id alone as its identifier. Claim and matrix ids remain case-sensitive even when tags ignore case. Full-line comments are skipped.
 
-Pins `0.1.0` and `0.1.1` retain the original `@B-nnn` scanner with an optional lowercase suffix. The frontmatter keys remain literals pending the separate frontmatter contract.
+Pin `0.1.0` retains the original `@B-nnn` scanner with an optional lowercase suffix. The frontmatter keys remain literals pending the separate frontmatter contract.
 
 ## Default manifest
 
