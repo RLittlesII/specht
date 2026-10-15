@@ -81,7 +81,12 @@
     "missing": "Missing",
     "draft": "🟡",
     "blocked": "🔴",
-    "approved": "approved"
+    "approved": "approved",
+    "covered": "Covered",
+    "partial": "Partial",
+    "waived": "Waived",
+    "withdrawn": "Withdrawn",
+    "superseded": "Superseded"
   },
   "claim": {
     "tag": "@{claim}",

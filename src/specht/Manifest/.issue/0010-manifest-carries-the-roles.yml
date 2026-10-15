@@ -23,6 +23,7 @@ children:
     "0185",
     "0187",
     "0191",
+    "0222",
   ]
 
 depends_on: []
@@ -71,9 +72,16 @@ claims:
   - B-052
   - B-053
   - B-054
+  - B-055
+  - B-056
+  - B-057
+  - B-058
+  - B-059
+  - B-060
+  - B-061
 
 created: "2026-10-08"
-updated: "2026-10-13"
+updated: "2026-10-15"
 closed: null
 
 summary: |
@@ -122,9 +130,23 @@ acceptance_criteria:
   - "B-045 — rule level outside the three rejected (0014)"
   - "B-046 — severity raised to error (0014)"
   - "B-047 — a schema file name that is not a plain file name rejected (0187)"
+  - "B-055 — tests files and declaration forms at 0.2.0 (0222)"
+  - "B-056 — a declaration form without exactly one {test} rejected (0222)"
+  - "B-057 — matrix.scenarioTitles, off by default (0222)"
+  - "B-058 — five more status markers and their defaults (0222)"
+  - "B-059 — owners name listed sections, never an empty role list (0222)"
+  - "B-060 — requiredSpecifications, empty by default (0222)"
+  - "B-061 — off-level rules; SPEC034 and SPEC035 off by default (no item yet)"
   - "§ 9 carries a row naming a test for each id above."
 
 decisions:
+  - |
+    2026-10-15, spec-author after spec-review round 1 of 0222: `claims`
+    gains B-055 to B-061, added by the owner on 2026-10-14 and 2026-10-15
+    for matrix resolution (0001-F12) and the trace command (0001-F13).
+    0222 was cut on 2026-10-15 for B-055 to B-060. B-061, the off-level
+    rules, touches the same manifest files and follows in a later item,
+    not yet cut.
   - |
     2026-10-13, the repository owner: Manifest decision 0010 ratified for
     grouped keys, forms and schema 0.2.0 compatibility. B-048 is carried by

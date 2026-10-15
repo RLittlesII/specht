@@ -40,6 +40,13 @@ that the next check rejects; edit those settings after pinning.
 | `rules`             | Each rule id's level: `error` or `warning` re-grades its violations, `off` drops them. A rule left out keeps its own severity; an id outside the pinned vocabulary, or any other level, exits `3`.                                                                                                                                                       |
 | `identifiers.claim` | The claim id grammar `SPEC030` enforces in § 3, and the § 3 ids a tag may resolve to under `SPEC021`.                                                                                                                                                                                                                                                    |
 
+Under schema `0.2.0`, `markers` also names `covered`, `partial`, `waived`, `withdrawn` and `superseded`, default `Covered`, `Partial`, `Waived`, `Withdrawn` and `Superseded`. Four more keys are accepted and no rule reads them yet; none is filled from a default, and older pins reject them:
+
+- `tests`: `{ "files": [<glob>], "declarations": [<form>] }`, `declarations` optional; each form holds `{test}` exactly once.
+- `matrix`: `{ "scenarioTitles": <bool> }`, `false` when left out.
+- `owners`: a `sections` title mapped to a non-empty list of roles.
+- `requiredSpecifications`: a list of directory globs, empty when left out.
+
 Under schema `0.2.0`, `claim.tag` is literal text around exactly one `{claim}` placeholder, default `@{claim}`. `claim.tagIgnoreCase` is Boolean, default `false`; when true it covers the entire tag and resolution uses ordinal comparison. Missing values come from the pinned version's shipped manifest. Older pins reject `claim`; flat tag keys are rejected at every pin. Each missing member of `claim` uses the pinned default, including a partially declared object.
 
 A key left out takes its value from the default manifest, except `rules`, which
@@ -146,7 +153,12 @@ way. The block also omits this repository's `rules` setting: consumers that leav
     "missing": "Missing",
     "draft": "🟡",
     "blocked": "🔴",
-    "approved": "approved"
+    "approved": "approved",
+    "covered": "Covered",
+    "partial": "Partial",
+    "waived": "Waived",
+    "withdrawn": "Withdrawn",
+    "superseded": "Superseded"
   },
   "claim": {
     "tag": "@{claim}",

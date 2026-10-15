@@ -23,10 +23,11 @@ public sealed class SpecManifestParser(SchemaVersions versions)
 
         var tags = number.CompareTo(ClaimTagVersion) >= 0 && versions.Find(number) is not null;
         var selection = number.CompareTo(SchemaSourceVersion) >= 0 && versions.Find(number) is not null;
+        var matrix = number.CompareTo(MatrixKeyVersion) >= 0 && versions.Find(number) is not null;
         var unknown = manifest
             .Select(static entry => entry.Key)
             .Where(key => !key.StartsWith('$') && !KnownKeys.Contains(key)
-                && !(tags && key == "claim") && !(selection && key == "schemaSource"))
+                && !(tags && key == "claim") && !(selection && key == "schemaSource") && !(matrix && MatrixKeys.Contains(key)))
             .Select(static key => $"'{key}'")
             .ToList();
 
@@ -65,6 +66,10 @@ public sealed class SpecManifestParser(SchemaVersions versions)
             SchemaSource = SourceSelection(manifest, sourceFaults),
             DeclaresEpicGrammar = manifest["identifiers"]?["epic"] is not null,
             SpechtSchema = SpechtSchema(manifest, frontmatterSchemas, sourceFaults),
+            Tests = matrix ? TestSettings(manifest["tests"]) : null,
+            MatrixScenarioTitles = matrix && manifest["matrix"]?["scenarioTitles"] is { } titles && titles.GetValue<bool>(),
+            Owners = matrix && manifest["owners"] is { } owners ? Tables(owners) : new Dictionary<string, IReadOnlyList<string>>(StringComparer.Ordinal),
+            RequiredSpecifications = matrix && manifest["requiredSpecifications"] is { } required ? Strings(required) : [],
         };
 
         if (structure.SchemaSource == SchemaSourceSelection.Embedded && structure.SpechtSchema is not null)
@@ -72,7 +77,7 @@ public sealed class SpecManifestParser(SchemaVersions versions)
             sourceFaults.Add("schemaSource 'embedded' contradicts the recorded spechtSchema source");
         }
 
-        Check(structure, defaults, IdentityFaults(manifest).Concat(sourceFaults).Concat(ClaimTagFaults(structure)), levels);
+        Check(structure, defaults, IdentityFaults(manifest).Concat(sourceFaults).Concat(ClaimTagFaults(structure)).Concat(MatrixKeyFaults(structure)), levels);
 
         return structure;
     }
@@ -123,6 +128,22 @@ public sealed class SpecManifestParser(SchemaVersions versions)
             yield return fault;
         }
     }
+
+    private static SpecTestSettings? TestSettings(JsonNode? node) =>
+        node is null ? null : new SpecTestSettings(Strings(Present(node["files"])), node["declarations"] is { } forms ? Strings(forms) : []);
+
+    private static IEnumerable<string> MatrixKeyFaults(SpecStructure structure) =>
+        (structure.Tests?.Declarations ?? [])
+            .Where(static form => form.Split("{test}", StringSplitOptions.None).Length != 2)
+            .Select(static form => $"tests.declarations entry '{form}' must hold '{{test}}' exactly once")
+            .Concat(
+                structure.Owners
+                    .Where(owner => !structure.Sections.Contains(owner.Key, StringComparer.Ordinal))
+                    .Select(static owner => $"the owners title '{owner.Key}' is not listed in sections"))
+            .Concat(
+                structure.Owners
+                    .Where(static owner => owner.Value.Count == 0)
+                    .Select(static owner => $"the owners title '{owner.Key}' lists no role"));
 
     private static SchemaSourceSelection? SourceSelection(JsonObject manifest, List<string> faults)
     {
@@ -397,6 +418,10 @@ public sealed class SpecManifestParser(SchemaVersions versions)
     private static readonly SemanticVersion ClaimTagVersion = new(0, 2, 0);
 
     private static readonly SemanticVersion SchemaSourceVersion = new(0, 2, 0);
+
+    private static readonly SemanticVersion MatrixKeyVersion = new(0, 2, 0);
+
+    private static readonly HashSet<string> MatrixKeys = new(StringComparer.Ordinal) { "tests", "matrix", "owners", "requiredSpecifications" };
 
     private static readonly SemanticVersion OriginalVersion = new(0, 1, 0);
 }

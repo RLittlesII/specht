@@ -1,0 +1,66 @@
+id: "0222"
+type: task
+title: Read the tests, matrix, owners and required-specification keys at schema 0.2.0
+
+status: done
+
+risk: 3
+
+parent: "0010"
+children: []
+
+depends_on: []
+spikes: []
+
+spec: src/specht/Manifest/.spec/README.md
+
+claims:
+  - B-055
+  - B-056
+  - B-057
+  - B-058
+  - B-059
+  - B-060
+
+created: "2026-10-15"
+updated: "2026-10-15"
+closed: "2026-10-15"
+
+summary: |
+  Matrix resolution (0001-F12) and the trace command (0001-F13) read their
+  settings from the manifest. A schema 0.2.0 manifest gains the tests,
+  matrix, owners and requiredSpecifications keys and five status markers;
+  a 0.1.0 manifest keeps its interpretation. The off-level rules of B-061
+  touch the same manifest files and follow in a later item.
+
+acceptance_criteria:
+  - "B-055 — tests files and declaration forms at 0.2.0; unknown key at 0.1.0"
+  - "B-056 — a declaration form without exactly one {test}"
+  - "B-057 — matrix.scenarioTitles, off by default"
+  - "B-058 — five more markers and their defaults"
+  - "B-059 — owners name listed sections, never an empty role list"
+  - "B-060 — requiredSpecifications, empty by default"
+  - "§ 9 carries a row naming a test for each id above."
+
+decisions:
+  - |
+    2026-10-15, implementer: the five status markers changed
+    src/tool/manifest/v0.2.0/manifest.json, which the 0.2.0 lock digest
+    covers, so 0.2.0 is relocked in this pull request. 0.2.0 has never been
+    carried by a published package, so 0001-F7 decision 0014 allows the
+    relock; its procedure was followed: the 0.2.0 entry of
+    src/tool/schema/versions.lock.json removed by hand, then
+    ./build.sh LockSchemaVersion (0001-F7 B-092, C-17). 0.2.0 moved from
+    5d087a05... to 3e86b57f...; 0.1.0 is unchanged. Spec-review round 1,
+    finding 1.
+  - |
+    2026-10-15, implementer: a recorded miss. Commits 82832be and fe5ecd4
+    carry the subject test(0222) and 339d1f1 carries feat(0001-F5), where
+    the delivery convention requires the item's type, task(0222). Pushed
+    history was not rewritten. The pull request title is task(0222): ...,
+    and the pull request is squash-merged so that title becomes the subject
+    on main. Spec-review round 1, finding 2.
+
+out_of_scope:
+  - "B-061, off-level rules and SPEC034/SPEC035 default off: a later item."
+  - "Reading these settings in a rule or command: 0001-F12 and 0001-F13."
