@@ -19,9 +19,11 @@ children:
     "0001-F9",
     "0001-F10",
     "0001-F11",
+    "0001-F12",
+    "0001-F13",
   ]
 created: "2026-10-07"
-updated: "2026-10-11"
+updated: "2026-10-14"
 github_issue: null
 ---
 
@@ -71,6 +73,8 @@ request; a Feature is a thing the tool does, with its own invariant.
 | `0001-F9`  | The manifest command            | `src/tool/Features/Manifest/.spec/README.md`    | after 6        |
 | `0001-F10` | The rules command               | `src/tool/Features/Rules/.spec/README.md`       | after 6        |
 | `0001-F11` | Setting a rule's level          | `src/tool/Features/Rules/Set/.spec/README.md`   | after 6        |
+| `0001-F12` | Matrix resolution               | `src/specht/Rules/Matrix/.spec/README.md`       | after 6        |
+| `0001-F13` | The trace command               | `src/tool/Features/Trace/.spec/README.md`       | after 6        |
 
 The initial draft bundled the command, `init`, the manifest roles, discovery and the baseline in
 one Feature. Each of those has a different invariant - the command never
@@ -89,6 +93,12 @@ invariant: the manifest command prints what the engine reads and writes
 nothing; the rules command lists the pinned version's vocabulary and keeps no
 second catalogue; the set command writes one rule's level and nothing else.
 The same need amended `0001-F4`: `init` writes a level for every rule.
+
+`0001-F12` and `0001-F13` joined on 2026-10-14 from the owner's need to hold
+each traceability row against the tree. Each has its own invariant: matrix
+resolution reads scenarios and test files as text and runs nothing, with its
+rules in schema `0.2.0`; the trace command lists every claim's resolution
+through that one resolver, judges nothing and writes nothing.
 
 Dependencies are declared in each Feature's frontmatter and checked by the tool
 (`SPEC050`-`SPEC052`). The order they imply is brief § 8's.

@@ -173,3 +173,51 @@ Feature: Discovery
     When the specifications are discovered through git
     And they are discovered by walking the tree
     Then neither discovers that specification
+
+  @B-013
+  Scenario: A companion file beside no specification is reported
+    Given the manifest pins schema version "0.2.0"
+    And the root holds a ".spec/" directory with a scenario file and no specification
+    When the check runs
+    Then the orphan-companion rule reports that scenario file at line 0, as a warning
+
+  @B-013 @boundary
+  Scenario: A companion file outside every layout's directory is not reported
+    Given the manifest pins schema version "0.2.0"
+    And the root holds a scenario file under "test/"
+    When the check runs
+    Then the orphan-companion rule reports nothing
+
+  @B-013 @boundary
+  Scenario: A companion file beside a specification is not reported
+    Given the manifest pins schema version "0.2.0"
+    And the root holds a ".spec/" directory with a specification and its scenario file
+    When the check runs
+    Then the orphan-companion rule reports nothing
+
+  @B-014
+  Scenario: A required directory with no specification is reported
+    Given the manifest pins schema version "0.2.0"
+    And the manifest requires a specification in each directory "skills/*"
+    And the root holds "skills/next/" with no specification inside it
+    And the root holds "skills/deliver/" with a co-located specification
+    When the check runs
+    Then the required-specification rule reports "skills/next/", as a warning
+    And it reports nothing for "skills/deliver/"
+
+  @B-014 @boundary
+  Scenario: An excluded required directory is not reported
+    Given the manifest pins schema version "0.2.0"
+    And the manifest requires a specification in each directory "skills/*"
+    And the root holds "skills/scratch/" with no specification inside it
+    And the manifest excludes that directory
+    When the check runs
+    Then the required-specification rule reports nothing
+
+  @B-015 @boundary
+  Scenario: With no required directories nothing is reported for them
+    Given the manifest pins schema version "0.2.0"
+    And the manifest requires no specification directories
+    And the root holds "skills/next/" with no specification inside it
+    When the check runs
+    Then the required-specification rule reports nothing

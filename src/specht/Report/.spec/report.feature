@@ -272,3 +272,81 @@ Feature: The report contract
     Given the rule pages for a schema version the tool ships
     When each page is read
     Then the schema version it gives is the version it ships under, written as major.minor.patch
+
+  @B-034
+  Scenario: A required-specification violation says the glob and the layouts
+    Given the manifest pins schema version "0.2.0"
+    And the manifest requires a specification in each directory "skills/*"
+    And the root holds "skills/next/" with no specification inside it
+    When the check runs with JSON output
+    Then the violation's expectation carries the glob "skills/*" as what required it
+    And the specification file names the layouts discover
+
+  @B-035
+  Scenario: A section-owner violation says the owners
+    Given the manifest pins schema version "0.2.0"
+    And the manifest names spec-author as the only owner of the acceptance criteria
+    And the root holds a specification whose acceptance criteria are stamped "implementer, 2026-10-14"
+    When the check runs with JSON output
+    Then the violation's expectation carries the owners "spec-author"
+
+  @B-036
+  Scenario: A scenario-title violation says the tag and the titles
+    Given the manifest pins schema version "0.2.0"
+    And the manifest turns scenario title matching on
+    And the root holds a specification whose row for claim B-001 names a title no scenario tagged @B-001 has
+    When the check runs with JSON output
+    Then the violation's expectation carries the tag "@B-001"
+    And the titles of the scenarios tagged @B-001
+
+  @B-037
+  Scenario: A missing-scenario violation says the tag and the missing marker
+    Given the manifest pins schema version "0.2.0"
+    And the root holds a specification whose covered claim B-001 no scenario carries
+    When the check runs with JSON output
+    Then the violation's expectation carries the tag "@B-001"
+    And the missing marker as the status
+
+  @B-038
+  Scenario: An orphan-companion violation says the specification expected
+    Given the manifest pins schema version "0.2.0"
+    And the root holds a ".spec/" directory with a scenario file and no specification
+    When the check runs with JSON output
+    Then the violation's expectation carries the specification file names expected beside it
+
+  @B-039
+  Scenario: An unresolved-test violation says the name, the files and the forms
+    Given the manifest pins schema version "0.2.0"
+    And the manifest declares the test files "test/**/*.cs" and the declaration form "void {test}("
+    And the root holds a specification whose row names the test "ScenarioNobodyWrote"
+    When the check runs with JSON output
+    Then the violation's expectation carries the name "ScenarioNobodyWrote"
+    And the files "test/**/*.cs"
+    And the declaration forms "void {test}("
+
+  @B-040
+  Scenario: A status violation says the supported status and what resolved
+    Given the manifest pins schema version "0.2.0"
+    And the manifest declares the test files "test/**/*.cs"
+    And the root holds a specification whose covered row's scenario resolves and whose one test does not
+    When the check runs with JSON output
+    Then the violation's expectation carries the status the row's resolution supports
+    And that the scenario resolved and the tests did not
+
+  @B-041
+  Scenario: A waiver violation says the form and the approvers
+    Given the manifest pins schema version "0.2.0"
+    And the manifest sets the waiver rule to error
+    And the root holds a specification whose waived row names no approver
+    When the check runs with JSON output
+    Then the violation's expectation carries the waiver form "<approver>, <YYYY-MM-DD>"
+    And the reviewer names the sign-off holds
+
+  @B-042
+  Scenario: A retired-claim violation says the status and no tags
+    Given the manifest pins schema version "0.2.0"
+    And the manifest sets the retired-claim rule to error
+    And the root holds a specification whose withdrawn claim a scenario still carries
+    When the check runs with JSON output
+    Then the violation's expectation carries the status "Withdrawn"
+    And a tag count of 0

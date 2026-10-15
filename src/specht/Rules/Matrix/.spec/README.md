@@ -1,0 +1,196 @@
+---
+title: "Specification: Matrix resolution"
+description: "Under schema 0.2.0 or later the check resolves each § 9 row against the companion scenarios and the declared test files as text, and reports a scenario, a test name, a status or a waiver the tree does not bear out"
+type: feature
+id: "F12"
+epic: "0001"
+spec_status: draft
+status: blocked
+priority: med
+value: 0
+risk: 0
+rank: 0
+scored_by: null
+scored_on: null
+domain: "Specification governance"
+author: "spec-author"
+milestone: null
+children: []
+depends_on: ["F3", "F5", "F7"]
+blocks: ["F13"]
+spikes: []
+created: "2026-10-14"
+updated: "2026-10-15"
+github_issue: null
+synced_at: null
+---
+
+# Specification: Matrix resolution
+
+## 1. Business Goal
+
+<!-- last written by: spec-author, 2026-10-14 -->
+
+A § 9 row says which scenario and which tests pin a claim and how far, and today the check reads none of that: a row may say `Covered` beside a test name no file holds, `Missing` beside tests that all exist, or `Waived` with no one named, and every one passes. The matrix is then a claim about the tree that nothing checks, and a reader trusts a status the tree does not bear out. This Feature removes that failure state: under schema `0.2.0` or later the check resolves each row's scenario against the companion scenarios and each named test against the test files the manifest declares, as text, and reports the row whose scenario, test names, status or waiver the tree does not bear out.
+
+## 2. User Needs
+
+<!-- last written by: spec-author, 2026-10-15 (A-1 amended, review round 1) -->
+
+| #   | Persona                                 | Need                                                                      | Pain Point Today                                          |
+| --- | --------------------------------------- | ------------------------------------------------------------------------- | --------------------------------------------------------- |
+| 1   | The reviewer reading a § 9 row          | A status the check has held against the scenarios and the tests           | Opens the companion and greps the test tree for every row |
+| 2   | The maintainer whose tests were renamed | The row that still names the old test, reported at its line               | Finds the stale name only when someone reads the row      |
+| 3   | The agent writing a § 9 row             | A row it cannot mark covered without the scenario and the tests it names  | Writes a status no gate reads                             |
+| 4   | `0001-F13`                              | One resolver that says which scenarios and tests a row's cells resolve to | N/A (internal dependency)                                 |
+
+### Assumptions
+
+| ID  | Assumption                                                                                                                                                                                                                                                                                                                                                                              |
+| --- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| A-1 | A row's scenario resolves when a companion scenario carries the row's claim tag and, under `matrix.scenarioTitles`, each title the row's Scenario cell names equals the title of a scenario that carries the tag; a cell names several titles split on `;` (owner, 2026-10-14; the split is spec-author's reading, from this repository's rows, not stated by the owner; B-008, B-009). |
+| A-2 | A test name resolves when a test file the manifest declares contains it in a declared form (owner, 2026-10-14; B-004, B-005).                                                                                                                                                                                                                                                           |
+| A-3 | A claim is live unless its § 3 Status is the withdrawn or the superseded marker (owner, 2026-10-14; `0001-F5` B-058).                                                                                                                                                                                                                                                                   |
+| A-4 | The rules of this Feature land in schema `0.2.0`, which has never shipped in a published package and is relocked when they land (owner, 2026-10-14; `0001-F7` decision 0014, B-115).                                                                                                                                                                                                    |
+
+## 3. Acceptance Criteria
+
+<!-- last written by: spec-author, 2026-10-15 (B-006 and B-013 state the double report, B-013 cites decision 0001 call 5, review round 2) -->
+
+| ID | Claim
+
+| ID    | Claim                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    | Source                                                                                                                                                                   | Status |
+| ----- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------ |
+| B-001 | Given a manifest that pins schema `0.2.0` or later, this Feature reads the § 9 columns by their position in `tables.matrix`, first to fourth as the claim, scenario, test and status columns, so a header the manifest renames keeps its column's role.                                                                                                                                                                                                                                                  | owner, 2026-10-14; decision 0001                                                                                                                                         | Active |
+| B-002 | Given a manifest that declares `tests.files`, each test name in a Test cell that is not the missing marker, in a row whose Status is not the waived, withdrawn or superseded marker, is resolved against the files those globs match outside `exclusions`, and a name that resolves in no file is reported `SPEC032` at the row, its identifier the claim id.                                                                                                                                            | owner, 2026-10-14; decision 0001; `0001-F5` B-055; the waived, withdrawn and superseded exemption is spec-author's reading after review round 1, not stated by the owner | Active |
+| B-003 | Given a Test cell, its test names are its inline-code spans, each split on `,` and `;`; text outside inline code is not a test name.                                                                                                                                                                                                                                                                                                                                                                     | owner, 2026-10-14; OQ-1                                                                                                                                                  | Active |
+| B-004 | Given a dotted test name, its last segment is the declared name, and it resolves when one declared test file holds that segment in a declared form and every earlier segment as a whole word: `A.B` needs `B` declared and `A`, and `A.B.C` needs `C` declared and both `A` and `B`.                                                                                                                                                                                                                     | owner, 2026-10-14; three or more segments are spec-author's reading after review round 1, not stated by the owner                                                        | Active |
+| B-005 | Given a manifest with no `tests.declarations`, a test name's one form is the name as a whole word; given `"declarations": ["let {test} "]`, only `let F2_B005_LookForRoleCarriesReport ` resolves that name, and a mention of it outside a declared form, such as one in a comment, does not.                                                                                                                                                                                                            | owner, 2026-10-14; `0001-F5` B-055, B-056                                                                                                                                | Active |
+| B-006 | Given a Test cell that is not the missing marker and holds no inline-code span, in a row whose Status is not the waived, withdrawn or superseded marker, it is reported `SPEC032` at the row, expecting a test name in inline code; in a covered row, `SPEC033` reports the row too (B-013).                                                                                                                                                                                                             | owner, 2026-10-14; OQ-1; the exemption as B-002's; the double report is spec-author's reading after review round 2, not stated by the owner                              | Active |
+| B-007 | Given a manifest with no `tests` key, `SPEC032` reports nothing.                                                                                                                                                                                                                                                                                                                                                                                                                                         | owner, 2026-10-14                                                                                                                                                        | Active |
+| B-008 | Given `matrix.scenarioTitles: true`, a Scenario cell is split on `;` into titles, and each title equal to no `Scenario:` or `Scenario Outline:` title in the companion is reported `SPEC022` at the row.                                                                                                                                                                                                                                                                                                 | owner, 2026-10-14; `0001-F5` B-057; the split is A-1's                                                                                                                   | Active |
+| B-009 | Given `matrix.scenarioTitles: true`, a title in a Scenario cell that names a scenario not carrying the row's claim tag is reported `SPEC022` at the row.                                                                                                                                                                                                                                                                                                                                                 | owner, 2026-10-14; `0001-F5` B-057; A-1                                                                                                                                  | Active |
+| B-010 | Given `matrix.scenarioTitles` absent or false, `SPEC022` reports nothing, and the Scenario cell is prose.                                                                                                                                                                                                                                                                                                                                                                                                | owner, 2026-10-14; `0001-F5` B-057; epic `0201` R4                                                                                                                       | Active |
+| B-011 | Given a live claim whose tag no companion scenario carries and whose § 9 Status is neither the missing nor the waived marker, it is reported `SPEC023` at the row; a waived row is judged by `SPEC034` alone (B-018).                                                                                                                                                                                                                                                                                    | owner, 2026-10-14; A-3; the waived exemption is spec-author's reading after review round 1, not stated by the owner                                                      | Active |
+| B-012 | Given a row `SPEC023` reports, `SPEC033` does not also report it.                                                                                                                                                                                                                                                                                                                                                                                                                                        | owner, 2026-10-14                                                                                                                                                        | Active |
+| B-013 | Given a row whose Status is the covered marker, it is reported `SPEC033` unless its scenario resolves, its Test cell names at least one test, and every test name in its Test cell resolves; a covered row whose Test cell is the missing marker is reported; a covered row whose Test cell holds no inline-code span is reported by this rule and by `SPEC032` (B-006), one saying the status overclaims and the other that the cell names no test, as `SPEC031` and `SPEC060` can both report one row. | owner, 2026-10-14; owner, 2026-10-15, decision 0001 call 5; A-1, A-2; the double report is spec-author's reading after review round 2, not stated by the owner           | Active |
+| B-014 | Given a row whose Status is the partial marker, it is reported `SPEC033` unless its scenario resolves or at least one test name in its Test cell resolves.                                                                                                                                                                                                                                                                                                                                               | owner, 2026-10-14; A-1, A-2                                                                                                                                              | Active |
+| B-015 | Given a row whose Status is the missing marker and whose Test cell names tests that all resolve, it is reported `SPEC033` as stale.                                                                                                                                                                                                                                                                                                                                                                      | owner, 2026-10-14                                                                                                                                                        | Active |
+| B-016 | Given a manifest with no `tests` key, `SPEC033` resolves no test name: it judges a row by its scenario and, for the covered marker, by whether its Test cell names a test (B-013), and never reports a row whose Status is the missing marker as stale.                                                                                                                                                                                                                                                  | owner, 2026-10-14; owner, 2026-10-15; B-007                                                                                                                              | Active |
+| B-017 | Given a row whose Status is none of the covered, partial, missing, waived, withdrawn and superseded markers, it is reported `SPEC033`, expecting those markers.                                                                                                                                                                                                                                                                                                                                          | owner, 2026-10-14; `0001-F5` B-058                                                                                                                                       | Active |
+| B-018 | Given a row whose Status is the waived marker, it is reported `SPEC034` unless its Test cell holds `<approver>, <YYYY-MM-DD>` and the approver is the Reviewer of a § 12 row whose Status is neither the draft nor the blocked marker.                                                                                                                                                                                                                                                                   | owner, 2026-10-14; OQ-2                                                                                                                                                  | Active |
+| B-019 | Given a § 3 claim whose Status is the withdrawn or the superseded marker, it is reported `SPEC035` when a companion scenario carries its tag, or when its § 9 Status is not that same marker.                                                                                                                                                                                                                                                                                                            | owner, 2026-10-14; A-3                                                                                                                                                   | Active |
+| B-020 | Given a manifest whose `rules` does not set `SPEC034` or `SPEC035` to error or warning, neither reports anything: each rule's own level is off.                                                                                                                                                                                                                                                                                                                                                          | owner, 2026-10-14; decision 0001 call 2; `0001-F5` B-061                                                                                                                 | Active |
+| B-021 | Given a manifest that pins schema `0.1.0`, none of `SPEC022`, `SPEC023` and `SPEC032` to `SPEC035` runs, and the report is byte-identical to the one the tool gives that tree without this Feature.                                                                                                                                                                                                                                                                                                      | owner, 2026-10-14; `0001-F7` C-1, B-115                                                                                                                                  | Active |
+
+## 4. Constraints
+
+<!-- last written by: spec-author, 2026-10-15 (C-6 removed before merge, review round 1) -->
+
+| ID | Constraint
+
+| ID  | Constraint                                                                                               | Rules Out                                                                                                         |
+| --- | -------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
+| C-1 | Resolution is text only (brief § 9; owner, 2026-10-14).                                                  | A compiler, a test runner, a started process or a network call; loading an assembly to find a test.               |
+| C-2 | Test files are read through `IFileSystem`, and every path is relative to the root (brief § 9).           | A direct `System.IO` read; an absolute path in a violation, a report or a test fixture.                           |
+| C-3 | One resolver serves the rules of this Feature and `0001-F13` (owner, 2026-10-14).                        | A second reading of a § 9 cell, a tag or a test file in the trace command; a trace that disagrees with the check. |
+| C-4 | No rule writes a file, and none suggests a rewrite beyond its `expected` (owner, 2026-10-14; brief § 9). | Fixing a status, a test name or a Scenario cell; a proposed replacement row.                                      |
+| C-5 | Every marker comes from the manifest; no rule holds a marker literal (`0001-F5` B-003, B-058).           | `"Covered"`, `"Missing"` or `"Waived"` written in a rule; a status compared to text the manifest did not supply.  |
+
+## 5. Out of Scope
+
+<!-- last written by: spec-author, 2026-10-14 -->
+
+| #   | Item                                                                                  | Exclusion Reason                                                                                                                           |
+| --- | ------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| 1   | Whether a test exercises the claim it is named for                                    | Text resolution says a name exists in a declared form, not what the test asserts (C-1; owner, 2026-10-14).                                 |
+| 2   | Whether a test name cites its claim id                                                | Not asked for; a naming convention is the consumer's (owner, 2026-10-14).                                                                  |
+| 3   | Code bindings between a claim and the code that serves it                             | Epic `0201` (owner, 2026-10-14).                                                                                                           |
+| 4   | Running the tests a row names                                                         | C-1; brief § 9 (owner, 2026-10-14).                                                                                                        |
+| 5   | Matching a Scenario cell to a title by default                                        | The template anchors a row to its tag; a title match is opt-in through `matrix.scenarioTitles` (B-010; epic `0201` R4; owner, 2026-10-14). |
+| 6   | The manifest keys `tests`, `matrix` and the five status markers, and their rejections | `0001-F5` B-055 to B-058.                                                                                                                  |
+| 7   | What each rule's `expected` carries                                                   | `0001-F3` B-036, B-037 and B-039 to B-042.                                                                                                 |
+| 8   | The rule vocabulary of schema `0.2.0` and its relock                                  | `0001-F7` B-115, decision 0014.                                                                                                            |
+| 9   | Printing every row's resolution, gaps or not                                          | `0001-F13`.                                                                                                                                |
+
+## 6. Concern Separation
+
+<!-- last written by: spec-author, 2026-10-14 -->
+
+Pending: owned by `implementer`, written after agreement.
+
+## 7. Technical Design
+
+<!-- last written by: spec-author, 2026-10-14 -->
+
+Pending: owned by `implementer`, written after agreement.
+
+## 8. Testing Strategy
+
+<!-- last written by: spec-author, 2026-10-14 -->
+
+Pending: owned by `test-writer`, written after agreement.
+
+## 9. Traceability Matrix
+
+<!-- last written by: spec-author, 2026-10-14 -->
+
+| Claim ID | Scenario                                                                             | Test    | Status  |
+| -------- | ------------------------------------------------------------------------------------ | ------- | ------- |
+| B-001    | A renamed matrix header keeps its column's role                                      | Missing | Missing |
+| B-002    | A test name no declared file holds is reported                                       | Missing | Missing |
+| B-003    | Test names are the inline-code spans of the Test cell                                | Missing | Missing |
+| B-004    | A dotted test name resolves when one file holds both parts                           | Missing | Missing |
+| B-005    | With no declared form a test name resolves as a whole word                           | Missing | Missing |
+| B-006    | A Test cell with no inline code is reported                                          | Missing | Missing |
+| B-007    | With no test files declared no test name is reported                                 | Missing | Missing |
+| B-008    | A Scenario cell that matches no scenario title is reported                           | Missing | Missing |
+| B-009    | A Scenario cell naming a scenario without the row's tag is reported                  | Missing | Missing |
+| B-010    | Without title matching the Scenario cell is prose                                    | Missing | Missing |
+| B-011    | A live claim no scenario carries is reported unless its row is missing               | Missing | Missing |
+| B-012    | A row reported for its missing scenario is not reported for its status               | Missing | Missing |
+| B-013    | A covered row whose scenario or tests do not resolve is reported                     | Missing | Missing |
+| B-014    | A partial row with nothing resolved is reported                                      | Missing | Missing |
+| B-015    | A missing row whose tests all resolve is reported as stale                           | Missing | Missing |
+| B-016    | With no test files declared a covered row is judged by its scenario and a named test | Missing | Missing |
+| B-017    | A status that is no known marker is reported                                         | Missing | Missing |
+| B-018    | A waived row without a signed-off approver and a date is reported                    | Missing | Missing |
+| B-019    | A withdrawn claim a scenario still carries is reported                               | Missing | Missing |
+| B-020    | The waiver and retired-claim rules are silent unless raised                          | Missing | Missing |
+| B-021    | Under schema 0.1.0 none of the matrix rules runs                                     | Missing | Missing |
+
+## 10. Lessons / Spec Deltas
+
+<!-- last written by: spec-author, 2026-10-15 (review rounds 1 and 2) -->
+
+- 2026-10-15, after `spec-reviewer` round 1, before this specification first merged. The owner decided that a covered row needs at least one test name and that a covered row whose Test cell is the missing marker is reported (owner, 2026-10-15): B-013 and B-016 revised. Revised as spec-author's reading, each labelled in its Source: B-002 and B-006 exempt the waived, withdrawn and superseded rows, as the missing marker is; B-011 exempts the waived row, which `SPEC034` judges; B-004 defines three or more dotted segments; A-1, B-008 and B-009 split a Scenario cell on `;`. B-005 says "outside a declared form". C-6 removed: its id never reached `main`, and decision 0001 call 2, B-020 and `0001-F5` B-061 carry the default levels. OQ-1 and OQ-3 gain notes. Scenarios added for each. After round 2: B-013 cites decision 0001 call 5, and B-006 and B-013 state, as spec-author's reading, that a covered row whose Test cell holds no inline-code span is reported by both `SPEC032` and `SPEC033`.
+
+## 11. Open Questions
+
+<!-- last written by: spec-author, 2026-10-15 (OQ-1 and OQ-3 noted, review round 1) -->
+
+| ID   | Question                                                                                                                                                                                                                                                                                                                                                                                                                           | Blocks       | Resolution |
+| ---- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------ | ---------- |
+| OQ-1 | Do consumers write test names in inline code, and should plain text in a Test cell be split on `,` and `;` as names too? Recommendation: inline-code spans only, with plain text an opt-in later. Note, 2026-10-15: under B-003 every inline-code span counts as a name, so a cell that quotes code that is not a test, such as `0001-F3` B-033's (`major.minor.patch`), is reported once this repository declares `tests` (OQ-3). | B-003, B-006 | Open       |
+| OQ-2 | Is `<approver>, <YYYY-MM-DD>` in the Test cell the right form for a waiver? Recommendation: yes.                                                                                                                                                                                                                                                                                                                                   | B-018        | Open       |
+| OQ-3 | Should this repository's manifest declare `"tests": { "files": ["test/**/*.cs"] }` and `owners` from `specht-conventions` § "Section ownership" in the pull request that delivers these rules? Recommendation: yes, with `owners` listing `test-writer` and `spec-author` for `9. Traceability Matrix`, since spec-author adds § 9 rows by house precedent, so `0101-F9` B-024 does not warn on them.                              | None         | Open       |
+
+## 12. Sign-off
+
+<!-- last written by: spec-reviewer, 2026-10-15 (matrix-resolution delta, round 2) -->
+
+| Section     | Status | Reviewer      | Note                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
+| ----------- | ------ | ------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1-5, 11     | 🔴     | spec-reviewer | Round 1 (2026-10-15) - blocked, reviewing the uncommitted working tree on `b9dfb84`. Ids are new, § 9 carries each claim once, every `@B-0nn` tag resolves, and the self-check reports no error. Blocking (spec-author): (1) B-006 reports, and B-002 and B-003 read, the Test cell of a row marked waived, withdrawn or superseded, so the `<approver>, <YYYY-MM-DD>` cell B-018 requires is `SPEC032` at error once `tests` is declared; exempt those markers as the missing marker is, with a boundary scenario, and say whether a waived row is exempt from B-011. (2) B-013 passes a covered row whose Test cell is the missing marker under a declared `tests`, since every one of no test names resolves; § 1 names exactly that row as the failure removed. State the case. (3) B-004 defines `A.B` only; say how a name of three or more dotted segments splits. (4) B-008 and A-1 do not say whether a Scenario cell holding several titles separated by `;` is split, as this repository's rows do (`0101-F9` B-021, `0001-F3` B-031). Non-blocking: (5) B-003 makes every inline-code span a test name, so `0001-F3` B-033's cell, holding `major.minor.patch`, fails once OQ-3 is yes; record it under OQ-1. (6) C-6 is a choice decision 0001 call 2 records and B-020 and `0001-F5` B-061 restate; drop it or cite the decision (`spec-and-traceability`: an imported rule is a decision, not a constraint). (7) B-005's "a mention of it in a comment does not" holds only when the comment lacks the form; say "a mention outside a declared form". (8) OQ-3 should say which roles `owners` lists for § 9, where spec-author adds rows by this repository's precedent, or `0101-F9` B-024 warns on them. |
+| 1-5, 10, 11 | 🟢     | spec-reviewer | Round 2 (2026-10-15) - approved, reviewing the uncommitted working tree on `b9dfb84` after spec-author's round-1 revision; this row clears the round-1 row above. All eight round-1 findings are closed. (1) B-002 and B-006 exempt waived, withdrawn and superseded rows, with a boundary outline over all three, and B-011 leaves a waived row to `SPEC034`, with its own boundary. (2) B-013 and B-016 follow the owner's call of 2026-10-15, which decision 0001 call 5 records: a covered row names a test, and a covered row whose Test cell is the missing marker is reported, with or without `tests`. (3) B-004 splits on the last segment, with a three-segment outline. (4) A-1, B-008 and B-009 split a Scenario cell on `;`, with an outline. (5) to (8): OQ-1 and OQ-3 carry the notes, C-6 is gone before merge and the decision's Affects reads C-1 to C-5, and B-005 says "outside a declared form". Each exemption, split and definition the owner did not state is labelled as spec-author's reading in its Source. Self-check: 0 errors. Non-blocking: (a) B-013's Source names "owner, 2026-10-15" and not decision 0001 call 5, which records it. (b) A covered row whose Test cell holds plain text is reported by both `SPEC032` (B-006) and `SPEC033` (B-013), and B-012 removes only the `SPEC023` overlap; say whether both are meant. `spec_status` stays `draft` while OQ-1 and OQ-2, which block B-003, B-006 and B-018, are open.                                                                                                                                                                                                                                                           |
+
+## Tasks
+
+None yet. Cut from § 3 after agreement.
+
+## Scoring
+
+| Field | Value | Basis          |
+| ----- | ----- | -------------- |
+| value | 0     | Not yet scored |
+| risk  | 0     | Not yet scored |
