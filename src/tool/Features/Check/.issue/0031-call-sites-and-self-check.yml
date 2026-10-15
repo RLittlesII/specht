@@ -2,7 +2,7 @@ id: "0031"
 type: task
 title: Prove Specht, the hook and a shell give one verdict once rule settings exist
 
-status: in-progress
+status: done
 
 risk: 3
 
@@ -20,7 +20,7 @@ claims:
 
 created: "2026-10-08"
 updated: "2026-10-14"
-closed: null
+closed: "2026-10-14"
 
 summary: |
   Once 0001-F5's rule settings exist, prove that a shell, `./build.sh
