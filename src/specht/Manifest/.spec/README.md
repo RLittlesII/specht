@@ -1058,7 +1058,7 @@ Green at commit `339d1f1`, on `net10.0` and `net11.0`: `SpecManifestParserMatrix
 
 ## Tasks
 
-Cut 2026-10-08 into [`../.issue/`](../.issue/): `0010` (the Feature), with `0011` to `0019`. Cut 2026-10-09: the claim tags (B-007, B-036 to B-038), as `0118` and renumbered `0134` on 2026-10-10. Cut 2026-10-11 (decision 0011): the manifest's and the frontmatter schemas' new paths, B-008 as amended, as `0185`; B-047 as `0187`, which waits on `0185`. B-033 as amended has no item (OQ-18). Cut 2026-10-11 (`0001-F7` decision 0009): `0191`, the default manifest of a pinned version, blocked on OQ-23 and carrying no claim until it is answered.
+Cut 2026-10-08 into [`../.issue/`](../.issue/): `0010` (the Feature), with `0011` to `0019`. Cut 2026-10-09: the claim tags (B-007, B-036 to B-038), as `0118` and renumbered `0134` on 2026-10-10. Cut 2026-10-11 (decision 0011): the manifest's and the frontmatter schemas' new paths, B-008 as amended, as `0185`; B-047 as `0187`, which waits on `0185`. B-033 as amended has no item (OQ-18). Cut 2026-10-11 (`0001-F7` decision 0009): `0191`, the default manifest of a pinned version, blocked on OQ-23 and carrying no claim until it is answered. Cut 2026-10-15 (owner, 2026-10-14 and 2026-10-15): the tests, matrix, owners and required-specification keys and the five status markers at schema `0.2.0`, B-055 to B-060, as `0222`. B-061, the off-level rules, has no item yet; it touches the same manifest files and follows in a later one.
 
 ## Scoring
 
