@@ -1,0 +1,94 @@
+id: "0227"
+type: task
+title: Report an unsigned waiver and a retired claim still carried, off unless raised
+
+status: ready-for-architecture
+
+risk: 3
+
+parent: "0224"
+children: []
+
+depends_on: ["0223", "0225"]
+spikes: []
+
+spec: src/specht/Rules/Matrix/.spec/README.md
+
+claims:
+  - B-018
+  - B-019
+  - B-020
+
+created: "2026-10-15"
+updated: "2026-10-15"
+closed: null
+
+summary: |
+  SPEC034 reports a waived § 9 row with no signed-off approver and date,
+  and SPEC035 a withdrawn or superseded claim a scenario or its § 9 row
+  still carries. Both ship with their own level off and report only when
+  the manifest's `rules` raises them.
+
+  Each id enters schema 0.2.0's vocabulary with its own rule (the owner,
+  2026-10-15), so this item adds SPEC034 and SPEC035 to 0.2.0's
+  vocabulary, writes their rule pages (0001-F3 B-031) and relocks 0.2.0
+  by decision 0014's procedure (0001-F7 C-17), all in the pull request
+  that builds the rules; 0001-F7 B-014 then holds at every commit. It
+  lists both ids off in the 0.2.0 default manifest's `rules`, the half of
+  0001-F5 B-061 that 0223 leaves, and binds the @B-061 scenarios.
+
+  Depends on 0223 for the off level (B-020) and on 0225, the one resolver
+  (C-3), for the Test cell SPEC034 reads.
+
+  Risk 3: it is the first item to add an id to 0.2.0, so the shipped
+  vocabulary stops being one list for both versions and a 0.1.0 pin must
+  still evaluate only its 21 ids; SPEC035 needs the scenarios a claim tag
+  resolves to, which extends 0225's resolver rather than adding a second
+  reader; SPEC034 reads § 12's Reviewer and Status by the manifest's
+  markers (C-5); and the relock moves the lock's digest for 0.2.0.
+
+acceptance_criteria:
+  - "B-018 — waived row without a signed-off approver and date, SPEC034"
+  - "B-019 — withdrawn or superseded claim still carried, SPEC035"
+  - "B-020 — neither reports unless the manifest's rules raises it"
+  - "`0001-F7` B-115 — SPEC034 and SPEC035 enter 0.2.0's vocabulary with this item, with their rule pages (`0001-F3` B-031) and a relock (`0001-F7` decision 0014); B-014 holds"
+  - "`0001-F5` B-061 — the 0.2.0 default manifest's rules lists SPEC034 and SPEC035 off; the @B-061 scenarios bind here"
+  - "No marker literal in either rule (C-5); one resolver, extended for claim tags, not a second (C-3)."
+  - "§ 9 carries a row naming a test for each id above."
+
+decisions:
+  - |
+    2026-10-15, spec-author: cut on the owner's ruling that each id enters
+    the 0.2.0 vocabulary with its own rule, so 0001-F7 B-014 holds at every
+    commit; it replaces 0226, which added all nine ids ahead of their rules
+    and was withdrawn before it merged. B-115 is not claimed here, because
+    `claims` holds this specification's ids: it is cited in the acceptance
+    criteria, as item 0005 cites 0001-F5 B-041, and stays 0041's claim.
+    B-115 states the vocabulary 0.2.0 ends with, and 0001-F7 C-17 and
+    decision 0014 let an unpublished version be relocked each time a rule
+    lands, so per-rule entry needs no claim change. The item that adds the
+    last of the nine binds @B-115.
+  - |
+    2026-10-15, spec-author: the cycle with 0223 is broken by splitting
+    0001-F5 B-061. 0223 builds the off level over fake rules and needs no
+    id; this item, which adds the ids, lists them off in the 0.2.0 default
+    manifest and depends on 0223. The order is the claims': 0001-F12 B-020
+    needs the off level before SPEC034 and SPEC035 ship, and 0001-F5 B-013
+    rejects a `rules` key outside the vocabulary until they are in it.
+    Rejected: the off level inside this item, which leaves 0001-F5's
+    mechanism with no 0001-F5 item; 0223 waiting on this item, a cycle;
+    shipping both rules at warning until the off level lands, which B-020
+    forbids; and the ids entering ahead of the rules, which left B-014
+    false.
+  - |
+    2026-10-15, spec-author: SPEC034 and SPEC035 share one item because
+    they share B-020 and the default manifest's entry, and the relock is
+    done once for both. Value omitted, inheriting 0224's. The ADR-0014
+    stages (0164, 0166) are not prerequisites; 0164 reshapes the rule
+    interface 0223 changes and must not disagree with it.
+
+out_of_scope:
+  - "The off level itself: 0223 (0001-F5 B-061)."
+  - "Every other 0.2.0 id: SPEC022, SPEC023, SPEC032 and SPEC033 enter with their own 0001-F12 items under 0224; SPEC014 and SPEC024 with 0001-F6's; SPEC015 with 0101-F9's."
+  - "The expected payload of each violation (0001-F3 B-041, B-042): that Feature's items."
+  - "Everything in § 5 of the spec."

@@ -8,7 +8,7 @@ value: 3
 risk: 4
 
 parent: "0001"
-children: ["0225"]
+children: ["0225", "0227"]
 
 depends_on: []
 spikes: []
@@ -57,13 +57,16 @@ summary: |
   row they then report (decision 0002 call 3); and a 0.1.0 pin must give
   a byte-identical report (B-021).
 
-  The first child is 0225, the resolver. The rule items follow, cut
-  later under this item: SPEC032 (B-002, B-006, B-007), SPEC022 (B-008
-  to B-010), SPEC023 (B-011, B-012), SPEC033 (B-013 to B-017), SPEC034
-  and SPEC035 (B-018 to B-020, after 0223 for the off level), and the
-  0.1.0 guard (B-021). Every rule item depends on 0226, which puts its
-  id in the 0.2.0 vocabulary (0001-F7 B-115). The trace command's items
-  (0001-F13) follow too, and depend on 0225.
+  The first child is 0225, the resolver; the second is 0227, SPEC034
+  and SPEC035 (B-018 to B-020, after 0223 for the off level). The other
+  rule items follow, cut later under this item: SPEC032 (B-002, B-006,
+  B-007), SPEC022 (B-008 to B-010), SPEC023 (B-011, B-012), SPEC033
+  (B-013 to B-017) and the 0.1.0 guard (B-021). Each rule item adds its
+  own id to the 0.2.0 vocabulary with its rule page and a relock, so
+  0001-F7 B-014 holds at every commit (the owner, 2026-10-15); 0001-F6's
+  SPEC014 and SPEC024 and 0101-F9's SPEC015 enter with those Features'
+  items. The trace command's items (0001-F13) follow too, and depend on
+  0225.
 
 acceptance_criteria:
   - "B-001 — § 9 columns by position (0225)"
@@ -83,9 +86,9 @@ acceptance_criteria:
   - "B-015 — stale missing row, SPEC033 (not cut)"
   - "B-016 — SPEC033 with no tests key (not cut)"
   - "B-017 — unknown status marker, SPEC033 (not cut)"
-  - "B-018 — waiver without a signed-off approver and date, SPEC034 (not cut)"
-  - "B-019 — retired claim still carried, SPEC035 (not cut)"
-  - "B-020 — SPEC034 and SPEC035 off unless raised (not cut; after 0223)"
+  - "B-018 — waiver without a signed-off approver and date, SPEC034 (0227)"
+  - "B-019 — retired claim still carried, SPEC035 (0227)"
+  - "B-020 — SPEC034 and SPEC035 off unless raised (0227, after 0223)"
   - "B-021 — 0.1.0 pin, byte-identical report (not cut)"
   - "§ 9 carries a row naming a test for each id above."
 
@@ -100,10 +103,20 @@ decisions:
   - |
     2026-10-15, spec-author: the resolver is cut first, alone, because the
     trace command needs it and not the rules (0001-F13 C-1), and because
-    it needs nothing outside the tree: every rule item waits on the 0.2.0
-    vocabulary (0001-F7 B-115, item 0226), and the resolver does not. Rejected: the
-    resolver inside the SPEC032 item, which would hold the trace command
-    behind the vocabulary.
+    it adds no rule id: every rule item adds its own id to the 0.2.0
+    vocabulary, and the resolver does not. Rejected: the resolver inside
+    the SPEC032 item, which would hold the trace command behind that
+    rule.
+
+  - |
+    2026-10-15, spec-author, re-cut on the owner's ruling that each id
+    enters the 0.2.0 vocabulary with its own rule: 0226, which added the
+    nine ids ahead of their rules and left 0001-F7 B-014 false, was
+    withdrawn before it merged and its number is not reused. 0227 is cut
+    now because 0223 is split around it (0001-F5 B-061); the other rule
+    items are not forced and stay uncut. Each rule item cites 0001-F7
+    B-115 for the ids it adds, and the one that adds the last binds
+    @B-115.
 
 out_of_scope:
   - "Everything in § 5 of the spec."

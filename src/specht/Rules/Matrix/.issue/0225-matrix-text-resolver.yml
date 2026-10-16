@@ -60,8 +60,8 @@ decisions:
     scenario observes the resolver through SPEC032, so they bind in that
     item; until then this item's tests are unit and integration tier, and
     each § 9 row stays Partial. Rejected: the resolver and SPEC032 in one
-    item, which waits on the 0.2.0 vocabulary (0001-F7 B-115, item 0226)
-    and would hold the trace command behind it.
+    item, which would hold the trace command behind that rule and the
+    entry of its id into the 0.2.0 vocabulary (0001-F7 B-115).
   - |
     2026-10-15, spec-author: value omitted, inheriting 0224's. No
     depends_on: 0222 is done, and the ADR-0014 stages (0164, 0166) are not
@@ -69,6 +69,7 @@ decisions:
 
 out_of_scope:
   - "Any SPEC### report, and which rows a rule exempts: the later 0001-F12 rule items under 0224."
-  - "Resolving a Scenario cell or a claim tag to scenarios (A-1; B-008, B-009, B-011): the SPEC022 and SPEC023 items, which extend this resolver."
+  - "Resolving a claim tag to scenarios (A-1; B-011, B-019): the first rule item that needs it, 0227 for SPEC035, which extends this resolver."
+  - "Resolving a Scenario cell's title (B-008, B-009): the SPEC022 item, which extends this resolver."
   - "Printing a row's resolution: 0001-F13 (§ 5 row 9)."
   - "Everything in § 5 of the spec."
