@@ -1,0 +1,75 @@
+id: "0223"
+type: task
+title: Let a rule's own level be off
+
+status: ready-for-architecture
+
+risk: 3
+
+parent: "0010"
+children: []
+
+depends_on: []
+spikes: []
+
+spec: src/specht/Manifest/.spec/README.md
+
+claims:
+  - B-061
+
+created: "2026-10-15"
+updated: "2026-10-15"
+closed: null
+
+summary: |
+  A rule may ship with its own level off: it reports nothing until the
+  manifest's `rules` raises it to error or warning, and a manifest that
+  names no level for it keeps that off level (B-044, decision 0009). This
+  item builds that mechanism and needs no new rule id: its tests run fake
+  rules over a fixture vocabulary, as the runner's tests do for 0014's
+  `off`.
+
+  B-061's other half - the 0.2.0 default manifest's `rules` listing
+  SPEC034 and SPEC035 as off - lands with 0227, the 0001-F12 item that
+  builds those two rules and adds their ids to the 0.2.0 vocabulary, since
+  a `rules` key outside the vocabulary is rejected (B-013). 0227 depends
+  on this item for 0001-F12 B-020 and binds the @B-061 scenarios, which
+  observe the waiver rule. Until then B-061's § 9 row stays Partial.
+
+  Risk 3: no rule declares a level of its own today - a violation carries
+  its severity, and SpecSeverity has no off - so the rule contract and
+  the runner's selection change beside the one 0014 built for a
+  manifest's `off`. Item 0164 reshapes the same rule interface; it is
+  gated by ADR-0014 and is not a prerequisite, but the two must not
+  disagree. No file of a shipped version changes, so nothing is relocked.
+
+acceptance_criteria:
+  - "B-061 — a rule whose own level is off reports only when raised; the 0.2.0 default's SPEC034 and SPEC035 entries are 0227's"
+  - "B-044 holds for such a rule: no level named keeps its own, off."
+  - "§ 9 carries a row naming a test for each id above."
+
+decisions:
+  - |
+    2026-10-15, spec-author: cut for B-061, which 0222 left to a later
+    item because it touches the same manifest files. Value omitted, so it
+    inherits 0010's.
+  - |
+    2026-10-15, spec-author, on the owner's ruling that each id enters the
+    0.2.0 vocabulary with its own rule (so 0001-F7 B-014 holds at every
+    commit): B-061 is delivered in two items. This one builds the off
+    level and depends on nothing; 0227 lists SPEC034 and SPEC035 off in
+    the 0.2.0 default manifest when it adds their ids, and depends on this
+    one. The claims order it so: 0001-F12 B-020 needs the off level before
+    SPEC034 and SPEC035 can ship off, and B-013 needs their ids in the
+    vocabulary before any manifest lists them. Rejected: this item waiting
+    on the vocabulary (0226, withdrawn), which left B-014 false until the
+    last of nine rules landed; this item waiting on 0227, which needs the
+    off level first, so each would wait on the other; the off level built
+    inside 0227, which leaves no 0001-F5 item for a 0001-F5 mechanism; and
+    shipping SPEC034 and SPEC035 at warning until the off level lands,
+    which 0001-F12 B-020 forbids.
+
+out_of_scope:
+  - "The 0.2.0 default manifest listing SPEC034 and SPEC035 off, and binding the @B-061 scenarios: 0227 (0001-F12)."
+  - "SPEC034 and SPEC035 themselves, and adding them to the 0.2.0 vocabulary: 0227 (0001-F12 B-018 to B-020; 0001-F7 B-115)."
+  - "Everything in § 5 of the spec."
