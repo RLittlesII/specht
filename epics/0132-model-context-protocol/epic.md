@@ -8,7 +8,7 @@ priority: med
 milestone: null
 children: []
 created: "2026-10-09"
-updated: "2026-10-11"
+updated: "2026-10-15"
 github_issue: null
 ---
 
@@ -139,22 +139,73 @@ Where the candidate cut was tested, and what the owner is asked to confirm:
 ## What this epic waits on
 
 This epic exposes what other Features build and builds none of it. It starts
-`blocked` because the Must criteria cannot be met until two of those
-capabilities exist. None of the work below is delivered yet.
+`blocked` because the Must criteria cannot be met until those capabilities
+exist. As of 2026-10-15 only listing and pinning, and the rule pages, are
+delivered.
 
-| Capability                          | Specified in                          | Work items                                               | Blocks                |
-| ----------------------------------- | ------------------------------------- | -------------------------------------------------------- | --------------------- |
-| A rule's full text                  | `0001-F3` B-019, B-020; `0001-F3` C-6 | `0040` (`--explain`); `0129` (a rule page per `SPEC###`) | The Must criteria     |
-| What a rule expected, per finding   | `0001-F3` C-2                         | `0037`, `0038`, `0039`                                   | The Must criteria     |
-| Listing and pinning schema versions | `0001-F7` B-041 to B-051              | `0121` to `0125`                                         | Only the Could writes |
-| `format`                            | `0101-F5`                             | None cut; the Feature is itself `blocked`                | Only the Could writes |
+| Capability                                               | Specified in                          | Work items                                                                           | Blocks                             |
+| -------------------------------------------------------- | ------------------------------------- | ------------------------------------------------------------------------------------ | ---------------------------------- |
+| A rule's full text                                       | `0001-F3` B-019, B-020; `0001-F3` C-6 | `0040` (`--explain`) ready for architecture; `0129` (a rule page per `SPEC###`) done | The Must criteria                  |
+| What a rule expected, per finding                        | `0001-F3` C-2                         | `0037`, `0038`, `0039`, ready for architecture                                       | The Must criteria                  |
+| The rule list, with each rule's family and level         | `0001-F10` (draft; `blocked`)         | None cut                                                                             | The Must criteria                  |
+| The manifest: sections, headers, grammars, keys, the pin | `0001-F9` (draft; `blocked`)          | None cut                                                                             | The Must criteria                  |
+| Listing and pinning schema versions                      | `0001-F7` B-041 to B-051              | Resolved 2026-10-15: `0121` to `0123` and `0125` done; `0124` (pin policy) `blocked` | Nothing; was only the Could writes |
+| `upgrade`                                                | `0001-F7`                             | `0045` to `0048`, `0093`, `0094`, `0131`, ready for architecture                     | Only the Could writes              |
+| `format`                                                 | `0101-F5`                             | None cut; the Feature is itself `blocked`                                            | Only the Could writes              |
 
-Item `0129` is not on `main` at this writing; it is open as pull request #79.
-The rule text it adds is the source the first Must criterion answers from, so
-it lands before this epic can unblock.
+Resolved 2026-10-15: item `0129` is done on `main`. When this section was
+written it was open as pull request #79.
 
 The tree-facts command is not in this table: it is this epic's own
 (candidate A).
+
+## The command line MCP serves
+
+The owner, 2026-10-15: "I'd like the MCP to have an understanding of what
+Spec tool commands it needs to have available to be valuable." MCP adds
+nothing the command line cannot say (§ Constraints), so each answer a
+criterion names needs a command first. States are read from the items and
+specifications on 2026-10-15.
+
+| Criterion | Answer                                                                        | Command                                        | Specified in                                             | State                                                                                                                                                                                       |
+| --------- | ----------------------------------------------------------------------------- | ---------------------------------------------- | -------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Must      | The check's verdict                                                           | `specht --json`                                | `0001-F3` B-001                                          | Built (`0035` done)                                                                                                                                                                         |
+| Must      | What each violation expected                                                  | `expected` in the `--json` report              | `0001-F3` C-2                                            | Specified; `0037` to `0039` ready for architecture                                                                                                                                          |
+| Must      | What each `SPEC###` requires                                                  | `specht --explain SPEC###`                     | `0001-F3` B-019, B-020                                   | Specified; `0040` ready for architecture. The rule pages are built (`0129` done)                                                                                                            |
+| Must      | The rules, with family and level                                              | `specht rules --json`                          | `0001-F10`                                               | Draft; `blocked`; no item                                                                                                                                                                   |
+| Must      | Sections, table headers, id grammars, frontmatter key names                   | `specht manifest --json`                       | `0001-F9`                                                | Draft; `blocked`; no item                                                                                                                                                                   |
+| Must      | The frontmatter schemas and the templates                                     | None                                           | Nowhere; `0001-F9` § 5 row 3 leaves it to this epic      | Gap: `init` writes them as files, and no command prints them                                                                                                                                |
+| Must      | The pinned schema version                                                     | `specht schema list`; `specht manifest --json` | `0001-F7` B-084; `0001-F9` B-006                         | `schema list` built (`0121`, `0125` done) with no `--json` (`docs/cli.md`); `manifest` as above                                                                                             |
+| Must      | The tree's facts: Features, claims, constraints, open questions, dependencies | None                                           | Nowhere: candidate A, shared with epic `0228` (its OQ-2) | Gap                                                                                                                                                                                         |
+| Must      | Claim coverage                                                                | `specht trace --json`                          | `0001-F13`                                               | Approved; `blocked`; no item. Overlaps candidate A; which answers coverage is not decided here                                                                                              |
+| Open      | A check of one specification                                                  | None                                           | Nowhere                                                  | Gap; the open question below stands. Candidates: epic `0228` candidate E (`--only`, the verdict stays the tree's); `specht frontmatter` (`0001-F8`, draft, `blocked`, `--json` is its OQ-2) |
+| Could     | Write the configuration                                                       | `specht init`                                  | `0001-F4`                                                | Built (`0185`, `0186` done)                                                                                                                                                                 |
+| Could     | Move the pin                                                                  | `specht schema pin`                            | `0001-F7` B-041 to B-051                                 | Built (`0122`, `0123`, `0125` done); `0124` (pin policy) `blocked`                                                                                                                          |
+| Could     | Bring files to the pin                                                        | `specht upgrade`                               | `0001-F7`                                                | Specified, not built; its items ready for architecture                                                                                                                                      |
+| Could     | Reorder rows and keys                                                         | `specht format`                                | `0101-F5`                                                | Draft; `blocked`; no item                                                                                                                                                                   |
+| Could     | The work queue                                                                | None                                           | Nowhere                                                  | Gap                                                                                                                                                                                         |
+
+The two remaining Must criteria - parity with the command line, and one client
+configuration entry - are properties of the host (candidates B and C), not
+answers, and need no command.
+
+**The minimum set.** MCP is valuable once the Must rows answer: `specht
+--json` with `expected`, `--explain`, `specht rules --json`, `specht manifest
+--json`, which also carries the pin, the tree's facts, claim coverage, and a
+printer for the frontmatter schemas and templates. Of these, only `specht
+--json` is built.
+
+**Findings for the owner.** Four answers have no specification. None is
+decided here, and none is a Feature or an item:
+
+1. The tree-facts command: candidate A; which epic owns it is epic `0228`
+   OQ-2.
+2. A printer for the frontmatter schemas and the templates: the open question
+   below on schema knowledge, which `0001-F9` § 5 row 3 defers to this epic.
+3. `specht schema list --json`: the list of shipped versions has no document
+   form. Whether that list is a Must answer at all is the open question
+   below on the list of shipped versions.
+4. A check of one specification: the open question below.
 
 ## Constraints
 
@@ -196,6 +247,8 @@ No Feature specification exists, so none is placed. Where each will sit
 follows the project layout, which is the design's choice and is not made
 here. Candidate A is a command and would sit in its command folder under
 `src/tool/Features/`, as every command's specification does.
+The host lives in this repository and releases on the tool's tag
+(ADR-0015).
 
 This epic file lives at `epics/0132-model-context-protocol/epic.md`, where
 schema version 1's epic glob `epics/**/epic.md` discovers it (`0001-F6`
@@ -204,10 +257,10 @@ decision 0001).
 ## Status
 
 `blocked`: the owner decided the epic waits on what it exposes. It unblocks
-when the rule text and `expected` rows of "What this epic waits on" are
-delivered. The next step does not wait for that: the owner confirms or
-changes the candidate cut, and each confirmed Feature then begins with its
-own specification.
+when the rows of "What this epic waits on" that block the Must criteria are
+delivered: the rule text, `expected`, the rule list and the manifest. The
+next step does not wait for that: the owner confirms or changes the candidate
+cut, and each confirmed Feature then begins with its own specification.
 
 ## Out of this epic
 
