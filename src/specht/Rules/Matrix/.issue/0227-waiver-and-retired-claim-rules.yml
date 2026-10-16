@@ -2,7 +2,7 @@ id: "0227"
 type: task
 title: Report an unsigned waiver and a retired claim still carried, off unless raised
 
-status: ready-for-architecture
+status: blocked
 
 risk: 3
 
@@ -47,12 +47,17 @@ summary: |
   reader; SPEC034 reads § 12's Reviewer and Status by the manifest's
   markers (C-5); and the relock moves the lock's digest for 0.2.0.
 
+  Blocked on 0001-F5 OQ-24: no manifest role names § 12's reviewer and
+  status columns, which B-018 reads.
+
 acceptance_criteria:
   - "B-018 — waived row without a signed-off approver and date, SPEC034"
   - "B-019 — withdrawn or superseded claim still carried, SPEC035"
   - "B-020 — neither reports unless the manifest's rules raises it"
   - "`0001-F7` B-115 — SPEC034 and SPEC035 enter 0.2.0's vocabulary with this item, with their rule pages (`0001-F3` B-031) and a relock (`0001-F7` decision 0014); B-014 holds"
   - "`0001-F5` B-061 — the 0.2.0 default manifest's rules lists SPEC034 and SPEC035 off; the @B-061 scenarios bind here"
+  - "`0001-F5` B-062 — neither rule, not raised, is run or counted; the @B-062 scenario binds here"
+  - "B-018 reads § 12's reviewer and status columns as `0001-F5` OQ-24's answer settles"
   - "No marker literal in either rule (C-5); one resolver, extended for claim tags, not a second (C-3)."
   - "§ 9 carries a row naming a test for each id above."
 
@@ -86,6 +91,18 @@ decisions:
     done once for both. Value omitted, inheriting 0224's. The ADR-0014
     stages (0164, 0166) are not prerequisites; 0164 reshapes the rule
     interface 0223 changes and must not disagree with it.
+  - |
+    2026-10-15, spec-author: blocked on 0001-F5 OQ-24. Spec-reviewer's
+    round-2 question (c) found that B-018 reads § 12's Reviewer column and
+    no manifest role names it; `tables` holds `matrix` alone. The owner
+    answered "I guess it should be added to the manifest?", a leaning
+    recorded as an open question with spec-author's recommendation,
+    `tables.signOff` read by position, not as a claim. Under that answer
+    an 0001-F5 item under 0010 builds the key and relocks 0.2.0, and this
+    item gains it in depends_on; the key needs nothing of this item, so no
+    cycle forms. Whichever option the owner chooses, this item reads the
+    column that way; it rejects none of them. Should the wait run long,
+    SPEC035 (B-019) may be split out, since it does not read § 12.
 
 out_of_scope:
   - "The off level itself: 0223 (0001-F5 B-061)."

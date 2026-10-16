@@ -36,6 +36,8 @@ internal partial class SpechtBuild : NukeBuild
 
     private AbsolutePath CoverageDirectory => ArtifactsDirectory / "coverage";
 
+    private AbsolutePath CoverageSettings => RootDirectory / "test" / "codecoverage.config";
+
     // B-019, C-3: the Markdown formatter runs at the exact version package.json pins, never a version fetched as latest.
     private string PrettierVersion
     {
@@ -136,7 +138,8 @@ internal partial class SpechtBuild : NukeBuild
             var coverage = TierCoverageDirectory("Acceptance");
             DotNet(
                 $"test --project {RootDirectory / "test" / "acceptance" / "acceptance.csproj"} --configuration {Configuration} --no-build " +
-                $"--max-parallel-test-modules 1 --coverage --coverage-output-format cobertura --results-directory {coverage}",
+                $"--max-parallel-test-modules 1 --coverage --coverage-output-format cobertura --coverage-settings {CoverageSettings} " +
+                $"--results-directory {coverage}",
                 workingDirectory: RootDirectory);
         });
 
@@ -218,7 +221,7 @@ internal partial class SpechtBuild : NukeBuild
         {
             DotNet(
                 $"test --project {project.FilePath} --configuration {Configuration} --no-build --filter-trait \"Tier={tier}\" " +
-                $"--coverage --coverage-output-format cobertura --results-directory {coverage}",
+                $"--coverage --coverage-output-format cobertura --coverage-settings {CoverageSettings} --results-directory {coverage}",
                 workingDirectory: RootDirectory);
         }
     }

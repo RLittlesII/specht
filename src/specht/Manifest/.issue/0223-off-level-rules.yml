@@ -16,6 +16,7 @@ spec: src/specht/Manifest/.spec/README.md
 
 claims:
   - B-061
+  - B-062
 
 created: "2026-10-15"
 updated: "2026-10-15"
@@ -36,6 +37,11 @@ summary: |
   on this item for 0001-F12 B-020 and binds the @B-061 scenarios, which
   observe the waiver rule. Until then B-061's § 9 row stays Partial.
 
+  Such a rule, not raised, is not run and is not counted among the rules
+  evaluated (B-062, decision 0014), the same selection B-011 makes for a
+  manifest's `off`, so 0001-F7 B-014 reads as it does under B-011. The
+  @B-062 scenario observes the waiver rule too and binds in 0227.
+
   Risk 3: no rule declares a level of its own today - a violation carries
   its severity, and SpecSeverity has no off - so the rule contract and
   the runner's selection change beside the one 0014 built for a
@@ -45,6 +51,7 @@ summary: |
 
 acceptance_criteria:
   - "B-061 — a rule whose own level is off reports only when raised; the 0.2.0 default's SPEC034 and SPEC035 entries are 0227's"
+  - "B-062 — such a rule, not raised, is not run and the count of rules evaluated excludes it, as under B-011"
   - "B-044 holds for such a rule: no level named keeps its own, off."
   - "§ 9 carries a row naming a test for each id above."
 
@@ -68,8 +75,17 @@ decisions:
     inside 0227, which leaves no 0001-F5 item for a 0001-F5 mechanism; and
     shipping SPEC034 and SPEC035 at warning until the off level lands,
     which 0001-F12 B-020 forbids.
+  - |
+    2026-10-15, spec-author: gains B-062 on the owner's answer to
+    spec-reviewer's round-2 question (a), "If the rule is off, why would
+    we waste cycles evaluating it?" (decision 0014). B-061 did not say
+    whether such a rule runs or counts. The runner's selection for a
+    manifest's `off` (B-011, item 0014) is extended to the rule's own level,
+    not duplicated beside it. Rejected: running the rule and dropping its
+    violations, which the owner ruled out; counting it unrun, which
+    B-011 rules out for `off`.
 
 out_of_scope:
-  - "The 0.2.0 default manifest listing SPEC034 and SPEC035 off, and binding the @B-061 scenarios: 0227 (0001-F12)."
+  - "The 0.2.0 default manifest listing SPEC034 and SPEC035 off, and binding the @B-061 and @B-062 scenarios: 0227 (0001-F12)."
   - "SPEC034 and SPEC035 themselves, and adding them to the 0.2.0 vocabulary: 0227 (0001-F12 B-018 to B-020; 0001-F7 B-115)."
   - "Everything in § 5 of the spec."

@@ -75,6 +75,15 @@ From brief § 2, § 5 and § 6, as of 2026-10-07:
   with the tool's exit code. It lives in a subfolder of this repository, runs
   on Linux, macOS and Windows, and shares the tool's `v<version>` tag (owner,
   2026-10-10; epic `0142`).
+- **A review surface is a read-only answer on the command line**, over the
+  tree or over documents the caller produced: the tree's facts, the delta
+  between two runs, a citation resolved to its row, an approval gate on open
+  questions and a report scoped to named files. The delta takes two
+  documents, never a base, a diff or a git call (`0055-F2` C-7); no baseline
+  file of accepted violations joins per-rule levels and `--strict`; and
+  whether an item's claims and a commit message's citations are within the
+  tool's scope is the owner's open question, not settled (owner, 2026-10-15;
+  epic `0228`).
 - **Every path in every output is repository-relative.** An absolute path
   anywhere is a defect.
 - **The tool never writes into a consumer's tree** except through `init`,
