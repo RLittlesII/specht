@@ -2,7 +2,7 @@ id: "0037"
 type: task
 title: Say what frontmatter, section and table rules expected
 
-status: in-progress
+status: done
 
 risk: 3
 
@@ -22,7 +22,7 @@ claims:
 
 created: "2026-10-08"
 updated: "2026-10-15"
-closed: null
+closed: "2026-10-15"
 
 summary: |
   `expected` as structured data (C-2) for the document-structure rules:
