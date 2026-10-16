@@ -4,7 +4,7 @@ Feature: The schema folder
   So that the tool reads and writes them where the manifest says, and a manifest that names no folder changes nothing
 
   Background:
-    Given a repository root holding a manifest pinned to the schema version that first knows a schema folder
+    Given a repository root holding a manifest pinned to schema version 0.2.0
     And the manifest names the Feature and item frontmatter schema files by their default names
 
   @B-001
@@ -27,7 +27,7 @@ Feature: The schema folder
 
   @B-003
   Scenario: The shipped manifest names no folder
-    When the shipped manifest of the version that first knows a schema folder is read
+    When the shipped manifest of schema version 0.2.0 is read
     Then it names no schema folder
 
   @B-004
@@ -134,7 +134,7 @@ Feature: The schema folder
 
   @B-013
   Scenario: An older pin rejects the folder key
-    Given the manifest pins the shipped schema version before the one that first knows a schema folder
+    Given the manifest pins schema version 0.1.0
     And the manifest names the schema folder "schemas/frontmatter"
     When the check runs
     Then the manifest is rejected as naming a key that version does not know
@@ -223,3 +223,11 @@ Feature: The schema folder
     When init runs against the root with templates
     Then the four templates are written under the configuration folder's templates folder
     And nothing is written under "schemas/frontmatter"
+
+  @B-022
+  Scenario: Init copies a shipped schema unchanged into the named folder
+    Given the manifest names the schema folder "schemas/frontmatter"
+    And the manifest records no upstream schema source
+    When init runs against the root with schemas
+    Then each frontmatter schema written under "schemas/frontmatter" is byte for byte the tool's embedded copy of the pinned version
+    And its identifier is the shipped one, naming the version and the file and not the folder

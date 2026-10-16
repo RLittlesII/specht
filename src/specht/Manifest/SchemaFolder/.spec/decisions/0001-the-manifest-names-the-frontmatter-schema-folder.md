@@ -152,3 +152,7 @@ Each cost is spec-author's reading.
 ## Reversal
 
 None.
+
+## Amendment 2026-10-15
+
+OQ-1 to OQ-4 are answered by the repository owner in [decision 0002](0002-the-key-is-schemafolder-first-known-to-schema-0-2-0-and-the-siblings-move-at-approval.md): the key is `schemaFolder`, schema `0.2.0` first defines it, the `$id` stays the shipped one, and the sibling amendments, with the dependency edges that "Why `depends_on` is empty" defers, land in the approval pull request. The body above is unedited.
