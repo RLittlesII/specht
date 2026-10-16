@@ -211,7 +211,11 @@ public sealed class SpecReportDocumentExpectedUnitTests
     {
         // Given
         SpecModel model = new SpecModelFixture()
-            .WithManifest(new JsonObject { ["sections"] = new JsonArray("Goal", "Needs", "Design") })
+            .WithManifest(new JsonObject
+            {
+                ["sections"] = new JsonArray("Goal", "Needs", "Design"),
+                ["roles"] = new JsonObject { ["claims"] = "Goal", ["matrix"] = "Needs", ["signOff"] = "Design" },
+            })
             .WithFeatures(Feature(text));
 
         // When
