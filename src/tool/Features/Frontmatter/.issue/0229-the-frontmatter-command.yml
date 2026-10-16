@@ -1,0 +1,118 @@
+id: "0229"
+type: feature
+title: The frontmatter command
+
+status: ready-for-architecture
+
+value: 3
+risk: 3
+
+parent: "0001"
+children: ["0230", "0231"]
+
+depends_on: []
+spikes: []
+
+spec: src/tool/Features/Frontmatter/.spec/README.md
+
+claims:
+  - B-001
+  - B-002
+  - B-003
+  - B-004
+  - B-005
+  - B-006
+  - B-007
+  - B-008
+  - B-009
+  - B-010
+  - B-011
+  - B-012
+  - B-013
+  - B-014
+  - B-015
+  - B-016
+  - B-017
+  - B-018
+  - B-019
+  - B-020
+  - B-021
+  - B-022
+  - B-023
+  - B-024
+  - B-025
+  - B-026
+  - B-027
+
+created: "2026-10-15"
+updated: "2026-10-15"
+closed: null
+
+summary: |
+  As the maintainer writing an issue, I want the frontmatter of an issue
+  body checked against the schema for its kind before I post it, and as
+  the CI step that relays an issue, I want the check's diagnostic lines
+  and exit codes for that one document, so that frontmatter that is not
+  in the tree gets the verdict the check would give it (§ 2 rows 1 and 3).
+
+  Risk 3: the command and the check must reach one verdict on one
+  frontmatter through one reader, one schema selection and one rule
+  (C-2), which means an engine seam the check also uses; the engine's
+  frontmatter rule runs over a whole model today and must also judge one
+  document; standard input is read whole; and the usage failure (B-026)
+  must bypass the command-line library's own validation so its -1 never
+  surfaces.
+
+  The first child is 0230, the engine seam that checks one document's
+  frontmatter, named by a kind, against the schemas the check selects for
+  a root (B-003 to B-009, B-013, B-025). The second is 0231, the command,
+  its documentation and the acceptance scenarios for every claim of this
+  Feature (B-001, B-002, B-010 to B-012, B-014 to B-024, B-026, B-027),
+  which waits on 0230.
+
+acceptance_criteria:
+  - "B-001 — a path is checked (0231)"
+  - "B-002 — --stdin is checked (0231)"
+  - "B-003 — rule id by kind (0230)"
+  - "B-004 — failure at the key's line (0230)"
+  - "B-005 — no frontmatter, SPEC001 at line 1 (0230)"
+  - "B-006 — the schema the check selects for the root (0230)"
+  - "B-007 — a rule that needs the tree does not run (0230)"
+  - "B-008 — the root's own specifications are not checked (0230)"
+  - "B-009 — a document in the tree gets the check's verdict (0230)"
+  - "B-010 — the check's diagnostic line (0231)"
+  - "B-011 — named by the path as typed (0231)"
+  - "B-012 — named <stdin> (0231)"
+  - "B-013 — error and warning counts (0230)"
+  - "B-014 — an error exits 1 (0231)"
+  - "B-015 — clean exits 0 (0231)"
+  - "B-016 — root not a directory, exit 2 (0231)"
+  - "B-017 — no manifest, exit 2 (0231)"
+  - "B-018 — manifest does not parse, exit 3 (0231)"
+  - "B-019 — unshipped pin, exit 3 (0231)"
+  - "B-020 — unknown kind, exit 4 (0231)"
+  - "B-021 — path names no file, exit 4 (0231)"
+  - "B-022 — tool messages on stderr (0231)"
+  - "B-023 — writes nothing (0231)"
+  - "B-024 — no derived absolute path (0231)"
+  - "B-025 — same input, same verdict (0230)"
+  - "B-026 — usage failure, exit 2 (0231)"
+  - "B-027 — first failure in order (0231)"
+  - "§ 9 carries a row naming a test for each id above."
+
+decisions:
+  - |
+    2026-10-15, spec-author: value 3 follows the specification's
+    priority: med, as item 0224 took value 3 from priority: med, item
+    0082 value 3, and item 0010 value 4 from priority: high (commit
+    621f3e08). Risk 3 on the basis in the summary.
+  - |
+    2026-10-15, spec-author: 0230, the engine seam, is cut first because
+    C-5 forbids frontmatter reading or schema evaluation in the command
+    and C-2 forbids a second reader, so the engine must expose checking
+    one document before the command exists. Rejected: one item for both,
+    which would put the engine change and the command, two projects, two
+    test tiers and the documentation, in one pull request.
+
+out_of_scope:
+  - "Everything in § 5 of the spec."

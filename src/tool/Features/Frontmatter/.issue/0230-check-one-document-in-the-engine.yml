@@ -1,0 +1,88 @@
+id: "0230"
+type: task
+title: Check one document's frontmatter in the engine
+
+status: ready-for-architecture
+
+risk: 3
+
+parent: "0229"
+children: []
+
+depends_on: []
+spikes: []
+
+spec: src/tool/Features/Frontmatter/.spec/README.md
+
+claims:
+  - B-003
+  - B-004
+  - B-005
+  - B-006
+  - B-007
+  - B-008
+  - B-009
+  - B-013
+  - B-025
+
+created: "2026-10-15"
+updated: "2026-10-15"
+closed: null
+
+summary: |
+  The engine (src/specht) gains a way to check one document's
+  frontmatter, named by a kind, against the schemas the check selects for
+  a root, through the same reader, loader and frontmatter rule the check
+  uses (C-2), evaluating that rule alone (C-1), honouring the manifest's
+  rule levels as the check does - off drops, warning regrades - and
+  returning the check's report shape with the error and warning counts
+  (B-013). The seam judges the kind apart from the document: a kind parse
+  the command calls before it reads the path, which names an unknown kind
+  as typed and the three kinds (B-020's message), and the entry point
+  that checks takes the parsed kind, so an unknown kind is reported ahead
+  of a missing document, root or manifest (B-027's order, which 0231
+  delivers); the root, manifest and unshipped-pin failures are the
+  check's own (decision 0001). The summary line the command prints
+  (B-013) is the report document's own count line.
+
+  Risk 3: the frontmatter rule's kind mapping becomes the one home for
+  both the check and the command, so the golden baseline report must not
+  move (0001-F1 C-9); the runner gains a second entry point beside Run.
+
+  Tests at unit tier only here; the @B scenarios for these claims bind in
+  0231, which has the command, so each § 9 row stays Partial until then,
+  as 0225's did.
+
+acceptance_criteria:
+  - "B-003 — rule id by kind: SPEC002 feature, SPEC003 task, SPEC004 epic"
+  - "B-004 — failure at the key's line"
+  - "B-005 — no frontmatter, SPEC001 at line 1"
+  - "B-006 — the schema of the version and source the check selects for the root"
+  - "B-007 — a rule that needs the tree does not run"
+  - "B-008 — the root's own specifications are not checked"
+  - "B-009 — a document in the tree gets the check's verdict"
+  - "B-013 — error and warning counts, as 0001-F3 B-005 counts them"
+  - "B-025 — same document, kind and root, same verdict"
+  - "The kind is parsed apart from the document; an unknown kind fails before any file is read (B-027's order)."
+  - "Golden baseline reports unchanged (0001-F1 C-9)."
+  - "No second frontmatter reader, schema loader or rule (0001-F8 C-2); the frontmatter rule alone is evaluated (C-1)."
+  - "§ 9 carries a row naming a test for each id above."
+
+decisions:
+  - |
+    2026-10-15, spec-author: cut alone, before the command, because C-5
+    forbids frontmatter reading or schema evaluation in the command and
+    C-2 forbids a second reader, so the engine must expose checking one
+    document before the command exists. Rejected: the kind judged in the
+    command, which would copy the kind list out of the engine (C-2, C-5).
+    The kind parse is the engine's so the kind list has one home; the
+    command only calls it first.
+  - |
+    2026-10-15, spec-author: value omitted, inheriting 0229's. No
+    depends_on: nothing open gates an engine entry point, and the
+    ADR-0014 stages are not prerequisites, since this adds an entry point
+    on the existing runner and migrates nothing.
+
+out_of_scope:
+  - "The command, its options, standard input, the stdout and stderr lines and the exit codes: 0231."
+  - "Everything in § 5 of the spec."
