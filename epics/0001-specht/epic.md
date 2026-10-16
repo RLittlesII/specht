@@ -21,9 +21,10 @@ children:
     "0001-F11",
     "0001-F12",
     "0001-F13",
+    "0001-F14",
   ]
 created: "2026-10-07"
-updated: "2026-10-14"
+updated: "2026-10-15"
 github_issue: null
 ---
 
@@ -60,21 +61,22 @@ any of them has the same read-only oracle and the same generation contract.
 Decomposed by capability dimension, not by brief § 8 step. A step is a pull
 request; a Feature is a thing the tool does, with its own invariant.
 
-| Feature    | Name                            | Specification                                   | brief § 8 step |
-| ---------- | ------------------------------- | ----------------------------------------------- | -------------- |
-| `0001-F1`  | The engine, extracted unchanged | `src/specht/.spec/README.md`                    | 2              |
-| `0001-F2`  | The check command               | `src/tool/Features/Check/.spec/README.md`       | 3              |
-| `0001-F3`  | The report contract             | `src/specht/Report/.spec/README.md`             | 3              |
-| `0001-F4`  | `init`                          | `src/tool/Features/Init/.spec/README.md`        | 3              |
-| `0001-F5`  | The manifest carries the roles  | `src/specht/Manifest/.spec/README.md`           | 5              |
-| `0001-F6`  | Discovery                       | `src/specht/Discovery/.spec/README.md`          | 5              |
-| `0001-F7`  | Schema versioning               | `src/tool/.spec/README.md`                      | 6              |
-| `0001-F8`  | The frontmatter command         | `src/tool/Features/Frontmatter/.spec/README.md` | after 6        |
-| `0001-F9`  | The manifest command            | `src/tool/Features/Manifest/.spec/README.md`    | after 6        |
-| `0001-F10` | The rules command               | `src/tool/Features/Rules/.spec/README.md`       | after 6        |
-| `0001-F11` | Setting a rule's level          | `src/tool/Features/Rules/Set/.spec/README.md`   | after 6        |
-| `0001-F12` | Matrix resolution               | `src/specht/Rules/Matrix/.spec/README.md`       | after 6        |
-| `0001-F13` | The trace command               | `src/tool/Features/Trace/.spec/README.md`       | after 6        |
+| Feature    | Name                            | Specification                                      | brief § 8 step |
+| ---------- | ------------------------------- | -------------------------------------------------- | -------------- |
+| `0001-F1`  | The engine, extracted unchanged | `src/specht/.spec/README.md`                       | 2              |
+| `0001-F2`  | The check command               | `src/tool/Features/Check/.spec/README.md`          | 3              |
+| `0001-F3`  | The report contract             | `src/specht/Report/.spec/README.md`                | 3              |
+| `0001-F4`  | `init`                          | `src/tool/Features/Init/.spec/README.md`           | 3              |
+| `0001-F5`  | The manifest carries the roles  | `src/specht/Manifest/.spec/README.md`              | 5              |
+| `0001-F6`  | Discovery                       | `src/specht/Discovery/.spec/README.md`             | 5              |
+| `0001-F7`  | Schema versioning               | `src/tool/.spec/README.md`                         | 6              |
+| `0001-F8`  | The frontmatter command         | `src/tool/Features/Frontmatter/.spec/README.md`    | after 6        |
+| `0001-F9`  | The manifest command            | `src/tool/Features/Manifest/.spec/README.md`       | after 6        |
+| `0001-F10` | The rules command               | `src/tool/Features/Rules/.spec/README.md`          | after 6        |
+| `0001-F11` | Setting a rule's level          | `src/tool/Features/Rules/Set/.spec/README.md`      | after 6        |
+| `0001-F12` | Matrix resolution               | `src/specht/Rules/Matrix/.spec/README.md`          | after 6        |
+| `0001-F13` | The trace command               | `src/tool/Features/Trace/.spec/README.md`          | after 6        |
+| `0001-F14` | The schema folder               | `src/specht/Manifest/SchemaFolder/.spec/README.md` | after 6        |
 
 The initial draft bundled the command, `init`, the manifest roles, discovery and the baseline in
 one Feature. Each of those has a different invariant - the command never
@@ -99,6 +101,12 @@ each traceability row against the tree. Each has its own invariant: matrix
 resolution reads scenarios and test files as text and runs nothing, with its
 rules in schema `0.2.0`; the trace command lists every claim's resolution
 through that one resolver, judges nothing and writes nothing.
+
+`0001-F14` joined on 2026-10-15 from the owner's need to place the frontmatter
+schemas where a repository's tree wants them, named in the manifest rather than
+fixed under the configuration folder. Its invariant: the engine and the tool
+read and write the frontmatter schemas where the manifest says, never where a
+literal says, and the default manifest changes no verdict.
 
 Dependencies are declared in each Feature's frontmatter and checked by the tool
 (`SPEC050`-`SPEC052`). The order they imply is brief § 8's.
