@@ -2,7 +2,7 @@ id: "0037"
 type: task
 title: Say what frontmatter, section and table rules expected
 
-status: ready-for-architecture
+status: in-progress
 
 risk: 3
 
@@ -21,7 +21,7 @@ claims:
   - B-026
 
 created: "2026-10-08"
-updated: "2026-10-08"
+updated: "2026-10-15"
 closed: null
 
 summary: |
