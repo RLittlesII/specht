@@ -97,8 +97,7 @@ public sealed class ReportSteps
         Tree.WriteRaw("epics/0001-epic/F1-feature/spec.md", "# Specification: F1\n\n" + string.Join('\n', SpecTree.Sections));
 
     [Given("the frontmatter schema files are deleted from the root")]
-    public void GivenTheFrontmatterSchemaFilesAreDeletedFromTheRoot() =>
-        Directory.Delete(Path.Combine(Tree.Root, SpecTree.FrontmatterSchemaFolder), recursive: true);
+    public void GivenTheFrontmatterSchemaFilesAreDeletedFromTheRoot() => Tree.DeleteFrontmatterSchemas();
 
     [Given("the root is a deeply nested directory on this machine")]
     public void GivenTheRootIsADeeplyNestedDirectoryOnThisMachine() =>
