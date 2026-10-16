@@ -8,7 +8,7 @@ priority: med
 milestone: null
 children: []
 created: "2026-10-10"
-updated: "2026-10-10"
+updated: "2026-10-15"
 github_issue: null
 ---
 
@@ -67,7 +67,7 @@ one.
 | R3  | By default only violations in files the pull request changed are annotated; an input widens the annotations to every violation                                                                 | The default is `0055-F2` decision 0002's scope                         |
 | R4  | The tool is installed from the consumer's local tool manifest with `dotnet tool restore`. The action pins no tool version, and the consumer supplies the feed authentication                   | The manifest is the one place a consumer pins the tool (`0055-F7` C-2) |
 | R5  | The action exits with the tool's exit code: `0`, `1`, `2`, `3` or `4`. Annotating and summarising never fail the step. A `strict` input maps to `--strict`                                     | The exit codes are AGENTS.md § CLI; `--strict` is `0001-F2` B-004      |
-| R6  | The action lives in a subfolder of this repository and is used as `uses: RLittlesII/specht/<folder>@<ref>`                                                                                     | The folder's name is OQ-1                                              |
+| R6  | The action lives in a subfolder of this repository and is used as `uses: RLittlesII/specht/<folder>@<ref>`                                                                                     | The folder's name is OQ-1; the repository rule is ADR-0015             |
 | R7  | The action runs on Linux, macOS and Windows runners                                                                                                                                            | Rules out a form that needs bash alone (OQ-3)                          |
 | R8  | The action is versioned with the tool's release: one `v<version>` tag covers the tool and the action                                                                                           | The tag is `0055-F5` B-007's; the release is `0055-F6`                 |
 
@@ -104,12 +104,12 @@ What the owner is asked to confirm:
 None of these stops a Feature specification being written. Each stops a
 consumer using the action.
 
-| Waits on                                                                                                                               | Recorded in                      | Blocks                                            |
-| -------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------- | ------------------------------------------------- |
-| A first release. The repository has no tag, so there is no `<ref>` a consumer can pin                                                  | `0055-F6`; `0055-F5` B-007       | R6, R8                                            |
-| The package id. `src/tool/tool.csproj` sets `PackageId` to `tool`; `README.md`, `0055-F6` and `0055-F7` name the package `specht.tool` | `0055-F6` B-003; `0055-F7` B-001 | R4: a consumer's manifest needs the id that ships |
-| The feed token scope a consumer's CI supplies                                                                                          | `0055-F7` B-005                  | R4                                                |
-| Access to the action from another repository while this one is private                                                                 | Nowhere yet (OQ-10)              | R6                                                |
+| Waits on                                                                                                                                        | Recorded in                      | Blocks              |
+| ----------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------- | ------------------- |
+| A first release. Resolved 2026-10-15: tags `v0.1.90` and `v0.1.131` exist, so a consumer has a `<ref>` to pin                                   | `0055-F6`; `0055-F5` B-007       | Nothing; was R6, R8 |
+| The package id. Resolved 2026-10-15: `src/tool/tool.csproj` sets `PackageId` to `specht.tool`, the id `README.md`, `0055-F6` and `0055-F7` name | `0055-F6` B-003; `0055-F7` B-001 | Nothing; was R4     |
+| The feed token scope a consumer's CI supplies                                                                                                   | `0055-F7` B-005                  | R4                  |
+| Access to the action from another repository while this one is private                                                                          | Nowhere yet (OQ-10)              | R6                  |
 
 ## Constraints
 
