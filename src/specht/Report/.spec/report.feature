@@ -90,21 +90,36 @@ Feature: The report contract
   Scenario: A frontmatter violation says what the schema requires
     Given the root holds a specification whose frontmatter priority is "urgent"
     When the check runs with JSON output
-    Then the violation's expectation names the schema file
-    And the key at fault
-    And the values the schema allows for it
+    Then the violation's expectation names the Feature schema file by its path under the configuration folder
+    And the key "priority"
+    And the failed constraint "enum" with the values the schema allows for it
+
+  @B-009
+  Scenario: A frontmatter violation of another kind says that constraint
+    Given the root holds a specification whose frontmatter value is "high"
+    When the check runs with JSON output
+    Then the violation's expectation names the key "value"
+    And the failed constraint "type" with the type the schema allows for it
+
+  @B-009
+  Scenario: A missing frontmatter key says the required keys
+    Given the root holds a specification whose frontmatter has no priority
+    When the check runs with JSON output
+    Then the violation's expectation names no key
+    And the failed constraint "required" with the keys the schema requires
 
   @B-010
   Scenario: A section violation says the section order
     Given the root holds a specification missing its constraints section
     When the check runs with JSON output
-    Then the violation's expectation carries the ordered section titles of the pinned schema version
+    Then the violation's expectation carries the section titles the manifest contracts, in order
 
   @B-011
   Scenario: A table violation says the headers
     Given the root holds a specification whose traceability table has a column named "Tests"
     When the check runs with JSON output
-    Then the violation's expectation carries the ordered header list for that section
+    Then the violation's expectation names the traceability section
+    And carries the ordered header list the manifest gives that section
 
   @B-012
   Scenario: An identity violation says the identity implied
@@ -142,8 +157,15 @@ Feature: The report contract
   Scenario: A missing frontmatter says what the schema requires
     Given the root holds a specification with no frontmatter
     When the check runs with JSON output
-    Then the violation's expectation names the Feature schema file
-    And the keys that schema requires
+    Then the violation's expectation names the Feature schema file by its path under the configuration folder
+    And the keys that schema requires, in the schema's order
+
+  @B-026
+  Scenario: A missing frontmatter names the schema file when the schemas are the tool's own
+    Given the frontmatter schema files are deleted from the root
+    And the root holds a specification with no frontmatter
+    When the check runs with JSON output
+    Then the violation's expectation names the Feature schema file by the path it has under the configuration folder
 
   @B-017
   Scenario: A dependency violation says the missing edge or the cycle

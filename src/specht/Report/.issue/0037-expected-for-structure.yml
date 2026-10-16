@@ -27,8 +27,9 @@ closed: null
 summary: |
   `expected` as structured data (C-2) for the document-structure rules:
   SPEC001-SPEC004 name the schema file and the constraint at fault, SPEC010
-  the section order, SPEC013 the header list. Each shape is added to the
-  report schema, by addition only (C-4).
+  the section order, SPEC013 the header list. The report schema keeps
+  `expected` an open object, so each shape is an addition (C-2, C-4;
+  decision 0004).
 
 acceptance_criteria:
   - "B-026 — SPEC001: schema file for the kind, its required keys"
