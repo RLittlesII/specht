@@ -110,7 +110,7 @@ Feature: The report contract
 
   @B-009
   Scenario: A failure inside a condition the schema only tests names no constraint
-    Given the root holds a specification whose frontmatter priority is "urgent" and whose scored_by is empty
+    Given the root holds a specification whose frontmatter priority is "urgent" and whose scored_by is null, the template's value
     When the check runs with JSON output
     Then the violation's expectation for the key "scored_by" names no failed constraint
 
