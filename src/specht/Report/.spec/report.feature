@@ -108,6 +108,12 @@ Feature: The report contract
     Then the violation's expectation names no key
     And the failed constraint "required" with the keys the schema requires
 
+  @B-009
+  Scenario: A failure inside a condition the schema only tests names no constraint
+    Given the root holds a specification whose frontmatter priority is "urgent" and whose scored_by is empty
+    When the check runs with JSON output
+    Then the violation's expectation for the key "scored_by" names no failed constraint
+
   @B-010
   Scenario: A section violation says the section order
     Given the root holds a specification missing its constraints section
