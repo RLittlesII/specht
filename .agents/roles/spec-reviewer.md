@@ -41,6 +41,9 @@ reports; it does not rewrite.
   claim has no mechanism, without naming the code read is the same finding;
   route it to `test-writer`. This is not asking for tests beyond the claims: the
   mechanism is how the claim is true.
+- A test diff that adds anything on the `Never add` list in
+  [`specht-conventions` § Testing](../skills/specht-conventions/references/testing.md),
+  read entry by entry against the diff; route it to `test-writer`.
 - A test class with no `Tier` trait, or a `*.Tests.cs` file under `src/` where
   no test project compiles it — both go green while testing nothing.
 - An absolute path in the tool's output, a report, a log line or a fixture.

@@ -62,7 +62,11 @@ Writes no production code and no claims.
    mechanism beneath it are two tiers, not the same behaviour twice. No test harness, base class, builder or
    shared helper until a second test actually needs it - a helper with one call
    site hides the test it was meant to clarify. Arrange inline where inline is
-   readable.
+   readable. Test data and theory rows come from where
+   [`specht-conventions` § Testing](../skills/specht-conventions/references/testing.md)
+   says, checked against its `Never add` list before the tests are handed on; a
+   private helper that builds data is not the exception this step allows,
+   however many tests call it.
 6. **A testability verdict in § 8.** One line per claim: its mechanism, and its
    unit test or the reason it has none. Then what the design makes hard to test
    — reported to `implementer`, not worked around with a weakened assertion or a
