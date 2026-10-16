@@ -1,0 +1,122 @@
+id: "0224"
+type: feature
+title: Matrix resolution
+
+status: ready-for-architecture
+
+value: 3
+risk: 4
+
+parent: "0001"
+children: ["0225", "0227"]
+
+depends_on: []
+spikes: []
+
+spec: src/specht/Rules/Matrix/.spec/README.md
+
+claims:
+  - B-001
+  - B-002
+  - B-003
+  - B-004
+  - B-005
+  - B-006
+  - B-007
+  - B-008
+  - B-009
+  - B-010
+  - B-011
+  - B-012
+  - B-013
+  - B-014
+  - B-015
+  - B-016
+  - B-017
+  - B-018
+  - B-019
+  - B-020
+  - B-021
+
+created: "2026-10-15"
+updated: "2026-10-15"
+closed: null
+
+summary: |
+  As the reviewer reading a § 9 row, I want its scenario, test names,
+  status and waiver held against the companion scenarios and the declared
+  test files, so that a row the tree does not bear out is reported at its
+  line.
+
+  Risk 4: six rules join schema 0.2.0, which is relocked when they land
+  (A-4; 0001-F7 decision 0014); one resolver serves these rules and the
+  trace command (C-3; 0001-F13 C-1), so its shape is fixed for two
+  Features; two rules may report one row, and B-006, B-012 and B-013 say
+  exactly when; this repository's own manifest declares `tests` and
+  `owners` in the pull request that delivers the rules, which fixes every
+  row they then report (decision 0002 call 3); and a 0.1.0 pin must give
+  a byte-identical report (B-021).
+
+  The first child is 0225, the resolver; the second is 0227, SPEC034
+  and SPEC035 (B-018 to B-020, after 0223 for the off level). The other
+  rule items follow, cut later under this item: SPEC032 (B-002, B-006,
+  B-007), SPEC022 (B-008 to B-010), SPEC023 (B-011, B-012), SPEC033
+  (B-013 to B-017) and the 0.1.0 guard (B-021). Each rule item adds its
+  own id to the 0.2.0 vocabulary with its rule page and a relock, so
+  0001-F7 B-014 holds at every commit (the owner, 2026-10-15); 0001-F6's
+  SPEC014 and SPEC024 and 0101-F9's SPEC015 enter with those Features'
+  items. The trace command's items (0001-F13) follow too, and depend on
+  0225.
+
+acceptance_criteria:
+  - "B-001 — § 9 columns by position (0225)"
+  - "B-002 — unresolved test name, SPEC032 (not cut)"
+  - "B-003 — test names are inline-code spans (0225)"
+  - "B-004 — dotted names, last segment declared (0225)"
+  - "B-005 — whole word, or only a declared form (0225)"
+  - "B-006 — Test cell with no inline code, SPEC032 (not cut)"
+  - "B-007 — no tests key, SPEC032 silent (not cut)"
+  - "B-008 — Scenario cell title matches none, SPEC022 (not cut)"
+  - "B-009 — titled scenario lacks the row's tag, SPEC022 (not cut)"
+  - "B-010 — title matching off, SPEC022 silent (not cut)"
+  - "B-011 — live claim no scenario carries, SPEC023 (not cut)"
+  - "B-012 — no SPEC033 beside SPEC023 (not cut)"
+  - "B-013 — covered row that does not resolve, SPEC033 (not cut)"
+  - "B-014 — partial row with nothing resolved, SPEC033 (not cut)"
+  - "B-015 — stale missing row, SPEC033 (not cut)"
+  - "B-016 — SPEC033 with no tests key (not cut)"
+  - "B-017 — unknown status marker, SPEC033 (not cut)"
+  - "B-018 — waiver without a signed-off approver and date, SPEC034 (0227)"
+  - "B-019 — retired claim still carried, SPEC035 (0227)"
+  - "B-020 — SPEC034 and SPEC035 off unless raised (0227, after 0223)"
+  - "B-021 — 0.1.0 pin, byte-identical report (not cut)"
+  - "§ 9 carries a row naming a test for each id above."
+
+decisions:
+  - |
+    2026-10-15, spec-author: value 3 follows the specification's
+    priority: med, as item 0082 took value 3 from its specification's
+    priority: med and item 0010 value 4 from priority: high (commit
+    621f3e08). The trace command's value of 4 is that Feature's own score
+    and is not borrowed; its items gate on 0225 and carry their rank to it
+    through the closure. Risk 4 on the basis in the summary.
+  - |
+    2026-10-15, spec-author: the resolver is cut first, alone, because the
+    trace command needs it and not the rules (0001-F13 C-1), and because
+    it adds no rule id: every rule item adds its own id to the 0.2.0
+    vocabulary, and the resolver does not. Rejected: the resolver inside
+    the SPEC032 item, which would hold the trace command behind that
+    rule.
+
+  - |
+    2026-10-15, spec-author, re-cut on the owner's ruling that each id
+    enters the 0.2.0 vocabulary with its own rule: 0226, which added the
+    nine ids ahead of their rules and left 0001-F7 B-014 false, was
+    withdrawn before it merged and its number is not reused. 0227 is cut
+    now because 0223 is split around it (0001-F5 B-061); the other rule
+    items are not forced and stay uncut. Each rule item cites 0001-F7
+    B-115 for the ids it adds, and the one that adds the last binds
+    @B-115.
+
+out_of_scope:
+  - "Everything in § 5 of the spec."

@@ -118,9 +118,10 @@ claims:
   - B-105
   - B-106
   - B-107
+  - B-115
 
 created: "2026-10-08"
-updated: "2026-10-13"
+updated: "2026-10-15"
 closed: null
 
 summary: |
@@ -274,6 +275,7 @@ acceptance_criteria:
   - "B-098 — a cut rule page gives the new version (0189)"
   - "B-099 — a cut file is otherwise byte-identical (0189)"
   - "B-100 — the cut touches nothing outside the new folders (0189)"
+  - "B-115 — each id enters 0.2.0's vocabulary with its rule: SPEC034, SPEC035 (0001-F12, 0227); SPEC022, SPEC023, SPEC032, SPEC033 (0001-F12, not cut); SPEC014, SPEC024 (0001-F6, no item); SPEC015 (0101-F9, draft)"
   - "§ 9 carries a row naming a test for each id above."
 
 decisions:
@@ -338,6 +340,19 @@ decisions:
     Feature, because the claims are this Feature's (decision 0009).
     Rejected: one item for both targets, which would hold the lock 0044
     and 0190 wait on behind the cut.
+  - |
+    2026-10-15, spec-author: `claims` gains B-115, the nine rule ids
+    schema 0.2.0 adds (decision 0014). 0226 was cut the same day to add
+    all nine ids, their rule pages and the relock ahead of the rules, and
+    was withdrawn before it merged on the owner's ruling that each id
+    enters the vocabulary with its own rule, since ids with no rule left
+    B-014 false; its number is not reused. B-115 has no item of this
+    Feature: each rule item adds its ids, rule pages and a relock (C-17;
+    decision 0014) and cites B-115, and the one that adds the last of the
+    nine binds @B-115. Rejected: 0226 re-scoped to the relock mechanics,
+    which the lock target (0188), the rule-page test (0001-F3 B-031) and
+    decision 0014's procedure already give every rule item. B-116 and
+    B-117 have no item.
 
 out_of_scope:
   - "Everything in § 5 of the spec."
