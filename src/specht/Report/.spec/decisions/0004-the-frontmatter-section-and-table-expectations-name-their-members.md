@@ -7,7 +7,7 @@ type: decision
 # Decision 0004: the frontmatter, section and table expectations name their members
 
 **Date:** 2026-10-15
-**Decided by:** the repository owner, answering a question on item `0037`: the four claims name their `expected` members, following B-036 and B-037. The member names and shapes are spec-author's reading; recorded by spec-author.
+**Decided by:** the repository owner, answering a question on item `0037`: the four claims name their `expected` members, following B-036 and B-037. The member names and shapes are spec-author's reading, except the resolution of `$ref`, which the owner decided on 2026-10-15 answering `spec-reviewer`'s block on item `0037`; recorded by spec-author.
 
 ## The call
 
@@ -25,12 +25,13 @@ B-009, B-010, B-011 and B-026 are amended in place, ids kept, and each names the
 - `key` is the top-level frontmatter key the violation identifies, the same as its identifier, and is absent where the failure is on the frontmatter as a whole, as a `required` failure is.
 - `constraints` is an object naming each assertion that failed at the violation's own place in the schema, with its value there. An assertion is a keyword of the JSON Schema 2020-12 Validation vocabulary - `type`, `enum`, `const`, `multipleOf`, `maximum`, `exclusiveMaximum`, `minimum`, `exclusiveMinimum`, `maxLength`, `minLength`, `pattern`, `maxItems`, `minItems`, `uniqueItems`, `maxContains`, `minContains`, `maxProperties`, `minProperties`, `required`, `dependentRequired` - or `format`.
   - An applicator - `properties`, `patternProperties`, `additionalProperties`, `items`, `prefixItems`, `contains`, `propertyNames`, `dependentSchemas`, `allOf`, `anyOf`, `oneOf`, `not`, `if`, `then`, `else`, `unevaluatedProperties`, `unevaluatedItems`, `$ref`, `$dynamicRef` - contributes no entry. Its failure is the failure of a subschema at another place, which is that place's violation.
+  - A place reached through a same-document reference (`$ref` to `#/...`, such as `#/$defs/...`) is the place the reference resolves to, and names its failed assertions as any other place does; a place reached through a reference to another document gives an empty `constraints`. This is the owner's call (2026-10-15), not spec-author's reading.
   - A `then` or `else` place, and an `allOf` member, is one the document must satisfy, so its assertions are named with that place's value: the Feature schema's `then` gives `required` `["synced_at"]`.
   - A place under an `if`, a `not`, or an `anyOf` or `oneOf` branch is one the document need not satisfy, so `constraints` is empty there: the template's `scored_by: null` fails the `if` that tests for a string, and that violation names no constraint.
   - `constraints` is also empty where no assertion failed at the place: the frontmatter as a whole failing through `properties` alone, or a key the schema does not declare, which fails the boolean `false` under `additionalProperties`.
 - `sections` is the ordered section titles the manifest's `sections` gives; `section` is the title of the section the violation identifies; `headers` is the ordered header list the manifest's `tables` gives that section. B-010, B-011 and B-026 each name the manifest's value and leave the pinned version's, where the manifest names none, to `0001-F5` B-019, as `0001-F7` B-074 and B-082 do.
 
-Which violations `FrontmatterSchemaRule` reports does not change: the engine keeps its baseline verdicts (`0001-F1` B-004). That it reports the failures inside a failed `if` at all - an invalid frontmatter carrying the template's `scored_by: null` and `github_issue: null` gains a `SPEC002` for each - is a bug for an item of its own, not this claim.
+Which violations `FrontmatterSchemaRule` reports does not change: the engine keeps its baseline verdicts (`0001-F1` B-004). That it reports the failures inside a failed `if` at all - an invalid frontmatter carrying the template's `scored_by: null` and `github_issue: null` gains a `SPEC002` for each - and the failures inside a passing `not`, is a bug for an item of its own, not this claim.
 
 `docs/schema/report.schema.json` is unchanged: `expected` stays an open object, as settled on 2026-10-14 for B-034 to B-042.
 
@@ -70,7 +71,7 @@ Which violations `FrontmatterSchemaRule` reports does not change: the engine kee
 - `properties` would carry the whole properties map, and the template's `scored_by: null` would read `type` `string`, a constraint the schema does not place on the document.
 - Cost of rejecting: a violation at an applicator, inside a condition or at an undeclared key carries an empty `constraints`, and the agent reads the message and the key. Taken.
 
-**Ending the reports from inside a failed `if` here.**
+**Ending the reports from inside a failed `if` or a passing `not` here.**
 
 - It changes which violations the rule reports and the baseline verdicts (`0001-F1` B-004), which a claim on the report's contents cannot do.
 - Cost of rejecting: those violations stay in the report, with an empty `constraints`, until the bug's item ends them. Taken.
@@ -84,6 +85,7 @@ Which violations `FrontmatterSchemaRule` reports does not change: the engine kee
 
 - `0001-F3` § 3 B-009, B-010, B-011, B-026; their `@B-009`, `@B-010`, `@B-011` and `@B-026` scenarios, four added under existing tags; § 10.
 - Revised 2026-10-15 before merge, answering `spec-reviewer`'s round-1 block (§ 12, expected-members delta): `constraints` names assertions only, B-010, B-011 and B-026 share one reading of the default, and the reasons for `schema` and against the report schema are corrected.
+- Amended 2026-10-15 by the owner's call on item `0037`'s review (§ 12, item `0037` row): a same-document `$ref` is resolved and a reference to another document gives an empty `constraints`; the failures inside a passing `not` join the failed-`if` bug.
 - Item `0037`: its summary line that each shape is added to the report schema does not hold.
 
 ## Reversal
