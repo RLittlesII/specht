@@ -1,0 +1,85 @@
+id: "0229"
+type: task
+title: Measure coverage with static instrumentation on every runner
+
+status: done
+
+risk: 1
+
+parent: "0068"
+children: []
+
+depends_on: []
+spikes: []
+
+spec: test/.spec/README.md
+
+claims: []
+
+created: "2026-10-15"
+updated: "2026-10-15"
+closed: "2026-10-15"
+
+summary: |
+  PR #208 failed the advisory codecov/patch status at 74.6% against 80%.
+  At commit 991c48f Codecov's line report for
+  `src/specht/Rules/FrontmatterSchemaRule.cs` lists 100 lines, 73% covered;
+  every local Release report lists 64 lines for that file, and their union
+  is 100% hit. The 36 extra lines are the sequence points the Debug build's
+  PDB has and the Release PDB lacks, mostly `{` and `}` lines inside
+  iterator methods, checked by reading both PDBs with
+  System.Reflection.Metadata.
+
+  Root cause: on the ubuntu-latest runner, linux-x64,
+  Microsoft.Testing.Extensions.CodeCoverage 18.12.0 instruments
+  dynamically as well as statically. It ships a linux-x64 native profiler
+  and none for osx-arm64, so macOS arm64 runs static only. Its default
+  `CollectFromChildProcesses` is True. The acceptance scenarios for the
+  `0001-F2` call sites, B-010 and B-011, in
+  `test/acceptance/Check/CheckSteps.CallSites.cs`, run `build.sh Specht`
+  and the pre-commit hook as child processes. The `Specht` target runs
+  `dotnet run --project src/tool --framework net10.0` with no
+  configuration, a Debug build of the engine. Dynamic instrumentation
+  measured that Debug child, so the acceptance report carried Debug
+  sequence points that only the self-check over a valid tree exercised.
+  Braces on paths it never takes reported zero hits, and Codecov's union of
+  the reports counted them as misses: line 75's `{` (valid frontmatter) is
+  hit, line 59's `{` (no frontmatter) and line 80's `{` (the failures loop)
+  are missed.
+
+  Fix: `test/codecoverage.config`, a Microsoft code coverage
+  `<Configuration><CodeCoverage>` file, sets
+  `EnableStaticManagedInstrumentation` True and
+  `EnableDynamicManagedInstrumentation` False. `.build/SpechtBuild.cs`
+  adds `CoverageSettings` and passes `--coverage-settings` with it in
+  `TestTier`'s and `AcceptanceTest`'s argument strings.
+
+acceptance_criteria:
+  - "Codecov's line report for a changed engine file lists the same lines as the local union of the tiers, with no zero-hit brace line."
+  - "The tier targets pass `--coverage-settings test/codecoverage.config`."
+  - "`.github/workflows/ci.yml` regenerated unchanged."
+  - "No .feature change needed: build configuration - the tiers still write one Cobertura report per test project into their own folders and CI uploads the same files; only the lines a report lists change, to the Release build's. Constraints preserved: 0055-F3 C-3, C-4, C-7"
+
+decisions:
+  - |
+    2026-10-15, implementer: every runner instruments statically and never
+    dynamically, the way macOS arm64 already did. Only the test projects'
+    `bin/` copies of the `src` assemblies are instrumented, the Release
+    build the tiers test, and the tool processes acceptance launches from
+    that copy are still measured.
+  - |
+    2026-10-15, implementer: rejected excluding `src/specht` from test
+    projects that do not exercise it. No such project loads it; the extra
+    lines came from the acceptance report, not another project.
+  - |
+    2026-10-15, implementer: rejected `CollectFromChildProcesses` False. It
+    would drop the tool processes acceptance launches, which are measured.
+  - |
+    2026-10-15, implementer: rejected building the `Specht` target in the
+    run's configuration. Dynamic instrumentation would still measure
+    whatever child process a scenario runs.
+
+out_of_scope:
+  - "The `Specht` target's `dotnet run` building Debug - not changed; a separate question."
+  - "The duplicate `merged/` reports Microsoft.Testing.Platform writes beside the per-module reports - not changed; harmless to Codecov's line union."
+  - "Everything else in § 5 of the spec."
