@@ -162,38 +162,70 @@ public sealed class FrontmatterSchemaRule : ISpecRule
 
     private static JsonElement? Place(JsonElement root, string evaluationPath)
     {
-        var place = root;
+        JsonElement? place = root;
         var argument = false;
 
-        foreach (var segment in evaluationPath.Split('/').Skip(1))
+        foreach (var name in Segments(evaluationPath))
         {
-            var name = segment.Replace("~1", "/", StringComparison.Ordinal).Replace("~0", "~", StringComparison.Ordinal);
-
             if (!argument && Conditions.Contains(name))
             {
                 return null;
             }
 
+            place = !argument && name == "$ref" ? Reference(root, place.Value) : Step(place.Value, name);
             argument = !argument && Named.Contains(name);
 
-            if (place.ValueKind == JsonValueKind.Object && place.TryGetProperty(name, out var member))
-            {
-                place = member;
-            }
-            else if (place.ValueKind == JsonValueKind.Array
-                && int.TryParse(name, NumberStyles.None, CultureInfo.InvariantCulture, out var index)
-                && index < place.GetArrayLength())
-            {
-                place = place[index];
-            }
-            else
+            if (place is null)
             {
                 return null;
             }
         }
 
-        return place.ValueKind == JsonValueKind.Object ? place : null;
+        return place is { ValueKind: JsonValueKind.Object } ? place : null;
     }
+
+    private static JsonElement? Reference(JsonElement root, JsonElement place)
+    {
+        if (place.ValueKind != JsonValueKind.Object
+            || !place.TryGetProperty("$ref", out var target)
+            || target.GetString() is not { } reference
+            || (reference != "#" && !reference.StartsWith("#/", StringComparison.Ordinal)))
+        {
+            return null;
+        }
+
+        JsonElement? resolved = root;
+
+        foreach (var name in Segments(Uri.UnescapeDataString(reference[1..])))
+        {
+            resolved = Step(resolved.Value, name);
+
+            if (resolved is null)
+            {
+                return null;
+            }
+        }
+
+        return resolved;
+    }
+
+    private static JsonElement? Step(JsonElement place, string name)
+    {
+        if (place.ValueKind == JsonValueKind.Object && place.TryGetProperty(name, out var member))
+        {
+            return member;
+        }
+
+        return place.ValueKind == JsonValueKind.Array
+            && int.TryParse(name, NumberStyles.None, CultureInfo.InvariantCulture, out var index)
+            && index < place.GetArrayLength()
+                ? place[index]
+                : null;
+    }
+
+    private static IEnumerable<string> Segments(string pointer) =>
+        pointer.Split('/').Skip(1).Select(static segment =>
+            segment.Replace("~1", "/", StringComparison.Ordinal).Replace("~0", "~", StringComparison.Ordinal));
 
     private static IEnumerable<EvaluationResults> Failures(EvaluationResults results)
     {
