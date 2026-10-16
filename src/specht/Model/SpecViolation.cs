@@ -1,3 +1,5 @@
+using System.Text.Json.Nodes;
+
 namespace Specht.Model;
 
 /// <summary>
@@ -18,6 +20,28 @@ public sealed record SpecViolation(
     string? Identifier,
     string Message)
 {
+    /// <summary>
+    /// What the rule expected, as the members its family names (<c>0001-F3</c> C-2), or <see langword="null"/> where no
+    /// claim names them yet. Not part of the diagnostic line.
+    /// </summary>
+    public JsonObject? Expected { get; init; }
+
+    /// <summary>Compares every field, <see cref="Expected"/> by its JSON value.</summary>
+    /// <param name="other">The violation to compare with.</param>
+    /// <returns>Whether the two are the same violation.</returns>
+    public bool Equals(SpecViolation? other) =>
+        other is not null
+        && string.Equals(RuleId, other.RuleId, StringComparison.Ordinal)
+        && Severity == other.Severity
+        && string.Equals(File, other.File, StringComparison.Ordinal)
+        && Line == other.Line
+        && string.Equals(Identifier, other.Identifier, StringComparison.Ordinal)
+        && string.Equals(Message, other.Message, StringComparison.Ordinal)
+        && JsonNode.DeepEquals(Expected, other.Expected);
+
+    /// <inheritdoc />
+    public override int GetHashCode() => HashCode.Combine(RuleId, Severity, File, Line, Identifier, Message);
+
     /// <summary>Renders the canonical MSBuild diagnostic line.</summary>
     public override string ToString()
     {
