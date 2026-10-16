@@ -1,0 +1,108 @@
+id: "0234"
+type: task
+title: Add the frontmatter command
+
+status: ready-for-architecture
+
+risk: 3
+
+parent: "0232"
+children: []
+
+depends_on: ["0233"]
+spikes: []
+
+spec: src/tool/Features/Frontmatter/.spec/README.md
+
+claims:
+  - B-001
+  - B-002
+  - B-010
+  - B-011
+  - B-012
+  - B-014
+  - B-015
+  - B-016
+  - B-017
+  - B-018
+  - B-019
+  - B-020
+  - B-021
+  - B-022
+  - B-023
+  - B-024
+  - B-026
+  - B-027
+
+created: "2026-10-15"
+updated: "2026-10-15"
+closed: null
+
+summary: |
+  The command `specht frontmatter --kind <kind> (<path> | --stdin)
+  [--root <dir>]` (A-1), a Spectre.Console.Cli command in
+  src/tool/Features/Frontmatter/, which, in B-027's order, parses; checks
+  the usage (B-026); parses the kind through the engine (B-020); reads
+  the document from the path, or from standard input whole (B-021,
+  B-002); calls the entry point 0233 adds; prints each violation as the
+  check's line and then the count line; and folds the result and each
+  failure into the check's exit codes (C-5, C-6), with the usage failure
+  handled in the command rather than by the library's validation so the
+  library's -1 never surfaces (B-026).
+
+  It also carries, in the same pull request, what 0002-F1 holds the
+  documentation to: the docs/cli.md section and the readme synopsis lines
+  (0002-F1 C-5, C-8), the exit-code page rows, and the AGENTS.md command
+  block.
+
+  Tests: integration tier for the command through the in-process command
+  tester, and the acceptance scenarios for every claim of this Feature,
+  including the @B scenarios 0233's claims bind here, with the test
+  launcher gaining a way to feed standard input.
+
+  Risk 3: the usage failure crosses the command-line library's own
+  validation path; standard input is fed to a child process in the
+  acceptance tests; the documentation test fails until the section
+  exists.
+
+  Waits on 0233: the command calls the engine entry point that item adds.
+
+acceptance_criteria:
+  - "B-001 — a path is checked"
+  - "B-002 — --stdin is checked"
+  - "B-010 — the check's diagnostic line"
+  - "B-011 — named by the path as typed"
+  - "B-012 — named <stdin>"
+  - "B-014 — an error exits 1"
+  - "B-015 — clean exits 0"
+  - "B-016 — root not a directory, exit 2"
+  - "B-017 — no manifest, exit 2"
+  - "B-018 — manifest does not parse, exit 3"
+  - "B-019 — unshipped pin, exit 3"
+  - "B-020 — unknown kind, named with the three, exit 4"
+  - "B-021 — path names no file, exit 4"
+  - "B-022 — tool messages on stderr; stdout only the lines and the summary"
+  - "B-023 — writes nothing"
+  - "B-024 — no derived absolute path"
+  - "B-026 — usage line, empty stdout, exit 2"
+  - "B-027 — first failure in order: usage, kind, path, root and manifest"
+  - "docs/cli.md gains the `specht frontmatter` section and both readmes the synopsis line (0002-F1 C-5, C-8)."
+  - "The @B-003 to @B-009, @B-013 and @B-025 scenarios bind here, so 0233's § 9 rows move from Partial."
+  - "§ 9 carries a row naming a test for each id above."
+
+decisions:
+  - |
+    2026-10-15, spec-author: cut after 0233 because the command calls the
+    engine entry point that item adds, and C-5 keeps frontmatter reading
+    and schema evaluation out of the command. Rejected: one item for
+    both, which would put the engine change and the command, two
+    projects, two test tiers and the documentation, in one pull request.
+  - |
+    2026-10-15, spec-author: value omitted, inheriting 0232's.
+
+out_of_scope:
+  - "--json and the report document (§ 5 row 5)."
+  - "A --report file or any write (§ 5 row 3)."
+  - "Fetching an issue from GitHub or any network (§ 5 row 1)."
+  - "A lone - as the document argument (§ 5 row 8)."
+  - "Everything in § 5 of the spec."

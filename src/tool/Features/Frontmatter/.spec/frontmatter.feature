@@ -25,10 +25,10 @@ Feature: The frontmatter command
     Then the violation carries rule id <rule>
 
     Examples:
-      | kind         | rule    |
-      | feature-spec | SPEC002 |
-      | task         | SPEC003 |
-      | epic         | SPEC004 |
+      | kind    | rule    |
+      | feature | SPEC002 |
+      | task    | SPEC003 |
+      | epic    | SPEC004 |
 
   @B-004
   Scenario: A failure on a key is reported at that key's line
@@ -58,8 +58,8 @@ Feature: The frontmatter command
 
   @B-007 @boundary
   Scenario: A Feature specification's sections are not checked
-    Given a feature-spec document with valid frontmatter and none of the twelve sections
-    When its frontmatter is checked as a feature-spec
+    Given a feature document with valid frontmatter and none of the twelve sections
+    When its frontmatter is checked as a feature
     Then no violation is reported
 
   @B-008
@@ -72,7 +72,7 @@ Feature: The frontmatter command
   @B-009
   Scenario: A document in the tree gets the check's verdict
     Given the root holds a specification whose frontmatter fails its schema on two keys
-    When that specification's frontmatter is checked as a feature-spec
+    When that specification's frontmatter is checked as a feature
     Then the violations are the frontmatter violations the check reports for that file
 
   @B-010
@@ -183,3 +183,32 @@ Feature: The frontmatter command
     Given a task document whose frontmatter fails its schema on two keys
     When its frontmatter is checked as a task twice
     Then both runs print the same standard output and exit with the same code
+
+  @B-026
+  Scenario Outline: A missing option or a conflicting pair is a usage failure
+    Given a task document with valid frontmatter
+    When the command is run <how>
+    Then the standard error names the usage
+    And the standard output is empty
+    And the exit code is 2
+
+    Examples:
+      | how                                         |
+      | with no kind                                |
+      | with a kind and neither a path nor the pipe |
+      | with a kind and both a path and the pipe    |
+
+  @B-027
+  Scenario Outline: A first failure is reported when several apply
+    Given <situation>
+    When the command is run <how>
+    Then the standard error names <what>
+    And the standard output is empty
+    And the exit code is <code>
+
+    Examples:
+      | situation                                                            | how                                                     | what                      | code |
+      | a root with a manifest                                               | with a kind named story and neither a path nor the pipe | the usage                 | 2    |
+      | a root with a manifest and no file at drafts/missing.md              | with a kind named story and the path drafts/missing.md  | story and the three kinds | 4    |
+      | a root path that is not a directory and no file at drafts/missing.md | with a task kind and the path drafts/missing.md         | drafts/missing.md         | 4    |
+      | a root path that is not a directory                                  | with a kind named story and a path naming a file        | story and the three kinds | 4    |
