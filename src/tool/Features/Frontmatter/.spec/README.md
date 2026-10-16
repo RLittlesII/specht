@@ -168,12 +168,13 @@ Pending: owned by `test-writer`, written after agreement.
 
 ## 10. Lessons / Spec Deltas
 
-<!-- last written by: spec-author, 2026-10-09, 2026-10-11 (§ 5 row 3), 2026-10-15 (decision 0002; items cut) -->
+<!-- last written by: spec-author, 2026-10-09, 2026-10-11 (§ 5 row 3), 2026-10-15 (decision 0002; items cut; renumbered) -->
 
 - 2026-10-09, B-010 amended in place: it restated the line form `0001-F2` B-001 held, which now carries the violation's identifier (`0001-F2` decision 0006). B-010 cites `0001-F2` B-001 and B-016 for the form and no longer copies it.
 - 2026-10-11, § 5 row 3 amended in place: its list of writers gains the set command (`0001-F11` decision 0001; brief § 9). No claim, constraint or scenario changed.
 - 2026-10-15, after the owner's answers ([decision 0002](decisions/0002-stdin-is-a-flag-and-the-kinds-are-the-manifest-keys.md)). A-2, B-003 and B-020 name the kinds as the manifest's `frontmatterSchemas` keys, `feature` for `feature-spec`, which named a retired file name. B-003 and B-020 marked Amended for it. § 2 row 2, the agent, withdrawn in place, its number kept: the tool's callers are a person or a CI step, and an agent reaches the tool through a protocol of its own. B-002 and B-012 amended in place to `--stdin`, since the command-line library rejects a lone `-` before any command runs; A-1 carries the command line. B-026 added for the usage failure, exit `2`. B-027 added as spec-author's reading, not an owner call: when more than one of B-016 to B-021 and B-026 applies to one invocation, the first in the order usage, kind, path, then root and manifest is reported, since what the caller typed is judged before the file system is touched, left to right as A-1 reads, so stderr names the first thing to fix, and B-016 to B-019 never apply together. § 5 row 1 names `--stdin`, row 5 reads decided against, and row 8 added. OQ-1 to OQ-4 resolved, OQ-5 raised and resolved the same day, and OQ-4 carries a note on B-027. The scenarios follow: B-003, B-007 and B-009 say `feature`, and B-026 and B-027 have outlines. After round 2, B-027's outline row 4 pairs an unknown kind with a missing root, so the kind-before-root order is exercised.
-- 2026-10-15, items cut: `0229`, `0230`, `0231`; frontmatter `status` moves to `ready-for-architecture`.
+- 2026-10-15, items cut: `0232`, `0233`, `0234`; frontmatter `status` moves to `ready-for-architecture`.
+- 2026-10-15, items renumbered before merge: cut as `0229`, `0230` and `0231`, they became `0232`, `0233` and `0234` after `main` merged item `0229` (pull request #210) first; the branch that merges first keeps its ids (`specht-conventions` § Delivery). The § 12 round-3 row keeps the first numbers verbatim.
 
 ## 11. Open Questions
 
@@ -204,7 +205,7 @@ Pending: owned by `test-writer`, written after agreement.
 
 ## Tasks
 
-Cut 2026-10-15 into [`../.issue/`](../.issue/): `0229` (the Feature), with `0230`, the engine seam that checks one document's frontmatter (B-003 to B-009, B-013, B-025), and `0231`, the command, its documentation and the acceptance scenarios (B-001, B-002, B-010 to B-012, B-014 to B-024, B-026, B-027), which waits on `0230`.
+Cut 2026-10-15 into [`../.issue/`](../.issue/): `0232` (the Feature), with `0233`, the engine seam that checks one document's frontmatter (B-003 to B-009, B-013, B-025), and `0234`, the command, its documentation and the acceptance scenarios (B-001, B-002, B-010 to B-012, B-014 to B-024, B-026, B-027), which waits on `0233`.
 
 ## Scoring
 

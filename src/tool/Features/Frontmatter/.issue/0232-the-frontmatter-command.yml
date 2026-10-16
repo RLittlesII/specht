@@ -1,4 +1,4 @@
-id: "0229"
+id: "0232"
 type: feature
 title: The frontmatter command
 
@@ -8,7 +8,7 @@ value: 3
 risk: 3
 
 parent: "0001"
-children: ["0230", "0231"]
+children: ["0233", "0234"]
 
 depends_on: []
 spikes: []
@@ -63,41 +63,41 @@ summary: |
   must bypass the command-line library's own validation so its -1 never
   surfaces.
 
-  The first child is 0230, the engine seam that checks one document's
+  The first child is 0233, the engine seam that checks one document's
   frontmatter, named by a kind, against the schemas the check selects for
-  a root (B-003 to B-009, B-013, B-025). The second is 0231, the command,
+  a root (B-003 to B-009, B-013, B-025). The second is 0234, the command,
   its documentation and the acceptance scenarios for every claim of this
   Feature (B-001, B-002, B-010 to B-012, B-014 to B-024, B-026, B-027),
-  which waits on 0230.
+  which waits on 0233.
 
 acceptance_criteria:
-  - "B-001 — a path is checked (0231)"
-  - "B-002 — --stdin is checked (0231)"
-  - "B-003 — rule id by kind (0230)"
-  - "B-004 — failure at the key's line (0230)"
-  - "B-005 — no frontmatter, SPEC001 at line 1 (0230)"
-  - "B-006 — the schema the check selects for the root (0230)"
-  - "B-007 — a rule that needs the tree does not run (0230)"
-  - "B-008 — the root's own specifications are not checked (0230)"
-  - "B-009 — a document in the tree gets the check's verdict (0230)"
-  - "B-010 — the check's diagnostic line (0231)"
-  - "B-011 — named by the path as typed (0231)"
-  - "B-012 — named <stdin> (0231)"
-  - "B-013 — error and warning counts (0230)"
-  - "B-014 — an error exits 1 (0231)"
-  - "B-015 — clean exits 0 (0231)"
-  - "B-016 — root not a directory, exit 2 (0231)"
-  - "B-017 — no manifest, exit 2 (0231)"
-  - "B-018 — manifest does not parse, exit 3 (0231)"
-  - "B-019 — unshipped pin, exit 3 (0231)"
-  - "B-020 — unknown kind, exit 4 (0231)"
-  - "B-021 — path names no file, exit 4 (0231)"
-  - "B-022 — tool messages on stderr (0231)"
-  - "B-023 — writes nothing (0231)"
-  - "B-024 — no derived absolute path (0231)"
-  - "B-025 — same input, same verdict (0230)"
-  - "B-026 — usage failure, exit 2 (0231)"
-  - "B-027 — first failure in order (0231)"
+  - "B-001 — a path is checked (0234)"
+  - "B-002 — --stdin is checked (0234)"
+  - "B-003 — rule id by kind (0233)"
+  - "B-004 — failure at the key's line (0233)"
+  - "B-005 — no frontmatter, SPEC001 at line 1 (0233)"
+  - "B-006 — the schema the check selects for the root (0233)"
+  - "B-007 — a rule that needs the tree does not run (0233)"
+  - "B-008 — the root's own specifications are not checked (0233)"
+  - "B-009 — a document in the tree gets the check's verdict (0233)"
+  - "B-010 — the check's diagnostic line (0234)"
+  - "B-011 — named by the path as typed (0234)"
+  - "B-012 — named <stdin> (0234)"
+  - "B-013 — error and warning counts (0233)"
+  - "B-014 — an error exits 1 (0234)"
+  - "B-015 — clean exits 0 (0234)"
+  - "B-016 — root not a directory, exit 2 (0234)"
+  - "B-017 — no manifest, exit 2 (0234)"
+  - "B-018 — manifest does not parse, exit 3 (0234)"
+  - "B-019 — unshipped pin, exit 3 (0234)"
+  - "B-020 — unknown kind, exit 4 (0234)"
+  - "B-021 — path names no file, exit 4 (0234)"
+  - "B-022 — tool messages on stderr (0234)"
+  - "B-023 — writes nothing (0234)"
+  - "B-024 — no derived absolute path (0234)"
+  - "B-025 — same input, same verdict (0233)"
+  - "B-026 — usage failure, exit 2 (0234)"
+  - "B-027 — first failure in order (0234)"
   - "§ 9 carries a row naming a test for each id above."
 
 decisions:
@@ -107,7 +107,7 @@ decisions:
     0082 value 3, and item 0010 value 4 from priority: high (commit
     621f3e08). Risk 3 on the basis in the summary.
   - |
-    2026-10-15, spec-author: 0230, the engine seam, is cut first because
+    2026-10-15, spec-author: 0233, the engine seam, is cut first because
     C-5 forbids frontmatter reading or schema evaluation in the command
     and C-2 forbids a second reader, so the engine must expose checking
     one document before the command exists. Rejected: one item for both,

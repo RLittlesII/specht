@@ -1,4 +1,4 @@
-id: "0231"
+id: "0234"
 type: task
 title: Add the frontmatter command
 
@@ -6,10 +6,10 @@ status: ready-for-architecture
 
 risk: 3
 
-parent: "0229"
+parent: "0232"
 children: []
 
-depends_on: ["0230"]
+depends_on: ["0233"]
 spikes: []
 
 spec: src/tool/Features/Frontmatter/.spec/README.md
@@ -44,7 +44,7 @@ summary: |
   src/tool/Features/Frontmatter/, which, in B-027's order, parses; checks
   the usage (B-026); parses the kind through the engine (B-020); reads
   the document from the path, or from standard input whole (B-021,
-  B-002); calls the entry point 0230 adds; prints each violation as the
+  B-002); calls the entry point 0233 adds; prints each violation as the
   check's line and then the count line; and folds the result and each
   failure into the check's exit codes (C-5, C-6), with the usage failure
   handled in the command rather than by the library's validation so the
@@ -57,7 +57,7 @@ summary: |
 
   Tests: integration tier for the command through the in-process command
   tester, and the acceptance scenarios for every claim of this Feature,
-  including the @B scenarios 0230's claims bind here, with the test
+  including the @B scenarios 0233's claims bind here, with the test
   launcher gaining a way to feed standard input.
 
   Risk 3: the usage failure crosses the command-line library's own
@@ -65,7 +65,7 @@ summary: |
   acceptance tests; the documentation test fails until the section
   exists.
 
-  Waits on 0230: the command calls the engine entry point that item adds.
+  Waits on 0233: the command calls the engine entry point that item adds.
 
 acceptance_criteria:
   - "B-001 — a path is checked"
@@ -87,18 +87,18 @@ acceptance_criteria:
   - "B-026 — usage line, empty stdout, exit 2"
   - "B-027 — first failure in order: usage, kind, path, root and manifest"
   - "docs/cli.md gains the `specht frontmatter` section and both readmes the synopsis line (0002-F1 C-5, C-8)."
-  - "The @B-003 to @B-009, @B-013 and @B-025 scenarios bind here, so 0230's § 9 rows move from Partial."
+  - "The @B-003 to @B-009, @B-013 and @B-025 scenarios bind here, so 0233's § 9 rows move from Partial."
   - "§ 9 carries a row naming a test for each id above."
 
 decisions:
   - |
-    2026-10-15, spec-author: cut after 0230 because the command calls the
+    2026-10-15, spec-author: cut after 0233 because the command calls the
     engine entry point that item adds, and C-5 keeps frontmatter reading
     and schema evaluation out of the command. Rejected: one item for
     both, which would put the engine change and the command, two
     projects, two test tiers and the documentation, in one pull request.
   - |
-    2026-10-15, spec-author: value omitted, inheriting 0229's.
+    2026-10-15, spec-author: value omitted, inheriting 0232's.
 
 out_of_scope:
   - "--json and the report document (§ 5 row 5)."

@@ -1,4 +1,4 @@
-id: "0230"
+id: "0233"
 type: task
 title: Check one document's frontmatter in the engine
 
@@ -6,7 +6,7 @@ status: ready-for-architecture
 
 risk: 3
 
-parent: "0229"
+parent: "0232"
 children: []
 
 depends_on: []
@@ -40,7 +40,7 @@ summary: |
   the command calls before it reads the path, which names an unknown kind
   as typed and the three kinds (B-020's message), and the entry point
   that checks takes the parsed kind, so an unknown kind is reported ahead
-  of a missing document, root or manifest (B-027's order, which 0231
+  of a missing document, root or manifest (B-027's order, which 0234
   delivers); the root, manifest and unshipped-pin failures are the
   check's own (decision 0001). The summary line the command prints
   (B-013) is the report document's own count line.
@@ -50,7 +50,7 @@ summary: |
   move (0001-F1 C-9); the runner gains a second entry point beside Run.
 
   Tests at unit tier only here; the @B scenarios for these claims bind in
-  0231, which has the command, so each § 9 row stays Partial until then,
+  0234, which has the command, so each § 9 row stays Partial until then,
   as 0225's did.
 
 acceptance_criteria:
@@ -78,11 +78,11 @@ decisions:
     The kind parse is the engine's so the kind list has one home; the
     command only calls it first.
   - |
-    2026-10-15, spec-author: value omitted, inheriting 0229's. No
+    2026-10-15, spec-author: value omitted, inheriting 0232's. No
     depends_on: nothing open gates an engine entry point, and the
     ADR-0014 stages are not prerequisites, since this adds an entry point
     on the existing runner and migrates nothing.
 
 out_of_scope:
-  - "The command, its options, standard input, the stdout and stderr lines and the exit codes: 0231."
+  - "The command, its options, standard input, the stdout and stderr lines and the exit codes: 0234."
   - "Everything in § 5 of the spec."
