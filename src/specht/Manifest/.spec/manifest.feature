@@ -786,3 +786,10 @@ Feature: The manifest carries the roles
     Given the default manifest of schema version "0.2.0"
     When its rule settings are read
     Then the waiver rule and the retired-claim rule are set to off
+
+  @B-062
+  Scenario: A rule whose own level is off and not raised is not counted
+    Given the manifest pins schema version "0.2.0"
+    And the manifest sets no level for the waiver rule
+    When the check runs
+    Then the count of rules evaluated excludes the waiver rule
