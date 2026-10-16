@@ -81,6 +81,15 @@ public sealed class SpecReportDocumentExpectedUnitTests
             { "a not whose subschema passed, beside the allOf applicator", "feature", Valid(("kind", "legacy")), "SPEC002", null, [[], []] },
             { "an assertion in each failed anyOf branch", "feature", Valid(("mode", "c")), "SPEC002", "mode", [[], []] },
             { "an assertion in each failed oneOf branch", "feature", Valid(("choice", "y")), "SPEC002", "choice", [[], [], []] },
+            {
+                "an assertion at the place a same-document reference resolves to",
+                "feature",
+                Valid(("budget", -1)),
+                "SPEC002",
+                "budget",
+                [new() { ["minimum"] = 0 }]
+            },
+            { "an assertion in a document a reference names", "feature", Valid(("meta", 5)), "SPEC002", "meta", [[]] },
             { "a key the schema does not declare", "feature", Valid(("extra", 1)), "SPEC002", "extra", [[]] },
             {
                 "an item's value outside its schema's enum",
@@ -334,8 +343,11 @@ public sealed class SpecReportDocumentExpectedUnitTests
             "synced_at": { "type": "string", "format": "date-time" },
             "kind": {},
             "mode": {},
-            "choice": { "oneOf": [{ "const": "x" }, { "type": "integer" }] }
+            "choice": { "oneOf": [{ "const": "x" }, { "type": "integer" }] },
+            "budget": { "$ref": "#/$defs/amount" },
+            "meta": { "$ref": "https://json-schema.org/draft/2020-12/meta/validation" }
           },
+          "$defs": { "amount": { "type": "integer", "minimum": 0 } },
           "additionalProperties": false,
           "allOf": [
             {
