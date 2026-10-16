@@ -32,7 +32,7 @@ public sealed class DiskSchemaEvaluationUnitTests
         Frontmatter frontmatter = new FrontmatterFixture().WithNode(new JsonObject());
         FeatureSpec feature = new FeatureSpecFixture().WithDocument(new SpecDocumentFixture().WithFrontmatter(frontmatter));
         ChildItem task = new ChildItemFixture().WithFrontmatter(frontmatter);
-        EpicFile epic = new DiskSchemaEpicFixture().WithFrontmatter(frontmatter);
+        EpicFile epic = new EpicFileFixture().WithFrontmatter(frontmatter);
         SpecModel model = new SpecModelFixture().WithSchemas(schemas).WithFeatures(feature).WithItems(task).WithList([epic]);
         var rule = new FrontmatterSchemaRule();
 

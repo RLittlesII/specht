@@ -1,3 +1,4 @@
+using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json.Nodes;
 
@@ -114,6 +115,31 @@ public sealed class SpecTree : IDisposable
 
     /// <summary>Runs every rule against the tree.</summary>
     public SpechtReport Run() => EngineServices.Runner().Run(Root);
+
+    /// <summary>Deletes the frontmatter schema folder, so the root holds no schema file on disk.</summary>
+    public void DeleteFrontmatterSchemas() => Directory.Delete(Path.Combine(Root, FrontmatterSchemaFolder), recursive: true);
+
+    /// <summary>
+    /// Records in the manifest an upstream schema source, <c>spechtSchema</c>, whose hashes are those of the three schema
+    /// files the root holds, so the files are the upstream copy it names.
+    /// </summary>
+    public void RecordUpstreamSchemaSource()
+    {
+        var path = Path.Combine(Root, ManifestPath);
+        var manifest = JsonNode.Parse(File.ReadAllText(path))!.AsObject();
+        manifest["spechtSchema"] = new JsonObject
+        {
+            ["location"] = "https://schemas.example/specht/",
+            ["version"] = "v1",
+            ["hashes"] = new JsonObject
+            {
+                ["feature"] = HashOf(FeatureSchemaPath),
+                ["task"] = HashOf(ItemSchemaPath),
+                ["epic"] = HashOf(EpicSchemaPath),
+            },
+        };
+        File.WriteAllText(path, manifest.ToJsonString());
+    }
 
     /// <inheritdoc />
     public void Dispose()
@@ -321,6 +347,9 @@ public sealed class SpecTree : IDisposable
 
         return text.Append("---\n\n").ToString();
     }
+
+    private string HashOf(string schemaPath) =>
+        "sha256:" + Convert.ToHexStringLower(SHA256.HashData(File.ReadAllBytes(Path.Combine(Root, schemaPath))));
 
     private readonly string _temporary;
 }

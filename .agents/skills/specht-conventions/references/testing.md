@@ -118,8 +118,8 @@ the citation. Rename the claim's wording instead, or accept the name.
 
 **Cases of one shape are one `[Theory]`.** Two facts that differ only in their
 data — a warning with and without `--strict`, each exit code — are one theory
-over `[MemberData]` or `[ClassData]`, a typed xunit.v3 `TheoryData<…>`, with the
-name stating the behaviour every row shares. A helper one test class calls from
+over a `[ClassData]` type, a typed xunit.v3 `TheoryData<…>`, not an inline
+`[MemberData]` property, with the name stating the behaviour every row shares. A helper one test class calls from
 another is shared data or a fixture in the wrong place: a class owns its own
 harness, and data two classes need is a `[ClassData]` type.
 

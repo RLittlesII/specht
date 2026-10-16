@@ -1,3 +1,4 @@
+using System.Text.Json.Nodes;
 using Specht.Manifest;
 using Specht.Model;
 
@@ -37,7 +38,8 @@ public sealed class SectionStructureRule : ISpecRule
                         feature.RelativePath,
                         0,
                         title,
-                        $"missing section '## {title}' - the contracted sections are in {SpecManifestStore.RelativePath}");
+                        $"missing section '## {title}' - the contracted sections are in {SpecManifestStore.RelativePath}")
+                    { Expected = Sections(expected) };
                 }
                 else if (count > 1)
                 {
@@ -47,7 +49,8 @@ public sealed class SectionStructureRule : ISpecRule
                         feature.RelativePath,
                         0,
                         title,
-                        $"section '## {title}' appears {count} times - each contracted section appears exactly once");
+                        $"section '## {title}' appears {count} times - each contracted section appears exactly once")
+                    { Expected = Sections(expected) };
                 }
             }
 
@@ -66,7 +69,8 @@ public sealed class SectionStructureRule : ISpecRule
                         feature.RelativePath,
                         section?.Line ?? 0,
                         ordered[index],
-                        $"section '## {ordered[index]}' is out of order - '## {present[index]}' is expected at this position");
+                        $"section '## {ordered[index]}' is out of order - '## {present[index]}' is expected at this position")
+                    { Expected = Sections(expected) };
 
                     break;
                 }
@@ -104,7 +108,8 @@ public sealed class SectionStructureRule : ISpecRule
                     feature.RelativePath,
                     section.Line,
                     title,
-                    $"section '## {title}' carries no table - expected a table with headers {string.Join(" | ", headers)}");
+                    $"section '## {title}' carries no table - expected a table with headers {string.Join(" | ", headers)}")
+                { Expected = Table(title, headers) };
 
                 continue;
             }
@@ -117,8 +122,15 @@ public sealed class SectionStructureRule : ISpecRule
                     feature.RelativePath,
                     section.Line,
                     title,
-                    $"section '## {title}' has headers {string.Join(" | ", section.Headers)} - expected {string.Join(" | ", headers)}");
+                    $"section '## {title}' has headers {string.Join(" | ", section.Headers)} - expected {string.Join(" | ", headers)}")
+                { Expected = Table(title, headers) };
             }
         }
     }
+
+    private static JsonObject Sections(IEnumerable<string> titles) => new() { ["sections"] = Strings(titles) };
+
+    private static JsonObject Table(string title, IEnumerable<string> headers) => new() { ["section"] = title, ["headers"] = Strings(headers) };
+
+    private static JsonArray Strings(IEnumerable<string> values) => new([.. values.Select(static value => JsonValue.Create(value))]);
 }

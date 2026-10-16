@@ -49,7 +49,7 @@ public sealed record SpecReportDocument(
                     violation.Line,
                     violation.Identifier,
                     violation.Message,
-                    new JsonObject()))
+                    violation.Expected?.DeepClone().AsObject() ?? new JsonObject()))
                 .ToList());
 
     /// <summary>Makes the run summary the check prints after the violation lines (<c>0001-F2</c> B-002).</summary>
