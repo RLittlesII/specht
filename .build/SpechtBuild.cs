@@ -51,9 +51,10 @@ internal partial class SpechtBuild : NukeBuild
     private Target Specht => definition => definition
         .Executes(() =>
         {
+            DotNetToolRestore(static settings => settings.SetProcessWorkingDirectory(RootDirectory).DisableProcessOutputLogging());
             var exitCode = 0;
             AnnotateChangedFiles(DotNet(
-                "run --project src/tool --framework net10.0 -- --root .",
+                "tool run specht -- --root .",
                 RootDirectory,
                 logger: ProcessTasks.DefaultLogger,
                 exitHandler: process => exitCode = process.ExitCode));

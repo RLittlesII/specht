@@ -20,7 +20,7 @@ depends_on: ["F6"]
 blocks: []
 spikes: []
 created: "2026-10-08"
-updated: "2026-10-14"
+updated: "2026-10-16"
 github_issue: null
 synced_at: null
 ---
@@ -105,11 +105,11 @@ A consumer cannot install a package from a feed it does not know, with a credent
 
 ## 7. Technical Design
 
-<!-- last written by: implementer, 2026-10-14 -->
+<!-- last written by: implementer, 2026-10-16 (self-check package compatibility) -->
 
 [Decision 0001](decisions/0001-use-native-package-and-tool-restore.md) uses
-native restore commands. The root tool manifest adds published `specht.tool`
-0.1.90. Root `nuget.config` maps exactly that package to the `specht` source,
+native restore commands. The root `.config/dotnet-tools.json` pins published
+`specht.tool` compatible with the live manifest. Root `nuget.config` maps exactly that package to the `specht` source,
 GitHub Packages; all other packages and audit data use nuget.org. NuGet reads
 `NuGetPackageSourceCredentials_specht` from the process environment, in its
 native `Username=...;Password=...;ValidAuthenticationTypes=Basic` format.
@@ -125,7 +125,7 @@ The install section of `README.md` owns the source XML, runtime credential, loca
 
 ## 8. Testing Strategy
 
-<!-- last written by: test-writer, 2026-10-14 (the synthetic projects' target framework, `0001-F2` B-045) -->
+<!-- last written by: test-writer, 2026-10-16 (known published package versions) -->
 
 `ConsumptionSteps` binds all eight scenarios. The five installation scenarios
 were run before the README change: five failed for missing guidance and the
@@ -141,7 +141,10 @@ and B-008 read the same install section for the named source, runtime credential
 CI setup, install/restore commands and authenticated global path.
 
 B-002 restores and invokes a synthetic checker at the committed pin. B-003
-checks that pin against 0.1.90, whose publication is recorded in `0055-F6` § 8.
+checks that pin against the known published versions 0.1.90 (`0055-F6` § 8)
+and [0.1.131](https://github.com/RLittlesII/specht/releases/tag/v0.1.131).
+The latter carries the schema and `claim` setting the installed self-check needs
+(`0001-F2` B-014).
 B-007 removes credential environment variables, supplies no checker package,
 and runs native solution restore followed by build. No automated test uses a
 network or real credential.
