@@ -190,7 +190,7 @@ Half of the model's contract is not in the schema files: which section holds the
 
 ## 6. Concern Separation
 
-<!-- last written by: implementer, 2026-10-15 (item `0222`) -->
+<!-- last written by: implementer, 2026-10-16 (own off-level selection) -->
 
 Item `0011` builds the loader; the families of keys (`0014`-`0019`) extend this table.
 
@@ -227,6 +227,8 @@ Item `0011` builds the loader; the families of keys (`0014`-`0019`) extend this 
 | Schema file name containment (B-047)                                                                                                                                                   | Business       | `SpecManifestParser.Check` validates filled names before schema reads; the existing exception reaches the command catch.                                                                                                                                                                                                     |
 | Claim-tag grammar, literal form, case and original diagnostics (B-007, B-036 to B-038)                                                                                                 | Both           | `SpecManifestParser`, the pure `FeatureTagParser`, `FeatureTag` and `FeatureFileRule`; decision 0013                                                                                                                                                                                                                         |
 | The `tests`, `matrix`, `owners` and `requiredSpecifications` keys and the five status markers at schema `0.2.0`; consumer settings with no `owners` default (B-055 to B-060, C-13)     | Business       | `SpecManifestParser.Parse` reads them into `SpecStructure`; `MatrixKeyFaults` validates declaration forms and owners; the `0.2.0` shipped manifest carries the markers (§ 7)                                                                                                                                                 |
+
+The own off level and its manifest override are a Business concern; the existing runner selects, filters and counts them through one predicate (B-061, B-062), as designed in § 7.
 
 ## 7. Technical Design
 
@@ -643,6 +645,16 @@ The model snapshot now supplies claims and companion tags to `FeatureFileRule`; 
 
 The five status markers are entries in the `0.2.0` shipped manifest's `markers`, filled per name by B-048's mechanism; `.specht/manifest.json` carries them too, because `markers` is a tool-owned key (`0001-F4` B-004). `0.2.0`, never published, is relocked in the same change by `0001-F7` decision 0014's procedure: its lock entry removed by hand, then `./build.sh LockSchemaVersion` (`0001-F7` C-17, B-092); `0.1.0`'s digest is unchanged. No rule or command reads these settings yet (`0001-F12`, `0001-F13`); B-061 is a later item.
 
+### A rule whose own level is off
+
+<!-- last written by: implementer, 2026-10-16 -->
+
+The additive `DefaultLevel` member of [`ISpecRule`](../../Rules/ISpecRule.cs) supplies the selection default when the manifest names no override. Existing rule families remain enabled by default and keep the severity of each violation they emit. The existing `SpecRuleLevel` represents off; `SpecSeverity` still represents only reported warnings and errors.
+
+[`SpechtRunner.Evaluate`](../../SpechtRunner.cs) resolves each id against the pinned vocabulary, its explicit manifest override and otherwise its rule's own level. The same predicate selects rule families, filters their returned findings and counts their enabled reported ids. A family whose every id is off is never evaluated; raising one id runs the family but neither reports nor counts its unraised siblings. Explicit overrides retain the existing grading behavior. Selection is local to each rule family, so one family's own off level cannot disable another family that reports the same id.
+
+This extends ADR-0004's selection boundary and implements decision 0014 without migrating ADR-0010's architecture. No schema resource, version vocabulary or version lock changes. B-061's default-map entries and the B-061/B-062 acceptance bindings remain deferred to `0001-F12`'s waiver rules as the item records.
+
 ## 8. Testing Strategy
 
 **B-047 testability.** The mechanism is the effective-name predicate in `SpecManifestParser.Check`, pinned by `SpecManifestParserSchemaFileNamesUnitTests.APathInASchemaFileName_WhenParsed_ShouldRejectItNamingTheKindAndValue` in memory. Its nine cases cover every schema kind, both separators, embedded `..`, and Unix, Windows drive-rooted and UNC absolute paths. The `@B-047 @B-022 @B-023` outline runs the built tool through `ManifestSteps`, asserting exit `3`, the complete stderr rejection naming the kind and value, and empty stdout. Existing B-008 tests preserve plain-name fill and loading from `.specht/schema/frontmatter/`. Before implementation, all nine parser cases failed because no exception was thrown; command cases failed with exit `0` instead of `3`. The existing parser and command seams make both concerns directly observable.
@@ -878,6 +890,14 @@ Every mechanism is in `SpecManifestParser.Parse`, read over the shipped catalog,
 Red was observed on `net10.0` and `net11.0` against commit `339d1f1` with its parser, both shipped `0.2.0` manifests, `docs/configuration.md` and this README reverted, and its `SpecStructure` and `SpecTestSettings` members kept so the tests compile. `SpecManifestParserMatrixKeysUnitTests` failed 36 of 44: every `0.2.0` acceptance case threw the unknown-key rejection of `tests`, `matrix`, `owners` or `requiredSpecifications`; the three form cases and the two owner-rejection cases failed because the message was that unknown-key rejection, not one naming the entry or the title; the five left-out markers and the named covered marker failed on the `0.2.0` default, which carried none of the five names. The `@B-055` to `@B-060` scenarios failed 20 of 28 on the same causes. The rejection tests assert the message is not that unknown-key rejection, so they cannot pass on it. Guards that passed before the implementation, as the boundaries they are: the `0.1.0` `tests` unit test and scenario; the left-out `owners`, `matrix` and `requiredSpecifications` unit cases and scenarios, whose defaults the kept members already give; and the four command rows, which exit `3` on the unknown key and pin the exit and stream mapping, not the new validation. Under `0.1.0`, `matrix`, `owners` and `requiredSpecifications` are B-049's boundary and no claim here states it, so no test here pins it.
 
 Green at commit `339d1f1`, on `net10.0` and `net11.0`: `SpecManifestParserMatrixKeysUnitTests` 44 of 44; the `CheckCommandIntegrationTests` input-failure theory 62 of 62; the `@B-055` to `@B-060` scenarios 28 of 28; the whole manifest Feature 150 passed, 64 skipped as unbound, none failed.
+
+### Own off-level coverage
+
+<!-- last written by: test-writer, 2026-10-16 -->
+
+`SpechtRunnerDefaultLevelUnitTests.ARuleWhoseOwnLevelIsOff_WhenEvaluated_ShouldRunReportAndCountOnlyIdsTheManifestRaises` exercises nine in-memory cases through the existing model/schema fixtures: omitted and empty rule maps, explicit off, warning and error overrides, one raised id beside an omitted or explicitly off sibling, an unrelated raised id, and a family outside the pinned vocabulary. A callback proves whether evaluation ran, while findings, severities and the report count prove selection and grading. An enabled control family remains counted. `SpechtRunnerDefaultLevelUnitTests.TwoFamiliesReportingTheSameId_WhenOnlyOnesOwnLevelIsOff_ShouldRunAndCountTheEnabledFamilyAlone` proves that an off family does not disable an enabled family reporting the same id.
+
+Before the runner change, four of the nine cases failed behaviorally: omitted/empty settings and an unrelated override still invoked the off family, and the omitted grouped sibling still counted. All ten tests then passed on `net10.0`. Existing runner tests and the golden baseline remain required checks. B-061 and B-062 stay Partial because their acceptance scenarios observe waiver rules delivered later; no binding or scenario is changed here.
 
 ## 9. Traceability Matrix
 
