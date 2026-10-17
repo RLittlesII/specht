@@ -43,6 +43,8 @@ public static class SpechtEngineServiceCollectionExtensions
         services.AddSingleton<ISpecRule, IdentityRule>();
         services.AddSingleton<ISpecRule, FeatureFileRule>();
         services.AddSingleton<ISpecRule, ClaimRule>();
+        services.AddSingleton<ISpecRule, WaiverRule>();
+        services.AddSingleton<ISpecRule, RetiredClaimRule>();
         services.AddSingleton<ISpecRule, ChildItemRule>();
         services.AddSingleton<ISpecRule, DependencyRule>();
         services.AddSingleton<ISpecRule, ApprovalRule>();
