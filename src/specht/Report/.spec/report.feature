@@ -245,6 +245,29 @@ Feature: The report contract
     When the check runs with JSON output
     Then the violation's expectation names the cell that must change before the approved status is honest
 
+  @B-016
+  Scenario Outline: A declared child or spike says the file shape
+    Given the root declares a missing <kind> item
+    When the check runs with JSON output
+    Then the <rule> expectation names the declared item's file shape
+
+    Examples:
+      | kind     | rule    |
+      | children | SPEC040 |
+      | spikes   | SPEC041 |
+
+  @B-017
+  Scenario: A cycle expectation preserves its ordered path including a lead-in
+    Given the root holds F1 depending on F2 and F2 depending on itself
+    When the check runs with JSON output
+    Then the F1 cycle expectation lists F1, F2 and F2 in order
+
+  @B-018
+  Scenario: An approval expectation locates the sign-off row
+    Given the root holds an approved specification with a blocked sign-off row
+    When the check runs with JSON output
+    Then the approval expectation names the sign-off row that must change
+
   @B-019
   Scenario: Explain prints a rule's full text
     When the tool is asked to explain SPEC031
