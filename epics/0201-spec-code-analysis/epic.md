@@ -76,7 +76,7 @@ outline-row identity. It must not add a mandatory dependency to the core model.
 This product choice does not change this repository's Gherkin-first development
 policy.
 
-The [decision record](../../src/analysis/Bindings/.spec/decisions/0001-hardened-hybrid.md)
+The [decision record](../../src/Analyzers/Bindings/.spec/decisions/0001-hardened-hybrid.md)
 records alternatives and costs. The [extended spike](spikes/0236/README.md)
 validates the non-Reqnroll cases; its results remain experimental evidence.
 
@@ -307,17 +307,18 @@ spike is mechanical evidence, not the production test-harness choice.
 The six co-located draft specifications below are the decomposition of the
 adopted model. Their companion scenarios state the obligations before production
 tests or code exist; traceability rows remain Missing. No delivery items are cut
-until the detailed agreements are ready. Area folders organize specifications
-and do not select assembly boundaries or a mediator architecture.
+until the detailed agreements are ready. Owner review selected the three
+project homes below; this does not select a mediator or change the engine
+architecture.
 
-| Feature | Agreement                                                                        | Invariant                                                                                                                  | Serves     | Depends on     |
-| ------- | -------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------- | ---------- | -------------- |
-| 0201-F1 | [Binding identity](../../src/analysis/Bindings/.spec/README.md)                  | A qualified identity resolves under consumer grammars independently of frameworks.                                         | R1, R3, R6 | None           |
-| 0201-F2 | [CSharp binding authoring](../../src/analysis/CSharp/.spec/README.md)            | Type defaults assist invoked fixes; explicit member IDs alone supply checked evidence, and missing bindings are diagnosed. | R1, R2, R8 | F1             |
-| 0201-F3 | [Test evidence adapters](../../src/analysis/Tests/.spec/README.md)               | Facts, theory cases and Playwright .NET tests correlate to bound methods without Reqnroll.                                 | R5, R7     | F1, F2         |
-| 0201-F4 | [Optional scenario bridge](../../src/analysis/Scenarios/.spec/README.md)         | Tagged scenarios and generated cases share the identity contract; shared steps do not stand in for scenario identity.      | R3, R4     | F1, F3         |
-| 0201-F5 | [Traceability reconciliation](../../src/analysis/Reconciliation/.spec/README.md) | Every required claim is considered, with explicit missing links, incomplete scope and distinct execution outcomes.         | R5, R7, R8 | F1, F3         |
-| 0201-F6 | [Consumer analysis adoption](../../src/analysis/Adoption/.spec/README.md)        | Declared inputs, scope and policy produce consistent editor/build verdicts without requiring Reqnroll.                     | R9         | F1, F2, F3, F5 |
+| Feature | Agreement                                                                         | Invariant                                                                                                                  | Serves     | Depends on     |
+| ------- | --------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------- | ---------- | -------------- |
+| 0201-F1 | [Binding identity](../../src/Analyzers/Bindings/.spec/README.md)                  | A qualified identity resolves under consumer grammars independently of frameworks.                                         | R1, R3, R6 | None           |
+| 0201-F2 | [CSharp binding authoring](../../src/CodeFixes/.spec/README.md)                   | Type defaults assist invoked fixes; explicit member IDs alone supply checked evidence, and missing bindings are diagnosed. | R1, R2, R8 | F1             |
+| 0201-F3 | [Test evidence adapters](../../src/Analyzers/TestEvidence/.spec/README.md)        | Facts, theory cases and Playwright .NET tests correlate to bound methods without Reqnroll.                                 | R5, R7     | F1, F2         |
+| 0201-F4 | [Optional scenario bridge](../../src/Analyzers/Scenarios/.spec/README.md)         | Tagged scenarios and generated cases share the identity contract; shared steps do not stand in for scenario identity.      | R3, R4     | F1, F3         |
+| 0201-F5 | [Traceability reconciliation](../../src/Analyzers/Reconciliation/.spec/README.md) | Every required claim is considered, with explicit missing links, incomplete scope and distinct execution outcomes.         | R5, R7, R8 | F1, F3         |
+| 0201-F6 | [Consumer analysis adoption](../../src/CodeAnalysis/.spec/README.md)              | Declared inputs, scope and policy produce consistent editor/build verdicts without requiring Reqnroll.                     | R9         | F1, F2, F3, F5 |
 
 F4 is an optional extension; F5 and F6 do not depend on it. F2 keeps diagnostics
 and their repairs together because a repair's safety depends on the same binding
@@ -362,7 +363,7 @@ is silently settled by prototype behavior.
 
 | OQ    | Question                                                                                                                                                                                                                                                                                                                                                                       | Who answers       |
 | ----- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ----------------- |
-| OQ-1  | Is `spec.code` the public product or package name, or a working name for a `specht` capability? How is the analyzer installed and versioned relative to the tool?                                                                                                                                                                                                              | Owner             |
+| OQ-1  | Is `spec.code` the public product or package name, or a working name for a `specht` capability? RESOLVED IN PART, 2026-10-17: owner selected Specht.Analysis in Analyzers, Specht.Codefixes in CodeFixes and deployment project Specht.CodeAnalysis in CodeAnalysis (ADR-0016). Installation and versioning relative to the tool remain open.                                  | Owner             |
 | OQ-2  | Which public XML encoding and code elements implement the adopted hybrid? RESOLVED IN PART, 2026-10-17: owner adopted hardened C, type defaults for authoring and explicit member IDs for evidence (0201-F1 decision 0001). Which languages, declaration kinds, binding roles and multiple-target forms are supported, and which repairs can an invoked code fix safely offer? | Owner with design |
 | OQ-3  | What is the common reference form for Feature specifications, claims and repository- or Feature-scoped ADRs, including repositories without an epic tier? Which additional record kinds does "other such things" include?                                                                                                                                                      | Owner             |
 | OQ-4  | How do Gherkin Feature-level and Scenario-level bindings interact with existing local claim tags? Are bindings inherited, repeated or qualified explicitly?                                                                                                                                                                                                                    | Owner             |
@@ -387,13 +388,48 @@ is silently settled by prototype behavior.
 | Runtime enforcement or remote traceability services                             | The requested capability is static, deterministic and offline.                                                                                         |
 | Production analyzer delivery from this decomposition                            | The isolated binding spike supplies evidence; each production Feature starts with an agreed specification and scenarios before delivery items are cut. |
 
+## Project layout
+
+Owner review, 2026-10-17: adopt the sibling project layout demonstrated by
+[Airframe](https://github.com/RocketSurgeonsGuild/Airframe/tree/main/src/CodeAnalysis).
+The project identities and folder names are deliberate:
+
+| Folder              | Project identity      | Responsibility                                                                                            |
+| ------------------- | --------------------- | --------------------------------------------------------------------------------------------------------- |
+| `src/Analyzers/`    | `Specht.Analysis`     | Binding model and read-only Roslyn diagnostics; no code-fix Workspaces dependency.                        |
+| `src/CodeFixes/`    | `Specht.Codefixes`    | Invoked authoring repairs; references the analyzer project.                                               |
+| `src/CodeAnalysis/` | `Specht.CodeAnalysis` | Deployment project; packages the analyzer and code-fix assemblies rather than duplicating their behavior. |
+
+The planned project files are `Analyzers.csproj`, `CodeFixes.csproj` and
+`CodeAnalysis.csproj` in those folders, following the reference's naming. The
+analyzer and code-fix projects are non-packable; CodeAnalysis owns deployment of
+this capability. `src/tool` continues to own the existing dotnet-tool package.
+A future package must include both component assemblies and the editor/build
+assets it needs; a deployment project must not ship an empty package or leak its
+own build output as a consumer runtime library.
+
+[ADR-0016](../../.spec/adr/0016-analyzer-codefix-deployment-projects.md)
+records this choice and its costs. Features remain vertical agreements rather
+than a one-to-one project list: F2 specifies diagnostics in Analyzers and the
+repairs in CodeFixes, with its agreement beside CodeFixes. F1, F3, F4 and F5 sit
+in the relevant analyzer project slices; F6 sits beside the deployment project.
+No duplicate specification or new shared-core assembly is introduced.
+
+This revision moves the agreements and their acceptance links; it does not
+scaffold empty production assemblies. The standalone experiment remains outside
+the solution. Supported Roslyn target frameworks, dependency versions, package
+installation/versioning, input transport and diagnostic vocabulary still need
+the owning Feature agreements before implementation. The folder decision does
+not waive ADR-0014's engine/host migration gate.
+
 ## Placement and next step
 
 This epic lives at `epics/0201-spec-code-analysis/epic.md`, where the existing
-epic discovery glob finds it. Feature specifications will live beside the areas
-they specify; analyzer and aggregation project placement is not decided here.
+epic discovery glob finds it. Feature specifications live beside their adopted
+project homes as linked above.
 
 The epic remains `deferred` for production at the owner's request on 2026-10-13.
-The 2026-10-17 owner direction adopts the model and authorizes this decomposition
-and spike extension. Resolve each Feature's remaining questions before cutting
-implementation items. Selection of the model does not claim package delivery.
+The 2026-10-17 owner direction adopts the model and authorizes this decomposition,
+spike extension and project-layout correction. Resolve each Feature's remaining
+questions before cutting implementation items. Selection of the model and
+project boundaries does not claim package delivery.

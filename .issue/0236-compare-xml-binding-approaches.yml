@@ -65,6 +65,22 @@ decisions:
     The six literal acceptance links discover 32 draft scenarios per target
     framework (64 intentional skips, no coverage claim). Public syntax, package
     and coverage-policy choices remain open.
+  - |
+    2026-10-17, owner review 5560492857: replace the src/analysis area layout
+    with sibling Analyzers, CodeFixes and CodeAnalysis project homes, following
+    Airframe. Their identities are Specht.Analysis, Specht.Codefixes and
+    Specht.CodeAnalysis (deployment). Reopen for the layout correction; retain
+    Feature/claim IDs and the production deferral. Main and open PRs checked
+    before taking repository ADR-0016 and process lesson 0011; no competing
+    IDs found.
+  - |
+    2026-10-17, review rework: moved the six agreements into the owner-selected
+    sibling project homes and recorded ADR-0016 plus process lesson 0011. All
+    32 claims and Feature/claim IDs are unchanged; both target frameworks
+    discover all 32 draft cases. Current source checker reports zero errors.
+    Restore, Format, Compile, UnitTest and IntegrationTest pass; acceptance
+    reports 896 passed, 574 skipped (including 64 draft cases) and the same
+    six stale-pinned-checker failures. Production remains deferred.
 out_of_scope:
   - "Shipped analyzer packages, public diagnostic IDs, production implementation under src/ or test/, and package delivery; literal acceptance discovery wiring for the draft scenarios is included."
   - "Behavioral proof from documentation, arbitrary assertion analysis, or an IDE compatibility/performance claim."

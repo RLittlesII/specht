@@ -43,9 +43,9 @@ Use type defaults to author explicit member bindings that remain stable across m
 
 ### Assumptions
 
-| ID  | Assumption                                                                                                         |
-| --- | ------------------------------------------------------------------------------------------------------------------ |
-| A-1 | Area folders organize the agreement; no assembly, package or runtime architecture is committed by their placement. |
+| ID  | Assumption                                                                                                                                                                                                                             |
+| --- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| A-1 | Originally, area folders were assumed not to select project boundaries. RESOLVED, 2026-10-17: owner review adopts the Analyzers, CodeFixes and deployment CodeAnalysis project homes (ADR-0016); implementation internals remain open. |
 
 ## 3. Acceptance Criteria
 
@@ -91,7 +91,17 @@ Not yet designed; no production implementation is authorized by this draft.
 
 <!-- last written by: implementer, 2026-10-17 -->
 
-Deferred until the public contract questions in § 11 are resolved. The isolated spike informs those decisions but is not production architecture.
+This Feature spans the two component projects selected in
+[ADR-0016](../../../.spec/adr/0016-analyzer-codefix-deployment-projects.md).
+`Specht.Analysis` in `src/Analyzers` owns read-only diagnostics; `Specht.Codefixes`
+in `src/CodeFixes` owns the invoked `CodeFixProvider` repairs and references the
+analyzer project. Analyzers must not reference the code-fix assembly. One Feature
+agreement covers the shared binding verdict; no claim or scenario is duplicated
+across project homes.
+
+The public syntax and default conflict questions in § 11 still block
+implementation. The experiment's combined executable is not the production
+assembly shape.
 
 ## 8. Testing Strategy
 

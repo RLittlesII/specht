@@ -43,9 +43,9 @@ Apply binding enforcement consistently to an explicitly selected consumer scope.
 
 ### Assumptions
 
-| ID  | Assumption                                                                                                         |
-| --- | ------------------------------------------------------------------------------------------------------------------ |
-| A-1 | Area folders organize the agreement; no assembly, package or runtime architecture is committed by their placement. |
+| ID  | Assumption                                                                                                                                                                                                                             |
+| --- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| A-1 | Originally, area folders were assumed not to select project boundaries. RESOLVED, 2026-10-17: owner review adopts the Analyzers, CodeFixes and deployment CodeAnalysis project homes (ADR-0016); implementation internals remain open. |
 
 ## 3. Acceptance Criteria
 
@@ -87,7 +87,15 @@ Not yet designed; no production implementation is authorized by this draft.
 
 <!-- last written by: implementer, 2026-10-17 -->
 
-Deferred until the public contract questions in § 11 are resolved. The isolated spike informs those decisions but is not production architecture.
+[ADR-0016](../../../.spec/adr/0016-analyzer-codefix-deployment-projects.md) adopts
+`src/Analyzers` (`Specht.Analysis`), `src/CodeFixes` (`Specht.Codefixes`) and
+`src/CodeAnalysis` (`Specht.CodeAnalysis`, deployment). The deployment project
+references both non-packable component projects; CodeFixes references Analyzers.
+Analyzer loading must not depend on CodeFixes or its Workspaces dependencies.
+
+These are agreed project boundaries, not built projects. Remaining implementation
+design waits for § 11. The isolated spike does not select production targets or
+waive the engine/host architecture gate.
 
 ## 8. Testing Strategy
 
@@ -116,10 +124,10 @@ None.
 
 <!-- last written by: spec-author, 2026-10-17 -->
 
-| ID   | Question                                                              | Blocks                    | Resolution |
-| ---- | --------------------------------------------------------------------- | ------------------------- | ---------- |
-| OQ-1 | Which packages, input transport and configuration surface ship first? | Production implementation | Open       |
-| OQ-2 | What severities, exclusions and suppressions allow gradual adoption?  | Production implementation | Open       |
+| ID   | Question                                                                                                                                                                                                                                                                                                                         | Blocks                    | Resolution |
+| ---- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------- | ---------- |
+| OQ-1 | Which deployment identity, packages, input transport and configuration surface ship first? RESOLVED IN PART, 2026-10-17: Specht.CodeAnalysis owns deployment; Specht.Analysis and Specht.Codefixes are separate components (ADR-0016). Installation/versioning, public package ID and input/configuration contracts remain open. | Production implementation | Open       |
+| OQ-2 | What severities, exclusions and suppressions allow gradual adoption?                                                                                                                                                                                                                                                             | Production implementation | Open       |
 
 ## 12. Sign-off
 

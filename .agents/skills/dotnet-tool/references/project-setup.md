@@ -110,9 +110,10 @@ for all `PackAsTool` projects from a shared `Directory.Build.targets`:
 ```
 
 Roslyn does not host the repository-wide checker (brief § 2). Epic `0201`
-selects a separate binding capability, decomposed into draft Features under
-`src/analysis/`; it remains deferred for production. The generic recipe above
-does not select its packaging or implementation architecture.
+selects a separate binding capability; the
+[companion's project homes](../../specht-conventions/SKILL.md#code-analysis-project-homes)
+link its adopted layout and assembly boundaries. Production remains deferred.
+The generic recipe above does not select its implementation architecture.
 
 ## Versioning
 

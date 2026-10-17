@@ -26,8 +26,12 @@ solution-wide from day one.
 
 `IsPackable=false` is the **default**, not the rule: `src/tool` overrides
 it to `true` with `PackAsTool`, because the tool is the product and the package
-is how it ships. No other project packs — the engine library `src/specht` is
+is how it ships. No other built project currently packs; the engine library `src/specht` is
 consumed through the tool, never as a package of its own (brief § 2 Must-4).
+For epic `0201`, [ADR-0016](../../../../.spec/adr/0016-analyzer-codefix-deployment-projects.md)
+adopts CodeAnalysis as the future deployment project and keeps Analyzers and
+CodeFixes non-packable. The current specification-only homes introduce no new
+packing project.
 
 `EnforceCodeStyleInBuild` is what makes the `.editorconfig` `:warning` severities
 real build warnings — and with `TreatWarningsAsErrors`, real failures — instead of

@@ -43,9 +43,9 @@ Resolve stable claim and ADR identities using consumer grammars without a test-f
 
 ### Assumptions
 
-| ID  | Assumption                                                                                                         |
-| --- | ------------------------------------------------------------------------------------------------------------------ |
-| A-1 | Area folders organize the agreement; no assembly, package or runtime architecture is committed by their placement. |
+| ID  | Assumption                                                                                                                                                                                                                             |
+| --- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| A-1 | Originally, area folders were assumed not to select project boundaries. RESOLVED, 2026-10-17: owner review adopts the Analyzers, CodeFixes and deployment CodeAnalysis project homes (ADR-0016); implementation internals remain open. |
 
 ## 3. Acceptance Criteria
 
