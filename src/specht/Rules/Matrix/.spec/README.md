@@ -20,7 +20,7 @@ depends_on: ["F3", "F5", "F7"]
 blocks: ["F13"]
 spikes: []
 created: "2026-10-14"
-updated: "2026-10-15"
+updated: "2026-10-16"
 github_issue: null
 synced_at: null
 ---
@@ -111,49 +111,69 @@ A § 9 row says which scenario and which tests pin a claim and how far, and toda
 
 ## 6. Concern Separation
 
-<!-- last written by: spec-author, 2026-10-14 -->
+<!-- last written by: implementer, 2026-10-16 -->
 
-Pending: owned by `implementer`, written after agreement.
+| Concern                                                              | Classification | Owner                                        |
+| -------------------------------------------------------------------- | -------------- | -------------------------------------------- |
+| Column roles, inline-code test names and declared-form matching      | Business       | `MatrixResolver`                             |
+| Root-relative test-file selection and reads through `IFileSystem`    | Technical      | Existing `SpecDiscovery` store               |
+| Retaining code-span contents alongside unchanged visible table cells | Both           | Existing Markdig document parse              |
+| Rule diagnostics, row exemptions and scenario resolution             | Business       | Later rule slices; not part of this resolver |
 
 ## 7. Technical Design
 
-<!-- last written by: spec-author, 2026-10-14 -->
+<!-- last written by: implementer, 2026-10-16 -->
 
-Pending: owned by `implementer`, written after agreement.
+[`SpecDocument`](../../../Model/SpecDocument.cs) keeps the existing flattened cells and additionally retains inline-code contents per row/cell in [`SpecSection`](../../../Model/SpecSection.cs). Both come from the same Markdig pipe-table parse. Existing rule inputs and baseline verdicts remain unchanged; prose, escaped backticks and code outside the matrix do not become test names.
+
+The existing [`SpecDiscovery`](../../../Discovery/SpecDiscovery.cs) store adds `ReadTestFiles`, reusing its glob and exclusion matcher rather than introducing a second file walker or an I/O dependency in a parser. It reads each matched file once, deduplicated across overlapping globs and ordered by root-relative path. No globs means no directory or file read. `SpecTestFile` carries that relative path and text for reuse across specifications and consumers.
+
+[`MatrixResolver.Resolve`](../MatrixResolver.cs) is pure: the caller supplies the parsed document, selected structure and the already-read files. It selects the matrix role's section, reads the first four columns by position and preserves row order/line. Only the third cell's inline-code contents are split on comma/semicolon, with whitespace trimmed and empty fragments omitted. It reports neither violations nor exemptions. Consumers reuse its returned row resolutions; no check/trace-specific reader is added.
+
+For each test name, the final dotted segment is inserted into each literal declaration form, or matched alone as a whole word when no forms are declared. An open end of a form keeps a whole-word boundary; literal prefixes and suffixes are honored exactly. Every preceding segment must occur as a whole word in the same file. Declaration prefixes/suffixes are escaped literal text; no compiler, assembly or test process is used. The matching name's one-based line and root-relative file are retained; LF, CRLF and CR line endings are counted consistently. When several files match, the first ordinal path supplies the evidence; within that file, the earliest matching name supplies its line. Repeated names reuse the same resolution within a document, keeping their cell order. No `tests` key yields unconfigured names; configured settings with no matching file yield unresolved names.
+
+The operation is registered in the existing engine composition, but not inserted into the checker while no matrix rule consumes it. There is no new rule ID, shipped resource, version bump or architecture migration. Scenario/title/claim-tag resolution, row-level exemptions and `skipped` outcomes extend this same resolver only in the later slices that own them.
 
 ## 8. Testing Strategy
 
-<!-- last written by: spec-author, 2026-10-14 -->
+<!-- last written by: test-writer, 2026-10-16 -->
 
-Pending: owned by `test-writer`, written after agreement.
+| Claim | Mechanism and proof                                                                                                                                               |
+| ----- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| B-001 | Renamed headers preserve the first four cells and the row's source line; unit and real-files integration proofs exercise the parsed matrix.                       |
+| B-003 | Markdig code spans, multiple delimiters, prose and escaped-backtick boundaries are exercised by unit cases.                                                       |
+| B-004 | Two and three dotted segments must occur in the same file; missing qualifiers and longer words remain unresolved in unit cases and a real-files integration case. |
+| B-005 | Whole-word and literal declaration-form matching, name boundaries, multiple forms and file/line evidence have unit cases and a real-files integration proof.      |
+
+File-selection tests use `MockFileSystem` for globs, deduplication, exclusions and no-selection behavior; integration cases use an invented `SpecTree`. Acceptance scenarios already observe the future SPEC032 rule and remain unbound until that rule's item, as the resolver item's cut records. These four matrix rows remain `Partial`, naming the unit and integration evidence rather than claiming an end-to-end rule verdict. Existing golden/determinism checks prove that adding this reader changes no check output.
 
 ## 9. Traceability Matrix
 
-<!-- last written by: spec-author, 2026-10-14 -->
+<!-- last written by: test-writer, 2026-10-16 -->
 
-| Claim ID | Scenario                                                                             | Test    | Status  |
-| -------- | ------------------------------------------------------------------------------------ | ------- | ------- |
-| B-001    | A renamed matrix header keeps its column's role                                      | Missing | Missing |
-| B-002    | A test name no declared file holds is reported                                       | Missing | Missing |
-| B-003    | Test names are the inline-code spans of the Test cell                                | Missing | Missing |
-| B-004    | A dotted test name resolves when one file holds both parts                           | Missing | Missing |
-| B-005    | With no declared form a test name resolves as a whole word                           | Missing | Missing |
-| B-006    | A Test cell with no inline code is reported                                          | Missing | Missing |
-| B-007    | With no test files declared no test name is reported                                 | Missing | Missing |
-| B-008    | A Scenario cell that matches no scenario title is reported                           | Missing | Missing |
-| B-009    | A Scenario cell naming a scenario without the row's tag is reported                  | Missing | Missing |
-| B-010    | Without title matching the Scenario cell is prose                                    | Missing | Missing |
-| B-011    | A live claim no scenario carries is reported unless its row is missing               | Missing | Missing |
-| B-012    | A row reported for its missing scenario is not reported for its status               | Missing | Missing |
-| B-013    | A covered row whose scenario or tests do not resolve is reported                     | Missing | Missing |
-| B-014    | A partial row with nothing resolved is reported                                      | Missing | Missing |
-| B-015    | A missing row whose tests all resolve is reported as stale                           | Missing | Missing |
-| B-016    | With no test files declared a covered row is judged by its scenario and a named test | Missing | Missing |
-| B-017    | A status that is no known marker is reported                                         | Missing | Missing |
-| B-018    | A waived row without a signed-off approver and a date is reported                    | Missing | Missing |
-| B-019    | A withdrawn claim a scenario still carries is reported                               | Missing | Missing |
-| B-020    | The waiver and retired-claim rules are silent unless raised                          | Missing | Missing |
-| B-021    | Under schema 0.1.0 none of the matrix rules runs                                     | Missing | Missing |
+| Claim ID | Scenario                                                                             | Test                                                                                                                                                                                                                                                                                                                                                           | Status  |
+| -------- | ------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------- |
+| B-001    | A renamed matrix header keeps its column's role                                      | `MatrixResolverUnitTests.RenamedMatrixHeaders_WhenResolved_ShouldKeepColumnRolesAndSourceLines`; `MatrixResolverIntegrationTests.AParsedMatrixAndDeclaredFiles_WhenResolved_ShouldRetainColumnRolesNamesAndDeclarationEvidence`                                                                                                                                | Partial |
+| B-002    | A test name no declared file holds is reported                                       | Missing                                                                                                                                                                                                                                                                                                                                                        | Missing |
+| B-003    | Test names are the inline-code spans of the Test cell                                | `MatrixResolverUnitTests.ATestCell_WhenResolved_ShouldReadOnlyInlineCodeNamesInOrder`; `MatrixResolverIntegrationTests.AParsedMatrixAndDeclaredFiles_WhenResolved_ShouldRetainColumnRolesNamesAndDeclarationEvidence`                                                                                                                                          | Partial |
+| B-004    | A dotted test name resolves when one file holds both parts                           | `MatrixResolverUnitTests.ATestName_WhenResolved_ShouldRequireItsDeclaredFormAndEveryQualifierInOneFile`; `MatrixResolverUnitTests.DottedPartsInSeparateFiles_WhenResolved_ShouldNotCombineThem`; `MatrixResolverIntegrationTests.QualifiersSplitAcrossDeclaredFiles_WhenResolved_ShouldLeaveTheDottedNameUnresolved`                                           | Partial |
+| B-005    | With no declared form a test name resolves as a whole word                           | `MatrixResolverUnitTests.ATestName_WhenResolved_ShouldRequireItsDeclaredFormAndEveryQualifierInOneFile`; `MatrixResolverUnitTests.SeveralMatchingFilesAndDeclarations_WhenResolved_ShouldReturnTheFirstOrdinalFileAndNameLine`; `MatrixResolverIntegrationTests.AParsedMatrixAndDeclaredFiles_WhenResolved_ShouldRetainColumnRolesNamesAndDeclarationEvidence` | Partial |
+| B-006    | A Test cell with no inline code is reported                                          | Missing                                                                                                                                                                                                                                                                                                                                                        | Missing |
+| B-007    | With no test files declared no test name is reported                                 | Missing                                                                                                                                                                                                                                                                                                                                                        | Missing |
+| B-008    | A Scenario cell that matches no scenario title is reported                           | Missing                                                                                                                                                                                                                                                                                                                                                        | Missing |
+| B-009    | A Scenario cell naming a scenario without the row's tag is reported                  | Missing                                                                                                                                                                                                                                                                                                                                                        | Missing |
+| B-010    | Without title matching the Scenario cell is prose                                    | Missing                                                                                                                                                                                                                                                                                                                                                        | Missing |
+| B-011    | A live claim no scenario carries is reported unless its row is missing               | Missing                                                                                                                                                                                                                                                                                                                                                        | Missing |
+| B-012    | A row reported for its missing scenario is not reported for its status               | Missing                                                                                                                                                                                                                                                                                                                                                        | Missing |
+| B-013    | A covered row whose scenario or tests do not resolve is reported                     | Missing                                                                                                                                                                                                                                                                                                                                                        | Missing |
+| B-014    | A partial row with nothing resolved is reported                                      | Missing                                                                                                                                                                                                                                                                                                                                                        | Missing |
+| B-015    | A missing row whose tests all resolve is reported as stale                           | Missing                                                                                                                                                                                                                                                                                                                                                        | Missing |
+| B-016    | With no test files declared a covered row is judged by its scenario and a named test | Missing                                                                                                                                                                                                                                                                                                                                                        | Missing |
+| B-017    | A status that is no known marker is reported                                         | Missing                                                                                                                                                                                                                                                                                                                                                        | Missing |
+| B-018    | A waived row without a signed-off approver and a date is reported                    | Missing                                                                                                                                                                                                                                                                                                                                                        | Missing |
+| B-019    | A withdrawn claim a scenario still carries is reported                               | Missing                                                                                                                                                                                                                                                                                                                                                        | Missing |
+| B-020    | The waiver and retired-claim rules are silent unless raised                          | Missing                                                                                                                                                                                                                                                                                                                                                        | Missing |
+| B-021    | Under schema 0.1.0 none of the matrix rules runs                                     | Missing                                                                                                                                                                                                                                                                                                                                                        | Missing |
 
 ## 10. Lessons / Spec Deltas
 

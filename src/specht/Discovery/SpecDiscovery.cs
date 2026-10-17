@@ -68,6 +68,19 @@ public sealed class SpecDiscovery(IFileSystem fileSystem)
     public IReadOnlyList<string> FindCompanions(SpecLocation specification, SpecDiscoveryInputs inputs) =>
         Beside(specification, inputs.CompanionFiles.Select(static glob => new Regex(Pattern(glob))).ToList()).ToList();
 
+    /// <summary>Reads each declared test file once, in root-relative ordinal order, outside the manifest's exclusions.</summary>
+    /// <param name="root">The repository root.</param>
+    /// <param name="globs">The test file globs.</param>
+    /// <param name="exclusions">The selected manifest's directory exclusions.</param>
+    /// <returns>The selected files with root-relative paths and text.</returns>
+    public IReadOnlyList<SpecTestFile> ReadTestFiles(
+        string root, IReadOnlyList<string> globs, IReadOnlyList<string> exclusions) =>
+        globs.Count == 0
+            ? []
+            : Matching(Files(root), globs, exclusions)
+                .Select(file => new SpecTestFile(file.Relative, fileSystem.File.ReadAllText(file.Path)))
+                .ToArray();
+
     private static IEnumerable<(string Path, string Relative)> Matching(
         List<(string Path, string Relative)> files,
         IReadOnlyList<string> globs,
