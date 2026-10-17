@@ -815,3 +815,35 @@ Feature: The manifest carries the roles
     When the check runs
     Then the manifest is rejected
     And the rejection names the done marker
+
+
+  @B-065 @B-002
+  Scenario: The working schema checks the sign-off table headers
+    Given the manifest pins schema version "0.2.0"
+    And the manifest declares no table headers
+    And the root holds a specification whose sign-off table has a "Decision" column in second place
+    When the check runs
+    Then the table-header rule expects "Section | Status | Reviewer | Note" for the sign-off section
+
+  @B-066
+  Scenario: A table role left out keeps the pinned default headers
+    Given the manifest pins schema version "0.2.0"
+    And the manifest declares only its matrix table headers
+    When the manifest is loaded
+    Then the sign-off table headers are "Section | Status | Reviewer | Note"
+    And the matrix table headers keep the declared names
+
+  @B-066 @boundary
+  Scenario: Explicit sign-off headers replace their whole default list
+    Given the manifest pins schema version "0.2.0"
+    And the manifest declares sign-off headers "Area | Verdict | Approver | Reason"
+    When the manifest is loaded
+    Then the sign-off table headers are "Area | Verdict | Approver | Reason"
+
+  @B-067 @boundary
+  Scenario: An older pin keeps its table-map replacement behavior
+    Given the manifest pins schema version "0.1.0"
+    And the manifest declares only its matrix table headers
+    When the manifest is loaded
+    Then the table map contains no sign-off entry
+    And the matrix table headers keep the declared names
