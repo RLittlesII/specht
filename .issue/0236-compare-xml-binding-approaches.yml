@@ -62,8 +62,10 @@ decisions:
     four passing Reqnroll invocations, ten direct passes, one intentional skip
     and one separately verified intentional failure. Authored six draft
     Features with 32 claims/scenarios and two-sided missing-binding checks.
-    Public syntax, package and coverage-policy choices remain open.
+    The six literal acceptance links discover 32 draft scenarios per target
+    framework (64 intentional skips, no coverage claim). Public syntax, package
+    and coverage-policy choices remain open.
 out_of_scope:
-  - "Shipped analyzer packages, public diagnostic IDs, production implementation under src/ or test/, and package delivery."
+  - "Shipped analyzer packages, public diagnostic IDs, production implementation under src/ or test/, and package delivery; literal acceptance discovery wiring for the draft scenarios is included."
   - "Behavioral proof from documentation, arbitrary assertion analysis, or an IDE compatibility/performance claim."
   - "Settling unrequested public syntax, packaging, diagnostic versioning or coverage-policy questions; implementing production Features."
