@@ -153,6 +153,52 @@ Feature: The report contract
     Then the violation's expectation names B-003 as needing exactly one row
     And the number of rows it has
 
+  @B-012
+  Scenario: A reused identity names its first declaration
+    Given the root holds the same Feature identity in both layouts
+    When the check runs with JSON output
+    Then each reused identity expectation carries its form, value and first declaration
+
+  @B-012
+  Scenario Outline: An item identity violation says the value implied
+    Given the root holds an item whose <key> disagrees with its <source>
+    When the check runs with JSON output
+    Then the item expectation carries its <form> form and the <value> implied
+
+    Examples:
+      | key    | source      | form      | value   |
+      | id     | file name   | task      | 0001-01 |
+      | parent | Feature     | qualified | 0001-F1 |
+
+  @B-013
+  Scenario Outline: A companion count violation says the required count
+    Given the root holds a specification with <count> companions
+    When the check runs with JSON output
+    Then the companion expectation requires exactly one file
+
+    Examples:
+      | count |
+      | 0     |
+      | 2     |
+
+  @B-014
+  Scenario: A duplicate claim names the first declaration line
+    Given the root holds a specification declaring B-001 twice
+    When the check runs with JSON output
+    Then the duplicate claim expectation carries its grammar and first declaration line
+
+  @B-015
+  Scenario Outline: A matrix expectation carries every declared claim count
+    Given the root holds a specification with <defect> matrix rows
+    When the check runs with JSON output
+    Then every matrix expectation requires one row and counts every declared claim
+
+    Examples:
+      | defect     |
+      | missing    |
+      | duplicate  |
+      | undeclared |
+
   @B-016
   Scenario: A child-item violation says the file shape or the next number
     Given the root holds a specification whose children skip from 0001-02 to 0001-04
