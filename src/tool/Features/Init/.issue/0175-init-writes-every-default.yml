@@ -2,7 +2,7 @@ id: "0175"
 type: task
 title: Write a level for every rule from init
 
-status: ready-for-architecture
+status: done
 
 risk: 3
 
@@ -21,8 +21,8 @@ claims:
   - B-026
 
 created: "2026-10-11"
-updated: "2026-10-11"
-closed: null
+updated: "2026-10-16"
+closed: "2026-10-16"
 
 summary: |
   The owner, 2026-10-11: "ensure that init covers providing the user with
@@ -60,6 +60,18 @@ decisions:
     and delivers B-012 alone; and a separate item for B-004, whose amended
     comparison cannot pass or fail apart from the embedded `rules` key this
     item adds.
+
+  - |
+    2026-10-16, repository owner initially chose to wait for a schema
+    recovery decision on the reported v0.1.131 asset. That wait was based
+    on interpreting the asset as a freeze of schema 0.2.0.
+  - |
+    2026-10-16, repository owner clarified: "we haven't shipped anything
+    to 0.2.0 schema is still valid." The freeze inference is withdrawn;
+    schema 0.2.0 remains the working version under 0001-F7 decision 0014.
+    Delivery resumes without a schema bump. Init decision 0006 records
+    this item's boundary: embed the rule defaults in 0.2.0, relock it,
+    preserve 0.1.0, and infer no general prerelease exception.
 
 out_of_scope:
   - "Changing a level in an existing manifest — § 5 #9; the set command, 0001-F11."

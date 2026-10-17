@@ -91,5 +91,28 @@
   "claim": {
     "tag": "@{claim}",
     "tagIgnoreCase": false
+  },
+  "rules": {
+    "SPEC001": "error",
+    "SPEC002": "error",
+    "SPEC003": "error",
+    "SPEC004": "error",
+    "SPEC010": "error",
+    "SPEC011": "error",
+    "SPEC012": "error",
+    "SPEC013": "error",
+    "SPEC020": "error",
+    "SPEC021": "error",
+    "SPEC030": "error",
+    "SPEC031": "error",
+    "SPEC040": "error",
+    "SPEC041": "error",
+    "SPEC043": "error",
+    "SPEC044": "error",
+    "SPEC050": "error",
+    "SPEC051": "error",
+    "SPEC052": "error",
+    "SPEC060": "error",
+    "SPEC061": "error"
   }
 }
