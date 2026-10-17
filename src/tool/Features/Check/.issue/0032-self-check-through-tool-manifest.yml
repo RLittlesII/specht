@@ -2,7 +2,7 @@ id: "0032"
 type: task
 title: Switch Specht to the tool through the local tool manifest
 
-status: ready-for-architecture
+status: done
 
 risk: 3
 
@@ -18,8 +18,8 @@ claims:
   - B-014
 
 created: "2026-10-08"
-updated: "2026-10-11"
-closed: null
+updated: "2026-10-16"
+closed: "2026-10-16"
 
 summary: |
   Once a specht.tool package is published, have `./build.sh Specht`
