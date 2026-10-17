@@ -1,0 +1,45 @@
+id: "0237"
+type: bug
+title: Validate the working schema with the working checker
+status: in-progress
+value: 5
+risk: 3
+parent: null
+children: []
+depends_on: []
+spikes: []
+spec: null
+claims: []
+created: "2026-10-17"
+updated: "2026-10-17"
+closed: null
+summary: |
+  The Specht target invokes the published 0.1.131 checker before compilation.
+  It rejects tests/owners in this repository's working 0.2.0 manifest with
+  exit 3; three installed-tool acceptance cases fail on the same mismatch.
+  A newer published checker cannot be a prerequisite for developing it.
+
+  The owner requested this fix in an isolated session after 0227 merged.
+  Build 0055-F1 C-3, Check 0001-F2 B-014/A-2 and decision 0009 explicitly
+  require the committed package pin here, so changing that guarantee needs
+  the owner's choice before implementation. Package installation can remain
+  part of self-check through a locally packed checkout, or be proven in
+  separate package tests while self-check runs the checkout's CLI.
+
+  Main at 06753445 and every open pull request were checked: no open PR
+  claimed an id above 0236. This item reserves 0237 on its draft PR. An
+  isolated detached checkout was created for read-only orientation because
+  the prior checkout had been removed and the parent's main checkout must
+  not be edited. This item is taken before its delivery branch and edits.
+acceptance_criteria:
+  - "Record the owner's self-check execution choice in the affected agreements before implementation."
+  - "Validate this checkout's working manifest with this checkout's checker without a newer published package."
+  - "Keep diagnostics, exit-code propagation, staged-tree checking and package-installation coverage."
+  - "Run meaningful regression tests and the full build without bypassing the validation gate."
+  - "Reconcile 0227's merged delivery state while retaining its historical failed-check evidence."
+decisions: []
+out_of_scope:
+  - "Publishing or tagging a release, or changing the package/schema version."
+  - "Removing the required tests/owners configuration or disabling checks."
+  - "Matrix-rule agreement and further 0001-F12 implementation."
+  - "Architecture migration gated by ADR-0014."
