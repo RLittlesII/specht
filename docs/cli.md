@@ -6,7 +6,7 @@ type: reference
 
 # Command line
 
-`specht` checks a tree, `specht init` writes the files a check needs, and
+`specht` checks a tree, `frontmatter` checks one document, `specht init` writes the files a check needs, and
 `schema` groups commands for the repository's schema version. Installed as a local tool, each runs as `dotnet specht`.
 
 ## `specht`
@@ -61,6 +61,45 @@ specifications: epics 0, features 1
 items: 0
 rules evaluated: 21
 errors: 1, warnings: 0
+```
+
+## `specht frontmatter`
+
+```text
+specht frontmatter --kind <KIND> (<path> | --stdin) [--root <DIR>]
+```
+
+Checks only one document's YAML frontmatter against the named kind's schema,
+using the version and schema source selected by the root's manifest. The kinds
+are `feature`, `task` and `epic`. The root's other documents and the document's
+sections, companions and dependencies are not checked. The command is offline
+and writes nothing; it has no JSON, report-file or fix option.
+
+| Option          | Value                       | Default               | Does                                                                      |
+| --------------- | --------------------------- | --------------------- | ------------------------------------------------------------------------- |
+| `--kind <KIND>` | `feature`, `task` or `epic` | Required              | Selects the frontmatter schema kind.                                      |
+| `--stdin`       | none                        | Off                   | Reads the complete document from standard input instead of a path.        |
+| `--root <DIR>`  | `<DIR>`                     | The working directory | Selects the root whose manifest determines the schema version and source. |
+| `-h, --help`    | none                        | Off                   | Prints the command's help and checks nothing.                             |
+
+Give exactly one document path or `--stdin`; a lone `-` is not a stdin alias.
+A relative document path is resolved from the working directory, independently
+of the root, and may name a file outside the root.
+
+**Stdout.** One MSBuild-shaped line per violation, followed by
+`errors: <count>, warnings: <count>`. A path is printed exactly as typed;
+standard input is named `<stdin>`. Only SPEC001 to SPEC004 can be reported.
+Rule-level overrides are the root's: warnings alone succeed and off rules
+report nothing.
+
+**Exit codes.** `0` for no errors, `1` for errors, `2` for usage or missing
+root/manifest, `3` for invalid configuration, and `4` for an unknown kind or
+missing document. Failures go to stderr with empty stdout. When several apply,
+usage is reported first, then kind, then document path, then root and manifest.
+
+```sh
+specht frontmatter --kind task drafts/issue.md --root .
+cat drafts/issue.md | specht frontmatter --kind task --stdin --root .
 ```
 
 ## `specht init`

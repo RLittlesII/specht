@@ -16,6 +16,7 @@ See [Quick start](https://github.com/RLittlesII/specht#quick-start) in the repos
 specht [--root <dir>] [--strict] [--json] [--schema-source <embedded|disk>]
 specht schema list [--root <dir>]
 specht schema pin [version] [--root <dir>]
+specht frontmatter --kind <kind> (<path> | --stdin) [--root <dir>]
 specht init [--root <dir>] [--schemas] [--templates] [--all]
             [--upstream <address>] [--upstream-version <label>] [--upstream-hash <kind=hash>]...
 specht --version
