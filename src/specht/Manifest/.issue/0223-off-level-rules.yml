@@ -2,7 +2,7 @@ id: "0223"
 type: task
 title: Let a rule's own level be off
 
-status: ready-for-architecture
+status: done
 
 risk: 3
 
@@ -19,8 +19,8 @@ claims:
   - B-062
 
 created: "2026-10-15"
-updated: "2026-10-15"
-closed: null
+updated: "2026-10-16"
+closed: "2026-10-16"
 
 summary: |
   A rule may ship with its own level off: it reports nothing until the

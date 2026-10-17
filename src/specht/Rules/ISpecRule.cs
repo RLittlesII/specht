@@ -1,3 +1,4 @@
+using Specht.Manifest;
 using Specht.Model;
 
 namespace Specht.Rules;
@@ -14,6 +15,9 @@ public interface ISpecRule
 
     /// <summary>Every <c>SPEC###</c> id this rule can report, for the summary line.</summary>
     IReadOnlyList<string> ReportedIds { get; }
+
+    /// <summary>The rule's own level when the manifest names no override; existing rules remain enabled.</summary>
+    SpecRuleLevel DefaultLevel => SpecRuleLevel.Error;
 
     /// <summary>Evaluates the rule against the whole resolved tree.</summary>
     IEnumerable<SpecViolation> Evaluate(SpecModel model);

@@ -1,6 +1,6 @@
 namespace Specht.Manifest;
 
-/// <summary>An explicit rule override; absence retains the rule's severity.</summary>
+/// <summary>A rule's own selection level or an explicit manifest override.</summary>
 public enum SpecRuleLevel
 {
     /// <summary>Report an error.</summary>
