@@ -9,7 +9,7 @@ risk: 3
 parent: "0224"
 children: []
 
-depends_on: ["0223", "0225"]
+depends_on: ["0223", "0225", "0235"]
 spikes: []
 
 spec: src/specht/Rules/Matrix/.spec/README.md
@@ -20,7 +20,7 @@ claims:
   - B-020
 
 created: "2026-10-15"
-updated: "2026-10-15"
+updated: "2026-10-17"
 closed: null
 
 summary: |
@@ -47,8 +47,9 @@ summary: |
   reader; SPEC034 reads § 12's Reviewer and Status by the manifest's
   markers (C-5); and the relock moves the lock's digest for 0.2.0.
 
-  Blocked on 0001-F5 OQ-24: no manifest role names § 12's reviewer and
-  status columns, which B-018 reads.
+  The owner resolved 0001-F5 OQ-24 on 2026-10-17 (decision 0015).
+  Blocked on the separate Manifest prerequisite 0235, which supplies
+  the positional tables.signOff role and per-role defaults B-018 reads.
 
 acceptance_criteria:
   - "B-018 — waived row without a signed-off approver and date, SPEC034"
@@ -103,6 +104,13 @@ decisions:
     cycle forms. Whichever option the owner chooses, this item reads the
     column that way; it rejects none of them. Should the wait run long,
     SPEC035 (B-019) may be split out, since it does not read § 12.
+
+  - |
+    2026-10-17, spec-author: the owner accepted OQ-24 as tables.signOff
+    with per-role defaults from 0.2.0 (Manifest decision 0015). New item
+    0235 delivers the Manifest mechanism first; this item remains
+    blocked until that prerequisite is done. No short-list rejection
+    or Report Feature behavior is added here.
 
 out_of_scope:
   - "The off level itself: 0223 (0001-F5 B-061)."

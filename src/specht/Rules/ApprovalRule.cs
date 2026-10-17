@@ -1,3 +1,4 @@
+using System.Text.Json.Nodes;
 using Specht.Model;
 
 namespace Specht.Rules;
@@ -49,7 +50,17 @@ public sealed class ApprovalRule : ISpecRule
                             feature.RelativePath,
                             matrix.RowLines[index],
                             row.Count > 0 ? row[0].Trim() : null,
-                            "spec_status is 'approved' while § 9 still carries a 'Missing' cell");
+                            "spec_status is 'approved' while § 9 still carries a 'Missing' cell")
+                        {
+                            Expected = new JsonObject
+                            {
+                                ["section"] = matrix.Title,
+                                ["row"] = index + 1,
+                                ["columns"] = new JsonArray(row.Select(static (cell, column) => (Cell: cell, Column: column + 1))
+                                    .Where(cell => string.Equals(cell.Cell.Trim(), markers["missing"], StringComparison.Ordinal))
+                                    .Select(static cell => (JsonNode?)JsonValue.Create(cell.Column)).ToArray()),
+                            },
+                        };
                     }
                 }
             }
@@ -73,7 +84,10 @@ public sealed class ApprovalRule : ISpecRule
                         feature.RelativePath,
                         signOff.RowLines[index],
                         row.Count > 0 ? row[0].Trim() : null,
-                        "spec_status is 'approved' while § 12 carries a row that is not approved");
+                        "spec_status is 'approved' while § 12 carries a row that is not approved")
+                    {
+                        Expected = new JsonObject { ["section"] = signOff.Title, ["row"] = index + 1 },
+                    };
                 }
             }
         }

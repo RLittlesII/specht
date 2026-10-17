@@ -1,0 +1,60 @@
+id: "0235"
+type: task
+title: Supply sign-off headers and fill table defaults per role
+
+status: done
+
+risk: 3
+
+parent: "0010"
+children: []
+
+depends_on: ["0015", "0191"]
+spikes: []
+
+spec: src/specht/Manifest/.spec/README.md
+
+claims:
+  - B-065
+  - B-066
+  - B-067
+
+created: "2026-10-17"
+updated: "2026-10-17"
+closed: "2026-10-17"
+
+summary: |
+  The owner accepted OQ-24's proposed tables.signOff contract on
+  2026-10-17 (decision 0015). Working schema 0.2.0 supplies the four
+  positional sign-off headers. The parser fills omitted table roles
+  from that pin's defaults while preserving explicit header lists.
+  SPEC013 already checks table roles and therefore checks the new
+  default too. Older pins retain whole-map replacement.
+
+  This is the separate Manifest prerequisite for 0227, which reads the
+  reviewer and status columns through the agreed positional table role.
+  It adds no rule ID and changes no 0.1.0 resource. Relock working 0.2.0
+  through 0001-F7 decision 0014's procedure. Risk 3: explicit partial
+  table maps change interpretation only from 0.2.0, and the default
+  reaches SPEC013 and init's shipping copy together.
+
+acceptance_criteria:
+  - "B-065 — positional sign-off headers in the pinned default"
+  - "B-066 — omitted roles filled, explicit lists preserved"
+  - "B-067 — older pins retain whole-map replacement"
+  - "B-002 and B-019 retain role-driven header checks and exact-pin defaults."
+  - "0.1.0 resource bytes and baseline verdicts remain unchanged."
+  - "§ 9 carries a row naming a test for each id above."
+
+decisions:
+  - |
+    2026-10-17, spec-author: cut after the owner accepted the contract
+    recorded in Manifest decision 0015. The new item is 0235, checked
+    against main and all open pull requests before claiming it.
+    Value inherits the parent. A short-header rejection was not
+    approved and is excluded.
+
+out_of_scope:
+  - "The waiver and retired-claim rules and their IDs: 0227."
+  - "A minimum table-header count: § 5 row 17."
+  - "Report Feature changes and --explain."

@@ -1,3 +1,4 @@
+using System.Text.Json.Nodes;
 using Specht.Model;
 
 namespace Specht.Rules;
@@ -59,7 +60,14 @@ public sealed class DependencyRule : ISpecRule
                         feature.RelativePath,
                         feature.Document.Frontmatter.LineOf(key),
                         edge,
-                        $"frontmatter {key} names '{edge}', which is not a discovered Feature");
+                        $"frontmatter {key} names '{edge}', which is not a discovered Feature")
+                    {
+                        Expected = new JsonObject
+                        {
+                            ["features"] = new JsonArray(identities.Order(StringComparer.Ordinal)
+                                .Select(static identity => (JsonNode?)JsonValue.Create(identity)).ToArray()),
+                        },
+                    };
 
                     continue;
                 }
@@ -72,7 +80,10 @@ public sealed class DependencyRule : ISpecRule
                         feature.RelativePath,
                         feature.Document.Frontmatter.LineOf(key),
                         edge,
-                        $"frontmatter {key} names this Feature itself");
+                        $"frontmatter {key} names this Feature itself")
+                    {
+                        Expected = new JsonObject { ["cycle"] = new JsonArray(feature.Identity, feature.Identity) },
+                    };
 
                     continue;
                 }
@@ -87,7 +98,13 @@ public sealed class DependencyRule : ISpecRule
                         feature.RelativePath,
                         feature.Document.Frontmatter.LineOf(key),
                         edge,
-                        $"'{feature.Identity}' declares {key} '{edge}', but '{edge}' does not declare {opposite} '{feature.Identity}'");
+                        $"'{feature.Identity}' declares {key} '{edge}', but '{edge}' does not declare {opposite} '{feature.Identity}'")
+                    {
+                        Expected = new JsonObject
+                        {
+                            ["edge"] = new JsonObject { ["feature"] = edge, ["key"] = opposite, ["value"] = feature.Identity },
+                        },
+                    };
                 }
             }
         }
@@ -123,7 +140,13 @@ public sealed class DependencyRule : ISpecRule
                 feature.RelativePath,
                 feature.Document.Frontmatter.LineOf("depends_on"),
                 feature.Identity,
-                $"dependency cycle: {string.Join(" -> ", path)}");
+                $"dependency cycle: {string.Join(" -> ", path)}")
+            {
+                Expected = new JsonObject
+                {
+                    ["cycle"] = new JsonArray(path.Select(static identity => (JsonNode?)JsonValue.Create(identity)).ToArray()),
+                },
+            };
         }
     }
 

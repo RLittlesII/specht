@@ -355,3 +355,12 @@ Feature: Matrix resolution
     When the check runs
     Then no scenario-title, missing-scenario, unresolved-test, status, waiver or retired-claim finding is reported
     And the report is byte-for-byte the one the tool gave that tree before this Feature
+
+
+  @B-018
+  Scenario: A waiver reads the renamed sign-off columns by position
+    Given the manifest pins schema version "0.2.0"
+    And the sign-off table uses the manifest's renamed column headers
+    And a waived row names an approver with a completed sign-off
+    When the check runs with the waiver rule raised
+    Then the waiver rule reports nothing
