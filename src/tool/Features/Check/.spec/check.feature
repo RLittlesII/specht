@@ -107,7 +107,7 @@ Feature: The check command
   Scenario: Three call sites get one verdict
     Given the tool honours rule settings in the manifest
     And a prepared root holding one error-severity and one warning-severity violation
-    And the root carries this repository's source, which the build target builds the tool from
+    And the root carries this repository's build files and local tool manifest
     When the check runs against that root from a shell
     And the check runs against that root through the build target
     And the check runs against that root through the pre-commit hook
@@ -127,6 +127,7 @@ Feature: The check command
   Scenario: The build reaches the tool through the local tool manifest
     Given the tool has been published as a package
     And this repository's local tool manifest names that package
+    And this repository's tool source cannot be built
     When the build's Specht target runs
     Then it reaches the tool through the local tool manifest
     And it does not build the tool from this repository's source

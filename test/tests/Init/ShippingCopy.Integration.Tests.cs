@@ -12,7 +12,7 @@ namespace Specht.Tests.Init;
 /// The shipping copy against this repository's live copy (0001-F4 B-004, C-2): the newest version's frontmatter schemas and
 /// templates are byte-identical to the files under <c>.specht/schema/frontmatter/</c> and <c>.specht/templates/</c>, and its
 /// manifest equals the live one, <c>.specht/manifest.json</c> (<c>0001-F5</c> decision 0011), on every key the
-/// embedded manifest carries; keys only the live manifest carries are consumer configuration and outside the comparison.
+/// embedded manifest carries except consumer rule levels; keys only the live manifest carries are also outside the comparison.
 /// </summary>
 [Trait("Tier", "Integration")]
 public sealed partial class ShippingCopyIntegrationTests
@@ -46,13 +46,14 @@ public sealed partial class ShippingCopyIntegrationTests
     }
 
     [Fact]
-    public void TheNewestEmbeddedManifest_WhenComparedWithTheLiveManifest_ShouldEqualItOnEveryKeyTheEmbeddedManifestCarries()
+    public void TheNewestEmbeddedManifest_WhenComparedWithTheLiveManifest_ShouldEqualItOnEveryToolOwnedKey()
     {
         // Given
         var name = $"manifest/v{NewestVersion()}/manifest.json";
         var path = Path.Combine([AppContext.BaseDirectory, .. SpecTree.ManifestPath.Split('/')]);
         File.Exists(path).Should().BeTrue($"this repository's live manifest is {SpecTree.ManifestPath}");
         var live = JsonNode.Parse(File.ReadAllText(path))!.AsObject();
+        live["rules"] = new JsonObject { ["SPEC031"] = "warning" };
 
         // When
         var embedded = JsonNode.Parse(Read(name))!.AsObject();
@@ -61,6 +62,11 @@ public sealed partial class ShippingCopyIntegrationTests
         embedded.Should().NotBeEmpty($"{name} carries the tool-owned keys");
         foreach (var (key, value) in embedded)
         {
+            if (key == "rules")
+            {
+                continue;
+            }
+
             live.ContainsKey(key).Should().BeTrue($"{SpecTree.ManifestPath} carries the tool-owned key {key}");
             JsonNode.DeepEquals(value, live[key])
                 .Should()

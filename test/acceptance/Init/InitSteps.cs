@@ -348,6 +348,11 @@ public sealed partial class InitSteps
         var live = _liveManifest ?? throw new InvalidOperationException("No live manifest was read.");
         foreach (var (key, value) in _embeddedManifest!)
         {
+            if (key == "rules")
+            {
+                continue;
+            }
+
             live.ContainsKey(key).Should().BeTrue($".specht/{Manifest} carries the tool-owned key {key}");
             JsonNode.DeepEquals(value, live[key]).Should().BeTrue($"the embedded and live manifests agree on the tool-owned key {key}");
         }

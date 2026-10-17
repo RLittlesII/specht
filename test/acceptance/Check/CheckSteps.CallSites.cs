@@ -34,8 +34,8 @@ public sealed partial class CheckSteps(IUnitTestRuntimeProvider runtime, PackedT
         _feature = Path.GetRelativePath(Tree.Root, Path.Combine(Path.GetDirectoryName(specification)!, "feature.feature")).Replace('\\', '/');
     }
 
-    [Given("the root carries this repository's source, which the build target builds the tool from")]
-    public void GivenTheRootCarriesThisRepositorysSourceWhichTheBuildTargetBuildsTheToolFrom()
+    [Given("the root carries this repository's build files and local tool manifest")]
+    public void GivenTheRootCarriesThisRepositorysBuildFilesAndLocalToolManifest()
     {
         CopyFromRepository(
             Listed().Where(static file => file.Split('/') is var parts && parts[0] != "epics" && !parts.Any(static part => part is ".spec" or ".issue")));
@@ -59,11 +59,11 @@ public sealed partial class CheckSteps(IUnitTestRuntimeProvider runtime, PackedT
     {
         CopyFromRepository(Listed("--cached", "--others", "--exclude-standard"));
         _source = Succeed(Tree.Root, "pwd", "-P").TrimEnd('\n');
-        Launch(Source, "--root", Source);
+        LaunchInstalled();
     }
 
     [When("the check runs against that root from a shell")]
-    public void WhenTheCheckRunsAgainstThatRootFromAShell() => Launch(Source, "--root", Source);
+    public void WhenTheCheckRunsAgainstThatRootFromAShell() => LaunchInstalled();
 
     [When("the check runs against that root through the build target")]
     public void WhenTheCheckRunsAgainstThatRootThroughTheBuildTarget() =>
@@ -173,6 +173,9 @@ public sealed partial class CheckSteps(IUnitTestRuntimeProvider runtime, PackedT
 
     private string[] Listed(params string[] options) =>
         Succeed(packed.Repository, "git", ["ls-files", "-z", .. options]).Split('\0', StringSplitOptions.RemoveEmptyEntries);
+
+    private void LaunchInstalled() =>
+        (_stdout, _stderr, _exitCode) = RunProcess(Source, "dotnet", "tool", "run", "specht", "--", "--root", ".");
 
     private void CopyFromRepository(IEnumerable<string> files)
     {
