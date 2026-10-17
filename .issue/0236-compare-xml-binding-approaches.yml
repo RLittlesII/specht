@@ -1,0 +1,87 @@
+id: "0236"
+type: spike
+title: Compare inherited, explicit and hybrid specification bindings
+status: done
+value: 4
+risk: 3
+parent: "0201"
+children: []
+depends_on: []
+spikes: []
+spec: null
+claims: []
+created: "2026-10-17"
+updated: "2026-10-17"
+closed: "2026-10-17"
+summary: |
+  The owner requested an executable comparison of epic 0201's binding
+  approaches, then added a third leg combining their strengths. Compare
+  type-scoped path/requirement bindings, explicit member ID/verifies
+  bindings, and stable-ID type defaults with explicit member overrides.
+  Use the epic's six evaluation cases and the same synthetic inputs.
+  The experiment supplies evidence for OQ-2, OQ-3, OQ-6, OQ-8 and OQ-12.
+  The initial investigation adopted no binding contract. The owner has now
+  selected the hardened hybrid and requested Feature decomposition plus
+  real xUnit and Playwright .NET validation without Reqnroll. No analyzer ships.
+acceptance_criteria:
+  - "Validate real xUnit facts and theories and Playwright .NET tests without any Reqnroll dependency; retain discovery and execution evidence and counterexamples."
+  - "Record the owner-selected hardened hybrid, framework-independent core and optional Reqnroll bridge in the epic, and author draft Feature specifications and scenarios."
+  - "Run actual Roslyn analysis and invoked code fixes for all three candidates on equivalent synthetic cases; report unsupported cases and prototype assumptions."
+  - "Compare cohesive and mixed-Feature classes, member and specification moves, consumer ID grammars and qualification, invalid and multiple bindings, shared steps, scenario outlines and omitted projects."
+  - "Assert expected resolution and diagnostics independently of the candidate, including wrong-but-existing targets, ambiguous scope and preservation of documentation during fixes."
+  - "Record reproducible commands, source identity, raw evidence and observed authoring/maintenance counts; do not invent performance or user-effort measurements."
+  - "Recommend the highest-value candidate from correctness, maintenance, readability and complexity evidence, with limitations and the specification decisions still owed."
+  - "Keep prototypes outside the shipped solution; retain durable findings with the epic and provide a delivery report."
+decisions:
+  - |
+    2026-10-17, owner: compare the two recorded approaches and a third
+    combining their strengths. This is an investigation, not approval of
+    implementation or of the hybrid contract.
+  - |
+    2026-10-17, investigation: origin/main at 47fc3ce5 holds sequence
+    0235 and no open pull request claims another ID. Take 0236 and use
+    an isolated checkout from origin/main; preserve the existing checkout's
+    uncommitted epic comparison and unrelated item edits.
+  - |
+    2026-10-17, investigation: completed the three-leg comparison. The
+    findings in epics/0201-spec-code-analysis/spikes/0236/README.md propose
+    type defaults for authoring and explicit member IDs for checked
+    evidence, without adopting a production binding agreement. The epic
+    also records the owner's test-harness direction from the linked
+    analyzer example.
+  - |
+    2026-10-17, owner: adopt type defaults for authoring with explicit member
+    IDs for checked traceability; keep the binding model framework-independent
+    and Reqnroll optional. Reopen this spike for non-Reqnroll execution evidence
+    and draft Feature decomposition. Main and the sole open PR (225, this work)
+    checked before taking 0201-F1 through F6; no competing claims found.
+  - |
+    2026-10-17, investigation: extended execution validates real xUnit facts,
+    InlineData and MemberData theories and Playwright .NET PageTest tests with
+    no Reqnroll packages. Full spike: 496 Roslyn assertions, 84 observations,
+    four passing Reqnroll invocations, ten direct passes, one intentional skip
+    and one separately verified intentional failure. Authored six draft
+    Features with 32 claims/scenarios and two-sided missing-binding checks.
+    The six literal acceptance links discover 32 draft scenarios per target
+    framework (64 intentional skips, no coverage claim). Public syntax, package
+    and coverage-policy choices remain open.
+  - |
+    2026-10-17, owner review 5560492857: replace the src/analysis area layout
+    with sibling Analyzers, CodeFixes and CodeAnalysis project homes, following
+    Airframe. Their identities are Specht.Analysis, Specht.Codefixes and
+    Specht.CodeAnalysis (deployment). Reopen for the layout correction; retain
+    Feature/claim IDs and the production deferral. Main and open PRs checked
+    before taking repository ADR-0016 and process lesson 0011; no competing
+    IDs found.
+  - |
+    2026-10-17, review rework: moved the six agreements into the owner-selected
+    sibling project homes and recorded ADR-0016 plus process lesson 0011. All
+    32 claims and Feature/claim IDs are unchanged; both target frameworks
+    discover all 32 draft cases. Current source checker reports zero errors.
+    Restore, Format, Compile, UnitTest and IntegrationTest pass; acceptance
+    reports 896 passed, 574 skipped (including 64 draft cases) and the same
+    six stale-pinned-checker failures. Production remains deferred.
+out_of_scope:
+  - "Shipped analyzer packages, public diagnostic IDs, production implementation under src/ or test/, and package delivery; literal acceptance discovery wiring for the draft scenarios is included."
+  - "Behavioral proof from documentation, arbitrary assertion analysis, or an IDE compatibility/performance claim."
+  - "Settling unrequested public syntax, packaging, diagnostic versioning or coverage-policy questions; implementing production Features."

@@ -66,6 +66,10 @@ proves the tool handles a tree it did not write.
    `specht format`, a separate command, moves whole table rows and frontmatter
    keys and edits nothing else; the check keeps no `--fix` (epic `0101`,
    `0101-F5` decision 0001).
+   **Later scope decision (2026-10-17).** Epic `0201` separately adopts code
+   bindings with an optional Reqnroll bridge. That capability is decomposed in
+   `src/Analyzers/`, `src/CodeFixes/` and `src/CodeAnalysis/`; the extraction and
+   repository-wide checker still do not host Roslyn analysis. Production delivery remains deferred.
    **Constraints.**
    | Constraint                                                                                                                                   | Hard/Soft |
    | -------------------------------------------------------------------------------------------------------------------------------------------- | --------- |

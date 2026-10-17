@@ -95,7 +95,7 @@ The rule engine exists only inside a consumer repository, as a project reference
 
 ## 5. Out of Scope
 
-<!-- last written by: spec-author, 2026-10-09 (rows 12 and 13 added; row 10 amended, `0001-F7` decision 0005; row 14 added, `0001-F5` decision 0004) -->
+<!-- last written by: spec-author, 2026-10-17 -->
 
 | #   | Item                                                                                                                                                     | Exclusion Reason                                                                                                          |
 | --- | -------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
@@ -107,7 +107,7 @@ The rule engine exists only inside a consumer repository, as a project reference
 | 6   | A second schema version, or a `schemaVersion` key                                                                                                        | `0001-F7`.                                                                                                                |
 | 7   | A new rule, including `SPEC070`                                                                                                                          | C-5; a new rule is a new schema version.                                                                                  |
 | 8   | a consumer repository replacing its project reference with the tool                                                                                      | A Feature of a consumer repository; this repository holds the verdicts still (B-004, C-9).                                |
-| 9   | Anything Roslyn                                                                                                                                          | Outside the checker's scope (brief § 2); epic `0201` records the deferred need.                                           |
+| 9   | Hosting Roslyn code-binding analysis in the repository-wide checker                                                                                      | Outside the checker's scope (brief § 2); epic `0201` records the deferred need.                                           |
 | 10  | Style and ordering rules, and the `specht format` command                                                                                                | Epic `0101`, in the schema version after `0.1.0` (`0101-F5` decision 0001; its number is `0001-F7` OQ-18); C-5.           |
 | 11  | Running the engine on any consumer's tree, in this repository's tests                                                                                    | `specht` is upstream of a consumer repository; a test here that depends on a consumer inverts that (decision 0004, C-10). |
 | 12  | Per-rule timing or tracing around a rule's evaluation                                                                                                    | ADR-0005 (c): each joins the fault isolation under a claim of its own; none is claimed.                                   |

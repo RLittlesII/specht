@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <RoslynHost>$(MSBuildToolsPath)/DotnetTools/dotnet-format</RoslynHost>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="$(RoslynHost)/Microsoft.CodeAnalysis*.dll" />
+    <Reference Include="$(RoslynHost)/Microsoft.DiaSymReader.dll" />
+    <Reference Include="$(RoslynHost)/System.Composition*.dll" />
+    <ProjectReference Include="../../../../../src/specht/specht.csproj" />
+  </ItemGroup>
+</Project>

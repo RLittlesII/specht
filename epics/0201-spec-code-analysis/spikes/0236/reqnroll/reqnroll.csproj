@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <AssemblyName>BindingSpike.AlphaTests</AssemblyName>
+    <PackageId>BindingSpike.AlphaTests</PackageId>
+    <IsTestProject>true</IsTestProject>
+    <ReqnrollUseIntermediateOutputPathForCodeBehind>true</ReqnrollUseIntermediateOutputPathForCodeBehind>
+    <RootNamespace>BindingSpike.Acceptance</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Reqnroll.xunit.v3" />
+    <PackageReference Include="xunit.v3" />
+    <ReqnrollFeatureFile Remove="alpha.feature" />
+    <ReqnrollFeatureFile Include="alpha.feature" />
+  </ItemGroup>
+</Project>
