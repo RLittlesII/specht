@@ -19,6 +19,7 @@
     <ReqnrollFeatureFile Include="..\..\src\tool\.spec\versioning.feature" Link="Features\versioning.feature" />
     <ReqnrollFeatureFile Include="..\..\src\tool\Features\Check\.spec\check.feature" Link="Features\check.feature" />
     <ReqnrollFeatureFile Include="..\..\src\tool\Features\Init\.spec\init.feature" Link="Features\init.feature" />
+    <ReqnrollFeatureFile Include="../../src/tool/Features/Frontmatter/.spec/frontmatter.feature" Link="Features/frontmatter.feature" />
     <ReqnrollFeatureFile Include="..\..\docs\.spec\docs-as-first-class-citizen.feature" Link="Features\docs-as-first-class-citizen.feature" />
   </ItemGroup>
 

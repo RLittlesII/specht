@@ -2,7 +2,7 @@ id: "0232"
 type: feature
 title: The frontmatter command
 
-status: ready-for-architecture
+status: done
 
 value: 3
 risk: 3
@@ -45,8 +45,8 @@ claims:
   - B-027
 
 created: "2026-10-15"
-updated: "2026-10-15"
-closed: null
+updated: "2026-10-16"
+closed: "2026-10-16"
 
 summary: |
   As the maintainer writing an issue, I want the frontmatter of an issue

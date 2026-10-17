@@ -50,28 +50,49 @@ internal static class AcceptanceTool
     }
 
     /// <summary>
-    /// Runs the process <paramref name="start"/> describes and waits for it to exit. A process whose standard input is
-    /// redirected reads none: the input is closed as soon as it starts.
+    /// Runs the tool with a complete document on its redirected standard input.
+    /// </summary>
+    /// <param name="workingDirectory">The process's working directory.</param>
+    /// <param name="input">The document text to pipe.</param>
+    /// <param name="args">The arguments, each passed as one.</param>
+    /// <returns>The process's stdout, stderr and exit code.</returns>
+    public static (string Stdout, string Stderr, int ExitCode) LaunchWithInput(string workingDirectory, string input, params string[] args)
+    {
+        var start = new ProcessStartInfo("dotnet") { WorkingDirectory = workingDirectory };
+        start.ArgumentList.Add(typeof(CheckCommand).Assembly.Location);
+        foreach (var arg in args)
+        {
+            start.ArgumentList.Add(arg);
+        }
+        return Run(start, input);
+    }
+
+    /// <summary>
+    /// Runs a process while draining both output streams and supplying its optional standard input before closing it.
     /// </summary>
     /// <param name="start">The process to run; its stdout and stderr are redirected here.</param>
+    /// <param name="input">The optional text to write to redirected standard input.</param>
     /// <returns>What the process wrote to stdout and to stderr, and its exit code.</returns>
-    public static (string Stdout, string Stderr, int ExitCode) Run(ProcessStartInfo start)
+    public static (string Stdout, string Stderr, int ExitCode) Run(ProcessStartInfo start, string? input = null)
     {
         start.RedirectStandardOutput = true;
         start.RedirectStandardError = true;
+        start.RedirectStandardInput |= input is not null;
 
         using var process = Process.Start(start) ?? throw new InvalidOperationException($"{start.FileName} did not start.");
+        var stdout = process.StandardOutput.ReadToEndAsync();
+        var stderr = process.StandardError.ReadToEndAsync();
         if (start.RedirectStandardInput)
         {
+            process.StandardInput.Write(input);
             process.StandardInput.Close();
         }
 
-        var stdout = process.StandardOutput.ReadToEndAsync();
-        var stderr = process.StandardError.ReadToEnd();
         var output = stdout.GetAwaiter().GetResult();
+        var error = stderr.GetAwaiter().GetResult();
         process.WaitForExit();
 
-        return (output, stderr, process.ExitCode);
+        return (output, error, process.ExitCode);
     }
 
     /// <summary>Reads the informational version the launched tool's assembly states.</summary>

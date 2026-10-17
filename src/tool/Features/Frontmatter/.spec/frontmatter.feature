@@ -44,8 +44,8 @@ Feature: The frontmatter command
 
   @B-006
   Scenario: The schema is the one the check selects for the root
-    Given a task document that pinned version 0.1.0 accepts and a stricter version rejects
-    And the root's manifest pins the stricter version
+    Given a task document the embedded schema accepts and a stricter on-disk schema rejects
+    And the root's manifest selects that on-disk schema under version 0.2.0
     When its frontmatter is checked as a task
     Then a violation is reported
 
@@ -95,7 +95,7 @@ Feature: The frontmatter command
 
   @B-013
   Scenario: A run ends with the error and warning counts
-    Given a task document whose frontmatter fails its schema on two keys
+    Given a task document whose frontmatter produces two schema failures
     When its frontmatter is checked as a task
     Then the standard output ends with an error count of 2 and a warning count of 0
 
@@ -180,7 +180,7 @@ Feature: The frontmatter command
 
   @B-025
   Scenario: The same input gives the same verdict
-    Given a task document whose frontmatter fails its schema on two keys
+    Given a task document whose frontmatter produces two schema failures
     When its frontmatter is checked as a task twice
     Then both runs print the same standard output and exit with the same code
 

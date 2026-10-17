@@ -164,6 +164,7 @@ specht schema list
 specht schema pin [<version>] [--root <dir>]
 specht schema list [--root <dir>]
 specht schema pin [version] [--root <dir>]
+specht frontmatter --kind <kind> (<path> | --stdin) [--root <dir>]
 specht upgrade [--root <dir>]
 specht --explain SPEC031
 specht --version
