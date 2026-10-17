@@ -153,6 +153,13 @@ public sealed class BindingAnalyzer(Candidate candidate, bool requireExplicit = 
         $"SPK{index:000}", "Experimental binding", "{0}", "Spike", index == 9 ? DiagnosticSeverity.Error : DiagnosticSeverity.Warning, true)).ToImmutableArray();
     public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => Rules;
 
+    private static bool IsFact(INamedTypeSymbol? type)
+    {
+        for (; type is not null; type = type.BaseType)
+            if (type.ToDisplayString() == "Xunit.FactAttribute") return true;
+        return false;
+    }
+
     public override void Initialize(AnalysisContext context)
     {
         context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
@@ -170,7 +177,7 @@ public sealed class BindingAnalyzer(Candidate candidate, bool requireExplicit = 
             {
                 var method = (MethodDeclarationSyntax)node.Node;
                 var symbol = node.SemanticModel.GetDeclaredSymbol(method)!;
-                if (!symbol.GetAttributes().Any(attribute => attribute.AttributeClass?.ToDisplayString() == "Xunit.FactAttribute")) return;
+                if (!symbol.GetAttributes().Any(attribute => IsFact(attribute.AttributeClass))) return;
                 var result = BindingReader.Read(method, node.SemanticModel, catalog, candidate);
                 foreach (var finding in result.Findings)
                     node.ReportDiagnostic(Diagnostic.Create(Rules.Single(rule => rule.Id == finding.Id), method.Identifier.GetLocation(), finding.Message));

@@ -6,7 +6,7 @@ type: epic
 status: deferred
 priority: med
 milestone: null
-children: []
+children: ["0201-F1", "0201-F2", "0201-F3", "0201-F4", "0201-F5", "0201-F6"]
 created: "2026-10-13"
 updated: "2026-10-17"
 github_issue: null
@@ -31,18 +31,54 @@ implementation, including missing or unresolved links.
 
 The repository owner requested this expansion on 2026-10-13, using the working
 name `spec.code`. That name does not yet choose a package, assembly or command.
-This is an epic draft: no Feature is agreed and no analyzer is delivered. The
-candidate cut and open questions guide decomposition; the executable binding
+The owner selected the hardened hybrid on 2026-10-17. Six draft Feature
+agreements now decompose it; no production analyzer is delivered. The remaining
+public-contract questions still block implementation; the executable binding
 comparison lives in the [spike investigation](spikes/0236/README.md).
 
-### Binding approaches under evaluation
+### Binding decision: hardened hybrid
 
 On 2026-10-17 the owner requested that the two XML documentation approaches be
 compared for consumer value, then added a third combining their strengths. No
-production contract is selected. The comparison
+production syntax was selected by the initial comparison. The owner has now
+adopted the hardened hybrid described below. The comparison
 separates three choices: how a declaration obtains its specification scope,
 whether it references a path or a stable identity, and whether the binding says
 that code implements or tests a claim. Those choices need not travel together.
+
+#### Adopted model, 2026-10-17
+
+Use type-level defaults for authoring and require explicit member identities for
+checked traceability. A code fix uses the default to narrow existing claim
+choices and writes the full target on the member. An explicit member identity
+wins in full; it never borrows missing identity fields from an enclosing type.
+Inherited-only bindings produce a diagnostic and are not checked evidence.
+Moving an explicitly bound method preserves its target. Missing or ambiguous
+context cannot silently select a claim. This adopts the semantics of hardened
+Approach C, not the spike's illustrative XML encoding or diagnostic IDs.
+
+Enforce the relationship from **both ends**. Code analysis reports selected
+methods with missing, invalid or ambiguous bindings and offers invoked repairs.
+Reconciliation enumerates the specification's declared claims, including claims
+that no method names, and reports missing evidence under the selected policy.
+A consumer need not remember every annotation to discover a gap. A fix can
+supply known IDs after target selection; it cannot infer assertion adequacy or
+choose intent from a method name. Generating new test skeletons is not adopted
+by this decision; it is a possible later authoring extension.
+
+Keep the binding model framework-independent. Reqnroll is optional: direct
+traceability is claim → explicit method binding → discovered test case → result.
+xUnit facts and theories and Playwright .NET tests must have value without any
+Reqnroll package or Gherkin input. Framework adapters supply discovery and result
+correlation; they do not change identity grammar or make XML runtime metadata.
+The optional Reqnroll bridge augments that chain with tagged scenario and
+outline-row identity. It must not add a mandatory dependency to the core model.
+This product choice does not change this repository's Gherkin-first development
+policy.
+
+The [decision record](../../src/analysis/Bindings/.spec/decisions/0001-hardened-hybrid.md)
+records alternatives and costs. The [extended spike](spikes/0236/README.md)
+validates the non-Reqnroll cases; its results remain experimental evidence.
 
 #### Approach A: specification scope on the type
 
@@ -126,7 +162,7 @@ only as an authoring default: a code fix writes explicit IDs on the member and
 an analyzer requires those persisted IDs before the binding counts as evidence.
 That refinement retains code-fix context while making checked bindings portable.
 
-All three examples are candidate contracts, not production declarations or
+The examples illustrate the compared candidates, not production declarations or
 coverage evidence. Path versus ID references, scope placement and role tags
 remain separate choices. The spike uses separate local Feature and optional
 epic fields to test custom grammars without assuming a qualification delimiter;
@@ -180,7 +216,7 @@ Path stability is an identity-choice benefit, not an intrinsic benefit of
 member placement. Role clarity can also be added to either approach. Neither
 XML shape establishes a scenario link or proves behavior on its own.
 
-#### Evaluation before selection
+#### Evaluation and extension
 
 Use the same synthetic specifications, claims and code for all three candidates:
 
@@ -195,13 +231,17 @@ Use the same synthetic specifications, claims and code for all three candidates:
 
 Compare diagnostic correctness first, then maintenance edits, reading effort
 and implementation complexity. Record actual observations and limitations;
-do not assign numerical value scores without evidence. Exercise all three candidates
-against identical cases before authoring the binding agreement.
+do not assign numerical value scores without evidence. The initial run exercised all three candidates against identical cases before
+the owner selected the hardened hybrid. Extend the evidence with real xUnit
+facts, multi-row theories and Playwright .NET browser tests in projects with no
+Reqnroll dependency. Check missing bindings as well as valid ones, correlate
+method identity to discovered cases and results, and keep skipped, failed and
+missing outcomes distinct. Do not treat static method counts as runner discovery.
 
 The [spike investigation](spikes/0236/README.md) records executable evidence,
-limitations and a proposed selection. It informs OQ-2, OQ-3, OQ-6, OQ-8 and
-OQ-12; those questions remain open until the owning Feature agreements adopt
-their answers.
+limitations and the adopted model. OQ-2 and OQ-12 are resolved for the
+authoring-versus-evidence decision; their remaining syntax and scope details
+are carried into the owning Feature drafts.
 
 ## Business Value
 
@@ -262,30 +302,30 @@ files for this capability. The test-context builder and diagnostic results are
 the reuse point; snapshot verification is excluded. The standalone binding
 spike is mechanical evidence, not the production test-harness choice.
 
-## Candidate Features
+## Feature decomposition
 
-**A candidate cut for grooming.** No candidate has a Feature id or a place in
-`children`; a child is added only when its co-located specification exists.
+The six co-located draft specifications below are the decomposition of the
+adopted model. Their companion scenarios state the obligations before production
+tests or code exist; traceability rows remain Missing. No delivery items are cut
+until the detailed agreements are ready. Area folders organize specifications
+and do not select assembly boundaries or a mediator architecture.
 
-| Candidate | Name                        | Invariant it would carry                                                                                                                    | Serves     |
-| --------- | --------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- | ---------- |
-| A         | Binding contract            | A declared target has one kind, one qualified identity and one resolution meaning across code, scenarios and specification records          | R1, R3, R6 |
-| B         | Roslyn binding diagnostics  | Each code binding resolves under the agreed contract or produces a precise source diagnostic; invoked code fixes repair only known bindings | R2, R6, R8 |
-| C         | Scenario binding validation | Each scenario's Feature and claim bindings resolve under the same contract used for code                                                    | R3, R4, R8 |
-| D         | Traceability reconciliation | The declared analysis scope yields an inspectable chain of claim, scenario, test and implementation bindings with explicit gaps             | R5, R7, R8 |
-| E         | Consumer adoption           | The consumer's declared scope and policy determine where binding enforcement applies in editor and build                                    | R9         |
+| Feature | Agreement                                                                        | Invariant                                                                                                                  | Serves     | Depends on     |
+| ------- | -------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------- | ---------- | -------------- |
+| 0201-F1 | [Binding identity](../../src/analysis/Bindings/.spec/README.md)                  | A qualified identity resolves under consumer grammars independently of frameworks.                                         | R1, R3, R6 | None           |
+| 0201-F2 | [CSharp binding authoring](../../src/analysis/CSharp/.spec/README.md)            | Type defaults assist invoked fixes; explicit member IDs alone supply checked evidence, and missing bindings are diagnosed. | R1, R2, R8 | F1             |
+| 0201-F3 | [Test evidence adapters](../../src/analysis/Tests/.spec/README.md)               | Facts, theory cases and Playwright .NET tests correlate to bound methods without Reqnroll.                                 | R5, R7     | F1, F2         |
+| 0201-F4 | [Optional scenario bridge](../../src/analysis/Scenarios/.spec/README.md)         | Tagged scenarios and generated cases share the identity contract; shared steps do not stand in for scenario identity.      | R3, R4     | F1, F3         |
+| 0201-F5 | [Traceability reconciliation](../../src/analysis/Reconciliation/.spec/README.md) | Every required claim is considered, with explicit missing links, incomplete scope and distinct execution outcomes.         | R5, R7, R8 | F1, F3         |
+| 0201-F6 | [Consumer analysis adoption](../../src/analysis/Adoption/.spec/README.md)        | Declared inputs, scope and policy produce consistent editor/build verdicts without requiring Reqnroll.                     | R9         | F1, F2, F3, F5 |
 
-The cuts separate failure modes: a reference contract can be sound while a
-Roslyn diagnostic points at the wrong declaration; scenario bindings can resolve
-while implementation coverage is incomplete; and adoption policy can select the
-wrong scope while every binding within it is valid. Candidate D owns completeness
-across the selected inputs, rather than assuming one compilation sees the whole
-repository. Candidate C must reuse or extend existing scenario validation rather
-than establish a competing interpretation of claim tags.
-
-No candidate name joins separate capabilities with `&` or a coordinating
-conjunction. Packaging and presentation are not implicitly part of the binding
-contract.
+F4 is an optional extension; F5 and F6 do not depend on it. F2 keeps diagnostics
+and their repairs together because a repair's safety depends on the same binding
+verdict. F3 separates runner identity and cases from reference resolution; F5
+owns completeness across inputs rather than assuming one compilation sees all
+projects. Existing scenario validation is reused, not replaced by a competing
+claim-tag interpretation. No Feature name bundles unrelated capabilities with a
+coordinating conjunction.
 
 ## Constraints
 
@@ -306,34 +346,34 @@ The old records are identified here so that decomposition carries their
 amendments to the owning specifications; this epic does not retrospectively
 change what the extraction delivered.
 
-| Record                                                          | Existing boundary                                                                             | Effect of this epic                                                                                                                                                                         |
-| --------------------------------------------------------------- | --------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Brief § 2; `0001-F1` § 5 row 9; epic `0001` § Out of this epic  | Anything Roslyn stays in a consumer repository                                                | A new epic owns reusable code bindings here; the extraction and repository-wide checker remain separate. The blanket exclusion needs narrowing when the new Feature agreements are written. |
-| `0001-F2` decision 0001 § Rejected                              | Roslyn was rejected as the host for repository-wide `SPEC###` checks                          | That rejection still holds. Code binding analysis is a separate responsibility; any changed ownership of the consumer's claim bridge needs an explicit decision.                            |
-| `specht-conventions` § Questions; `dotnet-tool` § Project setup | The companion says there is no Roslyn scope and project setup marks analyzers as inapplicable | Update those scope statements alongside the agreed Feature boundaries, before implementation relies on them.                                                                                |
-| `0001-F1`, `0001-F5`, `0001-F6`                                 | Existing claim-tag resolution, identity grammars and specification discovery                  | Candidate A and C must reconcile with these contracts rather than introduce independent grammars or discovery rules.                                                                        |
-| `0001-F7`                                                       | Pinned schema versions own their rule vocabulary                                              | Decide analyzer diagnostic versioning and its relationship to schema pins before assigning rule ids.                                                                                        |
+| Record                                                          | Existing boundary                                                                             | Effect of this epic                                                                                                                                                                                                                      |
+| --------------------------------------------------------------- | --------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Brief § 2; `0001-F1` § 5 row 9; epic `0001` § Out of this epic  | Anything Roslyn stays in a consumer repository                                                | A new epic owns reusable code bindings here; the extraction and repository-wide checker remain separate. The extraction boundary is narrowed to hosting Roslyn in the repository-wide checker; the new binding Features remain separate. |
+| `0001-F2` decision 0001 § Rejected                              | Roslyn was rejected as the host for repository-wide `SPEC###` checks                          | That rejection still holds. Code binding analysis is a separate responsibility; any changed ownership of the consumer's claim bridge needs an explicit decision.                                                                         |
+| `specht-conventions` § Questions; `dotnet-tool` § Project setup | The companion says there is no Roslyn scope and project setup marks analyzers as inapplicable | The scope statements now distinguish the standalone checker from the adopted binding model; packaging remains open.                                                                                                                      |
+| `0001-F1`, `0001-F5`, `0001-F6`                                 | Existing claim-tag resolution, identity grammars and specification discovery                  | Candidate A and C must reconcile with these contracts rather than introduce independent grammars or discovery rules.                                                                                                                     |
+| `0001-F7`                                                       | Pinned schema versions own their rule vocabulary                                              | Decide analyzer diagnostic versioning and its relationship to schema pins before assigning rule ids.                                                                                                                                     |
 
 ## Open questions
 
-None of these choices is settled by the epic. The answers belong in the Feature
-agreement that owns them, with decisions recording rejected alternatives and
-their costs.
+The owner decisions below resolve the model selection in place. Remaining
+questions belong to the Feature agreement that owns them; no open public contract
+is silently settled by prototype behavior.
 
-| OQ    | Question                                                                                                                                                                                                                                                                                                                                                | Who answers       |
-| ----- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------- |
-| OQ-1  | Is `spec.code` the public product or package name, or a working name for a `specht` capability? How is the analyzer installed and versioned relative to the tool?                                                                                                                                                                                       | Owner             |
-| OQ-2  | How are code bindings declared: type-scoped XML (Approach A), explicit member XML (Approach B), hybrid defaults (Approach C), attributes or another form? Evaluate the cases above before selecting. Which languages, declaration kinds, binding roles and multiple-target forms are supported, and which repairs can an invoked code fix safely offer? | Owner with design |
-| OQ-3  | What is the common reference form for Feature specifications, claims and repository- or Feature-scoped ADRs, including repositories without an epic tier? Which additional record kinds does "other such things" include?                                                                                                                               | Owner             |
-| OQ-4  | How do Gherkin Feature-level and Scenario-level bindings interact with existing local claim tags? Are bindings inherited, repeated or qualified explicitly?                                                                                                                                                                                             | Owner             |
-| OQ-5  | Which claims require implementation, scenario and test bindings, and which code requires a claim binding? How are shared infrastructure, generated code, test code and exemptions treated?                                                                                                                                                              | Owner             |
-| OQ-6  | How are scenario-to-test bindings established, and which inputs and aggregation boundary prove completeness across projects and compilations?                                                                                                                                                                                                           | Design after OQ-5 |
-| OQ-7  | Which document and ADR lifecycle states are valid binding targets, and what happens when a referenced claim is withdrawn or an ADR is superseded?                                                                                                                                                                                                       | Owner             |
-| OQ-8  | How are the pinned manifest and specification records supplied to Roslyn analysis, and how are missing or invalid inputs diagnosed consistently in editor and build?                                                                                                                                                                                    | Design            |
-| OQ-9  | Which diagnostic namespace, severities, suppression rules and versioning policy apply to analyzer findings and reconciliation gaps?                                                                                                                                                                                                                     | Owner with design |
-| OQ-10 | Does adoption reuse or extract the consumer's existing claim bridge, and which repository retains ownership of its convention analyzers?                                                                                                                                                                                                                | Owner             |
-| OQ-11 | Where is the reconciled evidence presented, and does it extend the existing report contract or have its own surface?                                                                                                                                                                                                                                    | Owner with design |
-| OQ-12 | How does a member obtain its specification scope: an enclosing type's binding, an explicit member binding or another rule? If both are supported, what are the precedence, conflict and move semantics, including nested and partial types?                                                                                                             | Owner with design |
+| OQ    | Question                                                                                                                                                                                                                                                                                                                                                                       | Who answers       |
+| ----- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ----------------- |
+| OQ-1  | Is `spec.code` the public product or package name, or a working name for a `specht` capability? How is the analyzer installed and versioned relative to the tool?                                                                                                                                                                                                              | Owner             |
+| OQ-2  | Which public XML encoding and code elements implement the adopted hybrid? RESOLVED IN PART, 2026-10-17: owner adopted hardened C, type defaults for authoring and explicit member IDs for evidence (0201-F1 decision 0001). Which languages, declaration kinds, binding roles and multiple-target forms are supported, and which repairs can an invoked code fix safely offer? | Owner with design |
+| OQ-3  | What is the common reference form for Feature specifications, claims and repository- or Feature-scoped ADRs, including repositories without an epic tier? Which additional record kinds does "other such things" include?                                                                                                                                                      | Owner             |
+| OQ-4  | How do Gherkin Feature-level and Scenario-level bindings interact with existing local claim tags? Are bindings inherited, repeated or qualified explicitly?                                                                                                                                                                                                                    | Owner             |
+| OQ-5  | Which claims require implementation, scenario and test bindings, and which code requires a claim binding? How are shared infrastructure, generated code, test code and exemptions treated?                                                                                                                                                                                     | Owner             |
+| OQ-6  | How are scenario-to-test bindings established, and which inputs and aggregation boundary prove completeness across projects and compilations?                                                                                                                                                                                                                                  | Design after OQ-5 |
+| OQ-7  | Which document and ADR lifecycle states are valid binding targets, and what happens when a referenced claim is withdrawn or an ADR is superseded?                                                                                                                                                                                                                              | Owner             |
+| OQ-8  | How are the pinned manifest and specification records supplied to Roslyn analysis, and how are missing or invalid inputs diagnosed consistently in editor and build?                                                                                                                                                                                                           | Design            |
+| OQ-9  | Which diagnostic namespace, severities, suppression rules and versioning policy apply to analyzer findings and reconciliation gaps?                                                                                                                                                                                                                                            | Owner with design |
+| OQ-10 | Does adoption reuse or extract the consumer's existing claim bridge, and which repository retains ownership of its convention analyzers?                                                                                                                                                                                                                                       | Owner             |
+| OQ-11 | Where is the reconciled evidence presented, and does it extend the existing report contract or have its own surface?                                                                                                                                                                                                                                                           | Owner with design |
+| OQ-12 | Which nested and partial type rules govern authoring defaults? RESOLVED IN PART, 2026-10-17: type context is authoring-only; complete member identity wins and travels with a move. Nested/partial default conflicts remain open in 0201-F2 OQ-3.                                                                                                                              | Owner with design |
 
 ## Out of this epic
 
@@ -345,7 +385,7 @@ their costs.
 | Creating claims or auto-approving specifications from code                      | The specification-first artifact chain remains authoritative.                                                                                          |
 | Code fixes that invent references or edit specification records                 | Candidate repairs insert or amend code bindings to known records only; the selection and safe-repair contract remain open in OQ-2.                     |
 | Runtime enforcement or remote traceability services                             | The requested capability is static, deterministic and offline.                                                                                         |
-| Production analyzer delivery from this draft                                    | The isolated binding spike supplies evidence; each production Feature starts with an agreed specification and scenarios before delivery items are cut. |
+| Production analyzer delivery from this decomposition                            | The isolated binding spike supplies evidence; each production Feature starts with an agreed specification and scenarios before delivery items are cut. |
 
 ## Placement and next step
 
@@ -353,8 +393,7 @@ This epic lives at `epics/0201-spec-code-analysis/epic.md`, where the existing
 epic discovery glob finds it. Feature specifications will live beside the areas
 they specify; analyzer and aggregation project placement is not decided here.
 
-The epic is `deferred` at the owner's request on 2026-10-13: this is a later
-problem. When it is taken up, groom the candidate boundaries and binding policy,
-then author each agreed Feature's specification and companion scenarios. Open
-questions must be resolved before implementation depends on their answers. The
-binding investigation does not lift the production deferral.
+The epic remains `deferred` for production at the owner's request on 2026-10-13.
+The 2026-10-17 owner direction adopts the model and authorizes this decomposition
+and spike extension. Resolve each Feature's remaining questions before cutting
+implementation items. Selection of the model does not claim package delivery.

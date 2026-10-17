@@ -94,6 +94,7 @@ public static class Program
         Check(tags.Count == 1 && tags[0].Id == customFixture.Claim, "The existing claim-tag parser must honor custom grammar.");
         Evidence.Add(new { Case = "custom-gherkin-tag", Parser = "Specht.Model.FeatureTagParser", Tags = tags.Select(tag => tag.Id) });
         if (args.Contains("--bridge")) Evidence.AddRange(ScenarioBridge.Run("epics/0201-spec-code-analysis/spikes/0236", fixture.Catalog, Check));
+        if (args.Contains("--frameworks")) Evidence.Add(await FrameworkEvidence.Run(fixture, Check));
         var output = args.Length == 0 ? ".artifacts/0236/bindings.json" : args[0];
         Directory.CreateDirectory(Path.GetDirectoryName(output)!);
         var json = JsonSerializer.Serialize(new { Assertions = assertions, Cases = Evidence.Count, Roslyn = typeof(DiagnosticAnalyzer).Assembly.GetName().Version!.ToString(), Runtime = System.Runtime.InteropServices.RuntimeInformation.FrameworkDescription, Evidence }, new JsonSerializerOptions { WriteIndented = true });

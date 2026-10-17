@@ -109,8 +109,10 @@ for all `PackAsTool` projects from a shared `Directory.Build.targets`:
 </ItemGroup>
 ```
 
-Nothing Roslyn is in scope for this tool (brief § 2); the pattern is kept as
-the generic recipe only.
+Roslyn does not host the repository-wide checker (brief § 2). Epic `0201`
+selects a separate binding capability, decomposed into draft Features under
+`src/analysis/`; it remains deferred for production. The generic recipe above
+does not select its packaging or implementation architecture.
 
 ## Versioning
 

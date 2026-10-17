@@ -93,7 +93,9 @@ From brief § 2, § 5 and § 6, as of 2026-10-07:
   frontmatter keys (brief § 9; `0101-F5` decision 0001). `init` never
   overwrites an existing file.
 - **No rule plugins.** Per-rule disable and `--strict` instead. Roslyn claim bridges and convention analyzers
-  are outside the checker's scope; epic `0201` records the deferred need.
+  are outside the checker's scope. Epic `0201` separately adopts the hardened
+  binding model; its draft Features keep the model framework-independent and
+  Reqnroll optional while production remains deferred.
 - **The engine baseline is recorded at commit `e7dba24`, never regenerated**, and the rule
   vocabulary is not widened before schema versioning exists (brief § 8 step 6).
 - **`generatedAtUtc` is dropped from the report**, so the baseline run is

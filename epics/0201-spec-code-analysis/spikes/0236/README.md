@@ -6,12 +6,13 @@ type: investigation
 
 # XML binding comparison
 
-This investigation answers epic `0201`'s evaluation cases. It adopts no public
-contract. Its standalone projects are outside the shipped solution and NuGet
+This investigation answers epic `0201`'s evaluation cases. On 2026-10-17 the
+owner adopted its hardened hybrid model and requested the non-Reqnroll extension.
+The exact public XML and diagnostic contracts remain open in the Feature drafts. Its standalone projects are outside the shipped solution and NuGet
 packages. The prototype uses the pinned SDK's Roslyn host in an executable;
 it is not a distributable analyzer package or an IDE compatibility test.
 
-## Proposed selection
+## Adopted model
 
 Use the **hybrid as authoring assistance with explicit member identities as the
 checked contract**. A type's stable Feature ID can narrow code-fix choices; the
@@ -22,8 +23,9 @@ binding can target another Feature without inheriting part of the default.
 This combines contextual authoring with portable evidence. Keeping implicit
 scope inheritance in C repeats A's silent-retargeting defect. If the extra
 scope/default policy is not worth maintaining, B is the smaller safe fallback.
-The spike proposes this selection; no Feature agreement or open question is
-approved by it.
+The owner selected this model after the initial spike. The six decomposed
+Feature agreements remain draft; this decision does not approve their remaining
+public-contract choices.
 
 ## Trial contracts fixed before execution
 
@@ -67,7 +69,7 @@ claimed.
 
 ## Observed findings
 
-The final experiment run passed **484 assertions across 83 observations** and
+The initial three-leg experiment passed **484 assertions across 83 observations** and
 **four Reqnroll test invocations with zero skips**, using Roslyn `5.12.0.0` from
 the pinned .NET 11 preview SDK. The engine baseline is commit `47fc3ce5`; the
 experiment source digest is
@@ -156,10 +158,17 @@ python3 epics/0201-spec-code-analysis/spikes/0236/run-spike.py
 ```
 
 The driver restores only from the local package cache with auditing disabled,
-builds the three isolated projects, runs both Reqnroll projects, and runs the
-Roslyn harness. A clone must first populate the repository's package cache.
+builds four isolated projects, runs both Reqnroll projects and the direct
+xUnit/Playwright suite, and runs the Roslyn harness. Pass `--without-reqnroll` to
+restore and build only the prototype and direct-test project and skip the scenario
+bridge entirely. A clone must first populate the repository's package cache.
 No test or analyzer contacts the network. The pinned SDK supplies Roslyn;
-existing central package versions supply Reqnroll and the engine dependencies.
+central package versions supply the test and engine dependencies. The spike pins
+Microsoft.Playwright.Xunit.v3 1.56.0 to use the available Chromium revision 1194,
+not as a production dependency recommendation. Before offline reproduction,
+restore that project from NuGet and install its matching Chromium browser with
+Playwright's documented browser installer; the driver does neither automatically.
+The package must be cached and the matching browser preinstalled.
 
 The driver writes `.artifacts/0236/bindings.json`, `run-manifest.json` and logs.
 The manifest records the git revision, a SHA-256 of experiment source inputs,
@@ -183,8 +192,9 @@ links. These are generated outputs and stay gitignored.
 - Synthetic Markdown contains the frontmatter and claims needed by the catalog,
   not a fully approved twelve-section Feature. Existing specification validation
   remains the upstream authority, including duplicate-identity checks.
-- The prototype recognizes synthetic xUnit facts. It does not settle all test
-  frameworks, inherited test attributes, implementation/ADR binding roles,
+- The extended prototype recognizes Fact-derived attributes using semantic base
+  types and compiles against real xUnit and Playwright assemblies. It does not
+  settle all test frameworks, assembly spoofing, implementation/ADR binding roles,
   lifecycle policy, generic XML forms, `inheritdoc` or generated-code policy.
 - The materialization probe supports the trial's single-line XML forms and has
   no Fix All provider. Formatter preservation, malformed scope diagnostics and
@@ -196,9 +206,68 @@ links. These are generated outputs and stay gitignored.
   prioritizes the observed correctness boundary, then contextual code-fix
   selection and implementation complexity; it assigns no numerical value score.
 
-OQ-2 must agree the tags, roles, required explicit evidence and repairs. OQ-3
+OQ-2 still must agree the tags, roles and safe public repair forms; explicit
+member identity for checked evidence is adopted. OQ-3
 must agree qualified identity encoding. OQ-6 must choose the scenario/test
 adapter and completeness boundary. OQ-8 must specify analyzer input delivery and
-invalidations. OQ-12 must decide whether type defaults are authoring hints only,
-and how nested/partial scopes and member overrides interact. The proposed safe
-hybrid answers none of those by implication.
+invalidations. OQ-12 is resolved for authoring-only defaults and complete member overrides;
+nested/partial authoring conflicts remain open. Prototype details do not settle
+those remaining choices by implication.
+
+## Extension: framework-independent tests
+
+Owner direction, 2026-10-17: adopt the hardened hybrid and extend this experiment
+without Reqnroll. The new framework project must restore with no Reqnroll
+transitive dependency and execute real xUnit facts, InlineData and MemberData
+theories, and Playwright .NET PageTest facts and theories. Browser fixtures use
+SetContentAsync with synthetic local markup and do not contact a website.
+
+The oracle requires eight bound methods to yield eleven discovered cases,
+including two distinct methods with the same display name. One case is an
+intentional skip; a separately selected fact is intentionally failed as an
+outcome control. Expected runner IDs and type/method metadata, not display-name
+matching, connect discovery and results. Mutation cases remove a theory binding,
+leave an inherited-only binding, and corrupt a target; each must produce its
+expected diagnostic at the method. Removing a whole project's evidence must
+leave coverage incomplete. The initial exact-Fact recognition is expected to
+miss a missing Theory binding; record that red result before broadening semantic
+recognition. These are spike obligations, not Covered production claims.
+
+### Observed extension results
+
+The no-Reqnroll run passed 477 Roslyn assertions and 82 observations, then
+correlated **eight bound methods to eleven runner-discovered cases**. Ten cases
+passed, including the Playwright PageTest fact and two theory rows in real
+headless Chromium; one intentional skip remained skipped. A separately selected
+fact intentionally failed and the driver required exit 1 and its failed event.
+The restored dependency graph contains zero Reqnroll packages.
+
+The old exact-Fact analyzer missed a missing InlineData theory binding; the new
+red test failed with zero diagnostics where SPK001 was expected. Semantic
+FactAttribute base-chain recognition fixed it. The green run now asserts missing
+bindings on a real fact, a real theory and a Playwright theory, plus inherited-only
+and unresolved bindings on a theory. Counts and method source spans are asserted.
+
+The xUnit full discovery listing pre-enumerates theories. Automated runner events
+carry the same TestCaseUniqueID, plus class/method metadata, so results correlate
+without display-name matching. Two methods deliberately share a display name and
+remain separate. XML result IDs are per-run IDs and are unsuitable as discovery
+join keys; the adapter probe therefore uses automated events. This does not prove
+all runtime data or overload cases: dynamic non-pre-enumerated theories, arbitrary
+MemberData payloads, overloaded names and stale assemblies remain production
+adapter questions in 0201-F3.
+
+The control that removes all references to F2's claim reports that unreferenced
+claim by enumerating the declared required set. Removing one case's outcome leaves
+a missing-result gap; omitting the selected project leaves scope incomplete.
+These are explicit synthetic reconciliation inputs, not repository-wide project
+discovery or an adopted coverage-policy default. The source-side missing-method
+checks and the claim-side missing-evidence checks demonstrate the two ends; they
+cannot infer whether a wrong but resolving claim ID matches an assertion's intent.
+
+`framework-evidence.json` retains the eleven ID-based links and negative controls.
+`framework-discovery.log`, `framework-events.log` and `framework-negative.log`
+retain sanitized real runner data. The no-Reqnroll and full run manifests identify
+source inputs and commands; no generated evidence is committed. Framework support
+is xUnit v3 plus Playwright .NET's xUnit v3 adapter on this platform, not a claim
+that every .NET or JavaScript test runner is implemented.

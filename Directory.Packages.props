@@ -30,6 +30,10 @@
     <PackageVersion Include="System.Security.Cryptography.Xml" Version="9.0.21" />
   </ItemGroup>
 
+  <ItemGroup Label="Spike 0236 only">
+    <PackageVersion Include="Microsoft.Playwright.Xunit.v3" Version="1.56.0" />
+  </ItemGroup>
+
   <ItemGroup Label="Testing">
     <PackageVersion Include="xunit.v3" Version="4.0.1" />
     <PackageVersion Include="Reqnroll.xunit.v3" Version="3.3.4" />

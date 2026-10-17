@@ -19,9 +19,13 @@ summary: |
   type-scoped path/requirement bindings, explicit member ID/verifies
   bindings, and stable-ID type defaults with explicit member overrides.
   Use the epic's six evaluation cases and the same synthetic inputs.
-  The experiment supplies evidence for OQ-2, OQ-3, OQ-6, OQ-8 and OQ-12;
-  it adopts no binding contract and ships no analyzer.
+  The experiment supplies evidence for OQ-2, OQ-3, OQ-6, OQ-8 and OQ-12.
+  The initial investigation adopted no binding contract. The owner has now
+  selected the hardened hybrid and requested Feature decomposition plus
+  real xUnit and Playwright .NET validation without Reqnroll. No analyzer ships.
 acceptance_criteria:
+  - "Validate real xUnit facts and theories and Playwright .NET tests without any Reqnroll dependency; retain discovery and execution evidence and counterexamples."
+  - "Record the owner-selected hardened hybrid, framework-independent core and optional Reqnroll bridge in the epic, and author draft Feature specifications and scenarios."
   - "Run actual Roslyn analysis and invoked code fixes for all three candidates on equivalent synthetic cases; report unsupported cases and prototype assumptions."
   - "Compare cohesive and mixed-Feature classes, member and specification moves, consumer ID grammars and qualification, invalid and multiple bindings, shared steps, scenario outlines and omitted projects."
   - "Assert expected resolution and diagnostics independently of the candidate, including wrong-but-existing targets, ambiguous scope and preservation of documentation during fixes."
@@ -45,7 +49,21 @@ decisions:
     evidence, without adopting a production binding agreement. The epic
     also records the owner's test-harness direction from the linked
     analyzer example.
+  - |
+    2026-10-17, owner: adopt type defaults for authoring with explicit member
+    IDs for checked traceability; keep the binding model framework-independent
+    and Reqnroll optional. Reopen this spike for non-Reqnroll execution evidence
+    and draft Feature decomposition. Main and the sole open PR (225, this work)
+    checked before taking 0201-F1 through F6; no competing claims found.
+  - |
+    2026-10-17, investigation: extended execution validates real xUnit facts,
+    InlineData and MemberData theories and Playwright .NET PageTest tests with
+    no Reqnroll packages. Full spike: 496 Roslyn assertions, 84 observations,
+    four passing Reqnroll invocations, ten direct passes, one intentional skip
+    and one separately verified intentional failure. Authored six draft
+    Features with 32 claims/scenarios and two-sided missing-binding checks.
+    Public syntax, package and coverage-policy choices remain open.
 out_of_scope:
-  - "Shipped analyzer packages, public diagnostic IDs, changes under src/ or test/, and production architecture adoption."
+  - "Shipped analyzer packages, public diagnostic IDs, production implementation under src/ or test/, and package delivery."
   - "Behavioral proof from documentation, arbitrary assertion analysis, or an IDE compatibility/performance claim."
-  - "Resolving the epic's open questions or starting delivery of its candidate Features."
+  - "Settling unrequested public syntax, packaging, diagnostic versioning or coverage-policy questions; implementing production Features."
