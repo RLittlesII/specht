@@ -1,6 +1,6 @@
 ---
 title: "Epic 0132: specht through the Model Context Protocol"
-description: "A second door onto specht for agents and editors: rule and schema knowledge for the pinned version, the specification tree as structured data and the check verdict, each identical to the command line's answer, served by a local process that one client configuration entry starts"
+description: "A second door onto specht for agents and editors: rule and schema knowledge for the pinned version, the specification tree as structured data and the check verdict, each identical to the command line's answer, plus a request for project-scoped document sequences independent of git"
 id: "0132"
 type: epic
 status: blocked
@@ -8,7 +8,7 @@ priority: med
 milestone: null
 children: []
 created: "2026-10-09"
-updated: "2026-10-15"
+updated: "2026-10-17"
 github_issue: null
 ---
 
@@ -30,6 +30,11 @@ agent-facing contract of record (`specht-conventions`, questions reference,
 nothing returns the tree's facts, because the engine emits violations and
 counts - so this epic also adds that answer to the command line, and MCP then
 serves the same one.
+
+The owner added a request on 2026-10-17 for unique document sequences per
+project and document type, allocated through MCP without coordinating through
+git. The requirement is recorded under "Document sequence allocation";
+project identity and reservation storage remain open.
 
 The need and its scope were decided by the repository owner on 2026-10-09.
 This file is the record of that decision. Nothing here is designed: no MCP
@@ -64,29 +69,68 @@ need wins.
 
 What it costs them today:
 
-| Pain                    | Cost                                                                         |
-| ----------------------- | ---------------------------------------------------------------------------- |
-| Copied skills drift     | A copy falls behind the pinned schema version, and agents follow stale rules |
-| Context spent on lookup | Every working session rediscovers structure the tool already knows           |
-| Wrong work ships        | A guessed rule or a missed dependency surfaces at the build or in review     |
-| Adoption stalls         | A new repository ports rule knowledge by hand before its agents are useful   |
+| Pain                    | Cost                                                                              |
+| ----------------------- | --------------------------------------------------------------------------------- |
+| Copied skills drift     | A copy falls behind the pinned schema version, and agents follow stale rules      |
+| Context spent on lookup | Every working session rediscovers structure the tool already knows                |
+| Wrong work ships        | A guessed rule or a missed dependency surfaces at the build or in review          |
+| Adoption stalls         | A new repository ports rule knowledge by hand before its agents are useful        |
+| Sequence files conflict | Parallel authors claim the same next id or conflict when merging a shared counter |
 
 ## Success criteria
 
 Each criterion carries the tier the owner gave it. A Must is the epic; a Could
 is delivered only if it is cheap once the Musts exist. The work queue is the
-first thing dropped, and the writes are dropped with it.
+first thing dropped, and the existing writes are dropped with it. Requested
+marks the new sequence capability, whose tier has not been decided.
 
-| Criterion                                                                                                                                                                                     | Tier  | Notes                                                                                                                  |
-| --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----- | ---------------------------------------------------------------------------------------------------------------------- |
-| Rule and schema knowledge for the pinned schema version is answerable: what each `SPEC###` requires, the sections, the table headers, the id grammars, the frontmatter keys and the templates | Must  | Facts only; no guidance on how to author                                                                               |
-| The tree's facts are answerable as structured data: its Features, claims, constraints, open questions, dependencies and claim coverage                                                        | Must  | From the command line and through MCP, as one answer, with a test proving they agree. The command line gains a command |
-| The check's verdict is answerable on request                                                                                                                                                  | Must  | On request only; not feedback while a document is being typed                                                          |
-| Every answer is the answer for the schema version the repository pins                                                                                                                         | Must  | Proven by a test across two schema versions                                                                            |
-| A verdict or a fact given through MCP is identical to the `specht` command's on the same tree                                                                                                 | Must  | Proven by a test                                                                                                       |
-| One client configuration entry gives a fresh repository every fact: an agent with no `specht`-specific skill authors a Feature specification that passes the check                            | Must  | The claim covers facts about `specht` and its schema. Method skills - how to write a good specification - are outside  |
-| The existing writes are reachable through MCP: `init`, `upgrade`, the pin command and `format`                                                                                                | Could | Each bound by the same write rule as its command (brief § 9). Dropped alongside the work queue                         |
-| The work queue is answerable: items, their status, their derived priority and rank, and which are startable                                                                                   | Could | Only if cheap once the tree's facts exist. The first thing dropped                                                     |
+| Criterion                                                                                                                                                                                     | Tier      | Notes                                                                                                                  |
+| --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- | ---------------------------------------------------------------------------------------------------------------------- |
+| Rule and schema knowledge for the pinned schema version is answerable: what each `SPEC###` requires, the sections, the table headers, the id grammars, the frontmatter keys and the templates | Must      | Facts only; no guidance on how to author                                                                               |
+| The tree's facts are answerable as structured data: its Features, claims, constraints, open questions, dependencies and claim coverage                                                        | Must      | From the command line and through MCP, as one answer, with a test proving they agree. The command line gains a command |
+| The check's verdict is answerable on request                                                                                                                                                  | Must      | On request only; not feedback while a document is being typed                                                          |
+| Every answer is the answer for the schema version the repository pins                                                                                                                         | Must      | Proven by a test across two schema versions                                                                            |
+| A verdict or a fact given through MCP is identical to the `specht` command's on the same tree                                                                                                 | Must      | Proven by a test                                                                                                       |
+| One client configuration entry gives a fresh repository every fact: an agent with no `specht`-specific skill authors a Feature specification that passes the check                            | Must      | The claim covers facts about `specht` and its schema. Method skills - how to write a good specification - are outside  |
+| The existing writes are reachable through MCP: `init`, `upgrade`, the pin command and `format`                                                                                                | Could     | Each bound by the same write rule as its command (brief § 9). Dropped alongside the work queue                         |
+| The work queue is answerable: items, their status, their derived priority and rank, and which are startable                                                                                   | Could     | Only if cheap once the tree's facts exist. The first thing dropped                                                     |
+| A caller can obtain a unique sequence value for a project and a supported document type without git coordination                                                                              | Requested | Added by the owner, 2026-10-17; tier and authority boundaries await agreement under "Document sequence allocation"     |
+
+## Document sequence allocation
+
+**Feature request, 2026-10-17.** A caller supplies a project and a document
+type supported by `specht`, and an MCP operation allocates a unique sequence
+value for that project and type on one machine. Concurrent callers across
+that project's worktrees and processes on the machine must receive distinct
+values within the same sequence scope (owner, 2026-10-17). Allocation must not
+depend on a git repository, branch, commit, merge, pull request or tracked
+counter file.
+
+The operation reserves a value; merely reading the highest id and returning
+the next one cannot meet the concurrency requirement. It does not create,
+edit or renumber a document. The set of supported document types and their
+sequence scopes must be agreed before a Feature specification is cut; the
+request is not limited to this repository's work-item sequence.
+
+This is a new capability, separate from the optional existing writes and
+work queue. It needs an allocation authority and durable reservation state.
+The authority is machine-local and offline; its storage is not chosen here.
+The permitted-write list does not yet cover reservation state; its owning
+records must explicitly permit those state changes before implementation.
+CLI parity still applies: the same allocation capability needs a command-line
+entry point, whose name is open.
+
+Examples to carry into that Feature's scenarios once the scope is agreed:
+
+- Two concurrent requests from different worktrees or processes for the same
+  project and document type on one machine receive different values without a
+  git operation or a tracked counter edit.
+- Restarting the allocation host does not make a reserved value available
+  for allocation again.
+- Requesting a sequence value leaves the project's documents unchanged.
+
+The open questions below block implementation, not recording this request.
+Coordinating allocations across machines is outside this request.
 
 ## Features
 
@@ -97,13 +141,14 @@ a candidate takes its Feature id when its specification is written, and joins
 
 The candidates are cut by capability dimension, where the invariant changes:
 
-| Candidate | Name                           | Invariant it would carry                                                                                                 | Tier  |
-| --------- | ------------------------------ | ------------------------------------------------------------------------------------------------------------------------ | ----- |
-| A         | Tree facts on the command line | The tree's facts are a read-only function of the tree and the pinned schema version, given as structured data            | Must  |
-| B         | The MCP host                   | A local process the client starts, the same version as the tool, reached by one client configuration entry, with no port | Must  |
-| C         | Reading through MCP            | Every answer MCP gives is the command line's answer on the same tree, and nothing is written                             | Must  |
-| D         | Writing through MCP            | A write through MCP is one an existing command already makes, bound by that command's write rule                         | Could |
-| E         | The work queue                 | The work items' delivery state is answerable, read-only                                                                  | Could |
+| Candidate | Name                           | Invariant it would carry                                                                                                      | Tier      |
+| --------- | ------------------------------ | ----------------------------------------------------------------------------------------------------------------------------- | --------- |
+| A         | Tree facts on the command line | The tree's facts are a read-only function of the tree and the pinned schema version, given as structured data                 | Must      |
+| B         | The MCP host                   | A local process the client starts, the same version as the tool, reached by one client configuration entry, with no port      | Must      |
+| C         | Reading through MCP            | Every answer MCP gives is the command line's answer on the same tree, and nothing is written                                  | Must      |
+| D         | Writing through MCP            | A write through MCP is one an existing command already makes, bound by that command's write rule                              | Could     |
+| E         | The work queue                 | The work items' delivery state is answerable, read-only                                                                       | Could     |
+| F         | Document sequence allocation   | Concurrent allocations within an agreed project and document-type scope never return the same value, without git coordination | Requested |
 
 Where the candidate cut was tested, and what the owner is asked to confirm:
 
@@ -129,6 +174,9 @@ Where the candidate cut was tested, and what the owner is asked to confirm:
   from work items, whose schema differs between this repository and its
   consumers (an open question below).
 - **The AGENTS.md "&" heuristic** found no conjunction in any candidate name.
+- **Candidate F is cut from candidates D and E.** It reserves identifiers,
+  rather than exposing an existing tree write or reading delivery state;
+  its machine-local reservations need their own state contract.
 - **Two things no candidate owns yet.** The sixth Must criterion - a fresh
   repository's agent authoring a passing Feature specification - is a
   property of candidates A, B and C together. And if the owner decides that
@@ -138,8 +186,8 @@ Where the candidate cut was tested, and what the owner is asked to confirm:
 
 ## What this epic waits on
 
-This epic exposes what other Features build and builds none of it. It starts
-`blocked` because the Must criteria cannot be met until those capabilities
+For its existing capabilities, this epic exposes what other Features build.
+It starts `blocked` because the Must criteria cannot be met until those capabilities
 exist. As of 2026-10-15 only listing and pinning, and the rule pages, are
 delivered.
 
@@ -157,7 +205,9 @@ Resolved 2026-10-15: item `0129` is done on `main`. When this section was
 written it was open as pull request #79.
 
 The tree-facts command is not in this table: it is this epic's own
-(candidate A).
+(candidate A). The new sequence capability (candidate F) also belongs to
+this epic; its unresolved authority boundaries are separate from these
+dependencies on existing capabilities.
 
 ## The command line MCP serves
 
@@ -213,6 +263,10 @@ Every constraint is hard. None is this epic's invention: each is an existing
 rule of the repository or the owner's word, and each is listed so that a
 Feature specification cut from this epic carries it forward.
 
+The sequence request does not silently waive these constraints. Its authority
+must fit them, or their owning records must be amended by an explicit decision
+before candidate F can be implemented.
+
 | Constraint                                                                                                                                   | Source                                                       | What it rules out                                                                                       |
 | -------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------- |
 | MCP is served by a local process the client starts. It opens no network port and makes no outbound call; only `init` and `upgrade` may fetch | AGENTS.md § Invariants; `0001-F7` decision 0004              | A hosted or remote service; a listening port; a fetch from any answer that is not `init` or `upgrade`   |
@@ -225,7 +279,7 @@ Feature specification cut from this epic carries it forward.
 
 ## Open questions
 
-None is resolved here. Each travels to the Feature specification it binds,
+The existing questions below remain open. Each travels to the Feature specification it binds,
 where it takes an `OQ-n` id and is resolved in place.
 
 | Question                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       | Who answers                                                               |
@@ -240,6 +294,17 @@ where it takes an `OQ-n` id and is resolved in place.
 | The work queue rests on this repository's item schema, and consumers use the `000X-NN` task id instead. Which does the work queue answer for?                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  | The owner, if the Could criterion is taken up                             |
 | Does a person in an editor need anything an answer shaped for an agent lacks?                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  | The owner                                                                 |
 | Listing the shipped schema versions (`0001-F7` B-041) writes nothing, yet it is grouped with the pin command as blocking only the Could writes. Is the list of shipped versions part of the schema knowledge the first Must criterion names?                                                                                                                                                                                                                                                                                                                                                                                   | The owner. Raised while writing this file; it was not asked on 2026-10-09 |
+
+### Questions for document sequence allocation
+
+| Question                                                                                                                                                                                                                                                      | Who answers                                                               |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------- |
+| Must allocations stay unique across machines and clones of one project, or only across worktrees and processes on one machine? Resolved 2026-10-17: the owner chose one machine. Cross-machine coordination is excluded, retaining the offline host boundary. | Resolved by the owner                                                     |
+| What stable identity denotes a project across paths and worktrees without depending on git, and how are separate clones on the same machine associated with it?                                                                                               | The owner, then the design                                                |
+| Which document types are supported, and which share a sequence or require a parent scope? This repository shares epic and work-item numbers; Features and their claims use other scopes.                                                                      | The spec-author, then the owner                                           |
+| Where does the machine-local, offline authority persist reservations, and what narrow permission for reservation-state writes is added to the owning records?                                                                                                 | The owner, then the design                                                |
+| How are existing document numbers adopted without reissuing them, and what are the rules for abandoned reservations, gaps and retries after an uncertain response?                                                                                            | The owner, then the design                                                |
+| What MCP operation and equivalent CLI command expose allocation, and what priority does this capability have relative to the existing Musts?                                                                                                                  | The owner for priority; the Feature specification for the public contract |
 
 ## Placement
 
@@ -275,3 +340,8 @@ cut, and each confirmed Feature then begins with its own specification.
 | Rule text, `--explain` and `expected`                                   | `0001-F3`; this epic only serves them                                                 |
 | The list and pin commands, `init` and `upgrade`                         | `0001-F7`, `0001-F4`; this epic only reaches them, and only under the Could criterion |
 | `format`                                                                | `0101-F5`; reached only under the Could criterion                                     |
+
+The sequence request reserves values only; document scaffolding and editing
+remain outside this epic. Cross-machine coordination is excluded. The existing
+write exclusion must explicitly account for local reservation state before
+candidate F is implemented.
