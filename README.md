@@ -175,28 +175,6 @@ repository.
 
 ## Layout
 
-```text
-specht/
-├── .build/                 # NUKE build
-├── .issue/                 # work items with no Feature; ids from .issue/.sequence
-├── .performance/           # BenchmarkDotNet benchmarks
-├── .spec/
-│   ├── adr/                # repo-wide decision records
-│   ├── lessons/            # repo-wide lessons
-│   └── templates/          # the work-item blank
-├── .specht/                # the tool's configuration, holding the files specht init can write
-│   ├── manifest.json       # the manifest
-│   ├── schema/frontmatter/ # the frontmatter schemas of schema v0.1.0
-│   └── templates/          # blanks for specifications and records
-├── docs/                   # reference pages, rule pages, report schema and documentation site
-├── src/
-│   ├── specht/             # engine, foldered by Feature over a shared model: discovery, manifest, report, versioning, rules
-│   └── tool/               # the specht command, one folder per command under Features/
-└── test/
-    ├── acceptance/         # Reqnroll scenarios
-    └── tests/              # unit and integration tiers, in folders that mirror src/
-```
-
 Every Feature is specified in a `.spec/README.md` beside the code it covers, such
 as `src/specht/Rules/Form/.spec/`, with its `.feature` file. Its work items sit in
 a `.issue/` beside that `.spec/`.
