@@ -4,6 +4,7 @@ using Specht.Composition;
 using Specht.Manifest;
 using Specht.Model;
 using Specht.Tool;
+using Specht.Tool.Features.Frontmatter;
 using Specht.Tool.Features.Schema;
 using Specht.Versioning;
 using Spectre.Console;
@@ -15,6 +16,19 @@ namespace Specht.Tests.Shared;
 /// <summary>Composes the real engine graph with optional in-memory file system and catalog substitutions.</summary>
 public static class EngineServices
 {
+    /// <summary>Exercises the standalone frontmatter command over substituted input and file-system seams.</summary>
+    public static CommandAppTester FrontmatterApp(IFileSystem fileSystem, TestConsole console, TextReader input, TextWriter errors)
+    {
+        var services = new ServiceCollection();
+        services.AddSingleton(fileSystem);
+        services.AddSingleton<IAnsiConsole>(console);
+        services.AddSingleton(input);
+        services.AddSingleton(errors);
+        var app = new CommandAppTester(new TypeRegistrar(services.AddSpechtEngine()), console: console);
+        app.Configure(static configuration => configuration.AddFrontmatter());
+        return app;
+    }
+
     /// <summary>Exercises the schema slice's production registrations with simulated terminal input.</summary>
     public static CommandAppTester CommandApp(IFileSystem fileSystem, TestConsole console)
     {

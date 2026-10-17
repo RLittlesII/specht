@@ -5,6 +5,7 @@ using Specht.Composition;
 using Specht.Manifest;
 using Specht.Tool;
 using Specht.Tool.Features.Check;
+using Specht.Tool.Features.Frontmatter;
 using Specht.Tool.Features.Init;
 using Specht.Tool.Features.Schema;
 using Spectre.Console.Cli;
@@ -19,7 +20,7 @@ app.SetDefaultCommand<CheckCommand>();
 app.Configure(static config =>
 {
     config.SetApplicationVersion(ThisAssembly.AssemblyInformationalVersion);
-    config.AddInit().AddSchema();
+    config.AddInit().AddSchema().AddFrontmatter();
 });
 
 return await app.RunAsync(args);
