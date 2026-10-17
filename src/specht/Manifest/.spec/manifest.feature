@@ -793,3 +793,25 @@ Feature: The manifest carries the roles
     And the manifest sets no level for the waiver rule
     When the check runs
     Then the count of rules evaluated excludes the waiver rule
+
+  @B-063
+  Scenario: The done marker defaults to its own name
+    Given the manifest pins schema version "0.3.0"
+    And the manifest names no done marker
+    When the manifest is loaded
+    Then the done marker is "done"
+
+  @B-063
+  Scenario: A done marker the manifest names replaces its default
+    Given the manifest pins schema version "0.3.0"
+    And the manifest's done marker is "delivered"
+    When the manifest is loaded
+    Then the done marker is "delivered"
+
+  @B-064
+  Scenario: An empty done marker is invalid
+    Given the manifest pins schema version "0.3.0"
+    And the manifest's done marker is empty
+    When the check runs
+    Then the manifest is rejected
+    And the rejection names the done marker
