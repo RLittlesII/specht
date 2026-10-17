@@ -20,7 +20,7 @@ depends_on: ["F2", "F3", "F7"]
 blocks: []
 spikes: []
 created: "2026-10-09"
-updated: "2026-10-15"
+updated: "2026-10-16"
 github_issue: null
 synced_at: null
 ---
@@ -116,55 +116,78 @@ Frontmatter written onto a GitHub issue is never in a `.spec/` tree on disk, so 
 
 ## 6. Concern Separation
 
-<!-- last written by: spec-author, 2026-10-09 -->
+<!-- last written by: implementer, 2026-10-16 (item 0233) -->
 
-Pending: owned by `implementer`, written after agreement.
+| Concern                                            | Type      | Home                                                     | Boundary                                                                        |
+| -------------------------------------------------- | --------- | -------------------------------------------------------- | ------------------------------------------------------------------------------- |
+| Kind names, schema and rule-id mapping             | Business  | `FrontmatterSchemaRule` and `FrontmatterKind`            | One mapping serves the tree and the standalone document; no new rule id.        |
+| Root, manifest, pin and source selection           | Both      | Existing `SpecSchemasLoader`                             | No discovery and no fallback when the root or manifest fails.                   |
+| Frontmatter parsing and evaluation                 | Technical | Existing `FrontmatterReader` and `FrontmatterSchemaRule` | Read the supplied text in memory; evaluate no structural rule.                  |
+| Rule selection, grading, ordering and counts       | Both      | `SpechtRunner`                                           | Both entry points share the evaluator; standalone input has no discovered tree. |
+| CLI, file/stdin selection, messages and exit codes | Both      | Item 0234                                                | Not implemented by 0233.                                                        |
 
 ## 7. Technical Design
 
-<!-- last written by: spec-author, 2026-10-09 -->
+<!-- last written by: implementer, 2026-10-16 (item 0233) -->
 
-Pending: owned by `implementer`, written after agreement.
+The runner gains `ParseFrontmatterKind` and `CheckFrontmatter`; their declarations in [`SpechtRunner.cs`](../../../../specht/SpechtRunner.cs) own the signatures. The parser delegates to the existing frontmatter rule, which maps the exact manifest keys `feature`, `task` and `epic` to [`FrontmatterKind`](../../../../specht/Model/FrontmatterKind.cs). An unknown kind names the typed value and all three valid kinds in an argument failure. Parsing requires no root or file read, so 0234 can parse before checking its document path (B-027).
+
+`CheckFrontmatter` loads the root's schemas through `SpecSchemasLoader.Load`, preserving the check's typed root/manifest/pin failures and embedded/disk/verified-upstream selection. It parses the caller's text with `FrontmatterReader.Parse`, retaining key lines, and evaluates the registered `FrontmatterSchemaRule` only. That rule's document overload is also called by its existing tree walk, so schema failures, rule ids, expectations and messages have one home. The caller supplies the diagnostic path verbatim, including `<stdin>`; no temporary file is written.
+
+A private evaluator overload accepts the evaluation operation while retaining the existing vocabulary filter, manifest rule-level overrides, ordering and report counts. The standalone call supplies an empty tree model and only the frontmatter rule; it does not discover or parse the root's documents. Its report has the selected schema version/source and the existing error/warning count properties. Item 0234 prints the report document's count line alone. No mediator or staged ADR-0010 migration is introduced; ADR-0014 remains in force. No shipped schema, manifest, template or golden report changes.
 
 ## 8. Testing Strategy
 
-<!-- last written by: spec-author, 2026-10-09 -->
+<!-- last written by: test-writer, 2026-10-16 (item 0233) -->
 
-Pending: owned by `test-writer`, written after agreement.
+`SpechtRunnerFrontmatterUnitTests` exercises the production registrations over `MockFileSystem` and synthetic schema versions. Every path supplied by a fixture is repository-relative; no test fetches a schema or writes to disk. Typed theory data cover the three kinds, manifest levels, selected sources and typed input failures.
+
+| Claim                                 | Mechanism and unit proof                                                                                                                                                                                                                   |
+| ------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| B-003, B-004                          | Kind-to-schema/rule mapping and key-line preservation: `ADocumentFailingItsKindSchema_WhenChecked_ShouldReportItsKindRuleAtTheKeysLine`.                                                                                                   |
+| B-005                                 | Missing frontmatter: `ADocumentWithoutFrontmatter_WhenChecked_ShouldReportSpec001AtLineOne`.                                                                                                                                               |
+| B-006, B-009                          | Pinned version, embedded/disk/verified-upstream source and shared tree verdict: `APinnedRoot_WhenDocumentChecked_ShouldUseTheSameSchemaSourceAndVerdictAsTheTree`.                                                                         |
+| B-007, B-008                          | Only the frontmatter family runs, no discovered inputs or writes: `AValidDocumentBesideInvalidRootSpecifications_WhenChecked_ShouldIgnoreTheTreeAndEveryOtherRule`.                                                                        |
+| B-013                                 | Override grading, dropping and report count-line reuse: `AManifestRuleLevel_WhenDocumentChecked_ShouldGradeOrDropTheViolationAndCountIt`.                                                                                                  |
+| B-025                                 | Deterministic report: `TheSameDocumentKindAndRoot_WhenCheckedTwice_ShouldReturnTheSameReport`.                                                                                                                                             |
+| B-020, B-027 (engine boundary only)   | Parse a valid kind without a root; an unknown kind names the typed value and valid kinds: `AManifestKind_WhenParsed_ShouldBeAvailableWithoutReadingARoot`, `AnUnknownKind_WhenParsed_ShouldNameTheTypedKindAndAllKindsBeforeReadingARoot`. |
+| B-016 to B-019 (engine boundary only) | Preserve the check's typed failures: `AnInvalidRootOrManifest_WhenDocumentChecked_ShouldRetainTheChecksTypedFailure`.                                                                                                                      |
+
+The existing engine golden-report tests guard `0001-F1` C-9. Item 0234 binds the existing `frontmatter.feature` scenarios and verifies the CLI, input precedence, diagnostic lines and exit codes. These tests do not claim that command exists. All rows with an engine proof remain `Partial` until that binding; command-only rows remain `Missing`. No new benchmark is needed: this item adds no architecture migration or performance claim.
 
 ## 9. Traceability Matrix
 
 <!-- last written by: spec-author, 2026-10-09, 2026-10-15 (B-026, B-027) -->
 
-| Claim ID | Scenario                                                  | Test    | Status  |
-| -------- | --------------------------------------------------------- | ------- | ------- |
-| B-001    | A document named by a path is checked                     | Missing | Missing |
-| B-002    | A document on standard input is checked                   | Missing | Missing |
-| B-003    | A failure is reported under its kind's rule id            | Missing | Missing |
-| B-004    | A failure on a key is reported at that key's line         | Missing | Missing |
-| B-005    | A document with no frontmatter is reported                | Missing | Missing |
-| B-006    | The schema is the one the check selects for the root      | Missing | Missing |
-| B-007    | A rule that needs the tree does not run                   | Missing | Missing |
-| B-008    | The root's own specifications are not checked             | Missing | Missing |
-| B-009    | A document in the tree gets the check's verdict           | Missing | Missing |
-| B-010    | A violation is printed as a diagnostic line               | Missing | Missing |
-| B-011    | A document named by a path is reported by that path       | Missing | Missing |
-| B-012    | A document on standard input is reported as stdin         | Missing | Missing |
-| B-013    | A run ends with the error and warning counts              | Missing | Missing |
-| B-014    | An error fails the run                                    | Missing | Missing |
-| B-015    | A clean document succeeds                                 | Missing | Missing |
-| B-016    | A missing root is a missing-input failure                 | Missing | Missing |
-| B-017    | A root without a manifest is a missing-input failure      | Missing | Missing |
-| B-018    | An unreadable manifest is an invalid-manifest failure     | Missing | Missing |
-| B-019    | A version the tool does not ship is invalid configuration | Missing | Missing |
-| B-020    | An unknown kind is not found                              | Missing | Missing |
-| B-021    | A path that names no file is not found                    | Missing | Missing |
-| B-022    | Messages about the tool go to standard error              | Missing | Missing |
-| B-023    | A run writes nothing                                      | Missing | Missing |
-| B-024    | No derived path in the output is absolute                 | Missing | Missing |
-| B-025    | The same input gives the same verdict                     | Missing | Missing |
-| B-026    | A missing option or a conflicting pair is a usage failure | Missing | Missing |
-| B-027    | A first failure is reported when several apply            | Missing | Missing |
+| Claim ID | Scenario                                                  | Test                                                                                                                                                                                                                                                          | Status  |
+| -------- | --------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------- |
+| B-001    | A document named by a path is checked                     | Missing                                                                                                                                                                                                                                                       | Missing |
+| B-002    | A document on standard input is checked                   | Missing                                                                                                                                                                                                                                                       | Missing |
+| B-003    | A failure is reported under its kind's rule id            | `SpechtRunnerFrontmatterUnitTests.ADocumentFailingItsKindSchema_WhenChecked_ShouldReportItsKindRuleAtTheKeysLine`; acceptance binding and command proof: 0234                                                                                                 | Partial |
+| B-004    | A failure on a key is reported at that key's line         | `SpechtRunnerFrontmatterUnitTests.ADocumentFailingItsKindSchema_WhenChecked_ShouldReportItsKindRuleAtTheKeysLine`; acceptance binding and command proof: 0234                                                                                                 | Partial |
+| B-005    | A document with no frontmatter is reported                | `SpechtRunnerFrontmatterUnitTests.ADocumentWithoutFrontmatter_WhenChecked_ShouldReportSpec001AtLineOne`; acceptance binding and command proof: 0234                                                                                                           | Partial |
+| B-006    | The schema is the one the check selects for the root      | `SpechtRunnerFrontmatterUnitTests.APinnedRoot_WhenDocumentChecked_ShouldUseTheSameSchemaSourceAndVerdictAsTheTree`; acceptance binding and command proof: 0234                                                                                                | Partial |
+| B-007    | A rule that needs the tree does not run                   | `SpechtRunnerFrontmatterUnitTests.AValidDocumentBesideInvalidRootSpecifications_WhenChecked_ShouldIgnoreTheTreeAndEveryOtherRule`; acceptance binding and command proof: 0234                                                                                 | Partial |
+| B-008    | The root's own specifications are not checked             | `SpechtRunnerFrontmatterUnitTests.AValidDocumentBesideInvalidRootSpecifications_WhenChecked_ShouldIgnoreTheTreeAndEveryOtherRule`; acceptance binding and command proof: 0234                                                                                 | Partial |
+| B-009    | A document in the tree gets the check's verdict           | `SpechtRunnerFrontmatterUnitTests.APinnedRoot_WhenDocumentChecked_ShouldUseTheSameSchemaSourceAndVerdictAsTheTree`; acceptance binding and command proof: 0234                                                                                                | Partial |
+| B-010    | A violation is printed as a diagnostic line               | Missing                                                                                                                                                                                                                                                       | Missing |
+| B-011    | A document named by a path is reported by that path       | Missing                                                                                                                                                                                                                                                       | Missing |
+| B-012    | A document on standard input is reported as stdin         | Missing                                                                                                                                                                                                                                                       | Missing |
+| B-013    | A run ends with the error and warning counts              | `SpechtRunnerFrontmatterUnitTests.AManifestRuleLevel_WhenDocumentChecked_ShouldGradeOrDropTheViolationAndCountIt`; acceptance binding and command proof: 0234                                                                                                 | Partial |
+| B-014    | An error fails the run                                    | Missing                                                                                                                                                                                                                                                       | Missing |
+| B-015    | A clean document succeeds                                 | Missing                                                                                                                                                                                                                                                       | Missing |
+| B-016    | A missing root is a missing-input failure                 | `SpechtRunnerFrontmatterUnitTests.AnInvalidRootOrManifest_WhenDocumentChecked_ShouldRetainTheChecksTypedFailure`; acceptance binding and command proof: 0234                                                                                                  | Partial |
+| B-017    | A root without a manifest is a missing-input failure      | `SpechtRunnerFrontmatterUnitTests.AnInvalidRootOrManifest_WhenDocumentChecked_ShouldRetainTheChecksTypedFailure`; acceptance binding and command proof: 0234                                                                                                  | Partial |
+| B-018    | An unreadable manifest is an invalid-manifest failure     | `SpechtRunnerFrontmatterUnitTests.AnInvalidRootOrManifest_WhenDocumentChecked_ShouldRetainTheChecksTypedFailure`; acceptance binding and command proof: 0234                                                                                                  | Partial |
+| B-019    | A version the tool does not ship is invalid configuration | `SpechtRunnerFrontmatterUnitTests.AnInvalidRootOrManifest_WhenDocumentChecked_ShouldRetainTheChecksTypedFailure`; acceptance binding and command proof: 0234                                                                                                  | Partial |
+| B-020    | An unknown kind is not found                              | `SpechtRunnerFrontmatterUnitTests.AnUnknownKind_WhenParsed_ShouldNameTheTypedKindAndAllKindsBeforeReadingARoot`; acceptance binding and command proof: 0234                                                                                                   | Partial |
+| B-021    | A path that names no file is not found                    | Missing                                                                                                                                                                                                                                                       | Missing |
+| B-022    | Messages about the tool go to standard error              | Missing                                                                                                                                                                                                                                                       | Missing |
+| B-023    | A run writes nothing                                      | Missing                                                                                                                                                                                                                                                       | Missing |
+| B-024    | No derived path in the output is absolute                 | Missing                                                                                                                                                                                                                                                       | Missing |
+| B-025    | The same input gives the same verdict                     | `SpechtRunnerFrontmatterUnitTests.TheSameDocumentKindAndRoot_WhenCheckedTwice_ShouldReturnTheSameReport`; acceptance binding and command proof: 0234                                                                                                          | Partial |
+| B-026    | A missing option or a conflicting pair is a usage failure | Missing                                                                                                                                                                                                                                                       | Missing |
+| B-027    | A first failure is reported when several apply            | `SpechtRunnerFrontmatterUnitTests.AManifestKind_WhenParsed_ShouldBeAvailableWithoutReadingARoot`; `SpechtRunnerFrontmatterUnitTests.AnUnknownKind_WhenParsed_ShouldNameTheTypedKindAndAllKindsBeforeReadingARoot`; acceptance binding and command proof: 0234 | Partial |
 
 ## 10. Lessons / Spec Deltas
 

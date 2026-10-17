@@ -2,7 +2,7 @@ id: "0233"
 type: task
 title: Check one document's frontmatter in the engine
 
-status: ready-for-architecture
+status: done
 
 risk: 3
 
@@ -26,8 +26,8 @@ claims:
   - B-025
 
 created: "2026-10-15"
-updated: "2026-10-15"
-closed: null
+updated: "2026-10-16"
+closed: "2026-10-16"
 
 summary: |
   The engine (src/specht) gains a way to check one document's
