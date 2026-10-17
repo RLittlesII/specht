@@ -378,3 +378,10 @@ Feature: The report contract
     When the check runs with JSON output
     Then the violation's expectation carries the status "Withdrawn"
     And a tag count of 0
+
+  @B-043
+  Scenario: A done Feature's missing-coverage violation says what must change first
+    Given the manifest pins schema version "0.3.0"
+    And the root holds a specification whose delivery status is done with one missing cell in its traceability table
+    When the check runs with JSON output
+    Then the violation's expectation names the cell that must change before the done status is honest
