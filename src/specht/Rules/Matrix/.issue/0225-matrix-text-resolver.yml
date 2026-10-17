@@ -2,7 +2,7 @@ id: "0225"
 type: task
 title: Resolve a matrix row's test names against the declared test files as text
 
-status: ready-for-architecture
+status: done
 
 risk: 3
 
@@ -21,8 +21,8 @@ claims:
   - B-005
 
 created: "2026-10-15"
-updated: "2026-10-15"
-closed: null
+updated: "2026-10-16"
+closed: "2026-10-16"
 
 summary: |
   The one resolver the matrix rules and the trace command share (C-3;
@@ -66,6 +66,18 @@ decisions:
     2026-10-15, spec-author: value omitted, inheriting 0224's. No
     depends_on: 0222 is done, and the ADR-0014 stages (0164, 0166) are not
     prerequisites, since this adds a reader and migrates nothing.
+  - |
+    2026-10-16, implementer: keep the resolver pure over the existing
+    parsed document and test-file texts. Extend the existing discovery
+    store for declared file reads, reusing its glob/exclusion matcher;
+    retain code spans in the existing Markdig parse. No new I/O store,
+    rule, dispatcher or runner migration is needed. Deterministic
+    evidence selects the first ordinal matching path and earliest name.
+  - |
+    2026-10-16, test-writer: the compilable stubs produced 33 failing
+    focused cases and one passing empty-section boundary. Four claim
+    rows name unit/integration proofs and stay Partial because their
+    scenarios observe SPEC032, which belongs to a later item.
 
 out_of_scope:
   - "Any SPEC### report, and which rows a rule exempts: the later 0001-F12 rule items under 0224."

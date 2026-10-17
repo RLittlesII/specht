@@ -53,7 +53,10 @@ public sealed class SpecDocument
                 heading.Line + 1,
                 table is null ? [] : HeaderCells(table),
                 table is null ? [] : BodyRows(table),
-                table is null ? [] : BodyRowLines(table)));
+                table is null ? [] : BodyRowLines(table))
+            {
+                RowCodeSpans = table is null ? [] : BodyCodeSpans(table),
+            });
         }
 
         return new SpecDocument(relativePath, FrontmatterReader.Parse(text), sections);
@@ -87,6 +90,14 @@ public sealed class SpecDocument
 
     private static IReadOnlyList<IReadOnlyList<string>> BodyRows(Table table) =>
         table.OfType<TableRow>().Where(static row => !row.IsHeader).Select(Cells).ToList();
+
+    private static IReadOnlyList<IReadOnlyList<IReadOnlyList<string>>> BodyCodeSpans(Table table) =>
+        table.OfType<TableRow>().Where(static row => !row.IsHeader)
+            .Select(static row => (IReadOnlyList<IReadOnlyList<string>>)row.OfType<TableCell>()
+                .Select(static cell => (IReadOnlyList<string>)cell.Descendants().OfType<CodeInline>()
+                    .Select(static code => code.Content).ToArray())
+                .ToArray())
+            .ToArray();
 
     private static IReadOnlyList<int> BodyRowLines(Table table) =>
         table.OfType<TableRow>().Where(static row => !row.IsHeader).Select(static row => row.Line + 1).ToList();

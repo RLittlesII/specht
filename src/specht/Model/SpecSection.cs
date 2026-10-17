@@ -11,4 +11,8 @@ public sealed record SpecSection(
     int Line,
     IReadOnlyList<string> Headers,
     IReadOnlyList<IReadOnlyList<string>> Rows,
-    IReadOnlyList<int> RowLines);
+    IReadOnlyList<int> RowLines)
+{
+    /// <summary>Inline-code contents per body row and cell, parallel to <see cref="Rows"/>.</summary>
+    public IReadOnlyList<IReadOnlyList<IReadOnlyList<string>>> RowCodeSpans { get; init; } = [];
+}

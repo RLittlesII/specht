@@ -6,6 +6,7 @@ using Specht.Manifest;
 using Specht.Model;
 using Specht.Resources;
 using Specht.Rules;
+using Specht.Rules.Matrix;
 using Specht.Versioning;
 
 namespace Specht.Composition;
@@ -29,6 +30,7 @@ public static class SpechtEngineServiceCollectionExtensions
         services.AddSingleton<FrontmatterReader>();
         services.AddSingleton<FeatureTagParser>();
         services.AddSingleton<SpecDiscovery>();
+        services.AddSingleton<MatrixResolver>();
         services.AddSingleton<SpecManifestStore>();
         services.AddSingleton<ManifestPinEditor>();
         services.AddSingleton<SchemaVersionManager>();
