@@ -6,10 +6,10 @@ type: reference
 
 # Exit codes
 
-| Exit | Meaning                                                                                                            |
-| ---- | ------------------------------------------------------------------------------------------------------------------ |
-| `0`  | Clean                                                                                                              |
-| `1`  | Violations (any violation, under `--strict`)                                                                       |
-| `2`  | Missing root or manifest, invalid frontmatter-command usage, or a version required without an interactive terminal |
-| `3`  | Invalid manifest or init source options, or an upstream schema fetch or hash check failed                          |
-| `4`  | Something named on the command line, such as a schema version, frontmatter kind or document file, was not found    |
+| Exit | Meaning                                                                                                                  |
+| ---- | ------------------------------------------------------------------------------------------------------------------------ |
+| `0`  | Clean                                                                                                                    |
+| `1`  | Violations (any violation, under `--strict`)                                                                             |
+| `2`  | Missing root or manifest, invalid frontmatter-command usage, or a version required without an interactive terminal       |
+| `3`  | Invalid manifest or init source options, or an upstream schema fetch or hash check failed                                |
+| `4`  | Something named on the command line, such as a schema version, rule id, frontmatter kind or document file, was not found |

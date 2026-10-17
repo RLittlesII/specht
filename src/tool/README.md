@@ -13,7 +13,7 @@ See [Quick start](https://github.com/RLittlesII/specht#quick-start) in the repos
 ## Commands
 
 ```sh
-specht [--root <dir>] [--strict] [--json] [--schema-source <embedded|disk>]
+specht [--root <dir>] [--strict] [--json] [--schema-source <embedded|disk>] [--explain <SPEC###>]
 specht schema list [--root <dir>]
 specht schema pin [version] [--root <dir>]
 specht frontmatter --kind <kind> (<path> | --stdin) [--root <dir>]

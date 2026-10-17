@@ -150,7 +150,7 @@ and its build; a global install is a second path for a shell.
 ## Usage
 
 ```sh
-specht [--root <dir>] [--strict] [--json] [--schema-source <embedded|disk>]
+specht [--root <dir>] [--strict] [--json] [--schema-source <embedded|disk>] [--explain <SPEC###>]
 specht schema list [--root <dir>]
 specht schema pin [version] [--root <dir>]
 specht frontmatter --kind <kind> (<path> | --stdin) [--root <dir>]

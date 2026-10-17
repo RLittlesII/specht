@@ -2,7 +2,7 @@ id: "0040"
 type: task
 title: Print a rule's full text with --explain
 
-status: ready-for-architecture
+status: done
 
 risk: 3
 
@@ -21,8 +21,8 @@ claims:
   - B-030
 
 created: "2026-10-08"
-updated: "2026-10-09"
-closed: null
+updated: "2026-10-17"
+closed: "2026-10-17"
 
 summary: |
   `specht --explain SPEC###` prints the rule's full text for the pinned
@@ -35,9 +35,7 @@ summary: |
 
   Depends on 0129: the full text is the rule page 0129 writes (decision
   0003), so there is nothing to print until the pages exist. A page opens
-  with YAML frontmatter, which `--explain` must not print; that is OQ-3's
-  proposed default and the owner has not been asked, so confirm it before
-  building.
+  with YAML frontmatter, which is included in the output (decision 0007).
 
 acceptance_criteria:
   - "B-019 — full text, version, stdout, exit 0, no check run"
@@ -55,6 +53,11 @@ decisions:
   - |
     2026-10-09, the repository owner: the text `--explain` prints is the
     rule page (decision 0003). `depends_on` gains 0129.
+
+  - |
+    2026-10-17, the repository owner: OQ-3 resolved as printing the entire
+    page, including YAML frontmatter (Report decision 0007). PRs for 0039
+    and 0227 have merged; the Report writer lane is free.
 
 out_of_scope:
   - "Changing a rule's text between versions — § 5 #5, 0001-F7."

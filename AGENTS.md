@@ -192,9 +192,12 @@ up or down. With no version, an interactive Spectre.Console selector uses arrow
 keys and Enter; without a terminal the command prints an explicit-version hint
 and exits `2`. Both commands are built (`0001-F7`, items `0121` to `0123`, `0125`).
 
-`specht upgrade`, `--explain`, `--report` and the `init --epics` option are
+`specht upgrade`, `--report` and the `init --epics` option are
 specified and not built (`0001-F7`, `0001-F3`, `0001-F4`). What the tool accepts today is
 [`docs/cli.md`](docs/cli.md), which a test holds to its help (`0002-F1`).
+
+`specht --explain <SPEC###>` prints the entire rule page, including YAML frontmatter,
+for the manifest's exact pin without running a check. It is built (item `0040`).
 
 `specht manifest` and `specht rules` are specified and not built (`0001-F9`,
 `0001-F10`). A command that sets one rule's level is specified and not yet

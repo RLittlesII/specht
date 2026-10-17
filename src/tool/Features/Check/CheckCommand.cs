@@ -16,8 +16,10 @@ namespace Specht.Tool.Features.Check;
 /// B-001) - and folds the report into an exit code. It parses, calls the runner and folds - nothing else (C-4).
 /// </summary>
 /// <param name="console">Where the product goes; injected so the command tester captures it.</param>
+/// <param name="explanations">The engine's pinned rule page reader.</param>
 /// <param name="run">The engine's runner, <see cref="SpechtRunner.Run"/> outside a test.</param>
-public sealed class CheckCommand(IAnsiConsole console, Func<string, SchemaSourceSelection?, SpechtReport> run) : AsyncCommand<CheckCommand.Settings>
+public sealed class CheckCommand(IAnsiConsole console, Func<string, SchemaSourceSelection?, SpechtReport> run,
+    RuleExplanationReader explanations) : AsyncCommand<CheckCommand.Settings>
 {
     /// <inheritdoc />
     public override Task<int> ExecuteAsync(CommandContext context, Settings settings, CancellationToken cancellationToken)
@@ -26,7 +28,20 @@ public sealed class CheckCommand(IAnsiConsole console, Func<string, SchemaSource
 
         try
         {
-            report = run(Path.GetFullPath(settings.Root), settings.SchemaSource switch
+            var root = Path.GetFullPath(settings.Root);
+            if (settings.Explain is { } id)
+            {
+                var page = explanations.Read(root, id);
+                if (page is null)
+                {
+                    return Fail(ExitCodes.NotFound, $"specht: rule '{id}' was not found in the pinned schema version.");
+                }
+
+                console.Profile.Out.Writer.Write(page);
+                return Task.FromResult(ExitCodes.Success);
+            }
+
+            report = run(root, settings.SchemaSource switch
             {
                 "embedded" => SchemaSourceSelection.Embedded,
                 "disk" => SchemaSourceSelection.Disk,
@@ -96,6 +111,11 @@ public sealed class CheckCommand(IAnsiConsole console, Func<string, SchemaSource
         [CommandOption("--schema-source <embedded|disk>")]
         [Description("Select embedded or local disk frontmatter schemas for this check.")]
         public string? SchemaSource { get; init; }
+
+        /// <summary>Gets the rule id whose entire page is printed without running a check.</summary>
+        [CommandOption("--explain <SPEC###>")]
+        [Description("Print the entire rule page for the pinned schema version without running a check.")]
+        public string? Explain { get; init; }
 
         /// <inheritdoc />
         public override ValidationResult Validate() => SchemaSource is null or "embedded" or "disk"
