@@ -1097,3 +1097,64 @@ Feature: Schema versioning
     When the feature template of each version is read
     Then version 0.2.0's traceability guidance says the missing-coverage rule reports a missing row once the specification is approved, unless the manifest lowers the rule
     And version 0.1.0's says a missing row does not block the specification reaching approved
+
+  @B-118
+  Scenario: A done Feature's missing row is reported
+    Given the manifest pins schema version 0.3.0
+    And the root holds a specification whose delivery status is done and whose traceability table has a missing test
+    When the check runs
+    Then the missing test is reported by the missing-coverage rule
+
+  @B-118
+  Scenario: A done Feature's missing row is reported whatever its agreement status
+    Given the manifest pins schema version 0.3.0
+    And the root holds a draft specification whose delivery status is done and whose traceability table has a missing test
+    When the check runs
+    Then the missing test is reported by the missing-coverage rule
+
+  @B-119 @boundary
+  Scenario: An approved Feature that is not done is not reported for a missing row
+    Given the manifest pins schema version 0.3.0
+    And the root holds an approved specification whose delivery status is in progress and whose traceability table has a missing test
+    When the check runs
+    Then the missing-coverage rule reports nothing
+
+  @B-120
+  Scenario Outline: Older versions report an approved Feature's missing row
+    Given the manifest pins schema version <version>
+    And the root holds an approved specification whose delivery status is in progress and whose traceability table has a missing test
+    When the check runs
+    Then the missing test is reported by the missing-coverage rule
+
+    Examples:
+      | version |
+      | 0.1.0   |
+      | 0.2.0   |
+
+  @B-121
+  Scenario: The missing-coverage message names the done status
+    Given the manifest pins schema version 0.3.0
+    And the root holds a specification whose delivery status is done and whose traceability table has a missing test
+    When the check runs
+    Then the missing-coverage message is "status is 'done' while § 9 still carries a 'Missing' cell"
+
+  @B-122 @boundary
+  Scenario: The sign-off rule still follows approval
+    Given the manifest pins schema version 0.3.0
+    And the root holds a specification in review whose delivery status is done and whose sign-off has a row awaiting review
+    When the check runs
+    Then the sign-off rule reports nothing
+
+  @B-123
+  Scenario: The missing-coverage rule keeps its id and its severity
+    Given the tool ships schema version 0.3.0
+    When its vocabulary is read
+    Then the missing-coverage rule is SPEC060 at error severity
+    And no other rule id reports missing coverage
+
+  @B-124
+  Scenario: The 0.3.0 template says the missing-coverage rule reports a done Feature
+    Given the tool ships schema version 0.3.0
+    When its feature template is read
+    Then its traceability guidance says a missing row does not block the specification reaching approved
+    And that the missing-coverage rule reports it once the delivery status is done, unless the manifest lowers the rule

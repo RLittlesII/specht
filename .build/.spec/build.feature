@@ -143,6 +143,7 @@ Feature: The build
   @B-024
   Scenario: A missing test is a warning here
     Given the checker's rule settings exist
+    And the repository pins a schema version before 0.3.0
     And an approved specification whose traceability matrix has a missing test
     When the self-check runs
     Then the missing test is reported as a warning
@@ -154,3 +155,19 @@ Feature: The build
     And a snapshot of every tracked file and the staged changes
     When a commit is attempted
     Then no tracked file and no staged change was modified
+
+  @B-026 @boundary
+  Scenario: An approved Feature that is not done passes the self-check with a missing test
+    Given the repository pins schema version 0.3.0
+    And an approved specification whose delivery status is in progress and whose traceability matrix has a missing test
+    When the self-check runs
+    Then no missing-coverage violation is reported
+    And the self-check succeeds
+
+  @B-027
+  Scenario: A done Feature with a missing test fails the self-check
+    Given the repository pins schema version 0.3.0
+    And a specification whose delivery status is done and whose traceability matrix has a missing test
+    When the self-check runs
+    Then the missing test is reported as an error
+    And the self-check fails
