@@ -12,7 +12,9 @@ namespace Specht;
 /// <param name="loader">The model loader.</param>
 /// <param name="rules">The rule set, in the order it is evaluated.</param>
 /// <param name="fileSystem">The file system a report is written through.</param>
-public sealed class SpechtRunner(SpecModelLoader loader, IEnumerable<ISpecRule> rules, IFileSystem fileSystem)
+/// <param name="schemas">The shared root and schema selection stage.</param>
+public sealed class SpechtRunner(
+    SpecModelLoader loader, IEnumerable<ISpecRule> rules, IFileSystem fileSystem, SpecSchemasLoader schemas)
 {
     /// <summary>
     /// Evaluates <paramref name="rules"/>, in the order given, over <paramref name="model"/> under the vocabulary of the
@@ -23,33 +25,8 @@ public sealed class SpechtRunner(SpecModelLoader loader, IEnumerable<ISpecRule> 
     /// <param name="model">The resolved tree.</param>
     /// <param name="rules">The rule set.</param>
     /// <returns>The report.</returns>
-    public static SpechtReport Evaluate(SpecModel model, IEnumerable<ISpecRule> rules)
-    {
-        var version = model.Schemas.Version;
-        var settings = model.Schemas.Structure.Rules;
-        var evaluated = rules.Where(rule => rule.ReportedIds.Any(id => Enabled(id, rule, version.RuleIds, settings))).ToList();
-        var violations = new List<SpecViolation>();
-
-        foreach (var rule in evaluated)
-        {
-            violations.AddRange(
-                rule.Evaluate(model)
-                    .Where(violation => Enabled(violation.RuleId, rule, version.RuleIds, settings))
-                    .Select(violation => Graded(violation, settings)));
-        }
-
-        return new SpechtReport(
-            version.Number,
-            model.Features.Count,
-            [
-                .. model.Schemas.Structure.Discovery.Layouts.Select(layout =>
-                    new SpecReportLayout(layout.Name, model.Features.Count(feature => feature.Location.Layout == layout))),
-            ],
-            model.Items.Count,
-            evaluated.Sum(rule => rule.ReportedIds.Count(id => Enabled(id, rule, version.RuleIds, settings))),
-            Order(violations))
-        { SchemaSource = model.Schemas.Source };
-    }
+    public static SpechtReport Evaluate(SpecModel model, IEnumerable<ISpecRule> rules) =>
+        Evaluate(model, rules, rule => rule.Evaluate(model));
 
     /// <summary>
     /// Orders <paramref name="violations"/> as the report carries them (<c>0001-F1</c> B-004, C-9): severity
@@ -72,6 +49,20 @@ public sealed class SpechtRunner(SpecModelLoader loader, IEnumerable<ISpecRule> 
     /// <summary>Loads and evaluates the tree with the frontmatter source selected for this invocation.</summary>
     public SpechtReport Run(string root, SchemaSourceSelection? selection) => Evaluate(loader.Load(root, selection), rules);
 
+    /// <summary>Parses a frontmatter kind before the caller reads its document or root.</summary>
+    public FrontmatterKind ParseFrontmatterKind(string kind) => rules.OfType<FrontmatterSchemaRule>().Single().ParseKind(kind);
+
+    /// <summary>Checks only the supplied document's frontmatter against the root's selected schemas.</summary>
+    public SpechtReport CheckFrontmatter(string root, FrontmatterKind kind, string path, string text)
+    {
+        var loaded = schemas.Load(root);
+        var model = new SpecModel(root, [], [], [], loaded);
+        var frontmatter = FrontmatterReader.Parse(text);
+
+        return Evaluate(model, rules.OfType<FrontmatterSchemaRule>(),
+            rule => ((FrontmatterSchemaRule)rule).Evaluate(path, frontmatter, loaded, kind));
+    }
+
     /// <summary>Writes <paramref name="report"/> to <paramref name="path"/> as the report document (<c>0001-F3</c> B-008).</summary>
     /// <param name="report">The run's report.</param>
     /// <param name="path">Where the document is written.</param>
@@ -79,6 +70,35 @@ public sealed class SpechtRunner(SpecModelLoader loader, IEnumerable<ISpecRule> 
     {
         fileSystem.Directory.CreateDirectory(fileSystem.Path.GetDirectoryName(path)!);
         fileSystem.File.WriteAllText(path, SpecReportDocument.From(report).ToJson());
+    }
+
+    private static SpechtReport Evaluate(
+        SpecModel model, IEnumerable<ISpecRule> rules, Func<ISpecRule, IEnumerable<SpecViolation>> evaluate)
+    {
+        var version = model.Schemas.Version;
+        var settings = model.Schemas.Structure.Rules;
+        var evaluated = rules.Where(rule => rule.ReportedIds.Any(id => Enabled(id, rule, version.RuleIds, settings))).ToList();
+        var violations = new List<SpecViolation>();
+
+        foreach (var rule in evaluated)
+        {
+            violations.AddRange(
+                evaluate(rule)
+                    .Where(violation => Enabled(violation.RuleId, rule, version.RuleIds, settings))
+                    .Select(violation => Graded(violation, settings)));
+        }
+
+        return new SpechtReport(
+            version.Number,
+            model.Features.Count,
+            [
+                .. model.Schemas.Structure.Discovery.Layouts.Select(layout =>
+                    new SpecReportLayout(layout.Name, model.Features.Count(feature => feature.Location.Layout == layout))),
+            ],
+            model.Items.Count,
+            evaluated.Sum(rule => rule.ReportedIds.Count(id => Enabled(id, rule, version.RuleIds, settings))),
+            Order(violations))
+        { SchemaSource = model.Schemas.Source };
     }
 
     private static bool Enabled(string id, ISpecRule rule, IReadOnlySet<string> vocabulary, SpecRuleSettings settings) =>

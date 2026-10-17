@@ -30,7 +30,7 @@ public sealed class FrontmatterSchemaRule : ISpecRule
     {
         foreach (var feature in model.Features)
         {
-            foreach (var violation in Check(feature.RelativePath, feature.Document.Frontmatter, model.Schemas.Feature, "SPEC002", model.Schemas, "feature"))
+            foreach (var violation in Evaluate(feature.RelativePath, feature.Document.Frontmatter, model.Schemas, FrontmatterKind.Feature))
             {
                 yield return violation;
             }
@@ -38,7 +38,7 @@ public sealed class FrontmatterSchemaRule : ISpecRule
 
         foreach (var item in model.Items)
         {
-            foreach (var violation in Check(item.RelativePath, item.Frontmatter, model.Schemas.Item, "SPEC003", model.Schemas, "task"))
+            foreach (var violation in Evaluate(item.RelativePath, item.Frontmatter, model.Schemas, FrontmatterKind.Task))
             {
                 yield return violation;
             }
@@ -46,11 +46,34 @@ public sealed class FrontmatterSchemaRule : ISpecRule
 
         foreach (var epic in model.Epics)
         {
-            foreach (var violation in Check(epic.RelativePath, epic.Frontmatter, model.Schemas.Epic, "SPEC004", model.Schemas, "epic"))
+            foreach (var violation in Evaluate(epic.RelativePath, epic.Frontmatter, model.Schemas, FrontmatterKind.Epic))
             {
                 yield return violation;
             }
         }
+    }
+
+    /// <summary>Parses the manifest's exact kind names without reading a document or root.</summary>
+    public FrontmatterKind ParseKind(string kind) => kind switch
+    {
+        "feature" => FrontmatterKind.Feature,
+        "task" => FrontmatterKind.Task,
+        "epic" => FrontmatterKind.Epic,
+        _ => throw new ArgumentException($"Unknown frontmatter kind '{kind}'. Available kinds: feature, task, epic.", nameof(kind)),
+    };
+
+    /// <summary>Evaluates one document using the same kind mapping and schema evaluation as the tree.</summary>
+    public IEnumerable<SpecViolation> Evaluate(string path, Frontmatter frontmatter, SpecSchemas schemas, FrontmatterKind kind)
+    {
+        var selected = kind switch
+        {
+            FrontmatterKind.Feature => (Schema: schemas.Feature, Rule: "SPEC002", Key: "feature"),
+            FrontmatterKind.Task => (Schema: schemas.Item, Rule: "SPEC003", Key: "task"),
+            FrontmatterKind.Epic => (Schema: schemas.Epic, Rule: "SPEC004", Key: "epic"),
+            _ => throw new ArgumentOutOfRangeException(nameof(kind), kind, "The kind must be feature, task or epic."),
+        };
+
+        return Check(path, frontmatter, selected.Schema, selected.Rule, schemas, selected.Key);
     }
 
     private static IEnumerable<SpecViolation> Check(
