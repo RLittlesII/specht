@@ -80,7 +80,10 @@ public sealed class ChildItemRule : ISpecRule
                     feature.RelativePath,
                     feature.Document.Frontmatter.LineOf(key),
                     declared,
-                    $"frontmatter {key} names '{declared}', but no '{declared}-*.md' was discovered");
+                    $"frontmatter {key} names '{declared}', but no '{declared}-*.md' was discovered")
+                {
+                    Expected = DeclaredExpectation(declared, requiredType),
+                };
 
                 continue;
             }
@@ -93,7 +96,10 @@ public sealed class ChildItemRule : ISpecRule
                     feature.RelativePath,
                     feature.Document.Frontmatter.LineOf(key),
                     declared,
-                    $"frontmatter {key} names '{declared}', which resolves to {matches.Count} files");
+                    $"frontmatter {key} names '{declared}', which resolves to {matches.Count} files")
+                {
+                    Expected = DeclaredExpectation(declared, requiredType),
+                };
 
                 continue;
             }
@@ -106,7 +112,10 @@ public sealed class ChildItemRule : ISpecRule
                     matches[0].RelativePath,
                     matches[0].Frontmatter.LineOf("type"),
                     declared,
-                    $"'{declared}' is declared in frontmatter {key} but its type is '{matches[0].Type}', not '{requiredType}'");
+                    $"'{declared}' is declared in frontmatter {key} but its type is '{matches[0].Type}', not '{requiredType}'")
+                {
+                    Expected = DeclaredExpectation(declared, requiredType),
+                };
             }
         }
     }
@@ -144,7 +153,10 @@ public sealed class ChildItemRule : ISpecRule
                     item.RelativePath,
                     item.Frontmatter.LineOf("id"),
                     item.Id,
-                    $"item id '{item.Id}' is already used by {seen[item.Id]} - ids are never reused");
+                    $"item id '{item.Id}' is already used by {seen[item.Id]} - ids are never reused")
+                {
+                    Expected = new JsonObject { ["fileName"] = $"{item.Id}-*.md", ["firstDeclaration"] = seen[item.Id] },
+                };
             }
 
             var parent = model.Features.FirstOrDefault(feature =>
@@ -193,12 +205,26 @@ public sealed class ChildItemRule : ISpecRule
                         numbers[index].Item.RelativePath,
                         numbers[index].Item.Frontmatter.LineOf("id"),
                         numbers[index].Item.Id,
-                        $"epic {group.Key}'s item sequence skips {expected:D2} - tasks are numbered per epic, contiguously from 01");
+                        $"epic {group.Key}'s item sequence skips {expected:D2} - tasks are numbered per epic, contiguously from 01")
+                    {
+                        Expected = new JsonObject { ["fileName"] = $"{group.Key}-{expected:D2}-*.md", ["nextNumber"] = expected },
+                    };
 
                     break;
                 }
             }
         }
+    }
+
+    private static JsonObject DeclaredExpectation(string declared, string? requiredType)
+    {
+        var expected = new JsonObject { ["fileName"] = $"{declared}-*.md" };
+        if (requiredType is not null)
+        {
+            expected["type"] = requiredType;
+        }
+
+        return expected;
     }
 
     private static int Number(string id)
