@@ -3,6 +3,7 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 using AwesomeAssertions;
 using Microsoft.Extensions.DependencyInjection;
+using Specht.Composition;
 using Specht.Manifest;
 using Specht.Model;
 using Specht.Report;
@@ -581,7 +582,7 @@ public sealed class CheckCommandIntegrationTests
 
     private static CommandAppResult Check(Func<string, SpechtReport> run, params string[] args)
     {
-        var services = new ServiceCollection();
+        var services = new ServiceCollection().AddSpechtEngine();
         services.AddSingleton<Func<string, SchemaSourceSelection?, SpechtReport>>((root, _) => run(root));
 
         var app = new CommandAppTester(new TypeRegistrar(services), console: new TestConsole().Width(80));

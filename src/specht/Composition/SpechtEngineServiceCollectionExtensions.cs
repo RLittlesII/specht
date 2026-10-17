@@ -4,6 +4,7 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Specht.Discovery;
 using Specht.Manifest;
 using Specht.Model;
+using Specht.Report;
 using Specht.Resources;
 using Specht.Rules;
 using Specht.Rules.Matrix;
@@ -36,6 +37,7 @@ public static class SpechtEngineServiceCollectionExtensions
         services.AddSingleton<SchemaVersionManager>();
         services.AddSingleton<UpstreamSchemaCopy>();
         services.AddSingleton<SpecSchemasLoader>();
+        services.AddSingleton<RuleExplanationReader>();
         services.AddSingleton<SpecModelLoader>();
         services.AddSingleton<SpechtRunner>();
         services.AddSingleton<ISpecRule, FrontmatterSchemaRule>();

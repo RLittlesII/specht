@@ -12,7 +12,7 @@ type: reference
 ## `specht`
 
 ```text
-specht [--root <DIR>] [--strict] [--json] [--schema-source <embedded|disk>]
+specht [--root <DIR>] [--strict] [--json] [--schema-source <embedded|disk>] [--explain <SPEC###>]
 specht --version
 ```
 
@@ -20,14 +20,15 @@ Checks the specifications under a root against the schema version its manifest
 pins. [What it checks](what-it-checks.md) lists the rules, and
 [Configuration](configuration.md) the manifest.
 
-| Option                             | Value                | Default                            | Does                                                                              |
-| ---------------------------------- | -------------------- | ---------------------------------- | --------------------------------------------------------------------------------- |
-| `--root <DIR>`                     | `<DIR>`              | The working directory              | Names the repository root to check.                                               |
-| `--schema-source <embedded\|disk>` | `embedded` or `disk` | Manifest selection, then automatic | Selects frontmatter schemas for this run; overrides a valid manifest selection.   |
-| `--strict`                         | none                 | Off                                | Fails on a violation of any severity, not only an error.                          |
-| `--json`                           | none                 | Off                                | Writes the report document to stdout in place of the violation lines and summary. |
-| `-h, --help`                       | none                 | Off                                | Prints the command's help and checks nothing.                                     |
-| `--version`                        | none                 | Off                                | As the only argument, prints the tool's version and checks nothing.               |
+| Option                             | Value                | Default                            | Does                                                                                                            |
+| ---------------------------------- | -------------------- | ---------------------------------- | --------------------------------------------------------------------------------------------------------------- |
+| `--root <DIR>`                     | `<DIR>`              | The working directory              | Names the repository root to check.                                                                             |
+| `--schema-source <embedded\|disk>` | `embedded` or `disk` | Manifest selection, then automatic | Selects frontmatter schemas for this run; overrides a valid manifest selection.                                 |
+| `--strict`                         | none                 | Off                                | Fails on a violation of any severity, not only an error.                                                        |
+| `--json`                           | none                 | Off                                | Writes the report document to stdout in place of the violation lines and summary.                               |
+| `--explain <SPEC###>`              | A rule id            | None                               | Prints the entire rule page for the pinned schema version, including YAML frontmatter, without running a check. |
+| `-h, --help`                       | none                 | Off                                | Prints the command's help and checks nothing.                                                                   |
+| `--version`                        | none                 | Off                                | As the only argument, prints the tool's version and checks nothing.                                             |
 
 Use `--schema-source disk` to read schemas maintained in the consumer repository under
 `.specht/schema/frontmatter/`, with filenames from `frontmatterSchemas`. Feature and
@@ -37,6 +38,12 @@ set `"schemaSource": "disk"` in a manifest pinned to schema `0.2.0` or later.
 Missing or invalid selected files exit `3`, with their relative path on stderr
 and no stdout. A recorded `spechtSchema` still requires hash verification under
 `disk`; selecting `embedded` beside that record is an invalid input.
+
+Use `specht --explain SPEC031` to print the complete embedded rule page for the
+manifest's schema pin, including its YAML frontmatter. A known rule exits `0`;
+an id outside that version's vocabulary is named on stderr and exits `4` with
+no stdout. A missing manifest exits `2`; an invalid manifest or unshipped pin
+exits `3`, with no page printed. Explain does not run the check.
 
 **Stdout.** One line per violation, with a file, a line in parentheses when it
 has one, a severity, a rule id, a message and, in square brackets, the
@@ -48,8 +55,9 @@ stderr. As the only argument, `--version` prints one line instead: the tool's
 version and the commit it was built from, such as `0.1.66+28d0ba692e`. It needs
 no manifest and writes nothing.
 
-**Exit codes.** `0`, `1`, `2` or `3`; [Exit codes](exit-codes.md) says what each
-means. `--version` as the only argument exits `0`.
+**Exit codes.** A check returns `0`, `1`, `2` or `3`; `--explain` can also return
+`4` for an unknown rule. [Exit codes](exit-codes.md) says what each means.
+`--version` as the only argument exits `0`.
 
 ```sh
 specht --root . --strict

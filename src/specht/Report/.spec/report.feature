@@ -274,6 +274,7 @@ Feature: The report contract
     Then the standard output carries what the rule checks
     And what the rule expects
     And the schema version the rule belongs to
+    And the entire authoritative page is printed, including YAML frontmatter
     And the exit code is 0
     And no check ran
 
@@ -326,8 +327,7 @@ Feature: The report contract
 
   @B-030 @boundary
   Scenario: Explain beside a pin the tool does not ship fails as the check does
-    Given the tool ships schema version 0.1.0 only
-    And the root's manifest is replaced by one pinning version 7.0.0
+    Given the root's manifest is replaced by one pinning version 7.0.0
     When the tool is asked to explain SPEC031
     Then no rule text is printed
     And the standard output is empty
