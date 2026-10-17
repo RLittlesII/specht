@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <AssemblyName>BindingSpike.BetaTests</AssemblyName>
+    <PackageId>BindingSpike.BetaTests</PackageId>
+    <IsTestProject>true</IsTestProject>
+    <ReqnrollUseIntermediateOutputPathForCodeBehind>true</ReqnrollUseIntermediateOutputPathForCodeBehind>
+    <RootNamespace>BindingSpike.OtherAcceptance</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Reqnroll.xunit.v3" />
+    <PackageReference Include="xunit.v3" />
+    <ReqnrollFeatureFile Remove="beta.feature" />
+    <ReqnrollFeatureFile Include="beta.feature" />
+  </ItemGroup>
+</Project>
