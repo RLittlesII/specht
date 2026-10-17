@@ -1,3 +1,5 @@
+using System.Text.Json.Nodes;
+using System.Text.RegularExpressions;
 using Specht.Model;
 
 namespace Specht.Rules;
@@ -47,7 +49,14 @@ public sealed class IdentityRule : ISpecRule
                     feature.RelativePath,
                     feature.Document.Frontmatter.LineOf("epic"),
                     feature.Identity,
-                    $"frontmatter epic '{feature.Epic}' does not match the containing directory '{epicDirectory}'");
+                    $"frontmatter epic '{feature.Epic}' does not match the containing directory '{epicDirectory}'")
+                {
+                    Expected = new JsonObject
+                    {
+                        ["form"] = model.Schemas.Structure.Identifiers["epic"],
+                        ["value"] = DirectoryIdentity(epicDirectory, model.Schemas.Structure.Identifiers["epic"]),
+                    },
+                };
             }
 
             if (identity.Feature is { } featureSegment
@@ -60,7 +69,14 @@ public sealed class IdentityRule : ISpecRule
                     feature.RelativePath,
                     feature.Document.Frontmatter.LineOf("id"),
                     feature.Identity,
-                    $"frontmatter id '{feature.Id}' does not match the containing directory '{featureDirectory}'");
+                    $"frontmatter id '{feature.Id}' does not match the containing directory '{featureDirectory}'")
+                {
+                    Expected = new JsonObject
+                    {
+                        ["form"] = model.Schemas.Structure.Identifiers["feature"],
+                        ["value"] = DirectoryIdentity(featureDirectory, model.Schemas.Structure.Identifiers["feature"]),
+                    },
+                };
             }
         }
 
@@ -81,8 +97,32 @@ public sealed class IdentityRule : ISpecRule
                     feature.Document.Frontmatter.LineOf("id"),
                     group.Key,
                     $"'{group.Key}' is specified in {paths.Count} places ({string.Join(", ", paths)}) - "
-                        + "a migration removes the old tree in the same change");
+                        + "a migration removes the old tree in the same change")
+                {
+                    Expected = new JsonObject
+                    {
+                        ["form"] = "{epic}-{feature}",
+                        ["value"] = group.Key,
+                        ["firstDeclaration"] = group.First().RelativePath,
+                    },
+                };
             }
         }
     }
+
+    private static string DirectoryIdentity(string directory, string grammar)
+    {
+        for (var index = directory.IndexOf('-'); index >= 0; index = directory.IndexOf('-', index + 1))
+        {
+            var prefix = directory[..index];
+            if (Regex.IsMatch(prefix, $"\\A(?:{grammar})\\z", RegexOptions.CultureInvariant))
+            {
+                return prefix;
+            }
+        }
+
+        var separator = directory.IndexOf('-');
+        return separator < 0 ? directory : directory[..separator];
+    }
+
 }

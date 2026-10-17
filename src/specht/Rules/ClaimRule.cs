@@ -1,3 +1,4 @@
+using System.Text.Json.Nodes;
 using Specht.Model;
 
 namespace Specht.Rules;
@@ -54,7 +55,10 @@ public sealed class ClaimRule : ISpecRule
                         feature.RelativePath,
                         line,
                         id,
-                        $"claim id '{id}' does not match {grammar} - claim ids are permanent, so the form is fixed");
+                        $"claim id '{id}' does not match {grammar} - claim ids are permanent, so the form is fixed")
+                    {
+                        Expected = new JsonObject { ["grammar"] = grammar },
+                    };
 
                     continue;
                 }
@@ -67,7 +71,10 @@ public sealed class ClaimRule : ISpecRule
                         feature.RelativePath,
                         line,
                         id,
-                        $"claim '{id}' is declared twice in § 3 (also at line {firstDeclarationLine})");
+                        $"claim '{id}' is declared twice in § 3 (also at line {firstDeclarationLine})")
+                    {
+                        Expected = new JsonObject { ["grammar"] = grammar, ["firstDeclarationLine"] = firstDeclarationLine },
+                    };
                 }
             }
 
@@ -119,7 +126,10 @@ public sealed class ClaimRule : ISpecRule
                     line,
                     id,
                     $"claim '{id}' has no row in § 9 - every § 3 claim appears there exactly once, "
-                        + "with 'Missing' as its test until one exists");
+                        + "with 'Missing' as its test until one exists")
+                {
+                    Expected = MatrixExpected(claims, rows),
+                };
             }
             else if (rows[id].Count > 1)
             {
@@ -129,7 +139,10 @@ public sealed class ClaimRule : ISpecRule
                     feature.RelativePath,
                     rows[id][1],
                     id,
-                    $"claim '{id}' has {rows[id].Count} rows in § 9 - expected exactly one");
+                    $"claim '{id}' has {rows[id].Count} rows in § 9 - expected exactly one")
+                {
+                    Expected = MatrixExpected(claims, rows),
+                };
             }
         }
 
@@ -141,8 +154,22 @@ public sealed class ClaimRule : ISpecRule
                 feature.RelativePath,
                 lines[0],
                 id,
-                $"§ 9 cites '{id}', which is not a claim in § 3 - a withdrawn claim is marked Withdrawn, not deleted");
+                $"§ 9 cites '{id}', which is not a claim in § 3 - a withdrawn claim is marked Withdrawn, not deleted")
+            {
+                Expected = MatrixExpected(claims, rows),
+            };
         }
+    }
+
+    private static JsonObject MatrixExpected(IReadOnlyDictionary<string, int> claims, IReadOnlyDictionary<string, List<int>> rows)
+    {
+        var counts = new JsonObject();
+        foreach (var id in claims.Keys)
+        {
+            counts[id] = rows.TryGetValue(id, out var lines) ? lines.Count : 0;
+        }
+
+        return new JsonObject { ["requiredRows"] = 1, ["rowsByClaim"] = counts };
     }
 
     private static string FirstCell(IReadOnlyList<string> row) => row.Count == 0 ? string.Empty : row[0].Trim();

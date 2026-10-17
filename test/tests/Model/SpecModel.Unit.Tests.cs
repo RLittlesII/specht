@@ -78,7 +78,10 @@ public sealed class SpecModelUnitTests
                 relativePath,
                 0,
                 "0009-F1",
-                $"found {featureFiles.Length} '.feature' files beside this specification - expected exactly one companion"));
+                $"found {featureFiles.Length} '.feature' files beside this specification - expected exactly one companion")
+            {
+                Expected = new JsonObject { ["companionCount"] = 1 },
+            });
     }
 
     [Theory]

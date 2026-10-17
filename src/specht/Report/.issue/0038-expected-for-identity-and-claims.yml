@@ -2,7 +2,7 @@ id: "0038"
 type: task
 title: Say what identity, companion, claim and matrix rules expected
 
-status: ready-for-architecture
+status: done
 
 risk: 3
 
@@ -21,8 +21,8 @@ claims:
   - B-015
 
 created: "2026-10-08"
-updated: "2026-10-08"
-closed: null
+updated: "2026-10-16"
+closed: "2026-10-16"
 
 summary: |
   `expected` as structured data (C-2) for the identity and traceability
@@ -37,7 +37,9 @@ acceptance_criteria:
   - "B-015 — SPEC031: claim ids needing one row, rows each has"
   - "§ 9 carries a row naming a test for each id above."
 
-decisions: []
+decisions:
+  - "0001-F3 decision 0005 names the payload members; the owner chose every declared claim in the matrix count map."
+  - "Existing rule guards, diagnostic lines and verdicts are preserved; no architecture migration or schema bump."
 
 out_of_scope:
   - "Applying `expected` to the document — § 5 #1."

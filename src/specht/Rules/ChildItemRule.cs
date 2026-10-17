@@ -1,3 +1,4 @@
+using System.Text.Json.Nodes;
 using System.Text.RegularExpressions;
 using Specht.Model;
 
@@ -129,7 +130,10 @@ public sealed class ChildItemRule : ISpecRule
                     item.RelativePath,
                     item.Frontmatter.LineOf("id"),
                     item.Id,
-                    $"frontmatter id '{item.Id}' does not match the file name prefix '{item.FileNameId}'");
+                    $"frontmatter id '{item.Id}' does not match the file name prefix '{item.FileNameId}'")
+                {
+                    Expected = new JsonObject { ["form"] = model.Schemas.Structure.Identifiers["task"], ["value"] = item.FileNameId },
+                };
             }
 
             if (!seen.TryAdd(item.Id, item.RelativePath))
@@ -155,7 +159,10 @@ public sealed class ChildItemRule : ISpecRule
                     item.RelativePath,
                     item.Frontmatter.LineOf("parent"),
                     item.Id,
-                    $"frontmatter parent '{item.Parent}' does not match the Feature it sits in ('{parent.Identity}')");
+                    $"frontmatter parent '{item.Parent}' does not match the Feature it sits in ('{parent.Identity}')")
+                {
+                    Expected = new JsonObject { ["form"] = "{epic}-{feature}", ["value"] = parent.Identity },
+                };
             }
         }
     }

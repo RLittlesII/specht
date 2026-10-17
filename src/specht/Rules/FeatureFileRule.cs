@@ -1,3 +1,4 @@
+using System.Text.Json.Nodes;
 using Specht.Model;
 
 namespace Specht.Rules;
@@ -28,7 +29,10 @@ public sealed class FeatureFileRule : ISpecRule
                     feature.RelativePath,
                     0,
                     feature.Identity,
-                    $"found {feature.FeatureFiles.Count} '.feature' files beside this specification - expected exactly one companion");
+                    $"found {feature.FeatureFiles.Count} '.feature' files beside this specification - expected exactly one companion")
+                {
+                    Expected = new JsonObject { ["companionCount"] = 1 },
+                };
 
                 continue;
             }
@@ -46,7 +50,13 @@ public sealed class FeatureFileRule : ISpecRule
                         companion.RelativePath,
                         tag.Line,
                         tag.Id,
-                        $"scenario tag '{tag.Text ?? "@" + tag.Id}' does not resolve to a claim in § 3 of {feature.RelativePath}");
+                        $"scenario tag '{tag.Text ?? "@" + tag.Id}' does not resolve to a claim in § 3 of {feature.RelativePath}")
+                    {
+                        Expected = new JsonObject
+                        {
+                            ["claims"] = new JsonArray(model.Claims[feature].Ids.Keys.Select(static id => (JsonNode?)JsonValue.Create(id)).ToArray()),
+                        },
+                    };
                 }
             }
         }
