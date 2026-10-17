@@ -39,6 +39,15 @@ public sealed class SpecManifestParser(SchemaVersions versions)
 
         var selected = versions.Find(number) ?? versions.Find(OriginalVersion) ?? Version(number);
         var defaults = JsonNode.Parse(selected.Manifest)!.AsObject();
+        var tables = Tables(manifest["tables"] ?? defaults["tables"]!);
+        if (matrix)
+        {
+            foreach (var (role, headers) in Tables(defaults["tables"]!))
+            {
+                tables.TryAdd(role, headers);
+            }
+        }
+
         var frontmatterSchemas = Filled(manifest, defaults, "frontmatterSchemas");
         var claim = tags ? manifest["claim"]?.AsObject() : null;
         var claimDefaults = tags ? Present(defaults["claim"]).AsObject() : null;
@@ -46,7 +55,7 @@ public sealed class SpecManifestParser(SchemaVersions versions)
         Dictionary<string, string> levels = [];
         var structure = new SpecStructure(
             Strings(manifest["sections"] ?? defaults["sections"]!),
-            Tables(manifest["tables"] ?? defaults["tables"]!),
+            tables,
             Filled(manifest, defaults, "identifiers"),
             SchemaVersion(manifest))
         {

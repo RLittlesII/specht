@@ -57,6 +57,12 @@
       "Scenario",
       "Test",
       "Status"
+    ],
+    "signOff": [
+      "Section",
+      "Status",
+      "Reviewer",
+      "Note"
     ]
   },
   "identifiers": {
