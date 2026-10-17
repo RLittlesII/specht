@@ -111,6 +111,8 @@
     "SPEC021": "error",
     "SPEC030": "error",
     "SPEC031": "error",
+    "SPEC034": "off",
+    "SPEC035": "off",
     "SPEC040": "error",
     "SPEC041": "error",
     "SPEC043": "error",

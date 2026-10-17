@@ -47,21 +47,25 @@ public sealed class SchemaVersions
         });
     }
 
-    private static HashSet<string> Shipped(SemanticVersion number) =>
-        number switch
+    private static HashSet<string> Shipped(SemanticVersion number)
+    {
+        HashSet<string> original =
+        [
+            "SPEC001", "SPEC002", "SPEC003", "SPEC004",
+            "SPEC010", "SPEC011", "SPEC012", "SPEC013",
+            "SPEC020", "SPEC021",
+            "SPEC030", "SPEC031",
+            "SPEC040", "SPEC041", "SPEC043", "SPEC044",
+            "SPEC050", "SPEC051", "SPEC052",
+            "SPEC060", "SPEC061",
+        ];
+        return number switch
         {
-            { Major: 0, Minor: 1, Patch: 0 } or { Major: 0, Minor: 2, Patch: 0 } =>
-                [
-                    "SPEC001", "SPEC002", "SPEC003", "SPEC004",
-                    "SPEC010", "SPEC011", "SPEC012", "SPEC013",
-                    "SPEC020", "SPEC021",
-                    "SPEC030", "SPEC031",
-                    "SPEC040", "SPEC041", "SPEC043", "SPEC044",
-                    "SPEC050", "SPEC051", "SPEC052",
-                    "SPEC060", "SPEC061",
-                ],
+            { Major: 0, Minor: 1, Patch: 0 } => original,
+            { Major: 0, Minor: 2, Patch: 0 } => [.. original, "SPEC034", "SPEC035"],
             _ => throw new InvalidOperationException($"schema/v{number}/ is embedded with no rule vocabulary."),
         };
+    }
 
     private const string Prefix = "schema/v";
     private const string PagePrefix = "rules/v";

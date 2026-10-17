@@ -8,6 +8,21 @@ namespace Specht.Rules.Matrix;
 /// <summary>Resolves matrix test names once from the parsed document and declared file texts, without I/O or diagnostics.</summary>
 public sealed class MatrixResolver
 {
+    /// <summary>Joins declared claims to their resolved matrix rows and already-parsed companion tags.</summary>
+    /// <param name="feature">The specification and its parsed companion snapshot.</param>
+    /// <param name="structure">The selected roles and tag-case setting.</param>
+    /// <param name="claims">The model's already-derived claim rows.</param>
+    /// <returns>Claim resolutions in declaration order.</returns>
+    public IReadOnlyList<MatrixClaimResolution> ResolveClaims(FeatureSpec feature, SpecStructure structure, SpecClaims claims)
+    {
+        var rows = Resolve(feature.Document, structure, []).ToLookup(static row => row.Claim.Trim(), StringComparer.Ordinal);
+        var comparer = structure.ClaimTagIgnoreCase ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal;
+        var tags = feature.FeatureFiles.SelectMany(static file => file.Tags).ToLookup(static tag => tag.Id, comparer);
+        return claims.Rows.Select((claim, index) => new MatrixClaimResolution(
+            claim, claims.Section!.Rows[index].ElementAtOrDefault(3)?.Trim() ?? string.Empty,
+            rows[claim.Id].ToArray(), tags[claim.Id].ToArray())).ToArray();
+    }
+
     /// <summary>Reads the configured matrix columns by position and resolves their inline-code test names.</summary>
     /// <param name="document">The specification already parsed by the model.</param>
     /// <param name="structure">The selected manifest's roles and test settings.</param>

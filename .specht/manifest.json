@@ -100,5 +100,57 @@
   "claim": {
     "tag": "@{claim}",
     "tagIgnoreCase": false
+  },
+  "tests": {
+    "files": [
+      "test/**/*.cs"
+    ]
+  },
+  "owners": {
+    "1. Business Goal": [
+      "spec-author"
+    ],
+    "2. User Needs": [
+      "spec-author"
+    ],
+    "3. Acceptance Criteria": [
+      "spec-author"
+    ],
+    "4. Constraints": [
+      "spec-author"
+    ],
+    "5. Out of Scope": [
+      "spec-author"
+    ],
+    "6. Concern Separation": [
+      "implementer"
+    ],
+    "7. Technical Design": [
+      "implementer"
+    ],
+    "8. Testing Strategy": [
+      "test-writer",
+      "benchmarker"
+    ],
+    "9. Traceability Matrix": [
+      "test-writer",
+      "spec-author"
+    ],
+    "10. Lessons / Spec Deltas": [
+      "spec-author"
+    ],
+    "11. Open Questions": [
+      "spec-author",
+      "test-writer",
+      "implementer",
+      "benchmarker",
+      "spec-reviewer"
+    ],
+    "12. Sign-off": [
+      "spec-reviewer"
+    ],
+    "Tasks": [
+      "spec-author"
+    ]
   }
 }

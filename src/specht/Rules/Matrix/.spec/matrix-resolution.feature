@@ -310,14 +310,21 @@ Feature: Matrix resolution
       | approved   | implementer, 2026-10-14     | one finding |
       | draft      | spec-reviewer, 2026-10-14   | one finding |
       | blocked    | spec-reviewer, 2026-10-14   | one finding |
+      | approved   | spec-reviewer, 2026-02-30   | one finding |
+      | approved   | spec-reviewer, 2026-1-4     | one finding |
 
   @B-019
-  Scenario: A withdrawn claim a scenario still carries is reported
+  Scenario Outline: A withdrawn claim a scenario still carries is reported
     Given the manifest sets the retired-claim rule to error
-    And a claim B-004 marked "Withdrawn"
+    And a claim B-004 marked "<status>"
     And a scenario tagged @B-004
     When the check runs
     Then the retired-claim rule reports claim B-004
+
+    Examples:
+      | status     |
+      | Withdrawn  |
+      | Superseded |
 
   @B-019
   Scenario Outline: A retired claim whose row says otherwise is reported
@@ -347,6 +354,13 @@ Feature: Matrix resolution
       | setting                                                  |
       | sets no level for either rule                            |
       | sets the waiver rule and the retired-claim rule to off   |
+
+  @B-018 @boundary
+  Scenario: A row that is not waived needs no waiver
+    Given the manifest sets the waiver rule to error
+    And a row whose Status is "Covered" and whose Test cell is "Missing"
+    When the check runs
+    Then the waiver rule reports nothing
 
   @B-021 @boundary
   Scenario: Under schema 0.1.0 none of the matrix rules runs

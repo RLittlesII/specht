@@ -2,7 +2,7 @@ id: "0227"
 type: task
 title: Report an unsigned waiver and a retired claim still carried, off unless raised
 
-status: blocked
+status: in-review
 
 risk: 3
 
@@ -48,8 +48,18 @@ summary: |
   markers (C-5); and the relock moves the lock's digest for 0.2.0.
 
   The owner resolved 0001-F5 OQ-24 on 2026-10-17 (decision 0015).
-  Blocked on the separate Manifest prerequisite 0235, which supplies
-  the positional tables.signOff role and per-role defaults B-018 reads.
+  Manifest prerequisite 0235 merged in PR #221. It supplies the
+  positional tables.signOff role and per-role defaults B-018 reads.
+  The owner resumed 0227 after 0039 and 0235 merged; the isolated
+  delivery starts from main at f087c45e.
+
+  Implementation and branch-checker verification are complete. The existing
+  build restores checker 0.1.131 before compiling this branch; that checker
+  rejects the required tests/owners configuration. Three installed-tool
+  acceptance cases fail for the same reason. These are recorded as a build
+  bootstrap finding for review, not a requirement to publish schema 0.2.0
+  first or provide another published package version. The normal build is
+  not green, so this pull request remains a draft pending that correction.
 
 acceptance_criteria:
   - "B-018 — waived row without a signed-off approver and date, SPEC034"
