@@ -16,14 +16,14 @@ public sealed class CompilerClosureIntegrationTests
         // Given
         var component = typeof(BindingResolver).Assembly;
         var projectRoot = new DirectoryInfo(AppContext.BaseDirectory);
-        while (projectRoot is not null && !File.Exists(Path.Combine(projectRoot.FullName, "src", "Analyzers", "Analyzers.csproj")))
+        while (projectRoot is not null && !File.Exists(Path.Combine(projectRoot.FullName, "src", "analyzers", "analyzers.csproj")))
         {
             projectRoot = projectRoot.Parent;
         }
 
         projectRoot.Should().NotBeNull();
         using var assets = JsonDocument.Parse(File.ReadAllText(Path.Combine(projectRoot!.FullName,
-            "src", "Analyzers", "obj", "project.assets.json")));
+            "src", "analyzers", "obj", "project.assets.json")));
         var selectedTarget = assets.RootElement.GetProperty("targets").GetProperty("netstandard2.0");
         var packageFolders = assets.RootElement.GetProperty("packageFolders").EnumerateObject()
             .Select(static folder => folder.Name).ToArray();

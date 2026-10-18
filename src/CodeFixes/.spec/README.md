@@ -123,8 +123,8 @@ Not yet designed; no production implementation is authorized by this draft.
 <!-- last written by: implementer, 2026-10-17 -->
 
 This Feature spans the two component projects selected in
-[ADR-0016](../../../.spec/adr/0016-analyzer-codefix-deployment-projects.md).
-`Specht.Analysis` in `src/Analyzers` owns read-only diagnostics; `Specht.Codefixes`
+[ADR-0018](../../../.spec/adr/0018-lowercase-analyzer-project-home.md).
+`Specht.Analysis` in `src/analyzers` owns read-only diagnostics; `Specht.Codefixes`
 in `src/CodeFixes` owns the invoked `CodeFixProvider` repairs and references the
 analyzer project. Analyzers must not reference the code-fix assembly. One Feature
 agreement covers the shared binding verdict; no claim or scenario is duplicated

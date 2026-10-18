@@ -40,7 +40,8 @@ unknown root, and does not change legacy engine parser APIs.
 
 - [0201-F1 B-022](../README.md#9-traceability-matrix) — the `@B-022`
   unsafe-provenance and contained-provenance scenarios pass through
-  `BindingSteps`, alongside the passing unit test
-  `BindingProvenanceUnitTests.ProvenanceAtEachInputBoundary_WhenPrepared_ShouldRejectUnsafePathsAndRetainContainedPaths`.
+  `BindingSteps`, alongside the passing unit tests
+  `BindingProvenanceUnitTests.UnsafeProvenanceAtEachInputBoundary_WhenPrepared_ShouldRejectWithFixedPathFreeError`
+  and `BindingProvenanceUnitTests.ContainedProvenanceAtEachInputBoundary_WhenResolved_ShouldRetainTheSuppliedSpelling`.
   Both tiers exercise supplied Feature text and Feature and ADR catalog inputs;
   § 9 records the claim as Covered.

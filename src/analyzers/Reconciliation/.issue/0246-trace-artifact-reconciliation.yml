@@ -8,7 +8,7 @@ parent: "0201"
 children: []
 depends_on: ["0244"]
 spikes: []
-spec: src/Analyzers/Reconciliation/.spec/README.md
+spec: src/analyzers/Reconciliation/.spec/README.md
 claims:
   [
     "B-001",

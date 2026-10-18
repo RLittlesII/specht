@@ -57,7 +57,7 @@ src/
     manifest/v0.1.0/           embedded shipping copy of the manifest
     schema/v0.1.0/frontmatter/ embedded shipping copy of the frontmatter schemas
     templates/v0.1.0/          embedded shipping copy of the templates
-  Analyzers/                   adopted Specht.Analysis home (epic 0201; production deferred)
+  analyzers/                   adopted Specht.Analysis home (epic 0201; production deferred)
   CodeFixes/                   adopted Specht.Codefixes home (epic 0201; production deferred)
   CodeAnalysis/                adopted Specht.CodeAnalysis deployment home (epic 0201; production deferred)
 
@@ -113,7 +113,7 @@ and where a new engine file goes. The inside of `test/tests` is owned by
 ## Code-analysis project homes
 
 Epic `0201` uses the sibling project homes above, as adopted in
-[ADR-0016](../../../.spec/adr/0016-analyzer-codefix-deployment-projects.md).
+[ADR-0018](../../../.spec/adr/0018-lowercase-analyzer-project-home.md).
 Place co-located agreements within those project homes. A Feature can span
 projects; name their responsibilities in its one agreement rather than creating
 a second specification or treating each Feature as a new project boundary.

@@ -19,7 +19,7 @@
     <File Path=".spec/brief.md" />
   </Folder>
   <Folder Name="/src/">
-    <Project Path="src/Analyzers/Analyzers.csproj" />
+    <Project Path="src/analyzers/analyzers.csproj" />
     <Project Path="src/specht/specht.csproj" />
     <Project Path="src\tool\tool.csproj" />
   </Folder>

@@ -12,7 +12,7 @@
     <PackageReference Include="AwesomeAssertions" />
     <PackageReference Include="Rocket.Surgery.Extensions.Testing.AutoFixtures" />
     <PackageReference Include="TestableIO.System.IO.Abstractions.TestingHelpers" />
-    <ProjectReference Include="../../src/Analyzers/Analyzers.csproj" />
+    <ProjectReference Include="../../src/analyzers/analyzers.csproj" />
     <ProjectReference Include="../../src/specht/specht.csproj" />
     <Using Include="Xunit" />
   </ItemGroup>

@@ -8,7 +8,7 @@ parent: "0201"
 children: []
 depends_on: ["0243"]
 spikes: []
-spec: src/Analyzers/TestEvidence/.spec/README.md
+spec: src/analyzers/TestEvidence/.spec/README.md
 claims:
   [
     "B-001",

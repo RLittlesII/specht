@@ -394,28 +394,38 @@ public sealed class BindingSteps
         _features.Single().State.Should().Be("draft");
     }
 
-    [Given("^supplied Feature text and Feature and ADR declarations with (.*) provenance$")]
-    public void GivenProvenanceCategory(string category)
-    {
-        _provenancePath = category switch
-        {
-            "a POSIX-rooted path" => '/' + "outside.md",
-            "a Windows drive-qualified path" => "Q" + ':' + '\\' + "outside.md",
-            "a UNC-rooted path" => new string('\\', 2) + "server" + '\\' + "outside.md",
-            "a backslash-rooted path" => '\\' + "outside.md",
-            "traversal above the root using forward slashes" => string.Join('/', "safe", "..", "..", "outside.md"),
-            "traversal above the root using backslashes" => string.Join('\\', "safe", "..", "..", "outside.md"),
-            "traversal above the root using mixed separators" => "safe" + '\\' + ".." + '/' + ".." + '\\' + "outside.md",
-            "a nested repository-relative path" => "src/one/.spec/README.md",
-            "a repository-relative path with backslash separators" => string.Join('\\', "src", "one", ".spec", "README.md"),
-            "an internal parent segment that stays inside the root" => "src/old/../one/.spec/README.md",
-            _ => throw new InvalidOperationException("Unknown provenance category."),
-        };
-    }
+    [Given("supplied Feature text and Feature and ADR declarations with a POSIX-rooted path provenance")]
+    public void GivenPosixRootedProvenance() => _provenancePath = '/' + "outside.md";
+
+    [Given("supplied Feature text and Feature and ADR declarations with a Windows drive-qualified path provenance")]
+    public void GivenDriveQualifiedProvenance() => _provenancePath = "Q" + ':' + '\\' + "outside.md";
+
+    [Given("supplied Feature text and Feature and ADR declarations with a UNC-rooted path provenance")]
+    public void GivenUncRootedProvenance() => _provenancePath = new string('\\', 2) + "server" + '\\' + "outside.md";
+
+    [Given("supplied Feature text and Feature and ADR declarations with a backslash-rooted path provenance")]
+    public void GivenBackslashRootedProvenance() => _provenancePath = '\\' + "outside.md";
+
+    [Given("supplied Feature text and Feature and ADR declarations with traversal above the root using forward slashes provenance")]
+    public void GivenForwardEscapeProvenance() => _provenancePath = string.Join('/', "safe", "..", "..", "outside.md");
+
+    [Given("supplied Feature text and Feature and ADR declarations with traversal above the root using backslashes provenance")]
+    public void GivenBackslashEscapeProvenance() => _provenancePath = string.Join('\\', "safe", "..", "..", "outside.md");
+
+    [Given("supplied Feature text and Feature and ADR declarations with traversal above the root using mixed separators provenance")]
+    public void GivenMixedEscapeProvenance() => _provenancePath = "safe" + '\\' + ".." + '/' + ".." + '\\' + "outside.md";
+
+    [Given("supplied Feature text and Feature and ADR declarations with a nested repository-relative path provenance")]
+    public void GivenNestedRelativeProvenance() => _provenancePath = "src/one/.spec/README.md";
+
+    [Given("supplied Feature text and Feature and ADR declarations with a repository-relative path with backslash separators provenance")]
+    public void GivenBackslashRelativeProvenance() => _provenancePath = string.Join('\\', "src", "one", ".spec", "README.md");
+
+    [Given("supplied Feature text and Feature and ADR declarations with an internal parent segment that stays inside the root provenance")]
+    public void GivenContainedParentProvenance() => _provenancePath = "src/old/../one/.spec/README.md";
 
     [When("these binding inputs are prepared")]
-    [When("these binding inputs are prepared and their declared targets resolve")]
-    public void WhenProvenanceInputsPrepared()
+    public void WhenUnsafeProvenanceInputsPrepared()
     {
         const string text = "---\nepic: 0400\nid: F1\nspec_status: draft\n---\n\n## 3. Acceptance Criteria\n\n"
             + "| ID | Claim | Source | Status |\n| --- | --- | --- | --- |\n| B-001 | A need | Source | Active |\n";
@@ -446,11 +456,24 @@ public sealed class BindingSteps
                 _provenanceErrors.Add(error.Message);
             }
         }
-        if (_provenanceTextFeature is not null && _provenanceErrors.Count == 0)
-        {
-            var catalog = new BindingCatalog(new[] { _provenanceTextFeature }, Array.Empty<BindingAdr>());
-            _provenanceResults.Add(new BindingResolver(catalog, _policy).Resolve(new ClaimReference("0400", "F1", "B-001")));
-        }
+    }
+
+    [When("these binding inputs are prepared and their declared targets resolve")]
+    public void WhenContainedProvenanceInputsPrepared()
+    {
+        const string text = "---\nepic: 0400\nid: F1\nspec_status: draft\n---\n\n## 3. Acceptance Criteria\n\n"
+            + "| ID | Claim | Source | Status |\n| --- | --- | --- | --- |\n| B-001 | A need | Source | Active |\n";
+        var path = _provenancePath ?? throw new InvalidOperationException("No provenance was supplied.");
+        var textFeature = new BindingFeatureReader().Read(text, path, _policy);
+        var textCatalog = new BindingCatalog(new[] { textFeature }, Array.Empty<BindingAdr>());
+        _provenanceResults.Add(new BindingResolver(textCatalog, _policy).Resolve(new ClaimReference("0400", "F1", "B-001")));
+        var feature = new BindingFeature(new FeatureIdentity("0400", "F1"), "draft", new[] { new BindingClaim("B-001", "Active") }, path);
+        var featureCatalog = new BindingCatalog(new[] { feature }, Array.Empty<BindingAdr>());
+        _provenanceResults.Add(new BindingResolver(featureCatalog, _policy).Resolve(new ClaimReference("0400", "F1", "B-001")));
+        var original = new BindingAdr("ADR-0001", null, "accepted", ".spec/adr/0001.md");
+        var changed = original with { RelativePath = path };
+        var adrCatalog = new BindingCatalog(Array.Empty<BindingFeature>(), new[] { changed });
+        _provenanceResults.Add(new BindingResolver(adrCatalog, _policy).Resolve(new AdrReference(null, null, "ADR-0001")));
     }
 
     [Then("each input is rejected with a fixed error that omits the rejected value")]
@@ -462,7 +485,11 @@ public sealed class BindingSteps
     }
 
     [Then("the unsafe provenance cannot appear in a binding result")]
-    public void ThenNoUnsafeResults() => _provenanceResults.Should().BeEmpty();
+    public void ThenNoUnsafeResults()
+    {
+        _provenanceTextFeature.Should().BeNull();
+        _provenanceResults.Should().BeEmpty();
+    }
 
     [Then("each valid repository-relative provenance is retained in the results")]
     public void ThenValidProvenanceRetained()
