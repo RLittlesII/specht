@@ -19,10 +19,12 @@
     <File Path=".spec/brief.md" />
   </Folder>
   <Folder Name="/src/">
+    <Project Path="src/Analyzers/Analyzers.csproj" />
     <Project Path="src/specht/specht.csproj" />
     <Project Path="src\tool\tool.csproj" />
   </Folder>
   <Folder Name="/test/">
+    <Project Path="test/analysis.tests/analysis.tests.csproj" />
     <Project Path="test/build.tests/build.tests.csproj" />
     <Project Path="test/comparison.tests/comparison.tests.csproj" />
     <Project Path="test\acceptance\acceptance.csproj" />

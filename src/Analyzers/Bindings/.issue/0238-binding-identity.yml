@@ -1,7 +1,7 @@
 id: "0238"
 type: feature
 title: "Implement binding identity and record resolution"
-status: ready
+status: done
 value: 5
 risk: 3
 parent: "0201"
@@ -32,10 +32,11 @@ claims:
     "B-019",
     "B-020",
     "B-021",
+    "B-022",
   ]
 created: "2026-10-17"
 updated: "2026-10-17"
-closed: null
+closed: "2026-10-17"
 summary: |
   Implement the framework-independent target catalog and resolver in Specht.Analysis from
   F1 decisions 0002–0005. Start with failing claim-tagged scenarios and mechanism tests,
@@ -64,6 +65,7 @@ acceptance_criteria:
   - "0201-F1 B-019"
   - "0201-F1 B-020"
   - "0201-F1 B-021"
+  - "0201-F1 B-022"
   - "§ 9 names passing acceptance and mechanism tests for every delivered claim before this item is done."
 decisions: []
 out_of_scope:

@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <RootNamespace>Specht.Analysis.Tests</RootNamespace>
+    <AssemblyName>specht.analysis.tests</AssemblyName>
+    <IsTestProject>true</IsTestProject>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <!-- AutoFixtures 10.0.6 emits nullable annotations without a nullable directive. -->
+    <NoWarn>$(NoWarn);CS8669</NoWarn>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="xunit.v3" />
+    <PackageReference Include="AwesomeAssertions" />
+    <PackageReference Include="Rocket.Surgery.Extensions.Testing.AutoFixtures" />
+    <PackageReference Include="TestableIO.System.IO.Abstractions.TestingHelpers" />
+    <ProjectReference Include="../../src/Analyzers/Analyzers.csproj" />
+    <ProjectReference Include="../../src/specht/specht.csproj" />
+    <Using Include="Xunit" />
+  </ItemGroup>
+</Project>

@@ -1,6 +1,6 @@
 ---
 title: "Specht.Analysis project home"
-description: "Adopted Analyzers project home for epic 0201"
+description: "Framework-independent binding identity component and adopted analyzer home for epic 0201"
 type: reference
 ---
 
@@ -11,8 +11,13 @@ read-only diagnostics and binding interpretation. Agreement slices live under
 Bindings, TestEvidence, Scenarios and Reconciliation. The CSharp diagnostics and
 repairs agreement is shared with [CodeFixes](../CodeFixes/.spec/README.md).
 
-The planned project file is Analyzers.csproj. No production project is scaffolded
-by the current specification revision.
+`Analyzers.csproj` builds the non-packable `Specht.Analysis` component for
+`netstandard2.0` under
+[ADR-0017](../../.spec/adr/0017-compiler-loaded-components-target-netstandard.md).
+The [binding identity implementation](Bindings/.spec/README.md) resolves supplied
+claim and ADR declarations independently of test frameworks and shares the
+engine's YAML/Markdown text readers. Compiler diagnostics, invoked fixes, discovery
+adapters and deployment remain downstream work.
 
 [ADR-0016](../../.spec/adr/0016-analyzer-codefix-deployment-projects.md) records
 the project identities, dependency direction and deployment boundary. Reqnroll

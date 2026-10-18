@@ -228,3 +228,32 @@ Feature: Binding identity
     When its binding is evaluated
     Then the Feature remains draft
     And the eligibility result does not represent agreement approval
+
+  @B-022 @boundary
+  Scenario Outline: Unsafe provenance is rejected before binding results
+    Given supplied Feature text and Feature and ADR declarations with <provenance> provenance
+    When these binding inputs are prepared
+    Then each input is rejected with a fixed error that omits the rejected value
+    And the unsafe provenance cannot appear in a binding result
+
+    Examples:
+      | provenance                                     |
+      | a POSIX-rooted path                             |
+      | a Windows drive-qualified path                  |
+      | a UNC-rooted path                               |
+      | a backslash-rooted path                         |
+      | traversal above the root using forward slashes  |
+      | traversal above the root using backslashes      |
+      | traversal above the root using mixed separators |
+
+  @B-022 @boundary
+  Scenario Outline: Repository-contained provenance remains usable
+    Given supplied Feature text and Feature and ADR declarations with <provenance> provenance
+    When these binding inputs are prepared and their declared targets resolve
+    Then each valid repository-relative provenance is retained in the results
+
+    Examples:
+      | provenance                                            |
+      | a nested repository-relative path                     |
+      | a repository-relative path with backslash separators  |
+      | an internal parent segment that stays inside the root |
