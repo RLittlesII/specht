@@ -1,0 +1,73 @@
+id: "0239"
+type: task
+title: "Implement XML binding diagnostics"
+status: ready-for-implementation
+value: 5
+risk: 4
+parent: "0201"
+children: []
+depends_on: ["0238", "0242"]
+spikes: []
+spec: src/CodeFixes/.spec/README.md
+claims:
+  [
+    "B-001",
+    "B-002",
+    "B-004",
+    "B-005",
+    "B-006",
+    "B-009",
+    "B-010",
+    "B-011",
+    "B-012",
+    "B-013",
+    "B-019",
+    "B-020",
+    "B-021",
+    "B-024",
+    "B-025",
+    "B-026",
+    "B-028",
+    "B-029",
+    "B-035",
+    "B-036",
+    "B-037",
+    "B-038",
+  ]
+created: "2026-10-17"
+updated: "2026-10-17"
+closed: null
+summary: |
+  Implement read-only XML role, placement, strict validation, relationship deduplication
+  and SPCT diagnostics using the F2 diagnostic contract. 0238 supplies target resolution;
+  0242 supplies analysis policy and input configuration. Establish the
+  Rocket.Surgery.Extensions.Testing.SourceGenerators harness with direct
+  AwesomeAssertions; do not use Verify. Test diagnostics before implementing them. Keep
+  code-fix dependencies out of the analyzer.
+acceptance_criteria:
+  - "0201-F2 B-001"
+  - "0201-F2 B-002"
+  - "0201-F2 B-004"
+  - "0201-F2 B-005"
+  - "0201-F2 B-006"
+  - "0201-F2 B-009"
+  - "0201-F2 B-010"
+  - "0201-F2 B-011"
+  - "0201-F2 B-012"
+  - "0201-F2 B-013"
+  - "0201-F2 B-019"
+  - "0201-F2 B-020"
+  - "0201-F2 B-021"
+  - "0201-F2 B-024"
+  - "0201-F2 B-025"
+  - "0201-F2 B-026"
+  - "0201-F2 B-028"
+  - "0201-F2 B-029"
+  - "0201-F2 B-035"
+  - "0201-F2 B-036"
+  - "0201-F2 B-037"
+  - "0201-F2 B-038"
+  - "§ 9 names passing acceptance and mechanism tests for every delivered claim before this item is done."
+decisions: []
+out_of_scope:
+  - "Everything in § 5 of the cited specification."

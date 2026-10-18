@@ -1,0 +1,50 @@
+id: "0242"
+type: feature
+title: "Implement analysis configuration and consumer input policy"
+status: ready
+value: 5
+risk: 4
+parent: "0201"
+children: []
+depends_on: []
+spikes: []
+spec: src/CodeAnalysis/.spec/README.md
+claims:
+  [
+    "B-001",
+    "B-003",
+    "B-012",
+    "B-013",
+    "B-014",
+    "B-015",
+    "B-016",
+    "B-017",
+    "B-018",
+    "B-022",
+    "B-024",
+  ]
+created: "2026-10-17"
+updated: "2026-10-17"
+closed: null
+summary: |
+  Introduce codeAnalysis settings and ADR identity grammar in a new unused schema version,
+  preserving old pins. Implement policy validation, selected scopes, reasoned exemptions
+  and required-input handling from F6 decisions 0003–0005 and § 7 of the specification. This can
+  start alongside 0238; it does not wait for runner collectors, scenario bridging or
+  specht trace. Actual consumer record contents are inputs, not just schemas.
+acceptance_criteria:
+  - "0201-F6 B-001"
+  - "0201-F6 B-003"
+  - "0201-F6 B-012"
+  - "0201-F6 B-013"
+  - "0201-F6 B-014"
+  - "0201-F6 B-015"
+  - "0201-F6 B-016"
+  - "0201-F6 B-017"
+  - "0201-F6 B-018"
+  - "0201-F6 B-022"
+  - "0201-F6 B-024"
+  - "§ 9 names passing acceptance and mechanism tests for every delivered claim before this item is done."
+decisions: []
+out_of_scope:
+  - "Everything in § 5 of the cited specification."

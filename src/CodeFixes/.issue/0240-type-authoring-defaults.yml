@@ -1,0 +1,32 @@
+id: "0240"
+type: task
+title: "Implement nested and partial type authoring defaults"
+status: ready-for-implementation
+value: 5
+risk: 3
+parent: "0201"
+children: []
+depends_on: ["0239"]
+spikes: []
+spec: src/CodeFixes/.spec/README.md
+claims: ["B-008", "B-014", "B-015", "B-016", "B-017", "B-018", "B-022"]
+created: "2026-10-17"
+updated: "2026-10-17"
+closed: null
+summary: |
+  Implement lexical type-default selection and partial-type conflict handling using the
+  XML parser and diagnostics from 0239. Defaults supply authoring context only. Test
+  nested replacement, identical partial defaults, conflicts and absent base-type
+  inheritance before implementation. No member binding is completed implicitly.
+acceptance_criteria:
+  - "0201-F2 B-008"
+  - "0201-F2 B-014"
+  - "0201-F2 B-015"
+  - "0201-F2 B-016"
+  - "0201-F2 B-017"
+  - "0201-F2 B-018"
+  - "0201-F2 B-022"
+  - "§ 9 names passing acceptance and mechanism tests for every delivered claim before this item is done."
+decisions: []
+out_of_scope:
+  - "Everything in § 5 of the cited specification."

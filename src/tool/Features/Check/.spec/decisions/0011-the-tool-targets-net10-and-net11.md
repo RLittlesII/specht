@@ -110,3 +110,11 @@ another's are item `0218`.
 Affects: `0001-F2` A-2, § 6, § 7 and § 10; item `0217`; `.build/.spec`
 A-2 and § 7; `0109-F1` § 7; `0055-F3` § 7. B-045, § 5 rows 28 and 29 and
 ADR-0009 gate 3: unchanged.
+
+## Amendment, 2026-10-17: compiler-loaded component exception
+
+The owner approved ADR-0017: analyzer and code-fix components target
+`netstandard2.0`. The CLI, collectors and tests retain the existing targets;
+NUKE's existing exception is unchanged. This narrows the all-project target rule
+for compiler-loaded components without removing the tool's `net10.0` or
+`net11.0` target or changing B-045.
