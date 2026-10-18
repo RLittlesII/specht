@@ -9,7 +9,7 @@ type: reference
 This is the adopted home of the `Specht.Analysis` analyzer project. It owns
 read-only diagnostics and binding interpretation. Agreement slices live under
 Bindings, TestEvidence, Scenarios and Reconciliation. The CSharp diagnostics and
-repairs agreement is shared with [CodeFixes](../CodeFixes/.spec/README.md).
+repairs agreement is shared with [CodeFixes](../codefixes/.spec/README.md).
 
 `analyzers.csproj` builds the non-packable `Specht.Analysis` component for
 `netstandard2.0` under

@@ -14,7 +14,7 @@
     <PackageReference Include="Rocket.Surgery.Extensions.Testing.AutoFixtures" />
     <PackageReference Include="TestableIO.System.IO.Abstractions.TestingHelpers" />
     <ProjectReference Include="../../src/analyzers/analyzers.csproj" />
-    <ProjectReference Include="../../src/CodeFixes/CodeFixes.csproj" />
+    <ProjectReference Include="../../src/codefixes/codefixes.csproj" />
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" />
     <ProjectReference Include="../../src/specht/specht.csproj" />
     <Using Include="Xunit" />

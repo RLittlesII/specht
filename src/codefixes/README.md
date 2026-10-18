@@ -6,7 +6,7 @@ type: reference
 
 # Specht.Codefixes
 
-[CodeFixes.csproj](CodeFixes.csproj) builds the non-packable netstandard2.0 editor
+[codefixes.csproj](codefixes.csproj) builds the non-packable netstandard2.0 editor
 component. Its [documentation provider](Documentation/DocumentationCodeFixProvider.cs)
 offers explicit existing-target choices, unambiguous default materialization and
 valid duplicate cleanup. Fix All admits the two deterministic repairs only.
