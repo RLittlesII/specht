@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms</value></resheader>
+  <data name="Shape" xml:space="preserve"><value>Reserved XML shape, placement or identity is incomplete</value></data>
+  <data name="Grammar" xml:space="preserve"><value>Identifier violates the consumer grammar</value></data>
+  <data name="Absent" xml:space="preserve"><value>Referenced target is absent</value></data>
+  <data name="Ambiguous" xml:space="preserve"><value>Referenced identity is ambiguous</value></data>
+  <data name="Ineligible" xml:space="preserve"><value>Resolved target is ineligible</value></data>
+  <data name="Required" xml:space="preserve"><value>Required authored relationship is missing</value></data>
+  <data name="Defaults" xml:space="preserve"><value>Partial type authoring defaults conflict</value></data>
+  <data name="Duplicate" xml:space="preserve"><value>Duplicate valid relationship</value></data>
+  <data name="Message" xml:space="preserve"><value>{0}</value></data>
+</root>

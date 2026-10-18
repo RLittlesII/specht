@@ -10,6 +10,7 @@
     <PackageReference Include="JsonSchema.Net" />
     <PackageReference Include="JsonPointer.Net" />
     <PackageReference Include="Microsoft.CodeAnalysis.Common" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" PrivateAssets="all" />
     <PackageReference Include="Markdig" />
     <PackageReference Include="YamlDotNet" />
     <PackageReference Include="System.Text.Json" />
