@@ -21,7 +21,7 @@
   <Folder Name="/src/">
     <Project Path="src/analyzers/analyzers.csproj" />
     <Project Path="src/codefixes/codefixes.csproj" />
-    <Project Path="src/CodeAnalysis/CodeAnalysis.csproj" />
+    <Project Path="src/codeanalysis/codeanalysis.csproj" />
     <Project Path="src/specht/specht.csproj" />
     <Project Path="src\tool\tool.csproj" />
   </Folder>

@@ -8,9 +8,11 @@ type: adr
 
 ## Status
 
-Accepted, 2026-10-17, by the repository owner in
-[PR 230 review](https://github.com/RLittlesII/specht/pull/230#discussion_r4305760337).
-Partially superseded by [ADR-0019](0019-lowercase-code-fix-project-home.md), 2026-10-18: the code-fix directory and project filename are lowercase. The component identity and responsibility remain unchanged.
+Superseded for the deployment project home by
+[ADR-0020](0020-lowercase-codeanalysis-deployment-home.md), 2026-10-18.
+Partially superseded by [ADR-0019](0019-lowercase-code-fix-project-home.md),
+2026-10-18, for the code-fix directory and project filename. The analyzer home
+and the component identities and responsibilities remain unchanged.
 Supersedes [ADR-0016](0016-analyzer-codefix-deployment-projects.md).
 
 ## Context

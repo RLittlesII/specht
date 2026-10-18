@@ -116,7 +116,7 @@ Apply binding enforcement consistently to an explicitly selected consumer scope.
 
 [ADR-0018](../../../.spec/adr/0018-lowercase-analyzer-project-home.md) adopts
 `src/analyzers` (`Specht.Analysis`), `src/CodeFixes` (`Specht.Codefixes`) and
-`src/CodeAnalysis` (`Specht.CodeAnalysis`, deployment). The deployment project
+`src/codeanalysis` (`Specht.CodeAnalysis`, deployment). The deployment project
 references both non-packable component projects; CodeFixes references Analyzers.
 Analyzer loading must not depend on CodeFixes or its Workspaces dependencies.
 
@@ -167,7 +167,7 @@ The original F1 three-argument reader keeps its fixed-column behavior.
 The standalone checker recognizes `codeAnalysis` on its existing pins and leaves
 its checker settings and SPEC vocabulary unchanged. The shipped catalog remains
 `0.1.0`, `0.2.0`; consumer-owned schemas consumed by the analyzer are not limited
-to that catalog. `src/CodeAnalysis` packs the private `Specht.CodeAnalysis`
+to that catalog. `src/codeanalysis` packs the private `Specht.CodeAnalysis`
 package beside analyzer and code-fix assemblies, their parser dependency closure,
 and `build/Specht.CodeAnalysis.props` and `.targets`. Roslyn compiler assemblies
 are supplied by the compiler host and are excluded from the package. The package

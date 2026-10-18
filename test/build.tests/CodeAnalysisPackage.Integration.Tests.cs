@@ -33,7 +33,7 @@ public sealed class CodeAnalysisPackageIntegrationTests
                 UseShellExecute = false,
             };
             process.StartInfo.ArgumentList.Add("pack");
-            process.StartInfo.ArgumentList.Add("src/CodeAnalysis/CodeAnalysis.csproj");
+            process.StartInfo.ArgumentList.Add("src/codeanalysis/codeanalysis.csproj");
             process.StartInfo.ArgumentList.Add("--configuration");
             process.StartInfo.ArgumentList.Add("Debug");
             process.StartInfo.ArgumentList.Add("--output");

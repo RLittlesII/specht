@@ -46,6 +46,6 @@ public sealed class AnalysisInputAnalyzer : DiagnosticAnalyzer
         "SPCT0001", new LocalizableResourceString("InputTitle", Resources, typeof(AnalysisInputAnalyzer)),
         new LocalizableResourceString("InputMessage", Resources, typeof(AnalysisInputAnalyzer)), "Traceability", DiagnosticSeverity.Error, true,
         description: new LocalizableResourceString("InputDescription", Resources, typeof(AnalysisInputAnalyzer)),
-        helpLinkUri: "https://github.com/RLittlesII/specht/blob/main/src/CodeAnalysis/.spec/README.md",
+        helpLinkUri: "https://github.com/RLittlesII/specht/blob/main/src/codeanalysis/.spec/README.md",
         customTags: new[] { WellKnownDiagnosticTags.CompilationEnd });
 }

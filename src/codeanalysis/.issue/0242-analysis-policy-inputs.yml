@@ -8,7 +8,7 @@ parent: "0201"
 children: []
 depends_on: []
 spikes: []
-spec: src/CodeAnalysis/.spec/README.md
+spec: src/codeanalysis/.spec/README.md
 claims:
   [
     "B-001",

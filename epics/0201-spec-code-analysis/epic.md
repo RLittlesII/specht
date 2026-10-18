@@ -176,7 +176,7 @@ ineligible targets, conflicting defaults, and missing required bindings within
 the selected enforcement scope to warning. Default valid duplicate relationships
 to information. Consumers can adjust severity per rule, including promotion to
 error; severity does not change evidence validity.
-[0201-F6 decision 0001](../../src/CodeAnalysis/.spec/decisions/0001-diagnostic-severity-defaults.md)
+[0201-F6 decision 0001](../../src/codeanalysis/.spec/decisions/0001-diagnostic-severity-defaults.md)
 records the defaults. Standard reporting controls are defined below; exclusions,
 domain/input configuration and the analysis-input contract remain open.
 
@@ -185,7 +185,7 @@ Owner decision, 2026-10-17: honor standard Roslyn diagnostic controls, including
 suppression XML or parallel suppression system. Suppression changes diagnostic
 visibility only; it never changes evidence validity or eligibility, satisfies a
 missing required link, or changes declared analysis scope.
-[0201-F6 decision 0002](../../src/CodeAnalysis/.spec/decisions/0002-standard-roslyn-suppression.md)
+[0201-F6 decision 0002](../../src/codeanalysis/.spec/decisions/0002-standard-roslyn-suppression.md)
 records the policy. Coverage and enforcement are defined below; domain/input
 configuration remains open.
 
@@ -196,7 +196,7 @@ projects; require missing authored bindings only in explicitly selected
 enforcement scopes. Generated code requires no authored bindings, and shared
 infrastructure has no blanket requirement to bind every method. Exemptions
 require explicit reasons and remain visible as exempt, never covered.
-[0201-F6 decision 0003](../../src/CodeAnalysis/.spec/decisions/0003-coverage-policy.md)
+[0201-F6 decision 0003](../../src/codeanalysis/.spec/decisions/0003-coverage-policy.md)
 records the policy, resolving OQ-5. Configuration encoding and analysis input
 contracts remain open.
 
@@ -217,7 +217,7 @@ every declared project/target-framework combination. Discovery/results must
 match source, assembly and configuration identities; stale/mismatched artifacts
 remain visibly stale and cannot establish current discovery/execution, while
 binding validity stays separate and absent results never count as passing.
-[0201-F6 decision 0004](../../src/CodeAnalysis/.spec/decisions/0004-consumer-inputs-completeness.md)
+[0201-F6 decision 0004](../../src/codeanalysis/.spec/decisions/0004-consumer-inputs-completeness.md)
 records the input/completeness contract. Detailed discovery configuration,
 evidence encoding, adapters and report surface remain with their owning Features.
 
@@ -261,7 +261,7 @@ adoption adds a `codeAnalysis` manifest section without introducing schema `0.3.
 or changing the consumer's pin. Scope, required links, exemptions and record
 discovery remain explicit policy;
 explicit mappings read it from existing consumer configuration (F6 OQ-1). MSBuild owns
-root/input delivery, and Roslyn owns severity/suppression. [0201-F6 decision 0005](../../src/CodeAnalysis/.spec/decisions/0005-deployment-configuration.md)
+root/input delivery, and Roslyn owns severity/suppression. [0201-F6 decision 0005](../../src/codeanalysis/.spec/decisions/0005-deployment-configuration.md)
 records the call. [ADR-0017](../../.spec/adr/0017-compiler-loaded-components-target-netstandard.md)
 records the approved `netstandard2.0` exception for compiler-loaded analyzer and
 code-fix components; CLI, collector and test targets retain `net10.0;net11.0`.
@@ -511,7 +511,7 @@ architecture.
 | 0201-F3 | [Test evidence adapters](../../src/analyzers/TestEvidence/.spec/README.md)        | Facts, theory cases and Playwright .NET tests correlate to bound methods without Reqnroll.                                      | R5, R7     | F1, F2         |
 | 0201-F4 | [Optional scenario bridge](../../src/analyzers/Scenarios/.spec/README.md)         | Tagged scenarios and generated cases share the identity contract; shared steps do not stand in for scenario identity.           | R3, R4     | F1, F3         |
 | 0201-F5 | [Traceability reconciliation](../../src/analyzers/Reconciliation/.spec/README.md) | Every required claim is considered, with explicit missing links, incomplete scope and distinct execution outcomes.              | R5, R7, R8 | F1, F3         |
-| 0201-F6 | [Consumer analysis adoption](../../src/CodeAnalysis/.spec/README.md)              | Declared inputs, scope and policy produce consistent editor/build verdicts without requiring Reqnroll.                          | R9         | F1, F2, F3, F5 |
+| 0201-F6 | [Consumer analysis adoption](../../src/codeanalysis/.spec/README.md)              | Declared inputs, scope and policy produce consistent editor/build verdicts without requiring Reqnroll.                          | R9         | F1, F2, F3, F5 |
 
 F4 is an optional extension; F5 and F6 do not depend on it. F2 keeps diagnostics
 and their repairs together because a repair's safety depends on the same binding
@@ -591,10 +591,10 @@ The project identities and folder names are deliberate:
 | ------------------- | --------------------- | --------------------------------------------------------------------------------------------------------- |
 | `src/analyzers/`    | `Specht.Analysis`     | Binding model and read-only Roslyn diagnostics; no code-fix Workspaces dependency.                        |
 | `src/codefixes/`    | `Specht.Codefixes`    | Invoked authoring repairs; references the analyzer project.                                               |
-| `src/CodeAnalysis/` | `Specht.CodeAnalysis` | Deployment project; packages the analyzer and code-fix assemblies rather than duplicating their behavior. |
+| `src/codeanalysis/` | `Specht.CodeAnalysis` | Deployment project; packages the analyzer and code-fix assemblies rather than duplicating their behavior. |
 
 The planned project files are `analyzers.csproj`, `codefixes.csproj` and
-`CodeAnalysis.csproj` in those folders, following the reference's naming. The
+`codeanalysis.csproj` in those folders, following the reference's naming. The
 analyzer and code-fix projects are non-packable; CodeAnalysis owns deployment of
 this capability. `src/tool` continues to own the existing dotnet-tool package.
 A future package must include both component assemblies and the editor/build
@@ -637,8 +637,8 @@ outcomes must pass by default under F5 decision 0002.
 | [0239](../../src/codefixes/.issue/0239-xml-binding-diagnostics.yml)                      | XML binding diagnostics                   | 0238, 0242       |
 | [0240](../../src/codefixes/.issue/0240-type-authoring-defaults.yml)                      | Nested and partial type defaults          | 0239             |
 | [0241](../../src/codefixes/.issue/0241-binding-code-fixes.yml)                           | Safe invoked code fixes                   | 0240             |
-| [0242](../../src/CodeAnalysis/.issue/0242-analysis-policy-inputs.yml)                    | Analysis configuration and input policy   | None             |
-| [0243](../../src/CodeAnalysis/.issue/0243-codeanalysis-package-delivery.yml)             | Package and editor/build delivery         | 0241, 0242       |
+| [0242](../../src/codeanalysis/.issue/0242-analysis-policy-inputs.yml)                    | Analysis configuration and input policy   | None             |
+| [0243](../../src/codeanalysis/.issue/0243-codeanalysis-package-delivery.yml)             | Package and editor/build delivery         | 0241, 0242       |
 | [0244](../../src/analyzers/TestEvidence/.issue/0244-test-evidence-collection.yml)        | Framework-independent evidence collection | 0243             |
 | [0245](../../src/analyzers/Scenarios/.issue/0245-optional-scenario-bridge.yml)           | Optional scenario bridge                  | 0244             |
 | [0246](../../src/analyzers/Reconciliation/.issue/0246-trace-artifact-reconciliation.yml) | CLI artifact reconciliation               | 0244             |
