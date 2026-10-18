@@ -79,14 +79,14 @@ policy.
 Owner decision, 2026-10-17: canonical claim references use separate `epic`,
 `feature` and `claim` fields, with `epic` optional. `feature` carries the local
 Feature ID, validated by the consumer's grammar; it is not combined with the
-epic using a fixed delimiter. [0201-F1 decision 0002](../../src/Analyzers/Bindings/.spec/decisions/0002-separate-claim-identity-fields.md)
+epic using a fixed delimiter. [0201-F1 decision 0002](../../src/analyzers/Bindings/.spec/decisions/0002-separate-claim-identity-fields.md)
 records the choice and alternative. XML role names are defined by 0201-F2 decision 0002; the comparison examples below are historical candidates.
 
 Owner decision, 2026-10-17: ADR references carry `adr` and select repository
 ownership when `feature` is absent, or the explicitly named Feature when it is
 present; `epic` remains optional. They never inherit a type default or search
 another owner when the selected target is missing.
-[0201-F1 decision 0003](../../src/Analyzers/Bindings/.spec/decisions/0003-explicit-adr-ownership.md)
+[0201-F1 decision 0003](../../src/analyzers/Bindings/.spec/decisions/0003-explicit-adr-ownership.md)
 records the ownership rule. Additional record kinds remain open; target
 lifecycle is defined by decision 0004 below.
 
@@ -95,7 +95,7 @@ Features and accepted ADRs are eligible targets for current evidence. Withdrawn
 or Superseded claims, claims in superseded Features, and proposed, rejected,
 deprecated or superseded ADRs retain resolving historical links but do not count
 toward current evidence. Reference resolution and lifecycle eligibility remain
-separate. [0201-F1 decision 0004](../../src/Analyzers/Bindings/.spec/decisions/0004-target-lifecycle-eligibility.md)
+separate. [0201-F1 decision 0004](../../src/analyzers/Bindings/.spec/decisions/0004-target-lifecycle-eligibility.md)
 defines the policy; 0201-F6 decision 0001 below defines target diagnostic severity.
 
 Owner decision, 2026-10-17: use `spec` for type-level authoring defaults,
@@ -229,25 +229,25 @@ cases remain unenumerated until supplied by the runner. Versioned JSON carries
 runner case IDs, method metadata, project/framework identity, source/assembly/configuration
 fingerprints, adapter version and run identity. Collect through normal test
 workflows; analysis/reconciliation does not launch tests.
-[0201-F3 decision 0001](../../src/Analyzers/TestEvidence/.spec/decisions/0001-framework-independent-runner-evidence.md)
+[0201-F3 decision 0001](../../src/analyzers/TestEvidence/.spec/decisions/0001-framework-independent-runner-evidence.md)
 records the corrected framework scope and evidence contract.
 
 Owner decision, 2026-10-17: expose reconciliation through `specht trace` with a
 human summary and separate versioned JSON contract; preserve the existing checker
-report contract. [0201-F5 decision 0001](../../src/Analyzers/Reconciliation/.spec/decisions/0001-trace-report-surface.md)
+report contract. [0201-F5 decision 0001](../../src/analyzers/Reconciliation/.spec/decisions/0001-trace-report-surface.md)
 records the surface, resolving OQ-11's product choice. Detailed evidence/report
 schemas, adapter integrations and CLI behavior remain technical design.
 
 Owner decision, 2026-10-17: checked targets are claims and ADRs; Feature and epic
 components establish scope, with other record kinds deferred.
-[0201-F1 decision 0005](../../src/Analyzers/Bindings/.spec/decisions/0005-checked-target-boundaries.md)
+[0201-F1 decision 0005](../../src/analyzers/Bindings/.spec/decisions/0005-checked-target-boundaries.md)
 records the target boundary. Gherkin Feature scope supplies the default; an
 explicit Scenario/Outline scope replaces it completely without merging fields.
 Local claim tags resolve in effective scope. Map scenarios to cases using
 generator/runner metadata through the common evidence contract, reusing the
 consumer claim bridge while its convention analyzers remain consumer-owned.
 Reqnroll remains optional.
-[0201-F4 decision 0001](../../src/Analyzers/Scenarios/.spec/decisions/0001-scenario-scope-bridge-ownership.md)
+[0201-F4 decision 0001](../../src/analyzers/Scenarios/.spec/decisions/0001-scenario-scope-bridge-ownership.md)
 records the scope and bridge policies. Exact tag/configuration encoding and
 metadata extraction remain technical design.
 
@@ -262,7 +262,7 @@ records the call. [ADR-0017](../../.spec/adr/0017-compiler-loaded-components-tar
 records the approved `netstandard2.0` exception for compiler-loaded analyzer and
 code-fix components; CLI, collector and test targets retain `net10.0;net11.0`.
 
-The [decision record](../../src/Analyzers/Bindings/.spec/decisions/0001-hardened-hybrid.md)
+The [decision record](../../src/analyzers/Bindings/.spec/decisions/0001-hardened-hybrid.md)
 records alternatives and costs. The [extended spike](spikes/0236/README.md)
 validates the non-Reqnroll cases; its results remain experimental evidence.
 
@@ -502,11 +502,11 @@ architecture.
 
 | Feature | Agreement                                                                         | Invariant                                                                                                                       | Serves     | Depends on     |
 | ------- | --------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- | ---------- | -------------- |
-| 0201-F1 | [Binding identity](../../src/Analyzers/Bindings/.spec/README.md)                  | A qualified identity resolves under consumer grammars independently of frameworks.                                              | R1, R3, R6 | None           |
+| 0201-F1 | [Binding identity](../../src/analyzers/Bindings/.spec/README.md)                  | A qualified identity resolves under consumer grammars independently of frameworks.                                              | R1, R3, R6 | None           |
 | 0201-F2 | [CSharp binding authoring](../../src/CodeFixes/.spec/README.md)                   | Type defaults assist invoked fixes; explicit declaration IDs alone supply checked evidence, and missing bindings are diagnosed. | R1, R2, R8 | F1             |
-| 0201-F3 | [Test evidence adapters](../../src/Analyzers/TestEvidence/.spec/README.md)        | Facts, theory cases and Playwright .NET tests correlate to bound methods without Reqnroll.                                      | R5, R7     | F1, F2         |
-| 0201-F4 | [Optional scenario bridge](../../src/Analyzers/Scenarios/.spec/README.md)         | Tagged scenarios and generated cases share the identity contract; shared steps do not stand in for scenario identity.           | R3, R4     | F1, F3         |
-| 0201-F5 | [Traceability reconciliation](../../src/Analyzers/Reconciliation/.spec/README.md) | Every required claim is considered, with explicit missing links, incomplete scope and distinct execution outcomes.              | R5, R7, R8 | F1, F3         |
+| 0201-F3 | [Test evidence adapters](../../src/analyzers/TestEvidence/.spec/README.md)        | Facts, theory cases and Playwright .NET tests correlate to bound methods without Reqnroll.                                      | R5, R7     | F1, F2         |
+| 0201-F4 | [Optional scenario bridge](../../src/analyzers/Scenarios/.spec/README.md)         | Tagged scenarios and generated cases share the identity contract; shared steps do not stand in for scenario identity.           | R3, R4     | F1, F3         |
+| 0201-F5 | [Traceability reconciliation](../../src/analyzers/Reconciliation/.spec/README.md) | Every required claim is considered, with explicit missing links, incomplete scope and distinct execution outcomes.              | R5, R7, R8 | F1, F3         |
 | 0201-F6 | [Consumer analysis adoption](../../src/CodeAnalysis/.spec/README.md)              | Declared inputs, scope and policy produce consistent editor/build verdicts without requiring Reqnroll.                          | R9         | F1, F2, F3, F5 |
 
 F4 is an optional extension; F5 and F6 do not depend on it. F2 keeps diagnostics
@@ -585,11 +585,11 @@ The project identities and folder names are deliberate:
 
 | Folder              | Project identity      | Responsibility                                                                                            |
 | ------------------- | --------------------- | --------------------------------------------------------------------------------------------------------- |
-| `src/Analyzers/`    | `Specht.Analysis`     | Binding model and read-only Roslyn diagnostics; no code-fix Workspaces dependency.                        |
+| `src/analyzers/`    | `Specht.Analysis`     | Binding model and read-only Roslyn diagnostics; no code-fix Workspaces dependency.                        |
 | `src/CodeFixes/`    | `Specht.Codefixes`    | Invoked authoring repairs; references the analyzer project.                                               |
 | `src/CodeAnalysis/` | `Specht.CodeAnalysis` | Deployment project; packages the analyzer and code-fix assemblies rather than duplicating their behavior. |
 
-The planned project files are `Analyzers.csproj`, `CodeFixes.csproj` and
+The planned project files are `analyzers.csproj`, `CodeFixes.csproj` and
 `CodeAnalysis.csproj` in those folders, following the reference's naming. The
 analyzer and code-fix projects are non-packable; CodeAnalysis owns deployment of
 this capability. `src/tool` continues to own the existing dotnet-tool package.
@@ -597,7 +597,7 @@ A future package must include both component assemblies and the editor/build
 assets it needs; a deployment project must not ship an empty package or leak its
 own build output as a consumer runtime library.
 
-[ADR-0016](../../.spec/adr/0016-analyzer-codefix-deployment-projects.md)
+[ADR-0018](../../.spec/adr/0018-lowercase-analyzer-project-home.md)
 records this choice and its costs. Features remain vertical agreements rather
 than a one-to-one project list: F2 specifies diagnostics in Analyzers and the
 repairs in CodeFixes, with its agreement beside CodeFixes. F1, F3, F4 and F5 sit
@@ -629,15 +629,15 @@ outcomes must pass by default under F5 decision 0002.
 
 | Item                                                                                     | Work                                      | Prerequisites    |
 | ---------------------------------------------------------------------------------------- | ----------------------------------------- | ---------------- |
-| [0238](../../src/Analyzers/Bindings/.issue/0238-binding-identity.yml)                    | Binding identity and record resolution    | None; start here |
+| [0238](../../src/analyzers/Bindings/.issue/0238-binding-identity.yml)                    | Binding identity and record resolution    | None; start here |
 | [0239](../../src/CodeFixes/.issue/0239-xml-binding-diagnostics.yml)                      | XML binding diagnostics                   | 0238, 0242       |
 | [0240](../../src/CodeFixes/.issue/0240-type-authoring-defaults.yml)                      | Nested and partial type defaults          | 0239             |
 | [0241](../../src/CodeFixes/.issue/0241-binding-code-fixes.yml)                           | Safe invoked code fixes                   | 0240             |
 | [0242](../../src/CodeAnalysis/.issue/0242-analysis-policy-inputs.yml)                    | Analysis configuration and input policy   | None             |
 | [0243](../../src/CodeAnalysis/.issue/0243-codeanalysis-package-delivery.yml)             | Package and editor/build delivery         | 0241, 0242       |
-| [0244](../../src/Analyzers/TestEvidence/.issue/0244-test-evidence-collection.yml)        | Framework-independent evidence collection | 0243             |
-| [0245](../../src/Analyzers/Scenarios/.issue/0245-optional-scenario-bridge.yml)           | Optional scenario bridge                  | 0244             |
-| [0246](../../src/Analyzers/Reconciliation/.issue/0246-trace-artifact-reconciliation.yml) | CLI artifact reconciliation               | 0244             |
+| [0244](../../src/analyzers/TestEvidence/.issue/0244-test-evidence-collection.yml)        | Framework-independent evidence collection | 0243             |
+| [0245](../../src/analyzers/Scenarios/.issue/0245-optional-scenario-bridge.yml)           | Optional scenario bridge                  | 0244             |
+| [0246](../../src/analyzers/Reconciliation/.issue/0246-trace-artifact-reconciliation.yml) | CLI artifact reconciliation               | 0244             |
 
 All 108 claim IDs are assigned exactly once across these items. Each item owns
 its delivery state and cites its Feature's claims; none is marked implemented.

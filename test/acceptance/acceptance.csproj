@@ -9,11 +9,11 @@
 
   <!-- One literal entry per linked .feature file; a batched glob silently discovers zero tests (specht-conventions § Testing). -->
   <ItemGroup>
-    <ReqnrollFeatureFile Include="../../src/Analyzers/Bindings/.spec/bindings.feature" Link="Features/analyzers-bindings.feature" />
+    <ReqnrollFeatureFile Include="../../src/analyzers/Bindings/.spec/bindings.feature" Link="Features/analyzers-bindings.feature" />
     <ReqnrollFeatureFile Include="../../src/CodeFixes/.spec/csharp.feature" Link="Features/codefixes-csharp.feature" />
-    <ReqnrollFeatureFile Include="../../src/Analyzers/TestEvidence/.spec/tests.feature" Link="Features/analyzers-test-evidence.feature" />
-    <ReqnrollFeatureFile Include="../../src/Analyzers/Scenarios/.spec/scenarios.feature" Link="Features/analyzers-scenarios.feature" />
-    <ReqnrollFeatureFile Include="../../src/Analyzers/Reconciliation/.spec/reconciliation.feature" Link="Features/analyzers-reconciliation.feature" />
+    <ReqnrollFeatureFile Include="../../src/analyzers/TestEvidence/.spec/tests.feature" Link="Features/analyzers-test-evidence.feature" />
+    <ReqnrollFeatureFile Include="../../src/analyzers/Scenarios/.spec/scenarios.feature" Link="Features/analyzers-scenarios.feature" />
+    <ReqnrollFeatureFile Include="../../src/analyzers/Reconciliation/.spec/reconciliation.feature" Link="Features/analyzers-reconciliation.feature" />
     <ReqnrollFeatureFile Include="../../src/CodeAnalysis/.spec/adoption.feature" Link="Features/codeanalysis-adoption.feature" />
 
     <ReqnrollFeatureFile Include="../../.config/.spec/consuming-the-package.feature" Link="Features/consuming-the-package.feature" />
@@ -41,6 +41,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\specht\specht.csproj" />
+    <ProjectReference Include="../../src/analyzers/analyzers.csproj" />
     <ProjectReference Include="../../.performance/comparison/comparison.csproj" />
     <ProjectReference Include="..\..\src\tool\tool.csproj" />
     <ProjectReference Include="..\..\.build\.build.csproj" />

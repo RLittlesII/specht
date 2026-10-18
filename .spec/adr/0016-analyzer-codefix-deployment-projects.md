@@ -8,7 +8,9 @@ type: adr
 
 ## Status
 
-Accepted, 2026-10-17, by the repository owner in
+Superseded, 2026-10-17, by
+[ADR-0018](0018-lowercase-analyzer-project-home.md).
+Originally accepted, 2026-10-17, by the repository owner in
 [PR 225 review 5560492857](https://github.com/RLittlesII/specht/pull/225#pullrequestreview-5560492857).
 This selects the project boundaries for epic 0201; production remains deferred.
 

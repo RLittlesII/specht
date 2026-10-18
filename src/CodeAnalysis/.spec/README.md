@@ -108,8 +108,8 @@ Not yet designed; no production implementation is authorized by this draft.
 
 <!-- last written by: implementer, 2026-10-17 -->
 
-[ADR-0016](../../../.spec/adr/0016-analyzer-codefix-deployment-projects.md) adopts
-`src/Analyzers` (`Specht.Analysis`), `src/CodeFixes` (`Specht.Codefixes`) and
+[ADR-0018](../../../.spec/adr/0018-lowercase-analyzer-project-home.md) adopts
+`src/analyzers` (`Specht.Analysis`), `src/CodeFixes` (`Specht.Codefixes`) and
 `src/CodeAnalysis` (`Specht.CodeAnalysis`, deployment). The deployment project
 references both non-packable component projects; CodeFixes references Analyzers.
 Analyzer loading must not depend on CodeFixes or its Workspaces dependencies.

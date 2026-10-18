@@ -1,0 +1,64 @@
+id: "0246"
+type: feature
+title: "Reconcile exported trace evidence in the CLI"
+status: ready-for-implementation
+value: 4
+risk: 4
+parent: "0201"
+children: []
+depends_on: ["0244"]
+spikes: []
+spec: src/analyzers/Reconciliation/.spec/README.md
+claims:
+  [
+    "B-001",
+    "B-002",
+    "B-003",
+    "B-004",
+    "B-005",
+    "B-006",
+    "B-007",
+    "B-008",
+    "B-009",
+    "B-010",
+    "B-011",
+    "B-012",
+    "B-013",
+    "B-014",
+    "B-015",
+    "B-016",
+    "B-017",
+  ]
+created: "2026-10-17"
+updated: "2026-10-17"
+closed: null
+summary: |
+  Implement CLI-side specht trace reconciliation of exported binding, discovery and result
+  artifacts, starting from every selected current claim. 0244 provides exported records
+  and case/result correlation. Require passing required outcomes by default, preserving
+  independent validity/completeness/exemption/execution states and the existing checker
+  report. Do not invoke or load the analyzer directly, create a Roslyn Workspace, build
+  projects or launch tests. Optional scenario evidence augments direct chains; 0245 is not
+  a prerequisite.
+acceptance_criteria:
+  - "0201-F5 B-001"
+  - "0201-F5 B-002"
+  - "0201-F5 B-003"
+  - "0201-F5 B-004"
+  - "0201-F5 B-005"
+  - "0201-F5 B-006"
+  - "0201-F5 B-007"
+  - "0201-F5 B-008"
+  - "0201-F5 B-009"
+  - "0201-F5 B-010"
+  - "0201-F5 B-011"
+  - "0201-F5 B-012"
+  - "0201-F5 B-013"
+  - "0201-F5 B-014"
+  - "0201-F5 B-015"
+  - "0201-F5 B-016"
+  - "0201-F5 B-017"
+  - "§ 9 names passing acceptance and mechanism tests for every delivered claim before this item is done."
+decisions: []
+out_of_scope:
+  - "Everything in § 5 of the cited specification."

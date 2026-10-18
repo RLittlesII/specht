@@ -1,7 +1,4 @@
 using Markdig;
-using Markdig.Extensions.Tables;
-using Markdig.Syntax;
-using Markdig.Syntax.Inlines;
 
 namespace Specht.Model;
 
@@ -36,90 +33,17 @@ public sealed class SpecDocument
     /// <summary>Parses <paramref name="text"/>, the document at <paramref name="relativePath"/>.</summary>
     public static SpecDocument Parse(string text, string relativePath)
     {
-        var document = Markdown.Parse(text, Pipeline);
-        var sections = new List<SpecSection>();
-
-        for (var index = 0; index < document.Count; index++)
-        {
-            if (document[index] is not HeadingBlock { Level: 2 } heading)
+        var sections = new MarkdownTextReader().Read(text, Pipeline).Select(static section =>
+            new SpecSection(section.Title, section.Line, section.Headers, section.Rows, section.RowLines)
             {
-                continue;
-            }
-
-            var table = NextTable(document, index);
-
-            sections.Add(new SpecSection(
-                HeadingText(heading),
-                heading.Line + 1,
-                table is null ? [] : HeaderCells(table),
-                table is null ? [] : BodyRows(table),
-                table is null ? [] : BodyRowLines(table))
-            {
-                RowCodeSpans = table is null ? [] : BodyCodeSpans(table),
-            });
-        }
-
+                RowCodeSpans = section.RowCodeSpans,
+            }).ToArray();
         return new SpecDocument(relativePath, FrontmatterReader.Parse(text), sections);
     }
 
     /// <summary>The section titled <paramref name="title"/>, or <c>null</c>.</summary>
     public SpecSection? Section(string title) =>
         Sections.FirstOrDefault(section => string.Equals(section.Title, title, StringComparison.Ordinal));
-
-    private static string HeadingText(HeadingBlock heading) =>
-        heading.Inline is null ? string.Empty : Flatten(heading.Inline);
-
-    private static Table? NextTable(MarkdownDocument document, int headingIndex)
-    {
-        for (var index = headingIndex + 1; index < document.Count; index++)
-        {
-            switch (document[index])
-            {
-                case HeadingBlock { Level: 2 }:
-                    return null;
-                case Table table:
-                    return table;
-            }
-        }
-
-        return null;
-    }
-
-    private static IReadOnlyList<string> HeaderCells(Table table) =>
-        table.OfType<TableRow>().Where(static row => row.IsHeader).Select(Cells).FirstOrDefault() ?? [];
-
-    private static IReadOnlyList<IReadOnlyList<string>> BodyRows(Table table) =>
-        table.OfType<TableRow>().Where(static row => !row.IsHeader).Select(Cells).ToList();
-
-    private static IReadOnlyList<IReadOnlyList<IReadOnlyList<string>>> BodyCodeSpans(Table table) =>
-        table.OfType<TableRow>().Where(static row => !row.IsHeader)
-            .Select(static row => (IReadOnlyList<IReadOnlyList<string>>)row.OfType<TableCell>()
-                .Select(static cell => (IReadOnlyList<string>)cell.Descendants().OfType<CodeInline>()
-                    .Select(static code => code.Content).ToArray())
-                .ToArray())
-            .ToArray();
-
-    private static IReadOnlyList<int> BodyRowLines(Table table) =>
-        table.OfType<TableRow>().Where(static row => !row.IsHeader).Select(static row => row.Line + 1).ToList();
-
-    private static IReadOnlyList<string> Cells(TableRow row) =>
-        row.OfType<TableCell>().Select(CellText).ToList();
-
-    private static string CellText(TableCell cell) => Flatten(cell);
-
-    /// <summary>
-    /// The visible text of a node: its literals and the content of its code
-    /// spans. A code span is a leaf, not a literal, so a cell written
-    /// <c>`B-001`</c> would otherwise read as empty and the claim would be
-    /// skipped silently rather than checked.
-    /// </summary>
-    private static string Flatten(MarkdownObject node) =>
-        string.Concat(node.Descendants().Select(static descendant => descendant switch
-        {
-            LiteralInline literal => literal.ToString(),
-            CodeInline code => code.Content,
-            _ => string.Empty,
-        })).Trim();
 
     private static readonly MarkdownPipeline Pipeline = new MarkdownPipelineBuilder().UsePipeTables().Build();
 }

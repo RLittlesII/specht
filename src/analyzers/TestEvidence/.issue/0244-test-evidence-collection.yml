@@ -1,0 +1,47 @@
+id: "0244"
+type: feature
+title: "Collect framework-independent test evidence"
+status: ready-for-implementation
+value: 4
+risk: 5
+parent: "0201"
+children: []
+depends_on: ["0243"]
+spikes: []
+spec: src/analyzers/TestEvidence/.spec/README.md
+claims:
+  [
+    "B-001",
+    "B-002",
+    "B-003",
+    "B-004",
+    "B-005",
+    "B-006",
+    "B-007",
+    "B-008",
+    "B-009",
+  ]
+created: "2026-10-17"
+updated: "2026-10-17"
+closed: null
+summary: |
+  Implement the versioned common evidence contract, build-time binding export and runner
+  collection/normalization. 0243 provides the installed components and build input
+  delivery. Validate xUnit facts/theories, Playwright .NET and conforming producer
+  evidence without Reqnroll or a framework-name allowlist. Preserve real case/method IDs,
+  deferred enumeration and freshness. DiagnosticAnalyzer writes no files; collection runs
+  only in the normal explicit build/test workflow.
+acceptance_criteria:
+  - "0201-F3 B-001"
+  - "0201-F3 B-002"
+  - "0201-F3 B-003"
+  - "0201-F3 B-004"
+  - "0201-F3 B-005"
+  - "0201-F3 B-006"
+  - "0201-F3 B-007"
+  - "0201-F3 B-008"
+  - "0201-F3 B-009"
+  - "§ 9 names passing acceptance and mechanism tests for every delivered claim before this item is done."
+decisions: []
+out_of_scope:
+  - "Everything in § 5 of the cited specification."
