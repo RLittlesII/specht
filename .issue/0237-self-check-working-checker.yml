@@ -11,12 +11,12 @@ spikes: []
 spec: null
 claims: []
 created: "2026-10-17"
-updated: "2026-10-17"
-closed: "2026-10-17"
+updated: "2026-10-18"
+closed: "2026-10-18"
 summary: |
   The previous Specht target invoked published checker 0.1.131 before compilation.
   It rejected tests/owners in this repository's working 0.2.0 manifest with
-  exit 3; three installed-tool acceptance cases fail on the same mismatch.
+  exit 3; three installed-tool acceptance cases failed on the same mismatch.
   A newer published checker cannot be a prerequisite for developing it.
 
   The owner requested this fix in an isolated session after 0227 merged.
@@ -32,7 +32,7 @@ summary: |
   the prior checkout had been removed and the parent's main checkout must
   not be edited. This item was taken before its delivery branch and edits.
 
-  Verification: the normal ./build.sh passes with no target skipped,
+  Initial 2026-10-17 verification: the normal ./build.sh passed with no target skipped,
   including Specht, Format, Compile and every test tier on net10.0/net11.0.
   Each framework reports 1037 unit, 356 integration and 453 acceptance
   passes; 287 future acceptance cases remain unbound and skipped.
@@ -40,6 +40,13 @@ summary: |
   implementation. Shell/build/hook equivalence passes through the installed
   working package. No consumer pin, schema resource or generated workflow
   changed.
+
+  Continuation 2026-10-18: rebased the existing implementation onto merged
+  F1 main, completed independent review and pinned package-identity rejection.
+  The normal unskipped full build passes with 2280 unit, 722 integration and
+  1044 acceptance passes, zero failures and 836 existing future acceptance skips.
+  All six previous installed-tool failures pass; the committed consumer pin,
+  schema resources and generated workflows remain unchanged.
 
 acceptance_criteria:
   - "0001-F2 B-014 — isolated installation of the working package and unchanged consumer pin."

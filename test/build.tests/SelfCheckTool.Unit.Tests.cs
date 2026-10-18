@@ -49,6 +49,35 @@ public sealed class SelfCheckToolUnitTests
     }
 
     [Fact]
+    public async Task APackageWithAnotherIdentity_WhenPreparing_ShouldStopBeforeInstallationOrChecking()
+    {
+        // Given
+        var fileSystem = new MockFileSystem();
+        var commands = new List<ProcessStartInfo>();
+        var checker = new SelfCheckTool(fileSystem, async command =>
+        {
+            commands.Add(command);
+            using var bytes = new MemoryStream();
+            using (var zip = new ZipArchive(bytes, ZipArchiveMode.Create, leaveOpen: true))
+            {
+                await using var writer = new StreamWriter(zip.CreateEntry("tool.nuspec").Open());
+                await writer.WriteAsync("<package><metadata><id>another.tool</id><version>1.2.3-gabc</version></metadata></package>");
+            }
+
+            await fileSystem.File.WriteAllBytesAsync("repo/.artifacts/self-check/feed/tool.nupkg", bytes.ToArray());
+            return 0;
+        });
+
+        // When
+        var preparing = async () => await checker.RunAsync("repo", "Debug");
+
+        // Then
+        await preparing.Should().ThrowAsync<InvalidOperationException>();
+        commands.Should().ContainSingle();
+        fileSystem.File.Exists("repo/.artifacts/self-check/.config/dotnet-tools.json").Should().BeFalse();
+    }
+
+    [Fact]
     public async Task WorkingEditsAtTheSameVersion_WhenCheckedAgain_ShouldInstallTheNewBytesWithFreshCachesAndKeepTheConsumerPin()
     {
         // Given
