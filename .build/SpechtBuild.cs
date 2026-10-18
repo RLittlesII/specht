@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.IO.Abstractions;
 using System.Linq;
 using System.Text.Json;
 using Nuke.Common;
@@ -9,6 +10,7 @@ using Nuke.Common.ProjectModel;
 using Nuke.Common.Tooling;
 using Nuke.Common.Tools.DotNet;
 using Serilog;
+using Specht.Build;
 using static Nuke.Common.Tools.DotNet.DotNetTasks;
 
 // Every gate is a target here (0055-F1 C-1); a target writes only under .artifacts/, bin/ and obj/ (C-5).
@@ -49,15 +51,9 @@ internal partial class SpechtBuild : NukeBuild
     }
 
     private Target Specht => definition => definition
-        .Executes(() =>
+        .Executes(async () =>
         {
-            DotNetToolRestore(static settings => settings.SetProcessWorkingDirectory(RootDirectory).DisableProcessOutputLogging());
-            var exitCode = 0;
-            AnnotateChangedFiles(DotNet(
-                "tool run specht -- --root .",
-                RootDirectory,
-                logger: ProcessTasks.DefaultLogger,
-                exitHandler: process => exitCode = process.ExitCode));
+            var exitCode = await new SelfCheckTool(new FileSystem(), RunSelfCheckCommandAsync).RunAsync(RootDirectory, Configuration);
             if (exitCode != 0)
             {
                 ExitCode = exitCode;

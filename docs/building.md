@@ -29,3 +29,13 @@ glob) and `--benchmark-job` parameters. Without them it runs every benchmark
 under the library's default job. Results are Markdown and JSON files under
 `.artifacts/benchmarks/`. Measurements never fail a build; broken benchmarks do.
 The default build runs no benchmark.
+
+The self-check builds and packs this checkout's tool, installs its exact package
+through an isolated local manifest under .artifacts/self-check/, and invokes it
+against this tree. Each run replaces the installation and caches, including when
+working edits retain the same computed package version. A preparation failure
+fails the gate; no supporting published checker is required. The committed
+published-consumer pin remains unchanged.
+
+The root `dotnet tool run specht` command still selects that published consumer
+pin. Use `./build.sh Specht` to validate the working checkout.

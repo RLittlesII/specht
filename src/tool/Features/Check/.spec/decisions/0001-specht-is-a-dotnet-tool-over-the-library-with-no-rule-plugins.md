@@ -113,3 +113,8 @@ Nothing above is edited.
   only. Its objection stands: a global install pins nothing beside the
   repository, so a build, a hook and CI still call the tool through the
   committed local tool manifest (C-6).
+
+2026-10-17, limited reversal by the repository owner, [decision 0014](0014-self-check-installs-the-working-package.md):
+this repository's self-check installs its working package through an isolated
+local manifest. Consumers retain the committed published pin, and no global
+installation or engine project reference is introduced.

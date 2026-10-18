@@ -138,6 +138,7 @@ its companion skill names the file.
 ## Before finishing
 
 - Run the narrow check for what you touched, then the full build.
+- A self-hosted validation gate exercises the tool built from the change; an older published-installation check alone cannot prove it.
 - Read the diff for changes you did not intend — a formatter pass, a reordered
   file, a stray generated artifact.
 - Update the specification section the design change affected, in the same change.

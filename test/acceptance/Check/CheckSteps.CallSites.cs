@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using System.Text.Json.Nodes;
 using System.Text.RegularExpressions;
+using System.Xml.Linq;
 using AwesomeAssertions;
 using Reqnroll;
 using Reqnroll.UnitTestProvider;
@@ -38,7 +39,8 @@ public sealed partial class CheckSteps(IUnitTestRuntimeProvider runtime, PackedT
     public void GivenTheRootCarriesThisRepositorysBuildFilesAndLocalToolManifest()
     {
         CopyFromRepository(
-            Listed().Where(static file => file.Split('/') is var parts && parts[0] != "epics" && !parts.Any(static part => part is ".spec" or ".issue")));
+            Listed("--cached", "--others", "--exclude-standard").Where(static file =>
+                file.Split('/') is var parts && parts[0] != "epics" && !parts.Any(static part => part is ".spec" or ".issue")));
         var manifestPath = Path.Combine(Tree.Root, SpecTree.ManifestPath);
         var manifest = JsonNode.Parse(File.ReadAllText(manifestPath))!.AsObject();
         manifest["rules"] = new JsonObject { ["SPEC060"] = "warning" };
@@ -59,7 +61,6 @@ public sealed partial class CheckSteps(IUnitTestRuntimeProvider runtime, PackedT
     {
         CopyFromRepository(Listed("--cached", "--others", "--exclude-standard"));
         _source = Succeed(Tree.Root, "pwd", "-P").TrimEnd('\n');
-        LaunchInstalled();
     }
 
     [When("the check runs against that root from a shell")]
@@ -109,6 +110,7 @@ public sealed partial class CheckSteps(IUnitTestRuntimeProvider runtime, PackedT
     [Then("the check runs against this repository's root")]
     public void ThenTheCheckRunsAgainstThisRepositorysRoot()
     {
+        LaunchInstalled();
         _stdout.Should().NotBeEmpty(_stderr);
         Carried(Target.Stdout).Should().Equal(Printed(_stdout), Target.Stdout);
     }
@@ -174,8 +176,34 @@ public sealed partial class CheckSteps(IUnitTestRuntimeProvider runtime, PackedT
     private string[] Listed(params string[] options) =>
         Succeed(packed.Repository, "git", ["ls-files", "-z", .. options]).Split('\0', StringSplitOptions.RemoveEmptyEntries);
 
-    private void LaunchInstalled() =>
-        (_stdout, _stderr, _exitCode) = RunProcess(Source, "dotnet", "tool", "run", "specht", "--", "--root", ".");
+    private void LaunchInstalled()
+    {
+        var workspace = Path.Combine(Source, ".artifacts/self-check");
+        if (!File.Exists(Path.Combine(workspace, ".config/dotnet-tools.json")))
+        {
+            _ = RunProcess(Source, "bash", Path.Combine(packed.Repository, "build.sh"), "Specht", "--root", Source);
+        }
+
+        File.Exists(Path.Combine(workspace, ".config/dotnet-tools.json")).Should().BeTrue("the working checker is installed before invocation");
+        var start = new ProcessStartInfo("dotnet")
+        {
+            WorkingDirectory = workspace,
+            RedirectStandardInput = true,
+            Environment =
+            {
+                ["DOTNET_CLI_HOME"] = Path.Combine(workspace, "cli-home"),
+                ["NUGET_PACKAGES"] = Path.Combine(workspace, "packages"),
+                ["NUGET_HTTP_CACHE_PATH"] = Path.Combine(workspace, "http-cache"),
+                ["NO_COLOR"] = "1",
+            },
+        };
+        foreach (var argument in (string[])["tool", "run", "specht", "--", "--root", "../.."])
+        {
+            start.ArgumentList.Add(argument);
+        }
+
+        (_stdout, _stderr, _exitCode) = AcceptanceTool.Run(start);
+    }
 
     private void CopyFromRepository(IEnumerable<string> files)
     {
@@ -185,6 +213,14 @@ public sealed partial class CheckSteps(IUnitTestRuntimeProvider runtime, PackedT
             Directory.CreateDirectory(Path.GetDirectoryName(copy)!);
             File.Copy(Path.Combine(packed.Repository, file), copy, overwrite: true);
         }
+
+        var cache = Environment.GetEnvironmentVariable("NUGET_PACKAGES")
+            ?? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".nuget", "packages");
+        var sources = new XDocument(new XElement("configuration",
+            new XElement("packageSources", new XElement("clear"), new XElement("add", new XAttribute("key", "cached"), new XAttribute("value", cache))),
+            new XElement("packageSourceMapping", new XElement("clear")),
+            new XElement("auditSources", new XElement("clear"))));
+        File.WriteAllText(Path.Combine(Tree.Root, "nuget.config"), sources.ToString());
     }
 
     private const string SignedOff =

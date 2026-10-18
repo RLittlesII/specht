@@ -213,12 +213,12 @@ none.
 ./build.sh VerifyTag        # on a tag build, fails unless the tag is v<version> on a commit of main; skipped otherwise
 ```
 
-`Specht` runs `specht` exactly as a consumer would — through the local tool
-manifest, never through a project reference (brief § 7). Until the first
-package is published it runs `dotnet run --project src/tool --framework net10.0 -- --root .`
-instead; the manifest replaces that the moment a package exists. From 0062,
-pre-commit calls the same thing when a staged file is under a `.spec/` directory
-or is a `.feature`.
+Specht builds and packs the working checkout, installs its exact package in
+an isolated local manifest under .artifacts/self-check/, and invokes that
+installed command (0001-F2 decision 0014). Preparation replaces the installation
+and its caches, so source edits at an unchanged version cannot reuse old bytes.
+The hook supplies its staged snapshot to the same target. The committed
+published-consumer pin remains for installation and restore coverage.
 
 `dotnet tool restore && dotnet husky install` once per clone, or `core.hooksPath`
 is unset and no git hook fires.

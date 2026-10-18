@@ -1,7 +1,7 @@
 id: "0237"
 type: bug
 title: Validate the working schema with the working checker
-status: in-progress
+status: done
 value: 5
 risk: 3
 parent: null
@@ -12,32 +12,49 @@ spec: null
 claims: []
 created: "2026-10-17"
 updated: "2026-10-17"
-closed: null
+closed: "2026-10-17"
 summary: |
-  The Specht target invokes the published 0.1.131 checker before compilation.
-  It rejects tests/owners in this repository's working 0.2.0 manifest with
+  The previous Specht target invoked published checker 0.1.131 before compilation.
+  It rejected tests/owners in this repository's working 0.2.0 manifest with
   exit 3; three installed-tool acceptance cases fail on the same mismatch.
   A newer published checker cannot be a prerequisite for developing it.
 
   The owner requested this fix in an isolated session after 0227 merged.
-  Build 0055-F1 C-3, Check 0001-F2 B-014/A-2 and decision 0009 explicitly
-  require the committed package pin here, so changing that guarantee needs
-  the owner's choice before implementation. Package installation can remain
-  part of self-check through a locally packed checkout, or be proven in
-  separate package tests while self-check runs the checkout's CLI.
+  Build 0055-F1 C-3, Check 0001-F2 B-014/A-2 and decision 0009 required
+  the committed published pin here. The owner selected installation of
+  this checkout's package; Check decision 0014 records the choice and
+  rejected direct-CLI alternative.
 
   Main at 06753445 and every open pull request were checked: no open PR
-  claimed an id above 0236. This item reserves 0237 on its draft PR. An
-  isolated detached checkout was created for read-only orientation because
+  claimed an id above 0236. Reservation PR #226 merged as 833e72c0;
+  implementation continues from that main in 0237/install-working-self-check.
+  An isolated detached checkout was created for read-only orientation because
   the prior checkout had been removed and the parent's main checkout must
-  not be edited. This item is taken before its delivery branch and edits.
+  not be edited. This item was taken before its delivery branch and edits.
+
+  Verification: the normal ./build.sh passes with no target skipped,
+  including Specht, Format, Compile and every test tier on net10.0/net11.0.
+  Each framework reports 1037 unit, 356 integration and 453 acceptance
+  passes; 287 future acceptance cases remain unbound and skipped.
+  Five unit cases and two acceptance cases failed behaviorally before
+  implementation. Shell/build/hook equivalence passes through the installed
+  working package. No consumer pin, schema resource or generated workflow
+  changed.
+
 acceptance_criteria:
-  - "Record the owner's self-check execution choice in the affected agreements before implementation."
-  - "Validate this checkout's working manifest with this checkout's checker without a newer published package."
-  - "Keep diagnostics, exit-code propagation, staged-tree checking and package-installation coverage."
-  - "Run meaningful regression tests and the full build without bypassing the validation gate."
+  - "0001-F2 B-014 — isolated installation of the working package and unchanged consumer pin."
+  - "0001-F2 B-046 — preparation failure stops the gate without fallback."
+  - "0001-F2 B-047 — fresh package bytes at an unchanged version."
+  - "0001-F2 B-010/B-011 — preserved shell/build/hook lines, codes and repository root."
+  - "Run the full build without bypassing the self-check gate."
   - "Reconcile 0227's merged delivery state while retaining its historical failed-check evidence."
-decisions: []
+decisions:
+  - |
+    2026-10-17, repository owner: build, pack and install this checkout's
+    package in an isolated local manifest, then self-check with it. Keep
+    package installation in the gate; accept the added build time.
+    Rejected: direct CLI execution with separate installation tests.
+    Check decision 0014 records the agreement and boundary.
 out_of_scope:
   - "Publishing or tagging a release, or changing the package/schema version."
   - "Removing the required tests/owners configuration or disabling checks."

@@ -124,13 +124,28 @@ Feature: The check command
     And the target exits with the check's exit code
 
   @B-014
-  Scenario: The build reaches the tool through the local tool manifest
-    Given the tool has been published as a package
-    And this repository's local tool manifest names that package
-    And this repository's tool source cannot be built
+  Scenario: The self-check installs the working checkout
+    Given the tool honours rule settings in the manifest
+    And a checkout whose working schema the published consumer pin cannot read
     When the build's Specht target runs
-    Then it reaches the tool through the local tool manifest
-    And it does not build the tool from this repository's source
+    Then it invokes the package built from that checkout through an isolated local manifest
+    And the committed consumer tool manifest is unchanged
+
+  @B-046 @boundary
+  Scenario: A broken working checker fails its own gate
+    Given the tool honours rule settings in the manifest
+    And a checkout whose working schema the published consumer pin cannot read
+    And the checkout's checker source cannot compile
+    When the build's Specht target runs
+    Then preparation fails before any checker runs
+
+  @B-047
+  Scenario: Working edits replace an earlier package at the same version
+    Given the tool honours rule settings in the manifest
+    And a checkout whose working schema the published consumer pin cannot read
+    And its self-check has already installed the working package
+    When the checker source changes without a version change and the self-check runs again
+    Then the changed checker is the one that runs
 
   @B-012 @boundary
   Scenario: A check writes nothing but the named report
