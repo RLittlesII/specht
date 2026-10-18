@@ -29,7 +29,7 @@ closed: null
 summary: |
   Introduce codeAnalysis settings and ADR identity grammar in a new unused schema version,
   preserving old pins. Implement policy validation, selected scopes, reasoned exemptions
-  and required-input handling from F6 decisions 0003–0005 and input-contract.md. This can
+  and required-input handling from F6 decisions 0003–0005 and § 7 of the specification. This can
   start alongside 0238; it does not wait for runner collectors, scenario bridging or
   specht trace. Actual consumer record contents are inputs, not just schemas.
 acceptance_criteria:
