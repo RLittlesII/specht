@@ -16,6 +16,63 @@ namespace Specht.Acceptance.Documentation;
 [Scope(Tag = "0201-F2")]
 public sealed class DocumentationSteps
 {
+    [Given("a type with an authoring-default binding")]
+    public void GivenAuthoringDefault()
+    {
+        _typeXml = "<spec feature=\"F1\" />";
+        _xml = string.Empty;
+        _onType = true;
+    }
+
+    [Given("an outer type with an authoring default")]
+    public void GivenOuterDefault() => _typeXml = "<spec feature=\"F1\" />";
+
+    [Given("a nested type with {string}")]
+    public void GivenNestedDefault(string kind)
+    {
+        _defaultSource = "/// " + _typeXml + "\npublic class Outer {\n"
+            + (kind == "its own default" ? "/// <spec feature=\"F2\" />\n" : string.Empty)
+            + "public class Inner { public void Run() {} } }";
+        _defaultType = "Outer+Inner";
+    }
+
+    [Given("a member inside the nested type needing authoring context")]
+    [Given("a member in a part that declares no default")]
+    public void GivenDefaultMember() => _onType = false;
+
+    [Given("an outer type with an epic-qualified authoring default")]
+    public void GivenEpicDefault() => _typeXml = "<spec epic=\"0201\" feature=\"F1\" />";
+
+    [Given("a nested type with its own default that omits the optional epic")]
+    public void GivenWholeDefault() => GivenNestedDefault("its own default");
+
+    [Given("a partial type with {string} across its parts")]
+    public void GivenPartialDefaults(string defaults) => _defaultSource =
+        "/// <spec feature=\"F1\" />\npublic partial class Example {}\n"
+        + (defaults == "identical repeated defaults" ? "/// <spec feature=\"F1\"></spec>\npublic partial class Example {}\n" : string.Empty)
+        + "public partial class Example { public void Run() {} }";
+
+    [Given("a partial type with different authoring defaults on two parts")]
+    public void GivenConflictingDefaults()
+    {
+        _defaultSource = "/// <spec feature=\"F1\" />\npublic partial class Example {}\n"
+            + "/// <spec feature=\"F2\" />\npublic partial class Example { public void Run() {} }";
+        _onType = true;
+    }
+
+    [Given("a base type with an authoring default")]
+    public void GivenBaseDefault() => _defaultSource = "/// <spec feature=\"F1\" />\npublic class Base {}\n";
+
+    [Given("a derived type with no default and no enclosing type default")]
+    public void GivenDerivedType() => _defaultSource += "public class Example : Base { public void Run() {} }";
+
+    [Given("a type with an invalid authoring-default element")]
+    public void GivenInvalidDefault()
+    {
+        _typeXml = "<spec feature=\"F1\" extra=\"invalid\" />";
+        _xml = string.Empty;
+    }
+
     [Given("a supported declaration carrying a complete explicit Feature and claim binding")]
     public void GivenExplicit() => _typeXml = "<spec feature=\"F2\" />";
 
@@ -173,15 +230,19 @@ public sealed class DocumentationSteps
     [When("the XML shape of the binding is validated")]
     [When("relationships are collected")]
     [When("its diagnostic is reported")]
+    [When("a binding repair determines its default context")]
+    [When("a binding repair determines the nested member's default context")]
+    [When("a binding repair determines the derived member's default context")]
+    [When("its authoring defaults are analyzed")]
     public void Analyze()
     {
-        _source = _partial
+        _source = _defaultSource ?? (_partial
             ? "/// <implements feature=\"F1\" claim=\"B-001\" />\npublic partial class Example {}\n"
                 + "/// <implements claim=\"B-001\" feature=\"F1\" />\npublic partial class Example {}"
             : (_typeXml.Length > 0 ? "/// " + _typeXml + "\n" : string.Empty)
                 + (_onType ? "/// " + _xml + "\n" : string.Empty)
                 + "public class Example\n{\n" + (!_onType && _xml.Length > 0 ? "    /// " + _xml + "\n" : string.Empty)
-                + "    public void Run() {}\n" + (_secondMethod ? "/// " + _xml + "\npublic void Other() {}\n" : string.Empty) + "}";
+                + "    public void Run() {}\n" + (_secondMethod ? "/// " + _xml + "\npublic void Other() {}\n" : string.Empty) + "}");
         var tree = CSharpSyntaxTree.ParseText(_source, path: "src/Example.cs");
         var compilation = CSharpCompilation.Create("Example", new[] { tree }, new[] { MetadataReference.CreateFromFile(typeof(object).Assembly.Location) },
             new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
@@ -196,7 +257,7 @@ public sealed class DocumentationSteps
         });
         var policy = new BindingPolicy("0.1.0", new Dictionary<string, string> { ["feature"] = "^F[0-9]+$", ["claim"] = _claimGrammar },
             new Dictionary<string, string>(), false, "3. Acceptance Criteria", new LifecycleOmissions(false, false, false));
-        var type = compilation.GetTypeByMetadataName("Example")!;
+        var type = compilation.GetTypeByMetadataName(_defaultType ?? "Example")!;
         var reader = new DocumentationBindingReader();
         var resolver = new BindingResolver(catalog, policy);
         _type = reader.Read(type, resolver);
@@ -220,6 +281,34 @@ public sealed class DocumentationSteps
 
     [Then("checked traceability uses that declaration identity regardless of its containing type default")]
     public void ThenExplicit() => _result!.Relationships.Should().ContainSingle().Which.Resolution!.Target!.Feature.Should().Be("F1");
+
+    [Then("the type defaults supply authoring context only")]
+    public void ThenAuthoringOnly()
+    {
+        _result!.AuthoringDefault!.Attributes["feature"].Should().Be("F1");
+        _result.Relationships.Should().BeEmpty();
+    }
+
+    [Then("the context comes from the {string}")]
+    public void ThenNearestDefault(string selected) => _result!.AuthoringDefault!.Attributes["feature"]
+        .Should().Be(selected == "outer type" ? "F1" : "F2");
+
+    [Then("the context contains only the nested type's default components")]
+    public void ThenWholeDefault() => _result!.AuthoringDefault!.Attributes["feature"].Should().Be("F2");
+
+    [Then("no epic component is inherited from the outer type")]
+    public void ThenNoEpicMerge() => _result!.AuthoringDefault!.Attributes.Keys.Should().Equal("feature");
+
+    [Then("the member has the same shared type default")]
+    public void ThenSharedDefault() => _result!.AuthoringDefault!.Attributes["feature"].Should().Be("F1");
+
+    [Then("analysis reports the conflicting defaults")]
+    public void ThenConflictingDefaults() => _result!.Findings.Select(static finding => finding.Id).Should().Equal("SPCT0008", "SPCT0008");
+
+    [Then("no repair automatically materializes a target from those defaults")]
+    [Then("no default context is inherited from the base type")]
+    [Then("that invalid element supplies no authoring context")]
+    public void ThenNoDefault() => _result!.AuthoringDefault.Should().BeNull();
 
     [Then("analysis reports that the member lacks explicit identity and does not count it as checked evidence")]
     public void ThenIncomplete()
@@ -310,6 +399,8 @@ public sealed class DocumentationSteps
     }
 
     private string _xml = "<implements feature=\"F1\" claim=\"B-001\" />";
+    private string? _defaultSource;
+    private string? _defaultType;
     private string _typeXml = string.Empty;
     private string _claimGrammar = "^B-[0-9]{3}$";
     private string? _scalar;

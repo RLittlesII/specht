@@ -6,4 +6,7 @@ namespace Specht.Analysis.Documentation;
 public sealed record DocumentationAnalysis(
     IReadOnlyList<DocumentationBinding> Elements,
     IReadOnlyList<DocumentationBinding> Relationships,
-    IReadOnlyList<DocumentationFinding> Findings);
+    IReadOnlyList<DocumentationFinding> Findings)
+{
+    public DocumentationBinding? AuthoringDefault { get; init; }
+}

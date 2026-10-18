@@ -10,6 +10,41 @@ namespace Specht.Analysis.Tests.Documentation;
 [Trait("Tier", "Unit")]
 public sealed class DocumentationBindingAnalyzerUnitTests
 {
+    [Fact]
+    public async Task ConflictingTypeDefaults_WhenAnalyzed_ShouldReportEachDefaultWithoutMemberDuplicates()
+    {
+        // Given
+        var first = "/// <spec feature=\"cap:read\" />\npublic partial class Example { }";
+        var second = "/// <spec feature=\"cap:other\" />\npublic partial class Example { public void Run() {} }";
+        var builder = GeneratorTestContextBuilder.Create().WithAnalyzer<DocumentationBindingAnalyzer>()
+            .WithDiagnosticSeverity(null).AddSource("src/First.cs", first).AddSource("src/Second.cs", second)
+            .AddGlobalOption("build_property.SpechtProjectPath", "test/tests.csproj")
+            .AddGlobalOption("build_property.TargetFramework", "net10.0");
+        foreach (var input in new AnalysisInputs().Inputs.Where(static input => input.Kind != "source"))
+        {
+            builder = builder.AddAdditionalText(input.RelativePath, input.Text!)
+                .AddOption(input.RelativePath, "build_metadata.AdditionalFiles.SpechtInputKind", input.Kind)
+                .AddOption(input.RelativePath, "build_metadata.AdditionalFiles.SpechtRelativePath", input.RelativePath);
+        }
+
+        // When
+        var result = await builder.GenerateAsync(TestContext.Current.CancellationToken);
+
+        // Then
+        result.InputDiagnostics.Where(static diagnostic => diagnostic.Severity == DiagnosticSeverity.Error).Should().BeEmpty();
+        var diagnostics = result.AnalyzerResults[typeof(DocumentationBindingAnalyzer)].Diagnostics
+            .OrderBy(static diagnostic => diagnostic.Location.SourceTree!.FilePath, StringComparer.Ordinal).ToArray();
+        diagnostics.Should().HaveCount(2);
+        diagnostics.Select(static diagnostic => diagnostic.Id).Should().Equal("SPCT0008", "SPCT0008");
+        diagnostics.Select(static diagnostic => diagnostic.Location.SourceTree!.FilePath).Should().Equal("src/First.cs", "src/Second.cs");
+        foreach (var diagnostic in diagnostics)
+        {
+            diagnostic.Severity.Should().Be(DiagnosticSeverity.Warning);
+            diagnostic.Location.SourceSpan.Should().Be(new TextSpan(5, 4));
+            diagnostic.GetMessage().Should().Contain("feature=");
+        }
+    }
+
     [Theory]
     [ClassData(typeof(RequiredAuthoringCases))]
     public async Task RunnerSelectedMethods_WhenAnalyzed_ShouldSeparateExplicitValidationFromRequiredAuthoring(

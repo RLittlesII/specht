@@ -1,7 +1,7 @@
 id: "0240"
 type: task
 title: "Implement nested and partial type authoring defaults"
-status: ready-for-implementation
+status: done
 value: 5
 risk: 3
 parent: "0201"
@@ -11,8 +11,8 @@ spikes: []
 spec: src/CodeFixes/.spec/README.md
 claims: ["B-008", "B-014", "B-015", "B-016", "B-017", "B-018", "B-022"]
 created: "2026-10-17"
-updated: "2026-10-17"
-closed: null
+updated: "2026-10-18"
+closed: "2026-10-18"
 summary: |
   Implement lexical type-default selection and partial-type conflict handling using the
   XML parser and diagnostics from 0239. Defaults supply authoring context only. Test
