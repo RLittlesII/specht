@@ -1,18 +1,25 @@
 ---
-title: "Specht.CodeAnalysis project home"
-description: "Adopted CodeAnalysis project home for epic 0201"
+title: "Specht.CodeAnalysis package"
+description: "Install the Specht analyzer and code fixes into a consumer project"
 type: reference
 ---
 
 # Specht.CodeAnalysis
 
-This is the adopted home of the `Specht.CodeAnalysis` deployment project. It
-will package `Specht.Analysis` from Analyzers and `Specht.Codefixes` from CodeFixes.
-The [consumer adoption agreement](.spec/README.md) owns installation and policy.
+Install `Specht.CodeAnalysis` as a private `PackageReference` in projects that
+should load the analyzer and code fixes. The package includes MSBuild integration
+that finds the nearest `.specht/manifest.json` above the project directory and
+supplies consumer analysis inputs to Roslyn.
 
-The planned project file is CodeAnalysis.csproj. No production deployment project
-or empty package is produced by the current specification revision.
+```xml
+<PackageReference Include="Specht.CodeAnalysis" Version="$(SpechtVersion)" PrivateAssets="all" />
+```
 
-[ADR-0016](../../.spec/adr/0016-analyzer-codefix-deployment-projects.md) records
-the project identities, dependency direction and deployment boundary. Reqnroll
-remains optional; the binding model is framework-independent.
+Set `SpechtRoot` when the project is outside the repository tree or when the
+nearest manifest is not the intended repository. Add extra input files through
+`SpechtAdditionalRecords`; each item must set `SpechtInputKind` to the input role
+and may set `SpechtRelativePath` when the path cannot be derived from the root.
+Set `SpechtTestEvidence` for explicit collector inputs.
+
+Diagnostic severity and suppression use standard Roslyn configuration. The
+package adds no application runtime dependency.

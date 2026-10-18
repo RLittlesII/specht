@@ -1,7 +1,7 @@
 id: "0243"
 type: task
 title: "Package CodeAnalysis and deliver editor and build inputs"
-status: ready-for-implementation
+status: done
 value: 5
 risk: 4
 parent: "0201"
@@ -26,8 +26,8 @@ claims:
     "B-023",
   ]
 created: "2026-10-17"
-updated: "2026-10-17"
-closed: null
+updated: "2026-10-18"
+closed: "2026-10-18"
 summary: |
   Create the Specht.CodeAnalysis deployment package and MSBuild assets for the completed
   analyzer/code-fix components and policy. Deliver actual configured consumer records
