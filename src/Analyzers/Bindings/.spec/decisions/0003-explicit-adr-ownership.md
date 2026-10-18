@@ -62,3 +62,31 @@ names, binding roles and supported declarations.
 ## Reversal
 
 None.
+
+## Addendum: Feature owner completeness — 2026-10-17
+
+**Decided by:** Repository owner
+
+The owner adopts the OQ-1 recommendation without changing this decision's owner
+selection: absent `feature` selects repository ownership and present `feature`
+selects only that Feature. There is no inherited scope, cross-scope fallback or
+additional public `scope` field.
+
+For a Feature-owned ADR, the `epic` component follows the same completeness rule
+as a claim owner: required when the manifest declares an epic tier, absent when
+it does not. The original optionality supports consumers without that tier; it
+does not allow an epic-enabled Feature owner to remain partially specified.
+The exact-match and move-stability rules in decision 0002's dated addendum apply
+to ADR declarations too.
+
+### Alternatives and cost
+
+An extra scope discriminator was considered alongside the existing owner
+components. It would repeat ownership already determined by Feature presence
+and add a conflicting-field validation case. The accepted cost is preserving the
+documented absence-as-repository convention and requiring every component of an
+explicit Feature owner. Inference from a type or another owner remains rejected
+for the reasons in the original decision.
+
+This clarifies 0201-F1 B-004 and B-013 through B-016; XML shape remains owned by
+0201-F2, whose shape validation is separate from identity completeness.

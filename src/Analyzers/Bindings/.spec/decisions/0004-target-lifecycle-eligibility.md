@@ -65,3 +65,46 @@ supported declarations and diagnostic policy remain separate open questions.
 ## Reversal
 
 None.
+
+## Addendum: Historical and compatibility boundaries — 2026-10-17
+
+**Decided by:** Repository owner
+
+The owner adopts the OQ-2 recommendation and retains the eligibility table
+above, including Amended claims. Resolution preserves a target's identity and
+lifecycle information independently of its eligibility. A named replacement
+never redirects a binding automatically: a superseding claim or ADR can have
+different meaning, so the original target remains ineligible until a person
+explicitly chooses a different target through the authoring workflow.
+
+A coverage exemption does not retire an otherwise current claim. Identity and
+lifecycle eligibility remain unchanged; 0201-F5 owns exemption presentation and
+required-evidence treatment. Eligibility neither approves a draft agreement nor
+establishes passing behavior, complete coverage or architectural compliance.
+
+Where the pinned schema permits absent lifecycle information, retain that
+schema's established omission semantics rather than imposing a new state or a
+new mandatory field. An explicit unrecognized claim, owning Feature or ADR
+lifecycle state is ineligible and remains inspectable with the resolved identity;
+it must not silently become current. Invalid input handling and presentation
+remain with 0201-F6; this rule does not authorize accepting schema-invalid data.
+
+### Alternatives and cost
+
+- Follow replacement links automatically: reduces maintenance, but attributes an
+  unchanged binding to an obligation or decision it never selected.
+- Treat a waived claim as retired: simplifies current-evidence filtering, but
+  confuses an exemption from required evidence with the claim's lifecycle.
+- Require newly explicit lifecycle information for every older pin: uniform
+  input shape, but changes previously permitted input semantics.
+- Treat an unknown explicit state as current or silently substitute a default:
+  avoids ineligible findings, but lets unsupported lifecycle meaning supply
+  current evidence.
+- Treat draft eligibility as agreement approval: collapses two states, but
+  allows reference analysis to ratify the agreement it merely resolves.
+
+The accepted cost is separate resolution, eligibility, approval and evidence
+results, preservation of historical identity, and explicit maintenance when a
+target is replaced. This adds 0201-F1 B-017 through B-021 and resolves the
+remaining OQ-2 boundaries without assigning a diagnostic severity or a new
+public lifecycle vocabulary.

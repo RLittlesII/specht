@@ -43,7 +43,7 @@ Feature: Binding identity
     Given a claim reference with a Feature identity and a claim identity
     When the reference is represented for analysis
     Then the epic, Feature and claim occupy separate identity components
-    And the epic component is optional
+    And each supplied component uses its configured local grammar
 
   @B-007 @boundary
   Scenario Outline: No ADR scope fallback
@@ -127,3 +127,104 @@ Feature: Binding identity
       | task         |
       | constraint   |
       | lesson       |
+
+  @B-013 @boundary
+  Scenario Outline: Epic component follows the consumer tier
+    Given a consumer whose model <tier>
+    And an otherwise complete reference to a <target> with <epic_component>
+    When its declared owner identity is validated
+    Then its owner identity is <verdict>
+
+    Examples:
+      | tier                     | target      | epic_component      | verdict    |
+      | declares an epic tier    | claim       | a valid epic        | complete   |
+      | declares an epic tier    | claim       | no epic             | incomplete |
+      | declares an epic tier    | Feature ADR | a valid epic        | complete   |
+      | declares an epic tier    | Feature ADR | no epic             | incomplete |
+      | declares no epic tier    | claim       | no epic             | complete   |
+      | declares no epic tier    | claim       | an epic             | invalid    |
+      | declares no epic tier    | Feature ADR | no epic             | complete   |
+      | declares no epic tier    | Feature ADR | an epic             | invalid    |
+
+  @B-014 @boundary
+  Scenario: Checked identity is not completed from authoring context
+    Given a persisted member reference missing a required owner component
+    And its containing type supplies that component as an authoring default
+    When the member reference is resolved
+    Then its explicit target identity remains incomplete
+    And no checked binding is obtained by borrowing the default
+
+  @B-015
+  Scenario Outline: Exactly one declared target
+    Given a complete reference conforming to the consumer identity grammars
+    And <matches> matching declarations in its selected owner
+    When the reference is resolved
+    Then its resolution is <verdict>
+
+    Examples:
+      | matches | verdict    |
+      | zero    | unresolved |
+      | one     | resolved   |
+      | two     | ambiguous  |
+
+  @B-016
+  Scenario Outline: Record moves preserve target identity
+    Given a resolving reference to a <target>
+    When the specification record moves without changing its declared identity or owner
+    Then the reference resolves to the same target identity
+
+    Examples:
+      | target         |
+      | claim          |
+      | repository ADR |
+      | Feature ADR    |
+
+  @B-017 @boundary
+  Scenario Outline: Supersession does not redirect a binding
+    Given a resolving reference to a superseded <target> naming a current replacement
+    When its lifecycle eligibility is evaluated
+    Then the binding retains the original target identity
+    And it remains ineligible for current evidence
+
+    Examples:
+      | target |
+      | claim  |
+      | ADR    |
+
+  @B-018 @boundary
+  Scenario: Coverage exemption does not retire a claim
+    Given an Active claim in an approved Feature with a reasoned coverage exemption
+    When a resolving reference to that claim is evaluated
+    Then the claim remains eligible under the current-target lifecycle policy
+
+  @B-019
+  Scenario Outline: Permitted lifecycle omission follows the pin
+    Given a pinned schema permitting omitted lifecycle information with an established <eligibility> interpretation
+    And an existing target omitting that information
+    When a resolving reference to that target is evaluated
+    Then the target is <eligibility> for current evidence
+
+    Examples:
+      | eligibility |
+      | eligible    |
+      | ineligible  |
+
+  @B-020 @boundary
+  Scenario Outline: Unknown explicit lifecycle state
+    Given a resolving reference whose <record> has an explicit unrecognized lifecycle state
+    When target lifecycle eligibility is evaluated
+    Then the target is ineligible for current evidence
+    And its resolved identity and unrecognized state remain available
+
+    Examples:
+      | record         |
+      | claim          |
+      | owning Feature |
+      | ADR            |
+
+  @B-021 @boundary
+  Scenario: Eligibility does not approve an agreement
+    Given an eligible claim in a draft Feature
+    When its binding is evaluated
+    Then the Feature remains draft
+    And the eligibility result does not represent agreement approval
