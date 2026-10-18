@@ -20,10 +20,16 @@ Feature: CSharp binding authoring
     Then the repair persists its complete target identity while preserving other XML documentation
 
   @B-004
-  Scenario: Unsafe repair
-    Given missing, conflicting or ambiguous default targets
+  Scenario Outline: Unsafe repair
+    Given "<problem>" default targets
     When the declared analysis is requested
     Then no repair silently selects a target
+
+    Examples:
+      | problem     |
+      | missing     |
+      | conflicting |
+      | ambiguous   |
 
   @B-005
   Scenario: Invalid binding

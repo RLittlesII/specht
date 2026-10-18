@@ -4,8 +4,6 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading;
-using System.Xml;
-using System.Xml.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -73,7 +71,7 @@ public sealed class DocumentationBindingReader
                     var values = new Dictionary<string, string>(StringComparer.Ordinal);
                     var allowed = role == "spec" ? new[] { "epic", "feature" }
                         : role == "follows" ? new[] { "epic", "feature", "adr" } : new[] { "epic", "feature", "claim" };
-                    var valid = WellFormed(node) && !node.ContainsDiagnostics && !node.ContainsSkippedText
+                    var valid = new DocumentationXml().IsWellFormed(node) && !node.ContainsDiagnostics && !node.ContainsSkippedText
                         && !node.DescendantTokens().Any(static token => token.IsMissing)
                         && (node is not XmlElementSyntax paired || paired.StartTag.Name.ToString() == paired.EndTag.Name.ToString())
                         && !node.Ancestors().OfType<XmlElementSyntax>().Any()
@@ -181,19 +179,4 @@ public sealed class DocumentationBindingReader
 
     private static bool SameTarget(BindingTarget left, BindingTarget right) =>
         left.Kind == right.Kind && left.Epic == right.Epic && left.Feature == right.Feature && left.Id == right.Id;
-
-    private static bool WellFormed(SyntaxNode node)
-    {
-        try
-        {
-            var clean = node.ReplaceTrivia(node.DescendantTrivia().Where(static trivia => trivia.IsKind(SyntaxKind.DocumentationCommentExteriorTrivia)),
-                static (_, _) => SyntaxFactory.Whitespace(string.Empty));
-            _ = XElement.Parse(clean.ToString());
-            return true;
-        }
-        catch (XmlException)
-        {
-            return false;
-        }
-    }
 }

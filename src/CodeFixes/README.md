@@ -1,19 +1,18 @@
 ---
 title: "Specht.Codefixes project home"
-description: "Adopted CodeFixes project home for epic 0201"
+description: "Invoked XML binding repairs for epic 0201"
 type: reference
 ---
 
 # Specht.Codefixes
 
-This is the adopted home of the `Specht.Codefixes` code-fix project. It owns
-invoked XML authoring repairs and will reference `Specht.Analysis` in Analyzers.
-The [CSharp binding agreement](.spec/README.md) specifies both the analyzer verdict
-and its safe repairs, with each responsibility in its own assembly.
+[CodeFixes.csproj](CodeFixes.csproj) builds the non-packable netstandard2.0 editor
+component. Its [documentation provider](Documentation/DocumentationCodeFixProvider.cs)
+offers explicit existing-target choices, unambiguous default materialization and
+valid duplicate cleanup. Fix All admits the two deterministic repairs only.
 
-The planned project file is CodeFixes.csproj. No production project is scaffolded
-by the current specification revision.
-
-[ADR-0016](../../.spec/adr/0016-analyzer-codefix-deployment-projects.md) records
-the project identities, dependency direction and deployment boundary. Reqnroll
-remains optional; the binding model is framework-independent.
+The [CSharp binding agreement](.spec/README.md) covers the shared analyzer verdict
+and invoked repairs. This project references `Specht.Analysis`; Workspaces stays
+outside the read-only analyzer assembly. [ADR-0018](../../.spec/adr/0018-lowercase-analyzer-project-home.md)
+records the project identities and dependency direction. Deployment packaging
+remains separate work.
