@@ -409,6 +409,7 @@ public sealed class SpecManifestParser(SchemaVersions versions)
     private static readonly HashSet<string> KnownKeys = new(StringComparer.Ordinal)
     {
         "schemaVersion",
+        "codeAnalysis",
         "layouts",
         "exclusions",
         "taskFiles",

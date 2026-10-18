@@ -33,6 +33,7 @@
 
   <ItemGroup>
     <PackageReference Include="Reqnroll.xunit.v3" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" />
     <PackageReference Include="YamlDotNet" />
     <PackageReference Include="xunit.v3" />
     <PackageReference Include="AwesomeAssertions" />

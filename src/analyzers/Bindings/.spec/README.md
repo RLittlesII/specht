@@ -20,7 +20,7 @@ depends_on: []
 blocks: ["F2", "F3", "F4", "F5", "F6"]
 spikes: []
 created: "2026-10-17"
-updated: "2026-10-17"
+updated: "2026-10-18"
 github_issue: null
 synced_at: null
 ---
@@ -120,7 +120,7 @@ Prevent ambiguous or silently retargeted code bindings by resolving claim and AD
 
 ## 7. Technical Design
 
-<!-- last written by: implementer, 2026-10-17 -->
+<!-- last written by: implementer, 2026-10-18 -->
 
 ### Component and input boundary
 
@@ -170,8 +170,9 @@ catalog entries therefore carry their explicit declared local identity, optional
 Feature owner and lifecycle state as typed input. F1 requires a nonempty ADR
 identity; when the effective policy supplies `Identifiers["adr"]`, that grammar
 also validates the whole local ADR ID. This adds no manifest setting, filename
-parser or heading/prose convention. F6 owns ADR input projection and introduction
-of its agreed ADR grammar through a new schema version. No ownership is inferred from
+parser or heading/prose convention. F6 owns ADR input projection using the supplied
+consumer configuration; it introduces no consumer schema or version requirement
+(F6 decision 0005, reversal 2026-10-18). No ownership is inferred from
 an enclosing type or document path.
 
 ### Data and operations

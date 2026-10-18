@@ -1,7 +1,7 @@
 id: "0242"
 type: feature
 title: "Implement analysis configuration and consumer input policy"
-status: ready
+status: done
 value: 5
 risk: 4
 parent: "0201"
@@ -24,11 +24,13 @@ claims:
     "B-024",
   ]
 created: "2026-10-17"
-updated: "2026-10-17"
-closed: null
+updated: "2026-10-18"
+closed: "2026-10-18"
 summary: |
-  Introduce codeAnalysis settings and ADR identity grammar in a new unused schema version,
-  preserving old pins. Implement policy validation, selected scopes, reasoned exemptions
+  Consume the repository's actual supplied schemas, schema version and ID grammars,
+  including bring-your-own schemas, without an imposed Specht schema or upgrade.
+  Add the codeAnalysis manifest section without a schema bump; read existing consumer
+  metadata through explicit mappings. Implement policy validation, selected scopes, reasoned exemptions
   and required-input handling from F6 decisions 0003–0005 and § 7 of the specification. This can
   start alongside 0238; it does not wait for runner collectors, scenario bridging or
   specht trace. Actual consumer record contents are inputs, not just schemas.

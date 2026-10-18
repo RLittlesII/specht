@@ -173,8 +173,8 @@ Feature: Consumer analysis adoption
     Then exact package-version equality is not required
 
   @B-022
-  Scenario: Manifest analysis policy
-    Given consumer analysis policy in the versioned codeAnalysis manifest section
+  Scenario: Supplied analysis policy
+    Given existing consumer configuration, its schemas and explicit analysis mappings
     When analysis policy is read
     Then selected scopes, required links, exemptions and record discovery use that policy
     And existing consumer ID grammars remain authoritative
@@ -187,7 +187,15 @@ Feature: Consumer analysis adoption
     And severity and suppression use standard Roslyn controls
 
   @B-024 @boundary
-  Scenario: Versioned configuration introduction
-    Given a consumer pinned to a schema predating codeAnalysis settings
-    When the new analysis configuration is introduced
-    Then existing schema pins and checker behavior remain unchanged
+  Scenario Outline: Consumer schema ownership
+    Given a consumer supplying "<schema>" at its own version "<version>"
+    When analysis consumes the supplied configuration and records
+    Then the supplied consumer schema and version are used
+    And no Specht schema adoption, schema upgrade or pin change is required
+
+    Examples:
+      | schema                | version |
+      | an older Specht schema | 0.1.0  |
+      | a known Specht schema  | 0.2.0  |
+      | a consumer-owned schema | 0.1.0 |
+      | a consumer-owned schema | 7.4.2 |

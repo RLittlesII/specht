@@ -20,7 +20,7 @@ depends_on: ["F1", "F2", "F3", "F5"]
 blocks: []
 spikes: []
 created: "2026-10-17"
-updated: "2026-10-17"
+updated: "2026-10-18"
 github_issue: null
 synced_at: null
 ---
@@ -49,34 +49,34 @@ Apply binding enforcement consistently to an explicitly selected consumer scope.
 
 ## 3. Acceptance Criteria
 
-<!-- last written by: spec-author, 2026-10-17 -->
+<!-- last written by: spec-author, 2026-10-18 -->
 
-| ID    | Claim                                                                                                                                                                                               | Source                              | Status |
-| ----- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------- | ------ |
-| B-001 | Given a consumer selecting a subset of projects and declarations for enforcement, this Feature ensures only that selected scope is required to carry bindings and the scope is visible in evidence. | Epic 0201; decision 0001 in 0201-F1 | Active |
-| B-002 | Given the same valid pinned configuration and specification inputs supplied in editor and build, this Feature ensures the same binding yields the same resolution verdict.                          | Epic 0201; decision 0001 in 0201-F1 | Active |
-| B-003 | Given a selected analysis scope with missing or invalid manifest or specification inputs, this Feature ensures analysis reports the input failure rather than silently reporting clean coverage.    | Epic 0201; decision 0001 in 0201-F1 | Active |
-| B-004 | Given a consumer selecting xUnit and Playwright .NET analysis without the scenario bridge, this Feature ensures adoption requires no Reqnroll installation.                                         | Epic 0201; decision 0001 in 0201-F1 | Active |
-| B-005 | Given a binding defect or missing required binding within the selected enforcement scope with no severity override, this Feature reports it as a warning under decision 0001.                       | Decision 0001                       | Active |
-| B-006 | Given duplicate valid relationships with no severity override, this Feature reports the duplicate diagnostic as information.                                                                        | Decision 0001                       | Active |
-| B-007 | Given a consumer severity override for one rule, this Feature applies the selected severity to that rule, including promotion to error.                                                             | Decision 0001                       | Active |
-| B-008 | Given a consumer using standard Roslyn diagnostic controls, this Feature honors analyzer configuration, pragma and SuppressMessage suppression without a custom suppression protocol.               | Decision 0002                       | Active |
-| B-009 | Given an invalid binding whose diagnostic is suppressed, this Feature keeps that binding invalid for evidence purposes.                                                                             | Decision 0002                       | Active |
-| B-010 | Given a missing required evidence link whose diagnostic is suppressed, this Feature does not treat that link as satisfied.                                                                          | Decision 0002                       | Active |
-| B-011 | Given a suppressed diagnostic, this Feature leaves the declared analysis scope unchanged.                                                                                                           | Decision 0002                       | Active |
-| B-012 | Given an explicit binding in an analyzed project, this Feature validates it even when its declaration is outside the scope requiring authored bindings.                                             | 0201-F6 decision 0003               | Active |
-| B-013 | Given generated code, this Feature does not require authored bindings on that code.                                                                                                                 | 0201-F6 decision 0003               | Active |
-| B-014 | Given shared infrastructure, this Feature imposes no blanket requirement to bind every method; required authoring follows explicitly selected enforcement scopes.                                   | 0201-F6 decision 0003               | Active |
-| B-015 | Given a requested coverage exemption without an explicit reason, this Feature rejects that exemption.                                                                                               | 0201-F6 decision 0003               | Active |
-| B-016 | Given enabled analysis, this Feature reads the consumer's actual selected manifest, specification, ADR and configured schema contents supplied through Roslyn AdditionalFiles by build integration. | 0201-F6 decision 0004               | Active |
-| B-017 | Given enabled analysis with missing, invalid or incompatible required inputs and no severity override, this Feature reports error diagnostics and marks analysis unavailable or incomplete.         | 0201-F6 decision 0004               | Active |
-| B-018 | Given changed source, specification or configuration inputs, this Feature invalidates the affected analysis verdicts.                                                                               | 0201-F6 decision 0004               | Active |
-| B-019 | Given a private PackageReference to Specht.CodeAnalysis, this Feature deploys analyzers, code fixes and build integration without an application runtime dependency.                                | Decision 0005                       | Active |
-| B-020 | Given a repository release, this Feature versions the analysis package alongside specht.tool using the repository release version.                                                                  | Decision 0005                       | Active |
-| B-021 | Given installed package versions, this Feature determines interoperability through schema/evidence contract versions rather than exact package-version equality.                                    | Decision 0005                       | Active |
-| B-022 | Given consumer analysis policy, this Feature reads selected scopes, required links, exemptions and record discovery from the versioned codeAnalysis manifest section using existing ID grammars.    | Decision 0005                       | Active |
-| B-023 | Given build integration, this Feature uses MSBuild repository-root selection and input delivery while standard Roslyn configuration owns severity and suppression.                                  | Decision 0005                       | Active |
-| B-024 | Given new codeAnalysis manifest settings, this Feature introduces them through a new schema version while preserving existing pins and checker behavior.                                            | Decision 0005                       | Active |
+| ID    | Claim                                                                                                                                                                                               | Source                              | Status  |
+| ----- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------- | ------- |
+| B-001 | Given a consumer selecting a subset of projects and declarations for enforcement, this Feature ensures only that selected scope is required to carry bindings and the scope is visible in evidence. | Epic 0201; decision 0001 in 0201-F1 | Active  |
+| B-002 | Given the same valid pinned configuration and specification inputs supplied in editor and build, this Feature ensures the same binding yields the same resolution verdict.                          | Epic 0201; decision 0001 in 0201-F1 | Active  |
+| B-003 | Given a selected analysis scope with missing or invalid manifest or specification inputs, this Feature ensures analysis reports the input failure rather than silently reporting clean coverage.    | Epic 0201; decision 0001 in 0201-F1 | Active  |
+| B-004 | Given a consumer selecting xUnit and Playwright .NET analysis without the scenario bridge, this Feature ensures adoption requires no Reqnroll installation.                                         | Epic 0201; decision 0001 in 0201-F1 | Active  |
+| B-005 | Given a binding defect or missing required binding within the selected enforcement scope with no severity override, this Feature reports it as a warning under decision 0001.                       | Decision 0001                       | Active  |
+| B-006 | Given duplicate valid relationships with no severity override, this Feature reports the duplicate diagnostic as information.                                                                        | Decision 0001                       | Active  |
+| B-007 | Given a consumer severity override for one rule, this Feature applies the selected severity to that rule, including promotion to error.                                                             | Decision 0001                       | Active  |
+| B-008 | Given a consumer using standard Roslyn diagnostic controls, this Feature honors analyzer configuration, pragma and SuppressMessage suppression without a custom suppression protocol.               | Decision 0002                       | Active  |
+| B-009 | Given an invalid binding whose diagnostic is suppressed, this Feature keeps that binding invalid for evidence purposes.                                                                             | Decision 0002                       | Active  |
+| B-010 | Given a missing required evidence link whose diagnostic is suppressed, this Feature does not treat that link as satisfied.                                                                          | Decision 0002                       | Active  |
+| B-011 | Given a suppressed diagnostic, this Feature leaves the declared analysis scope unchanged.                                                                                                           | Decision 0002                       | Active  |
+| B-012 | Given an explicit binding in an analyzed project, this Feature validates it even when its declaration is outside the scope requiring authored bindings.                                             | 0201-F6 decision 0003               | Active  |
+| B-013 | Given generated code, this Feature does not require authored bindings on that code.                                                                                                                 | 0201-F6 decision 0003               | Active  |
+| B-014 | Given shared infrastructure, this Feature imposes no blanket requirement to bind every method; required authoring follows explicitly selected enforcement scopes.                                   | 0201-F6 decision 0003               | Active  |
+| B-015 | Given a requested coverage exemption without an explicit reason, this Feature rejects that exemption.                                                                                               | 0201-F6 decision 0003               | Active  |
+| B-016 | Given enabled analysis, this Feature reads the consumer's actual selected manifest, specification, ADR and configured schema contents supplied through Roslyn AdditionalFiles by build integration. | 0201-F6 decision 0004               | Active  |
+| B-017 | Given enabled analysis with missing, invalid or incompatible required inputs and no severity override, this Feature reports error diagnostics and marks analysis unavailable or incomplete.         | 0201-F6 decision 0004               | Active  |
+| B-018 | Given changed source, specification or configuration inputs, this Feature invalidates the affected analysis verdicts.                                                                               | 0201-F6 decision 0004               | Active  |
+| B-019 | Given a private PackageReference to Specht.CodeAnalysis, this Feature deploys analyzers, code fixes and build integration without an application runtime dependency.                                | Decision 0005                       | Active  |
+| B-020 | Given a repository release, this Feature versions the analysis package alongside specht.tool using the repository release version.                                                                  | Decision 0005                       | Active  |
+| B-021 | Given installed package versions, this Feature determines interoperability through schema/evidence contract versions rather than exact package-version equality.                                    | Decision 0005                       | Active  |
+| B-022 | Given supplied consumer analysis policy, this Feature reads selected scopes, required links, exemptions and record discovery using the consumer's existing schemas and ID grammars.                 | Decision 0005                       | Amended |
+| B-023 | Given build integration, this Feature uses MSBuild repository-root selection and input delivery while standard Roslyn configuration owns severity and suppression.                                  | Decision 0005                       | Active  |
+| B-024 | Given consumer-supplied schemas and their version, this Feature consumes those inputs without requiring Specht-owned schemas, a schema upgrade or changes to the consumer's pin.                    | Decision 0005                       | Amended |
 
 ## 4. Constraints
 
@@ -100,13 +100,19 @@ Apply binding enforcement consistently to an explicitly selected consumer scope.
 
 ## 6. Concern Separation
 
-<!-- last written by: implementer, 2026-10-17 -->
+<!-- last written by: implementer, 2026-10-18 -->
 
-Not yet designed; no production implementation is authorized by this draft.
+| Concern                                              | Classification | Responsibility                                                                                                                  |
+| ---------------------------------------------------- | -------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| Consumer schema identity, version and field meanings | Business       | Supplied schemas and explicit mappings remain authoritative; the analyzer does not prescribe a schema upgrade.                  |
+| Selected projects, authoring scope and exemptions    | Business       | Policy separates explicit-reference validation from mandatory authoring and keeps reasoned exemptions visible.                  |
+| Configuration and record projection                  | Both           | Compiler-compatible readers use supplied JSON Schema, YAML and Markdown inputs without ambient discovery.                       |
+| Current input identity and failures                  | Both           | Fresh snapshots carry content identity and unavailable analysis separately from diagnostic presentation.                        |
+| AdditionalFiles transport and diagnostics            | Technical      | A Roslyn adapter reads explicit metadata; SPCT0001 reports input failure. Package discovery and build assets remain downstream. |
 
 ## 7. Technical Design
 
-<!-- last written by: implementer, 2026-10-17 -->
+<!-- last written by: implementer, 2026-10-18 -->
 
 [ADR-0018](../../../.spec/adr/0018-lowercase-analyzer-project-home.md) adopts
 `src/analyzers` (`Specht.Analysis`), `src/CodeFixes` (`Specht.Codefixes`) and
@@ -114,16 +120,67 @@ Not yet designed; no production implementation is authorized by this draft.
 references both non-packable component projects; CodeFixes references Analyzers.
 Analyzer loading must not depend on CodeFixes or its Workspaces dependencies.
 
-This is the planned contract, not a claim that the package or schema is built.
-It implements decisions 0001 through 0005. The shipping schema task selects the
-next unused schema minor after the current catalog; it must not modify an already
-published version. Old pins retain their manifests, schemas and SPEC vocabulary.
+This is the planned contract, not a claim that the package is built.
+It implements decisions 0001 through 0005, including decision 0005's
+2026-10-18 reversal on consumer schema ownership. The schema identity and version
+are supplied by the consumer repository. A consumer version such as `0.1.0` does
+not identify a Specht schema, and knowledge of Specht `0.2.0` does not authorize
+an upgrade, substitution or rejection of a valid consumer-owned schema.
 
-### Policy in the manifest
+### Built policy and input interpretation
 
-`codeAnalysis` is a closed object. Unknown keys or invalid values are input
-failures. Presence of the package in a selected project activates input validation;
-installing it with a pin that predates this section reports incompatible input.
+The implementation lives in [`src/analyzers/Policy`](../../analyzers/Policy).
+`AnalysisInputReader` creates a fresh immutable `AnalysisSnapshot` from supplied
+texts; it never selects a schema from the tool's version catalog. `AnalysisPolicy`
+keeps projects, selected Features and required links visible, and `Select`
+separates explicit validation from mandatory authoring. Test recognition and the
+generated flag are current compiler/adapter facts, not name heuristics.
+
+`AnalysisConfigurationReader` projects explicit JSON Pointer mappings, reusing
+JsonPointer.Net from the existing JsonSchema.Net dependency for pointer validation
+and literal evaluation; local code expands corresponding array wildcards.
+`AnalysisPolicyReader` validates the normalized analysis meanings, including
+reasoned exemptions and consumer identity grammars. It does not validate the
+consumer's original field names against a Specht manifest dialect.
+
+`AnalysisRecordReader` reuses the YAML representation and pipe-table readers
+already shared by F1, and uses `BindingFeatureReader.ReadMapped` for configured
+column/key roles. ADR selectors read the Markdig tree or YAML metadata; they do
+not derive identity from filenames. JsonSchema.Net, already used by the engine,
+evaluates supplied schemas with an isolated registry and network fetching disabled.
+Configuration and ADR schemas are evaluated when supplied; Feature schema input
+is required to read selected Feature records. No embedded schema is substituted.
+
+`AnalysisInputAdapter` reads the existing `SpechtInputKind` and
+`SpechtRelativePath` AdditionalFiles metadata. Input kinds are `configuration`,
+`mappings`, `feature`, `adr` and `schema:<kind>`; mappings may instead live in
+`codeAnalysis.mappings`. Current source texts also contribute to content identity.
+`AnalysisInputAnalyzer` reports `SPCT0001` with default error severity, a relative
+input path and an explicit unavailable property. Normal Roslyn reporting controls
+cannot change the snapshot's underlying availability. It registers one compilation
+action because no per-declaration actions exist in this input-only slice.
+
+Content identity hashes length-prefixed kind, relative path and current text in
+ordinal order; no state survives a compilation. Cancellation propagates. Snapshot
+policy, catalog and exposed collections cannot mutate the supplied configuration.
+The original F1 three-argument reader keeps its fixed-column behavior.
+
+The standalone checker recognizes `codeAnalysis` on its existing pins and leaves
+its checker settings and SPEC vocabulary unchanged. The shipped catalog remains
+`0.1.0`, `0.2.0`; consumer-owned schemas consumed by the analyzer are not limited
+to that catalog. Packaging, automatic MSBuild discovery and editor/build deployment
+remain the planned contract below, pending their component prerequisites.
+
+### Supplied analysis policy
+
+The fields below describe analysis policy, not an extension imposed on the
+consumer's schema. Presence of the package in a selected project activates input
+validation against the actual supplied consumer schemas and configuration.
+Neither the manifest's version alone nor absence of a Specht-owned schema makes
+those inputs incompatible. The consumer manifest gains a `codeAnalysis` section
+for analyzer settings without advancing its existing schema version. Explicit
+mappings read consumer-specific schema metadata and record roles from the existing
+configuration. The consumer's schemas and field meanings remain authoritative.
 The standalone checker remains independently usable without the package.
 
 | Field            | Type and meaning                                                                                                                                                                                                                                                                          |
@@ -134,6 +191,7 @@ The standalone checker remains independently usable without the package.
 | `enforcement`    | Optional array of `{ project, include, exclude, role, declarationKinds }`. Project must be declared; root-relative source globs select required authoring. Roles are `verifies`, `implements`, `follows`; kinds follow F2's declaration matrix. Default is no mandatory-authoring scopes. |
 | `exemptions`     | Optional array of `{ target, links, reason }`. Target is a claim identity or `{ kind: "declaration", project, symbolId }`; links name the requirements exempted. Nonempty reason required. No wildcard or implicit exemptions.                                                            |
 | `records`        | Optional record-reading settings below; Feature discovery continues to use existing `layouts`, `exclusions`, `roles`, `tables`, `markers` and identifier settings.                                                                                                                        |
+| `mappings`       | JSON Pointer mappings from normalized analysis fields to existing consumer configuration; array wildcards preserve corresponding entries.                                                                                                                                                 |
 | `scenarioScopes` | Optional `{ featureTag: "@spec.feature:{feature}", epicTag: "@spec.epic:{epic}" }`; literal forms with exactly their one placeholder. Existing `claim.tag` remains authoritative for local claim tags. These are encodings, not replacement ID grammars.                                  |
 
 Enforcement selection does not validate a declaration as a test merely because
@@ -147,9 +205,18 @@ An exemption never creates a link. Report it and its reason as exempt; it cannot
 increment covered counts. Other non-exempt links on the same claim remain visible
 and evaluated. Suppression changes presentation, not any of these verdicts.
 
+The following shape illustrates the new manifest section. It does not introduce
+or require schema `0.3.0`; consumer-specific metadata is read through mappings.
+
 ```json
 {
   "codeAnalysis": {
+    "mappings": {
+      "/schemaVersion": "/schemaVersion",
+      "/identifiers": "/identifiers",
+      "/markers": "/markers",
+      "/claimsSection": "/roles/claims"
+    },
     "projects": [
       {
         "path": "test/Example.Tests/Example.Tests.csproj",
@@ -186,7 +253,24 @@ and evaluated. Suppression changes presentation, not any of these verdicts.
 }
 ```
 
+### Configuration mappings
+
+The new `codeAnalysis.mappings` object maps normalized analysis field paths to
+JSON Pointers in the supplied consumer configuration. Build integration can also
+supply the same mappings as an explicit input. Field names in the normalization are analyzer implementation data,
+not required consumer keys. Wildcards map corresponding array entries; do not
+infer mappings from a schema version or a matching field name. Supplied schemas validate the records before projection. A supplied configuration
+schema is also honored; no configuration schema is invented when none is supplied. Schema versions
+are opaque consumer values. No shipped Specht schema or manifest defaults are
+substituted for supplied inputs.
+
 ### Actual consumer record data
+
+Treat the supplied schema version as part of that consumer's contract, not as an
+index into Specht's shipped schema catalog. Evaluate the supplied schemas and
+mappings; support consumer-owned schemas without substituting embedded ones.
+Keep the consumer pin, schemas and record contents unchanged. The new analysis
+section is configuration, not a request to version or replace those schemas.
 
 Build discovery enumerates actual files using the configured layouts and ADR
 profiles. It does not invent records from schemas. The analyzer receives and
@@ -195,7 +279,9 @@ parses each supplied record's text and resolves its declared values.
 - Feature identity comes from existing frontmatter roles (`id`, optional `epic`);
   Feature lifecycle uses `spec_status`. Claims come from the manifest's `claims`
   section role and its ID column, preserving the original declaration line.
-- `records.claimStatusColumn` defaults to `Status`. Active/Amended and historical
+- `records.featureIdentityKey`, `featureEpicKey` and `claimIdColumn` select consumer
+  metadata/column names; their conventional defaults are `id`, `epic` and `ID`.
+  `records.claimStatusColumn` defaults to `Status`. Active/Amended and historical
   state meanings are F1 decision 0004. `records.featureLifecycleKey` may replace
   the default frontmatter key, not the lifecycle semantics.
 - `records.adrProfiles` entries have `glob`, `owner`, `identity`, `lifecycle`.
@@ -209,9 +295,10 @@ parses each supplied record's text and resolves its declared values.
   `{ section, firstWord: true }`. The latter reads the first word of the first
   paragraph in that Markdown section, matching this repository's ADR Status
   section. Case is normalized for lifecycle vocabulary, not for record IDs.
-- The new manifest version defines `identifiers.adr` alongside the existing ID
-  grammars; it is not a separate analyzer regex. Unknown lifecycle values,
-  conflicting records or invalid selected metadata are explicit input findings.
+- Use the ADR identity grammar when the supplied consumer configuration defines
+  one; do not add it to or version the consumer's schema. F1 retains its explicit
+  local-identity behavior when no ADR grammar is supplied. Unknown lifecycle
+  values, conflicting records or invalid selected metadata are input findings.
 
 Frontmatter and Markdown parsing reuse the existing YamlDotNet representation
 model and Markdig pipe-table behavior. No regex Markdown parser or second schema
@@ -268,55 +355,82 @@ contents include the complete compatible parser dependency closure.
 
 ## 8. Testing Strategy
 
-<!-- last written by: test-writer, 2026-10-17 -->
+<!-- last written by: test-writer, 2026-10-18 -->
 
-The companion scenarios state the acceptance obligations. Production step definitions and mechanism tests are not written; each claim remains Missing in § 9. Spike results do not promote these rows to Covered.
+`AdoptionSteps` executes the input/policy scenarios through real in-memory
+AdditionalFiles and the production adapter. `AnalysisInputAnalyzerUnitTests` uses
+the agreed Rocket Surgery context with direct AwesomeAssertions for diagnostic
+count, ID, severity and location, and independently checks compiler errors.
+There are no Verify calls or snapshot files.
+
+| Claim | Mechanism and unit coverage                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
+| ----- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| B-001 | Project/TFM, source glob and declaration selection: `DeclarationFacts_WhenSelected_ShouldSeparateValidationFromRequiredAuthoring`.                                                                                                                                                                                                                                                                                                                                                |
+| B-003 | Explicit unavailable state for missing/invalid inputs: `RequiredInputDefects_WhenRead_ShouldMakeAnalysisUnavailable`.                                                                                                                                                                                                                                                                                                                                                             |
+| B-012 | Explicit-reference validation remains enabled outside mandatory authoring: `DeclarationFacts_WhenSelected_ShouldSeparateValidationFromRequiredAuthoring`.                                                                                                                                                                                                                                                                                                                         |
+| B-013 | Generated authoring exemption preserves explicit validation: the generated case in `DeclarationFacts_WhenSelected_ShouldSeparateValidationFromRequiredAuthoring`.                                                                                                                                                                                                                                                                                                                 |
+| B-014 | Shared infrastructure requires no blanket annotation: the excluded/outside cases in `DeclarationFacts_WhenSelected_ShouldSeparateValidationFromRequiredAuthoring`.                                                                                                                                                                                                                                                                                                                |
+| B-015 | Reasonless exemptions fail; reasoned exemptions remain visible: `InvalidPolicy_WhenRead_ShouldReportUnavailableAnalysis` and `ReasonedExemption_WhenSelected_ShouldRemainVisibleWithoutCreatingRequiredLinks`.                                                                                                                                                                                                                                                                    |
+| B-016 | Actual consumer record/schema contents and mapped columns: `SuppliedRecords_WhenRead_ShouldUseActualIdentityAndPreserveSelectedScope`, `ConfiguredColumns_WhenRead_ShouldUseTheirNamesInsteadOfColumnPositions`, `ActualAdditionalFiles_WhenAnalyzed_ShouldReadConfiguredConsumerRecordsWithoutInputErrors`, `SuppliedSchemaReference_WhenValidated_ShouldUseTheSuppliedDependencyWithoutFetching` and `ConsumerSchemaConstraint_WhenNotSatisfied_ShouldMakeAnalysisUnavailable`. |
+| B-017 | Error diagnostics with unavailable analysis: `MissingInputs_WhenAnalyzed_ShouldReportAnErrorWithoutCompilerErrors`, `MissingSuppliedSchema_WhenRead_ShouldFailInsteadOfUsingAnEmbeddedSchema`.                                                                                                                                                                                                                                                                                    |
+| B-018 | Content identity and current catalog replacement: `ChangedInput_WhenReadAgain_ShouldInvalidateContentIdentityAndRetainOriginalSnapshot`, `ChangedClaim_WhenReadAgain_ShouldUseNewContentsAndRetainTheOriginalCatalog`.                                                                                                                                                                                                                                                            |
+| B-022 | Explicit consumer mappings and section policy: `ExplicitMappings_WhenProjectingDifferentConsumerKeys_ShouldMapArraysAndLeaveTheOriginalUntouched`, `ManifestSectionMappings_WhenSupplied_ShouldReadExistingMetadataWithoutChangingItsSchemaVersion`.                                                                                                                                                                                                                              |
+| B-024 | Consumer-owned versions and unchanged checker pins: `ConsumerSchemaVersion_WhenSupplied_ShouldPreserveItWithoutRequiringASpechtPin`, `AnalysisSection_WhenAddedToAnExistingPin_ShouldPreserveThePinAndCheckerSettings`.                                                                                                                                                                                                                                                           |
+
+Compiler dependency loading and parser compatibility remain exercised by the
+existing `CompilerClosureIntegrationTests` and `EngineTextCompatibilityIntegrationTests`.
+Build discovery, package installation and the other reporting/adapter scenarios
+retain Missing rows until their implementations and tests exist.
 
 ## 9. Traceability Matrix
 
-<!-- last written by: test-writer, 2026-10-17 -->
+<!-- last written by: test-writer, 2026-10-18 -->
 
-| Claim ID | Scenario                             | Test    | Status  |
-| -------- | ------------------------------------ | ------- | ------- |
-| B-001    | Selected scope                       | Missing | Missing |
-| B-002    | Editor build parity                  | Missing | Missing |
-| B-003    | Invalid inputs                       | Missing | Missing |
-| B-004    | Optional Reqnroll                    | Missing | Missing |
-| B-005    | Default warning findings             | Missing | Missing |
-| B-006    | Informational duplicate findings     | Missing | Missing |
-| B-007    | Per-rule severity override           | Missing | Missing |
-| B-008    | Standard Roslyn suppression          | Missing | Missing |
-| B-009    | Suppressed invalid binding           | Missing | Missing |
-| B-010    | Suppressed missing evidence          | Missing | Missing |
-| B-011    | Suppression preserves scope          | Missing | Missing |
-| B-012    | Explicit binding validation          | Missing | Missing |
-| B-013    | Generated authoring boundary         | Missing | Missing |
-| B-014    | Shared infrastructure boundary       | Missing | Missing |
-| B-015    | Reasoned exemptions                  | Missing | Missing |
-| B-016    | Consumer record inputs               | Missing | Missing |
-| B-017    | Required input failure               | Missing | Missing |
-| B-018    | Input change invalidation            | Missing | Missing |
-| B-019    | Private package installation         | Missing | Missing |
-| B-020    | Aligned package release version      | Missing | Missing |
-| B-021    | Contract-based compatibility         | Missing | Missing |
-| B-022    | Manifest analysis policy             | Missing | Missing |
-| B-023    | Configuration responsibility         | Missing | Missing |
-| B-024    | Versioned configuration introduction | Missing | Missing |
+| Claim ID | Scenario                         | Test                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     | Status  |
+| -------- | -------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------- |
+| B-001    | Selected scope                   | AdoptionSteps.ThenScopeIsExplicit; AnalysisInputReaderUnitTests.DeclarationFacts_WhenSelected_ShouldSeparateValidationFromRequiredAuthoring; AnalysisPolicyUnitTests.SelectedRoleAndDeclarationKind_WhenApplied_ShouldRequireOnlyTheConfiguredRelationships                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              | Covered |
+| B-002    | Editor build parity              | Missing                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  | Missing |
+| B-003    | Invalid inputs                   | AdoptionSteps.ThenUnavailable; AnalysisInputReaderUnitTests.RequiredInputDefects_WhenRead_ShouldMakeAnalysisUnavailable; AnalysisInputReaderUnitTests.InvalidPolicy_WhenRead_ShouldReportUnavailableAnalysis; AnalysisConfigurationReaderUnitTests.InvalidExplicitMapping_WhenProjected_ShouldRejectIt                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   | Covered |
+| B-004    | Optional Reqnroll                | Missing                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  | Missing |
+| B-005    | Default warning findings         | Missing                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  | Missing |
+| B-006    | Informational duplicate findings | Missing                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  | Missing |
+| B-007    | Per-rule severity override       | Missing                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  | Missing |
+| B-008    | Standard Roslyn suppression      | Missing                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  | Missing |
+| B-009    | Suppressed invalid binding       | Missing                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  | Missing |
+| B-010    | Suppressed missing evidence      | Missing                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  | Missing |
+| B-011    | Suppression preserves scope      | Missing                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  | Missing |
+| B-012    | Explicit binding validation      | AdoptionSteps.ThenExplicitValidation; AnalysisInputReaderUnitTests.DeclarationFacts_WhenSelected_ShouldSeparateValidationFromRequiredAuthoring                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           | Covered |
+| B-013    | Generated authoring boundary     | AdoptionSteps.ThenNoMandatoryAuthoring; AnalysisInputReaderUnitTests.DeclarationFacts_WhenSelected_ShouldSeparateValidationFromRequiredAuthoring                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         | Covered |
+| B-014    | Shared infrastructure boundary   | AdoptionSteps.ThenNoMandatoryAuthoring; AnalysisInputReaderUnitTests.DeclarationFacts_WhenSelected_ShouldSeparateValidationFromRequiredAuthoring                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         | Covered |
+| B-015    | Reasoned exemptions              | AdoptionSteps.ThenUnavailable; AnalysisInputReaderUnitTests.InvalidPolicy_WhenRead_ShouldReportUnavailableAnalysis; AnalysisInputReaderUnitTests.ReasonedExemption_WhenSelected_ShouldRemainVisibleWithoutCreatingRequiredLinks; AnalysisPolicyUnitTests.ReasonedDeclarationExemption_WhenApplied_ShouldPreserveValidationAndExposeItsReason; AnalysisPolicyUnitTests.AdditionalRequiredLinks_WhenATestLinkIsExempt_ShouldRetainTheOtherRequirements                                                                                                                                                                                                                                                                                                                                                                     | Covered |
+| B-016    | Consumer record inputs           | AdoptionSteps.ThenReadsRecords; AnalysisInputReaderUnitTests.SuppliedRecords_WhenRead_ShouldUseActualIdentityAndPreserveSelectedScope; AnalysisInputAnalyzerUnitTests.ActualAdditionalFiles_WhenAnalyzed_ShouldReadConfiguredConsumerRecordsWithoutInputErrors; AnalysisInputReaderUnitTests.ConfiguredColumns_WhenRead_ShouldUseTheirNamesInsteadOfColumnPositions; ConsumerSchemasUnitTests.SuppliedSchemaReference_WhenValidated_ShouldUseTheSuppliedDependencyWithoutFetching; ConsumerSchemasUnitTests.ConsumerSchemaConstraint_WhenNotSatisfied_ShouldMakeAnalysisUnavailable; ConsumerRecordMappingsUnitTests.ConsumerFrontmatterKeys_WhenExplicitlyMapped_ShouldUseTheSuppliedIdentityAndLifecycle; ConsumerRecordMappingsUnitTests.FrontmatterAdrProfile_WhenRead_ShouldUseItsDeclaredIdentityLifecycleAndOwner | Covered |
+| B-017    | Required input failure           | AdoptionSteps.ThenInputError; AdoptionSteps.ThenUnavailable; AnalysisInputAnalyzerUnitTests.MissingInputs_WhenAnalyzed_ShouldReportAnErrorWithoutCompilerErrors; AnalysisInputReaderUnitTests.MissingSuppliedSchema_WhenRead_ShouldFailInsteadOfUsingAnEmbeddedSchema                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    | Covered |
+| B-018    | Input change invalidation        | AdoptionSteps.ThenInvalidated; AnalysisInputReaderUnitTests.ChangedInput_WhenReadAgain_ShouldInvalidateContentIdentityAndRetainOriginalSnapshot; AnalysisInputReaderUnitTests.ChangedClaim_WhenReadAgain_ShouldUseNewContentsAndRetainTheOriginalCatalog                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 | Covered |
+| B-019    | Private package installation     | Missing                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  | Missing |
+| B-020    | Aligned package release version  | Missing                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  | Missing |
+| B-021    | Contract-based compatibility     | Missing                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  | Missing |
+| B-022    | Supplied analysis policy         | AdoptionSteps.ThenMappedPolicy; AnalysisConfigurationReaderUnitTests.ExplicitMappings_WhenProjectingDifferentConsumerKeys_ShouldMapArraysAndLeaveTheOriginalUntouched; AnalysisInputReaderUnitTests.ManifestSectionMappings_WhenSupplied_ShouldReadExistingMetadataWithoutChangingItsSchemaVersion; AnalysisConfigurationReaderUnitTests.LiteralArrayIndexAndEmptySelection_WhenMapped_ShouldHonorJsonPointersAndPreserveExplicitEmptyArrays                                                                                                                                                                                                                                                                                                                                                                             | Covered |
+| B-023    | Configuration responsibility     | Missing                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  | Missing |
+| B-024    | Consumer schema ownership        | AdoptionSteps.ThenConsumerSchema; AdoptionSteps.ThenNoUpgrade; AnalysisInputReaderUnitTests.ConsumerSchemaVersion_WhenSupplied_ShouldPreserveItWithoutRequiringASpechtPin; CodeAnalysisSectionUnitTests.AnalysisSection_WhenAddedToAnExistingPin_ShouldPreserveThePinAndCheckerSettings                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  | Covered |
 
 ## 10. Lessons / Spec Deltas
 
-<!-- last written by: spec-author, 2026-10-17 -->
+<!-- last written by: spec-author, 2026-10-18 -->
 
-None.
+2026-10-18: amended B-022 and B-024 and their scenarios following the owner's
+correction: consume the consumer repository's supplied schemas and schema version,
+including bring-your-own schemas. Analyzer adoption neither introduces a Specht
+schema version nor requires a consumer upgrade. Decision 0005 records the reversal.
+OQ-1 records explicit mappings over existing consumer configuration as the policy input.
 
 ## 11. Open Questions
 
-<!-- last written by: spec-author, 2026-10-17 -->
+<!-- last written by: spec-author, 2026-10-18 -->
 
-| ID   | Question                                                                                   | Blocks                                   | Resolution                                                                                                                                                                                                                                                                                                                                                                              |
-| ---- | ------------------------------------------------------------------------------------------ | ---------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| OQ-1 | Which deployment identity, packages, input transport and configuration surface ship first? | None for deployment/configuration policy | RESOLVED, 2026-10-17: decision 0005 selects private Specht.CodeAnalysis installation, aligned repository release versions, contract-based compatibility and versioned codeAnalysis policy in the manifest. MSBuild owns root/input delivery; Roslyn controls reporting. Decision 0004 supplies actual consumer record data through AdditionalFiles. Exact contracts are defined in § 7. |
-| OQ-2 | What severities, exclusions and suppressions allow gradual adoption?                       | None for policy                          | RESOLVED, 2026-10-17: decisions 0001 through 0003 settle reporting and coverage; decision 0005 assigns policy to codeAnalysis in the manifest, root/input delivery to MSBuild and severity/suppression to standard Roslyn configuration.                                                                                                                                                |
+| ID   | Question                                                                                   | Blocks                    | Resolution                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
+| ---- | ------------------------------------------------------------------------------------------ | ------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| OQ-1 | Which deployment identity, packages, input transport and configuration surface ship first? | None for policy transport | RESOLVED, 2026-10-17: decision 0005 selects private Specht.CodeAnalysis installation, aligned releases and manifest-owned policy. REOPENED IN PART, 2026-10-18: the owner requires consumer-supplied schemas and their versions, including bring-your-own schemas, with no imposed schema adoption, upgrade or pin change. Installation, aligned releases, MSBuild input delivery and Roslyn reporting remain settled. RESOLVED, 2026-10-18: the owner selected existing consumer configuration through explicit mappings. The owner subsequently confirmed a new codeAnalysis manifest section, without a schema 0.3.0 bump. Build integration supplies configuration and explicit mappings; consumer schema metadata retains its existing meanings. |
+| OQ-2 | What severities, exclusions and suppressions allow gradual adoption?                       | None for policy           | RESOLVED, 2026-10-17: decisions 0001 through 0003 settle reporting and coverage. Decision 0005 retains MSBuild root/input delivery and standard Roslyn severity/suppression. Its 2026-10-18 reversal retains the new analysis section while removing a schema bump or consumer pin change; OQ-1 records the owner-selected explicit mappings over existing consumer configuration.                                                                                                                                                                                                                                                                                                                                                                    |
 
 ## 12. Sign-off
 
