@@ -23,6 +23,15 @@ claims:
     "B-010",
     "B-011",
     "B-012",
+    "B-013",
+    "B-014",
+    "B-015",
+    "B-016",
+    "B-017",
+    "B-018",
+    "B-019",
+    "B-020",
+    "B-021",
   ]
 created: "2026-10-17"
 updated: "2026-10-17"
@@ -46,6 +55,15 @@ acceptance_criteria:
   - "0201-F1 B-010"
   - "0201-F1 B-011"
   - "0201-F1 B-012"
+  - "0201-F1 B-013"
+  - "0201-F1 B-014"
+  - "0201-F1 B-015"
+  - "0201-F1 B-016"
+  - "0201-F1 B-017"
+  - "0201-F1 B-018"
+  - "0201-F1 B-019"
+  - "0201-F1 B-020"
+  - "0201-F1 B-021"
   - "§ 9 names passing acceptance and mechanism tests for every delivered claim before this item is done."
 decisions: []
 out_of_scope:
