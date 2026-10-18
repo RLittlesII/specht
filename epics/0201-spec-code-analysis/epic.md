@@ -101,7 +101,7 @@ defines the policy; 0201-F6 decision 0001 below defines target diagnostic severi
 Owner decision, 2026-10-17: use `spec` for type-level authoring defaults,
 `verifies` for declared test-to-claim relationships, `implements` for declared
 implementation-to-claim relationships, and `follows` for declared code-to-ADR
-relationships. [0201-F2 decision 0002](../../src/CodeFixes/.spec/decisions/0002-xml-binding-roles.md)
+relationships. [0201-F2 decision 0002](../../src/codefixes/.spec/decisions/0002-xml-binding-roles.md)
 records the four roles. Defaults do not count as checked evidence; declarations
 do not prove behavior or architectural compliance.
 
@@ -110,7 +110,7 @@ Owner decision, 2026-10-17: support CSharp XML-documentable types and members.
 and `follows` to types and documentable members, including constructors,
 methods, properties, indexers, fields and events. An explicit type binding
 applies only to that type; it never binds its members implicitly.
-[0201-F2 decision 0003](../../src/CodeFixes/.spec/decisions/0003-csharp-declaration-scope.md)
+[0201-F2 decision 0003](../../src/codefixes/.spec/decisions/0003-csharp-declaration-scope.md)
 records the scope and alternatives. Remaining XML forms and safe repairs stay
 open in OQ-2.
 
@@ -119,14 +119,14 @@ with a `spec` default; an inner default replaces the whole outer default.
 Partial declarations share one default when single or identical; conflicting
 defaults produce a diagnostic and block automatic materialization. Base classes
 do not supply defaults. Explicit checked bindings remain independent of this
-context. [0201-F2 decision 0004](../../src/CodeFixes/.spec/decisions/0004-nested-partial-type-defaults.md)
+context. [0201-F2 decision 0004](../../src/codefixes/.spec/decisions/0004-nested-partial-type-defaults.md)
 records the nested and partial rules, resolving OQ-12.
 
 Owner decision, 2026-10-17: represent multiple relationships by repeating
 `verifies`, `implements` or `follows`, with one complete target per element.
 Each relationship carries its own identity; identity attributes are scalar IDs
 under consumer grammars and are never split into target lists.
-[0201-F2 decision 0005](../../src/CodeFixes/.spec/decisions/0005-repeated-single-target-elements.md)
+[0201-F2 decision 0005](../../src/codefixes/.spec/decisions/0005-repeated-single-target-elements.md)
 records the form and alternatives. Strict XML validation is defined below;
 duplicate handling is defined by decision 0007 below; code-fix safety is defined by decision 0008 below.
 
@@ -136,7 +136,7 @@ placement; diagnose missing or unknown attributes, body text, nested elements,
 malformed XML and unsupported placements. Invalid relationships supply no
 checked evidence; invalid defaults supply no authoring context. Preserve
 unrelated documentation, including other custom tags.
-[0201-F2 decision 0006](../../src/CodeFixes/.spec/decisions/0006-strict-xml-validation.md)
+[0201-F2 decision 0006](../../src/codefixes/.spec/decisions/0006-strict-xml-validation.md)
 records the contract. Duplicate handling and code-fix safety are defined below,
 as are severity defaults in 0201-F6 decision 0001.
 
@@ -146,7 +146,7 @@ duplicate diagnostic. Offer an invoked fix that removes redundant copies while
 preserving one complete binding. Different roles and different symbols remain
 separate relationships; identical partial-type authoring defaults retain their
 existing policy.
-[0201-F2 decision 0007](../../src/CodeFixes/.spec/decisions/0007-duplicate-relationships.md)
+[0201-F2 decision 0007](../../src/codefixes/.spec/decisions/0007-duplicate-relationships.md)
 records the duplicate policy. Code-fix safety and severity defaults are defined
 below.
 
@@ -157,7 +157,7 @@ corrections, or delete unknown attributes or body content merely to make XML
 valid. Fix All is limited to supported deterministic repairs with independently
 satisfied preconditions; it must never propagate one selected target across
 unrelated declarations.
-[0201-F2 decision 0008](../../src/CodeFixes/.spec/decisions/0008-code-fix-safety.md)
+[0201-F2 decision 0008](../../src/codefixes/.spec/decisions/0008-code-fix-safety.md)
 records the repair contract, resolving OQ-2. Diagnostic/version and enforcement
 policies remain in their existing open questions.
 
@@ -166,7 +166,7 @@ Owner decision, 2026-10-17: use `SPCT####` analyzer diagnostics, starting with
 Analyzer rules follow analyzer package releases; manifest/schema contract
 changes still follow schema-version rules, and analyzer-only additions leave
 the checker's pinned `SPEC` vocabulary unchanged.
-[0201-F2 decision 0009](../../src/CodeFixes/.spec/decisions/0009-diagnostic-identity-versioning.md)
+[0201-F2 decision 0009](../../src/codefixes/.spec/decisions/0009-diagnostic-identity-versioning.md)
 records the identity/versioning policy. Severity defaults are defined below;
 standard reporting controls are defined below, while the package's version
 relationship to the tool remains open.
@@ -507,7 +507,7 @@ architecture.
 | Feature | Agreement                                                                         | Invariant                                                                                                                       | Serves     | Depends on     |
 | ------- | --------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- | ---------- | -------------- |
 | 0201-F1 | [Binding identity](../../src/analyzers/Bindings/.spec/README.md)                  | A qualified identity resolves under consumer grammars independently of frameworks.                                              | R1, R3, R6 | None           |
-| 0201-F2 | [CSharp binding authoring](../../src/CodeFixes/.spec/README.md)                   | Type defaults assist invoked fixes; explicit declaration IDs alone supply checked evidence, and missing bindings are diagnosed. | R1, R2, R8 | F1             |
+| 0201-F2 | [CSharp binding authoring](../../src/codefixes/.spec/README.md)                   | Type defaults assist invoked fixes; explicit declaration IDs alone supply checked evidence, and missing bindings are diagnosed. | R1, R2, R8 | F1             |
 | 0201-F3 | [Test evidence adapters](../../src/analyzers/TestEvidence/.spec/README.md)        | Facts, theory cases and Playwright .NET tests correlate to bound methods without Reqnroll.                                      | R5, R7     | F1, F2         |
 | 0201-F4 | [Optional scenario bridge](../../src/analyzers/Scenarios/.spec/README.md)         | Tagged scenarios and generated cases share the identity contract; shared steps do not stand in for scenario identity.           | R3, R4     | F1, F3         |
 | 0201-F5 | [Traceability reconciliation](../../src/analyzers/Reconciliation/.spec/README.md) | Every required claim is considered, with explicit missing links, incomplete scope and distinct execution outcomes.              | R5, R7, R8 | F1, F3         |
@@ -590,10 +590,10 @@ The project identities and folder names are deliberate:
 | Folder              | Project identity      | Responsibility                                                                                            |
 | ------------------- | --------------------- | --------------------------------------------------------------------------------------------------------- |
 | `src/analyzers/`    | `Specht.Analysis`     | Binding model and read-only Roslyn diagnostics; no code-fix Workspaces dependency.                        |
-| `src/CodeFixes/`    | `Specht.Codefixes`    | Invoked authoring repairs; references the analyzer project.                                               |
+| `src/codefixes/`    | `Specht.Codefixes`    | Invoked authoring repairs; references the analyzer project.                                               |
 | `src/CodeAnalysis/` | `Specht.CodeAnalysis` | Deployment project; packages the analyzer and code-fix assemblies rather than duplicating their behavior. |
 
-The planned project files are `analyzers.csproj`, `CodeFixes.csproj` and
+The planned project files are `analyzers.csproj`, `codefixes.csproj` and
 `CodeAnalysis.csproj` in those folders, following the reference's naming. The
 analyzer and code-fix projects are non-packable; CodeAnalysis owns deployment of
 this capability. `src/tool` continues to own the existing dotnet-tool package.
@@ -634,9 +634,9 @@ outcomes must pass by default under F5 decision 0002.
 | Item                                                                                     | Work                                      | Prerequisites    |
 | ---------------------------------------------------------------------------------------- | ----------------------------------------- | ---------------- |
 | [0238](../../src/analyzers/Bindings/.issue/0238-binding-identity.yml)                    | Binding identity and record resolution    | None; start here |
-| [0239](../../src/CodeFixes/.issue/0239-xml-binding-diagnostics.yml)                      | XML binding diagnostics                   | 0238, 0242       |
-| [0240](../../src/CodeFixes/.issue/0240-type-authoring-defaults.yml)                      | Nested and partial type defaults          | 0239             |
-| [0241](../../src/CodeFixes/.issue/0241-binding-code-fixes.yml)                           | Safe invoked code fixes                   | 0240             |
+| [0239](../../src/codefixes/.issue/0239-xml-binding-diagnostics.yml)                      | XML binding diagnostics                   | 0238, 0242       |
+| [0240](../../src/codefixes/.issue/0240-type-authoring-defaults.yml)                      | Nested and partial type defaults          | 0239             |
+| [0241](../../src/codefixes/.issue/0241-binding-code-fixes.yml)                           | Safe invoked code fixes                   | 0240             |
 | [0242](../../src/CodeAnalysis/.issue/0242-analysis-policy-inputs.yml)                    | Analysis configuration and input policy   | None             |
 | [0243](../../src/CodeAnalysis/.issue/0243-codeanalysis-package-delivery.yml)             | Package and editor/build delivery         | 0241, 0242       |
 | [0244](../../src/analyzers/TestEvidence/.issue/0244-test-evidence-collection.yml)        | Framework-independent evidence collection | 0243             |

@@ -14,7 +14,7 @@ namespace Specht.Acceptance.Documentation;
 
 [Binding]
 [Scope(Tag = "0201-F2")]
-public sealed class DocumentationSteps
+public sealed partial class DocumentationSteps
 {
     [Given("a type with an authoring-default binding")]
     public void GivenAuthoringDefault()
@@ -82,9 +82,6 @@ public sealed class DocumentationSteps
         _typeXml = "<spec feature=\"F1\" />";
         _xml = "<implements claim=\"B-001\" />";
     }
-
-    [Given("missing, conflicting or ambiguous default targets")]
-    public void GivenUnsafeDefault() => _xml = "<implements claim=\"B-001\" />";
 
     [Given("a malformed, unresolved or ambiguous reference on a supported declaration")]
     public void GivenUnresolved() => _xml = "<implements feature=\"F1\" claim=\"B-999\" />";
@@ -234,8 +231,14 @@ public sealed class DocumentationSteps
     [When("a binding repair determines the nested member's default context")]
     [When("a binding repair determines the derived member's default context")]
     [When("its authoring defaults are analyzed")]
-    public void Analyze()
+    public async System.Threading.Tasks.Task Analyze()
     {
+        if (_repairSource is not null)
+        {
+            await AnalyzeRepair();
+            return;
+        }
+
         _source = _defaultSource ?? (_partial
             ? "/// <implements feature=\"F1\" claim=\"B-001\" />\npublic partial class Example {}\n"
                 + "/// <implements claim=\"B-001\" feature=\"F1\" />\npublic partial class Example {}"
@@ -318,7 +321,11 @@ public sealed class DocumentationSteps
     }
 
     [Then("no repair silently selects a target")]
-    public void ThenNoSilentRepair() => _result!.Relationships.Should().BeEmpty();
+    public void ThenNoSilentRepair()
+    {
+        _repairActions.Should().OnlyContain(static action => action.EquivalenceKey!.StartsWith("Specht.Select:", StringComparison.Ordinal));
+        _repairFixed.Should().Be(_repairSource);
+    }
 
     [Then("analysis reports a diagnostic at that declaration with its target reference")]
     public void ThenDiagnostic()

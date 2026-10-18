@@ -116,13 +116,13 @@ Use type defaults to author explicit declaration bindings that remain stable acr
 
 <!-- last written by: implementer, 2026-10-18 -->
 
-| Concern                                                  | Classification | Home                                                                                        |
-| -------------------------------------------------------- | -------------- | ------------------------------------------------------------------------------------------- |
-| Explicit identity, XML roles and relationship uniqueness | Business       | `DocumentationBindingReader` delegates target verdicts to `BindingResolver`.                |
-| Compiler syntax, locations and diagnostic presentation   | Technical      | `DocumentationBindingAnalyzer` reads supplied policy and reports native Roslyn diagnostics. |
-| Published diagnostic identity                            | Both           | `DocumentationDiagnostics` validates publication history and owns the SPCT registry.        |
-| Authoring defaults                                       | Both           | `DocumentationBindingReader` selects lexical context and diagnoses partial conflicts.       |
-| Invoked repairs                                          | Both           | Planned below; implementation remains pending.                                              |
+| Concern                                                  | Classification | Home                                                                                          |
+| -------------------------------------------------------- | -------------- | --------------------------------------------------------------------------------------------- |
+| Explicit identity, XML roles and relationship uniqueness | Business       | `DocumentationBindingReader` delegates target verdicts to `BindingResolver`.                  |
+| Compiler syntax, locations and diagnostic presentation   | Technical      | `DocumentationBindingAnalyzer` reads supplied policy and reports native Roslyn diagnostics.   |
+| Published diagnostic identity                            | Both           | `DocumentationDiagnostics` validates publication history and owns the SPCT registry.          |
+| Authoring defaults                                       | Both           | `DocumentationBindingReader` selects lexical context and diagnoses partial conflicts.         |
+| Invoked repairs                                          | Both           | `DocumentationCodeFixProvider` offers validated plans and guards current workspace snapshots. |
 
 ## 7. Technical Design
 
@@ -150,7 +150,7 @@ and attribute order. Conflicting valid defaults produce SPCT0008 on each
 participating `spec` name, only when analyzing the declaring type. Members get
 no context from a conflict, and outer defaults cannot resolve it. Invalid
 defaults supply no context. Base types are never traversed. Explicit bindings
-continue to resolve independently. Invoked repairs below remain planned.
+continue to resolve independently.
 
 This Feature spans the two component projects selected in
 [ADR-0018](../../../.spec/adr/0018-lowercase-analyzer-project-home.md).
@@ -209,8 +209,17 @@ state. The analyzer performs no filesystem discovery, network access or writes.
 
 ### Invoked repairs
 
-Keep CodeFixProvider and Workspaces dependencies in Specht.Codefixes. Use
-DocumentEditor/SyntaxEditor to edit documentation trivia only. Offer default
+[`DocumentationCodeFixProvider`](../Documentation/DocumentationCodeFixProvider.cs)
+exports the invoked repairs. Workspaces dependencies stay in Specht.Codefixes.
+[`DocumentationRepairs`](../Documentation/DocumentationRepairs.cs) reuses the
+binding reader, resolver, input adapter, shared XML well-formedness check and
+supplied test-method recognition. It produces edits limited to reserved XML or
+new documentation on the selected declaration.
+[`DocumentationEdits`](../Documentation/DocumentationEdits.cs) applies those edits
+through DocumentEditor as one returned Solution, preserving every other byte.
+No workspace or specification write happens during analysis or action discovery.
+
+Offer default
 materialization when a claim-only element has exactly one eligible existing
 target under one valid default. Persist the entire target; moving the member
 later does not change its binding.
@@ -228,6 +237,14 @@ before applying each action; stale or changed preconditions remove the action.
 Use separate equivalence keys for default materialization and duplicate cleanup.
 Fix All admits only those deterministic, choice-free actions and recomputes each
 local precondition. Target-selection actions do not participate in Fix All.
+[`DocumentationFixAllProvider`](../Documentation/DocumentationFixAllProvider.cs)
+supports document, project and solution scopes, deduplicates repeated edits and
+returns no action for target-selection keys. Individual and bulk actions reject
+changed project snapshots and recompute the current binding verdict before
+applying an edit. Duplicate cleanup returns changes across partial documents
+atomically; unknown attributes, body content and malformed XML have no cleanup
+action. Native workspace tests normalize editorconfig host paths at the Roslyn
+boundary while retaining relative source and consumer-provenance fixtures.
 
 ### Verification
 
@@ -255,9 +272,13 @@ registry and rejects reassigned, removed or revived published identities.
 conflict ordering across files, base isolation and invalid-default exclusion;
 the compiler harness pins SPCT0008 count, warning severity and XML-name spans.
 The existing default scenarios now execute through `DocumentationSteps`.
-Invoked-repair scenarios remain pending.
-The read-only mechanisms are covered by the tests named in § 9. Repair safety
-remains Partial until the invoked-repair path is exercised.
+`DocumentationSteps` also invokes individual code actions and Fix All in native
+in-memory workspaces, asserting fixed source and reanalysis. Unsafe-default
+examples cover missing, conflicting and ambiguous contexts separately.
+`DocumentationCodeFixUnitTests` pins repair planning, lifecycle and ambiguity
+gates, preservation, partial cleanup, explicit selection, stale-action rejection,
+line endings and each supported Fix All scope. The read-only compiler harness
+and portable-component integration tests continue to guard assembly separation.
 
 The corresponding unit tests are named once, in § 9. The implemented mechanisms are:
 
@@ -291,6 +312,16 @@ The corresponding unit tests are named once, in § 9. The implemented mechanisms
 | B-017 | Different complete defaults block context and report SPCT0008 only on the type’s default names.                                                                                     |
 | B-018 | Selection traverses lexical ContainingType only, never BaseType.                                                                                                                    |
 | B-022 | XML-shape failures exclude defaults from authoring context.                                                                                                                         |
+| B-003 | Claim-only shape plus one eligible resolved default gates complete identity materialization.                                                                                        |
+| B-004 | Missing/conflicting defaults and ambiguous/ineligible resolver verdicts withhold automatic materialization.                                                                         |
+| B-007 | Selected recognized methods get named eligible target actions; line endings and indentation govern insertion only.                                                                  |
+| B-023 | Reserved-element spans constrain replacements; all other documentation text is retained exactly.                                                                                    |
+| B-027 | Reader ordering retains the ordinal first complete binding; one Solution removes redundant partial copies.                                                                          |
+| B-030 | Only invocation of a named existing-record action changes a choice-dependent target.                                                                                                |
+| B-031 | Target enumeration uses resolver-approved records; misspelled attributes have no automatic correction.                                                                              |
+| B-032 | XML well-formedness, empty-body and known-attribute gates exclude destructive cleanup.                                                                                              |
+| B-033 | Separate deterministic keys replan every local verdict for document/project/solution scopes and reject stale snapshots.                                                             |
+| B-034 | Fix All rejects every target-selection equivalence key.                                                                                                                             |
 
 ## 9. Traceability Matrix
 
@@ -300,11 +331,11 @@ The corresponding unit tests are named once, in § 9. The implemented mechanisms
 | -------- | ------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------- |
 | B-001    | Explicit evidence                    | DocumentationSteps.ThenExplicit; TypeBindingsAndDefaults_WhenReadingMembers_ShouldNeverSupplyImplicitIdentity                                                                                                                                                       | Covered |
 | B-002    | Inherited binding                    | DocumentationSteps.ThenIncomplete; TypeBindingsAndDefaults_WhenReadingMembers_ShouldNeverSupplyImplicitIdentity                                                                                                                                                     | Covered |
-| B-003    | Materialize default                  | Missing                                                                                                                                                                                                                                                             | Missing |
-| B-004    | Unsafe repair                        | DocumentationSteps.ThenNoSilentRepair; TypeBindingsAndDefaults_WhenReadingMembers_ShouldNeverSupplyImplicitIdentity                                                                                                                                                 | Partial |
+| B-003    | Materialize default                  | DocumentationSteps.ThenRepaired; ClaimOnlyBinding_WhenMaterialized_ShouldPersistIdentityAndPreserveOtherXml                                                                                                                                                         | Covered |
+| B-004    | Unsafe repair                        | DocumentationSteps.ThenNoSilentRepair; UnsafeBinding_WhenRepairsRequested_ShouldNeverGuessOrDestroyMaterial; AmbiguousOrIneligibleDefault_WhenRepairRequested_ShouldWithholdMaterialization                                                                         | Covered |
 | B-005    | Invalid binding                      | DocumentationSteps.ThenDiagnostic; TargetVerdict_WhenRead_ShouldRemainSeparateFromValidXmlShape                                                                                                                                                                     | Covered |
 | B-006    | Multiple targets                     | DocumentationSteps.ThenMultiple; DistinctTargets_WhenRepeated_ShouldRetainEachCompleteRelationship                                                                                                                                                                  | Covered |
-| B-007    | Missing member binding               | Missing                                                                                                                                                                                                                                                             | Missing |
+| B-007    | Missing member binding               | DocumentationSteps.ThenClaimChoices; MissingBinding_WhenTargetSelected_ShouldUseOnlyAnExistingEligibleRecord                                                                                                                                                        | Covered |
 | B-008    | Type authoring defaults              | DocumentationSteps.ThenAuthoringOnly; LexicalAndPartialDefaults_WhenSelected_ShouldSupplyWholeContextWithoutEvidence                                                                                                                                                | Covered |
 | B-009    | Test verification role               | DocumentationSteps.ThenVerification; DocumentableDeclaration_WhenRead_ShouldBindItsOwnSymbol                                                                                                                                                                        | Covered |
 | B-010    | Implementation role                  | DocumentationSteps.ThenImplementation; DocumentableDeclaration_WhenRead_ShouldBindItsOwnSymbol                                                                                                                                                                      | Covered |
@@ -320,18 +351,18 @@ The corresponding unit tests are named once, in § 9. The implemented mechanisms
 | B-020    | Invalid reserved XML                 | DocumentationSteps.ThenShapeFinding; InvalidReservedXml_WhenAnalyzed_ShouldReportOnePreciseFinding                                                                                                                                                                  | Covered |
 | B-021    | Invalid relationship exclusion       | DocumentationSteps.ThenNoEvidence; TargetVerdict_WhenRead_ShouldRemainSeparateFromValidXmlShape                                                                                                                                                                     | Covered |
 | B-022    | Invalid default exclusion            | DocumentationSteps.ThenNoDefault; InvalidDefault_WhenSelectingContext_ShouldRemainExcluded                                                                                                                                                                          | Covered |
-| B-023    | Unrelated documentation preservation | Missing                                                                                                                                                                                                                                                             | Missing |
+| B-023    | Unrelated documentation preservation | DocumentationSteps.ThenPreserved; ClaimOnlyBinding_WhenMaterialized_ShouldPersistIdentityAndPreserveOtherXml; ReplacementTarget_WhenExplicitlySelected_ShouldReplaceOnlyTheReservedElement                                                                          | Covered |
 | B-024    | Empty reserved elements              | DocumentationSteps.ThenValidShape; DocumentableDeclaration_WhenRead_ShouldBindItsOwnSymbol                                                                                                                                                                          | Covered |
 | B-025    | Duplicate relationship identity      | DocumentationSteps.ThenDeduplicated; RepeatedPartialRelationships_WhenRead_ShouldDeduplicateBySymbolRoleAndResolvedTarget                                                                                                                                           | Covered |
 | B-026    | Duplicate relationship diagnostic    | DocumentationSteps.ThenDuplicate; RepeatedPartialRelationships_WhenRead_ShouldDeduplicateBySymbolRoleAndResolvedTarget                                                                                                                                              | Covered |
-| B-027    | Remove redundant relationship copies | Missing                                                                                                                                                                                                                                                             | Missing |
+| B-027    | Remove redundant relationship copies | DocumentationSteps.ThenRepaired; PartialDuplicates_WhenRemoved_ShouldKeepOrdinalFirstAndPreserveOtherXml                                                                                                                                                            | Covered |
 | B-028    | Distinct relationship roles          | DocumentationSteps.ThenDistinctRoles; RepeatedPartialRelationships_WhenRead_ShouldDeduplicateBySymbolRoleAndResolvedTarget                                                                                                                                          | Covered |
 | B-029    | Distinct code symbols                | DocumentationSteps.ThenDistinctSymbols; RepeatedPartialRelationships_WhenRead_ShouldDeduplicateBySymbolRoleAndResolvedTarget                                                                                                                                        | Covered |
-| B-030    | Explicit repair target selection     | Missing                                                                                                                                                                                                                                                             | Missing |
-| B-031    | No guessed corrections               | Missing                                                                                                                                                                                                                                                             | Missing |
-| B-032    | No destructive validation cleanup    | Missing                                                                                                                                                                                                                                                             | Missing |
-| B-033    | Deterministic Fix All                | Missing                                                                                                                                                                                                                                                             | Missing |
-| B-034    | No bulk target propagation           | Missing                                                                                                                                                                                                                                                             | Missing |
+| B-030    | Explicit repair target selection     | DocumentationSteps.ThenSelection; DocumentationSteps.ThenNoSelection; ReplacementTarget_WhenExplicitlySelected_ShouldReplaceOnlyTheReservedElement                                                                                                                  | Covered |
+| B-031    | No guessed corrections               | DocumentationSteps.ThenNoGuess; UnsafeBinding_WhenRepairsRequested_ShouldNeverGuessOrDestroyMaterial                                                                                                                                                                | Covered |
+| B-032    | No destructive validation cleanup    | DocumentationSteps.ThenNoDeletion; UnsafeBinding_WhenRepairsRequested_ShouldNeverGuessOrDestroyMaterial                                                                                                                                                             | Covered |
+| B-033    | Deterministic Fix All                | DocumentationSteps.ThenRepaired; MixedBindings_WhenFixAllInvoked_ShouldRecheckEachBindingAndRespectScope; StaleAction_WhenWorkspaceChanged_ShouldPreserveTheCurrentDocuments                                                                                        | Covered |
+| B-034    | No bulk target propagation           | DocumentationSteps.ThenNoPropagation; ReplacementTarget_WhenExplicitlySelected_ShouldReplaceOnlyTheReservedElement                                                                                                                                                  | Covered |
 | B-035    | Analyzer diagnostic namespace        | DocumentationSteps.ThenNamespace; AgreedRegistry_WhenLoaded_ShouldKeepEveryAssignedDiagnosticAndItsSeverity                                                                                                                                                         | Covered |
 | B-036    | Stable published diagnostic IDs      | DocumentationSteps.ThenPublished; PublishedHistory_WhenValidated_ShouldRejectReassignmentRemovalAndRevival                                                                                                                                                          | Covered |
 | B-037    | Retired diagnostic IDs               | DocumentationSteps.ThenRetired; PublishedHistory_WhenValidated_ShouldRejectReassignmentRemovalAndRevival                                                                                                                                                            | Covered |
@@ -339,9 +370,10 @@ The corresponding unit tests are named once, in § 9. The implemented mechanisms
 
 ## 10. Lessons / Spec Deltas
 
-<!-- last written by: spec-author, 2026-10-17 -->
+<!-- last written by: spec-author, 2026-10-18 -->
 
-None.
+The unsafe-repair scenario now exercises missing, conflicting and ambiguous
+defaults as separate examples under the unchanged B-004 agreement.
 
 ## 11. Open Questions
 
