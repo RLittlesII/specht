@@ -12,6 +12,62 @@ namespace Specht.Analysis.Tests.Documentation;
 public sealed class DocumentationBindingReaderUnitTests
 {
     [Theory]
+    [ClassData(typeof(DistinctRelationshipCases))]
+    public void DistinctTargets_WhenRepeated_ShouldRetainEachCompleteRelationship(string role)
+    {
+        // Given
+        var xml = role == "follows" ? "<follows adr=\"ADR-0012\" />\n/// <follows adr=\"ADR-0013\" />"
+            : "<" + role + " feature=\"cap:read\" claim=\"need/7\" />\n/// <"
+                + role + " feature=\"cap:read\" claim=\"need/8\" />";
+        var tree = CSharpSyntaxTree.ParseText("public class Example\n{\n/// " + xml + "\npublic void Run() {}\n}",
+            path: "src/Example.cs", cancellationToken: TestContext.Current.CancellationToken);
+        var compilation = CSharpCompilation.Create("Example", [tree], [MetadataReference.CreateFromFile(typeof(object).Assembly.Location)]);
+        var snapshot = new AnalysisInputReader().Read(new AnalysisInputs().Inputs, TestContext.Current.CancellationToken);
+        var owner = snapshot.Catalog!.Features.Single();
+        var catalog = new BindingCatalog([new BindingFeature(owner.Identity, owner.State,
+            [new BindingClaim("need/7", "Active"), new BindingClaim("need/8", "Active")], owner.RelativePath)],
+            [new BindingAdr("ADR-0012", null, "accepted", ".spec/adr/0012.md"),
+                new BindingAdr("ADR-0013", null, "accepted", ".spec/adr/0013.md")]);
+
+        // When
+        var result = new DocumentationBindingReader().Read(compilation.GetTypeByMetadataName("Example")!.GetMembers("Run").Single(),
+            new BindingResolver(catalog, snapshot.Policy!.Bindings), role == "verifies", TestContext.Current.CancellationToken);
+
+        // Then
+        result.Relationships.Should().HaveCount(2);
+        result.Relationships.Select(static binding => binding.Resolution!.Target!.Id).Distinct().Should().HaveCount(2);
+        result.Findings.Should().BeEmpty();
+    }
+
+    [Theory]
+    [ClassData(typeof(ScalarIdentifierCases))]
+    public void ScalarAttribute_WhenRead_ShouldValidateTheEntireConsumerIdentifier(string value, bool valid)
+    {
+        // Given
+        var xml = "<implements feature=\"cap:read\" claim=\"" + value + "\" />";
+        var tree = CSharpSyntaxTree.ParseText("public class Example\n{\n/// " + xml + "\npublic void Run() {}\n}",
+            path: "src/Example.cs", cancellationToken: TestContext.Current.CancellationToken);
+        var compilation = CSharpCompilation.Create("Example", [tree], [MetadataReference.CreateFromFile(typeof(object).Assembly.Location)]);
+        var snapshot = new AnalysisInputReader().Read(new AnalysisInputs().Inputs, TestContext.Current.CancellationToken);
+        var owner = snapshot.Catalog!.Features.Single();
+        var catalog = new BindingCatalog([new BindingFeature(owner.Identity, owner.State,
+            [new BindingClaim("need/7,need/8", "Active")], owner.RelativePath)], []);
+        var identifiers = snapshot.Policy!.Bindings.Identifiers.ToDictionary(static entry => entry.Key, static entry => entry.Value);
+        identifiers["claim"] = "need/[0-9]+(?:,need/[0-9]+)?";
+        var policy = new BindingPolicy("0.1.0", identifiers, snapshot.Policy.Bindings.Markers, false,
+            snapshot.Policy.Bindings.ClaimsSection, snapshot.Policy.Bindings.Omissions);
+
+        // When
+        var result = new DocumentationBindingReader().Read(compilation.GetTypeByMetadataName("Example")!.GetMembers("Run").Single(),
+            new BindingResolver(catalog, policy), cancellationToken: TestContext.Current.CancellationToken);
+
+        // Then
+        result.Elements.Should().ContainSingle().Which.Attributes["claim"].Should().Be(value);
+        result.Relationships.Should().HaveCount(valid ? 1 : 0);
+        result.Findings.Select(static finding => finding.Id).Should().Equal(valid ? Array.Empty<string>() : new[] { "SPCT0003" });
+    }
+
+    [Theory]
     [ClassData(typeof(DocumentedDeclarations))]
     public void DocumentableDeclaration_WhenRead_ShouldBindItsOwnSymbol(string source, string symbolId, string role, bool testMethod)
     {

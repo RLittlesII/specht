@@ -12,6 +12,7 @@ spec: src/CodeFixes/.spec/README.md
 claims:
   [
     "B-003",
+    "B-004",
     "B-007",
     "B-023",
     "B-027",
@@ -22,7 +23,7 @@ claims:
     "B-034",
   ]
 created: "2026-10-17"
-updated: "2026-10-17"
+updated: "2026-10-18"
 closed: null
 summary: |
   Implement invoked target selection, default materialization, duplicate cleanup and
@@ -32,6 +33,7 @@ summary: |
   repairs separate from read-only analysis.
 acceptance_criteria:
   - "0201-F2 B-003"
+  - "0201-F2 B-004"
   - "0201-F2 B-007"
   - "0201-F2 B-023"
   - "0201-F2 B-027"
@@ -41,6 +43,10 @@ acceptance_criteria:
   - "0201-F2 B-033"
   - "0201-F2 B-034"
   - "§ 9 names passing acceptance and mechanism tests for every delivered claim before this item is done."
-decisions: []
+decisions:
+  - |
+    2026-10-18, delivery: B-004's complete no-silent-repair acceptance is
+    assigned here from 0239 because it requires invoked repairs and resolved
+    authoring defaults. The agreement and scenario are unchanged.
 out_of_scope:
   - "Everything in § 5 of the cited specification."

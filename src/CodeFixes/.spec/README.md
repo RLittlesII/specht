@@ -5,7 +5,7 @@ type: feature
 id: "F2"
 epic: "0201"
 spec_status: draft
-status: ready-for-architecture
+status: in-progress
 priority: med
 value: 0
 risk: 0
@@ -243,53 +243,79 @@ for diagnostic counts, severity, locations, supplied method recognition and
 generated-authoring boundaries. `DocumentationDiagnosticsUnitTests` pins the
 registry and rejects reassigned, removed or revived published identities.
 Defaults and repairs remain unimplemented; their scenarios remain pending.
-Traceability stays Partial until the delivery checks and remaining mechanism
-coverage are reconciled.
+The read-only mechanisms are covered by the tests named in § 9. Repair safety
+remains Partial until the invoked-repair path is exercised.
+
+The corresponding unit tests are named once, in § 9. The implemented mechanisms are:
+
+| Claim | Mechanism                                                                                                                                                                           |
+| ----- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| B-001 | Raw element attributes go directly to BindingResolver, independently of type defaults.                                                                                              |
+| B-002 | Required identity attributes gate evidence before resolution.                                                                                                                       |
+| B-005 | Resolution verdicts map to located SPCT findings without guessing a target.                                                                                                         |
+| B-006 | Each repeated element resolves its own complete target.                                                                                                                             |
+| B-009 | The verifies role requires the supplied recognized-method fact.                                                                                                                     |
+| B-010 | The implements role retains its own implementation relationship.                                                                                                                    |
+| B-011 | The follows role uses the existing ADR ownership resolver.                                                                                                                          |
+| B-012 | Compiler declaration references and the role-placement check cover documentable types and members.                                                                                  |
+| B-013 | A read visits only the logical symbol’s declaration references, without traversing its members.                                                                                     |
+| B-019 | Attribute text remains scalar and the resolver validates its complete consumer identifier.                                                                                          |
+| B-020 | XML well-formedness, empty content, attribute names and placement are checked separately.                                                                                           |
+| B-021 | IsEvidence excludes invalid, unresolved, ambiguous and ineligible relationships.                                                                                                    |
+| B-024 | ShapeValid is computed independently of the target-resolution verdict.                                                                                                              |
+| B-025 | Deduplication compares role and resolved identity within one logical symbol.                                                                                                        |
+| B-026 | A redundant valid element produces SPCT0009 at its original XML name.                                                                                                               |
+| B-028 | Role participates in the relationship key.                                                                                                                                          |
+| B-029 | Separate reads preserve separate symbol identities.                                                                                                                                 |
+| B-035 | The localizable registry supplies only SPCT diagnostic descriptors.                                                                                                                 |
+| B-036 | Publication-history validation and the fixed registry test retain the assigned finding identity.                                                                                    |
+| B-037 | Publication-history validation rejects an active use of a previously retired ID.                                                                                                    |
+| B-038 | DocumentationDiagnostics creates SPCT descriptors and never mutates SchemaVersions; its unit test pins that boundary and the existing checker baseline remains the regression test. |
 
 ## 9. Traceability Matrix
 
 <!-- last written by: test-writer, 2026-10-18 -->
 
-| Claim ID | Scenario                             | Test                                                                                                                         | Status  |
-| -------- | ------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------- | ------- |
-| B-001    | Explicit evidence                    | DocumentationSteps.ThenExplicit; TypeBindingsAndDefaults_WhenReadingMembers_ShouldNeverSupplyImplicitIdentity                | Partial |
-| B-002    | Inherited binding                    | DocumentationSteps.ThenIncomplete; TypeBindingsAndDefaults_WhenReadingMembers_ShouldNeverSupplyImplicitIdentity              | Partial |
-| B-003    | Materialize default                  | Missing                                                                                                                      | Missing |
-| B-004    | Unsafe repair                        | DocumentationSteps.ThenNoSilentRepair; TypeBindingsAndDefaults_WhenReadingMembers_ShouldNeverSupplyImplicitIdentity          | Partial |
-| B-005    | Invalid binding                      | DocumentationSteps.ThenDiagnostic; TargetVerdict_WhenRead_ShouldRemainSeparateFromValidXmlShape                              | Partial |
-| B-006    | Multiple targets                     | DocumentationSteps.ThenMultiple; mechanism coverage pending                                                                  | Partial |
-| B-007    | Missing member binding               | Missing                                                                                                                      | Missing |
-| B-008    | Type authoring defaults              | Missing                                                                                                                      | Missing |
-| B-009    | Test verification role               | DocumentationSteps.ThenVerification; DocumentableDeclaration_WhenRead_ShouldBindItsOwnSymbol                                 | Partial |
-| B-010    | Implementation role                  | DocumentationSteps.ThenImplementation; DocumentableDeclaration_WhenRead_ShouldBindItsOwnSymbol                               | Partial |
-| B-011    | ADR relationship role                | DocumentationSteps.ThenAdr; DocumentableDeclaration_WhenRead_ShouldBindItsOwnSymbol                                          | Partial |
-| B-012    | Supported declaration scope          | DocumentationSteps.ThenValidShape; DocumentableDeclaration_WhenRead_ShouldBindItsOwnSymbol                                   | Partial |
-| B-013    | Type binding isolation               | DocumentationSteps.ThenTypeOnly; TypeBindingsAndDefaults_WhenReadingMembers_ShouldNeverSupplyImplicitIdentity                | Partial |
-| B-014    | Nearest nested default               | Missing                                                                                                                      | Missing |
-| B-015    | Whole nested default                 | Missing                                                                                                                      | Missing |
-| B-016    | Shared partial default               | Missing                                                                                                                      | Missing |
-| B-017    | Conflicting partial defaults         | Missing                                                                                                                      | Missing |
-| B-018    | No base type default                 | Missing                                                                                                                      | Missing |
-| B-019    | Scalar identity values               | DocumentationSteps.ThenScalar; mechanism coverage pending                                                                    | Partial |
-| B-020    | Invalid reserved XML                 | DocumentationSteps.ThenShapeFinding; InvalidReservedXml_WhenAnalyzed_ShouldReportOnePreciseFinding                           | Partial |
-| B-021    | Invalid relationship exclusion       | DocumentationSteps.ThenNoEvidence; TargetVerdict_WhenRead_ShouldRemainSeparateFromValidXmlShape                              | Partial |
-| B-022    | Invalid default exclusion            | Missing                                                                                                                      | Missing |
-| B-023    | Unrelated documentation preservation | Missing                                                                                                                      | Missing |
-| B-024    | Empty reserved elements              | DocumentationSteps.ThenValidShape; DocumentableDeclaration_WhenRead_ShouldBindItsOwnSymbol                                   | Partial |
-| B-025    | Duplicate relationship identity      | DocumentationSteps.ThenDeduplicated; RepeatedPartialRelationships_WhenRead_ShouldDeduplicateBySymbolRoleAndResolvedTarget    | Partial |
-| B-026    | Duplicate relationship diagnostic    | DocumentationSteps.ThenDuplicate; RepeatedPartialRelationships_WhenRead_ShouldDeduplicateBySymbolRoleAndResolvedTarget       | Partial |
-| B-027    | Remove redundant relationship copies | Missing                                                                                                                      | Missing |
-| B-028    | Distinct relationship roles          | DocumentationSteps.ThenDistinctRoles; RepeatedPartialRelationships_WhenRead_ShouldDeduplicateBySymbolRoleAndResolvedTarget   | Partial |
-| B-029    | Distinct code symbols                | DocumentationSteps.ThenDistinctSymbols; RepeatedPartialRelationships_WhenRead_ShouldDeduplicateBySymbolRoleAndResolvedTarget | Partial |
-| B-030    | Explicit repair target selection     | Missing                                                                                                                      | Missing |
-| B-031    | No guessed corrections               | Missing                                                                                                                      | Missing |
-| B-032    | No destructive validation cleanup    | Missing                                                                                                                      | Missing |
-| B-033    | Deterministic Fix All                | Missing                                                                                                                      | Missing |
-| B-034    | No bulk target propagation           | Missing                                                                                                                      | Missing |
-| B-035    | Analyzer diagnostic namespace        | DocumentationSteps.ThenNamespace; AgreedRegistry_WhenLoaded_ShouldKeepEveryAssignedDiagnosticAndItsSeverity                  | Partial |
-| B-036    | Stable published diagnostic IDs      | DocumentationSteps.ThenPublished; PublishedHistory_WhenValidated_ShouldRejectReassignmentRemovalAndRevival                   | Partial |
-| B-037    | Retired diagnostic IDs               | DocumentationSteps.ThenRetired; PublishedHistory_WhenValidated_ShouldRejectReassignmentRemovalAndRevival                     | Partial |
-| B-038    | Checker vocabulary isolation         | DocumentationSteps.ThenCheckerUnchanged; mechanism coverage pending                                                          | Partial |
+| Claim ID | Scenario                             | Test                                                                                                                                                                                                   | Status  |
+| -------- | ------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------- |
+| B-001    | Explicit evidence                    | DocumentationSteps.ThenExplicit; TypeBindingsAndDefaults_WhenReadingMembers_ShouldNeverSupplyImplicitIdentity                                                                                          | Covered |
+| B-002    | Inherited binding                    | DocumentationSteps.ThenIncomplete; TypeBindingsAndDefaults_WhenReadingMembers_ShouldNeverSupplyImplicitIdentity                                                                                        | Covered |
+| B-003    | Materialize default                  | Missing                                                                                                                                                                                                | Missing |
+| B-004    | Unsafe repair                        | DocumentationSteps.ThenNoSilentRepair; TypeBindingsAndDefaults_WhenReadingMembers_ShouldNeverSupplyImplicitIdentity                                                                                    | Partial |
+| B-005    | Invalid binding                      | DocumentationSteps.ThenDiagnostic; TargetVerdict_WhenRead_ShouldRemainSeparateFromValidXmlShape                                                                                                        | Covered |
+| B-006    | Multiple targets                     | DocumentationSteps.ThenMultiple; DistinctTargets_WhenRepeated_ShouldRetainEachCompleteRelationship                                                                                                     | Covered |
+| B-007    | Missing member binding               | Missing                                                                                                                                                                                                | Missing |
+| B-008    | Type authoring defaults              | Missing                                                                                                                                                                                                | Missing |
+| B-009    | Test verification role               | DocumentationSteps.ThenVerification; DocumentableDeclaration_WhenRead_ShouldBindItsOwnSymbol                                                                                                           | Covered |
+| B-010    | Implementation role                  | DocumentationSteps.ThenImplementation; DocumentableDeclaration_WhenRead_ShouldBindItsOwnSymbol                                                                                                         | Covered |
+| B-011    | ADR relationship role                | DocumentationSteps.ThenAdr; DocumentableDeclaration_WhenRead_ShouldBindItsOwnSymbol                                                                                                                    | Covered |
+| B-012    | Supported declaration scope          | DocumentationSteps.ThenValidShape; DocumentableDeclaration_WhenRead_ShouldBindItsOwnSymbol                                                                                                             | Covered |
+| B-013    | Type binding isolation               | DocumentationSteps.ThenTypeOnly; TypeBindingsAndDefaults_WhenReadingMembers_ShouldNeverSupplyImplicitIdentity                                                                                          | Covered |
+| B-014    | Nearest nested default               | Missing                                                                                                                                                                                                | Missing |
+| B-015    | Whole nested default                 | Missing                                                                                                                                                                                                | Missing |
+| B-016    | Shared partial default               | Missing                                                                                                                                                                                                | Missing |
+| B-017    | Conflicting partial defaults         | Missing                                                                                                                                                                                                | Missing |
+| B-018    | No base type default                 | Missing                                                                                                                                                                                                | Missing |
+| B-019    | Scalar identity values               | DocumentationSteps.ThenScalar; ScalarAttribute_WhenRead_ShouldValidateTheEntireConsumerIdentifier                                                                                                      | Covered |
+| B-020    | Invalid reserved XML                 | DocumentationSteps.ThenShapeFinding; InvalidReservedXml_WhenAnalyzed_ShouldReportOnePreciseFinding                                                                                                     | Covered |
+| B-021    | Invalid relationship exclusion       | DocumentationSteps.ThenNoEvidence; TargetVerdict_WhenRead_ShouldRemainSeparateFromValidXmlShape                                                                                                        | Covered |
+| B-022    | Invalid default exclusion            | Missing                                                                                                                                                                                                | Missing |
+| B-023    | Unrelated documentation preservation | Missing                                                                                                                                                                                                | Missing |
+| B-024    | Empty reserved elements              | DocumentationSteps.ThenValidShape; DocumentableDeclaration_WhenRead_ShouldBindItsOwnSymbol                                                                                                             | Covered |
+| B-025    | Duplicate relationship identity      | DocumentationSteps.ThenDeduplicated; RepeatedPartialRelationships_WhenRead_ShouldDeduplicateBySymbolRoleAndResolvedTarget                                                                              | Covered |
+| B-026    | Duplicate relationship diagnostic    | DocumentationSteps.ThenDuplicate; RepeatedPartialRelationships_WhenRead_ShouldDeduplicateBySymbolRoleAndResolvedTarget                                                                                 | Covered |
+| B-027    | Remove redundant relationship copies | Missing                                                                                                                                                                                                | Missing |
+| B-028    | Distinct relationship roles          | DocumentationSteps.ThenDistinctRoles; RepeatedPartialRelationships_WhenRead_ShouldDeduplicateBySymbolRoleAndResolvedTarget                                                                             | Covered |
+| B-029    | Distinct code symbols                | DocumentationSteps.ThenDistinctSymbols; RepeatedPartialRelationships_WhenRead_ShouldDeduplicateBySymbolRoleAndResolvedTarget                                                                           | Covered |
+| B-030    | Explicit repair target selection     | Missing                                                                                                                                                                                                | Missing |
+| B-031    | No guessed corrections               | Missing                                                                                                                                                                                                | Missing |
+| B-032    | No destructive validation cleanup    | Missing                                                                                                                                                                                                | Missing |
+| B-033    | Deterministic Fix All                | Missing                                                                                                                                                                                                | Missing |
+| B-034    | No bulk target propagation           | Missing                                                                                                                                                                                                | Missing |
+| B-035    | Analyzer diagnostic namespace        | DocumentationSteps.ThenNamespace; AgreedRegistry_WhenLoaded_ShouldKeepEveryAssignedDiagnosticAndItsSeverity                                                                                            | Covered |
+| B-036    | Stable published diagnostic IDs      | DocumentationSteps.ThenPublished; PublishedHistory_WhenValidated_ShouldRejectReassignmentRemovalAndRevival                                                                                             | Covered |
+| B-037    | Retired diagnostic IDs               | DocumentationSteps.ThenRetired; PublishedHistory_WhenValidated_ShouldRejectReassignmentRemovalAndRevival                                                                                               | Covered |
+| B-038    | Checker vocabulary isolation         | DocumentationSteps.ThenCheckerUnchanged; AgreedRegistry_WhenLoaded_ShouldKeepEveryAssignedDiagnosticAndItsSeverity; TheBaselineTree_WhenChecked_ShouldGiveTheGoldenReportsVerdictsFieldForFieldInOrder | Covered |
 
 ## 10. Lessons / Spec Deltas
 
@@ -309,11 +335,12 @@ None.
 
 ## 12. Sign-off
 
-<!-- last written by: spec-reviewer, 2026-10-17 -->
+<!-- last written by: spec-reviewer, 2026-10-18 -->
 
-| Section | Status | Reviewer | Note                                                                                                              |
-| ------- | ------ | -------- | ----------------------------------------------------------------------------------------------------------------- |
-| 1-12    | 🟡     | Pending  | Owner selected the model; this decomposed Feature has not received detailed agreement or implementation sign-off. |
+| Section               | Status | Reviewer      | Note                                                                                                                                                                                                                     |
+| --------------------- | ------ | ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 1-12                  | 🟡     | Pending       | Owner selected the model; this decomposed Feature has not received detailed agreement or implementation sign-off.                                                                                                        |
+| Read-only diagnostics | 🟢     | spec-reviewer | Self-review of the read-only claims named in § 9: compiler-harness and mechanism tests pass on both target frameworks; the full build passes. Defaults, invoked repairs and deployment integration remain separate work. |
 
 ## Tasks
 

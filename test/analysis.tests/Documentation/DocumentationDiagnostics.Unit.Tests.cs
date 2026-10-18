@@ -12,9 +12,10 @@ public sealed class DocumentationDiagnosticsUnitTests
     {
         // Given
         DocumentationDiagnostics? registry = null;
+        // When
         Action publish = () => registry = new DocumentationDiagnostics([previous]);
 
-        // When / Then
+        // Then
         if (rejected)
         {
             publish.Should().Throw<ArgumentException>();

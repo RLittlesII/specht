@@ -1,7 +1,7 @@
 id: "0239"
 type: task
 title: "Implement XML binding diagnostics"
-status: in-review
+status: done
 value: 5
 risk: 4
 parent: "0201"
@@ -13,7 +13,6 @@ claims:
   [
     "B-001",
     "B-002",
-    "B-004",
     "B-005",
     "B-006",
     "B-009",
@@ -36,7 +35,7 @@ claims:
   ]
 created: "2026-10-17"
 updated: "2026-10-18"
-closed: null
+closed: "2026-10-18"
 summary: |
   Implement read-only XML role, placement, strict validation, relationship deduplication
   and SPCT diagnostics using the F2 diagnostic contract. 0238 supplies target resolution;
@@ -47,7 +46,6 @@ summary: |
 acceptance_criteria:
   - "0201-F2 B-001"
   - "0201-F2 B-002"
-  - "0201-F2 B-004"
   - "0201-F2 B-005"
   - "0201-F2 B-006"
   - "0201-F2 B-009"
@@ -68,6 +66,11 @@ acceptance_criteria:
   - "0201-F2 B-037"
   - "0201-F2 B-038"
   - "§ 9 names passing acceptance and mechanism tests for every delivered claim before this item is done."
-decisions: []
+decisions:
+  - |
+    2026-10-18, delivery: B-004's complete no-silent-repair acceptance belongs
+    to 0241, which owns invoked repairs after default selection. Read-only
+    incomplete-identity validation stays here under B-002. Rejected: making
+    this prerequisite depend on its own downstream repair implementation.
 out_of_scope:
   - "Everything in § 5 of the cited specification."
