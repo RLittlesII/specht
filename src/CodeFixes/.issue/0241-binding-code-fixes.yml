@@ -1,0 +1,46 @@
+id: "0241"
+type: task
+title: "Implement safe XML binding code fixes"
+status: ready-for-implementation
+value: 5
+risk: 4
+parent: "0201"
+children: []
+depends_on: ["0240"]
+spikes: []
+spec: src/CodeFixes/.spec/README.md
+claims:
+  [
+    "B-003",
+    "B-007",
+    "B-023",
+    "B-027",
+    "B-030",
+    "B-031",
+    "B-032",
+    "B-033",
+    "B-034",
+  ]
+created: "2026-10-17"
+updated: "2026-10-17"
+closed: null
+summary: |
+  Implement invoked target selection, default materialization, duplicate cleanup and
+  deterministic Fix All in Specht.Codefixes. 0240 supplies validated defaults and 0239
+  supplies the binding verdict. Assert exact fixed source and reanalysis, including
+  preservation of other XML. A selected target never propagates through Fix All. Keep
+  repairs separate from read-only analysis.
+acceptance_criteria:
+  - "0201-F2 B-003"
+  - "0201-F2 B-007"
+  - "0201-F2 B-023"
+  - "0201-F2 B-027"
+  - "0201-F2 B-030"
+  - "0201-F2 B-031"
+  - "0201-F2 B-032"
+  - "0201-F2 B-033"
+  - "0201-F2 B-034"
+  - "§ 9 names passing acceptance and mechanism tests for every delivered claim before this item is done."
+decisions: []
+out_of_scope:
+  - "Everything in § 5 of the cited specification."

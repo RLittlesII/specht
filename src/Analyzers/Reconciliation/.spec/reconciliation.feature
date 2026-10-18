@@ -3,7 +3,7 @@ Feature: Traceability reconciliation
 
   @B-001
   Scenario: Direct test chain
-    Given a claim bound to a discovered xUnit or Playwright .NET test and a matching result with no scenario policy
+    Given a claim bound to a discovered test through the common runner-evidence contract and a matching result with no scenario policy
     When the declared analysis is requested
     Then reconciliation presents the claim-to-method-to-case-to-result chain without requiring Reqnroll
 
@@ -36,3 +36,118 @@ Feature: Traceability reconciliation
     Given a declared specification claim requiring test evidence with no test binding at all
     When the declared analysis is requested
     Then reconciliation reports the missing evidence starting from that claim even when no method names it
+
+  @B-007 @boundary
+  Scenario: Ineligible target evidence
+    Given a resolving target classified as ineligible by the binding lifecycle policy
+    And a binding to that target
+    When evidence is reconciled for the current scope
+    Then that binding does not satisfy a current evidence requirement
+    And the historical link retains the target identity and lifecycle state
+
+  @B-008
+  Scenario: Default test requirement
+    Given a non-exempt current claim in a selected Feature
+    And no valid test binding to that claim
+    When coverage requirements are evaluated
+    Then the claim has missing required test evidence
+
+  @B-009
+  Scenario Outline: Optional link requirements
+    Given a current claim with no "<kind>" link
+    And the consumer "<policy>" that link requirement
+    When coverage requirements are evaluated
+    Then the missing link is "<outcome>"
+
+    Examples:
+      | kind           | policy                  | outcome                      |
+      | implementation | has not enabled         | not a required-link gap      |
+      | scenario       | has not enabled         | not a required-link gap      |
+      | implementation | has explicitly enabled  | reported as a required gap   |
+      | scenario       | has explicitly enabled  | reported as a required gap   |
+
+  @B-010 @boundary
+  Scenario: Visible coverage exemption
+    Given an explicit coverage exemption with a reason
+    When coverage is presented
+    Then the exemption and reason remain visible
+    And the exemption is classified as exempt rather than covered
+
+  @B-011
+  Scenario Outline: Declared compilation completeness
+    Given a declared set of project and target-framework combinations
+    And "<availability>"
+    When analysis completeness is evaluated
+    Then the analysis is "<state>"
+
+    Examples:
+      | availability                                      | state      |
+      | current required inputs for every combination     | complete   |
+      | a project combination omitted                     | incomplete |
+      | a target-framework combination omitted            | incomplete |
+      | stale required inputs for one combination         | incomplete |
+
+  @B-012 @boundary
+  Scenario Outline: Stale evidence state
+    Given "<state>" discovery or result evidence
+    When evidence is reconciled
+    Then the evidence remains visibly "<state>"
+    And it does not establish current discovery or execution
+
+    Examples:
+      | state      |
+      | stale      |
+      | mismatched |
+
+  @B-013 @boundary
+  Scenario Outline: Binding and execution independence
+    Given a valid binding with "<state>" test results
+    When evidence is reconciled
+    Then binding validity is evaluated independently of the execution-evidence state
+    And the results are not treated as passing
+
+    Examples:
+      | state      |
+      | absent     |
+      | stale      |
+      | mismatched |
+
+  @B-014
+  Scenario Outline: Trace report surface
+    Given supplied traceability evidence
+    When specht trace is requested with "<format>" output
+    Then reconciliation is presented in that format
+
+    Examples:
+      | format         |
+      | human summary  |
+      | versioned JSON |
+
+  @B-015 @boundary
+  Scenario: Checker report isolation
+    Given the existing checker report contract
+    When the separate trace report is introduced
+    Then the checker report contract is unchanged
+
+  @B-016 @boundary
+  Scenario: Consume supplied evidence
+    Given discovery and result artifacts from a normal test workflow
+    When reconciliation runs
+    Then it consumes those artifacts without launching test execution
+
+  @B-017
+  Scenario Outline: Passing outcomes required by default
+    Given complete current inputs and required links for a selected claim
+    And its required test case has outcome "<outcome>"
+    When the supplied evidence is reconciled by specht trace
+    Then the default trace gate "<gate>"
+    And binding validity and execution outcome remain separate
+
+    Examples:
+      | outcome | gate      |
+      | passed  | succeeds  |
+      | failed  | fails     |
+      | skipped | fails     |
+      | notRun  | fails     |
+      | aborted | fails     |
+      | absent  | fails     |

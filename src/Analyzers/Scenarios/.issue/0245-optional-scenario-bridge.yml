@@ -1,0 +1,34 @@
+id: "0245"
+type: feature
+title: "Implement the optional scenario evidence bridge"
+status: ready-for-implementation
+value: 4
+risk: 3
+parent: "0201"
+children: []
+depends_on: ["0244"]
+spikes: []
+spec: src/Analyzers/Scenarios/.spec/README.md
+claims: ["B-001", "B-002", "B-003", "B-004", "B-005", "B-006", "B-007", "B-008"]
+created: "2026-10-17"
+updated: "2026-10-17"
+closed: null
+summary: |
+  Map existing consumer generator/runner scenario metadata into the common evidence
+  contract from 0244. Apply Feature defaults and whole Scenario/Outline overrides, resolve
+  local claim tags and retain separate scenario, row, case and shared-step identities.
+  Reuse consumer bridges and leave convention analyzers consumer-owned. Reqnroll remains
+  optional.
+acceptance_criteria:
+  - "0201-F4 B-001"
+  - "0201-F4 B-002"
+  - "0201-F4 B-003"
+  - "0201-F4 B-004"
+  - "0201-F4 B-005"
+  - "0201-F4 B-006"
+  - "0201-F4 B-007"
+  - "0201-F4 B-008"
+  - "§ 9 names passing acceptance and mechanism tests for every delivered claim before this item is done."
+decisions: []
+out_of_scope:
+  - "Everything in § 5 of the cited specification."

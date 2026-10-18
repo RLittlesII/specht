@@ -1,6 +1,6 @@
 ---
 title: "Specification: Test evidence adapters"
-description: "Map explicit test-method bindings to discovered test cases without requiring Gherkin."
+description: "Map explicit test-method bindings to runner evidence across .NET test frameworks without requiring Gherkin."
 type: feature
 id: "F3"
 epic: "0201"
@@ -31,15 +31,15 @@ synced_at: null
 
 <!-- last written by: spec-author, 2026-10-17 -->
 
-Map explicit test-method bindings to discovered test cases without requiring Gherkin. This draft decomposes the owner-selected model; unresolved public contracts block implementation, not the recorded adoption decision.
+Map explicit test-method bindings to runner evidence across .NET test frameworks without requiring Gherkin. This draft decomposes the owner-selected model; unresolved public contracts block implementation, not the recorded adoption decision.
 
 ## 2. User Needs
 
 <!-- last written by: spec-author, 2026-10-17 -->
 
-| #   | Persona             | Need                                                                                  | Pain Point Today                                                 |
-| --- | ------------------- | ------------------------------------------------------------------------------------- | ---------------------------------------------------------------- |
-| 1   | Consumer maintainer | Map explicit test-method bindings to discovered test cases without requiring Gherkin. | References and test names can drift without an inspectable link. |
+| #   | Persona             | Need                                                                                                        | Pain Point Today                                                 |
+| --- | ------------------- | ----------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------- |
+| 1   | Consumer maintainer | Map explicit test-method bindings to runner evidence across .NET test frameworks without requiring Gherkin. | References and test names can drift without an inspectable link. |
 
 ### Assumptions
 
@@ -51,13 +51,17 @@ Map explicit test-method bindings to discovered test cases without requiring Ghe
 
 <!-- last written by: spec-author, 2026-10-17 -->
 
-| ID    | Claim                                                                                                                                                                                        | Source                              | Status |
-| ----- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------- | ------ |
-| B-001 | Given a bound xUnit fact in a selected test project without Reqnroll, this Feature ensures its discovered test case is linked to that method and claim.                                      | Epic 0201; decision 0001 in 0201-F1 | Active |
-| B-002 | Given a bound xUnit theory discovering two data rows without Reqnroll, this Feature ensures both test cases link to the same bound method without treating them as two methods.              | Epic 0201; decision 0001 in 0201-F1 | Active |
-| B-003 | Given a bound Playwright .NET test hosted by the supported xUnit adapter without Reqnroll, this Feature ensures the discovered case links through its CSharp method to the declared claim.   | Epic 0201; decision 0001 in 0201-F1 | Active |
-| B-004 | Given a selected test project with no supported discovery adapter, this Feature ensures the project is reported as unsupported rather than empty complete coverage.                          | Epic 0201; decision 0001 in 0201-F1 | Active |
-| B-005 | Given two discovered cases with duplicate display names but distinct runner identities, this Feature ensures they remain distinct and correlate through runner identity and method metadata. | Epic 0201; decision 0001 in 0201-F1 | Active |
+| ID    | Claim                                                                                                                                                                                                                 | Source                                             | Status  |
+| ----- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------- | ------- |
+| B-001 | Given a bound xUnit fact in a selected test project without Reqnroll, this Feature ensures its discovered test case is linked to that method and claim.                                                               | Epic 0201; decision 0001 in 0201-F1                | Active  |
+| B-002 | Given a bound xUnit theory discovering two data rows without Reqnroll, this Feature ensures both test cases link to the same bound method without treating them as two methods.                                       | Epic 0201; decision 0001 in 0201-F1                | Active  |
+| B-003 | Given a bound Playwright .NET test with conforming runner evidence and no Reqnroll, this Feature links the discovered case through its CSharp method to the declared claim.                                           | Epic 0201; decision 0001 in 0201-F1; decision 0001 | Amended |
+| B-004 | Given a selected test project with missing collection integration or insufficient case/method metadata, this Feature reports unavailable or unresolved evidence rather than empty complete coverage.                  | Epic 0201; decision 0001 in 0201-F1; decision 0001 | Amended |
+| B-005 | Given two discovered cases with duplicate display names but distinct runner identities, this Feature ensures they remain distinct and correlate through runner identity and method metadata.                          | Epic 0201; decision 0001 in 0201-F1                | Active  |
+| B-006 | Given supplied discovery or results, this Feature checks their source, assembly and configuration identities against the current analysis inputs.                                                                     | 0201-F6 decision 0004                              | Active  |
+| B-007 | Given conforming runner evidence from a .NET test framework, this Feature maps case and method identities through the common evidence contract without a framework-name allowlist.                                    | Decision 0001                                      | Active  |
+| B-008 | Given runtime-only parameterized test cases, this Feature leaves case enumeration incomplete until the runner supplies the cases and never invents cases or counts.                                                   | Decision 0001                                      | Active  |
+| B-009 | Given collected test evidence, this Feature reads versioned JSON carrying runner case IDs, method metadata, project/framework identity, source/assembly/configuration fingerprints, adapter version and run identity. | Decision 0001                                      | Active  |
 
 ## 4. Constraints
 
@@ -73,11 +77,11 @@ Map explicit test-method bindings to discovered test cases without requiring Ghe
 
 <!-- last written by: spec-author, 2026-10-17 -->
 
-| #   | Item                                                                                  | Exclusion Reason                      |
-| --- | ------------------------------------------------------------------------------------- | ------------------------------------- |
-| 1   | JavaScript and TypeScript Playwright bindings; Roslyn analyzes CSharp.                | This agreement does not authorize it. |
-| 2   | Claim inference from test display names, assertion text or scenario titles.           | This agreement does not authorize it. |
-| 3   | Supporting every xUnit version, NUnit or MSTest is not implied by Playwright support. | This agreement does not authorize it. |
+| #   | Item                                                                        | Exclusion Reason                      |
+| --- | --------------------------------------------------------------------------- | ------------------------------------- |
+| 1   | JavaScript and TypeScript Playwright bindings; Roslyn analyzes CSharp.      | This agreement does not authorize it. |
+| 2   | Claim inference from test display names, assertion text or scenario titles. | This agreement does not authorize it. |
+| 3   | Guessing case or method identity when runner metadata is insufficient.      | This agreement does not authorize it. |
 
 ## 6. Concern Separation
 
@@ -89,7 +93,10 @@ Not yet designed; no production implementation is authorized by this draft.
 
 <!-- last written by: implementer, 2026-10-17 -->
 
-Deferred until the public contract questions in § 11 are resolved. The isolated spike informs those decisions but is not production architecture.
+Decision 0001 adopts a common framework-independent runner-evidence contract,
+including deferred case enumeration and versioned JSON. Concrete collection
+integrations, evidence schema and compatibility tests remain to be designed;
+the isolated spike is not production architecture.
 
 ## 8. Testing Strategy
 
@@ -101,13 +108,17 @@ The companion scenarios state the acceptance obligations. Production step defini
 
 <!-- last written by: test-writer, 2026-10-17 -->
 
-| Claim ID | Scenario            | Test    | Status  |
-| -------- | ------------------- | ------- | ------- |
-| B-001    | xUnit fact          | Missing | Missing |
-| B-002    | xUnit theory        | Missing | Missing |
-| B-003    | Playwright dotnet   | Missing | Missing |
-| B-004    | Unsupported adapter | Missing | Missing |
-| B-005    | Stable correlation  | Missing | Missing |
+| Claim ID | Scenario                              | Test    | Status  |
+| -------- | ------------------------------------- | ------- | ------- |
+| B-001    | xUnit fact                            | Missing | Missing |
+| B-002    | xUnit theory                          | Missing | Missing |
+| B-003    | Playwright dotnet                     | Missing | Missing |
+| B-004    | Unavailable evidence                  | Missing | Missing |
+| B-005    | Stable correlation                    | Missing | Missing |
+| B-006    | Evidence identity matching            | Missing | Missing |
+| B-007    | Framework-independent runner evidence | Missing | Missing |
+| B-008    | Runtime-only case enumeration         | Missing | Missing |
+| B-009    | Versioned runner evidence             | Missing | Missing |
 
 ## 10. Lessons / Spec Deltas
 
@@ -119,10 +130,10 @@ None.
 
 <!-- last written by: spec-author, 2026-10-17 -->
 
-| ID   | Question                                                                            | Blocks                    | Resolution |
-| ---- | ----------------------------------------------------------------------------------- | ------------------------- | ---------- |
-| OQ-1 | Which xUnit versions, dynamic theory discovery modes and output formats ship first? | Production implementation | Open       |
-| OQ-2 | What runner metadata and source identity reject stale discovery and results?        | Production implementation | Open       |
+| ID   | Question                                                                            | Blocks                                            | Resolution                                                                                                                                                                                                                                                                                                                                                                                               |
+| ---- | ----------------------------------------------------------------------------------- | ------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| OQ-1 | Which xUnit versions, dynamic theory discovery modes and output formats ship first? | Concrete collection integration and schema design | RESOLVED for behavior, 2026-10-17: decision 0001 replaces a framework/version allowlist with a common runner-evidence contract and extensible collection adapters. xUnit, NUnit, MSTest and Playwright are validation cases. Runtime-only cases remain unenumerated until supplied; collection produces versioned JSON. Concrete integration compatibility and wire schema remain design/test-plan work. |
+| OQ-2 | What runner metadata and source identity reject stale discovery and results?        | Evidence schema design                            | RESOLVED for metadata semantics, 2026-10-17: F6 decision 0004 requires source/assembly/configuration matching. Decision 0001 adds case IDs, method metadata, project/framework identity, adapter version and run identity in versioned JSON. Exact fields and encoding remain technical design.                                                                                                          |
 
 ## 12. Sign-off
 
@@ -134,7 +145,7 @@ None.
 
 ## Tasks
 
-No delivery items cut; the agreement precedes implementation planning.
+- [0244: Collect framework-independent test evidence](../.issue/0244-test-evidence-collection.yml)
 
 ## Scoring
 
