@@ -214,7 +214,8 @@ the owner can reverse; record a reversal as a decision, never silently.
 - Its specification model is the schema it ships; the epic for the tool is
   written with the Feature template it ships.
 - Pre-commit and CI both call the tool exactly as a consumer would, through
-  the local tool manifest, not through a project reference.
+  an isolated local tool manifest populated from this checkout's package, not
+  through a project reference (0001-F2 decision 0014, owner, 2026-10-17).
 
 ## 8. Order of work
 

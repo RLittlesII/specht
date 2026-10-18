@@ -2,7 +2,7 @@ id: "0227"
 type: task
 title: Report an unsigned waiver and a retired claim still carried, off unless raised
 
-status: in-review
+status: done
 
 risk: 3
 
@@ -21,7 +21,7 @@ claims:
 
 created: "2026-10-15"
 updated: "2026-10-17"
-closed: null
+closed: "2026-10-17"
 
 summary: |
   SPEC034 reports a waived § 9 row with no signed-off approver and date,
@@ -53,6 +53,7 @@ summary: |
   The owner resumed 0227 after 0039 and 0235 merged; the isolated
   delivery starts from main at f087c45e.
 
+  Initial draft handoff, before PR #223 merged:
   Implementation and branch-checker verification are complete. The existing
   build restores checker 0.1.131 before compiling this branch; that checker
   rejects the required tests/owners configuration. Three installed-tool
@@ -60,6 +61,11 @@ summary: |
   bootstrap finding for review, not a requirement to publish schema 0.2.0
   first or provide another published package version. The normal build is
   not green, so this pull request remains a draft pending that correction.
+
+  Delivery reconciliation, 2026-10-17: PR #223 merged as b698b1ad.
+  The bootstrap finding is delivered separately by bug 0237, whose normal
+  unskipped build now passes. The earlier draft-check failures above remain
+  historical evidence; this does not claim that PR #223's CI passed.
 
 acceptance_criteria:
   - "B-018 — waived row without a signed-off approver and date, SPEC034"

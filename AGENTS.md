@@ -327,8 +327,10 @@ Traceability is checked deterministically, not by memory:
 ./build.sh Specht
 ```
 
-It runs the tool on this repository's own tree, through the local tool manifest,
-exactly as a consumer would. It validates frontmatter against `.specht/schema/frontmatter/`, the
+It builds and packs the working checker, installs it through an isolated local
+tool manifest under .artifacts/self-check/, and checks this repository's own
+tree (0001-F2 decision 0014). The hook uses its staged snapshot. The committed
+published package pin remains the consumer installation contract. It validates frontmatter against `.specht/schema/frontmatter/`, the
 twelve sections and their order, claim-id uniqueness, every `@B-00n` tag
 resolving to a claim, § 9 carrying exactly one row per § 3 claim,
 `children`/`depends_on` resolving to real files, and dependency symmetry. Rules

@@ -15,11 +15,8 @@ repository has chosen, and `dotnet tool restore` in CI brings it back. No build
 depends on a global install, and no consumer carries the engine as a project
 reference (brief § 2 Must-4, § 6).
 
-This repository is its own first consumer. Its build and, from 0062, its
-pre-commit hook run `dotnet specht` from its own manifest — the same call site
-every other repository uses (brief § 7). Until the first package is published, the
-self-check runs the project directly (`dotnet run --project src/tool --
---root .`); the moment a package exists, the manifest replaces that.
+This repository's build and pre-commit self-check follow
+[`specht-conventions` § Build and test](../../specht-conventions/SKILL.md#build-and-test).
 
 ## Pack
 
@@ -88,9 +85,9 @@ With a local install, invoke via `dotnet tool run specht` or `dotnet specht`.
 Then `dotnet specht init` writes the manifest, the frontmatter schemas and the templates into `<root>/.specht/`
 from the embedded copies, never overwriting an existing file.
 
-**When to use**: every consumer repository, and this one. A pinned tool version
-beside a pinned `schemaVersion` is what makes lagging deliberate rather than
-drift.
+**When to use**: every consumer repository; this repository retains its committed
+manifest for consumer installation and restore coverage. A pinned tool version
+beside a pinned `schemaVersion` is what makes lagging deliberate rather than drift.
 
 ## Publish to NuGet.org
 

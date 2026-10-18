@@ -325,7 +325,7 @@ internal sealed partial class SpechtBuild
     /// <summary>
     /// Writes each violation in a pull request's changed files as a GitHub annotation, from a Linux runner only.
     /// </summary>
-    private void AnnotateChangedFiles(IReadOnlyCollection<Output> output)
+    private void AnnotateChangedFiles(IReadOnlyCollection<string> output)
     {
         if (GitHubActions.Instance is null
             || Environment.GetEnvironmentVariable("EVENT_NAME") != "pull_request"
@@ -339,8 +339,7 @@ internal sealed partial class SpechtBuild
         var changed = Git($"diff --name-only --no-renames {baseSha}...{headSha}", RootDirectory, logOutput: false, exitHandler: static _ => null)
             .Where(static line => line.Type == OutputType.Std).Select(static line => line.Text).ToHashSet(StringComparer.Ordinal);
         var violations = output
-            .Where(static line => line.Type == OutputType.Std)
-            .Select(static line => Diagnostic().Match(line.Text))
+            .Select(static line => Diagnostic().Match(line))
             .Where(match => match.Success && changed.Contains(match.Groups["file"].Value));
 
         foreach (var violation in violations)

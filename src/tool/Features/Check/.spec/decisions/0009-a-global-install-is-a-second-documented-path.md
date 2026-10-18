@@ -68,4 +68,7 @@ with its own invocation.
 
 ## Reversal
 
-None.
+2026-10-17, limited reversal by the repository owner, [decision 0014](0014-self-check-installs-the-working-package.md):
+this repository's self-check installs its working package through an isolated
+local manifest. Consumers retain the committed published pin, and no global
+installation or engine project reference is introduced.
