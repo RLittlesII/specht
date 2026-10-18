@@ -20,6 +20,27 @@ public sealed class DocumentationBindingReader
     public DocumentationAnalysis Read(ISymbol symbol, BindingResolver resolver, bool recognizedTest = false,
         CancellationToken cancellationToken = default)
     {
+        var result = ReadDeclaration(symbol, resolver, recognizedTest, cancellationToken);
+        for (var type = symbol as INamedTypeSymbol ?? symbol.ContainingType; type is not null; type = type.ContainingType)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            var context = SymbolEqualityComparer.Default.Equals(type, symbol) ? result : ReadDeclaration(type, resolver, false, cancellationToken);
+            var defaults = context.Elements.Where(static element => element.Role == "spec").ToArray();
+            if (defaults.Length > 0)
+            {
+                return result with
+                {
+                    AuthoringDefault = defaults.All(element => element.ShapeValid && SameDefault(element, defaults[0])) ? defaults[0] : null,
+                };
+            }
+        }
+
+        return result;
+    }
+
+    private static DocumentationAnalysis ReadDeclaration(ISymbol symbol, BindingResolver resolver, bool recognizedTest,
+        CancellationToken cancellationToken)
+    {
         var elements = new List<DocumentationBinding>();
         var relationships = new List<DocumentationBinding>();
         var findings = new List<DocumentationFinding>();
@@ -138,8 +159,20 @@ public sealed class DocumentationBindingReader
             }
         }
 
+        var defaults = elements.Where(static element => element.Role == "spec" && element.ShapeValid).ToArray();
+        if (defaults.Length > 1 && defaults.Any(element => !SameDefault(element, defaults[0])))
+        {
+            findings.AddRange(defaults.Select(static element => new DocumentationFinding("SPCT0008",
+                Location.Create(element.Location.SourceTree!, new TextSpan(element.Location.SourceSpan.Start + 1, 4)),
+                string.Join(" ", element.Attributes.Select(static attribute => attribute.Key + "=\"" + attribute.Value + "\"")))));
+        }
+
         return new DocumentationAnalysis(elements.AsReadOnly(), relationships.AsReadOnly(), findings.AsReadOnly());
     }
+
+    private static bool SameDefault(DocumentationBinding left, DocumentationBinding right) =>
+        left.Attributes.Count == right.Attributes.Count && left.Attributes.All(attribute =>
+            right.Attributes.TryGetValue(attribute.Key, out var value) && string.Equals(value, attribute.Value, StringComparison.Ordinal));
 
     private static bool Present(IReadOnlyDictionary<string, string> values, string key) =>
         values.TryGetValue(key, out var value) && !string.IsNullOrWhiteSpace(value);
