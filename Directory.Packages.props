@@ -18,6 +18,9 @@
   </ItemGroup>
 
   <ItemGroup Label="Compiler components">
+    <PackageVersion Include="JsonPointer.Net" Version="7.0.2" />
+    <PackageVersion Include="Microsoft.CodeAnalysis.Common" Version="5.0.0" />
+    <PackageVersion Include="Microsoft.CodeAnalysis.CSharp" Version="5.0.0" />
     <PackageVersion Include="System.Text.Json" Version="10.0.13" />
   </ItemGroup>
 
@@ -41,6 +44,7 @@
   <ItemGroup Label="Testing">
     <PackageVersion Include="xunit.v3" Version="4.0.1" />
     <PackageVersion Include="Reqnroll.xunit.v3" Version="3.3.4" />
+    <PackageVersion Include="Rocket.Surgery.Extensions.Testing.SourceGenerators" Version="10.0.1" />
     <PackageVersion Include="AwesomeAssertions" Version="9.6.0" />
     <PackageVersion Include="Spectre.Console.Cli.Testing" Version="0.57.2" />
     <PackageVersion Include="Rocket.Surgery.Extensions.Testing.AutoFixtures" Version="10.0.6" />

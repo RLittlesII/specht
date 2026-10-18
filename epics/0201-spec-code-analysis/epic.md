@@ -253,11 +253,15 @@ metadata extraction remain technical design.
 
 Owner decision, 2026-10-17: deploy `Specht.CodeAnalysis` privately through NuGet,
 aligned with the repository/tool release version while checking interoperability
-through schema/evidence contract versions. The versioned manifest `codeAnalysis`
-section owns scope, required links, exemptions and record discovery; existing ID
-grammars remain authoritative. MSBuild owns root/input delivery, and Roslyn owns
-severity/suppression. New settings enter through a new schema version without
-changing old pins. [0201-F6 decision 0005](../../src/CodeAnalysis/.spec/decisions/0005-deployment-configuration.md)
+through schema/evidence contracts. Owner correction, 2026-10-18: consume the
+consumer repository's supplied schemas, versions and existing ID grammars,
+including bring-your-own schemas. Knowledge of Specht `0.2.0` does not require a
+consumer at `0.1.0` to upgrade or identify its schema as Specht-owned. Analyzer
+adoption adds a `codeAnalysis` manifest section without introducing schema `0.3.0`
+or changing the consumer's pin. Scope, required links, exemptions and record
+discovery remain explicit policy;
+explicit mappings read it from existing consumer configuration (F6 OQ-1). MSBuild owns
+root/input delivery, and Roslyn owns severity/suppression. [0201-F6 decision 0005](../../src/CodeAnalysis/.spec/decisions/0005-deployment-configuration.md)
 records the call. [ADR-0017](../../.spec/adr/0017-compiler-loaded-components-target-netstandard.md)
 records the approved `netstandard2.0` exception for compiler-loaded analyzer and
 code-fix components; CLI, collector and test targets retain `net10.0;net11.0`.

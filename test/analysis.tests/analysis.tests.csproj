@@ -10,6 +10,7 @@
   <ItemGroup>
     <PackageReference Include="xunit.v3" />
     <PackageReference Include="AwesomeAssertions" />
+    <PackageReference Include="Rocket.Surgery.Extensions.Testing.SourceGenerators" />
     <PackageReference Include="Rocket.Surgery.Extensions.Testing.AutoFixtures" />
     <PackageReference Include="TestableIO.System.IO.Abstractions.TestingHelpers" />
     <ProjectReference Include="../../src/analyzers/analyzers.csproj" />

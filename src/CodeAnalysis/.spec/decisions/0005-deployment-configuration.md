@@ -59,4 +59,25 @@ configuration. ADR-0017 records the separately approved compiler-target exceptio
 
 ## Reversal
 
-None.
+**2026-10-18, repository owner:** schema ownership and version belong to the
+consumer repository. Consume what it supplies, including bring-your-own schemas.
+A consumer at `0.1.0` need not upgrade because the analyzer knows `0.2.0`; the
+version string alone does not identify a Specht schema.
+
+The earlier requirement to introduce analysis settings and ADR grammar through a
+new Specht schema version is reversed. The owner confirmed that the new
+`codeAnalysis` manifest section is still required; adding it does not require
+schema `0.3.0` or a consumer pin change. Do not substitute a shipped schema for
+the supplied consumer schema or reject it merely
+because its version is outside the Specht catalog. Validate actual supplied
+inputs; genuinely missing or invalid inputs still fail explicitly.
+
+Rejected: making analyzer adoption contingent on Specht schema ownership or an
+upgrade. That would dictate the consumer's schema and prevent consumers with
+valid independent contracts from adopting the analyzer. The accepted cost is
+reading the consumer's configured schema and mappings rather than relying on a
+Specht version lookup. The owner selected existing consumer configuration through explicit mappings:
+build integration supplies configuration and mappings. The new analysis section
+contains analyzer settings while existing consumer schema metadata is read through
+explicit mappings. F6 OQ-1 records the resolution; the remaining installation, release, build-input
+and reporting decisions stand.
