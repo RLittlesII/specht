@@ -1,7 +1,7 @@
 id: "0239"
 type: task
 title: "Implement XML binding diagnostics"
-status: ready-for-implementation
+status: in-review
 value: 5
 risk: 4
 parent: "0201"
@@ -35,7 +35,7 @@ claims:
     "B-038",
   ]
 created: "2026-10-17"
-updated: "2026-10-17"
+updated: "2026-10-18"
 closed: null
 summary: |
   Implement read-only XML role, placement, strict validation, relationship deduplication
