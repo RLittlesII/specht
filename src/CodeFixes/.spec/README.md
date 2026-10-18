@@ -5,7 +5,7 @@ type: feature
 id: "F2"
 epic: "0201"
 spec_status: draft
-status: ready-for-architecture
+status: in-progress
 priority: med
 value: 0
 risk: 0
@@ -246,6 +246,32 @@ Defaults and repairs remain unimplemented; their scenarios remain pending.
 The read-only mechanisms are covered by the tests named in § 9. Repair safety
 remains Partial until the invoked-repair path is exercised.
 
+The corresponding unit tests are named once, in § 9. The implemented mechanisms are:
+
+| Claim | Mechanism                                                                                                                                                                           |
+| ----- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| B-001 | Raw element attributes go directly to BindingResolver, independently of type defaults.                                                                                              |
+| B-002 | Required identity attributes gate evidence before resolution.                                                                                                                       |
+| B-005 | Resolution verdicts map to located SPCT findings without guessing a target.                                                                                                         |
+| B-006 | Each repeated element resolves its own complete target.                                                                                                                             |
+| B-009 | The verifies role requires the supplied recognized-method fact.                                                                                                                     |
+| B-010 | The implements role retains its own implementation relationship.                                                                                                                    |
+| B-011 | The follows role uses the existing ADR ownership resolver.                                                                                                                          |
+| B-012 | Compiler declaration references and the role-placement check cover documentable types and members.                                                                                  |
+| B-013 | A read visits only the logical symbol’s declaration references, without traversing its members.                                                                                     |
+| B-019 | Attribute text remains scalar and the resolver validates its complete consumer identifier.                                                                                          |
+| B-020 | XML well-formedness, empty content, attribute names and placement are checked separately.                                                                                           |
+| B-021 | IsEvidence excludes invalid, unresolved, ambiguous and ineligible relationships.                                                                                                    |
+| B-024 | ShapeValid is computed independently of the target-resolution verdict.                                                                                                              |
+| B-025 | Deduplication compares role and resolved identity within one logical symbol.                                                                                                        |
+| B-026 | A redundant valid element produces SPCT0009 at its original XML name.                                                                                                               |
+| B-028 | Role participates in the relationship key.                                                                                                                                          |
+| B-029 | Separate reads preserve separate symbol identities.                                                                                                                                 |
+| B-035 | The localizable registry supplies only SPCT diagnostic descriptors.                                                                                                                 |
+| B-036 | Publication-history validation and the fixed registry test retain the assigned finding identity.                                                                                    |
+| B-037 | Publication-history validation rejects an active use of a previously retired ID.                                                                                                    |
+| B-038 | DocumentationDiagnostics creates SPCT descriptors and never mutates SchemaVersions; its unit test pins that boundary and the existing checker baseline remains the regression test. |
+
 ## 9. Traceability Matrix
 
 <!-- last written by: test-writer, 2026-10-18 -->
@@ -309,11 +335,12 @@ None.
 
 ## 12. Sign-off
 
-<!-- last written by: spec-reviewer, 2026-10-17 -->
+<!-- last written by: spec-reviewer, 2026-10-18 -->
 
-| Section | Status | Reviewer | Note                                                                                                              |
-| ------- | ------ | -------- | ----------------------------------------------------------------------------------------------------------------- |
-| 1-12    | 🟡     | Pending  | Owner selected the model; this decomposed Feature has not received detailed agreement or implementation sign-off. |
+| Section               | Status | Reviewer      | Note                                                                                                                                                                                                                     |
+| --------------------- | ------ | ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 1-12                  | 🟡     | Pending       | Owner selected the model; this decomposed Feature has not received detailed agreement or implementation sign-off.                                                                                                        |
+| Read-only diagnostics | 🟢     | spec-reviewer | Self-review of the read-only claims named in § 9: compiler-harness and mechanism tests pass on both target frameworks; the full build passes. Defaults, invoked repairs and deployment integration remain separate work. |
 
 ## Tasks
 

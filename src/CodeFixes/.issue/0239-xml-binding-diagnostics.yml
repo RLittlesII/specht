@@ -1,7 +1,7 @@
 id: "0239"
 type: task
 title: "Implement XML binding diagnostics"
-status: in-review
+status: done
 value: 5
 risk: 4
 parent: "0201"
@@ -35,7 +35,7 @@ claims:
   ]
 created: "2026-10-17"
 updated: "2026-10-18"
-closed: null
+closed: "2026-10-18"
 summary: |
   Implement read-only XML role, placement, strict validation, relationship deduplication
   and SPCT diagnostics using the F2 diagnostic contract. 0238 supplies target resolution;

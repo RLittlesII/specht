@@ -1,5 +1,6 @@
 using AwesomeAssertions;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.Text;
 using Rocket.Surgery.Extensions.Testing.SourceGenerators;
 using Specht.Analysis.Documentation;
 using Specht.Analysis.Tests.Policy;
@@ -79,7 +80,9 @@ public sealed class DocumentationBindingAnalyzerUnitTests
         diagnostic.Id.Should().Be(id);
         diagnostic.Severity.Should().Be(DiagnosticSeverity.Warning);
         diagnostic.Location.SourceTree!.FilePath.Should().Be("test/Example.cs");
-        source.Substring(diagnostic.Location.SourceSpan.Start, diagnostic.Location.SourceSpan.Length).Should().Contain(offending);
+        var expectedText = id == "SPCT0002" ? offending : "claim=\"" + offending + "\"";
+        diagnostic.Location.SourceSpan.Should().Be(new TextSpan(source.IndexOf(expectedText, StringComparison.Ordinal), expectedText.Length));
+        diagnostic.Location.GetLineSpan().StartLinePosition.Line.Should().Be(2);
         diagnostic.GetMessage().Should().Contain(xml.Contains("claim=") ? "need/" : xml.Split(' ')[0].TrimStart('<'));
     }
 }
