@@ -1,0 +1,59 @@
+id: "0247"
+type: task
+title: Document the CodeAnalysis diagnostics
+
+status: in-review
+
+value: 3
+risk: 2
+
+parent: "0201"
+children: []
+
+depends_on: []
+spikes: []
+
+spec: src/CodeAnalysis/.spec/README.md
+
+claims: []
+
+created: "2026-10-18"
+updated: "2026-10-18"
+closed: null
+
+summary: |
+  The repository owner asked for documentation for the CodeAnalysis library
+  modelled on
+  https://github.com/RocketSurgeonsGuild/Airframe/tree/main/src/CodeAnalysis/docs.
+  That reference uses a README index and one Markdown page per diagnostic ID.
+  Specht currently publishes SPCT0001 through SPCT0009, with an input-failure
+  diagnostic and binding diagnostics. No diagnostic reference pages exist.
+
+  Add the diagnostic index and one page per published diagnostic under
+  `src/CodeAnalysis/docs/`, link the index from `src/CodeAnalysis/README.md`,
+  and point each diagnostic's `helpLinkUri` at its page. Describe only behavior
+  present in the implementation and package at delivery time. Verify each page
+  against its descriptor, reporting logic, configuration/policy and code-fix
+  provider where applicable.
+
+  This is documentation and help-link wiring for the agreed consumer adoption
+  surface in `0201-F6`; it does not add or change analyzer behavior.
+
+acceptance_criteria:
+  - "`src/CodeAnalysis/docs/README.md` indexes one page for each currently published diagnostic, SPCT0001 through SPCT0009."
+  - "Each diagnostic page states its title, message, default severity, finding, conditions that report it, relevant configuration or policy, and whether a code fix is available; examples match current behavior."
+  - "Every page is checked against the shipped descriptor and implementation, including the policy and inputs represented by 0201-F6 B-005 to B-018; code-fix descriptions match the provider."
+  - "Each published diagnostic's `helpLinkUri` points to its corresponding page, and `src/CodeAnalysis/README.md` links the diagnostic index."
+  - "All links resolve, Markdown files open with the required YAML frontmatter, and the prose uses repository-relative paths."
+  - "No diagnostic ID, diagnostic message, severity, policy, fix behavior, package surface or consumer configuration changes."
+
+decisions:
+  - |
+    2026-10-18, implementer: follow the reference's index-plus-one-page-per-ID
+    organization. Include help-link wiring so a diagnostic emitted in an IDE
+    navigates directly to its explanation. This records implementation scope,
+    not an owner ruling.
+
+out_of_scope:
+  - "New diagnostics, retired diagnostic history, or changes to the analyzer and code-fix behavior."
+  - "General consumer installation and configuration guidance beyond the configuration needed to explain a diagnostic; the adoption agreement remains `src/CodeAnalysis/.spec/README.md`."
