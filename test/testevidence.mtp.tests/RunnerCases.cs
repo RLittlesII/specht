@@ -1,5 +1,7 @@
 namespace Specht.TestEvidence.Mtp.Tests;
 
+/// <summary>Provides xUnit fact and theory cases for MTP evidence collection.</summary>
+[Trait("Tier", "Integration")]
 public sealed class RunnerCases
 {
     /// <verifies epic="0201" feature="F3" claim="B-001" />

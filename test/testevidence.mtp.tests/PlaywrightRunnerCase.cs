@@ -3,6 +3,8 @@ using Xunit;
 
 namespace Specht.TestEvidence.Mtp.Tests;
 
+/// <summary>Provides a real Playwright .NET case for MTP evidence collection.</summary>
+[Trait("Tier", "Integration")]
 public sealed class PlaywrightRunnerCase : PageTest
 {
     /// <verifies epic="0201" feature="F3" claim="B-003" />
