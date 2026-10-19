@@ -4,6 +4,7 @@ using Microsoft.CodeAnalysis.Text;
 using Rocket.Surgery.Extensions.Testing.SourceGenerators;
 using Specht.Analysis.Documentation;
 using Specht.Analysis.Tests.Policy;
+using Specht.Analysis.Tests.TestEvidence;
 
 namespace Specht.Analysis.Tests.Documentation;
 
@@ -66,9 +67,8 @@ public sealed class DocumentationBindingAnalyzerUnitTests
 
         if (recognized)
         {
-            builder = builder.AddAdditionalText("test/evidence.json", """
-                {"format":"specht.test-evidence","formatVersion":1,"discovery":{"methods":[{"symbolId":"M:Example.Run"}]}}
-                """).AddOption("test/evidence.json", "build_metadata.AdditionalFiles.SpechtInputKind", "test-evidence")
+            builder = builder.AddAdditionalText("test/evidence.json", TestEvidenceJson.ForMethod("M:Example.Run"))
+                .AddOption("test/evidence.json", "build_metadata.AdditionalFiles.SpechtInputKind", "test-evidence")
                 .AddOption("test/evidence.json", "build_metadata.AdditionalFiles.SpechtRelativePath", "test/evidence.json");
         }
 

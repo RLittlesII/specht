@@ -68,4 +68,4 @@ Feature: Test evidence adapters
     Given collected test evidence in versioned JSON
     When its identities are read
     Then runner case IDs and method metadata are available
-    And project/framework, source/assembly/configuration, adapter version and run identities are available
+    And project, framework, source, assembly, configuration, adapter version and run identities are available

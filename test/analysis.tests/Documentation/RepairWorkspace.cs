@@ -9,6 +9,7 @@ using Rocket.Surgery.Extensions.Testing.SourceGenerators;
 using Specht.Analysis.Documentation;
 using Specht.Analysis.Policy;
 using Specht.Analysis.Tests.Policy;
+using Specht.Analysis.Tests.TestEvidence;
 using Specht.Codefixes.Documentation;
 
 namespace Specht.Analysis.Tests.Documentation;
@@ -35,9 +36,8 @@ internal sealed class RepairWorkspace
                 .AddOption(input.RelativePath, "build_metadata.AdditionalFiles.SpechtRelativePath", input.RelativePath);
         }
 
-        builder = builder.AddAdditionalText("test/evidence.json", """
-            {"format":"specht.test-evidence","formatVersion":1,"discovery":{"methods":[{"symbolId":"M:Example.Run"}]}}
-            """).AddOption("test/evidence.json", "build_metadata.AdditionalFiles.SpechtInputKind", "test-evidence")
+        builder = builder.AddAdditionalText("test/evidence.json", TestEvidenceJson.ForMethod("M:Example.Run"))
+            .AddOption("test/evidence.json", "build_metadata.AdditionalFiles.SpechtInputKind", "test-evidence")
             .AddOption("test/evidence.json", "build_metadata.AdditionalFiles.SpechtRelativePath", "test/evidence.json");
         var result = await builder.GenerateAsync(TestContext.Current.CancellationToken);
         result.InputDiagnostics.Where(static diagnostic => diagnostic.Severity == DiagnosticSeverity.Error).Should().BeEmpty();
@@ -56,9 +56,8 @@ internal sealed class RepairWorkspace
                 + "\nbuild_metadata.AdditionalFiles.SpechtRelativePath = " + input.RelativePath + "\n";
         }
 
-        project = project.AddAdditionalDocument("evidence.json", SourceText.From("""
-            {"format":"specht.test-evidence","formatVersion":1,"discovery":{"methods":[{"symbolId":"M:Example.Run"}]}}
-            """), filePath: Path.GetFullPath("test/evidence.json")).Project;
+        project = project.AddAdditionalDocument("evidence.json", SourceText.From(TestEvidenceJson.ForMethod("M:Example.Run")),
+            filePath: Path.GetFullPath("test/evidence.json")).Project;
         config += "\n[" + Path.GetFullPath("test/evidence.json") + "]\nbuild_metadata.AdditionalFiles.SpechtInputKind = test-evidence\n"
             + "build_metadata.AdditionalFiles.SpechtRelativePath = test/evidence.json\n";
         project = project.AddAnalyzerConfigDocument(".globalconfig", SourceText.From(config), filePath: Path.GetFullPath(".globalconfig")).Project;

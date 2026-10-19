@@ -206,9 +206,7 @@ public sealed partial class DocumentationSteps
             ("feature", "src/read/.spec/README.md", "---\nid: F1\nspec_status: draft\n---\n## 3. Acceptance Criteria\n"
                 + "| ID | Claim | Source | Status |\n| --- | --- | --- | --- |\n| B-001 | Synthetic | agreement | Active |\n"),
             ("schema:feature", "contracts/feature.json", "{\"type\":\"object\"}"),
-            ("test-evidence", "test/evidence.json", """
-             {"format":"specht.test-evidence","formatVersion":1,"discovery":{"methods":[{"symbolId":"M:Example.Run"}]}}
-             """),
+            ("test-evidence", "test/evidence.json", AcceptanceTestEvidence.ForMethod("M:Example.Run")),
         };
         if (_repairAmbiguous)
         {

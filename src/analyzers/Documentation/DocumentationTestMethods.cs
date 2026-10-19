@@ -1,9 +1,8 @@
 using System;
 using System.Collections.Generic;
-using System.Text.Json;
-using System.Text.Json.Nodes;
 using System.Threading;
 using Microsoft.CodeAnalysis.Diagnostics;
+using Specht.Analysis.TestEvidence;
 
 namespace Specht.Analysis.Documentation;
 
@@ -21,22 +20,27 @@ public sealed class DocumentationTestMethods
                 continue;
             }
 
-            try
+            var evidence = new TestEvidenceArtifactReader().Read(file.GetText(cancellationToken)?.ToString() ?? "null");
+            if (!evidence.IsValid)
             {
-                var document = JsonNode.Parse(file.GetText(cancellationToken)?.ToString() ?? "null");
-                if (document?["format"]?.GetValue<string>() == "specht.test-evidence" && document["formatVersion"]?.GetValue<int>() == 1)
+                continue;
+            }
+
+            var eligibleMethods = new HashSet<string>(StringComparer.Ordinal);
+            foreach (var binding in evidence.Artifact!.Bindings)
+            {
+                if (binding.ShapeValid && binding.Status == "resolved" && binding.IsEligible == true)
                 {
-                    foreach (var method in document["discovery"]?["methods"]?.AsArray() ?? new JsonArray())
-                    {
-                        if (method?["symbolId"]?.GetValue<string>() is { } id)
-                        {
-                            methods.Add(id);
-                        }
-                    }
+                    eligibleMethods.Add(binding.SymbolId);
                 }
             }
-            catch (Exception exception) when (exception is JsonException or InvalidOperationException)
+
+            foreach (var method in evidence.Artifact.Discovery.Methods)
             {
+                if (eligibleMethods.Contains(method.SymbolId))
+                {
+                    methods.Add(method.SymbolId);
+                }
             }
         }
 
