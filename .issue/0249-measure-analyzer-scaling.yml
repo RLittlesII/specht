@@ -1,0 +1,28 @@
+id: "0249"
+type: spike
+title: Measure analyzer input and binding scaling
+status: done
+value: 4
+risk: 3
+parent: "0201"
+children: []
+depends_on: ["0248"]
+spikes: []
+spec: null
+claims: []
+created: "2026-10-19"
+updated: "2026-10-19"
+closed: "2026-10-19"
+summary: |
+  Establish controlled time and allocation curves for analysis input reconstruction
+  and explicit binding resolution after the repository dogfood consumer is available.
+  This supplies evidence for epic 0201 OQ-13 without choosing a cache or budget.
+acceptance_criteria:
+  - "BenchmarkDotNet measures fresh input reconstruction over several valid synthetic record counts with managed allocation."
+  - "A separate benchmark varies catalog size and binding count without parsing inputs in the timed operation."
+  - "The benchmark runs in Release using the existing isolated harness, and the owning specifications record observed findings and environment."
+  - "Diagnostics or resolution outcomes are checked outside the measured operation; no timing threshold gates a build."
+decisions: []
+out_of_scope:
+  - "Production caching, snapshot sharing, and indexed lookup remain open in epic 0201 OQ-13."
+  - "Editor responsiveness and cold package restore are separate OQ-13 measurements."
