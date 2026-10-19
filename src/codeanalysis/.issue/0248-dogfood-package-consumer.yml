@@ -1,7 +1,7 @@
 id: "0248"
 type: task
 title: Dogfood Specht.CodeAnalysis in a repository project
-status: in-progress
+status: done
 value: 4
 risk: 3
 parent: "0201"
@@ -9,10 +9,10 @@ children: []
 depends_on: []
 spikes: []
 spec: src/codeanalysis/.spec/README.md
-claims: []
+claims: ["B-016"]
 created: "2026-10-19"
 updated: "2026-10-19"
-closed: null
+closed: "2026-10-19"
 summary: |
   Configure one real repository project to consume the packed Specht.CodeAnalysis
   package, supply the repository's existing analysis inputs and checked bindings,

@@ -21,7 +21,8 @@ public sealed class AnalysisInputAdapter
         {
             cancellationToken.ThrowIfCancellationRequested();
             var metadata = options.GetOptions(file);
-            if (!metadata.TryGetValue("build_metadata.AdditionalFiles.SpechtInputKind", out var kind))
+            if (!metadata.TryGetValue("build_metadata.AdditionalFiles.SpechtInputKind", out var kind)
+                || string.IsNullOrWhiteSpace(kind))
             {
                 continue;
             }

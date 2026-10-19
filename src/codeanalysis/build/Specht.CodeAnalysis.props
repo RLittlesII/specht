@@ -2,6 +2,11 @@
   <PropertyGroup>
     <SpechtRoot Condition="'$(SpechtRoot)' == ''">$([MSBuild]::GetDirectoryNameOfFileAbove('$(MSBuildProjectDirectory)', '.specht/manifest.json'))</SpechtRoot>
     <SpechtRoot Condition="'$(SpechtRoot)' != ''">$([System.IO.Path]::GetFullPath('$(SpechtRoot)'))</SpechtRoot>
+    <SpechtProjectPath Condition="'$(SpechtRoot)' != '' and '$(SpechtProjectPath)' == ''">$([System.IO.Path]::GetRelativePath('$(SpechtRoot)', '$(MSBuildProjectFullPath)'))</SpechtProjectPath>
+    <SpechtFeatureInputs Condition="'$(SpechtFeatureInputs)' == ''">$(SpechtRoot)/**/.spec/README.md;$(SpechtRoot)/epics/**/spec.md</SpechtFeatureInputs>
+    <SpechtScenarioInputs Condition="'$(SpechtScenarioInputs)' == ''">$(SpechtRoot)/**/.spec/*.feature;$(SpechtRoot)/epics/**/*.feature</SpechtScenarioInputs>
+    <SpechtAdrInputs Condition="'$(SpechtAdrInputs)' == ''">$(SpechtRoot)/**/.spec/adr/**/*.md;$(SpechtRoot)/epics/**/adr/**/*.md</SpechtAdrInputs>
+    <SpechtInputExclude>$(SpechtRoot)/.artifacts/**;$(SpechtRoot)/.claude/**;$(SpechtRoot)/.codex/**;$(SpechtRoot)/.git/**;$(SpechtRoot)/**/bin/**;$(SpechtRoot)/**/obj/**;$(SpechtRoot)/**/node_modules/**</SpechtInputExclude>
   </PropertyGroup>
 
   <ItemGroup Condition="'$(SpechtRoot)' != ''">
@@ -11,15 +16,15 @@
       <SpechtInputKind>configuration</SpechtInputKind>
       <SpechtRelativePath>.specht/manifest.json</SpechtRelativePath>
     </AdditionalFiles>
-    <AdditionalFiles Include="$(SpechtRoot)/**/.spec/README.md;$(SpechtRoot)/epics/**/spec.md">
+    <AdditionalFiles Include="$(SpechtFeatureInputs)" Exclude="$(SpechtInputExclude)">
       <SpechtInputKind>feature</SpechtInputKind>
       <SpechtRelativePath>$([System.IO.Path]::GetRelativePath('$(SpechtRoot)', '%(FullPath)'))</SpechtRelativePath>
     </AdditionalFiles>
-    <AdditionalFiles Include="$(SpechtRoot)/**/.spec/*.feature;$(SpechtRoot)/epics/**/*.feature">
+    <AdditionalFiles Include="$(SpechtScenarioInputs)" Exclude="$(SpechtInputExclude)">
       <SpechtInputKind>scenario</SpechtInputKind>
       <SpechtRelativePath>$([System.IO.Path]::GetRelativePath('$(SpechtRoot)', '%(FullPath)'))</SpechtRelativePath>
     </AdditionalFiles>
-    <AdditionalFiles Include="$(SpechtRoot)/**/.spec/adr/**/*.md;$(SpechtRoot)/epics/**/adr/**/*.md">
+    <AdditionalFiles Include="$(SpechtAdrInputs)" Exclude="$(SpechtInputExclude)">
       <SpechtInputKind>adr</SpechtInputKind>
       <SpechtRelativePath>$([System.IO.Path]::GetRelativePath('$(SpechtRoot)', '%(FullPath)'))</SpechtRelativePath>
     </AdditionalFiles>
@@ -35,6 +40,8 @@
       <SpechtRelativePath Condition="'%(SpechtRelativePath)' == ''">$([System.IO.Path]::GetRelativePath('$(SpechtRoot)', '%(FullPath)'))</SpechtRelativePath>
     </AdditionalFiles>
     <CompilerVisibleProperty Include="SpechtRoot" />
+    <CompilerVisibleProperty Include="SpechtProjectPath" />
+    <CompilerVisibleProperty Include="TargetFramework" />
     <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="SpechtInputKind" />
     <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="SpechtRelativePath" />
   </ItemGroup>

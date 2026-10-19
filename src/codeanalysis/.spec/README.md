@@ -178,6 +178,14 @@ The props file finds the nearest `.specht/manifest.json` above the project unles
 `SpechtRoot` is supplied. It passes the manifest, co-located and legacy Features,
 scenarios, ADRs, frontmatter schemas, and explicitly supplied records/evidence as
 AdditionalFiles. Each file carries explicit kind and root-relative path metadata.
+Build properties can narrow the Feature, scenario and ADR input globs for a
+selected project; generated artifacts, nested checkouts and build outputs are
+excluded from the default globs. Empty item metadata on unrelated compiler
+AdditionalFiles is ignored. The project path, target framework and repository
+root are compiler-visible so declarations can be selected, and rooted compiler
+source paths are converted to repository-relative provenance before matching.
+The selected project enables XML documentation parsing to make checked bindings
+visible to Roslyn.
 The same item construction applies to design-time and normal builds. The targets
 file reports a missing root as an MSBuild warning. Standard compiler controls
 remain responsible for diagnostic severity and suppression; presentation does

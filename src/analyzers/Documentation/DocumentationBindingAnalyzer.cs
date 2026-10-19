@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.IO;
 using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -56,7 +57,7 @@ public sealed class DocumentationBindingAnalyzer : DiagnosticAnalyzer
 
         var symbolId = context.Symbol.GetDocumentationCommentId() ?? context.Symbol.MetadataName;
         var reference = context.Symbol.DeclaringSyntaxReferences[0];
-        var path = reference.SyntaxTree.FilePath.Replace('\\', '/');
+        var path = reference.SyntaxTree.FilePath;
         if (options.GetOptions(reference.SyntaxTree).TryGetValue("specht_relative_path", out var relative))
         {
             path = relative;
@@ -64,6 +65,25 @@ public sealed class DocumentationBindingAnalyzer : DiagnosticAnalyzer
 
         try
         {
+            if (Path.IsPathRooted(path))
+            {
+                if (!options.GlobalOptions.TryGetValue("build_property.SpechtRoot", out var root))
+                {
+                    return;
+                }
+
+                var prefix = Path.GetFullPath(root).TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar)
+                    + Path.DirectorySeparatorChar;
+                var source = Path.GetFullPath(path);
+                if (!source.StartsWith(prefix, Path.DirectorySeparatorChar == '\\'
+                    ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal))
+                {
+                    return;
+                }
+
+                path = source.Substring(prefix.Length);
+            }
+
             path = new AnalysisPaths().Normalize(path);
         }
         catch (ArgumentException)
