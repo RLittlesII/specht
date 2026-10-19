@@ -44,7 +44,7 @@ public sealed class TestEvidenceArtifactReader
             {
                 throw Invalid("Declared fingerprints do not match their input identities.");
             }
-            var scenarios = ReadScenarios(root);
+            var scenarios = ReadScenarios(root, discovery.Cases);
 
             var artifact = new TestEvidenceArtifact(
                 Path(String(project, "path")), NonEmpty(String(project, "targetFramework"), "project.targetFramework"),
@@ -275,7 +275,7 @@ public sealed class TestEvidenceArtifactReader
         return inputs;
     }
 
-    private static IReadOnlyList<JsonElement> ReadScenarios(JsonElement root)
+    private static IReadOnlyList<JsonElement> ReadScenarios(JsonElement root, IReadOnlyList<TestEvidenceCase> discoveredCases)
     {
         if (!root.TryGetProperty("scenarios", out var scenarios))
         {
@@ -288,12 +288,113 @@ public sealed class TestEvidenceArtifactReader
         }
 
         var records = scenarios.EnumerateArray().ToArray();
-        if (records.Any(static scenario => scenario.ValueKind != JsonValueKind.Object))
+        var caseIds = new HashSet<string>(discoveredCases.Select(static item => item.CaseId), StringComparer.Ordinal);
+        var identities = new HashSet<string>(StringComparer.Ordinal);
+        foreach (var scenario in records)
         {
-            throw Invalid("Each scenario record must be an object.");
+            var value = Object(scenario, "scenario", "path", "scenarioId", "line", "scope", "claims", "cases");
+            var path = Path(String(value, "path"));
+            var scenarioId = NullableString(value, "scenarioId");
+            if (scenarioId is not null)
+            {
+                NonEmpty(scenarioId, "scenario.scenarioId");
+            }
+
+            var line = Positive(Integer(value, "line"), "scenario.line");
+            var identity = scenarioId is null ? path + "\0line:" + line : path + "\0id:" + scenarioId;
+            if (!identities.Add(identity))
+            {
+                throw Invalid("Scenario identities must be unique within an artifact.");
+            }
+
+            var scope = Object(Required(value, "scope"), "scenario.scope", "epic", "feature");
+            var epic = NullableString(scope, "epic");
+            var feature = NonEmpty(String(scope, "feature"), "scenario.scope.feature");
+            var claims = Array(value, "claims").Select(claim => ReadScenarioClaim(claim, epic, feature)).ToArray();
+            if (claims.Select(static claim => claim.Id).Distinct(StringComparer.Ordinal).Count() != claims.Length)
+            {
+                throw Invalid("Scenario claim IDs must be unique.");
+            }
+
+            var links = Array(value, "cases").Select(link => ReadScenarioCase(link, caseIds, discoveredCases, scenarioId)).ToArray();
+            if (links.Length == 0)
+            {
+                throw Invalid("Each scenario must retain at least one case link or unresolved link.");
+            }
         }
 
         return records.Select(static scenario => scenario.Clone()).ToArray();
+    }
+
+    private static (string Id, string Status) ReadScenarioClaim(JsonElement element, string? epic, string feature)
+    {
+        var value = Object(element, "scenario claim", "id", "status", "isEligible", "target", "matches");
+        var id = NonEmpty(String(value, "id"), "scenario.claim.id");
+        var status = String(value, "status");
+        if (!BindingStatuses.Contains(status))
+        {
+            throw Invalid("Scenario claim status is not recognized.");
+        }
+
+        var targetElement = Required(value, "target");
+        var target = targetElement.ValueKind == JsonValueKind.Null ? null : ReadTarget(targetElement, "scenario claim target");
+        var matches = Array(value, "matches").Select(match => ReadTarget(match, "scenario claim match")).ToArray();
+        var eligibleElement = Required(value, "isEligible");
+        var eligible = eligibleElement.ValueKind switch
+        {
+            JsonValueKind.True => true,
+            JsonValueKind.False => false,
+            JsonValueKind.Null => (bool?)null,
+            _ => throw Invalid("Scenario claim eligibility must be boolean or null."),
+        };
+        if ((status == "resolved") != (target is not null)
+            || (status == "resolved") != (eligible is not null)
+            || target is not null && (target.Kind != "claim" || target.Id != id || target.Epic != epic || target.Feature != feature)
+            || matches.Any(match => match.Kind != "claim" || match.Id != id || match.Epic != epic || match.Feature != feature))
+        {
+            throw Invalid("Scenario claim status, scope, target and matches disagree.");
+        }
+
+        return (id, status);
+    }
+
+    private static (string? RowId, string? CaseId, string Status) ReadScenarioCase(
+        JsonElement element,
+        HashSet<string> caseIds,
+        IReadOnlyList<TestEvidenceCase> discoveredCases,
+        string? scenarioId)
+    {
+        var value = Object(element, "scenario case link", "rowId", "caseId", "status");
+        var rowId = NullableString(value, "rowId");
+        var caseId = NullableString(value, "caseId");
+        var status = String(value, "status");
+        if (rowId is not null)
+        {
+            NonEmpty(rowId, "scenario case rowId");
+        }
+
+        if (status == "unresolved")
+        {
+            if (caseId is not null)
+            {
+                throw Invalid("Unresolved scenario case links must have a null caseId.");
+            }
+
+            return (rowId, null, status);
+        }
+
+        if (status != "resolved" || scenarioId is null || caseId is null || !caseIds.Contains(caseId))
+        {
+            throw Invalid("Resolved scenario case links must name a discovered case and scenario ID.");
+        }
+
+        var testCase = discoveredCases.Single(item => item.CaseId == caseId);
+        if (testCase.RowId != rowId)
+        {
+            throw Invalid("Scenario row IDs must match the linked discovered case.");
+        }
+
+        return (rowId, caseId, status);
     }
 
     private static JsonElement Object(JsonElement value, string description, params string[] allowed)

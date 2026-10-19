@@ -20,7 +20,7 @@ depends_on: ["F1", "F3"]
 blocks: []
 spikes: []
 created: "2026-10-17"
-updated: "2026-10-17"
+updated: "2026-10-18"
 github_issue: null
 synced_at: null
 ---
@@ -84,39 +84,87 @@ Add scenario-to-test links when a consumer opts into Reqnroll. This draft decomp
 
 ## 6. Concern Separation
 
-<!-- last written by: implementer, 2026-10-17 -->
+<!-- last written by: implementer, 2026-10-18 -->
 
-Not yet designed; no production implementation is authorized by this draft.
+| Concern                                      | Classification | Owner and boundary                                                                                           |
+| -------------------------------------------- | -------------- | ------------------------------------------------------------------------------------------------------------ |
+| Effective scenario scope and local claim IDs | Business       | The consumer claim bridge applies this Feature's complete-override rule and existing claim-tag grammar.      |
+| Claim target identity and lifecycle          | Both           | The bridge resolves each local claim with the same F2 identity contract used for code bindings.              |
+| Scenario-to-case correlation                 | Both           | The producer supplies stable scenario, row and F3 case identities; no title or step-method inference occurs. |
+| Missing producer metadata                    | Business       | The bridge emits an unresolved scenario link while preserving the direct F3 binding evidence.                |
+| Scenario evidence serialization              | Technical      | F3's optional `scenarios` property carries the closed record shape defined in § 7.                           |
 
 ## 7. Technical Design
 
-<!-- last written by: implementer, 2026-10-17 -->
+<!-- last written by: implementer, 2026-10-18 -->
 
-Decision 0001 settles scope precedence and bridge ownership, using 0201-F3's
-common evidence contract. Exact tag/configuration encoding and generator/runner
-metadata extraction remain technical-design work; the isolated spike is not
-production architecture.
+The consumer claim bridge is the producer boundary. It parses the consumer's
+existing local claim tags and Gherkin metadata, applies decision 0001, and emits
+scenario records in F3's optional `scenarios` array. The analyzer has no
+Reqnroll dependency and does not parse scenario titles or step methods. A
+producer ID identifies an integration; it does not gate which framework's
+evidence the common contract accepts.
+
+Each array entry represents one Gherkin scenario and contains:
+
+| Property     | Shape and meaning                                                                                            |
+| ------------ | ------------------------------------------------------------------------------------------------------------ |
+| `path`       | Repository-relative Gherkin file path.                                                                       |
+| `scenarioId` | Stable producer scenario ID, or null when the producer cannot supply one.                                    |
+| `line`       | One-based source line used to locate the scenario, including when its stable ID is unavailable.              |
+| `scope`      | Effective `{ epic, feature }`; `epic` is null when the selected grammar has no epic role.                    |
+| `claims`     | Local claim records `{ id, status, isEligible, target, matches }` resolved with F2's binding identity rules. |
+| `cases`      | One or more `{ rowId, caseId, status }` links to F3 discovery cases; `rowId` and `caseId` may be null.       |
+
+Claim `status` uses F2's `incomplete`, `invalid`, `unresolved`, `ambiguous` or
+`resolved` vocabulary. `target` is null unless resolved and otherwise uses the
+F3 target shape with kind `claim`; `matches` carries the F2 matches, and
+`isEligible` follows F2's resolved-target rule. `id` retains the local claim ID.
+The target's epic and feature equal the effective scenario scope.
+
+Case-link `status` is `resolved` or `unresolved`. A resolved link has a
+nonempty `caseId` that exists in `discovery.cases`; an unresolved link has a
+null `caseId`. Outline rows carry the producer's opaque `rowId`, which matches
+the linked F3 case row ID. If the bridge cannot produce any case link for a
+scenario because its required generator or discovery input is missing, it emits
+one unresolved link with null `rowId` and `caseId`. A missing `scenarioId` is
+also unresolved and never synthesized from mutable text. Scenario identity is
+`(path, scenarioId)` when the ID is present and `(path, line)` otherwise. Case
+identity remains F3's case key.
+
+When the bridge is not selected, the producer omits `scenarios`; an empty array
+means it was selected and found no scenario records. Both forms leave direct
+method bindings valid. The F3 reader validates the closed scenario shape and
+case references; its writer preserves the validated records. These boundaries
+are implemented in `TestEvidenceArtifactReader`, `TestEvidenceArtifactWriter`
+and the `TestEvidenceArtifact.Scenarios` model.
 
 ## 8. Testing Strategy
 
-<!-- last written by: test-writer, 2026-10-17 -->
+<!-- last written by: test-writer, 2026-10-18 -->
 
-The companion scenarios state the acceptance obligations. Production step definitions and mechanism tests are not written; each claim remains Missing in § 9. Spike results do not promote these rows to Covered.
+`TestEvidenceArtifactReader` validates normalized scenario records; it does not
+parse Gherkin or produce records from consumer generator/runner metadata. The
+unit tests cover the reader's contract checks and preservation of direct
+bindings. They do not prove the consumer bridge behavior in B-001 through
+B-007. No acceptance step definitions can exercise that producer because no
+production bridge is present in this repository. Those claims remain Partial
+or Missing in § 9 until the producer boundary has an executable implementation.
 
 ## 9. Traceability Matrix
 
 <!-- last written by: test-writer, 2026-10-17 -->
 
-| Claim ID | Scenario                         | Test    | Status  |
-| -------- | -------------------------------- | ------- | ------- |
-| B-001    | Scenario claim                   | Missing | Missing |
-| B-002    | Scenario outline                 | Missing | Missing |
-| B-003    | Shared steps                     | Missing | Missing |
-| B-004    | Missing generated input          | Missing | Missing |
-| B-005    | Bridge disabled                  | Missing | Missing |
-| B-006    | Feature scope default            | Missing | Missing |
-| B-007    | Complete scenario scope override | Missing | Missing |
-| B-008    | Common scenario bridge contract  | Missing | Missing |
+| Claim ID | Scenario                         | Test                                                                                                                                                                                       | Status  |
+| -------- | -------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------- |
+| B-001    | Scenario claim                   | `ScenarioEvidence_WhenResolvedClaimMatchesEffectiveScope_ShouldBeValid`; `ScenarioEvidence_WhenClaimTargetBelongsToAnotherFeature_ShouldBeInvalid`                                         | Partial |
+| B-002    | Scenario outline                 | `ScenarioEvidence_WhenOutlineRowDoesNotMatchDiscoveredCase_ShouldBeInvalid`                                                                                                                | Partial |
+| B-003    | Shared steps                     | `ScenarioEvidence_WhenTwoScenariosShareOneStepMethod_ShouldKeepScenarioLinksSeparate`; `ScenarioEvidence_WhenTwoOutlinesShareOneScenarioId_ShouldBeInvalid`                                | Partial |
+| B-004    | Missing generated input          | `ScenarioEvidence_WhenProducerCannotResolveCase_ShouldRetainUnresolvedLinkAndDirectBinding`                                                                                                | Partial |
+| B-005    | Bridge disabled                  | `ScenarioEvidence_WhenBridgeIsOmitted_ShouldPreserveDirectBindings`                                                                                                                        | Partial |
+| B-006    | Feature scope default            | Missing                                                                                                                                                                                    | Missing |
+| B-007    | Complete scenario scope override | Missing                                                                                                                                                                                    | Missing |
+| B-008    | Common scenario bridge contract  | `ScenarioEvidence_WhenCaseIdIsUnknown_ShouldBeInvalid`; `OptionalScenarioRecords_WhenWritten_ShouldBePreserved`; remaining malformed-record cases in `TestEvidenceScenarioReaderUnitTests` | Partial |
 
 ## 10. Lessons / Spec Deltas
 
@@ -128,10 +176,10 @@ None.
 
 <!-- last written by: spec-author, 2026-10-17 -->
 
-| ID   | Question                                                                           | Blocks                                                | Resolution                                                                                                                                                                                                                                                                                                                                 |
-| ---- | ---------------------------------------------------------------------------------- | ----------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| OQ-1 | What is Feature-level versus Scenario-level scope precedence?                      | Tag/configuration encoding design                     | RESOLVED for behavior, 2026-10-17: decision 0001 uses Feature-level scope by default; explicit Scenario/Outline scope replaces it completely without field merging. Local claim tags resolve in effective scope.                                                                                                                           |
-| OQ-2 | Which Reqnroll generator artifacts and versions form a supported adapter contract? | Concrete metadata extraction and compatibility design | RESOLVED for integration policy, 2026-10-17: decision 0001 maps generator/runner scenario-to-case metadata through the common evidence contract, reuses consumer claim bridges, retains consumer ownership of convention analyzers and keeps Reqnroll optional. Concrete extraction/compatibility and wire fields remain technical design. |
+| ID   | Question                                                                           | Blocks                                                | Resolution                                                                                                                                                                                                                                                                                              |
+| ---- | ---------------------------------------------------------------------------------- | ----------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| OQ-1 | What is Feature-level versus Scenario-level scope precedence?                      | Tag/configuration encoding design                     | RESOLVED for behavior, 2026-10-17: decision 0001 uses Feature-level scope by default; explicit Scenario/Outline scope replaces it completely without field merging. Local claim tags resolve in effective scope.                                                                                        |
+| OQ-2 | Which Reqnroll generator artifacts and versions form a supported adapter contract? | Concrete metadata extraction and compatibility design | RESOLVED, 2026-10-18: decision 0001 leaves Reqnroll optional and accepts scenario-to-case data through the producer-neutral contract. Section 7 defines the wire fields and unresolved-link representation; the compatibility matrix records only integrations actually tested and is not an allowlist. |
 
 ## 12. Sign-off
 
