@@ -21,7 +21,7 @@ public sealed class TestEvidenceBindingExporterUnitTests
             Location.Create("test/Example.cs", new TextSpan(0, 1),
                 new LinePositionSpan(new LinePosition(3, 4), new LinePosition(3, 5))),
             true, new BindingResult(BindingResolution.Resolved, target, true, [target]));
-        var analysis = new DocumentationAnalysis([], [binding], []);
+        var analysis = new DocumentationAnalysis([binding], [binding], []);
 
         // When
         var result = new TestEvidenceBindingExporter().Export(analysis, "test/Example.cs");

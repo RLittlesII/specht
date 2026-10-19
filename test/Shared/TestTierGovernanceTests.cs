@@ -10,6 +10,7 @@ namespace Specht.Tests;
 [Trait("Tier", "Unit")]
 public sealed class TestTierGovernanceTests
 {
+    /// <summary>Checks every discovered test class has exactly one supported tier.</summary>
     [Fact]
     public void EveryTestClass_WhenReflected_ShouldDeclareExactlyOneTier()
     {

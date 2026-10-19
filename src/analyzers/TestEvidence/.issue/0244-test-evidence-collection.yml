@@ -1,7 +1,7 @@
 id: "0244"
 type: feature
 title: "Collect framework-independent test evidence"
-status: in-progress
+status: done
 value: 4
 risk: 5
 parent: "0201"
@@ -22,8 +22,8 @@ claims:
     "B-009",
   ]
 created: "2026-10-17"
-updated: "2026-10-18"
-closed: null
+updated: "2026-10-19"
+closed: "2026-10-19"
 summary: |
   Implement the versioned common evidence contract, build-time binding export and runner
   collection/normalization. 0243 provides the installed components and build input

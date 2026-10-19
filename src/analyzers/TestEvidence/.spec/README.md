@@ -105,7 +105,7 @@ Map explicit test-method bindings to discovered and executed test cases across .
 
 ## 7. Technical Design
 
-<!-- last written by: implementer, 2026-10-18 -->
+<!-- last written by: implementer, 2026-10-19 -->
 
 The version-one artifact implements decision 0001 and 0201-F6 decision 0004.
 Adapters produce it during normal build, discovery or execution workflows. The
@@ -176,6 +176,21 @@ concatenation. Paths use repository-relative `/` separators. No machine path,
 timestamp or analyzer clock participates; identical logical inputs produce the
 same fingerprints.
 
+### First-party build and runner collection
+
+The `Specht.CodeAnalysis` package exports compiler methods, explicit F2 bindings,
+repository-relative input hashes and fingerprints through a Roslyn incremental
+generator. Its MSBuild targets place the MTP collector beside the test output,
+register the collector for MTP test applications, and write the requested
+artifact path to a runner configuration file. The xUnit v3 MTP collector maps
+runner method metadata to the compiler documentation-comment IDs and writes
+case IDs, outcomes, session identity and the compiler payload at session end.
+The fixture under `test/testevidence.mtp.tests/` exercises xUnit facts, theory
+rows and a real Playwright .NET xUnit test class; its Playwright test is skipped
+so evidence collection verifies discovery and skip reporting without launching
+a browser. The collector preserves deferred discovery when MTP does not provide
+a complete-enumeration signal.
+
 ### Methods and cases
 
 A method record carries `symbolId` (Roslyn documentation-comment ID), declaring
@@ -217,6 +232,14 @@ Collection combines current compiler symbol records with runner discovery and
 result events. Compiler-produced XML member IDs are the first-party CSharp method
 identity; display names and assertion text are never identity inputs. Export is an
 explicit build/collector step to its selected intermediate/output destination.
+`TestEvidenceRunnerCollector` normalizes producer-supplied case and outcome
+records before they enter the version-one artifact. Runner records carry opaque
+case IDs and either a compiler symbol ID or method metadata that uniquely matches
+the compiler-exported methods. Missing or unmatched identity produces unavailable
+discovery; conflicting outcomes invalidate collection. The collector retains the
+producer ID and version as metadata and does not select adapters by framework name.
+Its implementation and input/result records are declared in
+`src/analyzers/TestEvidence/`.
 The `SpechtTestEvidence` MSBuild item from 0243 supplies those explicit artifact
 files to Roslyn as AdditionalFiles. DiagnosticAnalyzer writes no files. Compiler-loaded components retain
 `netstandard2.0`; collection and test hosts retain `net10.0;net11.0` under
@@ -251,29 +274,31 @@ name alone is not evidence of compatibility.
 
 ## 8. Testing Strategy
 
-<!-- last written by: test-writer, 2026-10-18 -->
+<!-- last written by: test-writer, 2026-10-19 -->
 
-The acceptance scenarios exercise the version-one reader with synthetic runner
+The acceptance scenarios exercise the version-one reader and common runner
+normalizer with synthetic xUnit fact/theory, Playwright .NET and custom producer
 records. Mechanism tests cover closed-contract validation, freshness comparison,
-stable case identity, deferred discovery, deterministic fingerprints and
-round-trip serialization. Runner-specific event adapters still need end-to-end
-conformance evidence; the acceptance fixtures do not launch a test runner.
+case and outcome normalization, overload matching, stable identity, deferred
+discovery, deterministic fingerprints and round-trip serialization. These fixtures do not
+launch test runners; concrete runner event adapters still need end-to-end
+conformance evidence.
 
 ## 9. Traceability Matrix
 
-<!-- last written by: test-writer, 2026-10-18 -->
+<!-- last written by: test-writer, 2026-10-19 -->
 
-| Claim ID | Scenario                              | Test                                                                                                                                                                                                                                                                                                                                                                                                             | Status  |
-| -------- | ------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------- |
-| B-001    | xUnit fact                            | `Xunit fact`; `TestEvidenceSteps.ThenCaseIsLinkedToMethodAndClaim`; `TestEvidenceArtifactReaderUnitTests.VersionOneArtifact_WhenRead_ShouldExposeRunnerCaseMethodAndRunIdentities`                                                                                                                                                                                                                               | Partial |
-| B-002    | xUnit theory                          | `xUnit theory`; `TestEvidenceSteps.ThenTheoryRowsShareOneMethod`                                                                                                                                                                                                                                                                                                                                                 | Partial |
-| B-003    | Playwright dotnet                     | `Playwright dotnet`; `TestEvidenceSteps.ThenPlaywrightCaseLinksToClaim`                                                                                                                                                                                                                                                                                                                                          | Partial |
-| B-004    | Unavailable evidence                  | `Unavailable evidence`; `TestEvidenceSteps.ThenEvidenceIsNotComplete`                                                                                                                                                                                                                                                                                                                                            | Covered |
-| B-005    | Stable correlation                    | `Stable correlation`; `TestEvidenceSteps.ThenDuplicateNamesRemainDistinct`; `TestEvidenceArtifactReaderUnitTests.DuplicateDisplayNames_WhenRead_ShouldPreserveDistinctRunnerCaseIdentities`; `TestEvidenceCaseCorrelationUnitTests.DiscoveryAndResultsWithDifferentSessionIds_WhenCorrelated_ShouldMatchStableCaseIds`                                                                                           | Covered |
-| B-006    | Evidence identity matching            | `Evidence identity matching`; `TestEvidenceSteps.ThenIdentityMismatchIsStale`; `TestEvidenceArtifactReaderUnitTests.ArtifactIdentity_WhenComparedWithCurrentInputs_ShouldReportFreshness`; `TestEvidenceCaseCorrelationUnitTests.ResultsWithChangedAssemblyIdentity_WhenCorrelated_ShouldBeExcludedAsStale`; `TestEvidenceFingerprintUnitTests.ChangedLogicalInput_WhenHashed_ShouldProduceDifferentFingerprint` | Covered |
-| B-007    | Framework-independent runner evidence | `Framework-independent runner evidence`; `TestEvidenceSteps.ThenFrameworkUsesCommonContract`                                                                                                                                                                                                                                                                                                                     | Covered |
-| B-008    | Runtime-only case enumeration         | `Runtime-only case enumeration`; `TestEvidenceSteps.ThenEnumerationIsDeferred`; `TestEvidenceSteps.ThenNoCasesInvented`; `TestEvidenceArtifactReaderUnitTests.DeferredDiscovery_WhenRead_ShouldRemainIncompleteWithoutInventedCases`; `TestEvidenceCaseCorrelationUnitTests.DeferredCasesSuppliedByRunnerExecution_WhenCorrelated_ShouldUseRunnerCases`                                                          | Covered |
-| B-009    | Versioned runner evidence             | `Versioned runner evidence`; `TestEvidenceSteps.ThenRunnerIdsAvailable`; `TestEvidenceSteps.ThenAllIdentityMetadataIsAvailable`; `TestEvidenceArtifactWriterUnitTests.ReadArtifact_WhenWrittenAndReadAgain_ShouldPreserveEvidenceIdentities`                                                                                                                                                                     | Covered |
+| Claim ID | Scenario                              | Test                                                                                                                                                                                                                                                                                                                                                                                                                                        | Status  |
+| -------- | ------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------- |
+| B-001    | xUnit fact                            | `Xunit fact`; `TestEvidenceSteps.ThenCaseIsLinkedToMethodAndClaim`; `TestEvidenceRunnerCollectorUnitTests.XunitFact_WhenRunnerSuppliesStableCaseAndMethodIds_ShouldLinkOneCaseToOneMethod`; `TestEvidenceRunnerCollectorUnitTests.RunnerMethodMetadata_WhenItUniquelyMatchesAnOverload_ShouldResolveToCompilerSymbolId`; `test/testevidence.mtp.tests/RunnerCases.FactCase`                                                                 | Covered |
+| B-002    | xUnit theory                          | `xUnit theory`; `TestEvidenceSteps.ThenTheoryRowsShareOneMethod`; `TestEvidenceRunnerCollectorUnitTests.XunitTheory_WhenRunnerSuppliesTwoRows_ShouldKeepOneMethodAndTwoDistinctCases`; `test/testevidence.mtp.tests/RunnerCases.TheoryCase`                                                                                                                                                                                                 | Covered |
+| B-003    | Playwright dotnet                     | `Playwright dotnet`; `TestEvidenceSteps.ThenPlaywrightCaseLinksToClaim`; `TestEvidenceRunnerCollectorUnitTests.PlaywrightDotNet_WhenRunnerSuppliesCSharpMethodIdentity_ShouldRetainTheMethodLink`; `test/testevidence.mtp.tests/PlaywrightRunnerCase.PlaywrightDotNetCase`                                                                                                                                                                  | Covered |
+| B-004    | Unavailable evidence                  | `Unavailable evidence`; `TestEvidenceSteps.ThenEvidenceIsNotComplete`                                                                                                                                                                                                                                                                                                                                                                       | Covered |
+| B-005    | Stable correlation                    | `Stable correlation`; `TestEvidenceSteps.ThenDuplicateNamesRemainDistinct`; `TestEvidenceArtifactReaderUnitTests.DuplicateDisplayNames_WhenRead_ShouldPreserveDistinctRunnerCaseIdentities`; `TestEvidenceRunnerCollectorUnitTests.DuplicateDisplayNames_WhenRunnerSuppliesDistinctCaseIds_ShouldRemainDistinct`; `TestEvidenceCaseCorrelationUnitTests.DiscoveryAndResultsWithDifferentSessionIds_WhenCorrelated_ShouldMatchStableCaseIds` | Covered |
+| B-006    | Evidence identity matching            | `Evidence identity matching`; `TestEvidenceSteps.ThenIdentityMismatchIsStale`; `TestEvidenceArtifactReaderUnitTests.ArtifactIdentity_WhenComparedWithCurrentInputs_ShouldReportFreshness`; `TestEvidenceCaseCorrelationUnitTests.ResultsWithChangedAssemblyIdentity_WhenCorrelated_ShouldBeExcludedAsStale`; `TestEvidenceFingerprintUnitTests.ChangedLogicalInput_WhenHashed_ShouldProduceDifferentFingerprint`                            | Covered |
+| B-007    | Framework-independent runner evidence | `Framework-independent runner evidence`; `TestEvidenceSteps.ThenFrameworkUsesCommonContract`; `TestEvidenceRunnerCollectorUnitTests.CustomProducer_WhenItSuppliesCommonRecords_ShouldBeAcceptedWithoutFrameworkAllowlist`                                                                                                                                                                                                                   | Covered |
+| B-008    | Runtime-only case enumeration         | `Runtime-only case enumeration`; `TestEvidenceSteps.ThenEnumerationIsDeferred`; `TestEvidenceSteps.ThenNoCasesInvented`; `TestEvidenceRunnerCollectorUnitTests.RuntimeOnlyRows_WhenRunnerHasNotEnumeratedThem_ShouldRemainDeferredWithoutInventedCases`; `TestEvidenceCaseCorrelationUnitTests.DeferredCasesSuppliedByRunnerExecution_WhenCorrelated_ShouldUseRunnerCases`                                                                  | Covered |
+| B-009    | Versioned runner evidence             | `Versioned runner evidence`; `TestEvidenceSteps.ThenRunnerIdsAvailable`; `TestEvidenceSteps.ThenAllIdentityMetadataIsAvailable`; `TestEvidenceRunnerCollectorUnitTests.RepeatedIdenticalOutcomes_WhenCollected_ShouldRemainOneExecution`; `TestEvidenceArtifactWriterUnitTests.ReadArtifact_WhenWrittenAndReadAgain_ShouldPreserveEvidenceIdentities`                                                                                       | Covered |
 
 ## 10. Lessons / Spec Deltas
 

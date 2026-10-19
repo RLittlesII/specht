@@ -2,4 +2,26 @@
   <Target Name="SpechtCodeAnalysisValidateRoot" BeforeTargets="CoreCompile" Condition="'$(SpechtRoot)' == ''">
     <Warning Text="Specht.CodeAnalysis could not find .specht/manifest.json above '$(MSBuildProjectDirectory)'. Set SpechtRoot to the consumer repository root to enable analysis inputs." />
   </Target>
+
+  <PropertyGroup>
+    <SpechtTestEvidenceOutput Condition="'$(SpechtTestEvidenceOutput)' == ''">$(MSBuildProjectDirectory)/$(BaseIntermediateOutputPath)specht-test-evidence/$(MSBuildProjectName)-$(TargetFramework).json</SpechtTestEvidenceOutput>
+    <SpechtTestEvidenceOutput>$([System.IO.Path]::GetFullPath('$(SpechtTestEvidenceOutput)'))</SpechtTestEvidenceOutput>
+  </PropertyGroup>
+
+  <ItemGroup Condition="'$(IsTestingPlatformApplication)' == 'true'">
+    <Reference Include="$(MSBuildThisFileDirectory)runner/$(TargetFramework)/*.dll"
+               Condition="Exists('$(MSBuildThisFileDirectory)runner/$(TargetFramework)/Specht.TestEvidence.Mtp.dll')" />
+    <TestingPlatformBuilderHook Include="D8CB5E70-324E-42A5-9A61-75B6D2AC1084">
+      <DisplayName>Specht test evidence</DisplayName>
+      <TypeFullName>Specht.TestEvidence.Mtp.TestEvidenceBuilderHook</TypeFullName>
+    </TestingPlatformBuilderHook>
+  </ItemGroup>
+
+  <Target Name="SpechtTestEvidenceWriteRunnerConfig" AfterTargets="Build"
+          Condition="'$(IsTestingPlatformApplication)' == 'true' and '$(SpechtRoot)' != ''">
+    <MakeDir Directories="$(TargetDir)" />
+    <WriteLinesToFile File="$(TargetDir)specht.test-evidence.config.json"
+                      Lines="{ &quot;outputPath&quot;: &quot;$(SpechtTestEvidenceOutput)&quot; }"
+                      Overwrite="true" />
+  </Target>
 </Project>
