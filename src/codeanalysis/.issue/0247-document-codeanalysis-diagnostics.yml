@@ -2,7 +2,7 @@ id: "0247"
 type: task
 title: Document the CodeAnalysis diagnostics
 
-status: in-review
+status: ready
 
 value: 3
 risk: 2
@@ -18,7 +18,7 @@ spec: src/codeanalysis/.spec/README.md
 claims: []
 
 created: "2026-10-18"
-updated: "2026-10-18"
+updated: "2026-10-19"
 closed: null
 
 summary: |
