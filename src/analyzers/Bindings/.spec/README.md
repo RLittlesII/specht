@@ -326,6 +326,16 @@ The reviewed API exposes resolution separately from lifecycle eligibility, so hi
 
 On each of `net10.0` and `net11.0`, actual discovery and execution report 102 passing unit tests including the tier guard, five passing integration cases and 69 passing F1 acceptance examples, with no errors or skipped tests. Integration cases exercise independent expected parser outputs through both readers and real analysis loading, text projection and resolution in an isolated context that excludes the runtime engine and test frameworks. Red and green logs are retained under `.artifacts/0238/`; package-content and editor/compiler-host checks remain downstream deployment obligations.
 
+### Performance
+
+<!-- last written by: benchmarker, 2026-10-19 -->
+
+Measured at revision `bd384ed6` on Apple M1 Max, macOS Tahoe 26.4, .NET 10.0.12 Arm64, Release, with BenchmarkDotNet 0.15.8's default isolated job and memory diagnoser. Synthetic catalogs contain one active claim per distinct Feature; construction and outcome validation occur outside the timed operation.
+
+| Concern                                            | Source                               | Benchmark                                 | Finding                                                                                                                                                                                                                                                                |
+| -------------------------------------------------- | ------------------------------------ | ----------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Explicit claim lookup as records and bindings grow | § 7 Resolution and lifecycle, step 3 | `BindingLookupBenchmarks.ResolveBindings` | At 1/40/160 Features, one binding took 2.761/2.952/3.538 µs and allocated 7.26 KB in each case. Forty bindings took 112.102/122.636/140.195 µs and allocated 290.31 KB in each case. Time grows with both counts; allocation grows with binding count in this fixture. |
+
 ## 9. Traceability Matrix
 
 <!-- last written by: test-writer, 2026-10-17 -->

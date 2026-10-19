@@ -1,7 +1,7 @@
 id: "0249"
 type: spike
 title: Measure analyzer input and binding scaling
-status: in-progress
+status: done
 value: 4
 risk: 3
 parent: "0201"
@@ -12,7 +12,7 @@ spec: null
 claims: []
 created: "2026-10-19"
 updated: "2026-10-19"
-closed: null
+closed: "2026-10-19"
 summary: |
   Establish controlled time and allocation curves for analysis input reconstruction
   and explicit binding resolution after the repository dogfood consumer is available.

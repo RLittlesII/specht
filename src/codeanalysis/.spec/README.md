@@ -409,6 +409,16 @@ and `CodeAnalysisSectionUnitTests.AnalysisSection_WhenAddedToAnExistingPin_Shoul
 Compiler dependency loading and parser compatibility remain exercised by the
 existing `CompilerClosureIntegrationTests` and `EngineTextCompatibilityIntegrationTests`.
 
+### Performance
+
+<!-- last written by: benchmarker, 2026-10-19 -->
+
+Measured at revision `bd384ed6` on Apple M1 Max, macOS Tahoe 26.4, .NET 10.0.12 Arm64, Release, with BenchmarkDotNet 0.15.8's default isolated job and memory diagnoser. The synthetic inputs hold one source, scenario and ADR fixed while varying distinct Feature records. Input creation and availability checks occur outside the timed operation.
+
+| Concern                                  | Source                                           | Benchmark                                   | Finding                                                                                                                                                                                |
+| ---------------------------------------- | ------------------------------------------------ | ------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Fresh content-keyed input reconstruction | § 7 Build delivery and compilation-start catalog | `InputReconstructionBenchmarks.Reconstruct` | At 1/40/160 Feature records, reconstruction took 0.110/1.701/6.833 ms and allocated 179 KB/3.52 MB/13.81 MB per operation. From 40 to 160 records, time grew 4.0× and allocation 3.9×. |
+
 ## 9. Traceability Matrix
 
 <!-- last written by: test-writer, 2026-10-18 -->
