@@ -1,0 +1,29 @@
+id: "0248"
+type: task
+title: Dogfood Specht.CodeAnalysis in a repository project
+status: done
+value: 4
+risk: 3
+parent: "0201"
+children: []
+depends_on: []
+spikes: []
+spec: src/codeanalysis/.spec/README.md
+claims: ["B-016"]
+created: "2026-10-19"
+updated: "2026-10-19"
+closed: "2026-10-19"
+summary: |
+  Configure one real repository project to consume the packed Specht.CodeAnalysis
+  package, supply the repository's existing analysis inputs and checked bindings,
+  and provide a repeatable verification path for OQ-13's later performance
+  investigation.
+acceptance_criteria:
+  - "The selected repository project loads the packed analyzer through PackageReference and the package's MSBuild integration; no project reference or analyzer output path bypasses package delivery."
+  - "The manifest uses explicit mappings to the existing consumer schemas and identifiers without changing schemaVersion."
+  - "At least one real declaration resolves to an existing claim or ADR, and a temporary unresolved binding produces its expected diagnostic before the source is restored."
+  - "A repeatable command builds the package and selected consumer project, and analysis can be confirmed to rerun after source, specification and configuration input changes."
+  - "The work records no performance threshold or caching decision; those remain in 0201 OQ-13."
+decisions: []
+out_of_scope:
+  - "Benchmark measurements, performance optimization, package publication and new analyzer behavior."

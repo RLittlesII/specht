@@ -7,6 +7,7 @@
 
   <ItemGroup Label="Analyzers">
     <PackageVersion Include="Rocket.Surgery.Airframe.CodeAnalysis" Version="0.12.1" />
+    <PackageVersion Include="Specht.CodeAnalysis" Version="$(SpechtCodeAnalysisDogfoodVersion)" Condition="'$(SpechtCodeAnalysisDogfood)' == 'true'" />
   </ItemGroup>
 
   <ItemGroup Label="Engine">

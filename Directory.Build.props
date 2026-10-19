@@ -20,6 +20,14 @@
         <ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
     </PropertyGroup>
 
+    <PropertyGroup Condition="'$(SpechtCodeAnalysisDogfood)' == 'true' and '$(MSBuildProjectName)' == 'analyzers'">
+        <GenerateDocumentationFile>true</GenerateDocumentationFile>
+        <NoWarn>$(NoWarn);1591</NoWarn>
+        <SpechtFeatureInputs>$(MSBuildThisFileDirectory)src/analyzers/Bindings/.spec/README.md</SpechtFeatureInputs>
+        <SpechtScenarioInputs>$(MSBuildThisFileDirectory)src/analyzers/Bindings/.spec/*.feature</SpechtScenarioInputs>
+        <SpechtAdrInputs>$(MSBuildThisFileDirectory).spec/adr/0017-*.md</SpechtAdrInputs>
+    </PropertyGroup>
+
     <ItemGroup>
         <PackageReference Include="Rocket.Surgery.Airframe.CodeAnalysis" PrivateAssets="all"/>
         <PackageReference Include="Nerdbank.GitVersioning" PrivateAssets="all"/>

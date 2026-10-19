@@ -6,6 +6,7 @@ using System.Text.RegularExpressions;
 namespace Specht.Analysis.Bindings;
 
 /// <summary>Validates explicit identities and resolves selected claim and ADR declarations without I/O.</summary>
+/// <follows adr="ADR-0017" />
 public sealed class BindingResolver
 {
     public BindingResolver(BindingCatalog catalog, BindingPolicy policy)
@@ -14,6 +15,7 @@ public sealed class BindingResolver
         _policy = policy;
     }
 
+    /// <implements epic="0201" feature="F1" claim="B-015" />
     public BindingResult Resolve(ClaimReference reference)
     {
         var fault = string.IsNullOrEmpty(reference.Claim) ? BindingResolution.Incomplete
@@ -36,6 +38,7 @@ public sealed class BindingResolver
         return Result(matches, owners.Length > 1);
     }
 
+    /// <implements epic="0201" feature="F1" claim="B-004" />
     public BindingResult Resolve(AdrReference reference)
     {
         var fault = string.IsNullOrEmpty(reference.Adr) ? BindingResolution.Incomplete

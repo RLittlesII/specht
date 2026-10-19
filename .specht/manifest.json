@@ -101,6 +101,47 @@
     "tag": "@{claim}",
     "tagIgnoreCase": false
   },
+  "codeAnalysis": {
+    "mappings": {
+      "/schemaVersion": "/schemaVersion",
+      "/identifiers": "/identifiers",
+      "/markers": "/markers",
+      "/claimsSection": "/roles/claims",
+      "/policy": "/codeAnalysis"
+    },
+    "projects": [
+      {
+        "path": "src/analyzers/analyzers.csproj",
+        "targetFrameworks": ["netstandard2.0"]
+      }
+    ],
+    "features": [
+      { "epic": "0201", "feature": "F1" }
+    ],
+    "enforcement": [],
+    "records": {
+      "adrProfiles": [
+        {
+          "glob": ".spec/adr/*.md",
+          "owner": "repository",
+          "identity": { "headingLevel": 1, "separator": ": " },
+          "lifecycle": { "section": "Status", "firstWord": true }
+        },
+        {
+          "glob": "src/**/.spec/adr/*.md",
+          "owner": "containingFeature",
+          "identity": { "headingLevel": 1, "separator": ": " },
+          "lifecycle": { "section": "Status", "firstWord": true }
+        },
+        {
+          "glob": "epics/**/adr/*.md",
+          "owner": "containingFeature",
+          "identity": { "headingLevel": 1, "separator": ": " },
+          "lifecycle": { "section": "Status", "firstWord": true }
+        }
+      ]
+    }
+  },
   "tests": {
     "files": [
       "test/**/*.cs"
