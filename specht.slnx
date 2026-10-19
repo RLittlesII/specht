@@ -22,11 +22,13 @@
     <Project Path="src/analyzers/analyzers.csproj" />
     <Project Path="src/codefixes/codefixes.csproj" />
     <Project Path="src/codeanalysis/codeanalysis.csproj" />
+    <Project Path="src/testevidence.mtp/testevidence.mtp.csproj" />
     <Project Path="src/specht/specht.csproj" />
     <Project Path="src\tool\tool.csproj" />
   </Folder>
   <Folder Name="/test/">
     <Project Path="test/analysis.tests/analysis.tests.csproj" />
+    <Project Path="test/testevidence.mtp.tests/testevidence.mtp.tests.csproj" />
     <Project Path="test/build.tests/build.tests.csproj" />
     <Project Path="test/comparison.tests/comparison.tests.csproj" />
     <Project Path="test\acceptance\acceptance.csproj" />

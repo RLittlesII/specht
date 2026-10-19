@@ -41,6 +41,7 @@
     </AdditionalFiles>
     <CompilerVisibleProperty Include="SpechtRoot" />
     <CompilerVisibleProperty Include="SpechtProjectPath" />
+    <CompilerVisibleProperty Include="Configuration" />
     <CompilerVisibleProperty Include="TargetFramework" />
     <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="SpechtInputKind" />
     <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="SpechtRelativePath" />

@@ -15,7 +15,7 @@ public sealed class TestEvidenceBindingExporter
             throw new ArgumentException("The source path must be repository-relative.", nameof(relativePath));
         }
 
-        return analysis.Relationships.Select(binding => Export(binding, relativePath)).ToArray();
+        return analysis.Elements.Select(binding => Export(binding, relativePath)).ToArray();
     }
 
     private static TestEvidenceBinding Export(DocumentationBinding binding, string path)
