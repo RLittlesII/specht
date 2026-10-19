@@ -40,7 +40,7 @@ public sealed class DocumentationDiagnostics
         id, new LocalizableResourceString(key, Resources, typeof(DocumentationDiagnostics)),
         new LocalizableResourceString("Message", Resources, typeof(DocumentationDiagnostics)), "Traceability", severity, true,
         description: new LocalizableResourceString(key, Resources, typeof(DocumentationDiagnostics)),
-        helpLinkUri: "https://github.com/RLittlesII/specht/blob/main/src/codefixes/.spec/README.md");
+        helpLinkUri: "https://github.com/RLittlesII/specht/blob/main/src/codeanalysis/docs/" + id + ".md");
 
     private static readonly ResourceManager Resources = new("Specht.Analysis.Documentation.DocumentationResources", typeof(DocumentationDiagnostics).Assembly);
 }
