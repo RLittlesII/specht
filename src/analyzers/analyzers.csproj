@@ -5,6 +5,7 @@
     <RootNamespace>Specht.Analysis</RootNamespace>
     <AssemblyName>Specht.Analysis</AssemblyName>
     <EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="JsonSchema.Net" />

@@ -13,8 +13,8 @@ namespace Specht.Acceptance;
 /// <c>dotnet pack</c> on the solution, already compiled, in the configuration this assembly was built in - into a temporary
 /// directory instead of the build's package output, so it never runs the build from inside the build's own test target.
 /// One pack, because two packs of one solution at a time write the same intermediate files. The package is found as the
-/// one file the pack wrote and its manifest as the one <c>.nuspec</c> at its root: neither is opened by a name, so a
-/// scenario about what the package says does not fail on what the package is called.
+/// <c>specht.tool</c> package among the solution's outputs and its manifest as the one <c>.nuspec</c> at its root:
+/// neither is opened by a name, so a scenario about what the tool package says does not fail on its file name.
 /// </summary>
 public sealed class PackedTool : IDisposable
 {
@@ -27,6 +27,14 @@ public sealed class PackedTool : IDisposable
     /// <summary>Packs the tool, the first time it is asked.</summary>
     /// <returns>The path of the one package the pack wrote.</returns>
     public Task<string> PackageAsync() => _package.Value;
+
+    /// <summary>Gets the analysis package produced by the same solution pack.</summary>
+    /// <returns>The path of the one <c>Specht.CodeAnalysis</c> package.</returns>
+    public async Task<string> CodeAnalysisPackageAsync()
+    {
+        _ = await _package.Value;
+        return Directory.GetFiles(_packages!, "Specht.CodeAnalysis.*.nupkg").Should().ContainSingle().Subject;
+    }
 
     /// <summary>Reads what the package says about itself.</summary>
     /// <returns>The <c>metadata</c> element of the package's manifest.</returns>
@@ -147,7 +155,7 @@ public sealed class PackedTool : IDisposable
             "pack", "specht.slnx", "--configuration", Configuration, "--no-build", "--output", _packages);
         exitCode.Should().Be(0, stdout + stderr);
 
-        return Directory.GetFiles(_packages).Should().ContainSingle().Subject;
+        return Directory.GetFiles(_packages, "specht.tool.*.nupkg").Should().ContainSingle().Subject;
     }
 
     private async Task<(string Stdout, string Stderr, int ExitCode)> DotNetAsync(Dictionary<string, string> environment, params string[] arguments)

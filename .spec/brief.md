@@ -68,7 +68,7 @@ proves the tool handles a tree it did not write.
    `0101-F5` decision 0001).
    **Later scope decision (2026-10-17).** Epic `0201` separately adopts code
    bindings with an optional Reqnroll bridge. That capability is decomposed in
-   `src/analyzers/`, `src/CodeFixes/` and `src/CodeAnalysis/`; the extraction and
+   `src/analyzers/`, `src/CodeFixes/` and `src/codeanalysis/`; the extraction and
    repository-wide checker still do not host Roslyn analysis. Production delivery remains deferred.
    **Constraints.**
    | Constraint                                                                                                                                   | Hard/Soft |

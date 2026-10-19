@@ -1,0 +1,5 @@
+<Project>
+  <Target Name="SpechtCodeAnalysisValidateRoot" BeforeTargets="CoreCompile" Condition="'$(SpechtRoot)' == ''">
+    <Warning Text="Specht.CodeAnalysis could not find .specht/manifest.json above '$(MSBuildProjectDirectory)'. Set SpechtRoot to the consumer repository root to enable analysis inputs." />
+  </Target>
+</Project>

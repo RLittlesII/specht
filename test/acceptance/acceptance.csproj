@@ -14,7 +14,7 @@
     <ReqnrollFeatureFile Include="../../src/analyzers/TestEvidence/.spec/tests.feature" Link="Features/analyzers-test-evidence.feature" />
     <ReqnrollFeatureFile Include="../../src/analyzers/Scenarios/.spec/scenarios.feature" Link="Features/analyzers-scenarios.feature" />
     <ReqnrollFeatureFile Include="../../src/analyzers/Reconciliation/.spec/reconciliation.feature" Link="Features/analyzers-reconciliation.feature" />
-    <ReqnrollFeatureFile Include="../../src/CodeAnalysis/.spec/adoption.feature" Link="Features/codeanalysis-adoption.feature" />
+    <ReqnrollFeatureFile Include="../../src/codeanalysis/.spec/adoption.feature" Link="Features/codeanalysis-adoption.feature" />
 
     <ReqnrollFeatureFile Include="../../.config/.spec/consuming-the-package.feature" Link="Features/consuming-the-package.feature" />
     <ReqnrollFeatureFile Include="../../.performance/comparison/.spec/baseline-comparison.feature" Link="Features/baseline-comparison.feature" />

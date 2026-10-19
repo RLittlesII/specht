@@ -1,0 +1,41 @@
+<Project>
+  <PropertyGroup>
+    <SpechtRoot Condition="'$(SpechtRoot)' == ''">$([MSBuild]::GetDirectoryNameOfFileAbove('$(MSBuildProjectDirectory)', '.specht/manifest.json'))</SpechtRoot>
+    <SpechtRoot Condition="'$(SpechtRoot)' != ''">$([System.IO.Path]::GetFullPath('$(SpechtRoot)'))</SpechtRoot>
+  </PropertyGroup>
+
+  <ItemGroup Condition="'$(SpechtRoot)' != ''">
+    <Analyzer Include="$(MSBuildThisFileDirectory)../analyzers/dotnet/cs/*.dll" />
+    <Analyzer Remove="$(MSBuildThisFileDirectory)../analyzers/dotnet/cs/Microsoft.CodeAnalysis.dll;$(MSBuildThisFileDirectory)../analyzers/dotnet/cs/Microsoft.CodeAnalysis.CSharp.dll" />
+    <AdditionalFiles Include="$(SpechtRoot)/.specht/manifest.json" Condition="Exists('$(SpechtRoot)/.specht/manifest.json')">
+      <SpechtInputKind>configuration</SpechtInputKind>
+      <SpechtRelativePath>.specht/manifest.json</SpechtRelativePath>
+    </AdditionalFiles>
+    <AdditionalFiles Include="$(SpechtRoot)/**/.spec/README.md;$(SpechtRoot)/epics/**/spec.md">
+      <SpechtInputKind>feature</SpechtInputKind>
+      <SpechtRelativePath>$([System.IO.Path]::GetRelativePath('$(SpechtRoot)', '%(FullPath)'))</SpechtRelativePath>
+    </AdditionalFiles>
+    <AdditionalFiles Include="$(SpechtRoot)/**/.spec/*.feature;$(SpechtRoot)/epics/**/*.feature">
+      <SpechtInputKind>scenario</SpechtInputKind>
+      <SpechtRelativePath>$([System.IO.Path]::GetRelativePath('$(SpechtRoot)', '%(FullPath)'))</SpechtRelativePath>
+    </AdditionalFiles>
+    <AdditionalFiles Include="$(SpechtRoot)/**/.spec/adr/**/*.md;$(SpechtRoot)/epics/**/adr/**/*.md">
+      <SpechtInputKind>adr</SpechtInputKind>
+      <SpechtRelativePath>$([System.IO.Path]::GetRelativePath('$(SpechtRoot)', '%(FullPath)'))</SpechtRelativePath>
+    </AdditionalFiles>
+    <AdditionalFiles Include="$(SpechtRoot)/.specht/schema/**/*.json">
+      <SpechtInputKind>schema:$([System.String]::Copy('%(Filename)').Replace('.schema', ''))</SpechtInputKind>
+      <SpechtRelativePath>$([System.IO.Path]::GetRelativePath('$(SpechtRoot)', '%(FullPath)'))</SpechtRelativePath>
+    </AdditionalFiles>
+    <AdditionalFiles Include="@(SpechtAdditionalRecords)">
+      <SpechtRelativePath Condition="'%(SpechtRelativePath)' == ''">$([System.IO.Path]::GetRelativePath('$(SpechtRoot)', '%(FullPath)'))</SpechtRelativePath>
+    </AdditionalFiles>
+    <AdditionalFiles Include="@(SpechtTestEvidence)">
+      <SpechtInputKind>evidence</SpechtInputKind>
+      <SpechtRelativePath Condition="'%(SpechtRelativePath)' == ''">$([System.IO.Path]::GetRelativePath('$(SpechtRoot)', '%(FullPath)'))</SpechtRelativePath>
+    </AdditionalFiles>
+    <CompilerVisibleProperty Include="SpechtRoot" />
+    <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="SpechtInputKind" />
+    <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="SpechtRelativePath" />
+  </ItemGroup>
+</Project>

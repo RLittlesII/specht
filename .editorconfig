@@ -75,7 +75,7 @@ csharp_style_prefer_null_check_over_type_check = true:suggestion
 # future package upgrade that changes a default can't silently change what
 # this repo enforces, and so a reader can see the intended severity here
 # instead of having to check the analyzer's source. Sourced from the
-# package's own documented defaults (src/CodeAnalysis/README.md in
+# package's own documented defaults (src/codeanalysis/README.md in
 # RocketSurgeonsGuild/Airframe).
 #
 # Only RSA2XXX (Design - member layout, file structure, documentation) is

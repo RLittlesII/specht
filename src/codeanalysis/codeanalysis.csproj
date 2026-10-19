@@ -1,0 +1,38 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFrameworks />
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <IsPackable>true</IsPackable>
+    <IncludeBuildOutput>false</IncludeBuildOutput>
+    <PackageId>Specht.CodeAnalysis</PackageId>
+    <Description>Specht analyzer, code fixes and consumer build integration.</Description>
+    <PackageTags>analyzers code-analysis specifications</PackageTags>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageProjectUrl>https://github.com/RLittlesII/specht</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/RLittlesII/specht</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <NoWarn>$(NoWarn);NU5128</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="README.md" />
+    <None Include="README.md" Pack="true" PackagePath="\" />
+    <ProjectReference Include="../analyzers/analyzers.csproj" ReferenceOutputAssembly="false" PrivateAssets="all" />
+    <ProjectReference Include="../codefixes/codefixes.csproj" ReferenceOutputAssembly="false" PrivateAssets="all" />
+    <None Include="build/Specht.CodeAnalysis.props" Pack="true" PackagePath="build/" />
+    <None Include="build/Specht.CodeAnalysis.targets" Pack="true" PackagePath="build/" />
+  </ItemGroup>
+
+  <Target Name="PackAnalysisAssemblies" BeforeTargets="_GetPackageFiles">
+    <ItemGroup>
+      <None Include="../analyzers/bin/$(Configuration)/netstandard2.0/*.dll"
+            Pack="true" PackagePath="analyzers/dotnet/cs/" Visible="false" />
+      <None Remove="../analyzers/bin/$(Configuration)/netstandard2.0/Microsoft.CodeAnalysis.dll;../analyzers/bin/$(Configuration)/netstandard2.0/Microsoft.CodeAnalysis.CSharp.dll" />
+      <None Include="../codefixes/bin/$(Configuration)/netstandard2.0/Specht.Codefixes.dll"
+            Pack="true" PackagePath="analyzers/dotnet/cs/" Visible="false" />
+      <None Include="../codefixes/bin/$(Configuration)/netstandard2.0/Microsoft.CodeAnalysis*.dll"
+            Pack="false" />
+    </ItemGroup>
+  </Target>
+</Project>
