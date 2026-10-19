@@ -48,8 +48,17 @@ public sealed class TestEvidenceArtifactWriterUnitTests
         var source = JsonNode.Parse(TestEvidenceJson.Valid)!;
         source["scenarios"] = new JsonArray(new JsonObject
         {
-            ["scenarioPath"] = "src/feature/.spec/tests.feature",
-            ["generatorId"] = "scenario-1",
+            ["path"] = "src/feature/.spec/tests.feature",
+            ["scenarioId"] = "scenario-1",
+            ["line"] = 10,
+            ["scope"] = new JsonObject { ["epic"] = "0201", ["feature"] = "F4" },
+            ["claims"] = new JsonArray(),
+            ["cases"] = new JsonArray(new JsonObject
+            {
+                ["rowId"] = null,
+                ["caseId"] = "case-17",
+                ["status"] = "resolved",
+            }),
         });
         var artifact = new TestEvidenceArtifactReader().Read(source.ToJsonString()).Artifact!;
 
@@ -60,6 +69,7 @@ public sealed class TestEvidenceArtifactWriterUnitTests
         // Then
         result.IsValid.Should().BeTrue();
         result.Artifact!.Scenarios.Should().ContainSingle();
-        result.Artifact.Scenarios[0].GetProperty("generatorId").GetString().Should().Be("scenario-1");
+        result.Artifact.Scenarios[0].GetProperty("scenarioId").GetString().Should().Be("scenario-1");
+        result.Artifact.Scenarios[0].GetProperty("cases")[0].GetProperty("caseId").GetString().Should().Be("case-17");
     }
 }
