@@ -1,3 +1,4 @@
+using System.Linq;
 using System.Text.Json.Nodes;
 using AwesomeAssertions;
 using Reqnroll;
@@ -14,6 +15,7 @@ public sealed class TestEvidenceSteps
     {
         UseBoundCase("M:Example.Tests.Sample.Run", "B-001");
         _artifact!["adapter"]!["id"] = "xunit.v3";
+        _useRunnerCollector = true;
     }
 
     [Given("a bound xUnit theory discovering two data rows without Reqnroll")]
@@ -27,6 +29,7 @@ public sealed class TestEvidenceSteps
         _artifact["bindings"]![0]!["symbolId"] = "M:Example.Tests.Sample.Theory";
         _artifact["adapter"]!["id"] = "xunit.v3";
         _artifact["results"] = new JsonObject { ["state"] = "absent" };
+        _useRunnerCollector = true;
     }
 
     [Given("a bound Playwright .NET test with conforming runner evidence and no Reqnroll")]
@@ -34,6 +37,7 @@ public sealed class TestEvidenceSteps
     {
         UseBoundCase("M:Example.Tests.Sample.Playwright", "B-003");
         _artifact!["adapter"]!["id"] = "playwright.dotnet.xunit.v3";
+        _useRunnerCollector = true;
     }
 
     [Given("a selected test project with missing collection integration or insufficient case and method metadata")]
@@ -58,6 +62,7 @@ public sealed class TestEvidenceSteps
         _artifact["discovery"]!["methods"]![0]!["symbolId"] = "M:Example.Tests.Sample.Theory";
         _artifact["bindings"]![0]!["symbolId"] = "M:Example.Tests.Sample.Theory";
         _artifact["results"] = new JsonObject { ["state"] = "absent" };
+        _useRunnerCollector = true;
     }
 
     [Given("supplied {string} carrying source, assembly and configuration identities")]
@@ -79,6 +84,7 @@ public sealed class TestEvidenceSteps
     {
         UseBoundCase("M:Example.Tests.Sample.Run", "B-007");
         _artifact!["adapter"]!["id"] = framework;
+        _useRunnerCollector = true;
     }
 
     [Given("a bound parameterized test whose cases are available only at execution")]
@@ -91,13 +97,17 @@ public sealed class TestEvidenceSteps
     }
 
     [Given("collected test evidence in versioned JSON")]
-    public void GivenVersionedEvidence() => UseBoundCase("M:Example.Tests.Sample.Run", "B-009");
+    public void GivenVersionedEvidence()
+    {
+        UseBoundCase("M:Example.Tests.Sample.Run", "B-009");
+        _useRunnerCollector = true;
+    }
 
     [When("the declared analysis is requested")]
-    public void WhenAnalysisIsRequested() => _result = Read();
+    public void WhenAnalysisIsRequested() => _result = _useRunnerCollector ? CollectRunnerEvidence() : Read();
 
     [When("case and method identities are mapped")]
-    public void WhenIdentitiesAreMapped() => _result = Read();
+    public void WhenIdentitiesAreMapped() => _result = CollectRunnerEvidence();
 
     [When("it is used for current analysis")]
     public void WhenUsedForCurrentAnalysis()
@@ -111,7 +121,7 @@ public sealed class TestEvidenceSteps
     public void WhenRunnerHasNotSuppliedCases() => _result = Read();
 
     [When("its identities are read")]
-    public void WhenIdentitiesAreRead() => _result = Read();
+    public void WhenIdentitiesAreRead() => _result = CollectRunnerEvidence();
 
     [Then("its discovered test case is linked to that method and claim")]
     public void ThenCaseIsLinkedToMethodAndClaim()
@@ -207,6 +217,32 @@ public sealed class TestEvidenceSteps
 
     private TestEvidenceReadResult Read() => new TestEvidenceArtifactReader().Read(_artifact!.ToJsonString());
 
+    private TestEvidenceReadResult CollectRunnerEvidence()
+    {
+        var reader = new TestEvidenceArtifactReader();
+        var source = reader.Read(_artifact!.ToJsonString()).Artifact!;
+        var collection = new TestEvidenceRunnerCollector().Collect(
+            source.AdapterId,
+            source.AdapterVersion,
+            source.Discovery.Methods,
+            source.Discovery.Cases.Select(static item => new TestEvidenceRunnerCaseRecord(
+                item.CaseId, item.MethodSymbolId, item.RowId, item.DisplayName)).ToArray(),
+            source.Discovery.SessionId,
+            source.Discovery.State is TestEvidenceDiscoveryState.Complete,
+            source.Results.RunId,
+            source.Results.Cases.Select(static item => new TestEvidenceRunnerResultRecord(
+                item.CaseId, item.Outcome, item.Detail)).ToArray());
+        collection.IsValid.Should().BeTrue();
+        var collected = source with
+        {
+            AdapterId = collection.AdapterId,
+            AdapterVersion = collection.AdapterVersion,
+            Discovery = collection.Discovery,
+            Results = collection.Results,
+        };
+        return reader.Read(new TestEvidenceArtifactWriter().Write(collected));
+    }
+
     private TestEvidenceArtifact ValidArtifact()
     {
         _result.Should().NotBeNull();
@@ -216,4 +252,5 @@ public sealed class TestEvidenceSteps
 
     private JsonNode? _artifact;
     private TestEvidenceReadResult? _result;
+    private bool _useRunnerCollector;
 }
