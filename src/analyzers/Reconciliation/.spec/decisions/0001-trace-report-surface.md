@@ -50,4 +50,9 @@ schema, options and exit codes remain downstream technical design.
 
 ## Reversal
 
-None.
+**2026-10-19, repository owner:** Use `specht evidence` for this Feature's
+reconciliation and passing-outcome gate. Approved `0001-F13` already owns
+`specht trace` as a text-level, informational command whose gaps exit `0`.
+Combining the two would change that approved output and exit contract. The
+separate versioned JSON report and all other boundaries in this decision stand.
+The alternative of revising `0001-F13` was considered and rejected.

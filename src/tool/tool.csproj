@@ -34,6 +34,7 @@
   <ItemGroup>
     <PackageReference Include="Spectre.Console.Cli" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
+    <PackageReference Include="JsonPointer.Net" />
   </ItemGroup>
 
   <ItemGroup>

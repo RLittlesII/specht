@@ -17,6 +17,7 @@
     <ProjectReference Include="../../src/codefixes/codefixes.csproj" />
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" />
     <ProjectReference Include="../../src/specht/specht.csproj" />
+    <ProjectReference Include="../../src/tool/tool.csproj" />
     <Using Include="Xunit" />
   </ItemGroup>
 </Project>

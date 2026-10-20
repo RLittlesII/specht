@@ -4,37 +4,37 @@ Feature: Traceability reconciliation
   @B-001
   Scenario: Direct test chain
     Given a claim bound to a discovered test through the common runner-evidence contract and a matching result with no scenario policy
-    When the declared analysis is requested
+    When the evidence gate is requested for the declared scope
     Then reconciliation presents the claim-to-method-to-case-to-result chain without requiring Reqnroll
 
   @B-002
   Scenario: Incomplete scope
     Given a declared repository scope omitting a required test project or input
-    When the declared analysis is requested
+    When the evidence gate is requested for the declared scope
     Then the report marks coverage incomplete and identifies the missing input
 
   @B-003
   Scenario: Outcome distinction
     Given a resolved binding with a failed, skipped or absent test result
-    When the declared analysis is requested
+    When the evidence gate is requested for the declared scope
     Then the report keeps that outcome distinct from a passing result
 
   @B-004
   Scenario: Policy gaps
     Given an explicit policy requiring a link absent from a claim's evidence
-    When the declared analysis is requested
+    When the evidence gate is requested for the declared scope
     Then the report identifies that missing link instead of treating reference resolution as complete coverage
 
   @B-005
   Scenario: Optional scenarios
     Given scenario bridge evidence supplied for part of a declared scope
-    When the declared analysis is requested
+    When the evidence gate is requested for the declared scope
     Then those scenario links augment the direct chains without inventing links for other tests
 
   @B-006
   Scenario: Unbound claim
     Given a declared specification claim requiring test evidence with no test binding at all
-    When the declared analysis is requested
+    When the evidence gate is requested for the declared scope
     Then reconciliation reports the missing evidence starting from that claim even when no method names it
 
   @B-007 @boundary
@@ -73,6 +73,13 @@ Feature: Traceability reconciliation
     Then the exemption and reason remain visible
     And the exemption is classified as exempt rather than covered
 
+  @B-010 @boundary
+  Scenario: An exempt test link leaves the scenario requirement active
+    Given an explicit coverage exemption with a reason
+    And a required scenario link with explicit bridge evidence
+    When coverage is presented
+    Then the test link is exempt and the scenario link is satisfied
+
   @B-011
   Scenario Outline: Declared compilation completeness
     Given a declared set of project and target-framework combinations
@@ -86,6 +93,20 @@ Feature: Traceability reconciliation
       | a project combination omitted                     | incomplete |
       | a target-framework combination omitted            | incomplete |
       | stale required inputs for one combination         | incomplete |
+
+  @B-011 @boundary
+  Scenario: Older export beside current export
+    Given a stale export beside a current export for the same declared combination
+    When analysis completeness is evaluated
+    Then the analysis is "complete"
+    And the stale export remains visible without displacing current evidence
+
+  @B-011 @boundary
+  Scenario: Selected record absent from the input index
+    Given a declared compilation export omits the selected claim record from its input index
+    When analysis completeness is evaluated
+    Then the analysis is "incomplete"
+    And the missing record is identified as a required input
 
   @B-012 @boundary
   Scenario Outline: Stale evidence state
@@ -115,13 +136,37 @@ Feature: Traceability reconciliation
   @B-014
   Scenario Outline: Trace report surface
     Given supplied traceability evidence
-    When specht trace is requested with "<format>" output
+    When specht evidence is requested with "<format>" output
     Then reconciliation is presented in that format
 
     Examples:
       | format         |
       | human summary  |
       | versioned JSON |
+
+  @B-014
+  Scenario: Caller-named JSON report
+    Given supplied traceability evidence
+    When specht evidence writes a caller-named report
+    Then that report contains the same versioned JSON as stdout
+
+  @B-014 @boundary
+  Scenario: Unwritable caller-named report
+    Given supplied traceability evidence
+    When specht evidence cannot write the caller-named report
+    Then the command reports the write failure without exposing an absolute path
+
+  @B-014 @boundary
+  Scenario: External evidence directory
+    Given supplied traceability evidence
+    When evidence is supplied from an external directory containing two exports
+    Then both external exports have distinct root-safe labels
+
+  @B-014 @boundary
+  Scenario: Overlapping evidence selections
+    Given supplied traceability evidence
+    When the same export is selected by file and directory
+    Then it is reconciled once
 
   @B-015 @boundary
   Scenario: Checker report isolation
@@ -139,7 +184,7 @@ Feature: Traceability reconciliation
   Scenario Outline: Passing outcomes required by default
     Given complete current inputs and required links for a selected claim
     And its required test case has outcome "<outcome>"
-    When the supplied evidence is reconciled by specht trace
+    When the supplied evidence is reconciled by specht evidence
     Then the default trace gate "<gate>"
     And binding validity and execution outcome remain separate
 
