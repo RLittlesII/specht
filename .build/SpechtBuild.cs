@@ -143,11 +143,11 @@ internal partial class SpechtBuild : NukeBuild
     private Target Build => definition => definition
         .DependsOn(Test);
 
-    // B-009: exactly one specht.tool.<version>.nupkg under .artifacts/nupkg/.
+    // 0055-F1 B-009 and 0201-F6 B-020: pack the tool and analysis packages at one version.
     private Target Pack => definition => definition
         .DependsOn(Build)
         .Produces(PackageDirectory / "*.nupkg")
-        .Executes(() => PackTool(Configuration));
+        .Executes(() => PackReleasePackages(Configuration));
 
     private Target Benchmark => definition => definition
         .DependsOn(Restore)
@@ -198,7 +198,17 @@ internal partial class SpechtBuild : NukeBuild
     {
         PackageDirectory.CreateOrCleanDirectory();
         DotNetPack(settings => settings
-            .SetProject(Solution)
+            .SetProject(RootDirectory / "src" / "tool" / "tool.csproj")
+            .SetConfiguration(configuration)
+            .SetOutputDirectory(PackageDirectory)
+            .EnableNoBuild());
+    }
+
+    private void PackReleasePackages(string configuration)
+    {
+        PackTool(configuration);
+        DotNetPack(settings => settings
+            .SetProject(RootDirectory / "src" / "codeanalysis" / "codeanalysis.csproj")
             .SetConfiguration(configuration)
             .SetOutputDirectory(PackageDirectory)
             .EnableNoBuild());

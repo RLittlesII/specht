@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using System.Xml.Linq;
 using AwesomeAssertions;
 using Reqnroll;
+using YamlDotNet.RepresentationModel;
 
 namespace Specht.Acceptance.CodeAnalysis;
 
@@ -55,6 +56,22 @@ public sealed class CodeAnalysisPackageSteps(PackedTool tool)
     public void ThenPackageVersionsMatch()
     {
         VersionOf(_analysisPackage!, "Specht.CodeAnalysis.").Should().Be(VersionOf(_toolPackage!, "specht.tool."));
+    }
+
+    [Then("both are attached to the GitHub Release")]
+    public void ThenBothPackagesAreAttached()
+    {
+        var stream = new YamlStream();
+        using var workflow = File.OpenText(Path.Combine(tool.Repository, ".github", "workflows", "release.yml"));
+        stream.Load(workflow);
+        var root = (YamlMappingNode)stream.Documents[0].RootNode;
+        var jobs = (YamlMappingNode)root["jobs"];
+        var release = (YamlMappingNode)jobs["release"];
+        var steps = (YamlSequenceNode)release["steps"];
+        var create = steps.Cast<YamlMappingNode>().Single(static step => step["name"].ToString() == "Release");
+        var command = create["run"].ToString();
+        command.Should().Contain("specht.tool.${GITHUB_REF_NAME#v}.nupkg");
+        command.Should().Contain("Specht.CodeAnalysis.${GITHUB_REF_NAME#v}.nupkg");
     }
 
     [Given("different installed package versions with compatible schema and evidence contracts")]

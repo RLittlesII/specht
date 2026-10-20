@@ -145,10 +145,14 @@ jobs:
           GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
         shell: bash
         run: |
-          dotnet nuget push ".artifacts/nupkg/specht.tool.${GITHUB_REF_NAME#v}.nupkg" --source "https://nuget.pkg.github.com/rlittlesii/index.json" --api-key "$GITHUB_TOKEN" --skip-duplicate
+          tool=".artifacts/nupkg/specht.tool.${GITHUB_REF_NAME#v}.nupkg"
+          analysis=".artifacts/nupkg/Specht.CodeAnalysis.${GITHUB_REF_NAME#v}.nupkg"
+          test -f "$tool" && test -f "$analysis"
+          dotnet nuget push "$tool" --source "https://nuget.pkg.github.com/rlittlesii/index.json" --api-key "$GITHUB_TOKEN" --skip-duplicate
+          dotnet nuget push "$analysis" --source "https://nuget.pkg.github.com/rlittlesii/index.json" --api-key "$GITHUB_TOKEN" --skip-duplicate
       - name: Release
         env:
           GH_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
         shell: bash
         run: |
-          gh release create "$GITHUB_REF_NAME" ".artifacts/nupkg/specht.tool.${GITHUB_REF_NAME#v}.nupkg" --generate-notes --verify-tag --repo "$GITHUB_REPOSITORY"
+          gh release create "$GITHUB_REF_NAME" ".artifacts/nupkg/specht.tool.${GITHUB_REF_NAME#v}.nupkg" ".artifacts/nupkg/Specht.CodeAnalysis.${GITHUB_REF_NAME#v}.nupkg" --generate-notes --verify-tag --repo "$GITHUB_REPOSITORY"

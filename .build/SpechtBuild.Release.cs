@@ -103,8 +103,15 @@ internal sealed partial class SpechtBuild
                     {
                         ["GITHUB_TOKEN"] = "${{ secrets.GITHUB_TOKEN }}",
                     },
-                    Run = $"dotnet nuget push \"{PackagePath}/specht.tool.${{GITHUB_REF_NAME#v}}.nupkg\" " +
-                          "--source \"https://nuget.pkg.github.com/rlittlesii/index.json\" --api-key \"$GITHUB_TOKEN\" --skip-duplicate",
+                    Run = $"tool=\"{PackagePath}/specht.tool.${{GITHUB_REF_NAME#v}}.nupkg\"\n" +
+                          $"analysis=\"{PackagePath}/Specht.CodeAnalysis.${{GITHUB_REF_NAME#v}}.nupkg\"\n" +
+                          "test -f \"$tool\" && test -f \"$analysis\"\n" +
+                          "dotnet nuget push \"$tool\" " +
+                          "--source \"https://nuget.pkg.github.com/rlittlesii/index.json\" " +
+                          "--api-key \"$GITHUB_TOKEN\" --skip-duplicate\n" +
+                          "dotnet nuget push \"$analysis\" " +
+                          "--source \"https://nuget.pkg.github.com/rlittlesii/index.json\" " +
+                          "--api-key \"$GITHUB_TOKEN\" --skip-duplicate",
                 },
                 new RunStep("Release")
                 {
@@ -114,6 +121,7 @@ internal sealed partial class SpechtBuild
                         ["GH_TOKEN"] = "${{ secrets.GITHUB_TOKEN }}",
                     },
                     Run = $"gh release create \"$GITHUB_REF_NAME\" \"{PackagePath}/specht.tool.${{GITHUB_REF_NAME#v}}.nupkg\" " +
+                          $"\"{PackagePath}/Specht.CodeAnalysis.${{GITHUB_REF_NAME#v}}.nupkg\" " +
                           "--generate-notes --verify-tag --repo \"$GITHUB_REPOSITORY\"",
                 },
             ],

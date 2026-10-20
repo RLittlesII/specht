@@ -1,0 +1,28 @@
+id: "0250"
+type: task
+title: Publish Specht.CodeAnalysis with the repository release
+status: done
+value: 5
+risk: 2
+parent: "0201"
+children: []
+depends_on: ["0243"]
+spikes: []
+spec: src/codeanalysis/.spec/README.md
+claims: ["B-020"]
+created: "2026-10-20"
+updated: "2026-10-20"
+closed: "2026-10-20"
+summary: |
+  Close the release gap after 0243: pack Specht.CodeAnalysis beside specht.tool,
+  carry both packages through the release artifact, and publish both at the
+  repository release version. Keep the 0246 evidence command on its own branch.
+acceptance_criteria:
+  - "0201-F6 B-020 — aligned release packaging and publication."
+  - "The release workflow uploads, pushes and attaches both version-matched packages."
+  - "A release-path check fails if either expected package is absent."
+  - "§ 9 names passing acceptance and mechanism tests for B-020."
+decisions: []
+out_of_scope:
+  - "0201-F6 § 5 boundaries."
+  - "The 0246 evidence command and its merge."
