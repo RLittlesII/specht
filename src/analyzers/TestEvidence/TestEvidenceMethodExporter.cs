@@ -18,7 +18,10 @@ public sealed class TestEvidenceMethodExporter
             location = new TestEvidenceLocation(relativePath!, position.Line + 1, position.Character + 1);
         }
 
-        return new TestEvidenceMethod(symbolId, method.ContainingType.MetadataName, method.MetadataName,
+        var declaringType = method.ContainingNamespace.IsGlobalNamespace
+            ? method.ContainingType.MetadataName
+            : method.ContainingNamespace.ToDisplayString() + "." + method.ContainingType.MetadataName;
+        return new TestEvidenceMethod(symbolId, declaringType, method.MetadataName,
             method.Arity, method.Parameters.Select(static parameter =>
                 parameter.Type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat.WithMiscellaneousOptions(
                     SymbolDisplayFormat.FullyQualifiedFormat.MiscellaneousOptions & ~SymbolDisplayMiscellaneousOptions.UseSpecialTypes))).ToArray(), location);

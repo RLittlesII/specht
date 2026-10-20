@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <RootNamespace>Specht.TestEvidence.Mtp.Tests</RootNamespace>
+    <AssemblyName>specht.test-evidence.mtp.tests</AssemblyName>
+    <IsTestProject>true</IsTestProject>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <SpechtRoot>$(MSBuildProjectDirectory)/../..</SpechtRoot>
+    <SpechtFeatureInputs>$(SpechtRoot)/src/analyzers/Bindings/.spec/README.md;$(SpechtRoot)/src/analyzers/TestEvidence/.spec/README.md</SpechtFeatureInputs>
+    <SpechtScenarioInputs />
+    <SpechtAdrInputs>$(SpechtRoot)/.artifacts/0244/no-adrs.md</SpechtAdrInputs>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="AwesomeAssertions" />
+    <PackageReference Include="Microsoft.Playwright.Xunit.v3" />
+    <PackageReference Include="xunit.v3.mtp-v2" />
+    <ProjectReference Include="../../src/analyzers/analyzers.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+    <ProjectReference Include="../../src/testevidence.mtp/testevidence.mtp.csproj" />
+    <Analyzer Include="../../src/analyzers/bin/$(Configuration)/netstandard2.0/*.dll" />
+    <Analyzer Remove="../../src/analyzers/bin/$(Configuration)/netstandard2.0/Microsoft.CodeAnalysis.dll;../../src/analyzers/bin/$(Configuration)/netstandard2.0/Microsoft.CodeAnalysis.CSharp.dll" />
+    <Using Include="Xunit" />
+  </ItemGroup>
+  <Import Project="../../src/codeanalysis/build/Specht.CodeAnalysis.props" />
+  <Import Project="../../src/codeanalysis/build/Specht.CodeAnalysis.targets" />
+</Project>
