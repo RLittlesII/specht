@@ -165,6 +165,7 @@ specht schema pin [<version>] [--root <dir>]
 specht schema list [--root <dir>]
 specht schema pin [version] [--root <dir>]
 specht frontmatter --kind <kind> (<path> | --stdin) [--root <dir>]
+specht evidence [--root <dir>] --evidence <path>... [--run <id>] [--json] [--report <path>]
 specht upgrade [--root <dir>]
 specht --explain SPEC031
 specht --version
@@ -192,7 +193,12 @@ up or down. With no version, an interactive Spectre.Console selector uses arrow
 keys and Enter; without a terminal the command prints an explicit-version hint
 and exits `2`. Both commands are built (`0001-F7`, items `0121` to `0123`, `0125`).
 
-`specht upgrade`, `--report` and the `init --epics` option are
+`specht evidence` reconciles explicitly supplied build and runner exports against
+current claims selected by the consumer's `codeAnalysis` policy. It requires
+current inputs, required links and passing outcomes by default and emits a
+separate versioned report (`0201-F5`, item `0246`).
+
+`specht upgrade`, the check command's `--report` and the `init --epics` option are
 specified and not built (`0001-F7`, `0001-F3`, `0001-F4`). What the tool accepts today is
 [`docs/cli.md`](docs/cli.md), which a test holds to its help (`0002-F1`).
 

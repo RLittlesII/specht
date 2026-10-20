@@ -1,7 +1,7 @@
 id: "0246"
 type: feature
 title: "Reconcile exported trace evidence in the CLI"
-status: ready-for-implementation
+status: done
 value: 4
 risk: 4
 parent: "0201"
@@ -30,10 +30,10 @@ claims:
     "B-017",
   ]
 created: "2026-10-17"
-updated: "2026-10-17"
-closed: null
+updated: "2026-10-19"
+closed: "2026-10-19"
 summary: |
-  Implement CLI-side specht trace reconciliation of exported binding, discovery and result
+  Implement CLI-side specht evidence reconciliation of exported binding, discovery and result
   artifacts, starting from every selected current claim. 0244 provides exported records
   and case/result correlation. Require passing required outcomes by default, preserving
   independent validity/completeness/exemption/execution states and the existing checker
