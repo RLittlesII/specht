@@ -115,7 +115,7 @@ Feature: Traceability reconciliation
   @B-014
   Scenario Outline: Trace report surface
     Given supplied traceability evidence
-    When specht trace is requested with "<format>" output
+    When specht evidence is requested with "<format>" output
     Then reconciliation is presented in that format
 
     Examples:
@@ -139,7 +139,7 @@ Feature: Traceability reconciliation
   Scenario Outline: Passing outcomes required by default
     Given complete current inputs and required links for a selected claim
     And its required test case has outcome "<outcome>"
-    When the supplied evidence is reconciled by specht trace
+    When the supplied evidence is reconciled by specht evidence
     Then the default trace gate "<gate>"
     And binding validity and execution outcome remain separate
 

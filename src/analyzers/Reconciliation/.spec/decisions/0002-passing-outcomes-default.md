@@ -35,3 +35,8 @@ Link-completeness-only success by default with an optional passing-outcome flag.
 ## Reversal
 
 None.
+
+## Command-name addendum
+
+The 2026-10-19 reversal of decision 0001 names this command `specht evidence`.
+The passing-outcome gate in this decision is unchanged.
