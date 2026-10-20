@@ -154,6 +154,7 @@ specht [--root <dir>] [--strict] [--json] [--schema-source <embedded|disk>] [--e
 specht schema list [--root <dir>]
 specht schema pin [version] [--root <dir>]
 specht frontmatter --kind <kind> (<path> | --stdin) [--root <dir>]
+specht evidence [--root <dir>] --evidence <path>... [--run <id>] [--json] [--report <path>]
 specht init [--root <dir>] [--schemas] [--templates] [--all]
             [--upstream <address>] [--upstream-version <label>] [--upstream-hash <kind=hash>]...
 specht --version

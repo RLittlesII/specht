@@ -7,7 +7,8 @@ type: reference
 # Command line
 
 `specht` checks a tree, `frontmatter` checks one document, `specht init` writes the files a check needs, and
-`schema` groups commands for the repository's schema version. Installed as a local tool, each runs as `dotnet specht`.
+`schema` groups commands for the repository's schema version. `evidence` reconciles supplied build and runner exports.
+Installed as a local tool, each runs as `dotnet specht`.
 
 ## `specht`
 
@@ -69,6 +70,52 @@ specifications: epics 0, features 1
 items: 0
 rules evaluated: 21
 errors: 1, warnings: 0
+```
+
+## `specht evidence`
+
+```text
+specht evidence [--root <DIR>] --evidence <PATH>... [--run <ID>] [--json] [--report <PATH>]
+```
+
+Reconciles the current claims selected by `.specht/manifest.json`'s `codeAnalysis`
+policy against explicitly supplied version-one `specht.test-evidence` exports. It
+checks declared project and target-framework combinations, current input hashes,
+resolved bindings, discovered cases and their selected run outcomes. It is offline
+and does not build a project or start tests. The command reads each named file or
+JSON files beneath each named directory; it does not search elsewhere for evidence.
+
+| Option              | Value                | Default               | Does                                                    |
+| ------------------- | -------------------- | --------------------- | ------------------------------------------------------- |
+| `--root <DIR>`      | Repository directory | The working directory | Selects the current consumer configuration and files.   |
+| `--evidence <PATH>` | File or directory    | None                  | Supplies an export; repeat to cover the declared scope. |
+| `--run <ID>`        | Exact run identity   | Sole matching run     | Selects one run when several are supplied.              |
+| `--json`            | none                 | Off                   | Writes only the versioned evidence report to stdout.    |
+| `--report <PATH>`   | Output file          | None                  | Writes that same JSON report to a caller-named path.    |
+| `-h, --help`        | none                 | Off                   | Prints command help.                                    |
+
+The human output separates input, binding, required-link, exemption and execution
+counts and lists typed findings with root-relative paths. JSON uses
+`format: "specht.evidence-report"` and `formatVersion: 1`; it is separate from the
+checker's report. Required test links apply to every selected current claim unless
+an exact claim/link has a reasoned exemption. Implementation and scenario links
+are required only when enabled in the analysis policy. A link can be satisfied
+while its associated case failed or did not run; the gate requires every current
+case supplying non-exempt required test evidence to pass. Stale or mismatched
+exports remain visible and cannot establish current coverage.
+Native SPCT build diagnostics remain in the build's diagnostic stream; the
+version-one evidence export does not carry them into this report.
+
+Exit `0` means complete current inputs, required links and passing outcomes;
+`1` means a required link or outcome failed; `2` means required input is missing,
+stale or incompatible; `3` means configuration is invalid; and `4` means a named
+evidence path or requested run was not found, or the caller-named report could not
+be written. Configuration, explicit selection,
+input and policy failures take precedence in that order. Findings still show
+other facts that can be established safely.
+
+```sh
+specht evidence --root . --evidence .artifacts/test-evidence --json --report .artifacts/evidence-report.json
 ```
 
 ## `specht frontmatter`
