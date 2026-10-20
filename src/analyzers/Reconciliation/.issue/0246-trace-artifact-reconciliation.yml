@@ -1,7 +1,7 @@
 id: "0246"
 type: feature
 title: "Reconcile exported trace evidence in the CLI"
-status: in-progress
+status: in-review
 value: 4
 risk: 4
 parent: "0201"
