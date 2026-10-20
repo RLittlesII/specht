@@ -1,14 +1,14 @@
 ---
 title: "Epic 0132: specht through the Model Context Protocol"
-description: "A second door onto specht for agents and editors: rule and schema knowledge for the pinned version, the specification tree as structured data and the check verdict, each identical to the command line's answer, plus a request for project-scoped document sequences independent of git"
+description: "A second door onto specht for agents and editors: pinned rule knowledge, structured tree facts and check verdicts matching the CLI, a persistent keyed index of Markdown, and project-scoped document sequences independent of git"
 id: "0132"
 type: epic
 status: blocked
 priority: med
 milestone: null
-children: []
+children: ["0132-F1"]
 created: "2026-10-09"
-updated: "2026-10-17"
+updated: "2026-10-19"
 github_issue: null
 ---
 
@@ -36,11 +36,17 @@ project and document type, allocated through MCP without coordinating through
 git. The requirement is recorded under "Document sequence allocation";
 project identity and reservation storage remain open.
 
+The owner added a persistent specification index on 2026-10-19. Markdown remains
+authoritative, while a local database keeps keyed facts and relationships for
+repeated MCP lookups. Every indexed answer must reflect the current tree, even
+after direct edits and branch switches (`0132-F1` decision 0001). Feature
+`0132-F1` is a draft; its key scope and performance evidence remain open.
+
 The need and its scope were decided by the repository owner on 2026-10-09.
 This file is the record of that decision. Nothing here is designed: no MCP
 tool is named, no transport is chosen, no project is laid out and no package
-is decided. The split into Features is a candidate the owner has not
-confirmed, and no Feature specification exists yet.
+is decided. Candidates A to F remain an unconfirmed cut; the owner confirmed
+the distinct indexed-storage capability in Feature `0132-F1`.
 
 ## Business Value
 
@@ -95,6 +101,7 @@ marks the new sequence capability, whose tier has not been decided.
 | The existing writes are reachable through MCP: `init`, `upgrade`, the pin command and `format`                                                                                                | Could     | Each bound by the same write rule as its command (brief § 9). Dropped alongside the work queue                         |
 | The work queue is answerable: items, their status, their derived priority and rank, and which are startable                                                                                   | Could     | Only if cheap once the tree's facts exist. The first thing dropped                                                     |
 | A caller can obtain a unique sequence value for a project and a supported document type without git coordination                                                                              | Requested | Added by the owner, 2026-10-17; tier and authority boundaries await agreement under "Document sequence allocation"     |
+| Repeated MCP key lookups can follow stored specification relationships without reparsing unchanged Markdown, while each answer remains current with the repository tree                       | Requested | Added by the owner, 2026-10-19; `0132-F1` is draft, with key scope and measurement open                                |
 
 ## Document sequence allocation
 
@@ -134,21 +141,22 @@ Coordinating allocations across machines is outside this request.
 
 ## Features
 
-**A candidate cut, awaiting the owner's confirmation.** Nothing below is
-agreed. No Feature here has an id, a specification or a place in `children`:
-a candidate takes its Feature id when its specification is written, and joins
-`children` then, so that every child resolves to a file.
+**Candidates A to F await the owner's confirmation.** They have no Feature id,
+specification or place in `children`: a candidate takes its Feature id when
+its specification is written. Candidate G is confirmed as a separate draft
+Feature and is listed in `children`.
 
 The candidates are cut by capability dimension, where the invariant changes:
 
-| Candidate | Name                           | Invariant it would carry                                                                                                      | Tier      |
-| --------- | ------------------------------ | ----------------------------------------------------------------------------------------------------------------------------- | --------- |
-| A         | Tree facts on the command line | The tree's facts are a read-only function of the tree and the pinned schema version, given as structured data                 | Must      |
-| B         | The MCP host                   | A local process the client starts, the same version as the tool, reached by one client configuration entry, with no port      | Must      |
-| C         | Reading through MCP            | Every answer MCP gives is the command line's answer on the same tree, and nothing is written                                  | Must      |
-| D         | Writing through MCP            | A write through MCP is one an existing command already makes, bound by that command's write rule                              | Could     |
-| E         | The work queue                 | The work items' delivery state is answerable, read-only                                                                       | Could     |
-| F         | Document sequence allocation   | Concurrent allocations within an agreed project and document-type scope never return the same value, without git coordination | Requested |
+| Candidate     | Name                           | Invariant it would carry                                                                                                      | Tier      |
+| ------------- | ------------------------------ | ----------------------------------------------------------------------------------------------------------------------------- | --------- |
+| A             | Tree facts on the command line | The tree's facts are a read-only function of the tree and the pinned schema version, given as structured data                 | Must      |
+| B             | The MCP host                   | A local process the client starts, the same version as the tool, reached by one client configuration entry, with no port      | Must      |
+| C             | Reading through MCP            | Every answer MCP gives is the command line's answer on the same tree, and nothing is written                                  | Must      |
+| D             | Writing through MCP            | A write through MCP is one an existing command already makes, bound by that command's write rule                              | Could     |
+| E             | The work queue                 | The work items' delivery state is answerable, read-only                                                                       | Could     |
+| F             | Document sequence allocation   | Concurrent allocations within an agreed project and document-type scope never return the same value, without git coordination | Requested |
+| G (`0132-F1`) | Persistent specification index | A local, rebuildable database holds keyed facts and relationships; current-tree answers avoid reparsing unchanged Markdown    | Requested |
 
 Where the candidate cut was tested, and what the owner is asked to confirm:
 
@@ -177,6 +185,10 @@ Where the candidate cut was tested, and what the owner is asked to confirm:
 - **Candidate F is cut from candidates D and E.** It reserves identifiers,
   rather than exposing an existing tree write or reading delivery state;
   its machine-local reservations need their own state contract.
+- **Candidate G is cut from A and C.** A defines the public facts, and C serves
+  the same answer through MCP. G owns durable indexing, key traversal and
+  freshness underneath those answers. It keeps Markdown authoritative and
+  adds no new public answer; its draft agreement is `0132-F1`.
 - **Two things no candidate owns yet.** The sixth Must criterion - a fresh
   repository's agent authoring a passing Feature specification - is a
   property of candidates A, B and C together. And if the owner decides that
@@ -208,6 +220,10 @@ The tree-facts command is not in this table: it is this epic's own
 (candidate A). The new sequence capability (candidate F) also belongs to
 this epic; its unresolved authority boundaries are separate from these
 dependencies on existing capabilities.
+
+Feature `0132-F1` can define its index independently, but its public lookups
+wait on candidate A's facts and candidate C's MCP read surface. Its draft
+agreement records the key-scope and performance questions.
 
 ## The command line MCP serves
 
@@ -271,7 +287,7 @@ before candidate F can be implemented.
 | -------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------- |
 | MCP is served by a local process the client starts. It opens no network port and makes no outbound call; only `init` and `upgrade` may fetch | AGENTS.md § Invariants; `0001-F7` decision 0004              | A hosted or remote service; a listening port; a fetch from any answer that is not `init` or `upgrade`   |
 | No answer carries an absolute path                                                                                                           | brief § 9                                                    | A path that is not relative to the root the tool was given                                              |
-| Nothing is written outside the existing list of writes                                                                                       | brief § 9                                                    | A write MCP can make that no command makes; scaffolding or editing a specification                      |
+| No MCP answer writes into the consumer's tree; the index writes only derived state outside that tree                                         | brief § 9; owner, 2026-10-19; `0132-F1` C-1, C-2             | Scaffolding or editing a specification; a cache file in the repository                                  |
 | `--json` and `--explain` stay the agent-facing contract of record; MCP adds nothing the command line cannot say                              | Owner, 2026-10-09; `specht-conventions`, questions reference | An answer available only through MCP; a field MCP has and the command line lacks                        |
 | The tool's answers and MCP's answers can never come from different versions                                                                  | Owner, 2026-10-09                                            | A host that can be installed or upgraded apart from the tool it answers for. How is the design's choice |
 | The epic waits on what it exposes and builds no command-line capability another epic owns                                                    | Owner, 2026-10-09                                            | Building rule text, `expected`, the list and pin commands or `format` here to unblock sooner            |
@@ -308,9 +324,10 @@ where it takes an `OQ-n` id and is resolved in place.
 
 ## Placement
 
-No Feature specification exists, so none is placed. Where each will sit
-follows the project layout, which is the design's choice and is not made
-here. Candidate A is a command and would sit in its command folder under
+Feature `0132-F1` lives beside the proposed engine Index area at
+`src/specht/Index/.spec/README.md`. The remaining candidate placements follow
+the project layout and are not chosen here. Candidate A is a command and would
+sit in its command folder under
 `src/tool/Features/`, as every command's specification does.
 The host lives in this repository and releases on the tool's tag
 (ADR-0015).
@@ -324,8 +341,9 @@ decision 0001).
 `blocked`: the owner decided the epic waits on what it exposes. It unblocks
 when the rows of "What this epic waits on" that block the Must criteria are
 delivered: the rule text, `expected`, the rule list and the manifest. The
-next step does not wait for that: the owner confirms or changes the candidate
-cut, and each confirmed Feature then begins with its own specification.
+next step does not wait for that: the owner confirms or changes candidates
+A to F, while `0132-F1` resolves its key scope and measures the index proposal
+before any storage implementation is chosen.
 
 ## Out of this epic
 
