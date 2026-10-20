@@ -68,10 +68,9 @@ public sealed class CodeAnalysisPackageSteps(PackedTool tool)
         var jobs = (YamlMappingNode)root["jobs"];
         var release = (YamlMappingNode)jobs["release"];
         var steps = (YamlSequenceNode)release["steps"];
-        var create = steps.Cast<YamlMappingNode>().Single(static step => step["name"].ToString() == "Release");
-        var command = create["run"].ToString();
-        command.Should().Contain("specht.tool.${GITHUB_REF_NAME#v}.nupkg");
-        command.Should().Contain("Specht.CodeAnalysis.${GITHUB_REF_NAME#v}.nupkg");
+        var create = steps.Cast<YamlMappingNode>().Single(static step => step["name"].ToString() == "Create GitHub Release");
+        var command = create["run"].ToString().TrimEnd();
+        command.Should().Be("./build.cmd --target CreateGitHubRelease");
     }
 
     [Given("different installed package versions with compatible schema and evidence contracts")]

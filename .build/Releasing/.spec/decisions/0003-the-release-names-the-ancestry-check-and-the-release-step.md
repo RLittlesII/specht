@@ -1,6 +1,6 @@
 ---
 title: "Decision 0003: the release names, the ancestry check and the Release step"
-description: "The owner ruled four things for the first release: VerifyTag refuses a tag whose commit is not reachable from main; the aggregate target is Release and pushes nothing; the rename reaches the file, the enhancement, the workflow and the job; and gh creates the GitHub Release in the second job, which gains contents write. Supersedes decision 0001 on the names and on no Publish target only"
+description: "Records the release names, ancestry check and second-job publication; a later owner correction rejects the attribution of the no-publish-target inference"
 type: decision
 ---
 
@@ -143,9 +143,20 @@ rulings: the flag was proposed in planning and built by `implementer`,
 2026-10-11, and the owner has not been asked. Whether it needs a claim is
 OQ-14.
 
+## Correction - 2026-10-20
+
+The owner clarified in review of item `0250` that the exclusion of NUKE publish
+targets was not their decision. The quoted planning exchange above named an
+aggregate `Release` target and a `gh` step for that implementation; it did not
+settle a lasting rule against targets for publication. The no-target reading
+in this record and in decision 0001 was a design inference by the recorder.
+Item `0250` keeps the two-job permission boundary and moves the push and
+GitHub Release creation into guarded NUKE targets.
+
 ## Reversal
 
-None.
+Item `0250` supersedes the no-publish-target design inference. The two-job
+shape, release names, ancestry check and permission boundary remain in force.
 
 ## Addendum - 2026-10-14: close the first publication on its evidence
 

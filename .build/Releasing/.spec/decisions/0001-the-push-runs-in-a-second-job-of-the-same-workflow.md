@@ -1,6 +1,6 @@
 ---
 title: "Decision 0001: the push runs in a second job of the same workflow"
-description: "The owner chose a second job, publish, in the generated publish.yml: it needs build, runs only for a pushed v* tag and alone holds package write; no Publish target is built, and three readings of C-4, 0055-F1 C-1 and B-008 are accepted"
+description: "The owner chose a second job for publication; a later correction identifies the exclusion of a NUKE publish target as the recorder's inference, not the owner's decision"
 type: decision
 ---
 
@@ -108,3 +108,13 @@ C-7 is not among the owner's words. spec-author derived it from the choice of
 option A, which was put to the owner as `publish` alone holding package write.
 The owner has been told and has neither confirmed nor objected; § 4 marks the
 constraint so.
+
+## Correction - 2026-10-20
+
+The owner clarified during review of item `0250`: "I wouldn't have done it this
+way, I didn't make that decision." The owner's selection of a second job and
+acceptance that a shell push was _allowed_ did not require shell commands or
+prohibit NUKE publish targets. "No `Publish` target is built", the rejection of
+a publish target, and § 5 #7's former exclusion were the recorder's design
+inference. The owner did not decide that exclusion. Item `0250` corrects the
+design by keeping the two jobs and invoking guarded NUKE targets in the second.

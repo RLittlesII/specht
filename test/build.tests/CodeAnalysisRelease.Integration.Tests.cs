@@ -8,63 +8,7 @@ namespace Specht.Build.Tests;
 public sealed class CodeAnalysisReleaseIntegrationTests
 {
     [Fact]
-    public async Task ReleaseWorkflow_WhenPackagesArePresent_ShouldPushAndAttachBothAndFailClosedIfOneIsMissing()
-    {
-        if (OperatingSystem.IsWindows())
-        {
-            Assert.Skip("The release job runs on Ubuntu.");
-        }
-
-        var scripts = LoadReleaseScripts();
-        var directory = Directory.CreateTempSubdirectory("specht-release-");
-
-        try
-        {
-            var packages = Path.Combine(directory.FullName, ".artifacts", "nupkg");
-            var bin = Path.Combine(directory.FullName, "bin");
-            var log = Path.Combine(directory.FullName, "invocations.txt");
-            Directory.CreateDirectory(packages);
-            Directory.CreateDirectory(bin);
-            var tool = Path.Combine(packages, "specht.tool.1.2.3.nupkg");
-            var analysis = Path.Combine(packages, "Specht.CodeAnalysis.1.2.3.nupkg");
-            File.WriteAllText(tool, "tool");
-            File.WriteAllText(analysis, "analysis");
-            foreach (var command in new[] { "dotnet", "gh" })
-            {
-                var path = Path.Combine(bin, command);
-                File.WriteAllText(path, "#!/bin/sh\nprintf '%s\\n' \"$*\" >> \"$INVOCATIONS\"\n");
-                if (!OperatingSystem.IsWindows())
-                {
-                    File.SetUnixFileMode(path, UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute);
-                }
-            }
-
-            var push = await Run(scripts.Push, directory.FullName, bin, log);
-            push.ExitCode.Should().Be(0, push.Output);
-            var pushed = File.ReadAllLines(log);
-            pushed.Should().HaveCount(2);
-            pushed[0].Should().Contain("specht.tool.1.2.3.nupkg");
-            pushed[1].Should().Contain("Specht.CodeAnalysis.1.2.3.nupkg");
-
-            var release = await Run(scripts.Release, directory.FullName, bin, log);
-            release.ExitCode.Should().Be(0, release.Output);
-            File.ReadAllLines(log).Should().HaveCount(3);
-            File.ReadAllLines(log)[2].Should().Contain("specht.tool.1.2.3.nupkg")
-                .And.Contain("Specht.CodeAnalysis.1.2.3.nupkg");
-
-            File.Delete(analysis);
-            File.Delete(log);
-            var missing = await Run(scripts.Push, directory.FullName, bin, log);
-            missing.ExitCode.Should().NotBe(0);
-            File.Exists(log).Should().BeFalse();
-        }
-        finally
-        {
-            directory.Delete(recursive: true);
-        }
-    }
-
-    private static (string Push, string Release) LoadReleaseScripts()
+    public void ReleaseWorkflow_ShouldInvokeNukeTargetsAfterDownloadingPackages()
     {
         var root = FindRepositoryRoot();
         var stream = new YamlStream();
@@ -74,35 +18,40 @@ public sealed class CodeAnalysisReleaseIntegrationTests
         var jobs = (YamlMappingNode)workflow["jobs"];
         var release = (YamlMappingNode)jobs["release"];
         var steps = ((YamlSequenceNode)release["steps"]).Cast<YamlMappingNode>().ToArray();
-        return (Script("Push"), Script("Release"));
 
-        string Script(string name) => steps.Single(step => step["name"].ToString() == name)["run"].ToString();
+        steps.Should().Contain(static step => step["name"].ToString() == "Checkout");
+        steps.Should().Contain(static step => step["name"].ToString().Contains("Download the package", StringComparison.Ordinal));
+        steps.Single(static step => step["name"].ToString() == "Push release packages")["run"].ToString().TrimEnd()
+            .Should().Be("./build.cmd --target PushReleasePackages");
+        steps.Single(static step => step["name"].ToString() == "Create GitHub Release")["run"].ToString().TrimEnd()
+            .Should().Be("./build.cmd --target CreateGitHubRelease");
     }
 
-    private static async Task<(int ExitCode, string Output)> Run(string script, string directory, string bin, string log)
+    [Fact]
+    public async Task PushReleasePackages_WhenRunWithoutTagPush_ShouldFailBeforePublication()
     {
-        using var process = new Process();
-        process.StartInfo = new ProcessStartInfo("/bin/bash")
+        using var fixture = new ReleaseFixture();
+        var result = await fixture.RunTarget("PushReleasePackages", "workflow_dispatch");
+        result.ExitCode.Should().NotBe(0);
+        result.Output.Should().Contain("Publishing requires a pushed version tag");
+    }
+
+    [Fact]
+    public async Task CreateGitHubRelease_ShouldAttachBothPackedProjects()
+    {
+        if (OperatingSystem.IsWindows())
         {
-            WorkingDirectory = directory,
-            RedirectStandardOutput = true,
-            RedirectStandardError = true,
-            UseShellExecute = false,
-        };
-        process.StartInfo.ArgumentList.Add("-e");
-        process.StartInfo.ArgumentList.Add("-c");
-        process.StartInfo.ArgumentList.Add(script);
-        process.StartInfo.Environment["PATH"] = bin + Path.PathSeparator + Environment.GetEnvironmentVariable("PATH");
-        process.StartInfo.Environment["INVOCATIONS"] = log;
-        process.StartInfo.Environment["GITHUB_REF_NAME"] = "v1.2.3";
-        process.StartInfo.Environment["GITHUB_TOKEN"] = "fixture-token";
-        process.StartInfo.Environment["GITHUB_REPOSITORY"] = "rlittlesii/specht";
-        process.StartInfo.Environment["GH_TOKEN"] = "fixture-token";
-        process.Start();
-        var stdout = process.StandardOutput.ReadToEndAsync();
-        var stderr = process.StandardError.ReadToEndAsync();
-        await process.WaitForExitAsync(TestContext.Current.CancellationToken);
-        return (process.ExitCode, await stdout + await stderr);
+            Assert.Skip("The release job runs on Ubuntu.");
+        }
+
+        using var fixture = new ReleaseFixture();
+        fixture.WritePackages();
+        var result = await fixture.RunTarget("CreateGitHubRelease", "push");
+        result.ExitCode.Should().Be(0, result.Output);
+        var invocation = File.ReadAllText(fixture.GhLog);
+        invocation.Should().Contain("specht.tool.1.2.3.nupkg")
+            .And.Contain("Specht.CodeAnalysis.1.2.3.nupkg")
+            .And.Contain("--generate-notes --verify-tag");
     }
 
     private static string FindRepositoryRoot()
@@ -116,5 +65,78 @@ public sealed class CodeAnalysisReleaseIntegrationTests
         }
 
         throw new DirectoryNotFoundException("Could not locate the repository root.");
+    }
+
+    private sealed class ReleaseFixture : IDisposable
+    {
+        public ReleaseFixture()
+        {
+            Directory.CreateDirectory(Path.Combine(Root, ".nuke"));
+            Directory.CreateDirectory(Path.Combine(Root, "src", "tool"));
+            Directory.CreateDirectory(Path.Combine(Root, "src", "codeanalysis"));
+            Directory.CreateDirectory(Path.Combine(Root, "bin"));
+            File.WriteAllText(Path.Combine(Root, "fixture.slnx"), "<Solution />");
+            File.WriteAllText(Path.Combine(Root, ".nuke", "parameters.json"), "{\"Solution\":\"fixture.slnx\"}");
+            File.WriteAllText(
+                Path.Combine(Root, "src", "tool", "tool.csproj"),
+                "<Project><PropertyGroup><PackageId>specht.tool</PackageId></PropertyGroup></Project>");
+            File.WriteAllText(
+                Path.Combine(Root, "src", "codeanalysis", "codeanalysis.csproj"),
+                "<Project><PropertyGroup><PackageId>Specht.CodeAnalysis</PackageId></PropertyGroup></Project>");
+            var gh = Path.Combine(Root, "bin", "gh");
+            File.WriteAllText(gh, "#!/bin/sh\nprintf '%s\\n' \"$*\" > \"$INVOCATIONS\"\n");
+            if (!OperatingSystem.IsWindows())
+            {
+                File.SetUnixFileMode(gh, UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute);
+            }
+        }
+
+        public string Root { get; } = Path.Combine(".artifacts", "release-tests", Guid.NewGuid().ToString("N"));
+
+        public string GhLog => Path.Combine(Root, "gh-arguments.txt");
+
+        public void WritePackages()
+        {
+            var packages = Path.Combine(Root, ".artifacts", "nupkg");
+            Directory.CreateDirectory(packages);
+            File.WriteAllText(Path.Combine(packages, "specht.tool.1.2.3.nupkg"), "tool");
+            File.WriteAllText(Path.Combine(packages, "Specht.CodeAnalysis.1.2.3.nupkg"), "analysis");
+        }
+
+        public async Task<(int ExitCode, string Output)> RunTarget(string target, string eventName)
+        {
+            using var process = new Process();
+            process.StartInfo = new ProcessStartInfo("dotnet")
+            {
+                WorkingDirectory = Root,
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+                UseShellExecute = false,
+            };
+            process.StartInfo.ArgumentList.Add(typeof(SchemaVersionLock).Assembly.Location);
+            process.StartInfo.ArgumentList.Add("--root");
+            process.StartInfo.ArgumentList.Add(Path.GetFullPath(Root));
+            process.StartInfo.ArgumentList.Add("--target");
+            process.StartInfo.ArgumentList.Add(target);
+            process.StartInfo.Environment["NUKE_TELEMETRY_OPTOUT"] = "1";
+            process.StartInfo.Environment["GITHUB_ACTIONS"] = "true";
+            process.StartInfo.Environment["GITHUB_EVENT_NAME"] = eventName;
+            process.StartInfo.Environment["GITHUB_REF_TYPE"] = "tag";
+            process.StartInfo.Environment["GITHUB_REF_NAME"] = "v1.2.3";
+            process.StartInfo.Environment["GITHUB_TOKEN"] = "fixture-token";
+            process.StartInfo.Environment["GH_TOKEN"] = "fixture-token";
+            process.StartInfo.Environment["GITHUB_REPOSITORY"] = "RLittlesII/specht";
+            process.StartInfo.Environment["PATH"] =
+                Path.GetFullPath(Path.Combine(Root, "bin")) + Path.PathSeparator + Environment.GetEnvironmentVariable("PATH");
+            process.StartInfo.Environment["INVOCATIONS"] = Path.GetFullPath(GhLog);
+
+            process.Start();
+            var stdout = process.StandardOutput.ReadToEndAsync(TestContext.Current.CancellationToken);
+            var stderr = process.StandardError.ReadToEndAsync(TestContext.Current.CancellationToken);
+            await process.WaitForExitAsync(TestContext.Current.CancellationToken);
+            return (process.ExitCode, await stdout + await stderr);
+        }
+
+        public void Dispose() => Directory.Delete(Root, recursive: true);
     }
 }
