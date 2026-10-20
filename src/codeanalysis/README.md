@@ -23,3 +23,6 @@ Set `SpechtTestEvidence` for explicit collector inputs.
 
 Diagnostic severity and suppression use standard Roslyn configuration. The
 package adds no application runtime dependency.
+
+See the [diagnostic reference](docs/README.md) for each published diagnostic,
+its reporting conditions, and available code fixes.
