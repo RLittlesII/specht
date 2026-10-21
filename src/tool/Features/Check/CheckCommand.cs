@@ -17,11 +17,13 @@ namespace Specht.Tool.Features.Check;
 /// </summary>
 /// <param name="console">Where the product goes; injected so the command tester captures it.</param>
 /// <param name="explanations">The engine's pinned rule page reader.</param>
-/// <param name="run">The engine's runner, <see cref="SpechtRunner.Run"/> outside a test.</param>
+/// <param name="run">The engine's runner, <see cref="SpechtRunner.Run(string, SchemaSourceSelection?)"/> outside a test.</param>
+/// <implements epic="0001" feature="F2" claim="B-001" />
 public sealed class CheckCommand(IAnsiConsole console, Func<string, SchemaSourceSelection?, SpechtReport> run,
     RuleExplanationReader explanations) : AsyncCommand<CheckCommand.Settings>
 {
     /// <inheritdoc />
+    /// <implements epic="0001" feature="F2" claim="B-001" />
     public override Task<int> ExecuteAsync(CommandContext context, Settings settings, CancellationToken cancellationToken)
     {
         SpechtReport report;
@@ -90,6 +92,7 @@ public sealed class CheckCommand(IAnsiConsole console, Func<string, SchemaSource
     }
 
     /// <summary>The check's options.</summary>
+    /// <implements epic="0001" feature="F2" claim="B-001" />
     public sealed class Settings : CommandSettings
     {
         /// <summary>Gets the root to check, as typed; the working directory when omitted.</summary>
@@ -118,11 +121,13 @@ public sealed class CheckCommand(IAnsiConsole console, Func<string, SchemaSource
         public string? Explain { get; init; }
 
         /// <inheritdoc />
+        /// <implements epic="0001" feature="F2" claim="B-001" />
         public override ValidationResult Validate() => SchemaSource is null or "embedded" or "disk"
             ? ValidationResult.Success()
             : ValidationResult.Error("The schema source must be 'embedded' or 'disk'.");
     }
 
+    /// <implements epic="0001" feature="F2" claim="B-001" />
     private static Task<int> Fail(int code, string message)
     {
         Console.Error.WriteLine(message);

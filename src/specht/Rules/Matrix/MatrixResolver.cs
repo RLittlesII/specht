@@ -6,6 +6,7 @@ using Specht.Model;
 namespace Specht.Rules.Matrix;
 
 /// <summary>Resolves matrix test names once from the parsed document and declared file texts, without I/O or diagnostics.</summary>
+/// <implements epic="0001" feature="F12" claim="B-001" />
 public sealed class MatrixResolver
 {
     /// <summary>Joins declared claims to their resolved matrix rows and already-parsed companion tags.</summary>
@@ -13,6 +14,7 @@ public sealed class MatrixResolver
     /// <param name="structure">The selected roles and tag-case setting.</param>
     /// <param name="claims">The model's already-derived claim rows.</param>
     /// <returns>Claim resolutions in declaration order.</returns>
+    /// <implements epic="0001" feature="F12" claim="B-001" />
     public IReadOnlyList<MatrixClaimResolution> ResolveClaims(FeatureSpec feature, SpecStructure structure, SpecClaims claims)
     {
         var rows = Resolve(feature.Document, structure, []).ToLookup(static row => row.Claim.Trim(), StringComparer.Ordinal);
@@ -28,6 +30,7 @@ public sealed class MatrixResolver
     /// <param name="structure">The selected manifest's roles and test settings.</param>
     /// <param name="files">The declared file texts read once by the discovery store and shared by all consumers.</param>
     /// <returns>The matrix rows, in document order, with root-relative resolution evidence.</returns>
+    /// <implements epic="0001" feature="F12" claim="B-001" />
     public IReadOnlyList<MatrixRowResolution> Resolve(
         SpecDocument document, SpecStructure structure, IReadOnlyList<SpecTestFile> files)
     {
@@ -65,6 +68,7 @@ public sealed class MatrixResolver
         return rows.ToArray();
     }
 
+    /// <implements epic="0001" feature="F12" claim="B-001" />
     private static MatrixTestResolution ResolveTest(string name, SpecTestSettings? settings, IReadOnlyList<SpecTestFile> files)
     {
         if (settings is null)
@@ -111,6 +115,7 @@ public sealed class MatrixResolver
         return new MatrixTestResolution(name, MatrixTestStatus.Unresolved);
     }
 
+    /// <implements epic="0001" feature="F12" claim="B-001" />
     private static Regex Declaration(string form, string name)
     {
         var halves = form.Split("{test}", StringSplitOptions.None);
@@ -119,5 +124,6 @@ public sealed class MatrixResolver
         return new Regex(before + "(?<test>" + Regex.Escape(name) + ")" + after);
     }
 
+    /// <implements epic="0001" feature="F12" claim="B-001" />
     private static string Word(string name) => @"(?<!\w)" + Regex.Escape(name) + @"(?!\w)";
 }

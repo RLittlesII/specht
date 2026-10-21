@@ -34,6 +34,16 @@ public sealed class AdoptionSteps
     [Given("shared infrastructure outside explicitly selected authoring enforcement scope")]
     public void GivenSharedInfrastructure() => GivenOutsideEnforcement();
 
+    [Given("a consumer explicitly selects shared infrastructure methods for authored binding enforcement")]
+    public void GivenSelectedSharedInfrastructure()
+    {
+        var scope = _configuration["codeAnalysis"]!["enforcement"]![0]!;
+        scope["include"] = JsonNode.Parse("[\"src/**/*.cs\"]");
+        scope["role"] = "implements";
+        scope["declarationKinds"] = JsonNode.Parse("[\"method\"]");
+        _declaration = new AnalysisDeclaration("test/tests.csproj", "net10.0", "src/Shared.cs", "method", "M:Shared");
+    }
+
     [Given("a requested coverage exemption with no explicit reason")]
     public void GivenReasonlessExemption() => _configuration["codeAnalysis"]!["exemptions"] = JsonNode.Parse("""
         [{"target":{"feature":"F1","claim":"B-001"},"links":["test"],"reason":" "}]
@@ -147,6 +157,13 @@ public sealed class AdoptionSteps
         _snapshot!.Available.Should().BeTrue();
         _snapshot.Policy!.Select(_declaration!).RequiredRoles.Should().BeEmpty();
         _snapshot.Policy.Select(_declaration!).ValidateExplicit.Should().BeTrue();
+    }
+
+    [Then("those methods require authored bindings")]
+    public void ThenSharedMethodsRequireBindings()
+    {
+        _snapshot!.Available.Should().BeTrue();
+        _snapshot.Policy!.Select(_declaration!).RequiredRoles.Should().Equal("implements");
     }
 
     [Then("analysis reads the consumer record contents rather than treating schemas as the record inventory")]

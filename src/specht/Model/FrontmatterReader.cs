@@ -18,11 +18,14 @@ namespace Specht.Model;
 /// strings, whichever way they were written.
 /// </remarks>
 /// <param name="fileSystem">The file system the documents are read from.</param>
+/// <implements epic="0001" feature="F1" claim="B-004" />
 public sealed class FrontmatterReader(IFileSystem fileSystem)
 {
     /// <summary>Reads the frontmatter of the document at <paramref name="path"/>.</summary>
+    /// <implements epic="0001" feature="F1" claim="B-004" />
     public Frontmatter Read(string path) => Parse(fileSystem.File.ReadAllText(path));
 
+    /// <implements epic="0001" feature="F1" claim="B-004" />
     internal static Frontmatter Parse(string text)
     {
         var parsed = new FrontmatterTextReader().Read(text);

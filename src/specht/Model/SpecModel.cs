@@ -5,9 +5,11 @@ using System.Text.RegularExpressions;
 namespace Specht.Model;
 
 /// <summary>The whole specification tree, resolved once and evaluated by every rule.</summary>
+/// <implements epic="0001" feature="F1" claim="B-004" />
 public sealed class SpecModel
 {
     /// <summary>A model over what a caller already holds, such as documents built in memory.</summary>
+    /// <implements epic="0001" feature="F1" claim="B-004" />
     public SpecModel(
         string root,
         IReadOnlyList<FeatureSpec> features,
@@ -66,6 +68,7 @@ public sealed class SpecModel
     public SpecDependencyGraph DependencyGraph { get; }
 
     /// <summary>Retains the legacy grammar failure only when a claim-reading rule actually runs.</summary>
+    /// <implements epic="0001" feature="F1" claim="B-004" />
     internal void EnsureClaimGrammar() => _claimGrammarFailure?.Throw();
 
     private readonly ExceptionDispatchInfo? _claimGrammarFailure;

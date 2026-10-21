@@ -9,8 +9,10 @@ using Markdig.Syntax.Inlines;
 namespace Specht.Model;
 
 /// <summary>The shared top-level Markdown section and first-pipe-table reader.</summary>
+/// <implements epic="0001" feature="F1" claim="B-004" />
 internal sealed class MarkdownTextReader
 {
+    /// <implements epic="0001" feature="F1" claim="B-004" />
     public IReadOnlyList<MarkdownTextSection> Read(string text, MarkdownPipeline pipeline)
     {
         var document = Markdown.Parse(text, pipeline);
@@ -39,9 +41,11 @@ internal sealed class MarkdownTextReader
         return sections;
     }
 
+    /// <implements epic="0001" feature="F1" claim="B-004" />
     private static string HeadingText(HeadingBlock heading) =>
         heading.Inline is null ? string.Empty : Flatten(heading.Inline);
 
+    /// <implements epic="0001" feature="F1" claim="B-004" />
     private static Table? NextTable(MarkdownDocument document, int headingIndex)
     {
         for (var index = headingIndex + 1; index < document.Count; index++)
@@ -58,12 +62,15 @@ internal sealed class MarkdownTextReader
         return null;
     }
 
+    /// <implements epic="0001" feature="F1" claim="B-004" />
     private static IReadOnlyList<string> HeaderCells(Table table) =>
         table.OfType<TableRow>().Where(static row => row.IsHeader).Select(Cells).FirstOrDefault() ?? [];
 
+    /// <implements epic="0001" feature="F1" claim="B-004" />
     private static IReadOnlyList<IReadOnlyList<string>> BodyRows(Table table) =>
         table.OfType<TableRow>().Where(static row => !row.IsHeader).Select(Cells).ToList();
 
+    /// <implements epic="0001" feature="F1" claim="B-004" />
     private static IReadOnlyList<IReadOnlyList<IReadOnlyList<string>>> BodyCodeSpans(Table table) =>
         table.OfType<TableRow>().Where(static row => !row.IsHeader)
             .Select(static row => (IReadOnlyList<IReadOnlyList<string>>)row.OfType<TableCell>()
@@ -72,15 +79,19 @@ internal sealed class MarkdownTextReader
                 .ToArray())
             .ToArray();
 
+    /// <implements epic="0001" feature="F1" claim="B-004" />
     private static IReadOnlyList<int> BodyRowLines(Table table) =>
         table.OfType<TableRow>().Where(static row => !row.IsHeader).Select(static row => row.Line + 1).ToList();
 
+    /// <implements epic="0001" feature="F1" claim="B-004" />
     private static IReadOnlyList<string> Cells(TableRow row) =>
         row.OfType<TableCell>().Select(CellText).ToList();
 
+    /// <implements epic="0001" feature="F1" claim="B-004" />
     private static string CellText(TableCell cell) => Flatten(cell);
 
     /// <summary>The visible literals and leaf code-span content of a Markdown node.</summary>
+    /// <implements epic="0001" feature="F1" claim="B-004" />
     private static string Flatten(MarkdownObject node) =>
         string.Concat(node.Descendants().Select(static descendant => descendant switch
         {

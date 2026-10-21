@@ -5,6 +5,7 @@ namespace Specht.Manifest;
 
 /// <summary>Fetches the bytes of one public upstream schema and verifies its recorded SHA-256 (<c>0001-F4</c> B-014 to B-016).</summary>
 /// <param name="client">The credential-free HTTP client; a test substitutes its message handler.</param>
+/// <implements epic="0001" feature="F7" claim="B-068" />
 public sealed class UpstreamSchemaFetcher(HttpClient client)
 {
     /// <summary>Returns the served bytes only after their SHA-256 matches the manifest's hash.</summary>
@@ -12,6 +13,7 @@ public sealed class UpstreamSchemaFetcher(HttpClient client)
     /// <param name="cancellationToken">Cancels the fetch.</param>
     /// <returns>The verified bytes without decoding or transformation.</returns>
     /// <exception cref="SpechtUpstreamSchemaException">The source is unreachable or its bytes do not match the hash.</exception>
+    /// <implements epic="0001" feature="F7" claim="B-068" />
     public async Task<byte[]> Fetch(UpstreamSchemaFile file, CancellationToken cancellationToken)
     {
         var address = new UriBuilder(file.Address) { UserName = string.Empty, Password = string.Empty }.Uri;

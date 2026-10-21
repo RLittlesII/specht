@@ -8,9 +8,11 @@ using Spectre.Console.Cli;
 namespace Specht.Tool.Features.Init;
 
 /// <summary>Registers the init slice's services and command.</summary>
+/// <implements epic="0001" feature="F4" claim="B-019" />
 public static class InitRegistration
 {
     /// <summary>Adds init over the engine's manifest services and the caller's HTTP client.</summary>
+    /// <implements epic="0001" feature="F4" claim="B-019" />
     public static IServiceCollection AddInit(this IServiceCollection services)
     {
         services.TryAddSingleton(static _ => new HttpClient(new HttpClientHandler
@@ -32,6 +34,7 @@ public static class InitRegistration
     }
 
     /// <summary>Adds the init command and its help description.</summary>
+    /// <implements epic="0001" feature="F4" claim="B-019" />
     public static IConfigurator AddInit(this IConfigurator configuration)
     {
         configuration.AddCommand<InitCommand>("init")

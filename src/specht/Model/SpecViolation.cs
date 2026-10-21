@@ -12,6 +12,7 @@ namespace Specht.Model;
 /// <param name="Line">One-based line the diagnostic points at, or 0 when the file as a whole is at fault.</param>
 /// <param name="Identifier">The specification identifier at fault, when there is one; the line ends with it in square brackets.</param>
 /// <param name="Message">What is wrong, in terms the author can act on.</param>
+/// <implements epic="0001" feature="F1" claim="B-004" />
 public sealed record SpecViolation(
     string RuleId,
     SpecSeverity Severity,
@@ -29,6 +30,7 @@ public sealed record SpecViolation(
     /// <summary>Compares every field, <see cref="Expected"/> by its JSON value.</summary>
     /// <param name="other">The violation to compare with.</param>
     /// <returns>Whether the two are the same violation.</returns>
+    /// <implements epic="0001" feature="F1" claim="B-004" />
     public bool Equals(SpecViolation? other) =>
         other is not null
         && string.Equals(RuleId, other.RuleId, StringComparison.Ordinal)
@@ -40,9 +42,11 @@ public sealed record SpecViolation(
         && JsonNode.DeepEquals(Expected, other.Expected);
 
     /// <inheritdoc />
+    /// <implements epic="0001" feature="F1" claim="B-004" />
     public override int GetHashCode() => HashCode.Combine(RuleId, Severity, File, Line, Identifier, Message);
 
     /// <summary>Renders the canonical MSBuild diagnostic line.</summary>
+    /// <implements epic="0001" feature="F1" claim="B-004" />
     public override string ToString()
     {
         var severity = Severity == SpecSeverity.Error ? "error" : "warning";

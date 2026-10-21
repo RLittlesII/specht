@@ -17,9 +17,11 @@ namespace Specht.Tool.Features.Init;
 /// <param name="console">Where the listing goes; injected so the command tester captures it.</param>
 /// <param name="writer">The writer over the embedded shipping copy and the real file system outside a test.</param>
 /// <param name="errorWriter">Where failures go; standard error when omitted.</param>
+/// <implements epic="0001" feature="F4" claim="B-019" />
 public sealed class InitCommand(IAnsiConsole console, InitWriter writer, TextWriter? errorWriter = null) : AsyncCommand<InitCommand.Settings>
 {
     /// <inheritdoc />
+    /// <implements epic="0001" feature="F4" claim="B-019" />
     public override async Task<int> ExecuteAsync(CommandContext context, Settings settings, CancellationToken cancellationToken)
     {
         try
@@ -53,6 +55,7 @@ public sealed class InitCommand(IAnsiConsole console, InitWriter writer, TextWri
     }
 
     /// <summary>The init command's options.</summary>
+    /// <implements epic="0001" feature="F4" claim="B-019" />
     public sealed class Settings : CommandSettings
     {
         /// <summary>Gets the root to write under, as typed; the working directory when omitted.</summary>

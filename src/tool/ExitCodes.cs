@@ -4,6 +4,7 @@ namespace Specht.Tool;
 /// The process exit codes, returned from a command and never thrown (brief § 5; <c>0001-F2</c> C-2). The pre-commit hook
 /// and CI read them, so a code is never reused for a second meaning.
 /// </summary>
+/// <implements epic="0001" feature="F2" claim="B-003" />
 public static class ExitCodes
 {
     /// <summary>The check found nothing that fails it.</summary>

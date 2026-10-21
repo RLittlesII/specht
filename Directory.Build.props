@@ -20,11 +20,11 @@
         <ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
     </PropertyGroup>
 
-    <PropertyGroup Condition="'$(SpechtCodeAnalysisDogfood)' == 'true' and '$(MSBuildProjectName)' == 'analyzers'">
+    <PropertyGroup Condition="'$(SpechtCodeAnalysisPackageVersion)' != '' and ('$(MSBuildProjectName)' == 'analyzers' or '$(MSBuildProjectName)' == 'specht' or '$(MSBuildProjectName)' == 'tool')">
         <GenerateDocumentationFile>true</GenerateDocumentationFile>
         <NoWarn>$(NoWarn);1591</NoWarn>
-        <SpechtFeatureInputs>$(MSBuildThisFileDirectory)src/analyzers/Bindings/.spec/README.md</SpechtFeatureInputs>
-        <SpechtScenarioInputs>$(MSBuildThisFileDirectory)src/analyzers/Bindings/.spec/*.feature</SpechtScenarioInputs>
+        <SpechtFeatureInputs>$(MSBuildThisFileDirectory)src/analyzers/Bindings/.spec/README.md;$(MSBuildThisFileDirectory)src/analyzers/TestEvidence/.spec/README.md;$(MSBuildThisFileDirectory)src/analyzers/Reconciliation/.spec/README.md;$(MSBuildThisFileDirectory)src/specht/**/.spec/README.md;$(MSBuildThisFileDirectory)src/tool/**/.spec/README.md</SpechtFeatureInputs>
+        <SpechtScenarioInputs>$(MSBuildThisFileDirectory)src/analyzers/Bindings/.spec/*.feature;$(MSBuildThisFileDirectory)src/analyzers/TestEvidence/.spec/*.feature;$(MSBuildThisFileDirectory)src/analyzers/Reconciliation/.spec/*.feature;$(MSBuildThisFileDirectory)src/specht/**/.spec/*.feature;$(MSBuildThisFileDirectory)src/tool/**/.spec/*.feature</SpechtScenarioInputs>
         <SpechtAdrInputs>$(MSBuildThisFileDirectory).spec/adr/0017-*.md</SpechtAdrInputs>
     </PropertyGroup>
 

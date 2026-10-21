@@ -3,9 +3,11 @@ using System.Collections.ObjectModel;
 namespace Specht.Resources;
 
 /// <summary>Captures the engine's raw embedded resources once at composition (ADR-0010 D1).</summary>
+/// <implements epic="0001" feature="F4" claim="B-004" />
 public sealed class SpechtResources
 {
     /// <summary>Reads the default manifest, versioned frontmatter schemas and rule pages.</summary>
+    /// <implements epic="0001" feature="F4" claim="B-004" />
     public SpechtResources()
     {
         var assembly = typeof(SpechtResources).Assembly;

@@ -101,11 +101,16 @@ jobs:
         if: ${{ steps.changes.outputs.build == 'true' }}
         run: |
           ./build.cmd --target Compile --skip Restore Format
+      - name: Code Analysis
+        id: codeAnalysis
+        if: ${{ steps.changes.outputs.build == 'true' }}
+        run: |
+          ./build.cmd --target CodeAnalysis --skip Compile
       - name: 💨 Unit Test
         id: unitTest
         if: ${{ steps.changes.outputs.build == 'true' }}
         run: |
-          ./build.cmd --target UnitTest --skip Compile
+          ./build.cmd --target UnitTest --skip CodeAnalysis
       - name: 💨 Integration Test
         id: integrationTest
         if: ${{ steps.changes.outputs.build == 'true' }}

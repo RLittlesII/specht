@@ -7,6 +7,7 @@ namespace Specht.Rules;
 /// SPEC020 and SPEC021 - a specification has exactly one companion Gherkin
 /// file beside it, and every claim tag in that file resolves to a § 3 claim.
 /// </summary>
+/// <implements epic="0001" feature="F1" claim="B-001" />
 public sealed class FeatureFileRule : ISpecRule
 {
     /// <inheritdoc />
@@ -16,6 +17,7 @@ public sealed class FeatureFileRule : ISpecRule
     public IReadOnlyList<string> ReportedIds => ["SPEC020", "SPEC021"];
 
     /// <inheritdoc />
+    /// <implements epic="0001" feature="F1" claim="B-001" />
     public IEnumerable<SpecViolation> Evaluate(SpecModel model)
     {
         model.EnsureClaimGrammar();

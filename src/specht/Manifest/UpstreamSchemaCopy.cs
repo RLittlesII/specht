@@ -4,6 +4,7 @@ using System.Text;
 namespace Specht.Manifest;
 
 /// <summary>Verifies the bytes of an upstream copy against its recorded hashes (0001-F7 B-077 to B-081).</summary>
+/// <implements epic="0001" feature="F7" claim="B-068" />
 public sealed class UpstreamSchemaCopy
 {
     /// <summary>Verifies every fetched file and returns its schema text by kind.</summary>
@@ -11,6 +12,7 @@ public sealed class UpstreamSchemaCopy
     /// <param name="files">The bytes read for each fetched kind, or null for an absent file.</param>
     /// <returns>The verified text of each fetched kind.</returns>
     /// <exception cref="SpechtManifestException">A file is absent or differs from its hash.</exception>
+    /// <implements epic="0001" feature="F7" claim="B-068" />
     public IReadOnlyDictionary<string, string> Verify(UpstreamSchemaSource source, IReadOnlyDictionary<string, byte[]?> files)
     {
         var texts = new Dictionary<string, string>(StringComparer.Ordinal);

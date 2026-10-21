@@ -5,9 +5,11 @@ using Spectre.Console.Cli;
 namespace Specht.Tool.Features.Schema;
 
 /// <summary>Registers the schema command branch.</summary>
+/// <implements epic="0001" feature="F7" claim="B-001" />
 public static class SchemaRegistration
 {
     /// <summary>Adds the schema commands and their help descriptions.</summary>
+    /// <implements epic="0001" feature="F7" claim="B-001" />
     public static IConfigurator AddSchema(this IConfigurator configuration)
     {
         configuration.AddBranch("schema", static schema =>

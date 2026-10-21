@@ -5,8 +5,10 @@ using System.Text.Json;
 
 namespace Specht.Tool.Features.Evidence.Contract;
 
+/// <implements epic="0201" feature="F3" claim="B-009" />
 public sealed class TestEvidenceArtifactReader
 {
+    /// <implements epic="0201" feature="F3" claim="B-009" />
     public TestEvidenceReadResult Read(string json, TestEvidenceAnalysisInputs? currentInputs = null)
     {
         try
@@ -69,6 +71,7 @@ public sealed class TestEvidenceArtifactReader
         }
     }
 
+    /// <implements epic="0201" feature="F3" claim="B-009" />
     private static TestEvidenceDiscovery ReadDiscovery(JsonElement element)
     {
         var value = Object(element, "discovery", "state", "sessionId", "methods", "cases");
@@ -111,6 +114,7 @@ public sealed class TestEvidenceArtifactReader
         return new TestEvidenceDiscovery(state, session, methods, cases);
     }
 
+    /// <implements epic="0201" feature="F3" claim="B-009" />
     private static TestEvidenceMethod ReadMethod(JsonElement element)
     {
         var value = Object(element, "method", "symbolId", "declaringType", "name", "genericArity", "parameterTypes", "location");
@@ -137,6 +141,7 @@ public sealed class TestEvidenceArtifactReader
             NonNegative(Integer(value, "genericArity"), "method.genericArity"), parameters, source);
     }
 
+    /// <implements epic="0201" feature="F3" claim="B-009" />
     private static TestEvidenceCase ReadCase(JsonElement element)
     {
         var value = Object(element, "case", "caseId", "methodSymbolId", "rowId", "displayName");
@@ -144,6 +149,7 @@ public sealed class TestEvidenceArtifactReader
             NonEmpty(String(value, "methodSymbolId"), "case.methodSymbolId"), NullableString(value, "rowId"), NullableString(value, "displayName"));
     }
 
+    /// <implements epic="0201" feature="F3" claim="B-009" />
     private static IReadOnlyList<TestEvidenceBinding> ReadBindings(JsonElement element)
     {
         if (element.ValueKind != JsonValueKind.Array)
@@ -203,6 +209,7 @@ public sealed class TestEvidenceArtifactReader
         }).ToArray();
     }
 
+    /// <implements epic="0201" feature="F3" claim="B-009" />
     private static TestEvidenceResults ReadResults(JsonElement element, IReadOnlyList<TestEvidenceCase> discoveredCases)
     {
         var state = String(element, "state");
@@ -246,6 +253,7 @@ public sealed class TestEvidenceArtifactReader
         return new TestEvidenceResults(state, NonEmpty(String(value, "runId"), "results.runId"), uniqueOutcomes);
     }
 
+    /// <implements epic="0201" feature="F3" claim="B-009" />
     private static IReadOnlyList<TestEvidenceInput> ReadInputs(JsonElement element)
     {
         if (element.ValueKind != JsonValueKind.Array)
@@ -275,6 +283,7 @@ public sealed class TestEvidenceArtifactReader
         return inputs;
     }
 
+    /// <implements epic="0201" feature="F3" claim="B-009" />
     private static IReadOnlyList<JsonElement> ReadScenarios(JsonElement root, IReadOnlyList<TestEvidenceCase> discoveredCases)
     {
         if (!root.TryGetProperty("scenarios", out var scenarios))
@@ -326,6 +335,7 @@ public sealed class TestEvidenceArtifactReader
         return records.Select(static scenario => scenario.Clone()).ToArray();
     }
 
+    /// <implements epic="0201" feature="F3" claim="B-009" />
     private static (string Id, string Status) ReadScenarioClaim(JsonElement element, string? epic, string feature)
     {
         var value = Object(element, "scenario claim", "id", "status", "isEligible", "target", "matches");
@@ -358,6 +368,7 @@ public sealed class TestEvidenceArtifactReader
         return (id, status);
     }
 
+    /// <implements epic="0201" feature="F3" claim="B-009" />
     private static (string? RowId, string? CaseId, string Status) ReadScenarioCase(
         JsonElement element,
         HashSet<string> caseIds,
@@ -397,6 +408,7 @@ public sealed class TestEvidenceArtifactReader
         return (rowId, caseId, status);
     }
 
+    /// <implements epic="0201" feature="F3" claim="B-009" />
     private static JsonElement Object(JsonElement value, string description, params string[] allowed)
     {
         if (value.ValueKind != JsonValueKind.Object)
@@ -417,9 +429,11 @@ public sealed class TestEvidenceArtifactReader
         return value;
     }
 
+    /// <implements epic="0201" feature="F3" claim="B-009" />
     private static JsonElement Required(JsonElement value, string name) => value.TryGetProperty(name, out var result)
         ? result : throw Invalid("Required property '" + name + "' is missing.");
 
+    /// <implements epic="0201" feature="F3" claim="B-009" />
     private static string String(JsonElement value, string name)
     {
         var item = Required(value, name);
@@ -431,6 +445,7 @@ public sealed class TestEvidenceArtifactReader
         return item.GetString()!;
     }
 
+    /// <implements epic="0201" feature="F3" claim="B-009" />
     private static string? NullableString(JsonElement value, string name)
     {
         var item = Required(value, name);
@@ -438,6 +453,7 @@ public sealed class TestEvidenceArtifactReader
             ? item.GetString() : throw Invalid("Property '" + name + "' must be a string or null.");
     }
 
+    /// <implements epic="0201" feature="F3" claim="B-009" />
     private static int Integer(JsonElement value, string name)
     {
         var item = Required(value, name);
@@ -445,6 +461,7 @@ public sealed class TestEvidenceArtifactReader
             ? number : throw Invalid("Property '" + name + "' must be an integer.");
     }
 
+    /// <implements epic="0201" feature="F3" claim="B-009" />
     private static bool Boolean(JsonElement value, string name)
     {
         var item = Required(value, name);
@@ -456,6 +473,7 @@ public sealed class TestEvidenceArtifactReader
         };
     }
 
+    /// <implements epic="0201" feature="F3" claim="B-009" />
     private static TestEvidenceTarget ReadTarget(JsonElement target, string description)
     {
         var value = Object(target, description, "kind", "epic", "feature", "id", "state", "featureState", "relativePath", "line");
@@ -465,6 +483,7 @@ public sealed class TestEvidenceArtifactReader
             Positive(Integer(value, "line"), description + ".line"));
     }
 
+    /// <implements epic="0201" feature="F3" claim="B-009" />
     private static TestEvidenceLocation? ReadLocation(JsonElement location, string description)
     {
         if (location.ValueKind == JsonValueKind.Null)
@@ -477,6 +496,7 @@ public sealed class TestEvidenceArtifactReader
             Positive(Integer(value, "column"), description + ".column"));
     }
 
+    /// <implements epic="0201" feature="F3" claim="B-009" />
     private static IEnumerable<JsonElement> Array(JsonElement value, string name)
     {
         var item = Required(value, name);
@@ -484,16 +504,21 @@ public sealed class TestEvidenceArtifactReader
             : throw Invalid("Property '" + name + "' must be an array.");
     }
 
+    /// <implements epic="0201" feature="F3" claim="B-009" />
     private static string NonEmpty(string? value, string name) => !string.IsNullOrEmpty(value)
         ? value! : throw Invalid(name + " must be nonempty.");
 
+    /// <implements epic="0201" feature="F3" claim="B-009" />
     private static int Positive(int value, string name) => value > 0 ? value : throw Invalid(name + " must be positive.");
 
+    /// <implements epic="0201" feature="F3" claim="B-009" />
     private static int NonNegative(int value, string name) => value >= 0 ? value : throw Invalid(name + " cannot be negative.");
 
+    /// <implements epic="0201" feature="F3" claim="B-009" />
     private static string Digest(string value, string name) => value.Length == 64 && value.All(static character =>
         character is >= '0' and <= '9' or >= 'a' and <= 'f') ? value : throw Invalid(name + " must be a lowercase SHA-256 digest.");
 
+    /// <implements epic="0201" feature="F3" claim="B-009" />
     private static string Path(string value)
     {
         if (string.IsNullOrEmpty(value) || value[0] == '/' || value.Contains('\\')
@@ -506,6 +531,7 @@ public sealed class TestEvidenceArtifactReader
         return value;
     }
 
+    /// <implements epic="0201" feature="F3" claim="B-009" />
     private static string? OptionalPath(JsonElement value, string name)
     {
         if (!value.TryGetProperty(name, out var path))
@@ -517,8 +543,10 @@ public sealed class TestEvidenceArtifactReader
             ? Path(path.GetString()!) : throw Invalid("Optional path must be a string or null.");
     }
 
+    /// <implements epic="0201" feature="F3" claim="B-009" />
     private static ContractException Invalid(string message) => new(message);
 
+    /// <implements epic="0201" feature="F3" claim="B-009" />
     private sealed class ContractException(string message) : Exception(message);
 
     private static readonly HashSet<string> Outcomes = new(StringComparer.Ordinal)

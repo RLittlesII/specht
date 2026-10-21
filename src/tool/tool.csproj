@@ -35,6 +35,8 @@
     <PackageReference Include="Spectre.Console.Cli" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
     <PackageReference Include="JsonPointer.Net" />
+    <!-- The first solution compile produces this checkout's analyzer package; CodeAnalysis then sets its exact version. -->
+    <PackageReference Include="Specht.CodeAnalysis" PrivateAssets="all" Condition="'$(SpechtCodeAnalysisPackageVersion)' != ''" />
   </ItemGroup>
 
   <ItemGroup>

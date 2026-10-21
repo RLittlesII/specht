@@ -75,10 +75,14 @@ jobs:
         id: compile
         run: |
           ./build.cmd --target Compile --skip Restore Format
+      - name: Code Analysis
+        id: codeAnalysis
+        run: |
+          ./build.cmd --target CodeAnalysis --skip Compile
       - name: 💨 Unit Test
         id: unitTest
         run: |
-          ./build.cmd --target UnitTest --skip Compile
+          ./build.cmd --target UnitTest --skip CodeAnalysis
       - name: 💨 Integration Test
         id: integrationTest
         run: |

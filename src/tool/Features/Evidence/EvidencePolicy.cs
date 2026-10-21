@@ -7,8 +7,10 @@ using Specht.Tool.Features.Evidence.Contract;
 
 namespace Specht.Tool.Features.Evidence;
 
+/// <implements epic="0201" feature="F5" claim="B-011" />
 internal sealed class EvidencePolicy
 {
+    /// <implements epic="0201" feature="F5" claim="B-011" />
     private EvidencePolicy(JsonObject projected)
     {
         var policy = projected["policy"] as JsonObject ?? throw new EvidenceConfigurationException("Policy is missing.");
@@ -93,6 +95,7 @@ internal sealed class EvidencePolicy
     public string WithdrawnMarker { get; }
     public string SupersededMarker { get; }
 
+    /// <implements epic="0201" feature="F5" claim="B-011" />
     public static EvidencePolicy Read(JsonObject configuration)
     {
         var analysis = configuration["codeAnalysis"] as JsonObject ?? throw new EvidenceConfigurationException("codeAnalysis is missing.");
@@ -106,9 +109,11 @@ internal sealed class EvidencePolicy
         return new EvidencePolicy(projected);
     }
 
+    /// <implements epic="0201" feature="F5" claim="B-011" />
     public bool Matches(string role, string value) => _identifiers[role]?.GetValue<string>() is { } grammar
         && Regex.IsMatch(value, "\\A(?:" + grammar + ")\\z", RegexOptions.CultureInvariant);
 
+    /// <implements epic="0201" feature="F5" claim="B-011" />
     public string? Exemption(string? epic, string feature, string claim, string kind) =>
         (_policy["exemptions"] as JsonArray ?? new JsonArray()).Where(item => item?["target"]?["kind"] is null
             && item?["target"]?["epic"]?.GetValue<string>() == epic
@@ -117,7 +122,9 @@ internal sealed class EvidencePolicy
             && item?["links"]?.AsArray().Any(link => link?.GetValue<string>() == kind) == true)
             .Select(static item => item?["reason"]?.GetValue<string>()).FirstOrDefault();
 
+    /// <implements epic="0201" feature="F5" claim="B-011" />
     public sealed record ProjectEntry(string Path, string[] Frameworks);
+    /// <implements epic="0201" feature="F5" claim="B-011" />
     public sealed record FeatureEntry(string? Epic, string Feature);
 
     private readonly JsonObject _policy;

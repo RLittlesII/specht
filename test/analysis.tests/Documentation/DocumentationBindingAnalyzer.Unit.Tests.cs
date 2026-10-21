@@ -1,3 +1,4 @@
+using System.Text.Json.Nodes;
 using AwesomeAssertions;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Text;
@@ -11,6 +12,49 @@ namespace Specht.Analysis.Tests.Documentation;
 [Trait("Tier", "Unit")]
 public sealed class DocumentationBindingAnalyzerUnitTests
 {
+    [Fact]
+    public async Task WholeProjectKinds_WhenAnalyzed_ShouldRequireOnlyTypesConstructorsAndMethods()
+    {
+        // Given
+        var source = "public enum Mode { First }\npublic record Entry(string Name);\npublic class Example { public Example() {} public void Run() {} }";
+        var inputs = new AnalysisInputs().Inputs;
+        var configuration = JsonNode.Parse(inputs[0].Text!)!;
+        configuration["codeAnalysis"]!["enforcement"] = JsonNode.Parse("""
+            [{"project":"test/tests.csproj","include":["test/**/*.cs"],"exclude":[],
+              "role":"implements","declarationKinds":["type","constructor","method"]}]
+            """);
+        inputs[0] = inputs[0] with { Text = configuration.ToJsonString() };
+        var builder = GeneratorTestContextBuilder.Create().WithAnalyzer<DocumentationBindingAnalyzer>()
+            .WithDiagnosticSeverity(null).AddSource("test/Example.cs", source)
+            .AddSource("test/Program.cs", "int value = 1;")
+            .AddGlobalOption("build_property.SpechtProjectPath", "test/tests.csproj")
+            .AddGlobalOption("build_property.TargetFramework", "net10.0");
+        foreach (var input in inputs.Where(static input => input.Kind != "source"))
+        {
+            builder = builder.AddAdditionalText(input.RelativePath, input.Text!)
+                .AddOption(input.RelativePath, "build_metadata.AdditionalFiles.SpechtInputKind", input.Kind)
+                .AddOption(input.RelativePath, "build_metadata.AdditionalFiles.SpechtRelativePath", input.RelativePath);
+        }
+
+        // When
+        var result = await builder.GenerateAsync(TestContext.Current.CancellationToken);
+
+        // Then
+        // The source-generator test harness compiles a library, so its top-level statement produces CS8805.
+        result.InputDiagnostics.Where(static diagnostic => diagnostic.Severity == DiagnosticSeverity.Error && diagnostic.Id != "CS8805")
+            .Should().BeEmpty();
+        var required = result.AnalyzerResults[typeof(DocumentationBindingAnalyzer)].Diagnostics
+            .Where(static diagnostic => diagnostic.Id == "SPCT0007").Select(static diagnostic => diagnostic.GetMessage()).ToArray();
+        required.Should().Contain(static message => message.Contains("T:Mode", StringComparison.Ordinal));
+        required.Should().Contain(static message => message.Contains("T:Entry", StringComparison.Ordinal));
+        required.Should().Contain(static message => message.Contains("T:Example", StringComparison.Ordinal));
+        required.Should().Contain(static message => message.Contains("Example.#ctor", StringComparison.Ordinal));
+        required.Should().Contain(static message => message.Contains("Example.Run", StringComparison.Ordinal));
+        required.Should().NotContain(static message => message.Contains("F:Mode", StringComparison.Ordinal)
+            || message.Contains("P:Entry", StringComparison.Ordinal)
+            || message.Contains("Program", StringComparison.Ordinal));
+    }
+
     [Fact]
     public async Task ConflictingTypeDefaults_WhenAnalyzed_ShouldReportEachDefaultWithoutMemberDuplicates()
     {

@@ -1,6 +1,7 @@
 namespace Specht.Rules.Matrix;
 
 /// <summary>The outcome of resolving a matrix test name as text.</summary>
+/// <implements epic="0001" feature="F12" claim="B-001" />
 public enum MatrixTestStatus
 {
     /// <summary>No test files were declared in the manifest.</summary>

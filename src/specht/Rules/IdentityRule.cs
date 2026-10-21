@@ -15,6 +15,7 @@ namespace Specht.Rules;
 /// produces two homes for one specification, which is the thing the layout
 /// exists to end.
 /// </remarks>
+/// <implements epic="0001" feature="F1" claim="B-001" />
 public sealed class IdentityRule : ISpecRule
 {
     /// <inheritdoc />
@@ -24,6 +25,7 @@ public sealed class IdentityRule : ISpecRule
     public IReadOnlyList<string> ReportedIds => ["SPEC011", "SPEC012"];
 
     /// <inheritdoc />
+    /// <implements epic="0001" feature="F1" claim="B-001" />
     public IEnumerable<SpecViolation> Evaluate(SpecModel model)
     {
         foreach (var feature in model.Features)
@@ -110,6 +112,7 @@ public sealed class IdentityRule : ISpecRule
         }
     }
 
+    /// <implements epic="0001" feature="F1" claim="B-001" />
     private static string DirectoryIdentity(string directory, string grammar)
     {
         for (var index = directory.IndexOf('-'); index >= 0; index = directory.IndexOf('-', index + 1))

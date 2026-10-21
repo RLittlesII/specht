@@ -10,6 +10,7 @@ namespace Specht.Model;
 /// <param name="discovery">The discovery stage.</param>
 /// <param name="schemas">The manifest stage.</param>
 /// <param name="tags">The pure companion-tag parser.</param>
+/// <implements epic="0001" feature="F1" claim="B-004" />
 public sealed class SpecModelLoader(
     IFileSystem fileSystem,
     FrontmatterReader frontmatter,
@@ -18,9 +19,11 @@ public sealed class SpecModelLoader(
     FeatureTagParser tags)
 {
     /// <summary>Loads the resolved tree through its injected manifest and schema stage.</summary>
+    /// <implements epic="0001" feature="F1" claim="B-004" />
     public SpecModel Load(string root) => Load(root, null);
 
     /// <summary>Loads the resolved tree with the frontmatter source selected for this invocation.</summary>
+    /// <implements epic="0001" feature="F1" claim="B-004" />
     public SpecModel Load(string root, SchemaSourceSelection? selection)
     {
         var loaded = schemas.Load(root, selection);
@@ -59,6 +62,7 @@ public sealed class SpecModelLoader(
         return new SpecModel(root, features, items, epics, loaded);
     }
 
+    /// <implements epic="0001" feature="F1" claim="B-004" />
     private static string Relative(string root, string path) =>
         Path.GetRelativePath(root, path).Replace(Path.DirectorySeparatorChar, '/');
 }

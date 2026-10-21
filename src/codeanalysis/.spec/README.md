@@ -66,7 +66,7 @@ Apply binding enforcement consistently to an explicitly selected consumer scope.
 | B-011 | Given a suppressed diagnostic, this Feature leaves the declared analysis scope unchanged.                                                                                                           | Decision 0002                       | Active  |
 | B-012 | Given an explicit binding in an analyzed project, this Feature validates it even when its declaration is outside the scope requiring authored bindings.                                             | 0201-F6 decision 0003               | Active  |
 | B-013 | Given generated code, this Feature does not require authored bindings on that code.                                                                                                                 | 0201-F6 decision 0003               | Active  |
-| B-014 | Given shared infrastructure, this Feature imposes no blanket requirement to bind every method; required authoring follows explicitly selected enforcement scopes.                                   | 0201-F6 decision 0003               | Active  |
+| B-014 | Given shared infrastructure, this Feature requires authored method bindings only when its consumer explicitly selects that infrastructure for enforcement.                                          | 0201-F6 decision 0003               | Amended |
 | B-015 | Given a requested coverage exemption without an explicit reason, this Feature rejects that exemption.                                                                                               | 0201-F6 decision 0003               | Active  |
 | B-016 | Given enabled analysis, this Feature reads the consumer's actual selected manifest, specification, ADR and configured schema contents supplied through Roslyn AdditionalFiles by build integration. | 0201-F6 decision 0004               | Active  |
 | B-017 | Given enabled analysis with missing, invalid or incompatible required inputs and no severity override, this Feature reports error diagnostics and marks analysis unavailable or incomplete.         | 0201-F6 decision 0004               | Active  |
@@ -112,7 +112,7 @@ Apply binding enforcement consistently to an explicitly selected consumer scope.
 
 ## 7. Technical Design
 
-<!-- last written by: implementer, 2026-10-18 -->
+<!-- last written by: implementer, 2026-10-20 -->
 
 [ADR-0018](../../../.spec/adr/0018-lowercase-analyzer-project-home.md) adopts
 `src/analyzers` (`Specht.Analysis`), `src/CodeFixes` (`Specht.Codefixes`) and
@@ -187,8 +187,16 @@ excluded from the default globs. Empty item metadata on unrelated compiler
 AdditionalFiles is ignored. The project path, target framework and repository
 root are compiler-visible so declarations can be selected, and rooted compiler
 source paths are converted to repository-relative provenance before matching.
-The selected project enables XML documentation parsing to make checked bindings
+Selected projects enable XML documentation parsing to make checked bindings
 visible to Roslyn.
+For this repository's own adoption, decision 0006 adds the engine and CLI to
+the required package-fed build gate. Their entire compilations are selected;
+every eligible type, constructor and method in both projects requires an
+authored implementation binding. The local package is built
+first without a package version property, then all selected projects restore
+and compile with that exact version. This exercises the consumer package
+without creating a source-project dependency cycle.
+
 The same item construction applies to design-time and normal builds. The targets
 file reports a missing root as an MSBuild warning. Standard compiler controls
 remain responsible for diagnostic severity and suppression; presentation does
@@ -378,7 +386,7 @@ contents include the complete compatible parser dependency closure.
 
 ## 8. Testing Strategy
 
-<!-- last written by: test-writer, 2026-10-18 -->
+<!-- last written by: test-writer, 2026-10-20 -->
 
 `AdoptionSteps` executes the input/policy scenarios through real in-memory
 AdditionalFiles and the production adapter. `AnalysisInputAnalyzerUnitTests` uses
@@ -392,7 +400,7 @@ There are no Verify calls or snapshot files.
 | B-003 | Explicit unavailable state for missing/invalid inputs: `RequiredInputDefects_WhenRead_ShouldMakeAnalysisUnavailable`.                                                                                                                                                                                                                                                                                                                                                             |
 | B-012 | Explicit-reference validation remains enabled outside mandatory authoring: `DeclarationFacts_WhenSelected_ShouldSeparateValidationFromRequiredAuthoring`.                                                                                                                                                                                                                                                                                                                         |
 | B-013 | Generated authoring exemption preserves explicit validation: the generated case in `DeclarationFacts_WhenSelected_ShouldSeparateValidationFromRequiredAuthoring`.                                                                                                                                                                                                                                                                                                                 |
-| B-014 | Shared infrastructure requires no blanket annotation: the excluded/outside cases in `DeclarationFacts_WhenSelected_ShouldSeparateValidationFromRequiredAuthoring`.                                                                                                                                                                                                                                                                                                                |
+| B-014 | Shared infrastructure follows explicit selection: the excluded/outside cases in `DeclarationFacts_WhenSelected_ShouldSeparateValidationFromRequiredAuthoring`, `SelectedRoleAndDeclarationKind_WhenApplied_ShouldRequireOnlyTheConfiguredRelationships`, and the repository package gate.                                                                                                                                                                                         |
 | B-015 | Reasonless exemptions fail; reasoned exemptions remain visible: `InvalidPolicy_WhenRead_ShouldReportUnavailableAnalysis` and `ReasonedExemption_WhenSelected_ShouldRemainVisibleWithoutCreatingRequiredLinks`.                                                                                                                                                                                                                                                                    |
 | B-016 | Actual consumer record/schema contents and mapped columns: `SuppliedRecords_WhenRead_ShouldUseActualIdentityAndPreserveSelectedScope`, `ConfiguredColumns_WhenRead_ShouldUseTheirNamesInsteadOfColumnPositions`, `ActualAdditionalFiles_WhenAnalyzed_ShouldReadConfiguredConsumerRecordsWithoutInputErrors`, `SuppliedSchemaReference_WhenValidated_ShouldUseTheSuppliedDependencyWithoutFetching` and `ConsumerSchemaConstraint_WhenNotSatisfied_ShouldMakeAnalysisUnavailable`. |
 | B-017 | Error diagnostics with unavailable analysis: `MissingInputs_WhenAnalyzed_ShouldReportAnErrorWithoutCompilerErrors`, `MissingSuppliedSchema_WhenRead_ShouldFailInsteadOfUsingAnEmbeddedSchema`.                                                                                                                                                                                                                                                                                    |
@@ -411,6 +419,13 @@ produced by the solution pack. Contract compatibility also remains covered by
 and `CodeAnalysisSectionUnitTests.AnalysisSection_WhenAddedToAnExistingPin_ShouldPreserveThePinAndCheckerSettings`.
 Compiler dependency loading and parser compatibility remain exercised by the
 existing `CompilerClosureIntegrationTests` and `EngineTextCompatibilityIntegrationTests`.
+The standard build's `CodeAnalysis` target packs the current analyzer and
+builds the analyzer, engine and CLI through private package references before
+the test tiers. Generated CI runs the same gate. A manual invalid binding in
+the engine produced `SPCT0004` and `SPCT0007` on both target frameworks and
+failed the gate; restoring it returned the build to clean. The package
+integration and analyzer tests cover input delivery, package assets and
+diagnostic behavior without a separate repository dogfood script.
 
 ### Performance
 
@@ -441,7 +456,7 @@ Measured at revision `bd384ed6` on Apple M1 Max, macOS Tahoe 26.4, .NET 10.0.12 
 | B-011    | Suppression preserves scope      | Missing                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  | Missing |
 | B-012    | Explicit binding validation      | AdoptionSteps.ThenExplicitValidation; AnalysisInputReaderUnitTests.DeclarationFacts_WhenSelected_ShouldSeparateValidationFromRequiredAuthoring                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           | Covered |
 | B-013    | Generated authoring boundary     | AdoptionSteps.ThenNoMandatoryAuthoring; AnalysisInputReaderUnitTests.DeclarationFacts_WhenSelected_ShouldSeparateValidationFromRequiredAuthoring                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         | Covered |
-| B-014    | Shared infrastructure boundary   | AdoptionSteps.ThenNoMandatoryAuthoring; AnalysisInputReaderUnitTests.DeclarationFacts_WhenSelected_ShouldSeparateValidationFromRequiredAuthoring                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         | Covered |
+| B-014    | Shared infrastructure boundary   | AdoptionSteps.ThenNoMandatoryAuthoring; AdoptionSteps.ThenSharedMethodsRequireBindings; AnalysisInputReaderUnitTests.DeclarationFacts_WhenSelected_ShouldSeparateValidationFromRequiredAuthoring                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         | Covered |
 | B-015    | Reasoned exemptions              | AdoptionSteps.ThenUnavailable; AnalysisInputReaderUnitTests.InvalidPolicy_WhenRead_ShouldReportUnavailableAnalysis; AnalysisInputReaderUnitTests.ReasonedExemption_WhenSelected_ShouldRemainVisibleWithoutCreatingRequiredLinks; AnalysisPolicyUnitTests.ReasonedDeclarationExemption_WhenApplied_ShouldPreserveValidationAndExposeItsReason; AnalysisPolicyUnitTests.AdditionalRequiredLinks_WhenATestLinkIsExempt_ShouldRetainTheOtherRequirements                                                                                                                                                                                                                                                                                                                                                                     | Covered |
 | B-016    | Consumer record inputs           | AdoptionSteps.ThenReadsRecords; AnalysisInputReaderUnitTests.SuppliedRecords_WhenRead_ShouldUseActualIdentityAndPreserveSelectedScope; AnalysisInputAnalyzerUnitTests.ActualAdditionalFiles_WhenAnalyzed_ShouldReadConfiguredConsumerRecordsWithoutInputErrors; AnalysisInputReaderUnitTests.ConfiguredColumns_WhenRead_ShouldUseTheirNamesInsteadOfColumnPositions; ConsumerSchemasUnitTests.SuppliedSchemaReference_WhenValidated_ShouldUseTheSuppliedDependencyWithoutFetching; ConsumerSchemasUnitTests.ConsumerSchemaConstraint_WhenNotSatisfied_ShouldMakeAnalysisUnavailable; ConsumerRecordMappingsUnitTests.ConsumerFrontmatterKeys_WhenExplicitlyMapped_ShouldUseTheSuppliedIdentityAndLifecycle; ConsumerRecordMappingsUnitTests.FrontmatterAdrProfile_WhenRead_ShouldUseItsDeclaredIdentityLifecycleAndOwner | Covered |
 | B-017    | Required input failure           | AdoptionSteps.ThenInputError; AdoptionSteps.ThenUnavailable; AnalysisInputAnalyzerUnitTests.MissingInputs_WhenAnalyzed_ShouldReportAnErrorWithoutCompilerErrors; AnalysisInputReaderUnitTests.MissingSuppliedSchema_WhenRead_ShouldFailInsteadOfUsingAnEmbeddedSchema                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    | Covered |
@@ -488,6 +503,7 @@ OQ-1 records explicit mappings over existing consumer configuration as the polic
 - [0242: Implement analysis configuration and consumer input policy](../.issue/0242-analysis-policy-inputs.yml)
 - [0243: Package CodeAnalysis and deliver editor and build inputs](../.issue/0243-codeanalysis-package-delivery.yml)
 - [0250: Publish Specht.CodeAnalysis with the repository release](../.issue/0250-publish-codeanalysis-package.yml)
+- [0251: Adopt Specht.CodeAnalysis in the engine and CLI](../.issue/0251-analyze-engine-cli.yml)
 
 ## Scoring
 

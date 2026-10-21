@@ -9,12 +9,15 @@ namespace Specht.Model;
 /// <param name="store">The manifest and local schema store.</param>
 /// <param name="parser">The pure manifest parser and pin resolver.</param>
 /// <param name="copy">The verifier of local upstream bytes.</param>
+/// <implements epic="0001" feature="F1" claim="B-004" />
 public sealed class SpecSchemasLoader(SpecManifestStore store, SpecManifestParser parser, UpstreamSchemaCopy copy)
 {
     /// <summary>Loads embedded, explicitly selected disk, or verified local upstream schemas after manifest validation.</summary>
+    /// <implements epic="0001" feature="F1" claim="B-004" />
     public SpecSchemas Load(string root) => Load(root, null);
 
     /// <summary>Loads frontmatter schemas using this invocation's selection ahead of the valid manifest's selection.</summary>
+    /// <implements epic="0001" feature="F1" claim="B-004" />
     public SpecSchemas Load(string root, SchemaSourceSelection? selection)
     {
         var structure = LoadManifest(root);
@@ -46,9 +49,11 @@ public sealed class SpecSchemasLoader(SpecManifestStore store, SpecManifestParse
     }
 
     /// <summary>Loads the explicitly requested local schema files after the same manifest validation.</summary>
+    /// <implements epic="0001" feature="F1" claim="B-004" />
     public SpecSchemas LoadOnDisk(string root) => Load(root, SchemaSourceSelection.Disk);
 
     /// <summary>Reads and parses a manifest, retaining the existing root, missing-file and shape failures.</summary>
+    /// <implements epic="0001" feature="F1" claim="B-004" />
     public SpecStructure LoadManifest(string root)
     {
         if (!store.RootExists(root))
@@ -71,6 +76,7 @@ public sealed class SpecSchemasLoader(SpecManifestStore store, SpecManifestParse
         }
     }
 
+    /// <implements epic="0001" feature="F1" claim="B-004" />
     private SpecSchemas LoadDisk(string root, SpecSchemas embedded)
     {
         var structure = embedded.Structure;
@@ -88,6 +94,7 @@ public sealed class SpecSchemasLoader(SpecManifestStore store, SpecManifestParse
         return new SpecSchemas(version, structure, SpecSchemaSource.Disk, feature.Schema, item.Schema, epic?.Schema ?? embedded.Epic);
     }
 
+    /// <implements epic="0001" feature="F1" claim="B-004" />
     private (string Text, JsonSchema Schema) ReadDisk(string root, string name, BuildOptions options)
     {
         var path = SpecManifestStore.FrontmatterSchemaFolder + "/" + name;

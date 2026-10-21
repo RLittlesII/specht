@@ -11,6 +11,7 @@ namespace Specht;
 /// <param name="ItemCount">How many task, test, bug and spike files sit beside them.</param>
 /// <param name="RulesEvaluated">How many <c>SPEC###</c> ids were evaluated.</param>
 /// <param name="Violations">Every violation, most severe first.</param>
+/// <implements epic="0001" feature="F1" claim="B-010" />
 public sealed record SpechtReport(
     SemanticVersion SchemaVersion,
     int SpecificationCount,

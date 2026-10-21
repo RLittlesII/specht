@@ -5,6 +5,7 @@ namespace Specht.Rules.Matrix;
 
 /// <summary>SPEC035 checks that retired claims have no companion tags and retain their marker in the matrix.</summary>
 /// <param name="resolver">The shared, pure claim and matrix resolver.</param>
+/// <implements epic="0001" feature="F12" claim="B-001" />
 public sealed class RetiredClaimRule(MatrixResolver resolver) : ISpecRule
 {
     /// <inheritdoc />
@@ -17,6 +18,7 @@ public sealed class RetiredClaimRule(MatrixResolver resolver) : ISpecRule
     public SpecRuleLevel DefaultLevel => SpecRuleLevel.Off;
 
     /// <inheritdoc />
+    /// <implements epic="0001" feature="F12" claim="B-001" />
     public IEnumerable<SpecViolation> Evaluate(SpecModel model)
     {
         var structure = model.Schemas.Structure;

@@ -12,6 +12,7 @@ namespace Specht.Rules;
 /// <c>depends_on</c>. Checking the symmetry is what makes "derived" mean
 /// something, since nothing recomputes it automatically.
 /// </remarks>
+/// <implements epic="0001" feature="F1" claim="B-001" />
 public sealed class DependencyRule : ISpecRule
 {
     /// <inheritdoc />
@@ -21,6 +22,7 @@ public sealed class DependencyRule : ISpecRule
     public IReadOnlyList<string> ReportedIds => ["SPEC050", "SPEC051", "SPEC052"];
 
     /// <inheritdoc />
+    /// <implements epic="0001" feature="F1" claim="B-001" />
     public IEnumerable<SpecViolation> Evaluate(SpecModel model)
     {
         var features = model.FeaturesWithIdentity;
@@ -42,6 +44,7 @@ public sealed class DependencyRule : ISpecRule
         }
     }
 
+    /// <implements epic="0001" feature="F1" claim="B-001" />
     private static IEnumerable<SpecViolation> CheckEdges(
         FeatureSpec feature,
         IReadOnlySet<string> identities,
@@ -110,6 +113,7 @@ public sealed class DependencyRule : ISpecRule
         }
     }
 
+    /// <implements epic="0001" feature="F1" claim="B-001" />
     private static IEnumerable<(string Key, IReadOnlySet<string> Edges, IReadOnlyDictionary<string, IReadOnlySet<string>> Reverse)> Edges(
         FeatureSpec feature,
         IReadOnlyDictionary<string, IReadOnlySet<string>> dependsOn,
@@ -119,6 +123,7 @@ public sealed class DependencyRule : ISpecRule
         yield return ("blocks", blocks[feature.Identity], dependsOn);
     }
 
+    /// <implements epic="0001" feature="F1" claim="B-001" />
     private static IEnumerable<SpecViolation> CheckCycles(
         IReadOnlyList<FeatureSpec> features,
         IReadOnlyDictionary<string, IReadOnlySet<string>> dependsOn)
@@ -150,6 +155,7 @@ public sealed class DependencyRule : ISpecRule
         }
     }
 
+    /// <implements epic="0001" feature="F1" claim="B-001" />
     private static bool HasCycle(
         string identity,
         IReadOnlyDictionary<string, IReadOnlySet<string>> dependsOn,

@@ -10,6 +10,14 @@ Feature: The build
     Then the solution is compiled
     And the tests run after it
 
+  @B-028
+  Scenario: The default build checks the packaged analyzer
+    Given a fresh clone with the pinned SDK and restored dependencies
+    When the build runs with no target named
+    Then it packs the current code analysis project before its consumers are analyzed
+    And the analyzer, engine and CLI compile using that local package
+    And a package-fed diagnostic fails the build before the test tiers run
+
   @B-018
   Scenario: A failing default build exits non-zero
     Given a clone whose tests fail
@@ -59,10 +67,10 @@ Feature: The build
     Then the scenarios of every linked specification companion run
 
   @B-009
-  Scenario: Packing writes one tool package
+  Scenario: Packing writes both release packages
     When the pack target runs
-    Then exactly one tool package is written to the build's package output
-    And its name carries the version computed for the commit
+    Then the tool and code analysis packages are written to the build's package output
+    And both names carry the version computed for the commit
 
   @B-010
   Scenario: A fresh clone restores every tool the build needs

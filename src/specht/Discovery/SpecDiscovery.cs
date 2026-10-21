@@ -8,6 +8,7 @@ namespace Specht.Discovery;
 /// (<c>0001-F6</c> B-001, B-002, B-003, B-012).
 /// </summary>
 /// <param name="fileSystem">The file system the tree is read through.</param>
+/// <implements epic="0001" feature="F6" claim="B-001" />
 public sealed class SpecDiscovery(IFileSystem fileSystem)
 {
     /// <summary>
@@ -17,6 +18,7 @@ public sealed class SpecDiscovery(IFileSystem fileSystem)
     /// <param name="root">The repository root.</param>
     /// <param name="inputs">The manifest's discovery inputs.</param>
     /// <returns>Each specification, carrying the layout it was found in.</returns>
+    /// <implements epic="0001" feature="F6" claim="B-001" />
     public IReadOnlyList<SpecLocation> FindSpecifications(string root, SpecDiscoveryInputs inputs)
     {
         var files = Files(root);
@@ -35,6 +37,7 @@ public sealed class SpecDiscovery(IFileSystem fileSystem)
     /// <param name="inputs">The manifest's discovery inputs.</param>
     /// <param name="taskGrammar">The manifest's <c>identifiers.task</c> grammar.</param>
     /// <returns>The path of each item file.</returns>
+    /// <implements epic="0001" feature="F6" claim="B-001" />
     public IReadOnlyList<string> FindChildItems(
         IEnumerable<SpecLocation> specifications,
         SpecDiscoveryInputs inputs,
@@ -55,6 +58,7 @@ public sealed class SpecDiscovery(IFileSystem fileSystem)
     /// <param name="root">The repository root.</param>
     /// <param name="inputs">The manifest's discovery inputs.</param>
     /// <returns>The path of each epic file.</returns>
+    /// <implements epic="0001" feature="F6" claim="B-001" />
     public IReadOnlyList<string> FindEpics(string root, SpecDiscoveryInputs inputs) =>
         Matching(Files(root), inputs.EpicFiles, inputs.Exclusions).Select(static file => file.Path).ToList();
 
@@ -65,6 +69,7 @@ public sealed class SpecDiscovery(IFileSystem fileSystem)
     /// <param name="specification">The specification.</param>
     /// <param name="inputs">The manifest's discovery inputs.</param>
     /// <returns>The path of each companion file.</returns>
+    /// <implements epic="0001" feature="F6" claim="B-001" />
     public IReadOnlyList<string> FindCompanions(SpecLocation specification, SpecDiscoveryInputs inputs) =>
         Beside(specification, inputs.CompanionFiles.Select(static glob => new Regex(Pattern(glob))).ToList()).ToList();
 
@@ -73,6 +78,7 @@ public sealed class SpecDiscovery(IFileSystem fileSystem)
     /// <param name="globs">The test file globs.</param>
     /// <param name="exclusions">The selected manifest's directory exclusions.</param>
     /// <returns>The selected files with root-relative paths and text.</returns>
+    /// <implements epic="0001" feature="F6" claim="B-001" />
     public IReadOnlyList<SpecTestFile> ReadTestFiles(
         string root, IReadOnlyList<string> globs, IReadOnlyList<string> exclusions) =>
         globs.Count == 0
@@ -81,6 +87,7 @@ public sealed class SpecDiscovery(IFileSystem fileSystem)
                 .Select(file => new SpecTestFile(file.Relative, fileSystem.File.ReadAllText(file.Path)))
                 .ToArray();
 
+    /// <implements epic="0001" feature="F6" claim="B-001" />
     private static IEnumerable<(string Path, string Relative)> Matching(
         List<(string Path, string Relative)> files,
         IReadOnlyList<string> globs,
@@ -93,6 +100,7 @@ public sealed class SpecDiscovery(IFileSystem fileSystem)
             .OrderBy(static file => file.Relative, StringComparer.Ordinal);
     }
 
+    /// <implements epic="0001" feature="F6" claim="B-001" />
     private static string Pattern(string glob)
     {
         var segments = glob.Split('/').Select(static segment =>
@@ -101,6 +109,7 @@ public sealed class SpecDiscovery(IFileSystem fileSystem)
         return @"\A" + string.Concat(segments).TrimEnd('/') + @"\z";
     }
 
+    /// <implements epic="0001" feature="F6" claim="B-001" />
     private static bool IsExcluded(string relative, IReadOnlyList<string> exclusions)
     {
         var directories = relative.Split('/')[..^1];
@@ -111,6 +120,7 @@ public sealed class SpecDiscovery(IFileSystem fileSystem)
             : directories.Contains(entry, StringComparer.Ordinal));
     }
 
+    /// <implements epic="0001" feature="F6" claim="B-001" />
     private List<(string Path, string Relative)> Files(string root)
     {
         var origin = fileSystem.Path.GetFullPath(root);
@@ -121,6 +131,7 @@ public sealed class SpecDiscovery(IFileSystem fileSystem)
             .ToList();
     }
 
+    /// <implements epic="0001" feature="F6" claim="B-001" />
     private IEnumerable<string> Beside(SpecLocation specification, List<Regex> names) =>
         fileSystem.Directory.EnumerateFiles(specification.Directory)
             .Where(path => names.Any(name => name.IsMatch(fileSystem.Path.GetFileName(path))))

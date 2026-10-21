@@ -4,9 +4,11 @@ using Specht.Versioning;
 namespace Specht.Manifest;
 
 /// <summary>Lists and pins schema versions through the existing manifest services.</summary>
+/// <implements epic="0001" feature="F7" claim="B-043" />
 public sealed class SchemaVersionManager(SpecManifestStore store, SpecManifestParser parser, ManifestPinEditor editor, SchemaVersions versions)
 {
     /// <summary>Lists shipped versions with the optional manifest's declared or default pin.</summary>
+    /// <implements epic="0001" feature="F7" claim="B-043" />
     public (IReadOnlyList<SemanticVersion> Versions, SemanticVersion? Pinned) List(string root)
     {
         var bytes = ReadManifest(root, required: false);
@@ -26,6 +28,7 @@ public sealed class SchemaVersionManager(SpecManifestStore store, SpecManifestPa
     }
 
     /// <summary>Validates the pin input before returning choices for the host's selector.</summary>
+    /// <implements epic="0001" feature="F7" claim="B-043" />
     public IReadOnlyList<SemanticVersion> Choices(string root)
     {
         editor.Validate(ReadManifest(root, required: true)!);
@@ -33,6 +36,7 @@ public sealed class SchemaVersionManager(SpecManifestStore store, SpecManifestPa
     }
 
     /// <summary>Changes only the pin after root, settings and target validation.</summary>
+    /// <implements epic="0001" feature="F7" claim="B-043" />
     public async Task<SemanticVersion> Pin(string root, string version, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
@@ -57,8 +61,10 @@ public sealed class SchemaVersionManager(SpecManifestStore store, SpecManifestPa
         return target;
     }
 
+    /// <implements epic="0001" feature="F7" claim="B-043" />
     private SemanticVersion[] Shipped() => versions.Versions.Select(static version => version.Number).ToArray();
 
+    /// <implements epic="0001" feature="F7" claim="B-043" />
     private byte[]? ReadManifest(string root, bool required)
     {
         if (!store.RootExists(root))

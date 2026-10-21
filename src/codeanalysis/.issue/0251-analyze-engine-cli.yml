@@ -1,0 +1,29 @@
+id: "0251"
+type: task
+title: Adopt Specht.CodeAnalysis in the engine and CLI
+status: done
+value: 4
+risk: 3
+parent: "0201"
+children: []
+depends_on: ["0248"]
+spikes: []
+spec: src/codeanalysis/.spec/README.md
+claims: ["B-001", "B-012", "B-013", "B-014", "B-016", "B-019", "B-023"]
+created: "2026-10-20"
+updated: "2026-10-20"
+closed: "2026-10-20"
+summary: |
+  Extend the packaged analyzer adoption from the analyzer component to the
+  specht engine and specht.tool CLI projects, including their declared policy,
+  current specification inputs, and repeatable verification.
+acceptance_criteria:
+  - "Both projects consume the packed Specht.CodeAnalysis package through private PackageReferences."
+  - "The manifest requires authored bindings on every eligible type, constructor and method throughout both projects."
+  - "The standard build packs the current analyzer and checks both projects through its local package."
+  - "A clean run and a deliberately invalid binding prove that the package checks both projects."
+  - "The clean solution build loads the existing test-evidence analyzer with its dependency closure."
+  - "The standard build and CI require a package-fed CodeAnalysis target before test tiers; a diagnostic fails the target."
+decisions: []
+out_of_scope:
+  - "New analyzer rules, schema-version changes, performance optimization, and publishing."

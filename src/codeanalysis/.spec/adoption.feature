@@ -114,6 +114,12 @@ Feature: Consumer analysis adoption
     When missing-binding requirements are evaluated
     Then its methods are not required to carry bindings merely because they are shared infrastructure
 
+  @B-014
+  Scenario: Explicitly selected shared infrastructure
+    Given a consumer explicitly selects shared infrastructure methods for authored binding enforcement
+    When missing-binding requirements are evaluated
+    Then those methods require authored bindings
+
   @B-015 @boundary
   Scenario: Reasoned exemptions
     Given a requested coverage exemption with no explicit reason

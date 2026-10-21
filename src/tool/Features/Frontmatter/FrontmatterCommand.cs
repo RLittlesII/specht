@@ -18,10 +18,12 @@ namespace Specht.Tool.Features.Frontmatter;
 /// <param name="files">The document's file system.</param>
 /// <param name="input">Standard input, or the injected reader.</param>
 /// <param name="errors">Standard error, or the injected writer.</param>
+/// <implements epic="0001" feature="F8" claim="B-001" />
 public sealed class FrontmatterCommand(IAnsiConsole console, SpechtRunner runner, IFileSystem files, TextReader? input = null, TextWriter? errors = null)
     : AsyncCommand<FrontmatterCommand.Settings>
 {
     /// <inheritdoc />
+    /// <implements epic="0001" feature="F8" claim="B-001" />
     public override async Task<int> ExecuteAsync(CommandContext context, Settings settings, CancellationToken cancellationToken)
     {
         if (settings.Kind is null || (settings.DocumentPath is null) == !settings.Stdin)
@@ -74,6 +76,7 @@ public sealed class FrontmatterCommand(IAnsiConsole console, SpechtRunner runner
     }
 
     /// <summary>The frontmatter command's options.</summary>
+    /// <implements epic="0001" feature="F8" claim="B-001" />
     public sealed class Settings : CommandSettings
     {
         /// <summary>Gets the document path exactly as typed.</summary>
@@ -97,6 +100,7 @@ public sealed class FrontmatterCommand(IAnsiConsole console, SpechtRunner runner
         public string Root { get; init; } = ".";
     }
 
+    /// <implements epic="0001" feature="F8" claim="B-001" />
     private async Task<int> Fail(int code, string message)
     {
         await (errors ?? Console.Error).WriteLineAsync(message);

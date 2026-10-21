@@ -5,4 +5,5 @@ namespace Specht.Discovery;
 /// <param name="RelativePath">Path relative to the repository root.</param>
 /// <param name="Layout">The manifest layout whose glob matched it.</param>
 /// <param name="Directory">The directory holding it.</param>
+/// <implements epic="0001" feature="F6" claim="B-001" />
 public sealed record SpecLocation(string AbsolutePath, string RelativePath, SpecLayout Layout, string Directory);

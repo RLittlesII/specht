@@ -29,7 +29,8 @@ and no repository carries the engine."_
 Distribution is the NuGet package `specht.tool`, command `specht`, installed per
 consumer through a local tool manifest; a global install is the second
 documented path, for a shell (`0001-F2` decision 0009). `src/tool` is the one
-project that packs; `IsPackable=false` everywhere else.
+tool project that packs. `src/codeanalysis` packs the companion
+`Specht.CodeAnalysis` analyzer package; `IsPackable=false` elsewhere.
 
 `README.md` is the public front page: what the tool is, why, how to install and
 use it, and the layout; the reference pages are under `docs/`. The design
@@ -65,9 +66,10 @@ the .NET 10 runtime beside the .NET 11 SDK.
 NUKE drives everything. `specht.slnx` is the solution.
 
 ```sh
-./build.sh             # Default = Compile + Test
+./build.sh             # Default = Compile + CodeAnalysis + Test
 ./build.sh Format      # verify-only - fails on a diff
-./build.sh Pack        # specht.tool.<version>.nupkg
+./build.sh CodeAnalysis # pack the current analyzer and check all three source projects
+./build.sh Pack        # specht.tool and Specht.CodeAnalysis packages
 ./build.sh Specht   # specht, on this repository's own .spec/ tree
 ```
 
@@ -412,7 +414,7 @@ Each class of rule has one home. Read the owner, not a copy of it:
 | Naming, modifier order, braces, line length, suppressions | `.editorconfig` — the compiler reads it (scaffold, brief § 8 step 1)     |
 | Framework, nullability, strictness, packability           | `Directory.Build.props`                                                  |
 | Package versions                                          | `Directory.Packages.props`                                               |
-| Build targets, CI generation                              | `.build/SpechtBuild.cs`, `.build/SpechtBuild.GitHubActions.cs`           |
+| Build targets, CI generation                              | `.build/SpechtBuild*.cs`                                                 |
 | Project layout, test conventions, commands, ID schemes    | [`specht-conventions`](.agents/skills/specht-conventions/SKILL.md)       |
 | Command layout, packaging, what sits below a command      | [`dotnet-tool`](.agents/skills/dotnet-tool/SKILL.md)                     |
 | When an abstraction is earned, and how terse to be        | [`coding-conventions`](.agents/skills/coding-conventions/SKILL.md)       |

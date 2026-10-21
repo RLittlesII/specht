@@ -8,6 +8,7 @@ namespace Specht.Manifest;
 /// <param name="Tables">Expected header cells, keyed by role.</param>
 /// <param name="Identifiers">Id grammars, keyed by name.</param>
 /// <param name="SchemaVersion">The schema version the manifest pins, <c>0.1.0</c> when it pins none (<c>0001-F7</c> B-002).</param>
+/// <implements epic="0001" feature="F5" claim="B-048" />
 public sealed record SpecStructure(
     IReadOnlyList<string> Sections,
     IReadOnlyDictionary<string, IReadOnlyList<string>> Tables,

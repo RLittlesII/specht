@@ -12,10 +12,12 @@ using Spectre.Console.Cli;
 namespace Specht.Tool.Features.Schema.List;
 
 /// <summary>Lists the catalog and marks the pin, keeping failures off stdout (0001-F7 B-109).</summary>
+/// <implements epic="0001" feature="F7" claim="B-001" />
 public sealed class SchemaListCommand(IAnsiConsole console, SchemaVersionManager schemas, SchemaVersions versions, TextWriter? errorWriter = null)
     : AsyncCommand<SchemaListCommand.Settings>
 {
     /// <inheritdoc />
+    /// <implements epic="0001" feature="F7" claim="B-001" />
     public override async Task<int> ExecuteAsync(CommandContext context, Settings settings, CancellationToken cancellationToken)
     {
         try
@@ -42,6 +44,7 @@ public sealed class SchemaListCommand(IAnsiConsole console, SchemaVersionManager
     }
 
     /// <summary>The listing options.</summary>
+    /// <implements epic="0001" feature="F7" claim="B-001" />
     public sealed class Settings : CommandSettings
     {
         /// <summary>Gets the root whose manifest pin is marked.</summary>

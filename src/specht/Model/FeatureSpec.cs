@@ -4,9 +4,11 @@ using Specht.Discovery;
 namespace Specht.Model;
 
 /// <summary>A Feature's specification, resolved against what sits beside it.</summary>
+/// <implements epic="0001" feature="F1" claim="B-004" />
 public sealed class FeatureSpec
 {
     /// <summary>A Feature's specification from its parts.</summary>
+    /// <implements epic="0001" feature="F1" claim="B-004" />
     public FeatureSpec(SpecLocation location, SpecDocument document, IReadOnlyList<FeatureFile> featureFiles)
     {
         Location = location;
@@ -39,6 +41,7 @@ public sealed class FeatureSpec
     public string Identity => $"{Epic}-{Id}";
 
     /// <summary>A frontmatter string array, empty when absent.</summary>
+    /// <implements epic="0001" feature="F1" claim="B-004" />
     public IReadOnlyList<string> Strings(string key)
     {
         if (Document.Frontmatter.Node?[key] is not JsonArray array)

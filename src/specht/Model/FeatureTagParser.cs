@@ -4,12 +4,14 @@ using Specht.Manifest;
 namespace Specht.Model;
 
 /// <summary>Parses companion text using the selected manifest's tag contract without I/O.</summary>
+/// <implements epic="0001" feature="F1" claim="B-004" />
 public sealed class FeatureTagParser
 {
     /// <summary>Returns claim tags and their one-based lines; an absent form retains the legacy scanner.</summary>
     /// <param name="text">The companion's complete text.</param>
     /// <param name="structure">The effective manifest, or null for the legacy scanner.</param>
     /// <returns>Each recognized claim tag in file order.</returns>
+    /// <implements epic="0001" feature="F1" claim="B-004" />
     public IReadOnlyList<FeatureTag> Parse(string text, SpecStructure? structure = null)
     {
         var tags = new List<FeatureTag>();
