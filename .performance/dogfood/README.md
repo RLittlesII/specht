@@ -7,26 +7,29 @@ type: guide
 # Dogfood Specht.CodeAnalysis
 
 Restore the solution once, then run `bash .performance/dogfood/run.sh` from this repository. It builds and packs
-the checked-out `Specht.CodeAnalysis` project, restores
-`src/analyzers/analyzers.csproj` from that local package, and compiles the
-project with the package's analyzer and build assets enabled. The package cache
+the checked-out `Specht.CodeAnalysis` project, restores the analyzer, engine and
+CLI projects from that local package, and compiles all three with the package's
+analyzer and build assets enabled. The package cache
 and output live under `.artifacts/analysis-dogfood/`. The ordinary solution
-build leaves the conditional package reference disabled, so the package can be
-built before its source project consumes it.
+build leaves the conditional package references disabled, so the package can be
+built before its source projects consume it.
 
 Run `python3 .performance/dogfood/verify.py` after that build to compile a
-disposable consumer copy. It confirms a clean baseline, `SPCT0004` after a
-source binding change, `SPCT0004` after a selected Feature claim change, and
-`SPCT0001` after a manifest selection change. The copy and its cache stay under
+disposable consumer copy. It confirms a clean baseline in all three projects,
+`SPCT0004` and `SPCT0007` for changed and missing engine and CLI bindings,
+`SPCT0004` after an analyzer source binding or selected Feature claim change,
+and `SPCT0001` after a manifest selection change. The copy and its cache stay under
 `.artifacts/analysis-dogfood/`; the repository inputs are never changed by this
 verification.
 
-The selected project and `0201-F1` scope are declared in
+The three projects and `0201-F1`, `0001-F1` and `0001-F2` Feature inputs are declared in
 `.specht/manifest.json` and `Directory.Build.props`. XML documentation parsing
-is enabled for this selected project, with unrelated missing-comment warnings
-suppressed. Its explicit claim and ADR bindings in
+is enabled for these projects, with unrelated missing-comment warnings
+suppressed. The analyzer project's explicit claim and ADR bindings in
 `src/analyzers/Bindings/BindingResolver.cs` resolve against the current Feature
 and accepted ADR. The package supplies those actual records and the consumer
-frontmatter schemas as AdditionalFiles. A successful compile establishes that
-the supplied inputs are usable. The run does not establish a performance
+frontmatter schemas as AdditionalFiles. The engine's `FeatureFileRule` and the
+CLI's `ExitCodes` carry required implementation bindings in the selected
+authoring scopes. Explicit bindings elsewhere in all three projects are also validated.
+A successful compile establishes that the supplied inputs are usable. The run does not establish a performance
 finding; OQ-13 records the measurement protocol.

@@ -44,6 +44,7 @@ public sealed class SpechtRunner(
             .ToList();
 
     /// <summary>Loads and evaluates the tree using the catalog supplied at composition.</summary>
+    /// <implements epic="0001" feature="F1" claim="B-001" />
     public SpechtReport Run(string root) => Run(root, null);
 
     /// <summary>Loads and evaluates the tree with the frontmatter source selected for this invocation.</summary>

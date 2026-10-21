@@ -112,7 +112,7 @@ Apply binding enforcement consistently to an explicitly selected consumer scope.
 
 ## 7. Technical Design
 
-<!-- last written by: implementer, 2026-10-18 -->
+<!-- last written by: implementer, 2026-10-20 -->
 
 [ADR-0018](../../../.spec/adr/0018-lowercase-analyzer-project-home.md) adopts
 `src/analyzers` (`Specht.Analysis`), `src/CodeFixes` (`Specht.Codefixes`) and
@@ -187,8 +187,15 @@ excluded from the default globs. Empty item metadata on unrelated compiler
 AdditionalFiles is ignored. The project path, target framework and repository
 root are compiler-visible so declarations can be selected, and rooted compiler
 source paths are converted to repository-relative provenance before matching.
-The selected project enables XML documentation parsing to make checked bindings
+Selected projects enable XML documentation parsing to make checked bindings
 visible to Roslyn.
+For this repository's own adoption, decision 0006 adds the engine and CLI to
+the package-fed dogfood build. Their explicit bindings are validated throughout
+both projects, while the manifest requires authored bindings on selected core
+classes. The local package is built first with conditional consumption off,
+then all selected projects restore and compile with it enabled. This exercises
+the consumer package without creating a source-project dependency cycle.
+
 The same item construction applies to design-time and normal builds. The targets
 file reports a missing root as an MSBuild warning. Standard compiler controls
 remain responsible for diagnostic severity and suppression; presentation does
@@ -378,7 +385,7 @@ contents include the complete compatible parser dependency closure.
 
 ## 8. Testing Strategy
 
-<!-- last written by: test-writer, 2026-10-18 -->
+<!-- last written by: test-writer, 2026-10-20 -->
 
 `AdoptionSteps` executes the input/policy scenarios through real in-memory
 AdditionalFiles and the production adapter. `AnalysisInputAnalyzerUnitTests` uses
@@ -411,6 +418,11 @@ produced by the solution pack. Contract compatibility also remains covered by
 and `CodeAnalysisSectionUnitTests.AnalysisSection_WhenAddedToAnExistingPin_ShouldPreserveThePinAndCheckerSettings`.
 Compiler dependency loading and parser compatibility remain exercised by the
 existing `CompilerClosureIntegrationTests` and `EngineTextCompatibilityIntegrationTests`.
+The repository dogfood scripts pack the current analyzer, build the analyzer,
+engine and CLI projects through private package references, and verify their
+explicit and required bindings against disposable source, Feature and manifest
+edits. The clean and deliberately broken builds establish package-fed adoption
+in both runtime projects without changing the production tree.
 
 ### Performance
 
@@ -488,6 +500,7 @@ OQ-1 records explicit mappings over existing consumer configuration as the polic
 - [0242: Implement analysis configuration and consumer input policy](../.issue/0242-analysis-policy-inputs.yml)
 - [0243: Package CodeAnalysis and deliver editor and build inputs](../.issue/0243-codeanalysis-package-delivery.yml)
 - [0250: Publish Specht.CodeAnalysis with the repository release](../.issue/0250-publish-codeanalysis-package.yml)
+- [0251: Adopt Specht.CodeAnalysis in the engine and CLI](../.issue/0251-analyze-engine-cli.yml)
 
 ## Scoring
 

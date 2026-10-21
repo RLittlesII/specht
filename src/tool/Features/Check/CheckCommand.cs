@@ -17,11 +17,12 @@ namespace Specht.Tool.Features.Check;
 /// </summary>
 /// <param name="console">Where the product goes; injected so the command tester captures it.</param>
 /// <param name="explanations">The engine's pinned rule page reader.</param>
-/// <param name="run">The engine's runner, <see cref="SpechtRunner.Run"/> outside a test.</param>
+/// <param name="run">The engine's runner, <see cref="SpechtRunner.Run(string, SchemaSourceSelection?)"/> outside a test.</param>
 public sealed class CheckCommand(IAnsiConsole console, Func<string, SchemaSourceSelection?, SpechtReport> run,
     RuleExplanationReader explanations) : AsyncCommand<CheckCommand.Settings>
 {
     /// <inheritdoc />
+    /// <implements epic="0001" feature="F2" claim="B-001" />
     public override Task<int> ExecuteAsync(CommandContext context, Settings settings, CancellationToken cancellationToken)
     {
         SpechtReport report;

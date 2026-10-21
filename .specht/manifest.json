@@ -113,12 +113,37 @@
       {
         "path": "src/analyzers/analyzers.csproj",
         "targetFrameworks": ["netstandard2.0"]
+      },
+      {
+        "path": "src/specht/specht.csproj",
+        "targetFrameworks": ["net10.0", "net11.0"]
+      },
+      {
+        "path": "src/tool/tool.csproj",
+        "targetFrameworks": ["net10.0", "net11.0"]
       }
     ],
     "features": [
-      { "epic": "0201", "feature": "F1" }
+      { "epic": "0201", "feature": "F1" },
+      { "epic": "0001", "feature": "F1" },
+      { "epic": "0001", "feature": "F2" }
     ],
-    "enforcement": [],
+    "enforcement": [
+      {
+        "project": "src/specht/specht.csproj",
+        "include": ["src/specht/Rules/FeatureFileRule.cs"],
+        "exclude": [],
+        "role": "implements",
+        "declarationKinds": ["class"]
+      },
+      {
+        "project": "src/tool/tool.csproj",
+        "include": ["src/tool/ExitCodes.cs"],
+        "exclude": [],
+        "role": "implements",
+        "declarationKinds": ["class"]
+      }
+    ],
     "records": {
       "adrProfiles": [
         {

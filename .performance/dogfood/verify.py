@@ -23,28 +23,27 @@ for name in ("Directory.Build.props", "Directory.Packages.props", "global.json",
     if source.exists():
         shutil.copy2(source, CONSUMER / name)
 
-for name in (
-    ".specht/manifest.json",
-    ".specht/schema/frontmatter/feature.schema.json",
-    ".specht/schema/frontmatter/task.schema.json",
-    ".specht/schema/frontmatter/epic.schema.json",
-    ".spec/adr/0017-compiler-loaded-components-target-netstandard.md",
-):
+for name in (".spec/adr/0017-compiler-loaded-components-target-netstandard.md",):
     target = CONSUMER / name
     target.parent.mkdir(parents=True, exist_ok=True)
     shutil.copy2(ROOT / name, target)
 
-shutil.copytree(ROOT / "src/analyzers", CONSUMER / "src/analyzers", ignore=shutil.ignore_patterns("bin", "obj", ".issue"))
-for name in ("FrontmatterTextReader.cs", "FrontmatterText.cs", "MarkdownTextReader.cs", "MarkdownTextSection.cs"):
-    target = CONSUMER / "src/specht/Model" / name
-    target.parent.mkdir(parents=True, exist_ok=True)
-    shutil.copy2(ROOT / "src/specht/Model" / name, target)
+shutil.copytree(ROOT / ".specht", CONSUMER / ".specht")
+for name in ("analyzers", "specht", "tool"):
+    shutil.copytree(ROOT / "src" / name, CONSUMER / "src" / name,
+                    ignore=shutil.ignore_patterns("bin", "obj", ".issue"))
+shutil.copytree(ROOT / "docs/rules", CONSUMER / "docs/rules")
+shutil.copytree(ROOT / ".assets/logos", CONSUMER / ".assets/logos")
 
 environment = os.environ.copy()
 environment["NUGET_PACKAGES"] = str(ARTIFACTS / "consumer-cache")
 environment["DOTNET_CLI_USE_MSBUILD_SERVER"] = "0"
 environment["MSBUILDDISABLENODEREUSE"] = "1"
-project = str(CONSUMER / "src/analyzers/analyzers.csproj")
+projects = {
+    "analyzer": CONSUMER / "src/analyzers/analyzers.csproj",
+    "engine": CONSUMER / "src/specht/specht.csproj",
+    "CLI": CONSUMER / "src/tool/tool.csproj",
+}
 properties = [
     "-maxcpucount:1",
     "-p:NuGetAudit=false",
@@ -64,31 +63,49 @@ def invoke(label: str, command: list[str], expected: str | None = None) -> None:
     print(f"{label}: {expected or 'clean'}")
 
 
-def build(label: str, expected: str | None = None) -> None:
-    invoke(label, ["dotnet", "build", project, "--configuration", "Release", "--no-restore", "--disable-build-servers", *properties], expected)
+def build(name: str, label: str, expected: str | None = None) -> None:
+    invoke(label, ["dotnet", "build", str(projects[name]), "--configuration", "Release", "--no-restore",
+                   "--disable-build-servers", *properties], expected)
 
 
-invoke("restore", ["dotnet", "restore", project, "--configfile", str(ARTIFACTS / "nuget.config"), *properties])
-build("baseline")
+for name, project in projects.items():
+    invoke(f"{name} restore", ["dotnet", "restore", str(project), "--configfile", str(ARTIFACTS / "nuget.config"), *properties])
+    build(name, f"{name} baseline")
 
 source = CONSUMER / "src/analyzers/Bindings/BindingResolver.cs"
 original_source = source.read_text()
 assert 'claim="B-015"' in original_source
 source.write_text(original_source.replace('claim="B-015"', 'claim="B-999"', 1))
-build("source edit", "SPCT0004")
+build("analyzer", "source edit", "SPCT0004")
 source.write_text(original_source)
-build("source restored")
+build("analyzer", "source restored")
 
 feature = CONSUMER / "src/analyzers/Bindings/.spec/README.md"
 original_feature = feature.read_text()
 assert "| B-015 |" in original_feature
 feature.write_text(original_feature.replace("| B-015 |", "| B-998 |", 1))
-build("Feature edit", "SPCT0004")
+build("analyzer", "Feature edit", "SPCT0004")
 feature.write_text(original_feature)
-build("Feature restored")
+build("analyzer", "Feature restored")
+
+for name, relative in (
+    ("engine", "src/specht/Rules/FeatureFileRule.cs"),
+    ("CLI", "src/tool/ExitCodes.cs"),
+):
+    selected = CONSUMER / relative
+    original = selected.read_text()
+    binding = '/// <implements epic="0001" feature="F1" claim="B-001" />' if name == "engine" else \
+        '/// <implements epic="0001" feature="F2" claim="B-003" />'
+    assert binding in original
+    selected.write_text(original.replace(binding, binding.replace('claim="B-00', 'claim="B-99'), 1))
+    build(name, f"{name} invalid binding", "SPCT0004")
+    selected.write_text(original.replace(binding, "", 1))
+    build(name, f"{name} missing binding", "SPCT0007")
+    selected.write_text(original)
+    build(name, f"{name} restored")
 
 manifest = CONSUMER / ".specht/manifest.json"
 configuration = json.loads(manifest.read_text())
 configuration["codeAnalysis"]["features"][0]["feature"] = "F999"
 manifest.write_text(json.dumps(configuration, indent=2))
-build("manifest edit", "SPCT0001")
+build("analyzer", "manifest edit", "SPCT0001")

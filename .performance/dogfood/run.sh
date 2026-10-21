@@ -49,9 +49,11 @@ fi
 version="${package[0]##*/Specht.CodeAnalysis.}"
 version="${version%.nupkg}"
 
-dotnet restore src/analyzers/analyzers.csproj --configfile "$artifacts/nuget.config" \
-  -maxcpucount:1 -p:NuGetAudit=false -p:SpechtCodeAnalysisDogfood=true \
-  -p:SpechtCodeAnalysisDogfoodVersion="$version"
-dotnet build src/analyzers/analyzers.csproj --configuration Release --no-restore \
-  --disable-build-servers -maxcpucount:1 -p:SpechtCodeAnalysisDogfood=true \
-  -p:SpechtCodeAnalysisDogfoodVersion="$version" -p:ReportAnalyzer=true
+for project in src/analyzers/analyzers.csproj src/specht/specht.csproj src/tool/tool.csproj; do
+  dotnet restore "$project" --configfile "$artifacts/nuget.config" \
+    -maxcpucount:1 -p:NuGetAudit=false -p:SpechtCodeAnalysisDogfood=true \
+    -p:SpechtCodeAnalysisDogfoodVersion="$version"
+  dotnet build "$project" --configuration Release --no-restore \
+    --disable-build-servers -maxcpucount:1 -p:SpechtCodeAnalysisDogfood=true \
+    -p:SpechtCodeAnalysisDogfoodVersion="$version" -p:ReportAnalyzer=true
+done
