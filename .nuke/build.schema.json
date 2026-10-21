@@ -27,6 +27,7 @@
         "AcceptanceTest",
         "Benchmark",
         "Build",
+        "CodeAnalysis",
         "Compile",
         "ContinuousIntegration",
         "CreateGitHubRelease",

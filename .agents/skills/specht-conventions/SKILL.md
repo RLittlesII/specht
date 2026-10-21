@@ -57,9 +57,9 @@ src/
     manifest/v0.1.0/           embedded shipping copy of the manifest
     schema/v0.1.0/frontmatter/ embedded shipping copy of the frontmatter schemas
     templates/v0.1.0/          embedded shipping copy of the templates
-  analyzers/                   adopted Specht.Analysis home (epic 0201; production deferred)
-  CodeFixes/                   adopted Specht.Codefixes home (epic 0201; production deferred)
-  CodeAnalysis/                adopted Specht.CodeAnalysis deployment home (epic 0201; production deferred)
+  analyzers/                   Specht.Analysis source analyzer (epic 0201)
+  codefixes/                   Specht.Codefixes source code fixes (epic 0201)
+  codeanalysis/                Specht.CodeAnalysis package deployment (epic 0201)
 
 test/
   tests/                       specht.tests - unit and integration tests
@@ -203,12 +203,13 @@ none.
 ## Build and test
 
 ```sh
-./build.sh                  # Default = Compile + Test
+./build.sh                  # Default = Compile + CodeAnalysis + Test
 ./build.sh Format           # dotnet format --verify-no-changes
+./build.sh CodeAnalysis     # check the packaged analyzer in analyzer, engine and CLI
 ./build.sh UnitTest         # --filter-trait "Tier=Unit"
 ./build.sh IntegrationTest  # --filter-trait "Tier=Integration"
 ./build.sh AcceptanceTest   # test/acceptance, Reqnroll, no filter
-./build.sh Pack             # specht.tool.<version>.nupkg into .artifacts/nupkg
+./build.sh Pack             # specht.tool and Specht.CodeAnalysis packages into .artifacts/nupkg
 ./build.sh Specht           # the tool checking this repository's own .spec/ tree
 ./build.sh VerifyTag        # on a tag build, fails unless the tag is v<version> on a commit of main; skipped otherwise
 ```

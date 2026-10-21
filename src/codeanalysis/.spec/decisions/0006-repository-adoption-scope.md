@@ -20,8 +20,12 @@ also carry explicit member bindings outside those mandatory authoring scopes.
 
 Keep the bootstrap two-stage: pack `Specht.CodeAnalysis` with conditional
 references off, then restore and build the selected projects from that local
-package with the references on. An ordinary solution build remains able to
-produce the analysis package without a project-to-package cycle.
+package with the references on. The standard build runs this sequence as a
+required `CodeAnalysis` target between solution compilation and the test tiers;
+CI runs the same target. The first solution compilation remains able to produce
+the analysis package without a project-to-package cycle. Restore the ordinary
+solution assets after the gate so later tests and packing use their normal
+project graph.
 
 ## Why
 
@@ -37,5 +41,5 @@ requirement on shared infrastructure (B-001, B-012 and B-014).
 - Reference the analyzer project or its output path directly: that would bypass
   the deployment package and fail to exercise consumer installation (B-019).
 
-The accepted cost is a two-stage local build and a maintained project and
-Feature selection in the repository manifest.
+The accepted cost is a two-stage build and a maintained project and Feature
+selection in the repository manifest.

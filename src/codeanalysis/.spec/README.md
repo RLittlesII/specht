@@ -418,11 +418,12 @@ produced by the solution pack. Contract compatibility also remains covered by
 and `CodeAnalysisSectionUnitTests.AnalysisSection_WhenAddedToAnExistingPin_ShouldPreserveThePinAndCheckerSettings`.
 Compiler dependency loading and parser compatibility remain exercised by the
 existing `CompilerClosureIntegrationTests` and `EngineTextCompatibilityIntegrationTests`.
-The repository dogfood scripts pack the current analyzer, build the analyzer,
-engine and CLI projects through private package references, and verify their
-explicit and required bindings against disposable source, Feature and manifest
-edits. The clean and deliberately broken builds establish package-fed adoption
-in both runtime projects without changing the production tree.
+The standard build's `CodeAnalysis` target packs the current analyzer and
+builds the analyzer, engine and CLI through private package references before
+the test tiers. Generated CI runs the same gate. The separate dogfood scripts
+verify explicit and required bindings against disposable source, Feature and
+manifest edits. The clean and deliberately broken builds establish package-fed
+adoption in both runtime projects without changing the production tree.
 
 ### Performance
 

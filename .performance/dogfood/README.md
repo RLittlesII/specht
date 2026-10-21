@@ -1,18 +1,24 @@
 ---
 title: "Dogfood Specht.CodeAnalysis"
-description: "Build the local analysis package and consume it from the repository's analyzer project"
+description: "Verify the local analysis package and its analyzer, engine and CLI consumers"
 type: guide
 ---
 
 # Dogfood Specht.CodeAnalysis
 
-Restore the solution once, then run `bash .performance/dogfood/run.sh` from this repository. It builds and packs
+The standard `./build.sh` runs a required `CodeAnalysis` target after solution
+compilation and before tests. That target packs the current analyzer package and
+compiles the analyzer, engine and CLI against it, in the same order as CI. Run
+`./build.sh CodeAnalysis` to run this gate alone.
+
+For a separate disposable package run, restore the solution once, then run
+`bash .performance/dogfood/run.sh` from this repository. It builds and packs
 the checked-out `Specht.CodeAnalysis` project, restores the analyzer, engine and
 CLI projects from that local package, and compiles all three with the package's
 analyzer and build assets enabled. The package cache
-and output live under `.artifacts/analysis-dogfood/`. The ordinary solution
-build leaves the conditional package references disabled, so the package can be
-built before its source projects consume it.
+and output live under `.artifacts/analysis-dogfood/`. The first compilation in
+the standard build leaves conditional package references disabled, so the
+package can be built before its source projects consume it.
 
 Run `python3 .performance/dogfood/verify.py` after that build to compile a
 disposable consumer copy. It confirms a clean baseline in all three projects,

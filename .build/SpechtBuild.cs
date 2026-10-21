@@ -117,7 +117,7 @@ internal partial class SpechtBuild : NukeBuild
 
     // B-006: the classes trait-tagged Tier=Unit in every *.tests project; 0055-F3 B-001, C-7.
     private Target UnitTest => definition => definition
-        .DependsOn(Compile)
+        .DependsOn(CodeAnalysis)
         .Executes(() => TestTier("Unit"));
 
     // B-007: the classes trait-tagged Tier=Integration in every *.tests project; 0055-F3 B-001, C-7.

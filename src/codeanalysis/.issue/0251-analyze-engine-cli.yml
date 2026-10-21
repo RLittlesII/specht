@@ -23,6 +23,7 @@ acceptance_criteria:
   - "The repository's documented dogfood command builds and analyzes both projects from the local package."
   - "A clean run and a deliberately invalid binding prove that the package checks both projects."
   - "The clean solution build loads the existing test-evidence analyzer with its dependency closure."
+  - "The standard build and CI require a package-fed CodeAnalysis target before test tiers; a diagnostic fails the target."
 decisions: []
 out_of_scope:
   - "New analyzer rules, schema-version changes, performance optimization, and publishing."
