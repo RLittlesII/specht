@@ -8,6 +8,7 @@ namespace Specht.Rules;
 /// <c>AddSpechtEngine()</c> registers by name; none is found by reflection. A new rule is
 /// a new schema version (brief § 4), not just a new file.
 /// </summary>
+/// <implements epic="0001" feature="F1" claim="B-001" />
 public interface ISpecRule
 {
     /// <summary>The rule family's primary id, e.g. <c>SPEC03x</c>'s <c>SPEC030</c>.</summary>
@@ -20,5 +21,6 @@ public interface ISpecRule
     SpecRuleLevel DefaultLevel => SpecRuleLevel.Error;
 
     /// <summary>Evaluates the rule against the whole resolved tree.</summary>
+    /// <implements epic="0001" feature="F1" claim="B-001" />
     IEnumerable<SpecViolation> Evaluate(SpecModel model);
 }

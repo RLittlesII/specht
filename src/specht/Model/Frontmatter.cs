@@ -6,12 +6,15 @@ namespace Specht.Model;
 /// <param name="Node">The frontmatter mapping, or <c>null</c> when the document has none.</param>
 /// <param name="StartLine">One-based line of the opening <c>---</c>.</param>
 /// <param name="KeyLines">One-based line of each top-level key, so a schema error can point at the row.</param>
+/// <implements epic="0001" feature="F1" claim="B-004" />
 public sealed record Frontmatter(JsonObject? Node, int StartLine, IReadOnlyDictionary<string, int> KeyLines)
 {
     /// <summary>Line of <paramref name="key"/>, falling back to the frontmatter's own start.</summary>
+    /// <implements epic="0001" feature="F1" claim="B-004" />
     public int LineOf(string? key) =>
         key is not null && KeyLines.TryGetValue(key, out var line) ? line : StartLine;
 
     /// <summary>A top-level string value, or <c>null</c> when absent or not a string.</summary>
+    /// <implements epic="0001" feature="F1" claim="B-004" />
     public string? Text(string key) => Node?[key] is JsonValue value && value.TryGetValue<string>(out var text) ? text : null;
 }

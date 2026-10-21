@@ -5,4 +5,5 @@ namespace Specht.Rules.Matrix;
 /// <param name="Status">Whether the test resolves or test-file selection is unconfigured.</param>
 /// <param name="File">The root-relative matching file, only for a resolved test.</param>
 /// <param name="Line">The matching declaration's one-based line, only for a resolved test.</param>
+/// <implements epic="0001" feature="F12" claim="B-001" />
 public sealed record MatrixTestResolution(string Name, MatrixTestStatus Status, string? File = null, int? Line = null);

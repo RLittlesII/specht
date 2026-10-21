@@ -1,9 +1,11 @@
 namespace Specht.Model;
 
 /// <summary>A task, test, bug or spike file beside a specification.</summary>
+/// <implements epic="0001" feature="F1" claim="B-004" />
 public sealed class ChildItem
 {
     /// <summary>An item from its parts.</summary>
+    /// <implements epic="0001" feature="F1" claim="B-004" />
     public ChildItem(string relativePath, string fileName, Frontmatter frontmatter, string parentDirectory)
     {
         RelativePath = relativePath;

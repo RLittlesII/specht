@@ -1,15 +1,18 @@
 namespace Specht.Versioning;
 
 /// <summary>The schema versions a check can select from, ascending by version (<c>0001-F7</c> B-001, B-003, B-004).</summary>
+/// <implements epic="0001" feature="F7" claim="B-001" />
 public sealed class SchemaVersions
 {
     /// <summary>A set holding <paramref name="versions"/>.</summary>
     /// <param name="versions">The versions, in any order.</param>
+    /// <implements epic="0001" feature="F7" claim="B-001" />
     public SchemaVersions(IEnumerable<SchemaVersion> versions) =>
         Versions = versions.OrderBy(static version => version.Number).ToList();
 
     /// <summary>Assembles shipped versions from an already-read raw resource snapshot.</summary>
     /// <param name="resources">The raw schema and rule-page texts by logical name.</param>
+    /// <implements epic="0001" feature="F7" claim="B-001" />
     public SchemaVersions(IReadOnlyDictionary<string, string> resources) : this(ReadVersions(resources)) { }
 
     /// <summary>The versions, ascending by major, minor and patch.</summary>
@@ -18,8 +21,10 @@ public sealed class SchemaVersions
     /// <summary>Finds the exact version, or returns null when it is absent.</summary>
     /// <param name="number">The exact version number.</param>
     /// <returns>The held version, or null.</returns>
+    /// <implements epic="0001" feature="F7" claim="B-001" />
     public SchemaVersion? Find(SemanticVersion number) => Versions.FirstOrDefault(version => version.Number == number);
 
+    /// <implements epic="0001" feature="F7" claim="B-001" />
     private static IEnumerable<SchemaVersion> ReadVersions(IReadOnlyDictionary<string, string> resources)
     {
         var folders = resources.Keys
@@ -47,6 +52,7 @@ public sealed class SchemaVersions
         });
     }
 
+    /// <implements epic="0001" feature="F7" claim="B-001" />
     private static HashSet<string> Shipped(SemanticVersion number)
     {
         HashSet<string> original =

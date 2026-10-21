@@ -17,6 +17,7 @@ public sealed class FeatureFileRule : ISpecRule
     public IReadOnlyList<string> ReportedIds => ["SPEC020", "SPEC021"];
 
     /// <inheritdoc />
+    /// <implements epic="0001" feature="F1" claim="B-001" />
     public IEnumerable<SpecViolation> Evaluate(SpecModel model)
     {
         model.EnsureClaimGrammar();

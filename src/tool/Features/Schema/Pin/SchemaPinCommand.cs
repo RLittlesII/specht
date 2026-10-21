@@ -11,10 +11,12 @@ using Spectre.Console.Cli;
 namespace Specht.Tool.Features.Schema.Pin;
 
 /// <summary>Pins the caller's selected schema version and maps input failures to their CLI exit codes.</summary>
+/// <implements epic="0001" feature="F7" claim="B-043" />
 public sealed class SchemaPinCommand(IAnsiConsole console, SchemaVersionManager schemas, TextWriter? errorWriter = null)
     : AsyncCommand<SchemaPinCommand.Settings>
 {
     /// <inheritdoc />
+    /// <implements epic="0001" feature="F7" claim="B-043" />
     public override async Task<int> ExecuteAsync(CommandContext context, Settings settings, CancellationToken cancellationToken)
     {
         try
@@ -61,6 +63,7 @@ public sealed class SchemaPinCommand(IAnsiConsole console, SchemaVersionManager 
     }
 
     /// <summary>The pin options.</summary>
+    /// <implements epic="0001" feature="F7" claim="B-043" />
     public sealed class Settings : CommandSettings
     {
         /// <summary>Gets the optional target version.</summary>

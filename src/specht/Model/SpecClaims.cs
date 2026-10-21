@@ -5,12 +5,14 @@ using Specht.Manifest;
 namespace Specht.Model;
 
 /// <summary>A Feature's claim rows and valid ids, derived once for claim and companion rules.</summary>
+/// <implements epic="0001" feature="F1" claim="B-004" />
 public sealed class SpecClaims
 {
     /// <summary>Derives the rows under the manifest's claims role, retaining duplicates and malformed ids.</summary>
     /// <param name="document">The Feature document.</param>
     /// <param name="structure">The effective manifest.</param>
     /// <param name="grammar">The claim grammar shared across this model build.</param>
+    /// <implements epic="0001" feature="F1" claim="B-004" />
     public SpecClaims(SpecDocument document, SpecStructure structure, Regex? grammar)
     {
         Section = document.Section(structure.Roles["claims"]);

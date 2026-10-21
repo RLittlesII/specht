@@ -6,6 +6,7 @@ namespace Specht.Rules.Matrix;
 
 /// <summary>SPEC034 checks a waived matrix row's dated approver against the positional sign-off columns.</summary>
 /// <param name="resolver">The shared, pure matrix resolver.</param>
+/// <implements epic="0001" feature="F12" claim="B-001" />
 public sealed class WaiverRule(MatrixResolver resolver) : ISpecRule
 {
     /// <inheritdoc />
@@ -18,6 +19,7 @@ public sealed class WaiverRule(MatrixResolver resolver) : ISpecRule
     public SpecRuleLevel DefaultLevel => SpecRuleLevel.Off;
 
     /// <inheritdoc />
+    /// <implements epic="0001" feature="F12" claim="B-001" />
     public IEnumerable<SpecViolation> Evaluate(SpecModel model)
     {
         var structure = model.Schemas.Structure;

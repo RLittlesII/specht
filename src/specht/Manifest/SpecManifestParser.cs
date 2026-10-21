@@ -7,11 +7,13 @@ namespace Specht.Manifest;
 
 /// <summary>Parses and validates a manifest in memory using the embedded defaults (ADR-0010).</summary>
 /// <param name="versions">The instance catalog carrying each pin's shipped defaults and rule vocabulary.</param>
+/// <implements epic="0001" feature="F5" claim="B-048" />
 public sealed class SpecManifestParser(SchemaVersions versions)
 {
     /// <summary>Returns the validated structure with omitted values supplied by the default manifest.</summary>
     /// <param name="text">The manifest JSON to validate.</param>
     /// <returns>The structure and its upstream schema source, if declared.</returns>
+    /// <implements epic="0001" feature="F5" claim="B-048" />
     public SpecStructure Parse(string text)
     {
         var manifest = Present(JsonNode.Parse(text)).AsObject();
@@ -95,6 +97,7 @@ public sealed class SpecManifestParser(SchemaVersions versions)
     /// <param name="structure">The parsed and shape-validated manifest.</param>
     /// <returns>The selected version.</returns>
     /// <exception cref="SpechtManifestException">The pin is not shipped or a rule id is outside its vocabulary.</exception>
+    /// <implements epic="0001" feature="F5" claim="B-048" />
     public SchemaVersion PinnedVersion(SpecStructure structure)
     {
         var version = Version(structure.SchemaVersion);
@@ -109,6 +112,7 @@ public sealed class SpecManifestParser(SchemaVersions versions)
         return version;
     }
 
+    /// <implements epic="0001" feature="F5" claim="B-048" />
     private static IEnumerable<string> ClaimTagFaults(SpecStructure structure)
     {
         if (structure.ClaimTagForm is not { } form)
@@ -138,9 +142,11 @@ public sealed class SpecManifestParser(SchemaVersions versions)
         }
     }
 
+    /// <implements epic="0001" feature="F5" claim="B-048" />
     private static SpecTestSettings? TestSettings(JsonNode? node) =>
         node is null ? null : new SpecTestSettings(Strings(Present(node["files"])), node["declarations"] is { } forms ? Strings(forms) : []);
 
+    /// <implements epic="0001" feature="F5" claim="B-048" />
     private static IEnumerable<string> MatrixKeyFaults(SpecStructure structure) =>
         (structure.Tests?.Declarations ?? [])
             .Where(static form => form.Split("{test}", StringSplitOptions.None).Length != 2)
@@ -154,6 +160,7 @@ public sealed class SpecManifestParser(SchemaVersions versions)
                     .Where(static owner => owner.Value.Count == 0)
                     .Select(static owner => $"the owners title '{owner.Key}' lists no role"));
 
+    /// <implements epic="0001" feature="F5" claim="B-048" />
     private static SchemaSourceSelection? SourceSelection(JsonObject manifest, List<string> faults)
     {
         if (!manifest.TryGetPropertyValue("schemaSource", out var node))
@@ -173,6 +180,7 @@ public sealed class SpecManifestParser(SchemaVersions versions)
         }
     }
 
+    /// <implements epic="0001" feature="F5" claim="B-048" />
     private static UpstreamSchemaSource? SpechtSchema(JsonObject manifest, Dictionary<string, string> fileNames, List<string> faults)
     {
         if (!manifest.TryGetPropertyValue("spechtSchema", out var node))
@@ -229,9 +237,11 @@ public sealed class SpecManifestParser(SchemaVersions versions)
         return faults.Count == 0 ? new UpstreamSchemaSource(location!, version!, files) : null;
     }
 
+    /// <implements epic="0001" feature="F5" claim="B-048" />
     private static string? Text(JsonNode? node) =>
         node is JsonValue value && value.TryGetValue<string>(out var text) ? text : null;
 
+    /// <implements epic="0001" feature="F5" claim="B-048" />
     private static bool IsSha256(string hash) =>
         hash.Length == 71
             && hash.StartsWith("sha256:", StringComparison.Ordinal)
@@ -239,6 +249,7 @@ public sealed class SpecManifestParser(SchemaVersions versions)
 
 
 
+    /// <implements epic="0001" feature="F5" claim="B-048" />
     private static SpecLayout Layout(JsonNode? node)
     {
         var layout = Present(node);
@@ -249,9 +260,11 @@ public sealed class SpecManifestParser(SchemaVersions versions)
             layout["identity"] is { } identity ? new SpecPathIdentity(Segment(identity["epic"]), Segment(identity["feature"])) : null);
     }
 
+    /// <implements epic="0001" feature="F5" claim="B-048" />
     private static int? Segment(JsonNode? node) =>
         node is JsonValue value && value.TryGetValue<int>(out var index) && index >= 0 ? index : null;
 
+    /// <implements epic="0001" feature="F5" claim="B-048" />
     private static IEnumerable<string> IdentityFaults(JsonObject manifest)
     {
         foreach (var layout in manifest["layouts"]?.AsArray() ?? [])
@@ -285,6 +298,7 @@ public sealed class SpecManifestParser(SchemaVersions versions)
     }
 
 
+    /// <implements epic="0001" feature="F5" claim="B-048" />
     private static SemanticVersion SchemaVersion(JsonObject manifest)
     {
         if (!manifest.TryGetPropertyValue("schemaVersion", out var node))
@@ -301,24 +315,29 @@ public sealed class SpecManifestParser(SchemaVersions versions)
             $"{SpecManifestStore.RelativePath}: schemaVersion {node?.ToJsonString() ?? "null"} is not a major.minor.patch version such as \"0.1.0\".");
     }
 
+    /// <implements epic="0001" feature="F5" claim="B-048" />
     private static SemanticVersion? ReadVersion(JsonNode? node) =>
         node is JsonValue value && value.TryGetValue<string>(out var text) && SemanticVersion.TryParse(text, out var version) ? version : null;
 
+    /// <implements epic="0001" feature="F5" claim="B-048" />
     private static List<string> Strings(JsonNode node) =>
         node.AsArray().Select(static element => Present(element).GetValue<string>()).ToList();
 
+    /// <implements epic="0001" feature="F5" claim="B-048" />
     private static Dictionary<string, IReadOnlyList<string>> Tables(JsonNode node) =>
         node.AsObject().ToDictionary(
             static entry => entry.Key,
             static entry => (IReadOnlyList<string>)Strings(Present(entry.Value)),
             StringComparer.Ordinal);
 
+    /// <implements epic="0001" feature="F5" claim="B-048" />
     private static Dictionary<string, string> Named(JsonNode node) =>
         node.AsObject().ToDictionary(
             static entry => entry.Key,
             static entry => Present(entry.Value).GetValue<string>(),
             StringComparer.Ordinal);
 
+    /// <implements epic="0001" feature="F5" claim="B-048" />
     private static Dictionary<string, string> Levels(JsonNode? node) =>
         node is null
             ? new Dictionary<string, string>(StringComparer.Ordinal)
@@ -329,9 +348,11 @@ public sealed class SpecManifestParser(SchemaVersions versions)
                     : entry.Value?.ToJsonString() ?? "null",
                 StringComparer.Ordinal);
 
+    /// <implements epic="0001" feature="F5" claim="B-048" />
     private static JsonNode Present(JsonNode? node) =>
         node ?? throw new InvalidOperationException("A JSON null stands where the manifest's shape requires a value.");
 
+    /// <implements epic="0001" feature="F5" claim="B-048" />
     private static void Check(
         SpecStructure structure, JsonObject defaults, IEnumerable<string> identityFaults, IReadOnlyDictionary<string, string> levels)
     {
@@ -378,6 +399,7 @@ public sealed class SpecManifestParser(SchemaVersions versions)
         }
     }
 
+    /// <implements epic="0001" feature="F5" claim="B-048" />
     private static SpecDiscoveryInputs Discovery(JsonObject manifest, JsonObject defaults) =>
         new(
             (manifest["layouts"] ?? defaults["layouts"]!).AsArray().Select(Layout).ToList(),
@@ -386,6 +408,7 @@ public sealed class SpecManifestParser(SchemaVersions versions)
             Strings(manifest["epicFiles"] ?? defaults["epicFiles"]!),
             Strings(manifest["companionFiles"] ?? defaults["companionFiles"]!));
 
+    /// <implements epic="0001" feature="F5" claim="B-048" />
     private static Dictionary<string, string> Filled(JsonObject manifest, JsonObject defaults, string key)
     {
         var values = Named(defaults[key]!);
@@ -401,6 +424,7 @@ public sealed class SpecManifestParser(SchemaVersions versions)
         return values;
     }
 
+    /// <implements epic="0001" feature="F5" claim="B-048" />
     private SchemaVersion Version(SemanticVersion number) =>
         versions.Find(number) ?? throw new SpechtManifestException(
             $"{SpecManifestStore.RelativePath}: schemaVersion {number} is not shipped; this tool ships "

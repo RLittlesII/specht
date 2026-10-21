@@ -14,6 +14,7 @@ namespace Specht.Rules;
 /// contiguity are checked across the epic rather than within the directory
 /// that happens to hold the file.
 /// </remarks>
+/// <implements epic="0001" feature="F1" claim="B-001" />
 public sealed class ChildItemRule : ISpecRule
 {
     /// <inheritdoc />
@@ -23,6 +24,7 @@ public sealed class ChildItemRule : ISpecRule
     public IReadOnlyList<string> ReportedIds => ["SPEC040", "SPEC041", "SPEC043", "SPEC044"];
 
     /// <inheritdoc />
+    /// <implements epic="0001" feature="F1" claim="B-001" />
     public IEnumerable<SpecViolation> Evaluate(SpecModel model)
     {
         var byDirectory = model.Items
@@ -59,6 +61,7 @@ public sealed class ChildItemRule : ISpecRule
         }
     }
 
+    /// <implements epic="0001" feature="F1" claim="B-001" />
     private static IEnumerable<SpecViolation> CheckDeclared(
         FeatureSpec feature,
         IReadOnlyCollection<ChildItem> candidates,
@@ -120,6 +123,7 @@ public sealed class ChildItemRule : ISpecRule
         }
     }
 
+    /// <implements epic="0001" feature="F1" claim="B-001" />
     private static IEnumerable<SpecViolation> CheckItems(SpecModel model)
     {
         var seen = new Dictionary<string, string>(StringComparer.Ordinal);
@@ -179,6 +183,7 @@ public sealed class ChildItemRule : ISpecRule
         }
     }
 
+    /// <implements epic="0001" feature="F1" claim="B-001" />
     private static IEnumerable<SpecViolation> CheckSequences(SpecModel model)
     {
         var byEpic = model.Items
@@ -216,6 +221,7 @@ public sealed class ChildItemRule : ISpecRule
         }
     }
 
+    /// <implements epic="0001" feature="F1" claim="B-001" />
     private static JsonObject DeclaredExpectation(string declared, string? requiredType)
     {
         var expected = new JsonObject { ["fileName"] = $"{declared}-*.md" };
@@ -227,6 +233,7 @@ public sealed class ChildItemRule : ISpecRule
         return expected;
     }
 
+    /// <implements epic="0001" feature="F1" claim="B-001" />
     private static int Number(string id)
     {
         var match = Regex.Match(id, @"^\d{4}-(\d{2})$");

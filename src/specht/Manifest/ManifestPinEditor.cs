@@ -8,9 +8,11 @@ namespace Specht.Manifest;
 /// <summary>Validates non-version settings and edits only the root pin's bytes (0001-F7 C-13).</summary>
 /// <param name="parser">The existing manifest parser.</param>
 /// <param name="versions">The shipped catalog used for validation and repair.</param>
+/// <implements epic="0001" feature="F7" claim="B-043" />
 public sealed class ManifestPinEditor(SpecManifestParser parser, SchemaVersions versions)
 {
     /// <summary>Decodes the BOM encodings accepted by the existing manifest reader, or UTF-8 without a BOM.</summary>
+    /// <implements epic="0001" feature="F7" claim="B-043" />
     public string Decode(byte[] bytes)
     {
         var (encoding, offset) = Format(bytes);
@@ -18,6 +20,7 @@ public sealed class ManifestPinEditor(SpecManifestParser parser, SchemaVersions 
     }
 
     /// <summary>Validates settings under the current shipped version, or newest when that pin is unusable.</summary>
+    /// <implements epic="0001" feature="F7" claim="B-043" />
     public void Validate(byte[] bytes)
     {
         try
@@ -44,6 +47,7 @@ public sealed class ManifestPinEditor(SpecManifestParser parser, SchemaVersions 
     }
 
     /// <summary>Replaces only the root pin value, or adds the missing key without changing other values.</summary>
+    /// <implements epic="0001" feature="F7" claim="B-043" />
     public byte[] Change(byte[] bytes, SemanticVersion target)
     {
         var (encoding, offset) = Format(bytes);
@@ -75,9 +79,11 @@ public sealed class ManifestPinEditor(SpecManifestParser parser, SchemaVersions 
         throw new SpechtManifestException($"{SpecManifestStore.RelativePath}: expected a manifest object.");
     }
 
+    /// <implements epic="0001" feature="F7" claim="B-043" />
     private static int OriginalOffset(long utf8Offset, byte[] utf8, string text, Encoding encoding, int preamble) =>
         preamble + encoding.GetByteCount(text.AsSpan(0, Encoding.UTF8.GetCharCount(utf8.AsSpan(0, checked((int)utf8Offset)))));
 
+    /// <implements epic="0001" feature="F7" claim="B-043" />
     private static (Encoding Encoding, int Offset) Format(byte[] bytes)
     {
         ReadOnlySpan<byte> value = bytes;

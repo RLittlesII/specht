@@ -7,8 +7,10 @@ using Json.Pointer;
 namespace Specht.Tool.Features.Evidence.Contract;
 
 /// <summary>Projects explicitly mapped consumer fields without interpreting a schema version.</summary>
+/// <implements epic="0201" feature="F3" claim="B-009" />
 public sealed class AnalysisConfigurationReader
 {
+    /// <implements epic="0201" feature="F3" claim="B-009" />
     public JsonObject Read(JsonNode configuration, IReadOnlyDictionary<string, string> mappings)
     {
         var result = new JsonObject();
@@ -46,6 +48,7 @@ public sealed class AnalysisConfigurationReader
         return result;
     }
 
+    /// <implements epic="0201" feature="F3" claim="B-009" />
     private static string[] Segments(string pointer)
     {
         if (!pointer.StartsWith("/", StringComparison.Ordinal) || pointer.Length < 2 || !JsonPointer.TryParse(pointer, out _))
@@ -56,6 +59,7 @@ public sealed class AnalysisConfigurationReader
         return pointer.Substring(1).Split('/').Select(static part => part.Replace("~1", "/").Replace("~0", "~")).ToArray();
     }
 
+    /// <implements epic="0201" feature="F3" claim="B-009" />
     private static IEnumerable<KeyValuePair<int[], JsonNode?>> Values(JsonNode? node, string[] parts, int position, int[] indices)
     {
         if (position == parts.Length)
@@ -88,6 +92,7 @@ public sealed class AnalysisConfigurationReader
         }
     }
 
+    /// <implements epic="0201" feature="F3" claim="B-009" />
     private static void Set(JsonNode container, string[] parts, int position, int[] indices, int dimension, JsonNode? value)
     {
         var part = parts[position];

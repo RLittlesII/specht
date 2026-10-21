@@ -6,12 +6,14 @@ namespace Specht.Versioning;
 /// <param name="Major">The major number.</param>
 /// <param name="Minor">The minor number.</param>
 /// <param name="Patch">The patch number.</param>
+/// <implements epic="0001" feature="F7" claim="B-001" />
 public readonly record struct SemanticVersion(int Major, int Minor, int Patch) : IComparable<SemanticVersion>
 {
     /// <summary>Reads <paramref name="text"/> as a version.</summary>
     /// <param name="text">The text.</param>
     /// <param name="version">The version <paramref name="text"/> names, when it names one.</param>
     /// <returns>Whether <paramref name="text"/> is exactly three numbers separated by dots.</returns>
+    /// <implements epic="0001" feature="F7" claim="B-001" />
     public static bool TryParse(string? text, out SemanticVersion version)
     {
         version = default;
@@ -30,12 +32,15 @@ public readonly record struct SemanticVersion(int Major, int Minor, int Patch) :
     }
 
     /// <inheritdoc />
+    /// <implements epic="0001" feature="F7" claim="B-001" />
     public int CompareTo(SemanticVersion other) =>
         (Major, Minor, Patch).CompareTo((other.Major, other.Minor, other.Patch));
 
     /// <inheritdoc />
+    /// <implements epic="0001" feature="F7" claim="B-001" />
     public override string ToString() => string.Create(CultureInfo.InvariantCulture, $"{Major}.{Minor}.{Patch}");
 
+    /// <implements epic="0001" feature="F7" claim="B-001" />
     private static bool TryNumber(string part, out int number) =>
         int.TryParse(part, NumberStyles.None, CultureInfo.InvariantCulture, out number)
         && string.Equals(number.ToString(CultureInfo.InvariantCulture), part, StringComparison.Ordinal);

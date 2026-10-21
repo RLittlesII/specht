@@ -17,6 +17,7 @@ namespace Specht.Rules;
 /// "github_issue set implies synced_at present" is a statement about one
 /// file's frontmatter and belongs with the rest of them.
 /// </remarks>
+/// <implements epic="0001" feature="F5" claim="B-008" />
 public sealed class FrontmatterSchemaRule : ISpecRule
 {
     /// <inheritdoc />
@@ -26,6 +27,7 @@ public sealed class FrontmatterSchemaRule : ISpecRule
     public IReadOnlyList<string> ReportedIds => ["SPEC001", "SPEC002", "SPEC003", "SPEC004"];
 
     /// <inheritdoc />
+    /// <implements epic="0001" feature="F5" claim="B-008" />
     public IEnumerable<SpecViolation> Evaluate(SpecModel model)
     {
         foreach (var feature in model.Features)
@@ -54,6 +56,7 @@ public sealed class FrontmatterSchemaRule : ISpecRule
     }
 
     /// <summary>Parses the manifest's exact kind names without reading a document or root.</summary>
+    /// <implements epic="0001" feature="F5" claim="B-008" />
     public FrontmatterKind ParseKind(string kind) => kind switch
     {
         "feature" => FrontmatterKind.Feature,
@@ -63,6 +66,7 @@ public sealed class FrontmatterSchemaRule : ISpecRule
     };
 
     /// <summary>Evaluates one document using the same kind mapping and schema evaluation as the tree.</summary>
+    /// <implements epic="0001" feature="F5" claim="B-008" />
     public IEnumerable<SpecViolation> Evaluate(string path, Frontmatter frontmatter, SpecSchemas schemas, FrontmatterKind kind)
     {
         var selected = kind switch
@@ -76,6 +80,7 @@ public sealed class FrontmatterSchemaRule : ISpecRule
         return Check(path, frontmatter, selected.Schema, selected.Rule, schemas, selected.Key);
     }
 
+    /// <implements epic="0001" feature="F5" claim="B-008" />
     private static IEnumerable<SpecViolation> Check(
         string path, Frontmatter frontmatter, JsonSchema schema, string ruleId, SpecSchemas schemas, string kind)
     {
@@ -122,6 +127,7 @@ public sealed class FrontmatterSchemaRule : ISpecRule
         }
     }
 
+    /// <implements epic="0001" feature="F5" claim="B-008" />
     private static EvaluationResults EvaluateInvariant(JsonSchema schema, JsonElement instance, string? schemaPath)
     {
         var culture = CultureInfo.CurrentCulture;
@@ -142,6 +148,7 @@ public sealed class FrontmatterSchemaRule : ISpecRule
         }
     }
 
+    /// <implements epic="0001" feature="F5" claim="B-008" />
     private static JsonArray Required(JsonSchema schema) =>
         schema.Root.Source.ValueKind == JsonValueKind.Object
         && schema.Root.Source.TryGetProperty("required", out var required)
@@ -149,6 +156,7 @@ public sealed class FrontmatterSchemaRule : ISpecRule
             ? new([.. required.EnumerateArray().Select(static name => JsonNode.Parse(name.GetRawText()))])
             : [];
 
+    /// <implements epic="0001" feature="F5" claim="B-008" />
     private static JsonObject Expectation(string schemaFile, string? key, JsonObject constraints)
     {
         var expected = new JsonObject { ["schema"] = schemaFile };
@@ -163,6 +171,7 @@ public sealed class FrontmatterSchemaRule : ISpecRule
         return expected;
     }
 
+    /// <implements epic="0001" feature="F5" claim="B-008" />
     private static JsonObject Constraints(JsonSchema schema, EvaluationResults detail)
     {
         var constraints = new JsonObject();
@@ -183,6 +192,7 @@ public sealed class FrontmatterSchemaRule : ISpecRule
         return constraints;
     }
 
+    /// <implements epic="0001" feature="F5" claim="B-008" />
     private static JsonElement? Place(JsonElement root, string evaluationPath)
     {
         JsonElement? place = root;
@@ -207,6 +217,7 @@ public sealed class FrontmatterSchemaRule : ISpecRule
         return place is { ValueKind: JsonValueKind.Object } ? place : null;
     }
 
+    /// <implements epic="0001" feature="F5" claim="B-008" />
     private static JsonElement? Reference(JsonElement root, JsonElement place)
     {
         if (place.ValueKind != JsonValueKind.Object
@@ -232,6 +243,7 @@ public sealed class FrontmatterSchemaRule : ISpecRule
         return resolved;
     }
 
+    /// <implements epic="0001" feature="F5" claim="B-008" />
     private static JsonElement? Step(JsonElement place, string name)
     {
         if (place.ValueKind == JsonValueKind.Object && place.TryGetProperty(name, out var member))
@@ -246,10 +258,12 @@ public sealed class FrontmatterSchemaRule : ISpecRule
                 : null;
     }
 
+    /// <implements epic="0001" feature="F5" claim="B-008" />
     private static IEnumerable<string> Segments(string pointer) =>
         pointer.Split('/').Skip(1).Select(static segment =>
             segment.Replace("~1", "/", StringComparison.Ordinal).Replace("~0", "~", StringComparison.Ordinal));
 
+    /// <implements epic="0001" feature="F5" claim="B-008" />
     private static IEnumerable<EvaluationResults> Failures(EvaluationResults results)
     {
         if (!results.IsValid && results.Errors is { Count: > 0 })
@@ -276,6 +290,7 @@ public sealed class FrontmatterSchemaRule : ISpecRule
         }
     }
 
+    /// <implements epic="0001" feature="F5" claim="B-008" />
     private static string? KeyOf(EvaluationResults results)
     {
         var segments = results.InstanceLocation.ToString().Split('/', StringSplitOptions.RemoveEmptyEntries);
@@ -283,6 +298,7 @@ public sealed class FrontmatterSchemaRule : ISpecRule
         return segments.Length == 0 ? null : segments[0];
     }
 
+    /// <implements epic="0001" feature="F5" claim="B-008" />
     private static string Describe(EvaluationResults results, string? key)
     {
         var errors = results.Errors is null

@@ -9,8 +9,10 @@ using YamlDotNet.RepresentationModel;
 namespace Specht.Model;
 
 /// <summary>The shared text-only YAML representation reader used by the engine and compiler component.</summary>
+/// <implements epic="0001" feature="F1" claim="B-004" />
 internal sealed class FrontmatterTextReader
 {
+    /// <implements epic="0001" feature="F1" claim="B-004" />
     public FrontmatterText Read(string text)
     {
         var lines = Lines(text);
@@ -58,6 +60,7 @@ internal sealed class FrontmatterTextReader
 
     private static FrontmatterText None => new(null, 1, new Dictionary<string, int>(StringComparer.Ordinal));
 
+    /// <implements epic="0001" feature="F1" claim="B-004" />
     private static string[] Lines(string text)
     {
         var lines = new List<string>();
@@ -71,6 +74,7 @@ internal sealed class FrontmatterTextReader
         return [.. lines];
     }
 
+    /// <implements epic="0001" feature="F1" claim="B-004" />
     private static JsonNode? Convert(YamlNode node) => node switch
     {
         YamlMappingNode mapping => ConvertMapping(mapping),
@@ -79,6 +83,7 @@ internal sealed class FrontmatterTextReader
         _ => null,
     };
 
+    /// <implements epic="0001" feature="F1" claim="B-004" />
     private static JsonNode ConvertMapping(YamlMappingNode mapping)
     {
         var result = new JsonObject();
@@ -94,6 +99,7 @@ internal sealed class FrontmatterTextReader
         return result;
     }
 
+    /// <implements epic="0001" feature="F1" claim="B-004" />
     private static JsonNode ConvertSequence(YamlSequenceNode sequence)
     {
         var result = new JsonArray();
@@ -106,6 +112,7 @@ internal sealed class FrontmatterTextReader
         return result;
     }
 
+    /// <implements epic="0001" feature="F1" claim="B-004" />
     private static JsonNode? ConvertScalar(YamlScalarNode scalar)
     {
         var value = scalar.Value;

@@ -9,9 +9,11 @@ using Spectre.Console.Cli;
 namespace Specht.Tool.Features.Evidence;
 
 /// <summary>The offline gate over explicitly supplied trace evidence (0201-F5).</summary>
+/// <implements epic="0201" feature="F5" claim="B-014" />
 public sealed class EvidenceCommand(IAnsiConsole console, EvidenceReconciler reconciler) : Command<EvidenceCommand.Settings>
 {
     /// <inheritdoc />
+    /// <implements epic="0201" feature="F5" claim="B-014" />
     public override int Execute(CommandContext context, Settings settings, CancellationToken cancellationToken)
     {
         var root = Path.GetFullPath(settings.Root);
@@ -68,6 +70,7 @@ public sealed class EvidenceCommand(IAnsiConsole console, EvidenceReconciler rec
     }
 
     /// <summary>Explicit scope and output selection.</summary>
+    /// <implements epic="0201" feature="F5" claim="B-014" />
     public sealed class Settings : CommandSettings
     {
         /// <summary>The repository root.</summary>

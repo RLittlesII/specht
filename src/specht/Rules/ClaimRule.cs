@@ -13,6 +13,7 @@ namespace Specht.Rules;
 /// rather than the specification being agreed - see ApprovalRule for the point
 /// at which it does become one.
 /// </remarks>
+/// <implements epic="0001" feature="F1" claim="B-001" />
 public sealed class ClaimRule : ISpecRule
 {
     /// <inheritdoc />
@@ -22,6 +23,7 @@ public sealed class ClaimRule : ISpecRule
     public IReadOnlyList<string> ReportedIds => ["SPEC030", "SPEC031"];
 
     /// <inheritdoc />
+    /// <implements epic="0001" feature="F1" claim="B-001" />
     public IEnumerable<SpecViolation> Evaluate(SpecModel model)
     {
         model.EnsureClaimGrammar();
@@ -90,6 +92,7 @@ public sealed class ClaimRule : ISpecRule
         }
     }
 
+    /// <implements epic="0001" feature="F1" claim="B-001" />
     private static IEnumerable<SpecViolation> CheckMatrix(
         FeatureSpec feature,
         IReadOnlyDictionary<string, int> claims,
@@ -161,6 +164,7 @@ public sealed class ClaimRule : ISpecRule
         }
     }
 
+    /// <implements epic="0001" feature="F1" claim="B-001" />
     private static JsonObject MatrixExpected(IReadOnlyDictionary<string, int> claims, IReadOnlyDictionary<string, List<int>> rows)
     {
         var counts = new JsonObject();
@@ -172,5 +176,6 @@ public sealed class ClaimRule : ISpecRule
         return new JsonObject { ["requiredRows"] = 1, ["rowsByClaim"] = counts };
     }
 
+    /// <implements epic="0001" feature="F1" claim="B-001" />
     private static string FirstCell(IReadOnlyList<string> row) => row.Count == 0 ? string.Empty : row[0].Trim();
 }

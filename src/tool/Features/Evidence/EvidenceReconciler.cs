@@ -13,9 +13,11 @@ using Specht.Tool.Features.Evidence.Contract;
 namespace Specht.Tool.Features.Evidence;
 
 /// <summary>Joins current consumer records to supplied version-one build and runner exports.</summary>
+/// <implements epic="0201" feature="F5" claim="B-001" />
 public sealed class EvidenceReconciler
 {
     /// <summary>Builds a deterministic report from the explicitly selected artifacts.</summary>
+    /// <implements epic="0201" feature="F5" claim="B-001" />
     public EvidenceResult Reconcile(string root, IReadOnlyList<string> evidencePaths, string? runId)
     {
         var findings = new List<EvidenceFinding>();
@@ -460,6 +462,7 @@ public sealed class EvidenceReconciler
         return new EvidenceResult(report, exit);
     }
 
+    /// <implements epic="0201" feature="F5" claim="B-001" />
     private static IEnumerable<ClaimEntry> ReadClaims(string root, JsonObject configuration, EvidencePolicy policy,
         List<EvidenceFinding> findings)
     {
@@ -533,10 +536,13 @@ public sealed class EvidenceReconciler
         }
     }
 
+    /// <implements epic="0201" feature="F5" claim="B-001" />
     private static JsonArray Array(IEnumerable<JsonObject> entries) => new(entries.Select(static entry => (JsonNode?)entry).ToArray());
 
+    /// <implements epic="0201" feature="F5" claim="B-001" />
     private static string Role(string kind) => kind switch { "test" => "verifies", "implementation" => "implements", _ => "follows" };
 
+    /// <implements epic="0201" feature="F5" claim="B-001" />
     private static string? Contained(string root, string path)
     {
         if (path.StartsWith('/') || path.Contains('\\') || path.Split('/').Any(static part => part is "" or "." or ".."))
@@ -549,6 +555,7 @@ public sealed class EvidenceReconciler
             StringComparison.Ordinal) ? full : null;
     }
 
+    /// <implements epic="0201" feature="F5" claim="B-001" />
     private static string Label(string root, string path, int index)
     {
         var relative = Path.GetRelativePath(root, path).Replace('\\', '/');
@@ -556,15 +563,19 @@ public sealed class EvidenceReconciler
             ? $"external-evidence-{index + 1}" : relative;
     }
 
+    /// <implements epic="0201" feature="F5" claim="B-001" />
     private static string Hash(byte[] bytes) => Convert.ToHexStringLower(SHA256.HashData(bytes));
 
+    /// <implements epic="0201" feature="F5" claim="B-001" />
     private sealed record ArtifactEntry(string Label, TestEvidenceArtifact Artifact, string State)
     {
         public bool Current => State == "current";
     }
 
+    /// <implements epic="0201" feature="F5" claim="B-001" />
     private sealed record EvidenceFinding(string Kind, string Path, int Line, string Identity, string Message)
     {
+        /// <implements epic="0201" feature="F5" claim="B-001" />
         public JsonObject ToJson() => new()
         {
             ["kind"] = Kind,
@@ -575,6 +586,7 @@ public sealed class EvidenceReconciler
         };
     }
 
+    /// <implements epic="0201" feature="F5" claim="B-001" />
     private sealed class ClaimEntry(string? epic, string feature, string id, string state, string path, int line)
     {
         public string? Epic => epic;
@@ -587,6 +599,7 @@ public sealed class EvidenceReconciler
         public List<string> Cases { get; } = [];
         public List<string> Scenarios { get; } = [];
 
+        /// <implements epic="0201" feature="F5" claim="B-001" />
         public JsonObject ToJson() => new()
         {
             ["epic"] = epic,

@@ -15,7 +15,7 @@
     <PackageReference Include="Markdig" />
     <PackageReference Include="YamlDotNet" />
     <PackageReference Include="System.Text.Json" />
-    <PackageReference Include="Specht.CodeAnalysis" PrivateAssets="all" Condition="'$(SpechtCodeAnalysisDogfood)' == 'true'" />
+    <PackageReference Include="Specht.CodeAnalysis" PrivateAssets="all" Condition="'$(SpechtCodeAnalysisPackageVersion)' != ''" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="../specht/Model/FrontmatterTextReader.cs" Link="Text/FrontmatterTextReader.cs" />

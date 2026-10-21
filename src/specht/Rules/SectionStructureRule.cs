@@ -9,6 +9,7 @@ namespace Specht.Rules;
 /// exactly once each and in order, and the tables that gate coverage have the
 /// headers the contract names.
 /// </summary>
+/// <implements epic="0001" feature="F1" claim="B-001" />
 public sealed class SectionStructureRule : ISpecRule
 {
     /// <inheritdoc />
@@ -18,6 +19,7 @@ public sealed class SectionStructureRule : ISpecRule
     public IReadOnlyList<string> ReportedIds => ["SPEC010", "SPEC013"];
 
     /// <inheritdoc />
+    /// <implements epic="0001" feature="F1" claim="B-001" />
     public IEnumerable<SpecViolation> Evaluate(SpecModel model)
     {
         var expected = model.Schemas.Structure.Sections;
@@ -83,6 +85,7 @@ public sealed class SectionStructureRule : ISpecRule
         }
     }
 
+    /// <implements epic="0001" feature="F1" claim="B-001" />
     private static IEnumerable<SpecViolation> CheckTables(SpecModel model, FeatureSpec feature)
     {
         foreach (var (role, headers) in model.Schemas.Structure.Tables)
@@ -128,9 +131,12 @@ public sealed class SectionStructureRule : ISpecRule
         }
     }
 
+    /// <implements epic="0001" feature="F1" claim="B-001" />
     private static JsonObject Sections(IEnumerable<string> titles) => new() { ["sections"] = Strings(titles) };
 
+    /// <implements epic="0001" feature="F1" claim="B-001" />
     private static JsonObject Table(string title, IEnumerable<string> headers) => new() { ["section"] = title, ["headers"] = Strings(headers) };
 
+    /// <implements epic="0001" feature="F1" claim="B-001" />
     private static JsonArray Strings(IEnumerable<string> values) => new([.. values.Select(static value => JsonValue.Create(value))]);
 }

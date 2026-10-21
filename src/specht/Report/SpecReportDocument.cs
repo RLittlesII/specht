@@ -19,6 +19,7 @@ namespace Specht.Report;
 /// <param name="ErrorCount">How many violations are errors.</param>
 /// <param name="WarningCount">How many violations are warnings.</param>
 /// <param name="Violations">Every violation, in the report's order.</param>
+/// <implements epic="0001" feature="F3" claim="B-001" />
 public sealed record SpecReportDocument(
     string SchemaVersion,
     SpecSchemaSource SchemaSource,
@@ -32,6 +33,7 @@ public sealed record SpecReportDocument(
     /// <summary>Makes the document for <paramref name="report"/>.</summary>
     /// <param name="report">The run's report.</param>
     /// <returns>The document.</returns>
+    /// <implements epic="0001" feature="F3" claim="B-001" />
     public static SpecReportDocument From(SpechtReport report) =>
         new(
             report.SchemaVersion.ToString(),
@@ -54,6 +56,7 @@ public sealed record SpecReportDocument(
 
     /// <summary>Makes the run summary the check prints after the violation lines (<c>0001-F2</c> B-002).</summary>
     /// <returns>The summary lines.</returns>
+    /// <implements epic="0001" feature="F3" claim="B-001" />
     public IReadOnlyList<string> SummaryLines() =>
     [
         $"specifications: {string.Join(", ", Layouts.Select(Count))}",
@@ -64,8 +67,10 @@ public sealed record SpecReportDocument(
 
     /// <summary>Serializes the document as the JSON the published report schema describes.</summary>
     /// <returns>The JSON text.</returns>
+    /// <implements epic="0001" feature="F3" claim="B-001" />
     public string ToJson() => JsonSerializer.Serialize(this, Options);
 
+    /// <implements epic="0001" feature="F3" claim="B-001" />
     private static string Count(SpecReportLayout layout) =>
         FormattableString.Invariant($"{layout.Layout} {layout.SpecificationCount}");
 

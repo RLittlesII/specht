@@ -6,4 +6,5 @@ namespace Specht.Discovery;
 /// </summary>
 /// <param name="Epic">The segment whose directory carries the epic id, or <see langword="null"/> when the entry declares none.</param>
 /// <param name="Feature">The segment whose directory carries the Feature id, or <see langword="null"/> when the entry declares none.</param>
+/// <implements epic="0001" feature="F6" claim="B-001" />
 public sealed record SpecPathIdentity(int? Epic, int? Feature);

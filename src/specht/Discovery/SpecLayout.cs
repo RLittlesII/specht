@@ -4,4 +4,5 @@ namespace Specht.Discovery;
 /// <param name="Name">The name the summary and the report give it (B-009).</param>
 /// <param name="Glob">The glob a specification's root-relative path matches (C-6).</param>
 /// <param name="Identity">The path segments that carry a specification's identity, or <see langword="null"/> when the layout declares none (B-004).</param>
+/// <implements epic="0001" feature="F6" claim="B-001" />
 public sealed record SpecLayout(string Name, string Glob, SpecPathIdentity? Identity = null);

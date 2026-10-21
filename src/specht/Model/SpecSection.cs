@@ -6,6 +6,7 @@ namespace Specht.Model;
 /// <param name="Headers">The first table's header cells, or empty when the section has no table.</param>
 /// <param name="Rows">The first table's body rows, each a list of cell strings.</param>
 /// <param name="RowLines">One-based line of each body row, parallel to <see cref="Rows"/>.</param>
+/// <implements epic="0001" feature="F1" claim="B-004" />
 public sealed record SpecSection(
     string Title,
     int Line,

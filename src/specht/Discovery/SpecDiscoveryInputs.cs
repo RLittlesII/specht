@@ -9,6 +9,7 @@ namespace Specht.Discovery;
 /// <param name="TaskFiles">The file-name shapes of an item beside a specification; <c>{task}</c> stands for the task grammar.</param>
 /// <param name="EpicFiles">The globs an epic file's root-relative path matches one of.</param>
 /// <param name="CompanionFiles">The file-name globs of a companion file beside a specification.</param>
+/// <implements epic="0001" feature="F6" claim="B-001" />
 public sealed record SpecDiscoveryInputs(
     IReadOnlyList<SpecLayout> Layouts,
     IReadOnlyList<string> Exclusions,

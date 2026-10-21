@@ -11,9 +11,11 @@ namespace Specht.Model;
 /// code and bold spans, and the largest specification is a third of a
 /// megabyte - hand-rolled splitting is wrong on correctness and on cost.
 /// </remarks>
+/// <implements epic="0001" feature="F1" claim="B-004" />
 public sealed class SpecDocument
 {
     /// <summary>A document from its parts, as <see cref="Parse"/> gives them.</summary>
+    /// <implements epic="0001" feature="F1" claim="B-004" />
     public SpecDocument(string relativePath, Frontmatter frontmatter, IReadOnlyList<SpecSection> sections)
     {
         RelativePath = relativePath;
@@ -31,6 +33,7 @@ public sealed class SpecDocument
     public IReadOnlyList<SpecSection> Sections { get; }
 
     /// <summary>Parses <paramref name="text"/>, the document at <paramref name="relativePath"/>.</summary>
+    /// <implements epic="0001" feature="F1" claim="B-004" />
     public static SpecDocument Parse(string text, string relativePath)
     {
         var sections = new MarkdownTextReader().Read(text, Pipeline).Select(static section =>
@@ -42,6 +45,7 @@ public sealed class SpecDocument
     }
 
     /// <summary>The section titled <paramref name="title"/>, or <c>null</c>.</summary>
+    /// <implements epic="0001" feature="F1" claim="B-004" />
     public SpecSection? Section(string title) =>
         Sections.FirstOrDefault(section => string.Equals(section.Title, title, StringComparison.Ordinal));
 

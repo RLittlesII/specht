@@ -13,6 +13,7 @@ using Specht.Versioning;
 namespace Specht.Composition;
 
 /// <summary>The engine's one registration (ADR-0001 stage D; ADR-0003).</summary>
+/// <implements epic="0001" feature="F2" claim="B-001" />
 public static class SpechtEngineServiceCollectionExtensions
 {
     /// <summary>
@@ -22,6 +23,7 @@ public static class SpechtEngineServiceCollectionExtensions
     /// </summary>
     /// <param name="services">The collection the engine joins.</param>
     /// <returns><paramref name="services"/>.</returns>
+    /// <implements epic="0001" feature="F2" claim="B-001" />
     public static IServiceCollection AddSpechtEngine(this IServiceCollection services)
     {
         services.TryAddSingleton<IFileSystem, FileSystem>();

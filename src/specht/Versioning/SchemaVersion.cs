@@ -10,6 +10,7 @@ namespace Specht.Versioning;
 /// <param name="EpicSchema">The epic frontmatter schema's text.</param>
 /// <param name="RuleIds">Every <c>SPEC###</c> id a check under this version evaluates (B-014).</param>
 /// <param name="Manifest">The version's shipped manifest text supplying omission defaults (0001-F5 B-048).</param>
+/// <implements epic="0001" feature="F7" claim="B-001" />
 public sealed record SchemaVersion(
     SemanticVersion Number, string FeatureSchema, string ItemSchema, string EpicSchema, IReadOnlySet<string> RuleIds, string Manifest)
 {

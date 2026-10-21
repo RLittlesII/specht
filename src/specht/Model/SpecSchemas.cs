@@ -13,8 +13,10 @@ namespace Specht.Model;
 /// manifest is data for the same reason - a C# string array would be
 /// a second, invisible home for the twelve-section rule.
 /// </remarks>
+/// <implements epic="0001" feature="F1" claim="B-004" />
 public sealed class SpecSchemas
 {
+    /// <implements epic="0001" feature="F1" claim="B-004" />
     internal SpecSchemas(SchemaVersion version, SpecStructure structure, SpecSchemaSource source = SpecSchemaSource.Embedded)
     {
         var options = new BuildOptions { SchemaRegistry = new SchemaRegistry() };
@@ -27,6 +29,7 @@ public sealed class SpecSchemas
         Source = source;
     }
 
+    /// <implements epic="0001" feature="F1" claim="B-004" />
     internal SpecSchemas(
         SchemaVersion version, SpecStructure structure, SpecSchemaSource source, JsonSchema feature, JsonSchema item, JsonSchema epic)
     {
@@ -64,5 +67,6 @@ public sealed class SpecSchemas
     public SchemaVersion Version { get; }
 
     /// <summary>Compiles the selected version after the caller validates the manifest and resolves its pin.</summary>
+    /// <implements epic="0001" feature="F1" claim="B-004" />
     public static SpecSchemas Load(SpecStructure structure, SchemaVersion version) => new(version, structure);
 }

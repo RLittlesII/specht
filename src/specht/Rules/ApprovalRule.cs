@@ -13,6 +13,7 @@ namespace Specht.Rules;
 /// specification is currently a draft, so they are vacuously green, and the
 /// first specification to be approved gets the check for free.
 /// </remarks>
+/// <implements epic="0001" feature="F1" claim="B-001" />
 public sealed class ApprovalRule : ISpecRule
 {
     /// <inheritdoc />
@@ -22,6 +23,7 @@ public sealed class ApprovalRule : ISpecRule
     public IReadOnlyList<string> ReportedIds => ["SPEC060", "SPEC061"];
 
     /// <inheritdoc />
+    /// <implements epic="0001" feature="F1" claim="B-001" />
     public IEnumerable<SpecViolation> Evaluate(SpecModel model)
     {
         var roles = model.Schemas.Structure.Roles;

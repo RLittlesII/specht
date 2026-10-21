@@ -27,6 +27,7 @@ namespace Specht.Tool.Features.Init;
 /// <param name="manifestStore">The store for an existing manifest.</param>
 /// <param name="upstreamSchemaFetcher">The fetcher needed when an upstream source selects schemas.</param>
 /// <param name="manifestParser">The in-memory validator shared with manifest loading.</param>
+/// <implements epic="0001" feature="F4" claim="B-019" />
 public sealed partial class InitWriter(
     IReadOnlyDictionary<string, byte[]> shippingCopy,
     IFileSystem fileSystem,
@@ -37,6 +38,7 @@ public sealed partial class InitWriter(
     /// <summary>Reads the shipping copy embedded in <paramref name="assembly"/>.</summary>
     /// <param name="assembly">The assembly carrying the <c>manifest/</c>, <c>schema/</c> and <c>templates/</c> resources.</param>
     /// <returns>Each shipped file's bytes by logical name.</returns>
+    /// <implements epic="0001" feature="F4" claim="B-019" />
     public static IReadOnlyDictionary<string, byte[]> ShippingCopy(Assembly assembly) =>
         assembly.GetManifestResourceNames()
             .Where(static name => Shipped().IsMatch(name))
@@ -52,6 +54,7 @@ public sealed partial class InitWriter(
     /// <param name="upstreamHashes">Repeated kind=hash pairs for the declared schema kinds.</param>
     /// <returns>Each file, relative to the root with <c>/</c> separators in ordinal order, and whether it was written or skipped.</returns>
     /// <exception cref="SpechtRootNotFoundException"><paramref name="root"/> is not a directory.</exception>
+    /// <implements epic="0001" feature="F4" claim="B-019" />
     public async Task<IReadOnlyList<(string Path, bool Written)>> Write(
         string root,
         bool schemas,
@@ -190,6 +193,7 @@ public sealed partial class InitWriter(
         return listing;
     }
 
+    /// <implements epic="0001" feature="F4" claim="B-019" />
     private static byte[] Read(Assembly assembly, string name)
     {
         using var stream = assembly.GetManifestResourceStream(name)!;
@@ -199,11 +203,13 @@ public sealed partial class InitWriter(
         return buffer.ToArray();
     }
 
+    /// <implements epic="0001" feature="F4" claim="B-019" />
     [GeneratedRegex(
         "^(?:manifest/v(?<version>[0-9]+\\.[0-9]+\\.[0-9]+)/manifest\\.json|"
         + "(?<folder>schema|templates)/v(?<version>[0-9]+\\.[0-9]+\\.[0-9]+)/(?<path>.+))$")]
     private static partial Regex Shipped();
 
+    /// <implements epic="0001" feature="F4" claim="B-019" />
     private IEnumerable<(string Relative, byte[] Bytes)> Selected(bool schemas, bool templates, bool manifestPresent, SemanticVersion? pinned)
     {
         var shipped = shippingCopy

@@ -5,4 +5,5 @@ namespace Specht.Model;
 /// <param name="Line">The one-based line.</param>
 /// <param name="IsValid">Whether the claim grammar accepts the id.</param>
 /// <param name="FirstDeclarationLine">The first line of a duplicated valid id, null on its first declaration.</param>
+/// <implements epic="0001" feature="F1" claim="B-004" />
 public sealed record SpecClaim(string Id, int Line, bool IsValid, int? FirstDeclarationLine);

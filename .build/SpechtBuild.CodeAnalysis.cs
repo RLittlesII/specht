@@ -33,12 +33,12 @@ internal partial class SpechtBuild
             <configuration>
               <packageSources>
                 <clear />
-                <add key="dogfood" value="{{packageSource}}" />
+                <add key="local-analysis" value="{{packageSource}}" />
                 <add key="installed" value="{{installedSource}}" />
               </packageSources>
               <packageSourceMapping>
                 <clear />
-                <packageSource key="dogfood"><package pattern="Specht.CodeAnalysis" /></packageSource>
+                <packageSource key="local-analysis"><package pattern="Specht.CodeAnalysis" /></packageSource>
                 <packageSource key="installed"><package pattern="*" /></packageSource>
               </packageSourceMapping>
             </configuration>
@@ -72,10 +72,9 @@ internal partial class SpechtBuild
                      })
             {
                 DotNet($"restore \"{project}\" --configfile \"{config}\" -maxcpucount:1 -p:NuGetAudit=false " +
-                       $"-p:SpechtCodeAnalysisDogfood=true -p:SpechtCodeAnalysisDogfoodVersion={version}", RootDirectory);
+                       $"-p:SpechtCodeAnalysisPackageVersion={version}", RootDirectory);
                 DotNet($"build \"{project}\" --configuration {Configuration} --no-restore --disable-build-servers " +
-                       $"-maxcpucount:1 -p:ReportAnalyzer=true -p:SpechtCodeAnalysisDogfood=true " +
-                       $"-p:SpechtCodeAnalysisDogfoodVersion={version}", RootDirectory);
+                       $"-maxcpucount:1 -p:ReportAnalyzer=true -p:SpechtCodeAnalysisPackageVersion={version}", RootDirectory);
             }
         }
         finally

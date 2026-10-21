@@ -49,8 +49,8 @@ inflating apparent coverage.
 
 - Require implementation, scenario and test links for every claim: adds mandatory
   documentation and scenario machinery regardless of the consumer's needs.
-- Require bindings on every method in analyzed projects: burdens infrastructure
-  and code outside the consumer's selected adoption scope.
+- Require bindings on every method merely because a project is analyzed:
+  mandatory authoring must follow the consumer's explicit enforcement scope.
 - Require handwritten bindings on generated code: asks consumers to maintain
   documentation on declarations they do not author.
 - Silently exempt records or classify exemptions as covered: hides missing
@@ -71,3 +71,10 @@ OQ-1; existing completeness and result-state distinctions remain unchanged.
 ## Reversal
 
 None.
+
+## Repository adoption
+
+Repository adoption decision 0006 selects every eligible type, constructor and
+method in `specht` and `specht.tool` explicitly. Shared infrastructure in those
+projects is therefore inside the selected authoring scope; the general policy
+above still permits narrower consumer scopes.

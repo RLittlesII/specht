@@ -13,6 +13,7 @@ namespace Specht;
 /// <param name="rules">The rule set, in the order it is evaluated.</param>
 /// <param name="fileSystem">The file system a report is written through.</param>
 /// <param name="schemas">The shared root and schema selection stage.</param>
+/// <implements epic="0001" feature="F1" claim="B-001" />
 public sealed class SpechtRunner(
     SpecModelLoader loader, IEnumerable<ISpecRule> rules, IFileSystem fileSystem, SpecSchemasLoader schemas)
 {
@@ -25,6 +26,7 @@ public sealed class SpechtRunner(
     /// <param name="model">The resolved tree.</param>
     /// <param name="rules">The rule set.</param>
     /// <returns>The report.</returns>
+    /// <implements epic="0001" feature="F1" claim="B-001" />
     public static SpechtReport Evaluate(SpecModel model, IEnumerable<ISpecRule> rules) =>
         Evaluate(model, rules, rule => rule.Evaluate(model));
 
@@ -35,6 +37,7 @@ public sealed class SpechtRunner(
     /// </summary>
     /// <param name="violations">The violations to order.</param>
     /// <returns>The violations, ordered.</returns>
+    /// <implements epic="0001" feature="F1" claim="B-001" />
     public static IReadOnlyList<SpecViolation> Order(IEnumerable<SpecViolation> violations) =>
         violations
             .OrderByDescending(static violation => violation.Severity)
@@ -48,12 +51,15 @@ public sealed class SpechtRunner(
     public SpechtReport Run(string root) => Run(root, null);
 
     /// <summary>Loads and evaluates the tree with the frontmatter source selected for this invocation.</summary>
+    /// <implements epic="0001" feature="F1" claim="B-001" />
     public SpechtReport Run(string root, SchemaSourceSelection? selection) => Evaluate(loader.Load(root, selection), rules);
 
     /// <summary>Parses a frontmatter kind before the caller reads its document or root.</summary>
+    /// <implements epic="0001" feature="F1" claim="B-001" />
     public FrontmatterKind ParseFrontmatterKind(string kind) => rules.OfType<FrontmatterSchemaRule>().Single().ParseKind(kind);
 
     /// <summary>Checks only the supplied document's frontmatter against the root's selected schemas.</summary>
+    /// <implements epic="0001" feature="F1" claim="B-001" />
     public SpechtReport CheckFrontmatter(string root, FrontmatterKind kind, string path, string text)
     {
         var loaded = schemas.Load(root);
@@ -67,12 +73,14 @@ public sealed class SpechtRunner(
     /// <summary>Writes <paramref name="report"/> to <paramref name="path"/> as the report document (<c>0001-F3</c> B-008).</summary>
     /// <param name="report">The run's report.</param>
     /// <param name="path">Where the document is written.</param>
+    /// <implements epic="0001" feature="F1" claim="B-001" />
     public void WriteReport(SpechtReport report, string path)
     {
         fileSystem.Directory.CreateDirectory(fileSystem.Path.GetDirectoryName(path)!);
         fileSystem.File.WriteAllText(path, SpecReportDocument.From(report).ToJson());
     }
 
+    /// <implements epic="0001" feature="F1" claim="B-001" />
     private static SpechtReport Evaluate(
         SpecModel model, IEnumerable<ISpecRule> rules, Func<ISpecRule, IEnumerable<SpecViolation>> evaluate)
     {
@@ -102,9 +110,11 @@ public sealed class SpechtRunner(
         { SchemaSource = model.Schemas.Source };
     }
 
+    /// <implements epic="0001" feature="F1" claim="B-001" />
     private static bool Enabled(string id, ISpecRule rule, IReadOnlySet<string> vocabulary, SpecRuleSettings settings) =>
         vocabulary.Contains(id) && (settings.TryGetValue(id, out var level) ? level : rule.DefaultLevel) != SpecRuleLevel.Off;
 
+    /// <implements epic="0001" feature="F1" claim="B-001" />
     private static SpecViolation Graded(SpecViolation violation, SpecRuleSettings settings) =>
         settings.TryGetValue(violation.RuleId, out var level) ? level switch
         {

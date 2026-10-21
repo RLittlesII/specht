@@ -1,6 +1,6 @@
 ---
 title: "Decision 0006: Repository analysis adoption scope"
-description: "Analyze the engine and CLI through the packaged analyzer with selected required authoring scopes"
+description: "Require authored bindings throughout the engine and CLI through the packaged analyzer"
 type: decision
 ---
 
@@ -13,14 +13,17 @@ type: decision
 
 Extend the local packaged-analyzer verification to `specht` and `specht.tool`.
 Declare both projects and their target frameworks in the repository's analysis
-policy. The analyzer validates every explicit binding in their source. Require
-authored implementation bindings on selected core classes: `FeatureFileRule`
-in the engine and `ExitCodes` in the CLI. The engine runner and check command
-also carry explicit member bindings outside those mandatory authoring scopes.
+policy. Project selection covers each entire compilation, and the analyzer
+validates every explicit binding in their source. Require authored
+implementation bindings on every eligible type, constructor and method in
+both projects. Generated code remains outside required authoring (B-013).
 
-Keep the bootstrap two-stage: pack `Specht.CodeAnalysis` with conditional
-references off, then restore and build the selected projects from that local
-package with the references on. The standard build runs this sequence as a
+Keep the bootstrap two-stage: pack `Specht.CodeAnalysis` with no package version
+property, then restore and build the selected projects from that local package
+with `SpechtCodeAnalysisPackageVersion` set to its exact version. A version is
+required for the private PackageReferences because the first compilation must
+produce this checkout's analyzer before any project can consume it. The
+standard build runs this sequence as a
 required `CodeAnalysis` target between solution compilation and the test tiers;
 CI runs the same target. The first solution compilation remains able to produce
 the analysis package without a project-to-package cycle. Restore the ordinary
@@ -30,14 +33,15 @@ project graph.
 ## Why
 
 This exercises the same package and MSBuild input delivery consumers receive
-while selecting the declarations whose authoring relationship is required.
-The selected scopes make missing bindings observable without imposing a blanket
-requirement on shared infrastructure (B-001, B-012 and B-014).
+while making every eligible type, constructor and method in the two selected
+projects' source an explicit implementation relationship. The owner selected
+the full source scope, including shared infrastructure, through the existing
+enforcement policy (B-001, B-012 and B-014).
 
 ## Rejected
 
-- Require an authored binding on every source declaration: shared infrastructure
-  would gain obligations the selected-scope policy does not establish.
+- Infer required authoring merely from project selection: the manifest must
+  still declare the enforcement scope and declaration kinds explicitly.
 - Reference the analyzer project or its output path directly: that would bypass
   the deployment package and fail to exercise consumer installation (B-019).
 

@@ -11,6 +11,7 @@ namespace Specht.Report;
 /// <param name="Identifier">The identifier at fault, where the rule has one.</param>
 /// <param name="Message">What is wrong.</param>
 /// <param name="Expected">What the rule expected: an object each rule family extends by addition (C-2, C-4).</param>
+/// <implements epic="0001" feature="F3" claim="B-001" />
 public sealed record SpecReportViolation(
     string RuleId,
     SpecSeverity Severity,

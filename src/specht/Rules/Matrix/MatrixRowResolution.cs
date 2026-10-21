@@ -7,5 +7,6 @@ namespace Specht.Rules.Matrix;
 /// <param name="Test">The third cell's visible text.</param>
 /// <param name="Status">The fourth cell, the coverage status, without interpretation.</param>
 /// <param name="Tests">The inline-code test names, in cell order, and their resolution evidence.</param>
+/// <implements epic="0001" feature="F12" claim="B-001" />
 public sealed record MatrixRowResolution(
     int Line, string Claim, string Scenario, string Test, string Status, IReadOnlyList<MatrixTestResolution> Tests);
