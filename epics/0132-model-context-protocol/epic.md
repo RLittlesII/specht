@@ -8,7 +8,7 @@ priority: med
 milestone: null
 children: ["0132-F1"]
 created: "2026-10-09"
-updated: "2026-10-19"
+updated: "2026-10-21"
 github_issue: null
 ---
 
@@ -41,6 +41,14 @@ authoritative, while a local database keeps keyed facts and relationships for
 repeated MCP lookups. Every indexed answer must reflect the current tree, even
 after direct edits and branch switches (`0132-F1` decision 0001). Feature
 `0132-F1` is a draft; its key scope and performance evidence remain open.
+
+On 2026-10-20 the owner clarified that the proposed store concerns all records
+linked to a specification: items, Features, epics, ADRs, lessons and decisions,
+as well as their keys and sequence values. Whether agents answer better from
+indexed files or complete documents served by MCP is unresolved. The owner also
+raised optional online mode; if adopted, it would use one project sequence
+shared across machines. Spike `0252` will test the access paths and storage
+options before those choices amend the existing agreement.
 
 The need and its scope were decided by the repository owner on 2026-10-09.
 This file is the record of that decision. Nothing here is designed: no MCP
@@ -102,6 +110,21 @@ marks the new sequence capability, whose tier has not been decided.
 | The work queue is answerable: items, their status, their derived priority and rank, and which are startable                                                                                   | Could     | Only if cheap once the tree's facts exist. The first thing dropped                                                     |
 | A caller can obtain a unique sequence value for a project and a supported document type without git coordination                                                                              | Requested | Added by the owner, 2026-10-17; tier and authority boundaries await agreement under "Document sequence allocation"     |
 | Repeated MCP key lookups can follow stored specification relationships without reparsing unchanged Markdown, while each answer remains current with the repository tree                       | Requested | Added by the owner, 2026-10-19; `0132-F1` is draft, with key scope and measurement open                                |
+| A caller can find the items, Features, epics, ADRs, lessons and decisions related to a specification                                                                                          | Requested | Clarified by the owner, 2026-10-20; spike `0252` will evaluate how their content is served                             |
+
+## Related records
+
+The store request is broader than candidate F's sequence allocator. It asks
+MCP to connect items, Features, epics, ADRs, lessons and decisions to their
+specifications. These records have different scopes and relationships, so a
+single parent link or number counter does not describe the whole model.
+
+Feature `0132-F1` currently specifies a local index derived from authoritative
+Markdown. Its decision 0001 and constraints C-1, C-3 and C-8 govern the draft.
+Spike `0252` compares direct filesystem access, MCP lookup that opens source
+files, and MCP retrieval of complete stored documents. A recommendation for
+database-owned documents or a hosted mode must name the agreements and
+repository invariants to amend; this epic does not change them implicitly.
 
 ## Document sequence allocation
 
@@ -137,7 +160,15 @@ Examples to carry into that Feature's scenarios once the scope is agreed:
 - Requesting a sequence value leaves the project's documents unchanged.
 
 The open questions below block implementation, not recording this request.
-Coordinating allocations across machines is outside this request.
+The current offline allocation scope is one machine; the online proposal below
+would extend coordination across machines if adopted.
+
+**Conditional online proposal, 2026-10-20.** If an online mode is adopted, the
+owner wants one project sequence across machines. That requires a shared
+allocation authority and an explicit change to the current offline boundary.
+Independent local counters cannot provide that guarantee. Spike `0252` will
+examine mode switching and an unavailable online authority before the owner
+decides whether to adopt the mode.
 
 ## Features
 
@@ -279,9 +310,9 @@ Every constraint is hard. None is this epic's invention: each is an existing
 rule of the repository or the owner's word, and each is listed so that a
 Feature specification cut from this epic carries it forward.
 
-The sequence request does not silently waive these constraints. Its authority
-must fit them, or their owning records must be amended by an explicit decision
-before candidate F can be implemented.
+The sequence and related-record requests do not silently waive these
+constraints. Their authorities must fit them, or their owning records must be
+amended by an explicit decision before implementation.
 
 | Constraint                                                                                                                                   | Source                                                       | What it rules out                                                                                       |
 | -------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------- |
@@ -313,14 +344,24 @@ where it takes an `OQ-n` id and is resolved in place.
 
 ### Questions for document sequence allocation
 
-| Question                                                                                                                                                                                                                                                      | Who answers                                                               |
-| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------- |
-| Must allocations stay unique across machines and clones of one project, or only across worktrees and processes on one machine? Resolved 2026-10-17: the owner chose one machine. Cross-machine coordination is excluded, retaining the offline host boundary. | Resolved by the owner                                                     |
-| What stable identity denotes a project across paths and worktrees without depending on git, and how are separate clones on the same machine associated with it?                                                                                               | The owner, then the design                                                |
-| Which document types are supported, and which share a sequence or require a parent scope? This repository shares epic and work-item numbers; Features and their claims use other scopes.                                                                      | The spec-author, then the owner                                           |
-| Where does the machine-local, offline authority persist reservations, and what narrow permission for reservation-state writes is added to the owning records?                                                                                                 | The owner, then the design                                                |
-| How are existing document numbers adopted without reissuing them, and what are the rules for abandoned reservations, gaps and retries after an uncertain response?                                                                                            | The owner, then the design                                                |
-| What MCP operation and equivalent CLI command expose allocation, and what priority does this capability have relative to the existing Musts?                                                                                                                  | The owner for priority; the Feature specification for the public contract |
+| Question                                                                                                                                                                                                                                                                                                  | Who answers                                                               |
+| --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------- |
+| Must allocations stay unique across machines and clones of one project, or only across worktrees and processes on one machine? Resolved 2026-10-17 for the current offline scope: one machine. Conditional online scope clarified 2026-10-20: if adopted, one project sequence is shared across machines. | Resolved by the owner for each mode; online adoption remains open         |
+| Should online mode be adopted, and which offline, permitted-write and CLI parity rules would need amendment?                                                                                                                                                                                              | The owner after spike `0252`                                              |
+| If online allocation is adopted, how does it handle an unreachable authority or a project changing modes without reissuing a value?                                                                                                                                                                       | The owner, then the design                                                |
+| What stable identity denotes a project across paths and worktrees without depending on git, and how are separate clones on the same machine associated with it?                                                                                                                                           | The owner, then the design                                                |
+| Which document types are supported, and which share a sequence or require a parent scope? This repository shares epic and work-item numbers; Features and their claims use other scopes.                                                                                                                  | The spec-author, then the owner                                           |
+| Where does the machine-local, offline authority persist reservations, and what narrow permission for reservation-state writes is added to the owning records?                                                                                                                                             | The owner, then the design                                                |
+| How are existing document numbers adopted without reissuing them, and what are the rules for abandoned reservations, gaps and retries after an uncertain response?                                                                                                                                        | The owner, then the design                                                |
+| What MCP operation and equivalent CLI command expose allocation, and what priority does this capability have relative to the existing Musts?                                                                                                                                                              | The owner for priority; the Feature specification for the public contract |
+
+### Questions for related records
+
+| Question                                                                                                                        | Who answers                         |
+| ------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------- |
+| Does an MCP index over authoritative files improve agent answers enough, or does serving complete database documents help more? | Spike `0252`, then the owner        |
+| Which record types, links and lifecycle fields must a first query cover, and how are missing or stale links reported?           | The Feature specification and owner |
+| If full documents move into a database, which copy owns edits, Git history and conflicts between worktrees or machines?         | The owner, then the design          |
 
 ## Placement
 
@@ -360,6 +401,6 @@ before any storage implementation is chosen.
 | `format`                                                                | `0101-F5`; reached only under the Could criterion                                     |
 
 The sequence request reserves values only; document scaffolding and editing
-remain outside this epic. Cross-machine coordination is excluded. The existing
-write exclusion must explicitly account for local reservation state before
-candidate F is implemented.
+remain outside this epic. Cross-machine coordination is outside the current
+offline scope; online adoption remains open. The existing write exclusion must
+explicitly account for reservation state before candidate F is implemented.

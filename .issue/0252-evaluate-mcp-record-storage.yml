@@ -1,0 +1,50 @@
+id: "0252"
+type: spike
+title: Evaluate MCP access to linked records and local or online storage
+status: ready
+value: 4
+risk: 3
+parent: "0132"
+children: []
+depends_on: []
+spikes: []
+spec: null
+claims: []
+created: "2026-10-21"
+updated: "2026-10-21"
+closed: null
+summary: |
+  The MCP key dictionary needs to relate the records around a specification:
+  items, Features, epics, ADRs, lessons and decisions. The owner wants to know
+  whether an agent answers questions better from a database containing complete
+  documents or from an index that leads it to authoritative files. The same
+  design may offer a machine-local offline mode and an optional online mode;
+  if online allocation is adopted, one project sequence is shared across machines.
+
+  Run a controlled agent evaluation on one versioned corpus and the same question
+  set through three access paths: (1) filesystem search and reads, (2) MCP key
+  and relationship lookup followed by source-file reads, and (3) MCP retrieval
+  of complete database-stored documents. Include questions that cross record
+  types and require a source citation, as well as missing or stale links. Build
+  the smallest disposable adapters needed for comparable trials; do not infer
+  answer quality from lookup speed alone.
+
+  In parallel, survey plausible embedded document stores and hosted offerings
+  against the observed query and update needs. Compare durability, concurrent
+  access, deployment, offline operation, synchronization, migration, cost and
+  operational burden. Treat local and online authority, document ownership,
+  cache freshness, project identity, mode switches and unavailable online
+  service as explicit design questions. Existing `0132-F1` decision 0001 makes
+  Markdown authoritative; a different recommendation must name the agreement
+  and invariant changes it requires rather than silently replacing that choice.
+acceptance_criteria:
+  - "A reproducible corpus, question set, answer key and scoring rubric cover items, Features, epics, ADRs, lessons and decisions, including cross-record links, citations and stale or missing links."
+  - "The three access paths answer the same questions with the same agent setup; the report records correctness, completeness, citation quality, stale answers, tool calls, elapsed time and token use with raw observations and versions."
+  - "A candidate matrix compares at least one embedded local document store and one hosted offering against offline operation, shared online project sequence, durability, concurrency, synchronization, migration, security, cost and CLI/MCP parity."
+  - "The report recommends an access and storage direction from the evidence, states its limits, and identifies any changes needed in epic 0132, Feature 0132-F1, decision 0001, and repository invariants."
+  - "A separate allocation analysis identifies how online reservations remain unique across machines and what happens on disconnection or mode change; it does not treat independent local counters as one shared sequence."
+decisions: []
+out_of_scope:
+  - "Production MCP or database implementation; this spike may use disposable trial adapters."
+  - "Changing document authority, permitted writes, offline guarantees or public CLI/MCP contracts before the owner reviews the evidence and amends the owning agreements."
+  - "Document creation or editing through MCP; this investigation concerns retrieval and allocation authority."
