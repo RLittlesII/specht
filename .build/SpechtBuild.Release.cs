@@ -1,11 +1,14 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.IO;
 using System.IO.Abstractions;
 using System.Linq;
+using System.Xml.Linq;
 using Nuke.Common;
 using Nuke.Common.CI.GitHubActions;
 using Nuke.Common.Tooling;
+using Nuke.Common.Tools.DotNet;
 using Rocket.Surgery.Nuke.GithubActions;
 using Specht.Build;
 using static Nuke.Common.Tools.DotNet.DotNetTasks;
@@ -46,6 +49,70 @@ internal sealed partial class SpechtBuild
 
             await new SchemaVersionLock(new FileSystem(), RootDirectory).RequireAllLockedAsync();
         });
+
+    private Target PushReleasePackages => definition => definition
+        .Executes(() =>
+        {
+            var packages = ReleasePackages();
+            var token = Environment.GetEnvironmentVariable("GITHUB_TOKEN");
+            Assert.True(!string.IsNullOrWhiteSpace(token), "The release job has no package token.");
+
+            foreach (var package in packages)
+            {
+                DotNetNuGetPush(settings => settings
+                    .SetTargetPath(package)
+                    .SetSource("https://nuget.pkg.github.com/rlittlesii/index.json")
+                    .SetApiKey(token)
+                    .EnableSkipDuplicate());
+            }
+        });
+
+    private Target CreateGitHubRelease => definition => definition
+        .Executes(() =>
+        {
+            var packages = ReleasePackages();
+            Assert.True(!string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("GH_TOKEN")),
+                "The release job has no GitHub token.");
+            var repository = Environment.GetEnvironmentVariable("GITHUB_REPOSITORY");
+            Assert.True(!string.IsNullOrWhiteSpace(repository), "The release job has no repository.");
+            var tag = Environment.GetEnvironmentVariable("GITHUB_REF_NAME");
+
+            ProcessTasks.StartProcess(
+                    ToolPathResolver.GetPathExecutable("gh"),
+                    $"release create \"{tag}\" {string.Join(' ', packages.Select(static package => $"\"{package}\""))} " +
+                    $"--generate-notes --verify-tag --repo \"{repository}\"",
+                    RootDirectory)
+                .AssertZeroExitCode();
+        });
+
+    private string[] ReleasePackages()
+    {
+        var tag = Environment.GetEnvironmentVariable("GITHUB_REF_NAME");
+        Assert.True(Environment.GetEnvironmentVariable("GITHUB_ACTIONS") == "true" &&
+                    Environment.GetEnvironmentVariable("GITHUB_EVENT_NAME") == "push" &&
+                    Environment.GetEnvironmentVariable("GITHUB_REF_TYPE") == "tag" &&
+                    tag is { Length: > 1 } && tag.StartsWith('v'),
+            "Publishing requires a pushed version tag in GitHub Actions.");
+
+        var version = tag![1..];
+        var packages = new[]
+        {
+            PackageFile("src/tool/tool.csproj"),
+            PackageFile("src/codeanalysis/codeanalysis.csproj"),
+        };
+        foreach (var package in packages)
+        {
+            Assert.True(File.Exists(package), $"Missing release package {Path.GetFileName(package)}.");
+        }
+
+        return packages;
+
+        string PackageFile(string project)
+        {
+            var packageId = XDocument.Load(RootDirectory / project).Descendants("PackageId").Single().Value;
+            return PackageDirectory / $"{packageId}.{version}.nupkg";
+        }
+    }
 
     public static RocketSurgeonGitHubActionsConfiguration ReleaseMiddleware(
         RocketSurgeonGitHubActionsConfiguration configuration)
@@ -90,31 +157,32 @@ internal sealed partial class SpechtBuild
             Matrix = ["ubuntu-latest"],
             Steps =
             [
+                new CheckoutStep("Checkout"),
                 new DownloadArtifactStep("Download the package")
                 {
                     Name = PackageArtifact,
                     Path = PackagePath,
                 },
-                new SetupDotNetStep("Use .NET 10 SDK") { DotNetVersion = "10.0.401" },
-                new RunStep("Push")
+                new SetupDotNetStep("Use .NET 10 and 11 SDKs")
                 {
-                    Shell = GithubActionShell.Bash,
+                    DotNetVersion = "10.0.401",
+                    With = { ["global-json-file"] = "global.json" },
+                },
+                new RunStep("Push release packages")
+                {
                     Environment = new Dictionary<string, string>
                     {
                         ["GITHUB_TOKEN"] = "${{ secrets.GITHUB_TOKEN }}",
                     },
-                    Run = $"dotnet nuget push \"{PackagePath}/specht.tool.${{GITHUB_REF_NAME#v}}.nupkg\" " +
-                          "--source \"https://nuget.pkg.github.com/rlittlesii/index.json\" --api-key \"$GITHUB_TOKEN\" --skip-duplicate",
+                    Run = $"./build.cmd --target {nameof(PushReleasePackages)}",
                 },
-                new RunStep("Release")
+                new RunStep("Create GitHub Release")
                 {
-                    Shell = GithubActionShell.Bash,
                     Environment = new Dictionary<string, string>
                     {
                         ["GH_TOKEN"] = "${{ secrets.GITHUB_TOKEN }}",
                     },
-                    Run = $"gh release create \"$GITHUB_REF_NAME\" \"{PackagePath}/specht.tool.${{GITHUB_REF_NAME#v}}.nupkg\" " +
-                          "--generate-notes --verify-tag --repo \"$GITHUB_REPOSITORY\"",
+                    Run = $"./build.cmd --target {nameof(CreateGitHubRelease)}",
                 },
             ],
         });

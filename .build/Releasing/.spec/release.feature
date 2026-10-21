@@ -16,10 +16,10 @@ Feature: Release
     And no release is created
 
   @B-003
-  Scenario: A green tag publishes the package
+  Scenario: A green tag publishes both packages
     Given a tagged commit that passes every gate
     When its version tag is pushed
-    Then the tool package is published to the repository's package feed
+    Then the tool and analysis packages are published to the repository's package feed
 
   @B-004
   Scenario: A published version gets a release
@@ -64,9 +64,9 @@ Feature: Release
     Then its release notes list that pull request under "📋 Other changes"
 
   @B-007
-  Scenario: A release carries the package
+  Scenario: A release carries both packages
     When a version tag is published
-    Then its release has the published tool package attached
+    Then its release has both published packages attached
 
   @B-008 @boundary
   Scenario: A dry run stops before the push

@@ -165,6 +165,7 @@ Feature: Consumer analysis adoption
     Given a repository release
     When analysis and tool packages are produced
     Then both use the repository release version
+    And both are attached to the GitHub Release
 
   @B-021
   Scenario: Contract-based compatibility

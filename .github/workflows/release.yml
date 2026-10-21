@@ -131,24 +131,27 @@ jobs:
       statuses: none
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          clean: 'false'
       - name: 🚀 Download the package
         uses: actions/download-artifact@v4
         with:
           name: 'nupkg'
           path: '.artifacts/nupkg'
-      - name: 🔨 Use .NET 10 SDK
+      - name: 🔨 Use .NET 10 and 11 SDKs
         uses: actions/setup-dotnet@v4
         with:
+          global-json-file: 'global.json'
           dotnet-version: '10.0.401'
-      - name: Push
+      - name: Push release packages
         env:
           GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
-        shell: bash
         run: |
-          dotnet nuget push ".artifacts/nupkg/specht.tool.${GITHUB_REF_NAME#v}.nupkg" --source "https://nuget.pkg.github.com/rlittlesii/index.json" --api-key "$GITHUB_TOKEN" --skip-duplicate
-      - name: Release
+          ./build.cmd --target PushReleasePackages
+      - name: Create GitHub Release
         env:
           GH_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
-        shell: bash
         run: |
-          gh release create "$GITHUB_REF_NAME" ".artifacts/nupkg/specht.tool.${GITHUB_REF_NAME#v}.nupkg" --generate-notes --verify-tag --repo "$GITHUB_REPOSITORY"
+          ./build.cmd --target CreateGitHubRelease
