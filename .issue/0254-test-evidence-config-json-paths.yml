@@ -1,0 +1,37 @@
+id: "0254"
+type: bug
+title: Write the test evidence runner config path with forward slashes
+status: done
+value: 5
+risk: 1
+parent: null
+children: []
+depends_on: []
+spikes: []
+spec: null
+claims: []
+created: "2026-10-22"
+updated: "2026-10-22"
+closed: "2026-10-22"
+summary: |
+  The windows-latest job of run 39837470084 on main at 0c00f347 crashed the
+  testevidence.mtp.tests host on net10.0 and net11.0 after its one case
+  passed. The host exited with 0xE0434352 and the UnitTest target failed.
+
+  Specht.CodeAnalysis.targets writes specht.test-evidence.config.json with
+  WriteLinesToFile, interpolating SpechtTestEvidenceOutput as raw text. The
+  property comes from Path.GetFullPath, which yields backslash paths on
+  Windows, so the file held an unescaped backslash inside a JSON string.
+  TestEvidenceMtpCollector.Export parsed it at session end and
+  JsonDocument.Parse threw: 'a' is an invalid escapable character within a
+  JSON string.
+
+  The target now writes the path with forward slashes, which JSON accepts
+  unescaped and .NET resolves on every OS. The collector is unchanged.
+acceptance_criteria:
+  - "specht.test-evidence.config.json holds a valid JSON string on every OS."
+  - "testevidence.mtp.tests exits cleanly on windows-latest for net10.0 and net11.0."
+  - "No collector, analyzer or production code path changes."
+decisions: []
+out_of_scope:
+  - "Hardening TestEvidenceMtpCollector.Export against a malformed config file."
