@@ -217,7 +217,7 @@ public sealed partial class DocumentationSteps
         foreach (var (kind, path, text) in inputs)
         {
             project = project.AddAdditionalDocument(path, SourceText.From(text), filePath: Path.GetFullPath(path)).Project;
-            config += "\n[" + Path.GetFullPath(path) + "]\nbuild_metadata.AdditionalFiles.SpechtInputKind = " + kind
+            config += "\n[" + Path.GetFullPath(path).Replace('\\', '/') + "]\nbuild_metadata.AdditionalFiles.SpechtInputKind = " + kind
                 + "\nbuild_metadata.AdditionalFiles.SpechtRelativePath = " + path + "\n";
         }
 

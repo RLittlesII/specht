@@ -1,0 +1,37 @@
+id: "0253"
+type: bug
+title: Write test global config sections with forward slashes
+status: done
+value: 4
+risk: 1
+parent: null
+children: []
+depends_on: []
+spikes: []
+spec: null
+claims: []
+created: "2026-10-22"
+updated: "2026-10-22"
+closed: "2026-10-22"
+summary: |
+  The windows-latest job of run 39637577360 on main at c01a6f5e failed 28
+  DocumentationCodeFixUnitTests cases on net10.0 and net11.0. The analyzer
+  reported no diagnostics, so each case found an empty collection.
+
+  RepairWorkspace wrote .globalconfig section headers from Path.GetFullPath,
+  which yields backslash paths on Windows. Roslyn accepts only forward-slash
+  absolute paths as global config section names and drops the others, so no
+  additional file carried SpechtInputKind and the analyzer received no
+  inputs. The acceptance repair steps build the same configuration and share
+  the defect.
+
+  Both harnesses now replace backslashes with forward slashes in section
+  headers, the form MSBuild writes. The analysis tests pass on macOS; the
+  Windows result is the pull request's CI run.
+acceptance_criteria:
+  - "Global config section headers in the repair harnesses use forward slashes on every OS."
+  - "DocumentationCodeFixUnitTests pass on windows-latest for net10.0 and net11.0."
+  - "No analyzer, code fix or production path changes."
+decisions: []
+out_of_scope:
+  - "Path handling in the analyzer or code fix provider, which already normalize separators."
