@@ -52,13 +52,13 @@ internal sealed class RepairWorkspace
         foreach (var input in Inputs.Where(static input => input.Kind != "source"))
         {
             project = project.AddAdditionalDocument(input.RelativePath, SourceText.From(input.Text!), filePath: Path.GetFullPath(input.RelativePath)).Project;
-            config += "\n[" + Path.GetFullPath(input.RelativePath) + "]\nbuild_metadata.AdditionalFiles.SpechtInputKind = " + input.Kind
+            config += "\n[" + Path.GetFullPath(input.RelativePath).Replace('\\', '/') + "]\nbuild_metadata.AdditionalFiles.SpechtInputKind = " + input.Kind
                 + "\nbuild_metadata.AdditionalFiles.SpechtRelativePath = " + input.RelativePath + "\n";
         }
 
         project = project.AddAdditionalDocument("evidence.json", SourceText.From(TestEvidenceJson.ForMethod("M:Example.Run")),
             filePath: Path.GetFullPath("test/evidence.json")).Project;
-        config += "\n[" + Path.GetFullPath("test/evidence.json") + "]\nbuild_metadata.AdditionalFiles.SpechtInputKind = test-evidence\n"
+        config += "\n[" + Path.GetFullPath("test/evidence.json").Replace('\\', '/') + "]\nbuild_metadata.AdditionalFiles.SpechtInputKind = test-evidence\n"
             + "build_metadata.AdditionalFiles.SpechtRelativePath = test/evidence.json\n";
         project = project.AddAnalyzerConfigDocument(".globalconfig", SourceText.From(config), filePath: Path.GetFullPath(".globalconfig")).Project;
         project.Solution.Workspace.TryApplyChanges(project.Solution).Should().BeTrue();
