@@ -69,3 +69,117 @@ Feature: Test evidence adapters
     When its identities are read
     Then runner case IDs and method metadata are available
     And project, framework, source, assembly, configuration, adapter version and run identities are available
+
+  @B-010
+  Scenario: VSTest theory discovery
+    Given a bound xUnit v2 theory with two inline data rows in a VSTest test project
+    When its cases are discovered under VSTest
+    Then each theory case is recorded with its own stable runner case identity
+    And both cases link to the same bound method
+
+  @B-011
+  Scenario: VSTest theory execution
+    Given a bound xUnit v2 theory with two inline data rows in a VSTest test project
+    When its cases are executed under VSTest
+    Then each case's outcome is recorded against that case's own runner identity
+
+  @B-012
+  Scenario: Method compiled from outside the project
+    Given a bound test method whose source file sits outside its test project's directory and is linked into that project
+    When its cases are discovered
+    Then the method identity resolves to the bound method
+    And its source location is the linked file's repository-relative path
+
+  @B-013 @boundary
+  Scenario Outline: Nonpassing VSTest outcomes
+    Given a bound VSTest case that <outcome>
+    When its evidence is collected
+    Then the case is recorded with that outcome
+    And the case is never recorded as passed
+
+    Examples:
+      | outcome          |
+      | failed           |
+      | was skipped      |
+      | was not executed |
+
+  @B-014 @boundary
+  Scenario: Undiscovered VSTest cases
+    Given a bound test method for which VSTest discovered no case
+    When its evidence is collected
+    Then its discovery is reported as unavailable or incomplete
+    And it is reported as neither passing nor a complete empty set
+
+  @B-015 @boundary
+  Scenario Outline: One case never masks another
+    Given a bound xUnit v2 theory whose first case passed and whose second case <outcome>
+    When its evidence is collected
+    Then each case keeps its own outcome
+    And no single method-level outcome replaces them
+
+    Examples:
+      | outcome          |
+      | failed           |
+      | was skipped      |
+      | was not executed |
+
+  @B-016
+  Scenario: Reqnroll-generated VSTest cases
+    Given Reqnroll-generated tests for a Scenario Outline with two example rows executed under VSTest
+    When their evidence is collected
+    Then both generated cases and their outcomes are recorded in the common evidence contract
+    And no binding is required on the generated code
+
+  @B-017 @B-022 @boundary
+  Scenario: Clean checkout builds before evidence
+    Given a clean checkout with no evidence artifact and no evidence cache
+    And a selected xUnit v2 project run by VSTest whose test method carries an authored verifies relationship
+    And mandatory enforcement requires a verifies relationship on every test method
+    And warnings are treated as errors
+    When the projects are built and analyzed before any evidence is collected
+    Then the build succeeds without a diagnostic suppression
+    And reconciliation is incomplete, with a diagnosis naming the step that produces the evidence
+
+  @B-018 @boundary
+  Scenario: Stale evidence
+    Given an evidence artifact produced before a test source file changed
+    When the analysis is requested
+    Then the evidence is reported as stale with a diagnosis naming the step that regenerates it
+
+  @B-019
+  Scenario: Clean-checkout bootstrap
+    Given a clean checkout with no evidence artifact and no evidence cache
+    And a selected xUnit v2 project run by VSTest whose test method carries an authored verifies relationship
+    And mandatory enforcement requires a verifies relationship on every test method
+    And warnings are treated as errors
+    When the documented build, discovery, run and analysis sequence is followed
+    Then the analysis holds current passing evidence for the authored verifies relationship
+    And no hand-written evidence or diagnostic suppression was needed
+
+  @B-020 @B-021 @B-025
+  Scenario: Partitioned runs over shared claim files
+    Given projects A and B compile the same central claim files holding one visual and one nonvisual case
+    And project A declares the required-case scope "not @visual" and its run selects "Category!=visual"
+    And project B declares the required-case scope "@visual" and its run selects "Category=visual"
+    When both runs' evidence is collected
+    Then four case keys are discovered: A.nonvisual, A.visual, B.nonvisual and B.visual
+    And each case records its categories and, separately, whether its run selected it
+    And every case keeps its project, assembly and source provenance
+    And project A owns A.nonvisual and project B owns B.visual
+    And no case key is merged with another project's key
+
+  @B-026
+  Scenario: Selection narrower than the required scope
+    Given project A declares the required-case scope "not @visual"
+    And project A's run selected only part of the nonvisual cases
+    When its evidence is collected
+    Then the run is reported incomplete for the owned keys it did not select
+
+  @B-023 @B-024 @boundary
+  Scenario: Release excludes the test sources
+    Given a global package reference present in every project
+    And a Release configuration that excludes the test sources and test packages
+    And an evidence artifact left by an earlier Debug build
+    When the Release configuration is built and analyzed
+    Then the build succeeds without a diagnostic suppression
+    And the Debug evidence artifact is not used as Release evidence

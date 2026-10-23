@@ -6,9 +6,10 @@ type: epic
 status: deferred
 priority: med
 milestone: null
-children: ["0201-F1", "0201-F2", "0201-F3", "0201-F4", "0201-F5", "0201-F6"]
+children:
+  ["0201-F1", "0201-F2", "0201-F3", "0201-F4", "0201-F5", "0201-F6", "0201-F7"]
 created: "2026-10-13"
-updated: "2026-10-17"
+updated: "2026-10-23"
 github_issue: null
 ---
 
@@ -31,7 +32,7 @@ implementation, including missing or unresolved links.
 
 The repository owner requested this expansion on 2026-10-13, using the working
 name `spec.code`. That name does not yet choose a package, assembly or command.
-The owner selected the hardened hybrid on 2026-10-17. Six draft Feature
+The owner selected the hardened hybrid on 2026-10-17. Seven draft Feature
 agreements now decompose it; no production analyzer is delivered. The remaining
 public-contract questions still block implementation; the executable binding
 comparison lives in the [spike investigation](spikes/0236/README.md).
@@ -497,7 +498,7 @@ spike is mechanical evidence, not the production test-harness choice.
 
 ## Feature decomposition
 
-The six co-located draft specifications below are the decomposition of the
+The seven co-located draft specifications below are the decomposition of the
 adopted model. Their companion scenarios state the obligations before production
 tests or code exist; traceability rows remain Missing until implementation. Delivery items are now cut
 from the agreed claims; the implementation queue is below. Owner review selected the three
@@ -512,13 +513,17 @@ architecture.
 | 0201-F4 | [Optional scenario bridge](../../src/analyzers/Scenarios/.spec/README.md)         | Tagged scenarios and generated cases share the identity contract; shared steps do not stand in for scenario identity.           | R3, R4     | F1, F3         |
 | 0201-F5 | [Traceability reconciliation](../../src/analyzers/Reconciliation/.spec/README.md) | Every required claim is considered, with explicit missing links, incomplete scope and distinct execution outcomes.              | R5, R7, R8 | F1, F3         |
 | 0201-F6 | [Consumer analysis adoption](../../src/codeanalysis/.spec/README.md)              | Declared inputs, scope and policy produce consistent editor/build verdicts without requiring Reqnroll.                          | R9         | F1, F2, F3, F5 |
+| 0201-F7 | [Native Gherkin claim catalogue](../../src/analyzers/Catalogue/.spec/README.md)   | Claims tagged in a consumer's Gherkin enter the same catalogue, diagnostics and enforcement as claims in a Markdown table.      | R9         | F1, F6         |
 
 F4 is an optional extension; F5 and F6 do not depend on it. F2 keeps diagnostics
 and their repairs together because a repair's safety depends on the same binding
 verdict. F3 separates runner identity and cases from reference resolution; F5
 owns completeness across inputs rather than assuming one compilation sees all
 projects. Existing scenario validation is reused, not replaced by a competing
-claim-tag interpretation. No Feature name bundles unrelated capabilities with a
+claim-tag interpretation. F7, added for consumer request #256, reads a
+consumer's claims from tagged Gherkin through that same claim-tag grammar; F4
+resolves scenario tags against the catalogue it builds, and F3 B-010 to B-019
+cover the xUnit v2 and VSTest evidence the same request needs. No Feature name bundles unrelated capabilities with a
 coordinating conjunction.
 
 ## Constraints
@@ -643,5 +648,6 @@ outcomes must pass by default under F5 decision 0002.
 | [0245](../../src/analyzers/Scenarios/.issue/0245-optional-scenario-bridge.yml)           | Optional scenario bridge                  | 0244             |
 | [0246](../../src/analyzers/Reconciliation/.issue/0246-trace-artifact-reconciliation.yml) | CLI artifact reconciliation               | 0244             |
 
-All 108 claim IDs are assigned exactly once across these items. Each item owns
+All 108 claim IDs are assigned exactly once across these items. The 0201-F7
+claims and 0201-F3 B-010 to B-019, added 2026-10-23, have no item yet. Each item owns
 its delivery state and cites its Feature's claims; none is marked implemented.

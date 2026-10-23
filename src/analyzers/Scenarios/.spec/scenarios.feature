@@ -66,3 +66,11 @@ Feature: Optional scenario bridge
       | producer                     |
       | the consumer claim bridge    |
       | optional Reqnroll integration |
+
+  @B-009 @boundary
+  Scenario: Planned and active rows
+    Given an outline carrying one claim whose first Examples block is active and whose second is planned in the claim catalogue
+    When the declared analysis is requested
+    Then the case links of the first block's rows are active
+    And the case links of the second block's rows are planned
+    And every case link keeps the same claim

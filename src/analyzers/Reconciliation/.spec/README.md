@@ -20,7 +20,7 @@ depends_on: ["F1", "F3"]
 blocks: ["F6"]
 spikes: []
 created: "2026-10-17"
-updated: "2026-10-19"
+updated: "2026-10-23"
 github_issue: null
 synced_at: null
 ---
@@ -49,27 +49,32 @@ Expose missing links and test outcomes within an explicit project scope. The own
 
 ## 3. Acceptance Criteria
 
-<!-- last written by: spec-author, 2026-10-19 -->
+<!-- last written by: spec-author, 2026-10-23 -->
 
-| ID    | Claim                                                                                                                                                                                                                                         | Source                              | Status  |
-| ----- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------- | ------- |
-| B-001 | Given a claim bound to a discovered test through the common runner-evidence contract and a matching result with no scenario policy, this Feature presents the claim-to-method-to-case-to-result chain without requiring Reqnroll.             | Epic 0201; F3 decision 0001         | Amended |
-| B-002 | Given a declared repository scope omitting a required test project or input, this Feature ensures the report marks coverage incomplete and identifies the missing input.                                                                      | Epic 0201; decision 0001 in 0201-F1 | Active  |
-| B-003 | Given a resolved binding with a failed, skipped or absent test result, this Feature ensures the report keeps that outcome distinct from a passing result.                                                                                     | Epic 0201; decision 0001 in 0201-F1 | Active  |
-| B-004 | Given an explicit policy requiring a link absent from a claim's evidence, this Feature ensures the report identifies that missing link instead of treating reference resolution as complete coverage.                                         | Epic 0201; decision 0001 in 0201-F1 | Active  |
-| B-005 | Given scenario bridge evidence supplied for part of a declared scope, this Feature ensures those scenario links augment the direct chains without inventing links for other tests.                                                            | Epic 0201; decision 0001 in 0201-F1 | Active  |
-| B-006 | Given a declared specification claim requiring test evidence with no test binding at all, this Feature ensures reconciliation reports the missing evidence starting from that claim even when no method names it.                             | Epic 0201; decision 0001 in 0201-F1 | Active  |
-| B-007 | Given a binding to a resolving target classified as ineligible under 0201-F1's lifecycle policy, this Feature excludes that binding from current required evidence while retaining the historical link's target identity and lifecycle state. | 0201-F1 decision 0004               | Active  |
-| B-008 | Given a non-exempt current claim in the selected Feature scope, this Feature requires at least one valid test binding.                                                                                                                        | 0201-F6 decision 0003               | Active  |
-| B-009 | Given an implementation or scenario link kind, this Feature requires that kind only when the consumer explicitly enables its requirement.                                                                                                     | 0201-F6 decision 0003               | Active  |
-| B-010 | Given an explicitly reasoned coverage exemption, this Feature presents it as exempt rather than covered.                                                                                                                                      | 0201-F6 decision 0003               | Active  |
-| B-011 | Given a declared set of project and target-framework combinations, this Feature reports complete analysis only when current required inputs are available for every declared combination.                                                     | 0201-F6 decision 0004               | Active  |
-| B-012 | Given stale or mismatched discovery or results, this Feature retains their stale or mismatched state and excludes them from current discovery or execution evidence.                                                                          | 0201-F6 decision 0004               | Active  |
-| B-013 | Given absent, stale or mismatched test results, this Feature evaluates binding validity separately from those execution-evidence states.                                                                                                      | 0201-F6 decision 0004               | Active  |
-| B-014 | Given supplied traceability evidence, this Feature presents reconciliation through `specht evidence` with a human summary or separate versioned JSON output.                                                                                  | Decision 0001 reversal              | Amended |
-| B-015 | Given the new trace report contract, this Feature preserves the existing checker report contract unchanged.                                                                                                                                   | Decision 0001                       | Active  |
-| B-016 | Given supplied discovery and result artifacts, this Feature reconciles them without launching test execution.                                                                                                                                 | Decision 0001                       | Active  |
-| B-017 | Given complete required links, this Feature succeeds only when all current cases supplying non-exempt required test evidence have passing outcomes; missing or nonpassing outcomes fail the default gate.                                     | Decision 0002                       | Active  |
+| ID    | Claim                                                                                                                                                                                                                                         | Source                                              | Status  |
+| ----- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------- | ------- |
+| B-001 | Given a claim bound to a discovered test through the common runner-evidence contract and a matching result with no scenario policy, this Feature presents the claim-to-method-to-case-to-result chain without requiring Reqnroll.             | Epic 0201; F3 decision 0001                         | Amended |
+| B-002 | Given a declared repository scope omitting a required test project or input, this Feature ensures the report marks coverage incomplete and identifies the missing input.                                                                      | Epic 0201; decision 0001 in 0201-F1                 | Active  |
+| B-003 | Given a resolved binding with a failed, skipped or absent test result, this Feature ensures the report keeps that outcome distinct from a passing result.                                                                                     | Epic 0201; decision 0001 in 0201-F1                 | Active  |
+| B-004 | Given an explicit policy requiring a link absent from a claim's evidence, this Feature ensures the report identifies that missing link instead of treating reference resolution as complete coverage.                                         | Epic 0201; decision 0001 in 0201-F1                 | Active  |
+| B-005 | Given scenario bridge evidence supplied for part of a declared scope, this Feature ensures those scenario links augment the direct chains without inventing links for other tests.                                                            | Epic 0201; decision 0001 in 0201-F1                 | Active  |
+| B-006 | Given a declared specification claim requiring test evidence with no test binding at all, this Feature ensures reconciliation reports the missing evidence starting from that claim even when no method names it.                             | Epic 0201; decision 0001 in 0201-F1                 | Active  |
+| B-007 | Given a binding to a resolving target classified as ineligible under 0201-F1's lifecycle policy, this Feature excludes that binding from current required evidence while retaining the historical link's target identity and lifecycle state. | 0201-F1 decision 0004                               | Active  |
+| B-008 | Given a non-exempt current claim in the selected Feature scope, this Feature requires at least one valid test binding.                                                                                                                        | 0201-F6 decision 0003                               | Active  |
+| B-009 | Given an implementation or scenario link kind, this Feature requires that kind only when the consumer explicitly enables its requirement.                                                                                                     | 0201-F6 decision 0003                               | Active  |
+| B-010 | Given an explicitly reasoned coverage exemption, this Feature presents it as exempt rather than covered.                                                                                                                                      | 0201-F6 decision 0003                               | Active  |
+| B-011 | Given a declared set of project and target-framework combinations, this Feature reports complete analysis only when current required inputs are available for every declared combination.                                                     | 0201-F6 decision 0004                               | Active  |
+| B-012 | Given stale or mismatched discovery or results, this Feature retains their stale or mismatched state and excludes them from current discovery or execution evidence.                                                                          | 0201-F6 decision 0004                               | Active  |
+| B-013 | Given absent, stale or mismatched test results, this Feature evaluates binding validity separately from those execution-evidence states.                                                                                                      | 0201-F6 decision 0004                               | Active  |
+| B-014 | Given supplied traceability evidence, this Feature presents reconciliation through `specht evidence` with a human summary or separate versioned JSON output.                                                                                  | Decision 0001 reversal                              | Amended |
+| B-015 | Given the new trace report contract, this Feature preserves the existing checker report contract unchanged.                                                                                                                                   | Decision 0001                                       | Active  |
+| B-016 | Given supplied discovery and result artifacts, this Feature reconciles them without launching test execution.                                                                                                                                 | Decision 0001                                       | Active  |
+| B-017 | Given complete required links, this Feature succeeds only when every case key owned by a declared project passed in that project's own run; an owned key that is missing or did not pass fails the default gate.                              | Decision 0002; decision 0003; consumer request #256 | Amended |
+| B-018 | Given a required claim whose outline has planned rows, this Feature reports those rows' cases as planned, neither covering the claim nor failing the default gate.                                                                            | Consumer request #256; 0201-F7 B-026                | Active  |
+| B-019 | Given an outline with planned rows and an active row whose case is missing or skipped, this Feature fails the default gate for that active row.                                                                                               | Consumer request #256; 0201-F7 B-026                | Active  |
+| B-020 | Given a discovered case key its project does not own, this Feature never counts it as passed and never fails the default gate for it.                                                                                                         | Consumer request #256; decision 0003                | Amended |
+| B-021 | Given two projects whose required-case scopes partition the same claim files, this Feature succeeds when each owned key passes in its own project's run, without merging keys across projects.                                                | Consumer request #256; decision 0003                | Amended |
+| B-022 | Given a declared test project with no current evidence, this Feature fails the default gate for that project's owned keys.                                                                                                                    | Consumer request #256; decision 0003                | Active  |
 
 ## 4. Constraints
 
@@ -310,10 +315,15 @@ or executes a consumer test run.
 | B-015    | Checker report isolation                                                                                                                     | `Checker report isolation`; `ReconciliationSteps.ThenCheckerUnchanged`                                                                                                                                                                                                                                                                 | Covered |
 | B-016    | Consume supplied evidence                                                                                                                    | `Consume supplied evidence`; `ReconciliationSteps.ThenNoTestLaunch`                                                                                                                                                                                                                                                                    | Covered |
 | B-017    | Passing outcomes required by default                                                                                                         | `Passing outcomes required by default`; `ReconciliationSteps.ThenDefaultGate`; `EvidenceGateUnitTests.AnExecutionOutcome_WhenEvaluated_ShouldPassOnlyIfPassed                                                                                                                                                                          | Covered |
+| B-018    | Planned rows                                                                                                                                 | Missing                                                                                                                                                                                                                                                                                                                                | Missing |
+| B-019    | Active row beside planned rows                                                                                                               | Missing                                                                                                                                                                                                                                                                                                                                | Missing |
+| B-020    | Partitioned runs                                                                                                                             | Missing                                                                                                                                                                                                                                                                                                                                | Missing |
+| B-021    | Partitioned runs; Owned key missing or not passing                                                                                           | Missing                                                                                                                                                                                                                                                                                                                                | Missing |
+| B-022    | Omitted owning run                                                                                                                           | Missing                                                                                                                                                                                                                                                                                                                                | Missing |
 
 ## 10. Lessons / Spec Deltas
 
-<!-- last written by: spec-author, 2026-10-19 -->
+<!-- last written by: spec-author, 2026-10-23 -->
 
 The 2026-10-19 owner decision moved the evidence gate from `specht trace` to
 `specht evidence` after the approved `0001-F13` command was found to own the
@@ -322,6 +332,18 @@ decision 0001 records the reversal. The independent passing-outcome gate of
 B-017 and decision 0002 remains in force. The version-one F3 export has no
 native diagnostic field, so § 5 and § 7 leave SPCT diagnostics in their existing
 build stream while this command reports evidence gaps.
+
+2026-10-23: owner decision for consumer request #256 makes planned or ignored
+state per case. B-018 and B-019 keep planned rows out of coverage and the gate
+while an active row still fails when missing or skipped; B-017 is unchanged.
+
+2026-10-23: owner decision for consumer request #256 gates on run selection.
+B-017 is amended so a required case passes only on a pass from a run that
+selected it; B-020 and B-021 add the unselected and partitioned cases.
+
+2026-10-23: decision 0003 gates on per-project ownership instead of run
+selection, under 0201-F3 decision 0002. B-017, B-020 and B-021 are amended to
+owned keys; B-022 fails a declared project with no current evidence.
 
 ## 11. Open Questions
 
