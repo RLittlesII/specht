@@ -157,7 +157,7 @@ internal sealed partial class SpechtBuild
             Matrix = ["ubuntu-latest"],
             Steps =
             [
-                new CheckoutStep("Checkout"),
+                new CheckoutStep("Checkout") { FetchDepth = 0 },
                 new DownloadArtifactStep("Download the package")
                 {
                     Name = PackageArtifact,

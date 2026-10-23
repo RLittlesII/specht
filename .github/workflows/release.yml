@@ -139,6 +139,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           clean: 'false'
+          fetch-depth: '0'
       - name: 🚀 Download the package
         uses: actions/download-artifact@v4
         with:

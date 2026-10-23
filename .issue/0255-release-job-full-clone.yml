@@ -1,0 +1,36 @@
+id: "0255"
+type: bug
+title: Check out full history in the release job
+status: done
+value: 5
+risk: 1
+parent: null
+children: []
+depends_on: []
+spikes: []
+spec: null
+claims: []
+created: "2026-10-23"
+updated: "2026-10-23"
+closed: "2026-10-23"
+summary: |
+  The release job of run 39901708656 for tag v0.2.3 at 240c8534 failed in
+  its Push release packages step. Nerdbank.GitVersioning's GetBuildVersion
+  threw "Shallow clone lacks the objects required to calculate version
+  height" while compiling the build project, because commit 0c00f347 was
+  not in the clone.
+
+  ReleaseMiddleware, added by 0250, gave the release job a CheckoutStep
+  with the default fetch depth of 1. The build job sets FetchDepth = 0 in
+  Middleware; the release job never did, so any tag more than zero commits
+  past the last version.json change could not compute its version height.
+
+  The release job's checkout now fetches the full history, and release.yml
+  is regenerated.
+acceptance_criteria:
+  - "The release job checks out with fetch-depth 0."
+  - "PushReleasePackages and CreateGitHubRelease compile the build project on a tag past the version.json change."
+  - "No production code path changes."
+decisions: []
+out_of_scope:
+  - "Re-running the failed v0.2.3 release; that is done after merge."
