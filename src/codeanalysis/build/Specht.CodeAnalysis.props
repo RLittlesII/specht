@@ -32,13 +32,6 @@
       <SpechtInputKind>schema:$([System.String]::Copy('%(Filename)').Replace('.schema', ''))</SpechtInputKind>
       <SpechtRelativePath>$([System.IO.Path]::GetRelativePath('$(SpechtRoot)', '%(FullPath)'))</SpechtRelativePath>
     </AdditionalFiles>
-    <AdditionalFiles Include="@(SpechtAdditionalRecords)">
-      <SpechtRelativePath Condition="'%(SpechtRelativePath)' == ''">$([System.IO.Path]::GetRelativePath('$(SpechtRoot)', '%(FullPath)'))</SpechtRelativePath>
-    </AdditionalFiles>
-    <AdditionalFiles Include="@(SpechtTestEvidence)">
-      <SpechtInputKind>evidence</SpechtInputKind>
-      <SpechtRelativePath Condition="'%(SpechtRelativePath)' == ''">$([System.IO.Path]::GetRelativePath('$(SpechtRoot)', '%(FullPath)'))</SpechtRelativePath>
-    </AdditionalFiles>
     <CompilerVisibleProperty Include="SpechtRoot" />
     <CompilerVisibleProperty Include="SpechtProjectPath" />
     <CompilerVisibleProperty Include="Configuration" />

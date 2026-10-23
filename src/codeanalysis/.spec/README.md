@@ -20,7 +20,7 @@ depends_on: ["F1", "F2", "F3", "F5"]
 blocks: []
 spikes: []
 created: "2026-10-17"
-updated: "2026-10-18"
+updated: "2026-10-23"
 github_issue: null
 synced_at: null
 ---
@@ -49,7 +49,7 @@ Apply binding enforcement consistently to an explicitly selected consumer scope.
 
 ## 3. Acceptance Criteria
 
-<!-- last written by: spec-author, 2026-10-18 -->
+<!-- last written by: spec-author, 2026-10-23 -->
 
 | ID    | Claim                                                                                                                                                                                               | Source                              | Status  |
 | ----- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------- | ------- |
@@ -77,6 +77,7 @@ Apply binding enforcement consistently to an explicitly selected consumer scope.
 | B-022 | Given supplied consumer analysis policy, this Feature reads selected scopes, required links, exemptions and record discovery using the consumer's existing schemas and ID grammars.                 | Decision 0005                       | Amended |
 | B-023 | Given build integration, this Feature uses MSBuild repository-root selection and input delivery while standard Roslyn configuration owns severity and suppression.                                  | Decision 0005                       | Active  |
 | B-024 | Given consumer-supplied schemas and their version, this Feature consumes those inputs without requiring Specht-owned schemas, a schema upgrade or changes to the consumer's pin.                    | Decision 0005                       | Amended |
+| B-025 | Given a consumer declaring a test evidence file through the `SpechtTestEvidence` MSBuild item, this Feature makes that evidence available to the analyzer's test-method recognition.                | Item 0257; lesson 0001              | Active  |
 
 ## 4. Constraints
 
@@ -151,9 +152,16 @@ Configuration and ADR schemas are evaluated when supplied; Feature schema input
 is required to read selected Feature records. No embedded schema is substituted.
 
 `AnalysisInputAdapter` reads the existing `SpechtInputKind` and
-`SpechtRelativePath` AdditionalFiles metadata. Input kinds are `configuration`,
-`mappings`, `feature`, `adr` and `schema:<kind>`; mappings may instead live in
-`codeAnalysis.mappings`. Current source texts also contribute to content identity.
+`SpechtRelativePath` AdditionalFiles metadata. The package delivers the input
+kinds `configuration`, `mappings`, `feature`, `scenario`, `adr`, `schema:<kind>`
+and `test-evidence`, the last for `SpechtTestEvidence` items; mappings may
+instead live in `codeAnalysis.mappings`. Consumer-declared items,
+`SpechtTestEvidence` and `SpechtAdditionalRecords`, are added to AdditionalFiles
+from `Specht.CodeAnalysis.targets`, which MSBuild evaluates after the project
+body, so items the project declares are seen; the props are imported before the
+body, where those item lists are still empty. A `SpechtAdditionalRecords` item
+carries the `SpechtInputKind` the consumer sets. Current source texts also
+contribute to content identity.
 `AnalysisInputAnalyzer` reports `SPCT0001` with default error severity, a relative
 input path and an explicit unavailable property. Normal Roslyn reporting controls
 cannot change the snapshot's underlying availability. It registers one compilation
@@ -386,7 +394,7 @@ contents include the complete compatible parser dependency closure.
 
 ## 8. Testing Strategy
 
-<!-- last written by: test-writer, 2026-10-20 -->
+<!-- last written by: test-writer, 2026-10-23 -->
 
 `AdoptionSteps` executes the input/policy scenarios through real in-memory
 AdditionalFiles and the production adapter. `AnalysisInputAnalyzerUnitTests` uses
@@ -407,6 +415,7 @@ There are no Verify calls or snapshot files.
 | B-018 | Content identity and current catalog replacement: `ChangedInput_WhenReadAgain_ShouldInvalidateContentIdentityAndRetainOriginalSnapshot`, `ChangedClaim_WhenReadAgain_ShouldUseNewContentsAndRetainTheOriginalCatalog`.                                                                                                                                                                                                                                                            |
 | B-022 | Explicit consumer mappings and section policy: `ExplicitMappings_WhenProjectingDifferentConsumerKeys_ShouldMapArraysAndLeaveTheOriginalUntouched`, `ManifestSectionMappings_WhenSupplied_ShouldReadExistingMetadataWithoutChangingItsSchemaVersion`.                                                                                                                                                                                                                              |
 | B-024 | Consumer-owned versions and unchanged checker pins: `ConsumerSchemaVersion_WhenSupplied_ShouldPreserveItWithoutRequiringASpechtPin`, `AnalysisSection_WhenAddedToAnExistingPin_ShouldPreserveThePinAndCheckerSettings`.                                                                                                                                                                                                                                                           |
+| B-025 | The package's `SpechtTestEvidence` delivery kind matches the kind test-method recognition reads: the design-time inventory in `DeploymentProject_WhenPacked_ShouldCarryCompilerAssetsAndNoRuntimeDependencies`; recognition from a supplied artifact: `RunnerSelectedMethods_WhenAnalyzed_ShouldSeparateExplicitValidationFromRequiredAuthoring`. The kind mapping is MSBuild evaluation in `Specht.CodeAnalysis.props`, so its finest tier is that package integration test.     |
 
 `CodeAnalysisPackageIntegrationTests.DeploymentProject_WhenPacked_ShouldCarryCompilerAssetsAndNoRuntimeDependencies`
 packs both packages, inspects the analyzer dependency closure and package
@@ -439,7 +448,7 @@ Measured at revision `bd384ed6` on Apple M1 Max, macOS Tahoe 26.4, .NET 10.0.12 
 
 ## 9. Traceability Matrix
 
-<!-- last written by: test-writer, 2026-10-18 -->
+<!-- last written by: test-writer, 2026-10-23 -->
 
 | Claim ID | Scenario                         | Test                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     | Status  |
 | -------- | -------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------- |
@@ -467,10 +476,17 @@ Measured at revision `bd384ed6` on Apple M1 Max, macOS Tahoe 26.4, .NET 10.0.12 
 | B-022    | Supplied analysis policy         | AdoptionSteps.ThenMappedPolicy; AnalysisConfigurationReaderUnitTests.ExplicitMappings_WhenProjectingDifferentConsumerKeys_ShouldMapArraysAndLeaveTheOriginalUntouched; AnalysisInputReaderUnitTests.ManifestSectionMappings_WhenSupplied_ShouldReadExistingMetadataWithoutChangingItsSchemaVersion; AnalysisConfigurationReaderUnitTests.LiteralArrayIndexAndEmptySelection_WhenMapped_ShouldHonorJsonPointersAndPreserveExplicitEmptyArrays                                                                                                                                                                                                                                                                                                                                                                             | Covered |
 | B-023    | Configuration responsibility     | CodeAnalysisPackageSteps.ThenMsBuildSuppliesInputs; CodeAnalysisPackageSteps.ThenSeverityAndSuppressionAreStandard; CodeAnalysisPackageIntegrationTests.DeploymentProject_WhenPacked_ShouldCarryCompilerAssetsAndNoRuntimeDependencies; AnalysisInputAnalyzerUnitTests.MissingInputs_WhenAnalyzed_ShouldReportAnErrorWithoutCompilerErrors                                                                                                                                                                                                                                                                                                                                                                                                                                                                               | Covered |
 | B-024    | Consumer schema ownership        | AdoptionSteps.ThenConsumerSchema; AdoptionSteps.ThenNoUpgrade; AnalysisInputReaderUnitTests.ConsumerSchemaVersion_WhenSupplied_ShouldPreserveItWithoutRequiringASpechtPin; CodeAnalysisSectionUnitTests.AnalysisSection_WhenAddedToAnExistingPin_ShouldPreserveThePinAndCheckerSettings                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  | Covered |
+| B-025    | Package-delivered test evidence  | CodeAnalysisPackageSteps.ThenEvidenceMethodsAreRecognisedAsTests; CodeAnalysisPackageIntegrationTests.DeploymentProject_WhenPacked_ShouldCarryCompilerAssetsAndNoRuntimeDependencies; DocumentationBindingAnalyzerUnitTests.RunnerSelectedMethods_WhenAnalyzed_ShouldSeparateExplicitValidationFromRequiredAuthoring                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     | Covered |
 
 ## 10. Lessons / Spec Deltas
 
-<!-- last written by: spec-author, 2026-10-18 -->
+<!-- last written by: spec-author, 2026-10-23 -->
+
+2026-10-23: B-025 and its scenario require evidence declared through the
+`SpechtTestEvidence` item to reach the analyzer's test-method recognition. The
+package and the analyzer named the evidence input differently, and no claim
+covered the route between them. [Lesson 0001](lessons/0001-package-evidence-reaches-the-analyzer.md)
+records the finding.
 
 2026-10-20: B-020 and its scenario now require the release pipeline to publish
 and attach both packages, closing the gap between the pack test and a release.
