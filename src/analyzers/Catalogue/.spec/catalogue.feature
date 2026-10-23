@@ -151,3 +151,51 @@ Feature: Native Gherkin claim catalogue
     When the declared analysis is requested
     Then the claim file and the area metadata record are unchanged
     And no claims table or other adapter is written
+
+  @B-020
+  Scenario: Untagged claim is Active
+    Given the manifest selects native Gherkin claim input
+    And the Scenario Outline carries no lifecycle tag
+    When the declared analysis is requested
+    Then claim "REQ-FIX-001" is Active
+
+  @B-021
+  Scenario Outline: Configured lifecycle tag
+    Given the manifest selects native Gherkin claim input
+    And the consumer configures a tag meaning <state>
+    And the Scenario Outline carries that tag
+    When the declared analysis is requested
+    Then claim "REQ-FIX-001" is <state>
+
+    Examples:
+      | state      |
+      | Withdrawn  |
+      | Superseded |
+
+  @B-022
+  Scenario Outline: Feature lifecycle source
+    Given the manifest selects native Gherkin claim input
+    And <metadata>
+    When the declared analysis is requested
+    Then Feature "arithmetic" is <lifecycle>
+
+    Examples:
+      | metadata                                                                     | lifecycle  |
+      | the configured metadata record for Feature "arithmetic" states "superseded" | superseded |
+      | no metadata record is configured for Feature "arithmetic"                    | current    |
+
+  @B-023
+  Scenario: Feature tag disagrees
+    Given the manifest selects native Gherkin claim input
+    And the claim file carries a Feature-level tag naming Feature "geometry"
+    When the declared analysis is requested
+    Then an input failure names the claim file
+
+  @B-024 @boundary
+  Scenario: Ignored scenario keeps its claim
+    Given the manifest selects native Gherkin claim input
+    And the Scenario Outline carries a tag the consumer configures as ignored
+    And a mandatory enforcement scope selects the addition test method, which carries no verifies relationship
+    When the declared analysis is requested
+    Then claim "REQ-FIX-001" is still declared
+    And the required-link diagnostic is still reported
