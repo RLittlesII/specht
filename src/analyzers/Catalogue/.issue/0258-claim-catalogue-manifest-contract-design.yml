@@ -1,7 +1,7 @@
 id: "0258"
 type: task
 title: "Design the native claim catalogue manifest contract and tag semantics"
-status: ready
+status: in-progress
 value: 4
 risk: 3
 parent: "0201"
