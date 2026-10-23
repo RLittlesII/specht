@@ -102,19 +102,20 @@ Apply binding enforcement consistently to an explicitly selected consumer scope.
 
 ## 6. Concern Separation
 
-<!-- last written by: implementer, 2026-10-18 -->
+<!-- last written by: implementer, 2026-10-23 -->
 
-| Concern                                              | Classification | Responsibility                                                                                                                  |
-| ---------------------------------------------------- | -------------- | ------------------------------------------------------------------------------------------------------------------------------- |
-| Consumer schema identity, version and field meanings | Business       | Supplied schemas and explicit mappings remain authoritative; the analyzer does not prescribe a schema upgrade.                  |
-| Selected projects, authoring scope and exemptions    | Business       | Policy separates explicit-reference validation from mandatory authoring and keeps reasoned exemptions visible.                  |
-| Configuration and record projection                  | Both           | Compiler-compatible readers use supplied JSON Schema, YAML and Markdown inputs without ambient discovery.                       |
-| Current input identity and failures                  | Both           | Fresh snapshots carry content identity and unavailable analysis separately from diagnostic presentation.                        |
-| AdditionalFiles transport and diagnostics            | Technical      | A Roslyn adapter reads explicit metadata; SPCT0001 reports input failure. Package discovery and build assets remain downstream. |
+| Concern                                              | Classification | Responsibility                                                                                                                                                                                                   |
+| ---------------------------------------------------- | -------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Consumer schema identity, version and field meanings | Business       | Supplied schemas and explicit mappings remain authoritative; the analyzer does not prescribe a schema upgrade.                                                                                                   |
+| Selected projects, authoring scope and exemptions    | Business       | Policy separates explicit-reference validation from mandatory authoring and keeps reasoned exemptions visible.                                                                                                   |
+| Required-case scope and native claim source          | Both           | A project's scope is a tag expression parsed by one reader shared with the engine and the evidence command; native claims are configured under `records` and read by 0201-F7. Neither changes a consumer schema. |
+| Configuration and record projection                  | Both           | Compiler-compatible readers use supplied JSON Schema, YAML and Markdown inputs without ambient discovery.                                                                                                        |
+| Current input identity and failures                  | Both           | Fresh snapshots carry content identity and unavailable analysis separately from diagnostic presentation.                                                                                                         |
+| AdditionalFiles transport and diagnostics            | Technical      | A Roslyn adapter reads explicit metadata; SPCT0001 reports input failure. Package discovery and build assets remain downstream.                                                                                  |
 
 ## 7. Technical Design
 
-<!-- last written by: implementer, 2026-10-20 -->
+<!-- last written by: implementer, 2026-10-23 -->
 
 [ADR-0018](../../../.spec/adr/0018-lowercase-analyzer-project-home.md) adopts
 `src/analyzers` (`Specht.Analysis`), `src/CodeFixes` (`Specht.Codefixes`) and
@@ -223,16 +224,16 @@ mappings read consumer-specific schema metadata and record roles from the existi
 configuration. The consumer's schemas and field meanings remain authoritative.
 The standalone checker remains independently usable without the package.
 
-| Field            | Type and meaning                                                                                                                                                                                                                                                                          |
-| ---------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `projects`       | Required array of `{ path, targetFrameworks }`; root-relative project path and nonempty distinct TFM strings. This is the declared aggregation set.                                                                                                                                       |
-| `features`       | Required array of `{ feature, epic? }`; explicit selection, including an explicitly empty selection for ADR-only analysis. No inference from referenced methods.                                                                                                                          |
-| `requiredLinks`  | Optional `{ test: true, implementation: false, scenario: false }` defaults; test is always required for non-exempt selected current claims. Implementation/scenario may be enabled.                                                                                                       |
-| `enforcement`    | Optional array of `{ project, include, exclude, role, declarationKinds }`. Project must be declared; root-relative source globs select required authoring. Roles are `verifies`, `implements`, `follows`; kinds follow F2's declaration matrix. Default is no mandatory-authoring scopes. |
-| `exemptions`     | Optional array of `{ target, links, reason }`. Target is a claim identity or `{ kind: "declaration", project, symbolId }`; links name the requirements exempted. Nonempty reason required. No wildcard or implicit exemptions.                                                            |
-| `records`        | Optional record-reading settings below; Feature discovery continues to use existing `layouts`, `exclusions`, `roles`, `tables`, `markers` and identifier settings.                                                                                                                        |
-| `mappings`       | JSON Pointer mappings from normalized analysis fields to existing consumer configuration; array wildcards preserve corresponding entries.                                                                                                                                                 |
-| `scenarioScopes` | Optional `{ featureTag: "@spec.feature:{feature}", epicTag: "@spec.epic:{epic}" }`; literal forms with exactly their one placeholder. Existing `claim.tag` remains authoritative for local claim tags. These are encodings, not replacement ID grammars.                                  |
+| Field            | Type and meaning                                                                                                                                                                                                                                                                                                               |
+| ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `projects`       | Required array of `{ path, targetFrameworks, requiredCaseScope? }`; root-relative project path, nonempty distinct TFM strings and an optional tag expression (below). This is the declared aggregation set.                                                                                                                    |
+| `features`       | Required array of `{ feature, epic? }`; explicit selection, including an explicitly empty selection for ADR-only analysis. No inference from referenced methods.                                                                                                                                                               |
+| `requiredLinks`  | Optional `{ test: true, implementation: false, scenario: false }` defaults; test is always required for non-exempt selected current claims. Implementation/scenario may be enabled.                                                                                                                                            |
+| `enforcement`    | Optional array of `{ project, include, exclude, role, declarationKinds }`. Project must be declared; root-relative source globs select required authoring. Roles are `verifies`, `implements`, `follows`; kinds follow F2's declaration matrix. Default is no mandatory-authoring scopes.                                      |
+| `exemptions`     | Optional array of `{ target, links, reason }`. Target is a claim identity or `{ kind: "declaration", project, symbolId }`; links name the requirements exempted. Nonempty reason required. No wildcard or implicit exemptions.                                                                                                 |
+| `records`        | Optional record-reading settings below; Feature discovery continues to use existing `layouts`, `exclusions`, `roles`, `tables`, `markers` and identifier settings. `claimSource`, `claimFileSets`, `claimTagPrefix` and the tag lists select native Gherkin claims ([0201-F7 § 7](../../analyzers/Catalogue/.spec/README.md)). |
+| `mappings`       | JSON Pointer mappings from normalized analysis fields to existing consumer configuration; array wildcards preserve corresponding entries.                                                                                                                                                                                      |
+| `scenarioScopes` | Optional `{ featureTag: "@spec.feature:{feature}", epicTag: "@spec.epic:{epic}" }`; literal forms with exactly their one placeholder. Existing `claim.tag` remains authoritative for local claim tags. These are encodings, not replacement ID grammars.                                                                       |
 
 Enforcement selection does not validate a declaration as a test merely because
 its name looks like a test. Test-method identity comes from current runner or
@@ -293,6 +294,74 @@ or require schema `0.3.0`; consumer-specific metadata is read through mappings.
 }
 ```
 
+### Required-case scope
+
+[ADR-0001](adr/0001-required-case-scope-expression.md) (proposed) gives the grammar
+to [0201-F3 decision 0002](../../analyzers/TestEvidence/.spec/decisions/0002-required-case-scope-per-project.md).
+Each `codeAnalysis.projects` entry may carry `requiredCaseScope`, a string. An
+absent key owns every case of the project (B-026). The expression is read by
+`CaseScope` in `Specht.Claims`; `AnalysisPolicyReader` constructs one per project
+and `AnalysisProject.Scope` exposes it. An empty or malformed expression is an
+input failure at the manifest, reported as SPCT0001 with the message
+`Project required-case scope is not a valid tag expression.` The key belongs to the
+project entry and applies to each of its target frameworks.
+
+```text
+expression = or ;
+or         = and { "or" and } ;
+and        = not { "and" not } ;
+not        = "not" not | primary ;
+primary    = tag | "(" or ")" ;
+tag        = "@" tagchar { tagchar } ;
+tagchar    = any character except whitespace, "(" and ")" ;
+```
+
+Tokens are separated by whitespace, and a parenthesis is a token of its own. `and`,
+`or` and `not` are lowercase keywords; a tag begins with `@`, so `@not` is a tag.
+`not` binds tighter than `and`, and `and` tighter than `or`. A tag matches a case
+when the case's category set holds the tag's text after `@`, compared ordinally and
+case-sensitively. A category is a Reqnroll scenario tag or an xUnit
+`Trait("Category", ...)` value, without `@`. `CaseScope.Owns(categories)` returns
+the result; a case with no categories is a case with an empty set.
+
+| Expression              | Categories | Owns  | Reason                                   |
+| ----------------------- | ---------- | ----- | ---------------------------------------- |
+| absent                  | any        | true  | no scope declared                        |
+| `@visual`               | `visual`   | true  |                                          |
+| `@visual`               | none       | false |                                          |
+| `not @visual`           | none       | true  |                                          |
+| `not @visual`           | `visual`   | false |                                          |
+| `not not @a`            | `a`        | true  | `not` nests                              |
+| `@a or @b and @c`       | `b`        | false | `and` binds tighter: `@a or (@b and @c)` |
+| `@a or @b and @c`       | `b`, `c`   | true  |                                          |
+| `(@a or @b) and @c`     | `a`        | false | needs `c`                                |
+| `(@a or @b) and @c`     | `a`, `c`   | true  |                                          |
+| `@a and not (@b or @c)` | `a`, `c`   | false |                                          |
+| `@a and not (@b or @c)` | `a`        | true  |                                          |
+
+An expression is invalid when it is empty or only whitespace, ends in an operator
+(`@a and`), lacks an operand (`not`), has unbalanced parentheses (`(@a`, `@a)`),
+holds two operands in a row (`@a @b`), holds a bare word (`visual`, `AND`) or
+holds `@` alone. There is no escape.
+
+The partition fixture of 0201-F3 B-025 and 0201-F5 B-021: projects A and B compile
+the same claim files, holding one visual and one nonvisual case. A declares
+`not @visual`; B declares `@visual`. A project owns only keys of its own project
+(a case key is project, target framework, assembly, adapter and case ID), so the
+scope is tested only against the four keys below, each against its own project's
+scope.
+
+| Case key    | Project | Categories | Its project's scope | Owned |
+| ----------- | ------- | ---------- | ------------------- | ----- |
+| A.nonvisual | A       | none       | `not @visual`       | yes   |
+| A.visual    | A       | `visual`   | `not @visual`       | no    |
+| B.nonvisual | B       | none       | `@visual`           | no    |
+| B.visual    | B       | `visual`   | `@visual`           | yes   |
+
+A owns A.nonvisual and B owns B.visual. The unowned keys are neither required nor
+failed (0201-F5 B-020), and no key is merged with another project's. Which keys a
+run selected is a separate fact (0201-F3 B-020) and never enters `Owns`.
+
 ### Configuration mappings
 
 The new `codeAnalysis.mappings` object maps normalized analysis field paths to
@@ -318,7 +387,9 @@ parses each supplied record's text and resolves its declared values.
 
 - Feature identity comes from existing frontmatter roles (`id`, optional `epic`);
   Feature lifecycle uses `spec_status`. Claims come from the manifest's `claims`
-  section role and its ID column, preserving the original declaration line.
+  section role and its ID column, preserving the original declaration line, unless
+  `records.claimSource` is `gherkin`, when 0201-F7 § 7 builds them from the
+  configured claim files and no claims table is read.
 - `records.featureIdentityKey`, `featureEpicKey` and `claimIdColumn` select consumer
   metadata/column names; their conventional defaults are `id`, `epic` and `ID`.
   `records.claimStatusColumn` defaults to `Status`. Active/Amended and historical
@@ -346,7 +417,11 @@ checker is introduced. A mixed-target solution is expected: the compiler-loaded
 components target netstandard2.0 while the engine and tool keep their existing
 targets. Do not add a project reference from the analyzer to the modern-only
 engine assembly. Choose the smallest compatible reuse of existing text-reading
-semantics during F1 implementation; no engine retargeting is required.
+semantics during F1 implementation; no engine retargeting is required. Claim-tag
+reading and the required-case scope expression are the one shared case: they live
+in the `netstandard2.0` library `Specht.Claims` that the engine, the analyzer and
+`specht evidence` reference ([ADR-0021](../../../.spec/adr/0021-gherkin-claim-semantics-live-in-a-netstandard-library.md),
+proposed).
 
 ### Build delivery
 

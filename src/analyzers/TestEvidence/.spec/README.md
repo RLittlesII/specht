@@ -122,7 +122,7 @@ Map explicit test-method bindings to discovered and executed test cases across .
 
 ## 7. Technical Design
 
-<!-- last written by: implementer, 2026-10-19 -->
+<!-- last written by: implementer, 2026-10-23 -->
 
 The version-one artifact implements decision 0001 and 0201-F6 decision 0004.
 Adapters produce it during normal build, discovery or execution workflows. The
@@ -262,6 +262,18 @@ files to Roslyn as AdditionalFiles. DiagnosticAnalyzer writes no files. Compiler
 `netstandard2.0`; collection and test hosts retain `net10.0;net11.0` under
 ADR-0017. Runner-specific packages stay outside the compiler-loaded dependency
 closure.
+
+### Required-case scope
+
+A project's `requiredCaseScope` is a tag expression over case categories,
+specified in [0201-F6 § 7](../../../codeanalysis/.spec/README.md): key, grammar and
+the A/B partition table. `CaseScope.Owns(categories)` in `Specht.Claims`
+([ADR-0021](../../../../.spec/adr/0021-gherkin-claim-semantics-live-in-a-netstandard-library.md),
+proposed) is the one evaluation. A case's categories are its Reqnroll scenario
+tags or `Category` trait values without `@`. Ownership, the selected flag and the
+incomplete-run finding are recorded in the artifact and the report, not as SPCT
+diagnostics; the case record's new fields and any format version are item 0260's
+design of this section.
 
 ### Scenarios, freshness and compatibility
 

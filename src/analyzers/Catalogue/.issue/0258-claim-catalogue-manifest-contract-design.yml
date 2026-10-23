@@ -1,7 +1,7 @@
 id: "0258"
 type: task
 title: "Design the native claim catalogue manifest contract and tag semantics"
-status: in-progress
+status: done
 value: 4
 risk: 3
 parent: "0201"
@@ -12,7 +12,7 @@ spec: src/analyzers/Catalogue/.spec/README.md
 claims: []
 created: "2026-10-23"
 updated: "2026-10-23"
-closed: null
+closed: "2026-10-23"
 summary: |
   Fix the implementer-owned design (section 7) that 0259, 0260 and 0262 build against, so
   no later item invents a competing interpretation. It covers the manifest keys under
