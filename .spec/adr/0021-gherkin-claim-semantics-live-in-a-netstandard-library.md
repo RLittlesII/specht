@@ -8,9 +8,9 @@ type: adr
 
 ## Status
 
-Proposed — 2026-10-23, `implementer`, from item 0258. Needs the repository
-owner's acceptance before item 0259 starts: it adds a project and a package.
-It does not widen ADR-0017's target exception beyond a second
+Accepted, 2026-10-23, by the repository owner. Proposed the same day by
+`implementer`, from item 0258; item 0259 adds the project and the package. It
+does not widen ADR-0017's target exception beyond a second
 `netstandard2.0` project, and adopts none of what ADR-0017 and ADR-0014 leave
 unadopted: no mediator, no CQRS pipeline, no engine layering, no model-reader
 migration.

@@ -1,0 +1,29 @@
+id: "0263"
+type: feature
+title: Deliver a central .spec/features tree as scenario inputs by default
+status: ready
+value: 4
+risk: 1
+parent: "0201"
+children: []
+depends_on: []
+spikes: []
+spec: src/codeanalysis/.spec/README.md
+claims: ["B-027"]
+created: "2026-10-23"
+updated: "2026-10-23"
+closed: null
+summary: |
+  Reported in RLittlesII/specht#256. The default SpechtScenarioInputs in
+  Specht.CodeAnalysis.props matches only co-located .spec/*.feature files and
+  epics/**/*.feature, so a consumer keeping Gherkin in a central .spec/features
+  tree must set a build property. Decision 0007 adds that tree to the default.
+acceptance_criteria:
+  - "The props default also includes the .spec/features/**/*.feature tree under SpechtRoot."
+  - "A package-level test shows a central-tree feature file delivered as a scenario input with no property set, and a narrowed SpechtScenarioInputs still replaces the default."
+  - "Section 9 of the specification names the test for B-027."
+decisions: []
+out_of_scope:
+  - "Native Gherkin claim reading: 0259."
+  - "Any other default glob or exclude change."
+---

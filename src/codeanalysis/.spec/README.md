@@ -79,6 +79,7 @@ Apply binding enforcement consistently to an explicitly selected consumer scope.
 | B-024 | Given consumer-supplied schemas and their version, this Feature consumes those inputs without requiring Specht-owned schemas, a schema upgrade or changes to the consumer's pin.                                                                                                          | Decision 0005                                | Amended |
 | B-025 | Given a consumer declaring a test evidence file through the `SpechtTestEvidence` MSBuild item, this Feature makes that evidence available to the analyzer's test-method recognition.                                                                                                      | Item 0257; lesson 0001                       | Active  |
 | B-026 | Given a selected test project under `codeAnalysis`, this Feature reads its required-case scope as a Gherkin tag expression over case categories (Reqnroll scenario tags mapped to `Category` traits, or xUnit `Trait("Category", ...)` values), and uses all cases when none is declared. | Consumer request #256; 0201-F3 decision 0002 | Active  |
+| B-027 | Given a consumer keeping Gherkin scenarios in a central `.spec/features` tree, this Feature delivers those `.feature` files as scenario inputs by default.                                                                                                                                | Owner decision 2026-10-23; decision 0007     | Active  |
 
 ## 4. Constraints
 
@@ -193,7 +194,9 @@ scenarios, ADRs, frontmatter schemas, and explicitly supplied records/evidence a
 AdditionalFiles. Each file carries explicit kind and root-relative path metadata.
 Build properties can narrow the Feature, scenario and ADR input globs for a
 selected project; generated artifacts, nested checkouts and build outputs are
-excluded from the default globs. Empty item metadata on unrelated compiler
+excluded from the default globs. The default scenario glob covers the
+co-located `**/.spec/*.feature`, the legacy `epics/**/*.feature` and a central
+`.spec/features/**/*.feature` tree under the root (B-027, decision 0007). Empty item metadata on unrelated compiler
 AdditionalFiles is ignored. The project path, target framework and repository
 root are compiler-visible so declarations can be selected, and rooted compiler
 source paths are converted to repository-relative provenance before matching.
@@ -421,7 +424,7 @@ semantics during F1 implementation; no engine retargeting is required. Claim-tag
 reading and the required-case scope expression are the one shared case: they live
 in the `netstandard2.0` library `Specht.Claims` that the engine, the analyzer and
 `specht evidence` reference ([ADR-0021](../../../.spec/adr/0021-gherkin-claim-semantics-live-in-a-netstandard-library.md),
-proposed).
+accepted 2026-10-23).
 
 ### Build delivery
 
@@ -554,10 +557,15 @@ Measured at revision `bd384ed6` on Apple M1 Max, macOS Tahoe 26.4, .NET 10.0.12 
 | B-024    | Consumer schema ownership        | AdoptionSteps.ThenConsumerSchema; AdoptionSteps.ThenNoUpgrade; AnalysisInputReaderUnitTests.ConsumerSchemaVersion_WhenSupplied_ShouldPreserveItWithoutRequiringASpechtPin; CodeAnalysisSectionUnitTests.AnalysisSection_WhenAddedToAnExistingPin_ShouldPreserveThePinAndCheckerSettings                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  | Covered |
 | B-025    | Package-delivered test evidence  | CodeAnalysisPackageSteps.ThenEvidenceMethodsAreRecognisedAsTests; CodeAnalysisPackageIntegrationTests.DeploymentProject_WhenPacked_ShouldCarryCompilerAssetsAndNoRuntimeDependencies; DocumentationBindingAnalyzerUnitTests.RunnerSelectedMethods_WhenAnalyzed_ShouldSeparateExplicitValidationFromRequiredAuthoring                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     | Covered |
 | B-026    | Required-case scope per project  | Missing                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  | Missing |
+| B-027    | Central scenario tree            | Missing                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  | Missing |
 
 ## 10. Lessons / Spec Deltas
 
 <!-- last written by: spec-author, 2026-10-23 -->
+
+2026-10-23: B-027 widens the default scenario input glob to a central
+`.spec/features` tree, so a consumer keeping claims there sets no build property.
+Decision 0007 records it.
 
 2026-10-23: B-026 adds each selected test project's required-case scope, a
 Gherkin tag expression over case categories, under 0201-F3 decision 0002.
@@ -600,6 +608,7 @@ OQ-1 records explicit mappings over existing consumer configuration as the polic
 - [0243: Package CodeAnalysis and deliver editor and build inputs](../.issue/0243-codeanalysis-package-delivery.yml)
 - [0250: Publish Specht.CodeAnalysis with the repository release](../.issue/0250-publish-codeanalysis-package.yml)
 - [0251: Adopt Specht.CodeAnalysis in the engine and CLI](../.issue/0251-analyze-engine-cli.yml)
+- [0263: Deliver a central .spec/features tree as scenario inputs by default](../.issue/0263-central-feature-tree-default-scenario-input.yml)
 
 ## Scoring
 

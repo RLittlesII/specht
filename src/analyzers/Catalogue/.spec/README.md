@@ -133,7 +133,7 @@ Records: [ADR-0021](../../../../.spec/adr/0021-gherkin-claim-semantics-live-in-a
 (where the reader lives), [ADR-0001](adr/0001-native-claim-source-contract.md)
 (the keys, the element rules and the diagnostic identities) and
 [decision 0001](decisions/0001-claim-candidates-carry-the-encoding-prefix.md).
-Both ADRs are proposed and wait on the owner. The required-case scope key and its
+ADR-0021 is accepted (2026-10-23); ADR-0001 is proposed and waits on the owner. The required-case scope key and its
 grammar are in [0201-F6 § 7](../../../codeanalysis/.spec/README.md). No new
 architecture is adopted (ADR-0014): the reader is an instance class with a
 constructor, the catalogue records are the existing ones, and nothing is static.
@@ -272,10 +272,11 @@ A **claim file set** is `{ glob, feature, epic?, record? }`:
 - Two sets may not name one Feature identity, and one file may not match two
   sets. Selected Features (`codeAnalysis.features`) must each be named by a set.
 
-The delivery default for scenario inputs is `**/.spec/*.feature`. A central tree
-such as `.spec/features/arithmetic/` is not matched, so the consumer sets the
-`SpechtScenarioInputs` build property to include it. A set whose glob matches no
-delivered input is an input failure, which is how that omission shows (B-006).
+The delivery default for scenario inputs also covers a central
+`.spec/features` tree (0201-F6 B-027), so `.spec/features/arithmetic/` is
+delivered without a build property. A tree elsewhere still needs the
+`SpechtScenarioInputs` build property. A set whose glob matches no delivered
+input is an input failure, which is how that omission shows (B-006).
 
 **The Arithmetic fixture**, configured as a Gherkin-only consumer with no epic:
 

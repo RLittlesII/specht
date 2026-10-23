@@ -11,8 +11,8 @@ type: adr
 Proposed — 2026-10-23, `implementer`, from item 0258, as the design that
 [decision 0001](../decisions/0001-claim-candidates-carry-the-encoding-prefix.md)
 and OQ-1 to OQ-9 leave open. It depends on
-[ADR-0021](../../../../../.spec/adr/0021-gherkin-claim-semantics-live-in-a-netstandard-library.md)
-being accepted. Section 7 states the keys and rules in full.
+[ADR-0021](../../../../../.spec/adr/0021-gherkin-claim-semantics-live-in-a-netstandard-library.md),
+accepted 2026-10-23. Section 7 states the keys and rules in full.
 
 ## Context
 

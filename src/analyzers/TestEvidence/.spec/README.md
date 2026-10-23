@@ -269,7 +269,7 @@ A project's `requiredCaseScope` is a tag expression over case categories,
 specified in [0201-F6 § 7](../../../codeanalysis/.spec/README.md): key, grammar and
 the A/B partition table. `CaseScope.Owns(categories)` in `Specht.Claims`
 ([ADR-0021](../../../../.spec/adr/0021-gherkin-claim-semantics-live-in-a-netstandard-library.md),
-proposed) is the one evaluation. A case's categories are its Reqnroll scenario
+accepted) is the one evaluation. A case's categories are its Reqnroll scenario
 tags or `Category` trait values without `@`. Ownership, the selected flag and the
 incomplete-run finding are recorded in the artifact and the report, not as SPCT
 diagnostics; the case record's new fields and any format version are item 0260's
