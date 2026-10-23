@@ -116,13 +116,379 @@ A consumer whose claims are authored only as tagged Gherkin scenarios cannot use
 
 <!-- last written by: implementer, 2026-10-23 -->
 
-Not yet designed.
+| Concern                                           | Classification | Responsibility                                                                                                                                                                              |
+| ------------------------------------------------- | -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Claim identity, tag encoding and candidate prefix | Business       | The consumer's `claim.tag` encoding and `identifiers.claim` grammar, with the configured prefix, decide what a tag means. One reader gives that meaning to engine, analyzer and tool (C-1). |
+| Claim file to Feature mapping and lifecycle       | Business       | A claim file set maps files to a Feature identity and may name a record that supplies lifecycle. Nothing is inferred from file names, titles or steps (C-3).                                |
+| Planned, ignored and lifecycle tags               | Business       | Consumer-configured tag lists. Planned state belongs to a case; lifecycle belongs to a claim.                                                                                               |
+| Gherkin parsing and element location              | Technical      | The `Gherkin` package yields tags, elements and lines. `Specht.Claims` turns them into declarations and findings without I/O.                                                               |
+| Catalogue assembly, input failures and findings   | Both           | The analyzer builds the same catalogue records Markdown claims produce (C-2). A failure is SPCT0001 with a stated cause; a finding is SPCT0010 to SPCT0012.                                 |
+| Diagnostic identity and severity                  | Technical      | Append-only `SPCT####` ids, defaulted under 0201-F6 decision 0001 and changed only through standard Roslyn severity controls.                                                               |
 
 ## 7. Technical Design
 
 <!-- last written by: implementer, 2026-10-23 -->
 
-Not yet designed.
+Records: [ADR-0021](../../../../.spec/adr/0021-gherkin-claim-semantics-live-in-a-netstandard-library.md)
+(where the reader lives), [ADR-0001](adr/0001-native-claim-source-contract.md)
+(the keys, the element rules and the diagnostic identities) and
+[decision 0001](decisions/0001-claim-candidates-carry-the-encoding-prefix.md).
+Both ADRs are proposed and wait on the owner. The required-case scope key and its
+grammar are in [0201-F6 § 7](../../../codeanalysis/.spec/README.md). No new
+architecture is adopted (ADR-0014): the reader is an instance class with a
+constructor, the catalogue records are the existing ones, and nothing is static.
+
+### Where the code lives
+
+| Project and namespace                                         | Holds                                                                                                                                                                                                    |
+| ------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `src/claims/claims.csproj`, `Specht.Claims`, `netstandard2.0` | `TagForm`, `ClaimTagEncoding`, `ClaimTagRead`, `GherkinClaimReader`, `ClaimFile`, `ClaimDeclaration`, `ClaimCase`, `ClaimElement`, `ClaimFinding`, `InvalidGherkinException`, and 0201-F6's `CaseScope`. |
+| `src/analyzers/Catalogue/`, `Specht.Analysis.Catalogue`       | `ClaimSourcePolicy` (the parsed keys), `NativeClaimCatalogue` (files to `BindingFeature` records and findings), `CatalogueFinding`, `CatalogueDiagnostics`, `CatalogueAnalyzer`.                         |
+| `src/analyzers/Policy/` (existing)                            | `AnalysisInputException`, and the changes below to `AnalysisPolicyReader`, `AnalysisInputReader`, `AnalysisPolicy`, `AnalysisProject` and `AnalysisSnapshot`.                                            |
+| `src/specht/Model/FeatureTagParser.cs` (existing)             | Delegates each token to `ClaimTagEncoding`; its method, its legacy scanner and its reports are unchanged.                                                                                                |
+
+`claims.csproj` clears the inherited TFM list as the analyzer does, references
+only the `Gherkin` package (`35.0.0`, declared once in `Directory.Packages.props`
+under a `Gherkin` label), and is listed in `specht.slnx` under `/src/`.
+`analyzers.csproj` and `specht.csproj` take `ProjectReference`s to it. The
+existing `*.dll` pack glob carries `Specht.Claims.dll`, `Gherkin.dll` and
+`Cucumber.Messages.dll` into the package; 0259 adds a closure test naming them.
+The change to `FeatureTagParser` is a refactor: No `.feature` change needed.
+Constraints preserved: 0001-F1 B-004 and the golden baseline report.
+
+### One reading of a claim tag (C-1)
+
+`TagForm(form, placeholder, ignoreCase)` holds a literal form with exactly one
+`{placeholder}` and throws `ArgumentException` otherwise. `Capture(tag)` returns
+the text between the form's literal prefix and suffix, or `null` when the tag
+lacks either (compared ordinally, or ordinal-ignore-case, as constructed). A
+captured text of length zero is returned.
+
+`ClaimTagEncoding(TagForm form, string grammar, string? candidatePrefix = null)`
+holds the claim grammar and `Read(tag)` returns a `ClaimTagRead(Outcome, Text)`:
+
+| Condition, tested in this order                                       | `Outcome`       | `Text`        |
+| --------------------------------------------------------------------- | --------------- | ------------- |
+| `form.Capture` is `null`                                              | `NotACandidate` | `null`        |
+| `candidatePrefix` is set and the captured text does not begin with it | `NotACandidate` | `null`        |
+| the captured text matches `\A(?:grammar)\z`                           | `Claim`         | captured text |
+| otherwise                                                             | `Malformed`     | captured text |
+
+The prefix and the grammar use the encoding's case rule. The engine builds
+`new ClaimTagEncoding(new TagForm(form, "claim", ignoreCase), identifiers["claim"])`
+with no prefix and keeps only `Claim`; the analyzer adds the configured prefix and
+uses all three outcomes. The captured text is the claim identifier, exactly as
+authored (B-004).
+
+### Reading Gherkin
+
+`GherkinClaimReader(ClaimTagEncoding, GherkinClaimSettings)` has one method,
+`Read(relativePath, text)`, returning a `ClaimFile`. `GherkinClaimSettings` holds
+the planned, withdrawn and superseded tag lists (strings, `@`-led) and optional
+`TagForm`s for the Feature and epic tags. It parses with the `Gherkin` package's
+parser, one per call, and throws `InvalidGherkinException` when the package
+reports a parse error or when the text holds no `Feature:`. Element kinds come
+from the parsed structure, not from keyword text, so any Gherkin language reads.
+
+| `ClaimFile` member | Meaning                                                                                      |
+| ------------------ | -------------------------------------------------------------------------------------------- |
+| `Path`             | The `relativePath` argument.                                                                 |
+| `Declarations`     | `ClaimDeclaration(Id, Element, Path, Line, State, Cases)` in document order, then tag order. |
+| `Findings`         | `ClaimFinding(Kind, Path, Line, Text)`; `Kind` is `Malformed` or `MissingClaim`.             |
+| `FeatureTagValues` | The text each Feature-level tag captures through the Feature `TagForm`.                      |
+| `EpicTagValues`    | The same for the epic `TagForm`.                                                             |
+
+Rules, in the order the reader applies them:
+
+1. **Declaring elements.** A `Feature`, a `Rule`, a `Scenario` and a
+   `Scenario Outline` declare the claims their own tags carry. `Element` is
+   `Feature`, `Rule`, `Scenario` or `ScenarioOutline`; an element is an Outline
+   when it has at least one `Examples` block. `Line` is the line of the element's
+   keyword, never the tag line (B-008 to B-010).
+2. **Tags.** Each tag name, `@` included, goes through `Read`. `Claim` declares
+   `Id`, once per element however often the tag repeats. `Malformed` adds a
+   `Malformed` finding at the tag's line with the text
+   `Tag <tag> begins with the claim prefix but is not a valid claim identifier.`
+   (B-013). `NotACandidate` does nothing and draws nothing (B-025). A tag on a
+   `Rule` that a scenario inherits is not a further declaration (B-010).
+3. **Placement.** A tag that reads as `Claim` or `Malformed` on an `Examples`
+   block adds a `Malformed` finding with the text
+   `Tag <tag> begins with the claim prefix but sits where no claim can be declared.`
+   and declares nothing. A `Background` has no tags.
+4. **State.** `Superseded` when a declaring element's own tags include a
+   superseded tag, else `Withdrawn` for a withdrawn tag, else `Active` (B-020,
+   B-021). Inherited tags never change a claim's state.
+5. **Cases.** A case is one `Scenario` (`ClaimCase.Line` is its keyword line) or
+   one row of an Outline's `Examples` table body (the row's line); an Outline with
+   no body rows has no case. A claim's cases are the cases of every Scenario and
+   Outline at or below its declaring element, in document order, so a Rule's
+   claim holds all of its scenarios' cases.
+6. **Planned.** `ClaimCase.Planned` is true when any tag of the Feature, of the
+   enclosing Rule, of the Scenario or Outline, or of the row's own `Examples`
+   block is in the planned list (B-016, B-026). A planned case changes neither
+   the claim nor its other cases (B-024).
+7. **Missing claim.** A Scenario or Outline that no declaration covers, by its own
+   tags, its Rule's or the Feature's, adds a `MissingClaim` finding at its keyword
+   line with the text `<Scenario|Scenario Outline> "<title>" declares no claim.`
+   A malformed tag does not cover it (B-015).
+
+### Manifest contract
+
+All keys sit under `codeAnalysis` in the consumer's manifest. A key not listed
+here is not read. Under no `claimSource`, every key in this table is ignored and
+the Markdown path is unchanged (B-002).
+
+| Key                                    | Type and default                                                                 | Rule                                                                                                                   |
+| -------------------------------------- | -------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
+| `records.claimSource`                  | string; absent selects the Markdown claims table                                 | The only value is `"gherkin"`; any other value is an input failure (B-001). Repository-wide.                           |
+| `records.claimFileSets`                | array of `{ glob, feature, epic?, record? }`; required, nonempty under `gherkin` | See below (B-003, B-006, B-007).                                                                                       |
+| `records.claimTagPrefix`               | string; required under `gherkin`                                                 | Nonempty, no whitespace, no `@`. The text after `@` of every claim identifier begins with it (decision 0001, B-027).   |
+| `records.plannedTags`                  | array of string; default `["@ignore"]`                                           | Exact tags that mark a case planned. `[]` marks nothing.                                                               |
+| `records.withdrawnTags`                | array of string; default `[]`                                                    | Exact tags that give a claim the state `Withdrawn`.                                                                    |
+| `records.supersededTags`               | array of string; default `[]`                                                    | Exact tags that give a claim the state `Superseded`.                                                                   |
+| `records.featureLifecycleKey`          | string; existing, default `spec_status`                                          | The frontmatter key read from a claim file set's `record`.                                                             |
+| `scenarioScopes.featureTag`, `epicTag` | string; existing, optional                                                       | When set, the Feature and epic tags a claim file may carry (B-023).                                                    |
+| `mappings`: `/claimTag`                | pointer, normally `/claim/tag`; required under `gherkin`                         | The claim tag encoding, mapped like `/identifiers`. It must hold `{claim}` exactly once.                               |
+| `mappings`: `/claimTagIgnoreCase`      | pointer, normally `/claim/tagIgnoreCase`; optional, default `false`              | Map it only when the consumer's manifest sets it, because a mapping to an absent field is an existing input failure.   |
+| `mappings`: `/claimsSection`           | existing; optional under `gherkin`                                               | A Gherkin-only consumer has no claims table; `BindingPolicy.ClaimsSection` is then empty and nothing reads it (B-005). |
+
+A tag-list entry is `@` followed by one or more characters other than whitespace.
+Tag lists are compared ordinally with Gherkin tag names; only claim tags honour
+`tagIgnoreCase`.
+
+A **claim file set** is `{ glob, feature, epic?, record? }`:
+
+- `glob` is root-relative with the checker's segment semantics (`AnalysisPaths`)
+  and is matched against the delivered inputs of kind `scenario`.
+- `feature` must match `identifiers.feature`. `epic` is required exactly when
+  `identifiers.epic` is declared and must then match it; with no epic grammar
+  the key is forbidden and a claim resolves by Feature alone (B-007).
+- `record` is optional and is the root-relative path of a delivered `feature`
+  input. Its `featureLifecycleKey` value is the Feature lifecycle, validated as the
+  Markdown path validates it; its claims table, if any, is never read (B-005,
+  B-022). With no `record`, the Feature state is the new value `current`, which
+  `BindingResolver.Eligible` treats as eligible; the Markdown path rejects that
+  value, so no existing record can carry it.
+- Two sets may not name one Feature identity, and one file may not match two
+  sets. Selected Features (`codeAnalysis.features`) must each be named by a set.
+
+The delivery default for scenario inputs is `**/.spec/*.feature`. A central tree
+such as `.spec/features/arithmetic/` is not matched, so the consumer sets the
+`SpechtScenarioInputs` build property to include it. A set whose glob matches no
+delivered input is an input failure, which is how that omission shows (B-006).
+
+**The Arithmetic fixture**, configured as a Gherkin-only consumer with no epic:
+
+```json
+{
+  "schemaVersion": "0.2.0",
+  "identifiers": { "feature": "^[a-z]+$", "claim": "^REQ-FIX-[0-9]{3}$" },
+  "markers": {
+    "approved": "approved",
+    "withdrawn": "Withdrawn",
+    "superseded": "Superseded"
+  },
+  "claim": { "tag": "@{claim}", "tagIgnoreCase": false },
+  "codeAnalysis": {
+    "mappings": {
+      "/schemaVersion": "/schemaVersion",
+      "/identifiers": "/identifiers",
+      "/markers": "/markers",
+      "/claimTag": "/claim/tag",
+      "/claimTagIgnoreCase": "/claim/tagIgnoreCase"
+    },
+    "projects": [
+      {
+        "path": "test/Arithmetic.Tests/Arithmetic.Tests.csproj",
+        "targetFrameworks": ["net10.0"]
+      }
+    ],
+    "features": [{ "feature": "arithmetic" }],
+    "enforcement": [
+      {
+        "project": "test/Arithmetic.Tests/Arithmetic.Tests.csproj",
+        "include": ["test/Arithmetic.Tests/**/*.cs"],
+        "exclude": [],
+        "role": "verifies",
+        "declarationKinds": ["testMethod"]
+      }
+    ],
+    "records": {
+      "claimSource": "gherkin",
+      "claimTagPrefix": "REQ-",
+      "claimFileSets": [
+        {
+          "glob": ".spec/features/arithmetic/*.feature",
+          "feature": "arithmetic"
+        }
+      ],
+      "plannedTags": ["@ignore"],
+      "withdrawnTags": ["@withdrawn"],
+      "supersededTags": ["@superseded"]
+    },
+    "scenarioScopes": { "featureTag": "@spec.feature:{feature}" }
+  }
+}
+```
+
+With `.spec/features/arithmetic/arithmetic.feature` reading:
+
+```gherkin
+@spec.feature:arithmetic
+Feature: Arithmetic
+
+  Rule: Addition returns the sum
+
+    @REQ-FIX-001
+    Scenario Outline: Add two operands
+      Given <a> and <b>
+      Then the sum is <sum>
+
+      Examples:
+        | a | b | sum |
+        | 1 | 2 | 3   |
+        | 2 | 2 | 4   |
+```
+
+the catalogue holds one Feature, identity `arithmetic` with no epic and the state
+`current`, with one claim: `REQ-FIX-001`, `ScenarioOutline`, path
+`.spec/features/arithmetic/arithmetic.feature`, line 7, state `Active`, two
+cases at lines 13 and 14, neither planned. Feature tag `arithmetic` agrees with
+the set.
+
+### Building the catalogue
+
+`AnalysisPolicyReader` parses the keys into a `ClaimSourcePolicy` held by
+`AnalysisPolicy` (`null` for the Markdown path). `AnalysisInputReader`, when the
+policy has one, replaces the loop over `feature` inputs with
+`NativeClaimCatalogue`, which runs in this order and stops at the first failure
+(the reader reports one failure, as today):
+
+1. the keys and the mapped encoding, in the order of the failure table below;
+2. every delivered `scenario` input that a glob matches, in ordinal path order:
+   a file matched by two sets fails; a file whose text is `null` fails; a file
+   `GherkinClaimReader` rejects fails; a captured Feature or epic tag differing
+   from its set's identity fails;
+3. a set matching no delivered file fails;
+4. each `record`, validated by the Feature schema as a Markdown record is;
+5. each selected Feature without a set fails.
+
+It then builds one `BindingFeature` per set: identity from the set, state from
+the record or `current`, `RelativePath` the record's path or else the ordinal-first
+claim file, and a `BindingClaim` per declaration. `BindingClaim` gains optional
+trailing members `RelativePath`, `Element` and `Cases`; `BindingResolver` uses
+`claim.RelativePath ?? feature.RelativePath` and `claim.Line` as the target's
+provenance (B-008, C-2), and `BindingCatalog` validates every claim path with the
+existing provenance guard. Everything after the catalogue is the existing code:
+`AnalysisPolicy.Select`, `RequiredLinks` and `BindingResolver` are unchanged, so
+B-017 and B-018 give the Markdown path's diagnostics (SPCT0007, SPCT0004).
+Planned cases are visible through `Cases` to the scenario bridge (0201-F4) and to
+reconciliation (0201-F5); this Feature counts nothing.
+
+A claim keeps its identity through reordering or retitling because the identity
+is the Feature identity and `Id` (C-3, B-011); path and line are provenance.
+Duplicates are not removed: after all files are read, an `Id` declared by two
+declarations of one Feature adds a `SPCT0010` finding at each (B-012), and the
+catalogue keeps both, so a reference to it is ambiguous as for a Markdown
+duplicate. No catalogue member reads the file system.
+
+### Input failures
+
+A failure is `AnalysisInputException(relativePath, message)`, caught by
+`AnalysisInputReader` into the existing `AnalysisInputFailure` and reported as
+`SPCT0001` (error, 0201-F6 B-017) with the message as its argument. The path is the
+manifest unless the row says otherwise.
+
+| Cause                                                           | Path            | Message                                                                              | Claim |
+| --------------------------------------------------------------- | --------------- | ------------------------------------------------------------------------------------ | ----- |
+| `claimSource` is not `gherkin`                                  | manifest        | `codeAnalysis.records.claimSource must be "gherkin".`                                |       |
+| `claimTagPrefix` absent                                         | manifest        | `Native claim input requires codeAnalysis.records.claimTagPrefix.`                   | B-027 |
+| `claimTagPrefix` empty, spaced or holding `@`                   | manifest        | `codeAnalysis.records.claimTagPrefix must be nonempty text without whitespace or @.` |       |
+| `/claimTag` unmapped or without one `{claim}`                   | manifest        | `Native claim input requires the claim tag encoding mapped as /claimTag.`            |       |
+| a tag list holds a malformed entry                              | manifest        | `Claim tag lists must hold @-led tags without whitespace.`                           |       |
+| `claimFileSets` absent, empty or of the wrong shape or identity | manifest        | `codeAnalysis.records.claimFileSets is missing or invalid.`                          |       |
+| two sets name one Feature identity                              | manifest        | `Two claim file sets name one Feature.`                                              |       |
+| a set's glob matches no delivered input                         | manifest        | `A claim file set matches no supplied scenario input.`                               |       |
+| one file matched by two sets                                    | the file        | `A claim file matches more than one claim file set.`                                 |       |
+| claim file delivered without readable text                      | the file        | `Claim file is missing or unreadable.`                                               | B-014 |
+| claim file rejected by the reader                               | the file        | `Claim file is not valid Gherkin.`                                                   | B-014 |
+| Feature or epic tag differs from the set                        | the file        | `Feature or epic tag names a different identity than its claim file set.`            | B-023 |
+| `record` is not a delivered `feature` input                     | the record path | `Feature record is not a supplied feature input.`                                    |       |
+| record lifecycle value unknown                                  | the record path | `A supplied Feature has an unknown lifecycle value.`                                 |       |
+| a selected Feature has no set                                   | manifest        | `A selected consumer Feature has no claim file set.`                                 |       |
+
+A Feature is never reported as having no claims when its file failed (B-014).
+
+### Diagnostics
+
+`CatalogueAnalyzer` reads the same snapshot as `AnalysisInputAnalyzer`, through
+`AnalysisInputAdapter`, and reports `AnalysisSnapshot.Findings` when the snapshot
+is available. `CatalogueFinding(DiagnosticId, RelativePath, Line, Text)` is
+sorted by path (ordinal), line, id. Each diagnostic is at the supplied file's
+line, with the properties `SpechtRelativePath` and `SpechtLine`, message `{0}`
+being `Text`, category `Traceability` and a help link under
+`src/codeanalysis/docs/`.
+
+| Id       | Title                       | Default severity | Reported                                                                                                | Claims |
+| -------- | --------------------------- | ---------------- | ------------------------------------------------------------------------------------------------------- | ------ |
+| SPCT0010 | Duplicate claim declaration | Warning          | At each declaration's path and line; text `Claim <id> is declared more than once in Feature <feature>.` | B-012  |
+| SPCT0011 | Malformed claim tag         | Warning          | At the tag's line; the two texts of rules 2 and 3 above                                                 | B-013  |
+| SPCT0012 | Scenario declares no claim  | Warning          | At the Scenario or Outline keyword line; the text of rule 7                                             | B-015  |
+
+The ids follow SPCT0009, the last published (SPCT0099 is a test fixture);
+SPCT0001 to SPCT0009 are unchanged. A duplicate claim declaration is a defect
+that makes references ambiguous, so it is a warning and not the information of
+SPCT0009, which is a duplicate of a valid relationship. `CatalogueDiagnostics` is
+an append-only registry of its own, with the same guard that rejects a removed,
+reassigned or revived id as `DocumentationDiagnostics`; a test unions the two so
+no id collides. A page for each id under `src/codeanalysis/docs/`, the table in
+its README and the SPCT0001 page's list of causes are 0259's. Severity and
+suppression are the standard Roslyn controls (0201-F6 B-007, B-008); suppressing
+a finding leaves the catalogue unchanged.
+
+### What the later items follow
+
+- **0259** builds everything above except `CaseScope`, and gives each claim of
+  § 3 the assertion in the table below.
+- **0245** (the scenario bridge) reads claims only through `ClaimTagEncoding` and
+  the Feature and epic `TagForm`s, and joins a runner case to a catalogue case by
+  path and line; the producer's own row identity stays 0201-F4's.
+- **0260** evaluates `CaseScope` over a case's categories, written without `@`;
+  the incomplete-run diagnosis is a typed finding in the evidence artifact and
+  report (0201-F5 `findings`), not an SPCT diagnostic, because it exists only
+  after a run. The artifact's new fields and any format version are 0260's § 7.
+- **0262** gates on `ClaimCase.Planned` from the catalogue and on owned keys. The
+  tool takes a `ProjectReference` to `Specht.Claims` and never to the analyzer.
+
+| Claim | The test asserts, at `AnalysisInputReader.Read` unless stated                                                                                                            |
+| ----- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| B-001 | With `claimSource: "gherkin"`, the snapshot catalogue holds `REQ-FIX-001` for Feature `arithmetic` and a `feature` input's claims table is not read.                     |
+| B-002 | With no `claimSource` and a record with a claims table, the catalogue is the table's claims, and a present `claimFileSets` changes nothing.                              |
+| B-003 | A claim in a file matched by the set belongs to that set's identity.                                                                                                     |
+| B-004 | `Declarations[0].Id` is `REQ-FIX-001`; with `tagIgnoreCase` true, `@req-fix-001` reads as `req-fix-001`, as authored.                                                    |
+| B-005 | A set whose `record` has no claims table yields no failure; so does a set with no `record`.                                                                              |
+| B-006 | The same inputs with two different selected project paths give equal catalogues; a glob outside every project directory resolves.                                        |
+| B-007 | With no `identifiers.epic`, a claim resolves from a reference with no epic, and an `epic` in a set is a failure.                                                         |
+| B-008 | A Scenario's declaration has `Element` `Scenario`, its path, and the keyword line, not the tag line.                                                                     |
+| B-009 | An Outline with two rows gives one declaration and two cases.                                                                                                            |
+| B-010 | A Rule tag gives one declaration at the Rule line, its scenarios' cases, and no `SPCT0010`.                                                                              |
+| B-011 | Reordered and retitled elements give declarations equal in `Id` and Feature identity.                                                                                    |
+| B-012 | The same `Id` on two elements gives two `SPCT0010` findings, one per path and line.                                                                                      |
+| B-013 | The scenario tagged `@REQ-FIX-004 @visual @ignore @boundary @issue-42 @REQ-FIX-5` gives one declaration, one `SPCT0011` at the `@REQ-FIX-5` line, and none for that tag. |
+| B-014 | A `null` text and a non-Gherkin text each give one failure whose path is the file and whose message is the stated one.                                                   |
+| B-015 | A Scenario with no claim from itself, its Rule or the Feature gives `SPCT0012` at its keyword line; with a Rule claim it gives none.                                     |
+| B-016 | A case under a planned tag, itself or through its `Examples` block, has `Planned` true.                                                                                  |
+| B-017 | A native claim with no `verifies` method gives the same SPCT0007 as a Markdown claim; the existing resolver and policy are used unchanged.                               |
+| B-018 | A `verifies` naming `REQ-FIX-999` gives the same SPCT0004 as a Markdown claim.                                                                                           |
+| B-019 | `Read` takes texts and returns records; no member writes. The test supplies no file system.                                                                              |
+| B-020 | A claim with no lifecycle tag has `State` `Active`.                                                                                                                      |
+| B-021 | A configured withdrawn tag gives `Withdrawn`, a superseded tag `Superseded`; both together give `Superseded`.                                                            |
+| B-022 | A `record` with `spec_status: draft` gives Feature state `draft`; none gives `current`; both are eligible targets.                                                       |
+| B-023 | `@spec.feature:billing` on a file mapped to `arithmetic` gives one failure at that file; `@spec.feature:arithmetic`, or no Feature tag, gives none.                      |
+| B-024 | An `@ignore` scenario still declares its claim, and the claim's required links are as for an unplanned one.                                                              |
+| B-025 | `@visual`, `@ignore`, `@boundary` and `@issue-42` give no declaration and no finding.                                                                                    |
+| B-026 | An Outline with one ignored Examples block has `Planned` true only for that block's rows; the claim and the other rows are unchanged.                                    |
+| B-027 | No `claimTagPrefix` gives one failure at the manifest with the stated message.                                                                                           |
 
 ## 8. Testing Strategy
 
