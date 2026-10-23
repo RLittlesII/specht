@@ -215,24 +215,37 @@ Feature: Traceability reconciliation
       | skipped |
       | absent  |
 
-  @B-020 @boundary
-  Scenario: Unselected case
-    Given a required case discovered by a run that did not select it
-    And no other run selected it
+  @B-020 @B-021 @boundary
+  Scenario: Partitioned runs
+    Given projects A and B compile the same claim files holding one visual and one nonvisual case
+    And project A owns "not @visual" and project B owns "@visual"
+    And the discovered case keys are A.nonvisual, A.visual, B.nonvisual and B.visual
+    And A.nonvisual passed in project A's run and B.visual passed in project B's run
+    And A.visual and B.nonvisual were not selected by their runs
     When the supplied evidence is reconciled by specht evidence
-    Then the case is not counted as passed
-    And the default trace gate fails
+    Then the default trace gate succeeds
+    And A.visual and B.nonvisual are counted neither as passed nor as failures
+    And no case key is merged with another project's key
 
-  @B-021
-  Scenario Outline: Partitioned runs
-    Given two projects compile the same claim files
-    And the first project's run selects "Category!=visual" and the second's selects "Category=visual"
-    And the visual case selected by the second run "<outcome>"
+  @B-017 @B-021
+  Scenario Outline: Owned key missing or not passing
+    Given projects A and B own "not @visual" and "@visual" over the same claim files
+    And A.nonvisual passed in project A's run
+    And B.visual <outcome> in project B's run
     When the supplied evidence is reconciled by specht evidence
-    Then the default trace gate "<gate>"
+    Then the default trace gate fails for B.visual
+    And A.visual does not stand in for B.visual
 
     Examples:
-      | outcome          | gate     |
-      | passed           | succeeds |
-      | failed           | fails    |
-      | has no outcome   | fails    |
+      | outcome          |
+      | failed           |
+      | was skipped      |
+      | has no outcome   |
+
+  @B-022
+  Scenario: Omitted owning run
+    Given projects A and B own "not @visual" and "@visual" over the same claim files
+    And A.nonvisual passed in project A's run
+    And project B has no current evidence
+    When the supplied evidence is reconciled by specht evidence
+    Then the default trace gate fails for project B's owned keys

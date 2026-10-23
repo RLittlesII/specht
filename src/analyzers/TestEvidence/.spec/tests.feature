@@ -156,15 +156,24 @@ Feature: Test evidence adapters
     Then the analysis holds current passing evidence for the authored verifies relationship
     And no hand-written evidence or diagnostic suppression was needed
 
-  @B-020 @B-021
+  @B-020 @B-021 @B-025
   Scenario: Partitioned runs over shared claim files
-    Given two acceptance projects compile the same central claim files
-    And the first project's run selects "Category!=visual"
-    And the second project's run selects "Category=visual"
+    Given projects A and B compile the same central claim files holding one visual and one nonvisual case
+    And project A declares the required-case scope "not @visual" and its run selects "Category!=visual"
+    And project B declares the required-case scope "@visual" and its run selects "Category=visual"
     When both runs' evidence is collected
-    Then each artifact records the cases its run discovered and, separately, the cases its run selected
+    Then four case keys are discovered: A.nonvisual, A.visual, B.nonvisual and B.visual
+    And each case records its categories and, separately, whether its run selected it
     And every case keeps its project, assembly and source provenance
-    And the combined evidence holds both runs' selections and outcomes
+    And project A owns A.nonvisual and project B owns B.visual
+    And no case key is merged with another project's key
+
+  @B-026
+  Scenario: Selection narrower than the required scope
+    Given project A declares the required-case scope "not @visual"
+    And project A's run selected only part of the nonvisual cases
+    When its evidence is collected
+    Then the run is reported incomplete for the owned keys it did not select
 
   @B-023 @B-024 @boundary
   Scenario: Release excludes the test sources

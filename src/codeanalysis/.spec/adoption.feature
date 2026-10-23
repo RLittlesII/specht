@@ -213,3 +213,15 @@ Feature: Consumer analysis adoption
     And the consumer declares a test evidence file for its build
     When the consumer's project is analyzed
     Then the test methods that evidence identifies are recognised as tests
+
+  @B-026
+  Scenario Outline: Required-case scope per project
+    Given a selected test project under the consumer's code analysis configuration
+    And <declaration>
+    When the consumer's policy is read
+    Then the project's required-case scope is <scope>
+
+    Examples:
+      | declaration                                        | scope                                    |
+      | its required-case scope is declared as "not @visual" | the cases whose categories match it      |
+      | no required-case scope is declared                 | all cases                                |
