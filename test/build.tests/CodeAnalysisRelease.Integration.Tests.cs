@@ -28,6 +28,21 @@ public sealed class CodeAnalysisReleaseIntegrationTests
     }
 
     [Fact]
+    public void ReleaseWorkflow_ShouldCheckOutFullHistory()
+    {
+        var root = FindRepositoryRoot();
+        var stream = new YamlStream();
+        using var input = File.OpenText(Path.Combine(root, ".github", "workflows", "release.yml"));
+        stream.Load(input);
+        var workflow = (YamlMappingNode)stream.Documents[0].RootNode;
+        var release = (YamlMappingNode)((YamlMappingNode)workflow["jobs"])["release"];
+        var checkout = ((YamlSequenceNode)release["steps"]).Cast<YamlMappingNode>()
+            .Single(static step => step["name"].ToString() == "Checkout");
+
+        ((YamlMappingNode)checkout["with"])["fetch-depth"].ToString().Should().Be("0");
+    }
+
+    [Fact]
     public async Task PushReleasePackages_WhenRunWithoutTagPush_ShouldFailBeforePublication()
     {
         using var fixture = new ReleaseFixture();
