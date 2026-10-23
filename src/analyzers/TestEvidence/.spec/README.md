@@ -72,6 +72,8 @@ Map explicit test-method bindings to discovered and executed test cases across .
 | B-017 | Given a clean checkout with no evidence artifact, this Feature lets the build succeed and the analysis report the evidence as missing with a diagnosis naming the step that produces it.                                                  | Consumer request #256                              | Active  |
 | B-018 | Given an evidence artifact whose recorded inputs no longer match the current analysis inputs, this Feature reports it as stale with a diagnosis naming the step that regenerates it.                                                      | Consumer request #256; 0201-F6 decision 0004       | Active  |
 | B-019 | Given a clean checkout following the documented build, discovery-and-run and analysis sequence, this Feature supplies the analysis with current evidence without hand-written evidence, a pre-existing cache or a diagnostic suppression. | Consumer request #256                              | Active  |
+| B-020 | Given an evidence artifact from one run, this Feature records the cases that run selected separately from the cases it discovered, each with its project, assembly and source provenance.                                                 | Consumer request #256                              | Active  |
+| B-021 | Given evidence artifacts from several runs over the same claim files, this Feature combines them while keeping each case's run selection and provenance.                                                                                  | Consumer request #256                              | Active  |
 
 ## 4. Constraints
 
@@ -319,6 +321,8 @@ conformance evidence.
 | B-017    | Clean checkout without evidence          | Missing                                                                                                                                                                                                                                                                                                                                                                                                                                     | Missing |
 | B-018    | Stale evidence                           | Missing                                                                                                                                                                                                                                                                                                                                                                                                                                     | Missing |
 | B-019    | Clean-checkout bootstrap                 | Missing                                                                                                                                                                                                                                                                                                                                                                                                                                     | Missing |
+| B-020    | Partitioned runs over shared claim files | Missing                                                                                                                                                                                                                                                                                                                                                                                                                                     | Missing |
+| B-021    | Partitioned runs over shared claim files | Missing                                                                                                                                                                                                                                                                                                                                                                                                                                     | Missing |
 
 ## 10. Lessons / Spec Deltas
 
@@ -335,6 +339,11 @@ OQ-3 records the open collector mechanism. No existing claim changed.
 2026-10-23: the owner resolved OQ-3 with a VSTest test logger registered by
 the package build integration; TRX ingestion is rejected. No claim wording
 changed.
+
+2026-10-23: owner decision for consumer request #256 records run selection
+beside discovery. B-020 and B-021 keep each run's selected cases and their
+provenance and combine every run's evidence; 0201-F5 B-017 is amended and
+B-020 and B-021 there gate on the selecting run.
 
 ## 11. Open Questions
 

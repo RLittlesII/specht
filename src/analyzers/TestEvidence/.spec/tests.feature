@@ -149,3 +149,13 @@ Feature: Test evidence adapters
     When the documented build, discovery-and-run and analysis sequence is followed
     Then the analysis consumes current evidence produced by that sequence
     And no hand-written evidence or diagnostic suppression is needed
+
+  @B-020 @B-021
+  Scenario: Partitioned runs over shared claim files
+    Given two acceptance projects compile the same central claim files
+    And the first project's run selects "Category!=visual"
+    And the second project's run selects "Category=visual"
+    When both runs' evidence is collected
+    Then each artifact records the cases its run discovered and, separately, the cases its run selected
+    And every case keeps its project, assembly and source provenance
+    And the combined evidence holds both runs' selections and outcomes

@@ -214,3 +214,25 @@ Feature: Traceability reconciliation
       | outcome |
       | skipped |
       | absent  |
+
+  @B-020 @boundary
+  Scenario: Unselected case
+    Given a required case discovered by a run that did not select it
+    And no other run selected it
+    When the supplied evidence is reconciled by specht evidence
+    Then the case is not counted as passed
+    And the default trace gate fails
+
+  @B-021
+  Scenario Outline: Partitioned runs
+    Given two projects compile the same claim files
+    And the first project's run selects "Category!=visual" and the second's selects "Category=visual"
+    And the visual case selected by the second run "<outcome>"
+    When the supplied evidence is reconciled by specht evidence
+    Then the default trace gate "<gate>"
+
+    Examples:
+      | outcome          | gate     |
+      | passed           | succeeds |
+      | failed           | fails    |
+      | has no outcome   | fails    |
