@@ -69,3 +69,83 @@ Feature: Test evidence adapters
     When its identities are read
     Then runner case IDs and method metadata are available
     And project, framework, source, assembly, configuration, adapter version and run identities are available
+
+  @B-010
+  Scenario: VSTest theory discovery
+    Given a bound xUnit v2 theory with two inline data rows in a VSTest test project
+    When its cases are discovered under VSTest
+    Then each theory case is recorded with its own stable runner case identity
+    And both cases link to the same bound method
+
+  @B-011
+  Scenario: VSTest theory execution
+    Given a bound xUnit v2 theory with two inline data rows in a VSTest test project
+    When its cases are executed under VSTest
+    Then each case's outcome is recorded against that case's own runner identity
+
+  @B-012
+  Scenario: Method compiled from outside the project
+    Given a bound test method whose source file sits outside its test project's directory and is linked into that project
+    When its cases are discovered
+    Then the method identity resolves to the bound method
+    And its source location is the linked file's repository-relative path
+
+  @B-013 @boundary
+  Scenario Outline: Nonpassing VSTest outcomes
+    Given a bound VSTest case that <outcome>
+    When its evidence is collected
+    Then the case is recorded with that outcome
+    And the case is never recorded as passed
+
+    Examples:
+      | outcome          |
+      | failed           |
+      | was skipped      |
+      | was not executed |
+
+  @B-014 @boundary
+  Scenario: Undiscovered VSTest cases
+    Given a bound test method for which VSTest discovered no case
+    When its evidence is collected
+    Then its discovery is reported as unavailable or incomplete
+    And it is reported as neither passing nor a complete empty set
+
+  @B-015 @boundary
+  Scenario Outline: One case never masks another
+    Given a bound xUnit v2 theory whose first case passed and whose second case <outcome>
+    When its evidence is collected
+    Then each case keeps its own outcome
+    And no single method-level outcome replaces them
+
+    Examples:
+      | outcome          |
+      | failed           |
+      | was skipped      |
+      | was not executed |
+
+  @B-016
+  Scenario: Reqnroll-generated VSTest cases
+    Given Reqnroll-generated tests for a Scenario Outline with two example rows executed under VSTest
+    When their evidence is collected
+    Then both generated cases and their outcomes are recorded in the common evidence contract
+    And no binding is required on the generated code
+
+  @B-017 @boundary
+  Scenario: Clean checkout without evidence
+    Given a clean checkout with no evidence artifact
+    When the projects are built and analyzed
+    Then the build succeeds
+    And the analysis reports the evidence as missing with a diagnosis naming the step that produces it
+
+  @B-018 @boundary
+  Scenario: Stale evidence
+    Given an evidence artifact produced before a test source file changed
+    When the analysis is requested
+    Then the evidence is reported as stale with a diagnosis naming the step that regenerates it
+
+  @B-019
+  Scenario: Clean-checkout bootstrap
+    Given a clean checkout with no evidence artifact and no evidence cache
+    When the documented build, discovery-and-run and analysis sequence is followed
+    Then the analysis consumes current evidence produced by that sequence
+    And no hand-written evidence or diagnostic suppression is needed

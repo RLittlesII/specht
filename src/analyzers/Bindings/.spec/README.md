@@ -17,7 +17,7 @@ author: "spec-author"
 milestone: null
 children: []
 depends_on: []
-blocks: ["F2", "F3", "F4", "F5", "F6"]
+blocks: ["F2", "F3", "F4", "F5", "F6", "F7"]
 spikes: []
 created: "2026-10-17"
 updated: "2026-10-18"
