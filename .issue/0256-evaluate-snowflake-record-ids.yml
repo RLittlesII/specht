@@ -1,0 +1,137 @@
+id: "0256"
+type: spike
+title: Weigh Snowflake and other collision-free ids for records claimed across branches
+
+status: ready
+
+value: 3
+risk: 3
+
+parent: null
+children: []
+
+depends_on: []
+spikes: []
+
+spec: null
+
+claims: []
+
+created: "2026-10-23"
+updated: "2026-10-23"
+closed: null
+
+summary: |
+  2026-10-23, the repository owner: "This is snowflake. It is supposedly an
+  algorithm used by twitter to ensure id's without collision. Can we add a
+  spike to investigate if we can use this for id generation for ADRs and
+  Lessons et al, so we don't have collisions across branches?"
+
+  The generator the owner supplied counts milliseconds from a custom epoch of
+  2026-01-01 (1767225600000 ms) and packs a 64-bit id: the milliseconds
+  shifted left 22 bits, a 5-bit datacenter id, a 5-bit worker id, and a 12-bit
+  sequence within one millisecond. It refuses to run when the clock moves
+  backwards and waits for the next millisecond when the sequence overflows.
+  An id minted on 2026-10-23 has 18 decimal digits; from about 2033-07 it has
+  19; the 41-bit time field runs out in 2095.
+
+  Today. Work items and epics share one number space, `.issue/.sequence`,
+  which holds the last id claimed (`.spec/templates/item.yml`; at commit
+  `a72975c` it reads `0255`). Root ADRs (`.spec/adr/`, 0001 to 0020 at
+  `a72975c`) and lessons (`.spec/lessons/`, 0001 to 0012) take the next
+  file number by hand. Inside a Feature, claims (`B-00n`), constraints
+  (`C-n`), open questions (`OQ-n`), `decisions/` and a Feature's `adr/` are
+  numbered per specification. An id is not reserved until it merges:
+  lesson 0005 records decision 0003 of `0001-F5` claimed three times, claims,
+  constraints, questions and item 0118 claimed twice or three times by pull
+  requests cut from one `main`, and one duplicate item id reaching `main`.
+  The remedy today is a procedure, `specht-conventions` § Delivery "Reserve
+  an id before a branch claims it", enforced by review; item 0128 (status
+  `blocked`) proposes `SPEC###` rules that detect a duplicate.
+
+  Questions the spike answers:
+  1. Worker ids. Snowflake is unique only while every concurrent generator
+     holds a distinct worker id, and nothing here coordinates clones,
+     worktrees (agent sessions run several worktrees on one machine) or
+     agents. How would a worker id be assigned - machine, branch
+     hash, author, worktree path - in 10 bits, and what collides when two
+     worktrees or two agents on one machine share one, or when a clock
+     moves back across a restart?
+  2. Citability. Ids are cited by hand: `ADR-0002`, `0001-F1 B-001`, lesson
+     0005, commit subjects such as `fix(0255): ...`, `depends_on`, file names
+     and branch names `<id>/<short-description>` (AGENTS.md § SDLC). What
+     does an 18- to 19-digit id cost there, and does a shorter encoding -
+     base32 of the 64 bits is 13 characters, or truncated time plus random
+     bits - keep the collision property?
+  3. Ordering. A Snowflake id orders by creation time, not merge order. What
+     assumes dense, merge-ordered four-digit numbers? At `a72975c`
+     `.agents/skills/specht-conventions/scripts/next.py` keys each item by
+     the first four characters of its file name (`\d{4}-.*\.yml`), reads
+     `depends_on` with `"(\d{4})"`, reads `.issue/.goal` with `^\d{4}$`,
+     breaks rank ties with `-int(...)` on a Feature id and finally sorts by
+     id; `.issue/.sequence` holds one last id; readers take numbers as a
+     reading order.
+  4. The tool's own grammars. What `specht` ships and enforces: the
+     frontmatter schemas under `.specht/schema/frontmatter/` (epic id
+     `^[0-9]{4}$`, task id `^[0-9]{4}-[0-9]{2}$`, Feature id
+     `^F[0-9]+[a-z]?$`), the manifest's `identifiers` grammars (claim
+     `^B-[0-9]{3}[a-z]?$`, constraint, open question, task, Feature, epic;
+     brief § 5), the engine's own `^\d{4}-(\d{2})$` in
+     `src/specht/Rules/ChildItemRule.cs`, and `SPEC030` on claim ids. Which
+     of these a candidate would change, whether consumers are affected, and
+     which records `specht` does not check at all (this repository's items,
+     ADR and lesson file numbers). A grammar change is a schema version and
+     a new `SPEC###` is a new schema version (AGENTS.md § Invariants;
+     `0001-F7` C-11).
+  5. Directions to weigh, none decided:
+     - (a) Today's sequence plus the lesson 0005 procedure, the baseline.
+     - (b) Snowflake as supplied.
+     - (c) Time plus random without a worker id, ULID- or UUIDv7-shaped.
+     - (d) Provisional branch-local ids, renumbered by CI when the pull
+       request merges.
+     - (e) A CI or `specht` check failing on a duplicate across `main` plus
+       the pull request - the shape item 0128 proposes.
+     - (f) Online allocation from one shared sequence, the allocation
+       analysis of spike 0252.
+  6. Which record kinds collide. Repository-wide kinds - items and epics
+     through `.issue/.sequence`, root ADRs, lessons - against per-Feature
+     kinds - claims, constraints, open questions, decisions, a Feature's
+     ADRs - with lesson 0005's incidents counted by kind. A candidate may
+     suit one group and not the other.
+
+  It is a spike in the manner of item 0220: trial code on branches
+  `0256/trial-<candidate>` that never merge, evidence traced to commands run
+  on named commits, and a proposed ADR in `.spec/adr/` the owner rules on. It
+  changes no shipped behaviour, amends no claim and renumbers nothing. It
+  changes nothing under `src/`, `test/`, `docs/`, `.build/` or `.specht/` on
+  `main`.
+
+  It spans the delivery process, the queue script, every Feature's id
+  grammars and the shipped schema, so it sits at the repository root with
+  `spec: null`. Item 0128 and spike 0252 overlap it: neither waits on it and
+  this item edits neither.
+
+acceptance_criteria:
+  - "A proposed ADR in the repository-wide `.spec/adr/`, with the owner as decider, weighs directions (a) to (f) and any the trials add. It recommends one, or recommends keeping (a). If it adopts anything it names the specification deltas owed and the records it would amend - including item 0128, the delivery reference's reservation rule and lesson 0005's remedy - and edits no accepted record."
+  - "Each finding is traced to a command run on a named commit: of `main` for the baseline, of a branch `0256/trial-<candidate>` that is never merged for each candidate."
+  - "1. Collisions: a simulated trial cuts N parallel branches from one `main`, each allocating ids under each candidate, merges them, and reports the collisions found per candidate and per record kind, against lesson 0005's incidents."
+  - "2. Worker ids: an explicit analysis of how a worker id is assigned with no central coordinator - by machine, branch hash, author or worktree - what collides when two worktrees or agents on one machine share one, and what a clock moved backwards does."
+  - "3. Citation ergonomics: a comparison on real examples - `ADR-0002`, `0001-F1 B-001`, lesson 0005, a commit subject, a `depends_on`, a file name and a branch name - of each candidate's form, length and whether it can be read and typed by hand, including any shorter encoding and whether it keeps the collision property."
+  - "4. Ordering: what in `next.py`, `.issue/.sequence`, `.issue/.goal` and the reading order assumes dense, merge-ordered four-digit numbers, and what each candidate breaks there."
+  - "5. The tool: the effect of each candidate on the shipped frontmatter schemas, the manifest's `identifiers` grammars, the engine's own patterns and `SPEC030`, whether consumers are affected, and the schema version a change would need (`0001-F7` C-11)."
+  - "6. Online allocation: a cross-reference to spike 0252's allocation analysis, stating whether direction (f) is answered there or here."
+  - "A candidate that cannot be made to build or to pass is recorded as a finding, with the reason."
+
+decisions:
+  - |
+    2026-10-23, spec-author: filed on the repository owner's request the
+    same day, shaped as item 0220 was - trial branches that never merge,
+    evidence cited at commits, and a proposed ADR as the product. Status
+    `ready`: a spike has no design to precede it and waits on no item.
+
+out_of_scope:
+  - "Renumbering any existing id - AGENTS.md § Stable IDs; lesson 0005 records the one exception and does not widen it."
+  - "Changing id grammars, the frontmatter schemas, `.issue/.sequence` handling or the queue script on `main` - a follow-up item cut after the owner rules on the ADR."
+  - "Building a duplicate-id check - item 0128."
+  - "Building an allocator or an MCP service - spike 0252 and epic 0132."
+  - "Editing an accepted ADR or decision record - a new record answers it."
