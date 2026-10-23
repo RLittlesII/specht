@@ -204,6 +204,15 @@ Feature: Native Gherkin claim catalogue
     Then claim "REQ-FIX-001" is still declared
     And the required-link diagnostic is still reported
 
+  @B-026 @boundary
+  Scenario: Mixed Examples blocks
+    Given the manifest selects native Gherkin claim input
+    And the Scenario Outline tagged "@REQ-FIX-001" has a second Examples block tagged "@ignore"
+    When the declared analysis is requested
+    Then claim "REQ-FIX-001" keeps its identity
+    And the rows of the first Examples block remain required
+    And only the rows of the "@ignore" Examples block are planned
+
   @B-027
   Scenario: No candidate prefix configured
     Given the manifest selects native Gherkin claim input

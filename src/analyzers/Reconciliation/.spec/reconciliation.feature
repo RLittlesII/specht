@@ -196,3 +196,21 @@ Feature: Traceability reconciliation
       | notRun  | fails     |
       | aborted | fails     |
       | absent  | fails     |
+
+  @B-018 @boundary
+  Scenario: Planned rows
+    Given a required claim whose outline has an active Examples block that passed and a planned Examples block that was skipped
+    When the supplied evidence is reconciled by specht evidence
+    Then the planned rows are reported as planned
+    And the planned rows neither cover the claim nor fail the default trace gate
+
+  @B-019
+  Scenario Outline: Active row beside planned rows
+    Given a required claim whose outline has a planned Examples block and an active row whose case was "<outcome>"
+    When the supplied evidence is reconciled by specht evidence
+    Then the default trace gate fails for that active row
+
+    Examples:
+      | outcome |
+      | skipped |
+      | absent  |

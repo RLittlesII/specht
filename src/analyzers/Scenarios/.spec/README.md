@@ -20,7 +20,7 @@ depends_on: ["F1", "F3"]
 blocks: []
 spikes: []
 created: "2026-10-17"
-updated: "2026-10-18"
+updated: "2026-10-23"
 github_issue: null
 synced_at: null
 ---
@@ -49,7 +49,7 @@ Add scenario-to-test links when a consumer opts into Reqnroll. This draft decomp
 
 ## 3. Acceptance Criteria
 
-<!-- last written by: spec-author, 2026-10-17 -->
+<!-- last written by: spec-author, 2026-10-23 -->
 
 | ID    | Claim                                                                                                                                                                    | Source                                             | Status  |
 | ----- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------- | ------- |
@@ -61,6 +61,7 @@ Add scenario-to-test links when a consumer opts into Reqnroll. This draft decomp
 | B-006 | Given no explicit Scenario or Outline scope, this Feature uses the Gherkin Feature-level scope as the scenario default.                                                  | Decision 0001                                      | Active  |
 | B-007 | Given an explicit Scenario or Outline scope, this Feature replaces the complete Feature-level scope without merging components.                                          | Decision 0001                                      | Active  |
 | B-008 | Given scenario-to-case metadata from a consumer claim bridge or optional Reqnroll integration, this Feature maps it through the common runner-evidence contract.         | Decision 0001                                      | Active  |
+| B-009 | Given an outline whose rows the claim catalogue marks partly planned, this Feature marks each row's case link planned or active while every link keeps the same claim.   | Consumer request #256; 0201-F7 B-026               | Active  |
 
 ## 4. Constraints
 
@@ -165,12 +166,15 @@ or Missing in § 9 until the producer boundary has an executable implementation.
 | B-006    | Feature scope default            | Missing                                                                                                                                                                                    | Missing |
 | B-007    | Complete scenario scope override | Missing                                                                                                                                                                                    | Missing |
 | B-008    | Common scenario bridge contract  | `ScenarioEvidence_WhenCaseIdIsUnknown_ShouldBeInvalid`; `OptionalScenarioRecords_WhenWritten_ShouldBePreserved`; remaining malformed-record cases in `TestEvidenceScenarioReaderUnitTests` | Partial |
+| B-009    | Planned and active rows          | Missing                                                                                                                                                                                    | Missing |
 
 ## 10. Lessons / Spec Deltas
 
-<!-- last written by: spec-author, 2026-10-17 -->
+<!-- last written by: spec-author, 2026-10-23 -->
 
-None.
+2026-10-23: owner decision for consumer request #256 makes planned or ignored
+state per case. B-009 carries that state on each row's case link; no existing
+claim changed.
 
 ## 11. Open Questions
 
