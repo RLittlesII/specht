@@ -206,3 +206,10 @@ Feature: Consumer analysis adoption
       | a known Specht schema  | 0.2.0  |
       | a consumer-owned schema | 0.1.0 |
       | a consumer-owned schema | 7.4.2 |
+
+  @B-025
+  Scenario: Package-delivered test evidence
+    Given a consumer installing Specht.CodeAnalysis
+    And the consumer declares a test evidence file for its build
+    When the consumer's project is analyzed
+    Then the test methods that evidence identifies are recognised as tests

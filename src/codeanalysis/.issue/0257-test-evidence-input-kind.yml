@@ -1,0 +1,32 @@
+id: "0257"
+type: bug
+title: Deliver SpechtTestEvidence files under the input kind the analyzer reads
+status: done
+value: 5
+risk: 2
+parent: "0201"
+children: []
+depends_on: []
+spikes: []
+spec: src/codeanalysis/.spec/README.md
+claims: ["B-025"]
+created: "2026-10-23"
+updated: "2026-10-23"
+closed: "2026-10-23"
+summary: |
+  Reported in RLittlesII/specht#256, gap 4. Specht.CodeAnalysis.props adds
+  every @(SpechtTestEvidence) item to AdditionalFiles with SpechtInputKind
+  "evidence", while DocumentationTestMethods selects only "test-evidence".
+  No other reader consumes "evidence", so a consumer's evidence artifact is
+  silently ignored and no test method is recognised through the package.
+
+  Analyzer tests inject "test-evidence" directly through analyzer config
+  options, and the package integration test declares no SpechtTestEvidence
+  item, so nothing covered the package-to-analyzer route.
+acceptance_criteria:
+  - "A SpechtTestEvidence item declared through the package reaches the analyzer's test-method recognition."
+  - "A package-level integration test covers that route from the props to the analyzer."
+  - "The input kind the package writes is stated in the Feature specification."
+decisions: []
+out_of_scope:
+  - "Native Gherkin claim input, VSTest/xUnit v2 evidence and the Reqnroll scenario bridge (RLittlesII/specht#256 gaps 1-3); those need specification first."
