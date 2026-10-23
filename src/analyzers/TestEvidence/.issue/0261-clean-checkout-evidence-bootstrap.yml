@@ -1,0 +1,32 @@
+id: "0261"
+type: feature
+title: "Bootstrap evidence on a clean checkout"
+status: ready
+value: 4
+risk: 4
+parent: "0201"
+children: []
+depends_on: ["0260"]
+spikes: []
+spec: src/analyzers/TestEvidence/.spec/README.md
+claims: ["B-017", "B-018", "B-019", "B-022", "B-023", "B-024"]
+created: "2026-10-23"
+updated: "2026-10-23"
+closed: null
+summary: |
+  As a consumer adopting the analyzer on a fresh clone I want the first build to succeed
+  before any evidence exists, and every later step to say which step regenerates missing or
+  stale evidence, so that mandatory enforcement with warnings-as-errors never bricks the
+  checkout or a Release build. It waits on 0260 because the bootstrap supplies the artifact
+  0260 defines.
+acceptance_criteria:
+  - "B-017, B-019 - the initial build succeeds and current evidence is supplied on a clean checkout"
+  - "B-022 - reconciliation reports incomplete with a diagnosis naming the producing step"
+  - "B-018 - stale artifact reported with the regenerating step"
+  - "B-023, B-024 - Release excludes test sources without suppression and never uses Debug evidence"
+  - "section 9 carries a row naming a test for each id above."
+decisions: []
+out_of_scope:
+  - "Collector and artifact changes: 0260."
+  - "Reconciliation gating: 0262."
+  - "Everything in section 5 of the cited specification."

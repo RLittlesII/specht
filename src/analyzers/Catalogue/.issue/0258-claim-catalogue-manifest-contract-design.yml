@@ -1,0 +1,35 @@
+id: "0258"
+type: task
+title: "Design the native claim catalogue manifest contract and tag semantics"
+status: ready
+value: 4
+risk: 3
+parent: "0201"
+children: []
+depends_on: []
+spikes: []
+spec: src/analyzers/Catalogue/.spec/README.md
+claims: []
+created: "2026-10-23"
+updated: "2026-10-23"
+closed: null
+summary: |
+  Fix the implementer-owned design (section 7) that 0259, 0260 and 0262 build against, so
+  no later item invents a competing interpretation. It covers the manifest keys under
+  `codeAnalysis` (`records.claimSource`, the claim file sets mapped to Feature identities,
+  the candidate prefix, the planned, ignored and lifecycle tag lists, the Feature-tag
+  agreement check), the per-project required-case scope key and its tag-expression grammar,
+  the SPCT diagnostic ids, and where the Gherkin parser lives under the netstandard2.0
+  analyzer target, including how it reuses the existing claim-tag parser's semantics. This
+  item delivers design text only; it writes no production code and no claim.
+acceptance_criteria:
+  - "0201-F7 section 7 states the manifest keys that make B-001, B-002, B-003, B-006, B-007 and B-027 buildable."
+  - "0201-F7 section 7 states the tag lists and rules that make B-004, B-013, B-016, B-020, B-021, B-023, B-024 and B-025 buildable, and names the SPCT diagnostic id for each diagnostic those claims require."
+  - "0201-F6 section 7 states the per-project required-case scope key and its tag-expression grammar, making 0201-F6 B-026 and 0201-F3 B-025 buildable."
+  - "Section 7 names the parser's project and namespace under the netstandard2.0 analyzer target and states how it shares the existing claim-tag parser's semantics (0201-F7 C-1) with no second interpretation."
+  - "A reader of section 7 alone can write the tests for 0259 and 0260 without a further design decision."
+decisions: []
+out_of_scope:
+  - "Any production code or test: the reader is 0259 and the evidence collector is 0260."
+  - "Authoring or amending claims, constraints or scenarios; those stay spec-author's."
+  - "Everything in section 5 of the cited specification."
