@@ -9,7 +9,7 @@ children: []
 depends_on: []
 spikes: []
 spec: src/codeanalysis/.spec/README.md
-claims: []
+claims: ["B-025"]
 created: "2026-10-23"
 updated: "2026-10-23"
 closed: null
