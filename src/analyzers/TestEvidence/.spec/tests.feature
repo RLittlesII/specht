@@ -130,12 +130,15 @@ Feature: Test evidence adapters
     Then both generated cases and their outcomes are recorded in the common evidence contract
     And no binding is required on the generated code
 
-  @B-017 @boundary
-  Scenario: Clean checkout without evidence
-    Given a clean checkout with no evidence artifact
-    When the projects are built and analyzed
-    Then the build succeeds
-    And the analysis reports the evidence as missing with a diagnosis naming the step that produces it
+  @B-017 @B-022 @boundary
+  Scenario: Clean checkout builds before evidence
+    Given a clean checkout with no evidence artifact and no evidence cache
+    And a selected xUnit v2 project run by VSTest whose test method carries an authored verifies relationship
+    And mandatory enforcement requires a verifies relationship on every test method
+    And warnings are treated as errors
+    When the projects are built and analyzed before any evidence is collected
+    Then the build succeeds without a diagnostic suppression
+    And reconciliation is incomplete, with a diagnosis naming the step that produces the evidence
 
   @B-018 @boundary
   Scenario: Stale evidence
@@ -146,9 +149,12 @@ Feature: Test evidence adapters
   @B-019
   Scenario: Clean-checkout bootstrap
     Given a clean checkout with no evidence artifact and no evidence cache
-    When the documented build, discovery-and-run and analysis sequence is followed
-    Then the analysis consumes current evidence produced by that sequence
-    And no hand-written evidence or diagnostic suppression is needed
+    And a selected xUnit v2 project run by VSTest whose test method carries an authored verifies relationship
+    And mandatory enforcement requires a verifies relationship on every test method
+    And warnings are treated as errors
+    When the documented build, discovery, run and analysis sequence is followed
+    Then the analysis holds current passing evidence for the authored verifies relationship
+    And no hand-written evidence or diagnostic suppression was needed
 
   @B-020 @B-021
   Scenario: Partitioned runs over shared claim files
@@ -159,3 +165,12 @@ Feature: Test evidence adapters
     Then each artifact records the cases its run discovered and, separately, the cases its run selected
     And every case keeps its project, assembly and source provenance
     And the combined evidence holds both runs' selections and outcomes
+
+  @B-023 @B-024 @boundary
+  Scenario: Release excludes the test sources
+    Given a global package reference present in every project
+    And a Release configuration that excludes the test sources and test packages
+    And an evidence artifact left by an earlier Debug build
+    When the Release configuration is built and analyzed
+    Then the build succeeds without a diagnostic suppression
+    And the Debug evidence artifact is not used as Release evidence
