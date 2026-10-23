@@ -79,6 +79,7 @@ public sealed class CodeAnalysisPackageIntegrationTests
                   <PropertyGroup><TargetFramework>net10.0</TargetFramework></PropertyGroup>
                   <ItemGroup><PackageReference Include="Specht.CodeAnalysis" Version="{version}" /></ItemGroup>
                   <ItemGroup><SpechtTestEvidence Include="evidence/Sample.json" /></ItemGroup>
+                  <ItemGroup><SpechtAdditionalRecords Include="decisions/ADR-0002.md" SpechtInputKind="adr" /></ItemGroup>
                   <Target Name="PrintSpechtInputs" BeforeTargets="CoreCompile">
                     <Message Importance="high" Text="SPECHT-ROOT=$(SpechtRoot)" />
                     <Message Importance="high" Text="SPECHT-INPUT:%(AdditionalFiles.SpechtInputKind)|%(AdditionalFiles.SpechtRelativePath)" />
@@ -128,6 +129,10 @@ public sealed class CodeAnalysisPackageIntegrationTests
                 TestContext.Current.CancellationToken);
             Directory.CreateDirectory(Path.Combine(consumer, "evidence"));
             await File.WriteAllTextAsync(Path.Combine(consumer, "evidence", "Sample.json"), "{}", TestContext.Current.CancellationToken);
+            Directory.CreateDirectory(Path.Combine(consumer, "decisions"));
+            await File.WriteAllTextAsync(
+                Path.Combine(consumer, "decisions", "ADR-0002.md"), "# ADR-0002: Declared records\n\n## Status\n\nAccepted.\n",
+                TestContext.Current.CancellationToken);
 
             var restore = await Run(root, "restore", Path.Combine(consumer, "Consumer.csproj"), "--source", output, "--packages",
                 Path.Combine(consumer, "packages"), "--source",
@@ -146,6 +151,9 @@ public sealed class CodeAnalysisPackageIntegrationTests
 
             // And declared test evidence is delivered under the input kind the analyzer's test-method recognition reads.
             designTime.Output.Should().Contain("SPECHT-INPUT:test-evidence|evidence/Sample.json");
+
+            // And a record declared in the project body is delivered under the kind the consumer sets.
+            designTime.Output.Should().Contain("SPECHT-INPUT:adr|decisions/ADR-0002.md");
 
             // And standard compiler suppression controls presentation without changing input delivery.
             await File.WriteAllTextAsync(Path.Combine(consumer, "src", "Feature", ".spec", "README.md"), "invalid frontmatter\n",

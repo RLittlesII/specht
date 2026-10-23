@@ -152,9 +152,16 @@ Configuration and ADR schemas are evaluated when supplied; Feature schema input
 is required to read selected Feature records. No embedded schema is substituted.
 
 `AnalysisInputAdapter` reads the existing `SpechtInputKind` and
-`SpechtRelativePath` AdditionalFiles metadata. Input kinds are `configuration`,
-`mappings`, `feature`, `adr` and `schema:<kind>`; mappings may instead live in
-`codeAnalysis.mappings`. Current source texts also contribute to content identity.
+`SpechtRelativePath` AdditionalFiles metadata. The package delivers the input
+kinds `configuration`, `mappings`, `feature`, `scenario`, `adr`, `schema:<kind>`
+and `test-evidence`, the last for `SpechtTestEvidence` items; mappings may
+instead live in `codeAnalysis.mappings`. Consumer-declared items,
+`SpechtTestEvidence` and `SpechtAdditionalRecords`, are added to AdditionalFiles
+from `Specht.CodeAnalysis.targets`, which MSBuild evaluates after the project
+body, so items the project declares are seen; the props are imported before the
+body, where those item lists are still empty. A `SpechtAdditionalRecords` item
+carries the `SpechtInputKind` the consumer sets. Current source texts also
+contribute to content identity.
 `AnalysisInputAnalyzer` reports `SPCT0001` with default error severity, a relative
 input path and an explicit unavailable property. Normal Roslyn reporting controls
 cannot change the snapshot's underlying availability. It registers one compilation

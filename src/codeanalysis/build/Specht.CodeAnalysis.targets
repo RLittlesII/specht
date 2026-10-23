@@ -3,6 +3,16 @@
     <Warning Text="Specht.CodeAnalysis could not find .specht/manifest.json above '$(MSBuildProjectDirectory)'. Set SpechtRoot to the consumer repository root to enable analysis inputs." />
   </Target>
 
+  <ItemGroup Condition="'$(SpechtRoot)' != ''">
+    <AdditionalFiles Include="@(SpechtAdditionalRecords)">
+      <SpechtRelativePath Condition="'%(SpechtRelativePath)' == ''">$([System.IO.Path]::GetRelativePath('$(SpechtRoot)', '%(FullPath)'))</SpechtRelativePath>
+    </AdditionalFiles>
+    <AdditionalFiles Include="@(SpechtTestEvidence)">
+      <SpechtInputKind>test-evidence</SpechtInputKind>
+      <SpechtRelativePath Condition="'%(SpechtRelativePath)' == ''">$([System.IO.Path]::GetRelativePath('$(SpechtRoot)', '%(FullPath)'))</SpechtRelativePath>
+    </AdditionalFiles>
+  </ItemGroup>
+
   <PropertyGroup>
     <SpechtTestEvidenceOutput Condition="'$(SpechtTestEvidenceOutput)' == ''">$(MSBuildProjectDirectory)/$(BaseIntermediateOutputPath)specht-test-evidence/$(MSBuildProjectName)-$(TargetFramework).json</SpechtTestEvidenceOutput>
     <SpechtTestEvidenceOutput>$([System.IO.Path]::GetFullPath('$(SpechtTestEvidenceOutput)').Replace('\', '/'))</SpechtTestEvidenceOutput>

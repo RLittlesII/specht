@@ -19,7 +19,9 @@ Set `SpechtRoot` when the project is outside the repository tree or when the
 nearest manifest is not the intended repository. Add extra input files through
 `SpechtAdditionalRecords`; each item must set `SpechtInputKind` to the input role
 and may set `SpechtRelativePath` when the path cannot be derived from the root.
-Set `SpechtTestEvidence` for explicit collector inputs.
+Add `SpechtTestEvidence` items for explicit test evidence; the package delivers
+them under the `test-evidence` input kind. Declare both item types in the project
+body.
 
 Diagnostic severity and suppression use standard Roslyn configuration. The
 package adds no application runtime dependency.

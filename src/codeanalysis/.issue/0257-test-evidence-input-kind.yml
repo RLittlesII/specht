@@ -1,7 +1,7 @@
 id: "0257"
 type: bug
 title: Deliver SpechtTestEvidence files under the input kind the analyzer reads
-status: in-progress
+status: done
 value: 5
 risk: 2
 parent: "0201"
@@ -12,7 +12,7 @@ spec: src/codeanalysis/.spec/README.md
 claims: ["B-025"]
 created: "2026-10-23"
 updated: "2026-10-23"
-closed: null
+closed: "2026-10-23"
 summary: |
   Reported in RLittlesII/specht#256, gap 4. Specht.CodeAnalysis.props adds
   every @(SpechtTestEvidence) item to AdditionalFiles with SpechtInputKind

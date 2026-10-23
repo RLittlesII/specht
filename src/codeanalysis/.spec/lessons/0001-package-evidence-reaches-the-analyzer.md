@@ -18,9 +18,14 @@ missing or unread; it was silently ignored (RLittlesII/specht#256, gap 4).
 
 ## Root cause
 
-The package delivered `SpechtTestEvidence` files as the `evidence` input kind,
-while the analyzer's test-method recognition reads only `test-evidence`. Both
-halves were specified by the item name alone; no claim stated that the
+Two defects in the package's build integration, either one enough to lose the
+evidence. The props file was imported before the consumer project body, so
+`@(SpechtTestEvidence)` and `@(SpechtAdditionalRecords)` were still empty when
+its item group evaluated, and nothing was delivered under any kind. Had items
+arrived, they carried the `evidence` input kind, while the analyzer's
+test-method recognition reads only `test-evidence`.
+
+Both halves were specified by the item name alone; no claim stated that the
 package's delivery reaches the analyzer. Analyzer tests supplied `test-evidence`
 directly and the package test declared no evidence, so each half passed in
 isolation.
@@ -29,11 +34,15 @@ isolation.
 
 0201-F6 B-025 requires evidence declared through the `SpechtTestEvidence` item
 to reach the analyzer's test-method recognition, with an `@B-025` scenario that
-exercises the package route end to end. § 7 is to state the delivered input
-kinds completely, including `scenario` and the evidence kind.
+exercises the package route end to end. § 7 now states that both item groups
+are evaluated in the targets file, after the consumer project body, and that
+`SpechtTestEvidence` items are delivered as `test-evidence`.
 
 ## Claim
 
-- [0201-F6 B-025](../README.md#9-traceability-matrix) — no test exists yet; § 9
-  records the claim as Missing until the package-to-analyzer test lands with
-  item 0257.
+- [0201-F6 B-025](../README.md#9-traceability-matrix) — the `@B-025` scenario
+  passes through `CodeAnalysisPackageSteps.ThenEvidenceMethodsAreRecognisedAsTests`,
+  alongside
+  `CodeAnalysisPackageIntegrationTests.DeploymentProject_WhenPacked_ShouldCarryCompilerAssetsAndNoRuntimeDependencies`,
+  which packs the package and checks evidence delivery from a consumer project.
+  § 9 records the claim as Covered.
