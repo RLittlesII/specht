@@ -4,6 +4,7 @@ Feature: Native Gherkin claim catalogue
   Background:
     Given the claim file "specifications/arithmetic.feature" configured as Feature "arithmetic"
     And a Scenario Outline "Add two operands" under the Rule "Addition returns the sum" tagged "@REQ-FIX-001" with two example rows
+    And the claim tag encoding is "@{claim}" with the candidate prefix "REQ-"
     And the consumer's claim grammar accepts "REQ-FIX-001"
     And no epic identity is configured
 
@@ -90,13 +91,16 @@ Feature: Native Gherkin claim catalogue
     When the declared analysis is requested
     Then a duplicate-claim diagnostic is reported at each declaration's path and line
 
-  @B-013
-  Scenario: Malformed claim
+  @B-013 @B-025
+  Scenario: Claim candidates and ordinary tags
     Given the manifest selects native Gherkin claim input
-    And a scenario carries a tag in the claim tag encoding whose identifier fails the claim grammar
+    And the claim grammar requires three digits after "REQ-FIX-"
+    And a scenario tagged "@REQ-FIX-004 @visual @ignore @boundary @issue-42 @REQ-FIX-5"
     When the declared analysis is requested
-    Then a malformed-claim diagnostic is reported at that tag's path and line
-    And no claim is recorded for that tag
+    Then one claim "REQ-FIX-004" is recorded
+    And "@visual", "@ignore", "@boundary" and "@issue-42" declare no claim and draw no diagnostic
+    And a malformed-claim diagnostic is reported at the path and line of "@REQ-FIX-5"
+    And no claim is recorded for "@REQ-FIX-5"
 
   @B-014
   Scenario Outline: Missing or invalid claim file
@@ -199,3 +203,10 @@ Feature: Native Gherkin claim catalogue
     When the declared analysis is requested
     Then claim "REQ-FIX-001" is still declared
     And the required-link diagnostic is still reported
+
+  @B-027
+  Scenario: No candidate prefix configured
+    Given the manifest selects native Gherkin claim input
+    And no candidate prefix is configured beside the claim tag encoding
+    When the declared analysis is requested
+    Then an input failure names the manifest
