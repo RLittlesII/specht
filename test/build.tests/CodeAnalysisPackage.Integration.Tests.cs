@@ -78,6 +78,7 @@ public sealed class CodeAnalysisPackageIntegrationTests
                 <Project Sdk="Microsoft.NET.Sdk">
                   <PropertyGroup><TargetFramework>net10.0</TargetFramework></PropertyGroup>
                   <ItemGroup><PackageReference Include="Specht.CodeAnalysis" Version="{version}" /></ItemGroup>
+                  <ItemGroup><SpechtTestEvidence Include="evidence/Sample.json" /></ItemGroup>
                   <Target Name="PrintSpechtInputs" BeforeTargets="CoreCompile">
                     <Message Importance="high" Text="SPECHT-ROOT=$(SpechtRoot)" />
                     <Message Importance="high" Text="SPECHT-INPUT:%(AdditionalFiles.SpechtInputKind)|%(AdditionalFiles.SpechtRelativePath)" />
@@ -125,6 +126,8 @@ public sealed class CodeAnalysisPackageIntegrationTests
             await File.WriteAllTextAsync(
                 Path.Combine(consumer, ".spec", "adr", "ADR-0001.md"), "# ADR-0001: Package inputs\n\n## Status\n\nAccepted.\n",
                 TestContext.Current.CancellationToken);
+            Directory.CreateDirectory(Path.Combine(consumer, "evidence"));
+            await File.WriteAllTextAsync(Path.Combine(consumer, "evidence", "Sample.json"), "{}", TestContext.Current.CancellationToken);
 
             var restore = await Run(root, "restore", Path.Combine(consumer, "Consumer.csproj"), "--source", output, "--packages",
                 Path.Combine(consumer, "packages"), "--source",
@@ -140,6 +143,9 @@ public sealed class CodeAnalysisPackageIntegrationTests
             designTime.Output.Should().Contain("SPECHT-INPUT:scenario|src/Feature/.spec/adoption.feature");
             designTime.Output.Should().Contain("SPECHT-INPUT:adr|.spec/adr/ADR-0001.md");
             designTime.Output.Should().Contain("SPECHT-ANALYZER:").And.Contain("JsonSchema.Net.dll");
+
+            // And declared test evidence is delivered under the input kind the analyzer's test-method recognition reads.
+            designTime.Output.Should().Contain("SPECHT-INPUT:test-evidence|evidence/Sample.json");
 
             // And standard compiler suppression controls presentation without changing input delivery.
             await File.WriteAllTextAsync(Path.Combine(consumer, "src", "Feature", ".spec", "README.md"), "invalid frontmatter\n",
