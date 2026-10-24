@@ -311,6 +311,7 @@ public sealed class GherkinSteps
     }
 
     [Then("no claim is recorded for {string}")]
+    [Then("no claim {string} is recorded")]
     public void ThenNoClaim(string tag) =>
         Feature("arithmetic").Claims.Select(static item => item.Id).Should().NotContain(tag.TrimStart('@'));
 

@@ -39,7 +39,7 @@ public sealed class GherkinClaimPolicyReader
         ? text : throw new GherkinInputException(null, "Native claim input requires claim.tag, mapped as /claim.");
 
     private static GherkinTagForm? Scope(JsonObject? scopes, string role) =>
-        scopes?[role + "Tag"]?.GetValue<string>() is { } form ? new GherkinTagForm(form, role, false, null) : null;
+        scopes?[role + "Tag"] is JsonValue { } node && node.TryGetValue<string>(out var form) ? new GherkinTagForm(form, role, false, null) : null;
 
     private static IReadOnlyList<string> Tags(JsonNode? node, string[] fallback)
     {

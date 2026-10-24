@@ -47,6 +47,22 @@ public sealed class AnalysisInputReaderGherkinUnitTests
     }
 
     [Fact]
+    public void MarkdownRecordWithTheCurrentLifecycleValue_WhenRead_ShouldFailNamingTheRecord()
+    {
+        // Given
+        var inputs = new AnalysisInputs().Inputs;
+        var index = inputs.FindIndex(static input => input.Kind == "feature");
+        inputs[index] = inputs[index] with { Text = inputs[index].Text!.Replace("spec_status: draft", "spec_status: current") };
+
+        // When
+        var snapshot = Read(inputs);
+
+        // Then
+        snapshot.Failures.Should().Equal(new AnalysisInputFailure("src/read/.spec/README.md",
+            "Required consumer input is missing, invalid or incompatible with its explicit mappings."));
+    }
+
+    [Fact]
     public void TwoClaimFileSets_WhenRead_ShouldAssignEachFilesClaimsToItsSetsFeature()
     {
         // Given

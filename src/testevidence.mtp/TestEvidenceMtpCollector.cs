@@ -66,6 +66,44 @@ public sealed class TestEvidenceMtpCollector : IDataConsumer
         return Task.CompletedTask;
     }
 
+    public void Write(string outputPath, Assembly exportAssembly, string exportJson)
+    {
+        using var payload = JsonDocument.Parse(exportJson);
+        var root = payload.RootElement;
+        var methods = JsonSerializer.Deserialize<TestEvidenceMethod[]>(root.GetProperty("methods").GetRawText(), JsonOptions) ?? [];
+        var bindings = JsonSerializer.Deserialize<TestEvidenceBinding[]>(root.GetProperty("bindings").GetRawText(), JsonOptions) ?? [];
+        var inputs = JsonSerializer.Deserialize<TestEvidenceInput[]>(root.GetProperty("inputs").GetRawText(), JsonOptions) ?? [];
+        var cases = Cases.Values.OrderBy(static item => item.CaseId, StringComparer.Ordinal).ToArray();
+        var outcomes = Results.Values.OrderBy(static item => item.CaseId, StringComparer.Ordinal).ToArray();
+        var collection = new TestEvidenceRunnerCollector().Collect("mtp", AdapterVersion, methods, cases,
+            _sessionId, Volatile.Read(ref _enumerationComplete) == 1, _sessionId,
+            outcomes);
+        var assemblyPath = exportAssembly.Location;
+        if (string.IsNullOrWhiteSpace(assemblyPath) || !File.Exists(assemblyPath))
+        {
+            return;
+        }
+
+        using var sha = System.Security.Cryptography.SHA256.Create();
+        using var stream = File.OpenRead(assemblyPath);
+        var assemblyHash = string.Concat(sha.ComputeHash(stream).Select(static value => value.ToString("x2")));
+        var assemblyName = exportAssembly.GetName().Name ?? "test-assembly";
+        var artifact = new TestEvidenceArtifact(
+            root.GetProperty("projectPath").GetString()!,
+            root.GetProperty("targetFramework").GetString()!,
+            root.GetProperty("configurationName").GetString()!,
+            root.GetProperty("configurationFingerprint").GetString()!,
+            assemblyName, assemblyHash,
+            root.GetProperty("assemblyPath").GetString(),
+            root.GetProperty("sourceFingerprint").GetString()!,
+            root.GetProperty("policyFingerprint").GetString()!, "mtp", AdapterVersion, "1",
+            collection.Discovery with { Methods = methods }, bindings, collection.Results, inputs, [],
+            root.TryGetProperty("catalog", out var catalog)
+                ? JsonSerializer.Deserialize<TestEvidenceCatalogFeature[]>(catalog.GetProperty("features").GetRawText(), JsonOptions) : null);
+        Directory.CreateDirectory(Path.GetDirectoryName(Path.GetFullPath(outputPath))!);
+        File.WriteAllText(outputPath, new TestEvidenceArtifactWriter().Write(artifact));
+    }
+
     internal static Task FinishSessionAsync()
     {
         try
@@ -111,45 +149,12 @@ public sealed class TestEvidenceMtpCollector : IDataConsumer
         var exportType = exportAssembly?.GetType(ExportTypeName, throwOnError: false);
         var exportJson = exportType?.GetField("Json", BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Static)
             ?.GetRawConstantValue() as string;
-        if (string.IsNullOrWhiteSpace(exportJson))
+        if (string.IsNullOrWhiteSpace(exportJson) || exportAssembly is null)
         {
             return;
         }
 
-        using var payload = JsonDocument.Parse(exportJson);
-        var root = payload.RootElement;
-        var methods = JsonSerializer.Deserialize<TestEvidenceMethod[]>(root.GetProperty("methods").GetRawText(), JsonOptions) ?? [];
-        var bindings = JsonSerializer.Deserialize<TestEvidenceBinding[]>(root.GetProperty("bindings").GetRawText(), JsonOptions) ?? [];
-        var inputs = JsonSerializer.Deserialize<TestEvidenceInput[]>(root.GetProperty("inputs").GetRawText(), JsonOptions) ?? [];
-        var cases = Cases.Values.OrderBy(static item => item.CaseId, StringComparer.Ordinal).ToArray();
-        var outcomes = Results.Values.OrderBy(static item => item.CaseId, StringComparer.Ordinal).ToArray();
-        var collection = new TestEvidenceRunnerCollector().Collect("mtp", AdapterVersion, methods, cases,
-            _sessionId, Volatile.Read(ref _enumerationComplete) == 1, _sessionId,
-            outcomes);
-        var assemblyPath = exportAssembly?.Location;
-        if (string.IsNullOrWhiteSpace(assemblyPath) || !File.Exists(assemblyPath))
-        {
-            return;
-        }
-
-        using var sha = System.Security.Cryptography.SHA256.Create();
-        using var stream = File.OpenRead(assemblyPath);
-        var assemblyHash = string.Concat(sha.ComputeHash(stream).Select(static value => value.ToString("x2")));
-        var assemblyName = exportAssembly!.GetName().Name ?? "test-assembly";
-        var artifact = new TestEvidenceArtifact(
-            root.GetProperty("projectPath").GetString()!,
-            root.GetProperty("targetFramework").GetString()!,
-            root.GetProperty("configurationName").GetString()!,
-            root.GetProperty("configurationFingerprint").GetString()!,
-            assemblyName, assemblyHash,
-            root.GetProperty("assemblyPath").GetString(),
-            root.GetProperty("sourceFingerprint").GetString()!,
-            root.GetProperty("policyFingerprint").GetString()!, "mtp", AdapterVersion, "1",
-            collection.Discovery with { Methods = methods }, bindings, collection.Results, inputs, [],
-            root.TryGetProperty("catalog", out var catalog)
-                ? JsonSerializer.Deserialize<TestEvidenceCatalogFeature[]>(catalog.GetProperty("features").GetRawText(), JsonOptions) : null);
-        Directory.CreateDirectory(Path.GetDirectoryName(Path.GetFullPath(outputPath))!);
-        File.WriteAllText(outputPath, new TestEvidenceArtifactWriter().Write(artifact));
+        new TestEvidenceMtpCollector().Write(outputPath, exportAssembly, exportJson);
     }
 
     private const string AdapterVersion = "1.0.0";
