@@ -2,7 +2,7 @@ id: "0045"
 type: task
 title: Bring the schema set and templates to the pin with upgrade
 
-status: ready-for-architecture
+status: ready-for-implementation
 
 risk: 4
 
@@ -21,7 +21,7 @@ claims:
   - B-052
 
 created: "2026-10-08"
-updated: "2026-10-11"
+updated: "2026-10-24"
 closed: null
 
 summary: |
@@ -62,6 +62,33 @@ decisions:
     and the B-007 line name the write set as C-2 and B-007 now state it
     (ADR-0011; 0001-F5 decision 0011). Whether `upgrade` creates a part
     `init` was not asked for is OQ-51, open.
+  - |
+    2026-10-24, implementer (architecture pass; nothing built): § 6 and
+    § 7 "Upgrade to the pin" design the command. A `Features/Upgrade/`
+    slice holds `UpgradeCommand`, `UpgradeWriter` and
+    `UpgradeRegistration`, joined in `Program.cs` beside `AddInit`. The
+    writer is in the host because only the tool assembly embeds the
+    templates. `InitWriter`'s shipped-file mapping moves to
+    `Features/ShippedFiles.cs` for its second caller. The pin comes
+    from the check's `SpecSchemasLoader.LoadManifest` and
+    `SpecManifestParser.PinnedVersion` and is never written. Each
+    present shipped file is compared byte-exact and rewritten when it
+    differs. An absent one stays absent, on OQ-51's proposed default
+    (a), which is still open. Files the pin does not ship are never
+    read. No frontmatter schema is touched under the on-disk source or
+    a recorded upstream source (0093, 0094). Writes go through a
+    generalised `SpecManifestStore` staged replace that refuses paths
+    outside the two folders. A current root prints
+    `.specht/ is current at schemaVersion <pin>`. Exit codes follow the
+    check's existing catches, proven by 0046 and 0048. The change
+    listing and manifest keys are 0047's. ADR-0014: existing stores
+    and composition, no mediator or CQRS, and no ADR.
+  - |
+    2026-10-24, spec-author: four points the design rests on and no claim
+    decides are open, each on § 7's reading as its proposed default:
+    line endings in the byte comparison (OQ-61), a write failing partway
+    (OQ-62), the transient staging sibling under B-007 and B-063 (OQ-63),
+    and B-006's manifest keys before 0047 (OQ-64).
 
 out_of_scope:
   - "A template the manifest names as the consumer's — 0131."

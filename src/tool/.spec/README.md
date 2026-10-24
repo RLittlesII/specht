@@ -305,6 +305,19 @@ Item `0042` built the version set and the pin as an integer; item `0120` convert
 | Report provenance (B-011)                                                       | Technical | The existing `SpecSchemaSource` value flows through the runner and report mapper; input selection and resolved provenance are distinct |
 | References deferred by the schema library (B-105 to B-107)                      | Both      | The existing frontmatter evaluation boundary catches unresolved local references with their root-relative schema file identity         |
 
+<!-- last written by: implementer, 2026-10-24 (item `0045`, design only; not built) -->
+
+| Concern                                                                                                             | Classification | Where                                                                                                                     |
+| ------------------------------------------------------------------------------------------------------------------- | -------------- | ------------------------------------------------------------------------------------------------------------------------- |
+| What `upgrade` brings to the pin: the pinned version's shipped schema and template files, at `init`'s paths (B-005) | Business       | `ShippedFiles.At(SemanticVersion)` over the tool's embedded bytes, shared with `InitWriter`                               |
+| A present file differs when its bytes differ; an absent file stays absent (B-005, B-006; OQ-51 (a), open)           | Business       | `UpgradeWriter.Upgrade`                                                                                                   |
+| No frontmatter schema is read or written under the on-disk source or a recorded upstream source (C-2, C-8)          | Business       | `UpgradeWriter.Upgrade`, on `SpecStructure.SchemaSource` and `SpecStructure.SpechtSchema`; items `0093`, `0094` extend it |
+| The pin is read and never written (B-052, C-13)                                                                     | Business       | `SpecSchemasLoader.LoadManifest` and `SpecManifestParser.PinnedVersion`; item `0045` writes no manifest byte              |
+| A write lands only under the frontmatter schema folder or the templates folder (B-007, C-2)                         | Technical      | `SpecManifestStore.ReplaceConfigurationFile`, which refuses any other root-relative path                                  |
+| A rewrite replaces a file whole                                                                                     | Technical      | The manifest's existing staged sibling and atomic move, shared by `SpecManifestStore.WriteManifest`                       |
+| Printed paths are root-relative with `/` (C-7)                                                                      | Technical      | `UpgradeResult` carries the relative paths; `UpgradeCommand` prints them                                                  |
+| A missing root or manifest exits `2`, a rejected manifest or pin `3`                                                | Both           | The check's existing exceptions, caught in `UpgradeCommand` as `CheckCommand` catches them; proven by `0046` and `0048`   |
+
 ## 7. Technical Design
 
 ### Schema command boundary
@@ -538,6 +551,120 @@ The store reads one file under `.specht/schema/frontmatter/` through the injecte
 The rationale for content identity, schema/tool version independence, the Git commit alternative, and the separation of recording from enforcement are recorded in [ADR-0002](adr/0002-schema-locks-are-independent-of-tool-versions.md).
 
 The digest covers every file recursively under `src/tool/schema/v<version>/`, `src/tool/manifest/v<version>/`, `src/tool/templates/v<version>/` and `docs/rules/v<version>/`. These are the existing shipping trees (reuse: `SchemaVersions.ReadEmbedded`, `InitWriter`, and the engine and host resource declarations); the manifest stays in its current separate tree. Each path is relative to the repository root, uses `/`, and is sorted ordinally. For each file the hash receives its UTF-8 path length as an eight-byte big-endian integer, its path bytes, its content length in the same form, then its unchanged content bytes. Length framing prevents different file boundaries from yielding the same input. No timestamp, absolute root or platform newline conversion enters the hash. A new lock is written to a temporary sibling and moved into place; a recorded digest is never recomputed by locking. Validation of the shipped set against the lock, release gating and cutting a version remain outside this change.
+
+### Upgrade to the pin
+
+<!-- last written by: implementer, 2026-10-24 (item `0045`, design only; not built) -->
+
+**Designed 2026-10-24 for item `0045`; not built.** `specht upgrade` makes the
+pinned version's schema and template files on disk the shipped bytes. It reads
+the pin and never writes it (B-052, C-13). Items `0046`, `0047`, `0048`,
+`0093`, `0094` and `0131` extend this path; none of them replaces it. The
+command keeps the name `upgrade` while OQ-12 is open.
+
+**The slice.** `src/tool/Features/Upgrade/` holds three files, as `Init/` does:
+
+| File                     | Holds                                                                                                                                                    |
+| ------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `UpgradeCommand.cs`      | The command and its nested `Settings`, `--root` only. It calls `UpgradeWriter.Upgrade(Path.GetFullPath(root), token)`, prints, and folds to an exit code |
+| `UpgradeWriter.cs`       | The comparison and the rewrite                                                                                                                           |
+| `UpgradeRegistration.cs` | `AddUpgrade(IServiceCollection)` and `AddUpgrade(IConfigurator)`, the `"upgrade"` command and its description                                            |
+
+`Program.cs` gains `services.AddUpgrade();` after `services.AddInit();` and
+`.AddUpgrade()` in the `config.AddInit().AddSchema()` chain, until item `0144`
+moves the list into the factory (ADR-0007). Host tests compose through the same
+two extensions. The writer lives in the host slice, not beside
+`SchemaVersionManager`: the templates are embedded only in the tool assembly
+(`src/tool/tool.csproj`), and the engine holds the schemas only as decoded text
+(`SpechtResources.Texts`), which cannot answer a byte comparison.
+
+**The shipped files are one object with two callers.** `InitWriter.Selected`
+already maps `schema/v<version>/<path>` and `templates/v<version>/<path>` to
+`.specht/schema/<path>` and `.specht/templates/<path>` through its `Shipped()`
+pattern. That mapping moves to `ShippedFiles` at `src/tool/Features/ShippedFiles.cs`,
+the `Features/` root, because a second slice now reads it. It wraps the
+dictionary `InitWriter.ShippingCopy(Assembly)` already reads. `At(version)`
+returns that version's root-relative paths and bytes in ordinal order.
+`InitWriter` keeps its constructor and filters `At` by part. `UpgradeWriter`
+takes the frontmatter and template entries and never the manifest. No new
+static member and no second resource read are added.
+
+**What is compared.** `UpgradeWriter.Upgrade` reads the manifest through
+`SpecSchemasLoader.LoadManifest`, the check's read, and the pin through
+`SpecManifestParser.PinnedVersion`. Under that pin, for each shipped file:
+
+| On disk                    | Outcome                            | Claim                         |
+| -------------------------- | ---------------------------------- | ----------------------------- |
+| Absent                     | Not written; the part stays absent | OQ-51 (a), open               |
+| Bytes equal to the shipped | Current                            | B-006                         |
+| Any byte differs           | Rewritten with the shipped bytes   | B-005, older or newer version |
+
+The comparison is byte-exact, `ReadOnlySpan<byte>.SequenceEqual`, with no
+decoding, no line-ending normalisation and no `$id` reading, the same identity
+the version lock uses (C-17). A hand edit, a version's change and a CRLF
+checkout all differ. The epic schema follows its presence. `init` writes it
+only where its rule allows, so presence never adds an epic schema `init` would
+not have written. File names are the shipped names, as `init` writes them under
+the embedded source; `frontmatterSchemas` names apply to the disk and upstream
+paths that `0094` and `0093` own.
+
+**Absent files rest on OQ-51's proposed default (a).** A part the consumer never
+asked `init` for stays absent, and `init --schemas` or `init --templates` adds
+it. Reading (b) or (c) changes only the `Absent` row.
+
+**What is never touched.** A file in either folder that the pinned version does
+not ship, whether an older version's or the consumer's, is not read (B-063,
+C-2). With `SpecStructure.SchemaSource` set to `Disk`, or a recorded
+`SpecStructure.SpechtSchema`, no frontmatter schema is read or written, the
+templates are still compared, and no network type is reached (B-029, B-067,
+C-8). Item `0094` adds the skip listing, and item `0093` replaces the upstream
+branch with its fetch and hash check through `UpstreamSchemaFetcher`.
+`upgrade` takes no `--schema-source` option; whether it gains one belongs to
+`0094`. Until item `0130` adds the key, every shipped template is compared.
+Item `0131` removes the named ones before the comparison (B-060).
+
+**The plan, then the writes.** Every read and comparison finishes before the
+first write, so a failed read writes nothing. Rewrites go in ordinal path order
+through `SpecManifestStore.ReplaceConfigurationFile(root, relative, bytes,
+token)`. That is the manifest's staged sibling and atomic replace,
+generalised; `WriteManifest` becomes a call to it with `RelativePath`. It
+refuses a relative path that is not under `FrontmatterSchemaFolder`, a new
+`TemplateFolder` constant (`.specht/templates`), or `RelativePath` itself. That
+puts B-007's boundary in the one method that writes. The staging sibling exists
+only during one replace and is removed on success and on failure, so a
+before-and-after snapshot (B-007, B-063) sees only rewritten files.
+`ReadConfigurationFile(root, relative)` returns bytes or null for the
+comparison; `ReadFrontmatterSchema` remains for the loader. A failure partway
+through leaves earlier files rewritten, and a second run completes the rest.
+
+**The result and the output.** `UpgradeResult(SemanticVersion Pinned,
+IReadOnlyList<string> Rewritten)` carries root-relative `/` paths (C-7). With
+nothing rewritten, `UpgradeCommand` prints
+`.specht/ is current at schemaVersion <pin>` and exits `0` (B-006). After a
+rewrite it exits `0` (B-005) and prints nothing in item `0045`. Item `0047`
+adds the pinned version and each file to standard output (B-017). It also
+extends the plan with the missing manifest keys (B-016), written through
+`WriteManifest`, so "current" then also covers the keys B-006 lists. Until
+then the manifest is read only, and B-006's scenarios already hold every key.
+B-059 belongs to `0047`.
+
+**Failures before `0046` and `0048`.** The loader and parser throw the check's
+exceptions. `UpgradeCommand` catches them the way `CheckCommand` does:
+`SpechtRootNotFoundException` and `SpechtManifestNotFoundException` give `2`;
+`SpechtManifestUnreadableException` and `SpechtManifestException` give `3`, an
+unshipped or malformed pin included. Each writes one `specht:` line to standard
+error, and none writes a file. Items `0046` (B-018 to B-020) and `0048` (B-021)
+prove those paths and own any divergence from the check. An `IOException` or
+`UnauthorizedAccessException` while writing becomes a `SpechtManifestException`
+naming the root-relative file, as `SchemaVersionManager.Pin` already maps one,
+so no absolute path reaches the host's handler (brief § 9). Exit `3` there is
+the pin command's precedent; no claim names it.
+
+**ADR-0014.** The design uses the existing store, parser, loader and
+hand-written composition: no mediator, no CQRS contract, no new abstraction and
+no architecture migration. `ShippedFiles` has two real callers. The store
+methods extend `SpecManifestStore` and replace nothing. No ADR is recorded,
+because no repository rule changes.
 
 ## 8. Testing Strategy
 
@@ -865,7 +992,7 @@ byte orders of UTF-16 and UTF-32. Existing claim IDs and input semantics remain.
 
 ## 11. Open Questions
 
-<!-- last written by: spec-author, 2026-10-16 (OQ-59 and OQ-60 raised, decision 0015) -->
+<!-- last written by: spec-author, 2026-10-24 (OQ-61 to OQ-64 raised, item 0045 design) -->
 
 | ID | Question | Blocks | Resolution |
 | ----- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --- |
@@ -919,7 +1046,7 @@ byte orders of UTF-16 and UTF-32. Existing claim IDs and input semantics remain.
 | OQ-48 | How does `specht schema list` mark the pinned version? The owner chose that it is marked (OQ-19) and not how. Readings: (a) a prefix on the pinned line, the other lines indented to match, so no line is a version alone; (b) a suffix after the version, so every line starts with its version and an unmarked line is the version alone, as B-041 and B-085 read. Raised 2026-10-11 by spec-author. Owner not asked. | B-084; B-041 (the marked line) | Resolved 2026-10-14 (decision 0012): use the suffix ` (pinned)`, as in the reviewed walkthrough; the owner asked that a failing listing provide recovery. |
 | OQ-49 | What does `specht schema list` do when the pin cannot be read or is not in the list: `--root` naming a path that is not a directory, a manifest that does not parse or that the check rejects, or a manifest pinning a version the tool does not ship? The owner's answer to OQ-19 covers a root with a manifest and a root without one. B-041 is written with no condition on the root, and whether it holds in these cases is this question. Readings: (a) the plain list and exit `0`, since the list is the tool's; (b) the failure the check gives, exit `2` or `3` (B-018 to B-020, B-003). Raised 2026-10-11 by spec-author. Owner not asked. | B-041; B-084; a claim when answered | Resolved 2026-10-14 (decision 0012): a missing root exits `2`; an unreadable or rejected manifest exits `3`, with no list on stdout and recovery information on stderr (B-108, B-109). |
 | OQ-50 | Under a pin policy (B-053, B-054) the check uses a version above the one the manifest pins. Which does `specht schema list` mark: the version pinned, the version used, or both? B-084 marks the one pinned. Raised 2026-10-11 by spec-author. Owner not asked. | B-084; B-053; B-054 | Open |
-| OQ-51 | `init` now writes the frontmatter schemas and the templates only when asked (`0001-F4` decision 0004), so a root may hold a manifest and neither. Does `upgrade` create a frontmatter schema or a template that is absent, or rewrite only the files present? B-005 rewrites files that "differ" from the pinned version's and does not say whether an absent file differs; B-006 calls a root current when it "already holds what it would write". Readings: (a) `upgrade` rewrites only files present, and a part the consumer never asked for stays absent; (b) `upgrade` writes every file the pinned version ships, which undoes the choice `init` offered; (c) `upgrade` takes the same part options as `init`. Raised 2026-10-11 by spec-author. | B-005; B-006; B-062; item `0045` | Open. Owner not asked. Proposed default: (a), with `init --schemas` or `init --templates` the way to add a part. |
+| OQ-51 | `init` now writes the frontmatter schemas and the templates only when asked (`0001-F4` decision 0004), so a root may hold a manifest and neither. Does `upgrade` create a frontmatter schema or a template that is absent, or rewrite only the files present? B-005 rewrites files that "differ" from the pinned version's and does not say whether an absent file differs; B-006 calls a root current when it "already holds what it would write". Readings: (a) `upgrade` rewrites only files present, and a part the consumer never asked for stays absent; (b) `upgrade` writes every file the pinned version ships, which undoes the choice `init` offered; (c) `upgrade` takes the same part options as `init`. Raised 2026-10-11 by spec-author. | B-005; B-006; B-062; item `0045` | Open. Owner not asked. Proposed default: (a), with `init --schemas` or `init --templates` the way to add a part. Note, implementer, 2026-10-24: § 7 "Upgrade to the pin" designs item `0045` on (a); (b) or (c) would change only its absent-file row. |
 | OQ-52 | The names of the lock target and the cut target, how the cut is given its version, where the version lock sits and how it is written, and where the two targets' logic sits so that a test can fail B-092 to B-100: `0055-F1` § 8 holds that the build has no tests, and `0055-F6` proves its tag check by record (`0055-F6` § 5 row 9). Also not decided: what an idle lock run (B-093) or a refused cut (B-094, B-095) says; and where one version's manifest sits in the shipping copy. `0001-F5` decision 0011 moves the live manifest to `.specht/manifest.json`, outside `schema/`, and has the `$id` mirror the file's path under `.specht/` (C-6), and `0001-F4` A-2 and C-2 still say only that the shipping copy is embedded per version from `src/tool/schema/` and `templates/`: whether a version's manifest stays in its schema folder or takes a tree of its own is not written, so B-086, B-089, B-096 and C-16 speak of every tree a version's files sit in and count none. Proposed default, the direction of the plan the owner approved (decision 0009): the lock at `src/tool/schema/versions.lock.json`, outside the folders a version embeds; one SHA-256 for each version over its files in every such tree, in ordinal path order, each file's path and then its bytes; the logic in code a test reaches, a build target only calling it. Raised 2026-10-11 by spec-author for the `implementer`, who proposes these in § 7, and the `test-writer`. | A-4; B-089; B-092 to B-100; `0055-F6` B-013 | Open |
 | OQ-53 | The working version turns out to need another number - cut as `0.1.1`, it gains a change that can fail a tree that passed, which C-11 makes a `0.minor` - or is abandoned. May an unlocked version's folders be renamed or deleted, and by what? B-089 to B-091 bind what is locked and how many versions are not, and nothing else speaks of it. Proposed default: by hand, in a reviewed change - the folders renamed, and each `$id` and rule page row rewritten to the new number - and no target is built for it. Raised 2026-10-11 by spec-author. Owner not asked. | B-086; B-087; B-096 | Resolved in part 2026-10-14 by the repository owner (decision 0013): schema `0.1.1`, unlocked and never published, is abandoned - its folders deleted by hand in a reviewed change, with no target built for it. Renaming an unlocked version is not decided and stays open. |
 | OQ-54 | A version locked and never published - the lock merged, and a fault found before its tag. May its lock entry be removed so the version can be edited, or is a locked version changed only by a new version, as a published one is (C-1)? C-17 and B-093 are written on the second reading. Proposed default: the second - once the entry is on `main` the version is treated as published and the fix is the next version, at the cost of a number no package carries. Raised 2026-10-11 by spec-author. Owner not asked. | C-17; B-089; B-093 | Resolved 2026-10-14 by the owner (decision 0014): a locked version no published package has carried may be relocked; a published one changes only by a new version (C-1). The relock, a reviewed removal of the entry and then the lock target (B-092), is spec-author's reading, not stated by the owner, as in C-17; so B-093 is unchanged. C-17 amended. |
@@ -929,6 +1056,10 @@ byte orders of UTF-16 and UTF-32. Existing claim IDs and input semantics remain.
 | OQ-58 | Each id B-115 adds enters schema `0.2.0`'s vocabulary in the pull request that builds its rule (owner, 2026-10-15), so B-014 holds at every commit, and `0.2.0` is relocked as each rule lands (C-17; decision 0014). Decision 0013 makes `0.2.0` the next published version. A release cut before all nine rules are built publishes `0.2.0` with only the ids then in it, and C-1 and B-015 freeze it there: decision 0014 allows no relock once a package has carried it, so the ids still to come cannot enter `0.2.0` and B-115 cannot hold. What becomes of them? Options: (a) no release carries `0.2.0` until B-115 holds - all nine ids in its vocabulary, each with its rule; (b) the release goes, and the ids not yet built move to a `0.3.0`, which needs the owner to amend B-115 and decision 0014's calls 2 and 3, and spends a number decision 0014 rejected. Under (a) the wait may be long: `SPEC015`'s specification (`0101-F9`) is a draft, and `SPEC014` and `SPEC024` (`0001-F6`) have no item. Recommendation: (a), because it changes no claim and no decision. Whether a check enforces it, such as the release guard (`0055-F6` B-013) refusing a tag while `0.2.0`'s vocabulary is short of B-115's, is a claim the answer would add. Raised 2026-10-15 by spec-author; reworded the same day for the owner's per-rule ruling. Owner not asked. | B-115; C-1; C-17 | Open |
 | OQ-59 | Should `SPEC060` report a § 9 `Missing` row once the item delivering that claim is done, rather than once the whole Feature is done? The consumer item schema carries no claim ids, so the rule cannot find that item. Proposed default: not until items carry claims; B-118 keys on the Feature's delivery status. Raised 2026-10-16 by spec-author on the owner's ruling that it is not built now. | § 5 row 27 | Open |
 | OQ-60 | Is schema `0.2.0` published? The release run for tag `v0.1.131` (2026-10-15) pushed the `specht.tool` package `0.1.131`, which embeds `0.2.0` at lock digest `5d087a05…`; `main` locks `0.2.0` at `3e86b5…`, relocked with the matrix-resolution manifest keys (item `0222`) on a commit after the tagged one, so the package and `main` hold two different `0.2.0`s. Under C-1, C-17 and decision 0014 call 1 a carried version is never relocked, so (a) the change of decision 0015 is `0.3.0`, and `main`'s relocked `0.2.0` is a published version changed in place, for the owner to rule on with OQ-58; or (b) a pre-release package does not publish a schema version, `0.2.0` may still be relocked, and B-118 to B-124 read `0.2.0` for `0.3.0`. Proposed default: (a), because C-1 says "published in a package" and names no exception for a pre-release. Raised 2026-10-16 by spec-author. Owner not asked. | B-118 to B-124; C-1; C-17; OQ-58 | Open |
+| OQ-61 | Is a frontmatter schema or template that differs from the shipped file only in line endings current? Compared byte-exact, a checkout with CRLF line endings (`core.autocrlf`) never counts as current, and `upgrade` rewrites it on every run. Readings: (a) byte-exact, as § 7 designs it; (b) line endings normalised before comparing; (c) byte-exact, with the rewrite keeping the on-disk file's line endings. Raised 2026-10-24 by spec-author. | B-005; B-006 | Open. Owner not asked. Proposed default: (a), the identity the version lock uses (C-17). |
+| OQ-62 | What does `upgrade` do when a write fails after earlier files were rewritten? No claim states the exit code, or whether the files already rewritten stay rewritten. Readings: (a) exit `3` naming the root-relative file, as the pin command does, with earlier files left rewritten and a second run completing the rest, as § 7 designs it; (b) the files already rewritten are restored. Raised 2026-10-24 by spec-author. | B-005; B-007; item `0046` | Open. Owner not asked. Proposed default: (a). |
+| OQ-63 | Does "created" in B-007 and B-063 cover a file that exists only during one write? The atomic replace creates a staging sibling under `.specht/templates/` or `.specht/schema/frontmatter/` and always deletes it. Readings: (a) the claims bind the end state, and the staging sibling is outside them; (b) they bind every moment, and the replace stages elsewhere. Raised 2026-10-24 by spec-author. | B-007; B-063; C-2 | Open. Owner not asked. Proposed default: (a); the claims stand as written. |
+| OQ-64 | B-006 counts every manifest key the pinned version defines among what makes a root current, and adding a missing key is item `0047`'s (B-016), so until `0047` lands `0045` judges files only. Readings: (a) `0045`'s tests for B-006 use manifests that already hold every key, and `0047` extends the judgement to a missing key; (b) B-006 is split, its manifest-key part a claim of its own that `0047` carries. Raised 2026-10-24 by spec-author. | B-006; items `0045`, `0047` | Open. Owner not asked. Proposed default: (a). |
 
 ## 12. Sign-off
 
