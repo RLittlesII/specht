@@ -1,3 +1,4 @@
+using System.Security.Cryptography;
 using System.Text.Json.Nodes;
 using AwesomeAssertions;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel;
@@ -150,6 +151,28 @@ public sealed class TestEvidenceVsTestLoggerUnitTests
         // Then
         Case(source.Artifact(), FirstId)["categories"]!.AsArray().Select(static item => item!.GetValue<string>()).Should()
             .Equal("Smoke", "visual");
+    }
+
+    [Fact]
+    public void ACaseFromOneSource_WhenDiscovered_ShouldCarryThatSourcesProjectAssemblyAndMethodLocation()
+    {
+        // Given
+        var source = new VsTestSource();
+        var fact = source.Case(FirstId, "A.LocalCases.Fact", "A.LocalCases", "Fact");
+
+        // When
+        source.Attach().Discover(source.Source, fact);
+
+        // Then
+        var artifact = source.Artifact();
+        artifact["project"]!["path"]!.GetValue<string>().Should().Be("A/A.csproj");
+        artifact["project"]!["targetFramework"]!.GetValue<string>().Should().Be("net10.0");
+        artifact["assembly"]!["name"]!.GetValue<string>().Should().Be("A");
+        artifact["assembly"]!["path"]!.GetValue<string>().Should().Be(source.Source);
+        artifact["assembly"]!["sha256"]!.GetValue<string>().Should()
+            .Be(Convert.ToHexStringLower(SHA256.HashData(source.FileSystem.File.ReadAllBytes(source.Source))));
+        artifact["discovery"]!["methods"]!.AsArray().Single(static item => item!["symbolId"]!.GetValue<string>() == "M:A.LocalCases.Fact")!
+            ["location"]!["path"]!.GetValue<string>().Should().Be("A/LocalCases.cs");
     }
 
     [Theory]

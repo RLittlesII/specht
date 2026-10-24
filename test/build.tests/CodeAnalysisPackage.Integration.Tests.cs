@@ -175,6 +175,45 @@ public sealed class CodeAnalysisPackageIntegrationTests
         }
     }
 
+    [Fact]
+    public async Task DeploymentProject_WhenPacked_ShouldCarryTheVsTestLoggerFilesPerTargetFrameworkAndNoTestPlatformAssembly()
+    {
+        if (!AppContext.TargetFrameworkName!.EndsWith("v10.0", StringComparison.Ordinal))
+        {
+            Assert.Skip("The package integration test runs once against the repository's .NET 10 consumer runtime.");
+        }
+
+        // Given
+        var root = FindRepositoryRoot();
+        var output = Path.Combine(root, ".artifacts", "codeanalysis-package-tests", Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(output);
+
+        try
+        {
+            // When
+            var package = await Pack(root, "src/codeanalysis/codeanalysis.csproj", output, "Specht.CodeAnalysis");
+
+            // Then
+            using var archive = ZipFile.OpenRead(package);
+            var entries = archive.Entries.Select(static entry => entry.FullName).ToArray();
+            entries.Where(static entry => entry.StartsWith("build/vstest/", StringComparison.Ordinal)).Should().BeEquivalentTo(
+                from framework in new[] { "net10.0", "net11.0" }
+                from file in new[]
+                {
+                    "Specht.TestEvidence.VsTest.TestLogger.dll", "Specht.Analysis.dll", "TestableIO.System.IO.Abstractions.Wrappers.dll",
+                    "Testably.Abstractions.FileSystem.Interface.dll",
+                }
+                select $"build/vstest/{framework}/{file}");
+            entries.Select(static entry => entry[(entry.LastIndexOf('/') + 1)..]).Should().NotContain(static file =>
+                file.StartsWith("Microsoft.TestPlatform.", StringComparison.Ordinal)
+                || file.StartsWith("Microsoft.VisualStudio.TestPlatform.", StringComparison.Ordinal));
+        }
+        finally
+        {
+            Directory.Delete(output, recursive: true);
+        }
+    }
+
     private static async Task<string> Pack(string root, string project, string output, string packageId)
     {
         var result = await Run(root, "pack", project, "--configuration", "Debug", "--output", output, "--no-restore");
