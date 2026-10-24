@@ -8,6 +8,32 @@ internal static class TestEvidenceJson
     public const string AssemblyHash = "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb";
     public const string ConfigurationFingerprint = "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc";
 
+    public const string CatalogJson = """
+        {
+          "features": [
+            {
+              "epic": null,
+              "feature": "arithmetic",
+              "state": "current",
+              "path": ".spec/features/arithmetic/arithmetic.feature",
+              "claims": [
+                {
+                  "id": "REQ-FIX-001",
+                  "state": "Active",
+                  "element": "scenarioOutline",
+                  "path": ".spec/features/arithmetic/arithmetic.feature",
+                  "line": 7,
+                  "cases": [
+                    { "line": 13, "planned": false },
+                    { "line": 14, "planned": false }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+        """;
+
     public static string Valid => Build(Template);
     public static string SourceFingerprint => Fingerprint(Valid, "sourceFingerprint");
     public static string PolicyFingerprint => Fingerprint(Valid, "policyFingerprint");
@@ -34,6 +60,27 @@ internal static class TestEvidenceJson
             });
             return artifact.ToJsonString();
         }
+    }
+
+    public static IReadOnlyList<TestEvidenceCatalogFeature> CatalogFeatures { get; } =
+    [
+        new(null, "arithmetic", "current", ".spec/features/arithmetic/arithmetic.feature",
+        [
+            new("REQ-FIX-001", "Active", "scenarioOutline", ".spec/features/arithmetic/arithmetic.feature", 7,
+                [new(13, false), new(14, false)]),
+        ]),
+    ];
+
+    public static string VersionTwo => WithCatalog(Valid, 2);
+
+    public static string VersionThreeWithCatalog => WithCatalog(VersionThree, 3);
+
+    public static string WithCatalog(string json, int version)
+    {
+        var artifact = JsonNode.Parse(json)!;
+        artifact["formatVersion"] = version;
+        artifact["catalog"] = JsonNode.Parse(CatalogJson);
+        return artifact.ToJsonString();
     }
 
     public static string ForMethod(string symbolId)

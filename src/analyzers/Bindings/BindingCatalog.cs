@@ -8,7 +8,13 @@ namespace Specht.Analysis.Bindings;
 public sealed class BindingCatalog
 {
     public BindingCatalog(IReadOnlyList<BindingFeature> features, IReadOnlyList<BindingAdr> adrs)
+        : this(features, adrs, Array.Empty<BindingFinding>())
     {
+    }
+
+    public BindingCatalog(IReadOnlyList<BindingFeature> features, IReadOnlyList<BindingAdr> adrs, IReadOnlyList<BindingFinding> findings)
+    {
+        Findings = Array.AsReadOnly(findings.ToArray());
         Features = Array.AsReadOnly(features.ToArray());
         Adrs = Array.AsReadOnly(adrs.ToArray());
         var guard = new BindingProvenanceGuard();
@@ -21,4 +27,6 @@ public sealed class BindingCatalog
     public IReadOnlyList<BindingFeature> Features { get; }
 
     public IReadOnlyList<BindingAdr> Adrs { get; }
+
+    public IReadOnlyList<BindingFinding> Findings { get; }
 }

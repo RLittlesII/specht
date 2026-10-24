@@ -104,4 +104,60 @@ public sealed class TestEvidenceArtifactWriterUnitTests
         written["discovery"]!["cases"]![0]!.AsObject().Select(static member => member.Key).Should()
             .BeEquivalentTo("caseId", "methodSymbolId", "rowId", "displayName");
     }
+
+    [Fact]
+    public void NativeCatalog_WhenWritten_ShouldBeVersionTwoCarryingTheCatalogMember()
+    {
+        // Given
+        var artifact = new TestEvidenceArtifactReader().Read(TestEvidenceJson.Valid).Artifact! with { Catalog = TestEvidenceJson.CatalogFeatures };
+
+        // When
+        var written = JsonNode.Parse(new TestEvidenceArtifactWriter().Write(artifact))!;
+
+        // Then
+        written["formatVersion"]!.GetValue<int>().Should().Be(2);
+        JsonNode.DeepEquals(written["catalog"], JsonNode.Parse(TestEvidenceJson.CatalogJson)).Should().BeTrue();
+    }
+
+    [Fact]
+    public void NativeCatalogWithCaseFacts_WhenWritten_ShouldBeVersionThreeCarryingTheCatalogMember()
+    {
+        // Given
+        var artifact = new TestEvidenceArtifactReader().Read(TestEvidenceJson.VersionThree).Artifact! with { Catalog = TestEvidenceJson.CatalogFeatures };
+
+        // When
+        var written = JsonNode.Parse(new TestEvidenceArtifactWriter().Write(artifact))!;
+
+        // Then
+        written["formatVersion"]!.GetValue<int>().Should().Be(3);
+        JsonNode.DeepEquals(written["catalog"], JsonNode.Parse(TestEvidenceJson.CatalogJson)).Should().BeTrue();
+    }
+
+    [Fact]
+    public void NativeCatalogArtifact_WhenWrittenAndReadAgain_ShouldReadBackEqual()
+    {
+        // Given
+        var artifact = new TestEvidenceArtifactReader().Read(TestEvidenceJson.Valid).Artifact! with { Catalog = TestEvidenceJson.CatalogFeatures };
+
+        // When
+        var result = new TestEvidenceArtifactReader().Read(new TestEvidenceArtifactWriter().Write(artifact));
+
+        // Then
+        result.IsValid.Should().BeTrue();
+        result.Artifact!.Catalog.Should().BeEquivalentTo(TestEvidenceJson.CatalogFeatures, static options => options.WithStrictOrdering());
+    }
+
+    [Fact]
+    public void ArtifactWithoutACatalog_WhenWritten_ShouldCarryNoCatalogMember()
+    {
+        // Given
+        var artifact = new TestEvidenceArtifactReader().Read(TestEvidenceJson.Valid).Artifact!;
+
+        // When
+        var written = JsonNode.Parse(new TestEvidenceArtifactWriter().Write(artifact))!.AsObject();
+
+        // Then
+        written["formatVersion"]!.GetValue<int>().Should().Be(1);
+        written.ContainsKey("catalog").Should().BeFalse();
+    }
 }
