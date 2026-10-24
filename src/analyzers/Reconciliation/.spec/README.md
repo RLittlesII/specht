@@ -88,14 +88,15 @@ Expose missing links and test outcomes within an explicit project scope. The own
 
 ## 5. Out of Scope
 
-<!-- last written by: spec-author, 2026-10-19 -->
+<!-- last written by: spec-author, 2026-10-23 -->
 
-| #   | Item                                                                    | Exclusion Reason                                                                                                   |
-| --- | ----------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
-| 1   | Automatically declaring assertion adequacy or architectural compliance. | This agreement does not authorize it.                                                                              |
-| 2   | Launching test runs or querying remote test services during checking.   | This agreement does not authorize it.                                                                              |
-| 3   | Changing the approved text-level `specht trace` command.                | `0001-F13` owns its output and exit contract.                                                                      |
-| 4   | Re-ingesting native SPCT diagnostics into the evidence report.          | F3's version-one export carries binding verdicts, not diagnostic records; build diagnostics keep their own stream. |
+| #   | Item                                                                    | Exclusion Reason                                                                                                                                   |
+| --- | ----------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | Automatically declaring assertion adequacy or architectural compliance. | This agreement does not authorize it.                                                                                                              |
+| 2   | Launching test runs or querying remote test services during checking.   | This agreement does not authorize it.                                                                                                              |
+| 3   | Changing the approved text-level `specht trace` command.                | `0001-F13` owns its output and exit contract.                                                                                                      |
+| 4   | Re-ingesting native SPCT diagnostics into the evidence report.          | F3's version-one export carries binding verdicts, not diagnostic records; build diagnostics keep their own stream.                                 |
+| 5   | Parsing a consumer's `.feature` files.                                  | The analyzer exports the native claim catalogue in the test-evidence artifact and `specht evidence` reads it there (0201-F7 B-030, decision 0003). |
 
 ## 6. Concern Separation
 
@@ -112,7 +113,7 @@ Expose missing links and test outcomes within an explicit project scope. The own
 
 ## 7. Technical Design
 
-<!-- last written by: implementer, 2026-10-19 -->
+<!-- last written by: implementer, 2026-10-23 -->
 
 The command implements F5 decision 0001, F6's coverage/input decisions and the
 owner's decision to require passing outcomes by default. Current CLI usage is in
@@ -224,7 +225,7 @@ The reconciliation slice owns the report model, artifact input reader and
 reconciliation operation. The command calls that operation and renders its result.
 It does not reference `Specht.Analysis`: loading that assembly would cross the
 compiler boundary. `src/tool/Features/Evidence/Contract/` holds a tool-owned
-version-one F3 reader in a distinct namespace. Parity tests compare its fields
+F3 reader for versions one and two in a distinct namespace. Parity tests compare its fields
 and rejection behavior with the producer reader and writer. A malformed or
 unsupported envelope remains an input finding with its relative evidence path.
 
@@ -241,6 +242,23 @@ policy before reconciliation; it cannot infer missing project or Feature
 selection from the artifacts. Current records, schema files and manifest content
 form the policy identity against which F3's `inputs` and `policyFingerprint` are
 compared.
+
+Under native Gherkin claim input (`codeAnalysis.records.claimSource: "gherkin"`,
+0201-F7) the selected claims come from the supplied artifacts, not from engine
+discovery, and the command parses no `.feature` file (decision 0003 of 0201-F7).
+`EvidencePolicy` reads `claimSource`; `EvidenceReconciler` takes each selected
+Feature's claims, lifecycle, provenance and cases from the F3 `catalog` member of
+the current artifacts. Every current artifact must carry a `catalog`, and all of
+them must be equal, because they derive from the same hashed claim files; a
+missing or differing catalogue is an `invalidInput` finding at the artifact's
+evidence path. With no current artifact the selected claims cannot be
+enumerated, and each selected Feature is reported as missing, as a missing
+Markdown record is. A selected Feature absent from the catalogue is the same
+finding. A `planned` case keeps its claim required and never counts as passing
+evidence (0201-F7 B-016, B-024); the gate on it is item 0262's. Under the
+Markdown path `catalog` is not read. The claim files are `record` inputs, so a
+changed claim file makes the artifact stale through the existing hash check, and
+the stale catalogue is excluded with the rest of the artifact.
 
 For every declared project/TFM pair, require current compiler and runner evidence
 in the supplied F3 envelope. Group by the pair and their source, assembly,
