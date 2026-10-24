@@ -278,9 +278,11 @@ several projects' runs combine without a selection (item 0260, 0201-F3 OQ-5).
 selected run. A claim's case references are keyed by project, target framework
 and case ID, so keys from two projects never merge (0201-F3 B-021);
 `claims[].cases` lists one case-ID string per key, ordered by project, target
-framework and case ID. A version-3 case with `selected: false` is no case
-reference of the claim and is not gated. A bound method no discovered case
-names gets its own `missingResult` naming its symbol ID (0201-F3 B-014, OQ-4).
+framework and case ID. A version-3 case with
+`selected: false` is no case reference of the claim and is not gated. A bound
+method no discovered case names gets its own `missingResult` naming its symbol
+ID (0201-F3 B-014, OQ-4), and so does a bound method whose discovered cases are
+all unselected in every chosen run.
 
 For each current version-3 artifact (0201-F3 § 7) with available results and at
 least one case that is owned and not selected, report one `incompleteRun`

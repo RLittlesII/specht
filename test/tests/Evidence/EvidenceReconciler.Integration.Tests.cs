@@ -99,6 +99,25 @@ public sealed class EvidenceReconcilerIntegrationTests : IDisposable
             .Which.Should().Contain("M:Shared.Checks");
     }
 
+    [Fact]
+    public void ABoundMethodWhoseOnlyCaseItsRunFilteredOut_WhenReconciled_ShouldFailWithAMissingResultNamingTheMethod()
+    {
+        // Given
+        _root.Write("a.json", "a", 3, "run-a",
+            new JsonArray(Case("case-1", "M:Shared.Checks", owned: true, selected: false), Case("case-2", "M:Shared.Other", owned: true, selected: true)),
+            new JsonArray(Outcome("case-2")));
+        _root.Write("b.json", "b", 1, "run-b", new JsonArray(Case("case-1", "M:Shared.Other")), new JsonArray(Outcome("case-1")));
+
+        // When
+        var result = _root.Reconcile("a.json", "b.json");
+
+        // Then
+        result.ExitCode.Should().Be(1);
+        result.Report["findings"]!.AsArray().Where(static item => item!["kind"]!.GetValue<string>() == "missingResult")
+            .Select(static item => item!["message"]!.GetValue<string>()).Should().ContainSingle()
+            .Which.Should().Contain("M:Shared.Checks");
+    }
+
     public void Dispose() => _root.Dispose();
 
     private static string[] Kinds(JsonObject report) =>

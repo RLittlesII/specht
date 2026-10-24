@@ -28,18 +28,13 @@
   </ItemGroup>
 
   <PropertyGroup Condition="'$(IsTestProject)' == 'true' and '$(IsTestingPlatformApplication)' != 'true' and '$(SpechtRoot)' != '' and '$(TargetPath)' != ''">
-    <SpechtVsTestLoggerDirectory>$(MSBuildThisFileDirectory)vstest/net$(BundledNETCoreAppTargetFrameworkVersion)/</SpechtVsTestLoggerDirectory>
-    <SpechtVsTestLoggerDirectory Condition="!Exists('$(SpechtVsTestLoggerDirectory)Specht.TestEvidence.VsTest.TestLogger.dll')">$(MSBuildThisFileDirectory)vstest/net10.0/</SpechtVsTestLoggerDirectory>
+    <SpechtVsTestLoggerDirectory>$(MSBuildThisFileDirectory)vstest/net$(BundledNETCoreAppTargetFrameworkVersion)</SpechtVsTestLoggerDirectory>
+    <SpechtVsTestLoggerDirectory Condition="!Exists('$(SpechtVsTestLoggerDirectory)/Specht.TestEvidence.VsTest.TestLogger.dll')">$(MSBuildThisFileDirectory)vstest/net10.0</SpechtVsTestLoggerDirectory>
+    <VSTestTestAdapterPath Condition="'$(VSTestTestAdapterPath)' == ''">$(SpechtVsTestLoggerDirectory)</VSTestTestAdapterPath>
+    <VSTestTestAdapterPath Condition="'$(VSTestTestAdapterPath)' != '$(SpechtVsTestLoggerDirectory)'">$(VSTestTestAdapterPath);$(SpechtVsTestLoggerDirectory)</VSTestTestAdapterPath>
     <VSTestLogger Condition="'$(VSTestLogger)' == ''">specht</VSTestLogger>
     <VSTestLogger Condition="'$(VSTestLogger)' != 'specht'">$(VSTestLogger);specht</VSTestLogger>
   </PropertyGroup>
-
-  <Target Name="SpechtTestEvidenceCopyVsTestLogger" AfterTargets="Build" Condition="'$(SpechtVsTestLoggerDirectory)' != '' and '$(TargetPath)' != ''">
-    <ItemGroup>
-      <SpechtVsTestLoggerFile Include="$(SpechtVsTestLoggerDirectory)*.dll" />
-    </ItemGroup>
-    <Copy SourceFiles="@(SpechtVsTestLoggerFile)" DestinationFolder="$(TargetDir)" SkipUnchangedFiles="true" />
-  </Target>
 
   <Target Name="SpechtTestEvidenceWriteRunnerConfig" AfterTargets="Build"
           Condition="('$(IsTestingPlatformApplication)' == 'true' or '$(SpechtVsTestLoggerDirectory)' != '') and '$(SpechtRoot)' != '' and '$(TargetPath)' != ''">

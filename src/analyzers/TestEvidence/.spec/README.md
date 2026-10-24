@@ -281,18 +281,23 @@ adapter version `1.0.0`, contract version `1`.
 
 **Registration.** For a project with `IsTestProject` true,
 `IsTestingPlatformApplication` not true and `SpechtRoot` set, the package
-targets copy `build/vstest/<tfm>/*.dll` into the output directory, where
-`<tfm>` is `net$(BundledNETCoreAppTargetFrameworkVersion)` when the package
-ships it and `net10.0` otherwise: the logger runs in `vstest.console`, on the
-SDK's runtime, not the test project's. VSTest loads a logger whose file name
-ends in `TestLogger.dll` from the test source's directory. The targets append
+targets append the package's `build/vstest/<tfm>` folder to
+`VSTestTestAdapterPath`, where `<tfm>` is
+`net$(BundledNETCoreAppTargetFrameworkVersion)` when the package ships it and
+`net10.0` otherwise: the logger runs in `vstest.console`, on the SDK's runtime,
+not the test project's. VSTest loads a logger whose file name ends in
+`TestLogger.dll` from a test adapter path and resolves its dependencies from
+the same folder, so nothing is copied into the test output and no consumer
+assembly is ever overwritten. The targets append
 `specht` to `VSTestLogger`, which `dotnet test` in VSTest mode passes for both
 `--list-tests` and a run. `SpechtTestEvidenceWriteRunnerConfig` runs for these
 projects too, and the runner config gains `assemblyPath`, `$(TargetPath)`
 relative to `SpechtRoot` with `/` separators, which both collectors may record.
 A command-line `--logger` sets `VSTestLogger` as a global property and replaces
 the appended name; such a run writes no evidence unless it also names
-`--logger specht`.
+`--logger specht`. A `--settings` file likewise replaces it. A command-line
+`--test-adapter-path` replaces `VSTestTestAdapterPath` and with it the package
+folder.
 
 **Packaging.** `codeanalysis.csproj` references the project with
 `ReferenceOutputAssembly="false"` and `PrivateAssets="all"`, builds both target
@@ -301,11 +306,18 @@ frameworks as it does the MTP collector, and packs four files from
 `Specht.Analysis.dll`, `TestableIO.System.IO.Abstractions.Wrappers.dll` and
 `Testably.Abstractions.FileSystem.Interface.dll`. Not `*.dll`: that output
 also holds the analyzer's Roslyn, JsonSchema.Net, Markdig and YamlDotNet
-assemblies, which the logger never loads and which a copy beside the test
-output would put over the test project's own. No TestPlatform assembly is
+assemblies, which the logger never loads. No TestPlatform assembly is
 packed, and `analyzers/dotnet/cs/` is unchanged, so the
 compiler-loaded closure is unchanged (ADR-0017). The package integration test
 asserts both.
+
+Packaging delta, 2026-10-23 (review of item 0260): the first build copied the
+four files into the consumer's test output, which overwrote a consumer's own
+`TestableIO.System.IO.Abstractions.Wrappers.dll` and
+`Testably.Abstractions.FileSystem.Interface.dll` and fails with
+`FileLoadException` for a consumer on another major version. The files now stay
+in the package folder, reached through `VSTestTestAdapterPath`; the logger keeps
+its `IFileSystem` constructor for tests.
 
 **Per source.** Events are grouped by `TestCase.Source`, so one invocation over
 several test assemblies writes one artifact for each. For a source the logger
@@ -500,6 +512,10 @@ project's keys distinct when several projects compile the same claim files
   `incompleteRun` instead. A bound method that no discovered case names gets
   its own `missingResult`, `Required test method <symbol ID> has no discovered
 case.`, even when other bound methods of the claim have cases (B-014, OQ-4).
+  A bound method whose discovered cases are all unselected in every chosen run
+  gets `missingResult`, `Required test method <symbol ID> has no selected
+case.`, so a filter can never pass a claim by excluding its tests; under
+  partitioned runs another project's run selecting the case satisfies it.
 
 `EvidenceReconciler` (`src/tool/Features/Evidence/EvidenceReconciler.cs`)
 holds the run choice, the case keys and the `incompleteRun` finding.
@@ -701,11 +717,14 @@ No claim changed.
 
 ## 12. Sign-off
 
-<!-- last written by: spec-reviewer, 2026-10-17 -->
+<!-- last written by: spec-reviewer, 2026-10-23 -->
 
-| Section | Status | Reviewer | Note                                                                                                              |
-| ------- | ------ | -------- | ----------------------------------------------------------------------------------------------------------------- |
-| 1-12    | 🟡     | Pending  | Owner selected the model; this decomposed Feature has not received detailed agreement or implementation sign-off. |
+| Section | Status | Reviewer      | Note                                                                                                                                                                                                                                                                                                                                                                              |
+| ------- | ------ | ------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1-6     | 🟡     | spec-reviewer | Item 0260 review, 2026-10-23: § 3 unchanged; no finding against these sections.                                                                                                                                                                                                                                                                                                   |
+| 7       | 🟢     | spec-reviewer | Item 0260 re-review, 2026-10-23: both High findings fixed. A bound method whose discovered cases are all unselected in every chosen run now gets `missingResult` (`ABoundMethodWhoseOnlyCaseItsRunFilteredOut_WhenReconciled_ShouldFailWithAMissingResultNamingTheMethod`), and the logger is reached through `VSTestTestAdapterPath`, so nothing is copied into consumer output. |
+| 8-9     | 🟡     | spec-reviewer | Item 0260 review, 2026-10-23: the Medium and Low findings (stale § 8, missing `build/vstest/` inventory test, § 9 citations, `claims[].cases` attribution, consumer docs, ADR-0001 note) moved to item 0265 by owner decision.                                                                                                                                                    |
+| 10-12   | 🟡     | spec-reviewer | Item 0260 review, 2026-10-23: OQ-4 and OQ-5 resolved in place with the owner's words.                                                                                                                                                                                                                                                                                             |
 
 ## Tasks
 

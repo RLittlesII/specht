@@ -350,10 +350,19 @@ public sealed class EvidenceReconciler
                         .Where(testCase => testCase.MethodSymbolId == pair.binding.SymbolId)
                         .Select(testCase => (pair.entry, testCase))).ToArray();
                     foreach (var method in matching.Select(static pair => pair.binding.SymbolId).Distinct(StringComparer.Ordinal)
-                        .Where(method => !inputsIncomplete && !discovered.Any(item => item.testCase.MethodSymbolId == method)))
+                        .Where(method => !inputsIncomplete))
                     {
-                        findings.Add(new EvidenceFinding("missingResult", claim.Path, claim.Line, claim.Identity,
-                            $"Required test method {method} has no discovered case."));
+                        var cases = discovered.Where(item => item.testCase.MethodSymbolId == method).ToArray();
+                        if (cases.Length == 0)
+                        {
+                            findings.Add(new EvidenceFinding("missingResult", claim.Path, claim.Line, claim.Identity,
+                                $"Required test method {method} has no discovered case."));
+                        }
+                        else if (cases.All(static item => item.testCase.Selected == false))
+                        {
+                            findings.Add(new EvidenceFinding("missingResult", claim.Path, claim.Line, claim.Identity,
+                                $"Required test method {method} has no selected case."));
+                        }
                     }
 
                     var caseKeys = discovered.Where(static item => item.testCase.Selected != false)

@@ -1,7 +1,7 @@
 id: "0260"
 type: feature
 title: "Collect VSTest evidence with case categories, selection and ownership"
-status: in-progress
+status: done
 value: 5
 risk: 5
 parent: "0201"
@@ -25,7 +25,7 @@ claims:
   ]
 created: "2026-10-23"
 updated: "2026-10-23"
-closed: null
+closed: "2026-10-23"
 summary: |
   As a consumer running xUnit v2 tests under VSTest I want the evidence artifact to carry
   each case's own identity, outcome, categories and a selected flag so that ownership of a
