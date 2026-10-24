@@ -17,7 +17,7 @@ author: "spec-author"
 milestone: null
 children: []
 depends_on: ["F1", "F2"]
-blocks: ["F4", "F5", "F6"]
+blocks: ["F4", "F5", "F6", "F7"]
 spikes: []
 created: "2026-10-17"
 updated: "2026-10-23"
@@ -107,7 +107,7 @@ Map explicit test-method bindings to discovered and executed test cases across .
 
 ## 6. Concern Separation
 
-<!-- last written by: implementer, 2026-10-18 -->
+<!-- last written by: implementer, 2026-10-23 -->
 
 | Concern                                              | Classification | Owner and boundary                                                                                                      |
 | ---------------------------------------------------- | -------------- | ----------------------------------------------------------------------------------------------------------------------- |
@@ -116,7 +116,7 @@ Map explicit test-method bindings to discovered and executed test cases across .
 | Runner outcomes and run separation                   | Business       | F3 retains each supplied run and outcome; F5 decides how selected evidence contributes to reconciliation.               |
 | Source, assembly, configuration and policy freshness | Both           | F3 records identities; 0201-F6 owns current-input scope and 0201-F5 excludes stale artifacts from current evidence.     |
 | Scenario-to-case metadata                            | Both           | F3 carries the common case identity; 0201-F4 defines scenario scope and producer metadata mapping.                      |
-| Evidence serialization and versioning                | Technical      | F3 owns the closed version-one JSON envelope and its deterministic identity encoding.                                   |
+| Evidence serialization and versioning                | Technical      | F3 owns the closed version-one and version-two JSON envelopes and their deterministic identity encoding.                |
 | Runner collection and producer compatibility         | Technical      | First-party adapters normalize runner metadata; custom producers may submit the same contract without framework gating. |
 | Diagnostic and filesystem boundary                   | Technical      | DiagnosticAnalyzer remains read-only; explicit build/runner collection writes artifacts to the selected output folder.  |
 
@@ -133,7 +133,9 @@ accepted.
 ### Envelope
 
 Use UTF-8 JSON with `format: "specht.test-evidence"` and integer
-`formatVersion: 1`. Every top-level property is required except `scenarios`.
+`formatVersion` 1 or 2. Every top-level property is required except `scenarios`
+and `catalog`; `catalog` is permitted only at version 2, and version 2 differs
+from version 1 by that member alone (0201-F7 ADR-0001, proposed).
 Objects are closed: unknown properties and enum values are invalid. An unknown
 format version is `unsupportedContract`. This contract version is independent of
 the package and manifest schema versions.
@@ -145,7 +147,7 @@ artifact, while `adapter.contractVersion` versions the producer integration.
 | Property            | Contract                                                                                                                                        |
 | ------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
 | `format`            | Exact string `specht.test-evidence`.                                                                                                            |
-| `formatVersion`     | Integer `1`.                                                                                                                                    |
+| `formatVersion`     | Integer `2` when `catalog` is present, otherwise `1`.                                                                                           |
 | `project`           | Repository-relative project file path and exact declared target framework.                                                                      |
 | `configuration`     | Build configuration name and digest of compiler options and resolved reference identities.                                                      |
 | `assembly`          | Assembly name and SHA-256 content hash; optional assembly path is repository-relative.                                                          |
@@ -157,6 +159,7 @@ artifact, while `adapter.contractVersion` versions the producer integration.
 | `results`           | Either `absent` or an opaque run ID and outcomes keyed by stable case ID. Absence is not a passing result.                                      |
 | `inputs`            | Sorted `{ path, sha256, kind }` entries for the source, manifest, schema and record inputs represented by the artifact.                         |
 | `scenarios`         | Optional F4 scenario records. When present, they follow the F4 contract and do not alter F3 case identity.                                      |
+| `catalog`           | Version 2 only. The native claim catalogue the analyzer read from Gherkin claim files (0201-F7 B-030); absent under Markdown claim input.       |
 
 The nested shapes are fixed: `project` is `{ path, targetFramework }`;
 `configuration` is `{ name, fingerprint }`; `assembly` is
@@ -184,6 +187,20 @@ target records shaped as `{ kind, epic, feature, id, state, featureState,
 relativePath, line }`. `inputs` is an array of `{ path, sha256, kind }`; `kind`
 is `source`, `generated-source`, `manifest`, `schema` or `record`. `scenarios`,
 when present, is an array in the F4-defined shape.
+
+`catalog` is `{ features }`. A feature is
+`{ epic, feature, state, path, claims }`, sorted by `epic` (null first) then
+`feature`, ordinal; `epic` is null when the consumer declares no epic grammar,
+`state` is the Feature lifecycle or `current`, and `path` is the record path or
+the ordinal-first claim file. A claim is
+`{ id, state, element, path, line, cases }` in the reader's document order;
+`element` is `feature`, `rule`, `scenario` or `scenarioOutline`, and `state` is
+the claim lifecycle. A case is `{ line, planned }` with a Boolean `planned`.
+Paths are repository-relative and lines one-based. Every claim file is already a
+`record` entry of `inputs`, so `policyFingerprint` covers the catalogue's
+sources. `TestEvidenceCatalogFeature`, `TestEvidenceCatalogClaim` and
+`TestEvidenceCatalogCase` declare the records, and `TestEvidenceCatalogExporter`
+projects them from the analyzer's `BindingCatalog` (0201-F7 § 7).
 
 Hash input contents as SHA-256 over the exact bytes supplied to compilation or
 collection. Build each fingerprint by sorting entries by ordinal path then kind
@@ -267,9 +284,10 @@ closure.
 
 A project's `requiredCaseScope` is a tag expression over case categories,
 specified in [0201-F6 § 7](../../../codeanalysis/.spec/README.md): key, grammar and
-the A/B partition table. `CaseScope.Owns(categories)` in `Specht.Claims`
-([ADR-0021](../../../../.spec/adr/0021-gherkin-claim-semantics-live-in-a-netstandard-library.md),
-accepted) is the one evaluation. A case's categories are its Reqnroll scenario
+the A/B partition table. `CaseScope.Owns(categories)` in the analyzer
+(`src/analyzers/Policy/`) is the one evaluation: the collector, which
+references the analyzer, evaluates it for each case and records the result in the artifact, and `specht evidence` reads
+that recorded result and never parses the expression. A case's categories are its Reqnroll scenario
 tags or `Category` trait values without `@`. Ownership, the selected flag and the
 incomplete-run finding are recorded in the artifact and the report, not as SPCT
 diagnostics; the case record's new fields and any format version are item 0260's

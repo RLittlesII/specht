@@ -8,6 +8,13 @@ type: adr
 
 ## Status
 
+Rejected — withdrawn by the repository owner on 2026-10-23 in
+[review 5635389907](https://github.com/RLittlesII/specht/pull/260#pullrequestreview-5635389907),
+superseding the acceptance recorded earlier the same day. The file and its
+number stay; the number is never reused. See [Withdrawal](#withdrawal).
+
+The status as first recorded follows, unchanged.
+
 Accepted, 2026-10-23, by the repository owner. Proposed the same day by
 `implementer`, from item 0258; item 0259 adds the project and the package. It
 does not widen ADR-0017's target exception beyond a second
@@ -93,3 +100,22 @@ The engine's baseline reports do not change.
 ## Reversal
 
 None.
+
+## Withdrawal
+
+Withdrawn 2026-10-23 by the repository owner, who directed that the analyzer
+export the claim catalogue in the evidence artifact and that the shared library
+be dropped. The facts that remove the need for it:
+
+- [ADR-0017](0017-compiler-loaded-components-target-netstandard.md) (Accepted)
+  adopts no new shared-core assembly; `Specht.Claims` would have been one.
+- `specht evidence` need not parse Gherkin. The analyzer exports the native
+  claim catalogue into the test-evidence artifact the tool already reads through
+  `src/tool/Features/Evidence/Contract/TestEvidenceArtifactReader.cs`
+  (0201-F7 decision 0003, B-030).
+- The engine needs no change for 0201-F7. `FeatureTagParser` keeps its own
+  implementation; the analyzer's reading of the same rule is held to it by a
+  characterization test (0201-F7 § 7, C-1).
+
+The Gherkin package choice falls with the library. The analyzer's parser is
+proposed in 0201-F7 [ADR-0001](../../src/analyzers/Bindings/Gherkin/.spec/adr/0001-native-claim-source-contract.md).
