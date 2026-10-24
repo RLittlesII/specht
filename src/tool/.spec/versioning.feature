@@ -1158,3 +1158,139 @@ Feature: Schema versioning
     When its feature template is read
     Then its traceability guidance says a missing row does not block the specification reaching approved
     And that the missing-coverage rule reports it once the delivery status is done, unless the manifest lowers the rule
+
+  @B-125
+  Scenario: A recorded source supplies the templates it hashes
+    Given the manifest pins schema version 0.3.0
+    And the manifest records an upstream schema source with its version and content hash
+    And the source's record holds a content hash for the feature template
+    When the check runs
+    Then the manifest is accepted
+    And the feature template is one the source supplies
+
+  @B-126
+  Scenario Outline: A template hash in another form is invalid
+    Given the manifest pins schema version 0.3.0
+    And the manifest records an upstream schema source whose content hash for the feature template is <form>
+    When the check runs
+    Then the manifest is rejected
+    And the rejection names the feature template
+
+    Examples:
+      | form                          |
+      | written without its algorithm |
+      | written in capital digits     |
+      | shorter than the algorithm's  |
+      | another algorithm's           |
+
+  @B-127
+  Scenario: A hash for a template the version does not ship is invalid
+    Given the manifest pins schema version 0.3.0
+    And the manifest records an upstream schema source with a content hash for a runbook template that version 0.3.0 does not ship
+    When the check runs
+    Then the manifest is rejected
+    And the rejection names the runbook template
+
+  @B-128 @boundary
+  Scenario: Template hashes change nothing under an older pin
+    Given the manifest pins schema version 0.2.0
+    And the manifest records an upstream schema source with its version and content hash
+    And the report the check gives while the source's record holds no template hash
+    When the source's record gains a content hash for the feature template and the check runs again
+    Then the report is the same
+
+  @B-129 @boundary
+  Scenario: Upgrade fetches no template under an older pin
+    Given the manifest pins schema version 0.2.0
+    And the manifest records an upstream schema source with its version and content hash
+    And the source's record holds a content hash for the feature template
+    And the root's local copy of the feature template does not match that hash
+    When upgrade runs
+    Then the feature template was not asked for at the source
+
+  @B-130
+  Scenario: Upgrade writes a fetched template that matches its hash
+    Given the manifest pins schema version 0.3.0
+    And the manifest records an upstream schema source whose record holds a content hash for the feature template
+    And its manifest names no template as the consumer's
+    And the root's local copy of the feature template does not match that hash
+    And the source serves a feature template matching that hash
+    When upgrade runs
+    Then the root's feature template is the one the source served
+
+  @B-131
+  Scenario: Each template is fetched from the source's address and its own file name
+    Given the manifest pins schema version 0.3.0
+    And the manifest records an upstream schema source whose record holds a content hash for the feature template
+    And the root's local copy of the feature template does not match that hash
+    And the source serves a feature template matching that hash
+    When upgrade runs
+    Then the feature template was asked for at the source's address followed by its file name
+
+  @B-132
+  Scenario: Upgrade refuses a fetched template that does not match its hash
+    Given the manifest pins schema version 0.3.0
+    And the manifest records an upstream schema source whose record holds a content hash for the feature template
+    And the root's local copy of the feature template does not match that hash
+    And the source serves a feature template that does not match that hash
+    And a snapshot of every file under the root
+    When upgrade runs
+    Then no file under the root has changed
+    And the standard error names the source
+    And the exit code is 3
+
+  @B-133
+  Scenario Outline: Upgrade refuses a source that will not serve a template
+    Given the manifest pins schema version 0.3.0
+    And the manifest records an upstream schema source whose record holds a content hash for the feature template
+    And the root's local copy of the feature template does not match that hash
+    And the source <refusal>
+    And a snapshot of every file under the root
+    When upgrade runs
+    Then no file under the root has changed
+    And the standard error names the source
+    And the exit code is 3
+
+    Examples:
+      | refusal                             |
+      | cannot be reached                   |
+      | asks for a credential               |
+      | does not serve the feature template |
+
+  @B-134 @boundary
+  Scenario: Upgrade does not fetch templates that match their hashes
+    Given the manifest pins schema version 0.3.0
+    And the manifest records an upstream schema source whose record holds a content hash for the feature template
+    And the root's local copy of each schema and of the feature template matches its hash
+    And the network is unavailable
+    When upgrade runs
+    Then no network call was attempted
+
+  @B-135 @boundary
+  Scenario: An upstream source never writes a template the consumer owns
+    Given the manifest pins schema version 0.3.0
+    And the manifest records an upstream schema source whose record holds a content hash for the feature template
+    And the source serves a feature template matching that hash
+    And its manifest names the feature template as the consumer's
+    And the consumer has rewritten the feature template
+    When upgrade runs
+    Then the feature template is as the consumer wrote it
+
+  @B-136 @boundary
+  Scenario: Upgrade keeps a fetched template over the pinned version's
+    Given the manifest pins schema version 0.3.0
+    And the manifest records an upstream schema source whose record holds a content hash for the feature template
+    And its manifest names no template as the consumer's
+    And the root's feature template matches that hash and differs from version 0.3.0's
+    When upgrade runs
+    Then the root's feature template is unchanged
+
+  @B-137 @boundary
+  Scenario: Upgrade sends no credential when it fetches a template
+    Given the manifest pins schema version 0.3.0
+    And the manifest records an upstream schema source whose record holds a content hash for the feature template
+    And the root's local copy of the feature template does not match that hash
+    And the source serves a feature template matching that hash
+    And the machine holds a token the source would accept
+    When upgrade runs
+    Then nothing the tool asked the source for carried a credential
