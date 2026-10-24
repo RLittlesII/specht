@@ -41,12 +41,12 @@ jobs:
       NuGetPackageSourceCredentials_specht: 'Username=${{ github.actor }};Password=${{ secrets.GITHUB_TOKEN }};ValidAuthenticationTypes=Basic'
     strategy:
       fail-fast: false
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, macOS, ARM64]
     steps:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          clean: 'false'
+          clean: 'true'
           fetch-depth: '0'
           ref: '${{ github.event.pull_request.head.sha }}'
       - name: Fetch all history for all tags and branches
@@ -123,7 +123,7 @@ jobs:
           ./build.cmd --target AcceptanceTest --skip IntegrationTest
       - name: Upload coverage to Codecov
         id: codecov
-        if: ${{ (!cancelled() && runner.os == 'Linux') && steps.changes.outputs.build == 'true' }}
+        if: ${{ (!cancelled() && runner.os == 'macOS') && steps.changes.outputs.build == 'true' }}
         continue-on-error: true
         uses: codecov/codecov-action@v5
         with:

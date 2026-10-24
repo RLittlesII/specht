@@ -1,0 +1,90 @@
+id: "0264"
+type: task
+title: Move the Unix leg of CI and release to the owner's macOS runner pool
+
+status: in-review
+
+value: 3
+risk: 2
+
+parent: "0063"
+children: []
+
+depends_on: []
+spikes: []
+
+spec: .build/ContinuousIntegration/.spec/README.md
+
+claims:
+  - B-001
+  - B-003
+  - B-006
+  - B-007
+  - B-014
+  - B-017
+  - B-022
+  - B-023
+  - B-024
+
+created: "2026-10-23"
+updated: "2026-10-23"
+closed: null
+
+summary: |
+  The owner moved this repository's CI off GitHub-hosted Linux onto the
+  owner's self-hosted pool of three runners, `vitruvius-1` to `vitruvius-3`,
+  each labelled `self-hosted`, `macOS` and `ARM64` (decision 0005). The pool
+  replaces the Linux leg: every job that ran on `ubuntu-latest` in the `ci`,
+  `main` and `release` workflows runs on `[self-hosted, macOS, ARM64]`. The
+  windows leg stays on `windows-latest`; the Renovate workflow stays on
+  `ubuntu-latest` (`0055-F4` decision 0001).
+
+  A pool runner keeps its working directory between jobs, and the generated
+  checkout runs with `clean: 'false'`, so every pool job starts from a clean
+  checkout with untracked and ignored files removed (C-11).
+
+  Risk 2: generated workflows (C-1) and two runner conditions; the first live
+  runs on the pool are the only proof (`0055-F2` § 8).
+
+acceptance_criteria:
+  - "C-12 - the `ci` and `release` workflows are generated with
+    `runs-on: [self-hosted, macOS, ARM64]`, and `main` with the matrix
+    `os: [[self-hosted, macOS, ARM64], windows-latest]` and
+    `runs-on: ${{ matrix.os }}`; no generated workflow but `renovate` names
+    `ubuntu-latest`."
+  - "C-11 - every job on the pool starts from a clean checkout with untracked
+    and ignored files removed; the windows leg and the Renovate workflow gain
+    no cleaning step."
+  - "B-001, B-014 - a pull request that changes code is built on the pool."
+  - "B-003 - a push to `main` runs once on the pool and once on windows; no
+    leg runs on hosted Linux."
+  - "B-006 - annotations come from the macOS leg only: every condition that
+    read `runner.os == 'Linux'` or `RUNNER_OS` `Linux` reads `macOS`."
+  - "B-007 - the `main` workflow's Unix check name GitHub shows on the first
+    push after merge is recorded here and in `0055-F8` § 10; the owner
+    replaces `build (ubuntu-latest)` with it wherever branch protection
+    requires it."
+  - "B-017, B-022 to B-024 - the merge-tree check runs on the macOS leg and is
+    part of the macOS check."
+  - "`0055-F3` B-002 - coverage is uploaded from the macOS leg only."
+  - "`0055-F6` C-9 - the release workflow's `build` and `release` jobs run on
+    the pool from a clean checkout."
+  - "`0109-F1` B-017 - a push to `main` runs the benchmarks on macOS and
+    Windows, and the results artifact is named for each."
+  - "`ci.yml`, `main.yml` and `release.yml` are regenerated and committed,
+    their step order diffed (C-1)."
+  - "§ 9 keeps its rows; `Missing` stands under the owner's no-tests
+    decision (`0055-F2` § 8)."
+
+decisions:
+  - "2026-10-23, repository owner: replace the Linux legs with the
+    self-hosted pool `[self-hosted, macOS, ARM64]`; Windows and Renovate stay
+    hosted (decision 0005)."
+
+out_of_scope:
+  - "Moving the Renovate workflow - `0055-F2` § 5 #29, `0055-F4` decision
+    0001."
+  - "Moving the windows leg - `0055-F2` § 5 #30."
+  - "A Linux leg beside the pool - `0055-F2` § 5 #28."
+  - "Changing branch protection - the owner's, by hand (`0055-F8` C-1)."
+  - "Resolving `0055-F2` OQ-5."

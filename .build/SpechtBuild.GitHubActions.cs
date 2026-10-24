@@ -106,9 +106,12 @@ internal sealed partial class SpechtBuild
             .First(static z => z.Name.Equals("build", StringComparison.OrdinalIgnoreCase));
         buildJob.Environment["NuGetPackageSourceCredentials_specht"] =
             "Username=${{ github.actor }};Password=${{ secrets.GITHUB_TOKEN }};ValidAuthenticationTypes=Basic";
+        buildJob.Matrix = buildJob.Matrix.Select(static image => image == "ubuntu-latest" ? RunnerPool : image).ToArray();
         var checkoutStep = buildJob.Steps.OfType<CheckoutStep>().Single();
         // For fetch all
         checkoutStep.FetchDepth = 0;
+        // C-11: a pool runner keeps its workspace between jobs, so every checkout removes untracked and ignored files.
+        checkoutStep.Clean = true;
         buildJob.Steps.InsertRange(
             buildJob.Steps.IndexOf(checkoutStep) + 1,
             [
@@ -198,7 +201,7 @@ internal sealed partial class SpechtBuild
     }
 
     /// <summary>
-    /// Uploads the Cobertura reports the tier targets write to Codecov from the ubuntu leg only, after the last tier, and warns when the upload fails.
+    /// Uploads the Cobertura reports the tier targets write to Codecov from the macOS leg only, after the last tier, and warns when the upload fails.
     /// </summary>
     private static void AddCodecovUpload(RocketSurgeonsGithubActionsJob buildJob)
     {
@@ -206,7 +209,7 @@ internal sealed partial class SpechtBuild
         var uploadStep = new UsingStep("Upload coverage to Codecov")
         {
             Id = "codecov",
-            If = "${{ !cancelled() && runner.os == 'Linux' }}",
+            If = "${{ !cancelled() && runner.os == 'macOS' }}",
             ContinueOnError = true,
             Uses = "codecov/codecov-action@v5",
             With = new Dictionary<string, string>
@@ -277,8 +280,8 @@ internal sealed partial class SpechtBuild
     /// </summary>
     private static void GateOnChangedFiles(RocketSurgeonsGithubActionsJob buildJob)
     {
-        // B-012, B-014, B-015, C-5: a pull request skips on windows, and on ubuntu when its changed files are all
-        // Markdown outside any .spec/ or .specht/ folder; a push builds, as does ubuntu on no changed files or a failed diff.
+        // B-012, B-014, B-015, C-5: a pull request skips on windows, and on macOS when its changed files are all
+        // Markdown outside any .spec/ or .specht/ folder; a push builds, as does macOS on no changed files or a failed diff.
         const string gate = "steps.changes.outputs.build == 'true'";
         var fetchStep = buildJob.Steps.OfType<RunStep>().Single(static z => z.Run == "git fetch --prune");
         var decisionStep = new RunStep("Decide whether the change needs a build")
@@ -323,13 +326,13 @@ internal sealed partial class SpechtBuild
     private static string EscapeProperty(string value) => EscapeData(value).Replace(":", "%3A").Replace(",", "%2C");
 
     /// <summary>
-    /// Writes each violation in a pull request's changed files as a GitHub annotation, from a Linux runner only.
+    /// Writes each violation in a pull request's changed files as a GitHub annotation, from the macOS runner only.
     /// </summary>
     private void AnnotateChangedFiles(IReadOnlyCollection<string> output)
     {
         if (GitHubActions.Instance is null
             || Environment.GetEnvironmentVariable("EVENT_NAME") != "pull_request"
-            || Environment.GetEnvironmentVariable("RUNNER_OS") != "Linux"
+            || Environment.GetEnvironmentVariable("RUNNER_OS") != "macOS"
             || Environment.GetEnvironmentVariable("BASE_SHA") is not { Length: > 0 } baseSha
             || Environment.GetEnvironmentVariable("HEAD_SHA") is not { Length: > 0 } headSha)
         {
@@ -350,4 +353,7 @@ internal sealed partial class SpechtBuild
                 $"title={EscapeProperty(violation.Groups["rule"].Value)}::{EscapeData(violation.Groups["message"].Value)}");
         }
     }
+
+    // C-12 (decision 0005): the owner's self-hosted macOS pool takes every leg that ran on ubuntu-latest.
+    private const string RunnerPool = "[self-hosted, macOS, ARM64]";
 }

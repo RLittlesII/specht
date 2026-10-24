@@ -20,7 +20,7 @@ depends_on: ["F2", "F3", "F4"]
 blocks: []
 spikes: []
 created: "2026-10-08"
-updated: "2026-10-13"
+updated: "2026-10-23"
 github_issue: null
 synced_at: null
 ---
@@ -129,7 +129,9 @@ Pending: owned by `test-writer`.
 
 ## 10. Lessons / Spec Deltas
 
-<!-- last written by: spec-author, 2026-10-08 -->
+<!-- last written by: spec-author, 2026-10-08, 2026-10-23 (`0055-F2` decision 0005) -->
+
+- 2026-10-23, the owner moved CI's Linux leg to the owner's self-hosted macOS ARM64 pool ([`0055-F2` decision 0005](../../../.build/ContinuousIntegration/.spec/decisions/0005-the-unix-leg-runs-on-the-owners-macos-pool.md)). B-002 is unchanged: the checklist requires the per-operating-system checks the workflows produce, whatever their names. The `main` workflow's Unix check is renamed once, from `build (ubuntu-latest)` to the name GitHub derives from the matrix value `[self-hosted, macOS, ARM64]`; the `ci` workflow's `build` and the `main` workflow's `build (windows-latest)` are unchanged. Where branch protection requires `build (ubuntu-latest)`, the owner replaces it by hand (C-1, C-3), and items 0090 and 0264 name the check as observed.
 
 - 2026-10-08, B-003 amended from requiring the patch coverage status to requiring no coverage status (`0055-F2` OQ-2, owner): a pull request `0055-F2` B-012 skips uploads no coverage, so a required patch status would never report on it. The patch status is still reported (`0055-F3` B-003, B-004).
 

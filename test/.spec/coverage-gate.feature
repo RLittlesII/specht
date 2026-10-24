@@ -23,7 +23,7 @@ Feature: The coverage gate
   @B-002
   Scenario: Integration uploads coverage
     When integration runs the build's gates
-    Then the Linux run's coverage is sent to the coverage service for its commit
+    Then the macOS run's coverage is sent to the coverage service for its commit
 
   @B-002 @boundary
   Scenario: The Windows run uploads no coverage
