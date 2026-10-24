@@ -1,0 +1,48 @@
+id: "0285"
+type: task
+title: Print the shipped default manifest
+
+status: ready-for-architecture
+
+value: 3
+risk: 2
+
+parent: "0001"
+children: []
+
+depends_on: ["0284"]
+spikes: []
+
+spec: src/tool/Features/Manifest/.spec/README.md
+
+claims:
+  - B-008
+  - B-009
+  - B-010
+  - B-012
+
+created: "2026-10-24"
+updated: "2026-10-24"
+closed: null
+
+summary: |
+  As an agent editing a manifest I want `specht manifest --defaults` to print the default the tool ships, so that I read every key's default without a repository at hand.
+
+  The default is the `manifest.json` the tool embeds for the newest version it ships (A-3, decision 0002), not the output of `specht init --epics`, which is not built. No root is read: the output and the exit code are the same under a missing root, a missing manifest and a rejected one (B-009, B-010).
+
+  Waits on 0284: the option is on that command.
+
+acceptance_criteria:
+  - "B-008 — the newest shipped version's default"
+  - "B-009 — the same whatever the root holds"
+  - "B-010 — exit `0` whatever the root holds"
+  - "B-012 — equals the embedded manifest"
+  - "§ 9 carries a row naming a test for each id above."
+
+decisions:
+  - |
+    2026-10-24, spec-author's cut of the groomed Feature. Rejected: one item for the whole Feature.
+
+out_of_scope:
+  - "The default of a version other than the newest — § 5 row 7; § 11 OQ-3."
+  - "Writing a manifest — C-1; `init` is `0001-F4`."

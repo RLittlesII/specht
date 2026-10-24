@@ -81,10 +81,10 @@ Feature: The manifest command
       | the default   |
 
   @B-012
-  Scenario: The default manifest is the one init writes
-    Given a bare root that init with epics has written into
+  Scenario: The default manifest is the embedded one
+    Given the manifest the tool embeds for the newest version it ships
     When the default manifest is printed as JSON
-    Then every key and value printed equals the manifest init wrote
+    Then every key and value printed equals that embedded manifest
 
   @B-013
   Scenario: A missing root is a missing-input failure
@@ -146,3 +146,10 @@ Feature: The manifest command
   Scenario: The same input gives the same output
     When the effective manifest is printed twice
     Then both runs print the same standard output and exit with the same code
+
+  @B-020
+  Scenario: The text form is the JSON document, indented, in order
+    When the effective manifest is printed as text and as JSON
+    Then the text is the document the JSON form prints, indented
+    And its keys are in the order the default manifest holds them
+    And its rule settings are in ascending order of rule id

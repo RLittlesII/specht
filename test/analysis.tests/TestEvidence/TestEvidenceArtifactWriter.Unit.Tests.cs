@@ -58,6 +58,7 @@ public sealed class TestEvidenceArtifactWriterUnitTests
                 ["rowId"] = null,
                 ["caseId"] = "case-17",
                 ["status"] = "resolved",
+                ["state"] = "active",
             }),
         });
         var artifact = new TestEvidenceArtifactReader().Read(source.ToJsonString()).Artifact!;

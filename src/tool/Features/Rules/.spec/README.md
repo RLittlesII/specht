@@ -5,7 +5,7 @@ type: feature
 id: "F10"
 epic: "0001"
 spec_status: draft
-status: blocked
+status: ready-for-architecture
 priority: med
 value: 0
 risk: 0
@@ -20,7 +20,7 @@ depends_on: ["F2", "F3", "F5", "F7"]
 blocks: []
 spikes: []
 created: "2026-10-11"
-updated: "2026-10-11"
+updated: "2026-10-24"
 github_issue: null
 synced_at: null
 ---
@@ -35,7 +35,7 @@ A rule can be lowered, raised or switched off from the manifest, but nothing lis
 
 ## 2. User Needs
 
-<!-- last written by: spec-author, 2026-10-11 -->
+<!-- last written by: spec-author, 2026-10-11, 2026-10-24 -->
 
 | #   | Persona                                         | Need                                                                                  | Pain Point Today                                                             |
 | --- | ----------------------------------------------- | ------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------- |
@@ -46,15 +46,15 @@ A rule can be lowered, raised or switched off from the manifest, but nothing lis
 
 ### Assumptions
 
-| ID  | Assumption                                                                                                                                                                                                           |
-| --- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| A-1 | The command line is `specht rules [--root <dir>] [--json]`, beside `specht`, `init` and `upgrade`; `--root` defaults to the current directory as it does for the check (owner, 2026-10-11).                          |
-| A-2 | A rule's family and default severity are the ones its rule page gives (`0001-F3` B-032, A-5): one of the eight families, and `error` or `warning`.                                                                   |
-| A-3 | A rule's effective level is `error`, `warning` or `off` (`0001-F5` decision 0008): the level the manifest sets for its id, or, where the manifest sets none, the level of the rule's own severity (`0001-F5` B-044). |
+| ID  | Assumption                                                                                                                                                                                                                                                                                                                                                                                                         |
+| --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| A-1 | The command line is `specht rules [--root <dir>] [--json]`, beside `specht`, `init` and `upgrade`; `--root` defaults to the current directory as it does for the check (owner, 2026-10-11). `rules` is also a branch whose default command is this one, so `0001-F11`'s set command can hang under it as `specht schema pin` hangs under `schema` (`0001-F11` A-1); that places a name and adds no behaviour here. |
+| A-2 | A rule's family and default severity are the ones its rule page gives (`0001-F3` B-032, A-5): one of the eight families, and `error` or `warning`.                                                                                                                                                                                                                                                                 |
+| A-3 | A rule's effective level is `error`, `warning` or `off` (`0001-F5` decision 0008): the level the manifest sets for its id, or, where the manifest sets none, the level of the rule's own severity (`0001-F5` B-044).                                                                                                                                                                                               |
 
 ## 3. Acceptance Criteria
 
-<!-- last written by: spec-author, 2026-10-11 -->
+<!-- last written by: spec-author, 2026-10-11, 2026-10-24 -->
 
 | ID    | Claim                                                                                                                                                                                                                                                                                                                                                                                                                         | Source                                                                                                           | Status |
 | ----- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- | ------ |
@@ -76,6 +76,7 @@ A rule can be lowered, raised or switched off from the manifest, but nothing lis
 | B-016 | Given any run, no file is created, modified or deleted, under the root or anywhere else.                                                                                                                                                                                                                                                                                                                                      | brief § 9; C-1                                                                                                   | Active |
 | B-017 | Given any output on stdout or stderr, every path the tool derives is relative to the root with `/` separators, and the only path that may be absolute is one typed on the command line, echoed as given.                                                                                                                                                                                                                      | brief § 9; `0001-F2` B-013                                                                                       | Active |
 | B-018 | Given the same root, manifest and options, two runs print the same stdout and exit with the same code.                                                                                                                                                                                                                                                                                                                        | brief § 9; C-3                                                                                                   | Active |
+| B-019 | Given the text form, stdout carries one line for each entry, holding the rule id, the family, the default severity and the effective level in that order, separated by single tab characters, with the default severity and the effective level in lower case.                                                                                                                                                                | derived by spec-author (a form a test can fail, decision 0002); not stated by the owner; OQ-2                    | Active |
 
 ## 4. Constraints
 
@@ -125,7 +126,7 @@ Pending: owned by `test-writer`, written after agreement.
 
 ## 9. Traceability Matrix
 
-<!-- last written by: spec-author, 2026-10-11 -->
+<!-- last written by: spec-author, 2026-10-11, 2026-10-24 -->
 
 | Claim ID | Scenario                                                       | Test    | Status  |
 | -------- | -------------------------------------------------------------- | ------- | ------- |
@@ -147,21 +148,23 @@ Pending: owned by `test-writer`, written after agreement.
 | B-016    | A run writes nothing                                           | Missing | Missing |
 | B-017    | No derived path in the output is absolute                      | Missing | Missing |
 | B-018    | The same input gives the same output                           | Missing | Missing |
+| B-019    | The text form is one tab-separated line per rule               | Missing | Missing |
 
 ## 10. Lessons / Spec Deltas
 
-<!-- last written by: spec-author, 2026-10-11 -->
+<!-- last written by: spec-author, 2026-10-11, 2026-10-24 -->
 
-None.
+- 2026-10-24, groomed from `blocked` to `ready-for-architecture` ([decision 0002](decisions/0002-the-text-form-is-one-tab-separated-line-per-rule-and-the-blocked-status-is-lifted.md)). The block named `0001-F2`, `0001-F3`, `0001-F5` and `0001-F7`: the first three are built, and `0001-F7`'s list and pin commands are built (items `0121` to `0125`); only `upgrade` (item `0047`) is outstanding and no claim here depends on it. `depends_on` stays as references.
+- 2026-10-24, B-019 added: the text form, derived by spec-author on OQ-2's default, so a test can fail. A-1 notes that `rules` is also the branch `0001-F11` hangs under. No other claim changed.
 
 ## 11. Open Questions
 
-<!-- last written by: spec-author, 2026-10-11 -->
+<!-- last written by: spec-author, 2026-10-11, 2026-10-24 -->
 
 | ID   | Question                                                                                                                                                                                                                                                        | Blocks                | Resolution                                                                                              |
 | ---- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------- | ------------------------------------------------------------------------------------------------------- |
 | OQ-1 | With no manifest, does `specht rules` fail as the check and `--explain` do (`0001-F3` OQ-2, B-029), or list the newest shipped version's rules with each at its own severity? The effective level needs a manifest; the id, family and default severity do not. | B-013; § 5 row 5      | Open. Proceeds on the default: it fails with `2`, as `--explain` does. Owner not asked.                 |
-| OQ-2 | What does an entry look like without `--json`: one line per rule with its four values, an aligned table, or something else?                                                                                                                                     | B-001 (the form only) | Open. No claim fixes the text form. Owner not asked.                                                    |
+| OQ-2 | What does an entry look like without `--json`: one line per rule with its four values, an aligned table, or something else?                                                                                                                                     | B-019 (the form only) | Open. Proceeds on one tab-separated line per rule (B-019). Owner not asked.                             |
 | OQ-3 | Does an entry also carry the rule's title, which its page holds (`0001-F3` B-032)? The owner named the family, the default severity and the effective level.                                                                                                    | B-001, B-010          | Open. No claim is written for a title. Owner not asked.                                                 |
 | OQ-4 | Does the JSON document of this command get a published schema, as the report has (`0001-F3` C-1), with its member names fixed and bound to change by addition only? Epic `0132` would read it.                                                                  | B-010                 | Open. B-010 fixes what the document carries and no member name. Owner not asked.                        |
 | OQ-5 | Item `0169` renumbers the rule ids to four digits whose thousands digit names the group. Does the listing then order and group by that digit, and is "family" (`0001-F3` A-5) still the word, or the group ADR-0010 names?                                      | B-002, B-008          | Open. B-008's ordinal order holds under either numbering; B-002 follows the rule page. Owner not asked. |
@@ -176,7 +179,9 @@ None.
 
 ## Tasks
 
-None yet. Cut from § 3 after agreement.
+- `0280`: the engine reads the rule entries (B-001 to B-008).
+- `0281`: the `specht rules` command, text form, exit codes and failure paths (B-011 to B-019).
+- `0282`: `--json` (B-009, B-010).
 
 ## Scoring
 

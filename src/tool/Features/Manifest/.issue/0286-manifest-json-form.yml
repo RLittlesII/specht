@@ -1,0 +1,40 @@
+id: "0286"
+type: task
+title: The manifest command in JSON
+
+status: ready-for-architecture
+
+value: 3
+risk: 1
+
+parent: "0001"
+children: []
+
+depends_on: ["0284", "0285"]
+spikes: []
+
+spec: src/tool/Features/Manifest/.spec/README.md
+
+claims:
+  - B-011
+
+created: "2026-10-24"
+updated: "2026-10-24"
+closed: null
+
+summary: |
+  As a script or an MCP host I want `specht manifest --json`, with and without `--defaults`, to print one JSON document, so that I read the manifest without parsing text.
+
+  Waits on 0284 and 0285: the option applies to both forms, and the `--defaults` form exists only after 0285.
+
+acceptance_criteria:
+  - "B-011 — one JSON document, effective and default"
+  - "§ 9 carries a row naming a test for each id above."
+
+decisions:
+  - |
+    2026-10-24, spec-author's cut of the groomed Feature. Rejected: one item for the whole Feature.
+
+out_of_scope:
+  - "A published schema for the document — § 11 OQ-4."
+  - "The text form — 0284."
