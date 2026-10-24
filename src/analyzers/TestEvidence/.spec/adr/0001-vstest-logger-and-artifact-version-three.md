@@ -8,8 +8,9 @@ type: adr
 
 ## Status
 
-Proposed — 2026-10-23, `implementer`, from item 0260. The repository owner
-decides. OQ-3 already fixes the mechanism, a VSTest test logger registered by
+Accepted — 2026-10-23, decided by the repository owner: "Accept". The VSTest
+logger writes format version 3; versions 1 and 2 still read; the MTP collector
+stays at version 1. Proposed 2026-10-23 by `implementer`, from item 0260. OQ-3 already fixes the mechanism, a VSTest test logger registered by
 the package build integration; this record settles how it is built, registered
 and versioned. Section 7 states the contract in full.
 
