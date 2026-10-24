@@ -110,4 +110,42 @@ public sealed class TestEvidenceArtifactReaderUnitTests
         result.IsValid.Should().BeTrue();
         result.Artifact!.Results.Cases.Should().ContainSingle();
     }
+
+    [Fact]
+    public void VersionThreeArtifact_WhenRead_ShouldExposeEachCaseCategoriesOwnershipAndSelection()
+    {
+        // Given
+        var json = TestEvidenceJson.VersionThree;
+
+        // When
+        var result = new TestEvidenceArtifactReader().Read(json);
+
+        // Then
+        result.IsValid.Should().BeTrue();
+        var selected = result.Artifact!.Discovery.Cases.Single(static item => item.CaseId == "case-17");
+        selected.Categories.Should().Equal("Smoke", "visual");
+        selected.Owned.Should().BeTrue();
+        selected.Selected.Should().BeTrue();
+        var unselected = result.Artifact.Discovery.Cases.Single(static item => item.CaseId == "case-18");
+        unselected.Categories.Should().BeEmpty();
+        unselected.Owned.Should().BeTrue();
+        unselected.Selected.Should().BeFalse();
+    }
+
+    [Fact]
+    public void VersionOneArtifact_WhenRead_ShouldReportCategoriesOwnershipAndSelectionAsUnknown()
+    {
+        // Given
+        var json = TestEvidenceJson.Valid;
+
+        // When
+        var result = new TestEvidenceArtifactReader().Read(json);
+
+        // Then
+        result.IsValid.Should().BeTrue();
+        var testCase = result.Artifact!.Discovery.Cases.Single();
+        testCase.Categories.Should().BeNull();
+        testCase.Owned.Should().BeNull();
+        testCase.Selected.Should().BeNull();
+    }
 }

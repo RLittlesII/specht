@@ -40,11 +40,13 @@
     <PackageReference Include="xunit.v3" />
     <PackageReference Include="AwesomeAssertions" />
     <PackageReference Include="Spectre.Console.Cli.Testing" />
+    <PackageReference Include="Microsoft.TestPlatform.ObjectModel" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\specht\specht.csproj" />
     <ProjectReference Include="../../src/analyzers/analyzers.csproj" />
+    <ProjectReference Include="../../src/testevidence.vstest/testevidence.vstest.csproj" />
     <ProjectReference Include="../../src/codefixes/codefixes.csproj" />
     <ProjectReference Include="../../.performance/comparison/comparison.csproj" />
     <ProjectReference Include="..\..\src\tool\tool.csproj" />

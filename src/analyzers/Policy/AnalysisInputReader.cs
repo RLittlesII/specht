@@ -20,6 +20,7 @@ public sealed class AnalysisInputReader
     {
         var path = "analysis/inputs";
         var contentKey = Key(inputs, cancellationToken);
+        var configurationPath = path;
         try
         {
             foreach (var input in inputs)
@@ -40,6 +41,7 @@ public sealed class AnalysisInputReader
             path = "analysis/inputs";
             var configuration = One(inputs, "configuration");
             path = configuration.RelativePath;
+            configurationPath = path;
             var raw = JsonNode.Parse(configuration.Text!) as JsonObject ?? throw new ArgumentException("Consumer configuration is not an object.");
             var schemas = new Dictionary<string, JsonSchema>(StringComparer.Ordinal);
             var registry = new SchemaRegistry { Fetch = static (_, _) => null };
@@ -107,6 +109,11 @@ public sealed class AnalysisInputReader
             }
 
             return new AnalysisSnapshot(contentKey, policy, new BindingCatalog(features, adrs), Array.Empty<AnalysisInputFailure>());
+        }
+        catch (FormatException)
+        {
+            return new AnalysisSnapshot(contentKey, null, null,
+                new[] { new AnalysisInputFailure(_paths.Normalize(configurationPath), CaseScope.Invalid) });
         }
         catch (Exception exception) when (exception is ArgumentException or InvalidOperationException or JsonException
             or JsonSchemaException or RefResolutionException or KeyNotFoundException)

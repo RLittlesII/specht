@@ -12,6 +12,30 @@ internal static class TestEvidenceJson
     public static string SourceFingerprint => Fingerprint(Valid, "sourceFingerprint");
     public static string PolicyFingerprint => Fingerprint(Valid, "policyFingerprint");
 
+    public static string VersionThree
+    {
+        get
+        {
+            var artifact = JsonNode.Parse(Valid)!;
+            artifact["formatVersion"] = 3;
+            var cases = artifact["discovery"]!["cases"]!.AsArray();
+            cases[0]!["categories"] = new JsonArray("Smoke", "visual");
+            cases[0]!["owned"] = true;
+            cases[0]!["selected"] = true;
+            cases.Add(new JsonObject
+            {
+                ["caseId"] = "case-18",
+                ["methodSymbolId"] = "M:Example.Tests.Sample.Run",
+                ["rowId"] = "row-2",
+                ["displayName"] = "Sample.Run(2)",
+                ["categories"] = new JsonArray(),
+                ["owned"] = true,
+                ["selected"] = false,
+            });
+            return artifact.ToJsonString();
+        }
+    }
+
     public static string ForMethod(string symbolId)
     {
         var artifact = JsonNode.Parse(Valid)!;

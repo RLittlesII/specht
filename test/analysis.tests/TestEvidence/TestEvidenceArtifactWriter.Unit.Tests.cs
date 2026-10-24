@@ -72,4 +72,36 @@ public sealed class TestEvidenceArtifactWriterUnitTests
         result.Artifact.Scenarios[0].GetProperty("scenarioId").GetString().Should().Be("scenario-1");
         result.Artifact.Scenarios[0].GetProperty("cases")[0].GetProperty("caseId").GetString().Should().Be("case-17");
     }
+
+    [Fact]
+    public void VersionThreeArtifact_WhenWrittenAndReadAgain_ShouldPreserveCategoriesOwnershipAndSelection()
+    {
+        // Given
+        var original = new TestEvidenceArtifactReader().Read(TestEvidenceJson.VersionThree).Artifact!;
+
+        // When
+        var json = new TestEvidenceArtifactWriter().Write(original);
+        var result = new TestEvidenceArtifactReader().Read(json);
+
+        // Then
+        JsonNode.Parse(json)!["formatVersion"]!.GetValue<int>().Should().Be(3);
+        result.IsValid.Should().BeTrue();
+        result.Artifact!.Discovery.Cases.Should().BeEquivalentTo(original.Discovery.Cases);
+    }
+
+    [Fact]
+    public void CasesStatingNoOwnershipOrSelection_WhenWritten_ShouldStayVersionOne()
+    {
+        // Given
+        var original = new TestEvidenceArtifactReader().Read(TestEvidenceJson.Valid).Artifact!;
+
+        // When
+        var json = new TestEvidenceArtifactWriter().Write(original);
+
+        // Then
+        var written = JsonNode.Parse(json)!;
+        written["formatVersion"]!.GetValue<int>().Should().Be(1);
+        written["discovery"]!["cases"]![0]!.AsObject().Select(static member => member.Key).Should()
+            .BeEquivalentTo("caseId", "methodSymbolId", "rowId", "displayName");
+    }
 }

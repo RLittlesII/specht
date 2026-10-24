@@ -21,6 +21,7 @@
     <ProjectReference Include="../analyzers/analyzers.csproj" ReferenceOutputAssembly="false" PrivateAssets="all" />
     <ProjectReference Include="../codefixes/codefixes.csproj" ReferenceOutputAssembly="false" PrivateAssets="all" />
     <ProjectReference Include="../testevidence.mtp/testevidence.mtp.csproj" ReferenceOutputAssembly="false" PrivateAssets="all" SetTargetFramework="TargetFramework=net10.0" />
+    <ProjectReference Include="../testevidence.vstest/testevidence.vstest.csproj" ReferenceOutputAssembly="false" PrivateAssets="all" SetTargetFramework="TargetFramework=net10.0" />
     <None Include="build/Specht.CodeAnalysis.props" Pack="true" PackagePath="build/" />
     <None Include="build/Specht.CodeAnalysis.targets" Pack="true" PackagePath="build/" />
   </ItemGroup>
@@ -28,6 +29,8 @@
   <Target Name="BuildNet11TestEvidenceRunner" BeforeTargets="PackAnalysisAssemblies"
           Condition="'$(NoBuild)' != 'true'">
     <MSBuild Projects="../testevidence.mtp/testevidence.mtp.csproj" Targets="Build"
+             Properties="Configuration=$(Configuration);TargetFramework=net11.0" />
+    <MSBuild Projects="../testevidence.vstest/testevidence.vstest.csproj" Targets="Build"
              Properties="Configuration=$(Configuration);TargetFramework=net11.0" />
   </Target>
 
@@ -42,6 +45,10 @@
             Pack="true" PackagePath="build/runner/net10.0/" Visible="false" />
       <None Include="../testevidence.mtp/bin/$(Configuration)/net11.0/*.dll"
             Pack="true" PackagePath="build/runner/net11.0/" Visible="false" />
+      <None Include="../testevidence.vstest/bin/$(Configuration)/net10.0/Specht.TestEvidence.VsTest.TestLogger.dll;../testevidence.vstest/bin/$(Configuration)/net10.0/Specht.Analysis.dll;../testevidence.vstest/bin/$(Configuration)/net10.0/TestableIO.System.IO.Abstractions.Wrappers.dll;../testevidence.vstest/bin/$(Configuration)/net10.0/Testably.Abstractions.FileSystem.Interface.dll"
+            Pack="true" PackagePath="build/vstest/net10.0/" Visible="false" />
+      <None Include="../testevidence.vstest/bin/$(Configuration)/net11.0/Specht.TestEvidence.VsTest.TestLogger.dll;../testevidence.vstest/bin/$(Configuration)/net11.0/Specht.Analysis.dll;../testevidence.vstest/bin/$(Configuration)/net11.0/TestableIO.System.IO.Abstractions.Wrappers.dll;../testevidence.vstest/bin/$(Configuration)/net11.0/Testably.Abstractions.FileSystem.Interface.dll"
+            Pack="true" PackagePath="build/vstest/net11.0/" Visible="false" />
       <None Include="../codefixes/bin/$(Configuration)/netstandard2.0/Microsoft.CodeAnalysis*.dll"
             Pack="false" />
     </ItemGroup>
