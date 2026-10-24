@@ -418,10 +418,15 @@ public sealed class TestEvidenceArtifactReader
         IReadOnlyList<TestEvidenceCase> discoveredCases,
         string? scenarioId)
     {
-        var value = Object(element, "scenario case link", "rowId", "caseId", "status");
+        var value = Object(element, "scenario case link", "rowId", "caseId", "status", "state");
         var rowId = NullableString(value, "rowId");
         var caseId = NullableString(value, "caseId");
         var status = String(value, "status");
+        if (String(value, "state") is not ("planned" or "active"))
+        {
+            throw Invalid("Scenario case link state must be planned or active.");
+        }
+
         if (rowId is not null)
         {
             NonEmpty(rowId, "scenario case rowId");
