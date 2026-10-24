@@ -2,7 +2,7 @@ id: "0045"
 type: task
 title: Bring the schema set and templates to the pin with upgrade
 
-status: ready-for-architecture
+status: in-progress
 
 risk: 4
 
@@ -21,7 +21,7 @@ claims:
   - B-052
 
 created: "2026-10-08"
-updated: "2026-10-11"
+updated: "2026-10-24"
 closed: null
 
 summary: |
