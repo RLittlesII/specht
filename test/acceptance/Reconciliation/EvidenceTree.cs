@@ -243,7 +243,7 @@ internal sealed class EvidenceTree : IDisposable
                     ["target"] = target.DeepClone(),
                     ["matches"] = new JsonArray(),
                 }),
-                ["cases"] = new JsonArray(new JsonObject { ["rowId"] = null, ["caseId"] = "case-1", ["status"] = "resolved" }),
+                ["cases"] = new JsonArray(new JsonObject { ["rowId"] = null, ["caseId"] = "case-1", ["status"] = "resolved", ["state"] = "active" }),
             });
         }
         File.WriteAllText(Path.Combine(Root, "evidence.json"), evidence.ToJsonString());
