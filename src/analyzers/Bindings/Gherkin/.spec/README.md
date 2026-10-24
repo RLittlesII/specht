@@ -468,7 +468,9 @@ already writes, and nowhere else (decision 0003, B-030):
    compiler payload (`CompilationEvidence`) carries them as `catalog`. Under the
    Markdown path the payload has no `catalog` member.
 2. `TestEvidenceMtpCollector` reads `catalog` from the payload when present and
-   passes it to `TestEvidenceArtifact.Catalog`.
+   passes it to `TestEvidenceArtifact.Catalog`. The payload member is an object
+   with a `features` array, as in the artifact. `TestEvidenceVsTestLogger` makes
+   the same pass-through for the identity artifact it writes.
 3. `TestEvidenceArtifactWriter` writes a top-level `catalog` and
    `formatVersion: 2` when `Catalog` is set, and otherwise the version-1 artifact
    it writes today, byte for byte.

@@ -21,13 +21,14 @@ public sealed class TestEvidenceArtifactReader
             }
 
             var version = Integer(root, "formatVersion");
-            if (String(root, "format") != "specht.test-evidence" || version is not (1 or 3))
+            if (String(root, "format") != "specht.test-evidence" || version is not (1 or 2 or 3))
             {
                 return TestEvidenceReadResult.Unsupported();
             }
 
-            Object(root, "artifact", "format", "formatVersion", "project", "configuration", "assembly",
-                "sourceFingerprint", "policyFingerprint", "adapter", "discovery", "bindings", "results", "inputs", "scenarios");
+            var members = new[] { "format", "formatVersion", "project", "configuration", "assembly",
+                "sourceFingerprint", "policyFingerprint", "adapter", "discovery", "bindings", "results", "inputs", "scenarios" };
+            Object(root, "artifact", version == 1 ? members : members.Append("catalog").ToArray());
 
             var project = Object(Required(root, "project"), "project", "path", "targetFramework");
             var configuration = Object(Required(root, "configuration"), "configuration", "name", "fingerprint");
@@ -48,6 +49,7 @@ public sealed class TestEvidenceArtifactReader
                 throw Invalid("Declared fingerprints do not match their input identities.");
             }
             var scenarios = ReadScenarios(root, discovery.Cases);
+            var catalog = root.TryGetProperty("catalog", out var catalogElement) ? ReadCatalog(catalogElement) : null;
 
             var artifact = new TestEvidenceArtifact(
                 Path(String(project, "path")), NonEmpty(String(project, "targetFramework"), "project.targetFramework"),
@@ -55,7 +57,7 @@ public sealed class TestEvidenceArtifactReader
                 NonEmpty(String(assembly, "name"), "assembly.name"), Digest(String(assembly, "sha256"), "assembly.sha256"),
                 OptionalPath(assembly, "path"), sourceFingerprint, policyFingerprint,
                 NonEmpty(String(adapter, "id"), "adapter.id"), NonEmpty(String(adapter, "version"), "adapter.version"),
-                NonEmpty(String(adapter, "contractVersion"), "adapter.contractVersion"), discovery, bindings, results, inputs, scenarios);
+                NonEmpty(String(adapter, "contractVersion"), "adapter.contractVersion"), discovery, bindings, results, inputs, scenarios, catalog);
 
             var isCurrent = currentInputs is null || (artifact.ProjectPath == currentInputs.ProjectPath
                 && artifact.TargetFramework == currentInputs.TargetFramework
@@ -70,6 +72,38 @@ public sealed class TestEvidenceArtifactReader
         {
             return TestEvidenceReadResult.Invalid();
         }
+    }
+
+    /// <implements epic="0201" feature="F3" claim="B-009" />
+    private static IReadOnlyList<TestEvidenceCatalogFeature> ReadCatalog(JsonElement element)
+    {
+        var value = Object(element, "catalog", "features");
+        return Array(value, "features").Select(static feature =>
+        {
+            var item = Object(feature, "catalog feature", "epic", "feature", "state", "path", "claims");
+            return new TestEvidenceCatalogFeature(NullableString(item, "epic"), NonEmpty(String(item, "feature"), "catalog.feature"),
+                NonEmpty(String(item, "state"), "catalog.state"), Path(String(item, "path")),
+                Array(item, "claims").Select(ReadCatalogClaim).ToArray());
+        }).ToArray();
+    }
+
+    /// <implements epic="0201" feature="F3" claim="B-009" />
+    private static TestEvidenceCatalogClaim ReadCatalogClaim(JsonElement element)
+    {
+        var item = Object(element, "catalog claim", "id", "state", "element", "path", "line", "cases");
+        var kind = String(item, "element");
+        if (!CatalogElements.Contains(kind))
+        {
+            throw Invalid("Catalog claim element is not recognized.");
+        }
+
+        return new TestEvidenceCatalogClaim(NonEmpty(String(item, "id"), "catalog.claim.id"),
+            NonEmpty(String(item, "state"), "catalog.claim.state"), kind, Path(String(item, "path")),
+            Positive(Integer(item, "line"), "catalog.claim.line"), Array(item, "cases").Select(static testCase =>
+            {
+                var value = Object(testCase, "catalog case", "line", "planned");
+                return new TestEvidenceCatalogCase(Positive(Integer(value, "line"), "catalog.case.line"), Boolean(value, "planned"));
+            }).ToArray());
     }
 
     /// <implements epic="0201" feature="F3" claim="B-009" />
@@ -579,6 +613,9 @@ public sealed class TestEvidenceArtifactReader
 
     private static readonly HashSet<string> Roles = new(StringComparer.Ordinal)
         { "spec", "implements", "verifies", "follows" };
+
+    private static readonly HashSet<string> CatalogElements = new(StringComparer.Ordinal)
+        { "feature", "rule", "scenario", "scenarioOutline" };
 
     private static readonly HashSet<string> InputKinds = new(StringComparer.Ordinal)
         { "source", "generated-source", "manifest", "schema", "record" };

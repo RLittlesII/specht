@@ -18,7 +18,8 @@ public sealed class BindingCatalog
         Features = Array.AsReadOnly(features.ToArray());
         Adrs = Array.AsReadOnly(adrs.ToArray());
         var guard = new BindingProvenanceGuard();
-        foreach (var path in Features.Select(static feature => feature.RelativePath).Concat(Adrs.Select(static adr => adr.RelativePath)))
+        foreach (var path in Features.Select(static feature => feature.RelativePath).Concat(Adrs.Select(static adr => adr.RelativePath))
+            .Concat(Features.SelectMany(static feature => feature.Claims).Select(static claim => claim.RelativePath).OfType<string>()))
         {
             guard.Validate(path);
         }

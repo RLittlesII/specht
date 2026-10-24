@@ -145,7 +145,9 @@ public sealed class TestEvidenceMtpCollector : IDataConsumer
             root.GetProperty("assemblyPath").GetString(),
             root.GetProperty("sourceFingerprint").GetString()!,
             root.GetProperty("policyFingerprint").GetString()!, "mtp", AdapterVersion, "1",
-            collection.Discovery with { Methods = methods }, bindings, collection.Results, inputs, []);
+            collection.Discovery with { Methods = methods }, bindings, collection.Results, inputs, [],
+            root.TryGetProperty("catalog", out var catalog)
+                ? JsonSerializer.Deserialize<TestEvidenceCatalogFeature[]>(catalog.GetProperty("features").GetRawText(), JsonOptions) : null);
         Directory.CreateDirectory(Path.GetDirectoryName(Path.GetFullPath(outputPath))!);
         File.WriteAllText(outputPath, new TestEvidenceArtifactWriter().Write(artifact));
     }
