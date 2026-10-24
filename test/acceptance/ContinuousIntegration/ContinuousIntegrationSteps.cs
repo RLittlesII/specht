@@ -34,12 +34,12 @@ public sealed class ContinuousIntegrationSteps
     public void ThenTheBuildRunsAgainstThatCommit() =>
         Jobs().Select(static job => Checkout(job)["ref"]).Should().AllBe(HeadCommit);
 
-    [Then("the build runs on Linux and on Windows")]
-    public void ThenTheBuildRunsOnLinuxAndOnWindows() =>
+    [Then("integration runs on the owner's macOS runners and on Windows")]
+    public void ThenIntegrationRunsOnTheOwnersMacOSRunnersAndOnWindows() =>
         Jobs().Should().AllSatisfy(static job =>
         {
             Scalar(job, "runs-on").Should().Be("${{ matrix.os }}");
-            Images(job).Should().BeEquivalentTo("ubuntu-latest", "windows-latest");
+            Images(job).Should().BeEquivalentTo("self-hosted, macOS, ARM64", "windows-latest");
         });
 
     [Then("the format, compile, test, self-check and pack gates each run")]
@@ -81,8 +81,8 @@ public sealed class ContinuousIntegrationSteps
         steps.Should().NotContain(static step => step.Contains("upload-artifact", StringComparison.Ordinal));
     }
 
-    [Then("the Linux and Windows builds each report as a separate check")]
-    public void ThenTheLinuxAndWindowsBuildsEachReportAsASeparateCheck()
+    [Then("the macOS and Windows builds each report as a separate check")]
+    public void ThenTheMacOSAndWindowsBuildsEachReportAsASeparateCheck()
     {
         var job = Jobs().Should().ContainSingle().Subject;
         Images(job).Should().HaveCount(2).And.OnlyHaveUniqueItems();

@@ -154,10 +154,10 @@ internal sealed partial class SpechtBuild
                 Contents = GitHubActionsPermission.Write,
                 Packages = GitHubActionsPermission.Write,
             },
-            Matrix = ["ubuntu-latest"],
+            Matrix = [RunnerPool],
             Steps =
             [
-                new CheckoutStep("Checkout") { FetchDepth = 0 },
+                new CheckoutStep("Checkout") { FetchDepth = 0, Clean = true },
                 new DownloadArtifactStep("Download the package")
                 {
                     Name = PackageArtifact,

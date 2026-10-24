@@ -20,7 +20,7 @@ depends_on: ["F1"]
 blocks: []
 spikes: []
 created: "2026-10-09"
-updated: "2026-10-14"
+updated: "2026-10-23"
 github_issue: null
 synced_at: null
 ---
@@ -113,7 +113,7 @@ Every call site starts the tool as a new process - the pre-commit hook on every 
 
 ## 7. Technical Design
 
-<!-- last written by: implementer, 2026-10-13; implementer, 2026-10-14 (the benchmark project builds for two targets and runs `net10.0`, `0001-F2` decision 0011); implementer, 2026-10-14 (the baseline targets the SDK's bundled framework, item 0220) -->
+<!-- last written by: implementer, 2026-10-13; implementer, 2026-10-14 (the benchmark project builds for two targets and runs `net10.0`, `0001-F2` decision 0011); implementer, 2026-10-14 (the baseline targets the SDK's bundled framework, item 0220); implementer, 2026-10-23 (the main-only Short runs moved to the macOS pool, `0055-F2` decision 0005) -->
 
 ### Implemented timing slice
 
@@ -269,8 +269,12 @@ requires both the working timing session and the proven observer decision. They
 share this specification and may edit the same Startup files, so only one item
 is taken in this Feature at a time; no parallel-write claim is made here.
 
-The finished Feature uses the existing main-only Short runs on Linux and Windows;
-no automatic benchmark is added to pull requests. Local Dry establishes that the
+The finished Feature uses the existing main-only Short runs on the owner's
+self-hosted macOS ARM64 pool and on Windows (on Linux and Windows until
+2026-10-23, `0055-F2` decision 0005, item 0264); no automatic benchmark is added
+to pull requests. Since that move CI has no Linux host, so the Linux observer the
+feasibility outcome above describes has no CI run to measure on; no observer is
+built, and nothing in the CI change adds one. Local Dry establishes that the
 three cases run, and the default job provides a recorded finding. Neither Dry nor
 shared-runner Short results establish a regression threshold.
 
@@ -388,7 +392,9 @@ for a regression comparison and no number gates the build.
 
 ## 10. Lessons / Spec Deltas
 
-<!-- last written by: spec-author, 2026-10-13, 2026-10-14 (lesson 0001, item 0220) -->
+<!-- last written by: spec-author, 2026-10-13, 2026-10-14 (lesson 0001, item 0220), 2026-10-23 (`0055-F2` decision 0005) -->
+
+- 2026-10-23, the owner moved CI's Linux leg to the owner's self-hosted macOS ARM64 pool, replacing it ([`0055-F2` decision 0005](../../../../.build/ContinuousIntegration/.spec/decisions/0005-the-unix-leg-runs-on-the-owners-macos-pool.md)). The main-only Short runs this Feature uses now run on macOS and Windows. No claim, constraint or scenario changes. ADR-0001's Linux observer and its full-lifetime boundary question no longer have a CI host to run on; the ADR is accepted and not edited, and § 7, which names Linux, is the `implementer`'s.
 
 - 2026-10-09, spec-reviewer finding on commit `4b23e76`: B-003 restated with this Feature as subject. A-1 follows `0109-F1` B-013, which now packs only when this Feature's benchmark is selected.
 - 2026-10-09, the owner resolved OQ-1 and OQ-2. OQ-1 reverses its default: the tool process's memory is measured; B-006 added, C-7 restated, § 5 row 4 withdrawn. OQ-2: the fixed cost is measured in three rows - a generated tool that does nothing as the baseline, `specht --help`, and the check; B-007 to B-009 and C-8 added, C-1 restated, A-3 added, § 5 row 5 withdrawn and row 8 added. `--help` is the host row because the tool has no `--version`, and adding one is a product change (§ 5 row 8). B-004's source cites the owner's answer to `0109-F1` OQ-3. `0109-F1` C-4 holds unchanged: the allocation column stays, and B-006 reports beside it. Decision 0001 is unchanged: the checked invocation B-002 measures is still the one a call site runs, and B-008 is a row beside it, not a replacement; decision 0002 records the three-row call. On spec-reviewer findings before commit: B-006 and C-7 name the measured tool's own process, apart from the `dotnet` launcher and the benchmark process, and leave how and when it is read to § 7; C-8 gives packing the baseline tool to the benchmark code, not the benchmark target (orchestrator default, 2026-10-09, not the owner's), so A-1 and `0109-F1` B-013 are unchanged.

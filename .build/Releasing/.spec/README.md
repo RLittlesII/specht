@@ -20,7 +20,7 @@ depends_on: ["F1", "F5"]
 blocks: ["F7", "0109/F5"]
 spikes: []
 created: "2026-10-08"
-updated: "2026-10-16"
+updated: "2026-10-23"
 github_issue: null
 synced_at: null
 ---
@@ -73,7 +73,7 @@ Nothing publishes `specht.tool`: `0001-F2` § 5 row 7 hands the release workflow
 
 ## 4. Constraints
 
-<!-- last written by: spec-author, 2026-10-16 (C-6 amended, `0001-F7` decision 0015) -->
+<!-- last written by: spec-author, 2026-10-16 (C-6 amended, `0001-F7` decision 0015), 2026-10-23 (C-9 added, `0055-F2` decision 0005) -->
 
 | ID  | Constraint                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  | Rules Out                                                                                                                                                                                                                       |
 | --- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -85,6 +85,7 @@ Nothing publishes `specht.tool`: `0001-F2` § 5 row 7 hands the release workflow
 | C-6 | `Specht` gates a release or a dry run only once both `0001-F2`'s check command and `0001-F5`'s rule settings exist - from `0001-F5`'s arrival; until then its step reports and passes, so no release or dry run is gated while `SPEC060` is an error (`0055-F1` B-023, B-024, B-025, C-6, C-7; owner, 2026-10-08).                                                                                                                                                                                                                                                          | A release or dry run failed before `0001-F5` lands, or for a `Missing` traceability row on a specification whose delivery status is not done (amended 2026-10-16, `0001-F7` decision 0015: was any `Missing` traceability row). |
 | C-7 | Package write and contents write are granted to the `release` job only; the workflow-level token and the `build` job hold neither. Amended 2026-10-11 (decision 0003), which is the owner's confirmation of the grant living in the second job: was package write granted to the `publish` job only, derived by spec-author from the owner's choice of option A (decision 0001) and awaiting that confirmation.                                                                                                                                                             | A token that can write a package or a Release in a dry run, or while a gate runs the repository's code; the push or the Release creation as a step of the job that runs the gates; a third job holding contents write alone.    |
 | C-8 | The first `v*` tag is pushed only after a consumer can initialise a repository to a schema sourced at a URL and have the check validate with it (owner, 2026-10-11; decision 0004). Which claims that is, is OQ-17. C-2 stands.                                                                                                                                                                                                                                                                                                                                             | Pushing the first tag while `init` can write only the embedded schema set; reading C-2 as the first tag waiting on nothing; holding a later tag for it.                                                                         |
+| C-9 | The release workflow's `build` and `release` jobs run on the owner's self-hosted pool, `runs-on: [self-hosted, macOS, ARM64]`, each from a clean checkout with untracked and ignored files removed (owner, 2026-10-23; `0055-F2` C-11, C-12, decision 0005).                                                                                                                                                                                                                                                                                                                | Either job on GitHub-hosted `ubuntu-latest`; a job naming one runner of the pool; a release that packs or pushes a file a previous job left on the runner, which C-4 already forbids.                                           |
 
 ## 5. Out of Scope
 
@@ -127,7 +128,7 @@ Nothing publishes `specht.tool`: `0001-F2` § 5 row 7 hands the release workflow
 
 ## 7. Technical Design
 
-<!-- last written by: implementer, 2026-10-14 (the `build` job's step 3, `0001-F2` B-045 and its decision 0011) -->
+<!-- last written by: implementer, 2026-10-14 (the `build` job's step 3, `0001-F2` B-045 and its decision 0011), 2026-10-23 (item 0264, both jobs on the macOS pool, `0055-F2` decision 0005) -->
 
 On 2026-10-14, B-010 uses the native NuGet environment credential
 `NuGetPackageSourceCredentials_specht`, supplied at the generated release build
@@ -139,7 +140,11 @@ The existing Restore target restores the committed manifest unchanged.
 
 The repository owner asked that the release job use NUKE targets instead of embedding package commands and filenames in generated workflow shell strings. The earlier exclusion of publish targets was the recorder's design inference, not an owner decision; decisions 0001 and 0003 now record that correction. The generated `release` job checks out the tagged commit, downloads the run's package artifact, sets up the pinned SDK, then invokes `PushReleasePackages` and `CreateGitHubRelease` through `build.cmd`. Both targets require a pushed `v*` tag in GitHub Actions before reading a package or publishing. They read package IDs from the two packable projects and require both versioned files before either push. `PushReleasePackages` uses NUKE's typed `DotNetNuGetPush` settings. `CreateGitHubRelease` invokes `gh` for the provider operation after the pushes. Only the second job receives package and contents write; the build job still runs the gates with read access. The generated workflow contains target invocations and no package-name shell strings. The earlier design detail below is retained as its historical record and is superseded for item 0250's release path.
 
-**Built by item 0083 for B-001, B-002, B-005, B-008 and B-009, and by item 0084 for B-003, B-004, B-006, B-007, B-011 and B-012**, in the shape decisions 0001 and 0003 record: the generated file `release.yml`, the targets `Release` and `VerifyTag`, the job `build` on `ubuntu-latest` and the job `release`. No test proves it: for item 0083's five claims by decision 0002 and § 5 #9, and for item 0084's six by § 5 #9 alone, since decision 0002 names only the five. Decision 0003's 2026-10-14 addendum resolves OQ-16 for the first-publication reconciliation; § 8 records the evidence. The manual trigger carries no input, which is OQ-7's proposed default; OQ-7 and OQ-14 are open and block nothing here. B-010 is item 0085's; where this design leaves room for it, it says so and builds nothing.
+### Item 0264 amendment (2026-10-23)
+
+Both jobs, `build` and `release`, run on the owner's self-hosted pool, `runs-on: [self-hosted, macOS, ARM64]`, in place of `ubuntu-latest` (C-9; `0055-F2` C-12, decision 0005). In [`.build/SpechtBuild.Release.cs`](../../SpechtBuild.Release.cs) the `release` job's `Matrix` is the `RunnerPool` constant that [`.build/SpechtBuild.GitHubActions.cs`](../../SpechtBuild.GitHubActions.cs) declares, and its checkout sets `Clean = true`; the `build` job takes the same substitution and the same clean checkout from the shared `Middleware` (`0055-F2` § 7). Every checkout in [`release.yml`](../../../.github/workflows/release.yml) therefore writes `clean: 'true'` where the generator wrote `clean: 'false'`, so a pool runner's untracked and ignored files from an earlier job, an earlier `.artifacts/nupkg/` among them, are removed before the job reads its workspace (`0055-F2` C-11). The `release` job still takes its package only from this run's artifact (C-4). No step, target, permission or trigger changed. Where the design detail below names `ubuntu-latest` for either job, it describes the file before this amendment.
+
+**Built by item 0083 for B-001, B-002, B-005, B-008 and B-009, and by item 0084 for B-003, B-004, B-006, B-007, B-011 and B-012**, in the shape decisions 0001 and 0003 record: the generated file `release.yml`, the targets `Release` and `VerifyTag`, the job `build` on `ubuntu-latest` (on the macOS pool since item 0264, 2026-10-23) and the job `release`. No test proves it: for item 0083's five claims by decision 0002 and § 5 #9, and for item 0084's six by § 5 #9 alone, since decision 0002 names only the five. Decision 0003's 2026-10-14 addendum resolves OQ-16 for the first-publication reconciliation; § 8 records the evidence. The manual trigger carries no input, which is OQ-7's proposed default; OQ-7 and OQ-14 are open and block nothing here. B-010 is item 0085's; where this design leaves room for it, it says so and builds nothing.
 
 Until 2026-10-11 the file was `publish.yml`, the second job `publish`, the enhancement `PublishMiddleware`, the aggregate target `Publish` and the source file `SpechtBuild.Publish.cs` (decision 0003). Where this section reports a probe of 2026-10-09 it keeps that day's names.
 
@@ -309,7 +314,7 @@ What it would have cost:
 - calls `RunThroughEntryScript` on the `build` job;
 - inserts the upload step after the step whose `Id` is `pack`: the artifact `nupkg`, the path `.artifacts/nupkg/*.nupkg`, which `0055-F1` B-009 makes exactly one file, failing when no file is found, kept one day, hidden files included. `UploadArtifactStep` has typed properties for the first four and none for `include-hidden-files`; that input goes through `With`, the dictionary the step inherits from `UsingStep`, and the generator writes it as the first line of the step's `with:` block, beside the typed ones;
 - sets the workflow's permissions to `contents: read` and everything else `none`;
-- adds the `release` job: `needs: build`; `if: ${{ github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v') }}`; permissions `contents: write` and `packages: write`, everything else `none` (C-5, C-7); `ubuntu-latest`; the download step, the SDK step, the push step and the Release step.
+- adds the `release` job: `needs: build`; `if: ${{ github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v') }}`; permissions `contents: write` and `packages: write`, everything else `none` (C-5, C-7); `ubuntu-latest`, the `RunnerPool` since 2026-10-23 (C-9); the download step, the SDK step, the push step and the Release step.
 
 The push step has `shell: bash`, an `env` mapping `GITHUB_TOKEN` to `${{ secrets.GITHUB_TOKEN }}`, and one line: `dotnet nuget push ".artifacts/nupkg/specht.tool.${GITHUB_REF_NAME#v}.nupkg" --source "https://nuget.pkg.github.com/rlittlesii/index.json" --api-key "$GITHUB_TOKEN" --skip-duplicate`. It names one file, not a glob.
 
@@ -319,13 +324,13 @@ Both lines are built from the one constant `PackagePath`, as the upload's glob a
 
 ### The file generated
 
-Two jobs, both on `ubuntu-latest`, in this order. Both tables were read off the file the regeneration of 2026-10-11 wrote (`0055-F2` C-1). Step 3 of `build` was read again off the regeneration of 2026-10-14, which renamed it from `Use .NET 10 SDK` and added `global-json-file: 'global.json'` beside `dotnet-version: '10.0.401'` (`0001-F2` § 7, "Two target frameworks"); nothing else in the file changed. Against the `publish.yml` it replaces, that regeneration changed the workflow's name, the name, `id` and target of the last step of `build`, the second job's name, its `contents` scope, the end of the push line, and added the Release step; no step moved.
+Two jobs, both on `ubuntu-latest` until 2026-10-23 and on `[self-hosted, macOS, ARM64]` since (item 0264 amendment above), in this order. Both tables were read off the file the regeneration of 2026-10-11 wrote (`0055-F2` C-1). Step 3 of `build` was read again off the regeneration of 2026-10-14, which renamed it from `Use .NET 10 SDK` and added `global-json-file: 'global.json'` beside `dotnet-version: '10.0.401'` (`0001-F2` § 7, "Two target frameworks"); nothing else in the file changed. Against the `publish.yml` it replaces, that regeneration changed the workflow's name, the name, `id` and target of the last step of `build`, the second job's name, its `contents` scope, the end of the push line, and added the Release step; no step moved.
 
 Job `build`: no `needs`, no `if`, the workflow's read-only token.
 
 | #   | Step                                        | Runs                                                                                | Condition                                           |
 | --- | ------------------------------------------- | ----------------------------------------------------------------------------------- | --------------------------------------------------- |
-| 1   | Checkout                                    | `actions/checkout`, `fetch-depth: '0'`                                              | none                                                |
+| 1   | Checkout                                    | `actions/checkout`, `fetch-depth: '0'`, `clean: 'true'` since 2026-10-23            | none                                                |
 | 2   | Fetch all history for all tags and branches | `git fetch --prune`                                                                 | none                                                |
 | 3   | Use .NET 10 and 11 SDKs                     | `actions/setup-dotnet`, `10.0.401` and the SDK `global.json` pins (`0001-F2` B-045) | none                                                |
 | 4   | Specht                                      | `./build.cmd --target Specht`                                                       | none                                                |
@@ -713,7 +718,9 @@ its date is preserved rather than backdated.
 
 ## 10. Lessons / Spec Deltas
 
-<!-- last written by: spec-author, 2026-10-16 (`0001-F7` decision 0015) -->
+<!-- last written by: spec-author, 2026-10-16 (`0001-F7` decision 0015), 2026-10-23 (`0055-F2` decision 0005) -->
+
+- 2026-10-23, the owner moved CI's Linux jobs to the owner's self-hosted macOS ARM64 pool, replacing them ([`0055-F2` decision 0005](../../ContinuousIntegration/.spec/decisions/0005-the-unix-leg-runs-on-the-owners-macos-pool.md), item 0264): the release workflow's `build` and `release` jobs leave `ubuntu-latest`. C-9 added; no claim changes, since none names the runner. The job names, and so the run's check names, are unchanged. Owed to the `implementer`: § 7, which names `ubuntu-latest` for both jobs; the evidence rows in § 8 stay as recorded, on `ubuntu-latest`.
 
 - 2026-10-20, item 0250: B-003 and B-007 and their scenarios now include
   `Specht.CodeAnalysis` alongside `specht.tool`. The release design above

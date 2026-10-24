@@ -40,12 +40,12 @@ jobs:
   build:
     env:
       NuGetPackageSourceCredentials_specht: 'Username=${{ github.actor }};Password=${{ secrets.GITHUB_TOKEN }};ValidAuthenticationTypes=Basic'
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, macOS, ARM64]
     steps:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          clean: 'false'
+          clean: 'true'
           fetch-depth: '0'
       - name: Fetch all history for all tags and branches
         run: |
@@ -133,12 +133,12 @@ jobs:
       repository-projects: none
       security-events: none
       statuses: none
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, macOS, ARM64]
     steps:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          clean: 'false'
+          clean: 'true'
           fetch-depth: '0'
       - name: 🚀 Download the package
         uses: actions/download-artifact@v4

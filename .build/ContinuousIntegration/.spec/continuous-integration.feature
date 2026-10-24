@@ -45,9 +45,14 @@ Feature: Continuous integration
     Then the build runs against that commit
 
   @B-003
-  Scenario: Every run covers Linux and Windows
+  Scenario: Every run covers macOS and Windows
     When integration runs
-    Then integration runs on Linux and on Windows
+    Then integration runs on the owner's macOS runners and on Windows
+
+  @B-003 @boundary
+  Scenario: No run builds on a hosted Linux runner
+    When integration runs on a pull request or on the main branch
+    Then no leg of it runs on a hosted Linux runner
 
   @B-004
   Scenario: Every operating system runs every gate
@@ -56,9 +61,9 @@ Feature: Continuous integration
     Then the format, compile, unit test, integration test, acceptance test and self-check gates and the benchmarks each run as a step of their own
 
   @B-004 @boundary
-  Scenario: A pull request still runs every gate on Linux
+  Scenario: A pull request still runs every gate on macOS
     Given a pull request that changes code
-    When integration runs on Linux
+    When integration runs on macOS
     Then the format, compile, unit test, integration test, acceptance test and self-check gates each run as a step of their own
     And no benchmark or benchmark-result upload runs
 
@@ -79,7 +84,7 @@ Feature: Continuous integration
     Given a pull request whose own tree carries a specification violation in a file it changes
     When integration runs
     Then the violation is annotated on its file and line in the pull request's diff
-    And it is annotated once, from the Linux check only
+    And it is annotated once, from the macOS check only
 
   @B-006 @boundary
   Scenario: A violation in a file the pull request does not change is not annotated
@@ -101,7 +106,7 @@ Feature: Continuous integration
   @B-010
   Scenario: Each operating system is its own check
     When integration runs
-    Then the Linux and Windows builds each report as a separate check
+    Then the macOS and Windows builds each report as a separate check
 
   @B-011
   Scenario: A run reads the feed with its own token
@@ -120,7 +125,7 @@ Feature: Continuous integration
   Scenario: A documentation-only pull request passes its checks
     Given a pull request that changes only documentation outside any specification folder and outside the tool's configuration folder
     When integration runs
-    Then the Linux and Windows checks each pass
+    Then the macOS and Windows checks each pass
 
   @B-014
   Scenario: A pull request with no known changed files is built
@@ -220,20 +225,20 @@ Feature: Continuous integration
     Given the self-check does not yet gate integration
     And a pull request whose merged tree carries a specification violation
     When integration runs
-    Then the Linux check does not fail because of it
+    Then the macOS check does not fail because of it
 
   @B-023
-  Scenario: A violation the merged tree carries fails the Linux check once the self-check gates
+  Scenario: A violation the merged tree carries fails the macOS check once the self-check gates
     Given the self-check gates integration
     And a pull request whose own tree carries no specification violation
     And merging it with the main branch produces one
     When integration runs
-    Then the Linux check fails
+    Then the macOS check fails
 
   @B-024
-  Scenario: A merge that cannot be computed does not fail the Linux check
+  Scenario: A merge that cannot be computed does not fail the macOS check
     Given the self-check gates integration
     And a pull request that could be merged with the main branch when integration started
     And a change that has reached the main branch since and conflicts with it
     When integration runs
-    Then the Linux check does not fail because no merged tree was checked
+    Then the macOS check does not fail because no merged tree was checked
