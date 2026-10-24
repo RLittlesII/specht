@@ -13,6 +13,9 @@ public sealed class SpecManifestStore(IFileSystem fileSystem)
     /// <summary>The local frontmatter schema folder (0001-F5 B-008).</summary>
     public const string FrontmatterSchemaFolder = ConfigurationFolder + "/schema/frontmatter";
 
+    /// <summary>The templates folder (0001-F5 decision 0011).</summary>
+    public const string TemplateFolder = ConfigurationFolder + "/templates";
+
     /// <summary>The manifest's root-relative path.</summary>
     public const string RelativePath = ConfigurationFolder + "/manifest.json";
 
@@ -49,9 +52,27 @@ public sealed class SpecManifestStore(IFileSystem fileSystem)
 
     /// <summary>Atomically replaces a manifest after a complete staged write, cleaning the staging file on failure.</summary>
     /// <implements epic="0001" feature="F5" claim="B-048" />
-    public async Task WriteManifest(string root, byte[] bytes, CancellationToken cancellationToken)
+    public Task WriteManifest(string root, byte[] bytes, CancellationToken cancellationToken) =>
+        ReplaceConfigurationFile(root, RelativePath, bytes, cancellationToken);
+
+    /// <summary>Reads a configuration file's unchanged bytes, or null when it is absent (0001-F7 B-005).</summary>
+    /// <exception cref="SpechtManifestException"><paramref name="relative"/> is outside the replaceable configuration files.</exception>
+    /// <implements epic="0001" feature="F7" claim="B-007" />
+    public byte[]? ReadConfigurationFile(string root, string relative)
     {
-        var path = Under(root, RelativePath);
+        var path = Under(root, Permitted(relative));
+        return fileSystem.File.Exists(path) ? fileSystem.File.ReadAllBytes(path) : null;
+    }
+
+    /// <summary>
+    /// Atomically replaces the manifest, a frontmatter schema or a template after a complete staged write, cleaning the
+    /// staging file on failure, and refuses any other path (0001-F7 B-007, C-2).
+    /// </summary>
+    /// <exception cref="SpechtManifestException"><paramref name="relative"/> is outside the replaceable configuration files.</exception>
+    /// <implements epic="0001" feature="F7" claim="B-007" />
+    public async Task ReplaceConfigurationFile(string root, string relative, byte[] bytes, CancellationToken cancellationToken)
+    {
+        var path = Under(root, Permitted(relative));
         var temporary = path + "." + Guid.NewGuid().ToString("N") + ".tmp";
         try
         {
@@ -66,6 +87,22 @@ public sealed class SpecManifestStore(IFileSystem fileSystem)
                 fileSystem.File.Delete(temporary);
             }
         }
+    }
+
+    /// <implements epic="0001" feature="F7" claim="B-007" />
+    private static string Permitted(string relative)
+    {
+        var inside = relative == RelativePath
+                     || relative.StartsWith(FrontmatterSchemaFolder + "/", StringComparison.Ordinal)
+                     || relative.StartsWith(TemplateFolder + "/", StringComparison.Ordinal);
+
+        if (!inside || relative.Contains('\\') || relative.Split('/').Any(static part => part is "" or "." or ".."))
+        {
+            throw new SpechtManifestException(
+                $"{relative}: only {RelativePath}, {FrontmatterSchemaFolder}/ and {TemplateFolder}/ may be replaced.");
+        }
+
+        return relative;
     }
 
     /// <implements epic="0001" feature="F5" claim="B-048" />
