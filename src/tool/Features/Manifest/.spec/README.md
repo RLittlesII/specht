@@ -5,7 +5,7 @@ type: feature
 id: "F9"
 epic: "0001"
 spec_status: draft
-status: blocked
+status: ready-for-architecture
 priority: med
 value: 0
 risk: 0
@@ -20,7 +20,7 @@ depends_on: ["F2", "F4", "F5", "F7"]
 blocks: []
 spikes: []
 created: "2026-10-11"
-updated: "2026-10-11"
+updated: "2026-10-24"
 github_issue: null
 synced_at: null
 ---
@@ -35,7 +35,7 @@ A manifest states only what its author wrote; every key it leaves out is read fr
 
 ## 2. User Needs
 
-<!-- last written by: spec-author, 2026-10-11 -->
+<!-- last written by: spec-author, 2026-10-11, 2026-10-24 -->
 
 | #   | Persona                                 | Need                                                                    | Pain Point Today                                                    |
 | --- | --------------------------------------- | ----------------------------------------------------------------------- | ------------------------------------------------------------------- |
@@ -50,11 +50,11 @@ A manifest states only what its author wrote; every key it leaves out is read fr
 | --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | A-1 | The command line is `specht manifest [--root <dir>] [--defaults] [--json]`, beside `specht`, `init` and `upgrade`; `--root` defaults to the current directory as it does for the check (owner, 2026-10-11; decision 0001).                                                                       |
 | A-2 | "The effective manifest" is the manifest on disk as the engine reads it for a check: each key it declares at its own value, and each key it leaves out that the engine reads from the default manifest at the value the pinned version's default gives it (`0001-F5` B-019, A-4; decision 0001). |
-| A-3 | "The default manifest" under `--defaults` is the manifest the newest version the tool ships gives, the one `specht init --epics` writes into a bare root (`0001-F4` B-018, B-003); whether another version can be named is OQ-3.                                                                 |
+| A-3 | "The default manifest" under `--defaults` is the `manifest.json` the tool embeds for the newest version it ships, the copy `init` writes and `0001-F4` B-003 holds byte-identical; it is not the output of any command. Whether another version can be named is OQ-3.                            |
 
 ## 3. Acceptance Criteria
 
-<!-- last written by: spec-author, 2026-10-11 -->
+<!-- last written by: spec-author, 2026-10-11, 2026-10-24 -->
 
 | ID    | Claim                                                                                                                                                                                                                                                                                                                                                                                                                                              | Source                                                                                                         | Status |
 | ----- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------- | ------ |
@@ -69,7 +69,7 @@ A manifest states only what its author wrote; every key it leaves out is read fr
 | B-009 | Given `--defaults`, stdout is the same whatever the root holds: no manifest, a manifest the check rejects, or a `--root` that is not a directory.                                                                                                                                                                                                                                                                                                  | owner, 2026-10-11 ("needs no root or manifest"); decision 0001                                                 | Active |
 | B-010 | Given `--defaults`, this Feature exits with code `0` whatever the root holds.                                                                                                                                                                                                                                                                                                                                                                      | owner, 2026-10-11; decision 0001; C-5                                                                          | Active |
 | B-011 | Given `--json`, with or without `--defaults`, stdout parses as exactly one JSON document.                                                                                                                                                                                                                                                                                                                                                          | owner, 2026-10-11; decision 0001                                                                               | Active |
-| B-012 | Given `--json` and `--defaults`, the document's keys and values equal those of the manifest `specht init --epics` writes into a bare root.                                                                                                                                                                                                                                                                                                         | derived from A-3 and `0001-F4` B-003, B-018; not stated by the owner                                           | Active |
+| B-012 | Given `--json` and `--defaults`, the document's keys and values equal those of the `manifest.json` the tool embeds for the newest version it ships.                                                                                                                                                                                                                                                                                                | derived from A-3 and `0001-F4` B-003; not stated by the owner; decision 0002                                   | Active |
 | B-013 | Given `--root` names a path that is not a directory and no `--defaults`, this Feature writes a message naming that path as it was given on stderr, writes nothing on stdout, and exits with code `2`.                                                                                                                                                                                                                                              | `0001-F2` B-005; C-5                                                                                           | Active |
 | B-014 | Given a root with no manifest at the manifest path and no `--defaults`, this Feature writes a message naming the manifest path on stderr, writes nothing on stdout, and exits with code `2`.                                                                                                                                                                                                                                                       | `0001-F2` B-006; C-5; C-2                                                                                      | Active |
 | B-015 | Given a root whose manifest the check rejects - one that does not parse (`0001-F2` B-007), one `0001-F5` rejects (`0001-F5` B-022), one whose `schemaVersion` the check rejects (`0001-F7` B-003, B-039), or one recording an upstream schema source while explicitly selecting the embedded source (`0001-F7` B-036) - and no `--defaults`, this Feature names on stderr what the check names, writes nothing on stdout, and exits with code `3`. | owner, 2026-10-08 (every command answers a rejected manifest with `3`); `0001-F2` decision 0003; C-5           | Active |
@@ -77,6 +77,7 @@ A manifest states only what its author wrote; every key it leaves out is read fr
 | B-017 | Given any run, no file is created, modified or deleted, under the root or anywhere else.                                                                                                                                                                                                                                                                                                                                                           | brief § 9; C-1                                                                                                 | Active |
 | B-018 | Given any output on stdout or stderr, every path the tool derives is relative to the root with `/` separators, and the only path that may be absolute is one typed on the command line, echoed as given.                                                                                                                                                                                                                                           | brief § 9; `0001-F2` B-013                                                                                     | Active |
 | B-019 | Given the same root, manifest and options, two runs print the same stdout and exit with the same code.                                                                                                                                                                                                                                                                                                                                             | brief § 9; C-3                                                                                                 | Active |
+| B-020 | Given no `--json`, stdout is the document `--json` prints for the same options, indented, with its keys in the order the default manifest of the version being printed holds them and its rule settings in ascending ordinal order of rule id.                                                                                                                                                                                                     | derived by spec-author (a form a test can fail, decision 0002); not stated by the owner; OQ-1                  | Active |
 
 ## 4. Constraints
 
@@ -126,7 +127,7 @@ Pending: owned by `test-writer`, written after agreement.
 
 ## 9. Traceability Matrix
 
-<!-- last written by: spec-author, 2026-10-11 -->
+<!-- last written by: spec-author, 2026-10-11, 2026-10-24 -->
 
 | Claim ID | Scenario                                                 | Test    | Status  |
 | -------- | -------------------------------------------------------- | ------- | ------- |
@@ -141,7 +142,7 @@ Pending: owned by `test-writer`, written after agreement.
 | B-009    | The default manifest does not depend on the root         | Missing | Missing |
 | B-010    | Printing the default manifest succeeds without a root    | Missing | Missing |
 | B-011    | The JSON form is one document                            | Missing | Missing |
-| B-012    | The default manifest is the one init writes              | Missing | Missing |
+| B-012    | The default manifest is the embedded one                 | Missing | Missing |
 | B-013    | A missing root is a missing-input failure                | Missing | Missing |
 | B-014    | A root without a manifest is a missing-input failure     | Missing | Missing |
 | B-015    | A rejected manifest is an invalid-manifest failure       | Missing | Missing |
@@ -149,24 +150,27 @@ Pending: owned by `test-writer`, written after agreement.
 | B-017    | A run writes nothing                                     | Missing | Missing |
 | B-018    | No derived path in the output is absolute                | Missing | Missing |
 | B-019    | The same input gives the same output                     | Missing | Missing |
+| B-020    | The text form is the JSON document, indented, in order   | Missing | Missing |
 
 ## 10. Lessons / Spec Deltas
 
-<!-- last written by: spec-author, 2026-10-11, 2026-10-11 (§ 5 row 8) -->
+<!-- last written by: spec-author, 2026-10-11, 2026-10-11 (§ 5 row 8), 2026-10-24 -->
 
 - 2026-10-11, § 5 row 8 added: the owner considered a `--version` option on this command for the pinned schema version and did not choose it (`0001-F2` decision 0010). No claim, constraint or scenario changed.
+- 2026-10-24, groomed from `blocked` to `ready-for-architecture` ([decision 0002](decisions/0002-the-default-is-the-embedded-manifest-and-the-text-form-is-the-json-document.md)). The block named `0001-F2`, `0001-F4`, `0001-F5` and `0001-F7`: `0001-F2` and `0001-F5` are built; `0001-F7`'s list and pin commands are built (items `0121` to `0125`) and only `upgrade` (item `0047`) is outstanding, which no claim here depends on. `0001-F4` stays a reference for B-003 only.
+- 2026-10-24, A-3 and B-012 re-anchored: they named what `specht init --epics` writes, a command specified and not built (`0001-F4` B-018 Missing, OQ-18); they now name the default manifest the tool embeds for the newest shipped version. B-012 keeps its id. B-020 added: the text form, derived on OQ-1's default.
 
 ## 11. Open Questions
 
-<!-- last written by: spec-author, 2026-10-11 -->
+<!-- last written by: spec-author, 2026-10-11, 2026-10-24 -->
 
-| ID   | Question                                                                                                                                                                                                                                                                                                                                                                                                                                                                            | Blocks                       | Resolution                                                                                                                |
-| ---- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
-| OQ-1 | What does the output look like without `--json`, and in what order are the keys printed, in either form? The manifest is itself JSON, so the text form may be that JSON, a key-per-line listing, or something else; the order may be the on-disk manifest's, the default manifest's, or alphabetical. Owner not asked.                                                                                                                                                              | B-001, B-008 (the form only) | Open. No claim fixes the text form or a key order; B-011 fixes only that `--json` is one document.                        |
-| OQ-2 | The owner's decision reads "every omitted key filled from the pinned version's default" and "what the engine reads". They part on a key whose absence is itself a setting: the epic grammar (`0001-F5` C-10, decision 0004), which the default declares and the engine does not fill; what declares work-item files, which is never filled from a default (`0101-F8` C-12). Does the effective manifest leave such a key out, as the engine reads it, or print the default's value? | B-004, B-007                 | Open. B-004 claims only the keys `0001-F5` B-019 fills, and B-007 is written on "what the engine reads". Owner not asked. |
-| OQ-3 | Does `--defaults` take a version, so the default manifest of an older shipped version can be printed, and beside a manifest does it follow that manifest's pin?                                                                                                                                                                                                                                                                                                                     | B-008, B-012; § 5 row 7      | Open. Proceeds on the default: the newest version the tool ships, and no root read (B-009). Owner not asked.              |
-| OQ-4 | Does the JSON document of this command get a published schema, as the report has (`0001-F3` C-1), and is it bound by an additive-change rule as `0001-F3` C-4 binds the report? Epic `0132` would read it.                                                                                                                                                                                                                                                                          | -                            | Open. No claim is written. Owner not asked.                                                                               |
-| OQ-5 | Does the effective manifest say which values came from the manifest and which from the default?                                                                                                                                                                                                                                                                                                                                                                                     | -                            | Open. No claim is written; C-6 rules out a note on stdout until it is answered. Owner not asked.                          |
+| ID   | Question                                                                                                                                                                                                                                                                                                                                                                                                                                                                            | Blocks                              | Resolution                                                                                                                |
+| ---- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
+| OQ-1 | What does the output look like without `--json`, and in what order are the keys printed, in either form? The manifest is itself JSON, so the text form may be that JSON, a key-per-line listing, or something else; the order may be the on-disk manifest's, the default manifest's, or alphabetical. Owner not asked.                                                                                                                                                              | B-001, B-008, B-020 (the form only) | Open. Proceeds on the JSON document, indented, in the default manifest's key order (B-020). Owner not asked.              |
+| OQ-2 | The owner's decision reads "every omitted key filled from the pinned version's default" and "what the engine reads". They part on a key whose absence is itself a setting: the epic grammar (`0001-F5` C-10, decision 0004), which the default declares and the engine does not fill; what declares work-item files, which is never filled from a default (`0101-F8` C-12). Does the effective manifest leave such a key out, as the engine reads it, or print the default's value? | B-004, B-007                        | Open. B-004 claims only the keys `0001-F5` B-019 fills, and B-007 is written on "what the engine reads". Owner not asked. |
+| OQ-3 | Does `--defaults` take a version, so the default manifest of an older shipped version can be printed, and beside a manifest does it follow that manifest's pin?                                                                                                                                                                                                                                                                                                                     | B-008, B-012; § 5 row 7             | Open. Proceeds on the default: the newest version the tool ships, and no root read (B-009). Owner not asked.              |
+| OQ-4 | Does the JSON document of this command get a published schema, as the report has (`0001-F3` C-1), and is it bound by an additive-change rule as `0001-F3` C-4 binds the report? Epic `0132` would read it.                                                                                                                                                                                                                                                                          | -                                   | Open. No claim is written. Owner not asked.                                                                               |
+| OQ-5 | Does the effective manifest say which values came from the manifest and which from the default?                                                                                                                                                                                                                                                                                                                                                                                     | -                                   | Open. No claim is written; C-6 rules out a note on stdout until it is answered. Owner not asked.                          |
 
 ## 12. Sign-off
 
@@ -179,7 +183,10 @@ Pending: owned by `test-writer`, written after agreement.
 
 ## Tasks
 
-None yet. Cut from § 3 after agreement.
+- `0283`: the engine produces the effective manifest (B-003 to B-007).
+- `0284`: the `specht manifest` command, text form, exit codes and failure paths (B-001, B-002, B-013 to B-020).
+- `0285`: `--defaults` (B-008, B-009, B-010, B-012).
+- `0286`: `--json`, with and without `--defaults` (B-011).
 
 ## Scoring
 

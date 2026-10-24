@@ -1,0 +1,44 @@
+id: "0282"
+type: task
+title: The rules command in JSON
+
+status: ready-for-architecture
+
+value: 3
+risk: 1
+
+parent: "0001"
+children: []
+
+depends_on: ["0281"]
+spikes: []
+
+spec: src/tool/Features/Rules/.spec/README.md
+
+claims:
+  - B-009
+  - B-010
+
+created: "2026-10-24"
+updated: "2026-10-24"
+closed: null
+
+summary: |
+  As a script or an MCP host I want `specht rules --json` to print the listing as one JSON document, so that I read it without parsing text.
+
+  The document carries the entries the text form prints, with the same four values in the same order (B-010). Its member names are not fixed by a claim (OQ-4); the implementer records them in § 7.
+
+  Waits on 0281: the option is on that command.
+
+acceptance_criteria:
+  - "B-009 — stdout is exactly one JSON document"
+  - "B-010 — the same entries, values and order as the text form"
+  - "§ 9 carries a row naming a test for each id above."
+
+decisions:
+  - |
+    2026-10-24, spec-author's cut of the groomed Feature. Rejected: one item for the whole Feature.
+
+out_of_scope:
+  - "A published schema for the document — § 11 OQ-4."
+  - "The text form and the failure paths — 0281."

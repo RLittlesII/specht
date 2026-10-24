@@ -67,6 +67,12 @@ Feature: Setting a rule's level
     And no file under the root has changed
     And the exit code is 4
 
+  @B-007 @boundary
+  Scenario: An unknown rule under a root with no manifest is a missing-input failure
+    Given a root with no manifest
+    When a rule that version 0.1.0 does not hold is set to warning against that root
+    Then the exit code is 2
+
   @B-008
   Scenario: A level that is not one of the three is a not-found failure
     Given a snapshot of every file under the root
@@ -74,6 +80,12 @@ Feature: Setting a rule's level
     Then the standard error names loud and the three levels
     And no file under the root has changed
     And the exit code is 4
+
+  @B-008 @boundary
+  Scenario: A level that is not one of the three, under a rejected manifest, is an invalid-configuration failure
+    Given a root whose manifest is not well-formed
+    When the out-of-order-section rule is set to a level named loud against that root
+    Then the exit code is 3
 
   @B-009
   Scenario: Setting a level under a missing root is a missing-input failure
