@@ -200,8 +200,9 @@ current claims selected by the consumer's `codeAnalysis` policy. It requires
 current inputs, required links and passing outcomes by default and emits a
 separate versioned report (`0201-F5`, item `0246`).
 
-`specht upgrade`, the check command's `--report` and the `init --epics` option are
-specified and not built (`0001-F7`, `0001-F3`, `0001-F4`). What the tool accepts today is
+`specht upgrade` rewrites present schema and template files to the pin and is built
+(item `0045`); the manifest-key step is `0047`. The check command's `--report` and
+the `init --epics` option are specified and not built (`0001-F3`, `0001-F4`). What the tool accepts today is
 [`docs/cli.md`](docs/cli.md), which a test holds to its help (`0002-F1`).
 
 `specht --explain <SPEC###>` prints the entire rule page, including YAML frontmatter,
