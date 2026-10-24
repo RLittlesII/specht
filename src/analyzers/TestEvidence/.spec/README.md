@@ -405,8 +405,11 @@ claim file and one shared test file linked from outside both project
 directories, with passing, failing, skipped and categorized cases. A
 `build.tests` integration test copies it to a temporary root with the
 repository's `Directory.Packages.props`, a `global.json` carrying the
-repository's SDK and `"test": { "runner": "VSTest" }`, packs Specht.CodeAnalysis,
-restores from the pack output and the local package cache, and runs
+repository's SDK and `"test": { "runner": "VSTest" }`, and its own
+`nuget.config`, whose package source mapping takes Specht.CodeAnalysis from the
+pack output and every other package from nuget.org. It packs
+Specht.CodeAnalysis, restores each project into an isolated `--packages`
+folder under that root, and runs
 `dotnet test --list-tests` and then filtered `dotnet test` per project. The
 logger's event handling is also driven in process from
 `test/testevidence.vstest.tests/` with synthetic `TestLoggerEvents`.
@@ -719,16 +722,19 @@ No claim changed.
 
 <!-- last written by: spec-reviewer, 2026-10-23 -->
 
-| Section | Status | Reviewer      | Note                                                                                                                                                                                                                                                                                                                                                                              |
-| ------- | ------ | ------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 1-6     | 🟡     | spec-reviewer | Item 0260 review, 2026-10-23: § 3 unchanged; no finding against these sections.                                                                                                                                                                                                                                                                                                   |
-| 7       | 🟢     | spec-reviewer | Item 0260 re-review, 2026-10-23: both High findings fixed. A bound method whose discovered cases are all unselected in every chosen run now gets `missingResult` (`ABoundMethodWhoseOnlyCaseItsRunFilteredOut_WhenReconciled_ShouldFailWithAMissingResultNamingTheMethod`), and the logger is reached through `VSTestTestAdapterPath`, so nothing is copied into consumer output. |
-| 8-9     | 🟡     | spec-reviewer | Item 0260 review, 2026-10-23: the Medium and Low findings (stale § 8, missing `build/vstest/` inventory test, § 9 citations, `claims[].cases` attribution, consumer docs, ADR-0001 note) moved to item 0265 by owner decision.                                                                                                                                                    |
-| 10-12   | 🟡     | spec-reviewer | Item 0260 review, 2026-10-23: OQ-4 and OQ-5 resolved in place with the owner's words.                                                                                                                                                                                                                                                                                             |
+| Section | Status | Reviewer      | Note                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
+| ------- | ------ | ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1-6     | 🟢     | spec-reviewer | Item 0260 final review at `9e60f572`, 2026-10-23: § 3 to § 5 unchanged; § 6 matches what was built (version-one to version-three envelopes, `CaseScope` evaluated by the collector, the evidence command reading the recorded result); nothing in § 5 delivered.                                                                                                                                                                                                                                                                                                                                                                |
+| 7       | 🟢     | spec-reviewer | Item 0260 re-review, 2026-10-23: both High findings fixed. A bound method whose discovered cases are all unselected in every chosen run now gets `missingResult` (`ABoundMethodWhoseOnlyCaseItsRunFilteredOut_WhenReconciled_ShouldFailWithAMissingResultNamingTheMethod`), and the logger is reached through `VSTestTestAdapterPath`, so nothing is copied into consumer output. Final review at `9e60f572`: the Fixture paragraph still says the consumer restores from the pack output and the local package cache; it now carries its own `nuget.config` (pack output plus nuget.org). Low, for item 0265 L7.               |
+| 8-9     | 🟡     | spec-reviewer | Item 0260 review, 2026-10-23: the Medium and Low findings (stale § 8, missing `build/vstest/` inventory test, § 9 citations, `claims[].cases` attribution, consumer docs, ADR-0001 note) moved to item 0265 by owner decision. Final review at `9e60f572`: no unit test pins the logger's discovery-state mapping (aborted to `unavailable`, partially, skipped or not-discovered source to `deferred`), several results for one `TestCase.Id` (no outcome, `deferred`), or a run with no current discovery artifact (`deferred`); and neither reader rejects a version-3 case with `selected: true` beside `results` `absent`. |
+| 10-12   | 🟡     | spec-reviewer | Item 0260 review, 2026-10-23: OQ-4 and OQ-5 resolved in place with the owner's words. Final review at `9e60f572`: accepted ADR-0001 still decides that the package copies the logger beside the test assembly and that versions 1 and 2 still read, which § 7 and the built targets and readers contradict, and Tasks lists none of 0260, 0261 or 0265.                                                                                                                                                                                                                                                                         |
 
 ## Tasks
 
 - [0244: Collect framework-independent test evidence](../.issue/0244-test-evidence-collection.yml)
+- [0260: Collect VSTest evidence with case categories, selection and ownership](../.issue/0260-vstest-evidence-categories-and-ownership.yml)
+- [0261: Bootstrap evidence on a clean checkout](../.issue/0261-clean-checkout-evidence-bootstrap.yml)
+- [0265: Carry the 0260 review's medium and low findings through tests, docs and records](../.issue/0265-vstest-evidence-review-follow-through.yml)
 
 ## Scoring
 

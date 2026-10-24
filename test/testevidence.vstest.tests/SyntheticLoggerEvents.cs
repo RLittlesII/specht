@@ -17,12 +17,15 @@ internal sealed class SyntheticLoggerEvents : TestLoggerEvents
     public override event EventHandler<DiscoveredTestsEventArgs>? DiscoveredTests;
     public override event EventHandler<DiscoveryCompleteEventArgs>? DiscoveryComplete;
 
-    public void Discover(string source, params TestCase[] cases)
+    public void Discover(string source, params TestCase[] cases) =>
+        Discover(source, new DiscoveryCompleteEventArgs(cases.Length, false) { FullyDiscoveredSources = [source] }, cases);
+
+    public void Discover(string source, DiscoveryCompleteEventArgs completion, params TestCase[] cases)
     {
         DiscoveryStart?.Invoke(this, new DiscoveryStartEventArgs(new DiscoveryCriteria([source], 1, null)));
         DiscoveryMessage?.Invoke(this, new TestRunMessageEventArgs(TestMessageLevel.Informational, "discovering"));
         DiscoveredTests?.Invoke(this, new DiscoveredTestsEventArgs(cases));
-        DiscoveryComplete?.Invoke(this, new DiscoveryCompleteEventArgs(cases.Length, false) { FullyDiscoveredSources = [source] });
+        DiscoveryComplete?.Invoke(this, completion);
     }
 
     public void Run(string source, IReadOnlyList<TestCase>? named, params VsTestResult[] results)

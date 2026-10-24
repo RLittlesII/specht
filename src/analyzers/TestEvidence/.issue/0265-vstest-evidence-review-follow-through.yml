@@ -27,10 +27,9 @@ acceptance_criteria:
   - "M5 - src/codeanalysis/README.md carries a VSTest note, including that passing --logger or --settings replaces the registered specht logger unless --logger specht is added (implementer)."
   - "L7 - 0201-F3 section 8 and section 7 read as built: no pre-build wording, no rows held Missing for the logger, no parameter list parsed from ManagedMethod (test-writer)."
   - "L8 - B-010, B-011, B-012, B-013, B-015, B-016, B-020, B-025 - section 9 rows cite VsTestEvidenceSteps and the unit tests beside the build.tests probe (test-writer)."
-  - "L9 - 0201-F3 ADR-0001 carries a dated note that adapters with no managed-name properties fall back to FullyQualifiedName per decision 0003 (spec-author)."
   - "section 9 carries a row naming a test for each id above."
 decisions:
-  - "2026-10-23: cut from the 0260 specification review, 2026-10-23, findings M3, M4, M5, L7, L8 and L9 - owner, 2026-10-23: \"Finish only the two High findings, then mark 0260 done and open the PR. Cut a follow-up item for the Medium and Low review findings.\""
+  - '2026-10-23: cut from the 0260 specification review, 2026-10-23, findings M3, M4, M5, L7, L8 and L9 - owner, 2026-10-23: "Finish only the two High findings, then mark 0260 done and open the PR. Cut a follow-up item for the Medium and Low review findings."'
 out_of_scope:
   - "The two high findings of the 0260 review: delivered in 0260."
   - "Gating on owned keys in the report: 0262."

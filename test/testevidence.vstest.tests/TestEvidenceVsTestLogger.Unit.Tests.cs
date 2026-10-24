@@ -1,11 +1,12 @@
 using System.Text.Json.Nodes;
 using AwesomeAssertions;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel;
+using Microsoft.VisualStudio.TestPlatform.ObjectModel.Client;
 using VsTestResult = Microsoft.VisualStudio.TestPlatform.ObjectModel.TestResult;
 
 namespace Specht.TestEvidence.VsTest.Tests;
 
-/// <summary>The VSTest logger's event handling, driven in process (0201-F3 B-010, B-011, B-013 to B-016, B-020, B-025; decision 0003).</summary>
+/// <summary>The VSTest logger's event handling, driven in process (0201-F3 B-008, B-010, B-011, B-013 to B-016, B-020, B-025; decision 0003).</summary>
 [Trait("Tier", "Unit")]
 public sealed class TestEvidenceVsTestLoggerUnitTests
 {
@@ -199,6 +200,72 @@ public sealed class TestEvidenceVsTestLoggerUnitTests
         var artifact = source.Artifact();
         artifact["discovery"]!["cases"]!.AsArray().Should().NotContain(static item => item!["caseId"]!.GetValue<string>() == FirstId);
         artifact["discovery"]!["state"]!.GetValue<string>().Should().NotBe("complete");
+    }
+
+    [Theory]
+    [ClassData(typeof(DiscoveryCompletionRows))]
+    public void AnAbortedOrIncompleteSource_WhenDiscovered_ShouldRecordTheDiscoveryStateItSignals(
+        bool aborted, bool partiallyDiscovered, bool skipped, bool notDiscovered, string expected)
+    {
+        // Given
+        var source = new VsTestSource();
+        var fact = source.Case(FirstId, "A.LocalCases.Fact", "A.LocalCases", "Fact");
+        var completion = new DiscoveryCompleteEventArgs(1, aborted)
+        {
+            PartiallyDiscoveredSources = partiallyDiscovered ? [source.Source] : null,
+            SkippedDiscoveredSources = skipped ? [source.Source] : null,
+            NotDiscoveredSources = notDiscovered ? [source.Source] : null,
+        };
+
+        // When
+        source.Attach().Discover(source.Source, completion, fact);
+
+        // Then
+        source.Artifact()["discovery"]!["state"]!.GetValue<string>().Should().Be(expected);
+    }
+
+    [Fact]
+    public void SeveralResultsForOneCase_WhenRunAfterCompleteDiscovery_ShouldGiveThatCaseNoOutcomeAndDeferDiscovery()
+    {
+        // Given
+        var source = new VsTestSource();
+        var first = source.Case(FirstId, "A.LocalCases.Theory", "A.LocalCases", "Theory");
+        var second = source.Case(SecondId, "A.LocalCases.Theory", "A.LocalCases", "Theory");
+        source.Attach().Discover(source.Source, first, second);
+
+        // When
+        source.Attach().Run(source.Source, null, new VsTestResult(first) { Outcome = TestOutcome.Passed },
+            new VsTestResult(first) { Outcome = TestOutcome.Failed }, new VsTestResult(second) { Outcome = TestOutcome.Passed });
+
+        // Then
+        var artifact = source.Artifact();
+        artifact["discovery"]!["state"]!.GetValue<string>().Should().Be("deferred");
+        artifact["results"]!["cases"]!.AsArray().Select(static item => item!["caseId"]!.GetValue<string>()).Should().Equal(SecondId);
+    }
+
+    [Theory]
+    [ClassData(typeof(NoCurrentDiscoveryRows))]
+    public void NoCurrentDiscoveryArtifact_WhenRun_ShouldFormDeferredDiscoveryFromTheRunsOwnCases(bool staleArtifact)
+    {
+        // Given
+        var source = new VsTestSource();
+        var first = source.Case(FirstId, "A.LocalCases.Theory", "A.LocalCases", "Theory");
+        var second = source.Case(SecondId, "A.LocalCases.Theory", "A.LocalCases", "Theory");
+        if (staleArtifact)
+        {
+            source.Attach().Discover(source.Source, first, second);
+            var discovered = source.Artifact();
+            discovered["assembly"]!["sha256"] = new string('0', 64);
+            source.FileSystem.File.WriteAllText(source.Output, discovered.ToJsonString());
+        }
+
+        // When
+        source.Attach().Run(source.Source, null, new VsTestResult(first) { Outcome = TestOutcome.Passed });
+
+        // Then
+        var artifact = source.Artifact();
+        artifact["discovery"]!["state"]!.GetValue<string>().Should().Be("deferred");
+        artifact["discovery"]!["cases"]!.AsArray().Select(static item => item!["caseId"]!.GetValue<string>()).Should().Equal(FirstId);
     }
 
     private static JsonNode Case(JsonNode artifact, string caseId) =>

@@ -232,6 +232,11 @@ public sealed class TestEvidenceArtifactReader
         if (state == "absent")
         {
             Object(element, "results", "state");
+            if (discoveredCases.Any(static item => item.Selected == true))
+            {
+                throw Invalid("A case cannot be selected when results are absent.");
+            }
+
             return new TestEvidenceResults(state, null, System.Array.Empty<TestEvidenceOutcome>());
         }
 

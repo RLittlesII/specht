@@ -92,3 +92,25 @@ Option 1.
 ## Reversal
 
 None.
+
+## Amendment 2026-10-23
+
+Recorded by `spec-author` from the 0260 specification review, to match what
+item 0260 built. The body above is unedited.
+
+- Registration: since commit `7e842e8e` the package targets copy nothing
+  into the consumer's output. They append the package's `build/vstest/<tfm>/`
+  folder to `VSTestTestAdapterPath` and append `specht` to `VSTestLogger`;
+  VSTest loads the logger from that folder. "Copied beside the test assembly"
+  in the description and the decision no longer holds.
+- Versions read: readers accept `formatVersion` 1 and 3 only. Version 2 and
+  its `catalog` member are item 0259 and not built, so a version-2 artifact
+  is unsupported until that item lands (section 7, "Version three"). "Versions
+  1 and 2 still read" in the status and the decision no longer holds.
+- Case identity: when the VSTest adapter sets no `ManagedType` or
+  `ManagedMethod` property, as xunit.runner.visualstudio 2.x does not, the
+  logger matches the case by its FullyQualifiedName, declaring type plus
+  method name, only when that pair is unique among the compiler-exported
+  methods ([decision 0003](../decisions/0003-fully-qualified-name-fallback.md)).
+  The last consequence above, that adapters setting no managed-name properties
+  leave cases unresolved, holds only when that match fails.

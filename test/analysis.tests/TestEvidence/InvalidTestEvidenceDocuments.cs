@@ -29,6 +29,10 @@ internal sealed class InvalidTestEvidenceDocuments : TheoryData<string, string>
             """));
         Add(resultForUnselectedCase.ToJsonString(), "invalidContract");
 
+        var selectedCaseWithoutResults = System.Text.Json.Nodes.JsonNode.Parse(TestEvidenceJson.VersionThree)!;
+        selectedCaseWithoutResults["results"] = new System.Text.Json.Nodes.JsonObject { ["state"] = "absent" };
+        Add(selectedCaseWithoutResults.ToJsonString(), "invalidContract");
+
         var versionOneWithOwnership = System.Text.Json.Nodes.JsonNode.Parse(TestEvidenceJson.Valid)!;
         versionOneWithOwnership["discovery"]!["cases"]![0]!["owned"] = true;
         Add(versionOneWithOwnership.ToJsonString(), "invalidContract");
