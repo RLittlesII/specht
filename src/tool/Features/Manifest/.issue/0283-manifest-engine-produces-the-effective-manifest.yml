@@ -1,0 +1,53 @@
+id: "0283"
+type: task
+title: Produce the effective manifest
+
+status: ready-for-architecture
+
+value: 3
+risk: 3
+
+parent: "0001"
+children: []
+
+depends_on: ["0280"]
+spikes: []
+
+spec: src/tool/Features/Manifest/.spec/README.md
+
+claims:
+  - B-003
+  - B-004
+  - B-005
+  - B-006
+  - B-007
+
+created: "2026-10-24"
+updated: "2026-10-24"
+closed: null
+
+summary: |
+  As the `specht manifest` command I want the engine to give me the effective manifest of a root, so that the command prints what the check reads and holds no second reader.
+
+  Each declared key is at its own value; each omitted key is at the value the pinned version's default gives it, as the loader reads it (`0001-F5` B-019); each rule id without a level is at the rule's own severity; an absent `schemaVersion` is `0.1.0`. It comes from the check's loader and its defaults, with no second reader and no second table of defaults (C-2). A key whose absence is itself a setting is OQ-2, open: only the keys the loader fills are claimed.
+
+  Waits on 0280: the rule settings are filled through the same effective-level seam, 'level = manifest level else the rule's own severity'.
+
+acceptance_criteria:
+  - "B-003 — a declared key at the manifest's value"
+  - "B-004 — an omitted key at the pinned default"
+  - "B-005 — a rule with no level at its own severity"
+  - "B-006 — no `schemaVersion`: `0.1.0`"
+  - "B-007 — written as a copy's manifest, the check's verdict is unchanged"
+  - "§ 9 carries a row naming a test for each id above."
+
+decisions:
+  - |
+    2026-10-24, spec-author's cut of the groomed Feature. Rejected: one item for the whole Feature.
+
+out_of_scope:
+  - "The command, its output form and exit codes — 0284."
+  - "`--defaults` — 0285."
+  - "A key whose absence is a setting — § 11 OQ-2."
+  - "Which values came from the default — § 11 OQ-5."
+  - "A diff against the default — § 5 row 5."

@@ -1,0 +1,63 @@
+id: "0284"
+type: task
+title: The `specht manifest` command
+
+status: ready-for-architecture
+
+value: 3
+risk: 2
+
+parent: "0001"
+children: []
+
+depends_on: ["0283"]
+spikes: []
+
+spec: src/tool/Features/Manifest/.spec/README.md
+
+claims:
+  - B-001
+  - B-002
+  - B-013
+  - B-014
+  - B-015
+  - B-016
+  - B-017
+  - B-018
+  - B-019
+  - B-020
+
+created: "2026-10-24"
+updated: "2026-10-24"
+closed: null
+
+summary: |
+  As a maintainer I want `specht manifest` to print the effective manifest as text, so that I see every value the check reads, the omitted ones too.
+
+  The command parses, calls the engine of 0283 and folds the result into an exit code (C-4). The text form is B-020: the document `--json` prints, indented, in the default manifest's key order, derived by spec-author on OQ-1's default. The exit codes are the check's (C-5).
+
+  Waits on 0283: the command prints what the engine produces.
+
+acceptance_criteria:
+  - "B-001 — the effective manifest on stdout"
+  - "B-002 — exit `0`"
+  - "B-013 — missing root: `2`"
+  - "B-014 — no manifest: `2`"
+  - "B-015 — rejected manifest: `3`"
+  - "B-016 — stdout carries only the manifest"
+  - "B-017 — a run writes nothing"
+  - "B-018 — no derived path absolute"
+  - "B-019 — same input, same output"
+  - "B-020 — the JSON document, indented, in order"
+  - "§ 9 carries a row naming a test for each id above."
+
+decisions:
+  - |
+    2026-10-24, spec-author's cut of the groomed Feature. Rejected: one item for the whole Feature.
+
+out_of_scope:
+  - "`--defaults` — 0285."
+  - "`--json` — 0286."
+  - "Editing the manifest — `0001-F9` § 5 row 1; 0288."
+  - "Listing the rules — § 5 row 2; 0281."
+  - "A diff against the default — § 5 row 5."
