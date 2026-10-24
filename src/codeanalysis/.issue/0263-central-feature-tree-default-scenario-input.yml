@@ -1,7 +1,7 @@
 id: "0263"
 type: feature
 title: Deliver a central .spec/features tree as scenario inputs by default
-status: ready
+status: done
 value: 4
 risk: 1
 parent: "0201"
@@ -11,8 +11,8 @@ spikes: []
 spec: src/codeanalysis/.spec/README.md
 claims: ["B-027"]
 created: "2026-10-23"
-updated: "2026-10-23"
-closed: null
+updated: "2026-10-24"
+closed: "2026-10-24"
 summary: |
   Reported in RLittlesII/specht#256. The default SpechtScenarioInputs in
   Specht.CodeAnalysis.props matches only co-located .spec/*.feature files and

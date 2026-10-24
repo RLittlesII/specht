@@ -182,6 +182,19 @@ public sealed class CodeAnalysisPackageSteps(PackedTool tool) : IDisposable
         await File.WriteAllTextAsync(Path.Combine(_consumer, "test", "Sample.cs"), "public sealed class Sample { public void Run() { } }");
     }
 
+    [Given("a consumer keeping its Gherkin scenarios in a central specification tree under its root")]
+    public async Task GivenCentralScenarioTree()
+    {
+        await GivenConsumerInstallingThePackage();
+        Directory.CreateDirectory(Path.Combine(_consumer!, ".spec", "features"));
+        await File.WriteAllTextAsync(Path.Combine(_consumer!, ".spec", "features", "central.feature"), "Feature: Central scenarios\n");
+    }
+
+    [Given("the consumer sets no scenario input property")]
+    public void GivenNoScenarioInputProperty()
+    {
+    }
+
     [Given("the consumer declares a test evidence file for its build")]
     public async Task GivenConsumerDeclaresTestEvidence()
     {
@@ -235,6 +248,9 @@ public sealed class CodeAnalysisPackageSteps(PackedTool tool) : IDisposable
               <PropertyGroup><TargetFramework>net10.0</TargetFramework></PropertyGroup>
               <ItemGroup><PackageReference Include="Specht.CodeAnalysis" Version="{VersionOf(_analysisPackage!, "Specht.CodeAnalysis.")}" /></ItemGroup>
               {evidence}
+              <Target Name="PrintSpechtInputs" BeforeTargets="CoreCompile">
+                <Message Importance="high" Text="SPECHT-INPUT:%(AdditionalFiles.SpechtInputKind)|%(AdditionalFiles.SpechtRelativePath)" />
+              </Target>
             </Project>
             """);
         var project = Path.Combine(_consumer!, "Consumer.csproj");
@@ -253,6 +269,10 @@ public sealed class CodeAnalysisPackageSteps(PackedTool tool) : IDisposable
         _analysis.Should().NotContain("SPCT0001");
         _analysis.Should().Contain("warning SPCT0007: M:Sample.Run requires verifies");
     }
+
+    [Then("the scenarios in that tree are delivered as scenario inputs")]
+    public void ThenCentralScenariosAreDelivered() =>
+        _analysis.Should().Contain("SPECHT-INPUT:scenario|.spec/features/central.feature");
 
     private static XElement Metadata(ZipArchive archive)
     {
