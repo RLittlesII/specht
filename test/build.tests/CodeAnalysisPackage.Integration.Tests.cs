@@ -214,6 +214,78 @@ public sealed class CodeAnalysisPackageIntegrationTests
         }
     }
 
+    [Fact]
+    public async Task ConsumerRoot_WhenItSetsNoScenarioInputProperty_ShouldDeliverTheCentralFeatureTreeAsScenarioInputs()
+    {
+        // Given
+        var consumer = Directory.CreateTempSubdirectory("specht-central-tree-").FullName;
+
+        try
+        {
+            WriteCentralTree(consumer);
+
+            // When
+            var output = await EvaluateScenarioInputs(consumer);
+
+            // Then
+            output.Should().Contain("SPECHT-INPUT:scenario|.spec/features/central.feature");
+            output.Should().Contain("SPECHT-INPUT:scenario|.spec/features/nested/deeper.feature");
+        }
+        finally
+        {
+            Directory.Delete(consumer, recursive: true);
+        }
+    }
+
+    [Fact]
+    public async Task ConsumerRoot_WhenItNarrowsTheScenarioInputProperty_ShouldReplaceTheDefaultAndOmitTheCentralFeatureTree()
+    {
+        // Given
+        var consumer = Directory.CreateTempSubdirectory("specht-central-tree-").FullName;
+
+        try
+        {
+            WriteCentralTree(consumer);
+
+            // When
+            var output = await EvaluateScenarioInputs(consumer, "-property:SpechtScenarioInputs=src/**/*.feature");
+
+            // Then
+            output.Should().Contain("SPECHT-INPUT:scenario|src/Feature/.spec/narrow.feature");
+            output.Should().NotContain(".spec/features/");
+        }
+        finally
+        {
+            Directory.Delete(consumer, recursive: true);
+        }
+    }
+
+    private static void WriteCentralTree(string consumer)
+    {
+        Directory.CreateDirectory(Path.Combine(consumer, ".specht"));
+        Directory.CreateDirectory(Path.Combine(consumer, ".spec", "features", "nested"));
+        Directory.CreateDirectory(Path.Combine(consumer, "src", "Feature", ".spec"));
+        File.WriteAllText(Path.Combine(consumer, ".specht", "manifest.json"), "{}");
+        File.WriteAllText(Path.Combine(consumer, ".spec", "features", "central.feature"), "Feature: Central\n");
+        File.WriteAllText(Path.Combine(consumer, ".spec", "features", "nested", "deeper.feature"), "Feature: Deeper\n");
+        File.WriteAllText(Path.Combine(consumer, "src", "Feature", ".spec", "narrow.feature"), "Feature: Narrow\n");
+        File.WriteAllText(Path.Combine(consumer, "Probe.proj"), $"""
+            <Project>
+              <Import Project="{Path.Combine(FindRepositoryRoot(), "src", "codeanalysis", "build", "Specht.CodeAnalysis.props")}" />
+              <Target Name="PrintSpechtInputs">
+                <Message Importance="high" Text="SPECHT-INPUT:%(AdditionalFiles.SpechtInputKind)|%(AdditionalFiles.SpechtRelativePath)" />
+              </Target>
+            </Project>
+            """);
+    }
+
+    private static async Task<string> EvaluateScenarioInputs(string consumer, params string[] properties)
+    {
+        var result = await Run(consumer, ["msbuild", Path.Combine(consumer, "Probe.proj"), "-target:PrintSpechtInputs", .. properties]);
+        result.ExitCode.Should().Be(0, result.Output);
+        return result.Output;
+    }
+
     private static async Task<string> Pack(string root, string project, string output, string packageId)
     {
         var result = await Run(root, "pack", project, "--configuration", "Debug", "--output", output, "--no-restore");
