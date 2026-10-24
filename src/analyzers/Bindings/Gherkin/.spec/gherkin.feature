@@ -4,7 +4,7 @@ Feature: Native Gherkin claim catalogue
   Background:
     Given the claim file "specifications/arithmetic.feature" configured as Feature "arithmetic"
     And a Scenario Outline "Add two operands" under the Rule "Addition returns the sum" tagged "@REQ-FIX-001" with two example rows
-    And the claim tag encoding is "@{claim}" with the candidate prefix "REQ-"
+    And the claim tag encoding is "@{claim}"
     And the consumer's claim grammar accepts "REQ-FIX-001"
     And no epic identity is configured
 
@@ -91,16 +91,22 @@ Feature: Native Gherkin claim catalogue
     When the declared analysis is requested
     Then a duplicate-claim diagnostic is reported at each declaration's path and line
 
-  @B-013 @B-025
-  Scenario: Claim candidates and ordinary tags
+  @B-025
+  Scenario: Ordinary tags
     Given the manifest selects native Gherkin claim input
-    And the claim grammar requires three digits after "REQ-FIX-"
-    And a scenario tagged "@REQ-FIX-004 @visual @ignore @boundary @issue-42 @REQ-FIX-5"
+    And a scenario tagged "@REQ-FIX-004 @visual @ignore @boundary @issue-42"
     When the declared analysis is requested
     Then one claim "REQ-FIX-004" is recorded
     And "@visual", "@ignore", "@boundary" and "@issue-42" declare no claim and draw no diagnostic
-    And a malformed-claim diagnostic is reported at the path and line of "@REQ-FIX-5"
-    And no claim is recorded for "@REQ-FIX-5"
+
+  @B-025 @boundary
+  Scenario: A mistyped claim tag is an ordinary tag
+    Given the manifest selects native Gherkin claim input
+    And the claim grammar requires three digits after "REQ-FIX-"
+    And a scenario tagged "@REQ-FIX-5"
+    When the declared analysis is requested
+    Then no claim is recorded for "@REQ-FIX-5"
+    And no malformed-claim diagnostic is reported for "@REQ-FIX-5"
 
   @B-014
   Scenario Outline: Missing or invalid claim file
@@ -213,9 +219,23 @@ Feature: Native Gherkin claim catalogue
     And the rows of the first Examples block remain required
     And only the rows of the "@ignore" Examples block are planned
 
-  @B-027
-  Scenario: No candidate prefix configured
+  @B-028
+  Scenario: Claim tag on an Examples block
     Given the manifest selects native Gherkin claim input
-    And no candidate prefix is configured beside the claim tag encoding
+    And an Examples block of the Scenario Outline is tagged "@REQ-FIX-006"
     When the declared analysis is requested
-    Then an input failure names the manifest
+    Then a malformed-claim diagnostic is reported at the path and line of "@REQ-FIX-006"
+    And no claim "REQ-FIX-006" is recorded
+
+  @B-029
+  Scenario: Claim file in another language
+    Given the manifest selects native Gherkin claim input
+    And the configured claim file declares the Gherkin language "fr"
+    When the declared analysis is requested
+    Then an input failure names the claim file
+
+  @B-030
+  Scenario: Catalogue exported with the evidence
+    Given the manifest selects native Gherkin claim input
+    When the analyzer writes the test evidence
+    Then the evidence holds claim "REQ-FIX-001" of Feature "arithmetic" with its two example rows

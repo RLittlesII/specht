@@ -225,3 +225,10 @@ Feature: Consumer analysis adoption
       | declaration                                        | scope                                    |
       | its required-case scope is declared as "not @visual" | the cases whose categories match it      |
       | no required-case scope is declared                 | all cases                                |
+
+  @B-027
+  Scenario: Central scenario tree
+    Given a consumer keeping its Gherkin scenarios in a central specification tree under its root
+    And the consumer sets no scenario input property
+    When the consumer's project is analyzed
+    Then the scenarios in that tree are delivered as scenario inputs

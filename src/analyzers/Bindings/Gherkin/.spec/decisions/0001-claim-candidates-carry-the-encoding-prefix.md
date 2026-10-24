@@ -47,4 +47,8 @@ B-004, B-013, B-025, B-027; OQ-8 and OQ-9.
 
 ## Reversal
 
-None.
+Superseded 2026-10-23 by the repository owner in
+[decision 0002](0002-a-claim-tag-is-the-existing-claim-tag-form.md): there is no
+candidate prefix, and a tag declares a claim exactly when it matches the
+existing claim tag form and the claim identifier grammar. The reasoning above is
+kept as it was at the time.
