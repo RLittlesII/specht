@@ -59,4 +59,19 @@ public sealed class EvidenceWireParityUnitTests
         // Then
         JsonNode.DeepEquals(cli, analyzer).Should().BeTrue();
     }
+
+    [Fact]
+    public void ProducerVersionThreeArtifact_WhenReadByCli_ShouldRetainTheSameCaseFacts()
+    {
+        // Given
+        var producer = new TestEvidenceArtifactReader().Read(TestEvidenceJson.VersionThree).Artifact!;
+        var emitted = new TestEvidenceArtifactWriter().Write(producer);
+
+        // When
+        var cli = new CliEvidenceReader().Read(emitted);
+
+        // Then
+        cli.IsValid.Should().BeTrue();
+        JsonNode.DeepEquals(JsonSerializer.SerializeToNode(producer), JsonSerializer.SerializeToNode(cli.Artifact)).Should().BeTrue();
+    }
 }

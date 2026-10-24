@@ -27,11 +27,28 @@
     </TestingPlatformBuilderHook>
   </ItemGroup>
 
+  <PropertyGroup Condition="'$(IsTestProject)' == 'true' and '$(IsTestingPlatformApplication)' != 'true' and '$(SpechtRoot)' != '' and '$(TargetPath)' != ''">
+    <SpechtVsTestLoggerDirectory>$(MSBuildThisFileDirectory)vstest/net$(BundledNETCoreAppTargetFrameworkVersion)/</SpechtVsTestLoggerDirectory>
+    <SpechtVsTestLoggerDirectory Condition="!Exists('$(SpechtVsTestLoggerDirectory)Specht.TestEvidence.VsTest.TestLogger.dll')">$(MSBuildThisFileDirectory)vstest/net10.0/</SpechtVsTestLoggerDirectory>
+    <VSTestLogger Condition="'$(VSTestLogger)' == ''">specht</VSTestLogger>
+    <VSTestLogger Condition="'$(VSTestLogger)' != 'specht'">$(VSTestLogger);specht</VSTestLogger>
+  </PropertyGroup>
+
+  <Target Name="SpechtTestEvidenceCopyVsTestLogger" AfterTargets="Build" Condition="'$(SpechtVsTestLoggerDirectory)' != '' and '$(TargetPath)' != ''">
+    <ItemGroup>
+      <SpechtVsTestLoggerFile Include="$(SpechtVsTestLoggerDirectory)*.dll" />
+    </ItemGroup>
+    <Copy SourceFiles="@(SpechtVsTestLoggerFile)" DestinationFolder="$(TargetDir)" SkipUnchangedFiles="true" />
+  </Target>
+
   <Target Name="SpechtTestEvidenceWriteRunnerConfig" AfterTargets="Build"
-          Condition="'$(IsTestingPlatformApplication)' == 'true' and '$(SpechtRoot)' != ''">
+          Condition="('$(IsTestingPlatformApplication)' == 'true' or '$(SpechtVsTestLoggerDirectory)' != '') and '$(SpechtRoot)' != '' and '$(TargetPath)' != ''">
+    <PropertyGroup>
+      <SpechtTestEvidenceAssemblyPath>$([System.IO.Path]::GetRelativePath('$(SpechtRoot)', '$(TargetPath)').Replace('\', '/'))</SpechtTestEvidenceAssemblyPath>
+    </PropertyGroup>
     <MakeDir Directories="$(TargetDir)" />
     <WriteLinesToFile File="$(TargetDir)specht.test-evidence.config.json"
-                      Lines="{ &quot;outputPath&quot;: &quot;$(SpechtTestEvidenceOutput)&quot; }"
+                      Lines="{ &quot;outputPath&quot;: &quot;$(SpechtTestEvidenceOutput)&quot;, &quot;assemblyPath&quot;: &quot;$(SpechtTestEvidenceAssemblyPath)&quot; }"
                       Overwrite="true" />
   </Target>
 </Project>

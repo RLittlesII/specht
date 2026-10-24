@@ -56,6 +56,10 @@
     <PackageVersion Include="TestableIO.System.IO.Abstractions.TestingHelpers" Version="22.3.0" />
   </ItemGroup>
 
+  <ItemGroup Label="VSTest logger">
+    <PackageVersion Include="Microsoft.TestPlatform.ObjectModel" Version="18.0.1" />
+  </ItemGroup>
+
   <ItemGroup Label="VSTest evidence fixture only">
     <PackageVersion Include="xunit" Version="2.9.3" />
     <PackageVersion Include="xunit.runner.visualstudio" Version="3.1.5" />

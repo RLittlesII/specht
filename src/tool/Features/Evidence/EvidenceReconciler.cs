@@ -221,17 +221,37 @@ public sealed class EvidenceReconciler
                 explicitlyMissing = true;
                 findings.Add(new EvidenceFinding("missingRun", "", 0, runId, "The requested run was not found."));
             }
-            else if (runId is null && availableRuns.Length > 1)
+            var selectedRuns = new Dictionary<(string Project, string Framework), string?>();
+            foreach (var pair in currentArtifacts.GroupBy(static entry => (entry.Artifact.ProjectPath, entry.Artifact.TargetFramework)))
             {
-                inputsIncomplete = true;
-                findings.Add(new EvidenceFinding("ambiguousRun", "", 0, "", "Several runs are available; select one with --run."));
+                var runs = pair.Where(static entry => entry.Artifact.Results.State == "available")
+                    .Select(static entry => entry.Artifact.Results.RunId!).Distinct(StringComparer.Ordinal).ToArray();
+                if (runId is null && runs.Length > 1)
+                {
+                    inputsIncomplete = true;
+                    findings.Add(new EvidenceFinding("ambiguousRun", pair.Key.ProjectPath, 0, pair.Key.TargetFramework,
+                        "Several runs are available for this project and target framework; select one with --run."));
+                }
+
+                selectedRuns[pair.Key] = runId is not null ? runs.Contains(runId, StringComparer.Ordinal) ? runId : null
+                    : runs.Length == 1 ? runs[0] : null;
             }
 
-            var selectedRun = runId ?? (availableRuns.Length == 1 ? availableRuns[0] : null);
+            string? SelectedRun(TestEvidenceArtifact artifact) =>
+                selectedRuns.GetValueOrDefault((artifact.ProjectPath, artifact.TargetFramework));
+
             foreach (var entry in artifacts.OrderBy(static item => item.Label, StringComparer.Ordinal))
             {
                 var artifact = entry.Artifact;
+                var selectedRun = SelectedRun(artifact);
                 var discoveryCurrent = entry.Current && artifact.Discovery.State == TestEvidenceDiscoveryState.Complete;
+                var unselectedOwned = artifact.Discovery.Cases.Count(static testCase => testCase.Owned == true && testCase.Selected == false);
+                if (entry.Current && artifact.Results.State == "available" && unselectedOwned > 0)
+                {
+                    findings.Add(new EvidenceFinding("incompleteRun", entry.Label, 0, artifact.ProjectPath + " " + artifact.TargetFramework,
+                        $"The run did not select {unselectedOwned} owned case keys."));
+                }
+
                 if (entry.Current && !discoveryCurrent)
                 {
                     inputsIncomplete = true;
@@ -324,19 +344,24 @@ public sealed class EvidenceReconciler
                         continue;
                     }
 
-                    var caseKeys = matching.Where(pair => selectedRun is null || pair.entry.Artifact.Results.RunId == selectedRun)
+                    var discovered = matching.Where(pair => (runId ?? SelectedRun(pair.entry.Artifact)) is not { } chosen
+                            || pair.entry.Artifact.Results.RunId == chosen)
                         .SelectMany(pair => pair.entry.Artifact.Discovery.Cases
                         .Where(testCase => testCase.MethodSymbolId == pair.binding.SymbolId)
-                        .Select(testCase => (pair.entry.Label, testCase.CaseId))).Distinct().ToArray();
-                    if (caseKeys.Length == 0 && !inputsIncomplete)
+                        .Select(testCase => (pair.entry, testCase))).ToArray();
+                    foreach (var method in matching.Select(static pair => pair.binding.SymbolId).Distinct(StringComparer.Ordinal)
+                        .Where(method => !inputsIncomplete && !discovered.Any(item => item.testCase.MethodSymbolId == method)))
                     {
                         findings.Add(new EvidenceFinding("missingResult", claim.Path, claim.Line, claim.Identity,
-                            "A required test binding has no discovered case."));
+                            $"Required test method {method} has no discovered case."));
                     }
 
-                    foreach (var (label, caseId) in caseKeys)
+                    var caseKeys = discovered.Where(static item => item.testCase.Selected != false)
+                        .Select(static item => (item.entry.Label, item.entry.Artifact.ProjectPath, item.entry.Artifact.TargetFramework,
+                            item.testCase.CaseId)).Distinct().ToArray();
+                    foreach (var (label, project, framework, caseId) in caseKeys)
                     {
-                        claim.Cases.Add(caseId);
+                        claim.Cases.Add((project, framework, caseId));
                         var caseRow = caseRows.Single(row => row["evidence"]!.GetValue<string>() == label
                             && row["caseId"]!.GetValue<string>() == caseId);
                         if (!EvidenceGate.Passed(caseRow["outcome"]!.GetValue<string>()) && !inputsIncomplete)
@@ -596,7 +621,7 @@ public sealed class EvidenceReconciler
         public int Line => line;
         public string Identity => (epic is null ? "" : epic + "-") + feature + " " + id;
         public JsonObject Links { get; } = new();
-        public List<string> Cases { get; } = [];
+        public List<(string Project, string TargetFramework, string CaseId)> Cases { get; } = [];
         public List<string> Scenarios { get; } = [];
 
         /// <implements epic="0201" feature="F5" claim="B-001" />
@@ -609,8 +634,9 @@ public sealed class EvidenceReconciler
             ["path"] = path,
             ["line"] = line,
             ["links"] = Links,
-            ["cases"] = new JsonArray(Cases.Distinct(StringComparer.Ordinal).Order(StringComparer.Ordinal)
-                .Select(static item => (JsonNode?)JsonValue.Create(item)).ToArray()),
+            ["cases"] = new JsonArray(Cases.Distinct().OrderBy(static item => item.Project, StringComparer.Ordinal)
+                .ThenBy(static item => item.TargetFramework, StringComparer.Ordinal).ThenBy(static item => item.CaseId, StringComparer.Ordinal)
+                .Select(static item => (JsonNode?)JsonValue.Create(item.CaseId)).ToArray()),
             ["scenarios"] = new JsonArray(Scenarios.Distinct(StringComparer.Ordinal).Order(StringComparer.Ordinal)
                 .Select(static item => (JsonNode?)JsonValue.Create(item)).ToArray()),
         };

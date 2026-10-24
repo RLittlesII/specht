@@ -406,7 +406,7 @@ public sealed partial class TestEvidenceVsTestIntegrationTests(TestEvidenceVsTes
         {
             log.AppendLine(Probe());
             Directory.CreateDirectory(Path.GetDirectoryName(_probe)!);
-            await File.WriteAllTextAsync(_probe, log.ToString(), TestContext.Current.CancellationToken);
+            await File.WriteAllTextAsync(_probe, Relativized(log.ToString()), TestContext.Current.CancellationToken);
             foreach (var key in new[] { "A-list", "A-run", "B-list", "B-run" })
             {
                 artifacts.TryAdd(key, null);
@@ -414,6 +414,20 @@ public sealed partial class TestEvidenceVsTestIntegrationTests(TestEvidenceVsTes
 
             var because = "the VSTest fixture run is recorded in " + Path.GetRelativePath(_root, _probe).Replace('\\', '/');
             return new VsTestEvidence(artifacts, because);
+        }
+
+        private string Relativized(string text)
+        {
+            var home = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+            foreach (var (path, placeholder) in new[] { (_consumer, "<consumer>"), (_root, "<repository>"), (home, "<home>") })
+            {
+                foreach (var form in new[] { "/private" + path, path, path.Replace('\\', '/') })
+                {
+                    text = text.Replace(form, placeholder, StringComparison.Ordinal);
+                }
+            }
+
+            return text;
         }
 
         private string Probe()

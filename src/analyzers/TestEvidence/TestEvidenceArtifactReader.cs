@@ -18,7 +18,8 @@ public sealed class TestEvidenceArtifactReader
                 throw Invalid("artifact must be an object.");
             }
 
-            if (String(root, "format") != "specht.test-evidence" || Integer(root, "formatVersion") != 1)
+            var version = Integer(root, "formatVersion");
+            if (String(root, "format") != "specht.test-evidence" || version is not (1 or 3))
             {
                 return TestEvidenceReadResult.Unsupported();
             }
@@ -30,7 +31,7 @@ public sealed class TestEvidenceArtifactReader
             var configuration = Object(Required(root, "configuration"), "configuration", "name", "fingerprint");
             var assembly = Object(Required(root, "assembly"), "assembly", "name", "sha256", "path");
             var adapter = Object(Required(root, "adapter"), "adapter", "id", "version", "contractVersion");
-            var discovery = ReadDiscovery(Required(root, "discovery"));
+            var discovery = ReadDiscovery(Required(root, "discovery"), version);
             var bindings = ReadBindings(Required(root, "bindings"));
             var results = ReadResults(Required(root, "results"), discovery.Cases);
             var inputs = ReadInputs(Required(root, "inputs"));
@@ -69,7 +70,7 @@ public sealed class TestEvidenceArtifactReader
         }
     }
 
-    private static TestEvidenceDiscovery ReadDiscovery(JsonElement element)
+    private static TestEvidenceDiscovery ReadDiscovery(JsonElement element, int version)
     {
         var value = Object(element, "discovery", "state", "sessionId", "methods", "cases");
         var stateText = String(value, "state");
@@ -96,7 +97,7 @@ public sealed class TestEvidenceArtifactReader
             throw Invalid("Method symbol IDs must be unique.");
         }
 
-        var cases = Array(value, "cases").Select(ReadCase).ToArray();
+        var cases = Array(value, "cases").Select(item => ReadCase(item, version)).ToArray();
         if (cases.Select(static item => item.CaseId).Distinct(StringComparer.Ordinal).Count() != cases.Length
             || cases.Any(item => !methodIds.Contains(item.MethodSymbolId)))
         {
@@ -137,11 +138,26 @@ public sealed class TestEvidenceArtifactReader
             NonNegative(Integer(value, "genericArity"), "method.genericArity"), parameters, source);
     }
 
-    private static TestEvidenceCase ReadCase(JsonElement element)
+    private static TestEvidenceCase ReadCase(JsonElement element, int version)
     {
-        var value = Object(element, "case", "caseId", "methodSymbolId", "rowId", "displayName");
-        return new TestEvidenceCase(NonEmpty(String(value, "caseId"), "case.caseId"),
+        var value = version == 3
+            ? Object(element, "case", "caseId", "methodSymbolId", "rowId", "displayName", "categories", "owned", "selected")
+            : Object(element, "case", "caseId", "methodSymbolId", "rowId", "displayName");
+        var testCase = new TestEvidenceCase(NonEmpty(String(value, "caseId"), "case.caseId"),
             NonEmpty(String(value, "methodSymbolId"), "case.methodSymbolId"), NullableString(value, "rowId"), NullableString(value, "displayName"));
+        if (version != 3)
+        {
+            return testCase;
+        }
+
+        var categories = Array(value, "categories").Select(static category => category.ValueKind == JsonValueKind.String
+            ? NonEmpty(category.GetString(), "case.categories") : throw Invalid("Case categories must be strings.")).ToArray();
+        if (!categories.SequenceEqual(categories.Distinct(StringComparer.Ordinal).OrderBy(static category => category, StringComparer.Ordinal)))
+        {
+            throw Invalid("Case categories must be distinct and in ordinal order.");
+        }
+
+        return testCase with { Categories = categories, Owned = Boolean(value, "owned"), Selected = Boolean(value, "selected") };
     }
 
     private static IReadOnlyList<TestEvidenceBinding> ReadBindings(JsonElement element)
@@ -218,7 +234,8 @@ public sealed class TestEvidenceArtifactReader
             throw Invalid("results.state is not recognized.");
         }
 
-        var caseIds = new HashSet<string>(discoveredCases.Select(static item => item.CaseId), StringComparer.Ordinal);
+        var caseIds = new HashSet<string>(discoveredCases.Where(static item => item.Selected != false).Select(static item => item.CaseId),
+            StringComparer.Ordinal);
         var outcomes = Array(value, "cases").Select(item =>
         {
             var result = Object(item, "result", "caseId", "outcome", "detail");

@@ -15,7 +15,8 @@ public sealed class AnalysisPolicy
         Bindings = bindings;
         Projects = Array.AsReadOnly(_policy["projects"]!.AsArray().Select(project => new AnalysisProject(
             _paths.Normalize(project!["path"]!.GetValue<string>()),
-            Array.AsReadOnly(project["targetFrameworks"]!.AsArray().Select(static tfm => tfm!.GetValue<string>()).ToArray()))).ToArray());
+            Array.AsReadOnly(project["targetFrameworks"]!.AsArray().Select(static tfm => tfm!.GetValue<string>()).ToArray()),
+            new CaseScope(project["requiredCaseScope"]?.GetValue<string>()))).ToArray());
         Features = Array.AsReadOnly(_policy["features"]!.AsArray().Select(static feature =>
             new FeatureIdentity(feature!["epic"]?.GetValue<string>(), feature["feature"]!.GetValue<string>())).ToArray());
     }

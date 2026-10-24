@@ -90,6 +90,15 @@ public sealed class AdoptionSteps
         _configuration["revision"] = version;
     }
 
+    [Given("a selected test project under the consumer's code analysis configuration")]
+    [Given("no required-case scope is declared")]
+    public void GivenTheConfiguredTestProject()
+    {
+    }
+
+    [Given("its required-case scope is declared as {string}")]
+    public void GivenRequiredCaseScope(string scope) => _configuration["codeAnalysis"]!["projects"]![0]!["requiredCaseScope"] = scope;
+
     [When("the declared analysis is requested")]
     [When("binding analysis runs")]
     [When("missing-binding requirements are evaluated")]
@@ -98,6 +107,7 @@ public sealed class AdoptionSteps
     [When("analysis runs")]
     [When("analysis policy is read")]
     [When("analysis consumes the supplied configuration and records")]
+    [When("the consumer's policy is read")]
     public void WhenRead() => _snapshot = Run();
 
     [When("{string} changes")]
@@ -214,6 +224,22 @@ public sealed class AdoptionSteps
         _snapshot!.Available.Should().BeTrue();
         _snapshot.Policy!.Bindings.SchemaVersion.Should().Be(_version);
         _snapshot.Catalog!.Features.Should().ContainSingle().Which.Identity.Feature.Should().Be("F1");
+    }
+
+    [Then("the project's required-case scope is the cases whose categories match it")]
+    public void ThenScopeMatchesCategories()
+    {
+        var scope = _snapshot!.Policy!.Projects.Single().Scope;
+        scope.Owns(["smoke"]).Should().BeTrue();
+        scope.Owns(["visual"]).Should().BeFalse();
+    }
+
+    [Then("the project's required-case scope is all cases")]
+    public void ThenScopeIsAllCases()
+    {
+        var scope = _snapshot!.Policy!.Projects.Single().Scope;
+        scope.Owns([]).Should().BeTrue();
+        scope.Owns(["visual"]).Should().BeTrue();
     }
 
     [Then("no Specht schema adoption, schema upgrade or pin change is required")]
