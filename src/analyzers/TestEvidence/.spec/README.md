@@ -116,7 +116,8 @@ Map explicit test-method bindings to discovered and executed test cases across .
 | Runner outcomes and run separation                   | Business       | F3 retains each supplied run and outcome; F5 decides how selected evidence contributes to reconciliation.               |
 | Source, assembly, configuration and policy freshness | Both           | F3 records identities; 0201-F6 owns current-input scope and 0201-F5 excludes stale artifacts from current evidence.     |
 | Scenario-to-case metadata                            | Both           | F3 carries the common case identity; 0201-F4 defines scenario scope and producer metadata mapping.                      |
-| Evidence serialization and versioning                | Technical      | F3 owns the closed version-one and version-two JSON envelopes and their deterministic identity encoding.                |
+| Evidence serialization and versioning                | Technical      | F3 owns the closed version-one to version-three JSON envelopes and their deterministic identity encoding.               |
+| Case categories, selection and ownership             | Both           | F3 records runner categories and selection and evaluates 0201-F6's `CaseScope`; 0201-F5 reports and gates on them.      |
 | Runner collection and producer compatibility         | Technical      | First-party adapters normalize runner metadata; custom producers may submit the same contract without framework gating. |
 | Diagnostic and filesystem boundary                   | Technical      | DiagnosticAnalyzer remains read-only; explicit build/runner collection writes artifacts to the selected output folder.  |
 
@@ -133,9 +134,11 @@ accepted.
 ### Envelope
 
 Use UTF-8 JSON with `format: "specht.test-evidence"` and integer
-`formatVersion` 1 or 2. Every top-level property is required except `scenarios`
-and `catalog`; `catalog` is permitted only at version 2, and version 2 differs
-from version 1 by that member alone (0201-F7 ADR-0001, proposed).
+`formatVersion` 1, 2 or 3. Every top-level property is required except `scenarios`
+and `catalog`; `catalog` is permitted only at versions 2 and 3, and version 2 differs
+from version 1 by that member alone (0201-F7 ADR-0001, proposed). Version 3
+differs from version 2 only by three required members on every case record
+(below; [ADR-0001](adr/0001-vstest-logger-and-artifact-version-three.md), proposed).
 Objects are closed: unknown properties and enum values are invalid. An unknown
 format version is `unsupportedContract`. This contract version is independent of
 the package and manifest schema versions.
@@ -147,7 +150,7 @@ artifact, while `adapter.contractVersion` versions the producer integration.
 | Property            | Contract                                                                                                                                        |
 | ------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
 | `format`            | Exact string `specht.test-evidence`.                                                                                                            |
-| `formatVersion`     | Integer `2` when `catalog` is present, otherwise `1`.                                                                                           |
+| `formatVersion`     | Integer `3` when case records carry categories, ownership and selection; otherwise `2` when `catalog` is present, otherwise `1`.                |
 | `project`           | Repository-relative project file path and exact declared target framework.                                                                      |
 | `configuration`     | Build configuration name and digest of compiler options and resolved reference identities.                                                      |
 | `assembly`          | Assembly name and SHA-256 content hash; optional assembly path is repository-relative.                                                          |
@@ -159,7 +162,7 @@ artifact, while `adapter.contractVersion` versions the producer integration.
 | `results`           | Either `absent` or an opaque run ID and outcomes keyed by stable case ID. Absence is not a passing result.                                      |
 | `inputs`            | Sorted `{ path, sha256, kind }` entries for the source, manifest, schema and record inputs represented by the artifact.                         |
 | `scenarios`         | Optional F4 scenario records. When present, they follow the F4 contract and do not alter F3 case identity.                                      |
-| `catalog`           | Version 2 only. The native claim catalogue the analyzer read from Gherkin claim files (0201-F7 B-030); absent under Markdown claim input.       |
+| `catalog`           | Versions 2 and 3. The native claim catalogue the analyzer read from Gherkin claim files (0201-F7 B-030); absent under Markdown claim input.     |
 
 The nested shapes are fixed: `project` is `{ path, targetFramework }`;
 `configuration` is `{ name, fingerprint }`; `assembly` is
@@ -210,6 +213,28 @@ concatenation. Paths use repository-relative `/` separators. No machine path,
 timestamp or analyzer clock participates; identical logical inputs produce the
 same fingerprints.
 
+### Version three
+
+At version 3 a case is `{ caseId, methodSymbolId, rowId, displayName,
+categories, owned, selected }`; at versions 1 and 2 the three new members are
+invalid, as any unknown member is. Every other object, and `catalog`, is as at
+version 2.
+
+| Member       | Contract                                                                                                                                        |
+| ------------ | ----------------------------------------------------------------------------------------------------------------------------------------------- |
+| `categories` | Array of nonempty strings, distinct and in ordinal order; empty when the case has none. A category is written as the runner reports it, no `@`. |
+| `owned`      | Boolean. Whether the producing project's required-case scope owns this case (B-025); `true` when the project declares no scope.                 |
+| `selected`   | Boolean. Whether this artifact's run selected the case (B-020). `false` for every case when `results` is `absent`.                              |
+
+A case with an entry in `results.cases` has `selected: true`; an entry for an
+unselected case invalidates the artifact. A selected case may have no entry,
+which is never a passing result. Ownership and selection are facts about the
+case and the run; neither changes the case key, and the artifact records no
+diagnosis derived from them. The reader returns all three; at versions 1 and 2
+they are unknown, not empty, false or owned. `TestEvidenceCase` carries them as
+nullable members, and the writer emits version 3 only for a producer that
+states them.
+
 ### First-party build and runner collection
 
 The `Specht.CodeAnalysis` package exports compiler methods, explicit F2 bindings,
@@ -223,7 +248,123 @@ The fixture under `test/testevidence.mtp.tests/` exercises xUnit facts, theory
 rows and a real Playwright .NET xUnit test class; its Playwright test is skipped
 so evidence collection verifies discovery and skip reporting without launching
 a browser. The collector preserves deferred discovery when MTP does not provide
-a complete-enumeration signal.
+a complete-enumeration signal. It writes version 1 and records no categories,
+ownership or selection; the VSTest logger below is the version-3 producer.
+
+### VSTest collection
+
+[ADR-0001](adr/0001-vstest-logger-and-artifact-version-three.md) (proposed)
+records the choices; OQ-3 fixes the mechanism.
+
+**Project.** `src/testevidence.vstest/testevidence.vstest.csproj`, beside
+`src/testevidence.mtp`: assembly `Specht.TestEvidence.VsTest.TestLogger`,
+namespace `Specht.TestEvidence.VsTest`, `net10.0;net11.0` (ADR-0017),
+`IsPackable=false`, in `specht.slnx`. It references `analyzers.csproj` as the
+MTP collector does, and `Microsoft.TestPlatform.ObjectModel` with
+`ExcludeAssets="runtime"` and `PrivateAssets="all"`: `vstest.console` supplies
+that assembly. One class, `TestEvidenceVsTestLogger`, implements
+`ITestLoggerWithParameters` with `[FriendlyName("specht")]` and
+`[ExtensionUri("logger://specht/test-evidence")]`. Adapter ID `vstest`,
+adapter version `1.0.0`, contract version `1`.
+
+**Registration.** For a project with `IsTestProject` true,
+`IsTestingPlatformApplication` not true and `SpechtRoot` set, the package
+targets copy `build/vstest/<tfm>/*.dll` into the output directory, where
+`<tfm>` is `net$(BundledNETCoreAppTargetFrameworkVersion)` when the package
+ships it and `net10.0` otherwise: the logger runs in `vstest.console`, on the
+SDK's runtime, not the test project's. VSTest loads a logger whose file name
+ends in `TestLogger.dll` from the test source's directory. The targets append
+`specht` to `VSTestLogger`, which `dotnet test` in VSTest mode passes for both
+`--list-tests` and a run. `SpechtTestEvidenceWriteRunnerConfig` runs for these
+projects too, and the runner config gains `assemblyPath`, `$(TargetPath)`
+relative to `SpechtRoot` with `/` separators, which both collectors may record.
+A command-line `--logger` sets `VSTestLogger` as a global property and replaces
+the appended name; such a run writes no evidence unless it also names
+`--logger specht`.
+
+**Packaging.** `codeanalysis.csproj` references the project with
+`ReferenceOutputAssembly="false"` and `PrivateAssets="all"`, builds both target
+frameworks as it does the MTP collector, and packs
+`bin/<configuration>/<tfm>/*.dll` to `build/vstest/<tfm>/`. No TestPlatform
+assembly is packed, and `analyzers/dotnet/cs/` is unchanged, so the
+compiler-loaded closure is unchanged (ADR-0017). The package integration test
+asserts both.
+
+**Per source.** Events are grouped by `TestCase.Source`, so one invocation over
+several test assemblies writes one artifact for each. For a source the logger
+reads `specht.test-evidence.config.json` beside it, and reads the constant
+`Specht.Generated.TestEvidenceCompilationExport.Json` from the assembly's
+metadata with `System.Reflection.Metadata`, without loading the assembly. The
+assembly name comes from the same metadata and `sha256` from the file's bytes.
+With no config or no export it writes nothing, as the MTP collector does.
+
+**Identity.** `caseId` is `TestCase.Id` in lowercase `D` form; the xUnit adapter
+derives it from xUnit's test-case unique ID, which covers the assembly, class,
+method and serialized row arguments, so each pre-enumerated theory row has its
+own (B-010) and discovery and execution agree on it. `rowId` is null and
+`displayName` is `TestCase.DisplayName`. Method metadata comes only from the
+VSTest managed-name properties `TestCase.ManagedType` and
+`TestCase.ManagedMethod`, which `xunit.runner.visualstudio` 3.x sets and 2.x
+does not. `ManagedType` is the declaring type; `ManagedMethod` gives the name,
+the arity after a backtick and the parameter list, each parameter prefixed
+`global::` to match the compiler exporter's form. A nested type (`+`), a generic
+parameter (`!`) or a generic instantiation (`` ` ``, `<`) is not translated: the
+case keeps no method metadata and stays unresolved (B-004), as does a case from
+an adapter that sets neither property. `FullyQualifiedName`, `DisplayName`,
+`CodeFilePath` and `LineNumber` are never identity inputs; `CodeFilePath` is an
+absolute machine path and is never written. A method's location is the
+compiler's: the syntax tree path relative to `SpechtRoot`, which for a file
+linked from outside the project directory is that file's own path (B-012).
+Reqnroll-generated tests are compiled methods like any other; their generated
+source has no location and needs no binding (B-016).
+
+**Discovery.** A discovery request (`dotnet test --list-tests`) supplies
+`DiscoveredTests` and `DiscoveryComplete`. The state is `complete` when
+discovery was not aborted and the source is in none of the partially, skipped
+or not-discovered source lists, `unavailable` when it was aborted, and
+`deferred` otherwise. The artifact it writes has `results` `absent` and every
+case `selected: false`. A bound method with no case gets none (B-014): no case
+is synthesized.
+
+**Run.** A run request supplies `TestRunStart`, `TestResult` and
+`TestRunComplete`, and no discovered cases. A case is selected when the run
+reported a result for it, or when `TestRunCriteria.HasSpecificTests` named it;
+a named case with no result is `notRun`. Outcomes map `Passed` to `passed`,
+`Failed` to `failed`, `Skipped` to `skipped`, and `None` and `NotFound` to
+`notRun` (B-013); `detail` is `ErrorMessage`. Each case keeps its own outcome
+(B-011, B-015). Several results for one `TestCase.Id` are runtime-only rows under
+one case (B-008): that case gets no outcome and discovery is `deferred`. The
+logger never evaluates `TestRunCriteria.TestCaseFilter`.
+
+**Discovery then run.** At run end the logger reads the artifact already at the
+output path. When it reads as valid and `TestEvidenceCaseCorrelation` finds the
+same project, target framework, assembly hash, adapter and fingerprints, the
+logger keeps that discovery, session ID and case set and adds the run's
+selection and outcomes; a run case missing from it makes discovery `deferred`.
+Otherwise the run's own cases form the discovery, `deferred`. So one project and
+target framework keeps one artifact. VSTest gives a logger no session identity:
+each request's session or run ID is a new GUID, opaque and never a time (C-4).
+
+**Categories and ownership.** A case's categories are the values of its
+`TestCase.Traits` named exactly `Category`: xUnit `Trait("Category", ...)`, and
+the `Category` traits Reqnroll.xUnit generates from scenario tags. The compiler
+export payload gains `requiredCaseScope`, the expression text of the
+`codeAnalysis.projects` entry whose path is the compiling project, or null. The
+logger builds the same `CaseScope` from it and records
+`owned = Owns(categories)`, `true` when null (B-025). A malformed expression
+never reaches the logger: the build reports SPCT0001 and generates no export.
+
+**Fixture.** `test/testevidence.vstest.fixture/` is a consumer-shaped tree that
+no solution builds: two xUnit v2 VSTest projects compiling one shared Reqnroll
+claim file and one shared test file linked from outside both project
+directories, with passing, failing, skipped and categorized cases. A
+`build.tests` integration test copies it to a temporary root with the
+repository's `Directory.Packages.props`, a `global.json` carrying the
+repository's SDK and `"test": { "runner": "VSTest" }`, packs Specht.CodeAnalysis,
+restores from the pack output and the local package cache, and runs
+`dotnet test --list-tests` and then filtered `dotnet test` per project. The
+logger's event handling is also driven in process from
+`test/testevidence.vstest.tests/` with synthetic `TestLoggerEvents`.
 
 ### Methods and cases
 
@@ -288,10 +429,40 @@ the A/B partition table. `CaseScope.Owns(categories)` in the analyzer
 (`src/analyzers/Policy/`) is the one evaluation: the collector, which
 references the analyzer, evaluates it for each case and records the result in the artifact, and `specht evidence` reads
 that recorded result and never parses the expression. A case's categories are its Reqnroll scenario
-tags or `Category` trait values without `@`. Ownership, the selected flag and the
-incomplete-run finding are recorded in the artifact and the report, not as SPCT
-diagnostics; the case record's new fields and any format version are item 0260's
-design of this section.
+tags or `Category` trait values without `@`. Ownership and selection are the
+version-3 case members `owned` and `selected`; the expression reaches the
+collector through the compiler export (VSTest collection above). Neither they
+nor the incomplete-run finding are SPCT diagnostics.
+
+The incomplete-run diagnosis (B-026) is derived, not stored: `specht evidence`
+reports one finding of kind `incompleteRun` for each current version-3 artifact
+with `results` `available` and at least one case with `owned: true` and
+`selected: false`. Its path is the evidence label, its identity the project and
+target framework, and its message the number of owned case keys the run did not
+select. In this item it is reported and does not change the exit code; gating on
+owned keys is item 0262 (0201-F5 decision 0003). A version-1 or version-2
+artifact records no ownership, so it gets no such finding.
+
+### Several projects' evidence
+
+Each artifact is one project and target framework, and its case key is
+`(project, targetFramework, assembly hash, adapter ID, caseId)`. `specht
+evidence` combines artifacts in `EvidenceReconciler`, which already keys case
+rows by evidence label, project and target framework. Two changes keep every
+project's keys distinct when several projects compile the same claim files
+(B-021):
+
+- A claim's case references carry the project and target framework beside the
+  case ID, so equal runner IDs from two projects never collapse into one entry.
+- Without `--run`, a run is chosen per declared project and target framework:
+  each pair with one available run uses it, and `ambiguousRun` is reported only
+  for a pair with several. Today one run is chosen across all artifacts, so two
+  projects' runs are always ambiguous. `--run <id>` keeps its meaning.
+
+The tool-owned reader in `src/tool/Features/Evidence/Contract/` reads version 3
+with the producer reader's rules; the parity tests cover the new members.
+0201-F5 § 7 states the run choice and the `incompleteRun` gap kind once these
+are built; whether the per-pair run choice belongs here or to item 0262 is OQ-5.
 
 ### Scenarios, freshness and compatibility
 
@@ -398,13 +569,15 @@ adds ownership and B-026 the incomplete-run diagnosis.
 
 ## 11. Open Questions
 
-<!-- last written by: spec-author, 2026-10-23 -->
+<!-- last written by: implementer, 2026-10-23 -->
 
-| ID   | Question                                                                                                                                    | Blocks                            | Resolution                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
-| ---- | ------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| OQ-1 | Which runner integrations and versions produce supported evidence?                                                                          | Concrete adapter compatibility    | RESOLVED, 2026-10-18: decision 0001 rejects a closed framework/version allowlist. Version one accepts producers that emit this Feature's contract; the compatibility matrix names only runner, adapter and platform versions actually tested and the metadata they supply. Runtime-only cases remain deferred until supplied by the runner.                                                                                                                                                                                                                                                    |
-| OQ-2 | Which identities determine whether discovery and result artifacts are current?                                                              | Evidence envelope and freshness   | RESOLVED, 2026-10-18: artifacts match project, TFM, source fingerprint, assembly hash, configuration identity and policy fingerprint. Discovery and execution retain separate opaque session/run IDs; cases correlate by the stable case key in § 7.                                                                                                                                                                                                                                                                                                                                           |
-| OQ-3 | Which collection mechanism produces xUnit v2 and VSTest evidence: a VSTest data collector, a VSTest test logger, TRX ingestion, or another? | B-010, B-011, B-013, B-014, B-016 | Open. Proposed default: a VSTest test logger registered by the package build integration, which receives discovery and result events with managed method metadata and writes the version-one artifact as another producer under decision 0001, with no framework allowlist; TRX ingestion is not the default because a TRX file carries no discovery-only cases and no compiler method identity. RESOLVED, 2026-10-23: owner decision takes the proposed default: a VSTest test logger registered by the package build integration writes the version-one artifact; TRX ingestion is rejected. |
+| ID   | Question                                                                                                                                                                                     | Blocks                            | Resolution                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| ---- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| OQ-1 | Which runner integrations and versions produce supported evidence?                                                                                                                           | Concrete adapter compatibility    | RESOLVED, 2026-10-18: decision 0001 rejects a closed framework/version allowlist. Version one accepts producers that emit this Feature's contract; the compatibility matrix names only runner, adapter and platform versions actually tested and the metadata they supply. Runtime-only cases remain deferred until supplied by the runner.                                                                                                                                                                                                                                                    |
+| OQ-2 | Which identities determine whether discovery and result artifacts are current?                                                                                                               | Evidence envelope and freshness   | RESOLVED, 2026-10-18: artifacts match project, TFM, source fingerprint, assembly hash, configuration identity and policy fingerprint. Discovery and execution retain separate opaque session/run IDs; cases correlate by the stable case key in § 7.                                                                                                                                                                                                                                                                                                                                           |
+| OQ-3 | Which collection mechanism produces xUnit v2 and VSTest evidence: a VSTest data collector, a VSTest test logger, TRX ingestion, or another?                                                  | B-010, B-011, B-013, B-014, B-016 | Open. Proposed default: a VSTest test logger registered by the package build integration, which receives discovery and result events with managed method metadata and writes the version-one artifact as another producer under decision 0001, with no framework allowlist; TRX ingestion is not the default because a TRX file carries no discovery-only cases and no compiler method identity. RESOLVED, 2026-10-23: owner decision takes the proposed default: a VSTest test logger registered by the package build integration writes the version-one artifact; TRX ingestion is rejected. |
+| OQ-4 | When discovery is complete and a bound method required for a claim has no discovered case, is that reported as incomplete input (exit `2`) or as today's `missingResult` failure (exit `1`)? | B-014                             | Open. Proposed default: keep `missingResult` (exit `1`) and name the method in its message; the artifact never synthesizes a case and the claim never passes, which meets "neither passing nor a complete empty set". If B-014's "unavailable or incomplete" means the input state, the finding moves to `deferredCases` and exit `2` instead, a 0201-F5 change.                                                                                                                                                                                                                               |
+| OQ-5 | Does choosing a run per project and target framework, which combining several projects' runs needs, belong to item 0260 (B-021) or to item 0262 (0201-F5 B-021)?                             | B-021                             | Open. Proposed default: item 0260, because without it two projects' runs are reported `ambiguousRun` and B-021 here cannot be shown; item 0262 then gates on the chosen runs.                                                                                                                                                                                                                                                                                                                                                                                                                  |
 
 ## 12. Sign-off
 
