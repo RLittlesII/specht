@@ -1,0 +1,50 @@
+id: "0287"
+type: task
+title: Edit one rule level in the manifest bytes
+
+status: ready-for-architecture
+
+value: 2
+risk: 3
+
+parent: "0001"
+children: []
+
+depends_on: []
+spikes: []
+
+spec: src/tool/Features/Rules/Set/.spec/README.md
+
+claims:
+  - B-001
+  - B-003
+  - B-004
+  - B-005
+  - B-012
+
+created: "2026-10-24"
+updated: "2026-10-24"
+closed: null
+
+summary: |
+  As the set command I want the engine to change one rule's level in the manifest bytes, so that only that entry differs and the manifest stays one the check accepts.
+
+  Three edits: replace the value of an existing entry (B-003), add an entry to `rules` (B-004), add the `rules` key holding one entry (B-005). Every other key and entry keeps its value (C-1). The result is a manifest the check accepts (B-012). Reuse the shape of `src/specht/Manifest/ManifestPinEditor.cs`; do not replace it. Where an addition goes, and its formatting, is OQ-6, open.
+
+acceptance_criteria:
+  - "B-001 — the named rule is at the named level"
+  - "B-003 — an existing entry: only its value differs"
+  - "B-004 — no entry: it is added, all else keeps its value"
+  - "B-005 — no `rules` key: it is added with the one entry"
+  - "B-012 — the manifest left is one the check accepts"
+  - "§ 9 carries a row naming a test for each id above."
+
+decisions:
+  - |
+    2026-10-24, spec-author's cut of the groomed Feature. Rejected: one item for the whole Feature.
+
+out_of_scope:
+  - "The command, its refusals and exit codes — 0288."
+  - "Any key other than a rule's level — `0001-F11` § 5 row 1."
+  - "Removing an entry — § 5 row 6; § 11 OQ-5."
+  - "Setting several rules — § 5 row 5."
