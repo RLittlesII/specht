@@ -1,7 +1,7 @@
 id: "0260"
 type: feature
 title: "Collect VSTest evidence with case categories, selection and ownership"
-status: ready
+status: in-progress
 value: 5
 risk: 5
 parent: "0201"
