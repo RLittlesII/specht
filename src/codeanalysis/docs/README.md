@@ -23,3 +23,6 @@ configuration.
 | [SPCT0007](SPCT0007.md) | Required authored relationship is missing               | Warning          | Conditional |
 | [SPCT0008](SPCT0008.md) | Partial type authoring defaults conflict                | Warning          | No          |
 | [SPCT0009](SPCT0009.md) | Duplicate valid relationship                            | Info             | Conditional |
+| [SPCT0010](SPCT0010.md) | Duplicate claim declaration                             | Warning          | No          |
+| [SPCT0011](SPCT0011.md) | Claim tag where no claim is declared                    | Warning          | No          |
+| [SPCT0012](SPCT0012.md) | Scenario carries no claim                               | Warning          | No          |

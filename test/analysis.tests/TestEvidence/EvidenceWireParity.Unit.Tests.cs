@@ -74,4 +74,49 @@ public sealed class EvidenceWireParityUnitTests
         cli.IsValid.Should().BeTrue();
         JsonNode.DeepEquals(JsonSerializer.SerializeToNode(producer), JsonSerializer.SerializeToNode(cli.Artifact)).Should().BeTrue();
     }
+
+    [Fact]
+    public void ProducerVersionTwoArtifact_WhenReadByCli_ShouldRetainTheCatalog()
+    {
+        // Given
+        var producer = new TestEvidenceArtifactReader().Read(TestEvidenceJson.VersionTwo).Artifact!;
+        var emitted = new TestEvidenceArtifactWriter().Write(producer);
+
+        // When
+        var cli = new CliEvidenceReader().Read(emitted);
+
+        // Then
+        cli.IsValid.Should().BeTrue();
+        cli.Artifact!.Catalog.Should().NotBeNull();
+        JsonNode.DeepEquals(JsonSerializer.SerializeToNode(producer), JsonSerializer.SerializeToNode(cli.Artifact)).Should().BeTrue();
+    }
+
+    [Fact]
+    public void ProducerVersionOneArtifact_WhenReadByCli_ShouldHaveNoCatalog()
+    {
+        // Given
+        var producer = new TestEvidenceArtifactReader().Read(TestEvidenceJson.Valid).Artifact!;
+
+        // When
+        var cli = new CliEvidenceReader().Read(new TestEvidenceArtifactWriter().Write(producer));
+
+        // Then
+        cli.IsValid.Should().BeTrue();
+        cli.Artifact!.Catalog.Should().BeNull();
+    }
+
+    [Theory]
+    [ClassData(typeof(InvalidCatalogDocuments))]
+    public void MalformedCatalog_WhenReadByCli_ShouldGiveTheSameContractFailure(string json, string failure)
+    {
+        // Given
+        var producer = new TestEvidenceArtifactReader().Read(json);
+
+        // When
+        var cli = new CliEvidenceReader().Read(json);
+
+        // Then
+        producer.Failure.Should().Be(failure);
+        cli.Failure.Should().Be(producer.Failure);
+    }
 }

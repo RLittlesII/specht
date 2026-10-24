@@ -11,7 +11,7 @@ namespace Specht.TestEvidence.VsTest.Tests;
 
 internal sealed class VsTestSource
 {
-    public VsTestSource(string? requiredCaseScope = null)
+    public VsTestSource(string? requiredCaseScope = null, JsonNode? catalog = null)
     {
         var target = new TestEvidenceTarget("claim", "0201", "F3", "B-010", "Active", "approved",
             "src/analyzers/TestEvidence/.spec/README.md", 16);
@@ -33,6 +33,11 @@ internal sealed class VsTestSource
             ["inputs"] = new JsonArray(),
             ["requiredCaseScope"] = requiredCaseScope,
         };
+        if (catalog is not null)
+        {
+            payload["catalog"] = catalog;
+        }
+
         var tree = CSharpSyntaxTree.ParseText("namespace Specht.Generated { internal static class TestEvidenceCompilationExport { "
             + "internal const string Json = " + SymbolDisplay.FormatLiteral(payload.ToJsonString(), true) + "; } }");
         var compilation = CSharpCompilation.Create("A", [tree], [MetadataReference.CreateFromFile(typeof(object).Assembly.Location)],
