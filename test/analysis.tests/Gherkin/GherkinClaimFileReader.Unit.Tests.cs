@@ -214,6 +214,22 @@ public sealed class GherkinClaimFileReaderUnitTests
         file.Findings.Should().BeEmpty();
     }
 
+    [Theory]
+    [ClassData(typeof(ConfiguredClaimIdCases))]
+    public void ConfiguredClaimForm_WhenAScenarioTagIsRead_ShouldDeclareOnlyIdsTheFormAndGrammarAccept(
+        string form, string grammar, string tag, string? expected)
+    {
+        // Given
+        GherkinClaimPolicy policy = new GherkinClaimPolicyFixture().WithClaim(new GherkinTagForm(form, "claim", false, grammar));
+        var text = "Feature: A\n\n  " + tag + "\n  Scenario: S\n    Given x\n";
+
+        // When
+        var file = new GherkinClaimFileReader(policy).Read(Path, text);
+
+        // Then
+        file.Claims.Select(static claim => claim.Id).Should().Equal(expected is null ? [] : [expected]);
+    }
+
     [Fact]
     public void TagFailingTheClaimGrammar_WhenRead_ShouldDeclareNoClaimAndNameNoTagInAFinding()
     {
