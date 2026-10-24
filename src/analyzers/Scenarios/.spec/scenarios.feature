@@ -69,8 +69,21 @@ Feature: Optional scenario bridge
 
   @B-009 @boundary
   Scenario: Planned and active rows
-    Given an outline carrying one claim whose first Examples block is active and whose second is planned in the claim catalogue
+    Given an outline whose first Examples block is marked active and whose second is marked planned
     When the declared analysis is requested
     Then the case links of the first block's rows are active
     And the case links of the second block's rows are planned
-    And every case link keeps the same claim
+
+  @B-010
+  Scenario: Planned and active rows keep one claim
+    Given an outline carrying one claim whose rows are partly planned
+    When the declared analysis is requested
+    Then every row's case link keeps that same claim
+
+  @B-011 @boundary
+  Scenario: Planned row without a discovered case
+    Given an outline row marked planned that has no discovered test case
+    And an outline row marked active whose generator input is missing
+    When the declared analysis is requested
+    Then the planned row's link is planned and has no case
+    And the active row's link is the unresolved link for missing input

@@ -164,6 +164,48 @@ public sealed class TestEvidenceScenarioReaderUnitTests
         result.Artifact.Bindings.Should().ContainSingle();
     }
 
+    [Theory]
+    [ClassData(typeof(InvalidScenarioStateCases))]
+    public void ScenarioEvidence_WhenCaseLinkStateIsOmittedOrUnrecognized_ShouldBeInvalid(bool omitted, string? state)
+    {
+        // Given
+        var artifact = JsonNode.Parse(TestEvidenceJson.Valid)!;
+        var link = CaseLink(null, "case-17", "resolved");
+        if (omitted)
+        {
+            link.Remove("state");
+        }
+        else
+        {
+            link["state"] = state;
+        }
+
+        artifact["scenarios"] = new JsonArray(Scenario("scenario-1", 10, "F4", new JsonArray(), new JsonArray(link)));
+
+        // When
+        var result = new TestEvidenceArtifactReader().Read(artifact.ToJsonString());
+
+        // Then
+        result.IsValid.Should().BeFalse();
+    }
+
+    [Theory]
+    [ClassData(typeof(PlannedScenarioLinkCases))]
+    public void ScenarioEvidence_WhenPlannedLinkHasEitherResolution_ShouldBeValidAndKeepItsState(string status, string? rowId, string? caseId)
+    {
+        // Given
+        var artifact = JsonNode.Parse(TestEvidenceJson.Valid)!;
+        artifact["scenarios"] = new JsonArray(Scenario("scenario-1", 10, "F4", new JsonArray(),
+            new JsonArray(CaseLink(rowId, caseId, status, "planned"))));
+
+        // When
+        var result = new TestEvidenceArtifactReader().Read(artifact.ToJsonString());
+
+        // Then
+        result.IsValid.Should().BeTrue();
+        result.Artifact!.Scenarios.Single().GetProperty("cases")[0].GetProperty("state").GetString().Should().Be("planned");
+    }
+
     private static JsonObject Scenario(string? scenarioId, int line, string feature, JsonArray claims, JsonArray cases) => new()
     {
         ["path"] = "tests/scenarios.feature",
@@ -174,11 +216,12 @@ public sealed class TestEvidenceScenarioReaderUnitTests
         ["cases"] = cases,
     };
 
-    private static JsonObject CaseLink(string? rowId, string? caseId, string status) => new()
+    private static JsonObject CaseLink(string? rowId, string? caseId, string status, string state = "active") => new()
     {
         ["rowId"] = rowId,
         ["caseId"] = caseId,
         ["status"] = status,
+        ["state"] = state,
     };
 
     private static JsonObject Claim(string feature) => new()
