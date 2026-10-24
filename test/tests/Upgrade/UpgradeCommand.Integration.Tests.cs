@@ -136,6 +136,27 @@ public sealed class UpgradeCommandIntegrationTests
         fileSystem.File.ReadAllBytes(Path.Combine(root, ".specht/manifest.json")).Should().Equal(manifest);
     }
 
+    [Fact]
+    public void ATemplateThatCannotBeReplaced_WhenUpgraded_ShouldNameTheFileOnStandardErrorAndExitThree()
+    {
+        // Given
+        var root = Path.GetFullPath("repo");
+        var fileSystem = new MockFileSystem();
+        fileSystem.AddFile(Path.Combine(root, ".specht/manifest.json"), new MockFileData("{\"schemaVersion\":\"0.1.0\"}"));
+        fileSystem.AddFile(
+            Path.Combine(root, ".specht/templates/feature.md"),
+            new MockFileData("# A synthetic template with local edits\n") { Attributes = FileAttributes.ReadOnly });
+        var errors = new StringWriter();
+        var app = UpgradeServices.App(fileSystem, new TestConsole(), errors);
+
+        // When
+        var result = app.Run("upgrade", "--root", "repo");
+
+        // Then
+        result.ExitCode.Should().Be(3, result.Output);
+        errors.ToString().Should().Contain(".specht/templates/feature.md: could not be replaced.").And.NotContain(root);
+    }
+
     private static SemanticVersion Version(string text) =>
         SemanticVersion.TryParse(text, out var version) ? version : throw new FormatException(text);
 }

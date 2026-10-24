@@ -13,11 +13,16 @@ namespace Specht.Tests.Upgrade;
 /// <summary>Composes the engine graph and the upgrade slice's production registrations over an in-memory file system.</summary>
 internal static class UpgradeServices
 {
-    public static CommandAppTester App(IFileSystem fileSystem, TestConsole console)
+    public static CommandAppTester App(IFileSystem fileSystem, TestConsole console, TextWriter? errors = null)
     {
         var services = new ServiceCollection();
         services.AddSingleton(fileSystem);
         services.AddSingleton<IAnsiConsole>(console);
+        if (errors is not null)
+        {
+            services.AddSingleton<TextWriter>(errors);
+        }
+
         var app = new CommandAppTester(new TypeRegistrar(services.AddSpechtEngine().AddUpgrade()), console: console);
         app.Configure(static configuration => configuration.AddUpgrade());
         return app;
