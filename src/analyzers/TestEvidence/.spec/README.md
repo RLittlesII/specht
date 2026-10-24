@@ -138,7 +138,7 @@ Use UTF-8 JSON with `format: "specht.test-evidence"` and integer
 and `catalog`; `catalog` is permitted only at versions 2 and 3, and version 2 differs
 from version 1 by that member alone (0201-F7 ADR-0001, proposed). Version 3
 differs from version 2 only by three required members on every case record
-(below; [ADR-0001](adr/0001-vstest-logger-and-artifact-version-three.md), proposed).
+(below; [ADR-0001](adr/0001-vstest-logger-and-artifact-version-three.md), accepted).
 Objects are closed: unknown properties and enum values are invalid. An unknown
 format version is `unsupportedContract`. This contract version is independent of
 the package and manifest schema versions.
@@ -253,8 +253,14 @@ ownership or selection; the VSTest logger below is the version-3 producer.
 
 ### VSTest collection
 
-[ADR-0001](adr/0001-vstest-logger-and-artifact-version-three.md) (proposed)
-records the choices; OQ-3 fixes the mechanism.
+[ADR-0001](adr/0001-vstest-logger-and-artifact-version-three.md) (accepted)
+records the choices; OQ-3 fixes the mechanism and decision 0003 the name
+fallback. Three runtime behaviours below are read from the TestPlatform and
+adapter assemblies, not yet observed in a run: that a logger named through
+`VSTestLogger` receives `DiscoveredTests` under `--list-tests`, the exact
+`ManagedType` and `ManagedMethod` strings, and that `TestCase.Id` is equal
+across the discovery and run requests. A probe run confirms them before the
+logger is built.
 
 **Project.** `src/testevidence.vstest/testevidence.vstest.csproj`, beside
 `src/testevidence.mtp`: assembly `Specht.TestEvidence.VsTest.TestLogger`,
@@ -302,17 +308,29 @@ With no config or no export it writes nothing, as the MTP collector does.
 derives it from xUnit's test-case unique ID, which covers the assembly, class,
 method and serialized row arguments, so each pre-enumerated theory row has its
 own (B-010) and discovery and execution agree on it. `rowId` is null and
-`displayName` is `TestCase.DisplayName`. Method metadata comes only from the
+`displayName` is `TestCase.DisplayName`. Method metadata comes from the
 VSTest managed-name properties `TestCase.ManagedType` and
-`TestCase.ManagedMethod`, which `xunit.runner.visualstudio` 3.x sets and 2.x
-does not. `ManagedType` is the declaring type; `ManagedMethod` gives the name,
-the arity after a backtick and the parameter list, each parameter prefixed
-`global::` to match the compiler exporter's form. A nested type (`+`), a generic
-parameter (`!`) or a generic instantiation (`` ` ``, `<`) is not translated: the
-case keeps no method metadata and stays unresolved (B-004), as does a case from
-an adapter that sets neither property. `FullyQualifiedName`, `DisplayName`,
-`CodeFilePath` and `LineNumber` are never identity inputs; `CodeFilePath` is an
-absolute machine path and is never written. A method's location is the
+`TestCase.ManagedMethod` when the adapter sets them, as
+`xunit.runner.visualstudio` 3.x does. `ManagedType` is the declaring type;
+`ManagedMethod` gives the name, the arity after a backtick and the parameter
+list, each parameter prefixed `global::` to match the compiler exporter's form.
+A nested type (`+`), a generic parameter (`!`) or a generic instantiation
+(`` ` ``, `<`) is not translated: the case keeps no method metadata and stays
+unresolved (B-004).
+
+When a case carries neither managed-name property, as under
+`xunit.runner.visualstudio` 2.x, the logger falls back to `FullyQualifiedName`
+([decision 0003](decisions/0003-fully-qualified-name-fallback.md)). It splits
+the name at its last `.` into declaring type and method name and resolves the
+case to the compiler-exported method with that `declaringType` and `name` only
+when exactly one exported method has that pair; xUnit1024 forbids overloaded
+test methods, so a unique pair names one method. No exported method, or more
+than one, leaves the case unresolved (B-004); parameter types and arity are not
+consulted, and no partial or case-insensitive match is tried. A case with only
+one of the two managed-name properties is unresolved and does not fall back.
+`DisplayName`, `CodeFilePath` and `LineNumber` are never identity inputs, and
+`FullyQualifiedName` is one only in this fallback; `CodeFilePath` is an absolute
+machine path and is never written. A method's location is the
 compiler's: the syntax tree path relative to `SpechtRoot`, which for a file
 linked from outside the project directory is that file's own path (B-012).
 Reqnroll-generated tests are compiled methods like any other; their generated
@@ -461,8 +479,8 @@ project's keys distinct when several projects compile the same claim files
 
 The tool-owned reader in `src/tool/Features/Evidence/Contract/` reads version 3
 with the producer reader's rules; the parity tests cover the new members.
-0201-F5 § 7 states the run choice and the `incompleteRun` gap kind once these
-are built; whether the per-pair run choice belongs here or to item 0262 is OQ-5.
+Item 0260 builds both (OQ-5); 0201-F5 § 7 states the run choice and the
+`incompleteRun` gap kind.
 
 ### Scenarios, freshness and compatibility
 

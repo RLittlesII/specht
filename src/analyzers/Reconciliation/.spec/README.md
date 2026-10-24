@@ -129,8 +129,9 @@ specht evidence [--root <dir>] --evidence <path>...
 The root defaults consistently with the existing tool command. Evidence paths
 are explicit files or caller-named artifact directories; enumeration is bounded
 to those supplied paths, never a repository-wide evidence search. `--run` selects
-a result invocation. Without it, accept the sole matching run; multiple matching
-runs require an explicit choice, not a timestamp heuristic.
+a result invocation. Without it, accept each project/TFM pair's sole matching
+run; several runs for one pair require an explicit choice, not a timestamp
+heuristic (Reconciliation flow, below).
 
 Default stdout is one human summary with root-relative findings and separate
 input, binding, link, exemption and execution counts. `--json` emits only JSON.
@@ -185,8 +186,8 @@ and their outcomes are still evaluated. `passing` is an execution state, not a
 synonym for link completeness or approval.
 
 Reconciliation gap kinds include `missingRequiredLink`, `missingCompilation`,
-`deferredCases`, `missingResult`, `staleEvidence`, `ambiguousRun` and
-`invalidInput`. These structured facts are not additional SPEC rules. Supplied
+`deferredCases`, `missingResult`, `staleEvidence`, `ambiguousRun`,
+`incompleteRun` and `invalidInput`. These structured facts are not additional SPEC rules. Supplied
 analyzer diagnostics retain their stable SPCT IDs and effective presentation
 metadata in the build stream. The CLI gate evaluates the underlying required
 evidence independently of whether such diagnostics were suppressed.
@@ -269,8 +270,21 @@ generated compiler input or assembly whose current bytes cannot be established
 from a supplied current export is unavailable, never presumed current from an
 old artifact's self-reported hash. Preserve stale and mismatched artifacts in the
 report but exclude their links and outcomes from the current gate. Distinct run
-IDs stay distinct; `--run` selects one, and multiple matching runs without a
-selection produce `ambiguousRun`.
+IDs stay distinct. Without `--run`, a run is chosen for each declared
+project/TFM pair: a pair whose current artifacts hold one available run uses
+it, and a pair holding several reports `ambiguousRun` for that pair only, so
+several projects' runs combine without a selection (item 0260, 0201-F3 OQ-5).
+`--run <id>` selects that run wherever it appears; a pair without it has no
+selected run. A claim's case references carry the project and target framework
+beside the case ID, so keys from two projects never merge (0201-F3 B-021).
+
+For each current version-3 artifact (0201-F3 § 7) with available results and at
+least one case that is owned and not selected, report one `incompleteRun`
+finding at the evidence label, identified by its project and target framework,
+whose message counts the owned case keys the run did not select (0201-F3
+B-026). The finding does not change the exit code; gating on owned keys is item
+0262 (decision 0003). Version-1 and version-2 artifacts record no ownership and
+get no such finding.
 
 Join eligible resolved `verifies` bindings to current discovered methods by
 `symbolId`, then to cases by `methodSymbolId` and outcomes by the F3 case key
