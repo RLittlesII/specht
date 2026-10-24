@@ -1,0 +1,60 @@
+id: "0288"
+type: task
+title: The set command
+
+status: ready-for-architecture
+
+value: 2
+risk: 2
+
+parent: "0001"
+children: []
+
+depends_on: ["0287", "0281"]
+spikes: []
+
+spec: src/tool/Features/Rules/Set/.spec/README.md
+
+claims:
+  - B-002
+  - B-006
+  - B-007
+  - B-008
+  - B-009
+  - B-010
+  - B-011
+  - B-013
+
+created: "2026-10-24"
+updated: "2026-10-24"
+closed: null
+
+summary: |
+  As a maintainer I want one command that sets one rule to `error`, `warning` or `off`, refused when the rule or the level is wrong, so that the manifest changes where I meant.
+
+  The command is registered under the `rules` branch (A-1 reading (a)), which 0281 creates. If the owner picks another name for OQ-1, this dependency is revisited. The command parses, calls the engine of 0287 and folds the result into an exit code (C-7). The root and manifest are validated before the rule id and the level, so `2` or `3` wins over `4` (decision 0002; `0001-F7` B-111). Writes only the manifest (B-006).
+
+  Waits on 0287 for the edit and on 0281 for the branch.
+
+acceptance_criteria:
+  - "B-002 — success: exit `0`"
+  - "B-006 — no file other than the manifest touched"
+  - "B-007 — unknown rule id: `4`, after root and manifest"
+  - "B-008 — level not one of three: `4`, after root and manifest"
+  - "B-009 — missing root: `2`, nothing written"
+  - "B-010 — no manifest: `2`, no manifest created"
+  - "B-011 — rejected manifest: `3`, nothing written"
+  - "B-013 — no derived path absolute"
+  - "§ 9 carries a row naming a test for each id above."
+
+decisions:
+  - |
+    2026-10-24, spec-author's cut of the groomed Feature. Rejected: one item for the whole Feature.
+
+out_of_scope:
+  - "The edit itself — 0287."
+  - "What the command prints on success — § 11 OQ-4."
+  - "Case-folding a level — § 11 OQ-7."
+  - "Repairing a rejected manifest — § 11 OQ-3."
+  - "The command's name — § 11 OQ-1."
+  - "Setting any other key — `0001-F11` § 5 row 1."

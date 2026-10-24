@@ -131,3 +131,10 @@ Feature: The rules command
   Scenario: The same input gives the same output
     When the rules are listed twice
     Then both runs print the same standard output and exit with the same code
+
+  @B-019
+  Scenario: The text form is one tab-separated line per rule
+    Given the manifest sets the out-of-order-section rule to warning
+    When the rules are listed
+    Then the out-of-order-section rule is on one line holding its rule id, family, default severity and effective level in that order
+    And the default severity and the effective level are in lower case

@@ -1,0 +1,57 @@
+id: "0280"
+type: task
+title: Read the rule entries
+
+status: ready-for-architecture
+
+value: 3
+risk: 2
+
+parent: "0001"
+children: []
+
+depends_on: []
+spikes: []
+
+spec: src/tool/Features/Rules/.spec/README.md
+
+claims:
+  - B-001
+  - B-002
+  - B-003
+  - B-004
+  - B-005
+  - B-006
+  - B-007
+  - B-008
+
+created: "2026-10-24"
+updated: "2026-10-24"
+closed: null
+
+summary: |
+  As the `specht rules` command I want the engine to give me one entry per rule id of the pinned version, so that the command prints a listing and holds no catalogue of its own.
+
+  An entry is the id from the version's vocabulary, the family and default severity from the rule page, and the effective level from the manifest the check's loader produced: the manifest's level, else the level of the rule's own severity (`0001-F5` B-044). Entries come in ordinal rule-id order and include rules set to `off`. The listing is read when it is asked for; no second list of ids, families or severities is kept (C-2).
+
+  `0283` also reads the effective level, so the seam is shared.
+
+acceptance_criteria:
+  - "B-001 — one entry per rule id, no other"
+  - "B-002 — the rule page's family"
+  - "B-003 — the rule page's default severity"
+  - "B-004 — the manifest's level is the effective level"
+  - "B-005 — no manifest level: the rule's own severity"
+  - "B-006 — an `off` rule still has its entry"
+  - "B-007 — agrees with what `--explain` prints"
+  - "B-008 — ordinal rule-id order"
+  - "§ 9 carries a row naming a test for each id above."
+
+decisions:
+  - |
+    2026-10-24, spec-author's cut of the groomed Feature. Rejected: one item for the whole Feature.
+
+out_of_scope:
+  - "The command, its text and JSON forms and its exit codes — 0281, 0282."
+  - "A generated or hand-kept index, a second catalogue — C-2, `0001-F3` § 5 row 10."
+  - "Renumbering the rule ids — 0169; § 11 OQ-5."

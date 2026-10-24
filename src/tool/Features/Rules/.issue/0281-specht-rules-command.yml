@@ -1,0 +1,63 @@
+id: "0281"
+type: task
+title: The `specht rules` command
+
+status: ready-for-architecture
+
+value: 3
+risk: 2
+
+parent: "0001"
+children: []
+
+depends_on: ["0280"]
+spikes: []
+
+spec: src/tool/Features/Rules/.spec/README.md
+
+claims:
+  - B-011
+  - B-012
+  - B-013
+  - B-014
+  - B-015
+  - B-016
+  - B-017
+  - B-018
+  - B-019
+
+created: "2026-10-24"
+updated: "2026-10-24"
+closed: null
+
+summary: |
+  As a maintainer I want `specht rules` to print the listing as plain text, so that I choose a level for a rule before a violation introduces it.
+
+  The command parses, calls the engine of 0280 and folds the result into an exit code (C-4). It also registers `rules` as a branch whose default command is the listing, so that `0001-F11`'s set command (0288) can hang under it as `specht schema pin` hangs under `schema` (`src/tool/Features/Schema/SchemaRegistration.cs`); that is design, not a claim.
+
+  The text form is B-019, derived by spec-author on OQ-2's default. The no-manifest case is B-013 on OQ-1's default.
+
+  Waits on 0280: the command prints what the engine reads.
+
+acceptance_criteria:
+  - "B-011 — exit `0` whatever the levels"
+  - "B-012 — missing root: `2`, stdout empty"
+  - "B-013 — no manifest: `2`, stdout empty"
+  - "B-014 — rejected manifest: `3`, stdout empty"
+  - "B-015 — stdout carries only the listing"
+  - "B-016 — a run writes nothing"
+  - "B-017 — no derived path absolute"
+  - "B-018 — same input, same output"
+  - "B-019 — one tab-separated line per rule"
+  - "§ 9 carries a row naming a test for each id above."
+
+decisions:
+  - |
+    2026-10-24, spec-author's cut of the groomed Feature. Rejected: one item for the whole Feature.
+
+out_of_scope:
+  - "`--json` — 0282."
+  - "Setting a rule's level — `0001-F10` § 5 row 1; 0288."
+  - "A rule's cause, examples and fix — § 5 row 2."
+  - "Filtering by family, level or severity — § 5 row 6."
+  - "A title column — § 11 OQ-3."
