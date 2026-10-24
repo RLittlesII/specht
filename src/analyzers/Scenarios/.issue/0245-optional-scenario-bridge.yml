@@ -1,7 +1,7 @@
 id: "0245"
 type: feature
 title: "Implement the optional scenario evidence bridge"
-status: ready
+status: in-progress
 value: 4
 risk: 3
 parent: "0201"
@@ -11,7 +11,7 @@ spikes: []
 spec: src/analyzers/Scenarios/.spec/README.md
 claims: ["B-001", "B-002", "B-003", "B-004", "B-005", "B-006", "B-007", "B-008", "B-009"]
 created: "2026-10-17"
-updated: "2026-10-23"
+updated: "2026-10-24"
 closed: null
 summary: |
   Map existing consumer generator/runner scenario metadata into the common evidence
