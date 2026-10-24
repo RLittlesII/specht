@@ -300,9 +300,7 @@ public sealed partial class TestEvidenceVsTestIntegrationTests(TestEvidenceVsTes
             foreach (var (project, filter) in new[] { ("A", "Category!=visual"), ("B", "Category=visual") })
             {
                 var path = $"{project}/{project}.csproj";
-                await Run(log, _consumer, "restore", path, "--source", _feed, "--source",
-                    Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".nuget", "packages"),
-                    "--packages", Path.Combine(_consumer, "packages"));
+                await Run(log, _consumer, "restore", path, "--packages", Path.Combine(_consumer, "packages"));
                 await Run(log, _consumer, "build", path, "--no-restore");
                 await Run(log, _consumer, "test", path, "--no-build", "--list-tests", "--diag", $".diag/{project}-list.log");
                 artifacts[project + "-list"] = Artifact(log, project + "-list", project);
@@ -336,6 +334,21 @@ public sealed partial class TestEvidenceVsTestIntegrationTests(TestEvidenceVsTes
                   "sdk": {{sdk.RootElement.GetProperty("sdk").GetRawText()}},
                   "test": { "runner": "VSTest" }
                 }
+                """);
+            await Write("nuget.config", $"""
+                <?xml version="1.0" encoding="utf-8"?>
+                <configuration>
+                  <packageSources>
+                    <clear />
+                    <add key="nuget.org" value="https://api.nuget.org/v3/index.json" />
+                    <add key="fixture" value="{_feed}" />
+                  </packageSources>
+                  <packageSourceMapping>
+                    <clear />
+                    <packageSource key="nuget.org"><package pattern="*" /></packageSource>
+                    <packageSource key="fixture"><package pattern="Specht.CodeAnalysis" /></packageSource>
+                  </packageSourceMapping>
+                </configuration>
                 """);
             await Write("Directory.Build.props", $"""
                 <Project>
