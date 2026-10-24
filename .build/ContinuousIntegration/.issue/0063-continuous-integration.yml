@@ -8,7 +8,7 @@ value: 5
 risk: 3
 
 parent: "0055"
-children: ["0064", "0066", "0067", "0102", "0114", "0118", "0140"]
+children: ["0064", "0066", "0067", "0102", "0114", "0118", "0140", "0264"]
 
 depends_on: []
 spikes: []
@@ -33,7 +33,7 @@ claims:
   - B-016
 
 created: "2026-10-08"
-updated: "2026-10-13"
+updated: "2026-10-23"
 closed: null
 
 summary: |

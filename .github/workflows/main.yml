@@ -42,13 +42,13 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, windows-latest]
+        os: [[self-hosted, macOS, ARM64], windows-latest]
     runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          clean: 'false'
+          clean: 'true'
           fetch-depth: '0'
           ref: '${{ github.event.pull_request.head.sha }}'
       - name: Fetch all history for all tags and branches
@@ -125,7 +125,7 @@ jobs:
           ./build.cmd --target AcceptanceTest --skip IntegrationTest
       - name: Upload coverage to Codecov
         id: codecov
-        if: ${{ (!cancelled() && runner.os == 'Linux') && steps.changes.outputs.build == 'true' }}
+        if: ${{ (!cancelled() && runner.os == 'macOS') && steps.changes.outputs.build == 'true' }}
         continue-on-error: true
         uses: codecov/codecov-action@v5
         with:

@@ -20,7 +20,7 @@ depends_on: ["F1", "F2"]
 blocks: ["F8"]
 spikes: []
 created: "2026-10-08"
-updated: "2026-10-13"
+updated: "2026-10-23"
 github_issue: null
 synced_at: null
 ---
@@ -190,7 +190,9 @@ Delivered so far by items 0073 and 0074. Action updates and the post-upgrade reg
 
 ## 10. Lessons / Spec Deltas
 
-<!-- last written by: spec-author, 2026-10-09 -->
+<!-- last written by: spec-author, 2026-10-09, 2026-10-23 (`0055-F2` decision 0005) -->
+
+- 2026-10-23, the owner moved CI's Linux jobs to the owner's self-hosted macOS ARM64 pool ([`0055-F2` decision 0005](../../.build/ContinuousIntegration/.spec/decisions/0005-the-unix-leg-runs-on-the-owners-macos-pool.md)). That decision does not apply to the Renovate workflow: it stays on GitHub-hosted `ubuntu-latest`, as decision 0001 and A-2 state, which the owner did not overturn (`0055-F2` C-12, § 5 #29). No claim, constraint or scenario of this Feature changes.
 
 - 2026-10-08, C-1, § 1 and § 5 row 3 amended, following `0001-F1` decision 0004 (the owner): no baseline tag is placed, so the exclusion holds until `0001-F1` B-004's golden baseline test is on `main`, not until a tag exists. The B-008 scenario's precondition follows.
 - 2026-10-09, `0055-F2` B-009 withdrawn by the owner (`0055-F2` decision 0001). B-013 and B-014 now rest on `0055-F2` C-1, the committed workflows staying the build's generation, rather than on a run-time check passing; their behaviour is unchanged. Their scenarios' last step follows.

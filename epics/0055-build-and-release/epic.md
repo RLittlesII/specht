@@ -1,6 +1,6 @@
 ---
 title: "Epic 0055: Build, versioning, release and consumption"
-description: "The infrastructure that lets this repository ship from its first push: the NUKE build, the pre-commit hook, CI on Linux and Windows, the coverage gate, dependency updates, versioning, the release to GitHub Packages, consumer install and the repository settings"
+description: "The infrastructure that lets this repository ship from its first push: the NUKE build, the pre-commit hook, CI on the owner's macOS runner pool and Windows, the coverage gate, dependency updates, versioning, the release to GitHub Packages, consumer install and the repository settings"
 id: "0055"
 type: epic
 status: ready-for-architecture
@@ -18,7 +18,7 @@ children:
     "0055-F8",
   ]
 created: "2026-10-08"
-updated: "2026-10-11"
+updated: "2026-10-23"
 github_issue: null
 ---
 
@@ -28,7 +28,7 @@ github_issue: null
 
 The infrastructure that turns this repository into one that ships: the NUKE
 build and its entry scripts, the local tool manifest and the pre-commit hook,
-continuous integration on Linux and Windows, the coverage gate,
+continuous integration on the owner's macOS runner pool and Windows, the coverage gate,
 dependency updates, the package version, the release that publishes
 `specht.tool` to GitHub Packages, what a consumer needs to install it, and the
 GitHub repository settings that make the checks binding.
@@ -50,7 +50,7 @@ anything checks it: no workflow runs, no coverage is measured, no check is
 required before a merge, and the first release is improvised on the day it
 matters most, because a published package stays and the schema version it
 embeds is never changed in place (`0001-F7` C-1). With it delivered, a pull request is built, tested, formatted,
-spec-checked and coverage-gated on Linux, a push to `main` runs the build on
+spec-checked and coverage-gated on macOS, a push to `main` runs the build on
 every operating system the tool runs on, dependencies arrive as reviewed pull
 requests, and a release is one deliberate tag.
 
@@ -62,7 +62,7 @@ invariant, and the cut is made where the invariant changes.
 | Feature   | Name                          | Specification                                  | Invariant                                                                      |
 | --------- | ----------------------------- | ---------------------------------------------- | ------------------------------------------------------------------------------ |
 | `0055-F1` | The build                     | `.build/.spec/README.md`                       | Every gate is a build target; the hook and CI call targets, never `dotnet`     |
-| `0055-F2` | Continuous integration        | `.build/ContinuousIntegration/.spec/README.md` | A pull request runs the build on Linux; a push to `main`, on Linux and Windows |
+| `0055-F2` | Continuous integration        | `.build/ContinuousIntegration/.spec/README.md` | A pull request runs the build on macOS; a push to `main`, on macOS and Windows |
 | `0055-F3` | The coverage gate             | `test/.spec/README.md`                         | New code under the patch target fails the pull request; the total never does   |
 | `0055-F4` | Dependency updates            | `.github/.spec/README.md`                      | An update is a pull request; only a green minor or patch merges itself         |
 | `0055-F5` | Package versioning            | `.build/Versioning/.spec/README.md`            | The package version is a function of the commit, never of a hand edit          |
