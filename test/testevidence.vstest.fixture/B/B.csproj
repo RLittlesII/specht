@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net$(BundledNETCoreAppTargetFrameworkVersion)</TargetFramework>
+    <IsPackable>false</IsPackable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+    <ReqnrollUseIntermediateOutputPathForCodeBehind>true</ReqnrollUseIntermediateOutputPathForCodeBehind>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="xunit" />
+    <PackageReference Include="xunit.runner.visualstudio" />
+    <PackageReference Include="Reqnroll.xUnit" />
+    <PackageReference Include="Specht.CodeAnalysis" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="../shared/SharedCases.cs" Link="Shared/SharedCases.cs" />
+    <Compile Include="../shared/SharedClaimSteps.cs" Link="Shared/SharedClaimSteps.cs" />
+    <ReqnrollFeatureFile Include="../shared/SharedClaims.feature" Link="Shared/SharedClaims.feature" />
+  </ItemGroup>
+</Project>
