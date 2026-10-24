@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFrameworks>net10.0;net11.0</TargetFrameworks>
+    <RootNamespace>Specht.TestEvidence.VsTest</RootNamespace>
+    <AssemblyName>Specht.TestEvidence.VsTest.TestLogger</AssemblyName>
+    <IsPackable>false</IsPackable>
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.TestPlatform.ObjectModel" ExcludeAssets="runtime" PrivateAssets="all" />
+    <PackageReference Include="TestableIO.System.IO.Abstractions.Wrappers" />
+    <ProjectReference Include="../analyzers/analyzers.csproj" />
+  </ItemGroup>
+</Project>

@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <RootNamespace>Specht.TestEvidence.VsTest.Tests</RootNamespace>
+    <AssemblyName>specht.testevidence.vstest.tests</AssemblyName>
+    <IsTestProject>true</IsTestProject>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="xunit.v3" />
+    <PackageReference Include="AwesomeAssertions" />
+    <PackageReference Include="TestableIO.System.IO.Abstractions.TestingHelpers" />
+    <PackageReference Include="Microsoft.TestPlatform.ObjectModel" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" />
+    <ProjectReference Include="../../src/analyzers/analyzers.csproj" />
+    <ProjectReference Include="../../src/testevidence.vstest/testevidence.vstest.csproj" />
+    <Using Include="Xunit" />
+  </ItemGroup>
+</Project>

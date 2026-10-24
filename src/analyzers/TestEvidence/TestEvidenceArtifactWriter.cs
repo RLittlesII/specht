@@ -11,7 +11,7 @@ public sealed class TestEvidenceArtifactWriter
         var value = new JsonObject
         {
             ["format"] = "specht.test-evidence",
-            ["formatVersion"] = 1,
+            ["formatVersion"] = artifact.Discovery.Cases.Any(StatesCaseFacts) ? 3 : 1,
             ["project"] = new JsonObject { ["path"] = artifact.ProjectPath, ["targetFramework"] = artifact.TargetFramework },
             ["configuration"] = new JsonObject
             {
@@ -66,14 +66,29 @@ public sealed class TestEvidenceArtifactWriter
             ["parameterTypes"] = new JsonArray(method.ParameterTypes.Select(static parameter => (JsonNode?)JsonValue.Create(parameter)).ToArray()),
             ["location"] = Location(method.Location),
         }).ToArray()),
-        ["cases"] = new JsonArray(discovery.Cases.Select(static item => (JsonNode?)new JsonObject
+        ["cases"] = new JsonArray(discovery.Cases.Select(static item => (JsonNode?)Case(item)).ToArray()),
+    };
+
+    private static JsonObject Case(TestEvidenceCase item)
+    {
+        var value = new JsonObject
         {
             ["caseId"] = item.CaseId,
             ["methodSymbolId"] = item.MethodSymbolId,
             ["rowId"] = item.RowId,
             ["displayName"] = item.DisplayName,
-        }).ToArray()),
-    };
+        };
+        if (StatesCaseFacts(item))
+        {
+            value["categories"] = new JsonArray(item.Categories!.Select(static category => (JsonNode?)JsonValue.Create(category)).ToArray());
+            value["owned"] = item.Owned;
+            value["selected"] = item.Selected;
+        }
+
+        return value;
+    }
+
+    private static bool StatesCaseFacts(TestEvidenceCase item) => item.Categories is not null || item.Owned is not null || item.Selected is not null;
 
     private static JsonObject Binding(TestEvidenceBinding binding)
     {

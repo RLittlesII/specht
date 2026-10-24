@@ -1,0 +1,31 @@
+id: "0265"
+type: task
+title: "Carry the 0260 review's medium and low findings through tests, docs and records"
+status: ready
+value: 3
+risk: 2
+parent: "0201"
+children: []
+depends_on: ["0260"]
+spikes: []
+spec: src/analyzers/TestEvidence/.spec/README.md
+claims: []
+created: "2026-10-23"
+updated: "2026-10-24"
+closed: null
+summary: |
+  Follow-through on 0260, which this item waits on: the 0260 specification review left
+  medium and low findings that the owner deferred so 0260 could close on its two high
+  findings. Two remain: settle the report's case multiplicity across projects, and bring
+  the user documentation in line with test-evidence format version 3 and VSTest
+  collection. No new behaviour.
+acceptance_criteria:
+  - "M4 - report claims[].cases with one case id shared by two projects: 0201-F5 section 7 and 0201-F3 section 7 record it as a multiplicity projection with identity on the cases rows, or the report version is bumped for {project, targetFramework, caseId} objects (spec-author, implementer)."
+  - "M5 - docs/cli.md describes version-three exports, incompleteRun and the per-project and per-target-framework run choice in place of version-one exports and the sole matching run (implementer)."
+  - "M5 - src/codeanalysis/README.md carries a VSTest note, including that passing --logger or --settings replaces the registered specht logger unless --logger specht is added (implementer)."
+decisions:
+  - '2026-10-23: cut from the 0260 specification review, 2026-10-23, findings M3, M4, M5, L7, L8 and L9 - owner, 2026-10-23: "Finish only the two High findings, then mark 0260 done and open the PR. Cut a follow-up item for the Medium and Low review findings."'
+out_of_scope:
+  - "The two high findings of the 0260 review: delivered in 0260."
+  - "Gating on owned keys in the report: 0262."
+  - "Everything in section 5 of the cited specification."

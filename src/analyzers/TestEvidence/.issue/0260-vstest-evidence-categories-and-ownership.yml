@@ -1,7 +1,7 @@
 id: "0260"
 type: feature
 title: "Collect VSTest evidence with case categories, selection and ownership"
-status: ready
+status: done
 value: 5
 risk: 5
 parent: "0201"
@@ -25,7 +25,7 @@ claims:
   ]
 created: "2026-10-23"
 updated: "2026-10-23"
-closed: null
+closed: "2026-10-23"
 summary: |
   As a consumer running xUnit v2 tests under VSTest I want the evidence artifact to carry
   each case's own identity, outcome, categories and a selected flag so that ownership of a
@@ -39,8 +39,10 @@ acceptance_criteria:
   - "B-010, B-011, B-015, B-016 - per-case identity and outcome for theories and generated tests"
   - "B-012 to B-014 - method location outside the project, nonpassing outcomes, undiscovered cases"
   - "B-020, B-021, B-025, B-026 - categories, selected flag, ownership by tag expression, several projects' runs combined, incomplete-run diagnosis"
+  - "0201-F6 B-026 - each selected project's required-case scope read as a tag expression over case categories, all cases when none is declared, SPCT0001 on a malformed expression; 0201-F6 section 9 carries a row naming its test"
   - "section 9 carries a row naming a test for each id above."
-decisions: []
+decisions:
+  - "2026-10-23: 0201-F6 B-026, reading and evaluating each selected project's required-case scope, moves here from 0259 - owner, 2026-10-23: \"Move CaseScope to 0260\". B-025 and B-026 need the scope, and this item does not wait on 0259."
 out_of_scope:
   - "The scope grammar and manifest keys: 0258."
   - "The clean-checkout bootstrap, stale diagnosis and Release behaviour: 0261."

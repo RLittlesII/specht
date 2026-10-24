@@ -4,6 +4,43 @@ internal sealed class InvalidTestEvidenceDocuments : TheoryData<string, string>
 {
     public InvalidTestEvidenceDocuments()
     {
+        foreach (var member in new[] { "categories", "owned", "selected" })
+        {
+            var missingMember = System.Text.Json.Nodes.JsonNode.Parse(TestEvidenceJson.VersionThree)!;
+            missingMember["discovery"]!["cases"]![0]!.AsObject().Remove(member);
+            Add(missingMember.ToJsonString(), "invalidContract");
+        }
+
+        var unorderedCategories = System.Text.Json.Nodes.JsonNode.Parse(TestEvidenceJson.VersionThree)!;
+        unorderedCategories["discovery"]!["cases"]![0]!["categories"] = new System.Text.Json.Nodes.JsonArray("visual", "Smoke");
+        Add(unorderedCategories.ToJsonString(), "invalidContract");
+
+        var repeatedCategory = System.Text.Json.Nodes.JsonNode.Parse(TestEvidenceJson.VersionThree)!;
+        repeatedCategory["discovery"]!["cases"]![0]!["categories"] = new System.Text.Json.Nodes.JsonArray("visual", "visual");
+        Add(repeatedCategory.ToJsonString(), "invalidContract");
+
+        var emptyCategory = System.Text.Json.Nodes.JsonNode.Parse(TestEvidenceJson.VersionThree)!;
+        emptyCategory["discovery"]!["cases"]![0]!["categories"] = new System.Text.Json.Nodes.JsonArray("");
+        Add(emptyCategory.ToJsonString(), "invalidContract");
+
+        var resultForUnselectedCase = System.Text.Json.Nodes.JsonNode.Parse(TestEvidenceJson.VersionThree)!;
+        resultForUnselectedCase["results"]!["cases"]!.AsArray().Add(System.Text.Json.Nodes.JsonNode.Parse("""
+            { "caseId": "case-18", "outcome": "passed", "detail": null }
+            """));
+        Add(resultForUnselectedCase.ToJsonString(), "invalidContract");
+
+        var selectedCaseWithoutResults = System.Text.Json.Nodes.JsonNode.Parse(TestEvidenceJson.VersionThree)!;
+        selectedCaseWithoutResults["results"] = new System.Text.Json.Nodes.JsonObject { ["state"] = "absent" };
+        Add(selectedCaseWithoutResults.ToJsonString(), "invalidContract");
+
+        var versionOneWithOwnership = System.Text.Json.Nodes.JsonNode.Parse(TestEvidenceJson.Valid)!;
+        versionOneWithOwnership["discovery"]!["cases"]![0]!["owned"] = true;
+        Add(versionOneWithOwnership.ToJsonString(), "invalidContract");
+
+        var laterVersion = System.Text.Json.Nodes.JsonNode.Parse(TestEvidenceJson.VersionThree)!;
+        laterVersion["formatVersion"] = 4;
+        Add(laterVersion.ToJsonString(), "unsupportedContract");
+
         var unsupportedVersion = System.Text.Json.Nodes.JsonNode.Parse(TestEvidenceJson.Valid)!;
         unsupportedVersion["formatVersion"] = 2;
         Add(unsupportedVersion.ToJsonString(), "unsupportedContract");
