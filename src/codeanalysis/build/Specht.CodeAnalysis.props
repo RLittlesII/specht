@@ -4,7 +4,7 @@
     <SpechtRoot Condition="'$(SpechtRoot)' != ''">$([System.IO.Path]::GetFullPath('$(SpechtRoot)'))</SpechtRoot>
     <SpechtProjectPath Condition="'$(SpechtRoot)' != '' and '$(SpechtProjectPath)' == ''">$([System.IO.Path]::GetRelativePath('$(SpechtRoot)', '$(MSBuildProjectFullPath)'))</SpechtProjectPath>
     <SpechtFeatureInputs Condition="'$(SpechtFeatureInputs)' == ''">$(SpechtRoot)/**/.spec/README.md;$(SpechtRoot)/epics/**/spec.md</SpechtFeatureInputs>
-    <SpechtScenarioInputs Condition="'$(SpechtScenarioInputs)' == ''">$(SpechtRoot)/**/.spec/*.feature;$(SpechtRoot)/epics/**/*.feature</SpechtScenarioInputs>
+    <SpechtScenarioInputs Condition="'$(SpechtScenarioInputs)' == ''">$(SpechtRoot)/**/.spec/*.feature;$(SpechtRoot)/epics/**/*.feature;$(SpechtRoot)/.spec/features/**/*.feature</SpechtScenarioInputs>
     <SpechtAdrInputs Condition="'$(SpechtAdrInputs)' == ''">$(SpechtRoot)/**/.spec/adr/**/*.md;$(SpechtRoot)/epics/**/adr/**/*.md</SpechtAdrInputs>
     <SpechtInputExclude>$(SpechtRoot)/.artifacts/**;$(SpechtRoot)/.claude/**;$(SpechtRoot)/.codex/**;$(SpechtRoot)/.git/**;$(SpechtRoot)/**/bin/**;$(SpechtRoot)/**/obj/**;$(SpechtRoot)/**/node_modules/**</SpechtInputExclude>
   </PropertyGroup>
