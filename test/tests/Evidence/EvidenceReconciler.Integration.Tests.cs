@@ -366,6 +366,66 @@ public sealed class EvidenceReconcilerIntegrationTests : IDisposable
         MissingResults(result.Report).Should().BeEmpty();
     }
 
+    [Fact]
+    public void ARequiredClaimsBoundMethodWithAnOwnedCaseTheRunDidNotSelect_WhenReconciled_ShouldReportBothTheIncompleteRunAndTheMissingResultAndExitOne()
+    {
+        // Given
+        _root.Write("a.json", "a", 3, "run-a",
+            new JsonArray(OwnedCase("case-1", false), OwnedCase("case-2", true)),
+            new JsonArray(Outcome("case-2")));
+        _root.Write("b.json", "b", 1, "run-b", new JsonArray(Case("case-1", "M:Shared.Checks")), new JsonArray(Outcome("case-1")));
+
+        // When
+        var result = _root.Reconcile("a.json", "b.json");
+
+        // Then
+        result.ExitCode.Should().Be(1);
+        Kinds(result.Report).Should().Contain("incompleteRun").And.Contain("missingResult");
+        MissingResults(result.Report).Should().ContainSingle().Which.Should().Contain("case-1");
+    }
+
+    [Fact]
+    public void APlannedOwnedCaseTheRunDidNotSelect_WhenReconciled_ShouldNotBeCountedInTheIncompleteRunMessage()
+    {
+        // Given
+        _root.Write("a.json", "a", 3, "run-a",
+            new JsonArray(
+                OwnedCase("active-row", true),
+                OwnedCase("planned-row", false),
+                Case("case-3", "M:Shared.Other", owned: true, selected: false)),
+            new JsonArray(Outcome("active-row")),
+            new JsonArray(Scenario("outline-1", ("active-row", "active"), ("planned-row", "planned"))));
+        _root.Write("b.json", "b", 1, "run-b", new JsonArray(Case("case-1", "M:Shared.Checks")), new JsonArray(Outcome("case-1")));
+
+        // When
+        var result = _root.Reconcile("a.json", "b.json");
+
+        // Then
+        result.Report["findings"]!.AsArray().Single(static item => item!["kind"]!.GetValue<string>() == "incompleteRun")!["message"]!
+            .GetValue<string>().Should().Contain("select 1 owned");
+    }
+
+    [Fact]
+    public void AResolvedScenarioLinkWithNoCaseId_WhenReconciled_ShouldRejectTheArtifactAsInvalidInputAndGateNothing()
+    {
+        // Given
+        _root.Write("a.json", "a", 3, "run-a",
+            new JsonArray(OwnedCase("case-1", true)),
+            new JsonArray(Outcome("case-1")),
+            new JsonArray(Scenario("outline-1", ("case-1", "active")), ScenarioRecord("outline-2",
+                [new JsonObject { ["rowId"] = null, ["caseId"] = null, ["status"] = "resolved", ["state"] = "active" }])));
+        _root.Write("b.json", "b", 1, "run-b", new JsonArray(Case("case-1", "M:Shared.Checks")), new JsonArray(Outcome("case-1")));
+
+        // When
+        var result = _root.Reconcile("a.json", "b.json");
+
+        // Then
+        result.ExitCode.Should().Be(2);
+        Kinds(result.Report).Should().Contain("invalidInput");
+        MissingResults(result.Report).Should().BeEmpty();
+        result.Report["cases"]!.AsArray().Should().NotContain(static row => row!["project"]!.GetValue<string>() == "test/a/a.csproj");
+    }
+
     public void Dispose() => _root.Dispose();
 
     private static string[] Kinds(JsonObject report) =>

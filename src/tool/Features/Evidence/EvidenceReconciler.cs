@@ -237,6 +237,19 @@ public sealed class EvidenceReconciler
                     : runs.Length == 1 ? runs[0] : null;
             }
 
+            var plannedByArtifact = new Dictionary<TestEvidenceArtifact, HashSet<string>>(ReferenceEqualityComparer.Instance);
+
+            bool IsPlanned(TestEvidenceArtifact artifact, string caseId)
+            {
+                if (!plannedByArtifact.TryGetValue(artifact, out var planned))
+                {
+                    planned = PlannedCaseIds(artifact);
+                    plannedByArtifact[artifact] = planned;
+                }
+
+                return planned.Contains(caseId);
+            }
+
             string? SelectedRun(TestEvidenceArtifact artifact) =>
                 selectedRuns.GetValueOrDefault((artifact.ProjectPath, artifact.TargetFramework));
 
@@ -245,7 +258,8 @@ public sealed class EvidenceReconciler
                 var artifact = entry.Artifact;
                 var selectedRun = SelectedRun(artifact);
                 var discoveryCurrent = entry.Current && artifact.Discovery.State == TestEvidenceDiscoveryState.Complete;
-                var unselectedOwned = artifact.Discovery.Cases.Count(static testCase => testCase.Owned == true && testCase.Selected == false);
+                var unselectedOwned = artifact.Discovery.Cases.Count(testCase => testCase.Owned == true && testCase.Selected == false
+                    && !IsPlanned(artifact, testCase.CaseId));
                 if (entry.Current && artifact.Results.State == "available" && unselectedOwned > 0)
                 {
                     findings.Add(new EvidenceFinding("incompleteRun", entry.Label, 0, artifact.ProjectPath + " " + artifact.TargetFramework,
@@ -584,10 +598,17 @@ public sealed class EvidenceReconciler
     }
 
     /// <implements epic="0201" feature="F5" claim="B-018" />
-    private static bool IsPlanned(TestEvidenceArtifact artifact, string caseId) => EvidenceGate.Planned(artifact.Scenarios
-        .SelectMany(static scenario => scenario.GetProperty("cases").EnumerateArray())
-        .Where(link => link.GetProperty("status").GetString() == "resolved" && link.GetProperty("caseId").GetString() == caseId)
-        .Select(static link => link.GetProperty("state").GetString() ?? string.Empty).ToArray());
+    private static HashSet<string> PlannedCaseIds(TestEvidenceArtifact artifact) => artifact.Scenarios
+        .SelectMany(static scenario => scenario.TryGetProperty("cases", out var cases) && cases.ValueKind == JsonValueKind.Array
+            ? cases.EnumerateArray() : Enumerable.Empty<JsonElement>())
+        .Where(static link => link.TryGetProperty("status", out var status) && status.GetString() == "resolved"
+            && link.TryGetProperty("caseId", out var id) && id.ValueKind == JsonValueKind.String)
+        .GroupBy(static link => link.GetProperty("caseId").GetString()!, StringComparer.Ordinal)
+        .Where(static group => EvidenceGate.Planned(group
+            .Select(static link => link.TryGetProperty("state", out var state) ? state.GetString() ?? string.Empty : string.Empty)
+            .ToArray()))
+        .Select(static group => group.Key)
+        .ToHashSet(StringComparer.Ordinal);
 
     /// <implements epic="0201" feature="F5" claim="B-001" />
     private static JsonArray Array(IEnumerable<JsonObject> entries) => new(entries.Select(static entry => (JsonNode?)entry).ToArray());

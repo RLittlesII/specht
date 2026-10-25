@@ -60,8 +60,17 @@ narrowed run fail closed; `incompleteRun` alone never changed the exit code.
 ## Affects
 
 B-017 to B-022; § 7 sentences on `selected: false`, `incompleteRun` and
-"the gate on it is item 0262's" (implementer restates); TestEvidence § 7 is
-unchanged.
+"the gate on it is item 0262's" (implementer restates).
+
+TestEvidence § 7 is not unchanged. Its B-026 paragraph (line 493 at this
+writing) says: "In this item it is reported and does not change the exit code;
+gating on owned keys is item 0262 (0201-F5 decision 0003)." That sentence is
+superseded for the gate: an owned unselected case bound to a required claim is a
+`missingResult` and exits 1, while `incompleteRun` itself stays an informational
+finding. This pull request cannot edit that README, which another session owns,
+so the TestEvidence owner must reword the sentence; Reconciliation § 10 records
+the hand-off and OQ-4 tracks it. The TestEvidence acceptance step
+`ThenIncompleteRun` now expects exit 1 for this reason.
 
 ## Reversal
 
