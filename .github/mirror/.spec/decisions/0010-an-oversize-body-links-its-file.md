@@ -7,7 +7,7 @@ type: decision
 # Decision 0010: a body over GitHub's limit links its file instead of copying it
 
 **Date:** 2026-10-25
-**Decided by:** adopted for item `0294` on 2026-10-25 as the default for the limit `implementer` reported in § 7; recorded by spec-author. Not yet confirmed by the repository owner.
+**Decided by:** adopted for item `0294` on 2026-10-25 as the default for the limit `implementer` reported in § 7; recorded by spec-author. Confirmed by the repository owner on 2026-10-25.
 
 ## The call
 

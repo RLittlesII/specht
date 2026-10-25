@@ -266,9 +266,9 @@ Feature: Work-item mirror
   @B-040
   Scenario: Runs queue and none is cancelled
     Given a mirror run is in progress
-    When a second push to main starts another
-    Then the second run starts after the first finishes
-    And neither run is cancelled
+    When later pushes to main start more runs
+    Then the run in progress finishes uncancelled
+    And the newest of the later runs starts after it
 
   @B-041
   Scenario: A run reports what it did

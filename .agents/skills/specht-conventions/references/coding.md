@@ -142,6 +142,11 @@ path anywhere is a defect (brief § 9), and the review looks for it.
   `nuke --generate-configuration GitHubActions_ci --host GitHubActions`) and commit
   the regeneration. **Diff the step order** after any target change: the generator
   orders CI steps by dependency-graph depth, not by declaration order.
+- **A generated workflow invokes a NUKE target** through `InvokedTargets`;
+  `Enhancements` middleware only adds what the attribute cannot express
+  (inputs, concurrency, permissions, step environment) and never replaces the
+  job's steps. `renovate` is the exception: it runs a third-party action
+  ([lesson 0013](../../../../.spec/lessons/0013-a-generated-workflow-invokes-a-target.md)).
 - **A workflow with one image has no matrix.** The generator emits `matrix` only
   for more than one image, so `${{ matrix.os }}` is the empty string in a
   single-image workflow and a condition on it is false without failing anything.

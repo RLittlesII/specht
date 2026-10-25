@@ -2,7 +2,7 @@ id: "0295"
 type: task
 title: Generate the mirror workflow from the build
 
-status: ready-for-architecture
+status: done
 
 risk: 2
 
@@ -22,8 +22,8 @@ claims:
   - B-040
 
 created: "2026-10-24"
-updated: "2026-10-24"
-closed: null
+updated: "2026-10-25"
+closed: "2026-10-25"
 
 summary: |
   `.build/SpechtBuild.Mirror.cs`, following `.build/SpechtBuild.Renovate.cs`,
