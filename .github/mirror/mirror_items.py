@@ -18,6 +18,7 @@ DONE_LINE = re.compile(r'\+status:[ \t]*"?done"?[ \t]*(#.*)?')
 OWNED_LABELS = {"mirrored", "goal", "stale"}
 OWNED_PREFIXES = ("type:", "status:")
 SUB_ISSUE_CAP = 100
+BODY_LIMIT = 65536
 COUNTS = ("created", "edited", "closed", "reopened", "linked", "commented", "stale", "skipped")
 FOOTER = (
     "This issue is a read-only mirror of the file above, written from `main` on every push that changes it. "
@@ -170,23 +171,34 @@ def fence(text):
     return "`" * max(3, max(map(len, runs), default=0) + 1)
 
 
-def render(entry, others):
+def render(entry, others, blob=None, sections=None):
     lines = [f"<!-- specht-item: {entry.marker} -->", "", f"Mirrored from `{entry.path}` on `main`."]
     if entry.delivered:
         lines.append(f"Delivered by {entry.delivered}.")
     lines += [f"Id {entry.id} is also claimed by `{other}`." for other in others]
-    for heading, content in entry.sections:
+    for heading, content in entry.sections[:sections]:
         if not content:
             continue
         lines += ["", f"## {heading}", ""]
         lines += [f"- {line}" for line in content] if isinstance(content, list) else [content]
-    language = "yaml" if entry.kind == "item" else "markdown"
-    marks = fence(entry.text)
-    lines += ["", "## Source", "", f"{marks}{language}", entry.text.rstrip("\n"), marks, "", "---", "", FOOTER]
+    if blob:
+        source = [f"[`{entry.path}` at `{blob.rsplit('/', 1)[1][:12]}`]({blob}/{entry.path})"]
+    else:
+        marks = fence(entry.text)
+        source = [f"{marks}{'yaml' if entry.kind == 'item' else 'markdown'}", entry.text.rstrip("\n"), marks]
+    lines += ["", "## Source", "", *source, "", "---", "", FOOTER]
     return "\n".join(lines)
 
 
-def read_tree(root, commits):
+def fitted(entry, others, blob):
+    for arguments in ((), (blob,), (blob, 1)):
+        body = render(entry, others, *arguments)
+        if len(body) <= BODY_LIMIT:
+            return body
+    return body
+
+
+def read_tree(root, commits, blob):
     entries = read_epics(root) + read_work_items(root)
     claims = Counter(entry.id for entry in entries)
     for entry in entries:
@@ -195,7 +207,7 @@ def read_tree(root, commits):
             entry.delivered = delivered_by(entry.path, entry.id, commits)
     for entry in entries:
         others = [other.path for other in entries if other.id == entry.id and other is not entry]
-        entry.body = render(entry, others)
+        entry.body = fitted(entry, others, blob)
     return entries
 
 
@@ -210,7 +222,8 @@ def owned(label):
 def mirror(root, gh, history, *, pushed=(), backfill=False):
     root = Path(root)
     commits = parse_history(history)
-    entries = read_tree(root, commits)
+    mirrored = commits[-1].sha if commits else "main"
+    entries = read_tree(root, commits, f"https://github.com/{gh.repo}/blob/{mirrored}")
     summary = Summary()
     summary.undelivered = [entry.path for entry in entries if entry.kind == "item" and entry.done and not entry.delivered]
     counts = summary.counts
@@ -422,6 +435,7 @@ query($owner: String!, $name: String!, $endCursor: String) {
 class Plan:
     def __init__(self, gh):
         self.gh = gh
+        self.repo = gh.repo
         self.writes = []
 
     def issues(self):
