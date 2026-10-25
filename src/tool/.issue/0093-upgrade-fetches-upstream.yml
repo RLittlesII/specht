@@ -2,7 +2,7 @@ id: "0093"
 type: task
 title: Fetch and verify a recorded upstream schema source on upgrade
 
-status: ready-for-architecture
+status: in-progress
 
 risk: 3
 
@@ -25,7 +25,7 @@ claims:
   - B-083
 
 created: "2026-10-08"
-updated: "2026-10-11"
+updated: "2026-10-24"
 closed: null
 
 summary: |
