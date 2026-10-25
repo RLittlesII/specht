@@ -8,7 +8,7 @@ value: 3
 risk: 4
 
 parent: "0055"
-children: ["0294", "0295", "0296"]
+children: ["0294", "0295", "0296", "0297"]
 
 depends_on: []
 spikes: []
@@ -69,6 +69,7 @@ claims:
   - B-051
   - B-052
   - B-053
+  - B-054
 
 created: "2026-10-24"
 updated: "2026-10-25"
@@ -138,6 +139,7 @@ acceptance_criteria:
   - "B-049 — a duplicated id's marker names its path (0294)"
   - "B-050 — no `status:` label on a done epic (0294)"
   - "B-051 — no Summary: the epic's `description` in its place (0294)"
+  - "B-054 — an issue created in a run linked under its parent in that run (0297)"
   - "§ 9 carries a row naming a test for each id above."
 
 decisions:

@@ -425,7 +425,7 @@ query($owner: String!, $name: String!, $endCursor: String) {
 
     def node(self, number):
         if number not in self.nodes:
-            self.nodes[number] = self.graphql(self.NODE, f"number={number}", jq=".data.repository.issue.id")[0]
+            self.nodes[number] = self.graphql(self.NODE, f"number={number}")[0]["data"]["repository"]["issue"]["id"]
         return self.nodes[number]
 
     def comment_pr(self, pr, body):
