@@ -2,7 +2,7 @@ id: "0294"
 type: task
 title: Write the mirror script on the shared item reader, with its unit tests
 
-status: ready-for-architecture
+status: in-progress
 
 risk: 4
 
