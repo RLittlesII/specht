@@ -1,7 +1,7 @@
 id: "0259"
 type: feature
 title: "Read the claim catalogue from tagged Gherkin"
-status: ready
+status: done
 value: 5
 risk: 4
 parent: "0201"
@@ -41,8 +41,8 @@ claims:
     "B-030",
   ]
 created: "2026-10-23"
-updated: "2026-10-23"
-closed: null
+updated: "2026-10-24"
+closed: "2026-10-24"
 summary: |
   As a consumer keeping its claims as tags on Gherkin scenarios I want the analyzer to
   build the claim catalogue from my `.feature` files so that I need no Markdown claims

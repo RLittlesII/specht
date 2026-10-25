@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text.Json.Nodes;
 using System.Text.RegularExpressions;
 using Specht.Analysis.Bindings;
+using Specht.Analysis.Bindings.Gherkin;
 
 namespace Specht.Analysis.Policy;
 
@@ -137,11 +138,14 @@ public sealed class AnalysisPolicyReader
 
         var markers = Named(projection["markers"]);
         var omissions = projection["omissions"];
+        var gherkin = new GherkinClaimPolicyReader().Read(projection["claim"], policy["records"] as JsonObject,
+            policy["scenarioScopes"] as JsonObject, identifiers, epics);
         var bindings = new BindingPolicy(projection["schemaVersion"]?.GetValue<string>() ?? string.Empty,
-            identifiers, markers, epics, Text(projection, "claimsSection"), new LifecycleOmissions(
+            identifiers, markers, epics, gherkin is null ? Text(projection, "claimsSection") : projection["claimsSection"]?.GetValue<string>() ?? string.Empty,
+            new LifecycleOmissions(
                 omissions?["feature"]?.GetValue<bool>() == true, omissions?["claim"]?.GetValue<bool>() == true,
                 omissions?["adr"]?.GetValue<bool>() == true));
-        return new AnalysisPolicy(policy, bindings);
+        return new AnalysisPolicy(policy, bindings) { Gherkin = gherkin };
     }
 
     private static Dictionary<string, string> Named(JsonNode? node) =>

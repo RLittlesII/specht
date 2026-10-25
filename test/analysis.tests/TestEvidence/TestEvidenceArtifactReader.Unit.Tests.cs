@@ -148,4 +148,63 @@ public sealed class TestEvidenceArtifactReaderUnitTests
         testCase.Owned.Should().BeNull();
         testCase.Selected.Should().BeNull();
     }
+
+    [Fact]
+    public void VersionTwoArtifactWithACatalog_WhenRead_ShouldExposeTheCatalog()
+    {
+        // Given
+        var json = TestEvidenceJson.VersionTwo;
+
+        // When
+        var result = new TestEvidenceArtifactReader().Read(json);
+
+        // Then
+        result.IsValid.Should().BeTrue();
+        result.Artifact!.Catalog.Should().BeEquivalentTo(TestEvidenceJson.CatalogFeatures, static options => options.WithStrictOrdering());
+    }
+
+    [Fact]
+    public void VersionThreeArtifactWithACatalog_WhenRead_ShouldExposeTheCatalogBesideTheCaseFacts()
+    {
+        // Given
+        var json = TestEvidenceJson.VersionThreeWithCatalog;
+
+        // When
+        var result = new TestEvidenceArtifactReader().Read(json);
+
+        // Then
+        result.IsValid.Should().BeTrue();
+        result.Artifact!.Catalog.Should().BeEquivalentTo(TestEvidenceJson.CatalogFeatures, static options => options.WithStrictOrdering());
+        result.Artifact.Discovery.Cases.Should().HaveCount(2);
+    }
+
+    [Fact]
+    public void VersionTwoArtifactWithoutACatalog_WhenRead_ShouldBeValidWithNoCatalog()
+    {
+        // Given
+        var artifact = JsonNode.Parse(TestEvidenceJson.Valid)!;
+        artifact["formatVersion"] = 2;
+
+        // When
+        var result = new TestEvidenceArtifactReader().Read(artifact.ToJsonString());
+
+        // Then
+        result.IsValid.Should().BeTrue();
+        result.Artifact!.Catalog.Should().BeNull();
+    }
+
+    [Theory]
+    [ClassData(typeof(InvalidCatalogDocuments))]
+    public void MalformedCatalog_WhenRead_ShouldReturnContractFailure(string json, string failure)
+    {
+        // Given
+
+        // When
+        var result = new TestEvidenceArtifactReader().Read(json);
+
+        // Then
+        result.IsValid.Should().BeFalse();
+        result.Failure.Should().Be(failure);
+        result.Artifact.Should().BeNull();
+    }
 }

@@ -9,6 +9,7 @@ using System.Text.Json.Nodes;
 using System.Threading;
 using Json.Schema;
 using Specht.Analysis.Bindings;
+using Specht.Analysis.Bindings.Gherkin;
 using Specht.Model;
 
 namespace Specht.Analysis.Policy;
@@ -27,7 +28,7 @@ public sealed class AnalysisInputReader
             {
                 cancellationToken.ThrowIfCancellationRequested();
                 path = _paths.Normalize(input.RelativePath);
-                if (input.Text is null)
+                if (input.Text is null && input.Kind != "scenario")
                 {
                     throw new ArgumentException("A required consumer input could not be read.");
                 }
@@ -77,22 +78,44 @@ public sealed class AnalysisInputReader
             var settings = projection["policy"]?["records"];
             var records = new AnalysisRecordReader();
             var features = new List<BindingFeature>();
-            foreach (var input in inputs.Where(static input => input.Kind == "feature"))
+            var findings = Array.Empty<BindingFinding>();
+            if (policy.Gherkin is null)
             {
-                cancellationToken.ThrowIfCancellationRequested();
-                path = input.RelativePath;
-                var frontmatter = new FrontmatterTextReader().Read(input.Text!);
-                Validate(schemas, "feature", frontmatter.Node);
-                features.Add(records.Feature(input, policy, settings));
-            }
-
-            path = configuration.RelativePath;
-            foreach (var selected in policy.Features)
-            {
-                if (!features.Any(feature => feature.Identity == selected))
+                if (inputs.FirstOrDefault(static input => input.Kind == "scenario" && input.Text is null) is { } unread)
                 {
-                    throw new ArgumentException("A selected consumer Feature input is missing.");
+                    path = unread.RelativePath;
+                    throw new ArgumentException("A required consumer input could not be read.");
                 }
+
+                foreach (var input in inputs.Where(static input => input.Kind == "feature"))
+                {
+                    cancellationToken.ThrowIfCancellationRequested();
+                    path = input.RelativePath;
+                    var frontmatter = new FrontmatterTextReader().Read(input.Text!);
+                    Validate(schemas, "feature", frontmatter.Node);
+                    features.Add(records.Feature(input, policy, settings));
+                }
+
+                path = configuration.RelativePath;
+                foreach (var selected in policy.Features)
+                {
+                    if (!features.Any(feature => feature.Identity == selected))
+                    {
+                        throw new ArgumentException("A selected consumer Feature input is missing.");
+                    }
+                }
+            }
+            else
+            {
+                var native = new GherkinCatalogReader().Read(policy, inputs, settings?["featureLifecycleKey"]?.GetValue<string>() ?? "spec_status",
+                    (record, frontmatter) =>
+                    {
+                        path = record.RelativePath;
+                        Validate(schemas, "feature", frontmatter);
+                    });
+                features.AddRange(native.Features);
+                findings = native.Findings.ToArray();
+                path = configuration.RelativePath;
             }
 
             var adrs = new List<BindingAdr>();
@@ -108,7 +131,12 @@ public sealed class AnalysisInputReader
                 adrs.Add(records.Adr(input, policy, settings, features));
             }
 
-            return new AnalysisSnapshot(contentKey, policy, new BindingCatalog(features, adrs), Array.Empty<AnalysisInputFailure>());
+            return new AnalysisSnapshot(contentKey, policy, new BindingCatalog(features, adrs, findings), Array.Empty<AnalysisInputFailure>());
+        }
+        catch (GherkinInputException exception)
+        {
+            return new AnalysisSnapshot(contentKey, null, null,
+                new[] { new AnalysisInputFailure(_paths.Normalize(exception.RelativePath ?? configurationPath), exception.Message) });
         }
         catch (FormatException)
         {
