@@ -2,7 +2,7 @@ id: "0295"
 type: task
 title: Generate the mirror workflow from the build
 
-status: ready-for-architecture
+status: in-progress
 
 risk: 2
 
@@ -22,7 +22,7 @@ claims:
   - B-040
 
 created: "2026-10-24"
-updated: "2026-10-24"
+updated: "2026-10-25"
 closed: null
 
 summary: |
