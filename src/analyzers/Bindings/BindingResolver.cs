@@ -34,7 +34,7 @@ public sealed class BindingResolver
         var matches = owners.SelectMany(feature => feature.Claims.Where(claim => string.Equals(claim.Id, reference.Claim, StringComparison.Ordinal))
             .Select(claim => new BindingTarget(BindingTargetKind.Claim,
                 _policy.DeclaresEpicGrammar ? feature.Identity.Epic : null, feature.Identity.Feature,
-                claim.Id, claim.State, feature.State, feature.RelativePath, claim.Line)));
+                claim.Id, claim.State, feature.State, claim.RelativePath ?? feature.RelativePath, claim.Line)));
         return Result(matches, owners.Length > 1);
     }
 
@@ -111,7 +111,7 @@ public sealed class BindingResolver
         var claim = target.State is null ? _policy.Omissions.ClaimEligible
             : !Marker("withdrawn", target.State) && !Marker("superseded", target.State) && target.State is "Active" or "Amended";
         var feature = target.FeatureState is null ? _policy.Omissions.FeatureEligible
-            : target.FeatureState is "draft" or "in-review" || Marker("approved", target.FeatureState);
+            : target.FeatureState is "draft" or "in-review" or "current" || Marker("approved", target.FeatureState);
         return claim && feature;
     }
 

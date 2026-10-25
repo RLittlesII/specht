@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Nodes;
@@ -11,7 +12,7 @@ public sealed class TestEvidenceArtifactWriter
         var value = new JsonObject
         {
             ["format"] = "specht.test-evidence",
-            ["formatVersion"] = artifact.Discovery.Cases.Any(StatesCaseFacts) ? 3 : 1,
+            ["formatVersion"] = artifact.Discovery.Cases.Any(StatesCaseFacts) ? 3 : artifact.Catalog is null ? 1 : 2,
             ["project"] = new JsonObject { ["path"] = artifact.ProjectPath, ["targetFramework"] = artifact.TargetFramework },
             ["configuration"] = new JsonObject
             {
@@ -39,8 +40,37 @@ public sealed class TestEvidenceArtifactWriter
                 (JsonNode?)JsonNode.Parse(scenario.GetRawText())).ToArray());
         }
 
+        if (artifact.Catalog is not null)
+        {
+            value["catalog"] = Catalog(artifact.Catalog);
+        }
+
         return value.ToJsonString(new JsonSerializerOptions { WriteIndented = true });
     }
+
+    private static JsonObject Catalog(IReadOnlyList<TestEvidenceCatalogFeature> features) => new()
+    {
+        ["features"] = new JsonArray(features.Select(static feature => (JsonNode?)new JsonObject
+        {
+            ["epic"] = feature.Epic,
+            ["feature"] = feature.Feature,
+            ["state"] = feature.State,
+            ["path"] = feature.Path,
+            ["claims"] = new JsonArray(feature.Claims.Select(static claim => (JsonNode?)new JsonObject
+            {
+                ["id"] = claim.Id,
+                ["state"] = claim.State,
+                ["element"] = claim.Element,
+                ["path"] = claim.Path,
+                ["line"] = claim.Line,
+                ["cases"] = new JsonArray(claim.Cases.Select(static item => (JsonNode?)new JsonObject
+                {
+                    ["line"] = item.Line,
+                    ["planned"] = item.Planned,
+                }).ToArray()),
+            }).ToArray()),
+        }).ToArray()),
+    };
 
     private static JsonObject Assembly(TestEvidenceArtifact artifact)
     {
