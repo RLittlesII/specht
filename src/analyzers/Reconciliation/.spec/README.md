@@ -124,7 +124,7 @@ Expose missing links and test outcomes within an explicit project scope. The own
 
 ## 7. Technical Design
 
-<!-- last written by: implementer, 2026-10-24 -->
+<!-- last written by: implementer, 2026-10-25 -->
 
 The command implements F5 decision 0001, F6's coverage/input decisions and the
 owner's decision to require passing outcomes by default. Current CLI usage is in
@@ -133,16 +133,15 @@ owner's decision to require passing outcomes by default. Current CLI usage is in
 ### Command
 
 ```text
-specht evidence [--root <dir>] [<path>...] [--evidence <path>...]
-             [--run <id>] [--json] [--report <path>]
+specht evidence [--root <dir>] [<path>...] [--run <id>] [--json] [--report <path>]
 ```
 
 `<path>...` is an optional repeatable positional argument, as in
-`specht frontmatter`; `--evidence` is its alias with the same meaning (decision
-0006). `Execute` passes the positional paths first, then the `--evidence` paths
-in command-line order, to `EvidenceReconciler.Reconcile`, which de-duplicates
-files. Neither form given keeps the reconciler's no-evidence finding and exit 2.
-The declarations are `EvidenceCommand.Settings.Paths` and `.Evidence`.
+`specht frontmatter`, and the only way to name evidence (decision 0006).
+`Execute` passes the paths in command-line order to
+`EvidenceReconciler.Reconcile`, which de-duplicates files. No path keeps the
+reconciler's no-evidence finding and exit 2. The declaration is
+`EvidenceCommand.Settings.Paths`.
 
 The root defaults consistently with the existing tool command. Evidence paths
 are explicit files or caller-named artifact directories; enumeration is bounded
@@ -478,7 +477,7 @@ artifact on disk.
 | B-024    | Evidence option alias                                                                                                                        | Missing                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             | Withdrawn |
 | B-025    | Evidence paths in command-line order                                                                                                         | `Evidence paths in command-line order`; `Same export named twice`; `ReconciliationSteps.ThenBothSuppliedInCommandLineOrder`; `ReconciliationSteps.ThenOverlappingFileIsDeduplicated`; `EvidenceCommandIntegrationTests.SeveralPositionalDirectories_WhenReconciled_ShouldNumberExternalDirectoriesInCommandLineOrder`; `EvidenceCommandIntegrationTests.TheSameExportNamedTwice_WhenReconciled_ShouldSupplyItOnce`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  | Covered   |
 | B-026    | No evidence path                                                                                                                             | `No evidence path`; `ReconciliationSteps.ThenNoEvidenceReported`; `EvidenceCommandIntegrationTests.NoPath_WhenReconciled_ShouldFailWithIncompleteInputAndTheNoEvidenceFinding`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      | Covered   |
-| B-027    | Evidence help shows positional paths                                                                                                         | `Evidence help shows positional paths`; `ReconciliationSteps.ThenHelpShowsPositionalPaths`; `EvidenceCommandIntegrationTests.TheEvidenceHelp_WhenRequested_ShouldShowOptionalPositionalPathsAndNoEvidenceOption`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    | Missing   |
+| B-027    | Evidence help shows positional paths                                                                                                         | `Evidence help shows positional paths`; `ReconciliationSteps.ThenHelpShowsPositionalPaths`; `EvidenceCommandIntegrationTests.TheEvidenceHelp_WhenRequested_ShouldShowOptionalPositionalPathsAndNoEvidenceOption`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    | Covered   |
 
 ## 10. Lessons / Spec Deltas
 

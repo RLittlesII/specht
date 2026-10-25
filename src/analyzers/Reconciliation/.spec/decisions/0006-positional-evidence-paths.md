@@ -61,8 +61,16 @@ repeated paths are supplied in command-line order, then the existing
 de-duplication. Point 5 now reads: help shows `[<path>...]` and no evidence
 option. Points 1, 4 and 6 stand.
 
+The owner then stated the rule, 2026-10-25: "Doesn't _have_ to be positional,
+it just can't repeat the dern command verb/noun". The governing rule is that a
+command's option never repeats the command's own name, verb or noun. Positional
+paths are the chosen way to satisfy it for `specht evidence`, because they match
+`specht frontmatter <path>`.
+
 Considered and not chosen:
 
+- A differently named option, such as `--input`: it satisfies the rule too; the
+  positional form was chosen for consistency with `specht frontmatter`.
 - Keeping `--evidence` as an alias: it repeats the command name, the objection
   the owner raised.
 - A deprecation period with a warning: the owner chose removal outright.

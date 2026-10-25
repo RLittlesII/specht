@@ -17,7 +17,7 @@ public sealed class EvidenceCommand(IAnsiConsole console, EvidenceReconciler rec
     public override int Execute(CommandContext context, Settings settings, CancellationToken cancellationToken)
     {
         var root = Path.GetFullPath(settings.Root);
-        var result = reconciler.Reconcile(root, [.. settings.Paths, .. settings.Evidence], settings.Run);
+        var result = reconciler.Reconcile(root, settings.Paths, settings.Run);
         var json = result.Report.ToJsonString(new JsonSerializerOptions { WriteIndented = true }) + Environment.NewLine;
         if (settings.Report is not null)
         {
@@ -80,13 +80,8 @@ public sealed class EvidenceCommand(IAnsiConsole console, EvidenceReconciler rec
 
         /// <summary>Evidence files or directories named positionally.</summary>
         [CommandArgument(0, "[PATH]")]
-        [Description("Supplied evidence file or directory; may be repeated.")]
+        [Description("Evidence file or directory to reconcile; may be repeated.")]
         public string[] Paths { get; init; } = [];
-
-        /// <summary>Evidence files or directories named with the option, an alias of the positional paths.</summary>
-        [CommandOption("--evidence <PATH>")]
-        [Description("Alias of PATH: supplied evidence file or directory; may be repeated.")]
-        public string[] Evidence { get; init; } = [];
 
         /// <summary>The run identity when several are supplied.</summary>
         [CommandOption("--run <ID>")]
