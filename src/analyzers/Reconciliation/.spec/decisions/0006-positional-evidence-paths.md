@@ -76,4 +76,13 @@ Considered and not chosen:
 - A deprecation period with a warning: the owner chose removal outright.
 
 B-024 is withdrawn; B-023, B-025, B-026 and B-027 are amended to the positional
-form. Acceptance helpers and build targets switch to positional paths.
+form.
+
+The Callers bullets on the usage lines and on acceptance helpers and build
+targets, and the "What the test must prove" paragraph, are superseded. In their
+place: the usage lines in `AGENTS.md`, `README.md` and `src/tool/README.md` show
+the positional form only; acceptance helpers, build targets and tests name
+evidence positionally. The tests prove that repeated positional paths are
+supplied in command-line order, then de-duplicated; that no evidence path gives
+exit 2 with the unchanged finding; and that help and `docs/cli.md` show
+`[<path>...]` and no evidence option.

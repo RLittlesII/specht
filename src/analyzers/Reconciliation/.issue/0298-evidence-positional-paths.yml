@@ -9,7 +9,7 @@ children: []
 depends_on: []
 spikes: []
 spec: src/analyzers/Reconciliation/.spec/README.md
-claims: ["B-023", "B-024", "B-025", "B-026", "B-027"]
+claims: ["B-023","B-025", "B-026", "B-027"]
 created: "2026-10-25"
 updated: "2026-10-25"
 closed: "2026-10-25"
