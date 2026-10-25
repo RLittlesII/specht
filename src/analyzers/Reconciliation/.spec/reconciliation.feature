@@ -248,4 +248,18 @@ Feature: Traceability reconciliation
     And A.nonvisual passed in project A's run
     And project B has no current evidence
     When the supplied evidence is reconciled by specht evidence
-    Then the default trace gate fails for project B's owned keys
+    Then the default trace gate fails as incomplete input naming project B
+    And project B's owned keys are not reported as passed
+
+  @B-018 @boundary
+  Scenario: Claim whose only cases are planned
+    Given a required claim whose outline has only planned Examples blocks
+    When the supplied evidence is reconciled by specht evidence
+    Then the claim has no covering case
+    And the default trace gate fails for the claim's missing test evidence
+
+  @B-020 @boundary
+  Scenario: Bound test with no owned case
+    Given a bound test whose every discovered case is owned by no project
+    When the supplied evidence is reconciled by specht evidence
+    Then the default trace gate fails for that test as having no owned case

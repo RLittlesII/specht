@@ -2,7 +2,7 @@ id: "0130"
 type: task
 title: Read the manifest key that names the consumer's templates
 
-status: ready-for-architecture
+status: done
 
 risk: 2
 
@@ -18,8 +18,8 @@ claims:
   - B-065
 
 created: "2026-10-09"
-updated: "2026-10-10"
-closed: null
+updated: "2026-10-24"
+closed: "2026-10-24"
 
 summary: |
   The manifest gains the key that names which templates are the

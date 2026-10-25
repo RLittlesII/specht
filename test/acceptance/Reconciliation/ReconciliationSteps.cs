@@ -5,7 +5,7 @@ using Specht.Tests.Shared;
 
 namespace Specht.Acceptance.Reconciliation;
 
-/// <summary>The public evidence gate over a synthetic consumer tree (0201-F5 B-001 to B-017).</summary>
+/// <summary>The public evidence gate over a synthetic consumer tree (0201-F5 B-001 to B-022).</summary>
 [Binding]
 [Scope(Tag = "0201-F5")]
 public sealed class ReconciliationSteps
@@ -134,6 +134,58 @@ public sealed class ReconciliationSteps
 
     [Given("its required test case has outcome {string}")]
     public void GivenCaseOutcome(string outcome) => _outcome = outcome == "absent" ? null : outcome;
+
+    [Given("a required claim whose outline has an active Examples block that passed and a planned Examples block that was skipped")]
+    public void GivenActiveAndPlannedRows() => _cases =
+    [
+        new CaseSpec("active-row", true, true, "passed", "active"),
+        new CaseSpec("planned-row", true, true, "skipped", "planned"),
+    ];
+
+    [Given("a required claim whose outline has a planned Examples block and an active row whose case was {string}")]
+    public void GivenPlannedBlockBesideActiveRow(string outcome) => _cases =
+    [
+        new CaseSpec("active-row", true, true, outcome == "absent" ? null : outcome, "active"),
+        new CaseSpec("planned-row", true, true, "skipped", "planned"),
+    ];
+
+    [Given("a required claim whose outline has only planned Examples blocks")]
+    public void GivenOnlyPlannedRows() => _cases =
+    [
+        new CaseSpec("planned-row", true, true, "skipped", "planned"),
+        new CaseSpec("planned-row-2", true, true, "skipped", "planned"),
+    ];
+
+    [Given("a bound test whose every discovered case is owned by no project")]
+    public void GivenNoOwnedCase() => _cases =
+    [
+        new CaseSpec("plain-case", false, false, null),
+        new CaseSpec("visual-case", false, true, "passed"),
+    ];
+
+    [Given("projects A and B compile the same claim files holding one visual and one nonvisual case")]
+    public void GivenPartitionedProjects() => _partitioned = true;
+
+    [Given("projects A and B own {string} and {string} over the same claim files")]
+    [Given("project A owns {string} and project B owns {string}")]
+    public void GivenOwnership(string first, string second) => _partitioned = true;
+
+    [Given("the discovered case keys are A.nonvisual, A.visual, B.nonvisual and B.visual")]
+    [Given("A.nonvisual passed in project A's run")]
+    [Given("A.nonvisual passed in project A's run and B.visual passed in project B's run")]
+    [Given("A.visual and B.nonvisual were not selected by their runs")]
+    public void GivenPartitionKeysAndRuns() { }
+
+    [Given(@"^B\.visual (failed|was skipped|has no outcome) in project B's run$")]
+    public void GivenOwnedKeyNotPassing(string outcome) => _visualOutcome = outcome switch
+    {
+        "failed" => "failed",
+        "was skipped" => "skipped",
+        _ => null,
+    };
+
+    [Given("project B has no current evidence")]
+    public void GivenOmittedOwningRun() => _omittedRun = true;
 
     [When("the evidence gate is requested for the declared scope")]
     [When("evidence is reconciled for the current scope")]
@@ -375,6 +427,94 @@ public sealed class ReconciliationSteps
     [Then("binding validity and execution outcome remain separate")]
     public void ThenOutcomeSeparated() => Claim()["links"]!["test"]!["state"]!.GetValue<string>().Should().Be("satisfied");
 
+    [Then("the planned rows are reported as planned")]
+    public void ThenPlannedRowsReported()
+    {
+        Row("test/tests.csproj", "planned-row")["planned"]!.GetValue<bool>().Should().BeTrue();
+        (Row("test/tests.csproj", "active-row")["planned"]?.GetValue<bool>() ?? false).Should().BeFalse();
+    }
+
+    [Then("the planned rows neither cover the claim nor fail the default trace gate")]
+    public void ThenPlannedRowsNeitherCoverNorFail()
+    {
+        _result.ExitCode.Should().Be(0);
+        Claim()["cases"]!.AsArray().Select(static item => item!.GetValue<string>()).Should().Equal("active-row");
+    }
+
+    [Then("the default trace gate fails for that active row")]
+    public void ThenActiveRowFails()
+    {
+        _result.ExitCode.Should().Be(1);
+        MissingResults().Should().ContainSingle().Which.Should().Contain("active-row");
+    }
+
+    [Then("the claim has no covering case")]
+    public void ThenNoCoveringCase() => Claim()["cases"]!.AsArray().Should().BeEmpty();
+
+    [Then("the default trace gate fails for the claim's missing test evidence")]
+    public void ThenPlannedOnlyClaimFails()
+    {
+        _result.ExitCode.Should().Be(1);
+        MissingResults().Should().NotBeEmpty();
+    }
+
+    [Then("the default trace gate fails for that test as having no owned case")]
+    public void ThenNoOwnedCaseFails()
+    {
+        _result.ExitCode.Should().Be(1);
+        MissingResults().Should().ContainSingle().Which.Should().Contain("M:test").And.Contain("no owned case");
+    }
+
+    [Then("the default trace gate succeeds")]
+    public void ThenGateSucceeds() => _result.ExitCode.Should().Be(0);
+
+    [Then("A.visual and B.nonvisual are counted neither as passed nor as failures")]
+    public void ThenUnownedKeysNotCounted()
+    {
+        Report()["summary"]!["passed"]!.GetValue<int>().Should().Be(2);
+        Report()["summary"]!["failed"]!.GetValue<int>().Should().Be(0);
+        Row("test/a/a.csproj", "visual-case")["owned"]!.GetValue<bool>().Should().BeFalse();
+        Row("test/b/b.csproj", "plain-case")["owned"]!.GetValue<bool>().Should().BeFalse();
+    }
+
+    [Then("no case key is merged with another project's key")]
+    public void ThenKeysNotMerged()
+    {
+        Report()["cases"]!.AsArray().Select(static row => (row!["project"]!.GetValue<string>(), row["caseId"]!.GetValue<string>()))
+            .Distinct().Should().HaveCount(4);
+        Claim()["cases"]!.AsArray().Select(static item => item!.GetValue<string>()).Should().Equal("plain-case", "visual-case");
+    }
+
+    [Then("the default trace gate fails for B.visual")]
+    public void ThenOwnedKeyFails()
+    {
+        _result.ExitCode.Should().Be(1);
+        MissingResults().Should().ContainSingle().Which.Should().Contain("visual-case");
+    }
+
+    [Then("A.visual does not stand in for B.visual")]
+    public void ThenNoStandIn()
+    {
+        Row("test/a/a.csproj", "visual-case")["owned"]!.GetValue<bool>().Should().BeFalse();
+        Row("test/b/b.csproj", "visual-case")["outcome"]!.GetValue<string>().Should().NotBe("passed");
+        Report()["summary"]!["passed"]!.GetValue<int>().Should().Be(1);
+    }
+
+    [Then("the default trace gate fails as incomplete input naming project B")]
+    public void ThenOmittedRunFails()
+    {
+        _result.ExitCode.Should().Be(2);
+        Report()["findings"]!.AsArray().Should().Contain(static item => item!["kind"]!.GetValue<string>() == "missingCompilation"
+            && item["path"]!.GetValue<string>() == "test/b/b.csproj");
+    }
+
+    [Then("project B's owned keys are not reported as passed")]
+    public void ThenOmittedKeysNotPassed()
+    {
+        Report()["cases"]!.AsArray().Should().NotContain(static row => row!["project"]!.GetValue<string>() == "test/b/b.csproj");
+        Report()["summary"]!["passed"]!.GetValue<int>().Should().Be(1);
+    }
+
     [AfterScenario]
     public void Dispose()
     {
@@ -385,7 +525,26 @@ public sealed class ReconciliationSteps
     private void Run(bool json)
     {
         _json = json;
-        _tree.WriteEvidence(_outcome, _binding, _historical, _scenario);
+        if (_partitioned)
+        {
+            _tree.UsePartitions("a", "b");
+            _tree.WriteCases("a", "evidence.json",
+                [new CaseSpec("plain-case", true, true, "passed"), new CaseSpec("visual-case", false, false, null)]);
+            if (!_omittedRun)
+            {
+                _tree.WriteCases("b", "evidence-b.json",
+                    [new CaseSpec("plain-case", false, false, null), new CaseSpec("visual-case", true, true, _visualOutcome)]);
+            }
+        }
+        else if (_cases is not null)
+        {
+            _tree.WriteCases("tests", "evidence.json", _cases);
+        }
+        else
+        {
+            _tree.WriteEvidence(_outcome, _binding, _historical, _scenario);
+        }
+
         if (_omitRecord)
         {
             _tree.OmitIndexedRecord();
@@ -406,12 +565,20 @@ public sealed class ReconciliationSteps
         }
 
         _fileCount = Directory.EnumerateFiles(_tree.Root, "*", SearchOption.AllDirectories).Count();
+        string[] second = _partitioned && !_omittedRun ? ["--evidence", "evidence-b.json"] : [];
         _result = _staleExtra ? _tree.Run("--json", "--evidence", "stale.json")
-            : json ? _tree.Run("--json") : _tree.Run();
+            : json ? _tree.Run(["--json", .. second]) : _tree.Run();
     }
 
     private JsonNode Report() => JsonNode.Parse(_result.Stdout)!;
     private JsonNode Claim() => Report()["claims"]![0]!;
+    private JsonNode Row(string project, string caseId) => Report()["cases"]!.AsArray()
+        .Single(row => row!["project"]!.GetValue<string>() == project && row["caseId"]!.GetValue<string>() == caseId)!;
+
+    private string[] MissingResults() => Report()["findings"]!.AsArray()
+        .Where(static item => item!["kind"]!.GetValue<string>() == "missingResult")
+        .Select(static item => item!["message"]!.GetValue<string>()).ToArray();
+
     private string[] Kinds() => Report()["findings"]!.AsArray().Select(static item => item!["kind"]!.GetValue<string>()).ToArray();
 
     private readonly EvidenceTree _tree = new();
@@ -429,4 +596,8 @@ public sealed class ReconciliationSteps
     private bool _staleExtra;
     private bool _omitRecord;
     private bool _json = true;
+    private IReadOnlyList<CaseSpec>? _cases;
+    private bool _partitioned;
+    private bool _omittedRun;
+    private string? _visualOutcome = "passed";
 }
