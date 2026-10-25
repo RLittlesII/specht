@@ -81,6 +81,7 @@ public sealed class SpecManifestParser(SchemaVersions versions)
             MatrixScenarioTitles = matrix && manifest["matrix"]?["scenarioTitles"] is { } titles && titles.GetValue<bool>(),
             Owners = matrix && manifest["owners"] is { } owners ? Tables(owners) : new Dictionary<string, IReadOnlyList<string>>(StringComparer.Ordinal),
             RequiredSpecifications = matrix && manifest["requiredSpecifications"] is { } required ? Strings(required) : [],
+            ConsumerTemplates = manifest["consumerTemplates"] is { } templates ? Strings(templates) : [],
         };
 
         if (structure.SchemaSource == SchemaSourceSelection.Embedded && structure.SpechtSchema is not null)
@@ -447,6 +448,7 @@ public sealed class SpecManifestParser(SchemaVersions versions)
         "markers",
         "rules",
         "spechtSchema",
+        "consumerTemplates",
     };
 
     private static readonly SemanticVersion ClaimTagVersion = new(0, 2, 0);
