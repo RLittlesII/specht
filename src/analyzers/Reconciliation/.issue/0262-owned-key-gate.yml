@@ -1,7 +1,7 @@
 id: "0262"
 type: feature
 title: "Gate the report on owned case keys and planned rows"
-status: ready
+status: done
 value: 4
 risk: 3
 parent: "0201"
@@ -11,8 +11,8 @@ spikes: []
 spec: src/analyzers/Reconciliation/.spec/README.md
 claims: ["B-017", "B-018", "B-019", "B-020", "B-021", "B-022"]
 created: "2026-10-23"
-updated: "2026-10-23"
-closed: null
+updated: "2026-10-24"
+closed: "2026-10-24"
 summary: |
   As a consumer partitioning one set of claim files across test projects I want the default
   gate to pass only when every case key a project owns passed in that project's own run, so
@@ -27,7 +27,7 @@ acceptance_criteria:
   - "B-022 - a declared project with no current evidence fails the gate for its owned keys"
   - "B-018, B-019 - planned rows neither cover the claim nor fail the gate; an active row beside them still does"
   - "section 9 carries a row naming a current passing test for each id above."
-decisions: []
+decisions: ["0201-F5 decision 0004"]
 out_of_scope:
   - "Ownership computation and the selected flag: 0260."
   - "Reading planned marks from Gherkin: 0259."
