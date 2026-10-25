@@ -20,7 +20,7 @@ depends_on: ["F2", "F3", "F4"]
 blocks: []
 spikes: []
 created: "2026-10-08"
-updated: "2026-10-23"
+updated: "2026-10-24"
 github_issue: null
 synced_at: null
 ---
@@ -46,10 +46,10 @@ A workflow that runs is not a gate until the repository requires it: without bra
 
 ### Assumptions
 
-| ID  | Assumption                                                                                                                                                                 |
-| --- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| A-1 | The checklist sits beside this specification under `.github/settings/`; the `implementer` may move both together.                                                          |
-| A-2 | `github_mode` stays `false`: GitHub issues are not the tracker, and the issue templates under `.github/ISSUE_TEMPLATE/` stay for outside reports only (owner, 2026-10-08). |
+| ID  | Assumption                                                                                                                                                                                                                                                                                                      |
+| --- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| A-1 | The checklist sits beside this specification under `.github/settings/`; the `implementer` may move both together.                                                                                                                                                                                               |
+| A-2 | `github_mode` stays `false`: GitHub issues are not the tracker, and the issue templates under `.github/ISSUE_TEMPLATE/` stay for outside reports only (owner, 2026-10-08). The read-only mirror of the work items as issues is `0055-F9`, and it is not a tracker (owner, 2026-10-24; `0055-F9` decision 0001). |
 
 ## 3. Acceptance Criteria
 
@@ -83,13 +83,13 @@ A workflow that runs is not a gate until the repository requires it: without bra
 
 <!-- last written by: spec-author, 2026-10-08 -->
 
-| #   | Item                                                                     | Exclusion Reason                                                                              |
-| --- | ------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------- |
-| 1   | GitHub issues, labels and milestones as a tracker                        | `github_mode: false` (AGENTS.md § SDLC); work is tracked in `.issue/` items.                  |
-| 2   | Turning an outside report into work                                      | A maintainer writes a `.issue/` item from it by hand; nothing here automates that.            |
-| 3   | Producing the checks, the coverage statuses and the update pull requests | `0055-F2`, `0055-F3`, `0055-F4`.                                                              |
-| 4   | Verifying that GitHub's live settings match the checklist                | C-1: no call to the GitHub API; the tool and its tests stay offline (AGENTS.md § Invariants). |
-| 5   | Package feed permissions for consumers                                   | `0055-F7`.                                                                                    |
+| #   | Item                                                                     | Exclusion Reason                                                                                                               |
+| --- | ------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------ |
+| 1   | GitHub issues, labels and milestones as a tracker                        | `github_mode: false` (AGENTS.md § SDLC); work is tracked in `.issue/` items. The read-only mirror is `0055-F9`, not a tracker. |
+| 2   | Turning an outside report into work                                      | A maintainer writes a `.issue/` item from it by hand; nothing here automates that.                                             |
+| 3   | Producing the checks, the coverage statuses and the update pull requests | `0055-F2`, `0055-F3`, `0055-F4`.                                                                                               |
+| 4   | Verifying that GitHub's live settings match the checklist                | C-1: no call to the GitHub API; the tool and its tests stay offline (AGENTS.md § Invariants).                                  |
+| 5   | Package feed permissions for consumers                                   | `0055-F7`.                                                                                                                     |
 
 ## 6. Concern Separation
 
@@ -129,7 +129,9 @@ Pending: owned by `test-writer`.
 
 ## 10. Lessons / Spec Deltas
 
-<!-- last written by: spec-author, 2026-10-08, 2026-10-23 (`0055-F2` decision 0005) -->
+<!-- last written by: spec-author, 2026-10-08, 2026-10-23 (`0055-F2` decision 0005), 2026-10-24 (`0055-F9`) -->
+
+- 2026-10-24, the owner decided GitHub issues become a read-only mirror of the work items ([`0055-F9` decision 0001](../../mirror/.spec/decisions/0001-work-items-stay-the-tracker-and-github-mirrors-them.md)). A-2 and § 5 row 1 now point to `0055-F9`; `github_mode` stays `false` and no claim here changes. B-009 is unchanged: issues stay enabled, which the mirror also needs. B-007 is unchanged: the mirror reads no secret, only the workflow's own token, whose `issues: write` and `pull-requests: write` its workflow grants in `permissions:` (`0055-F9` C-5), so no repository setting is toggled for it.
 
 - 2026-10-23, the owner moved CI's Linux leg to the owner's self-hosted macOS ARM64 pool ([`0055-F2` decision 0005](../../../.build/ContinuousIntegration/.spec/decisions/0005-the-unix-leg-runs-on-the-owners-macos-pool.md)). B-002 is unchanged: the checklist requires the per-operating-system checks the workflows produce, whatever their names. The `main` workflow's Unix check is renamed once, from `build (ubuntu-latest)` to the name GitHub derives from the matrix value `[self-hosted, macOS, ARM64]`; the `ci` workflow's `build` and the `main` workflow's `build (windows-latest)` are unchanged. Where branch protection requires `build (ubuntu-latest)`, the owner replaces it by hand (C-1, C-3), and items 0090 and 0264 name the check as observed.
 
