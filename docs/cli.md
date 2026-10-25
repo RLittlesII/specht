@@ -80,7 +80,7 @@ specht evidence [--root <DIR>] --evidence <PATH>... [--run <ID>] [--json] [--rep
 ```
 
 Reconciles the current claims selected by `.specht/manifest.json`'s `codeAnalysis`
-policy against explicitly supplied version-one `specht.test-evidence` exports. It
+policy against explicitly supplied `specht.test-evidence` exports of `formatVersion` 1, 2 or 3. It
 checks declared project and target-framework combinations, current input hashes,
 resolved bindings, discovered cases and their selected run outcomes. It is offline
 and does not build a project or start tests. The command reads each named file or
@@ -90,7 +90,7 @@ JSON files beneath each named directory; it does not search elsewhere for eviden
 | ------------------- | -------------------- | --------------------- | ------------------------------------------------------- |
 | `--root <DIR>`      | Repository directory | The working directory | Selects the current consumer configuration and files.   |
 | `--evidence <PATH>` | File or directory    | None                  | Supplies an export; repeat to cover the declared scope. |
-| `--run <ID>`        | Exact run identity   | Sole matching run     | Selects one run when several are supplied.              |
+| `--run <ID>`        | Exact run identity   | One run per project   | Selects that run wherever it appears.                   |
 | `--json`            | none                 | Off                   | Writes only the versioned evidence report to stdout.    |
 | `--report <PATH>`   | Output file          | None                  | Writes that same JSON report to a caller-named path.    |
 | `-h, --help`        | none                 | Off                   | Prints command help.                                    |
@@ -104,8 +104,15 @@ are required only when enabled in the analysis policy. A link can be satisfied
 while its associated case failed or did not run; the gate requires every current
 case supplying non-exempt required test evidence to pass. Stale or mismatched
 exports remain visible and cannot establish current coverage.
+
+Without `--run`, a run is chosen for each declared project and target framework:
+one available run is used, and `ambiguousRun` is reported only for a pair holding
+several. `incompleteRun` is informational and leaves the exit code unchanged; it
+counts owned, non-planned cases the selected run did not select. An owned
+unselected case bound to a required claim is also a `missingResult`, which exits
+`1`.
 Native SPCT build diagnostics remain in the build's diagnostic stream; the
-version-one evidence export does not carry them into this report.
+evidence export does not carry them into this report.
 
 On a clean checkout the sequence that produces evidence is: build, then `dotnet test
 --list-tests`, then `dotnet test`, which write `obj/specht-test-evidence/<project>-<framework>.json`.

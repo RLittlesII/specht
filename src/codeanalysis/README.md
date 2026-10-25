@@ -32,6 +32,12 @@ evidence --evidence obj/specht-test-evidence` to reconcile. An artifact that doe
 not match the build's project, framework, configuration, sources or policy is
 ignored and recognition stays provisional.
 
+For an xUnit v2/VSTest test project the package registers the `specht` VSTest
+logger: it adds its `build/vstest/<tfm>` folder to `VSTestTestAdapterPath` and
+`specht` to `VSTestLogger`. Passing `--logger` or `--settings` on `dotnet test`
+replaces the registered logger, so no evidence is written unless the command also
+names `--logger specht`.
+
 Diagnostic severity and suppression use standard Roslyn configuration. The
 package adds no application runtime dependency.
 
