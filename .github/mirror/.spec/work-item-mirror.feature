@@ -353,3 +353,9 @@ Feature: Work-item mirror
     When the mirror runs
     Then its issue shows the item's summary and the link to its file
     And it leaves out the item's acceptance criteria, decisions and out-of-scope entries
+
+  @B-054
+  Scenario: An issue created in a run sits under its parent's issue after that run
+    Given a task whose parent is Feature item 0041, and neither has an issue yet
+    When the mirror runs once through the gh command
+    Then the task's issue is a sub-issue of item 0041's issue
