@@ -1,0 +1,75 @@
+id: "0291"
+type: task
+title: Fetch and verify the templates a recorded upstream source hashes on upgrade
+
+status: ready-for-architecture
+
+risk: 3
+
+parent: "0041"
+children: []
+
+depends_on: ["0093", "0290"] # extends 0093's fetch and hash check to templates; reads the hashes 0290 defines
+spikes: []
+
+spec: src/tool/.spec/README.md
+
+claims:
+  - B-129
+  - B-130
+  - B-132
+  - B-133
+  - B-134
+  - B-136
+  - B-137
+
+created: "2026-10-24"
+updated: "2026-10-24"
+closed: null
+
+summary: |
+  Upgrade's template fetch (decision 0016): a template the record hashes
+  and the manifest does not name as the consumer's is written only from
+  fetched content that matches its hash (C-9), a local copy that matches
+  is kept over the pinned version's (C-10), a match everywhere makes no
+  network call (C-8), and no credential is sent (C-15). Below schema
+  `0.3.0` no template is requested (B-129, on OQ-66's proposed default).
+  0093 stays the schemas' fetch; this item extends it to templates.
+
+  Waits on 0093 for the fetch and the hash check, which 0045's rewrite
+  sits under, and on 0290 for the hashes and the address. A named
+  template is never written (B-135) and is 0131's. Whether an absent
+  template is fetched is OQ-51, open. Risk 3: the network path exists
+  when this starts, and the rewrite now has three owners for a template
+  - the consumer, the source and the pinned version.
+
+acceptance_criteria:
+  - "B-129 — a `templates` member below `0.3.0`: no request for a template"
+  - "B-130 — local copy differs, fetched content matches: written under the template's file name"
+  - "B-132 — fetched content mismatches the hash: stderr, nothing written, exit 3"
+  - "B-133 — source unreachable, asks for a credential, or lacks the template: stderr, nothing written, exit 3"
+  - "B-134 — every fetched schema and unnamed hashed template matches: no network call"
+  - "B-136 — a local copy matching the hash, differing from the pinned version's: left as it was"
+  - "B-137 — no credential sent with the fetch"
+  - "§ 9 carries a row naming a test for each id above."
+
+decisions:
+  - |
+    2026-10-24, spec-author's cut, recording the repository owner's
+    decision 0016: upgrade's template fetch apart from 0093, which keeps
+    the schema claims it carries, so the first release's schema fetch
+    does not wait on the template record. B-131 is 0290's, so init's
+    fetch (0292) shares it without waiting on this item. B-135 is 0131's,
+    beside B-060, the named template upgrade does not write. Not
+    depending on 0045 directly: 0093 does. Rejected: the template claims
+    added to 0093, which would hold its claims behind 0290 and schema
+    `0.3.0`. The cut is spec-author's, not an owner ruling.
+
+out_of_scope:
+  - "The schemas' fetch — 0093."
+  - "A template the manifest names as the consumer's — 0131 (B-135); § 5 #30."
+  - "The record, its rejections and the address — 0290."
+  - "Creating an absent template — OQ-51, open; no claim yet."
+  - "Moving the upstream version — C-10."
+  - "A credential — § 5 #20."
+  - "init's template fetch — 0292."

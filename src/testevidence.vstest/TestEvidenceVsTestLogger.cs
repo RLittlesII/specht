@@ -208,7 +208,8 @@ public sealed class TestEvidenceVsTestLogger : ITestLoggerWithParameters
             new TestEvidenceDiscovery(TestEvidenceDiscoveryState.Deferred, sessionId, methods, []),
             payload["bindings"].Deserialize<TestEvidenceBinding[]>(Json) ?? [],
             new TestEvidenceResults("absent", null, []),
-            payload["inputs"].Deserialize<TestEvidenceInput[]>(Json) ?? [], []);
+            payload["inputs"].Deserialize<TestEvidenceInput[]>(Json) ?? [], [],
+            payload["catalog"]?["features"].Deserialize<TestEvidenceCatalogFeature[]>(Json));
         var cases = _cases.Values.Where(testCase => testCase.Source == source).ToDictionary(static testCase => CaseId(testCase),
             StringComparer.Ordinal);
         var records = cases.Values.Select(testCase => new TestEvidenceRunnerCaseRecord(CaseId(testCase), Resolve(testCase, methods), null,
