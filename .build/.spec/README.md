@@ -17,10 +17,10 @@ author: "spec-author"
 milestone: null
 children: []
 depends_on: []
-blocks: ["F2", "F3", "F4", "F5", "F6", "0109/F1"]
+blocks: ["F2", "F3", "F4", "F5", "F6", "F9", "0109/F1"]
 spikes: []
 created: "2026-10-08"
-updated: "2026-10-17"
+updated: "2026-10-24"
 github_issue: null
 synced_at: null
 ---
