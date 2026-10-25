@@ -453,3 +453,49 @@ Feature: init
     And the source options were refused before fetching
     And the standard error names the existing manifest
     And the exit code is 3
+
+  @B-041
+  Scenario: Init writes a fetched template that matches its hash
+    Given a root whose manifest pins schema version 0.3.0 and records an upstream schema source whose record holds a content hash for the feature template
+    And its manifest names no template as the consumer's
+    And no template file under the root
+    And the source serves a feature template matching that hash
+    When init runs against it with templates
+    Then the root's feature template is the one the source served
+
+  @B-042
+  Scenario: Init refuses a fetched template that does not match its hash
+    Given a root whose manifest pins schema version 0.3.0 and records an upstream schema source whose record holds a content hash for the feature template
+    And no template file under the root
+    And the source serves a feature template that does not match that hash
+    And a snapshot of every file under the root
+    When init runs against it with templates
+    Then no file under the root has changed
+    And the standard error names the source
+    And the exit code is 3
+
+  @B-043
+  Scenario Outline: Init refuses a source that will not serve a template
+    Given a root whose manifest pins schema version 0.3.0 and records an upstream schema source whose record holds a content hash for the feature template
+    And no template file under the root
+    And the source <refusal>
+    And a snapshot of every file under the root
+    When init runs against it with templates
+    Then no file under the root has changed
+    And the standard error names the source
+    And the exit code is 3
+
+    Examples:
+      | refusal                             |
+      | cannot be reached                   |
+      | asks for a credential               |
+      | does not serve the feature template |
+
+  @B-044 @boundary
+  Scenario: Init keeps a present template without fetching it
+    Given a root whose manifest pins schema version 0.3.0 and records an upstream schema source whose record holds a content hash for the feature template
+    And the feature template is present under the root
+    And the network is unavailable
+    When init runs against it with templates
+    Then no network call was attempted
+    And the feature template is unchanged
