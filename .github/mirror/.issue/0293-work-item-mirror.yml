@@ -8,7 +8,7 @@ value: 3
 risk: 4
 
 parent: "0055"
-children: ["0294", "0295", "0296"]
+children: ["0294", "0295", "0296", "0297"]
 
 depends_on: []
 spikes: []

@@ -1,0 +1,46 @@
+id: "0297"
+type: bug
+title: Read the sub-issue node lookup as gh prints it
+
+status: in-progress
+
+risk: 2
+
+parent: "0293"
+children: []
+
+depends_on: []
+spikes: []
+
+spec: .github/mirror/.spec/README.md
+
+claims:
+  - B-054
+
+created: "2026-10-25"
+updated: "2026-10-25"
+closed: null
+
+summary: |
+  The first live mirror run, Actions run 40174035328 after #281 merged,
+  created all 279 issues and closed the done ones, then stopped at the
+  first sub-issue link. `Gh.node()` passed `--jq .data.repository.issue.id`,
+  for which `gh` prints the string result raw rather than as JSON, so
+  `values()` raised `JSONDecodeError` and no `add_sub_issue` write was
+  made. The unit tests drive a fake `gh`, so the real adapter's reading of
+  `gh`'s output was never tested (C-11). The lookup now reads the whole
+  JSON document and indexes the id; a live dry run plans 202
+  `add_sub_issue` writes. Risk 2: one adapter line, and the next run
+  converges (B-031).
+
+acceptance_criteria:
+  - "B-054 — an issue created in a run linked under its parent in that run"
+  - "C-11 — the real `gh` adapter's reading of `gh`'s output tested against that output as `gh` prints it"
+  - "Lesson 0001 in `.github/mirror/.spec/lessons/` and its § 10 row"
+  - "§ 9 carries a row naming a test for each id above."
+
+decisions: []
+
+out_of_scope:
+  - "Running the mirror with `--apply`; the next push to `main` or item 0296's run converges the links (B-031)."
+  - "The convergence and backfill runs, and the documentation deltas - item 0296."
