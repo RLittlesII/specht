@@ -9,7 +9,7 @@ risk: 3
 parent: "0041"
 children: []
 
-depends_on: ["0130", "0045", "0047"] # reads 0130's key; narrows the rewrite 0045 performs; extends 0047's listing of what changed
+depends_on: ["0130", "0045", "0047", "0290"] # reads 0130's key; narrows the rewrite 0045 performs; extends 0047's listing of what changed; reads the template hashes 0290 defines
 spikes: []
 
 spec: src/tool/.spec/README.md
@@ -21,9 +21,10 @@ claims:
   - B-061
   - B-062
   - B-063
+  - B-135
 
 created: "2026-10-09"
-updated: "2026-10-10"
+updated: "2026-10-24"
 closed: null
 
 summary: |
@@ -41,8 +42,9 @@ summary: |
 acceptance_criteria:
   - "B-060 — a named template is not written"
   - "B-061 — each skipped template printed with the reason"
-  - "B-062 — an unnamed template that differs is rewritten"
+  - "B-062 — an unnamed template no source hashes, that differs, is rewritten"
   - "B-063 — no template file the pinned version does not ship is touched"
+  - "B-135 — a named template the upstream source hashes is not written"
   - "B-005 — a template named: the frontmatter schemas still rewritten (its `@boundary` scenario)"
   - "B-006 — only a named template differs: current, nothing rewritten (its second scenario)"
   - "§ 9 carries a row naming a test for each id above."
@@ -54,10 +56,18 @@ decisions:
     since none can be shown without the key (0130) and the rewrite (0045).
     B-064 is withdrawn into B-005 and carried by no item. Rejected: B-063
     in 0045, where its case of a name in the manifest could not be shown.
+  - |
+    2026-10-24, spec-author, recording the repository owner's decision
+    0016: B-135 added, a named template upgrade does not write whatever
+    source is recorded, beside B-060. B-062 as amended rewrites only a
+    template no recorded upstream source hashes; a hashed one is the
+    source's (0291). Both halves need the hashes, so the item waits on
+    0290. Rejected: B-135 in 0291, which would split the named template's
+    two claims across items.
 
 out_of_scope:
   - "The key and the check under it — 0130."
   - "A name the pinned version does not ship as an invalid manifest — OQ-27; no claim yet."
-  - "An upstream template source — § 5 #14; OQ-26."
+  - "Fetching a template an upstream source hashes — 0291."
   - "`init` beside a named template — § 5 #18."
   - "Validating a template's content — § 5 #15."

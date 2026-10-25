@@ -1,0 +1,83 @@
+id: "0290"
+type: task
+title: Read the template hashes an upstream schema source records
+
+status: ready-for-architecture
+
+risk: 3
+
+parent: "0041"
+children: []
+
+depends_on: ["0130", "0176", "0189"] # names a template as 0130's key does; extends 0176's record; schema 0.3.0 is cut with 0189's target
+spikes: []
+
+spec: src/tool/.spec/README.md
+
+claims:
+  - B-125
+  - B-126
+  - B-127
+  - B-128
+  - B-131
+
+created: "2026-10-24"
+updated: "2026-10-24"
+closed: null
+
+summary: |
+  Decision 0016 extends the `spechtSchema` record with one SHA-256 hash
+  for each template the source supplies, known from schema `0.3.0`. This
+  item is the engine reading that member into 0176's model: the hashed
+  templates, their rejections, the address each is fetched from, and a
+  pin below `0.3.0` checking as it does without the member. It fetches
+  nothing; upgrade's fetch is 0291 and init's is 0292, and both wait on
+  this item, as 0093 and 0095 wait on 0176.
+
+  The member's name and key form are OQ-65, open, and the treatment of
+  the member below `0.3.0` is OQ-66, open. B-125 to B-128 are written on
+  their proposed defaults, (a) each; neither is put to the owner, and
+  this item does not answer them. A ruling other than (a) changes these
+  claims before this item is built.
+
+  Waits on 0176 for the record it extends, on 0130 for the form a
+  template's name takes in the manifest, which a hash's key repeats,
+  and on 0189 for the target that cuts schema `0.3.0`. Risk 3: a member
+  of a published manifest schema stays (C-1).
+
+acceptance_criteria:
+  - "B-125 — a `templates` object at `0.3.0` or later: each member a hashed template, by file name"
+  - "B-126 — a template hash not in the sha256 form: invalid, the template named"
+  - "B-127 — a hash for a file the pinned version does not ship: invalid, the file named"
+  - "B-128 — a `templates` member below `0.3.0`: the check's report unchanged"
+  - "B-131 — each hashed template's address: the location followed by its file name"
+  - "A manifest whose record hashes no template checks exactly as before: 0001-F1 B-004's golden baseline report is unchanged"
+  - "§ 9 carries a row naming a test for each id above."
+
+decisions:
+  - |
+    2026-10-24, spec-author's cut, recording the repository owner's
+    decision 0016: the record apart from the two commands that fetch from
+    it (0291, 0292), as 0176 was cut apart from 0093 and 0095. B-131 is
+    here and not with upgrade's fetch, so the address is settled once for
+    both init and upgrade and 0292 does not wait on 0291; the precedent
+    is B-074 in 0176. Rejected: B-131 in 0291, which would hold init's
+    fetch behind upgrade's, the order 0095's re-cut of 2026-10-11 removed.
+    The cut is spec-author's, not an owner ruling.
+  - |
+    2026-10-24, spec-author: no item cuts schema `0.3.0`. Decision 0015
+    places B-118 to B-124 in it and carries no item; 0189 builds the cut
+    target and cuts no version. Which item first cuts `0.3.0` with that
+    target - this one, or one for decision 0015 - is not decided and is
+    left for the repository owner. Until then this item cannot pin a
+    fixture to `0.3.0`. That the member is `0.3.0`'s at all rests on
+    OQ-60 (a), open.
+
+out_of_scope:
+  - "Fetching a template — 0291 (upgrade), 0292 (init)."
+  - "The member's name and key form — OQ-65, open."
+  - "Rejecting the member below `0.3.0` — OQ-66, open; B-128 states its default."
+  - "The check verifying a fetched template, or stopping when one is absent — § 5 #28."
+  - "A template record apart from `spechtSchema` — § 5 #29."
+  - "Recording a template hash from init's command line — 0001-F4 § 5 #19."
+  - "A credential — § 5 #20."
