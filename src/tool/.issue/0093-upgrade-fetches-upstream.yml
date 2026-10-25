@@ -2,7 +2,7 @@ id: "0093"
 type: task
 title: Fetch and verify a recorded upstream schema source on upgrade
 
-status: ready-for-architecture
+status: ready-for-implementation
 
 risk: 3
 
@@ -25,7 +25,7 @@ claims:
   - B-083
 
 created: "2026-10-08"
-updated: "2026-10-11"
+updated: "2026-10-24"
 closed: null
 
 summary: |
@@ -60,6 +60,30 @@ decisions:
     0008: B-082 and B-083 added, the name each fetched file is written
     under and a fetch that sends no credential (C-15). The cut is
     spec-author's.
+  - |
+    2026-10-24, implementer (architecture pass; nothing built): § 6 and
+    § 7 "Upgrade fetches the recorded source" design the fetch. It
+    replaces 0045's upstream skip in `UpgradeWriter.Upgrade`. For each
+    `UpstreamSchemaSource.Files` kind the local copy is read through
+    `SpecManifestStore.ReadConfigurationFile` under its
+    `frontmatterSchemas` name; a copy matching its hash is current and
+    makes no network call, an absent one stays absent (OQ-51 (a), open;
+    `specht init` fetches it, B-079), and a differing one is fetched
+    through 0095's `UpstreamSchemaFetcher`, which verifies before
+    returning. A new `UpstreamSchemaFile.Matches` holds the hash
+    identity for the writer, the fetcher and `UpstreamSchemaCopy`.
+    Every read, comparison and fetch runs before the first write, so a
+    mismatch, an unreachable source or a 401/404 refusal writes nothing;
+    that is OQ-44's and OQ-45's proposed default, both still open for
+    `upgrade`. `UpgradeCommand` catches `SpechtUpstreamSchemaException`
+    as exit 3, naming the recorded address without user information.
+    No manifest byte is written. The credential-free client and the
+    fetcher move from `AddInit` to a shared
+    `Features/UpstreamFetchRegistration.cs` that `AddInit` and
+    `AddUpgrade` both call; `UpgradeWriter` takes the fetcher. Templates
+    stay compared to the pinned version's until the template fetch
+    (B-130 to B-137) lands. ADR-0013 and ADR-0014 hold: existing
+    stores, the handler as the test seam, no mediator.
 
 out_of_scope:
   - "Moving the upstream version — C-10."

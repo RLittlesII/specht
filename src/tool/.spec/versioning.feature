@@ -244,6 +244,7 @@ Feature: Schema versioning
   @B-027
   Scenario: Upgrade refuses a fetched schema that does not match its hash
     Given the manifest records an upstream schema source with its version and content hash
+    And the root's local copy does not match that hash
     And the source serves content that does not match that hash
     And a snapshot of every file under the root
     When upgrade runs
