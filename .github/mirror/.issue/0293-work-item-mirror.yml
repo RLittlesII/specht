@@ -1,0 +1,154 @@
+id: "0293"
+type: feature
+title: Work-item mirror
+
+status: ready-for-architecture
+
+value: 3
+risk: 4
+
+parent: "0055"
+children: ["0294", "0295", "0296"]
+
+depends_on: []
+spikes: []
+
+spec: .github/mirror/.spec/README.md
+
+claims:
+  - B-001
+  - B-002
+  - B-003
+  - B-004
+  - B-005
+  - B-006
+  - B-007
+  - B-008
+  - B-009
+  - B-010
+  - B-011
+  - B-012
+  - B-013
+  - B-014
+  - B-015
+  - B-016
+  - B-017
+  - B-018
+  - B-019
+  - B-020
+  - B-021
+  - B-022
+  - B-023
+  - B-024
+  - B-025
+  - B-026
+  - B-027
+  - B-028
+  - B-029
+  - B-030
+  - B-031
+  - B-032
+  - B-033
+  - B-034
+  - B-035
+  - B-036
+  - B-037
+  - B-038
+  - B-039
+  - B-040
+  - B-041
+  - B-042
+  - B-043
+  - B-044
+  - B-045
+  - B-046
+  - B-047
+  - B-048
+  - B-049
+  - B-050
+  - B-051
+
+created: "2026-10-24"
+updated: "2026-10-24"
+closed: null
+
+summary: |
+  As a reader of this repository on GitHub, I want every work item and
+  epic on `main` shown as a read-only issue, open or closed as the item
+  is and linked to its parent and to the pull request that delivered it,
+  so that the roadmap and what is done are visible without a clone, while
+  the work items stay the tracker and nothing on GitHub is read back.
+  Value 3: it removes § 1's failure state for readers on GitHub but ships
+  nothing in `specht.tool` (C-9) and sits on no `.issue/.goal` path.
+  Risk 4: about 275 public issues written with an `issues: write` token,
+  delivery derived from git history, and the queue script's reader
+  changed under it (C-7).
+
+acceptance_criteria:
+  - "B-001 — one issue per work item (0294)"
+  - "B-002 — one issue per epic (0294)"
+  - "B-003 — plain `specht-item` marker for a unique id (0294)"
+  - "B-004 — label `mirrored` (0294)"
+  - "B-005 — item title `<id>: <title>` (0294)"
+  - "B-006 — epic title `Epic <id>: <title>` (0294)"
+  - "B-007 — label `type:<type>` (0294)"
+  - "B-008 — one `status:<status>` label on an open item (0294)"
+  - "B-009 — no `status:` label on a done item (0294)"
+  - "B-010 — label `goal` from `.issue/.goal` (0294)"
+  - "B-011 — a missing label created first (0294)"
+  - "B-012 — done item: closed as completed (0294)"
+  - "B-013 — open item: open, reopened if closed (0294)"
+  - "B-014 — sub-issue of the parent item's issue (0294)"
+  - "B-015 — sub-issue of the epic's issue (0294)"
+  - "B-016 — provenance line naming the path (0294)"
+  - "B-017 — Delivered by: the first `done` commit's pull request (0294)"
+  - "B-018 — Delivered by: the latest subject naming the id (0294)"
+  - "B-019 — Delivered by: the commit's sha (0294)"
+  - "B-020 — summary, criteria, decisions, out of scope rendered (0294)"
+  - "B-021 — item verbatim in a fenced `yaml` block (0294)"
+  - "B-022 — read-only footer (0294)"
+  - "B-023 — a duplicated id: each body names the other path (0294)"
+  - "B-024 — `Delivers #<issue> (<id>).` on the done commit's pull request (0294)"
+  - "B-025 — done commit naming no pull request: skipped (0294)"
+  - "B-026 — the `Delivers` comment posted once (0294)"
+  - "B-027 — backfill posts a missing `Delivers` comment once (0294)"
+  - "B-028 — pull-request bodies untouched (0294)"
+  - "B-029 — nothing changed: nothing written (0294)"
+  - "B-030 — only differing fields written (0294)"
+  - "B-031 — an interrupted run finished by the next (0294)"
+  - "B-032 — an issue without the marker untouched (0294)"
+  - "B-033 — a removed file's issue neither closed nor deleted (0294)"
+  - "B-034 — a removed file's issue labelled `stale` (0294)"
+  - "B-035 — a removed file warned in the step summary (0294)"
+  - "B-036 — a push to `main` on the trigger paths runs it (0295)"
+  - "B-037 — a manual start runs it (0295)"
+  - "B-038 — a push off the trigger paths does not run it (0295)"
+  - "B-039 — no run on another branch or a pull request (0295)"
+  - "B-040 — runs queue, none cancelled (0295)"
+  - "B-041 — step summary counts (0294)"
+  - "B-042 — the tree unchanged by anything set on GitHub (0294)"
+  - "B-043 — epic label `type:epic` (0294)"
+  - "B-044 — one `status:<status>` label on an open epic (0294)"
+  - "B-045 — done epic: closed as completed (0294)"
+  - "B-046 — open epic: open, reopened if closed (0294)"
+  - "B-047 — epic's `## Summary` rendered (0294)"
+  - "B-048 — epic verbatim in a fenced `markdown` block (0294)"
+  - "B-049 — a duplicated id's marker names its path (0294)"
+  - "B-050 — no `status:` label on a done epic (0294)"
+  - "B-051 — no Summary: the epic's `description` in its place (0294)"
+  - "§ 9 carries a row naming a test for each id above."
+
+decisions:
+  - |
+    2026-10-24, at the cut from the approved specification: sliced into
+    the mirror script with the extended shared item reader and its unit
+    tests (0294), the generated workflow that runs it (0295, after 0294),
+    and the first live run with backfill and the documentation deltas
+    § 10 records as owed (0296, after 0294 and 0295). Every claim the
+    script's plan and writes satisfy is 0294's; the trigger and
+    concurrency claims B-036 to B-040 are 0295's; 0296 carries no claim,
+    since § 9's tests for every claim are 0294's and 0295's. OQ-4, OQ-5
+    and OQ-8 stay open with their defaults.
+
+out_of_scope:
+  - "Everything in § 5 of the spec."

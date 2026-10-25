@@ -270,7 +270,7 @@ Earlier review rows are preserved verbatim; later approvals and the current reco
 
 ## Tasks
 
-None cut. Items are cut from § 3 after agreement.
+Cut 2026-10-24 into [`../.issue/`](../.issue/): [`0293`](../.issue/0293-work-item-mirror.yml) (the Feature), with [`0294`](../.issue/0294-mirror-script.yml), the script on the shared item reader and its unit tests (B-001 to B-035, B-041 to B-051); [`0295`](../.issue/0295-mirror-workflow.yml), the generated workflow (B-036 to B-040), after `0294`; and [`0296`](../.issue/0296-mirror-first-run.yml), the first run, backfill and the § 10 documentation deltas, after both, with no claim. No item answers OQ-4, OQ-5 or OQ-8; `0294` and `0295` proceed on their defaults.
 
 ## Scoring
 

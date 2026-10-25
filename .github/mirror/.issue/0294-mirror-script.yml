@@ -1,0 +1,148 @@
+id: "0294"
+type: task
+title: Write the mirror script on the shared item reader, with its unit tests
+
+status: ready-for-architecture
+
+risk: 4
+
+parent: "0293"
+children: []
+
+depends_on: []
+spikes: []
+
+spec: .github/mirror/.spec/README.md
+
+claims:
+  - B-001
+  - B-002
+  - B-003
+  - B-004
+  - B-005
+  - B-006
+  - B-007
+  - B-008
+  - B-009
+  - B-010
+  - B-011
+  - B-012
+  - B-013
+  - B-014
+  - B-015
+  - B-016
+  - B-017
+  - B-018
+  - B-019
+  - B-020
+  - B-021
+  - B-022
+  - B-023
+  - B-024
+  - B-025
+  - B-026
+  - B-027
+  - B-028
+  - B-029
+  - B-030
+  - B-031
+  - B-032
+  - B-033
+  - B-034
+  - B-035
+  - B-041
+  - B-042
+  - B-043
+  - B-044
+  - B-045
+  - B-046
+  - B-047
+  - B-048
+  - B-049
+  - B-050
+  - B-051
+
+created: "2026-10-24"
+updated: "2026-10-24"
+closed: null
+
+summary: |
+  `.github/mirror/mirror_items.py`, standard-library Python driving `gh`
+  (C-7, decision 0007): it reads the tree, the history of `main` and the
+  marked issues, computes a plan, and with `--dry-run` prints it, with
+  `--apply` writes it one write at a time (C-10), against the repository
+  `--repo` names, with a backfill mode for B-027, and writes the step
+  summary. Items are read through the item reader in
+  `.agents/skills/specht-conventions/scripts/next.py`, extended to key
+  items by path and to read every field the mirror needs; the raw file is
+  read only for B-021. The plan is tested with `unittest` against a fake
+  `gh` and a synthetic git log (C-11, decision 0005), and a build target
+  runs the tests. OQ-8 is open: the implementer proposes the target, and
+  the `0055-F1` amendment for a new target and the `0055-F2` amendment for
+  CI's pull-request build running it, which are spec-author's to write
+  before the build changes. OQ-4's default applies: a sub-issue link the
+  cap refuses is counted skipped and named. Status
+  ready-for-architecture: § 6 and § 7 are pending and OQ-8 is open. Risk
+  4: the queue script's reader changes under it, and delivery is derived
+  from git history across squash and rebase merges (A-2).
+
+acceptance_criteria:
+  - "B-001 — one issue per work item"
+  - "B-002 — one issue per epic"
+  - "B-003 — plain `specht-item` marker for a unique id"
+  - "B-004 — label `mirrored`"
+  - "B-005 — item title `<id>: <title>`"
+  - "B-006 — epic title `Epic <id>: <title>`"
+  - "B-007 — label `type:<type>`"
+  - "B-008 — one `status:<status>` label on an open item"
+  - "B-009 — no `status:` label on a done item"
+  - "B-010 — label `goal` from `.issue/.goal`"
+  - "B-011 — a missing label created first"
+  - "B-012 — done item: closed as completed"
+  - "B-013 — open item: open, reopened if closed"
+  - "B-014 — sub-issue of the parent item's issue"
+  - "B-015 — sub-issue of the epic's issue"
+  - "B-016 — provenance line naming the path"
+  - "B-017 — Delivered by: the first `done` commit's pull request (#270 for `0045`)"
+  - "B-018 — Delivered by: the latest subject naming the id"
+  - "B-019 — Delivered by: the commit's sha"
+  - "B-020 — summary, criteria, decisions, out of scope rendered"
+  - "B-021 — item verbatim in a fenced `yaml` block, the only raw read"
+  - "B-022 — read-only footer"
+  - "B-023 — a duplicated id: each body names the other path"
+  - "B-024 — `Delivers #<issue> (<id>).` on the done commit's pull request"
+  - "B-025 — done commit naming no pull request: skipped"
+  - "B-026 — the `Delivers` comment posted once, on any rerun"
+  - "B-027 — backfill posts a missing `Delivers` comment once"
+  - "B-028 — pull-request bodies untouched"
+  - "B-029 — nothing changed: nothing written"
+  - "B-030 — only differing fields written"
+  - "B-031 — an interrupted run finished by the next"
+  - "B-032 — an issue without the marker untouched"
+  - "B-033 — a removed file's issue neither closed nor deleted"
+  - "B-034 — a removed file's issue labelled `stale`"
+  - "B-035 — a removed file warned in the step summary"
+  - "B-041 — step summary counts, skipped included"
+  - "B-042 — the tree unchanged by anything set on GitHub"
+  - "B-043 — epic label `type:epic`"
+  - "B-044 — one `status:<status>` label on an open epic"
+  - "B-045 — done epic: closed as completed"
+  - "B-046 — open epic: open, reopened if closed"
+  - "B-047 — epic's `## Summary` rendered"
+  - "B-048 — epic verbatim in a fenced `markdown` block"
+  - "B-049 — a duplicated id's marker names its path"
+  - "B-050 — no `status:` label on a done epic"
+  - "B-051 — no Summary: the epic's `description` in its place"
+  - "C-7 — one shared reader keyed by path; queue output unchanged for a tree with no duplicated id (this tree has `0220` twice, A-5)"
+  - "C-11 — `unittest`, fake `gh`, synthetic git log, no read of this repository's tree or history, run by a build target"
+  - "C-1, C-2, C-4, C-10 — no write to the tree, no read back, relative paths only, one write at a time"
+  - "§ 9 carries a row naming a test for each id above."
+
+decisions: []
+
+out_of_scope:
+  - "The workflow that runs the script, its triggers and concurrency — 0295."
+  - "The first live run, the backfill run and the documentation deltas — 0296."
+  - "A third-party Python package or a mirror-only item parser — C-7."
+  - "An item key or status value added for the mirror — C-8."
+  - "Renumbering `0220` — § 5 #8."
