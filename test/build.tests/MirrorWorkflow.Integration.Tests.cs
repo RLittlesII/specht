@@ -13,8 +13,9 @@ public sealed class MirrorWorkflowIntegrationTests
 
         Scalars(push["branches"]).Should().Equal("main");
         Scalars(push["paths"]).Should().Equal(MirroredPaths);
-        MirrorCommand().Should().StartWith("python3 .github/mirror/mirror_items.py --apply --repo \"${{ github.repository }}\"")
-            .And.Contain("--before \"${{ github.event.before }}\" --after \"${{ github.event.after }}\"");
+        MirrorCommand().Should().Be("./build.cmd --target Mirror --skip MirrorTest");
+        MirrorEnvironment()["MirrorBefore"].ToString().Should().Be("${{ github.event.before }}");
+        MirrorEnvironment()["MirrorAfter"].ToString().Should().Be("${{ github.event.after }}");
     }
 
     [Fact]
@@ -25,7 +26,7 @@ public sealed class MirrorWorkflowIntegrationTests
 
         backfill["type"].ToString().Should().Be("boolean");
         backfill["default"].ToString().Should().Be("false");
-        MirrorCommand().Should().Contain("${{ inputs.backfill && '--backfill' || '' }}");
+        MirrorEnvironment()["MirrorBackfill"].ToString().Should().Be("${{ inputs.backfill || false }}");
     }
 
     [Fact]
@@ -69,7 +70,7 @@ public sealed class MirrorWorkflowIntegrationTests
             ["issues"] = "write",
             ["pull-requests"] = "write",
         });
-        ((YamlMappingNode)MirrorStep()["env"])["GH_TOKEN"].ToString().Should().Be("${{ github.token }}");
+        MirrorEnvironment()["GH_TOKEN"].ToString().Should().Be("${{ github.token }}");
         File.ReadAllText(WorkflowPath()).Should().NotContain("secrets.");
     }
 
@@ -114,7 +115,9 @@ public sealed class MirrorWorkflowIntegrationTests
 
     private static YamlMappingNode MirrorStep() =>
         Steps().Single(static step =>
-            step.Children.ContainsKey("run") && step["run"].ToString().Contains(".github/mirror/mirror_items.py", StringComparison.Ordinal));
+            step.Children.ContainsKey("id") && step["id"].ToString() == "mirror");
+
+    private static YamlMappingNode MirrorEnvironment() => (YamlMappingNode)MirrorStep()["env"];
 
     private static string MirrorCommand() => MirrorStep()["run"].ToString().Trim();
 

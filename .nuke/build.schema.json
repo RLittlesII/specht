@@ -34,6 +34,7 @@
         "Format",
         "IntegrationTest",
         "LockSchemaVersion",
+        "Mirror",
         "MirrorTest",
         "Pack",
         "PushReleasePackages",
@@ -134,6 +135,18 @@
           "items": {
             "type": "string"
           }
+        },
+        "MirrorAfter": {
+          "type": "string",
+          "description": "The commit the push moved main to - Default is none, so no commit counts as pushed"
+        },
+        "MirrorBackfill": {
+          "type": "boolean",
+          "description": "Post every missing Delivers comment - Default is false"
+        },
+        "MirrorBefore": {
+          "type": "string",
+          "description": "The commit main pointed at before the push the mirror runs for - Default is none"
         },
         "Solution": {
           "type": "string",

@@ -59,11 +59,21 @@ jobs:
         with:
           clean: 'false'
           fetch-depth: '0'
-      - name: Mirror the work items
+      - name: 🔨 Use .NET 10 and 11 SDKs
+        uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: 'global.json'
+          dotnet-version: '10.0.401'
+      - name: 💨 Mirror Test
+        id: mirrorTest
+        run: |
+          ./build.cmd --target MirrorTest
+      - name: Mirror
+        id: mirror
         env:
           GH_TOKEN: '${{ github.token }}'
-        shell: bash
+          MirrorBefore: '${{ github.event.before }}'
+          MirrorAfter: '${{ github.event.after }}'
+          MirrorBackfill: '${{ inputs.backfill || false }}'
         run: |
-          python3 .github/mirror/mirror_items.py --apply --repo "${{ github.repository }}" \
-          --before "${{ github.event.before }}" --after "${{ github.event.after }}" \
-          ${{ inputs.backfill && '--backfill' || '' }}
+          ./build.cmd --target Mirror --skip MirrorTest
