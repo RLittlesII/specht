@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using AwesomeAssertions;
@@ -206,17 +207,20 @@ public sealed partial class DocumentationSteps
             ("feature", "src/read/.spec/README.md", "---\nid: F1\nspec_status: draft\n---\n## 3. Acceptance Criteria\n"
                 + "| ID | Claim | Source | Status |\n| --- | --- | --- | --- |\n| B-001 | Synthetic | agreement | Active |\n"),
             ("schema:feature", "contracts/feature.json", "{\"type\":\"object\"}"),
-            ("test-evidence", "test/evidence.json", AcceptanceTestEvidence.ForMethod("M:Example.Run")),
         };
         if (_repairAmbiguous)
         {
             inputs = inputs.Concat(new[] { ("feature", "src/other/.spec/README.md", inputs[1].Item3) }).ToArray();
         }
 
-        var config = "is_global = true\nbuild_property.SpechtProjectPath = test/tests.csproj\nbuild_property.TargetFramework = net10.0\n";
+        _repairInputs = inputs;
+        inputs = inputs.Append(("test-evidence", "test/evidence.json",
+            await AcceptanceTestEvidence.Current("M:Example.Run", [("test/Example.cs", _repairSource!)], inputs))).ToArray();
+        var config = "is_global = true\nbuild_property.SpechtRoot = " + AcceptanceTestEvidence.Root.Replace('\\', '/')
+            + "\nbuild_property.SpechtProjectPath = test/tests.csproj\nbuild_property.TargetFramework = net10.0\nbuild_property.Configuration = Debug\n";
         foreach (var (kind, path, text) in inputs)
         {
-            project = project.AddAdditionalDocument(path, SourceText.From(text), filePath: Path.GetFullPath(path)).Project;
+            project = project.AddAdditionalDocument(path, SourceText.From(text, Encoding.UTF8), filePath: Path.GetFullPath(path)).Project;
             config += "\n[" + Path.GetFullPath(path).Replace('\\', '/') + "]\nbuild_metadata.AdditionalFiles.SpechtInputKind = " + kind
                 + "\nbuild_metadata.AdditionalFiles.SpechtRelativePath = " + path + "\n";
         }
@@ -254,6 +258,15 @@ public sealed partial class DocumentationSteps
 
     private async Task<ImmutableArray<Diagnostic>> RepairFindings(Project project)
     {
+        var sources = new List<(string Path, string Source)>();
+        foreach (var document in project.Documents)
+        {
+            sources.Add((document.FilePath!, (await document.GetTextAsync()).ToString()));
+        }
+
+        var evidence = project.AdditionalDocuments.Single(static document => document.Name == "test/evidence.json");
+        project = project.Solution.WithAdditionalDocumentText(evidence.Id,
+            SourceText.From(await AcceptanceTestEvidence.Current("M:Example.Run", sources, _repairInputs), Encoding.UTF8)).GetProject(project.Id)!;
         var compilation = await project.GetCompilationAsync();
         compilation!.GetDiagnostics().Where(static diagnostic => diagnostic.Severity == DiagnosticSeverity.Error).Should().BeEmpty();
         return await compilation.WithAnalyzers(ImmutableArray.Create<DiagnosticAnalyzer>(new DocumentationBindingAnalyzer()), project.AnalyzerOptions)
@@ -267,6 +280,7 @@ public sealed partial class DocumentationSteps
     private string? _repairKey;
     private bool _repairBulk;
     private bool _repairAmbiguous;
+    private (string Kind, string Path, string Text)[] _repairInputs = [];
     private Project? _repairProject;
     private ImmutableArray<Diagnostic> _repairDiagnostics;
 }

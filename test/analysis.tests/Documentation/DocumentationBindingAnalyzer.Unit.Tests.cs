@@ -100,9 +100,12 @@ public sealed class DocumentationBindingAnalyzerUnitTests
             + (explicitBinding ? "/// <implements feature=\"cap:read\" claim=\"bad\" />\n" : string.Empty) + "public void Run() {}\n}";
         var builder = GeneratorTestContextBuilder.Create().WithAnalyzer<DocumentationBindingAnalyzer>()
             .WithDiagnosticSeverity(null).AddSource(path, source)
+            .AddGlobalOption("build_property.SpechtRoot", CurrentArtifact.Root)
             .AddGlobalOption("build_property.SpechtProjectPath", "test/tests.csproj")
-            .AddGlobalOption("build_property.TargetFramework", "net10.0");
-        foreach (var input in new AnalysisInputs().Inputs.Where(static input => input.Kind != "source"))
+            .AddGlobalOption("build_property.TargetFramework", "net10.0")
+            .AddGlobalOption("build_property.Configuration", "Debug");
+        var inputs = new AnalysisInputs().Inputs;
+        foreach (var input in inputs.Where(static input => input.Kind != "source"))
         {
             builder = builder.AddAdditionalText(input.RelativePath, input.Text!)
                 .AddOption(input.RelativePath, "build_metadata.AdditionalFiles.SpechtInputKind", input.Kind)
@@ -111,7 +114,7 @@ public sealed class DocumentationBindingAnalyzerUnitTests
 
         if (recognized)
         {
-            builder = builder.AddAdditionalText("test/evidence.json", TestEvidenceJson.ForMethod("M:Example.Run"))
+            builder = builder.AddAdditionalText("test/evidence.json", await new CurrentArtifact().For("M:Example.Run", [(path, source)], inputs))
                 .AddOption("test/evidence.json", "build_metadata.AdditionalFiles.SpechtInputKind", "test-evidence")
                 .AddOption("test/evidence.json", "build_metadata.AdditionalFiles.SpechtRelativePath", "test/evidence.json");
         }

@@ -130,21 +130,32 @@ Feature: Test evidence adapters
     Then both generated cases and their outcomes are recorded in the common evidence contract
     And no binding is required on the generated code
 
-  @B-017 @B-022 @boundary
+  @B-017 @boundary
   Scenario: Clean checkout builds before evidence
     Given a clean checkout with no evidence artifact and no evidence cache
     And a selected xUnit v2 project run by VSTest whose test method carries an authored verifies relationship
     And mandatory enforcement requires a verifies relationship on every test method
     And warnings are treated as errors
-    When the projects are built and analyzed before any evidence is collected
+    When the projects are built before any evidence is collected
     Then the build succeeds without a diagnostic suppression
-    And reconciliation is incomplete, with a diagnosis naming the step that produces the evidence
+    And a verifies relationship with a malformed claim or an unresolved claim is still reported
+
+  @B-022
+  Scenario: Reconciliation before any evidence
+    Given a clean checkout with no evidence artifact and no evidence cache
+    And a selected xUnit v2 project run by VSTest whose test method carries an authored verifies relationship
+    And mandatory enforcement requires a verifies relationship on every test method
+    And warnings are treated as errors
+    When reconciliation is requested before any evidence is collected
+    Then reconciliation is incomplete
+    And its diagnosis names the build, discovery and run steps that produce the evidence
 
   @B-018 @boundary
   Scenario: Stale evidence
     Given an evidence artifact produced before a test source file changed
-    When the analysis is requested
-    Then the evidence is reported as stale with a diagnosis naming the step that regenerates it
+    When reconciliation is requested
+    Then the evidence is reported as stale with a diagnosis naming the rebuild, discovery and run steps that regenerate it
+    And the build treats the artifact as provisional and still succeeds
 
   @B-019
   Scenario: Clean-checkout bootstrap
@@ -152,8 +163,9 @@ Feature: Test evidence adapters
     And a selected xUnit v2 project run by VSTest whose test method carries an authored verifies relationship
     And mandatory enforcement requires a verifies relationship on every test method
     And warnings are treated as errors
-    When the documented build, discovery, run and analysis sequence is followed
+    When the documented build, discovery, run and analysis sequence is followed, with the produced artifact supplied to the build
     Then the analysis holds current passing evidence for the authored verifies relationship
+    And the rebuild with the artifact supplied succeeds
     And no hand-written evidence or diagnostic suppression was needed
 
   @B-020 @B-021 @B-025
@@ -175,11 +187,16 @@ Feature: Test evidence adapters
     When its evidence is collected
     Then the run is reported incomplete for the owned keys it did not select
 
-  @B-023 @B-024 @boundary
+  @B-023 @boundary
   Scenario: Release excludes the test sources
     Given a global package reference present in every project
     And a Release configuration that excludes the test sources and test packages
-    And an evidence artifact left by an earlier Debug build
-    When the Release configuration is built and analyzed
+    When the Release configuration is built
     Then the build succeeds without a diagnostic suppression
-    And the Debug evidence artifact is not used as Release evidence
+
+  @B-024 @boundary
+  Scenario: Debug evidence is not Release evidence
+    Given an evidence artifact left by an earlier Debug build
+    When the Release configuration is built
+    Then the Debug evidence artifact is not used as Release evidence
+    And the build succeeds without a diagnostic suppression

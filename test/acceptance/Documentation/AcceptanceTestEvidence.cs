@@ -1,11 +1,19 @@
+using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text.Json.Nodes;
+using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Rocket.Surgery.Extensions.Testing.SourceGenerators;
 using Specht.Analysis.TestEvidence;
 
 namespace Specht.Acceptance.Documentation;
 
 internal static class AcceptanceTestEvidence
 {
+    public static string Root => Path.GetFullPath(".");
+
     public static string ForMethod(string symbolId)
     {
         var artifact = JsonNode.Parse("""
@@ -86,6 +94,41 @@ internal static class AcceptanceTestEvidence
             item["path"]!.GetValue<string>(), item["sha256"]!.GetValue<string>(), item["kind"]!.GetValue<string>())).ToArray();
         artifact["sourceFingerprint"] = fingerprint.ComputeDigests(identities.Where(static input => input.Kind is "source" or "generated-source"));
         artifact["policyFingerprint"] = fingerprint.ComputeDigests(identities.Where(static input => input.Kind is "manifest" or "schema" or "record"));
+        return artifact.ToJsonString();
+    }
+
+    public static async Task<string> Current(string symbolId, IEnumerable<(string Path, string Source)> sources,
+        IEnumerable<(string Kind, string Path, string Text)> inputs)
+    {
+        var builder = GeneratorTestContextBuilder.Create().WithGenerator<TestEvidenceCompilationExporter>()
+            .WithDiagnosticSeverity(null)
+            .AddGlobalOption("build_property.SpechtRoot", Root)
+            .AddGlobalOption("build_property.SpechtProjectPath", "test/tests.csproj")
+            .AddGlobalOption("build_property.TargetFramework", "net10.0")
+            .AddGlobalOption("build_property.Configuration", "Debug");
+        foreach (var source in sources)
+        {
+            builder = builder.AddSource(source.Path, source.Source);
+        }
+
+        foreach (var (kind, path, text) in inputs.Where(static input => input.Kind != "test-evidence"))
+        {
+            builder = builder.AddAdditionalText(path, text)
+                .AddOption(path, "build_metadata.AdditionalFiles.SpechtInputKind", kind)
+                .AddOption(path, "build_metadata.AdditionalFiles.SpechtRelativePath", path);
+        }
+
+        var result = await builder.GenerateAsync(CancellationToken.None);
+        var literal = result.Results[typeof(TestEvidenceCompilationExporter)].SyntaxTrees.Single()
+            .GetRoot(CancellationToken.None).DescendantNodes().OfType<LiteralExpressionSyntax>().Single();
+        var export = JsonNode.Parse(literal.Token.ValueText)!;
+        var artifact = JsonNode.Parse(ForMethod(symbolId))!;
+        artifact["project"] = new JsonObject { ["path"] = export["projectPath"]!.DeepClone(), ["targetFramework"] = export["targetFramework"]!.DeepClone() };
+        artifact["configuration"]!["name"] = export["configurationName"]!.DeepClone();
+        artifact["configuration"]!["fingerprint"] = export["configurationFingerprint"]!.DeepClone();
+        artifact["sourceFingerprint"] = export["sourceFingerprint"]!.DeepClone();
+        artifact["policyFingerprint"] = export["policyFingerprint"]!.DeepClone();
+        artifact["inputs"] = export["inputs"]!.DeepClone();
         return artifact.ToJsonString();
     }
 
