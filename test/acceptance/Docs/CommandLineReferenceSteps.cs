@@ -271,7 +271,7 @@ public sealed partial class CommandLineReferenceSteps
     private const string Reference = "docs/cli.md";
     private const string DefaultCommand = "specht";
 
-    private static readonly string[] SpecifiedCommands = ["specht upgrade", "specht manifest", "specht rules"];
+    private static readonly string[] SpecifiedCommands = ["specht manifest", "specht rules"];
 
     private Dictionary<string, string[][]>? _surface;
     private string? _page;

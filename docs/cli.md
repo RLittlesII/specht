@@ -7,7 +7,8 @@ type: reference
 # Command line
 
 `specht` checks a tree, `frontmatter` checks one document, `specht init` writes the files a check needs, and
-`schema` groups commands for the repository's schema version. `evidence` reconciles supplied build and runner exports.
+`schema` groups commands for the repository's schema version. `specht upgrade` brings its schemas and templates to the pin.
+`evidence` reconciles supplied build and runner exports.
 Installed as a local tool, each runs as `dotnet specht`.
 
 ## `specht`
@@ -314,3 +315,27 @@ specht schema pin 0.2.0
 ```text
 pinned schemaVersion 0.2.0 in .specht/manifest.json
 ```
+
+## `specht upgrade`
+
+```text
+specht upgrade [--root <DIR>]
+```
+
+Brings the frontmatter schemas and templates under `<DIR>/.specht/` to the bytes
+the manifest's pinned version ships. It rewrites a file that is present and
+differs, and leaves a file that is absent absent; `specht init --schemas` or
+`--templates` adds a missing part. It never changes the manifest, a pin, a file
+the pinned version does not ship, or anything outside `.specht/schema/frontmatter/`
+and `.specht/templates/`.
+
+| Option         | Value   | Default               | Does                                          |
+| -------------- | ------- | --------------------- | --------------------------------------------- |
+| `--root <DIR>` | `<DIR>` | The working directory | Names the repository root to upgrade.         |
+| `-h, --help`   | none    | none                  | Prints the command's help and writes nothing. |
+
+**Stdout.** When nothing differs, `.specht/ is current at schemaVersion <pin>`.
+After a rewrite, nothing.
+
+**Exit codes.** `0` on success; `2` for a missing root or manifest; `3` for an
+invalid manifest or an unshipped pin. Failures explain the problem on stderr.

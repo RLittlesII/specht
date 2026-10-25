@@ -6,7 +6,6 @@ using System.Linq;
 using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Nodes;
-using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Specht.Manifest;
@@ -28,7 +27,7 @@ namespace Specht.Tool.Features.Init;
 /// <param name="upstreamSchemaFetcher">The fetcher needed when an upstream source selects schemas.</param>
 /// <param name="manifestParser">The in-memory validator shared with manifest loading.</param>
 /// <implements epic="0001" feature="F4" claim="B-019" />
-public sealed partial class InitWriter(
+public sealed class InitWriter(
     IReadOnlyDictionary<string, byte[]> shippingCopy,
     IFileSystem fileSystem,
     SpecManifestParser manifestParser,
@@ -41,7 +40,7 @@ public sealed partial class InitWriter(
     /// <implements epic="0001" feature="F4" claim="B-019" />
     public static IReadOnlyDictionary<string, byte[]> ShippingCopy(Assembly assembly) =>
         assembly.GetManifestResourceNames()
-            .Where(static name => Shipped().IsMatch(name))
+            .Where(static name => ShippedFiles.Pattern().IsMatch(name))
             .ToDictionary(static name => name, name => Read(assembly, name), StringComparer.Ordinal);
 
     /// <summary>Writes each absent selected file at the manifest pin, or newest shipped version for a new manifest.</summary>
@@ -204,42 +203,21 @@ public sealed partial class InitWriter(
     }
 
     /// <implements epic="0001" feature="F4" claim="B-019" />
-    [GeneratedRegex(
-        "^(?:manifest/v(?<version>[0-9]+\\.[0-9]+\\.[0-9]+)/manifest\\.json|"
-        + "(?<folder>schema|templates)/v(?<version>[0-9]+\\.[0-9]+\\.[0-9]+)/(?<path>.+))$")]
-    private static partial Regex Shipped();
-
-    /// <implements epic="0001" feature="F4" claim="B-019" />
     private IEnumerable<(string Relative, byte[] Bytes)> Selected(bool schemas, bool templates, bool manifestPresent, SemanticVersion? pinned)
     {
-        var shipped = shippingCopy
-            .Select(static entry => (Name: Shipped().Match(entry.Key), Bytes: entry.Value))
-            .Where(static entry => entry.Name.Success)
-            .Select(static entry => (
-                Version: SemanticVersion.TryParse(entry.Name.Groups["version"].Value, out var version)
-                    ? version
-                    : throw new InvalidOperationException($"{entry.Name.Value} is embedded with an invalid schema version."),
-                Folder: entry.Name.Groups["folder"].Success ? entry.Name.Groups["folder"].Value : null,
-                Path: entry.Name.Groups["path"].Success ? entry.Name.Groups["path"].Value : null,
-                entry.Bytes))
-            .ToList();
-        var version = pinned ?? shipped.Max(static entry => entry.Version);
+        var shipped = new ShippedFiles(shippingCopy);
 
-        return shipped
-            .Where(entry => entry.Version == version)
-            .Where(entry => entry.Folder switch
+        return shipped.At(pinned ?? shipped.Newest())
+            .Where(file => file.Relative switch
             {
-                null => true,
-                "schema" => schemas && (manifestPresent || entry.Path != "frontmatter/epic.schema.json"),
-                "templates" => templates,
+                SpecManifestStore.RelativePath => true,
+                var relative when relative.StartsWith(SpecManifestStore.ConfigurationFolder + "/schema/", StringComparison.Ordinal) =>
+                    schemas && (manifestPresent || relative != EpicSchemaRelative),
+                var relative when relative.StartsWith(SpecManifestStore.TemplateFolder + "/", StringComparison.Ordinal) => templates,
                 _ => false,
             })
-            .Select(static entry => (
-                Relative: entry.Folder is null
-                    ? SpecManifestStore.RelativePath
-                    : $"{SpecManifestStore.ConfigurationFolder}/{entry.Folder}/{entry.Path}",
-                entry.Bytes))
-            .OrderBy(static entry => entry.Relative, StringComparer.Ordinal)
-            .Select(static entry => (entry.Relative, entry.Bytes));
+            .Select(static file => (file.Relative, file.Bytes));
     }
+
+    private const string EpicSchemaRelative = SpecManifestStore.FrontmatterSchemaFolder + "/epic.schema.json";
 }
