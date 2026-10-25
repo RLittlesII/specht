@@ -2,7 +2,7 @@ id: "0297"
 type: bug
 title: Read the sub-issue node lookup as gh prints it
 
-status: in-progress
+status: done
 
 risk: 2
 
@@ -19,7 +19,7 @@ claims:
 
 created: "2026-10-25"
 updated: "2026-10-25"
-closed: null
+closed: "2026-10-25"
 
 summary: |
   The first live mirror run, Actions run 40174035328 after #281 merged,
