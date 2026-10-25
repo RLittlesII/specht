@@ -1,19 +1,23 @@
 ---
 title: "Decision 0017: the consumer's templates are named in a consumerTemplates array"
-description: "Proposed, not ratified: the manifest key that names the consumer's templates is consumerTemplates, a top-level array of template file names relative to .specht/templates/, part of schema 0.1.0, with no form check beyond the array of strings"
+description: "Ratified by the repository owner on 2026-10-24: the manifest key that names the consumer's templates is consumerTemplates, a top-level array of template file names relative to .specht/templates/, part of schema 0.1.0, with no form check beyond the array of strings"
 type: decision
 ---
 
 # Decision 0017: the consumer's templates are named in a consumerTemplates array
 
 **Date:** 2026-10-24
-**Decided by:** proposed by the `implementer` for the repository owner, answering the part of `0001-F7` OQ-1 that decision 0006 left to the `implementer`; awaiting ratification
+**Decided by:** the repository owner, 2026-10-24 (see Ratification). Proposed by the `implementer`, answering the part of `0001-F7` OQ-1 that decision 0006 left to the `implementer`
 
 ## Status
 
-**Proposed. Not ratified.** Nothing below is a decision until the owner
-ratifies it. No claim names the key and no code reads it; item `0130` builds it
-once ratified.
+**Ratified 2026-10-24 by the repository owner, as proposed.** See
+[Ratification](#ratification). The rest of this section and the sections down to
+"Affects" are the proposal as it was put, and are not rewritten.
+
+As proposed: **Proposed. Not ratified.** Nothing below was a decision until the
+owner ratified it. No claim names the key and no code reads it; item `0130`
+builds it now it is ratified.
 
 ## The proposal
 
@@ -44,3 +48,14 @@ once ratified.
 ## Affects
 
 `0001-F7` § 7 "The consumer's templates key", OQ-1, B-065; items `0130`, `0131`.
+
+## Ratification
+
+**Date:** 2026-10-24
+**Ruled by:** the repository owner.
+
+**Ratified as proposed.** The key is `consumerTemplates`, a top-level array of
+template file names relative to `.specht/templates/`, part of schema `0.1.0`,
+with no form check beyond the array of strings. `0001-F7` OQ-1 is resolved for
+this key. `0001-F7` OQ-27, whether a name the pinned version does not ship is
+checked, is not decided here and stays open.
