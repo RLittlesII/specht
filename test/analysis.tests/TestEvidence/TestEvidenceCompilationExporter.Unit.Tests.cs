@@ -4,6 +4,7 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Rocket.Surgery.Extensions.Testing.SourceGenerators;
 using Specht.Analysis.Policy;
 using Specht.Analysis.TestEvidence;
+using Specht.Analysis.Tests.Gherkin;
 using Specht.Analysis.Tests.Policy;
 
 namespace Specht.Analysis.Tests.TestEvidence;
@@ -43,6 +44,32 @@ public sealed class TestEvidenceCompilationExporterUnitTests
 
         // Then
         export["requiredCaseScope"]!.GetValue<string>().Should().Be("not @visual");
+    }
+
+    [Fact]
+    public async Task NativeClaimInput_WhenExported_ShouldCarryTheCatalogMember()
+    {
+        // Given
+        var inputs = new GherkinInputs().Inputs;
+
+        // When
+        var export = await Export(inputs);
+
+        // Then
+        JsonNode.DeepEquals(export["catalog"], JsonNode.Parse(TestEvidenceJson.CatalogJson)).Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task MarkdownClaimInput_WhenExported_ShouldCarryNoCatalogMember()
+    {
+        // Given
+        var inputs = new AnalysisInputs().Inputs;
+
+        // When
+        var export = await Export(inputs);
+
+        // Then
+        export.AsObject().ContainsKey("catalog").Should().BeFalse();
     }
 
     private static async Task<JsonNode> Export(IEnumerable<AnalysisInput> inputs)

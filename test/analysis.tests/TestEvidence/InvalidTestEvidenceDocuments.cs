@@ -42,7 +42,7 @@ internal sealed class InvalidTestEvidenceDocuments : TheoryData<string, string>
         Add(laterVersion.ToJsonString(), "unsupportedContract");
 
         var unsupportedVersion = System.Text.Json.Nodes.JsonNode.Parse(TestEvidenceJson.Valid)!;
-        unsupportedVersion["formatVersion"] = 2;
+        unsupportedVersion["formatVersion"] = 0;
         Add(unsupportedVersion.ToJsonString(), "unsupportedContract");
 
         var unsupportedFormat = System.Text.Json.Nodes.JsonNode.Parse(TestEvidenceJson.Valid)!;

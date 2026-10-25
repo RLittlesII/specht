@@ -20,4 +20,5 @@ public sealed record TestEvidenceArtifact(
     IReadOnlyList<TestEvidenceBinding> Bindings,
     TestEvidenceResults Results,
     IReadOnlyList<TestEvidenceInput> Inputs,
-    IReadOnlyList<JsonElement> Scenarios);
+    IReadOnlyList<JsonElement> Scenarios,
+    IReadOnlyList<TestEvidenceCatalogFeature>? Catalog = null);
