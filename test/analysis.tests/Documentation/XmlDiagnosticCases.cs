@@ -13,7 +13,6 @@ public sealed class XmlDiagnosticCases : TheoryData<string, string, string>
         Add("<implements feature=\"cap:read\" claim=\"need/7,need/8\" />", "SPCT0003", "need/7,need/8");
         Add("<implements feature=\"cap:read\" claim=\"need/8\" />", "SPCT0004", "need/8");
         Add("<implements feature=\"cap:read\" claim=\"need/7\" extra=\"x\" />", "SPCT0002", "implements");
-        Add("<verifies feature=\"cap:read\" claim=\"need/7\" />", "SPCT0002", "verifies");
         Add("<implements feature=\"cap:read\" feature=\"cap:read\" claim=\"need/7\" />", "SPCT0002", "implements");
         Add("<implements feature=\"cap:read\" claim=\"need/7&broken;\" />", "SPCT0002", "implements");
         Add("<implements feature=\"cap:read\" claim=\"need/7\"></follows>", "SPCT0002", "implements");

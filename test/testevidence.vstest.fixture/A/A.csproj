@@ -12,11 +12,20 @@
     <PackageReference Include="xunit" />
     <PackageReference Include="xunit.runner.visualstudio" />
     <PackageReference Include="Reqnroll.xUnit" />
-    <PackageReference Include="Specht.CodeAnalysis" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="../shared/SharedCases.cs" Link="Shared/SharedCases.cs" />
     <Compile Include="../shared/SharedClaimSteps.cs" Link="Shared/SharedClaimSteps.cs" />
     <ReqnrollFeatureFile Include="../shared/SharedClaims.feature" Link="Shared/SharedClaims.feature" />
+  </ItemGroup>
+  <ItemGroup>
+    <SpechtTestEvidence Include="obj/specht-test-evidence/$(MSBuildProjectName)-$(TargetFramework).json"
+                        Condition="Exists('obj/specht-test-evidence/$(MSBuildProjectName)-$(TargetFramework).json')" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(Configuration)' == 'Release'">
+    <Compile Remove="@(Compile)" />
+    <Compile Include="Library.cs" />
+    <PackageReference Remove="Microsoft.NET.Test.Sdk;xunit;xunit.runner.visualstudio;Reqnroll.xUnit" />
+    <ReqnrollFeatureFile Remove="@(ReqnrollFeatureFile)" />
   </ItemGroup>
 </Project>

@@ -54,7 +54,7 @@ internal sealed class PartitionedEvidenceRoot : IDisposable
         File.WriteAllText(Path.Combine(_root, ".specht", "manifest.json"), configuration.ToJsonString());
     }
 
-    public void Write(string name, string project, int formatVersion, string runId, JsonArray cases, JsonArray results)
+    public void Write(string name, string project, int formatVersion, string runId, JsonArray cases, JsonArray results, JsonArray? scenarios = null)
     {
         var inputs = new[]
         {
@@ -115,8 +115,15 @@ internal sealed class PartitionedEvidenceRoot : IDisposable
                 ["kind"] = input.Kind,
             }).ToArray()),
         };
+        if (scenarios is not null)
+        {
+            artifact["scenarios"] = scenarios;
+        }
+
         File.WriteAllText(Path.Combine(_root, name), artifact.ToJsonString());
     }
+
+    public void Edit(string relativePath, string text) => File.WriteAllText(Path.Combine(_root, relativePath), text);
 
     public EvidenceResult Reconcile(params string[] evidence) => new EvidenceReconciler().Reconcile(_root, evidence, null);
 

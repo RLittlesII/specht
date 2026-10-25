@@ -16,6 +16,12 @@ public sealed class TestEvidenceFingerprint
             Hex(sha.ComputeHash(source.Content)), source.Kind)));
     }
 
+    public string Source(IEnumerable<TestEvidenceInput> inputs) =>
+        ComputeDigests(inputs.Where(static input => input.Kind is "source" or "generated-source"));
+
+    public string Policy(IEnumerable<TestEvidenceInput> inputs) =>
+        ComputeDigests(inputs.Where(static input => input.Kind is "manifest" or "schema" or "record"));
+
     public string ComputeDigests(IEnumerable<TestEvidenceInput> inputs)
     {
         using var canonical = new MemoryStream();

@@ -23,6 +23,15 @@ Add `SpechtTestEvidence` items for explicit test evidence; the package delivers
 them under the `test-evidence` input kind. Declare both item types in the project
 body.
 
+On a clean checkout no evidence exists yet. The first build recognises test methods
+provisionally and succeeds with mandatory enforcement and warnings as errors. Run
+`dotnet test --list-tests`, then `dotnet test`; the logger writes
+`obj/specht-test-evidence/<project>-<framework>.json`. Supply that file as
+`SpechtTestEvidence` to rebuild with authoritative recognition, and run `specht
+evidence --evidence obj/specht-test-evidence` to reconcile. An artifact that does
+not match the build's project, framework, configuration, sources or policy is
+ignored and recognition stays provisional.
+
 Diagnostic severity and suppression use standard Roslyn configuration. The
 package adds no application runtime dependency.
 

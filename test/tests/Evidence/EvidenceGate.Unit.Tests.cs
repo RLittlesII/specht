@@ -3,7 +3,7 @@ using Specht.Tool.Features.Evidence;
 
 namespace Specht.Tests.Evidence;
 
-/// <summary>Required-link and outcome decisions under 0201-F5 B-003, B-004, B-008 to B-010 and B-017.</summary>
+/// <summary>Required-link and outcome decisions under 0201-F5 B-003, B-004, B-008 to B-010 and B-017 to B-020.</summary>
 [Trait("Tier", "Unit")]
 public sealed class EvidenceGateUnitTests
 {
@@ -40,6 +40,32 @@ public sealed class EvidenceGateUnitTests
 
         // Then
         passes.Should().Be(expected);
+    }
+
+    [Theory]
+    [ClassData(typeof(GatedCases))]
+    public void AnOwnershipAndPlannedState_WhenEvaluated_ShouldGateOnlyAnOwnedCaseThatIsNotPlanned(bool? owned, bool planned, bool expected)
+    {
+        // Given
+
+        // When
+        var gated = EvidenceGate.Gated(owned, planned);
+
+        // Then
+        gated.Should().Be(expected);
+    }
+
+    [Theory]
+    [ClassData(typeof(PlannedLinkSets))]
+    public void ScenarioLinkStatesOfOneCase_WhenEvaluated_ShouldBePlannedOnlyWhenEveryLinkIsPlanned(string[] linkStates, bool expected)
+    {
+        // Given
+
+        // When
+        var planned = EvidenceGate.Planned(linkStates);
+
+        // Then
+        planned.Should().Be(expected);
     }
 
     [Theory]

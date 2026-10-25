@@ -46,9 +46,9 @@ internal sealed class DocumentationRepairs
         }
 
         var resolver = new BindingResolver(inputs.Catalog!, inputs.Policy!.Bindings);
-        var recognized = new DocumentationTestMethods().Read(document.Project.AnalyzerOptions, cancellationToken)
-            .Contains(symbol.GetDocumentationCommentId() ?? symbol.MetadataName);
-        var analysis = new DocumentationBindingReader().Read(symbol, resolver, recognized, cancellationToken);
+        var recognition = new DocumentationTestMethods().Read(document.Project.AnalyzerOptions, compilation, cancellationToken);
+        var recognized = recognition.Methods.Contains(symbol.GetDocumentationCommentId() ?? symbol.MetadataName);
+        var analysis = new DocumentationBindingReader().Read(symbol, resolver, recognized, cancellationToken, !recognition.Authoritative);
         var binding = analysis.Elements.FirstOrDefault(element => element.Location.SourceTree == tree
             && element.Location.SourceSpan.Contains(diagnostic.Location.SourceSpan));
         var plans = new List<DocumentationRepair>();

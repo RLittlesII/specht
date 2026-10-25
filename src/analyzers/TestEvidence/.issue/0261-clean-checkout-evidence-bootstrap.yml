@@ -1,7 +1,7 @@
 id: "0261"
 type: feature
 title: "Bootstrap evidence on a clean checkout"
-status: ready
+status: done
 value: 4
 risk: 4
 parent: "0201"
@@ -11,8 +11,8 @@ spikes: []
 spec: src/analyzers/TestEvidence/.spec/README.md
 claims: ["B-017", "B-018", "B-019", "B-022", "B-023", "B-024"]
 created: "2026-10-23"
-updated: "2026-10-23"
-closed: null
+updated: "2026-10-24"
+closed: "2026-10-24"
 summary: |
   As a consumer adopting the analyzer on a fresh clone I want the first build to succeed
   before any evidence exists, and every later step to say which step regenerates missing or

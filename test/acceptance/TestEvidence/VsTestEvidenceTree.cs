@@ -69,6 +69,14 @@ internal sealed class VsTestEvidenceTree : IDisposable
     public EvidenceResult Reconcile() =>
         new EvidenceReconciler().Reconcile(Root, _scopes.Keys.Order(StringComparer.Ordinal).Select(Output).ToArray(), null);
 
+    public EvidenceResult ReconcileWithoutEvidence()
+    {
+        Prepare();
+        return new EvidenceReconciler().Reconcile(Root, [], null);
+    }
+
+    public void EditSource() => File.AppendAllText(Path.Combine(Root, "test/shared/SharedCases.cs"), "\n");
+
     public void Dispose() => Directory.Delete(Root, true);
 
     private static string Output(string project) => $"test/{project}/obj/{project}-net10.0.json";

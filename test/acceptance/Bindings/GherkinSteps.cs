@@ -491,9 +491,12 @@ public sealed class GherkinSteps
         var source = "public class Example\n{\n" + annotation + "    public void Run() {}\n}";
         var builder = GeneratorTestContextBuilder.Create().WithAnalyzer<DocumentationBindingAnalyzer>()
             .WithDiagnosticSeverity(null).AddSource("test/Example.cs", source)
+            .AddGlobalOption("build_property.SpechtRoot", AcceptanceTestEvidence.Root)
             .AddGlobalOption("build_property.SpechtProjectPath", "test/tests.csproj")
-            .AddGlobalOption("build_property.TargetFramework", "net10.0");
-        foreach (var input in Build())
+            .AddGlobalOption("build_property.TargetFramework", "net10.0")
+            .AddGlobalOption("build_property.Configuration", "Debug");
+        var built = Build();
+        foreach (var input in built)
         {
             builder = builder.AddAdditionalText(input.RelativePath, input.Text!)
                 .AddOption(input.RelativePath, "build_metadata.AdditionalFiles.SpechtInputKind", input.Kind)
@@ -502,7 +505,8 @@ public sealed class GherkinSteps
 
         if (_enforcementKind == "testMethod")
         {
-            builder = builder.AddAdditionalText("test/evidence.json", AcceptanceTestEvidence.ForMethod("M:Example.Run"))
+            builder = builder.AddAdditionalText("test/evidence.json", await AcceptanceTestEvidence.Current("M:Example.Run", [("test/Example.cs", source)],
+                built.Select(static input => (input.Kind, input.RelativePath, input.Text!))))
                 .AddOption("test/evidence.json", "build_metadata.AdditionalFiles.SpechtInputKind", "test-evidence")
                 .AddOption("test/evidence.json", "build_metadata.AdditionalFiles.SpechtRelativePath", "test/evidence.json");
         }

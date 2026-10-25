@@ -226,7 +226,7 @@ public sealed class VsTestEvidenceSteps
         var finding = _result!.Report["findings"]!.AsArray().Should()
             .ContainSingle(static item => item!["kind"]!.GetValue<string>() == "incompleteRun").Subject!;
         finding["identity"]!.GetValue<string>().Should().Contain("test/a/a.csproj");
-        _result.ExitCode.Should().Be(0);
+        _result.ExitCode.Should().Be(1);
     }
 
     [AfterScenario]

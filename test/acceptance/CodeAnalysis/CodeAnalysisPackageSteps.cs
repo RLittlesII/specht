@@ -1,7 +1,10 @@
 using System.IO.Compression;
+using System.Text.Json.Nodes;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using AwesomeAssertions;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Reqnroll;
 using YamlDotNet.RepresentationModel;
 
@@ -258,6 +261,11 @@ public sealed class CodeAnalysisPackageSteps(PackedTool tool) : IDisposable
             "--source", Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".nuget", "packages"),
             "--packages", Path.Combine(_consumer!, "packages"));
         restore.ExitCode.Should().Be(0, restore.Stdout + restore.Stderr);
+        if (_evidence is not null)
+        {
+            await MatchEvidenceToTheCompilation(project);
+        }
+
         var build = await tool.DotNetAsync("build", project, "--no-restore", "-p:UseSharedCompilation=false");
         build.ExitCode.Should().Be(0, build.Stdout + build.Stderr);
         _analysis = build.Stdout + build.Stderr;
@@ -282,6 +290,30 @@ public sealed class CodeAnalysisPackageSteps(PackedTool tool) : IDisposable
     }
 
     private static string VersionOf(string path, string prefix) => Path.GetFileNameWithoutExtension(path)[prefix.Length..];
+
+    private async Task MatchEvidenceToTheCompilation(string project)
+    {
+        var generated = Directory.CreateTempSubdirectory("specht-codeanalysis-generated-").FullName;
+        try
+        {
+            var first = await tool.DotNetAsync("build", project, "--no-restore", "-p:UseSharedCompilation=false",
+                "-p:EmitCompilerGeneratedFiles=true", $"-p:CompilerGeneratedFilesOutputPath={generated}");
+            first.ExitCode.Should().Be(0, first.Stdout + first.Stderr);
+            var file = Directory.GetFiles(generated, "Specht.TestEvidence.CompilationExport.g.cs", SearchOption.AllDirectories).Single();
+            var export = JsonNode.Parse(CSharpSyntaxTree.ParseText(await File.ReadAllTextAsync(file)).GetRoot()
+                .DescendantNodes().OfType<LiteralExpressionSyntax>().Single().Token.ValueText)!;
+            var path = Path.Combine(_consumer!, _evidence!);
+            var artifact = JsonNode.Parse(await File.ReadAllTextAsync(path))!;
+            artifact["sourceFingerprint"] = export["sourceFingerprint"]!.DeepClone();
+            artifact["policyFingerprint"] = export["policyFingerprint"]!.DeepClone();
+            artifact["inputs"] = export["inputs"]!.DeepClone();
+            await File.WriteAllTextAsync(path, artifact.ToJsonString());
+        }
+        finally
+        {
+            Directory.Delete(generated, recursive: true);
+        }
+    }
 
     private ZipArchive OpenAnalysisPackage() =>
         ZipFile.OpenRead(_analysisPackage ?? throw new InvalidOperationException("No analysis package was produced."));

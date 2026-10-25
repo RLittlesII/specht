@@ -3,6 +3,7 @@ using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using AwesomeAssertions;
+using Specht.Tool.Features.Evidence;
 
 namespace Specht.Build.Tests;
 
@@ -124,6 +125,129 @@ public sealed partial class TestEvidenceVsTestIntegrationTests(TestEvidenceVsTes
         cases.Select(caseId => Outcome(executed, caseId)).Should().AllBeEquivalentTo("passed", evidence.Because);
     }
 
+    [Fact]
+    public async Task CleanCheckoutWithMandatoryEnforcementAndWarningsAsErrors_WhenBuiltBeforeAnyEvidence_ShouldSucceedWithoutASuppression()
+    {
+        // Given
+        var evidence = await Collected();
+        var manifest = evidence.Consumer.Text(".specht/manifest.json");
+        manifest.Should().Contain("\"testMethod\"", evidence.Because).And.Contain("\"verifies\"", evidence.Because);
+        evidence.Consumer.Text("Directory.Build.props").Should().Contain("<TreatWarningsAsErrors>true</TreatWarningsAsErrors>", evidence.Because);
+        evidence.Consumer.Text("A/LocalCases.cs").Should().Contain("<verifies ", evidence.Because);
+        evidence.Consumer.Text("shared/SharedCases.cs").Should().Contain("<verifies ", evidence.Because);
+
+        // When
+        var builds = new[] { evidence.Builds["A-build"], evidence.Builds["B-build"] };
+
+        // Then
+        builds.Select(static build => build.ExitCode).Should().Equal([0, 0], evidence.Because);
+        builds.Select(static build => build.Output).Should().NotContain(static output => output.Contains("SPCT", StringComparison.Ordinal),
+            evidence.Because);
+        evidence.Consumer.Authored().Select(evidence.Consumer.Text).Should()
+            .NotContain(static text => text.Contains("SPCT", StringComparison.Ordinal) || text.Contains("#pragma warning disable", StringComparison.Ordinal)
+                || text.Contains("SuppressMessage", StringComparison.Ordinal), evidence.Because);
+    }
+
+    [Fact]
+    public async Task CleanCheckout_WhenReconciledBeforeAnyEvidence_ShouldBeIncomplete()
+    {
+        // Given
+        var evidence = await Collected();
+
+        // When
+        var result = evidence.Reconciliations["empty"];
+
+        // Then
+        result.ExitCode.Should().Be(2, evidence.Because);
+        result.Report["inputState"]!["state"]!.GetValue<string>().Should().Be("incomplete", evidence.Because);
+    }
+
+    [Fact]
+    public async Task DocumentedSequence_WhenFollowedOnACleanCheckout_ShouldHoldCurrentPassingEvidenceForTheAuthoredVerifies()
+    {
+        // Given
+        var evidence = await Collected();
+
+        // When
+        var report = evidence.Reconciliations["run"].Report;
+
+        // Then
+        evidence.Artifact("A", afterRun: false).GetProperty("results").GetProperty("state").GetString().Should().Be("absent", evidence.Because);
+        evidence.Artifact("A", afterRun: true).GetProperty("results").GetProperty("state").GetString().Should().Be("available", evidence.Because);
+        report["inputState"]!["state"]!.GetValue<string>().Should().Be("complete", evidence.Because);
+        report["findings"]!.AsArray().Select(static finding => finding!["kind"]!.GetValue<string>()).Should()
+            .NotContain(["missingCompilation", "staleEvidence", "invalidInput", "deferredCases"], evidence.Because);
+        var binding = report["bindings"]!.AsArray().Single(static row => row!["symbolId"]!.GetValue<string>() == "M:Fixture.A.LocalCases.BoundFact")!;
+        binding["current"]!.GetValue<bool>().Should().BeTrue(evidence.Because);
+        binding["status"]!.GetValue<string>().Should().Be("resolved", evidence.Because);
+        report["cases"]!.AsArray().Single(static row => row!["methodSymbolId"]!.GetValue<string>() == "M:Fixture.A.LocalCases.BoundFact")!["outcome"]!
+            .GetValue<string>().Should().Be("passed", evidence.Because);
+    }
+
+    [Fact]
+    public async Task ArtifactProducedByTheRun_WhenSuppliedToTheRebuild_ShouldBuildWithoutASuppression()
+    {
+        // Given
+        var evidence = await Collected();
+
+        // When
+        var rebuild = evidence.Builds["A-rebuild"];
+
+        // Then
+        rebuild.ExitCode.Should().Be(0, evidence.Because);
+        rebuild.Output.Should().NotContain("SPCT", evidence.Because);
+    }
+
+    [Fact]
+    public async Task SourceEditedAfterTheRun_WhenReconciledAndRebuilt_ShouldReportStaleEvidenceAndStillBuild()
+    {
+        // Given
+        var evidence = await Collected();
+
+        // When
+        var report = evidence.Reconciliations["stale"].Report;
+
+        // Then
+        var stale = report["findings"]!.AsArray().Where(static finding => finding!["kind"]!.GetValue<string>() == "staleEvidence").ToArray();
+        stale.Should().NotBeEmpty(evidence.Because);
+        stale.Select(static finding => finding!["path"]!.GetValue<string>()).Should().Contain("A/LocalCases.cs", evidence.Because);
+        stale.Select(static finding => finding!["message"]!.GetValue<string>()).Should()
+            .OnlyContain(static message => message.Contains("rebuild", StringComparison.OrdinalIgnoreCase), evidence.Because);
+        evidence.Builds["A-stale"].ExitCode.Should().Be(0, evidence.Because);
+        evidence.Builds["A-stale"].Output.Should().NotContain("SPCT", evidence.Because);
+    }
+
+    [Fact]
+    public async Task ReleaseConfigurationWithoutTestSourcesOrPackages_WhenBuiltUnderAGlobalPackageReference_ShouldSucceedWithoutASuppression()
+    {
+        // Given
+        var evidence = await Collected();
+        evidence.Consumer.Text("Directory.Packages.props").Should().Contain("<GlobalPackageReference Include=\"Specht.CodeAnalysis\"", evidence.Because);
+
+        // When
+        var release = evidence.Builds["A-release"];
+
+        // Then
+        release.ExitCode.Should().Be(0, evidence.Because);
+        release.Output.Should().NotContain("SPCT", evidence.Because);
+    }
+
+    [Fact]
+    public async Task DebugArtifactBesideAReleaseBuild_WhenReleaseIsBuilt_ShouldSucceedWithoutUsingItAsReleaseEvidence()
+    {
+        // Given
+        var evidence = await Collected();
+        evidence.Artifact("A", afterRun: true).GetProperty("configuration").GetProperty("name").GetString().Should()
+            .Be("Debug", evidence.Because);
+
+        // When
+        var release = evidence.Builds["A-release-beside"];
+
+        // Then
+        release.ExitCode.Should().Be(0, evidence.Because);
+        release.Output.Should().NotContain("SPCT", evidence.Because);
+    }
+
     public sealed class CategoryRows : TheoryData<string, string, string[], bool>
     {
         public CategoryRows()
@@ -146,7 +270,10 @@ public sealed partial class TestEvidenceVsTestIntegrationTests(TestEvidenceVsTes
         }
     }
 
-    public sealed record VsTestEvidence(IReadOnlyDictionary<string, JsonElement?> Artifacts, string Because)
+    public sealed record BuildStep(int ExitCode, string Output);
+
+    public sealed record VsTestEvidence(IReadOnlyDictionary<string, JsonElement?> Artifacts, IReadOnlyDictionary<string, BuildStep> Builds,
+        IReadOnlyDictionary<string, EvidenceResult> Reconciliations, ConsumerFiles Consumer, string Because)
     {
         public JsonElement Artifact(string project, bool afterRun)
         {
@@ -154,6 +281,18 @@ public sealed partial class TestEvidenceVsTestIntegrationTests(TestEvidenceVsTes
             artifact.Should().NotBeNull(Because);
             return artifact!.Value;
         }
+    }
+
+    public sealed record ConsumerFiles(string Root)
+    {
+        public string Text(string relative) => File.ReadAllText(Path.Combine(Root, relative));
+
+        public IEnumerable<string> Authored() => Directory.EnumerateFiles(Root, "*", SearchOption.AllDirectories)
+            .Where(static file => file.EndsWith(".cs", StringComparison.Ordinal) || file.EndsWith(".csproj", StringComparison.Ordinal)
+                || file.EndsWith(".props", StringComparison.Ordinal))
+            .Where(file => !Path.GetRelativePath(Root, file).Split(Path.DirectorySeparatorChar)
+                .Any(static part => part is "bin" or "obj" or "packages" or ".diag"))
+            .Select(file => Path.GetRelativePath(Root, file).Replace('\\', '/'));
     }
 
     public sealed partial class VsTestRun : IAsyncDisposable
@@ -243,6 +382,13 @@ public sealed partial class TestEvidenceVsTestIntegrationTests(TestEvidenceVsTes
             }
         }
 
+        private static async Task<BuildStep> Step(StringBuilder log, string directory, params string[] arguments)
+        {
+            var before = log.Length;
+            var exit = await Run(log, directory, arguments);
+            return new BuildStep(exit, log.ToString(before, log.Length - before));
+        }
+
         private static async Task<int> Run(StringBuilder log, string directory, params string[] arguments)
         {
             using var process = new Process();
@@ -293,25 +439,47 @@ public sealed partial class TestEvidenceVsTestIntegrationTests(TestEvidenceVsTes
             var package = Directory.GetFiles(_feed, "Specht.CodeAnalysis.*.nupkg").SingleOrDefault();
             if (pack != 0 || package is null)
             {
-                return await Finish(log, artifacts);
+                return await Finish(log, artifacts, new Dictionary<string, BuildStep>(), new Dictionary<string, EvidenceResult>());
             }
 
-            await Arrange(Path.GetFileNameWithoutExtension(package)["Specht.CodeAnalysis.".Length..]);
-            foreach (var (project, filter) in new[] { ("A", "Category!=visual"), ("B", "Category=visual") })
+            await Arrange(log, Path.GetFileNameWithoutExtension(package)["Specht.CodeAnalysis.".Length..]);
+            var builds = new Dictionary<string, BuildStep>(StringComparer.Ordinal);
+            var reconciliations = new Dictionary<string, EvidenceResult>(StringComparer.Ordinal);
+            var projects = new[] { ("A", "Category!=visual"), ("B", "Category=visual") };
+            foreach (var (project, _) in projects)
+            {
+                await Run(log, _consumer, "restore", $"{project}/{project}.csproj", "--packages", Path.Combine(_consumer, "packages"));
+                builds[project + "-build"] = await Step(log, _consumer, "build", $"{project}/{project}.csproj", "--no-restore");
+            }
+
+            builds["A-release"] = await Step(log, _consumer, "build", "A/A.csproj", "--no-restore", "--configuration", "Release");
+            reconciliations["empty"] = new EvidenceReconciler().Reconcile(_consumer, [], null);
+            foreach (var (project, filter) in projects)
             {
                 var path = $"{project}/{project}.csproj";
-                await Run(log, _consumer, "restore", path, "--packages", Path.Combine(_consumer, "packages"));
-                await Run(log, _consumer, "build", path, "--no-restore");
                 await Run(log, _consumer, "test", path, "--no-build", "--list-tests", "--diag", $".diag/{project}-list.log");
                 artifacts[project + "-list"] = Artifact(log, project + "-list", project);
                 await Run(log, _consumer, "test", path, "--no-build", "--filter", filter, "--diag", $".diag/{project}-run.log");
                 artifacts[project + "-run"] = Artifact(log, project + "-run", project);
             }
 
-            return await Finish(log, artifacts);
+            var supplied = new[] { "A/obj/specht-test-evidence", "B/obj/specht-test-evidence" };
+            reconciliations["run"] = new EvidenceReconciler().Reconcile(_consumer, supplied, null);
+            builds["A-rebuild"] = await Step(log, _consumer, "build", "A/A.csproj", "--no-restore");
+            builds["A-release-beside"] = await Step(log, _consumer, "build", "A/A.csproj", "--no-restore", "--configuration", "Release");
+            await File.AppendAllTextAsync(Path.Combine(_consumer, "A", "LocalCases.cs"), "\n", TestContext.Current.CancellationToken);
+            reconciliations["stale"] = new EvidenceReconciler().Reconcile(_consumer, supplied, null);
+            builds["A-stale"] = await Step(log, _consumer, "build", "A/A.csproj", "--no-restore");
+            foreach (var (name, result) in reconciliations)
+            {
+                log.AppendLine($"== reconciliation {name}: exit {result.ExitCode}, {result.Report["inputState"]!["state"]}");
+                log.AppendLine(result.Report["findings"]!.ToJsonString());
+            }
+
+            return await Finish(log, artifacts, builds, reconciliations);
         }
 
-        private async Task Arrange(string version)
+        private async Task Arrange(StringBuilder log, string version)
         {
             var fixture = Path.Combine(_root, "test", "testevidence.vstest.fixture");
             foreach (var file in Directory.GetFiles(fixture, "*", SearchOption.AllDirectories))
@@ -327,7 +495,11 @@ public sealed partial class TestEvidenceVsTestIntegrationTests(TestEvidenceVsTes
                 File.Copy(file, target);
             }
 
-            File.Copy(Path.Combine(_root, "Directory.Packages.props"), Path.Combine(_consumer, "Directory.Packages.props"));
+            var packages = await File.ReadAllTextAsync(Path.Combine(_root, "Directory.Packages.props"), TestContext.Current.CancellationToken);
+            var versioned = packages.Split('\n')
+                .Single(static line => line.Contains("PackageVersion Include=\"Specht.CodeAnalysis\"", StringComparison.Ordinal));
+            await Write("Directory.Packages.props", packages.Replace(versioned,
+                "    <GlobalPackageReference Include=\"Specht.CodeAnalysis\" Version=\"$(SpechtCodeAnalysisPackageVersion)\" />", StringComparison.Ordinal));
             using var sdk = JsonDocument.Parse(await File.ReadAllTextAsync(Path.Combine(_root, "global.json")));
             await Write("global.json", $$"""
                 {
@@ -352,10 +524,15 @@ public sealed partial class TestEvidenceVsTestIntegrationTests(TestEvidenceVsTes
                 """);
             await Write("Directory.Build.props", $"""
                 <Project>
-                  <PropertyGroup><SpechtCodeAnalysisPackageVersion>{version}</SpechtCodeAnalysisPackageVersion></PropertyGroup>
+                  <PropertyGroup>
+                    <SpechtCodeAnalysisPackageVersion>{version}</SpechtCodeAnalysisPackageVersion>
+                    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+                  </PropertyGroup>
                 </Project>
                 """);
-            await Write(".specht/manifest.json", """
+            var query = await Step(log, _consumer, "msbuild", "A/A.csproj", "-getProperty:BundledNETCoreAppTargetFrameworkVersion", "-nologo");
+            var framework = "net" + query.Output.Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).Last();
+            await Write(".specht/manifest.json", $$"""
                 {
                   "revision": "fixture-r1",
                   "idPatterns": { "feature": "^F[0-9]+$", "claim": "^B-[0-9]+$", "adr": "^ADR-[0-9]+$" },
@@ -363,15 +540,23 @@ public sealed partial class TestEvidenceVsTestIntegrationTests(TestEvidenceVsTes
                   "lifecycleMarkers": { "approved": "approved", "withdrawn": "Withdrawn", "superseded": "Superseded" },
                   "codeAnalysis": {
                     "projects": [
-                      { "path": "A/A.csproj", "targetFrameworks": ["net10.0", "net11.0"], "requiredCaseScope": "not @visual" },
-                      { "path": "B/B.csproj", "targetFrameworks": ["net10.0", "net11.0"], "requiredCaseScope": "@visual" }
+                      { "path": "A/A.csproj", "targetFrameworks": ["{{framework}}"], "requiredCaseScope": "not @visual" },
+                      { "path": "B/B.csproj", "targetFrameworks": ["{{framework}}"], "requiredCaseScope": "@visual" }
                     ],
                     "features": [{ "feature": "F1" }],
+                    "requiredLinks": { "test": true },
+                    "enforcement": [
+                      { "project": "A/A.csproj", "include": ["A/**/*.cs", "shared/**/*.cs"], "exclude": [],
+                        "role": "verifies", "declarationKinds": ["testMethod"] },
+                      { "project": "B/B.csproj", "include": ["B/**/*.cs", "shared/**/*.cs"], "exclude": [],
+                        "role": "verifies", "declarationKinds": ["testMethod"] }
+                    ],
                     "mappings": {
                       "/schemaVersion": "/revision",
                       "/identifiers": "/idPatterns",
                       "/claimsSection": "/claimHeading",
-                      "/markers": "/lifecycleMarkers"
+                      "/markers": "/lifecycleMarkers",
+                      "/policy": "/codeAnalysis"
                     }
                   }
                 }
@@ -415,7 +600,8 @@ public sealed partial class TestEvidenceVsTestIntegrationTests(TestEvidenceVsTes
             return document.RootElement.Clone();
         }
 
-        private async Task<VsTestEvidence> Finish(StringBuilder log, Dictionary<string, JsonElement?> artifacts)
+        private async Task<VsTestEvidence> Finish(StringBuilder log, Dictionary<string, JsonElement?> artifacts,
+            Dictionary<string, BuildStep> builds, Dictionary<string, EvidenceResult> reconciliations)
         {
             log.AppendLine(Probe());
             Directory.CreateDirectory(Path.GetDirectoryName(_probe)!);
@@ -426,7 +612,7 @@ public sealed partial class TestEvidenceVsTestIntegrationTests(TestEvidenceVsTes
             }
 
             var because = "the VSTest fixture run is recorded in " + Path.GetRelativePath(_root, _probe).Replace('\\', '/');
-            return new VsTestEvidence(artifacts, because);
+            return new VsTestEvidence(artifacts, builds, reconciliations, new ConsumerFiles(_consumer), because);
         }
 
         private string Relativized(string text)
