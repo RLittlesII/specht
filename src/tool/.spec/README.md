@@ -106,7 +106,7 @@ A repository's `.spec/schema/` is a copy of the consumer's from one day, and not
 | B-024 | Given a manifest that records an upstream schema source, and so selects the on-disk source (B-032), the check reads the frontmatter schemas from the local copy under `<root>/.specht/schema/frontmatter/`.                                                                                                                                                                                                                                                            | OQ-7 (owner, 2026-10-08); decision 0004; C-8; ADR-0011; `0001-F5` decision 0011                                                                                                                                     | Amended   |
 | B-025 | Given a manifest that records an upstream schema source, the check makes no network call.                                                                                                                                                                                                                                                                                                                                                                              | OQ-7 (owner, 2026-10-08); decision 0004; C-8; brief § 9                                                                                                                                                             | Active    |
 | B-026 | Given `specht upgrade` under a manifest that records an upstream schema source, a local copy whose content hash differs from the recorded one, and fetched content that matches the recorded hash, this Feature writes that content into `<root>/.specht/schema/frontmatter/`.                                                                                                                                                                                         | OQ-7 (owner, 2026-10-08); decision 0004; C-2; C-9; ADR-0011; `0001-F5` decision 0011                                                                                                                                | Amended   |
-| B-027 | Given `specht upgrade` under a manifest that records an upstream schema source whose fetched content does not match the recorded content hash, this Feature names the source on stderr, writes nothing, and exits with code `3`.                                                                                                                                                                                                                                       | OQ-7 (owner, 2026-10-08); decision 0004; `0001-F2` decision 0003                                                                                                                                                    | Active    |
+| B-027 | Given `specht upgrade` under a manifest that records an upstream schema source it must fetch (B-026) and fetched content that does not match the recorded content hash (amended 2026-10-24: was any recorded source whose fetched content does not match, with no local copy that differs), this Feature names the source on stderr, writes nothing, and exits with code `3`.                                                                                          | OQ-7 (owner, 2026-10-08); decision 0004; `0001-F2` decision 0003                                                                                                                                                    | Amended   |
 | B-028 | Given a manifest that records an upstream schema source, the check evaluates exactly the rule ids of the pinned embedded version's vocabulary.                                                                                                                                                                                                                                                                                                                         | OQ-7 (owner, 2026-10-08); decision 0004; B-014; brief § 4                                                                                                                                                           | Active    |
 | B-029 | Given `specht upgrade` with the on-disk source selected (B-009 or B-032), this Feature writes none of the pinned version's embedded frontmatter schemas.                                                                                                                                                                                                                                                                                                               | OQ-8 (owner, 2026-10-08); decision 0004; decision 0005; C-2                                                                                                                                                         | Amended   |
 | B-030 | Given the upgrade of B-029, this Feature prints each frontmatter schema it skipped and the reason.                                                                                                                                                                                                                                                                                                                                                                     | OQ-8 (owner, 2026-10-08); B-017                                                                                                                                                                                     | Active    |
@@ -333,6 +333,21 @@ Item `0042` built the version set and the pin as an integer; item `0120` convert
 | A rewrite replaces a file whole                                                                                     | Technical      | The manifest's existing staged sibling and atomic move, shared by `SpecManifestStore.WriteManifest`                       |
 | Printed paths are root-relative with `/` (C-7)                                                                      | Technical      | `UpgradeResult` carries the relative paths; `UpgradeCommand` prints them                                                  |
 | A missing root or manifest exits `2`, a rejected manifest or pin `3`                                                | Both           | The check's existing exceptions, caught in `UpgradeCommand` as `CheckCommand` catches them; proven by `0046` and `0048`   |
+
+<!-- last written by: implementer, 2026-10-24 (item `0093`, design only; not built) -->
+
+| Concern                                                                                                                            | Classification | Where                                                                                                                                    |
+| ---------------------------------------------------------------------------------------------------------------------------------- | -------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| Which recorded kinds `upgrade` brings to the source: Feature and item, and epic under the declared grammar (B-026, B-075, B-076)   | Business       | `UpstreamSchemaSource.Files`, as parsed; `UpgradeWriter.Upgrade` adds no kind                                                            |
+| A local copy whose SHA-256 is the recorded hash is current, and nothing is fetched for it (B-033)                                  | Business       | `UpstreamSchemaFile.Matches(byte[])`, over `SpecManifestStore.ReadConfigurationFile` bytes                                               |
+| A present local copy that differs is fetched from `UpstreamSchemaFile.Address` and written only on a match (B-026, C-9)            | Both           | `UpstreamSchemaFetcher.Fetch`, which verifies before returning; `UpgradeWriter.Upgrade` plans the write                                  |
+| An absent recorded kind stays absent; `specht init` fetches it (B-079, OQ-47; OQ-51 (a), open)                                     | Business       | `UpgradeWriter.Upgrade`                                                                                                                  |
+| Each fetched kind lands under its `frontmatterSchemas` name and nowhere else (B-082, C-2)                                          | Business       | `UpstreamSchemaFile.FileName`; `SpecManifestStore.ReadConfigurationFile` and `ReplaceConfigurationFile` refuse a path outside the folder |
+| Every fetch completes before the first write; one failure writes nothing (B-027, B-035; OQ-44, open for `upgrade`)                 | Business       | `UpgradeWriter.Upgrade`: reads and comparisons, then fetches, then writes                                                                |
+| A mismatch, an unreachable source or a refusal names the address on stderr and exits `3` (B-027, B-035; OQ-45, open for `upgrade`) | Both           | `SpechtUpstreamSchemaException` from the fetcher; `UpgradeCommand`'s exit-`3` catch                                                      |
+| The recorded version and hashes are never written (B-034, C-10)                                                                    | Business       | `UpgradeWriter.Upgrade` writes no manifest byte, as item `0045` does                                                                     |
+| No network type is reached without a record, or for a current copy (B-067, B-033, C-8)                                             | Technical      | `UpgradeWriter.Upgrade` calls the fetcher only from the recorded branch, after the local comparison                                      |
+| No credential is read or sent (B-083, C-15)                                                                                        | Technical      | The credential-free `HttpClient` and the fetcher's removal of user information, registered once for `init` and `upgrade`                 |
 
 ## 7. Technical Design
 
@@ -633,8 +648,8 @@ not ship, whether an older version's or the consumer's, is not read (B-063,
 C-2). With `SpecStructure.SchemaSource` set to `Disk`, or a recorded
 `SpecStructure.SpechtSchema`, no frontmatter schema is read or written, the
 templates are still compared, and no network type is reached (B-029, B-067,
-C-8). Item `0094` adds the skip listing, and item `0093` replaces the upstream
-branch with its fetch and hash check through `UpstreamSchemaFetcher`.
+C-8). Item `0094` adds the skip listing. Item `0093` replaces the upstream
+branch; "Upgrade fetches the recorded source" below states the replacement.
 `upgrade` takes no `--schema-source` option; whether it gains one belongs to
 `0094`. Until item `0130` adds the key, every shipped template is compared.
 Item `0131` removes the named ones before the comparison (B-060).
@@ -681,6 +696,139 @@ hand-written composition: no mediator, no CQRS contract, no new abstraction and
 no architecture migration. `ShippedFiles` has two real callers. The store
 methods extend `SpecManifestStore` and replace nothing. No ADR is recorded,
 because no repository rule changes.
+
+### Upgrade fetches the recorded source
+
+<!-- last written by: implementer, 2026-10-24 (item `0093`, design only; not built) -->
+
+**Designed 2026-10-24 for item `0093`; not built.** Under a recorded
+`SpecStructure.SpechtSchema`, `upgrade` brings each recorded kind's local copy
+to the recorded hash, fetching only a copy that differs (B-026, B-033). It
+replaces item `0045`'s upstream skip in `UpgradeWriter.Upgrade` and reuses the
+fetch and hash check item `0095` built for `init`. No new domain type is added.
+
+**Which branch runs.** The manifest read is `0045`'s:
+
+| Manifest                                      | Frontmatter schemas                        | Network       |
+| --------------------------------------------- | ------------------------------------------ | ------------- |
+| No record, embedded source                    | Compared to the pinned version's (`0045`)  | None (B-067)  |
+| No record, on-disk source                     | Not read or written; `0094` lists the skip | None (B-067)  |
+| A record, implied or explicit on-disk source  | This subsection                            | Only to fetch |
+| A record and an explicit `embedded` selection | Rejected at parse, exit `3` (B-036)        | None          |
+
+A record keeps its hashes under the on-disk source (B-024, B-036, decision
+0011), so an explicit `"schemaSource": "disk"` beside a record is the third
+row. The fourth is `SpecManifestParser.Parse`'s existing contradiction fault,
+reached through `LoadManifest`. `upgrade` has no `--schema-source` option, so
+the command-line half of B-036 does not arise.
+
+**The local comparison.** For each `UpstreamSchemaFile` in
+`UpstreamSchemaSource.Files`, which already holds the epic kind only under the
+declared grammar (B-075, B-076), the writer reads
+`SpecManifestStore.ReadConfigurationFile(root, FrontmatterSchemaFolder + "/" +
+file.FileName)`. That read goes through the store's `Permitted` path check, so
+a `frontmatterSchemas` name that leaves the folder is a
+`SpechtManifestException` and exit `3` before any network call; `InitWriter`'s
+own check is not copied.
+
+| Local copy              | Outcome                                     | Claim             |
+| ----------------------- | ------------------------------------------- | ----------------- |
+| Absent                  | Not fetched, not written; stays absent      | OQ-51 (a), open   |
+| SHA-256 equals the hash | Current; no network call                    | B-033             |
+| SHA-256 differs         | Fetched; written only if the fetch verifies | B-026, B-082, C-9 |
+
+An absent copy is not "a local copy whose content hash differs" (B-026), and
+the check already names `specht init` as the command that fetches it (B-079,
+OQ-47). `init --schemas` beside the existing manifest fetches every absent
+recorded kind today. This keeps `0045`'s "absent stays absent"; reading (b) or
+(c) of OQ-51 changes only the `Absent` row.
+
+The hash is compared through one new member,
+`UpstreamSchemaFile.Matches(byte[] bytes)`: `sha256:` and the lowercase
+hexadecimal SHA-256 of the bytes, equal by ordinal to `Hash`.
+`UpstreamSchemaFetcher.Fetch` and `UpstreamSchemaCopy.Verify` each hold that
+expression today; both call `Matches` instead, so C-9's identity has one
+statement and three callers. `upgrade` does not call `UpstreamSchemaCopy`: it
+rejects an absent kind and returns decoded text, and `upgrade` needs neither.
+
+**The plan, then the fetches, then the writes.** `Upgrade` builds its plan in
+three passes, so nothing is written until everything that can fail has run:
+
+1. The local reads and comparisons: `0045`'s template comparison, and the
+   recorded kinds above. No network type is reached in this pass.
+2. One `UpstreamSchemaFetcher.Fetch(file, token)` for each differing kind, in
+   `Files` order. The fetcher returns bytes only after their hash matches, so a
+   returned file is a verified one. The first `SpechtUpstreamSchemaException`
+   ends the run.
+3. The writes, templates and fetched schemas together in ordinal path order,
+   through `SpecManifestStore.ReplaceConfigurationFile`, each schema under
+   `FrontmatterSchemaFolder + "/" + file.FileName` (B-082, C-2).
+
+A mismatch or an unreachable source in pass 2 therefore writes no schema and
+no template (B-027, B-035). That is OQ-44's proposed default for `upgrade`,
+which B-027 already states and the owner chose for `init` (`0001-F4` decision
+0005); OQ-44 stays open for `upgrade`. A write failure in pass 3 keeps `0045`'s
+mapping and OQ-62's proposed default (a).
+
+**What is printed.** `UpstreamSchemaFetcher` names the source by its address,
+the recorded `location` followed by the file name, with user information
+removed: `upstream schema source '<address>' could not be reached.`, or that it
+`does not match its recorded SHA-256.` The address is a URL the consumer
+recorded, not a path the tool derives, so C-7 and brief § 9 do not reach it; no
+transport detail and no local path is copied in. `UpgradeCommand` adds
+`SpechtUpstreamSchemaException` to its exit-`3` catch beside
+`SpechtManifestException` and `SpechtManifestUnreadableException`, as
+`InitCommand` does, and writes one `specht:` line to standard error. A source
+that answers `401` or `404` fails `GetByteArrayAsync` as an unreachable one
+does, so a refusal gives the same line and exit `3`: OQ-45's proposed default,
+which `init` already has (`0001-F4` B-016) and B-133 states for a template.
+OQ-45 stays open for `upgrade`.
+
+**The record is never written (B-034, C-10).** The writer reads the manifest
+and writes no manifest byte, as in `0045`. Item `0047`'s missing-key fill
+(B-016) adds only keys the pinned version defines; `spechtSchema` is not one,
+so the fill never adds or changes a record.
+
+**No network without cause (B-067, B-033, C-8).** The fetcher is called only
+from pass 2, which runs only for a recorded kind whose present copy differs.
+Tests compose the real writer and fetcher over a synthetic `HttpMessageHandler`
+(ADR-0013) that records each request and fails any it receives; B-067 and
+B-033 assert it recorded none and the run exits `0`.
+
+**No credential (B-083, C-15 as amended).** The fetcher's `HttpClient` is the
+one `init` uses: no credentials, no default or proxy credentials, no cookies
+and no redirects, and the fetcher removes user information from the address.
+Nothing reads the environment, a credential store or the manifest for a token,
+and no header is set. B-083's test sets a token in the process environment and
+asserts the recorded request carries no `Authorization` header and no user
+information. The next version's credential, sent only to the recorded host
+(decision 0016 call 2), is not built.
+
+**Composition.** The client and the fetcher are registered once, for both
+slices. `InitRegistration.AddInit` holds both today; they move to
+`src/tool/Features/UpstreamFetchRegistration.cs`, the `Features/` root as for
+`ShippedFiles`, as `AddUpstreamSchemaFetch(this IServiceCollection)` with
+`TryAddSingleton` for each. `AddInit` and `AddUpgrade` both call it, so
+composing either or both registers one client, and a test that registers its
+own `HttpClient` first keeps it. `UpgradeWriter` gains a required
+`UpstreamSchemaFetcher` constructor parameter, resolved by the container; it
+has no embedded-only caller to keep it optional for. The assembly-reference
+test that allows the handler's configuration only inside `AddInit`
+(`EngineAssembly.AllowedNetworkReference`) follows the move to the new site.
+No new static state, no interface over the fetcher (the handler is the seam),
+no mediator and no CQRS contract (ADR-0014). No ADR is recorded: ADR-0013
+already rules where the fetch sits and how its client is configured.
+
+**Templates under a record.** Until the template fetch (B-130 to B-137) lands,
+every template is compared to the pinned version's, as in `0045`: the parser
+reads no `templates` member yet (B-125), so no template is one the record
+hashes. That item removes the hashed templates from the pinned comparison and
+adds them to the three passes through the same fetcher and `Matches`.
+
+**What is not here.** The listing of fetched files is `0047`'s (B-017); after
+a fetch `upgrade` exits `0` and prints nothing, as `0045` does after a rewrite.
+The on-disk skip and its listing are `0094`'s. The input failures are `0046`'s
+and `0048`'s. Moving the recorded version is the consumer's (C-10).
 
 ## 8. Testing Strategy
 
@@ -1068,14 +1216,14 @@ byte orders of UTF-16 and UTF-32. Existing claim IDs and input semantics remain.
 | OQ-41 | The owner, 2026-10-11: "public sources for v1. for v2 we should offer pats in the keychain or os equivalent". Not said: what "v1" and "v2" name - the first release and a later release (spec-author's reading, which C-15 is written on), a schema version, or a `specht.tool` package version; which keychains, and what "os equivalent" covers; how a token comes to be there; which hosts receive it, and whether a redirect to another host carries it (decision 0008, call 2); what a machine with no keychain, a CI runner, does. No proposal. Raised 2026-10-11 by spec-author. Owner not asked. | C-15; § 5 row 20; a claim when answered | Resolved 2026-10-24 by the repository owner (decision 0016): "v1" is this release and "v2" the next release. The owner's words: "Private sources should be allowed in the first release." and "Assume the private source has no authentication for this version. We can do authenticated sources NEXT version." The first release fetches from a consumer's own source on any `https` host and reads and sends no credential (C-15, amended). The mechanism - keychain, environment, CI - is deferred to the next version and not specified (§ 5 row 20). Decided for then, the owner picking "Recorded host only": a credential is sent only to the host of the recorded `location`, over `https`, and a redirect to another host does not carry it. It is direction for the next version, not a claim of this release; no constraint is written while no credential is sent (decision 0016 call 2). |
 | OQ-42 | Is an address that names a branch refused? The hash refuses content that moved, and nothing in an address says it is a branch (decision 0008, call 3; carried from OQ-35). Proposed default: it is not refused by its form. Raised 2026-10-11 by spec-author. Owner not asked. | B-070 | Open |
 | OQ-43 | A consumer who wants to edit a fetched schema by hand. Under OQ-38 (a) the check refuses the edited copy (B-080). Removing the record leaves the embedded set selected, and selecting the on-disk copy with no record is B-009, which is not schema `0.1.0`'s (OQ-40). Is there a way in the first release (decision 0008, call 4)? No proposal. Raised 2026-10-11 by spec-author. Owner not asked. | B-080; B-009 | Open |
-| OQ-44 | Under `upgrade` or `init` with several fetched files, one of which does not match its hash: are the files that match written? B-027 and `0001-F4` B-015 say "writes nothing" and were written when the record held one hash; C-9 as amended says only that the file that does not match is not written. Proposed default: nothing is written, as those claims read. Raised 2026-10-11 by spec-author. Owner answered for `init` on 2026-10-12; `upgrade` has not been put to the owner. | B-026; B-027; `0001-F4` B-014, B-015 | Resolved for `init` only, 2026-10-12 by the repository owner: write nothing when any fetched schema fails its recorded hash, including schemas that matched and selected templates (`0001-F4` decision 0005). Rejected: writing matching files before the failure, which leaves a partial initialisation. Open for `upgrade`; the owner was asked about `init` only. |
-| OQ-45 | A source that answers and refuses: it asks for a credential, or says the file is not there. B-035 covers a source that cannot be reached, and C-15 sends no credential. Proposed default: as B-035 - the source named on stderr, nothing written, exit `3`. Raised 2026-10-11 by spec-author. Owner answered for `init` on 2026-10-12; `upgrade` has not been put to the owner. | B-035; `0001-F4` B-016 | Resolved for `init` only, 2026-10-12 by the repository owner: an authentication response or a missing requested file names the source on stderr, writes nothing and exits `3`, as an unreachable source does (`0001-F4` decision 0005; B-016). HTTP `401` and `404` are the scenarios. Rejected: a separate outcome for these refusals; the accepted choice gives the existing upstream-source failure result. Open for `upgrade`; the owner was asked about `init` only. |
+| OQ-44 | Under `upgrade` or `init` with several fetched files, one of which does not match its hash: are the files that match written? B-027 and `0001-F4` B-015 say "writes nothing" and were written when the record held one hash; C-9 as amended says only that the file that does not match is not written. Proposed default: nothing is written, as those claims read. Raised 2026-10-11 by spec-author. Owner answered for `init` on 2026-10-12; `upgrade` has not been put to the owner. | B-026; B-027; `0001-F4` B-014, B-015 | Resolved for `init` only, 2026-10-12 by the repository owner: write nothing when any fetched schema fails its recorded hash, including schemas that matched and selected templates (`0001-F4` decision 0005). Rejected: writing matching files before the failure, which leaves a partial initialisation. Open for `upgrade`; the owner was asked about `init` only. Note, implementer, 2026-10-24: § 7 "Upgrade fetches the recorded source" designs item `0093` on the proposed default, every fetch before the first write. |
+| OQ-45 | A source that answers and refuses: it asks for a credential, or says the file is not there. B-035 covers a source that cannot be reached, and C-15 sends no credential. Proposed default: as B-035 - the source named on stderr, nothing written, exit `3`. Raised 2026-10-11 by spec-author. Owner answered for `init` on 2026-10-12; `upgrade` has not been put to the owner. | B-035; `0001-F4` B-016 | Resolved for `init` only, 2026-10-12 by the repository owner: an authentication response or a missing requested file names the source on stderr, writes nothing and exits `3`, as an unreachable source does (`0001-F4` decision 0005; B-016). HTTP `401` and `404` are the scenarios. Rejected: a separate outcome for these refusals; the accepted choice gives the existing upstream-source failure result. Open for `upgrade`; the owner was asked about `init` only. Note, implementer, 2026-10-24: § 7 "Upgrade fetches the recorded source" designs item `0093` on the proposed default, which the shared fetcher already gives. Note, spec-author, 2026-10-24: B-133 takes the proposed default for templates (decision 0016) and the 0093 design takes it for schemas, so the owner's answer for `upgrade` settles both. |
 | OQ-46 | A `spechtSchema` member other than `location`, `version` and `hashes`, and a `hashes` entry for a kind that is not fetched - the epic kind with no epic grammar declared, or a kind the manifest does not have. Proposed default: each is rejected as invalid, as `0001-F5` B-012 rejects a key the engine does not know. Raised 2026-10-11 by spec-author. Owner not asked. | B-069; B-072 | Open |
 | OQ-47 | Which command B-079 names. `init` writes an absent file from the source (`0001-F4` B-014); `upgrade` fetches when the local copy does not match its hash (B-026), and whether an absent file is such a copy is not said. Proposed default: `specht init`, spec-author's reading. Raised 2026-10-11 by spec-author. Owner not asked. | B-079 | Resolved 2026-10-12 by the repository owner: `specht init`. Rejected: `specht upgrade`; naming both. B-079 amended to name it. Not asked, and open as OQ-57: an option beside the command. |
 | OQ-48 | How does `specht schema list` mark the pinned version? The owner chose that it is marked (OQ-19) and not how. Readings: (a) a prefix on the pinned line, the other lines indented to match, so no line is a version alone; (b) a suffix after the version, so every line starts with its version and an unmarked line is the version alone, as B-041 and B-085 read. Raised 2026-10-11 by spec-author. Owner not asked. | B-084; B-041 (the marked line) | Resolved 2026-10-14 (decision 0012): use the suffix ` (pinned)`, as in the reviewed walkthrough; the owner asked that a failing listing provide recovery. |
 | OQ-49 | What does `specht schema list` do when the pin cannot be read or is not in the list: `--root` naming a path that is not a directory, a manifest that does not parse or that the check rejects, or a manifest pinning a version the tool does not ship? The owner's answer to OQ-19 covers a root with a manifest and a root without one. B-041 is written with no condition on the root, and whether it holds in these cases is this question. Readings: (a) the plain list and exit `0`, since the list is the tool's; (b) the failure the check gives, exit `2` or `3` (B-018 to B-020, B-003). Raised 2026-10-11 by spec-author. Owner not asked. | B-041; B-084; a claim when answered | Resolved 2026-10-14 (decision 0012): a missing root exits `2`; an unreadable or rejected manifest exits `3`, with no list on stdout and recovery information on stderr (B-108, B-109). |
 | OQ-50 | Under a pin policy (B-053, B-054) the check uses a version above the one the manifest pins. Which does `specht schema list` mark: the version pinned, the version used, or both? B-084 marks the one pinned. Raised 2026-10-11 by spec-author. Owner not asked. | B-084; B-053; B-054 | Open |
-| OQ-51 | `init` now writes the frontmatter schemas and the templates only when asked (`0001-F4` decision 0004), so a root may hold a manifest and neither. Does `upgrade` create a frontmatter schema or a template that is absent, or rewrite only the files present? B-005 rewrites files that "differ" from the pinned version's and does not say whether an absent file differs; B-006 calls a root current when it "already holds what it would write". Readings: (a) `upgrade` rewrites only files present, and a part the consumer never asked for stays absent; (b) `upgrade` writes every file the pinned version ships, which undoes the choice `init` offered; (c) `upgrade` takes the same part options as `init`. Raised 2026-10-11 by spec-author. | B-005; B-006; B-062; item `0045` | Open. Owner not asked. Proposed default: (a), with `init --schemas` or `init --templates` the way to add a part. Note, implementer, 2026-10-24: § 7 "Upgrade to the pin" designs item `0045` on (a); (b) or (c) would change only its absent-file row. |
+| OQ-51 | `init` now writes the frontmatter schemas and the templates only when asked (`0001-F4` decision 0004), so a root may hold a manifest and neither. Does `upgrade` create a frontmatter schema or a template that is absent, or rewrite only the files present? B-005 rewrites files that "differ" from the pinned version's and does not say whether an absent file differs; B-006 calls a root current when it "already holds what it would write". Readings: (a) `upgrade` rewrites only files present, and a part the consumer never asked for stays absent; (b) `upgrade` writes every file the pinned version ships, which undoes the choice `init` offered; (c) `upgrade` takes the same part options as `init`. Raised 2026-10-11 by spec-author. | B-005; B-006; B-062; item `0045` | Open. Owner not asked. Proposed default: (a), with `init --schemas` or `init --templates` the way to add a part. Note, implementer, 2026-10-24: § 7 "Upgrade to the pin" designs item `0045` on (a); (b) or (c) would change only its absent-file row. Item `0093` designs an absent recorded upstream kind on (a) as well, unfetched, with `specht init` the remedy B-079 names. |
 | OQ-52 | The names of the lock target and the cut target, how the cut is given its version, where the version lock sits and how it is written, and where the two targets' logic sits so that a test can fail B-092 to B-100: `0055-F1` § 8 holds that the build has no tests, and `0055-F6` proves its tag check by record (`0055-F6` § 5 row 9). Also not decided: what an idle lock run (B-093) or a refused cut (B-094, B-095) says; and where one version's manifest sits in the shipping copy. `0001-F5` decision 0011 moves the live manifest to `.specht/manifest.json`, outside `schema/`, and has the `$id` mirror the file's path under `.specht/` (C-6), and `0001-F4` A-2 and C-2 still say only that the shipping copy is embedded per version from `src/tool/schema/` and `templates/`: whether a version's manifest stays in its schema folder or takes a tree of its own is not written, so B-086, B-089, B-096 and C-16 speak of every tree a version's files sit in and count none. Proposed default, the direction of the plan the owner approved (decision 0009): the lock at `src/tool/schema/versions.lock.json`, outside the folders a version embeds; one SHA-256 for each version over its files in every such tree, in ordinal path order, each file's path and then its bytes; the logic in code a test reaches, a build target only calling it. Raised 2026-10-11 by spec-author for the `implementer`, who proposes these in § 7, and the `test-writer`. | A-4; B-089; B-092 to B-100; `0055-F6` B-013 | Open |
 | OQ-53 | The working version turns out to need another number - cut as `0.1.1`, it gains a change that can fail a tree that passed, which C-11 makes a `0.minor` - or is abandoned. May an unlocked version's folders be renamed or deleted, and by what? B-089 to B-091 bind what is locked and how many versions are not, and nothing else speaks of it. Proposed default: by hand, in a reviewed change - the folders renamed, and each `$id` and rule page row rewritten to the new number - and no target is built for it. Raised 2026-10-11 by spec-author. Owner not asked. | B-086; B-087; B-096 | Resolved in part 2026-10-14 by the repository owner (decision 0013): schema `0.1.1`, unlocked and never published, is abandoned - its folders deleted by hand in a reviewed change, with no target built for it. Renaming an unlocked version is not decided and stays open. |
 | OQ-54 | A version locked and never published - the lock merged, and a fault found before its tag. May its lock entry be removed so the version can be edited, or is a locked version changed only by a new version, as a published one is (C-1)? C-17 and B-093 are written on the second reading. Proposed default: the second - once the entry is on `main` the version is treated as published and the fix is the next version, at the cost of a number no package carries. Raised 2026-10-11 by spec-author. Owner not asked. | C-17; B-089; B-093 | Resolved 2026-10-14 by the owner (decision 0014): a locked version no published package has carried may be relocked; a published one changes only by a new version (C-1). The relock, a reviewed removal of the entry and then the lock target (B-092), is spec-author's reading, not stated by the owner, as in C-17; so B-093 is unchanged. C-17 amended. |
