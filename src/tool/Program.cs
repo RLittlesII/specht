@@ -9,12 +9,14 @@ using Specht.Tool.Features.Evidence;
 using Specht.Tool.Features.Frontmatter;
 using Specht.Tool.Features.Init;
 using Specht.Tool.Features.Schema;
+using Specht.Tool.Features.Upgrade;
 using Spectre.Console.Cli;
 
 var services = new ServiceCollection();
 services.AddSpechtEngine();
 services.AddSingleton<Func<string, SchemaSourceSelection?, SpechtReport>>(static provider => provider.GetRequiredService<SpechtRunner>().Run);
 services.AddInit();
+services.AddUpgrade();
 services.AddSingleton<EvidenceReconciler>();
 
 var app = new CommandApp(new TypeRegistrar(services));
@@ -22,7 +24,7 @@ app.SetDefaultCommand<CheckCommand>();
 app.Configure(static config =>
 {
     config.SetApplicationVersion(ThisAssembly.AssemblyInformationalVersion);
-    config.AddInit().AddSchema().AddFrontmatter();
+    config.AddInit().AddUpgrade().AddSchema().AddFrontmatter();
     config.AddCommand<EvidenceCommand>("evidence");
 });
 
