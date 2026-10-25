@@ -32,6 +32,8 @@ internal partial class SpechtBuild : NukeBuild
 
     private static string NpxPath => ToolPathResolver.GetPathExecutable("npx");
 
+    private static string PythonPath => ToolPathResolver.GetPathExecutable("python3");
+
     private AbsolutePath ArtifactsDirectory => RootDirectory / ".artifacts";
 
     private AbsolutePath PackageDirectory => ArtifactsDirectory / "nupkg";
@@ -189,6 +191,15 @@ internal partial class SpechtBuild : NukeBuild
 
             DotNetRun(settings.SetApplicationArguments(arguments));
         });
+
+    private Target MirrorTest => static definition => definition
+        .Executes(static () => ProcessTasks
+            .StartProcess(
+                PythonPath,
+                "-B -m unittest discover -s .github/mirror/tests -v",
+                RootDirectory,
+                logger: static (_, text) => Log.Information(text))
+            .AssertZeroExitCode());
 
     private static string Include(string[]? files) => files is null ? string.Empty : $"--include {Quote(files)}";
 

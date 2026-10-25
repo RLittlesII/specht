@@ -211,6 +211,7 @@ none.
 ./build.sh AcceptanceTest   # test/acceptance, Reqnroll, no filter
 ./build.sh Pack             # specht.tool and Specht.CodeAnalysis packages into .artifacts/nupkg
 ./build.sh Specht           # the tool checking this repository's own .spec/ tree
+./build.sh MirrorTest       # python3 -m unittest over .github/mirror/tests; not in Default or CI yet
 ./build.sh VerifyTag        # on a tag build, fails unless the tag is v<version> on a commit of main; skipped otherwise
 ```
 
