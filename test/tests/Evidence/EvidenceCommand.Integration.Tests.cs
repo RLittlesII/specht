@@ -8,21 +8,20 @@ using Spectre.Console.Testing;
 namespace Specht.Tests.Evidence;
 
 /// <summary>
-/// The evidence command's argument surface: positional paths and the --evidence alias supply the same inputs, in a fixed
-/// union order, and the help shows them (0201-F5 B-023 to B-027).
+/// The evidence command's argument surface: positional paths supply the inputs in command-line order, and the help
+/// shows them as the only way to name evidence (0201-F5 B-023, B-025 to B-027).
 /// </summary>
 [Trait("Tier", "Integration")]
 public sealed class EvidenceCommandIntegrationTests : IDisposable
 {
-    [Theory]
-    [ClassData(typeof(EvidencePathForms))]
-    public async Task TwoExportsNamedInOneForm_WhenReconciled_ShouldSupplyBothWithoutError(string[] paths)
+    [Fact]
+    public async Task TwoPositionalExports_WhenReconciled_ShouldSupplyBothWithoutError()
     {
         // Given
         Write();
 
         // When
-        var result = await Run([.. paths, "--json"]);
+        var result = await Run(["a.json", "b.json", "--json"]);
 
         // Then
         result.ExitCode.Should().Be(0, result.Output);
@@ -30,7 +29,7 @@ public sealed class EvidenceCommandIntegrationTests : IDisposable
     }
 
     [Fact]
-    public async Task APositionalPathAndOptionPaths_WhenReconciled_ShouldNumberExternalDirectoriesPositionalFirstThenOptionsInOrder()
+    public async Task SeveralPositionalDirectories_WhenReconciled_ShouldNumberExternalDirectoriesInCommandLineOrder()
     {
         // Given
         Write();
@@ -39,20 +38,20 @@ public sealed class EvidenceCommandIntegrationTests : IDisposable
         var third = External("a.json");
 
         // When
-        var result = await Run(["--evidence", second, "--evidence", third, first, "--json"]);
+        var result = await Run([second, third, first, "--json"]);
 
         // Then
-        Supplied(result.Output).Should().Equal("external-evidence-1/a.json", "external-evidence-2/b.json", "external-evidence-3/a.json");
+        Supplied(result.Output).Should().Equal("external-evidence-1/b.json", "external-evidence-2/a.json", "external-evidence-3/a.json");
     }
 
     [Fact]
-    public async Task TheSameExportInBothForms_WhenReconciled_ShouldSupplyItOnce()
+    public async Task TheSameExportNamedTwice_WhenReconciled_ShouldSupplyItOnce()
     {
         // Given
         Write();
 
         // When
-        var result = await Run(["a.json", "--evidence", "a.json", "--evidence", "b.json", "--json"]);
+        var result = await Run(["a.json", "a.json", "b.json", "--json"]);
 
         // Then
         result.ExitCode.Should().Be(0, result.Output);
@@ -60,7 +59,7 @@ public sealed class EvidenceCommandIntegrationTests : IDisposable
     }
 
     [Fact]
-    public async Task NoPathInEitherForm_WhenReconciled_ShouldFailWithIncompleteInputAndTheNoEvidenceFinding()
+    public async Task NoPath_WhenReconciled_ShouldFailWithIncompleteInputAndTheNoEvidenceFinding()
     {
         // Given
         Write();
@@ -76,7 +75,7 @@ public sealed class EvidenceCommandIntegrationTests : IDisposable
     }
 
     [Fact]
-    public async Task TheEvidenceHelp_WhenRequested_ShouldShowOptionalPositionalPathsAndDescribeTheOptionAsTheirAlias()
+    public async Task TheEvidenceHelp_WhenRequested_ShouldShowOptionalPositionalPathsAndNoEvidenceOption()
     {
         // Given
         var console = new TestConsole();
@@ -89,7 +88,7 @@ public sealed class EvidenceCommandIntegrationTests : IDisposable
         result.ExitCode.Should().Be(0);
         var help = Regex.Replace(result.Output, @"\s+", " ");
         help.Should().MatchRegex(@"evidence \[PATH\w*\] \[OPTIONS\]");
-        help.Should().MatchRegex(@"(?i)--evidence <PATH>.*?alias");
+        help.Should().NotContain("--evidence");
     }
 
     public void Dispose()
