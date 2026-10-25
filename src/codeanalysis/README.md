@@ -28,7 +28,7 @@ provisionally and succeeds with mandatory enforcement and warnings as errors. Ru
 `dotnet test --list-tests`, then `dotnet test`; the logger writes
 `obj/specht-test-evidence/<project>-<framework>.json`. Supply that file as
 `SpechtTestEvidence` to rebuild with authoritative recognition, and run `specht
-evidence --evidence obj/specht-test-evidence` to reconcile. An artifact that does
+evidence obj/specht-test-evidence` to reconcile. An artifact that does
 not match the build's project, framework, configuration, sources or policy is
 ignored and recognition stays provisional.
 
