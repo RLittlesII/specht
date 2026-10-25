@@ -1,0 +1,52 @@
+id: "0296"
+type: task
+title: Run the mirror to convergence, backfill once, and amend the docs that deny issues
+
+status: ready-for-architecture
+
+risk: 3
+
+parent: "0293"
+children: []
+
+depends_on: ["0294", "0295"] # runs 0294's script through 0295's workflow
+spikes: []
+
+spec: .github/mirror/.spec/README.md
+
+claims: []
+
+created: "2026-10-24"
+updated: "2026-10-24"
+closed: null
+
+summary: |
+  The first live run: dispatch the mirror workflow, or run 0294's script
+  locally with `gh`, until a run writes nothing (B-029), then run
+  backfill once (B-027), and check the issue counts against A-1 recounted
+  at the run's base (263 items and 12 epics at the cut's base, so about
+  275 issues before this Feature's own items). It carries the deltas § 10
+  records as owed, so the documents stop saying there are no GitHub
+  issues while keeping C-3: the issues are a read-only mirror, not the
+  tracker. It carries no claim: § 9's tests are 0294's and 0295's. Risk
+  3: about 275 public writes that a token cannot delete, under GitHub's
+  secondary write limit (C-10).
+
+acceptance_criteria:
+  - "A run on `main` creates the issues; a later run writes nothing (B-029 observed live)"
+  - "Backfill run once; a second backfill comments on nothing (B-026, B-027 observed live)"
+  - "Issue count equals items plus epics at the run's base, recounted against A-1; the step summary of each run recorded in the pull request"
+  - 'AGENTS.md § SDLC — "no GitHub issues or milestones" and "no issue for `Closes` to close" reworded to the read-only mirror'
+  - '`specht-conventions` SKILL.md — the `.github/` layout entry, "There are no GitHub issues", and the Never-add list'
+  - '`references/delivery.md` — the "no GitHub issues" sentence, the `Closes` sentence, the reason in the `github_issue` row, and the Never-add list'
+  - "`references/specs.md` — the reason `github_issue` stays `null` (ADR-0022)"
+  - "`.github/ISSUE_TEMPLATE/feature.yml` — text naming another project corrected"
+  - "C-3 — every reworded line keeps the item as the record of delivery state"
+
+decisions: []
+
+out_of_scope:
+  - "Filling `github_issue` or `synced_at` anywhere — § 5 #9, C-12."
+  - "Editing `.specht/templates/feature.md` or its embedded copy — C-12."
+  - "Renumbering `0220` — § 5 #8."
+  - "Turning hand-filed issue #256 into an item — § 5 #7."
