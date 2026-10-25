@@ -1,7 +1,7 @@
 id: "0298"
 type: feature
 title: "Take evidence paths as positional arguments on specht evidence"
-status: in-review
+status: done
 value: 3
 risk: 2
 parent: "0201"
@@ -12,7 +12,7 @@ spec: src/analyzers/Reconciliation/.spec/README.md
 claims: ["B-023", "B-024", "B-025", "B-026", "B-027"]
 created: "2026-10-25"
 updated: "2026-10-25"
-closed: null
+closed: "2026-10-25"
 summary: |
   As a consumer running specht evidence I want to name the evidence paths as positional
   arguments, the way specht frontmatter takes its path, so that the command name is not
