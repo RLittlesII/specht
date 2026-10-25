@@ -31,6 +31,25 @@ public sealed class EvidenceReconcilerIntegrationTests : IDisposable
     }
 
     [Fact]
+    public void TwoProjectsArtifactsHoldingTheSameCaseIdForOneClaim_WhenReconciled_ShouldListTheBareCaseIdTwiceAndKeepIdentityOnTheCaseRows()
+    {
+        // Given
+        _root.Write("b.json", "b", 1, "run-b", new JsonArray(Case("case-1", "M:Shared.Checks")), new JsonArray(Outcome("case-1")));
+        _root.Write("a.json", "a", 1, "run-a", new JsonArray(Case("case-1", "M:Shared.Checks")), new JsonArray(Outcome("case-1")));
+
+        // When
+        var result = _root.Reconcile("b.json", "a.json");
+
+        // Then
+        result.Report["formatVersion"]!.GetValue<int>().Should().Be(1);
+        result.Report["claims"]!.AsArray().Single()!["cases"]!.AsArray().Select(static entry => entry!.GetValue<string>())
+            .Should().Equal("case-1", "case-1");
+        result.Report["cases"]!.AsArray()
+            .Select(static row => (row!["caseId"]!.GetValue<string>(), row["project"]!.GetValue<string>(), row["targetFramework"]!.GetValue<string>()))
+            .Should().Equal([("case-1", "test/a/a.csproj", "net10.0"), ("case-1", "test/b/b.csproj", "net10.0")]);
+    }
+
+    [Fact]
     public void SeveralRunsForOneProject_WhenReconciledWithoutARun_ShouldReportAnAmbiguousRunForThatProjectOnly()
     {
         // Given
