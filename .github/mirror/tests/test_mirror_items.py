@@ -70,6 +70,8 @@ EPIC_0055 = (
 DELIVERY = "1111111111111111111111111111111111111111"
 DESIGN = "2222222222222222222222222222222222222222"
 UNNAMED = "3333333333333333333333333333333333333333"
+MIRRORED = "4444444444444444444444444444444444444444"
+LIMIT = 65536
 
 
 def seam(test):
@@ -703,6 +705,75 @@ class Body(unittest.TestCase):
         before, inner, _ = fenced(self, issue_for(self, gh, "0055")["body"], "markdown")
         self.assertIn("The infrastructure that lets this repository ship from its first push", words(before))
         self.assertEqual(inner, epic.rstrip("\n"))
+
+
+class OversizeBody(unittest.TestCase):
+    HISTORY = git_log((DESIGN, "spec(0055): design it (#264)", []), (MIRRORED, "task(0055): latest (#300)", []))
+
+    def test_B048_EpicWhoseBodyIsExactlyTheLimit_WhenMirrored_ShouldStillCarryTheFileVerbatim(self):
+        # Given
+        measured = FakeGh()
+        mirror(self, write_tree(self, {EPIC_0055_PATH: EPIC_0055}), measured, self.HISTORY)
+        epic = EPIC_0055 + "x" * (LIMIT - 1 - len(next(iter(measured.store.values()))["body"])) + "\n"
+        root = write_tree(self, {EPIC_0055_PATH: epic})
+        gh = FakeGh()
+
+        # When
+        mirror(self, root, gh, self.HISTORY)
+
+        # Then
+        body = issue_for(self, gh, "0055")["body"]
+        self.assertEqual(len(body), LIMIT)
+        _, inner, _ = fenced(self, body, "markdown")
+        self.assertEqual(inner, epic.rstrip("\n"))
+
+    def test_B052_EpicOneCharacterOverTheLimit_WhenMirrored_ShouldLinkTheFileAtTheMirroredCommitInItsPlace(self):
+        # Given
+        measured = FakeGh()
+        mirror(self, write_tree(self, {EPIC_0055_PATH: EPIC_0055}), measured, self.HISTORY)
+        padding = "x" * (LIMIT - len(next(iter(measured.store.values()))["body"]))
+        root = write_tree(self, {EPIC_0055_PATH: EPIC_0055 + padding + "\n"})
+        gh = FakeGh()
+
+        # When
+        mirror(self, root, gh, self.HISTORY)
+
+        # Then
+        body = issue_for(self, gh, "0055")["body"]
+        target = f"{gh.repo}/blob/{MIRRORED}/{EPIC_0055_PATH}"
+        linking = [line for line in body.split("\n") if target in line]
+        self.assertEqual(len(linking), 1, f"lines linking {target}")
+        self.assertRegex(linking[0], rf"\[[^\]]+\]\(https://\S+/{re.escape(target)}\)")
+        self.assertFalse(padding in body, "the epic file is copied into the body")
+        self.assertFalse("./build.sh" in body, "the epic file is copied into the body")
+
+    def test_B053_ItemStillOverTheLimitWithItsFileLinked_WhenMirrored_ShouldLeaveOutTheSectionsAfterTheSummary(self):
+        # Given
+        criteria = "".join(f'  - "B-{n:03} - criterion {n} {"y" * 100}"\n' for n in range(700))
+        item = ITEM_0045.replace(
+            '  - "B-001 - present schema files match the pin"\n', '  - "B-001 - present schema files match the pin"\n' + criteria
+        )
+        root = write_tree(self, {ITEM_0045_PATH: item})
+        gh = FakeGh()
+
+        # When
+        mirror(self, root, gh, self.HISTORY)
+
+        # Then
+        body = issue_for(self, gh, "0045")["body"]
+        rendered = words(body)
+        self.assertTrue(
+            "The upgrade command rewrites the present schema and template files to the pinned version." in rendered,
+            "the summary is rendered",
+        )
+        self.assertTrue(f"{gh.repo}/blob/{MIRRORED}/{ITEM_0045_PATH}" in body, "the body links the item file")
+        for left_out in (
+            "B-001 - present schema files match the pin",
+            "criterion 699",
+            "a template the manifest names as the consumer's is left as it is.",
+            "The manifest keys - 0047.",
+        ):
+            self.assertFalse(left_out in rendered, f"{left_out!r} is rendered")
 
 
 class DeliveryComment(unittest.TestCase):

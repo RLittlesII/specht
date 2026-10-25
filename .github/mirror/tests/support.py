@@ -61,7 +61,8 @@ class Interrupted(Exception):
 
 
 class FakeGh:
-    def __init__(self, issues=(), labels=(), pulls=None, fail_after=None):
+    def __init__(self, issues=(), labels=(), pulls=None, fail_after=None, repo="owner/name"):
+        self.repo = repo
         self.store = {}
         for issue in issues:
             stored = {"state": "open", "state_reason": None, "labels": [], "parent": None, "comments": []}
