@@ -322,7 +322,7 @@ Delivered by items `0294` and `0295`. The script is [`../mirror_items.py`](../mi
 
 ## 10. Lessons / Spec Deltas
 
-<!-- last written by: spec-author, 2026-10-25 (item 0295, review of #281) -->
+<!-- last written by: spec-author, 2026-10-25 (item 0297) -->
 
 - 2026-10-24, review round 1: B-017 to B-019 reordered so the first commit that set an item `done` names its pull request, then the latest subject naming its id, then that commit's sha, because 22 done ids are named by more than one subject. C-7 amended to the item reader as extended, since `next.py` keys items by the file name's first four digits and reads neither `type` nor the list fields. B-027 is started by an input on the manual start. C-10 keeps only its testable half. Sources re-labelled: the owner's plan, or spec-author inference.
 - 2026-10-24, owner answers: OQ-2, OQ-3, OQ-6 and OQ-7 resolved by decisions 0005, 0006 (retired; now ADR-0022), 0003 and 0004; C-11, C-12 and B-043 to B-049 added; OQ-8 and OQ-9 opened.
@@ -331,6 +331,7 @@ Delivered by items `0294` and `0295`. The script is [`../mirror_items.py`](../mi
 - 2026-10-25, item `0294`'s findings: epic `0201`'s body exceeds GitHub's 65,536-character limit, so B-021 and B-048 are amended to bodies within it and B-052 and B-053 added (decision 0010; OQ-10 opened). The `@B-030` scenario edited the file's title, which also changes the body under B-021; it now edits the issue's title by hand, as B-030 and its test state. C-13 records that the scenarios are proved by the `unittest` tests § 9 names, with no Reqnroll binding. OQ-8 resolved; § 5 row 10 added.
 - 2026-10-25, item `0295`'s findings: B-040 amended to what GitHub guarantees, since a concurrency group keeps one pending run and a later start replaces it; § 5 row 11 records that the replaced push's `Delivers` comments wait for a backfill run. C-13 amended to cover the build tests that read the generated workflow file, which prove B-036 to B-040.
 - 2026-10-25, review of #281: the workflow runs the `Mirror` NUKE target through `InvokedTargets`, so OQ-5's default now names the .NET SDKs the job sets up. OQ-11 opened for the runner `0055-F2` C-12 does not name. The process lesson is the repository-wide [lesson 0013](../../../.spec/lessons/0013-a-generated-workflow-invokes-a-target.md).
+- 2026-10-25, item `0297`, [lesson 0001](lessons/0001-the-gh-adapter-reads-what-gh-prints.md): the first live run stopped at the first sub-issue link, because `Gh.node()` parsed `gh`'s raw `--jq` string as JSON and no test read `gh`'s output. B-054 added for the link of an issue the same run created; C-11 amended so the real adapter's reading of `gh`'s output is tested as `gh` prints it.
 - Delta for the delivery item, not made here: AGENTS.md § SDLC ("there are **no GitHub issues or milestones** in this workflow") and `specht-conventions` `references/delivery.md` § "The tracker is local `.issue/` items" (the same sentence) change their wording when the mirror is delivered.
 
 ## 11. Open Questions
@@ -371,7 +372,7 @@ Earlier review rows are preserved verbatim; later approvals and the current reco
 
 ## Tasks
 
-Cut 2026-10-24 into [`../.issue/`](../.issue/): [`0293`](../.issue/0293-work-item-mirror.yml) (the Feature), with [`0294`](../.issue/0294-mirror-script.yml), the script on the shared item reader and its unit tests (B-001 to B-035, B-041 to B-053); [`0295`](../.issue/0295-mirror-workflow.yml), the generated workflow (B-036 to B-040), after `0294`; and [`0296`](../.issue/0296-mirror-first-run.yml), the first run, backfill and the § 10 documentation deltas, after both, with no claim. No item answers OQ-4, OQ-5 or OQ-10; `0294` and `0295` proceed on their defaults. B-052 and B-053 were added to `0294` on 2026-10-25.
+Cut 2026-10-24 into [`../.issue/`](../.issue/): [`0293`](../.issue/0293-work-item-mirror.yml) (the Feature), with [`0294`](../.issue/0294-mirror-script.yml), the script on the shared item reader and its unit tests (B-001 to B-035, B-041 to B-053); [`0295`](../.issue/0295-mirror-workflow.yml), the generated workflow (B-036 to B-040), after `0294`; and [`0296`](../.issue/0296-mirror-first-run.yml), the first run, backfill and the § 10 documentation deltas, after both, with no claim. No item answers OQ-4, OQ-5 or OQ-10; `0294` and `0295` proceed on their defaults. B-052 and B-053 were added to `0294` on 2026-10-25. [`0297`](../.issue/0297-mirror-node-lookup.yml), a bug cut 2026-10-25 from the first live run, delivers B-054 (lesson 0001).
 
 ## Scoring
 
