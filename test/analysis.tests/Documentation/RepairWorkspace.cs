@@ -1,4 +1,5 @@
 using System.Collections.Immutable;
+using System.Text;
 using AwesomeAssertions;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CodeActions;
@@ -20,10 +21,13 @@ internal sealed class RepairWorkspace
 
     public async Task<Project> Create(params (string Path, string Source)[] sources)
     {
+        var evidence = await new CurrentArtifact().For("M:Example.Run", sources, Inputs);
         var builder = GeneratorTestContextBuilder.Create().WithAnalyzer<DocumentationBindingAnalyzer>()
             .WithDiagnosticSeverity(null)
+            .AddGlobalOption("build_property.SpechtRoot", CurrentArtifact.Root)
             .AddGlobalOption("build_property.SpechtProjectPath", "test/tests.csproj")
-            .AddGlobalOption("build_property.TargetFramework", "net10.0");
+            .AddGlobalOption("build_property.TargetFramework", "net10.0")
+            .AddGlobalOption("build_property.Configuration", "Debug");
         foreach (var source in sources)
         {
             builder = builder.AddSource(source.Path, source.Source);
@@ -36,7 +40,7 @@ internal sealed class RepairWorkspace
                 .AddOption(input.RelativePath, "build_metadata.AdditionalFiles.SpechtRelativePath", input.RelativePath);
         }
 
-        builder = builder.AddAdditionalText("test/evidence.json", TestEvidenceJson.ForMethod("M:Example.Run"))
+        builder = builder.AddAdditionalText("test/evidence.json", evidence)
             .AddOption("test/evidence.json", "build_metadata.AdditionalFiles.SpechtInputKind", "test-evidence")
             .AddOption("test/evidence.json", "build_metadata.AdditionalFiles.SpechtRelativePath", "test/evidence.json");
         var result = await builder.GenerateAsync(TestContext.Current.CancellationToken);
@@ -48,15 +52,17 @@ internal sealed class RepairWorkspace
             project = project.Solution.WithDocumentFilePath(document.Id, source.Path).GetProject(project.Id)!;
         }
 
-        var config = "is_global = true\nbuild_property.SpechtProjectPath = test/tests.csproj\nbuild_property.TargetFramework = net10.0\n";
+        var config = "is_global = true\nbuild_property.SpechtRoot = " + CurrentArtifact.Root.Replace('\\', '/')
+            + "\nbuild_property.SpechtProjectPath = test/tests.csproj\nbuild_property.TargetFramework = net10.0\nbuild_property.Configuration = Debug\n";
         foreach (var input in Inputs.Where(static input => input.Kind != "source"))
         {
-            project = project.AddAdditionalDocument(input.RelativePath, SourceText.From(input.Text!), filePath: Path.GetFullPath(input.RelativePath)).Project;
+            project = project.AddAdditionalDocument(input.RelativePath, SourceText.From(input.Text!, Encoding.UTF8),
+                filePath: Path.GetFullPath(input.RelativePath)).Project;
             config += "\n[" + Path.GetFullPath(input.RelativePath).Replace('\\', '/') + "]\nbuild_metadata.AdditionalFiles.SpechtInputKind = " + input.Kind
                 + "\nbuild_metadata.AdditionalFiles.SpechtRelativePath = " + input.RelativePath + "\n";
         }
 
-        project = project.AddAdditionalDocument("evidence.json", SourceText.From(TestEvidenceJson.ForMethod("M:Example.Run")),
+        project = project.AddAdditionalDocument("evidence.json", SourceText.From(evidence, Encoding.UTF8),
             filePath: Path.GetFullPath("test/evidence.json")).Project;
         config += "\n[" + Path.GetFullPath("test/evidence.json").Replace('\\', '/') + "]\nbuild_metadata.AdditionalFiles.SpechtInputKind = test-evidence\n"
             + "build_metadata.AdditionalFiles.SpechtRelativePath = test/evidence.json\n";
@@ -67,6 +73,15 @@ internal sealed class RepairWorkspace
 
     public async Task<ImmutableArray<Diagnostic>> Diagnostics(Project project)
     {
+        var sources = new List<(string Path, string Source)>();
+        foreach (var document in project.Documents)
+        {
+            sources.Add((document.FilePath!, (await document.GetTextAsync(TestContext.Current.CancellationToken)).ToString()));
+        }
+
+        var evidence = project.AdditionalDocuments.Single(static document => document.Name == "evidence.json");
+        project = project.Solution.WithAdditionalDocumentText(evidence.Id,
+            SourceText.From(await new CurrentArtifact().For("M:Example.Run", sources, Inputs), Encoding.UTF8)).GetProject(project.Id)!;
         var compilation = await project.GetCompilationAsync(TestContext.Current.CancellationToken);
         compilation!.GetDiagnostics(TestContext.Current.CancellationToken)
             .Where(static diagnostic => diagnostic.Severity == DiagnosticSeverity.Error).Should().BeEmpty();

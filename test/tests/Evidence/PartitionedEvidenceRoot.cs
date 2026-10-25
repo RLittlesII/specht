@@ -118,6 +118,8 @@ internal sealed class PartitionedEvidenceRoot : IDisposable
         File.WriteAllText(Path.Combine(_root, name), artifact.ToJsonString());
     }
 
+    public void Edit(string relativePath, string text) => File.WriteAllText(Path.Combine(_root, relativePath), text);
+
     public EvidenceResult Reconcile(params string[] evidence) => new EvidenceReconciler().Reconcile(_root, evidence, null);
 
     public void Dispose() => Directory.Delete(_root, true);

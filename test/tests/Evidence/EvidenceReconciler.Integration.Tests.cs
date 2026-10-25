@@ -1,9 +1,13 @@
 using System.Text.Json.Nodes;
+using System.Text.RegularExpressions;
 using AwesomeAssertions;
 
 namespace Specht.Tests.Evidence;
 
-/// <summary>Several projects' runs, the incomplete-run finding and the undiscovered bound method (0201-F3 B-014, B-021, B-026; OQ-4, OQ-5).</summary>
+/// <summary>
+/// Several projects' runs, the incomplete-run finding, the undiscovered bound method and the steps a missing or stale
+/// input names (0201-F3 B-014, B-018, B-021, B-022, B-026; OQ-4, OQ-5).
+/// </summary>
 [Trait("Tier", "Integration")]
 public sealed class EvidenceReconcilerIntegrationTests : IDisposable
 {
@@ -118,7 +122,51 @@ public sealed class EvidenceReconcilerIntegrationTests : IDisposable
             .Which.Should().Contain("M:Shared.Checks");
     }
 
+    [Fact]
+    public void NoEvidenceSupplied_WhenReconciled_ShouldBeIncompleteAndNameTheBuildDiscoveryAndRunSteps()
+    {
+        // Given
+        var supplied = Array.Empty<string>();
+
+        // When
+        var result = _root.Reconcile(supplied);
+
+        // Then
+        result.ExitCode.Should().Be(2);
+        result.Report["inputState"]!["state"]!.GetValue<string>().Should().Be("incomplete");
+        var messages = Messages(result.Report, "missingCompilation");
+        messages.Should().NotBeEmpty();
+        messages.Should().OnlyContain(static message => NamesTheProducingSteps(message));
+    }
+
+    [Fact]
+    public void AnEvidenceInputEditedAfterTheRun_WhenReconciled_ShouldReportItStaleAndNameTheRebuildDiscoveryAndRunSteps()
+    {
+        // Given
+        _root.Write("a.json", "a", 1, "run-a", new JsonArray(Case("case-1", "M:Shared.Checks")), new JsonArray(Outcome("case-1")));
+        _root.Write("b.json", "b", 1, "run-b", new JsonArray(Case("case-1", "M:Shared.Checks")), new JsonArray(Outcome("case-1")));
+        _root.Edit("test/Shared.cs", "class Shared { int Edited; }");
+
+        // When
+        var result = _root.Reconcile("a.json", "b.json");
+
+        // Then
+        var messages = Messages(result.Report, "staleEvidence");
+        messages.Should().NotBeEmpty();
+        messages.Should().OnlyContain(static message => message.Contains("rebuild", StringComparison.OrdinalIgnoreCase)
+            && NamesTheProducingSteps(message));
+    }
+
     public void Dispose() => _root.Dispose();
+
+    private static bool NamesTheProducingSteps(string message) =>
+        message.Contains("build", StringComparison.OrdinalIgnoreCase)
+        && message.Contains("dotnet test --list-tests", StringComparison.Ordinal)
+        && Regex.IsMatch(message, "dotnet test(?! --list-tests)", RegexOptions.CultureInvariant);
+
+    private static string[] Messages(JsonObject report, string kind) =>
+        report["findings"]!.AsArray().Where(finding => finding!["kind"]!.GetValue<string>() == kind)
+            .Select(static finding => finding!["message"]!.GetValue<string>()).ToArray();
 
     private static string[] Kinds(JsonObject report) =>
         report["findings"]!.AsArray().Select(static finding => finding!["kind"]!.GetValue<string>()).ToArray();

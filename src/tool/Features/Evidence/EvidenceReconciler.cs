@@ -87,7 +87,7 @@ public sealed class EvidenceReconciler
                 {
                     explicitlyMissing = true;
                     findings.Add(new EvidenceFinding("missingEvidence", Label(root, absolute, index), 0, string.Empty,
-                        "A named evidence input was not found."));
+                        "A named evidence input was not found. " + ProducingSteps));
                 }
             }
 
@@ -97,7 +97,7 @@ public sealed class EvidenceReconciler
             if (namedFiles.Count == 0 && !explicitlyMissing)
             {
                 inputsIncomplete = true;
-                findings.Add(new EvidenceFinding("missingCompilation", "", 0, "", "No evidence was supplied for the declared scope."));
+                findings.Add(new EvidenceFinding("missingCompilation", "", 0, "", "No evidence was supplied for the declared scope. " + ProducingSteps));
             }
 
             var artifacts = new List<ArtifactEntry>();
@@ -133,7 +133,7 @@ public sealed class EvidenceReconciler
                         state = "stale";
                         inputsUnavailable |= !present;
                         findings.Add(new EvidenceFinding(present ? "staleEvidence" : "invalidInput", input.Path, 0, label,
-                            present ? "The input hash differs from the export." : "An indexed input is unavailable."));
+                            present ? "The input hash differs from the export. " + RegeneratingSteps : "An indexed input is unavailable."));
                     }
                 }
 
@@ -144,7 +144,7 @@ public sealed class EvidenceReconciler
                     state = "mismatched";
                     inputsUnavailable |= !assemblyPresent;
                     findings.Add(new EvidenceFinding("staleEvidence", label, 0, artifact.ProjectPath,
-                        "The current assembly bytes cannot be established."));
+                        "The current assembly bytes cannot be established. " + RegeneratingSteps));
                 }
 
                 if (!artifact.Inputs.Any(static input => input.Kind == "manifest" && input.Path == ".specht/manifest.json"))
@@ -178,7 +178,7 @@ public sealed class EvidenceReconciler
                 {
                     inputsIncomplete = true;
                     findings.Add(new EvidenceFinding("missingCompilation", project, 0, framework,
-                        "The declared project and target framework have no current export."));
+                        "The declared project and target framework have no current export. " + ProducingSteps));
                 }
                 else if (matching.Select(static entry => entry.Artifact.ConfigurationFingerprint + entry.Artifact.SourceFingerprint
                     + entry.Artifact.AssemblySha256 + entry.Artifact.PolicyFingerprint).Distinct(StringComparer.Ordinal).Count() > 1)
@@ -650,6 +650,9 @@ public sealed class EvidenceReconciler
                 .Select(static item => (JsonNode?)JsonValue.Create(item)).ToArray()),
         };
     }
+
+    private const string ProducingSteps = "Produce it by building, then running `dotnet test --list-tests`, then `dotnet test`.";
+    private const string RegeneratingSteps = "Regenerate it by rebuilding, then running `dotnet test --list-tests` and `dotnet test` again.";
 
     private static readonly JsonSerializerOptions WireJson = new(JsonSerializerDefaults.Web);
 }

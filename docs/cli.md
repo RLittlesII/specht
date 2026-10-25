@@ -107,6 +107,11 @@ exports remain visible and cannot establish current coverage.
 Native SPCT build diagnostics remain in the build's diagnostic stream; the
 version-one evidence export does not carry them into this report.
 
+On a clean checkout the sequence that produces evidence is: build, then `dotnet test
+--list-tests`, then `dotnet test`, which write `obj/specht-test-evidence/<project>-<framework>.json`.
+With none supplied the report is incomplete (exit `2`), and each missing or stale
+finding names the step that regenerates it.
+
 Exit `0` means complete current inputs, required links and passing outcomes;
 `1` means a required link or outcome failed; `2` means required input is missing,
 stale or incompatible; `3` means configuration is invalid; and `4` means a named

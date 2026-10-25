@@ -5,6 +5,7 @@ using Microsoft.CodeAnalysis;
 using Rocket.Surgery.Extensions.Testing.SourceGenerators;
 using Specht.Analysis.Documentation;
 using Specht.Analysis.Policy;
+using Specht.Analysis.Tests.Documentation;
 using Specht.Analysis.Tests.Policy;
 using Specht.Analysis.Tests.TestEvidence;
 
@@ -84,8 +85,10 @@ public sealed class GherkinEnforcementUnitTests
     {
         var builder = GeneratorTestContextBuilder.Create().WithAnalyzer<DocumentationBindingAnalyzer>()
             .WithDiagnosticSeverity(null).AddSource("test/Example.cs", source)
+            .AddGlobalOption("build_property.SpechtRoot", CurrentArtifact.Root)
             .AddGlobalOption("build_property.SpechtProjectPath", "test/tests.csproj")
-            .AddGlobalOption("build_property.TargetFramework", "net10.0");
+            .AddGlobalOption("build_property.TargetFramework", "net10.0")
+            .AddGlobalOption("build_property.Configuration", "Debug");
         foreach (var input in inputs.Where(static input => input.Kind != "source"))
         {
             builder = builder.AddAdditionalText(input.RelativePath, input.Text!)
@@ -95,7 +98,7 @@ public sealed class GherkinEnforcementUnitTests
 
         if (recognized)
         {
-            builder = builder.AddAdditionalText("test/evidence.json", TestEvidenceJson.ForMethod("M:Example.Run"))
+            builder = builder.AddAdditionalText("test/evidence.json", await new CurrentArtifact().For("M:Example.Run", [("test/Example.cs", source)], inputs))
                 .AddOption("test/evidence.json", "build_metadata.AdditionalFiles.SpechtInputKind", "test-evidence")
                 .AddOption("test/evidence.json", "build_metadata.AdditionalFiles.SpechtRelativePath", "test/evidence.json");
         }

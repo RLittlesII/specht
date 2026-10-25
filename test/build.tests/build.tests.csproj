@@ -11,6 +11,7 @@
     <PackageReference Include="YamlDotNet" />
     <PackageReference Include="TestableIO.System.IO.Abstractions.TestingHelpers" />
     <ProjectReference Include="..\..\.build\.build.csproj" />
+    <ProjectReference Include="..\..\src\tool\tool.csproj" />
     <Using Include="Xunit" />
   </ItemGroup>
 </Project>

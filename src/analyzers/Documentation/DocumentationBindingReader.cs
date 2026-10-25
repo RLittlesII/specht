@@ -16,9 +16,9 @@ namespace Specht.Analysis.Documentation;
 public sealed class DocumentationBindingReader
 {
     public DocumentationAnalysis Read(ISymbol symbol, BindingResolver resolver, bool recognizedTest = false,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default, bool provisional = false)
     {
-        var result = ReadDeclaration(symbol, resolver, recognizedTest, cancellationToken);
+        var result = ReadDeclaration(symbol, resolver, recognizedTest || provisional, cancellationToken);
         for (var type = symbol as INamedTypeSymbol ?? symbol.ContainingType; type is not null; type = type.ContainingType)
         {
             cancellationToken.ThrowIfCancellationRequested();
