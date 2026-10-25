@@ -1,0 +1,68 @@
+id: "0292"
+type: task
+title: Write the templates a recorded upstream source hashes into absent files on init
+
+status: ready-for-architecture
+
+risk: 3
+
+parent: "0050"
+children: []
+
+depends_on: ["0095", "0186", "0290"] # reuses 0095's fetch and hash check; fetches only when 0186's selection holds the templates; reads the hashes and address 0290 defines
+spikes: []
+
+spec: src/tool/Features/Init/.spec/README.md
+
+claims:
+  - B-034
+  - B-041
+  - B-042
+  - B-043
+  - B-044
+
+created: "2026-10-24"
+updated: "2026-10-24"
+closed: null
+
+summary: |
+  Init's side of 0001-F7 decision 0016: with the templates in the run's
+  selection, an absent template the recorded source hashes is written
+  from fetched content that matches its hash, a present one is never
+  requested, and a mismatch or a source that will not serve it writes
+  nothing and exits 3. B-034 as amended keeps a run with no such
+  template, and without the schemas, off the network. 0095 delivered
+  B-034 as it read before the amendment; this item delivers the
+  template half.
+
+  `init` beside a hashed template the manifest names as the consumer's,
+  absent, is OQ-10, the repository owner's and open: B-041 covers only a
+  template the manifest does not name. This item does not answer it.
+
+  Waits on 0290 for the hashes and the address (0001-F7 B-131), and
+  reuses the fetch 0095 built and the selection 0186 built. Risk 3: a
+  second kind of file on init's network path, and an open question on
+  which file a named template gets.
+
+acceptance_criteria:
+  - "B-041 — templates selected, an unnamed hashed template absent, content matches: written"
+  - "B-042 — fetched content mismatches the hash: stderr, nothing written, exit 3"
+  - "B-043 — source unreachable, needs authentication, or lacks the template: stderr, nothing written, exit 3"
+  - "B-044 — a hashed template present: no request for it"
+  - "B-034 — as amended: schemas not selected and no absent template B-041 would fetch: no network call"
+  - "§ 9 carries a row naming a test for each id above."
+
+decisions:
+  - |
+    2026-10-24, spec-author's cut, recording 0001-F7 decision 0016: init's
+    template fetch apart from upgrade's (0001-F7, 0291), waiting only on
+    the record (0290), as 0095 waited on 0176 and not on upgrade. B-034
+    is here because its amendment adds the template case; 0095 stays
+    done. The cut is spec-author's, not an owner ruling.
+
+out_of_scope:
+  - "An absent hashed template the manifest names as the consumer's — OQ-10, open; no claim yet."
+  - "Recording a template hash from the command line — § 5 #19."
+  - "Overwriting a present template — C-1; § 5 #5."
+  - "A credential — 0001-F7 C-15; 0001-F7 § 5 #20."
+  - "upgrade's template fetch — 0291."
