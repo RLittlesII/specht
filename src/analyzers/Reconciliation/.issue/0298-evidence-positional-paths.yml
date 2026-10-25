@@ -16,15 +16,16 @@ closed: "2026-10-25"
 summary: |
   As a consumer running specht evidence I want to name the evidence paths as positional
   arguments, the way specht frontmatter takes its path, so that the command name is not
-  repeated by a required option. --evidence stays an accepted alias so existing scripts and
-  build targets keep working. Decision 0006 records the union order and which callers switch.
+  repeated by a required option. --evidence is removed with no alias (decision 0006
+  reversal, 2026-10-25). Decision 0006 records the order and which callers switch.
 acceptance_criteria:
-  - "B-023, B-024 - positional paths and the --evidence alias supply evidence with identical semantics"
-  - "B-025 - both forms together supply the union, positional first, then the existing de-duplication"
-  - "B-026 - neither form given keeps exit 2 with the no-evidence finding"
-  - "B-027 - help shows the optional positional paths and describes --evidence as their alias; docs/cli.md matches the help"
-  - "section 9 carries a row naming a current passing test for each id above."
+  - "B-023 - positional paths supply each file or directory as evidence, repeatable"
+  - "B-024 - withdrawn 2026-10-25; --evidence is removed"
+  - "B-025 - repeated positional paths are supplied in command-line order, then the existing de-duplication"
+  - "B-026 - no evidence path keeps exit 2 with the no-evidence finding"
+  - "B-027 - help shows the optional positional paths and no evidence option; docs/cli.md matches the help"
+  - "section 9 carries a row naming a current passing test for each active id above."
 decisions: ["0201-F5 decision 0006"]
 out_of_scope:
-  - "Removing, deprecating or warning about --evidence."
+  - "A deprecation alias or a warning for --evidence."
   - "Any change to exit codes or the report JSON."

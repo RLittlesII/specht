@@ -1,6 +1,6 @@
 ---
 title: "Decision 0006: evidence paths are positional arguments"
-description: "Why specht evidence takes its paths as positional arguments, keeps --evidence as an alias, and which callers switch"
+description: "Why specht evidence takes its paths as positional arguments, why the --evidence alias was then removed, and which callers switch"
 type: decision
 ---
 
@@ -50,4 +50,22 @@ and the unchanged finding; help and `docs/cli.md` show `[<path>...]` and name
 
 ## Reversal
 
-None.
+**2026-10-25**, repository owner: "So what I don't like about `--evidence` we
+are calling it on `specht evidence`. Would you have `dotnet test --test`?",
+then "drop it".
+
+Points 2 and 3 are reversed. `--evidence` is removed with no alias, no
+deprecation period and no warning; passing it is an unknown option like any
+other, the CLI parser's usage error. Evidence paths are positional only:
+repeated paths are supplied in command-line order, then the existing
+de-duplication. Point 5 now reads: help shows `[<path>...]` and no evidence
+option. Points 1, 4 and 6 stand.
+
+Considered and not chosen:
+
+- Keeping `--evidence` as an alias: it repeats the command name, the objection
+  the owner raised.
+- A deprecation period with a warning: the owner chose removal outright.
+
+B-024 is withdrawn; B-023, B-025, B-026 and B-027 are amended to the positional
+form. Acceptance helpers and build targets switch to positional paths.
