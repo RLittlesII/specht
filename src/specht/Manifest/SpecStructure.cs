@@ -57,4 +57,7 @@ public sealed record SpecStructure(
 
     /// <summary>The directory globs that must hold a specification; empty when the manifest names none (B-060).</summary>
     public IReadOnlyList<string> RequiredSpecifications { get; init; } = [];
+
+    /// <summary>The template file names the manifest names as the consumer's; empty when it names none, and no rule reads it (<c>0001-F7</c> B-065).</summary>
+    public IReadOnlyList<string> ConsumerTemplates { get; init; } = [];
 }
