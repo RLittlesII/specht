@@ -206,6 +206,9 @@ internal sealed class EvidenceTree : IDisposable
     public (string Stdout, string Stderr, int ExitCode) Run(params string[] options) =>
         AcceptanceTool.Launch(Root, ["evidence", "--root", Root, "--evidence", "evidence.json", .. options]);
 
+    public (string Stdout, string Stderr, int ExitCode) RunWith(params string[] arguments) =>
+        AcceptanceTool.Launch(Root, ["evidence", "--root", Root, .. arguments]);
+
     public string WriteExternalDirectory()
     {
         _externalDirectory = Path.Combine(Path.GetTempPath(), "specht-external-" + Guid.NewGuid().ToString("N"));

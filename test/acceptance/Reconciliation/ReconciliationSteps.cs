@@ -1,4 +1,5 @@
 using System.Text.Json.Nodes;
+using System.Text.RegularExpressions;
 using AwesomeAssertions;
 using Reqnroll;
 using Specht.Tests.Shared;
@@ -228,6 +229,89 @@ public sealed class ReconciliationSteps
         _tree.WriteEvidence();
         var directory = _tree.WriteOverlappingDirectory();
         _result = _tree.Run("--json", "--evidence", directory, "--evidence", directory + "/copy.json");
+    }
+
+    [Given("supplied traceability evidence in two locations")]
+    public void GivenEvidenceInTwoLocations()
+    {
+        _tree.WriteEvidence();
+        _external = _tree.WriteExternalDirectory();
+    }
+
+    [Given("a declared scope and no evidence path in either form")]
+    public void GivenNoEvidencePath() { }
+
+    [Given("a request for specht evidence help")]
+    public void GivenEvidenceHelpRequest() { }
+
+    [When("specht evidence is requested with both locations as positional arguments")]
+    public void WhenBothLocationsArePositional() => _result = _tree.RunWith("--json", "evidence.json", _external!);
+
+    [When("specht evidence is requested with the evidence option")]
+    public void WhenEvidenceOptionIsUsed()
+    {
+        _tree.WriteEvidence();
+        _result = _tree.RunWith("--json", "--evidence", "evidence.json");
+        _positional = _tree.RunWith("--json", "evidence.json");
+    }
+
+    [When("one location is positional and the other is named with the evidence option")]
+    public void WhenOneLocationIsPositionalAndOneIsAnOption() =>
+        _result = _tree.RunWith("--json", _external!, "--evidence", "evidence.json");
+
+    [When("the same export is named positionally and with the evidence option")]
+    public void WhenTheSameExportIsNamedInBothForms()
+    {
+        _tree.WriteEvidence();
+        var directory = _tree.WriteOverlappingDirectory();
+        _result = _tree.RunWith("--json", directory, "--evidence", directory + "/copy.json", "--evidence", "evidence.json");
+    }
+
+    [When("specht evidence is requested")]
+    public void WhenEvidenceIsRequestedWithNoPath() => _result = _tree.RunWith("--json");
+
+    [When("the help is shown")]
+    public void WhenTheHelpIsShown() => _result = AcceptanceTool.Launch(_tree.Root, "evidence", "--help");
+
+    [Then("both are supplied as evidence")]
+    public void ThenBothLocationsAreSupplied()
+    {
+        _result.ExitCode.Should().Be(0, _result.Stdout + _result.Stderr);
+        Supplied().Should().Equal("evidence.json", "external-evidence-2/first.json", "external-evidence-2/second.json");
+    }
+
+    [Then("the report equals the one from positional arguments")]
+    public void ThenReportEqualsPositional()
+    {
+        _result.ExitCode.Should().Be(0, _result.Stdout + _result.Stderr);
+        Supplied().Should().Equal("evidence.json");
+        _result.Stdout.Should().Be(_positional.Stdout);
+    }
+
+    [Then("both are supplied, the positional one first, with no error")]
+    public void ThenBothSuppliedPositionalFirst()
+    {
+        _result.ExitCode.Should().Be(0, _result.Stdout + _result.Stderr);
+        _result.Stderr.Should().BeEmpty();
+        Supplied().Should().Equal("evidence.json", "external-evidence-1/first.json", "external-evidence-1/second.json");
+    }
+
+    [Then("the command fails with incomplete input and reports that no evidence was supplied")]
+    public void ThenNoEvidenceReported()
+    {
+        _result.ExitCode.Should().Be(2);
+        Report()["findings"]!.AsArray().Should().Contain(static item => item!["kind"]!.GetValue<string>() == "missingCompilation"
+            && item["message"]!.GetValue<string>().Contains("No evidence was supplied", StringComparison.Ordinal));
+    }
+
+    [Then("the optional positional paths are in the usage and the evidence option is described as their alias")]
+    public void ThenHelpShowsPositionalPaths()
+    {
+        var help = Regex.Replace(_result.Stdout, @"\x1b\[[0-9;]*m", string.Empty);
+        _result.ExitCode.Should().Be(0, help);
+        Regex.IsMatch(help, @"evidence\s+\[PATH\w*\]\s+\[OPTIONS\]").Should().BeTrue($"the usage shows optional paths, but read {help}");
+        Regex.IsMatch(help, @"--evidence <PATH>[\s\S]*?alias", RegexOptions.IgnoreCase)
+            .Should().BeTrue($"--evidence is described as an alias, but read {help}");
     }
 
     [Then("reconciliation presents the claim-to-method-to-case-to-result chain without requiring Reqnroll")]
@@ -570,6 +654,8 @@ public sealed class ReconciliationSteps
             : json ? _tree.Run(["--json", .. second]) : _tree.Run();
     }
 
+    private string[] Supplied() => Report()["scope"]!["supplied"]!.AsArray().Select(static item => item!["path"]!.GetValue<string>()).ToArray();
+
     private JsonNode Report() => JsonNode.Parse(_result.Stdout)!;
     private JsonNode Claim() => Report()["claims"]![0]!;
     private JsonNode Row(string project, string caseId) => Report()["cases"]!.AsArray()
@@ -585,6 +671,8 @@ public sealed class ReconciliationSteps
     private SpecTree? _checker;
     private string? _checkerBefore;
     private (string Stdout, string Stderr, int ExitCode) _result;
+    private (string Stdout, string Stderr, int ExitCode) _positional;
+    private string? _external;
     private string? _optionalKind;
     private string? _outcome = "passed";
     private int _fileCount;

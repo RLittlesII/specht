@@ -4,6 +4,7 @@ using Specht.Composition;
 using Specht.Manifest;
 using Specht.Model;
 using Specht.Tool;
+using Specht.Tool.Features.Evidence;
 using Specht.Tool.Features.Frontmatter;
 using Specht.Tool.Features.Schema;
 using Specht.Versioning;
@@ -26,6 +27,17 @@ public static class EngineServices
         services.AddSingleton(errors);
         var app = new CommandAppTester(new TypeRegistrar(services.AddSpechtEngine()), console: console);
         app.Configure(static configuration => configuration.AddFrontmatter());
+        return app;
+    }
+
+    /// <summary>Exercises the evidence command over its production registrations and a capturing console.</summary>
+    public static CommandAppTester EvidenceApp(TestConsole console)
+    {
+        var services = new ServiceCollection();
+        services.AddSingleton<IAnsiConsole>(console);
+        services.AddSingleton<EvidenceReconciler>();
+        var app = new CommandAppTester(new TypeRegistrar(services.AddSpechtEngine()), console: console);
+        app.Configure(static configuration => configuration.AddCommand<EvidenceCommand>("evidence"));
         return app;
     }
 
