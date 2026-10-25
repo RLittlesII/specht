@@ -120,7 +120,143 @@ internal sealed class EvidenceTree : IDisposable
         File.WriteAllText(path, manifest.ToJsonString());
     }
 
-    public void WriteEvidence(string? outcome = "passed", bool binding = true, bool historicalBinding = false, bool scenario = false)
+    public void WriteEvidence(string? outcome = "passed", bool binding = true, bool historicalBinding = false, bool scenario = false) =>
+        File.WriteAllText(Path.Combine(Root, "evidence.json"), BuildEvidence(outcome, binding, historicalBinding, scenario).ToJsonString());
+
+    public void UsePartitions(params string[] names)
+    {
+        var path = Path.Combine(Root, ".specht", "manifest.json");
+        var manifest = JsonNode.Parse(File.ReadAllText(path))!;
+        var projects = manifest["codeAnalysis"]!["projects"]!.AsArray();
+        projects.Clear();
+        foreach (var name in names)
+        {
+            Directory.CreateDirectory(Path.Combine(Root, "test", name));
+            File.WriteAllBytes(Path.Combine(Root, "test", name, name + ".dll"), [(byte)name[0], 9]);
+            projects.Add(new JsonObject { ["path"] = ProjectPath(name), ["targetFrameworks"] = new JsonArray("net10.0") });
+        }
+
+        File.WriteAllText(path, manifest.ToJsonString());
+    }
+
+    public void WriteCases(string name, string file, IReadOnlyList<CaseSpec> cases)
+    {
+        var artifact = BuildEvidence();
+        artifact["formatVersion"] = 3;
+        artifact["project"]!["path"] = ProjectPath(name);
+        if (name != "tests")
+        {
+            var assembly = $"test/{name}/{name}.dll";
+            artifact["assembly"] = new JsonObject
+            {
+                ["name"] = name,
+                ["sha256"] = Hash(File.ReadAllBytes(Path.Combine(Root, assembly))),
+                ["path"] = assembly,
+            };
+        }
+
+        artifact["discovery"]!["cases"] = new JsonArray(cases.Select(static item => (JsonNode?)new JsonObject
+        {
+            ["caseId"] = item.CaseId,
+            ["methodSymbolId"] = "M:test",
+            ["rowId"] = null,
+            ["displayName"] = item.CaseId,
+            ["categories"] = new JsonArray(),
+            ["owned"] = item.Owned,
+            ["selected"] = item.Selected,
+        }).ToArray());
+        artifact["results"] = new JsonObject
+        {
+            ["state"] = "available",
+            ["runId"] = "run-" + name,
+            ["cases"] = new JsonArray(cases.Where(static item => item.Selected && item.Outcome is not null)
+                .Select(static item => (JsonNode?)new JsonObject { ["caseId"] = item.CaseId, ["outcome"] = item.Outcome, ["detail"] = null }).ToArray()),
+        };
+        var linked = cases.Where(static item => item.Link is not null).ToArray();
+        if (linked.Length > 0)
+        {
+            var target = artifact["bindings"]![0]!["target"]!.DeepClone();
+            artifact["scenarios"] = new JsonArray(new JsonObject
+            {
+                ["path"] = "src/read/.spec/read.feature",
+                ["scenarioId"] = "outline-1",
+                ["line"] = 1,
+                ["scope"] = new JsonObject { ["epic"] = null, ["feature"] = "cap:read" },
+                ["claims"] = new JsonArray(new JsonObject
+                {
+                    ["id"] = "need/7",
+                    ["status"] = "resolved",
+                    ["isEligible"] = true,
+                    ["target"] = target,
+                    ["matches"] = new JsonArray(),
+                }),
+                ["cases"] = new JsonArray(linked.Select(static item => (JsonNode?)new JsonObject
+                {
+                    ["rowId"] = null,
+                    ["caseId"] = item.CaseId,
+                    ["status"] = "resolved",
+                    ["state"] = item.Link,
+                }).ToArray()),
+            });
+        }
+
+        File.WriteAllText(Path.Combine(Root, file), artifact.ToJsonString());
+    }
+
+    public (string Stdout, string Stderr, int ExitCode) Run(params string[] options) =>
+        AcceptanceTool.Launch(Root, ["evidence", "--root", Root, "--evidence", "evidence.json", .. options]);
+
+    public string WriteExternalDirectory()
+    {
+        _externalDirectory = Path.Combine(Path.GetTempPath(), "specht-external-" + Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(_externalDirectory);
+        File.Copy(Path.Combine(Root, "evidence.json"), Path.Combine(_externalDirectory, "first.json"));
+        File.Copy(Path.Combine(Root, "evidence.json"), Path.Combine(_externalDirectory, "second.json"));
+        return _externalDirectory;
+    }
+
+    public string WriteOverlappingDirectory()
+    {
+        var directory = Path.Combine(Root, "evidence-dir");
+        Directory.CreateDirectory(directory);
+        File.Copy(Path.Combine(Root, "evidence.json"), Path.Combine(directory, "copy.json"));
+        return "evidence-dir";
+    }
+
+    public void Dispose()
+    {
+        Directory.Delete(Root, true);
+        if (_externalDirectory is not null)
+        {
+            Directory.Delete(_externalDirectory, true);
+        }
+    }
+
+    private static string ProjectPath(string name) => name == "tests" ? "test/tests.csproj" : $"test/{name}/{name}.csproj";
+
+    private static string Hash(byte[] bytes) => Convert.ToHexStringLower(SHA256.HashData(bytes));
+
+    private static string Fingerprint(params (string Path, string Kind, string Digest)[] inputs)
+    {
+        using var stream = new MemoryStream();
+        foreach (var input in inputs.OrderBy(static entry => entry.Path, StringComparer.Ordinal)
+            .ThenBy(static entry => entry.Kind, StringComparer.Ordinal))
+        {
+            foreach (var value in new[] { input.Path, input.Kind, input.Digest })
+            {
+                var bytes = Encoding.UTF8.GetBytes(value);
+                stream.WriteByte((byte)(bytes.Length >> 24));
+                stream.WriteByte((byte)(bytes.Length >> 16));
+                stream.WriteByte((byte)(bytes.Length >> 8));
+                stream.WriteByte((byte)bytes.Length);
+                stream.Write(bytes);
+            }
+        }
+
+        return Hash(stream.ToArray());
+    }
+
+    private JsonObject BuildEvidence(string? outcome = "passed", bool binding = true, bool historicalBinding = false, bool scenario = false)
     {
         var recordPath = "src/read/.spec/README.md";
         if (historicalBinding)
@@ -246,58 +382,7 @@ internal sealed class EvidenceTree : IDisposable
                 ["cases"] = new JsonArray(new JsonObject { ["rowId"] = null, ["caseId"] = "case-1", ["status"] = "resolved", ["state"] = "active" }),
             });
         }
-        File.WriteAllText(Path.Combine(Root, "evidence.json"), evidence.ToJsonString());
-    }
-
-    public (string Stdout, string Stderr, int ExitCode) Run(params string[] options) =>
-        AcceptanceTool.Launch(Root, ["evidence", "--root", Root, "--evidence", "evidence.json", .. options]);
-
-    public string WriteExternalDirectory()
-    {
-        _externalDirectory = Path.Combine(Path.GetTempPath(), "specht-external-" + Guid.NewGuid().ToString("N"));
-        Directory.CreateDirectory(_externalDirectory);
-        File.Copy(Path.Combine(Root, "evidence.json"), Path.Combine(_externalDirectory, "first.json"));
-        File.Copy(Path.Combine(Root, "evidence.json"), Path.Combine(_externalDirectory, "second.json"));
-        return _externalDirectory;
-    }
-
-    public string WriteOverlappingDirectory()
-    {
-        var directory = Path.Combine(Root, "evidence-dir");
-        Directory.CreateDirectory(directory);
-        File.Copy(Path.Combine(Root, "evidence.json"), Path.Combine(directory, "copy.json"));
-        return "evidence-dir";
-    }
-
-    public void Dispose()
-    {
-        Directory.Delete(Root, true);
-        if (_externalDirectory is not null)
-        {
-            Directory.Delete(_externalDirectory, true);
-        }
-    }
-
-    private static string Hash(byte[] bytes) => Convert.ToHexStringLower(SHA256.HashData(bytes));
-
-    private static string Fingerprint(params (string Path, string Kind, string Digest)[] inputs)
-    {
-        using var stream = new MemoryStream();
-        foreach (var input in inputs.OrderBy(static entry => entry.Path, StringComparer.Ordinal)
-            .ThenBy(static entry => entry.Kind, StringComparer.Ordinal))
-        {
-            foreach (var value in new[] { input.Path, input.Kind, input.Digest })
-            {
-                var bytes = Encoding.UTF8.GetBytes(value);
-                stream.WriteByte((byte)(bytes.Length >> 24));
-                stream.WriteByte((byte)(bytes.Length >> 16));
-                stream.WriteByte((byte)(bytes.Length >> 8));
-                stream.WriteByte((byte)bytes.Length);
-                stream.Write(bytes);
-            }
-        }
-
-        return Hash(stream.ToArray());
+        return evidence;
     }
 
     private string? _externalDirectory;

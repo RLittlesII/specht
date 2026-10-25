@@ -27,7 +27,7 @@ acceptance_criteria:
   - "B-022 - a declared project with no current evidence fails the gate for its owned keys"
   - "B-018, B-019 - planned rows neither cover the claim nor fail the gate; an active row beside them still does"
   - "section 9 carries a row naming a current passing test for each id above."
-decisions: []
+decisions: ["0201-F5 decision 0004"]
 out_of_scope:
   - "Ownership computation and the selected flag: 0260."
   - "Reading planned marks from Gherkin: 0259."

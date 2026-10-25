@@ -1,3 +1,6 @@
+using System.Collections.Generic;
+using System.Linq;
+
 namespace Specht.Tool.Features.Evidence;
 
 /// <summary>The independent required-link and exit decisions for the evidence gate.</summary>
@@ -14,4 +17,11 @@ internal static class EvidenceGate
 
     /// <implements epic="0201" feature="F5" claim="B-017" />
     public static bool Passed(string? outcome) => outcome == "passed";
+
+    /// <implements epic="0201" feature="F5" claim="B-017" />
+    public static bool Gated(bool? owned, bool planned) => owned != false && !planned;
+
+    /// <implements epic="0201" feature="F5" claim="B-018" />
+    public static bool Planned(IReadOnlyCollection<string> linkStates) =>
+        linkStates.Count > 0 && linkStates.All(static state => state == "planned");
 }

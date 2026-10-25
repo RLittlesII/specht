@@ -295,6 +295,8 @@ public sealed class EvidenceReconciler
                         ["caseId"] = testCase.CaseId,
                         ["methodSymbolId"] = testCase.MethodSymbolId,
                         ["rowId"] = testCase.RowId,
+                        ["owned"] = testCase.Owned != false,
+                        ["planned"] = IsPlanned(artifact, testCase.CaseId),
                         ["displayName"] = testCase.DisplayName,
                         ["discoveryState"] = discoveryCurrent ? "current" : entry.State,
                         ["runId"] = artifact.Results.RunId,
@@ -349,34 +351,44 @@ public sealed class EvidenceReconciler
                         .SelectMany(pair => pair.entry.Artifact.Discovery.Cases
                         .Where(testCase => testCase.MethodSymbolId == pair.binding.SymbolId)
                         .Select(testCase => (pair.entry, testCase))).ToArray();
-                    foreach (var method in matching.Select(static pair => pair.binding.SymbolId).Distinct(StringComparer.Ordinal)
-                        .Where(method => !inputsIncomplete))
+                    foreach (var method in matching.Select(static pair => pair.binding.SymbolId).Distinct(StringComparer.Ordinal))
                     {
                         var cases = discovered.Where(item => item.testCase.MethodSymbolId == method).ToArray();
+                        var gated = cases
+                            .Where(item => EvidenceGate.Gated(item.testCase.Owned, IsPlanned(item.entry.Artifact, item.testCase.CaseId)))
+                            .ToArray();
                         if (cases.Length == 0)
                         {
-                            findings.Add(new EvidenceFinding("missingResult", claim.Path, claim.Line, claim.Identity,
-                                $"Required test method {method} has no discovered case."));
+                            if (!inputsIncomplete)
+                            {
+                                findings.Add(new EvidenceFinding("missingResult", claim.Path, claim.Line, claim.Identity,
+                                    $"Required test method {method} has no discovered case."));
+                            }
                         }
-                        else if (cases.All(static item => item.testCase.Selected == false))
+                        else if (gated.Length == 0)
                         {
-                            findings.Add(new EvidenceFinding("missingResult", claim.Path, claim.Line, claim.Identity,
-                                $"Required test method {method} has no selected case."));
+                            if (!inputsIncomplete)
+                            {
+                                findings.Add(new EvidenceFinding("missingResult", claim.Path, claim.Line, claim.Identity,
+                                    $"Required test method {method} has no owned case."));
+                            }
                         }
-                    }
 
-                    var caseKeys = discovered.Where(static item => item.testCase.Selected != false)
-                        .Select(static item => (item.entry.Label, item.entry.Artifact.ProjectPath, item.entry.Artifact.TargetFramework,
-                            item.testCase.CaseId)).Distinct().ToArray();
-                    foreach (var (label, project, framework, caseId) in caseKeys)
-                    {
-                        claim.Cases.Add((project, framework, caseId));
-                        var caseRow = caseRows.Single(row => row["evidence"]!.GetValue<string>() == label
-                            && row["caseId"]!.GetValue<string>() == caseId);
-                        if (!EvidenceGate.Passed(caseRow["outcome"]!.GetValue<string>()) && !inputsIncomplete)
+                        foreach (var (item, caseId) in gated.Select(static item => (item, item.testCase.CaseId)).Distinct())
                         {
-                            findings.Add(new EvidenceFinding("missingResult", claim.Path, claim.Line, claim.Identity,
-                                $"Required case {caseId} did not pass."));
+                            var caseRow = caseRows.Single(row => row["evidence"]!.GetValue<string>() == item.entry.Label
+                                && row["caseId"]!.GetValue<string>() == caseId);
+                            var selected = item.testCase.Selected != false;
+                            if (selected)
+                            {
+                                claim.Cases.Add((item.entry.Artifact.ProjectPath, item.entry.Artifact.TargetFramework, caseId));
+                            }
+
+                            if ((!selected || !EvidenceGate.Passed(caseRow["outcome"]!.GetValue<string>())) && !inputsIncomplete)
+                            {
+                                findings.Add(new EvidenceFinding("missingResult", claim.Path, claim.Line, claim.Identity,
+                                    selected ? $"Required case {caseId} did not pass." : $"Required case {caseId} was not selected by its run."));
+                            }
                         }
                     }
                 }
@@ -435,6 +447,7 @@ public sealed class EvidenceReconciler
         var orderedClaims = claims.OrderBy(static claim => claim.Epic, StringComparer.Ordinal)
             .ThenBy(static claim => claim.Feature, StringComparer.Ordinal).ThenBy(static claim => claim.Id, StringComparer.Ordinal).ToArray();
         var links = claims.SelectMany(static claim => claim.Links.Select(static pair => pair.Value?["state"]?.GetValue<string>())).ToArray();
+        var ownedRows = caseRows.Where(static row => row["owned"]!.GetValue<bool>()).ToArray();
         var report = new JsonObject
         {
             ["format"] = "specht.evidence-report",
@@ -457,8 +470,8 @@ public sealed class EvidenceReconciler
                 ["selectedClaims"] = claims.Count,
                 ["coveredClaims"] = claims.Count(claim => claim.Links["test"]?["state"]?.GetValue<string>() == "satisfied"),
                 ["exemptClaims"] = claims.Count(claim => claim.Links["test"]?["state"]?.GetValue<string>() == "exempt"),
-                ["passed"] = caseRows.Count(row => row["outcome"]?.GetValue<string>() == "passed"),
-                ["failed"] = caseRows.Count(row => row["outcome"]?.GetValue<string>() == "failed"),
+                ["passed"] = ownedRows.Count(row => row["outcome"]?.GetValue<string>() == "passed"),
+                ["failed"] = ownedRows.Count(row => row["outcome"]?.GetValue<string>() == "failed"),
                 ["findings"] = findings.Count,
                 ["exitCode"] = exit,
                 ["inputs"] = new JsonObject
@@ -484,12 +497,12 @@ public sealed class EvidenceReconciler
                 },
                 ["execution"] = new JsonObject
                 {
-                    ["passed"] = caseRows.Count(row => row["outcome"]?.GetValue<string>() == "passed"),
-                    ["failed"] = caseRows.Count(row => row["outcome"]?.GetValue<string>() == "failed"),
-                    ["skipped"] = caseRows.Count(row => row["outcome"]?.GetValue<string>() == "skipped"),
-                    ["notRun"] = caseRows.Count(row => row["outcome"]?.GetValue<string>() == "notRun"),
-                    ["aborted"] = caseRows.Count(row => row["outcome"]?.GetValue<string>() == "aborted"),
-                    ["absent"] = caseRows.Count(row => row["outcome"]?.GetValue<string>() == "absent"),
+                    ["passed"] = ownedRows.Count(row => row["outcome"]?.GetValue<string>() == "passed"),
+                    ["failed"] = ownedRows.Count(row => row["outcome"]?.GetValue<string>() == "failed"),
+                    ["skipped"] = ownedRows.Count(row => row["outcome"]?.GetValue<string>() == "skipped"),
+                    ["notRun"] = ownedRows.Count(row => row["outcome"]?.GetValue<string>() == "notRun"),
+                    ["aborted"] = ownedRows.Count(row => row["outcome"]?.GetValue<string>() == "aborted"),
+                    ["absent"] = ownedRows.Count(row => row["outcome"]?.GetValue<string>() == "absent"),
                 },
             },
         };
@@ -569,6 +582,12 @@ public sealed class EvidenceReconciler
             }
         }
     }
+
+    /// <implements epic="0201" feature="F5" claim="B-018" />
+    private static bool IsPlanned(TestEvidenceArtifact artifact, string caseId) => EvidenceGate.Planned(artifact.Scenarios
+        .SelectMany(static scenario => scenario.GetProperty("cases").EnumerateArray())
+        .Where(link => link.GetProperty("status").GetString() == "resolved" && link.GetProperty("caseId").GetString() == caseId)
+        .Select(static link => link.GetProperty("state").GetString() ?? string.Empty).ToArray());
 
     /// <implements epic="0201" feature="F5" claim="B-001" />
     private static JsonArray Array(IEnumerable<JsonObject> entries) => new(entries.Select(static entry => (JsonNode?)entry).ToArray());
