@@ -35,6 +35,42 @@ public sealed class TestEvidenceVsTestLoggerUnitTests
         Case(artifact, FirstId)["displayName"]!.GetValue<string>().Should().Be(first.DisplayName);
     }
 
+    /// <verifies epic="0201" feature="F7" claim="B-030" />
+    [Fact]
+    public void PayloadWithACatalog_WhenDiscovered_ShouldCarryTheCatalogInTheArtifact()
+    {
+        // Given
+        var catalog = new JsonObject
+        {
+            ["features"] = new JsonArray(new JsonObject
+            {
+                ["epic"] = "0201",
+                ["feature"] = "F7",
+                ["state"] = "approved",
+                ["path"] = "A/arithmetic.feature",
+                ["claims"] = new JsonArray(new JsonObject
+                {
+                    ["id"] = "REQ-FIX-001",
+                    ["state"] = "Active",
+                    ["element"] = "Scenario",
+                    ["path"] = "A/arithmetic.feature",
+                    ["line"] = 3,
+                    ["cases"] = new JsonArray(),
+                }),
+            }),
+        };
+        var source = new VsTestSource(catalog: catalog);
+        var testCase = source.Case(FirstId, "A.LocalCases.Fact", "A.LocalCases", "Fact");
+
+        // When
+        source.Attach().Discover(source.Source, testCase);
+
+        // Then
+        var feature = source.Artifact()["catalog"]!["features"]!.AsArray().Should().ContainSingle().Which!;
+        feature["feature"]!.GetValue<string>().Should().Be("F7");
+        feature["claims"]!.AsArray().Should().ContainSingle().Which!["id"]!.GetValue<string>().Should().Be("REQ-FIX-001");
+    }
+
     [Theory]
     [ClassData(typeof(RunnerOutcomeRows))]
     public void ARunnerOutcomeBesideAPassingRow_WhenRun_ShouldBeRecordedAgainstThatRowAlone(TestOutcome outcome, string expected)

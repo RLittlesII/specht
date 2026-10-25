@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json.Nodes;
 using Specht.Analysis.Bindings;
+using Specht.Analysis.Bindings.Gherkin;
 
 namespace Specht.Analysis.Policy;
 
@@ -22,6 +23,7 @@ public sealed class AnalysisPolicy
     }
 
     public BindingPolicy Bindings { get; }
+    public GherkinClaimPolicy? Gherkin { get; init; }
     public IReadOnlyList<AnalysisProject> Projects { get; }
     public IReadOnlyList<FeatureIdentity> Features { get; }
 
