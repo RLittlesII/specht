@@ -1,7 +1,7 @@
 id: "0262"
 type: feature
 title: "Gate the report on owned case keys and planned rows"
-status: ready
+status: in-progress
 value: 4
 risk: 3
 parent: "0201"
@@ -11,7 +11,7 @@ spikes: []
 spec: src/analyzers/Reconciliation/.spec/README.md
 claims: ["B-017", "B-018", "B-019", "B-020", "B-021", "B-022"]
 created: "2026-10-23"
-updated: "2026-10-23"
+updated: "2026-10-24"
 closed: null
 summary: |
   As a consumer partitioning one set of claim files across test projects I want the default
