@@ -20,7 +20,7 @@ claims:
   - B-031
 
 created: "2026-10-08"
-updated: "2026-10-10"
+updated: "2026-10-24"
 closed: null
 
 summary: |
@@ -46,6 +46,10 @@ decisions:
     is scoped to the templates the manifest does not name as the
     consumer's; selecting the on-disk source names none. Claims and
     dependencies unchanged.
+  - |
+    2026-10-24, spec-author, recording the owner's decision 0016: B-031
+    as amended also leaves out each template the recorded upstream source
+    hashes (0001-F7 B-125, item 0290). Claims and dependencies unchanged.
 
 out_of_scope:
   - "Overwriting a consumer's frontmatter schemas — C-2."
