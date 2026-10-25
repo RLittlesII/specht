@@ -2,7 +2,7 @@ id: "0294"
 type: task
 title: Write the mirror script on the shared item reader, with its unit tests
 
-status: ready-for-architecture
+status: done
 
 risk: 4
 
@@ -61,10 +61,12 @@ claims:
   - B-049
   - B-050
   - B-051
+  - B-052
+  - B-053
 
 created: "2026-10-24"
-updated: "2026-10-24"
-closed: null
+updated: "2026-10-25"
+closed: "2026-10-25"
 
 summary: |
   `.github/mirror/mirror_items.py`, standard-library Python driving `gh`
@@ -77,12 +79,9 @@ summary: |
   items by path and to read every field the mirror needs; the raw file is
   read only for B-021. The plan is tested with `unittest` against a fake
   `gh` and a synthetic git log (C-11, decision 0005), and a build target
-  runs the tests. OQ-8 is open: the implementer proposes the target, and
-  the `0055-F1` amendment for a new target and the `0055-F2` amendment for
-  CI's pull-request build running it, which are spec-author's to write
-  before the build changes. OQ-4's default applies: a sub-issue link the
-  cap refuses is counted skipped and named. Status
-  ready-for-architecture: § 6 and § 7 are pending and OQ-8 is open. Risk
+  runs the tests (`MirrorTest`, OQ-8 resolved 2026-10-25). OQ-4's default
+  applies: a sub-issue link the cap refuses is counted skipped and named.
+  A body over GitHub's limit links its file (decision 0010). Risk
   4: the queue script's reader changes under it, and delivery is derived
   from git history across squash and rebase merges (A-2).
 
@@ -133,6 +132,8 @@ acceptance_criteria:
   - "B-049 — a duplicated id's marker names its path"
   - "B-050 — no `status:` label on a done epic"
   - "B-051 — no Summary: the epic's `description` in its place"
+  - "B-052 — an oversize body links its file at the mirrored commit"
+  - "B-053 — still oversize: sections after the summary left out"
   - "C-7 — one shared reader keyed by path; queue output unchanged for a tree with no duplicated id (this tree has `0220` twice, A-5)"
   - "C-11 — `unittest`, fake `gh`, synthetic git log, no read of this repository's tree or history, run by a build target"
   - "C-1, C-2, C-4, C-10 — no write to the tree, no read back, relative paths only, one write at a time"

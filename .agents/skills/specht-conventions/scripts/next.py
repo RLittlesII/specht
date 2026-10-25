@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import argparse
+import json
 import os
 import re
 from pathlib import Path
@@ -26,6 +27,28 @@ def block(text, key):
     return " ".join(match[1].split()) if match else ""
 
 
+def listing(text, key):
+    match = re.search(rf"^{key}:[ \t]*(.*)\n((?:[ \t]+.*\n?|\n)*)", text, re.M)
+    if not match:
+        return []
+    if match[1].startswith("["):
+        return [unquote(entry) for entry in re.findall(r'"(?:[^"\\]|\\.)*"|\'(?:[^\']|\'\')*\'', match[1])]
+    indent = re.search(r"^([ \t]*)- ", match[2], re.M)
+    entries = re.split(rf"^{indent[1]}- ", match[2], flags=re.M)[1:] if indent else []
+    return [unquote(re.sub(r"^[|>][-+]? ?", "", " ".join(entry.split()))) for entry in entries]
+
+
+def unquote(value):
+    if len(value) > 1 and value[0] == value[-1] == '"':
+        try:
+            return json.loads(value)
+        except ValueError:
+            return value[1:-1]
+    if len(value) > 1 and value[0] == value[-1] == "'":
+        return value[1:-1].replace("''", "'")
+    return value
+
+
 def describe(summary, width):
     sentence = re.split(r"(?<=[.!?])\s", summary, maxsplit=1)[0]
     return sentence if len(sentence) <= width else sentence[: width - 1].rstrip() + "…"
@@ -43,8 +66,9 @@ def read_items(root):
             path = Path(directory, name)
             text = path.read_text(encoding="utf-8")
             home = path.parent.parent.relative_to(root).as_posix()
-            items[name[:4]] = {
+            items[path.relative_to(root).as_posix()] = {
                 "id": name[:4],
+                "type": scalar(text, "type"),
                 "title": scalar(text, "title"),
                 "status": scalar(text, "status"),
                 "value": scalar(text, "value"),
@@ -54,6 +78,9 @@ def read_items(root):
                 "home": "" if home == "." else home,
                 "depends_on": re.findall(r'"(\d{4})"', scalar(text, "depends_on")),
                 "summary": block(text, "summary"),
+                "acceptance_criteria": listing(text, "acceptance_criteria"),
+                "decisions": listing(text, "decisions"),
+                "out_of_scope": listing(text, "out_of_scope"),
             }
     return items
 
@@ -146,7 +173,7 @@ def main():
     args = parser.parse_args()
 
     root = args.root.resolve()
-    items = read_items(root)
+    items = {item["id"]: item for item in read_items(root).values()}
     containers = rank(items, {i["id"]: i for i in items.values() if i["status"] != "done"}, read_goal(root))
     open_items = sorted((i for i in items.values() if i["status"] != "done"), key=order)
     for item in open_items:

@@ -140,7 +140,7 @@ Feature: Work-item mirror
 
   @B-021
   Scenario: An issue carries the item as written
-    Given a work item on the main branch
+    Given a work item whose issue fits within GitHub's limit on an issue's length
     When the mirror runs
     Then its issue carries the item file exactly as written
 
@@ -197,9 +197,10 @@ Feature: Work-item mirror
 
   @B-030
   Scenario: A run writes only what differs
-    Given a work item whose title changed and whose status did not
+    Given a mirrored issue whose title was edited by hand
+    And whose description and labels still match its work item
     When the mirror runs
-    Then its issue's title is updated
+    Then its issue's title is restored from the work item
     And nothing else about the issue is written
 
   @B-031
@@ -315,7 +316,7 @@ Feature: Work-item mirror
 
   @B-048
   Scenario: An epic's issue carries the epic as written
-    Given an epic on the main branch
+    Given an epic whose issue fits within GitHub's limit on an issue's length
     When the mirror runs
     Then its issue carries the epic file exactly as written
 
@@ -338,3 +339,17 @@ Feature: Work-item mirror
     When the mirror runs
     Then its issue shows the epic's description where the summary would be
     And then carries the epic file exactly as written
+
+  @B-052
+  Scenario: An oversize issue links its file instead of copying it
+    Given an epic too long to copy into one issue within GitHub's limit
+    When the mirror runs
+    Then its issue links the epic file as it stands at the mirrored commit
+    And it does not carry the epic file itself
+
+  @B-053
+  Scenario: An issue still too long also leaves out the sections after the summary
+    Given a work item whose issue is over GitHub's limit even with its file replaced by a link
+    When the mirror runs
+    Then its issue shows the item's summary and the link to its file
+    And it leaves out the item's acceptance criteria, decisions and out-of-scope entries
