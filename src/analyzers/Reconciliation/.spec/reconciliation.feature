@@ -263,3 +263,33 @@ Feature: Traceability reconciliation
     Given a bound test whose every discovered case is owned by no project
     When the supplied evidence is reconciled by specht evidence
     Then the default trace gate fails for that test as having no owned case
+
+  @B-023
+  Scenario: Positional evidence paths
+    Given supplied traceability evidence in two locations
+    When specht evidence is requested with both locations as positional arguments
+    Then both are supplied as evidence
+
+  @B-025
+  Scenario: Evidence paths in command-line order
+    Given supplied traceability evidence in two locations
+    When specht evidence is requested with both locations as positional arguments
+    Then both are supplied in command-line order, with no error
+
+  @B-025 @boundary
+  Scenario: Same export named twice
+    Given supplied traceability evidence
+    When the same export is named twice as positional arguments
+    Then it is reconciled once
+
+  @B-026 @boundary
+  Scenario: No evidence path
+    Given a declared scope and no evidence path
+    When specht evidence is requested
+    Then the command fails with incomplete input and reports that no evidence was supplied
+
+  @B-027
+  Scenario: Evidence help shows positional paths
+    Given a request for specht evidence help
+    When the help is shown
+    Then the optional positional paths are in the usage and no evidence option is offered

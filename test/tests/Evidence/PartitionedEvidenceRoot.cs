@@ -54,6 +54,8 @@ internal sealed class PartitionedEvidenceRoot : IDisposable
         File.WriteAllText(Path.Combine(_root, ".specht", "manifest.json"), configuration.ToJsonString());
     }
 
+    public string Root => _root;
+
     public void Write(string name, string project, int formatVersion, string runId, JsonArray cases, JsonArray results, JsonArray? scenarios = null)
     {
         var inputs = new[]
