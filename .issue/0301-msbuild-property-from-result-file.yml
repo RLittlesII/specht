@@ -1,0 +1,49 @@
+id: "0301"
+type: bug
+title: Read an MSBuild property from its result file in tests
+status: done
+value: 4
+risk: 1
+parent: null
+children: []
+depends_on: []
+spikes: []
+spec: null
+claims: []
+created: "2026-10-25"
+updated: "2026-10-25"
+closed: "2026-10-25"
+summary: |
+  The Main workflow on main failed from d1b34d48 (Actions run 40233517873)
+  and in pull request #565's run 40257484584, only on the self-hosted macOS
+  ARM64 runner. `TestEvidenceVsTestIntegrationTests.DocumentedSequence_WhenFollowedOnACleanCheckout_ShouldHoldCurrentPassingEvidenceForTheAuthoredVerifies`
+  (net10.0) expected the reconciliation report's `inputState.state` to be
+  `complete` and read `incomplete`. It is intermittent and not caused by
+  #563: its head 330c58d9 is byte-identical to d1b34d48 and passed, and
+  run 40258055558 on code containing d1b34d48 passed.
+
+  The fixture's `Arrange` read the consumer's target framework with
+  `dotnet msbuild A/A.csproj -getProperty:BundledNETCoreAppTargetFrameworkVersion`
+  and took the last line of the combined console output. Under load the
+  .NET CLI's MSBuild server times out and prints "MSBuild server
+  unavailable: ... Falling back to an in-process build." after the value,
+  so the manifest declared a framework of `netMSBuild server unavailable:
+  ...`. Neither project had a current export for its declared framework,
+  the reconciler reported two `missingCompilation` findings, and
+  `inputState` was `incomplete`. The reconciler was right; the harness was
+  wrong. Reproduced locally in 1 of 6 runs under CPU load.
+
+  Both places that parsed a `-getProperty` value from console output now
+  pass `-getResultOutputFile:<path>` and read the value from that file:
+  `VsTestRun.Arrange` in `test/build.tests/TestEvidenceVsTest.Integration.Tests.cs`
+  and `ThenItsNameCarriesTheVersionComputedForTheCommit` in
+  `test/acceptance/Build/BuildSteps.cs`, which trimmed stdout and stderr
+  and had the same latent defect. Risk 1: two test reads, no product code.
+acceptance_criteria:
+  - "Both tests read the MSBuild property value from the file `-getResultOutputFile` writes, never from console output."
+  - "The documented-sequence fixture test passes with `inputState.state` `complete`."
+  - "Lesson 0014 in `.spec/lessons/` and its rule in `specht-conventions` `references/testing.md`."
+  - "No production code path changes."
+decisions: []
+out_of_scope:
+  - "Any change to the evidence reconciler or the test logger; both behaved correctly on the input they were given."
