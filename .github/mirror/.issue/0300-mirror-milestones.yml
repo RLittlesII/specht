@@ -1,0 +1,69 @@
+id: "0300"
+type: task
+title: Mirror the goal file's milestones as GitHub milestones
+
+status: done
+
+value: 3
+risk: 3
+
+parent: "0293"
+children: []
+
+depends_on: []
+spikes: []
+
+spec: .github/mirror/.spec/README.md
+
+claims:
+  - B-029
+  - B-041
+  - B-055
+  - B-056
+  - B-057
+  - B-058
+  - B-059
+  - B-060
+  - B-061
+  - B-062
+  - B-063
+
+created: "2026-10-25"
+updated: "2026-10-25"
+closed: "2026-10-25"
+
+summary: |
+  Pull request 565 put the release plan into `.issue/.goal` as milestones,
+  and the owner asked of it: "so no `.github/milestones.yml`? No milestones
+  cut?" The answer is decision 0011: the mirror keeps one marked GitHub
+  milestone per versioned section of the goal file and gives each open
+  item's issue the milestone of the earliest section whose closure holds
+  it, with the goal file still the record. Value 3: a reader on GitHub
+  sees which release an issue belongs to and how far each release is.
+  Risk 3: a new kind of write to GitHub, and the closure is the queue's
+  `reach`, shared rather than copied (C-7). Depends on nothing: the first
+  live run, 0296, mirrors the milestones too whichever lands first.
+
+acceptance_criteria:
+  - "B-029 — matching milestones: nothing written"
+  - "B-041 — the step summary counts milestones"
+  - "B-055 — one open milestone per versioned section"
+  - "B-056 — the `specht-milestone` marker; an unmarked namesake adopted"
+  - "B-057 — the earliest section's milestone for an open item"
+  - "B-058 — no milestone outside every closure"
+  - "B-059 — a done item keeps its milestone"
+  - "B-060 — a marked milestone with no section closed, never deleted"
+  - "B-061 — an unmarked milestone with no section untouched"
+  - "B-062 — a flat goal file moves no issue's milestone"
+  - "B-063 — an epic keeps its milestone"
+  - "§ 9 carries a row naming a test for each id above."
+
+decisions:
+  - |
+    2026-10-25, the repository owner: mirror the goal file's milestones
+    through the work-item mirror rather than keep a `.github/milestones.yml`
+    or a `milestone:` key in Feature specifications (decision 0011).
+
+out_of_scope:
+  - "Project boards - § 5 row 4."
+  - "Everything else in § 5 of the spec."

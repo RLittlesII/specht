@@ -19,7 +19,14 @@ OWNED_LABELS = {"mirrored", "goal", "stale"}
 OWNED_PREFIXES = ("type:", "status:")
 SUB_ISSUE_CAP = 100
 BODY_LIMIT = 65536
-COUNTS = ("created", "edited", "closed", "reopened", "linked", "commented", "stale", "skipped")
+COUNTS = ("created", "edited", "closed", "reopened", "linked", "commented", "stale", "skipped", "milestones")
+MILESTONE_MARKER = "<!-- specht-milestone -->"
+MILESTONE_DESCRIPTION = (
+    f"{MILESTONE_MARKER}\n\n"
+    "Mirrored from `.issue/.goal` on `main`; `docs/roadmap.md` says what this milestone makes better. "
+    "Edits here are overwritten by the next run."
+)
+KEEP = object()
 FOOTER = (
     "This issue is a read-only mirror of the file above, written from `main` on every push that changes it. "
     "Edits here are overwritten by the next run, and comments are not read."
@@ -53,6 +60,7 @@ class Entry:
     marker: str = ""
     body: str = ""
     delivered: str = None
+    milestone: object = KEEP
 
     @property
     def done(self):
@@ -198,6 +206,22 @@ def fitted(entry, others, blob):
     return body
 
 
+def plan_milestones(root, entries):
+    sections = [(version, ids) for version, ids in queue.read_milestones(root) if version]
+    if not sections:
+        return []
+    items = {item["id"]: item for item in queue.read_items(root).values()}
+    open_items = {item_id: item for item_id, item in items.items() if item["status"] != "done"}
+    children = {}
+    for item in open_items.values():
+        children.setdefault(item["parent"], []).append(item["id"])
+    closures = [(version, queue.reach(ids, open_items, children)) for version, ids in sections]
+    for entry in entries:
+        if entry.kind == "item" and not entry.done:
+            entry.milestone = next((version for version, closure in closures if entry.id in closure), None)
+    return [version for version, _ in sections]
+
+
 def read_tree(root, commits, blob):
     entries = read_epics(root) + read_work_items(root)
     claims = Counter(entry.id for entry in entries)
@@ -241,20 +265,42 @@ def mirror(root, gh, history, *, pushed=(), backfill=False):
     for label in sorted(wanted - set(gh.labels())):
         gh.create_label(label)
 
+    versions = plan_milestones(root, entries)
+    milestones = gh.milestones()
+    marked_milestones = [milestone for milestone in milestones if MILESTONE_MARKER in (milestone["description"] or "")]
+    for version in versions:
+        titled = [milestone for milestone in milestones if milestone["title"] == version]
+        milestone = next((m for m in titled if m in marked_milestones), titled[0] if titled else None)
+        if milestone is None:
+            gh.create_milestone(version, MILESTONE_DESCRIPTION)
+            counts["milestones"] += 1
+            continue
+        changes = {
+            "description": None if same(milestone["description"], MILESTONE_DESCRIPTION) else MILESTONE_DESCRIPTION,
+            "state": None if milestone["state"] == "open" else "open",
+        }
+        if any(changes.values()):
+            gh.edit_milestone(milestone["number"], **{key: value for key, value in changes.items() if value})
+            counts["milestones"] += 1
+
     for entry in entries:
         issue = marked.get(entry.marker)
+        assigned = None if entry.milestone is KEEP else entry.milestone
         if issue is None:
-            number = gh.create_issue(entry.title, entry.body, sorted(entry.labels))
+            number = gh.create_issue(entry.title, entry.body, sorted(entry.labels), milestone=assigned)
             counts["created"] += 1
             issue = {"number": number, "labels": sorted(entry.labels), "state": "open", "state_reason": None, "parent": None}
             marked[entry.marker] = issue
         else:
             labels = set(issue["labels"])
+            moved = entry.milestone is not KEEP and issue.get("milestone") != entry.milestone
             changes = {
                 "title": None if same(issue["title"], entry.title) else entry.title,
                 "body": None if same(issue["body"], entry.body) else entry.body,
                 "add_labels": sorted(entry.labels - labels),
                 "remove_labels": sorted({label for label in labels if owned(label)} - entry.labels),
+                "milestone": assigned if moved else None,
+                "remove_milestone": moved and assigned is None,
             }
             if any(changes.values()):
                 gh.edit_issue(issue["number"], **{key: value for key, value in changes.items() if value})
@@ -283,6 +329,11 @@ def mirror(root, gh, history, *, pushed=(), backfill=False):
         gh.add_sub_issue(parent, child["number"])
         children[parent] += 1
         counts["linked"] += 1
+
+    for milestone in marked_milestones:
+        if milestone["title"] not in versions and milestone["state"] != "closed":
+            gh.edit_milestone(milestone["number"], state="closed")
+            counts["milestones"] += 1
 
     for issue in orphans:
         summary.stale.append(issue["number"])
@@ -343,7 +394,7 @@ class Gh:
 query($owner: String!, $name: String!, $endCursor: String) {
   repository(owner: $owner, name: $name) {
     issues(first: 100, after: $endCursor, orderBy: {field: CREATED_AT, direction: ASC}) {
-      nodes { id number title body state stateReason labels(first: 100) { nodes { name } } parent { number } }
+      nodes { id number title body state stateReason labels(first: 100) { nodes { name } } parent { number } milestone { title } }
       pageInfo { hasNextPage endCursor }
     }
   }
@@ -386,12 +437,28 @@ query($owner: String!, $name: String!, $endCursor: String) {
                         "state_reason": (node["stateReason"] or "").lower() or None,
                         "labels": [label["name"] for label in node["labels"]["nodes"]],
                         "parent": (node["parent"] or {}).get("number"),
+                        "milestone": (node.get("milestone") or {}).get("title"),
                     }
                 )
         return issues
 
     def labels(self):
         return self.run("label", "list", "--repo", self.repo, "--limit", "1000", "--json", "name", "--jq", ".[].name").split()
+
+    def milestones(self):
+        fields = "[.[] | {number, title, description, state}]"
+        pages = values(self.run("api", f"repos/{self.repo}/milestones?state=all", "--paginate", "--jq", fields))
+        return [milestone for page in pages for milestone in page]
+
+    def create_milestone(self, title, description):
+        arguments = ["api", "-X", "POST", f"repos/{self.repo}/milestones", "-f", f"title={title}", "-f", f"description={description}"]
+        return int(self.run(*arguments, "--jq", ".number").strip())
+
+    def edit_milestone(self, number, description=None, state=None):
+        arguments = ["api", "-X", "PATCH", f"repos/{self.repo}/milestones/{number}"]
+        arguments += ["-f", f"description={description}"] if description is not None else []
+        arguments += ["-f", f"state={state}"] if state is not None else []
+        self.run(*arguments)
 
     def pr_comments(self, pr):
         pages = values(self.run("api", f"repos/{self.repo}/issues/{pr}/comments", "--paginate", "--jq", "[.[].body]"))
@@ -400,13 +467,16 @@ query($owner: String!, $name: String!, $endCursor: String) {
     def create_label(self, name):
         self.run("label", "create", name, "--repo", self.repo)
 
-    def create_issue(self, title, body, labels):
+    def create_issue(self, title, body, labels, milestone=None):
         arguments = ["issue", "create", "--repo", self.repo, "--title", title, "--body-file", "-"]
         arguments += [flag for label in labels for flag in ("--label", label)]
+        arguments += ["--milestone", milestone] if milestone is not None else []
         return int(self.run(*arguments, stdin=body).strip().rsplit("/", 1)[1])
 
-    def edit_issue(self, number, title=None, body=None, add_labels=(), remove_labels=()):
+    def edit_issue(self, number, title=None, body=None, add_labels=(), remove_labels=(), milestone=None, remove_milestone=False):
         arguments = ["issue", "edit", str(number), "--repo", self.repo]
+        arguments += ["--milestone", milestone] if milestone is not None else []
+        arguments += ["--remove-milestone"] if remove_milestone else []
         arguments += ["--title", title] if title is not None else []
         arguments += ["--body-file", "-"] if body is not None else []
         arguments += [flag for label in add_labels for flag in ("--add-label", label)]
@@ -444,6 +514,9 @@ class Plan:
     def labels(self):
         return self.gh.labels()
 
+    def milestones(self):
+        return self.gh.milestones()
+
     def pr_comments(self, pr):
         return self.gh.pr_comments(pr)
 
@@ -453,13 +526,24 @@ class Plan:
     def create_label(self, name):
         self.record("create_label", name=name)
 
-    def create_issue(self, title, body, labels):
+    def create_milestone(self, title, description):
+        self.record("create_milestone", title=title, description=description)
+
+    def edit_milestone(self, number, description=None, state=None):
+        fields = {"description": description, "state": state}
+        self.record("edit_milestone", number=number, **{key: value for key, value in fields.items() if value})
+
+    def create_issue(self, title, body, labels, milestone=None):
         number = f"new-{sum(write['op'] == 'create_issue' for write in self.writes) + 1}"
-        self.record("create_issue", number=number, title=title, body=body, labels=list(labels))
+        extra = {"milestone": milestone} if milestone is not None else {}
+        self.record("create_issue", number=number, title=title, body=body, labels=list(labels), **extra)
         return number
 
-    def edit_issue(self, number, title=None, body=None, add_labels=(), remove_labels=()):
-        fields = {"title": title, "body": body, "add_labels": list(add_labels), "remove_labels": list(remove_labels)}
+    def edit_issue(self, number, title=None, body=None, add_labels=(), remove_labels=(), milestone=None, remove_milestone=False):
+        fields = {
+            "title": title, "body": body, "add_labels": list(add_labels), "remove_labels": list(remove_labels),
+            "milestone": milestone, "remove_milestone": remove_milestone,
+        }
         self.record("edit_issue", number=number, **{key: value for key, value in fields.items() if value})
 
     def close_issue(self, number, reason):
@@ -487,17 +571,24 @@ def values(text):
 
 
 def describe(write):
-    target = write.get("number", write.get("pr", write.get("name", "")))
+    target = write.get("number", write.get("pr", write.get("name", write.get("title", ""))))
     detail = {
-        "create_issue": lambda: write["title"],
-        "edit_issue": lambda: ", ".join(key for key in ("title", "body", "add_labels", "remove_labels") if key in write)
+        "create_issue": lambda: write["title"] + (f" in {write['milestone']}" if "milestone" in write else ""),
+        "edit_issue": lambda: ", ".join(
+            key for key in ("title", "body", "add_labels", "remove_labels", "milestone", "remove_milestone") if key in write
+        )
         + "".join(f" +{label}" for label in write.get("add_labels", []))
-        + "".join(f" -{label}" for label in write.get("remove_labels", [])),
+        + "".join(f" -{label}" for label in write.get("remove_labels", []))
+        + (f" {write['milestone']}" if "milestone" in write else ""),
+        "create_milestone": lambda: "with the marker",
+        "edit_milestone": lambda: ", ".join(f"{key} {write[key] if key == 'state' else ''}".strip() for key in ("description", "state") if key in write),
         "close_issue": lambda: write["reason"],
         "add_sub_issue": lambda: f"under #{write['parent']}",
         "comment_pr": lambda: write["body"],
     }.get(write["op"], lambda: "")()
-    return f"| {write['op']} | {'#' if write['op'] != 'create_label' else ''}{target} | {detail} |"
+    prefix = "milestone " if "milestone" in write["op"] and write["op"] != "create_milestone" else ""
+    hashed = write["op"] not in ("create_label", "create_milestone")
+    return f"| {write['op']} | {prefix}{'#' if hashed and not prefix else ''}{target} | {detail} |"
 
 
 def plan_markdown(summary, writes):
