@@ -192,6 +192,7 @@ Feature: Work-item mirror
   @B-029
   Scenario: A run with nothing changed writes nothing
     Given every issue already matches its work item or epic
+    And every milestone already matches the release plan
     When the mirror runs
     Then nothing is written to GitHub
 
@@ -274,6 +275,7 @@ Feature: Work-item mirror
   Scenario: A run reports what it did
     When the mirror runs
     Then its summary counts the issues created, edited, closed, reopened, linked, commented, marked stale and skipped
+    And it counts the milestones created, edited, closed or reopened
 
   @B-042 @boundary
   Scenario: Nothing on GitHub is read back into the tree
@@ -359,3 +361,75 @@ Feature: Work-item mirror
     Given a task whose parent is Feature item 0041, and neither has an issue yet
     When the mirror runs once through the gh command
     Then the task's issue is a sub-issue of item 0041's issue
+
+  @B-055
+  Scenario Outline: Each release in the plan has one open milestone
+    Given the release plan names release 0.3.0
+    And the repository holds <milestones>
+    When the mirror runs
+    Then the repository has exactly one milestone titled 0.3.0
+    And it is open
+
+    Examples:
+      | milestones                              |
+      | no milestone titled 0.3.0               |
+      | a closed milestone titled 0.3.0         |
+
+  @B-056
+  Scenario: A milestone of the same title filed by hand is adopted
+    Given the release plan names release 0.3.0
+    And a milestone titled 0.3.0 was created by hand
+    When the mirror runs
+    Then that milestone is the one kept for release 0.3.0
+    And its description carries the hidden mirror marker
+
+  @B-057
+  Scenario: Work needed by two releases takes the earlier one's milestone
+    Given Feature item 0041 has an open task
+    And release 0.3.0 lists item 0041
+    And release 0.4.0 lists an item that waits on that task
+    When the mirror runs
+    Then the task's issue is in milestone 0.3.0
+
+  @B-058
+  Scenario: Work no release needs has no milestone
+    Given an open work item that no release lists, and no listed item needs
+    And its issue is in milestone 0.3.0
+    When the mirror runs
+    Then its issue is in no milestone
+
+  @B-059 @boundary
+  Scenario: Done work keeps its milestone
+    Given a work item whose status is done
+    And its issue is in milestone 0.2.0
+    And the release plan no longer lists it
+    When the mirror runs
+    Then its issue is still in milestone 0.2.0
+
+  @B-060 @boundary
+  Scenario: A released milestone is closed, not deleted
+    Given a milestone the mirror keeps for release 0.2.0
+    And the release plan no longer names release 0.2.0
+    When the mirror runs
+    Then that milestone is closed
+    And it still exists
+
+  @B-061 @boundary
+  Scenario: A milestone filed by hand for no release is left alone
+    Given a milestone titled "Someday" created by hand
+    And the release plan names no release "Someday"
+    When the mirror runs
+    Then that milestone is unchanged
+
+  @B-062 @boundary
+  Scenario: A release plan without releases moves no issue
+    Given the release plan lists items but names no release
+    And an open work item's issue is in milestone 0.3.0
+    When the mirror runs
+    Then its issue is still in milestone 0.3.0
+
+  @B-063 @boundary
+  Scenario: An epic keeps its milestone
+    Given an epic whose issue is in milestone 0.3.0
+    When the mirror runs
+    Then its issue is still in milestone 0.3.0

@@ -61,14 +61,19 @@ class Interrupted(Exception):
 
 
 class FakeGh:
-    def __init__(self, issues=(), labels=(), pulls=None, fail_after=None, repo="owner/name"):
+    def __init__(self, issues=(), labels=(), pulls=None, fail_after=None, repo="owner/name", milestones=()):
         self.repo = repo
         self.store = {}
         for issue in issues:
-            stored = {"state": "open", "state_reason": None, "labels": [], "parent": None, "comments": []}
+            stored = {"state": "open", "state_reason": None, "labels": [], "parent": None, "milestone": None, "comments": []}
             stored.update(copy.deepcopy(issue))
             self.store[stored["number"]] = stored
         self.label_store = set(labels)
+        self.milestone_store = {}
+        for milestone in milestones:
+            stored = {"description": "", "state": "open"}
+            stored.update(copy.deepcopy(milestone))
+            self.milestone_store[stored["number"]] = stored
         self.pulls = {number: {"body": body, "comments": []} for number, body in (pulls or {}).items()}
         self.writes = []
         self.fail_after = fail_after
@@ -85,6 +90,26 @@ class FakeGh:
     def labels(self):
         return sorted(self.label_store)
 
+    def milestones(self):
+        return [copy.deepcopy(milestone) for milestone in self.milestone_store.values()]
+
+    def create_milestone(self, title, description):
+        with self.write("create_milestone", title=title, description=description):
+            if any(milestone["title"] == title for milestone in self.milestone_store.values()):
+                raise LookupError(f"milestone already exists: {title}")
+            number = max(self.milestone_store, default=0) + 1
+            self.milestone_store[number] = {"number": number, "title": title, "description": description, "state": "open"}
+            return number
+
+    def edit_milestone(self, number, description=None, state=None):
+        fields = {"description": description, "state": state}
+        with self.write("edit_milestone", number=number, **{k: v for k, v in fields.items() if v is not None}):
+            milestone = self.milestone_store[number]
+            if description is not None:
+                milestone["description"] = description
+            if state is not None:
+                milestone["state"] = state
+
     def pr_comments(self, pr):
         return list(self.pulls[pr]["comments"])
 
@@ -92,9 +117,11 @@ class FakeGh:
         with self.write("create_label", name=name):
             self.label_store.add(name)
 
-    def create_issue(self, title, body, labels):
-        with self.write("create_issue", title=title, body=body, labels=sorted(labels)):
+    def create_issue(self, title, body, labels, milestone=None):
+        extra = {"milestone": milestone} if milestone is not None else {}
+        with self.write("create_issue", title=title, body=body, labels=sorted(labels), **extra):
             self.require_labels(labels)
+            self.require_milestone(milestone)
             number = self.next_number
             self.next_number += 1
             self.store[number] = {
@@ -105,15 +132,24 @@ class FakeGh:
                 "state_reason": None,
                 "labels": sorted(labels),
                 "parent": None,
+                "milestone": milestone,
                 "comments": [],
             }
             return number
 
-    def edit_issue(self, number, title=None, body=None, add_labels=(), remove_labels=()):
-        fields = {"title": title, "body": body, "add_labels": sorted(add_labels), "remove_labels": sorted(remove_labels)}
-        with self.write("edit_issue", number=number, **{k: v for k, v in fields.items() if v not in (None, [])}):
+    def edit_issue(self, number, title=None, body=None, add_labels=(), remove_labels=(), milestone=None, remove_milestone=False):
+        fields = {
+            "title": title, "body": body, "add_labels": sorted(add_labels), "remove_labels": sorted(remove_labels),
+            "milestone": milestone, "remove_milestone": remove_milestone,
+        }
+        with self.write("edit_issue", number=number, **{k: v for k, v in fields.items() if v not in (None, [], False)}):
             issue = self.store[number]
             self.require_labels(add_labels)
+            self.require_milestone(milestone)
+            if milestone is not None:
+                issue["milestone"] = milestone
+            if remove_milestone:
+                issue["milestone"] = None
             if title is not None:
                 issue["title"] = title
             if body is not None:
@@ -138,6 +174,10 @@ class FakeGh:
     def comment_pr(self, pr, body):
         with self.write("comment_pr", pr=pr, body=body):
             self.pulls[pr]["comments"].append(body)
+
+    def require_milestone(self, title):
+        if title is not None and not any(milestone["title"] == title for milestone in self.milestone_store.values()):
+            raise LookupError(f"milestone not in repository: {title}")
 
     def require_labels(self, labels):
         unknown = set(labels) - self.label_store
