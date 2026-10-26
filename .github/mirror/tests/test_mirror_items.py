@@ -240,7 +240,12 @@ class Labels(unittest.TestCase):
         self.assertEqual(status_labels(issue_for(self, gh, "0045")), [])
 
     def test_B010_ItemAgainstTheGoalFile_WhenMirrored_ShouldCarryGoalExactlyWhenListed(self):
-        for goal, expected in (("0045\n", True), ("0046\n", False)):
+        for goal, expected in (
+            ("0045\n", True),
+            ("0046\n", False),
+            ("0.3.0\n0045\n0.4.0\n0046\n", True),
+            ("0.3.0\n0046\n0.4.0\n0045\n", False),
+        ):
             with self.subTest(goal=goal):
                 # Given
                 root = write_tree(self, {ITEM_0045_PATH: ITEM_0045, ".issue/.goal": goal})

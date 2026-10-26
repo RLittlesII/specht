@@ -1,3 +1,67 @@
-0082
-0086
-0180
+# The milestones, in release order. A bare version line opens a milestone and
+# the item ids under it are its finish line; the first milestone is the current
+# one, the product goal. The queue script ranks every open item on a listed
+# id's dependency path with its milestone, earlier milestones first, and the
+# work-item mirror labels the current milestone's items `goal`. Lines starting
+# with # are comments. docs/roadmap.md says what each milestone makes better.
+
+0.3.0
+# Complete the tool contract; the repository runs itself
+0041
+0050
+0025
+0220
+0280
+0281
+0282
+0283
+0284
+0285
+0286
+0287
+0288
+0063
+0078
+0072
+0089
+0293
+
+0.4.0
+# A manifest-driven engine, measured before it is restructured
+0216
+0010
+0004
+0033
+0224
+0152
+0100
+0144
+0153
+0156
+0157
+0158
+0159
+0160
+0161
+0162
+0163
+0164
+0166
+0167
+0168
+0169
+0170
+0207
+0218
+0141
+0203
+0208
+
+0.5.0
+# Beyond the command line: epics 0142, 0132, 0194, 0196, 0193, 0228, 0101 and
+# the 0002 site. Their Features are not yet specified; a Feature item joins this
+# list once cut.
+0252
+0256
+0289
+0128

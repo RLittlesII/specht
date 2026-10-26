@@ -210,10 +210,18 @@ items live under `.build/`, `.github/` and `.config/` - and strips a trailing
 `depends_on`, `parent` and `status`, and stored nowhere; the definition stays
 in [`.spec/templates/item.yml`](../../../../.spec/templates/item.yml).
 
-**The product goal** is `.issue/.goal`, one item id per line: every open item
-on those items' dependency path is `high`. It names Release (`0082`) and
-Consuming the package (`0086`), the first NuGet release, and the setup guide's
-last item (`0180`). Moving the finish line is an edit to that file.
+**The milestones** are `.issue/.goal`, in release order: a bare version line
+(`0.3.0`) opens a milestone and the item ids under it, one per line, are its
+finish line; `#` starts a comment. The first milestone is the current one, the
+product goal. Every open item on a listed id's dependency path takes that
+milestone's version as its priority, the earliest milestone winning when a
+dependency crosses two; a flat list with no version line is one milestone and
+prints `high`. The file names container items, so a Feature's open children
+follow it in. Closing a milestone deletes its section; the next one is current.
+What each milestone makes better is [`docs/roadmap.md`](../../../../docs/roadmap.md),
+which cites the Features by id and holds no ids of its own. Moving the finish
+line is an edit to the goal file; the mirror's `goal` label follows the current
+milestone (`0055-F9` B-010).
 
 **Lanes.** Two startable items share a lane when they name the same `spec:`, or
 when their homes fall under the same entry of `SHARED_WRITE_SETS` at the top of

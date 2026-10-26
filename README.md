@@ -190,6 +190,7 @@ a `.issue/` beside that `.spec/`.
 - [Multiple projects](docs/multiple-projects.md)
 - [Exit codes](docs/exit-codes.md)
 - [Building](docs/building.md)
+- [Roadmap](docs/roadmap.md)
 - [Rule pages](docs/rules/v0.1.0/)
 
 ## License

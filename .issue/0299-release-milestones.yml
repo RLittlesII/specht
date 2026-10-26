@@ -1,0 +1,82 @@
+id: "0299"
+type: task
+title: Plan the open work as release milestones in the goal file
+
+status: done
+
+value: 4
+risk: 2
+
+parent: null
+children: []
+
+depends_on: []
+spikes: []
+
+spec: null
+
+claims: []
+
+created: "2026-10-25"
+updated: "2026-10-25"
+closed: "2026-10-25"
+
+summary: |
+  The owner asked, 2026-10-25, to plan the future work in milestone chunks,
+  so that `next` is deterministic about what the product ships next rather
+  than leaving the order to rank alone. The product goal file held three
+  ids (0082, 0086, 0180), all of them done, so no open item ranked `high`
+  and the queue fell back to Feature closure scores. `.issue/.goal` now
+  carries the milestones in release order: a bare version line (`0.3.0`)
+  opens a milestone and the four-digit ids under it are its finish line;
+  the first milestone is the current one. The queue script ranks every open
+  item on a listed id's dependency path with its milestone, earlier
+  milestones first, then Feature-needed work (`medium`), then the rest
+  (`low`). `read_goal` keeps its name and returns the first milestone's
+  ids, so the mirror's `goal` label means "in the current milestone". A
+  flat id list stays valid as one unnamed milestone. Risk 2: one script,
+  one data file and the pages that describe them; no package code.
+
+acceptance_criteria:
+  - "`.issue/.goal` holds the three milestones, 0.3.0, 0.4.0 and 0.5.0, in that format, in release order."
+  - "`next.py` prints the milestone version as the Priority of every open item on a listed id's dependency path, and `medium` or `low` for the rest; no item of 0.4.0 is pulled into 0.3.0 by a dependency."
+  - "`.spec/templates/item.yml`, `specht-conventions` `references/delivery.md` and the `next` skill state the goal file's format and how priority derives from it."
+  - "`docs/roadmap.md` names each milestone's Features and what it makes better, and `README.md` links it."
+  - "`0055-F9` B-010 reads `the current milestone`."
+  - "`./build.sh Format` and the mirror's Python tests pass."
+
+decisions:
+  - |
+    2026-10-25: renumbered from 0298 before merge. Pull request 563 merged
+    its own item 0298 to `main` first (lesson 0005: an id is not reserved
+    until it merges); this item never merged under 0298, so no citation
+    on `main` names it. The branch keeps its `0298/` name.
+  - |
+    2026-10-25, owner: the open work is planned in milestone chunks (0.3.0
+    "Complete the tool contract; the repository runs itself": epic 0001
+    Features F2, F4, F7, F9, F10, F11 and epic 0055 Features F2, F4, F5,
+    F8, F9; 0.4.0 "A manifest-driven engine, measured before it is
+    restructured": spike 0216 first, then 0001-F1, F3, F5, F6, F12 and
+    0109-F4, F5; 0.5.0 "Beyond the command line": epics 0142, 0132, 0194,
+    0196, 0193, 0228, 0101 and the 0002 site, whose Features are not yet
+    cut). Rejected: leaving the order to rank alone, which with every goal
+    id done offered Feature closure scores and nothing `high`.
+  - |
+    2026-10-25, owner: the milestones live in `.issue/.goal`, which keeps
+    its name and gains version sections. Rejected: a separate
+    `.milestones` file, and the `milestone:` frontmatter key of the Feature
+    specification. The mirror Feature `0055-F9` reads the file through
+    `read_goal`, so renaming it or moving the data would widen this change
+    into the mirror script and its tests; a section header leaves
+    `read_goal` returning the first milestone's ids.
+  - |
+    2026-10-25, owner: the ADR-0014 refactors are planned into 0.4.0
+    behind spike 0216, and the gate stands - each refactor stays
+    conditional on the spike's finding. Rejected: planning the refactors
+    unconditionally, which would waive the benchmark evidence ADR-0014
+    requires.
+
+out_of_scope:
+  - "A GitHub milestone or any GitHub-side tracker - `specht-conventions` `references/delivery.md` § \"Never add\" forbids one, and `0055-F9` § 5 row 4 excludes milestones from the mirror."
+  - "Bumping `version.json` - the release chore does that when a milestone closes, as `chore: version 0.2.0` did."
+  - "Cutting Features for the 0.5.0 epics - each epic's spec-author does, and the Feature item joins the goal file once cut."
