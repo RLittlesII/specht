@@ -549,7 +549,8 @@ claude.ai/code/artifacts.
 ## SDLC
 
 **Work is tracked locally.** A `<id>-<slug>.yml` item stands in for a GitHub
-issue, and there are **no GitHub issues or milestones** in this workflow. PR labels
+issue. GitHub issues and milestones are a read-only mirror of the items and
+the goal file (`0055-F9`), **never the tracker**. PR labels
 categorize release notes only; they never track delivery state. The
 item owns delivery state; the Feature's `.spec/README.md` owns content. The
 schema, the status vocabulary and the rank definition are in

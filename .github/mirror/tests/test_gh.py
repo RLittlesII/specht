@@ -43,7 +43,7 @@ class Reads(unittest.TestCase):
         second = {
             "id": "I_kwDOnode8", "number": 8, "title": "0042: The task", "body": "<!-- specht-item: 0042 -->",
             "state": "CLOSED", "stateReason": "COMPLETED", "labels": {"nodes": [{"name": "mirrored"}, {"name": "type:task"}]},
-            "parent": {"number": 7},
+            "parent": {"number": 7}, "milestone": {"title": "0.3.0"},
         }
         gh = MIRROR_ITEMS.Gh("owner/name")
         pages = [issue_page(first, more=True), issue_page(second)]
@@ -57,11 +57,25 @@ class Reads(unittest.TestCase):
             issues,
             [
                 {"number": 7, "title": "0041: The feature", "body": "<!-- specht-item: 0041 -->", "state": "open",
-                 "state_reason": None, "labels": ["mirrored"], "parent": None},
+                 "state_reason": None, "labels": ["mirrored"], "parent": None, "milestone": None},
                 {"number": 8, "title": "0042: The task", "body": "<!-- specht-item: 0042 -->", "state": "closed",
-                 "state_reason": "completed", "labels": ["mirrored", "type:task"], "parent": 7},
+                 "state_reason": "completed", "labels": ["mirrored", "type:task"], "parent": 7, "milestone": "0.3.0"},
             ],
         )
+
+    def test_B055_GhPrintingTwoPagesOfMilestones_WhenRead_ShouldReturnTheMilestonesOfBothPages(self):
+        # Given
+        first = [{"number": 1, "title": "0.3.0", "description": "<!-- specht-milestone -->", "state": "open"}]
+        second = [{"number": 2, "title": "0.4.0", "description": None, "state": "closed"}]
+        gh = MIRROR_ITEMS.Gh("owner/name")
+        stdout = "".join(f"{json.dumps(page)}\n" for page in (first, second))
+
+        # When
+        with mock.patch.object(MIRROR_ITEMS.subprocess, "run", return_value=printed(stdout)):
+            milestones = gh.milestones()
+
+        # Then
+        self.assertEqual(milestones, first + second)
 
     def test_B054_GhPrintingAnIssueNodeQuery_WhenLookedUp_ShouldReturnTheIssuesNodeId(self):
         # Given

@@ -891,6 +891,20 @@ class Convergence(unittest.TestCase):
         # Then
         self.assertEqual(gh.writes[written:], [])
 
+    def test_B029_MilestonesMatchingTheGoalFile_WhenMirroredTwice_ShouldWriteNothingTheSecondTime(self):
+        # Given
+        root = write_tree(self, MILESTONE_TREE)
+        gh = FakeGh(milestones=[{"number": 2, "title": "0.2.0", "description": MILESTONE_MARKER}])
+        mirror(self, root, gh)
+        written = len(gh.writes)
+        self.assertIn("create_milestone", [op for op, _ in gh.writes])
+
+        # When
+        mirror(self, root, gh)
+
+        # Then
+        self.assertEqual(gh.writes[written:], [])
+
     def test_B030_IssueTitleEditedByHand_WhenMirrored_ShouldWriteOnlyTheTitle(self):
         # Given
         root = write_tree(self, self.TREE)
@@ -1037,12 +1051,170 @@ class RemovedFiles(unittest.TestCase):
         self.assertEqual(len(warnings), 1, text)
 
 
+MILESTONE_MARKER = "<!-- specht-milestone -->"
+MILESTONE_GOAL = "0.3.0\n# Complete the tool contract\n0041\n\n0.4.0\n0050\n"
+
+
+def item(item_id, title, status="ready", parent="null", depends_on=()):
+    parent = parent if parent == "null" else f'"{parent}"'
+    depends = ", ".join(f'"{d}"' for d in depends_on)
+    return f'id: "{item_id}"\ntype: task\ntitle: {title}\nstatus: {status}\n\nrisk: 2\n\nparent: {parent}\n\ndepends_on: [{depends}]\n'
+
+
+MILESTONE_TREE = {
+    ".issue/.goal": MILESTONE_GOAL,
+    EPIC_0055_PATH: EPIC_0055,
+    ".issue/0041-feature.yml": item("0041", "The feature"),
+    ".issue/0042-task.yml": item("0042", "A task of the feature", parent="0041"),
+    ".issue/0050-later.yml": item("0050", "A later feature", depends_on=["0042"]),
+    ".issue/0060-unplanned.yml": item("0060", "Unplanned work"),
+    ".issue/0070-done.yml": item("0070", "Done under the feature", status="done", parent="0041"),
+}
+
+
+def milestone_titled(test, gh, title):
+    found = [milestone for milestone in gh.milestone_store.values() if milestone["title"] == title]
+    test.assertEqual(len(found), 1, f"milestones titled {title}")
+    return found[0]
+
+
+class Milestones(unittest.TestCase):
+    def test_B055_VersionedSection_WhenMirrored_ShouldKeepOneOpenMilestoneTitledWithTheVersion(self):
+        # Given
+        root = write_tree(self, MILESTONE_TREE)
+        gh = FakeGh(milestones=[{"number": 5, "title": "0.4.0", "description": MILESTONE_MARKER, "state": "closed"}])
+
+        # When
+        mirror(self, root, gh)
+
+        # Then
+        self.assertEqual(sorted(m["title"] for m in gh.milestone_store.values()), ["0.3.0", "0.4.0"])
+        self.assertEqual(milestone_titled(self, gh, "0.3.0")["state"], "open")
+        self.assertEqual(milestone_titled(self, gh, "0.4.0"), {**gh.milestone_store[5], "number": 5, "state": "open"})
+
+    def test_B056_UnmarkedMilestoneWithTheVersionTitle_WhenMirrored_ShouldBeAdoptedByWritingTheMarker(self):
+        # Given
+        root = write_tree(self, MILESTONE_TREE)
+        gh = FakeGh(milestones=[{"number": 3, "title": "0.3.0", "description": "Made by hand", "state": "open"}])
+
+        # When
+        mirror(self, root, gh)
+
+        # Then
+        adopted = milestone_titled(self, gh, "0.3.0")
+        self.assertEqual(adopted["number"], 3)
+        self.assertIn(MILESTONE_MARKER, adopted["description"])
+        self.assertIn(MILESTONE_MARKER, milestone_titled(self, gh, "0.4.0")["description"])
+
+    def test_B057_OpenItemInTwoClosures_WhenMirrored_ShouldTakeTheEarliestSectionsMilestone(self):
+        # Given
+        root = write_tree(self, MILESTONE_TREE)
+        gh = FakeGh()
+
+        # When
+        mirror(self, root, gh)
+
+        # Then
+        self.assertEqual(
+            {marker: issue_for(self, gh, marker)["milestone"] for marker in ("0041", "0042", "0050")},
+            {"0041": "0.3.0", "0042": "0.3.0", "0050": "0.4.0"},
+        )
+
+    def test_B058_OpenItemInNoClosure_WhenMirrored_ShouldCarryNoMilestone(self):
+        # Given
+        root = write_tree(self, MILESTONE_TREE)
+        gh = FakeGh(
+            issues=[{"number": 6, "title": "0060: Unplanned work", "body": "<!-- specht-item: 0060 -->", "milestone": "0.3.0"}],
+            milestones=[{"number": 1, "title": "0.3.0", "description": MILESTONE_MARKER}],
+        )
+
+        # When
+        mirror(self, root, gh)
+
+        # Then
+        self.assertIsNone(gh.store[6]["milestone"])
+        self.assertIn(("edit_issue", {"number": 6, "body": gh.store[6]["body"], "add_labels": ["mirrored", "status:ready", "type:task"],
+                                      "remove_milestone": True}), gh.writes)
+
+    def test_B059_DoneItem_WhenMirrored_ShouldKeepItsMilestone(self):
+        # Given
+        root = write_tree(self, MILESTONE_TREE)
+        gh = FakeGh(
+            issues=[
+                {"number": 7, "title": "0070: Done under the feature", "body": "<!-- specht-item: 0070 -->", "milestone": "0.2.0"},
+            ],
+            milestones=[{"number": 1, "title": "0.2.0", "description": "Made by hand"}],
+        )
+
+        # When
+        mirror(self, root, gh)
+
+        # Then
+        self.assertEqual(gh.store[7]["milestone"], "0.2.0")
+
+    def test_B060_MarkedMilestoneWithNoSection_WhenMirrored_ShouldBeClosedNotDeleted(self):
+        # Given
+        root = write_tree(self, MILESTONE_TREE)
+        gh = FakeGh(milestones=[{"number": 2, "title": "0.2.0", "description": MILESTONE_MARKER, "state": "open"}])
+
+        # When
+        mirror(self, root, gh)
+
+        # Then
+        self.assertEqual(gh.milestone_store[2]["state"], "closed")
+        self.assertEqual(gh.milestone_store[2]["title"], "0.2.0")
+
+    def test_B061_UnmarkedMilestoneWithNoSection_WhenMirrored_ShouldBeLeftAlone(self):
+        # Given
+        root = write_tree(self, MILESTONE_TREE)
+        hand = {"number": 9, "title": "Someday", "description": "Made by hand", "state": "open"}
+        gh = FakeGh(milestones=[hand])
+
+        # When
+        mirror(self, root, gh)
+
+        # Then
+        self.assertEqual(gh.milestone_store[9], hand)
+        self.assertNotIn(9, [args.get("number") for op, args in gh.writes if op == "edit_milestone"])
+
+    def test_B062_FlatGoalFile_WhenMirrored_ShouldChangeNoIssuesMilestone(self):
+        # Given
+        root = write_tree(self, {**MILESTONE_TREE, ".issue/.goal": "0041\n"})
+        gh = FakeGh(
+            issues=[{"number": 6, "title": "0060: Unplanned work", "body": "<!-- specht-item: 0060 -->", "milestone": "0.3.0"}],
+            milestones=[{"number": 1, "title": "0.3.0", "description": "Made by hand"}],
+        )
+
+        # When
+        mirror(self, root, gh)
+
+        # Then
+        self.assertEqual(gh.store[6]["milestone"], "0.3.0")
+        self.assertEqual([issue["milestone"] for issue in gh.store.values() if issue["number"] != 6], [None] * (len(gh.store) - 1))
+        self.assertEqual([op for op, _ in gh.writes if "milestone" in op], [])
+
+    def test_B063_Epic_WhenMirrored_ShouldKeepItsMilestone(self):
+        # Given
+        root = write_tree(self, MILESTONE_TREE)
+        gh = FakeGh(
+            issues=[{"number": 4, "title": "Epic 0055: old", "body": "<!-- specht-item: 0055 -->", "milestone": "Someday"}],
+            milestones=[{"number": 9, "title": "Someday", "description": "Made by hand"}],
+        )
+
+        # When
+        mirror(self, root, gh)
+
+        # Then
+        self.assertEqual(gh.store[4]["milestone"], "Someday")
+
+
 class StepSummary(unittest.TestCase):
     def test_B041_RunOfEveryKind_WhenSummarised_ShouldCountEachKindOfWrite(self):
         # Given
         root = write_tree(
             self,
             {
+                ".issue/.goal": "0.3.0\n0045\n",
                 ITEM_0045_PATH: ITEM_0045,
                 ".issue/0046-done.yml": 'id: "0046"\ntype: task\ntitle: Done now\nstatus: done\n',
                 ".issue/0047-ready.yml": 'id: "0047"\ntype: task\ntitle: Ready again\nstatus: ready\n',
@@ -1071,11 +1243,13 @@ class StepSummary(unittest.TestCase):
         # Then
         counts = dict(summary.counts)
         self.assertEqual(
-            sorted(counts), sorted(["created", "edited", "closed", "reopened", "linked", "commented", "stale", "skipped"])
+            sorted(counts),
+            sorted(["created", "edited", "closed", "reopened", "linked", "commented", "stale", "skipped", "milestones"]),
         )
         self.assertGreaterEqual(counts.pop("edited"), 1)
         self.assertEqual(
-            counts, {"created": 2, "closed": 1, "reopened": 1, "linked": 1, "commented": 1, "stale": 1, "skipped": 1}
+            counts,
+            {"created": 2, "closed": 1, "reopened": 1, "linked": 1, "commented": 1, "stale": 1, "skipped": 1, "milestones": 1},
         )
         lines = text.lower().split("\n")
         for kind, count in summary.counts.items():

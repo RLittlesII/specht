@@ -10,7 +10,8 @@ Work ships in milestones named by the package minor version. A milestone is a
 set of Features that together change what a consumer can do; it closes when
 every one of them is done and the version is bumped. The ids are the
 specifications' stable ids, and the finish line of each milestone is the first
-section of `.issue/.goal`, which the queue ranks by. This page says why; the
+section of `.issue/.goal`, which the queue ranks by. Each milestone is mirrored
+to a read-only GitHub milestone of the same title. This page says why; the
 goal file says what; the Feature specifications say how.
 
 ## Today: 0.2.x
