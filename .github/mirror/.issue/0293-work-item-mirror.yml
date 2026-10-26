@@ -8,7 +8,7 @@ value: 3
 risk: 4
 
 parent: "0055"
-children: ["0294", "0295", "0296", "0297"]
+children: ["0294", "0295", "0296", "0297", "0300"]
 
 depends_on: []
 spikes: []
@@ -70,6 +70,15 @@ claims:
   - B-052
   - B-053
   - B-054
+  - B-055
+  - B-056
+  - B-057
+  - B-058
+  - B-059
+  - B-060
+  - B-061
+  - B-062
+  - B-063
 
 created: "2026-10-24"
 updated: "2026-10-25"
@@ -116,7 +125,7 @@ acceptance_criteria:
   - "B-026 — the `Delivers` comment posted once (0294)"
   - "B-027 — backfill posts a missing `Delivers` comment once (0294)"
   - "B-028 — pull-request bodies untouched (0294)"
-  - "B-029 — nothing changed: nothing written (0294)"
+  - "B-029 — nothing changed: nothing written (0294; milestones 0300)"
   - "B-030 — only differing fields written (0294)"
   - "B-031 — an interrupted run finished by the next (0294)"
   - "B-032 — an issue without the marker untouched (0294)"
@@ -128,7 +137,7 @@ acceptance_criteria:
   - "B-038 — a push off the trigger paths does not run it (0295)"
   - "B-039 — no run on another branch or a pull request (0295)"
   - "B-040 — runs queue, none cancelled (0295)"
-  - "B-041 — step summary counts (0294)"
+  - "B-041 — step summary counts (0294; milestones 0300)"
   - "B-042 — the tree unchanged by anything set on GitHub (0294)"
   - "B-043 — epic label `type:epic` (0294)"
   - "B-044 — one `status:<status>` label on an open epic (0294)"
@@ -140,6 +149,15 @@ acceptance_criteria:
   - "B-050 — no `status:` label on a done epic (0294)"
   - "B-051 — no Summary: the epic's `description` in its place (0294)"
   - "B-054 — an issue created in a run linked under its parent in that run (0297)"
+  - "B-055 — one open milestone per versioned goal section (0300)"
+  - "B-056 — the milestone marker; an unmarked namesake adopted (0300)"
+  - "B-057 — the earliest section's milestone for an open item (0300)"
+  - "B-058 — no milestone outside every closure (0300)"
+  - "B-059 — a done item keeps its milestone (0300)"
+  - "B-060 — a marked milestone with no section closed, never deleted (0300)"
+  - "B-061 — an unmarked milestone with no section untouched (0300)"
+  - "B-062 — a flat goal file moves no milestone (0300)"
+  - "B-063 — an epic keeps its milestone (0300)"
   - "§ 9 carries a row naming a test for each id above."
 
 decisions:

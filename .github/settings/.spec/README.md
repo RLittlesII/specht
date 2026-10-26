@@ -20,7 +20,7 @@ depends_on: ["F2", "F3", "F4"]
 blocks: []
 spikes: []
 created: "2026-10-08"
-updated: "2026-10-24"
+updated: "2026-10-25"
 github_issue: null
 synced_at: null
 ---
@@ -81,15 +81,15 @@ A workflow that runs is not a gate until the repository requires it: without bra
 
 ## 5. Out of Scope
 
-<!-- last written by: spec-author, 2026-10-08 -->
+<!-- last written by: spec-author, 2026-10-25 (item 0300) -->
 
-| #   | Item                                                                     | Exclusion Reason                                                                                                               |
-| --- | ------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------ |
-| 1   | GitHub issues, labels and milestones as a tracker                        | `github_mode: false` (AGENTS.md § SDLC); work is tracked in `.issue/` items. The read-only mirror is `0055-F9`, not a tracker. |
-| 2   | Turning an outside report into work                                      | A maintainer writes a `.issue/` item from it by hand; nothing here automates that.                                             |
-| 3   | Producing the checks, the coverage statuses and the update pull requests | `0055-F2`, `0055-F3`, `0055-F4`.                                                                                               |
-| 4   | Verifying that GitHub's live settings match the checklist                | C-1: no call to the GitHub API; the tool and its tests stay offline (AGENTS.md § Invariants).                                  |
-| 5   | Package feed permissions for consumers                                   | `0055-F7`.                                                                                                                     |
+| #   | Item                                                                     | Exclusion Reason                                                                                                                                           |
+| --- | ------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | GitHub issues, labels and milestones as a tracker                        | `github_mode: false` (AGENTS.md § SDLC); work is tracked in `.issue/` items. GitHub issues and milestones are `0055-F9`'s read-only mirror, not a tracker. |
+| 2   | Turning an outside report into work                                      | A maintainer writes a `.issue/` item from it by hand; nothing here automates that.                                                                         |
+| 3   | Producing the checks, the coverage statuses and the update pull requests | `0055-F2`, `0055-F3`, `0055-F4`.                                                                                                                           |
+| 4   | Verifying that GitHub's live settings match the checklist                | C-1: no call to the GitHub API; the tool and its tests stay offline (AGENTS.md § Invariants).                                                              |
+| 5   | Package feed permissions for consumers                                   | `0055-F7`.                                                                                                                                                 |
 
 ## 6. Concern Separation
 

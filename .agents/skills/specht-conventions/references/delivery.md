@@ -10,7 +10,8 @@ Extends [`deliver-change`](../../deliver-change/SKILL.md).
 
 ## The tracker is local `.issue/` items
 
-There are **no GitHub issues or milestones** in this workflow. PR labels
+GitHub issues and milestones are a read-only mirror of the items and
+`.issue/.goal` (`0055-F9`), **never the tracker**. PR labels
 categorize release notes only; the local item owns delivery state. A
 `<id>-<slug>.yml` work item stands in for an issue: the item owns delivery state,
 the Feature's `.spec/README.md` owns content, and neither duplicates the other.
@@ -221,7 +222,8 @@ follow it in. Closing a milestone deletes its section; the next one is current.
 What each milestone makes better is [`docs/roadmap.md`](../../../../docs/roadmap.md),
 which cites the Features by id and holds no ids of its own. Moving the finish
 line is an edit to the goal file; the mirror's `goal` label follows the current
-milestone (`0055-F9` B-010).
+milestone (`0055-F9` B-010), and each milestone is mirrored to a GitHub
+milestone of the same title (`0055-F9` B-055).
 
 **Lanes.** Two startable items share a lane when they name the same `spec:`, or
 when their homes fall under the same entry of `SHARED_WRITE_SETS` at the top of
