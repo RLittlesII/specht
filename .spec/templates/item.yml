@@ -36,9 +36,12 @@
 # the moment someone else merges it - and an open pull request holds ids too,
 # so take the number above the highest any of them claims.
 #
-# .issue/.goal beside it holds the PRODUCT GOAL: one item id per line, the
-# items that are the product's finish line. Every open item on their
-# dependency path is priority `high` - see the derivation below.
+# .issue/.goal beside it holds the MILESTONES, in release order: a bare
+# version line (`0.3.0`) opens a milestone and the item ids under it, one per
+# line, are its finish line. The first milestone is the current one, the
+# product goal. Every open item on a listed id's dependency path takes its
+# milestone as priority, earlier milestones first - see the derivation below.
+# docs/roadmap.md says what each milestone makes better; the ids live here only.
 
 id: "0003" # string, so leading zeros survive. Never reused.
 type: feature # epic | feature | task | test | bug | spike | refactor
@@ -76,14 +79,16 @@ status: ready
 #                             it gates, and a Feature's rank climbs as its
 #                             closure shrinks.
 #
-#   priority = high   when the item is in the closure of the product goal,
-#                     the ids in .issue/.goal
-#              medium when it is in some Feature's closure
+#   priority = the milestone version (0.3.0 before 0.4.0 before 0.5.0) when
+#                     the item is in the closure of a milestone's ids in
+#                     .issue/.goal; the earliest milestone wins. A flat list
+#                     of ids with no version line prints `high`.
+#              medium when it is in some Feature's closure and no milestone's
 #              low    when no Feature needs it. Its rank is its own value × 100
 #                     ÷ the cost of itself and what it waits on.
 #
-# The queue orders by priority, then rank, then how many open items wait on
-# the item, then id. The definition lives here only, and the script is its one
+# The queue orders by priority (milestones in order, then medium, then low),
+# then rank, then how many open items wait on the item, then id. The definition lives here only, and the script is its one
 # implementation.
 value: 4 # 1-5. AUTHORED. Optional on a child: omit to inherit the parent's
 risk: 3 # 1-5. AUTHORED and REQUIRED, never inherited. The cost rank divides by

@@ -58,8 +58,11 @@ lane detail and preserve the shared-write-set restrictions below.
   and never by hand. It orders work by what gets the product, then a Feature,
   to done soonest. A rank that looks wrong is a grooming problem in the fields
   it is computed from, raised, not corrected in the answer.
-- **Priority** is the tier rank sorts inside: work on the path to the product
-  goal, then work some Feature needs, then work nothing waits on.
+- **Priority** is the tier rank sorts inside: the milestone an item serves,
+  earliest first, then work some Feature needs, then work nothing waits on.
+  The companion names the milestone record; the current milestone is the
+  product goal, and an item outside every milestone is not next while the
+  current one has startable work, whatever its rank.
 - **Toward** names the Feature an item's rank comes from and, in brackets, the
   work that Feature has left.
 - **Gates** names the open items that wait on this one directly: what

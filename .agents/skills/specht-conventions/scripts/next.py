@@ -8,7 +8,7 @@ from pathlib import Path
 SKIPPED = {".git", "bin", "obj", "node_modules", "graphify-out", ".artifacts", "worktrees"}
 STARTABLE = {"ready", "ready-for-architecture", "ready-for-implementation"}
 TAKEN = {"in-progress", "in-review"}
-PRIORITIES = ["high", "medium", "low"]
+MILESTONE = re.compile(r"^\d+\.\d+\.\d+$")
 SHARED_WRITE_SETS = [
     (".build/ContinuousIntegration", "generated workflows"),
     (".build/Releasing", "generated workflows"),
@@ -115,9 +115,23 @@ def order(item):
     return (item["tier"], -item["rank"], -item["waiting"], item["id"])
 
 
-def read_goal(root):
+def read_milestones(root):
     path = root / ".issue" / ".goal"
-    return re.findall(r"^\d{4}$", path.read_text(encoding="utf-8"), re.M) if path.exists() else []
+    milestones = []
+    for line in path.read_text(encoding="utf-8").splitlines() if path.exists() else []:
+        line = line.split("#")[0].strip()
+        if MILESTONE.match(line):
+            milestones.append((line, []))
+        elif re.fullmatch(r"\d{4}", line):
+            if not milestones:
+                milestones.append(("", []))
+            milestones[-1][1].append(line)
+    return [m for m in milestones if m[1]]
+
+
+def read_goal(root):
+    milestones = read_milestones(root)
+    return milestones[0][1] if milestones else []
 
 
 def value(item, items):
@@ -143,13 +157,13 @@ def score(item, closure, items, open_items):
     return round(value(item, items) * 100 / max(cost, 1)), cost
 
 
-def rank(items, open_items, goal):
+def rank(items, open_items, milestones):
     children = {}
     for item in open_items.values():
         children.setdefault(item["parent"], []).append(item["id"])
     work = {i: reach([i], open_items, children) - set(children) for i in open_items}
     features = {i: score(open_items[i], work[i], items, open_items) for i in open_items if i in children}
-    product = reach(goal, open_items, children)
+    planned = [(version or "high", reach(ids, open_items, children)) for version, ids in milestones]
 
     for item in open_items.values():
         toward = [(features[f][0], f) for f in features if item["id"] in work[f] | {f}]
@@ -158,8 +172,9 @@ def rank(items, open_items, goal):
             item["toward"] = f"{feature} ({features[feature][1]})"
         else:
             item["rank"], item["toward"] = score(item, work[item["id"]], items, open_items)[0], "-"
-        item["tier"] = 0 if item["id"] in product else 1 if toward else 2
-        item["priority"] = PRIORITIES[item["tier"]]
+        tiers = [i for i, (_, closure) in enumerate(planned) if item["id"] in closure]
+        item["tier"] = tiers[0] if tiers else len(planned) if toward else len(planned) + 1
+        item["priority"] = planned[item["tier"]][0] if tiers else "medium" if toward else "low"
         item["waiting"] = sum(1 for i in open_items if i != item["id"] and item["id"] in work[i])
         item["gates"] = ", ".join(sorted(i for i in open_items if item["id"] in open_items[i]["depends_on"])) or "-"
     return children
@@ -174,7 +189,7 @@ def main():
 
     root = args.root.resolve()
     items = {item["id"]: item for item in read_items(root).values()}
-    containers = rank(items, {i["id"]: i for i in items.values() if i["status"] != "done"}, read_goal(root))
+    containers = rank(items, {i["id"]: i for i in items.values() if i["status"] != "done"}, read_milestones(root))
     open_items = sorted((i for i in items.values() if i["status"] != "done"), key=order)
     for item in open_items:
         item["blockers"] = [

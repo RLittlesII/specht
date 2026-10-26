@@ -564,6 +564,11 @@ Feature, soonest.
   `.spec/lessons/` use. Ids stay repository-wide
   from one `.issue/.sequence`, which holds the last id claimed; find one with
   `**/.issue/<id>-*.yml`.
+- **`.issue/.goal` holds the milestones**, in release order: a bare version
+  line opens one and the item ids under it are its finish line. The first is
+  the current milestone, the product goal; the queue ranks planned work by
+  milestone before anything else. [`docs/roadmap.md`](docs/roadmap.md) says
+  what each one makes better and cites the Features; it holds no ids of its own.
 - `status: in-progress` marks an item taken, and `in-review` once the pull
   request opens. Bump `updated:` on every edit.
 - **`done` and the `closed:` date are written by the pull request that delivers
