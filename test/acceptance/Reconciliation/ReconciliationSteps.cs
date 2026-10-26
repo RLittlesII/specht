@@ -1,4 +1,5 @@
 using System.Text.Json.Nodes;
+using System.Text.RegularExpressions;
 using AwesomeAssertions;
 using Reqnroll;
 using Specht.Tests.Shared;
@@ -219,7 +220,7 @@ public sealed class ReconciliationSteps
     public void WhenExternalDirectoryIsSupplied()
     {
         _tree.WriteEvidence();
-        _result = _tree.Run("--json", "--evidence", _tree.WriteExternalDirectory());
+        _result = _tree.Run("--json", _tree.WriteExternalDirectory());
     }
 
     [When("the same export is selected by file and directory")]
@@ -227,7 +228,69 @@ public sealed class ReconciliationSteps
     {
         _tree.WriteEvidence();
         var directory = _tree.WriteOverlappingDirectory();
-        _result = _tree.Run("--json", "--evidence", directory, "--evidence", directory + "/copy.json");
+        _result = _tree.Run("--json", directory, directory + "/copy.json");
+    }
+
+    [Given("supplied traceability evidence in two locations")]
+    public void GivenEvidenceInTwoLocations()
+    {
+        _tree.WriteEvidence();
+        _external = _tree.WriteExternalDirectory();
+    }
+
+    [Given("a declared scope and no evidence path")]
+    public void GivenNoEvidencePath() { }
+
+    [Given("a request for specht evidence help")]
+    public void GivenEvidenceHelpRequest() { }
+
+    [When("specht evidence is requested with both locations as positional arguments")]
+    public void WhenBothLocationsArePositional() => _result = _tree.RunWith("--json", "evidence.json", _external!);
+
+    [When("the same export is named twice as positional arguments")]
+    public void WhenTheSameExportIsNamedTwice()
+    {
+        _tree.WriteEvidence();
+        var directory = _tree.WriteOverlappingDirectory();
+        _result = _tree.RunWith("--json", directory, directory + "/copy.json", "evidence.json");
+    }
+
+    [When("specht evidence is requested")]
+    public void WhenEvidenceIsRequestedWithNoPath() => _result = _tree.RunWith("--json");
+
+    [When("the help is shown")]
+    public void WhenTheHelpIsShown() => _result = AcceptanceTool.Launch(_tree.Root, "evidence", "--help");
+
+    [Then("both are supplied as evidence")]
+    public void ThenBothLocationsAreSupplied()
+    {
+        _result.ExitCode.Should().Be(0, _result.Stdout + _result.Stderr);
+        Supplied().Should().Equal("evidence.json", "external-evidence-2/first.json", "external-evidence-2/second.json");
+    }
+
+    [Then("both are supplied in command-line order, with no error")]
+    public void ThenBothSuppliedInCommandLineOrder()
+    {
+        _result.ExitCode.Should().Be(0, _result.Stdout + _result.Stderr);
+        _result.Stderr.Should().BeEmpty();
+        Supplied().Should().Equal("evidence.json", "external-evidence-2/first.json", "external-evidence-2/second.json");
+    }
+
+    [Then("the command fails with incomplete input and reports that no evidence was supplied")]
+    public void ThenNoEvidenceReported()
+    {
+        _result.ExitCode.Should().Be(2);
+        Report()["findings"]!.AsArray().Should().Contain(static item => item!["kind"]!.GetValue<string>() == "missingCompilation"
+            && item["message"]!.GetValue<string>().Contains("No evidence was supplied", StringComparison.Ordinal));
+    }
+
+    [Then("the optional positional paths are in the usage and no evidence option is offered")]
+    public void ThenHelpShowsPositionalPaths()
+    {
+        var help = Regex.Replace(_result.Stdout, @"\x1b\[[0-9;]*m", string.Empty);
+        _result.ExitCode.Should().Be(0, help);
+        Regex.IsMatch(help, @"evidence\s+\[PATH\w*\]\s+\[OPTIONS\]").Should().BeTrue($"the usage shows optional paths, but read {help}");
+        help.Should().NotContain("--evidence");
     }
 
     [Then("reconciliation presents the claim-to-method-to-case-to-result chain without requiring Reqnroll")]
@@ -565,10 +628,12 @@ public sealed class ReconciliationSteps
         }
 
         _fileCount = Directory.EnumerateFiles(_tree.Root, "*", SearchOption.AllDirectories).Count();
-        string[] second = _partitioned && !_omittedRun ? ["--evidence", "evidence-b.json"] : [];
-        _result = _staleExtra ? _tree.Run("--json", "--evidence", "stale.json")
+        string[] second = _partitioned && !_omittedRun ? ["evidence-b.json"] : [];
+        _result = _staleExtra ? _tree.Run("--json", "stale.json")
             : json ? _tree.Run(["--json", .. second]) : _tree.Run();
     }
+
+    private string[] Supplied() => Report()["scope"]!["supplied"]!.AsArray().Select(static item => item!["path"]!.GetValue<string>()).ToArray();
 
     private JsonNode Report() => JsonNode.Parse(_result.Stdout)!;
     private JsonNode Claim() => Report()["claims"]![0]!;
@@ -585,6 +650,7 @@ public sealed class ReconciliationSteps
     private SpecTree? _checker;
     private string? _checkerBefore;
     private (string Stdout, string Stderr, int ExitCode) _result;
+    private string? _external;
     private string? _optionalKind;
     private string? _outcome = "passed";
     private int _fileCount;

@@ -619,7 +619,7 @@ the test output; provisional recognition, succeeds) -> `dotnet test --no-build
 --list-tests` (logger writes the version-3 artifact, discovery `complete`,
 results absent, to `obj/specht-test-evidence/<project>-<tfm>.json`) -> `dotnet
 test --no-build` (same file gains results and selection) -> analysis:
-`specht evidence --evidence obj/specht-test-evidence`, and a rebuild with the
+`specht evidence obj/specht-test-evidence`, and a rebuild with the
 artifact supplied as `SpechtTestEvidence`, which is now authoritative. The
 path, collectors and artifact are 0260's and do not change. The artifact is
 not a build input of the export (`TestEvidenceCompilationInputs.Read` maps neither kind), so supplying

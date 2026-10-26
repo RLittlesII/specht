@@ -76,7 +76,7 @@ errors: 1, warnings: 0
 ## `specht evidence`
 
 ```text
-specht evidence [--root <DIR>] --evidence <PATH>... [--run <ID>] [--json] [--report <PATH>]
+specht evidence [--root <DIR>] [<PATH>...] [--run <ID>] [--json] [--report <PATH>]
 ```
 
 Reconciles the current claims selected by `.specht/manifest.json`'s `codeAnalysis`
@@ -86,14 +86,14 @@ resolved bindings, discovered cases and their selected run outcomes. It is offli
 and does not build a project or start tests. The command reads each named file or
 JSON files beneath each named directory; it does not search elsewhere for evidence.
 
-| Option              | Value                | Default               | Does                                                    |
-| ------------------- | -------------------- | --------------------- | ------------------------------------------------------- |
-| `--root <DIR>`      | Repository directory | The working directory | Selects the current consumer configuration and files.   |
-| `--evidence <PATH>` | File or directory    | None                  | Supplies an export; repeat to cover the declared scope. |
-| `--run <ID>`        | Exact run identity   | One run per project   | Selects that run wherever it appears.                   |
-| `--json`            | none                 | Off                   | Writes only the versioned evidence report to stdout.    |
-| `--report <PATH>`   | Output file          | None                  | Writes that same JSON report to a caller-named path.    |
-| `-h, --help`        | none                 | Off                   | Prints command help.                                    |
+| Option            | Value                | Default               | Does                                                    |
+| ----------------- | -------------------- | --------------------- | ------------------------------------------------------- |
+| `--root <DIR>`    | Repository directory | The working directory | Selects the current consumer configuration and files.   |
+| `<PATH>...`       | File or directory    | None                  | Supplies an export; repeat to cover the declared scope. |
+| `--run <ID>`      | Exact run identity   | One run per project   | Selects that run wherever it appears.                   |
+| `--json`          | none                 | Off                   | Writes only the versioned evidence report to stdout.    |
+| `--report <PATH>` | Output file          | None                  | Writes that same JSON report to a caller-named path.    |
+| `-h, --help`      | none                 | Off                   | Prints command help.                                    |
 
 The human output separates input, binding, required-link, exemption and execution
 counts and lists typed findings with root-relative paths. JSON uses
@@ -128,7 +128,7 @@ input and policy failures take precedence in that order. Findings still show
 other facts that can be established safely.
 
 ```sh
-specht evidence --root . --evidence .artifacts/test-evidence --json --report .artifacts/evidence-report.json
+specht evidence --root . .artifacts/test-evidence --json --report .artifacts/evidence-report.json
 ```
 
 ## `specht frontmatter`
