@@ -20,7 +20,7 @@ depends_on: ["F1", "F3", "F6"]
 blocks: []
 spikes: []
 created: "2026-10-23"
-updated: "2026-10-25"
+updated: "2026-10-26"
 github_issue: null
 synced_at: null
 ---
@@ -764,7 +764,7 @@ non-English input failure under ADR-0001 (Proposed). The Feature moved from `src
 
 - [0258: Design the native claim catalogue manifest contract and tag semantics](../.issue/0258-claim-catalogue-manifest-contract-design.yml)
 - [0259: Read the claim catalogue from tagged Gherkin](../.issue/0259-native-gherkin-claim-catalogue-reader.yml)
-- [0304: Document native Gherkin claim input for consumers](../.issue/0304-document-native-gherkin-claim-input.yml)
+- [0303: Document native Gherkin claim input for consumers](../.issue/0303-document-native-gherkin-claim-input.yml)
 
 ## Scoring
 

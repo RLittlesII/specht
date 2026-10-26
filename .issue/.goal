@@ -65,8 +65,7 @@
 0256
 0289
 0128
-# Epic 0201 for consumer request #256: native Gherkin claims with VSTest and
-# Reqnroll evidence, proven end to end in one packaged consumer.
+# Epic 0201 for consumer request #256: native Gherkin claims with xUnit v2
+# VSTest evidence, proven end to end in one packaged consumer, and documented.
 0302
 0303
-0304

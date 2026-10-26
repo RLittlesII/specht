@@ -111,9 +111,9 @@ Spikes `0256` (collision-free record ids) and `0289` (large comment chunks in
 specification markdown), and item `0128` (an id claimed twice), land here.
 
 Code analysis reaches a consumer whose claims live only in Gherkin, for
-consumer request #256: Reqnroll scenario rows recorded in the evidence
-(`0201-F4`), one packaged consumer proving native claims with VSTest evidence end
-to end (`0201-F6`), and native claim input documented (`0201-F7`).
+consumer request #256: one packaged consumer proving native claims with xUnit
+v2 VSTest evidence end to end (`0201-F6`), and native claim input documented
+(`0201-F7`).
 
 **Done means:** a consumer repository gets its violations on a pull request with
 one workflow step and no code of its own.

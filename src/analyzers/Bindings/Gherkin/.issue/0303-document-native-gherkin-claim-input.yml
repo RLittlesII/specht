@@ -1,4 +1,4 @@
-id: "0304"
+id: "0303"
 type: task
 title: "Document native Gherkin claim input for consumers"
 status: ready
@@ -11,7 +11,7 @@ spikes: []
 spec: src/analyzers/Bindings/Gherkin/.spec/README.md
 claims: []
 created: "2026-10-25"
-updated: "2026-10-25"
+updated: "2026-10-26"
 closed: null
 summary: |
   Consumer request #256 requires a documented manifest option that selects native
@@ -39,6 +39,6 @@ acceptance_criteria:
   - "Every example manifest is checked against the built reader, the Markdown opens with the required frontmatter, and no path is absolute."
 decisions: []
 out_of_scope:
-  - "Selecting or configuring the Reqnroll scenario producer: 0302 (0201-F4 OQ-5)."
-  - "The packaged end-to-end consumer fixture: 0303."
+  - "Reqnroll and scenario records: native claim input needs neither; 0201-F4 is an optional input this page does not document."
+  - "The packaged end-to-end consumer fixture: 0302."
   - "Any analyzer, package or manifest behaviour change."
