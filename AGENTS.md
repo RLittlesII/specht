@@ -216,6 +216,13 @@ named (`0001-F11` OQ-1).
 
 - **Never an absolute path** in any output, report, log line, or test fixture
   (brief § 9). Paths are relative to the root the tool was given.
+- **`codeAnalysis` is the manifest's only C#-specific section, not a catch-all.**
+  The checker reads Markdown, YAML and Gherkin and serves every technology
+  those rules can read; a setting the checker reads, or that describes the
+  specification tree, is a top-level key the checker owns, and the analyzer
+  reads it there. Only what has no meaning without a C# compilation goes under
+  `codeAnalysis`
+  ([ADR-0023](.spec/adr/0023-codeanalysis-is-the-only-csharp-specific-manifest-section.md)).
 - **Never a write into a consumer's tree** except through `init`, `upgrade`,
   the pin command, which changes only `schemaVersion` in the manifest
   (`0001-F7` decision 0005), the set command, which changes only one rule's
