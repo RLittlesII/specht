@@ -1,4 +1,4 @@
-id: "0298"
+id: "0299"
 type: task
 title: Plan the open work as release milestones in the goal file
 
@@ -46,6 +46,11 @@ acceptance_criteria:
   - "`./build.sh Format` and the mirror's Python tests pass."
 
 decisions:
+  - |
+    2026-10-25: renumbered from 0298 before merge. Pull request 563 merged
+    its own item 0298 to `main` first (lesson 0005: an id is not reserved
+    until it merges); this item never merged under 0298, so no citation
+    on `main` names it. The branch keeps its `0298/` name.
   - |
     2026-10-25, owner: the open work is planned in milestone chunks (0.3.0
     "Complete the tool contract; the repository runs itself": epic 0001
