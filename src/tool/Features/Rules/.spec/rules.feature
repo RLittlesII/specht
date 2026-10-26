@@ -21,6 +21,12 @@ Feature: The rules command
     When the rules are listed
     Then the out-of-order-section rule is listed with the default severity error
 
+  @B-003
+  Scenario: A rule whose page defaults to off is listed with that default
+    Given the manifest pins schema version 0.2.0
+    When the rules are listed
+    Then the retired-claim rule is listed with the default severity off
+
   @B-004
   Scenario Outline: A rule the manifest sets is listed at that level
     Given the manifest sets the out-of-order-section rule to <level>

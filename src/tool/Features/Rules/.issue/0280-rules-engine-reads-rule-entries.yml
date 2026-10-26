@@ -2,7 +2,7 @@ id: "0280"
 type: task
 title: Read the rule entries
 
-status: ready-for-architecture
+status: done
 
 value: 3
 risk: 2
@@ -26,8 +26,8 @@ claims:
   - B-008
 
 created: "2026-10-24"
-updated: "2026-10-24"
-closed: null
+updated: "2026-10-26"
+closed: "2026-10-26"
 
 summary: |
   As the `specht rules` command I want the engine to give me one entry per rule id of the pinned version, so that the command prints a listing and holds no catalogue of its own.
