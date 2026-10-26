@@ -40,6 +40,7 @@ public static class SpechtEngineServiceCollectionExtensions
         services.AddSingleton<UpstreamSchemaCopy>();
         services.AddSingleton<SpecSchemasLoader>();
         services.AddSingleton<RuleExplanationReader>();
+        services.AddSingleton<RuleEntriesReader>();
         services.AddSingleton<SpecModelLoader>();
         services.AddSingleton<SpechtRunner>();
         services.AddSingleton<ISpecRule, FrontmatterSchemaRule>();

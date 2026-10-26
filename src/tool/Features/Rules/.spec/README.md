@@ -20,7 +20,7 @@ depends_on: ["F2", "F3", "F5", "F7"]
 blocks: []
 spikes: []
 created: "2026-10-11"
-updated: "2026-10-24"
+updated: "2026-10-26"
 github_issue: null
 synced_at: null
 ---
@@ -35,7 +35,7 @@ A rule can be lowered, raised or switched off from the manifest, but nothing lis
 
 ## 2. User Needs
 
-<!-- last written by: spec-author, 2026-10-11, 2026-10-24 -->
+<!-- last written by: spec-author, 2026-10-26 -->
 
 | #   | Persona                                         | Need                                                                                  | Pain Point Today                                                             |
 | --- | ----------------------------------------------- | ------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------- |
@@ -49,7 +49,7 @@ A rule can be lowered, raised or switched off from the manifest, but nothing lis
 | ID  | Assumption                                                                                                                                                                                                                                                                                                                                                                                                         |
 | --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | A-1 | The command line is `specht rules [--root <dir>] [--json]`, beside `specht`, `init` and `upgrade`; `--root` defaults to the current directory as it does for the check (owner, 2026-10-11). `rules` is also a branch whose default command is this one, so `0001-F11`'s set command can hang under it as `specht schema pin` hangs under `schema` (`0001-F11` A-1); that places a name and adds no behaviour here. |
-| A-2 | A rule's family and default severity are the ones its rule page gives (`0001-F3` B-032, A-5): one of the eight families, and `error` or `warning`.                                                                                                                                                                                                                                                                 |
+| A-2 | A rule's family and default severity are the ones its rule page gives (`0001-F3` B-032, A-5): one of the eight families, and `error`, `warning` or `off`; schema `0.2.0`'s `SPEC034` and `SPEC035` pages give `Off`.                                                                                                                                                                                               |
 | A-3 | A rule's effective level is `error`, `warning` or `off` (`0001-F5` decision 0008): the level the manifest sets for its id, or, where the manifest sets none, the level of the rule's own severity (`0001-F5` B-044).                                                                                                                                                                                               |
 
 ## 3. Acceptance Criteria
@@ -108,54 +108,82 @@ A rule can be lowered, raised or switched off from the manifest, but nothing lis
 
 ## 6. Concern Separation
 
-<!-- last written by: spec-author, 2026-10-11 -->
+<!-- last written by: implementer, 2026-10-26 -->
 
-Pending: owned by `implementer`, written after agreement.
+| Concern                                                                                             | Classification | Owner                                                                      |
+| --------------------------------------------------------------------------------------------------- | -------------- | -------------------------------------------------------------------------- |
+| The exact pinned vocabulary and its ordinal order (B-001, B-008)                                    | Business       | `RuleEntriesReader`, using `SpecManifestParser.PinnedVersion`              |
+| The family and default severity on the authoritative page (B-002, B-003, B-007)                     | Business       | `RuleEntriesReader`, using the existing Markdown document parser           |
+| An explicit manifest level, fallback to the page default and retaining off entries (B-004 to B-006) | Business       | `RuleEntriesReader` over the loader-produced `SpecStructure.Rules`         |
+| Root/manifest observation and validated pin selection                                               | Technical      | Existing `SpecSchemasLoader`, `SpecManifestStore` and `SpecManifestParser` |
+| Rendering the entries, command failures and exit codes                                              | Both           | The later command slice; outside this engine change                        |
 
 ## 7. Technical Design
 
-<!-- last written by: spec-author, 2026-10-11 -->
+<!-- last written by: implementer, 2026-10-26 -->
 
-Pending: owned by `implementer`, written after agreement.
+### Engine catalogue
+
+[`RuleEntriesReader`](../../../../specht/Rules/RuleEntriesReader.cs) is a concrete instance registered by the existing [`AddSpechtEngine`](../../../../specht/Composition/SpechtEngineServiceCollectionExtensions.cs) composition. Its root entry point loads only the manifest through [`SpecSchemasLoader.LoadManifest`](../../../../specht/Model/SpecSchemasLoader.cs), then calls its in-memory overload with that `SpecStructure`. It does not load frontmatter schemas, discover specifications or evaluate rules.
+
+The in-memory overload resolves the exact pin through [`SpecManifestParser.PinnedVersion`](../../../../specht/Manifest/SpecManifestParser.cs), orders that version's `RuleIds` with `StringComparer.Ordinal`, and reads the corresponding `SchemaVersion.RulePages` text. For each page it reuses [`SpecDocument.Parse`](../../../../specht/Model/SpecDocument.cs), taking the `Family` and `Default severity` rows of the `Metadata` section's first pipe table. It does not parse Markdown by splitting pipes. Page metadata is trusted shipped content, whose shape and page-per-vocabulary invariant are already checked by `SchemaVersionRulePagesUnitTests`.
+
+[`RuleEntry`](../../../../specht/Rules/RuleEntry.cs) carries the vocabulary id, family, default severity and effective level. Both level values use the existing `SpecRuleLevel`, including `Off`; the family retains the page's spelling. An explicit value in `SpecStructure.Rules` wins; an omitted entry uses the page's default severity. No entry is filtered for its effective level. The returned entries are produced on demand, with no maintained metadata index or cache. Manifest inspection can consume this same result rather than compute effective levels again.
+
+ADR-0014 retains direct calls and the existing stores, parser and composition. This change introduces no interface, dependency package, mediator, new static parser, vocabulary, rule-page edit or command registration. Command stdout, text/JSON rendering, error mapping and exit codes remain separate work.
 
 ## 8. Testing Strategy
 
-<!-- last written by: spec-author, 2026-10-11 -->
+<!-- last written by: test-writer, 2026-10-26 -->
 
-Pending: owned by `test-writer`, written after agreement.
+The engine catalogue scenarios run through `RuleEntriesSteps` over a synthetic `SpecTree` and the existing manifest loader. B-007 compares the entry to the output of the built `--explain` command. The command and JSON scenarios retain unbound steps until their owning items supply them; the existing Reqnroll pending-step policy reports them as skipped.
+
+| Claim | Mechanism                                                                          | Unit proof                                                                                                                                        |
+| ----- | ---------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
+| B-001 | Exact-pin vocabulary projection; extra pages are excluded                          | `RuleEntriesReaderUnitTests.AnExactPin_WhenRead_ShouldReturnOnlyThatVersionsVocabulary`; stdout remains the command item's proof                  |
+| B-002 | Family read from the pinned page's Metadata table                                  | `RuleEntriesReaderUnitTests.APageMetadataValue_WhenRead_ShouldSupplyTheFamilyAndDefaultSeverity`                                                  |
+| B-003 | Page default mapped to Error, Warning or Off                                       | `RuleEntriesReaderUnitTests.APageMetadataValue_WhenRead_ShouldSupplyTheFamilyAndDefaultSeverity`                                                  |
+| B-004 | Explicit manifest level wins over the page default                                 | `RuleEntriesReaderUnitTests.AnExplicitLevel_WhenRead_ShouldOverrideThePageDefaultWithoutRemovingTheEntry`                                         |
+| B-005 | An omitted level uses the page default, independently of shipped manifest defaults | `RuleEntriesReaderUnitTests.NoExplicitLevel_WhenRead_ShouldUseTheRulesOwnSeverity`                                                                |
+| B-006 | Off is an effective value, not an entry filter                                     | `RuleEntriesReaderUnitTests.AnExplicitLevel_WhenRead_ShouldOverrideThePageDefaultWithoutRemovingTheEntry`                                         |
+| B-007 | The selected version's page supplies both catalogue metadata and explanation       | `RuleEntriesReaderUnitTests.APageMetadataValue_WhenRead_ShouldSupplyTheFamilyAndDefaultSeverity`; the acceptance comparison exercises `--explain` |
+| B-008 | Explicit ordinal ordering of an unordered vocabulary                               | `RuleEntriesReaderUnitTests.AnUnorderedVocabulary_WhenRead_ShouldReturnEntriesInOrdinalIdOrder`                                                   |
+
+The pure `Read(SpecStructure)` overload admits synthetic `SchemaVersionFixture` vocabularies and pages; the root overload exercises the existing loader without specification discovery. No extra test seam is required. B-009 to B-019 remain outside the engine catalogue scope.
 
 ## 9. Traceability Matrix
 
-<!-- last written by: spec-author, 2026-10-11, 2026-10-24 -->
+<!-- last written by: test-writer, 2026-10-26 -->
 
-| Claim ID | Scenario                                                       | Test    | Status  |
-| -------- | -------------------------------------------------------------- | ------- | ------- |
-| B-001    | Every rule of the pinned version is listed once                | Missing | Missing |
-| B-002    | A rule is listed with its family                               | Missing | Missing |
-| B-003    | A rule is listed with its default severity                     | Missing | Missing |
-| B-004    | A rule the manifest sets is listed at that level               | Missing | Missing |
-| B-005    | A rule the manifest does not set is listed at its own severity | Missing | Missing |
-| B-006    | A rule switched off is still listed                            | Missing | Missing |
-| B-007    | The listing agrees with the rule's page                        | Missing | Missing |
-| B-008    | Rules are listed in order of rule id                           | Missing | Missing |
-| B-009    | The JSON form is one document                                  | Missing | Missing |
-| B-010    | The JSON form carries what the text form prints                | Missing | Missing |
-| B-011    | Listing succeeds whatever the levels are                       | Missing | Missing |
-| B-012    | A missing root is a missing-input failure                      | Missing | Missing |
-| B-013    | A root without a manifest is a missing-input failure           | Missing | Missing |
-| B-014    | A rejected manifest is an invalid-manifest failure             | Missing | Missing |
-| B-015    | Messages about the tool go to standard error                   | Missing | Missing |
-| B-016    | A run writes nothing                                           | Missing | Missing |
-| B-017    | No derived path in the output is absolute                      | Missing | Missing |
-| B-018    | The same input gives the same output                           | Missing | Missing |
-| B-019    | The text form is one tab-separated line per rule               | Missing | Missing |
+| Claim ID | Scenario                                                       | Test                                                                                                                                                                                    | Status  |
+| -------- | -------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------- |
+| B-001    | Every rule of the pinned version is listed once                | `RuleEntriesSteps.ThenListingHasPinnedVocabulary`; `RuleEntriesReaderUnitTests.AnExactPin_WhenRead_ShouldReturnOnlyThatVersionsVocabulary`; stdout proof belongs to the command item    | Partial |
+| B-002    | A rule is listed with its family                               | `RuleEntriesSteps.ThenSectionRuleFamily`; `RuleEntriesReaderUnitTests.APageMetadataValue_WhenRead_ShouldSupplyTheFamilyAndDefaultSeverity`                                              | Covered |
+| B-003    | A rule is listed with its default severity                     | `RuleEntriesSteps.ThenSectionRuleDefault`; `RuleEntriesSteps.ThenRetiredClaimDefault`; `RuleEntriesReaderUnitTests.APageMetadataValue_WhenRead_ShouldSupplyTheFamilyAndDefaultSeverity` | Covered |
+| B-004    | A rule the manifest sets is listed at that level               | `RuleEntriesSteps.ThenSectionRuleEffectiveLevel`; `RuleEntriesReaderUnitTests.AnExplicitLevel_WhenRead_ShouldOverrideThePageDefaultWithoutRemovingTheEntry`                             | Covered |
+| B-005    | A rule the manifest does not set is listed at its own severity | `RuleEntriesSteps.ThenSectionRuleEffectiveLevel`; `RuleEntriesReaderUnitTests.NoExplicitLevel_WhenRead_ShouldUseTheRulesOwnSeverity`                                                    | Covered |
+| B-006    | A rule switched off is still listed                            | `RuleEntriesSteps.ThenListingRetainsSectionRule`; `RuleEntriesReaderUnitTests.AnExplicitLevel_WhenRead_ShouldOverrideThePageDefaultWithoutRemovingTheEntry`                             | Covered |
+| B-007    | The listing agrees with the rule's page                        | `RuleEntriesSteps.ThenListingAgreesWithExplanation`; `RuleEntriesReaderUnitTests.APageMetadataValue_WhenRead_ShouldSupplyTheFamilyAndDefaultSeverity`                                   | Covered |
+| B-008    | Rules are listed in order of rule id                           | `RuleEntriesSteps.ThenListingIsOrdinallyOrdered`; `RuleEntriesReaderUnitTests.AnUnorderedVocabulary_WhenRead_ShouldReturnEntriesInOrdinalIdOrder`                                       | Covered |
+| B-009    | The JSON form is one document                                  | Missing                                                                                                                                                                                 | Missing |
+| B-010    | The JSON form carries what the text form prints                | Missing                                                                                                                                                                                 | Missing |
+| B-011    | Listing succeeds whatever the levels are                       | Missing                                                                                                                                                                                 | Missing |
+| B-012    | A missing root is a missing-input failure                      | Missing                                                                                                                                                                                 | Missing |
+| B-013    | A root without a manifest is a missing-input failure           | Missing                                                                                                                                                                                 | Missing |
+| B-014    | A rejected manifest is an invalid-manifest failure             | Missing                                                                                                                                                                                 | Missing |
+| B-015    | Messages about the tool go to standard error                   | Missing                                                                                                                                                                                 | Missing |
+| B-016    | A run writes nothing                                           | Missing                                                                                                                                                                                 | Missing |
+| B-017    | No derived path in the output is absolute                      | Missing                                                                                                                                                                                 | Missing |
+| B-018    | The same input gives the same output                           | Missing                                                                                                                                                                                 | Missing |
+| B-019    | The text form is one tab-separated line per rule               | Missing                                                                                                                                                                                 | Missing |
 
 ## 10. Lessons / Spec Deltas
 
-<!-- last written by: spec-author, 2026-10-11, 2026-10-24 -->
+<!-- last written by: spec-author, 2026-10-26 -->
 
 - 2026-10-24, groomed from `blocked` to `ready-for-architecture` ([decision 0002](decisions/0002-the-text-form-is-one-tab-separated-line-per-rule-and-the-blocked-status-is-lifted.md)). The block named `0001-F2`, `0001-F3`, `0001-F5` and `0001-F7`: the first three are built, and `0001-F7`'s list and pin commands are built (items `0121` to `0125`); only `upgrade` (item `0047`) is outstanding and no claim here depends on it. `depends_on` stays as references.
 - 2026-10-24, B-019 added: the text form, derived by spec-author on OQ-2's default, so a test can fail. A-1 notes that `rules` is also the branch `0001-F11` hangs under. No other claim changed.
+- 2026-10-26, corrected A-2 to include `off`, already given by schema `0.2.0`'s authoritative `SPEC034` and `SPEC035` pages. Added a B-003 scenario for a page whose default is off; B-003 and B-007 continue to require the page's value. No claim or rule-page content changed.
 
 ## 11. Open Questions
 
@@ -171,11 +199,12 @@ Pending: owned by `test-writer`, written after agreement.
 
 ## 12. Sign-off
 
-<!-- last written by: spec-author, 2026-10-11 -->
+<!-- last written by: spec-reviewer, 2026-10-26 -->
 
-| Section | Status | Reviewer      | Note                   |
-| ------- | ------ | ------------- | ---------------------- |
-| 1-5     | 🟡     | spec-reviewer | Awaiting first review. |
+| Section               | Status | Reviewer      | Note                                                                                                                                                                                                 |
+| --------------------- | ------ | ------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1-5                   | 🟡     | spec-reviewer | Awaiting first review of the broader command agreement.                                                                                                                                              |
+| 6-9, engine catalogue | 🟢     | spec-reviewer | B-001 to B-008 engine scope reviewed with no findings; focused tests on both frameworks and repository gates pass. B-001 remains Partial for stdout; command and JSON work is outside this approval. |
 
 ## Tasks
 
