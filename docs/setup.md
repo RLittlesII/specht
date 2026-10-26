@@ -24,6 +24,9 @@ as `dotnet specht`.
 `dotnet tool install -g specht.tool` puts `specht` on PATH for a shell. It is
 not pinned per repository, so a build still uses the manifest.
 
+A repository with no .NET project installs the same way; the SDK is needed for
+the tool alone ([Without .NET code](non-dotnet.md)).
+
 ## Initialise
 
 ```sh
