@@ -232,6 +232,13 @@ tree for `<TargetFramework>` in generated project text. A literal `net10.0`
 reached `main` once, where the benchmark alone builds it
 ([`0109-F4` lesson 0001](../../../../.performance/benchmarks/Startup/.spec/lessons/0001-a-generated-project-targets-the-bundled-framework.md)).
 
+**An MSBuild property is read from its result file.** A test that needs a
+property's value passes `-getResultOutputFile:<path>` beside `-getProperty` and
+reads the file, which holds the value alone. It never parses `dotnet msbuild`
+console output: the CLI prints MSBuild-server and other diagnostics there, and
+under load one landed after the value and became a framework name
+([lesson 0014](../../../../.spec/lessons/0014-read-an-msbuild-property-from-its-result-file.md)).
+
 Never a copy of a real repository's `.spec/` tree, this one's included: a copied
 tree carries every rule's happy path at once and pins the test to whatever that
 tree happened to contain. No test touches the network, a live provider, or the
@@ -262,3 +269,4 @@ wall clock.
 - A string comparison of a path built with `Path.Combine` and not normalized.
 - A literal `<TargetFramework>` in a project generated at run time and restored
   from an isolated feed.
+- A `-getProperty` value parsed from `dotnet msbuild` console output.

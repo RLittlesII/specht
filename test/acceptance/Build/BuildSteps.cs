@@ -189,8 +189,10 @@ public sealed partial class BuildSteps(IUnitTestRuntimeProvider runtime) : IDisp
     [Then("its name carries the version computed for the commit")]
     public async Task ThenItsNameCarriesTheVersionComputedForTheCommit()
     {
-        await RunAsync(("dotnet", ["msbuild", "tool/tool.csproj", "-getProperty:Version"]));
-        Packages().Should().Equal($"specht.tool.{_output.Trim()}.nupkg");
+        var version = Path.Combine(_root, "tool", "obj", "version.txt");
+        Directory.CreateDirectory(Path.GetDirectoryName(version)!);
+        await RunAsync(("dotnet", ["msbuild", "tool/tool.csproj", "-getProperty:Version", $"-getResultOutputFile:{version}"]));
+        Packages().Should().Equal($"specht.tool.{File.ReadAllText(version).Trim()}.nupkg");
     }
 
     [Then("every dotnet tool the build and the hook invoke is available")]

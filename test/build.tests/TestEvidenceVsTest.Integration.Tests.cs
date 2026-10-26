@@ -530,8 +530,11 @@ public sealed partial class TestEvidenceVsTestIntegrationTests(TestEvidenceVsTes
                   </PropertyGroup>
                 </Project>
                 """);
-            var query = await Step(log, _consumer, "msbuild", "A/A.csproj", "-getProperty:BundledNETCoreAppTargetFrameworkVersion", "-nologo");
-            var framework = "net" + query.Output.Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).Last();
+            var result = Path.Combine(_consumer, ".diag", "bundled-framework.txt");
+            Directory.CreateDirectory(Path.GetDirectoryName(result)!);
+            await Run(log, _consumer, "msbuild", "A/A.csproj", "-getProperty:BundledNETCoreAppTargetFrameworkVersion", $"-getResultOutputFile:{result}",
+                "-nologo");
+            var framework = "net" + (await File.ReadAllTextAsync(result, TestContext.Current.CancellationToken)).Trim();
             await Write(".specht/manifest.json", $$"""
                 {
                   "revision": "fixture-r1",
