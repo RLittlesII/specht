@@ -1,0 +1,57 @@
+id: "0304"
+type: task
+title: Say what specht checks in a repository with no .NET code
+
+status: done
+
+value: 3
+risk: 1
+
+parent: null
+children: []
+
+depends_on: []
+spikes: []
+
+spec: null
+
+claims: []
+
+created: "2026-10-26"
+updated: "2026-10-26"
+closed: "2026-10-26"
+
+summary: |
+  The owner asked, 2026-10-26, what value `specht` gives a repository that
+  holds no C#: a Flutter application running the same specification-driven
+  process with `.feature` files. The answer is in the tree and nowhere in
+  `docs/`: every `SPEC###` rule reads Markdown, YAML and Gherkin and none
+  reads source code, so the whole check runs; only `specht evidence` and the
+  `Specht.CodeAnalysis` analyzer need a .NET project, and native Gherkin
+  claim input lives in the analyzer alone. `docs/setup.md` assumes a .NET
+  consumer and says nothing about a runner that has the SDK for the tool
+  alone. A terse page under the root `docs/`, linked from the package front
+  page and from Setup, documents built behaviour only and changes none, so
+  it delivers no claim and cites the claims and milestones it documents.
+
+acceptance_criteria:
+  - "`docs/non-dotnet.md` opens with the required frontmatter and says the checker reads Markdown, YAML and Gherkin only, citing `docs/what-it-checks.md` for the rule groups."
+  - "The page says the .NET SDK is needed to run the tool, through the local tool manifest or a global install, and nothing else of .NET."
+  - "The page says a `.feature` file from any Gherkin runner is the companion `SPEC020` and `SPEC021` read, and that `claim.tag` changes the tag shape under schema `0.2.0`."
+  - "The page says `.issue/` is never read and the item rules run only on item files beside a specification."
+  - "The page says `tests` and `matrix` are accepted under `0.2.0` and no rule reads them until `0001-F12` ships in 0.4.0, with a Dart `declarations` example under that heading."
+  - "The page lists `specht evidence`, the analyzer package and native Gherkin claim input as unavailable without a .NET project, each with its reason, and cites `0201-F7` § 5 row 7 for the checker-side move being epic `0001`'s."
+  - "`README.md` and `docs/setup.md` link the page."
+  - "No path on the page is absolute, and `./build.sh Format` passes."
+
+decisions:
+  - |
+    2026-10-26, owner: a docs page now; the checker-side native Gherkin
+    claim Feature is specified in its own session under epic `0001`, not
+    here. Rejected: folding that specification into this item, which
+    documents built behaviour only.
+
+out_of_scope:
+  - "A test-evidence adapter for Dart or any runner outside .NET: evidence reconciles exports against analyzer bindings, which have no non-C# input."
+  - "Native Gherkin claims in the checker: `0201-F7` § 5 row 7 hands it to epic `0001`, specified apart from this item."
+  - "Any manifest, engine or analyzer change."
