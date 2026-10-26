@@ -1,0 +1,62 @@
+id: "0303"
+type: test
+title: "Prove native Gherkin claims with VSTest and Reqnroll evidence in one packaged consumer"
+status: ready-for-architecture
+value: 4
+risk: 3
+parent: "0201"
+children: []
+depends_on: ["0302"] # the planned Examples block reaches the gate only through the scenario records 0302 produces
+spikes: []
+spec: src/codeanalysis/.spec/README.md
+claims: ["B-002", "B-016", "B-017", "B-025", "B-026", "B-027"]
+created: "2026-10-25"
+updated: "2026-10-25"
+closed: null
+summary: |
+  Consumer request #256 asks for one packaged consumer integration fixture that
+  combines what separate tests now prove apart: native Gherkin claims
+  (`codeAnalysis.records.claimSource: gherkin`, 0201-F7), xUnit v2/VSTest and
+  Reqnroll evidence (0201-F3), mandatory `implements`/`verifies` enforcement under
+  this Feature's policy, and the reconciliation gate (0201-F5). The tree is
+  consumer-shaped: a central `.spec` tree with the consumer's own grammars and no
+  epic, and several C# projects, built from the packed Specht.CodeAnalysis. The
+  existing `test/testevidence.vstest.fixture/` uses a Markdown claims table, and
+  the package test builds with `NoWarn=SPCT0001`; neither meets the request.
+
+  It cites existing claims and adds none: every behaviour it exercises is already
+  a claim, and what the fixture adds is their combination and the absence of a
+  suppression.
+
+  It waits on 0302 because the fixture carries a planned Examples block: planned
+  state reaches the gate only through scenario records (0201-F5 B-018, B-019;
+  0201-F5 OQ-3), and only that producer writes them from a real run. Without it the
+  planned row's skipped case gates as active and the valid fixture cannot pass, so
+  the request's planned and per-row criteria stay unproven end to end.
+acceptance_criteria:
+  - "B-027, B-016 - claim files in a central `.spec/features` tree reach every project as inputs with no build property"
+  - "B-025, B-026 - each project supplies its own evidence and declares a required-case scope; the scopes partition the claim files (0201-F3 B-021, 0201-F5 B-021)"
+  - "B-002 - the same configuration gives the same verdicts in the local build and in the build target CI runs, with no CI-only property or file"
+  - "B-017 - a missing manifest or claim file fails with the input-failure diagnostic"
+  - "0201-F7 B-001, B-005, B-006, B-007 - native claims resolve for every project with no claims table and no epic"
+  - "0201-F7 B-017 - a declaration missing a required `implements` or `verifies` fails the build"
+  - "0201-F7 B-018 - a relationship naming an unknown claim fails the build"
+  - "0201-F3 B-010 to B-013, B-016 - theory and Reqnroll outline rows each keep their own case and outcome, including methods compiled from outside the project directory"
+  - "0201-F3 B-017, B-019 - the clean-checkout sequence builds first and then holds current passing evidence"
+  - "0201-F3 B-018, 0201-F5 B-012 - stale evidence is reported and excluded"
+  - "0201-F3 B-022, 0201-F5 B-022 - a declared project with no evidence fails as incomplete input"
+  - "0201-F5 B-017 - the valid fixture passes the default gate; a failed or skipped owned row fails it"
+  - "0201-F7 B-016, B-026, 0201-F4 B-014, 0201-F5 B-018, B-019 - a planned Examples block neither covers nor fails its claim, and an active sibling row still gates"
+  - "No `NoWarn`, `.editorconfig` severity change, pragma or `SuppressMessage` appears in the fixture."
+  - "§ 9 of each cited specification carries a row naming the fixture's test for each id above."
+decisions:
+  - |
+    2026-10-25, spec-author: depends on 0302 rather than dropping the planned
+    Examples block from the fixture. Rejected: a fixture with no planned rows,
+    which could land now but would leave consumer request #256's planned-row
+    and per-row criteria unproven end to end.
+out_of_scope:
+  - "The scenario producer itself: 0302."
+  - "User documentation of native claim input and the bootstrap sequence: 0304."
+  - "A new claim, diagnostic or policy key; any behaviour change found missing goes back to its Feature's § 3 first."
+  - "Everything in § 5 of the cited specification."

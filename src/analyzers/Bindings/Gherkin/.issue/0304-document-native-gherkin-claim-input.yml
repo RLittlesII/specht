@@ -1,0 +1,44 @@
+id: "0304"
+type: task
+title: "Document native Gherkin claim input for consumers"
+status: ready
+value: 3
+risk: 1
+parent: "0201"
+children: []
+depends_on: []
+spikes: []
+spec: src/analyzers/Bindings/Gherkin/.spec/README.md
+claims: []
+created: "2026-10-25"
+updated: "2026-10-25"
+closed: null
+summary: |
+  Consumer request #256 requires a documented manifest option that selects native
+  `.feature` claim input (its first criterion) and a documented clean-checkout
+  sequence (its sixth). `codeAnalysis.records.claimSource` and its keys are written
+  only in this specification, ADR-0001 and the SPCT0010 to SPCT0012 pages; the
+  package readme names none of them, and its bootstrap paragraph does not say what
+  native claim input changes.
+
+  Add a terse user-facing page under the root `docs/`, linked from the package
+  readme and from the `codeAnalysis` row of `docs/configuration.md`. It documents
+  built behaviour only and changes none, so it delivers no claim and cites the
+  claims it documents.
+acceptance_criteria:
+  - "B-001, B-002 - `records.claimSource: gherkin` selects native input; absent keeps the Markdown claims table"
+  - "B-003, B-006, B-007, B-023 - `records.claimFileSets` maps a central-tree glob to a Feature identity, with `epic` only under an epic grammar"
+  - "B-004, B-025, B-028 - a claim tag is the existing `claim.tag` form and claim grammar, mapped through `/claim`; other tags are ordinary"
+  - "B-005, B-022 - a Feature record without a claims table, and `record` supplying the Feature lifecycle"
+  - "B-016, B-024, B-026 - `records.plannedTags` marks scenarios and Examples blocks planned without removing their claim"
+  - "B-020, B-021 - `records.withdrawnTags` and `records.supersededTags`"
+  - "B-029 - English keywords only"
+  - "0201-F6 B-027 - the default central `.spec/features` input and `SpechtScenarioInputs` for any other tree"
+  - "0201-F3 B-017, B-019, B-022 - the clean-checkout sequence under native input: what the first build enforces, what discovery and the run write, and which step then gates"
+  - "The page links SPCT0001 and SPCT0010 to SPCT0012 and restates none of them."
+  - "Every example manifest is checked against the built reader, the Markdown opens with the required frontmatter, and no path is absolute."
+decisions: []
+out_of_scope:
+  - "Selecting or configuring the Reqnroll scenario producer: 0302 (0201-F4 OQ-5)."
+  - "The packaged end-to-end consumer fixture: 0303."
+  - "Any analyzer, package or manifest behaviour change."

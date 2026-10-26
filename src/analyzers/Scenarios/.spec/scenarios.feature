@@ -87,3 +87,41 @@ Feature: Optional scenario bridge
     When the declared analysis is requested
     Then the planned row's link is planned and has no case
     And the active row's link is the unresolved link for missing input
+
+  @B-012
+  Scenario: Reqnroll scenarios recorded from a real run
+    Given a selected Reqnroll test project holding a Scenario and a Scenario Outline
+    When the tests are discovered and run with the shipped evidence collection
+    Then its evidence carries one scenario record for each of them
+
+  @B-013
+  Scenario: Each Reqnroll outline row linked to its own case
+    Given a Reqnroll Scenario Outline whose two Examples rows are discovered as separate test cases
+    When the tests are discovered and run with the shipped evidence collection
+    Then each row is linked to its own discovered case
+
+  @B-014
+  Scenario: Planned Reqnroll rows
+    Given a Reqnroll Scenario Outline whose second Examples block carries a configured planned tag
+    When the tests are discovered and run with the shipped evidence collection
+    Then the second block's rows are linked as planned
+    And the first block's rows are linked as active
+
+  @B-015
+  Scenario: Reqnroll row with no discovered case
+    Given a Reqnroll Scenario Outline row that the runner did not discover
+    When the tests are discovered and run with the shipped evidence collection
+    Then that row is recorded with an unresolved link
+
+  @B-016 @boundary
+  Scenario: Reqnroll producer not selected
+    Given a Reqnroll test project that does not select the scenario producer
+    When the tests are discovered and run with the shipped evidence collection
+    Then its evidence carries no scenario records
+
+  @B-017 @boundary
+  Scenario: Two Reqnroll scenarios sharing a title
+    Given two Reqnroll scenarios with the same title
+    When the tests are discovered and run with the shipped evidence collection
+    Then each is recorded as its own scenario
+    And each is linked only to its own discovered cases
