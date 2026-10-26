@@ -188,6 +188,7 @@ a `.issue/` beside that `.spec/`.
 - [What it checks](docs/what-it-checks.md)
 - [Configuration](docs/configuration.md)
 - [Multiple projects](docs/multiple-projects.md)
+- [Without .NET code](docs/non-dotnet.md)
 - [Exit codes](docs/exit-codes.md)
 - [Building](docs/building.md)
 - [Roadmap](docs/roadmap.md)
