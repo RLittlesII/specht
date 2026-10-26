@@ -48,6 +48,7 @@ unattended.
 | `0055-F5`  | Package versioning proven apart from the schema version                                              |
 | `0055-F8`  | The repository settings checklist, written and applied                                               |
 | `0055-F9`  | The work-item mirror run to convergence                                                              |
+| `0201-F7`  | Native Gherkin claim input documented for consumers                                                  |
 
 Spike `0220`, rule-page versioning without a full copy per version, informs the
 cut and lands here.
@@ -112,8 +113,7 @@ specification markdown), and item `0128` (an id claimed twice), land here.
 
 Code analysis reaches a consumer whose claims live only in Gherkin, for
 consumer request #256: one packaged consumer proving native claims with xUnit
-v2 VSTest evidence end to end (`0201-F6`), and native claim input documented
-(`0201-F7`).
+v2 VSTest evidence end to end (`0201-F6`). Its documentation lands in 0.3.0.
 
 **Done means:** a consumer repository gets its violations on a pull request with
 one workflow step and no code of its own.
