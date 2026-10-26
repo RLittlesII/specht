@@ -20,7 +20,7 @@ depends_on: ["F1", "F2", "F3", "F5"]
 blocks: ["F7"]
 spikes: []
 created: "2026-10-17"
-updated: "2026-10-23"
+updated: "2026-10-26"
 github_issue: null
 synced_at: null
 ---
@@ -617,6 +617,7 @@ OQ-1 records explicit mappings over existing consumer configuration as the polic
 - [0250: Publish Specht.CodeAnalysis with the repository release](../.issue/0250-publish-codeanalysis-package.yml)
 - [0251: Adopt Specht.CodeAnalysis in the engine and CLI](../.issue/0251-analyze-engine-cli.yml)
 - [0263: Deliver a central .spec/features tree as scenario inputs by default](../.issue/0263-central-feature-tree-default-scenario-input.yml)
+- [0302: Prove native Gherkin claims with xUnit v2 VSTest evidence in one packaged consumer](../.issue/0302-packaged-gherkin-vstest-consumer-fixture.yml)
 
 ## Scoring
 

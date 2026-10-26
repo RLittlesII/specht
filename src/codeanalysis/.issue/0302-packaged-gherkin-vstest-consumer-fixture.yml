@@ -1,0 +1,73 @@
+id: "0302"
+type: test
+title: "Prove native Gherkin claims with xUnit v2 VSTest evidence in one packaged consumer"
+status: ready
+value: 4
+risk: 3
+parent: "0201"
+children: []
+depends_on: []
+spikes: []
+spec: src/codeanalysis/.spec/README.md
+claims: ["B-002", "B-016", "B-017", "B-025", "B-026", "B-027"]
+created: "2026-10-25"
+updated: "2026-10-26"
+closed: null
+summary: |
+  Consumer request #256 asks for one packaged consumer integration fixture that
+  combines what separate tests now prove apart: native Gherkin claims
+  (`codeAnalysis.records.claimSource: gherkin`, 0201-F7), xUnit v2 evidence under
+  VSTest (0201-F3), mandatory `implements`/`verifies` enforcement under this
+  Feature's policy, and the reconciliation gate (0201-F5). The tree is
+  consumer-shaped: a central `.spec` tree with the consumer's own grammars and no
+  epic, and two C# projects built from the packed Specht.CodeAnalysis - a
+  production project whose code carries `<implements>` and a test project whose
+  plain test methods carry `<verifies>`. The existing
+  `test/testevidence.vstest.fixture/` uses a Markdown claims table, and the
+  package test builds with `NoWarn=SPCT0001`; neither meets the request.
+
+  It cites existing claims and adds none: every behaviour it exercises is built
+  and already a claim, and what the fixture adds is their combination and the
+  absence of a suppression. It needs no test framework beyond xUnit v2 and VSTest:
+  no Reqnroll package, generated test or scenario record is a precondition of
+  passing.
+acceptance_criteria:
+  - "B-027, B-016 - claim files in a central `.spec/features` tree reach both projects as inputs with no build property"
+  - "0201-F7 B-001, B-005, B-006, B-007 - `records.claimSource: gherkin` resolves the same native claims for both projects under the consumer's grammars, with no claims table and no epic"
+  - "B-025, B-026 - the test project supplies its evidence through `SpechtTestEvidence`; its required-case scope is an xUnit `Trait(\"Category\", ...)` expression, or absent and owning every case"
+  - "0201-F7 B-017 - in mandatory scope, production code missing `implements` or a test method missing `verifies` fails the build"
+  - "0201-F7 B-018 - a relationship naming an unknown claim fails the build"
+  - "B-017 - a missing manifest or claim file fails with the input-failure diagnostic"
+  - "0201-F3 B-010 to B-013 - xUnit v2 facts and theory rows under VSTest each keep their own case and outcome, including a test method compiled from outside the test project directory"
+  - "0201-F3 B-017, B-019 - the clean-checkout sequence builds first and then holds current passing evidence"
+  - "0201-F3 B-018, 0201-F5 B-012 - stale evidence is reported and excluded"
+  - "0201-F3 B-022, 0201-F5 B-022 - the declared test project with no evidence fails as incomplete input"
+  - "0201-F7 B-030 - the gate reads the native claims from the catalogue in the evidence artifact"
+  - "0201-F5 B-017 - the valid fixture passes the default gate; a failed or skipped owned case fails it"
+  - "B-002 - the same configuration gives the same verdicts in the local build and in the build target CI runs, with no CI-only property or file"
+  - "No Reqnroll package, generated test or scenario record appears in the fixture, and none is needed to pass."
+  - "No `NoWarn`, `.editorconfig` severity change, pragma or `SuppressMessage` appears in the fixture."
+  - "§ 9 of each cited specification carries a row naming the fixture's test for each id above."
+decisions:
+  - |
+    2026-10-26, repository owner, recorded by spec-author: the Reqnroll scenario
+    producer is withdrawn, so this fixture no longer waits on it. The owner: "I
+    don't want to couple my concerns to ReqnRoll. I don't want to ASSUME every
+    user will have it." The fixture proves the chain with plain xUnit v2 test
+    methods under VSTest. Rejected: the 2026-10-25 draft, which waited on the
+    producer so that a planned Examples block could reach the gate through
+    scenario records; planned rows leave the fixture, and their gate treatment
+    stays 0201-F5 OQ-3.
+  - |
+    2026-10-26, spec-author: two C# projects, one production and one test, as
+    the owner's instruction names. One test project owns every case, so
+    required-case scopes partitioned across several test projects (0201-F3
+    B-021, 0201-F5 B-021) are not combined here. Rejected: a second test project,
+    which the instruction does not ask for.
+out_of_scope:
+  - "Reqnroll and scenario records: 0201-F4 is an optional input this fixture does not use."
+  - "Planned scenarios and Examples blocks reaching the gate: 0201-F5 OQ-3."
+  - "Required-case scopes partitioned across several test projects: 0201-F3 B-021 and 0201-F5 B-021, proved apart."
+  - "User documentation of native claim input and the bootstrap sequence: 0303."
+  - "A new claim, diagnostic or policy key; any behaviour change found missing goes back to its Feature's § 3 first."
+  - "Everything in § 5 of the cited specification."
