@@ -1,7 +1,7 @@
 id: "0303"
 type: task
 title: "Document native Gherkin claim input for consumers"
-status: ready
+status: done
 value: 3
 risk: 1
 parent: "0201"
@@ -12,7 +12,7 @@ spec: src/analyzers/Bindings/Gherkin/.spec/README.md
 claims: []
 created: "2026-10-25"
 updated: "2026-10-26"
-closed: null
+closed: "2026-10-26"
 summary: |
   Consumer request #256 requires a documented manifest option that selects native
   `.feature` claim input (its first criterion) and a documented clean-checkout

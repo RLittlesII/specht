@@ -38,6 +38,10 @@ logger: it adds its `build/vstest/<tfm>` folder to `VSTestTestAdapterPath` and
 replaces the registered logger, so no evidence is written unless the command also
 names `--logger specht`.
 
+For tagged `.feature` files as the claim catalogue, see
+[native Gherkin claim input](https://github.com/RLittlesII/specht/blob/main/docs/native-gherkin-claims.md)
+for manifest settings and the clean-checkout evidence sequence.
+
 Diagnostic severity and suppression use standard Roslyn configuration. The
 package adds no application runtime dependency.
 
