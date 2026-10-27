@@ -10,7 +10,7 @@ public static class RulesRegistration
     /// <implements epic="0001" feature="F10" claim="B-001" />
     public static IConfigurator AddRules(this IConfigurator configuration)
     {
-        configuration.AddBranch<RulesCommand.Settings>("rules", static rules =>
+        configuration.AddBranch<RulesCommand.BranchSettings>("rules", static rules =>
         {
             rules.SetDescription("List pinned rules and their effective levels.");
             rules.SetDefaultCommand<RulesCommand>();
