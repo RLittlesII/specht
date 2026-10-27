@@ -7,6 +7,7 @@ using Specht.Composition;
 using Specht.Manifest;
 using Specht.Model;
 using Specht.Report;
+using Specht.Rules;
 using Specht.Tests.Manifest;
 using Specht.Tests.Shared;
 using Specht.Tool;
@@ -580,6 +581,61 @@ public sealed class CheckCommandIntegrationTests
         }
     }
 
+    [Theory]
+    [ClassData(typeof(ReadOnlyCheckData))]
+    public void ACheckWithoutAReportPath_WhenRun_ShouldLeaveEveryFileUnderTheRootUnchanged(string input, int expectedExit)
+    {
+        // Given
+        using var tree = new SpecTree();
+        tree.WriteFeature("0001", "F1");
+        tree.WriteRaw(".hidden/keep.bin", "unchanged hidden content");
+        tree.WriteRaw("unrelated.txt", "unchanged unrelated content");
+        if (input == "violation")
+        {
+            tree.WriteFeature("0001", "F1", new Dictionary<string, string> { ["spec_status"] = "nearly" });
+        }
+        else if (input == "missing manifest")
+        {
+            File.Delete(Path.Combine(tree.Root, SpecTree.ManifestPath));
+        }
+        else if (input == "invalid manifest")
+        {
+            tree.WriteRaw(SpecTree.ManifestPath, "{");
+        }
+
+        var before = Snapshot();
+
+        // When
+        var result = Check(EngineServices.Runner().Run, "--root", tree.Root);
+
+        // Then
+        result.ExitCode.Should().Be(expectedExit);
+        Snapshot().Should().BeEquivalentTo(before);
+
+        Dictionary<string, string> Snapshot() => Directory.EnumerateFiles(tree.Root, "*",
+                new EnumerationOptions { RecurseSubdirectories = true, AttributesToSkip = 0 })
+            .ToDictionary(file => Path.GetRelativePath(tree.Root, file).Replace(Path.DirectorySeparatorChar, '/'),
+                static file => Convert.ToHexString(SHA256.HashData(File.ReadAllBytes(file))), StringComparer.Ordinal);
+    }
+
+    [Fact]
+    public void ARuleThatThrows_WhenCheckedWithoutStrict_ShouldReportItsFailureAndExitOne()
+    {
+        // Given
+        using var tree = new SpecTree();
+        tree.WriteFeature("0001", "F1");
+        tree.WriteRaw(SpecTree.ManifestPath, """{ "rules": { "SPEC030": "warning" } }""");
+
+        // When
+        var result = Check(static root => SpechtRunner.Evaluate(EngineServices.Loader().Load(root),
+            [new FaultIsolatedRule(new ThrowingRule())]), "--root", tree.Root);
+
+        // Then
+        result.ExitCode.Should().Be(1);
+        result.Output.Should().Contain($"{SpecTree.ManifestPath}: error SPEC030:").And.Contain(nameof(FormatException));
+        result.Output.Should().NotContain("sensitive detail").And.NotContain("Exception:");
+    }
+
     private static CommandAppResult Check(Func<string, SpechtReport> run, params string[] args)
     {
         var services = new ServiceCollection().AddSpechtEngine();
@@ -615,6 +671,13 @@ public sealed class CheckCommandIntegrationTests
 
     private static string HashOf(SpecTree tree, string schemaPath) =>
         "sha256:" + Convert.ToHexStringLower(SHA256.HashData(File.ReadAllBytes(Path.Combine(tree.Root, schemaPath))));
+
+    private sealed class ThrowingRule : ISpecRule
+    {
+        public string Id => "SPEC030";
+        public IReadOnlyList<string> ReportedIds => [Id];
+        public IEnumerable<SpecViolation> Evaluate(SpecModel model) => throw new FormatException("sensitive detail");
+    }
 
     private const string TwoClaims =
         "## 3. Acceptance Criteria\n\n| ID | Claim | Source | Status |\n| -- | ----- | ------ | ------ |\n"

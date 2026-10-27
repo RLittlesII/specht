@@ -35,6 +35,13 @@ Relation to earlier records, each stated in full under Decision:
   Disable and re-grade stay its two functions inside `Evaluate`; its severity
   map skips the fault violation (Decision (c)).
 
+Decision (c)'s unfiltered-catch scope is partially superseded for typed root and
+manifest input failures by the later accepted input contracts: `0001-F2` B-005
+to B-007, `0001-F5` B-022 and `0001-F7` B-105 / decision 0011. These failures
+retain their specified exits, including references rejected during schema use.
+The fault wrapper handles other exceptions; `0001-F1` A-4 and decision 0005's
+2026-10-27 reconciliation record the boundary. The remaining decisions stand.
+
 ## Context
 
 ### What the code is today

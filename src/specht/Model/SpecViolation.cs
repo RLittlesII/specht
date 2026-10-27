@@ -27,6 +27,8 @@ public sealed record SpecViolation(
     /// </summary>
     public JsonObject? Expected { get; init; }
 
+    internal bool IsRuleFailure { get; init; }
+
     /// <summary>Compares every field, <see cref="Expected"/> by its JSON value.</summary>
     /// <param name="other">The violation to compare with.</param>
     /// <returns>Whether the two are the same violation.</returns>
@@ -39,11 +41,12 @@ public sealed record SpecViolation(
         && Line == other.Line
         && string.Equals(Identifier, other.Identifier, StringComparison.Ordinal)
         && string.Equals(Message, other.Message, StringComparison.Ordinal)
+        && IsRuleFailure == other.IsRuleFailure
         && JsonNode.DeepEquals(Expected, other.Expected);
 
     /// <inheritdoc />
     /// <implements epic="0001" feature="F1" claim="B-004" />
-    public override int GetHashCode() => HashCode.Combine(RuleId, Severity, File, Line, Identifier, Message);
+    public override int GetHashCode() => HashCode.Combine(RuleId, Severity, File, Line, Identifier, Message, IsRuleFailure);
 
     /// <summary>Renders the canonical MSBuild diagnostic line.</summary>
     /// <implements epic="0001" feature="F1" claim="B-004" />

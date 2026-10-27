@@ -44,16 +44,16 @@ public static class SpechtEngineServiceCollectionExtensions
         services.AddSingleton<EffectiveManifestReader>();
         services.AddSingleton<SpecModelLoader>();
         services.AddSingleton<SpechtRunner>();
-        services.AddSingleton<ISpecRule, FrontmatterSchemaRule>();
-        services.AddSingleton<ISpecRule, SectionStructureRule>();
-        services.AddSingleton<ISpecRule, IdentityRule>();
-        services.AddSingleton<ISpecRule, FeatureFileRule>();
-        services.AddSingleton<ISpecRule, ClaimRule>();
-        services.AddSingleton<ISpecRule, WaiverRule>();
-        services.AddSingleton<ISpecRule, RetiredClaimRule>();
-        services.AddSingleton<ISpecRule, ChildItemRule>();
-        services.AddSingleton<ISpecRule, DependencyRule>();
-        services.AddSingleton<ISpecRule, ApprovalRule>();
+        services.AddSingleton<ISpecRule>(static _ => new FaultIsolatedRule(new FrontmatterSchemaRule()));
+        services.AddSingleton<ISpecRule>(static _ => new FaultIsolatedRule(new SectionStructureRule()));
+        services.AddSingleton<ISpecRule>(static _ => new FaultIsolatedRule(new IdentityRule()));
+        services.AddSingleton<ISpecRule>(static _ => new FaultIsolatedRule(new FeatureFileRule()));
+        services.AddSingleton<ISpecRule>(static _ => new FaultIsolatedRule(new ClaimRule()));
+        services.AddSingleton<ISpecRule>(static provider => new FaultIsolatedRule(new WaiverRule(provider.GetRequiredService<MatrixResolver>())));
+        services.AddSingleton<ISpecRule>(static provider => new FaultIsolatedRule(new RetiredClaimRule(provider.GetRequiredService<MatrixResolver>())));
+        services.AddSingleton<ISpecRule>(static _ => new FaultIsolatedRule(new ChildItemRule()));
+        services.AddSingleton<ISpecRule>(static _ => new FaultIsolatedRule(new DependencyRule()));
+        services.AddSingleton<ISpecRule>(static _ => new FaultIsolatedRule(new ApprovalRule()));
 
         return services;
     }

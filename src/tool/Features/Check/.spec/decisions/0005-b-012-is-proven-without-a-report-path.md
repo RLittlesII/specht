@@ -1,6 +1,6 @@
 ---
 title: "Decision 0005: B-012 is proven without a report path"
-description: "B-012's scenario runs the check with no report path and proves nothing under the root changes; its report exemption is proven where 0001-F3 writes the file, and its command-tester test waits on the harness ADR-0007 decides"
+description: "B-012 is proven without a report path; the owner later permits the command-level read-only proof through the existing setup while the report exemption stays in 0001-F3"
 type: decision
 ---
 
@@ -49,4 +49,9 @@ tier.
 
 ## Reversal
 
-None.
+2026-10-27, the repository owner permitted B-012's read-only test through the
+existing command setup, without starting ADR-0010's architecture migration.
+The harness prerequisite above is reversed for this test only. The built-tool
+scenario remains, the command integration test uses the existing setup, and
+`0001-F3` still owns the report-path exemption. ADR-0014's benchmark gate and
+the rest of ADR-0007's migration remain unchanged.

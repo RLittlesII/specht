@@ -1,0 +1,38 @@
+id: "0310"
+type: task
+title: Isolate a failing rule and preserve a failing command verdict
+
+status: done
+value: 5
+risk: 3
+parent: null
+children: []
+depends_on: ["0106", "0107"]
+spikes: []
+spec: src/specht/.spec/README.md
+claims:
+  - B-012
+  - B-013
+  - B-014
+  - B-015
+  - B-016
+created: "2026-10-27"
+updated: "2026-10-27"
+closed: "2026-10-27"
+summary: |
+  Deliver ADR-0005 (c) and decision 0005's fault isolation, required by
+  0001-F2 B-015. Complete the existing scenarios and preserve the golden
+  baseline verdicts. This closes the missing delivery slice raised in OQ-2.
+acceptance_criteria:
+  - "B-012 to B-016 — the existing engine scenarios and mechanism tests pass."
+  - "0001-F2 B-015 — the real evaluator's fault reaches the command as exit 1."
+  - "C-11 — a failing iterator is materialized once, discarded and not retried."
+  - "The composition test proves every registered rule is isolated."
+  - "0001-F7 B-105 and 0001-F2 B-005 to B-007 retain their input-failure exits."
+  - "The baseline report remains unchanged; the provenance marker is not a report field."
+decisions:
+  - "ADR-0005 (c) and decision 0005 already decide the behavior and decorator."
+  - "Id 0310 is above main's 0305 and ids 0306 to 0309 held by open pull requests 585 and 586."
+out_of_scope:
+  - "ADR-0010 migration, a mediator and one rule per id; ADR-0014 remains binding."
+  - "A new rule id, retries, exception text, timing and tracing."
