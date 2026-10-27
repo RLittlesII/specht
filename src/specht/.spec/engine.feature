@@ -117,3 +117,10 @@ Feature: The engine, extracted unchanged
     When the engine runs
     Then the failure's message names the rule and the kind of error
     And it carries none of the error's own text
+
+  @B-017 @boundary
+  Scenario: The original rule failure is retained without changing the report
+    Given one rule fails with an error whose text holds an absolute path on this machine
+    When the engine runs
+    Then the fault keeps the identity of the original failure
+    And the retained failure adds no field or private detail to the report

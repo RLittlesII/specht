@@ -11,6 +11,7 @@
     <PackageReference Include="Markdig" />
     <PackageReference Include="TestableIO.System.IO.Abstractions.Wrappers" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
+    <PackageReference Include="Scrutor" />
     <!-- The first solution compile produces this checkout's analyzer package; CodeAnalysis then sets its exact version. -->
     <PackageReference Include="Specht.CodeAnalysis" PrivateAssets="all" Condition="'$(SpechtCodeAnalysisPackageVersion)' != ''" />
   </ItemGroup>

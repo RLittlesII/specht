@@ -8,6 +8,7 @@ public sealed class FailingRule(int findings = 0, string message = "synthetic fa
 {
     public string Id => "SPEC030";
     public IReadOnlyList<string> ReportedIds => ["SPEC030", "SPEC031"];
+    public Exception Failure { get; } = rejection ?? new FormatException(message);
 
     public IEnumerable<SpecViolation> Evaluate(SpecModel model)
     {
@@ -16,6 +17,6 @@ public sealed class FailingRule(int findings = 0, string message = "synthetic fa
             yield return finding;
         }
 
-        throw rejection ?? new FormatException(message);
+        throw Failure;
     }
 }

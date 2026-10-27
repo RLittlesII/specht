@@ -9,10 +9,32 @@ using Specht.Tests.Shared;
 
 namespace Specht.Tests.Engine;
 
-/// <summary>Rule failures are atomic, machine-independent errors that do not stop other rules (0001-F1 B-012 to B-016).</summary>
+/// <summary>Rule failures are atomic, machine-independent errors that do not stop other rules (0001-F1 B-012 to B-017).</summary>
 [Trait("Tier", "Unit")]
 public sealed class FaultIsolatedRuleUnitTests
 {
+    [Fact]
+    public void TheSameRuleException_WhenReportedAgain_ShouldRetainItsIdentityAndKeepCopiesEqual()
+    {
+        // Given
+        SpecModel model = new SpecModelFixture();
+        var secret = Path.GetFullPath("private-failure-detail");
+        Exception exception = new FormatException(secret);
+        exception.Data["private detail"] = secret;
+        var rule = new FaultIsolatedRule(new Rule("SPEC030", () => throw exception));
+
+        // When
+        var first = rule.Evaluate(model).Single();
+        var same = rule.Evaluate(model).Single();
+        exception = new FormatException(secret);
+        var different = rule.Evaluate(model).Single();
+
+        // Then
+        first.Should().Be(same).And.NotBe(different);
+        (first with { }).Should().Be(first);
+        first.ToString().Should().NotContain(secret);
+    }
+
     [Theory]
     [ClassData(typeof(TypedInputFailureData))]
     public void ATypedInputFailure_WhenARuleRaisesIt_ShouldReachTheCallerUnchanged(Exception failure)

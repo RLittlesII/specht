@@ -21,6 +21,7 @@ public sealed class FaultIsolatedRule(ISpecRule inner) : ISpecRule
 
     /// <inheritdoc />
     /// <implements epic="0001" feature="F1" claim="B-012" />
+    /// <implements epic="0001" feature="F1" claim="B-017" />
     public IEnumerable<SpecViolation> Evaluate(SpecModel model)
     {
         try
@@ -33,7 +34,7 @@ public sealed class FaultIsolatedRule(ISpecRule inner) : ISpecRule
             return
             [
                 new SpecViolation(Id, SpecSeverity.Error, SpecManifestStore.RelativePath, 0, null,
-                    $"Rule {Id} failed with {exception.GetType().Name}.") { IsRuleFailure = true },
+                    $"Rule {Id} failed with {exception.GetType().Name}.") { RuleFailure = exception },
             ];
         }
     }

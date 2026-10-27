@@ -97,7 +97,7 @@ public sealed class SpechtRunner(
         {
             violations.AddRange(
                 evaluate(rule)
-                    .Where(violation => violation.IsRuleFailure || Enabled(violation.RuleId, rule, version.RuleIds, settings))
+                    .Where(violation => violation.RuleFailure is not null || Enabled(violation.RuleId, rule, version.RuleIds, settings))
                     .Select(violation => Graded(violation, settings)));
         }
 
@@ -120,7 +120,7 @@ public sealed class SpechtRunner(
 
     /// <implements epic="0001" feature="F1" claim="B-001" />
     private static SpecViolation Graded(SpecViolation violation, SpecRuleSettings settings) =>
-        !violation.IsRuleFailure && settings.TryGetValue(violation.RuleId, out var level) ? level switch
+        violation.RuleFailure is null && settings.TryGetValue(violation.RuleId, out var level) ? level switch
         {
             SpecRuleLevel.Warning => violation with { Severity = SpecSeverity.Warning },
             SpecRuleLevel.Error => violation with { Severity = SpecSeverity.Error },

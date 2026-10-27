@@ -42,6 +42,10 @@ retain their specified exits, including references rejected during schema use.
 The fault wrapper handles other exceptions; `0001-F1` A-4 and decision 0005's
 2026-10-27 reconciliation record the boundary. The remaining decisions stand.
 
+Decision (c)'s per-registration wrapper construction is superseded by
+[ADR-0024](0024-scrutor-decorates-explicit-rule-registrations.md), 2026-10-27:
+rule registrations remain explicit and Scrutor applies their decorator once.
+
 ## Context
 
 ### What the code is today

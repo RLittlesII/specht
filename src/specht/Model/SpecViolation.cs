@@ -13,6 +13,7 @@ namespace Specht.Model;
 /// <param name="Identifier">The specification identifier at fault, when there is one; the line ends with it in square brackets.</param>
 /// <param name="Message">What is wrong, in terms the author can act on.</param>
 /// <implements epic="0001" feature="F1" claim="B-004" />
+/// <implements epic="0001" feature="F1" claim="B-017" />
 public sealed record SpecViolation(
     string RuleId,
     SpecSeverity Severity,
@@ -27,9 +28,9 @@ public sealed record SpecViolation(
     /// </summary>
     public JsonObject? Expected { get; init; }
 
-    internal bool IsRuleFailure { get; init; }
+    internal Exception? RuleFailure { get; init; }
 
-    /// <summary>Compares every field, <see cref="Expected"/> by its JSON value.</summary>
+    /// <summary>Compares fields, expected JSON by value and any retained exception by identity.</summary>
     /// <param name="other">The violation to compare with.</param>
     /// <returns>Whether the two are the same violation.</returns>
     /// <implements epic="0001" feature="F1" claim="B-004" />
@@ -41,12 +42,12 @@ public sealed record SpecViolation(
         && Line == other.Line
         && string.Equals(Identifier, other.Identifier, StringComparison.Ordinal)
         && string.Equals(Message, other.Message, StringComparison.Ordinal)
-        && IsRuleFailure == other.IsRuleFailure
+        && ReferenceEquals(RuleFailure, other.RuleFailure)
         && JsonNode.DeepEquals(Expected, other.Expected);
 
     /// <inheritdoc />
     /// <implements epic="0001" feature="F1" claim="B-004" />
-    public override int GetHashCode() => HashCode.Combine(RuleId, Severity, File, Line, Identifier, Message, IsRuleFailure);
+    public override int GetHashCode() => HashCode.Combine(RuleId, Severity, File, Line, Identifier, Message, RuleFailure);
 
     /// <summary>Renders the canonical MSBuild diagnostic line.</summary>
     /// <implements epic="0001" feature="F1" claim="B-004" />

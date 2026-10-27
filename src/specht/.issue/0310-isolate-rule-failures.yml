@@ -16,6 +16,7 @@ claims:
   - B-014
   - B-015
   - B-016
+  - B-017
 created: "2026-10-27"
 updated: "2026-10-27"
 closed: "2026-10-27"
@@ -27,7 +28,8 @@ acceptance_criteria:
   - "B-012 to B-016 — the existing engine scenarios and mechanism tests pass."
   - "0001-F2 B-015 — the real evaluator's fault reaches the command as exit 1."
   - "C-11 — a failing iterator is materialized once, discarded and not retried."
-  - "The composition test proves every registered rule is isolated."
+  - "The composition test proves every explicitly registered rule is isolated through Scrutor decoration (ADR-0024)."
+  - "B-017 — the original exception is retained internally, without changing diagnostics or JSON."
   - "0001-F7 B-105 and 0001-F2 B-005 to B-007 retain their input-failure exits."
   - "The baseline report remains unchanged; the provenance marker is not a report field."
 decisions:

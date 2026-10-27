@@ -1,3 +1,4 @@
+using System.Text.Json;
 using System.Text.Json.Nodes;
 using AwesomeAssertions;
 using Microsoft.Extensions.DependencyInjection;
@@ -5,6 +6,7 @@ using Reqnroll;
 using Specht.Composition;
 using Specht.Manifest;
 using Specht.Model;
+using Specht.Report;
 using Specht.Rules;
 using Specht.Tests.Engine.Baseline;
 using Specht.Tests.Shared;
@@ -96,6 +98,30 @@ public sealed partial class EngineSteps
 
     [Then("it carries none of the error's own text")]
     public void ThenItCarriesNoneOfTheErrorsOwnText() => Failure.Message.Should().NotContain(_faultText!);
+
+    [Then("the fault keeps the identity of the original failure")]
+    public void ThenTheFaultKeepsTheIdentityOfTheOriginalFailure()
+    {
+        var model = EngineServices.Loader().Load(Tree.Root);
+        var same = SpechtRunner.Evaluate(model, FaultRules()).Violations.Single(static violation => violation.RuleId == "SPEC030");
+        var different = SpechtRunner.Evaluate(model,
+            [new FaultIsolatedRule(new FailingRule(message: _faultText!))]).Violations.Single();
+        Failure.Should().Be(same).And.NotBe(different);
+        (Failure with { }).Should().Be(Failure);
+    }
+
+    [Then("the retained failure adds no field or private detail to the report")]
+    public void ThenTheRetainedFailureAddsNoFieldOrPrivateDetailToTheReport()
+    {
+        var text = SpecReportDocument.From(Report).ToJson();
+        using var json = JsonDocument.Parse(text);
+        var fault = json.RootElement.GetProperty("violations").EnumerateArray()
+            .Single(static violation => violation.GetProperty("ruleId").GetString() == "SPEC030");
+        fault.EnumerateObject().Select(static property => property.Name).Should()
+            .BeEquivalentTo("ruleId", "severity", "file", "line", "message", "expected");
+        text.Should().NotContain(_faultText!);
+        Failure.ToString().Should().NotContain(_faultText!);
+    }
 
     private SpecViolation Failure => Report.Violations.Should().ContainSingle(static violation => violation.RuleId == "SPEC030").Which;
 
