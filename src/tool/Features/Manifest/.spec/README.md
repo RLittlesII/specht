@@ -20,7 +20,7 @@ depends_on: ["F2", "F4", "F5", "F7"]
 blocks: []
 spikes: []
 created: "2026-10-11"
-updated: "2026-10-24"
+updated: "2026-10-26"
 github_issue: null
 synced_at: null
 ---
@@ -109,21 +109,162 @@ A manifest states only what its author wrote; every key it leaves out is read fr
 
 ## 6. Concern Separation
 
-<!-- last written by: spec-author, 2026-10-11 -->
+<!-- last written by: implementer, 2026-10-26 -->
 
-Pending: owned by `implementer`, written after agreement.
+| Concern                                                                  | Classification | Home                                                                            |
+| ------------------------------------------------------------------------ | -------------- | ------------------------------------------------------------------------------- |
+| Declared values and exact-pin omission defaults (B-003, B-004, B-006)    | Business       | The existing manifest parser, alongside its current value selection             |
+| Omission that disables an optional capability (B-007, OQ-2)              | Business       | The parser's existing declaration checks; the effective document preserves them |
+| Effective levels from the pinned vocabulary and rule pages (B-005)       | Business       | The existing `RuleEntriesReader.Read(SpecStructure)`                            |
+| Root observation, one manifest read and input failures                   | Technical      | The existing `SpecManifestStore` and `SpecSchemasLoader`                        |
+| A reusable effective JSON document with no file writes (B-007, C-1, C-2) | Both           | A concrete engine reader under `Specht.Manifest`                                |
+| Console output, formatting and command exit codes                        | Technical      | Subsequent command work; no command joins this engine change                    |
 
 ## 7. Technical Design
 
-<!-- last written by: spec-author, 2026-10-11 -->
+<!-- last written by: implementer, 2026-10-26 -->
 
-Pending: owned by `implementer`, written after agreement.
+### Existing implementation to extend
+
+- [`SpecSchemasLoader.LoadManifest`](../../../../specht/Model/SpecSchemasLoader.cs)
+  owns root and manifest observation and the wrapping of malformed input.
+  [`SpecManifestStore.ReadManifest`](../../../../specht/Manifest/SpecManifestStore.cs)
+  is the file read; it already handles the encodings the check accepts.
+- [`SpecManifestParser.Parse`](../../../../specht/Manifest/SpecManifestParser.cs)
+  selects the exact pin's embedded `SchemaVersion.Manifest` and resolves each
+  value. `Filled`, `Discovery`, table-role filling and claim-tag selection
+  already define omission granularity. `PinnedVersion` rejects unshipped pins
+  and rule ids outside their vocabulary.
+- [`RuleEntriesReader.Read(SpecStructure)`](../../../../specht/Rules/RuleEntriesReader.cs)
+  is the pure, already-loaded path that supplies each rule's effective level.
+  Its explicit-level precedence includes `off`; an omitted level comes from
+  the rule page, even when the embedded manifest declares another level.
+- [`SpecStructure`](../../../../specht/Manifest/SpecStructure.cs) is the rules'
+  typed view, not a serializable manifest. It contains declaration flags and
+  derived upstream addresses, and omits accepted `$` metadata and
+  `codeAnalysis`. Serializing that record would lose declared JSON and could
+  enable an epic grammar that was never declared.
+
+### Proposed engine path
+
+Extend the existing parser and loader with a document-returning path, retaining
+their current entry points for existing callers. The names below describe
+proposed members; no new member is implemented by this design change.
+
+| Planned member                                        | Responsibility                                                                                                                                           |
+| ----------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `SpecManifestParser.ParseDocument(string text)`       | Return the validated `SpecStructure` and an owned effective `JsonObject`, produced from the same parsed input and the same default selections            |
+| `SpecSchemasLoader.LoadManifestDocument(string root)` | Use the existing root checks, store read and malformed-input wrapping to obtain that parser result                                                       |
+| `EffectiveManifestReader.Read(string root)`           | Call the document loader once, obtain effective levels through `RuleEntriesReader.Read(structure)`, and return the document with those levels in `rules` |
+
+The paired parser result is an invocation-local data value; it carries no
+store, root path, cache or behavior. Keep the existing `Parse` and
+`LoadManifest` APIs on their current validation path. Share their parsing and
+failure handling with the new entry points instead of maintaining a second
+implementation. The document is materialized only when requested; ordinary
+checks need no JSON clone or effective-rules expansion.
+
+Start the document from the parsed declaration so accepted metadata,
+`codeAnalysis`, optional settings and nested extension values survive. Capture
+the values selected by the existing parser at the point they are selected;
+do not reconstruct a second defaulting policy in the reader, serialize the
+typed record, or apply a generic recursive merge over the embedded manifest.
+JSON nodes returned to the caller are owned by that invocation and never alias
+an embedded default or another root's document.
+
+The reader passes the already-loaded structure to `RuleEntriesReader`; it does
+not use that reader's root overload. This both validates the pin and vocabulary
+before returning a document and avoids reading the root twice. Replace only the
+effective document's `rules` projection, with lower-case `error`, `warning` and
+`off` entries in ordinal id order. Explicit consumer levels retain their value.
+Do not mutate the structure's explicit settings or evaluate a rule.
+
+Register the concrete reader in
+[`AddSpechtEngine`](../../../../specht/Composition/SpechtEngineServiceCollectionExtensions.cs).
+It uses the existing composition, stores and catalog. No new interface,
+mediator, model-reader migration, host factory, package or schema version is
+needed; ADR-0014's execution gate remains in force.
+
+### Omission and preservation boundaries
+
+| Input or existing parser decision                                                                                      | Effective document                                                                                                             |
+| ---------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| A declared scalar, list or nested extension value                                                                      | Preserve the declared value; supplement only omitted members the parser actually fills                                         |
+| A whole discovery list or `sections` is omitted                                                                        | Carry the whole value selected from the exact pin's default; never concatenate arrays                                          |
+| A role, marker, frontmatter schema name or non-epic grammar is omitted                                                 | Carry the parser's per-member filled value                                                                                     |
+| `tables` is declared under an older pin                                                                                | Preserve the parser's whole-table selection; do not add absent roles                                                           |
+| A table role is omitted under schema `0.2.0` or later                                                                  | Carry the parser's per-role default; a declared header list remains whole                                                      |
+| The epic grammar is absent from the declaration                                                                        | Keep it absent, even though the typed identifiers dictionary holds a fallback; reparsing must keep `DeclaresEpicGrammar` false |
+| `schemaVersion` is absent                                                                                              | Carry the parsed version as `0.1.0`, rather than the newest version                                                            |
+| A rule level is absent                                                                                                 | Carry that pinned rule page's severity through the shared rule-entry reader, not the embedded manifest's rule level            |
+| `claim` members are omitted                                                                                            | Materialize only the tag defaults the selected parser branch reads; never introduce this key for an older pin                  |
+| `schemaSource`, `spechtSchema`, `tests`, `matrix`, `owners`, `requiredSpecifications` or `consumerTemplates` is absent | Preserve absence; do not invent optional configuration from a default or from a typed sentinel                                 |
+| `$` metadata or `codeAnalysis` is declared                                                                             | Preserve its JSON without interpreting, filling or relocating its members                                                      |
+
+An explicit JSON `null` is not a missing key. Preserve an accepted declared
+value unless an existing claim requires its expansion, as B-005 does for rule
+settings. Do not tighten the check's accepted shapes or introduce a new null
+policy during projection. B-003 preserves explicit values; B-004 supplies
+omissions; B-007 requires the result to retain the check's interpretation.
+
+[Decision 0003](decisions/0003-design-the-effective-document-on-the-existing-omission-boundary.md)
+records proceeding on the existing OQ-2 boundary without owner ratification.
+No work-item declaration, native-claim setting or analyzer default is added by
+this Feature. An output that reparses differently is a design failure, not an
+exception to B-007.
+
+### Boundary of this design
+
+The reader stops before discovery, schema-file loading, upstream verification
+or fetch, and rule evaluation. A recorded upstream source remains JSON data;
+its derived file addresses are not serialized. Manifest-only inspection uses
+the same manifest validation as the check without making an optional local
+schema file or a network request a prerequisite.
+
+The result is a reusable JSON object, not console text or a report. The command,
+its error folding, text-key ordering, `--defaults` and `--json` remain subsequent
+work. Ordering remains engine work under C-4; the command does not sort keys.
+In particular, the default-manifest path must not reuse the effective
+projection: B-012 requires the embedded document's actual values. No public
+JSON Schema or additive-change guarantee is introduced under OQ-4.
 
 ## 8. Testing Strategy
 
-<!-- last written by: spec-author, 2026-10-11 -->
+<!-- last written by: test-writer, 2026-10-26 -->
 
-Pending: owned by `test-writer`, written after agreement.
+This is a test plan for the engine design, not a claim of executed coverage.
+The existing scenarios remain the agreement; § 9 stays Missing until tests
+exist and pass. Synthetic `SchemaVersions` inputs and `MockFileSystem` exercise
+the mechanism without disk or network; a synthetic `SpecTree` copy proves the
+round trip through the real runner.
+
+| Claim | Mechanism to prove                                                         | Planned proof                                                                                                                                                                            |
+| ----- | -------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| B-003 | Retaining explicit JSON while supplying only omitted members               | Unit cases for a renamed claims role, whole arrays, declared empty lists, accepted nulls, optional settings, `$` metadata and `codeAnalysis`; every declared value survives              |
+| B-004 | Capturing the exact parser default at its existing merge boundary          | Unit cases with two synthetic pins whose defaults differ; partial maps and table roles under old and new pins; alternate roots through one composed reader                               |
+| B-005 | Shared effective-level precedence over the exact pinned vocabulary         | Unit cases for explicit `error`, `warning` and `off`, missing levels and pages whose default is `off`; deliberately make the embedded rule setting disagree with the page                |
+| B-006 | Missing-version selection and its materialization                          | Unit case with multiple shipped versions and no declared pin; output remains `0.1.0` and reparses under that pin                                                                         |
+| B-007 | Reparse equivalence, including declaration-sensitive optional capabilities | Unit comparison of parsed structures, including `DeclaresEpicGrammar`, then integration comparison of the complete report from a synthetic root and its copy using the returned manifest |
+
+The B-007 integration proof must contain real violations and check that the
+original report is nonempty before comparing it with the copy. Include a root
+without an epic grammar so a blind default merge would change its verdict,
+and preserve relative paths in both fixtures and reports. The parser tests
+already proving pin-specific defaults and table selection are regression
+evidence to retain, not substitutes for projection tests.
+
+Bind the existing B-003 to B-007 scenarios to the engine reader while no command
+exists. Their shared print steps must not silently treat B-001 or the command
+options as implemented. The B-007 binding can serialize the returned object in
+the fixture to prove the engine's round trip; command output remains a later
+proof. Do not add ignored scenarios, passing placeholders or a production stub
+as a substitute for a behavioral red test.
+
+Each engine unit class has `Tier=Unit`; the disk round-trip class has
+`Tier=Integration`. Focused verification uses the highest declared test target,
+currently `net11.0`; required repository gates retain their configured matrix.
+No benchmark is needed for a design-only change, and no performance benefit is
+claimed.
 
 ## 9. Traceability Matrix
 
@@ -174,12 +315,13 @@ Pending: owned by `test-writer`, written after agreement.
 
 ## 12. Sign-off
 
-<!-- last written by: spec-author, 2026-10-11; spec-reviewer, 2026-10-11 (§ 5 row 8 only) -->
+<!-- last written by: spec-author, 2026-10-11; spec-reviewer, 2026-10-26 -->
 
-| Section   | Status | Reviewer      | Note                                                                                                                                                                                                                                                                    |
-| --------- | ------ | ------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 1-5       | 🟡     | spec-reviewer | Awaiting first review.                                                                                                                                                                                                                                                  |
-| 5 (row 8) | 🟢     | spec-reviewer | Row 8 only (2026-10-11), reviewing `origin/main` (`5c22c84`)...`28d0ba6`: it states choice 3 of `0001-F2` decision 0010 and cites `0001-F7` B-084, B-006 and OQ-3, which exist. Everything else in § 1-5 still awaits its first review, so `spec_status` stays `draft`. |
+| Section            | Status | Reviewer      | Note                                                                                                                                                                                                                                                                    |
+| ------------------ | ------ | ------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1-5                | 🟡     | spec-reviewer | Awaiting first review.                                                                                                                                                                                                                                                  |
+| 5 (row 8)          | 🟢     | spec-reviewer | Row 8 only (2026-10-11), reviewing `origin/main` (`5c22c84`)...`28d0ba6`: it states choice 3 of `0001-F2` decision 0010 and cites `0001-F7` B-084, B-006 and OQ-3, which exist. Everything else in § 1-5 still awaits its first review, so `spec_status` stays `draft`. |
+| 6-8, engine design | 🟡     | spec-reviewer | Architecture proposal prepared 2026-10-26 against B-003 to B-007; review pending. No implementation or claim coverage is approved by this row. Decision 0003 preserves OQ-2's open status.                                                                              |
 
 ## Tasks
 
