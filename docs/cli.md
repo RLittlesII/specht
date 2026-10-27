@@ -76,7 +76,7 @@ errors: 1, warnings: 0
 ## `specht rules`
 
 ```text
-specht rules [--root <DIR>]
+specht rules [--root <DIR>] [--json]
 ```
 
 Lists every rule in the manifest's exact schema version, including rules set to
@@ -86,9 +86,14 @@ Severities and levels use lower-case `error`, `warning` or `off`; families retai
 the rule page's spelling. A manifest override supplies the effective level;
 otherwise the rule's default severity applies.
 
+With `--json`, stdout is one array with the same entries and order. Each object
+has `id`, `family`, `defaultSeverity` and `effectiveLevel` string members; severity
+and level retain the text form's lower-case spelling.
+
 | Option         | Value   | Default               | Does                                                               |
 | -------------- | ------- | --------------------- | ------------------------------------------------------------------ |
 | `--root <DIR>` | `<DIR>` | The working directory | Selects the repository whose manifest supplies the pin and levels. |
+| `--json`       | none    | Off                   | Prints the listing as one JSON document.                           |
 | `-h, --help`   | none    | Off                   | Prints command help.                                               |
 
 The command reads only the manifest and embedded rule catalogue. It evaluates no
@@ -101,6 +106,7 @@ to stderr with empty stdout.
 
 ```sh
 specht rules --root .
+specht rules --root . --json
 ```
 
 ## `specht evidence`

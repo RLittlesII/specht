@@ -2,7 +2,7 @@ id: "0282"
 type: task
 title: The rules command in JSON
 
-status: ready-for-architecture
+status: done
 
 value: 3
 risk: 1
@@ -20,8 +20,8 @@ claims:
   - B-010
 
 created: "2026-10-24"
-updated: "2026-10-24"
-closed: null
+updated: "2026-10-26"
+closed: "2026-10-26"
 
 summary: |
   As a script or an MCP host I want `specht rules --json` to print the listing as one JSON document, so that I read it without parsing text.
