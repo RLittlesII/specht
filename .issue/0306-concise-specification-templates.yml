@@ -1,7 +1,7 @@
 id: "0306"
 type: chore
 title: Ship concise key-driven specification templates
-status: in-progress
+status: done
 cost: 3
 risk: 2
 parent: null
@@ -12,7 +12,7 @@ spec: null
 claims: []
 created: "2026-10-27"
 updated: "2026-10-27"
-closed: null
+closed: "2026-10-27"
 summary: |
   Deliver concise Feature and supporting-record templates in schema 0.2.1.
 acceptance_criteria:
@@ -33,5 +33,9 @@ decisions:
   - "2026-10-27, refreshed-base verification: 168 focused shipping/init/upgrade/versioning tests and 12 schema-lock tests pass on net11.0 after the fast-forward."
   - "2026-10-27, pre-commit correction: Prettier aligned two section-10 table lines in the unpublished 0.2.1 Feature template. Re-lock that unpublished patch with the supported target and refresh live copies; published 0.1.0/0.2.0 bytes and lock entries remain unchanged."
   - "2026-10-27, correction review: /root/review Approved the formatting-only correction at working snapshot a2878f73c767a877e555d94a411da65ebda698eade68484856d09f4c07006ee0; new 0.2.1 digest 68bd603921fa07c7763e6e1fea952de6f834c40478e7f961d88d32f5079a5bca independently verified. Twelve shipping and twelve integrity checks pass after correction."
+  - "2026-10-27, full PR verification: Specht, Restore, Format, Compile, CodeAnalysis and all UnitTest suites passed. Updated the exact version catalog fixture for 0.2.1; focused net11.0 checks pass 3/3 and every existing assertion is retained."
+  - "2026-10-27, catalog correction review: /root/review Approved CodeAnalysis fixture SHA-256 72419def198595bf2f4c418b832a5aa76eff0e6bee48bdd1cf15ff195ee8d04c; no production changes or weakened assertions. Conditional surface review returned no findings."
+  - "2026-10-27, integration fixture: explicitly arrange the existing 0.2.0 schema-list pin instead of inheriting the live repository pin. Focused net11.0 checks pass 3/3; /root/review Approved file SHA-256 1aa4359b1fd23f7f05b3fe7e6fde8353ddfb1b96eae1fdb32d6290e46e7dada5 without implementation changes or assertion weakening."
+  - "2026-10-27, remaining gates: recompiled and passed IntegrationTest and AcceptanceTest across the configured framework matrix after the integration-only fixture correction. Previously passing unchanged production and unit gates retain applicability. Delivery closes in this PR under repository convention; feature-requests remains 03dceb6d."
 out_of_scope:
   - Checker behavior, prose linting, reference resolution and existing specification cleanup.
