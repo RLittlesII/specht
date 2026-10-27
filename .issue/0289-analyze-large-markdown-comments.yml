@@ -1,73 +1,38 @@
 id: "0289"
 type: spike
 title: Analyze large HTML comment chunks in specification markdown
-
 status: ready
-
 value: 2
 risk: 2
-
 parent: null
 children: []
-
 depends_on: []
 spikes: []
-
 spec: null
-
 claims: []
-
 created: "2026-10-24"
-updated: "2026-10-24"
+updated: "2026-10-27"
 closed: null
-
 summary: |
-  2026-10-24, the repository owner: "Can we put a feature in the items to add
-  analysis for large comment chunks in markdown."
-
-  Specification markdown carries long multi-line HTML comments. The case that
-  prompted this is an amendment stamp over a Feature's section 7:
-
-      <!-- Amended 2026-10-24 by spec-author, per user instruction (0001-06 / #87;
-           the user accepted the architect's #87 proposal, Q1 to Q9, as
-           recommended). Adds the subsection "Acceptance harness seam ..." and a
-           pointer under "### Decision Required". ... § 11 gains OQ-39 to OQ-44. -->
-
-  Such chunks grow, hide content from a reader and from the checker, and carry
-  facts (who, when, on whose word, what it touched) in free prose. The owner
-  asked that the analysis reference, for each large comment:
-
-  - date: when the amendment was made.
-  - by: the role or person who made it.
-  - per user or not: whether the user instructed it, or the role acted alone.
-  - the keys to the amendments: the records the amendment touched, at least the
-    ADR ids (`ADR-0002`) and the claim ids (`0001-F1 B-001`).
-
-  The analysis reports each such comment with those four facts extracted, and
-  flags the ones that are large or that lack a field.
-
-  Questions the spike answers:
-  1. Size. What makes a chunk large: lines, characters, or both. Where the
-     threshold lives (the manifest's rule settings) and its default.
-  2. Scope. Which markdown it reads (specifications, ADRs, lessons, items) and
-     which it skips (comments inside fenced code).
-  3. Extraction. Whether date, by, per-user and keys are parsed from the prose
-     as written, or a structured stamp form is specified and the prose is
-     migrated to it. What a comment with a missing field reports.
-  4. Surface. A new `SPEC###` (a new schema version, `0001-F7` C-11, with a
-     severity set through `0001-F9` to `0001-F11`) or a report outside the
-     rule vocabulary.
-
-  The spike ends in a written decision and a hand-off to spec-author for a
-  Feature specification. It writes no code.
-
+  Specify opt-in detection of bulky amendment comments in specification
+  Markdown. The owner wants concise current content, without decorative
+  banners or long narratives announcing amendments and listing benefits.
+  Example: a multiline <!-- Amended ... --> narrative is a candidate finding;
+  required one-line author stamps and generated markers remain valid.
+  Decide the detectable size/shape boundary, manifest configuration, file
+  scope, fenced-example handling and root-relative diagnostics. Default off.
+  Do not require comments to carry dates, authors, user authorization or long
+  lists of affected keys. Necessary approval evidence stays in its owned
+  record; compact section 10 rows cite the affected keys.
+  Time box: one session, at most two hours; return an agreement handoff.
 acceptance_criteria:
-  - "A decision record answers questions 1 to 4, each with its reason."
-  - "The record names the extracted fields: date, by, per user or not, ADR keys, claim keys."
-  - "A hand-off names the Feature spec to be authored and the schema-version impact."
-
-decisions: []
-
+  - "Define a deterministic size/shape boundary, scope and configurable opt-in behavior."
+  - "Permit required author stamps and generated markers; define generated-body and fenced-example handling."
+  - "Specify diagnostics for bulky amendment narratives without requiring extracted provenance fields or a replacement narrative."
+  - "Include report/accept examples and identify the Feature agreement and schema-version impact before implementation."
+decisions:
+  - "2026-10-24: Original intake requested large-comment analysis with extracted date, author, authorization and affected keys."
+  - "2026-10-27, repository owner: revise the request to discourage bulky amendment comments; mandatory provenance extraction is superseded. Keep required stamps and generated markers."
 out_of_scope:
-  - "Any rule, engine or host change."
-  - "Rewriting existing comments."
+  - "Rule, engine or host implementation; rewriting existing comments."
+  - "Automatic prose rewriting, a prose word-count gate or new check activation in agents."
