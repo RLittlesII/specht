@@ -1,25 +1,23 @@
-using System.IO.Abstractions;
 using System.Text.Json.Nodes;
 using AwesomeAssertions;
 using Reqnroll;
-using Specht.Manifest;
-using Specht.Rules;
 using Specht.Tests.Rules;
 using Specht.Tests.Shared;
 using Specht.Versioning;
 
 namespace Specht.Acceptance.Rules;
 
-/// <summary>Exercises the engine catalogue for 0280; the command and JSON bindings belong to 0281 and 0282.</summary>
+/// <summary>Exercises the text command and its catalogue; JSON bindings belong to the later JSON slice.</summary>
 [Binding]
 [Scope(Feature = "The rules command")]
-public sealed class RuleEntriesSteps
+public sealed partial class RuleEntriesSteps
 {
     [Given("a repository root holding a manifest that pins schema version {word}")]
     public void GivenRepositoryRoot(string pin)
     {
         _tree = new SpecTree();
         GivenManifestPins(pin);
+        _manifestBefore = File.ReadAllBytes(Path.Combine(Tree.Root, SpecTree.ManifestPath));
     }
 
     [Given("the manifest pins schema version {word}")]
@@ -39,6 +37,7 @@ public sealed class RuleEntriesSteps
         var manifest = JsonNode.Parse(File.ReadAllText(path))!.AsObject();
         manifest["rules"] = new JsonObject { [SectionRule] = level };
         File.WriteAllText(path, manifest.ToJsonString());
+        _manifestBefore = File.ReadAllBytes(path);
     }
 
     [Given("the manifest sets no level for the out-of-order-section rule")]
@@ -49,8 +48,7 @@ public sealed class RuleEntriesSteps
     }
 
     [When("the rules are listed")]
-    public void WhenRulesAreListed() =>
-        _entries = new RuleEntriesReader(EngineServices.Schemas(new FileSystem()), EngineServices.Parser()).Read(Tree.Root);
+    public void WhenRulesAreListed() => _result = AcceptanceTool.Launch(Tree.Root, "rules");
 
     [When("the out-of-order-section rule is explained")]
     public void WhenSectionRuleIsExplained()
@@ -64,39 +62,39 @@ public sealed class RuleEntriesSteps
     public void ThenListingHasPinnedVocabulary(string pin)
     {
         _version!.Number.ToString().Should().Be(pin);
-        _entries.Select(static entry => entry.Id).Should().BeEquivalentTo(_version.RuleIds);
-        _entries.Select(static entry => entry.Id).Should().OnlyHaveUniqueItems();
+        Entries.Select(static entry => entry[0]).Should().BeEquivalentTo(_version.RuleIds);
+        Entries.Select(static entry => entry[0]).Should().OnlyHaveUniqueItems();
     }
 
     [Then("the out-of-order-section rule is listed in the structure family")]
-    public void ThenSectionRuleFamily() => Entry(SectionRule).Family.Should().Be("Structure");
+    public void ThenSectionRuleFamily() => Entry(SectionRule)[1].Should().Be("Structure");
 
     [Then("the out-of-order-section rule is listed with the default severity {word}")]
     public void ThenSectionRuleDefault(string level) =>
-        Entry(SectionRule).DefaultSeverity.ToString().ToLowerInvariant().Should().Be(level);
+        Entry(SectionRule)[2].Should().Be(level);
 
     [Then("the retired-claim rule is listed with the default severity off")]
-    public void ThenRetiredClaimDefault() => Entry("SPEC035").DefaultSeverity.Should().Be(SpecRuleLevel.Off);
+    public void ThenRetiredClaimDefault() => Entry("SPEC035")[2].Should().Be("off");
 
     [Then("the out-of-order-section rule is listed with the effective level {word}")]
     public void ThenSectionRuleEffectiveLevel(string level) =>
-        Entry(SectionRule).EffectiveLevel.ToString().ToLowerInvariant().Should().Be(level);
+        Entry(SectionRule)[3].Should().Be(level);
 
     [Then("the listing has an entry for the out-of-order-section rule")]
-    public void ThenListingRetainsSectionRule() => _entries.Should().ContainSingle(static entry => entry.Id == SectionRule);
+    public void ThenListingRetainsSectionRule() => Entries.Should().ContainSingle(static entry => entry[0] == SectionRule);
 
     [Then("the family and the default severity listed for it are the ones its explanation gives")]
     public void ThenListingAgreesWithExplanation()
     {
-        Entry(SectionRule).Family.Should().Be(_explanation!.Value("Family"));
-        Entry(SectionRule).DefaultSeverity.ToString().Should().Be(_explanation.Value("Default severity"));
+        Entry(SectionRule)[1].Should().Be(_explanation!.Value("Family"));
+        Entry(SectionRule)[2].Should().Be(_explanation!.Value("Default severity")?.ToLowerInvariant());
     }
 
     [Then("each entry's rule id follows the one before it in ordinal order")]
     public void ThenListingIsOrdinallyOrdered()
     {
-        _entries.Should().NotBeEmpty();
-        _entries.Select(static entry => entry.Id).Should().BeInAscendingOrder(StringComparer.Ordinal);
+        Entries.Should().NotBeEmpty();
+        Entries.Select(static entry => entry[0]).Should().BeInAscendingOrder(StringComparer.Ordinal);
     }
 
     [AfterScenario]
@@ -104,11 +102,15 @@ public sealed class RuleEntriesSteps
 
     private SpecTree Tree => _tree ?? throw new InvalidOperationException("No repository root was prepared.");
 
-    private RuleEntry Entry(string id) => _entries.Should().ContainSingle(entry => entry.Id == id).Which;
+    private string[][] Entries => _result.Stdout.Split('\n', StringSplitOptions.RemoveEmptyEntries)
+        .Select(static line => line.TrimEnd('\r').Split('\t')).ToArray();
+
+    private string[] Entry(string id) => Entries.Should().ContainSingle(entry => entry[0] == id).Which;
 
     private const string SectionRule = "SPEC010";
     private SpecTree? _tree;
     private SchemaVersion? _version;
     private RulePage? _explanation;
-    private IReadOnlyList<RuleEntry> _entries = [];
+    private (string Stdout, string Stderr, int ExitCode) _result;
+    private byte[] _manifestBefore = [];
 }

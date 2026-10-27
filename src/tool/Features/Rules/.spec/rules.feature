@@ -10,6 +10,7 @@ Feature: The rules command
   Scenario: Every rule of the pinned version is listed once
     When the rules are listed
     Then the listing has one entry for each rule of version 0.1.0 and no other entry
+    And the listing is the standard output
 
   @B-002
   Scenario: A rule is listed with its family
@@ -74,10 +75,16 @@ Feature: The rules command
     Then both forms carry the same rules, families, default severities and effective levels in the same order
 
   @B-011
-  Scenario: Listing succeeds whatever the levels are
-    Given the manifest sets the out-of-order-section rule to off
+  Scenario Outline: Listing succeeds whatever the levels are
+    Given the manifest sets the out-of-order-section rule to <level>
     When the rules are listed
     Then the exit code is 0
+
+    Examples:
+      | level   |
+      | error   |
+      | warning |
+      | off     |
 
   @B-012
   Scenario: A missing root is a missing-input failure
@@ -108,6 +115,7 @@ Feature: The rules command
       | is not well-formed                                                           |
       | sets a rule the pinned version does not hold                                 |
       | pins a version the tool does not ship                                        |
+      | pins a malformed version                                                     |
       | records an upstream schema source and explicitly selects the embedded source |
 
   @B-015

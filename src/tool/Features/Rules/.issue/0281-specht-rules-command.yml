@@ -2,7 +2,7 @@ id: "0281"
 type: task
 title: The `specht rules` command
 
-status: ready-for-architecture
+status: done
 
 value: 3
 risk: 2
@@ -27,8 +27,8 @@ claims:
   - B-019
 
 created: "2026-10-24"
-updated: "2026-10-24"
-closed: null
+updated: "2026-10-26"
+closed: "2026-10-26"
 
 summary: |
   As a maintainer I want `specht rules` to print the listing as plain text, so that I choose a level for a rule before a violation introduces it.
