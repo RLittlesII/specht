@@ -1,0 +1,37 @@
+id: "0306"
+type: chore
+title: Ship concise key-driven specification templates
+status: in-progress
+cost: 3
+risk: 2
+parent: null
+children: []
+depends_on: []
+spikes: []
+spec: null
+claims: []
+created: "2026-10-27"
+updated: "2026-10-27"
+closed: null
+summary: |
+  Deliver concise Feature and supporting-record templates in schema 0.2.1.
+acceptance_criteria:
+  - Preserve published-version bytes and checker behavior.
+  - Keep qualified sibling keys, test references only in section 9 and compact deltas.
+  - Remove duplicated instructions and implementation-file link requirements.
+  - Verify shipping, initialization, upgrade and version integrity.
+decisions:
+  - "2026-10-27, ownership: current session, branch 0306/concise-specification-templates. User authorized template delivery; existing-spec migration is limited to the agents repository."
+  - "2026-10-27, baseline: clean checkout at 0cdbb875, sequence 0305. Add schema patch 0.2.1; leave 0.1.0 and 0.2.0 unchanged."
+  - "2026-10-27, verification: 168 shipping/init/upgrade/versioning tests and 12 schema-lock tests pass on net11.0. All three version digests match; published 0.1.0/0.2.0 trees and lock entries remain unchanged."
+  - "2026-10-27, delivery: registered 0.2.1 with the unchanged 0.2.0 rule vocabulary. Supported schema pin/upgrade refreshed live copies in this checkout and the consuming checkout. Consumer reports match except schemaVersion."
+  - "2026-10-27, independent diff review: /root/review Approved delivered-content snapshot 4d6fe839a6d512364601f60906cfd4e542e10d761b14bb1432a323a7a56bda7c; no actionable findings."
+  - "2026-10-27, full-tree strict check: zero errors and 116 pre-existing warnings; exact report matches baseline 0cdbb875 except schemaVersion."
+  - "2026-10-27, package: built locally as specht.tool 0.2.43-g0cdbb8759c; publication is a separate release step before fresh upstream consumer restores."
+  - "2026-10-27, concurrent work: preserve intake items 0307-0309, item 0289 and epic 0228 edits from the coordinating chat; sequence remains 0309. These future requests add no checks in this change."
+  - "2026-10-27, commit preparation: resumed the owned delivery on 0306/concise-specification-templates and fast-forwarded it to main 76b17990. Request-only branch feature-requests remains at 03dceb6d and is not an ancestor of this delivery. Preserve shared ID reservations through 0309 without including request records."
+  - "2026-10-27, refreshed-base verification: 168 focused shipping/init/upgrade/versioning tests and 12 schema-lock tests pass on net11.0 after the fast-forward."
+  - "2026-10-27, pre-commit correction: Prettier aligned two section-10 table lines in the unpublished 0.2.1 Feature template. Re-lock that unpublished patch with the supported target and refresh live copies; published 0.1.0/0.2.0 bytes and lock entries remain unchanged."
+  - "2026-10-27, correction review: /root/review Approved the formatting-only correction at working snapshot a2878f73c767a877e555d94a411da65ebda698eade68484856d09f4c07006ee0; new 0.2.1 digest 68bd603921fa07c7763e6e1fea952de6f834c40478e7f961d88d32f5079a5bca independently verified. Twelve shipping and twelve integrity checks pass after correction."
+out_of_scope:
+  - Checker behavior, prose linting, reference resolution and existing specification cleanup.
