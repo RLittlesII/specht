@@ -8,6 +8,23 @@ type: reference
 
 Extends [`test-from-scenarios`](../../test-from-scenarios/SKILL.md).
 
+## Framework selection for agent verification
+
+For agent-run .NET verification, use only the highest .NET target framework
+declared by the project being verified. Compare framework versions numerically:
+`net9.0;net10.0` selects `net10.0`, and `net9.0;net10.0;net11.0` selects
+`net11.0`. Read the project's evaluated `TargetFramework` or `TargetFrameworks`,
+including inherited properties; the installed SDK does not select the target.
+
+Apply this selection to red/green tests, focused builds, and review reruns. Pass
+the selected target explicitly with `--framework` when invoking `dotnet build`
+or `dotnet test`; do not repeat verification for the older targets. A project
+with one target uses that target. Record the selected framework with the result.
+
+Required repository build gates and CI retain their configured target matrices;
+this agent policy does not change their configuration or require additional
+per-framework runs beside those gates.
+
 ## Three tiers
 
 | Tier        | Where                                                 | Selected by                     |
