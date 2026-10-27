@@ -138,6 +138,8 @@ its companion skill names the file.
 ## Before finishing
 
 - Run the narrow check for what you touched, then the full build.
+- For .NET verification, follow the companion's
+  [framework selection policy](../specht-conventions/references/testing.md#framework-selection-for-agent-verification).
 - A self-hosted validation gate exercises the tool built from the change; an older published-installation check alone cannot prove it.
 - Read the diff for changes you did not intend — a formatter pass, a reordered
   file, a stray generated artifact.
