@@ -8,7 +8,7 @@ type: reference
 
 `specht` checks a tree, `frontmatter` checks one document, `specht init` writes the files a check needs, and
 `schema` groups commands for the repository's schema version. `specht upgrade` brings its schemas and templates to the pin.
-`evidence` reconciles supplied build and runner exports.
+`evidence` reconciles supplied build and runner exports. `rules` lists the pinned rules and their effective levels.
 Installed as a local tool, each runs as `dotnet specht`.
 
 ## `specht`
@@ -71,6 +71,36 @@ specifications: epics 0, features 1
 items: 0
 rules evaluated: 21
 errors: 1, warnings: 0
+```
+
+## `specht rules`
+
+```text
+specht rules [--root <DIR>]
+```
+
+Lists every rule in the manifest's exact schema version, including rules set to
+`off`, in ascending ordinal order of rule id. Each stdout line contains the rule
+id, family, default severity and effective level, separated by single tabs.
+Severities and levels use lower-case `error`, `warning` or `off`; families retain
+the rule page's spelling. A manifest override supplies the effective level;
+otherwise the rule's default severity applies.
+
+| Option         | Value   | Default               | Does                                                               |
+| -------------- | ------- | --------------------- | ------------------------------------------------------------------ |
+| `--root <DIR>` | `<DIR>` | The working directory | Selects the repository whose manifest supplies the pin and levels. |
+| `-h, --help`   | none    | Off                   | Prints command help.                                               |
+
+The command reads only the manifest and embedded rule catalogue. It evaluates no
+rule, reads no specification, writes no files and makes no network requests.
+Stdout contains only the listing, with no header or summary.
+
+**Exit codes.** `0` for a valid listing regardless of rule levels; `2` for a
+missing root or manifest; `3` for an invalid manifest or schema pin. Failures go
+to stderr with empty stdout.
+
+```sh
+specht rules --root .
 ```
 
 ## `specht evidence`
