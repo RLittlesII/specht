@@ -2,7 +2,7 @@ id: "0283"
 type: task
 title: Produce the effective manifest
 
-status: ready-for-architecture
+status: ready-for-implementation
 
 value: 3
 risk: 3
@@ -23,7 +23,7 @@ claims:
   - B-007
 
 created: "2026-10-24"
-updated: "2026-10-24"
+updated: "2026-10-26"
 closed: null
 
 summary: |
@@ -44,6 +44,14 @@ acceptance_criteria:
 decisions:
   - |
     2026-10-24, spec-author's cut of the groomed Feature. Rejected: one item for the whole Feature.
+  - |
+    2026-10-26, architecture pass: the proposed engine path and reuse are in
+    the specification's § 6 and § 7, with the proof plan in § 8. Decision 0003
+    records proceeding on B-004/B-007's existing omission boundary while OQ-2
+    stays open. The existing engine project and composition are the scaffold;
+    no runtime stub is added. Failing tests and implementation remain before
+    this item can close. The command,
+    --defaults and --json remain the other items' work.
 
 out_of_scope:
   - "The command, its output form and exit codes — 0284."
