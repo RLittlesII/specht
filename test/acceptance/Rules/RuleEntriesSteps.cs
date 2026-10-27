@@ -7,7 +7,7 @@ using Specht.Versioning;
 
 namespace Specht.Acceptance.Rules;
 
-/// <summary>Exercises the text command and its catalogue; JSON bindings belong to the later JSON slice.</summary>
+/// <summary>Exercises the text and JSON command forms and their pinned catalogue.</summary>
 [Binding]
 [Scope(Feature = "The rules command")]
 public sealed partial class RuleEntriesSteps
