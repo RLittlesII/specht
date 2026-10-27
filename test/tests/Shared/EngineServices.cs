@@ -1,4 +1,5 @@
 using System.IO.Abstractions;
+using System.Text.Json.Nodes;
 using Microsoft.Extensions.DependencyInjection;
 using Specht.Composition;
 using Specht.Manifest;
@@ -74,6 +75,10 @@ public static class EngineServices
 
     /// <summary>Reads and parses a manifest without check-only pin resolution.</summary>
     public static SpecStructure Manifest(IFileSystem fileSystem, string root) => Schemas(fileSystem).LoadManifest(root);
+
+    /// <summary>Reads the manifest document over the existing validation and file-system seams.</summary>
+    public static JsonObject EffectiveManifest(string root, IFileSystem? fileSystem = null, SchemaVersions? versions = null) =>
+        ((EffectiveManifestReader)Resolve(typeof(EffectiveManifestReader), fileSystem, versions)).Read(root);
 
     /// <summary>Loads the embedded or verified upstream schemas.</summary>
     public static SpecSchemas LoadSchemas(IFileSystem fileSystem, string root, SchemaVersions versions) => Schemas(fileSystem, versions).Load(root);

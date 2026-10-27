@@ -2,7 +2,7 @@ id: "0283"
 type: task
 title: Produce the effective manifest
 
-status: ready-for-implementation
+status: done
 
 value: 3
 risk: 3
@@ -24,7 +24,7 @@ claims:
 
 created: "2026-10-24"
 updated: "2026-10-26"
-closed: null
+closed: "2026-10-26"
 
 summary: |
   As the `specht manifest` command I want the engine to give me the effective manifest of a root, so that the command prints what the check reads and holds no second reader.

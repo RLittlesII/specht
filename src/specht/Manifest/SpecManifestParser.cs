@@ -14,84 +14,18 @@ public sealed class SpecManifestParser(SchemaVersions versions)
     /// <param name="text">The manifest JSON to validate.</param>
     /// <returns>The structure and its upstream schema source, if declared.</returns>
     /// <implements epic="0001" feature="F5" claim="B-048" />
-    public SpecStructure Parse(string text)
+    public SpecStructure Parse(string text) => Parse(text, false, out _);
+
+    /// <summary>Returns the validated structure and its owned JSON document with the same omission defaults.</summary>
+    /// <param name="text">The manifest JSON to validate.</param>
+    /// <returns>The parsed structure and reusable effective document before rule-level expansion.</returns>
+    /// <implements epic="0001" feature="F9" claim="B-003" />
+    /// <implements epic="0001" feature="F9" claim="B-004" />
+    /// <implements epic="0001" feature="F9" claim="B-006" />
+    public SpecManifestDocument ParseDocument(string text)
     {
-        var manifest = Present(JsonNode.Parse(text)).AsObject();
-        var number = ReadVersion(manifest["schemaVersion"]) ?? OriginalVersion;
-        if (manifest.ContainsKey("schemaSource") && versions.Find(number) is null)
-        {
-            _ = Version(number);
-        }
-
-        var tags = number.CompareTo(ClaimTagVersion) >= 0 && versions.Find(number) is not null;
-        var selection = number.CompareTo(SchemaSourceVersion) >= 0 && versions.Find(number) is not null;
-        var matrix = number.CompareTo(MatrixKeyVersion) >= 0 && versions.Find(number) is not null;
-        var unknown = manifest
-            .Select(static entry => entry.Key)
-            .Where(key => !key.StartsWith('$') && !KnownKeys.Contains(key)
-                && !(tags && key == "claim") && !(selection && key == "schemaSource") && !(matrix && MatrixKeys.Contains(key)))
-            .Select(static key => $"'{key}'")
-            .ToList();
-
-        if (unknown.Count > 0)
-        {
-            throw new SpechtManifestException(
-                $"{SpecManifestStore.RelativePath}: the engine does not know the key {string.Join(", ", unknown)}.");
-        }
-
-        var selected = versions.Find(number) ?? versions.Find(OriginalVersion) ?? Version(number);
-        var defaults = JsonNode.Parse(selected.Manifest)!.AsObject();
-        var tables = Tables(manifest["tables"] ?? defaults["tables"]!);
-        if (matrix)
-        {
-            foreach (var (role, headers) in Tables(defaults["tables"]!))
-            {
-                tables.TryAdd(role, headers);
-            }
-        }
-
-        var frontmatterSchemas = Filled(manifest, defaults, "frontmatterSchemas");
-        var claim = tags ? manifest["claim"]?.AsObject() : null;
-        var claimDefaults = tags ? Present(defaults["claim"]).AsObject() : null;
-        var sourceFaults = new List<string>();
-        Dictionary<string, string> levels = [];
-        var structure = new SpecStructure(
-            Strings(manifest["sections"] ?? defaults["sections"]!),
-            tables,
-            Filled(manifest, defaults, "identifiers"),
-            SchemaVersion(manifest))
-        {
-            Discovery = Discovery(manifest, defaults),
-            FrontmatterSchemas = frontmatterSchemas,
-            Roles = Filled(manifest, defaults, "roles"),
-            Markers = Filled(manifest, defaults, "markers"),
-            Rules = new SpecRuleSettings((levels = Levels(manifest["rules"])).Where(static entry => entry.Value is "error" or "warning" or "off")
-                .Select(static entry => new KeyValuePair<string, SpecRuleLevel>(entry.Key, entry.Value switch
-                {
-                    "warning" => SpecRuleLevel.Warning,
-                    "off" => SpecRuleLevel.Off,
-                    _ => SpecRuleLevel.Error,
-                }))),
-            ClaimTagForm = tags ? Present(claim?["tag"] ?? claimDefaults?["tag"]).GetValue<string>() : null,
-            ClaimTagIgnoreCase = tags && Present(claim?["tagIgnoreCase"] ?? claimDefaults?["tagIgnoreCase"]).GetValue<bool>(),
-            SchemaSource = SourceSelection(manifest, sourceFaults),
-            DeclaresEpicGrammar = manifest["identifiers"]?["epic"] is not null,
-            SpechtSchema = SpechtSchema(manifest, frontmatterSchemas, sourceFaults),
-            Tests = matrix ? TestSettings(manifest["tests"]) : null,
-            MatrixScenarioTitles = matrix && manifest["matrix"]?["scenarioTitles"] is { } titles && titles.GetValue<bool>(),
-            Owners = matrix && manifest["owners"] is { } owners ? Tables(owners) : new Dictionary<string, IReadOnlyList<string>>(StringComparer.Ordinal),
-            RequiredSpecifications = matrix && manifest["requiredSpecifications"] is { } required ? Strings(required) : [],
-            ConsumerTemplates = manifest["consumerTemplates"] is { } templates ? Strings(templates) : [],
-        };
-
-        if (structure.SchemaSource == SchemaSourceSelection.Embedded && structure.SpechtSchema is not null)
-        {
-            sourceFaults.Add("schemaSource 'embedded' contradicts the recorded spechtSchema source");
-        }
-
-        Check(structure, defaults, IdentityFaults(manifest).Concat(sourceFaults).Concat(ClaimTagFaults(structure)).Concat(MatrixKeyFaults(structure)), levels);
-
-        return structure;
+        var structure = Parse(text, true, out var document);
+        return new SpecManifestDocument(structure, document!);
     }
 
     /// <summary>Resolves a parsed manifest's pin and validates its rule ids before schema reads (0001-F5 C-5).</summary>
@@ -401,16 +335,16 @@ public sealed class SpecManifestParser(SchemaVersions versions)
     }
 
     /// <implements epic="0001" feature="F5" claim="B-048" />
-    private static SpecDiscoveryInputs Discovery(JsonObject manifest, JsonObject defaults) =>
+    private static SpecDiscoveryInputs Discovery(JsonObject manifest, JsonObject defaults, JsonObject? document) =>
         new(
-            (manifest["layouts"] ?? defaults["layouts"]!).AsArray().Select(Layout).ToList(),
-            Strings(manifest["exclusions"] ?? defaults["exclusions"]!),
-            Strings(manifest["taskFiles"] ?? defaults["taskFiles"]!),
-            Strings(manifest["epicFiles"] ?? defaults["epicFiles"]!),
-            Strings(manifest["companionFiles"] ?? defaults["companionFiles"]!));
+            Selected(manifest, defaults, "layouts", document).AsArray().Select(Layout).ToList(),
+            Strings(Selected(manifest, defaults, "exclusions", document)),
+            Strings(Selected(manifest, defaults, "taskFiles", document)),
+            Strings(Selected(manifest, defaults, "epicFiles", document)),
+            Strings(Selected(manifest, defaults, "companionFiles", document)));
 
     /// <implements epic="0001" feature="F5" claim="B-048" />
-    private static Dictionary<string, string> Filled(JsonObject manifest, JsonObject defaults, string key)
+    private static Dictionary<string, string> Filled(JsonObject manifest, JsonObject defaults, string key, JsonObject? document)
     {
         var values = Named(defaults[key]!);
 
@@ -422,7 +356,137 @@ public sealed class SpecManifestParser(SchemaVersions versions)
             }
         }
 
+        if (document is not null && (!manifest.ContainsKey(key) || manifest[key] is not null))
+        {
+            if (!document.ContainsKey(key))
+            {
+                document[key] = new JsonObject();
+            }
+
+            var projected = document[key]!.AsObject();
+            foreach (var (name, value) in values)
+            {
+                if (!projected.ContainsKey(name) && !(key == "identifiers" && name == "epic"))
+                {
+                    projected[name] = value;
+                }
+            }
+        }
+
         return values;
+    }
+
+    /// <implements epic="0001" feature="F9" claim="B-004" />
+    private static JsonNode Selected(JsonObject? manifest, JsonObject defaults, string key, JsonObject? document)
+    {
+        var selected = manifest?[key] ?? Present(defaults[key]);
+        if (document is not null && manifest?.ContainsKey(key) != true)
+        {
+            document[key] = selected.DeepClone();
+        }
+
+        return selected;
+    }
+
+    /// <implements epic="0001" feature="F5" claim="B-048" />
+    private SpecStructure Parse(string text, bool includeDocument, out JsonObject? document)
+    {
+        var manifest = Present(JsonNode.Parse(text)).AsObject();
+        document = includeDocument ? manifest.DeepClone().AsObject() : null;
+        var number = ReadVersion(manifest["schemaVersion"]) ?? OriginalVersion;
+        if (manifest.ContainsKey("schemaSource") && versions.Find(number) is null)
+        {
+            _ = Version(number);
+        }
+
+        var tags = number.CompareTo(ClaimTagVersion) >= 0 && versions.Find(number) is not null;
+        var selection = number.CompareTo(SchemaSourceVersion) >= 0 && versions.Find(number) is not null;
+        var matrix = number.CompareTo(MatrixKeyVersion) >= 0 && versions.Find(number) is not null;
+        var unknown = manifest
+            .Select(static entry => entry.Key)
+            .Where(key => !key.StartsWith('$') && !KnownKeys.Contains(key)
+                && !(tags && key == "claim") && !(selection && key == "schemaSource") && !(matrix && MatrixKeys.Contains(key)))
+            .Select(static key => $"'{key}'")
+            .ToList();
+
+        if (unknown.Count > 0)
+        {
+            throw new SpechtManifestException(
+                $"{SpecManifestStore.RelativePath}: the engine does not know the key {string.Join(", ", unknown)}.");
+        }
+
+        var selected = versions.Find(number) ?? versions.Find(OriginalVersion) ?? Version(number);
+        var defaults = JsonNode.Parse(selected.Manifest)!.AsObject();
+        var tables = Tables(Selected(manifest, defaults, "tables", document));
+        if (matrix)
+        {
+            foreach (var (role, headers) in Tables(defaults["tables"]!))
+            {
+                if (tables.TryAdd(role, headers) && document?["tables"] is JsonObject projectedTables)
+                {
+                    projectedTables[role] = defaults["tables"]![role]!.DeepClone();
+                }
+            }
+        }
+
+        var frontmatterSchemas = Filled(manifest, defaults, "frontmatterSchemas", document);
+        var claim = tags ? manifest["claim"]?.AsObject() : null;
+        var claimDefaults = tags ? Present(defaults["claim"]).AsObject() : null;
+        JsonObject? claimDocument = null;
+        if (tags && document is not null && (!manifest.ContainsKey("claim") || manifest["claim"] is not null))
+        {
+            if (!document.ContainsKey("claim"))
+            {
+                document["claim"] = new JsonObject();
+            }
+
+            claimDocument = document["claim"]!.AsObject();
+        }
+
+        var sourceFaults = new List<string>();
+        Dictionary<string, string> levels = [];
+        var structure = new SpecStructure(
+            Strings(Selected(manifest, defaults, "sections", document)),
+            tables,
+            Filled(manifest, defaults, "identifiers", document),
+            SchemaVersion(manifest))
+        {
+            Discovery = Discovery(manifest, defaults, document),
+            FrontmatterSchemas = frontmatterSchemas,
+            Roles = Filled(manifest, defaults, "roles", document),
+            Markers = Filled(manifest, defaults, "markers", document),
+            Rules = new SpecRuleSettings((levels = Levels(manifest["rules"])).Where(static entry => entry.Value is "error" or "warning" or "off")
+                .Select(static entry => new KeyValuePair<string, SpecRuleLevel>(entry.Key, entry.Value switch
+                {
+                    "warning" => SpecRuleLevel.Warning,
+                    "off" => SpecRuleLevel.Off,
+                    _ => SpecRuleLevel.Error,
+                }))),
+            ClaimTagForm = tags ? Selected(claim, claimDefaults!, "tag", claimDocument).GetValue<string>() : null,
+            ClaimTagIgnoreCase = tags && Selected(claim, claimDefaults!, "tagIgnoreCase", claimDocument).GetValue<bool>(),
+            SchemaSource = SourceSelection(manifest, sourceFaults),
+            DeclaresEpicGrammar = manifest["identifiers"]?["epic"] is not null,
+            SpechtSchema = SpechtSchema(manifest, frontmatterSchemas, sourceFaults),
+            Tests = matrix ? TestSettings(manifest["tests"]) : null,
+            MatrixScenarioTitles = matrix && manifest["matrix"]?["scenarioTitles"] is { } titles && titles.GetValue<bool>(),
+            Owners = matrix && manifest["owners"] is { } owners ? Tables(owners) : new Dictionary<string, IReadOnlyList<string>>(StringComparer.Ordinal),
+            RequiredSpecifications = matrix && manifest["requiredSpecifications"] is { } required ? Strings(required) : [],
+            ConsumerTemplates = manifest["consumerTemplates"] is { } templates ? Strings(templates) : [],
+        };
+
+        if (structure.SchemaSource == SchemaSourceSelection.Embedded && structure.SpechtSchema is not null)
+        {
+            sourceFaults.Add("schemaSource 'embedded' contradicts the recorded spechtSchema source");
+        }
+
+        Check(structure, defaults, IdentityFaults(manifest).Concat(sourceFaults).Concat(ClaimTagFaults(structure)).Concat(MatrixKeyFaults(structure)), levels);
+
+        if (document is not null && !manifest.ContainsKey("schemaVersion"))
+        {
+            document["schemaVersion"] = structure.SchemaVersion.ToString();
+        }
+
+        return structure;
     }
 
     /// <implements epic="0001" feature="F5" claim="B-048" />

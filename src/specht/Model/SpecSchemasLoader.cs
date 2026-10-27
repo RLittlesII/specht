@@ -54,7 +54,16 @@ public sealed class SpecSchemasLoader(SpecManifestStore store, SpecManifestParse
 
     /// <summary>Reads and parses a manifest, retaining the existing root, missing-file and shape failures.</summary>
     /// <implements epic="0001" feature="F1" claim="B-004" />
-    public SpecStructure LoadManifest(string root)
+    public SpecStructure LoadManifest(string root) => ReadManifest(root, parser.Parse);
+
+    /// <summary>Loads the check's validated manifest with its owned effective JSON, using the same store and failure handling.</summary>
+    /// <param name="root">The repository root.</param>
+    /// <returns>The parsed structure and projected document.</returns>
+    /// <implements epic="0001" feature="F9" claim="B-007" />
+    public SpecManifestDocument LoadManifestDocument(string root) => ReadManifest(root, parser.ParseDocument);
+
+    /// <implements epic="0001" feature="F9" claim="B-007" />
+    private T ReadManifest<T>(string root, Func<string, T> parse)
     {
         if (!store.RootExists(root))
         {
@@ -68,7 +77,7 @@ public sealed class SpecSchemasLoader(SpecManifestStore store, SpecManifestParse
 
         try
         {
-            return parser.Parse(store.ReadManifest(root));
+            return parse(store.ReadManifest(root));
         }
         catch (Exception exception) when (exception is JsonException or InvalidOperationException or FormatException)
         {
