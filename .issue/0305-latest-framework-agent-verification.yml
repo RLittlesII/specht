@@ -1,0 +1,39 @@
+id: "0305"
+type: task
+title: Verify with the highest project target framework
+
+status: done
+
+value: 2
+risk: 1
+
+parent: null
+children: []
+depends_on: []
+spikes: []
+
+spec: null
+claims: []
+
+created: "2026-10-26"
+updated: "2026-10-26"
+closed: "2026-10-26"
+
+summary: |
+  A process-documentation change requested by the repository owner: agent-run
+  .NET verification selects only the highest framework declared by each project.
+  The shared testing reference owns the policy; coding-conventions links it.
+
+acceptance_criteria:
+  - "Numeric selection chooses net10.0 from net9.0/net10.0 and net11.0 from net9.0/net10.0/net11.0."
+  - "Agent-run red/green tests, focused builds and review reruns explicitly select the highest declared target and record it."
+  - "Required repository gates and CI retain their existing target matrices."
+  - "The rule has one authoritative home and is available in both installed skill copies."
+  - "No .feature change needed: process documentation; tool behavior is unchanged. Constraints preserved: 0001-F1 C-5, 0001-F1 C-9."
+
+decisions:
+  - "2026-10-26, repository owner: agents use only the highest project target framework when verifying."
+  - "2026-10-26, skill editor: derive the target from evaluated project properties rather than the installed SDK; retain the repository-owned gate and CI matrices."
+
+out_of_scope:
+  - "Changing supported target frameworks, build targets, CI matrices, tool behavior or role ownership."
