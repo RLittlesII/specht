@@ -1,6 +1,7 @@
 using System;
 using System.Buffers.Binary;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.IO.Abstractions;
 using System.Linq;
@@ -16,6 +17,8 @@ public sealed class SchemaVersionLock(IFileSystem fileSystem, string root)
 {
     /// <summary>The committed lock, outside the embedded version folders.</summary>
     public const string RelativePath = "src/tool/schema/versions.lock.json";
+
+    internal static readonly string[] ShippingTrees = ["src/tool/schema", "src/tool/manifest", "src/tool/templates", "docs/rules"];
 
     /// <summary>Records the newest version unless it already has a digest.</summary>
     public async Task LockNewestAsync()
@@ -89,17 +92,26 @@ public sealed class SchemaVersionLock(IFileSystem fileSystem, string root)
         return Convert.ToHexStringLower(digest.GetHashAndReset());
     }
 
-    private IEnumerable<Version> ReadVersions() => fileSystem.Directory
-        .GetDirectories(fileSystem.Path.Combine(root, "src/tool/schema"), "v*")
-        .Select(path => fileSystem.Path.GetFileName(path)[1..])
-        .Select(static text => Version.TryParse(text, out var version)
+    internal static bool TryParseVersion(string text, [NotNullWhen(true)] out Version? version)
+    {
+        if (Version.TryParse(text, out version)
             && version.Build >= 0
             && version.Revision < 0
-            && string.Equals(text, version.ToString(3), StringComparison.Ordinal)
+            && string.Equals(text, version.ToString(3), StringComparison.Ordinal))
+        {
+            return true;
+        }
+
+        version = null;
+        return false;
+    }
+
+    internal IEnumerable<Version> ReadVersions() => fileSystem.Directory
+        .GetDirectories(fileSystem.Path.Combine(root, "src/tool/schema"), "v*")
+        .Select(path => fileSystem.Path.GetFileName(path)[1..])
+        .Select(static text => TryParseVersion(text, out var version)
             ? version
             : throw new InvalidOperationException($"schema/v{text}/ has an invalid schema version."));
 
     private static readonly JsonSerializerOptions LockJson = new() { WriteIndented = true };
-
-    private static readonly string[] ShippingTrees = ["src/tool/schema", "src/tool/manifest", "src/tool/templates", "docs/rules"];
 }

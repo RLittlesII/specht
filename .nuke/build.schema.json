@@ -31,6 +31,7 @@
         "Compile",
         "ContinuousIntegration",
         "CreateGitHubRelease",
+        "CutSchemaVersion",
         "Format",
         "IntegrationTest",
         "LockSchemaVersion",
@@ -128,6 +129,10 @@
         "Configuration": {
           "type": "string",
           "description": "Configuration to build - Default is 'Debug' (local) or 'Release' (server)"
+        },
+        "CutVersion": {
+          "type": "string",
+          "description": "The schema version to cut from the newest shipped one, major.minor.patch - Default is none, which is refused"
         },
         "Files": {
           "type": "array",
