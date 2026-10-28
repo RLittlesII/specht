@@ -26,11 +26,11 @@ public sealed partial class CommandLineReferenceSteps
     [Given("the command-line reference")]
     public void GivenTheCommandLineReference() => _page = Reference;
 
-    [Given("a command a specification describes and the tool's help does not list")]
-    public void GivenACommandASpecificationDescribesAndTheToolsHelpDoesNotList()
+    [Given("a copy of the command-line reference with a synthetic unsupported command section")]
+    public void GivenAnUnsupportedCommandSection()
     {
-        _unbuilt = [.. SpecifiedCommands.Except(Surface.Keys)];
-        _unbuilt.Should().NotBeEmpty("0002-F1 § 5 row 6 names commands that are specified and not built");
+        Surface.Should().NotContainKey(UnsupportedCommand);
+        _referenceContent = Read(Reference) + $"\n\n## `{UnsupportedCommand}`\n";
     }
 
     [Given("the repository's front page")]
@@ -55,7 +55,7 @@ public sealed partial class CommandLineReferenceSteps
     [Then("each command has a section of its own in the reference")]
     public void ThenEachCommandHasASectionOfItsOwnInTheReference()
     {
-        var sections = Sections();
+        var sections = Sections(_referenceContent);
         Surface.Keys.Where(command => sections.Count(section => section.Command == command) != 1)
             .Should()
             .BeEmpty($"each command the help lists has one section in {Reference} (B-006)");
@@ -64,7 +64,7 @@ public sealed partial class CommandLineReferenceSteps
     [Then("each option has an entry in that command's section")]
     public void ThenEachOptionHasAnEntryInThatCommandsSection()
     {
-        var sections = Sections();
+        var sections = Sections(_referenceContent);
         Surface.SelectMany(command => command.Value
                 .Select(static option => option[^1])
                 .Except(sections.Where(section => section.Command == command.Key).SelectMany(static section => section.Options))
@@ -75,23 +75,24 @@ public sealed partial class CommandLineReferenceSteps
 
     [Then("every command with a section is one the help lists")]
     public void ThenEveryCommandWithASectionIsOneTheHelpLists() =>
-        Sections().Select(static section => section.Command).Except(Surface.Keys)
+        Sections(_referenceContent).Select(static section => section.Command).Except(Surface.Keys)
             .Should()
             .BeEmpty($"{Reference} has a section only for a command the help lists (B-008)");
 
     [Then("every option with an entry is one its command's help lists")]
     public void ThenEveryOptionWithAnEntryIsOneItsCommandsHelpLists() =>
-        Sections().Where(section => Surface.ContainsKey(section.Command))
+        Sections(_referenceContent).Where(section => Surface.ContainsKey(section.Command))
             .SelectMany(section => section.Options.Except(Surface[section.Command].SelectMany(static option => option))
                 .Select(option => $"{section.Command} {option}"))
             .Should()
             .BeEmpty($"{Reference} has an entry only for an option its command's help lists (B-008)");
 
-    [Then("the reference has no section for that command")]
-    public void ThenTheReferenceHasNoSectionForThatCommand() =>
-        Sections().Select(static section => section.Command).Intersect(_unbuilt)
-            .Should()
-            .BeEmpty($"{Reference} has no section for a command the help does not list (B-008, C-8)");
+    [Then("the comparison rejects that unsupported command section")]
+    public void ThenUnsupportedSectionIsRejected()
+    {
+        Action compare = ThenEveryCommandWithASectionIsOneTheHelpLists;
+        compare.Should().Throw<Exception>().WithMessage($"*{UnsupportedCommand}*");
+    }
 
     [Then("every command and option it names is one the help lists")]
     public void ThenEveryCommandAndOptionItNamesIsOneTheHelpLists() =>
@@ -150,10 +151,10 @@ public sealed partial class CommandLineReferenceSteps
 
     private static string[] Names(string text) => [.. OptionName().Matches(text).Select(static match => match.Value)];
 
-    private static List<(string Command, List<string> Options)> Sections()
+    private static List<(string Command, List<string> Options)> Sections(string? referenceContent)
     {
         var sections = new List<(string Command, List<string> Options)>();
-        foreach (var line in Read(Reference).Split('\n'))
+        foreach (var line in (referenceContent ?? Read(Reference)).Split('\n'))
         {
             if (SectionHeading().Match(line) is { Success: true } heading)
             {
@@ -270,10 +271,9 @@ public sealed partial class CommandLineReferenceSteps
 
     private const string Reference = "docs/cli.md";
     private const string DefaultCommand = "specht";
-
-    private static readonly string[] SpecifiedCommands = ["specht manifest", "specht rules"];
+    private const string UnsupportedCommand = "specht synthetic-unavailable-command";
 
     private Dictionary<string, string[][]>? _surface;
     private string? _page;
-    private string[] _unbuilt = [];
+    private string? _referenceContent;
 }

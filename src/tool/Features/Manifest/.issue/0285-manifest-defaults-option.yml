@@ -2,7 +2,7 @@ id: "0285"
 type: task
 title: Print the shipped default manifest
 
-status: ready-for-architecture
+status: done
 
 value: 3
 risk: 2
@@ -22,8 +22,8 @@ claims:
   - B-012
 
 created: "2026-10-24"
-updated: "2026-10-24"
-closed: null
+updated: "2026-10-27"
+closed: "2026-10-27"
 
 summary: |
   As an agent editing a manifest I want `specht manifest --defaults` to print the default the tool ships, so that I read every key's default without a repository at hand.

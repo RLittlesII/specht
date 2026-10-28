@@ -210,7 +210,7 @@ for the manifest's exact pin without running a check. It is built (item `0040`).
 
 `specht rules` lists the pinned rules as tab-separated text and is built (item
 `0281`); its `--json` form prints the same entries as one document (item `0282`, `0001-F10`).
-`specht manifest` is specified and not built (`0001-F9`). A command that sets one rule's level is specified and not yet
+`specht manifest` prints the effective or newest shipped default manifest as text or JSON and is built (`0001-F9`, items `0284` to `0286`). A command that sets one rule's level is specified and not yet
 named (`0001-F11` OQ-1).
 
 ## Invariants

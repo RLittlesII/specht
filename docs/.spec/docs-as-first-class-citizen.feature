@@ -66,10 +66,10 @@ Feature: Docs as first-class citizen
     And every option with an entry is one its command's help lists
 
   @B-008 @boundary
-  Scenario: A command that is specified and not built has no section
-    Given a command a specification describes and the tool's help does not list
+  Scenario: An unsupported command section is rejected
+    Given a copy of the command-line reference with a synthetic unsupported command section
     When the command-line reference is compared with the tool's help
-    Then the reference has no section for that command
+    Then the comparison rejects that unsupported command section
 
   @B-009
   Scenario: The front page shows only what the tool accepts

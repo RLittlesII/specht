@@ -2,7 +2,7 @@ id: "0286"
 type: task
 title: The manifest command in JSON
 
-status: ready-for-architecture
+status: done
 
 value: 3
 risk: 1
@@ -19,8 +19,8 @@ claims:
   - B-011
 
 created: "2026-10-24"
-updated: "2026-10-24"
-closed: null
+updated: "2026-10-27"
+closed: "2026-10-27"
 
 summary: |
   As a script or an MCP host I want `specht manifest --json`, with and without `--defaults`, to print one JSON document, so that I read the manifest without parsing text.
