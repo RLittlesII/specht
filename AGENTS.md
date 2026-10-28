@@ -592,7 +592,8 @@ Feature, soonest.
   then read the merged commit on `main`: a citation it lacks is recorded, never
   restored by rewriting history
   ([`specht-conventions` § Delivery](.agents/skills/specht-conventions/references/delivery.md)).
-  There is no issue for `Closes` to close.
+  Neither a commit nor a pull-request body closes a mirrored issue with
+  `Closes`; the mirror closes it from the item.
 - Branch `<id>/<short-description>` from the item id, or `spec/<feature-slug>`
   when authoring a specification, which has no item to take an id from.
 
