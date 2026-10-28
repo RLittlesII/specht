@@ -2,7 +2,7 @@ id: "0081"
 type: test
 title: Prove a package version change moves no schema version
 
-status: ready-for-architecture
+status: done
 
 risk: 2
 
@@ -18,8 +18,8 @@ claims:
   - B-006
 
 created: "2026-10-08"
-updated: "2026-10-08"
-closed: null
+updated: "2026-10-28"
+closed: "2026-10-28"
 
 summary: |
   A test that bumps `version.json` and asserts the embedded version set and
@@ -31,7 +31,13 @@ acceptance_criteria:
   - "B-006 — `version.json` alone changed: embedded schema versions and `init`'s `schemaVersion` unchanged"
   - "§ 9 carries a row naming a test for each id above."
 
-decisions: []
+decisions:
+  - |
+    2026-10-28: the request to deliver 0055-F5 takes its remaining test
+    item 0081. B-006 gains an executable acceptance proof alongside B-005;
+    the original no-tests policy remains for the other six claims.
+    Existing schema-catalog and init-writer unit tests cover the underlying
+    mechanisms. No production change or architecture migration is needed.
 
 out_of_scope:
   - "Schema versions — § 5 #1, 0001-F7."
