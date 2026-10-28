@@ -116,7 +116,7 @@ The engine owns validation, token editing and the atomic manifest replacement. T
 
 <!-- last written by: test-writer, 2026-10-28 -->
 
-Acceptance scenarios run the built CLI as a separate process against a synthetic repository. Unit tests cover token spans, escaped names, supported BOM encodings, missing and null settings, no-op edits, exact pinned vocabulary, validation precedence and rejected inputs without writes. Integration tests exercise both root-option positions, shipped pins, each level, repeatability and preservation of every other file. The existing atomic-store tests cover staging cleanup and replacement failures.
+Acceptance scenarios run the built CLI as a separate process against a synthetic repository. Unit tests cover token spans, escaped names, supported BOM encodings, missing and null settings, no-op edits, exact pinned vocabulary, validation precedence and rejected inputs without writes. Integration tests exercise both root-option positions, shipped pins, each level, repeatability and preservation of every other file. The existing atomic-store tests cover successful replacement and cancelled-write preservation and cleanup.
 
 ## 9. Traceability Matrix
 
