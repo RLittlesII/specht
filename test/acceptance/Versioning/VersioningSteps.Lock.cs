@@ -68,17 +68,21 @@ public sealed partial class VersioningSteps
         _lockRoot = Path.Combine(".artifacts", "schema-lock-tests", Guid.NewGuid().ToString("N"));
         foreach (var version in versions)
         {
-            foreach (var path in new[]
-                     {
-                         $"src/tool/schema/v{version}/frontmatter/feature.schema.json",
-                         $"src/tool/manifest/v{version}/manifest.json",
-                         $"src/tool/templates/v{version}/feature.md",
-                         $"docs/rules/v{version}/SPEC001.md",
-                     })
+            foreach (var (path, content) in new Dictionary<string, string>
+            {
+                [$"src/tool/schema/v{version}/frontmatter/feature.schema.json"] =
+                    $"{{\n  \"$id\": \"https://github.com/rlittlesii/specht/schema/v{version}/frontmatter/feature.schema.json\",\n"
+                    + "  \"type\": \"object\"\n}\n",
+                [$"src/tool/manifest/v{version}/manifest.json"] = $"{{\n  \"schemaVersion\": \"{version}\"\n}}\n",
+                [$"src/tool/templates/v{version}/feature.md"] = "synthetic template\n",
+                [$"docs/rules/v{version}/SPEC001.md"] =
+                    "# SPEC001: Synthetic rule\n\n| Property         | Value       |\n| ---------------- | ----------- |\n"
+                    + $"| Schema version   | {version,-11} |\n",
+            })
             {
                 var fullPath = Path.Combine(_lockRoot, path);
                 Directory.CreateDirectory(Path.GetDirectoryName(fullPath)!);
-                File.WriteAllText(fullPath, $"synthetic {path}\n");
+                File.WriteAllText(fullPath, content);
             }
         }
     }
