@@ -1,0 +1,47 @@
+id: "0314"
+type: chore
+title: Ask the maintainer's questions first and start review from the report
+status: ready
+value: 4
+risk: 2
+parent: null
+children: []
+depends_on: []
+spikes: []
+spec: null
+claims: []
+created: "2026-10-28"
+updated: "2026-10-28"
+closed: null
+summary: |
+  A consumer ran ten specification review rounds. Findings that one
+  question to the maintainer would have settled surfaced round by round,
+  and each round re-read the whole specification instead of starting from
+  what changed. Two role changes remove that.
+  (1) Before the first draft, spec-author returns a list of plain-language
+  questions for the maintainer: the ambiguities it found, each one
+  answerable without reading the specification. The rule is written in
+  .agents/skills/clarify-requirements/SKILL.md, which owns when to ask;
+  .agents/roles/spec-author.md links it from Read first and names the list
+  under Produce.
+  (2) spec-reviewer takes two inputs it does not take today: the checker's
+  JSON report (specht --json) for the tree under review, and the previous
+  round's findings, each with its status (open, resolved, withdrawn). A
+  round starts from what changed since the last one. Written in
+  .agents/roles/spec-reviewer.md, Read first and Report.
+  Each rule lives in one place (AGENTS.md § Code conventions): a role
+  contract names what the role takes and produces and links the skill that
+  holds the rule, never a second copy of it.
+acceptance_criteria:
+  - ".agents/skills/clarify-requirements/SKILL.md states that a first draft is preceded by a list of plain-language questions for the maintainer, and what makes a question plain-language."
+  - ".agents/roles/spec-author.md links that rule and names the question list as an output; it does not restate the rule."
+  - ".agents/roles/spec-reviewer.md names the specht --json report and the previous round's findings with their status as inputs, and its Report section carries each finding's status forward."
+  - "No other skill or role file gains a copy of either rule."
+  - "python3 .agents/install.py reinstalls the changed role and skill without error."
+  - "./build.sh Specht passes."
+decisions:
+  - "2026-10-28, repository owner, chose to specify the two mechanical checks now and park the rest as spikes; the review process changes go ahead as this chore."
+out_of_scope:
+  - "A checker rule or report field for review rounds; the report is read as it is."
+  - "A stored file of review findings in the repository; the previous round's findings are an input the reviewer is handed."
+  - "Changes to test-writer, implementer or benchmarker."

@@ -1,0 +1,53 @@
+id: "0315"
+type: spike
+title: Analyze a wording check for Then steps that cannot fail
+status: ready
+value: 3
+risk: 2
+parent: null
+children: []
+depends_on: []
+spikes: []
+spec: null
+claims: []
+created: "2026-10-28"
+updated: "2026-10-28"
+closed: null
+summary: |
+  A consumer's review found a scenario that cannot fail: its outcome step
+  read "the instance may return no event". specht passed it, because it
+  checks that a scenario is tagged and resolves, not what its Then step
+  asserts. A permissive word in an outcome step is a mechanical signal.
+  Evaluate a check that flags a Gherkin Then step, or an And or But step
+  under a Then, whose text contains a word from a configurable list. The
+  starting list is may, can, either and "or no".
+  Answer, deciding or raising each as an open question with a
+  recommendation:
+  (1) Detection, deterministic: whole-word and case matching, phrases
+  against single words, docstrings and tables under a step, Background
+  and Scenario Outline steps, and text quoted inside the step.
+  (2) False positives: run the candidate list over every .feature file in
+  this repository, record the commit read, and give counts per word of
+  hits and of hits that are a real defect.
+  (3) Default severity: recommend warning, or say why not.
+  (4) Configuration: where the word list lives in the manifest, per the
+  direction in brief § 5 that literals move into the manifest, and whether
+  a consumer replaces or extends the default list.
+  (5) Home: an existing Feature that reads .feature files or a new one,
+  and the schema-version impact of a new SPEC### (0001-F7 C-11; at least
+  a 0.minor step after 0.2.1).
+  Time box: one session; return an agreement handoff for spec-author. No
+  implementation.
+acceptance_criteria:
+  - "Define a deterministic detection shape: step keywords in reach, word boundaries, case, phrases, docstrings, tables, Outlines and quoted text."
+  - "Report hit and defect counts per candidate word over this repository's .feature files, with the commit read."
+  - "Recommend a default severity and the manifest home of the word list against brief § 5."
+  - "Recommend the home Feature and state the schema-version impact against 0001-F7 C-11."
+  - "Return an agreement handoff for spec-author: candidate claims, constraints, out-of-scope rows and open questions."
+decisions:
+  - "2026-10-28, repository owner, chose to specify the two mechanical checks now and park the rest as spikes; this is one of the parked spikes."
+out_of_scope:
+  - "Rule, engine or host implementation."
+  - "Writing or amending a specification; the handoff goes to spec-author."
+  - "Rewording existing scenarios in this repository."
+  - "Judging whether a scenario is testable beyond the word list; meaning stays with review."

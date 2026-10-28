@@ -1,0 +1,55 @@
+id: "0318"
+type: spike
+title: Analyze a warning baseline or per-finding suppression
+status: ready
+value: 3
+risk: 3
+parent: null
+children: []
+depends_on: []
+spikes: []
+spec: null
+claims: []
+created: "2026-10-28"
+updated: "2026-10-28"
+closed: null
+summary: |
+  A consumer ran ten review rounds and saw the same 10 warnings (SPEC040,
+  SPEC051) every run. A warning that never changes is learned and ignored,
+  and that weakens every rule whose default level is warning, including
+  any new one. Today the only control is a rule's level for the whole tree
+  (rules set, src/tool/Features/Rules/Set/.spec/README.md), which hides
+  every finding of a rule, not the known ones.
+  Evaluate a recorded baseline of accepted findings, a per-finding
+  suppression written in the specification, and neither. Answer, deciding
+  or raising each as an open question with a recommendation:
+  (1) Invariants: each option against AGENTS.md § Invariants - deterministic
+  and offline, the same tree gives the same report, no write into a
+  consumer's tree except through a named command. Name the command that
+  would write a baseline, if one would, and the invariant amendment it
+  needs.
+  (2) Identity: what identifies a finding across edits (rule id, path,
+  identifier, line), and what happens when a line moves or a finding's
+  identifier changes.
+  (3) Reporting: whether a baselined or suppressed finding still appears,
+  and how, in the text stream, --json and the summary counts; whether a
+  stale baseline entry is itself a finding.
+  (4) Against rules set: what either option gives that a rule level does
+  not, and whether a level per path or per identifier would be enough.
+  (5) Home and schema-version impact (0001-F7 C-11), and whether a
+  manifest key or a separate file holds the record.
+  Time box: one session; return an agreement handoff for spec-author, or a
+  recommendation to do neither with the reason. No implementation.
+acceptance_criteria:
+  - "Evaluate a baseline, an in-specification suppression and neither against each invariant in AGENTS.md § Invariants."
+  - "Define finding identity across edits and state what a moved line or changed identifier does."
+  - "State how a baselined or suppressed finding is reported in text, --json and the counts, and whether a stale entry is a finding."
+  - "Compare against the rules set level control in src/tool/Features/Rules/Set/.spec/README.md."
+  - "State the home and the schema-version impact against 0001-F7 C-11."
+  - "Return an agreement handoff for spec-author, or a recommendation to do neither."
+decisions:
+  - "2026-10-28, repository owner, chose to specify the two mechanical checks now and park the rest as spikes; this is one of the parked spikes."
+out_of_scope:
+  - "Rule, engine, command or host implementation."
+  - "Editing the rules set specification or AGENTS.md § Invariants; the handoff recommends edits."
+  - "Changing the level or wording of SPEC040 or SPEC051."

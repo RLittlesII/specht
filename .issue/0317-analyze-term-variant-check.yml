@@ -1,0 +1,48 @@
+id: "0317"
+type: spike
+title: Analyze a check for a term written in two forms
+status: ready
+value: 2
+risk: 2
+parent: null
+children: []
+depends_on: []
+spikes: []
+spec: null
+claims: []
+created: "2026-10-28"
+updated: "2026-10-28"
+closed: null
+summary: |
+  A consumer's review found one concept written as two terms, "route" in
+  some claims and "path" in others. specht cannot see it. Evaluate whether
+  a check earns its cost, and recommend do or drop.
+  Answer, deciding or raising each as an open question with a
+  recommendation:
+  (1) Shape: a manifest-declared list of terms, each with its forbidden
+  variants, against a glossary section in the specification itself, and
+  the scope each reads (one specification, one epic, the whole tree).
+  (2) Determinism: matching rules for case, inflection, compounds, code
+  spans and quoted text, and whether the result stays the same for the
+  same tree on every machine.
+  (3) Noise: which sections a variant is legitimate in, and an estimate of
+  findings a consumer would suppress; measure on this repository's tree
+  with a sample list and record the commit read.
+  (4) Home: where the list and the rule would live, per brief § 5, and the
+  schema-version impact of a new SPEC### (0001-F7 C-11) or of a new
+  section, which changes the template.
+  (5) Verdict: do or drop, with the reason. A drop is a valid outcome.
+  Time box: one session; return an agreement handoff for spec-author, or a
+  drop with the reason recorded on this item. No implementation.
+acceptance_criteria:
+  - "Compare a manifest term list against a glossary section on cost, scope and template impact."
+  - "Define deterministic matching or state why it cannot be made deterministic."
+  - "Report a noise measurement on this repository's tree with a sample list and the commit read."
+  - "State the home and the schema-version impact against brief § 5 and 0001-F7 C-11."
+  - "Recommend do or drop; on do, return an agreement handoff for spec-author."
+decisions:
+  - "2026-10-28, repository owner, chose to specify the two mechanical checks now and park the rest as spikes; this is one of the parked spikes."
+out_of_scope:
+  - "Rule, engine, template or host implementation."
+  - "Writing a specification or a glossary for this repository."
+  - "Synonym detection without a declared list; the check reads only what a consumer declares."
