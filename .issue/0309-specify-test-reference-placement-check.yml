@@ -1,0 +1,38 @@
+id: "0309"
+type: spike
+title: Specify an opt-in test-reference placement check
+status: ready
+value: 3
+risk: 3
+parent: null
+children: []
+depends_on: []
+spikes: []
+spec: null
+claims: []
+created: "2026-10-27"
+updated: "2026-10-27"
+closed: null
+summary: |
+  Specify an opt-in check for concrete test names, classes, files or
+  locators in specification sections outside section 9. Section 8 keeps
+  strategy, required tiers, testability and coverage requirements by claim.
+  Reuse 0001-F12 matrix-resolution work and the existing resolver delivered
+  by 0225. Do not duplicate test discovery or infer a test from arbitrary prose.
+  Example: a recognized test locator in section 8 is reported; the same locator
+  in section 9, or a B-044 citation without a locator, is accepted.
+  The spike must bound reliable recognition of test files and names, including
+  locators outside the current matrix, and document unsupported forms.
+  Time box: one session, at most two hours; return an agreement handoff.
+acceptance_criteria:
+  - "Define recognizable test references using existing matrix resolution and declared test inputs; cover names, files, classes and locators."
+  - "Specify section-9 allowance and outside-section diagnostics without treating generic testing language or claim keys as test locators."
+  - "Include examples for unresolved names, dotted names, paths, inline/reference links, fenced examples and specifications with no declared tests."
+  - "Define an opt-in, default-off rule and its schema impact; preserve matrix coverage semantics and unchanged-consumer verdicts."
+  - "Record remaining recognition limits and hand off an agreement before implementation items."
+decisions:
+  - "2026-10-27, repository owner: request future Specht capability; do not enable new checks in agents. Value reflects the requested spec-process change; risk estimates bounded agreement discovery."
+out_of_scope:
+  - "Implementation, source compilation, test execution or check activation in agents."
+  - "A second matrix resolver, prose rewriting, test renaming or changes to matrix coverage statuses."
+  - "Auditing immutable historical records or repository entry-point test commands."
