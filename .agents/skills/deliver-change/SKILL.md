@@ -25,7 +25,12 @@ report publication —
    way, never written side by side: each would take the same next id.
 4. **Do not start an item whose specification is unresolved.** Open questions that
    block the claims you are about to build are resolved first, or the exception is
-   written down as a decision record naming what was assumed.
+   written down as a decision record naming what was assumed. Before building
+   anything that copies state whose authority lives elsewhere - a hosted
+   service's settings, external configuration - or a test that only asserts a
+   document's own content, stop and ask the owner whether to build it at all,
+   even when an approved specification or a ready item calls for it. Present
+   the specification's request as a question, and build only on a yes.
 5. **The specification delta is part of the change.** Scenario and claim edits ship
    in the same pull request as the code, not after it. A correction that lives only
    in conversation does not survive to the next session.
@@ -123,6 +128,8 @@ prevented it — the skill holds the rule, the lesson keeps the incident.
 - Vendor-specific AI names in any artifact, including attribution and sign-off.
 - A second item in progress alongside the first.
 - A branch or an edit before the item is signalled as taken.
+- A copy of state whose authority lives elsewhere, or a test that only asserts a
+  document's own content, built without the owner's yes.
 - A claim, a status, or a rule duplicated into the item from the specification.
 - A scenario edit deferred to a follow-up pull request.
 - A skipped phase because the change "is small". Small changes skip roles, not
