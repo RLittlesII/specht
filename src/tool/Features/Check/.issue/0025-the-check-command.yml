@@ -2,7 +2,7 @@ id: "0025"
 type: feature
 title: The check command
 
-status: ready-for-architecture
+status: done
 
 value: 5
 risk: 3
@@ -10,7 +10,7 @@ risk: 3
 parent: "0001"
 children: ["0026", "0027", "0028", "0029", "0030", "0031", "0032", "0133", "0171", "0172", "0174", "0182", "0217"]
 
-depends_on: []
+depends_on: ["0310"]
 spikes: []
 
 spec: src/tool/Features/Check/.spec/README.md
@@ -30,11 +30,12 @@ claims:
   - B-012
   - B-013
   - B-014
+  - B-015
   - B-016
 
 created: "2026-10-08"
-updated: "2026-10-14"
-closed: null
+updated: "2026-10-27"
+closed: "2026-10-27"
 
 summary: |
   As a pre-commit hook, a CI build or an agent mid-write, I want one specht

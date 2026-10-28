@@ -2,11 +2,19 @@ using System.Globalization;
 using System.Security.Cryptography;
 using System.Text.RegularExpressions;
 using AwesomeAssertions;
+using Microsoft.Extensions.DependencyInjection;
 using Reqnroll;
+using Specht.Acceptance.Engine;
+using Specht.Composition;
+using Specht.Manifest;
 using Specht.Model;
 using Specht.Report;
+using Specht.Rules;
 using Specht.Tests.Shared;
 using Specht.Tool;
+using Specht.Tool.Features.Check;
+using Spectre.Console.Cli.Testing;
+using Spectre.Console.Testing;
 
 
 namespace Specht.Acceptance.Check;
@@ -106,7 +114,28 @@ public sealed partial class CheckSteps
 
     [When("the check runs")]
     [When("the check runs without asking for the JSON document")]
-    public void WhenTheCheckRuns() => Launch(Tree.Root, "--root", ".");
+    public void WhenTheCheckRuns()
+    {
+        if (!_ruleFails)
+        {
+            Launch(Tree.Root, "--root", ".");
+            return;
+        }
+
+        var services = new ServiceCollection().AddSpechtEngine();
+        services.AddSingleton<ISpecRule>(new FaultIsolatedRule(new FailingRule()));
+        services.AddSingleton<Func<string, SchemaSourceSelection?, SpechtReport>>(static provider => provider.GetRequiredService<SpechtRunner>().Run);
+        var app = new CommandAppTester(new TypeRegistrar(services), console: new TestConsole());
+        app.SetDefaultCommand<CheckCommand>();
+        var result = app.Run("--root", Tree.Root);
+        (_stdout, _stderr, _exitCode) = (result.Output, string.Empty, result.ExitCode);
+    }
+
+    [Given("the root holds a specification")]
+    public void GivenTheRootHoldsASpecification() => Tree.WriteFeature("0001", "F1");
+
+    [Given("one rule fails while it is evaluated")]
+    public void GivenOneRuleFailsWhileItIsEvaluated() => _ruleFails = true;
 
     [When("the check runs against it")]
     public void WhenTheCheckRunsAgainstIt() => Launch(Tree.Root, "--root", _typed ?? throw new InvalidOperationException("No root was typed."));
@@ -350,4 +379,5 @@ public sealed partial class CheckSteps
     private string _stdout = string.Empty;
     private string _stderr = string.Empty;
     private int _exitCode = -1;
+    private bool _ruleFails;
 }

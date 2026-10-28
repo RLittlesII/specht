@@ -56,7 +56,7 @@ public sealed class SpechtRunner(
 
     /// <summary>Parses a frontmatter kind before the caller reads its document or root.</summary>
     /// <implements epic="0001" feature="F1" claim="B-001" />
-    public FrontmatterKind ParseFrontmatterKind(string kind) => rules.OfType<FrontmatterSchemaRule>().Single().ParseKind(kind);
+    public FrontmatterKind ParseFrontmatterKind(string kind) => FrontmatterRule.ParseKind(kind);
 
     /// <summary>Checks only the supplied document's frontmatter against the root's selected schemas.</summary>
     /// <implements epic="0001" feature="F1" claim="B-001" />
@@ -66,7 +66,7 @@ public sealed class SpechtRunner(
         var model = new SpecModel(root, [], [], [], loaded);
         var frontmatter = FrontmatterReader.Parse(text);
 
-        return Evaluate(model, rules.OfType<FrontmatterSchemaRule>(),
+        return Evaluate(model, [FrontmatterRule],
             rule => ((FrontmatterSchemaRule)rule).Evaluate(path, frontmatter, loaded, kind));
     }
 
@@ -79,6 +79,10 @@ public sealed class SpechtRunner(
         fileSystem.Directory.CreateDirectory(fileSystem.Path.GetDirectoryName(path)!);
         fileSystem.File.WriteAllText(path, SpecReportDocument.From(report).ToJson());
     }
+
+    private FrontmatterSchemaRule FrontmatterRule => rules
+        .Select(static rule => rule is FaultIsolatedRule isolated ? isolated.Inner : rule)
+        .OfType<FrontmatterSchemaRule>().Single();
 
     /// <implements epic="0001" feature="F1" claim="B-001" />
     private static SpechtReport Evaluate(
@@ -93,7 +97,7 @@ public sealed class SpechtRunner(
         {
             violations.AddRange(
                 evaluate(rule)
-                    .Where(violation => Enabled(violation.RuleId, rule, version.RuleIds, settings))
+                    .Where(violation => violation.RuleFailure is not null || Enabled(violation.RuleId, rule, version.RuleIds, settings))
                     .Select(violation => Graded(violation, settings)));
         }
 
@@ -116,7 +120,7 @@ public sealed class SpechtRunner(
 
     /// <implements epic="0001" feature="F1" claim="B-001" />
     private static SpecViolation Graded(SpecViolation violation, SpecRuleSettings settings) =>
-        settings.TryGetValue(violation.RuleId, out var level) ? level switch
+        violation.RuleFailure is null && settings.TryGetValue(violation.RuleId, out var level) ? level switch
         {
             SpecRuleLevel.Warning => violation with { Severity = SpecSeverity.Warning },
             SpecRuleLevel.Error => violation with { Severity = SpecSeverity.Error },
