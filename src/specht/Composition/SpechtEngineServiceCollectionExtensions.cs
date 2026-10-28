@@ -36,6 +36,8 @@ public static class SpechtEngineServiceCollectionExtensions
         services.AddSingleton<MatrixResolver>();
         services.AddSingleton<SpecManifestStore>();
         services.AddSingleton<ManifestPinEditor>();
+        services.AddSingleton<ManifestRuleEditor>();
+        services.AddSingleton<RuleLevelSetter>();
         services.AddSingleton<SchemaVersionManager>();
         services.AddSingleton<UpstreamSchemaCopy>();
         services.AddSingleton<SpecSchemasLoader>();

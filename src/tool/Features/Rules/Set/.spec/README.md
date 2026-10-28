@@ -4,7 +4,7 @@ description: "The set command sets one rule id of the pinned schema version to e
 type: feature
 id: "F11"
 epic: "0001"
-spec_status: draft
+spec_status: in-review
 status: ready-for-architecture
 priority: med
 value: 0
@@ -20,7 +20,7 @@ depends_on: ["F2", "F5", "F7"]
 blocks: []
 spikes: []
 created: "2026-10-11"
-updated: "2026-10-24"
+updated: "2026-10-28"
 github_issue: null
 synced_at: null
 ---
@@ -55,21 +55,21 @@ Lowering, raising or switching off a rule is a hand edit to a JSON file: a misty
 
 <!-- last written by: spec-author, 2026-10-11, 2026-10-24 -->
 
-| ID    | Claim                                                                                                                                                                                                                                               | Source                                                                                                                                                                                                            | Status |
-| ----- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------ |
-| B-001 | Given the set command naming a rule id of the pinned version's vocabulary and a level, this Feature sets that rule id to that level in the manifest's `rules`.                                                                                      | owner, 2026-10-11; decision 0001; OQ-1                                                                                                                                                                            | Active |
-| B-002 | Given the set command sets a level, this Feature exits with code `0`.                                                                                                                                                                               | `0001-F7` B-043; C-6                                                                                                                                                                                              | Active |
-| B-003 | Given the set command under a manifest whose `rules` carries an entry for the named rule id, the manifest's bytes differ from before only in that entry's value.                                                                                    | owner, 2026-10-11; decision 0001; C-1; `0001-F7` B-045                                                                                                                                                            | Active |
-| B-004 | Given the set command under a manifest whose `rules` carries no entry for the named rule id, this Feature adds the entry and every other key and every other `rules` entry keeps its value.                                                         | owner, 2026-10-11; decision 0001; C-1; `0001-F7` B-047                                                                                                                                                            | Active |
-| B-005 | Given the set command under a manifest with no `rules` key, this Feature adds the key holding that one entry and every other key keeps its value.                                                                                                   | owner, 2026-10-11; decision 0001; C-1; `0001-F7` B-047                                                                                                                                                            | Active |
-| B-006 | Given the set command, no file under the root other than the manifest is created, modified or deleted.                                                                                                                                              | owner, 2026-10-11; decision 0001; C-1; brief § 9; `0001-F7` B-046                                                                                                                                                 | Active |
-| B-007 | Given the set command naming a rule id outside the pinned version's vocabulary under a root and a manifest that B-009 to B-011 accept, this Feature names the id on stderr, writes nothing, and exits with code `4`.                                | derived from `0001-F2` decision 0003 (`4` is for what the command line names), `0001-F3` B-020 and `0001-F7` B-048, B-111; not stated by the owner; decision 0002; OQ-2                                           | Active |
-| B-008 | Given the set command naming a level other than `error`, `warning` and `off` under a root and a manifest that B-009 to B-011 accept, this Feature names the level as typed and the three levels on stderr, writes nothing, and exits with code `4`. | derived from `0001-F2` decision 0003 (`4` is for what the command line names), `0001-F8` B-020 and `0001-F7` B-111; the refusal is the owner's, 2026-10-11, the code is not; `0001-F5` OQ-15; decision 0002; OQ-2 | Active |
-| B-009 | Given the set command with `--root` naming a path that is not a directory, this Feature writes nothing and exits with code `2`.                                                                                                                     | brief § 5; `0001-F7` B-049                                                                                                                                                                                        | Active |
-| B-010 | Given the set command under a root with no manifest, this Feature writes nothing and exits with code `2`.                                                                                                                                           | brief § 5; `0001-F7` B-050; C-2; OQ-2                                                                                                                                                                             | Active |
-| B-011 | Given the set command under a root whose manifest the check rejects, this Feature writes nothing and exits with code `3`.                                                                                                                           | `0001-F2` decision 0003; `0001-F7` B-051; OQ-2; OQ-3                                                                                                                                                              | Active |
-| B-012 | Given the set command sets a level in a manifest the check accepts, the check accepts the manifest it leaves.                                                                                                                                       | derived from C-3 and `0001-F5` B-013, B-045; not stated by the owner                                                                                                                                              | Active |
-| B-013 | Given any output on stdout or stderr, every path the tool derives is relative to the root with `/` separators, and the only path that may be absolute is one typed on the command line, echoed as given.                                            | brief § 9; `0001-F2` B-013                                                                                                                                                                                        | Active |
+| ID    | Claim                                                                                                                                                                                                                                               | Source                                                                                                                                                                                                                                                                                                            | Status |
+| ----- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------ |
+| B-001 | Given the set command naming a rule id of the pinned version's vocabulary and a level, this Feature sets that rule id to that level in the manifest's `rules`.                                                                                      | owner, 2026-10-11; decision 0001; OQ-1                                                                                                                                                                                                                                                                            | Active |
+| B-002 | Given the set command sets a level, this Feature exits with code `0`.                                                                                                                                                                               | `0001-F7` B-043; C-6                                                                                                                                                                                                                                                                                              | Active |
+| B-003 | Given the set command under a manifest whose `rules` carries an entry for the named rule id, the manifest's bytes differ from before only in that entry's value.                                                                                    | owner, 2026-10-11; decision 0001; C-1; `0001-F7` B-045                                                                                                                                                                                                                                                            | Active |
+| B-004 | Given the set command under a manifest whose `rules` carries no entry for the named rule id, this Feature adds the entry and every other key and every other `rules` entry keeps its value.                                                         | owner, 2026-10-11; decision 0001; C-1; `0001-F7` B-047                                                                                                                                                                                                                                                            | Active |
+| B-005 | Given the set command under a manifest with no `rules` key, this Feature adds the key holding that one entry and every other key keeps its value.                                                                                                   | owner, 2026-10-11; decision 0001; C-1; `0001-F7` B-047                                                                                                                                                                                                                                                            | Active |
+| B-006 | Given the set command, no file under the root other than the manifest is created, modified or deleted.                                                                                                                                              | owner, 2026-10-11; decision 0001; C-1; brief § 9; `0001-F7` B-046                                                                                                                                                                                                                                                 | Active |
+| B-007 | Given the set command naming a rule id outside the pinned version's vocabulary under a root and a manifest that B-009 to B-011 accept, this Feature names the id on stderr, writes nothing, and exits with code `4`.                                | derived from `0001-F2` decision 0003 (`4` is for what the command line names), `0001-F3` B-020 and `0001-F7` B-048, B-111; not stated by the owner; decision 0002; OQ-2; `RuleSetCommandUnitTests.Input_WhenExecuted_ShouldFoldTheEngineFailureIntoTheExistingExitCode`                                           | Active |
+| B-008 | Given the set command naming a level other than `error`, `warning` and `off` under a root and a manifest that B-009 to B-011 accept, this Feature names the level as typed and the three levels on stderr, writes nothing, and exits with code `4`. | derived from `0001-F2` decision 0003 (`4` is for what the command line names), `0001-F8` B-020 and `0001-F7` B-111; the refusal is the owner's, 2026-10-11, the code is not; `0001-F5` OQ-15; decision 0002; OQ-2; `RuleSetCommandUnitTests.Input_WhenExecuted_ShouldFoldTheEngineFailureIntoTheExistingExitCode` | Active |
+| B-009 | Given the set command with `--root` naming a path that is not a directory, this Feature writes nothing and exits with code `2`.                                                                                                                     | brief § 5; `0001-F7` B-049                                                                                                                                                                                                                                                                                        | Active |
+| B-010 | Given the set command under a root with no manifest, this Feature writes nothing and exits with code `2`.                                                                                                                                           | brief § 5; `0001-F7` B-050; C-2; OQ-2                                                                                                                                                                                                                                                                             | Active |
+| B-011 | Given the set command under a root whose manifest the check rejects, this Feature writes nothing and exits with code `3`.                                                                                                                           | `0001-F2` decision 0003; `0001-F7` B-051; OQ-2; OQ-3                                                                                                                                                                                                                                                              | Active |
+| B-012 | Given the set command sets a level in a manifest the check accepts, the check accepts the manifest it leaves.                                                                                                                                       | derived from C-3 and `0001-F5` B-013, B-045; not stated by the owner                                                                                                                                                                                                                                              | Active |
+| B-013 | Given any output on stdout or stderr, every path the tool derives is relative to the root with `/` separators, and the only path that may be absolute is one typed on the command line, echoed as given.                                            | brief § 9; `0001-F2` B-013                                                                                                                                                                                                                                                                                        | Active |
 
 ## 4. Constraints
 
@@ -102,46 +102,47 @@ Lowering, raising or switching off a rule is a hand edit to a JSON file: a misty
 
 ## 6. Concern Separation
 
-<!-- last written by: spec-author, 2026-10-11 -->
+<!-- last written by: implementer, 2026-10-28 -->
 
-Pending: owned by `implementer`, written after agreement.
+The engine owns validation, token editing and the atomic manifest replacement. The CLI binds arguments and maps typed input failures to existing exit codes. The existing manifest parser and pinned vocabulary remain authoritative.
 
 ## 7. Technical Design
 
-<!-- last written by: spec-author, 2026-10-11 -->
+<!-- last written by: implementer, 2026-10-28 -->
 
-Pending: owned by `implementer`, written after agreement.
+`ManifestRuleEditor` replaces a root `rules` entry value or inserts a missing entry/object. It shares BOM decoding and byte-offset conversion with `ManifestPinEditor`; unrelated tokens, encoding and BOM survive. `RuleLevelSetter` validates the root and complete manifest, resolves the exact pinned vocabulary, validates the id and lower-case level together so both faults are named when both are invalid, then uses `SpecManifestStore.WriteManifest` for an atomic replacement only when bytes differ. The command registers beneath the existing rules branch. [Decision 0003](decisions/0003-deliver-on-the-recorded-working-defaults.md) records the working defaults. No architecture migration is required.
 
 ## 8. Testing Strategy
 
-<!-- last written by: spec-author, 2026-10-11 -->
+<!-- last written by: test-writer, 2026-10-28 -->
 
-Pending: owned by `test-writer`, written after agreement.
+Acceptance scenarios run the built CLI as a separate process against a synthetic repository. Unit tests cover token spans, escaped names, supported BOM encodings, missing and null settings, no-op edits, exact pinned vocabulary, validation precedence and rejected inputs without writes. Integration tests exercise both root-option positions, shipped pins, each level, repeatability and preservation of every other file. The existing atomic-store tests cover successful replacement and cancelled-write preservation and cleanup.
 
 ## 9. Traceability Matrix
 
-<!-- last written by: spec-author, 2026-10-11 -->
+<!-- last written by: test-writer, 2026-10-28 -->
 
-| Claim ID | Scenario                                                        | Test    | Status  |
-| -------- | --------------------------------------------------------------- | ------- | ------- |
-| B-001    | Setting a level writes it into the manifest                     | Missing | Missing |
-| B-002    | Setting a level succeeds                                        | Missing | Missing |
-| B-003    | Setting a level changes only that rule's entry                  | Missing | Missing |
-| B-004    | Setting a rule the manifest does not name adds its entry        | Missing | Missing |
-| B-005    | Setting a rule in a manifest with no rule settings adds them    | Missing | Missing |
-| B-006    | Setting a level touches no other file                           | Missing | Missing |
-| B-007    | A rule the pinned version does not hold is a not-found failure  | Missing | Missing |
-| B-008    | A level that is not one of the three is a not-found failure     | Missing | Missing |
-| B-009    | Setting a level under a missing root is a missing-input failure | Missing | Missing |
-| B-010    | Setting a level without a manifest is a missing-input failure   | Missing | Missing |
-| B-011    | Setting a level in an invalid manifest is invalid configuration | Missing | Missing |
-| B-012    | The manifest left behind is one the check accepts               | Missing | Missing |
-| B-013    | No derived path in the output is absolute                       | Missing | Missing |
+| Claim ID | Scenario                                                        | Test                                                                                                                                                                                                                                              | Status  |
+| -------- | --------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------- |
+| B-001    | Setting a level writes it into the manifest                     | `RuleSettingSteps.ThenLevel`; `RuleLevelSetterUnitTests.AcceptedManifest_WhenSetting_ShouldRemainAcceptedWithOnlyTheNamedOverride`                                                                                                                | Covered |
+| B-002    | Setting a level succeeds                                        | `RuleSettingSteps.ThenExitCode`; `RuleSetCommandIntegrationTests.AcceptedManifest_WhenSettingThroughTheHost_ShouldWriteOnlyTheNamedOverride`                                                                                                      | Covered |
+| B-003    | Setting a level changes only that rule's entry                  | `RuleSettingSteps.ThenOnlyValue`; `ManifestRuleEditorUnitTests.ExistingLevel_WhenChanged_ShouldPreserveEncodingAndEveryOtherByte`; `ManifestRuleEditorUnitTests.EscapedNamesAndSameLevel_WhenSet_ShouldLeaveEveryByteUnchanged`                   | Covered |
+| B-004    | Setting a rule the manifest does not name adds its entry        | `RuleSettingSteps.ThenOtherValues`; `ManifestRuleEditorUnitTests.MissingEntry_WhenChanged_ShouldKeepOtherValuesAndLeaveAnAcceptedManifest`                                                                                                        | Covered |
+| B-005    | Setting a rule in a manifest with no rule settings adds them    | `RuleSettingSteps.ThenSingleEntry`; `ManifestRuleEditorUnitTests.MissingEntry_WhenChanged_ShouldKeepOtherValuesAndLeaveAnAcceptedManifest`                                                                                                        | Covered |
+| B-006    | Setting a level touches no other file                           | `RuleSettingSteps.ThenOtherFilesUnchanged`; `RuleSetCommandIntegrationTests.AcceptedManifest_WhenSettingThroughTheHost_ShouldWriteOnlyTheNamedOverride`                                                                                           | Covered |
+| B-007    | A rule the pinned version does not hold is a not-found failure  | `RuleSettingSteps.ThenNamesRule`; `RuleLevelSetterUnitTests.RejectedInput_WhenSetting_ShouldValidateManifestFirstAndWriteNothing`; `RuleSetCommandUnitTests.Input_WhenExecuted_ShouldFoldTheEngineFailureIntoTheExistingExitCode`                 | Covered |
+| B-008    | A level that is not one of the three is a not-found failure     | `RuleSettingSteps.ThenNamesLevels`; `RuleLevelSetterUnitTests.RejectedInput_WhenSetting_ShouldValidateManifestFirstAndWriteNothing`; `RuleSetCommandUnitTests.Input_WhenExecuted_ShouldFoldTheEngineFailureIntoTheExistingExitCode`               | Covered |
+| B-009    | Setting a level under a missing root is a missing-input failure | `RuleSettingSteps.ThenExitCode`; `RuleLevelSetterUnitTests.MissingInput_WhenSetting_ShouldFailBeforeArgumentsAndCreateNothing`                                                                                                                    | Covered |
+| B-010    | Setting a level without a manifest is a missing-input failure   | `RuleSettingSteps.ThenNoManifest`; `RuleLevelSetterUnitTests.MissingInput_WhenSetting_ShouldFailBeforeArgumentsAndCreateNothing`                                                                                                                  | Covered |
+| B-011    | Setting a level in an invalid manifest is invalid configuration | `RuleSettingSteps.ThenFilesUnchanged`; `RuleLevelSetterUnitTests.RejectedInput_WhenSetting_ShouldValidateManifestFirstAndWriteNothing`                                                                                                            | Covered |
+| B-012    | The manifest left behind is one the check accepts               | `RuleSettingSteps.ThenManifestAccepted`; `ManifestRuleEditorUnitTests.NullRulesAcceptedByTheParser_WhenSet_ShouldReplaceNullWithOneEntry`; `ManifestRuleEditorUnitTests.MissingEntry_WhenChanged_ShouldKeepOtherValuesAndLeaveAnAcceptedManifest` | Covered |
+| B-013    | No derived path in the output is absolute                       | `RuleSettingSteps.ThenRelativePaths`; `RuleSetCommandUnitTests.Input_WhenExecuted_ShouldFoldTheEngineFailureIntoTheExistingExitCode`                                                                                                              | Covered |
 
 ## 10. Lessons / Spec Deltas
 
 <!-- last written by: spec-author, 2026-10-11, 2026-10-24 -->
 
+- 2026-10-28, delivery follows [decision 0003](decisions/0003-deliver-on-the-recorded-working-defaults.md). Boundary scenarios make the recorded case and refusal defaults executable, preserve accepted null rule settings under B-012, and require both invalid arguments to be named under B-007 and B-008.
 - 2026-10-24, groomed from `blocked` to `ready-for-architecture` ([decision 0002](decisions/0002-a-root-or-manifest-fault-is-reported-before-an-unknown-rule-or-level.md)). The block named `0001-F2`, `0001-F5` and `0001-F7`: `0001-F2` and `0001-F5` are built; `0001-F7`'s list and pin commands are built (items `0121` to `0125`) and only `upgrade` (item `0047`) is outstanding, which no claim here depends on.
 - 2026-10-24, OQ-2 resolved by `0001-F7` OQ-23 (decision 0012, B-111): B-007 and B-008 now apply under a root and manifest that B-009 to B-011 accept, and two boundary scenarios state the order. OQ-3 is not carried over from `0001-F7` OQ-20 and stays open.
 
@@ -161,11 +162,12 @@ Pending: owned by `test-writer`, written after agreement.
 
 ## 12. Sign-off
 
-<!-- last written by: spec-author, 2026-10-11 -->
+<!-- last written by: spec-reviewer, 2026-10-28 -->
 
-| Section | Status | Reviewer      | Note                   |
-| ------- | ------ | ------------- | ---------------------- |
-| 1-5     | 🟡     | spec-reviewer | Awaiting first review. |
+| Section | Status | Reviewer      | Note                                                                                                                                                                 |
+| ------- | ------ | ------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1-5     | 🟡     | spec-reviewer | 2026-10-28: delivered on the recorded working defaults in decision 0003; awaiting PR review.                                                                         |
+| 6-9     | 🟢     | spec-reviewer | 2026-10-28: Implementation and traceability self-review complete; full repository build passed, including both acceptance frameworks. No independent review claimed. |
 
 ## Tasks
 

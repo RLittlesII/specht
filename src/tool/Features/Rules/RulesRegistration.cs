@@ -1,3 +1,4 @@
+using Specht.Tool.Features.Rules.Set;
 using Spectre.Console.Cli;
 
 namespace Specht.Tool.Features.Rules;
@@ -14,6 +15,7 @@ public static class RulesRegistration
         {
             rules.SetDescription("List pinned rules and their effective levels.");
             rules.SetDefaultCommand<RulesCommand>();
+            rules.AddCommand<RuleSetCommand>("set").WithDescription("Set one pinned rule to error, warning or off.");
         });
         return configuration;
     }

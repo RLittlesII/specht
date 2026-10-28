@@ -126,3 +126,32 @@ Feature: Setting a rule's level
     Given a root with no manifest
     When the out-of-order-section rule is set to warning against that root given as an absolute path
     Then every path the output names other than those typed is relative to the root and uses forward slashes
+
+  @B-008 @boundary
+  Scenario: A level in another letter case is refused
+    When the out-of-order-section rule is set to Warning
+    Then the exit code is 4
+
+  @B-011 @boundary
+  Scenario: Setting a level does not repair an invalid level already in the manifest
+    Given the manifest sets the out-of-order-section rule to loud
+    And a snapshot of every file under the root
+    When the out-of-order-section rule is set to warning
+    Then no file under the root has changed
+    And the exit code is 3
+
+  @B-012 @boundary
+  Scenario: Accepted null rule settings become one explicit override
+    Given the manifest carries null rule settings
+    When the out-of-order-section rule is set to warning
+    Then the manifest's rule settings hold the out-of-order-section rule at warning and nothing else
+    And the check accepts the manifest
+
+  @B-007 @B-008 @boundary
+  Scenario: An unknown rule and invalid level name both inputs
+    Given a snapshot of every file under the root
+    When a rule that version 0.1.0 does not hold is set to loud
+    Then the standard error names that rule
+    And the standard error names loud and the three levels
+    And no file under the root has changed
+    And the exit code is 4

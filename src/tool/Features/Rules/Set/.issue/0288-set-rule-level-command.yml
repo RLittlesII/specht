@@ -2,7 +2,7 @@ id: "0288"
 type: task
 title: The set command
 
-status: ready-for-architecture
+status: done
 
 value: 2
 risk: 2
@@ -26,8 +26,8 @@ claims:
   - B-013
 
 created: "2026-10-24"
-updated: "2026-10-24"
-closed: null
+updated: "2026-10-28"
+closed: "2026-10-28"
 
 summary: |
   As a maintainer I want one command that sets one rule to `error`, `warning` or `off`, refused when the rule or the level is wrong, so that the manifest changes where I meant.
