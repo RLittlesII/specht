@@ -2,7 +2,7 @@ id: "0284"
 type: task
 title: The `specht manifest` command
 
-status: ready-for-architecture
+status: done
 
 value: 3
 risk: 2
@@ -28,8 +28,8 @@ claims:
   - B-020
 
 created: "2026-10-24"
-updated: "2026-10-24"
-closed: null
+updated: "2026-10-27"
+closed: "2026-10-27"
 
 summary: |
   As a maintainer I want `specht manifest` to print the effective manifest as text, so that I see every value the check reads, the omitted ones too.

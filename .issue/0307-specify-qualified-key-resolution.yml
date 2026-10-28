@@ -1,0 +1,39 @@
+id: "0307"
+type: spike
+title: Specify qualified specification-key resolution under epic 0228
+status: ready
+value: 4
+risk: 3
+parent: "0228"
+children: []
+depends_on: []
+spikes: []
+spec: null
+claims: []
+created: "2026-10-27"
+updated: "2026-10-27"
+closed: null
+summary: |
+  Extend epic 0228 candidate C and R4/R5 rather than start another resolver.
+  A caller should resolve specification, claim, constraint, open-question,
+  ADR, decision and lesson keys without a web of document hyperlinks.
+  Examples: 0001-F2, 0001-F2 B-044, 0001-F2 C-3 and a Feature-qualified
+  ADR or decision number. Report missing or ambiguous targets explicitly;
+  return the authoritative root-relative location for a resolved target.
+  Use the existing identity/index work where applicable. Index storage and
+  MCP research remain 0132-F1 and 0252; no database is a prerequisite inferred
+  by this request. The same resolver serves the read-only lookup and future
+  opt-in citation validation.
+  Time box: one session, at most two hours; return an agreement handoff.
+acceptance_criteria:
+  - "Record the candidate-C agreement scope under epic 0228 R4/R5 without duplicating the existing candidate."
+  - "Define qualified keys for specs, claims, constraints, questions and scoped records, including repository-wide versus Feature-local records."
+  - "Define resolved, missing and ambiguous outcomes; specify source file/line and text/status where applicable."
+  - "Specify local and external-reference examples, duplicate keys and a document moved without changing its key."
+  - "Record shared resolution, CLI/JSON and opt-in validation boundaries and schema impact; allocate no rule ID before the owning agreement."
+decisions:
+  - "2026-10-27, repository owner: request future Specht capability; do not enable new checks in agents. Value reflects the requested spec-process change; risk estimates bounded agreement discovery."
+out_of_scope:
+  - "Production resolver, database, MCP implementation or replacement IDs."
+  - "Activating new checks in agents, rewriting links or changing tracker spec paths."
+  - "Reworking the storage evaluation in 0252 or the index agreement 0132-F1."

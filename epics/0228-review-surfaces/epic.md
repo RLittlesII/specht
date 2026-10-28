@@ -8,7 +8,7 @@ priority: med
 milestone: null
 children: []
 created: "2026-10-15"
-updated: "2026-10-15"
+updated: "2026-10-27"
 github_issue: null
 ---
 
@@ -93,6 +93,12 @@ epic; a Could is delivered only if the owner's answer admits it.
 | R7  | The check's output can be scoped to named files, with the whole tree still evaluated and one line saying how many violations fell outside                                                                                                                                                                                                           | Must  | The run on the list `git diff --name-only` gives is the reviewer's run; whether the exit code follows the scope is OQ-6 |
 | R8  | An item's claims resolve to its parent's § 3, and an item `done` while a claimed id's § 9 row is `Missing` is reported                                                                                                                                                                                                                              | Could | On the task layout the tool reads; whether this repository's items join is OQ-4                                         |
 | R9  | A commit message's citations resolve as R4 resolves them, and a dangling or malformed one fails the call                                                                                                                                                                                                                                            | Could | Whether a commit message is within the tool's scope is OQ-5                                                             |
+
+## Intake requests
+
+| Item | Candidate | Request                                                                                            |
+| ---- | --------- | -------------------------------------------------------------------------------------------------- |
+| 0307 | C; R4/R5  | Specify qualified-key resolution, missing/ambiguous targets and shared lookup/validation behavior. |
 
 ## Features
 

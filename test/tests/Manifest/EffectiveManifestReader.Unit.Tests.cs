@@ -268,7 +268,7 @@ public sealed class EffectiveManifestReaderUnitTests
         });
 
         var schemas = EngineServices.Schemas(files, data.Versions);
-        var reader = new EffectiveManifestReader(schemas, new RuleEntriesReader(schemas, new SpecManifestParser(data.Versions)));
+        var reader = new EffectiveManifestReader(schemas, new RuleEntriesReader(schemas, new SpecManifestParser(data.Versions)), data.Versions);
 
         // When
         var older = reader.Read("older");

@@ -8,6 +8,7 @@ using Specht.Tool.Features.Check;
 using Specht.Tool.Features.Evidence;
 using Specht.Tool.Features.Frontmatter;
 using Specht.Tool.Features.Init;
+using Specht.Tool.Features.Manifest;
 using Specht.Tool.Features.Rules;
 using Specht.Tool.Features.Schema;
 using Specht.Tool.Features.Upgrade;
@@ -25,7 +26,7 @@ app.SetDefaultCommand<CheckCommand>();
 app.Configure(static config =>
 {
     config.SetApplicationVersion(ThisAssembly.AssemblyInformationalVersion);
-    config.AddInit().AddUpgrade().AddSchema().AddFrontmatter().AddRules();
+    config.AddInit().AddUpgrade().AddSchema().AddFrontmatter().AddRules().AddManifest();
     config.AddCommand<EvidenceCommand>("evidence");
 });
 

@@ -6,10 +6,10 @@ using Specht.Tests.Shared;
 
 namespace Specht.Acceptance.Manifest;
 
-/// <summary>Exercises the engine projection for B-003 to B-007 without claiming command delivery.</summary>
+/// <summary>Exercises the manifest command and its preserved effective-document semantics.</summary>
 [Binding]
 [Scope(Feature = "The manifest command")]
-public sealed class EffectiveManifestSteps
+public sealed partial class EffectiveManifestSteps
 {
     [Given("a repository root holding a manifest that pins schema version {word}")]
     public void GivenRoot(string pin)
@@ -59,15 +59,11 @@ public sealed class EffectiveManifestSteps
         Write(manifest);
     }
 
-    public void WhenProjected()
-    {
-        _document = EngineServices.EffectiveManifest(Tree.Root);
-    }
-
     [When("the effective manifest is printed as JSON and written as the manifest of a copy of the root")]
     public void WhenWrittenToCopy()
     {
-        _document = EngineServices.EffectiveManifest(Tree.Root);
+        Print("--json");
+        _result.ExitCode.Should().Be(0, _result.Stderr);
         _copy = new SpecTree();
         foreach (var file in Directory.EnumerateFiles(Tree.Root, "*", SearchOption.AllDirectories))
         {
@@ -76,7 +72,7 @@ public sealed class EffectiveManifestSteps
             File.Copy(file, destination, overwrite: true);
         }
 
-        File.WriteAllText(Path.Combine(_copy.Root, SpecTree.ManifestPath), _document.ToJsonString());
+        File.WriteAllText(Path.Combine(_copy.Root, SpecTree.ManifestPath), _result.Stdout);
     }
 
     [Then("the claims section carries the name the manifest gives it")]
