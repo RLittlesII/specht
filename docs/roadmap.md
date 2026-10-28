@@ -31,7 +31,8 @@ Every command the command-line reference promises exists, and the schema
 lifecycle is whole: a consumer can inspect the effective manifest, list the
 rules of the pinned version, set one rule's level, upgrade a manifest without
 losing a setting, and fetch a recorded upstream schema source on upgrade. The
-maintainer can cut the next schema version from the newest one.
+maintainer can cut the next schema version from the newest one, and every
+work item is visible on GitHub as a read-only issue.
 
 | Feature    | Delivers                                                                                             |
 | ---------- | ---------------------------------------------------------------------------------------------------- |
@@ -42,6 +43,7 @@ maintainer can cut the next schema version from the newest one.
 | `0001-F11` | The set command: one rule's level, changed in the manifest bytes alone                               |
 | `0001-F2`  | The check command's agreement closed against what is built                                           |
 | `0055-F5`  | Package versioning proven apart from the schema version                                              |
+| `0055-F9`  | The work-item mirror run to convergence                                                              |
 | `0201-F7`  | Native Gherkin claim input documented for consumers                                                  |
 
 Spike `0220`, rule-page versioning without a full copy per version, informs the
