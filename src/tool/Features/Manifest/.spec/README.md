@@ -4,7 +4,7 @@ description: "specht manifest prints the effective manifest of a root, the manif
 type: feature
 id: "F9"
 epic: "0001"
-spec_status: draft
+spec_status: approved
 status: ready-for-architecture
 priority: med
 value: 0
@@ -20,7 +20,7 @@ depends_on: ["F2", "F4", "F5", "F7"]
 blocks: []
 spikes: []
 created: "2026-10-11"
-updated: "2026-10-26"
+updated: "2026-10-27"
 github_issue: null
 synced_at: null
 ---
@@ -109,7 +109,7 @@ A manifest states only what its author wrote; every key it leaves out is read fr
 
 ## 6. Concern Separation
 
-<!-- last written by: implementer, 2026-10-26 -->
+<!-- last written by: implementer, 2026-10-27 -->
 
 | Concern                                                                  | Classification | Home                                                                            |
 | ------------------------------------------------------------------------ | -------------- | ------------------------------------------------------------------------------- |
@@ -118,11 +118,11 @@ A manifest states only what its author wrote; every key it leaves out is read fr
 | Effective levels from the pinned vocabulary and rule pages (B-005)       | Business       | The existing `RuleEntriesReader.Read(SpecStructure)`                            |
 | Root observation, one manifest read and input failures                   | Technical      | The existing `SpecManifestStore` and `SpecSchemasLoader`                        |
 | A reusable effective JSON document with no file writes (B-007, C-1, C-2) | Both           | A concrete engine reader under `Specht.Manifest`                                |
-| Console output, formatting and command exit codes                        | Technical      | Subsequent command work; no command joins this engine change                    |
+| Console output, formatting and command exit codes                        | Technical      | The manifest command folds failures and writes reader-produced text             |
 
 ## 7. Technical Design
 
-<!-- last written by: implementer, 2026-10-26 -->
+<!-- last written by: implementer, 2026-10-27 -->
 
 ### Existing implementation to extend
 
@@ -222,77 +222,103 @@ its derived file addresses are not serialized. Manifest-only inspection uses
 the same manifest validation as the check without making an optional local
 schema file or a network request a prerequisite.
 
-The result is a reusable JSON object, not console text or a report. The command,
-its error folding, text-key ordering, `--defaults` and `--json` remain subsequent
-work. Ordering remains engine work under C-4; the command does not sort keys.
-In particular, the default-manifest path must not reuse the effective
-projection: B-012 requires the embedded document's actual values. No public
-JSON Schema or additive-change guarantee is introduced under OQ-4.
+The reader's JSON projection remains reusable. Its text entry point formats that
+projection in the engine, using the exact pin's embedded manifest to order the
+root keys. Declared keys absent from that template follow in ordinal order;
+rule entries always follow ordinal rule id order. Nested values retain their
+JSON content, including accepted nulls and extension data. Formatting clones
+nodes so it cannot mutate a caller's document or the embedded defaults.
+
+The command uses the existing production composition, a nested settings type and
+slice registration. It calls the reader and writes its returned text through the
+injected console's plain writer. Typed root and manifest failures map to the
+check's existing exit constants and stderr messages. It neither runs the check
+nor loads optional schema files. The root option defaults to the working
+directory. No host factory or architecture migration is introduced.
+
+The default path selects the newest entry from the injected version catalogue
+and formats its embedded manifest directly. It bypasses both root normalization
+and the manifest loader, retaining the embedded keys and values rather than
+expanding rule severities or omission defaults. This follows A-3 and decision
+0002 while OQ-3 remains open.
+
+Both selections share the same engine formatter. The `--json` option selects
+compact serialization; the text form selects indentation. They preserve the
+same document values. Neither selection writes a report or consumer file.
 
 ## 8. Testing Strategy
 
-<!-- last written by: test-writer, 2026-10-26 -->
+<!-- last written by: test-writer, 2026-10-27 -->
 
-The engine projection is exercised through the production registration and
-synthetic inputs. `EffectiveManifestReaderUnitTests` covers preservation,
-exact-pin selection, maps and table-role defaults, explicit and omitted levels,
-accepted nulls, declaration-sensitive capabilities, isolated results and an
-upstream record with no local schemas. `EffectiveManifestReaderIntegrationTests`
-compares the complete serialized report and specification count after writing
-the projection into a synthetic copy; the original report must be nonempty.
-The disk-schema fixture omits the epic grammar and epic schema, so introducing
-that grammar would make the copy fail schema loading.
+Every companion scenario runs the production command in a child process.
+The round-trip scenario writes its actual `--json` output into a synthetic copy
+and compares complete reports with nonempty violations. No pending command
+binding is counted as coverage. Unit tests exercise the reader and direct
+command over `MockFileSystem`; integration tests cross the process boundary.
+The fixtures and network addresses are synthetic and no test contacts a server.
 
-| Claim | Mechanism                                                                                           | Executable proof                                                                                                                                                                                                                                                                                                                                         |
-| ----- | --------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| B-003 | Preserve declared values, nested extensions, empty arrays and accepted nulls                        | `DeclaredJson_WhenProjected_ShouldKeepItsValuesAndNestedExtensions`; `AcceptedNull_WhenProjected_ShouldRemainDeclared`; `OptionalDeclarationsAndNestedNulls_WhenReparsed_ShouldKeepTheChecksInterpretation`; `ARecordedSourceWithoutLocalSchemas_WhenInspected_ShouldPreserveItsJsonWithoutLoadingTheSchemas`; `EffectiveManifestSteps.ThenDeclaredName` |
-| B-004 | Capture defaults where the existing parser selects them, respecting pin and table merge granularity | `OmittedValues_WhenProjected_ShouldCarryTheExactPinsSelectedDefaults`; `PartialMapsAndTables_WhenProjected_ShouldFollowThePinsMergeBoundary`; `AlternatingRootsAndMutatedResults_WhenProjected_ShouldKeepDefaultsAndOtherInvocationsIsolated`; `EffectiveManifestSteps.ThenDefaultName`                                                                  |
-| B-005 | Expand the pinned vocabulary using shared page severity and explicit-level precedence               | `ExplicitAndMissingLevels_WhenProjected_ShouldUseTheSharedPinnedPagePrecedence`; `EffectiveManifestSteps.ThenRuleSeverity`                                                                                                                                                                                                                               |
-| B-006 | Materialize an omitted pin as the original version even with newer shipped versions                 | `NoPinOrOptionalCapabilities_WhenProjected_ShouldRetainTheOriginalVersionAndDeclarationSemantics`; `EffectiveManifestSteps.ThenVersion`                                                                                                                                                                                                                  |
-| B-007 | Preserve the parser's declaration semantics and the runner's complete report on a violating tree    | `OptionalDeclarationsAndNestedNulls_WhenReparsed_ShouldKeepTheChecksInterpretation`; `NoPinOrOptionalCapabilities_WhenProjected_ShouldRetainTheOriginalVersionAndDeclarationSemantics`; `AViolatingRootWithoutEpicGrammar_WhenCopiedWithItsEffectiveManifest_ShouldKeepTheCompleteReport`; `EffectiveManifestSteps.ThenEquivalentReports`                |
+| Claim | Mechanism and proof                                                                                                                                                                    |
+| ----- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| B-001 | Reader projection and plain output: `ManifestCommandUnitTests` and `ManifestCommandIntegrationTests`.                                                                                  |
+| B-002 | Success fold: `ManifestCommandUnitTests`.                                                                                                                                              |
+| B-003 | Declaration preservation: `EffectiveManifestReaderUnitTests`.                                                                                                                          |
+| B-004 | Exact-pin omission selection: `EffectiveManifestReaderUnitTests`.                                                                                                                      |
+| B-005 | Shared pinned-page severity precedence: `EffectiveManifestReaderUnitTests`.                                                                                                            |
+| B-006 | Original-version fallback: `EffectiveManifestReaderUnitTests`.                                                                                                                         |
+| B-007 | Declaration-sensitive round-trip: `EffectiveManifestReaderUnitTests`, `EffectiveManifestReaderIntegrationTests` and the command scenario.                                              |
+| B-008 | Newest embedded selection: `ManifestDefaultsUnitTests` and `ManifestDefaultsIntegrationTests`.                                                                                         |
+| B-009 | Default branch before root normalization/loading: `ManifestDefaultsUnitTests` uses an invalid path and an empty file system.                                                           |
+| B-010 | Default success fold: `ManifestDefaultsUnitTests`.                                                                                                                                     |
+| B-011 | JSON selection and one-document serialization: `ManifestJsonUnitTests` and `ManifestJsonIntegrationTests`.                                                                             |
+| B-012 | Embedded values without effective expansion: `ManifestDefaultsUnitTests` uses a synthetic newest default with explicit rule levels.                                                    |
+| B-013 | Root-not-found fold: `ManifestCommandUnitTests` and check-diagnostic equivalence in `ManifestCommandIntegrationTests`.                                                                 |
+| B-014 | Manifest-not-found fold: the same typed failure theory.                                                                                                                                |
+| B-015 | Malformed, unknown-member, malformed-pin, unshipped-pin and conflicting-source folds: the same theory.                                                                                 |
+| B-016 | Product-only writer and separate error writer: `ManifestCommandUnitTests`.                                                                                                             |
+| B-017 | Read-only engine/command seams: all fake files, including an outside sentinel, are unchanged in `ManifestCommandUnitTests`; process snapshots cover success, defaults and repeat runs. |
+| B-018 | Root-relative typed diagnostics: `ManifestCommandUnitTests` and process comparison with the check.                                                                                     |
+| B-019 | Repeatability and preserved inputs: `ManifestTextUnitTests` and `ManifestCommandIntegrationTests`.                                                                                     |
+| B-020 | Engine-owned default-key and ordinal-rule ordering: `ManifestTextUnitTests`, synthetic default rules in `ManifestDefaultsUnitTests` and both command forms in the scenario.            |
 
-The five existing B-003 to B-007 scenarios bind to the engine reader until the
-command is built. `EffectiveManifestProjectionSteps` scopes the shared print
-step to B-003 to B-006 explicitly; B-007 serializes the engine result only in
-the fixture. The literal feature link uses a distinct resource name because
-the parser's Feature already uses `manifest.feature`. The other 22 command
-cases remain unbound and skipped under the existing runner policy. No CLI
-behavior or command output is approved by these engine proofs.
+`ManifestCommand.ExecuteAsync` only selects the reader entry point, writes its
+text and folds typed failures. Its decisions are exercised directly without
+Spectre's parser; the integration tier verifies registration, options, stdout,
+stderr and exit codes through the shipped composition. `Format` only orders
+root keys and rule entries and serializes owned clones; its nested values
+remain the projection's responsibility. No new host factory or shared-source
+link is added.
 
-Focused green verification on `net11.0`: 24 unit/integration cases and five
-acceptance scenarios pass. The 22 future command cases remain skipped.
-The existing parser, baseline and rule catalogue tests remain regression
-coverage. Required repository gates retain their configured target matrix.
-
-No benchmark is needed: the normal check does not materialize the projection,
-no architecture migration is introduced, and no performance benefit is claimed.
+Focused verification selects `net11.0`; required repository gates retain their
+configured target matrix. No benchmark is needed: the normal check does not
+materialize or format the projection, no architecture migration is introduced,
+and no performance benefit is claimed.
 
 ## 9. Traceability Matrix
 
-<!-- last written by: test-writer, 2026-10-26 -->
+<!-- last written by: test-writer, 2026-10-27 -->
 
 | Claim ID | Scenario                                                 | Test                                                                                                                                                                                                                                                                                                                                                                                                                                                | Status  |
 | -------- | -------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------- |
-| B-001    | The effective manifest is printed                        | Missing                                                                                                                                                                                                                                                                                                                                                                                                                                             | Missing |
-| B-002    | Printing the effective manifest succeeds                 | Missing                                                                                                                                                                                                                                                                                                                                                                                                                                             | Missing |
+| B-001    | The effective manifest is printed                        | `EffectiveManifestSteps.ThenEffectiveDocument`; `ManifestCommandUnitTests.AValidRoot_WhenExecuted_ShouldPrintOnlyTheEffectiveManifestAndLeaveAllFilesUnchanged`; `ManifestCommandIntegrationTests.AValidRoot_WhenPrinting_ShouldEmitOnlyTheEffectiveDocumentInDefaultOrder`                                                                                                                                                                         | Covered |
+| B-002    | Printing the effective manifest succeeds                 | `EffectiveManifestSteps.ThenExitCode`; `ManifestCommandUnitTests.AValidRoot_WhenExecuted_ShouldPrintOnlyTheEffectiveManifestAndLeaveAllFilesUnchanged`                                                                                                                                                                                                                                                                                              | Covered |
 | B-003    | A declared value is printed as declared                  | `EffectiveManifestSteps.ThenDeclaredName`; `EffectiveManifestReaderUnitTests.DeclaredJson_WhenProjected_ShouldKeepItsValuesAndNestedExtensions`; `EffectiveManifestReaderUnitTests.AcceptedNull_WhenProjected_ShouldRemainDeclared`; `EffectiveManifestReaderUnitTests.ARecordedSourceWithoutLocalSchemas_WhenInspected_ShouldPreserveItsJsonWithoutLoadingTheSchemas`                                                                              | Covered |
 | B-004    | A value left out is printed at its default               | `EffectiveManifestSteps.ThenDefaultName`; `EffectiveManifestReaderUnitTests.OmittedValues_WhenProjected_ShouldCarryTheExactPinsSelectedDefaults`; `EffectiveManifestReaderUnitTests.PartialMapsAndTables_WhenProjected_ShouldFollowThePinsMergeBoundary`; `EffectiveManifestReaderUnitTests.AlternatingRootsAndMutatedResults_WhenProjected_ShouldKeepDefaultsAndOtherInvocationsIsolated`                                                          | Covered |
 | B-005    | A rule with no level is printed at its own severity      | `EffectiveManifestSteps.ThenRuleSeverity`; `EffectiveManifestReaderUnitTests.ExplicitAndMissingLevels_WhenProjected_ShouldUseTheSharedPinnedPagePrecedence`                                                                                                                                                                                                                                                                                         | Covered |
 | B-006    | A manifest without a version is printed as version 0.1.0 | `EffectiveManifestSteps.ThenVersion`; `EffectiveManifestReaderUnitTests.NoPinOrOptionalCapabilities_WhenProjected_ShouldRetainTheOriginalVersionAndDeclarationSemantics`                                                                                                                                                                                                                                                                            | Covered |
 | B-007    | The effective manifest gives the check's verdict         | `EffectiveManifestSteps.ThenEquivalentReports`; `EffectiveManifestReaderUnitTests.OptionalDeclarationsAndNestedNulls_WhenReparsed_ShouldKeepTheChecksInterpretation`; `EffectiveManifestReaderUnitTests.NoPinOrOptionalCapabilities_WhenProjected_ShouldRetainTheOriginalVersionAndDeclarationSemantics`; `EffectiveManifestReaderIntegrationTests.AViolatingRootWithoutEpicGrammar_WhenCopiedWithItsEffectiveManifest_ShouldKeepTheCompleteReport` | Covered |
-| B-008    | The default manifest is printed                          | Missing                                                                                                                                                                                                                                                                                                                                                                                                                                             | Missing |
-| B-009    | The default manifest does not depend on the root         | Missing                                                                                                                                                                                                                                                                                                                                                                                                                                             | Missing |
-| B-010    | Printing the default manifest succeeds without a root    | Missing                                                                                                                                                                                                                                                                                                                                                                                                                                             | Missing |
-| B-011    | The JSON form is one document                            | Missing                                                                                                                                                                                                                                                                                                                                                                                                                                             | Missing |
-| B-012    | The default manifest is the embedded one                 | Missing                                                                                                                                                                                                                                                                                                                                                                                                                                             | Missing |
-| B-013    | A missing root is a missing-input failure                | Missing                                                                                                                                                                                                                                                                                                                                                                                                                                             | Missing |
-| B-014    | A root without a manifest is a missing-input failure     | Missing                                                                                                                                                                                                                                                                                                                                                                                                                                             | Missing |
-| B-015    | A rejected manifest is an invalid-manifest failure       | Missing                                                                                                                                                                                                                                                                                                                                                                                                                                             | Missing |
-| B-016    | Messages about the tool go to standard error             | Missing                                                                                                                                                                                                                                                                                                                                                                                                                                             | Missing |
-| B-017    | A run writes nothing                                     | Missing                                                                                                                                                                                                                                                                                                                                                                                                                                             | Missing |
-| B-018    | No derived path in the output is absolute                | Missing                                                                                                                                                                                                                                                                                                                                                                                                                                             | Missing |
-| B-019    | The same input gives the same output                     | Missing                                                                                                                                                                                                                                                                                                                                                                                                                                             | Missing |
-| B-020    | The text form is the JSON document, indented, in order   | Missing                                                                                                                                                                                                                                                                                                                                                                                                                                             | Missing |
+| B-008    | The default manifest is printed                          | `EffectiveManifestSteps.ThenDefaultDocument`; `ManifestDefaultsUnitTests.NoReadableRoot_WhenPrintingDefaults_ShouldUseTheNewestEmbeddedValuesWithoutProjection`; `ManifestDefaultsIntegrationTests.AnyRoot_WhenPrintingDefaults_ShouldIgnoreTheRootAndPrintTheNewestEmbeddedDocument`                                                                                                                                                               | Covered |
+| B-009    | The default manifest does not depend on the root         | `EffectiveManifestSteps.ThenIndependentOfRoot`; `ManifestDefaultsUnitTests.NoReadableRoot_WhenPrintingDefaults_ShouldUseTheNewestEmbeddedValuesWithoutProjection`; `ManifestDefaultsIntegrationTests.AnyRoot_WhenPrintingDefaults_ShouldIgnoreTheRootAndPrintTheNewestEmbeddedDocument`                                                                                                                                                             | Covered |
+| B-010    | Printing the default manifest succeeds without a root    | `EffectiveManifestSteps.ThenExitCode`; `ManifestDefaultsUnitTests.NoReadableRoot_WhenPrintingDefaults_ShouldUseTheNewestEmbeddedValuesWithoutProjection`                                                                                                                                                                                                                                                                                            | Covered |
+| B-011    | The JSON form is one document                            | `EffectiveManifestSteps.ThenOneDocument`; `ManifestJsonUnitTests.EitherSelection_WhenExecutedAsJson_ShouldKeepTheSelectedDocumentsValues`; `ManifestJsonIntegrationTests.EitherSelection_WhenPrintingJson_ShouldEmitOneDocumentEquivalentToTheTextForm`                                                                                                                                                                                             | Covered |
+| B-012    | The default manifest is the embedded one                 | `EffectiveManifestSteps.ThenEmbeddedValues`; `ManifestDefaultsUnitTests.NoReadableRoot_WhenPrintingDefaults_ShouldUseTheNewestEmbeddedValuesWithoutProjection`; `ManifestDefaultsIntegrationTests.AnyRoot_WhenPrintingDefaults_ShouldIgnoreTheRootAndPrintTheNewestEmbeddedDocument`                                                                                                                                                                | Covered |
+| B-013    | A missing root is a missing-input failure                | `EffectiveManifestSteps.ThenNamesRoot`; `ManifestCommandUnitTests.InvalidInput_WhenExecuted_ShouldFoldTheTypedFailureAndWriteOnlyToStderr`; `ManifestCommandIntegrationTests.InvalidInput_WhenPrinting_ShouldMatchTheChecksFailure`                                                                                                                                                                                                                 | Covered |
+| B-014    | A root without a manifest is a missing-input failure     | `EffectiveManifestSteps.ThenNamesManifest`; `ManifestCommandUnitTests.InvalidInput_WhenExecuted_ShouldFoldTheTypedFailureAndWriteOnlyToStderr`; `ManifestCommandIntegrationTests.InvalidInput_WhenPrinting_ShouldMatchTheChecksFailure`                                                                                                                                                                                                             | Covered |
+| B-015    | A rejected manifest is an invalid-manifest failure       | `EffectiveManifestSteps.ThenMatchesCheck`; `ManifestCommandUnitTests.InvalidInput_WhenExecuted_ShouldFoldTheTypedFailureAndWriteOnlyToStderr`; `ManifestCommandIntegrationTests.InvalidInput_WhenPrinting_ShouldMatchTheChecksFailure`                                                                                                                                                                                                              | Covered |
+| B-016    | Messages about the tool go to standard error             | `EffectiveManifestSteps.ThenProductOnly`; `ManifestCommandUnitTests.AValidRoot_WhenExecuted_ShouldPrintOnlyTheEffectiveManifestAndLeaveAllFilesUnchanged`                                                                                                                                                                                                                                                                                           | Covered |
+| B-017    | A run writes nothing                                     | `EffectiveManifestSteps.ThenUnchanged`; `ManifestCommandUnitTests.AValidRoot_WhenExecuted_ShouldPrintOnlyTheEffectiveManifestAndLeaveAllFilesUnchanged`; `ManifestCommandIntegrationTests.RepeatedRuns_WhenPrinting_ShouldPreserveFilesAndOutput`                                                                                                                                                                                                   | Covered |
+| B-018    | No derived path in the output is absolute                | `EffectiveManifestSteps.ThenRelativePaths`; `ManifestCommandUnitTests.InvalidInput_WhenExecuted_ShouldFoldTheTypedFailureAndWriteOnlyToStderr`; `ManifestCommandIntegrationTests.InvalidInput_WhenPrinting_ShouldMatchTheChecksFailure`                                                                                                                                                                                                             | Covered |
+| B-019    | The same input gives the same output                     | `EffectiveManifestSteps.ThenDeterministic`; `ManifestTextUnitTests.ReorderedDeclarations_WhenFormatted_ShouldFollowTheExactDefaultAndKeepExtensionValues`; `ManifestCommandIntegrationTests.RepeatedRuns_WhenPrinting_ShouldPreserveFilesAndOutput`                                                                                                                                                                                                 | Covered |
+| B-020    | The text form is the JSON document, indented, in order   | `EffectiveManifestSteps.ThenSameDocument`; `EffectiveManifestSteps.ThenKeyOrder`; `EffectiveManifestSteps.ThenRuleOrder`; `ManifestTextUnitTests.ReorderedDeclarations_WhenFormatted_ShouldFollowTheExactDefaultAndKeepExtensionValues`                                                                                                                                                                                                             | Covered |
 
 ## 10. Lessons / Spec Deltas
 
@@ -316,14 +342,15 @@ no architecture migration is introduced, and no performance benefit is claimed.
 
 ## 12. Sign-off
 
-<!-- last written by: spec-author, 2026-10-11; spec-reviewer, 2026-10-26 -->
+<!-- last written by: spec-author, 2026-10-11; spec-reviewer, 2026-10-27 -->
 
-| Section                | Status | Reviewer      | Note                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
-| ---------------------- | ------ | ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 1-5                    | 🟡     | spec-reviewer | Awaiting first review.                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
-| 5 (row 8)              | 🟢     | spec-reviewer | Row 8 only (2026-10-11), reviewing `origin/main` (`5c22c84`)...`28d0ba6`: it states choice 3 of `0001-F2` decision 0010 and cites `0001-F7` B-084, B-006 and OQ-3, which exist. Everything else in § 1-5 still awaits its first review, so `spec_status` stays `draft`.                                                                                                                                                                                                         |
-| 6-8, engine design     | 🟡     | spec-reviewer | Architecture proposal prepared 2026-10-26 against B-003 to B-007; review pending. No implementation or claim coverage is approved by this row. Decision 0003 preserves OQ-2's open status.                                                                                                                                                                                                                                                                                      |
-| 6-9, engine projection | 🟢     | spec-reviewer | Delivery self-review, 2026-10-26: B-003 to B-007 are covered by 23 unit cases, one disk round-trip integration case and five engine scenarios. The complete build passes, including working-package self-check, Format, CodeAnalysis and all configured test tiers. No unresolved findings in the engine scope. This supersedes the pending engine-design review only; broader agreement and command behavior remain outside this approval. No independent sign-off is claimed. |
+| Section                | Status | Reviewer      | Note                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
+| ---------------------- | ------ | ------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1-5                    | 🟢     | spec-reviewer | Delivery self-review, 2026-10-27: B-001 to B-020, constraints and exclusions agree with decisions 0001 to 0003. OQ-1 to OQ-5 retain their recorded scope and provenance; proceeding on the existing defaults does not ratify them. No unresolved findings within this agreement; no independent sign-off is claimed.                                                                                                                                                                                       |
+| 5 (row 8)              | 🟢     | spec-reviewer | Row 8 only (2026-10-11), reviewing `origin/main` (`5c22c84`)...`28d0ba6`: it states choice 3 of `0001-F2` decision 0010 and cites `0001-F7` B-084, B-006 and OQ-3, which exist. Everything else in § 1-5 still awaits its first review, so `spec_status` stays `draft`.                                                                                                                                                                                                                                    |
+| 6-8, engine design     | 🟢     | spec-reviewer | Architecture proposal prepared 2026-10-26 against B-003 to B-007; review pending. No implementation or claim coverage is approved by this row. Decision 0003 preserves OQ-2's open status. Superseded by the complete delivery self-review below.                                                                                                                                                                                                                                                          |
+| 6-9, engine projection | 🟢     | spec-reviewer | Delivery self-review, 2026-10-26: B-003 to B-007 are covered by 23 unit cases, one disk round-trip integration case and five engine scenarios. The complete build passes, including working-package self-check, Format, CodeAnalysis and all configured test tiers. No unresolved findings in the engine scope. This supersedes the pending engine-design review only; broader agreement and command behavior remain outside this approval. No independent sign-off is claimed.                            |
+| 6-9, complete command  | 🟢     | spec-reviewer | Delivery self-review, 2026-10-27: all 20 claims have scenario and mechanism proofs. Focused net11.0 verification passes 300 manifest unit/integration cases and all 27 manifest scenarios with zero skips. The complete build passes the working-package self-check, Format, CodeAnalysis and all configured test tiers. The command uses the existing reader and slice registration; no write, network path or architecture rollout is added. No unresolved findings; no independent sign-off is claimed. |
 
 ## Tasks
 

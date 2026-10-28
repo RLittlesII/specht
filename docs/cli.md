@@ -9,6 +9,7 @@ type: reference
 `specht` checks a tree, `frontmatter` checks one document, `specht init` writes the files a check needs, and
 `schema` groups commands for the repository's schema version. `specht upgrade` brings its schemas and templates to the pin.
 `evidence` reconciles supplied build and runner exports. `rules` lists the pinned rules and their effective levels.
+`manifest` prints the effective configuration or the newest shipped default.
 Installed as a local tool, each runs as `dotnet specht`.
 
 ## `specht`
@@ -71,6 +72,46 @@ specifications: epics 0, features 1
 items: 0
 rules evaluated: 21
 errors: 1, warnings: 0
+```
+
+## `specht manifest`
+
+```text
+specht manifest [--root <DIR>] [--defaults] [--json]
+```
+
+Prints the manifest as the check reads it: declared values are preserved,
+omitted settings the engine fills come from the exact pin's defaults, and
+omitted rule levels come from the pinned rule pages. Optional capabilities
+that depend on a declaration remain absent. With no pin, the effective version
+is `0.1.0`.
+
+`--defaults` prints the newest shipped version's embedded manifest directly.
+It ignores the root and its pin, including a missing root or rejected manifest;
+it does not expand effective settings into that embedded document.
+
+| Option         | Value   | Default               | Does                                                      |
+| -------------- | ------- | --------------------- | --------------------------------------------------------- |
+| `--root <DIR>` | `<DIR>` | The working directory | Selects the root whose effective manifest is printed.     |
+| `--defaults`   | none    | false                 | Prints the newest shipped default without reading a root. |
+| `--json`       | none    | false                 | Prints one JSON document for either selection.            |
+| `-h, --help`   | none    | none                  | Prints the command's help.                                |
+
+**Stdout.** Only the manifest document. Without `--json`, JSON is indented;
+root keys follow the selected embedded default, followed by other declared
+keys in ordinal order. Rule entries follow ordinal rule id order. `--json`
+prints the same keys and values as one compact JSON document.
+
+The command is read-only and offline. It neither checks specification files
+nor fetches a recorded upstream source or loads local frontmatter schemas.
+
+**Exit codes.** `0` on success; `2` for a missing root or manifest; `3` for a
+rejected manifest or pin. Failures go to stderr with empty stdout, using the
+check's diagnostics. `--defaults` succeeds without a valid root or manifest.
+
+```sh
+specht manifest --root .
+specht manifest --defaults --json
 ```
 
 ## `specht rules`

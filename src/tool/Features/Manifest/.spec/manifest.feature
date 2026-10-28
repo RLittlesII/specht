@@ -8,6 +8,7 @@ Feature: The manifest command
 
   @B-001
   Scenario: The effective manifest is printed
+    Given the root holds specifications with violations
     When the effective manifest is printed
     Then the standard output carries the effective manifest of that root
 
