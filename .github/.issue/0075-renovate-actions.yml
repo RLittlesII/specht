@@ -2,7 +2,7 @@ id: "0075"
 type: task
 title: Update action versions in the build project and commit the regenerated workflows
 
-status: ready-for-architecture
+status: done
 
 risk: 4
 
@@ -19,10 +19,11 @@ claims:
   - B-009
   - B-013
   - B-014
+  - B-018
 
 created: "2026-10-08"
-updated: "2026-10-09"
-closed: null
+updated: "2026-10-28"
+closed: "2026-10-28"
 
 summary: |
   A custom manager reads action versions from the build project (C-6), and
@@ -36,9 +37,24 @@ acceptance_criteria:
   - "B-009 — workflow changes only by regeneration"
   - "B-013 — action update carries declaration and regenerated workflows"
   - "B-014 — NUKE update carries the regenerated workflows"
+  - "B-018 — the generation completes in Renovate's own clone"
   - "§ 9 carries a row naming a test for each id above."
 
-decisions: []
+decisions:
+  - |
+    2026-10-28, owner: the build project's floating major action tags
+    (codecov/codecov-action@v5, actions/upload-artifact@v7,
+    docker/login-action@v3, azure/login@v2) stay floating and are not
+    pinned to full tags, so B-002's grouping covers full-tag
+    declarations only - today renovatebot/github-action@v46.3.7.
+    Decision 0002; B-002's source and § 5 #8 cite it. Rejected:
+    pinning every declaration to a full tag.
+  - |
+    2026-10-08, owner: the build's mechanisms carry no tests (0055-F2
+    § 8), and the Renovate configuration and the workflow generation are
+    the build's, so the criterion "§ 9 carries a row naming a test for
+    each id above" is superseded; B-002, B-009, B-013, B-014 and B-018
+    stay Missing in § 9, and 0055-F4 § 8 says so.
 
 out_of_scope:
   - "A rule matching `.github/workflows/` — C-3."

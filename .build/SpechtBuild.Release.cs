@@ -165,7 +165,7 @@ internal sealed partial class SpechtBuild
                 },
                 new SetupDotNetStep("Use .NET 10 and 11 SDKs")
                 {
-                    DotNetVersion = "10.0.401",
+                    DotNetVersion = BuildHostSdkVersion,
                     With = { ["global-json-file"] = "global.json" },
                 },
                 new RunStep("Push release packages")

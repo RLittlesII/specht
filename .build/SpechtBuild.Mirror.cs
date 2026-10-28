@@ -75,7 +75,7 @@ internal sealed partial class SpechtBuild
         checkout.FetchDepth = 0;
         job.Steps.Insert(
             job.Steps.IndexOf(checkout) + 1,
-            new SetupDotNetStep("Use .NET 10 and 11 SDKs") { DotNetVersion = "10.0.401", With = { ["global-json-file"] = "global.json" } });
+            new SetupDotNetStep("Use .NET 10 and 11 SDKs") { DotNetVersion = BuildHostSdkVersion, With = { ["global-json-file"] = "global.json" } });
 
         job.Steps.OfType<RunStep>().Single(static step => step.Id == "mirror").Environment = new Dictionary<string, string>
         {

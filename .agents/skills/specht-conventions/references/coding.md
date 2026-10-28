@@ -37,9 +37,11 @@ packing project.
 real build warnings — and with `TreatWarningsAsErrors`, real failures — instead of
 suggestions a developer can ignore while the build stays green.
 
-`.build/.build.csproj` is the one exemption: it deliberately does **not** import
-the root `Directory.Build.props`, so a Nuke or SDK bump cannot block the build
-orchestrator itself from compiling. Product code gets no such exemption.
+`.build/.build.csproj` imports the root `Directory.Build.props` like every
+project, so its strictness, `Rocket.Surgery.Airframe.CodeAnalysis` and
+Nerdbank.GitVersioning reach the build orchestrator too. Its only exemptions are
+in its own file: the one target framework NUKE requires and a `NoWarn` list.
+Product code gets no such exemption.
 
 ## The engine is copied, not written
 
@@ -142,6 +144,11 @@ path anywhere is a defect (brief § 9), and the review looks for it.
   `nuke --generate-configuration GitHubActions_ci --host GitHubActions`) and commit
   the regeneration. **Diff the step order** after any target change: the generator
   orders CI steps by dependency-graph depth, not by declaration order.
+- **An action version change needs `./build.sh GenerateWorkflows`.** Rocket.Surgery.Nuke
+  copies the action versions an existing workflow names into its regeneration, so
+  `Compile` never applies a changed declaration; the target deletes each workflow
+  and regenerates it
+  ([lesson 0015](../../../../.spec/lessons/0015-an-action-version-change-needs-a-from-scratch-regeneration.md)).
 - **A generated workflow invokes a NUKE target** through `InvokedTargets`;
   `Enhancements` middleware only adds what the attribute cannot express
   (inputs, concurrency, permissions, step environment) and never replaces the

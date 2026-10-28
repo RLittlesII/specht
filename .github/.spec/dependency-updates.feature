@@ -107,3 +107,9 @@ Feature: Dependency updates
     When the dependency-update workflow runs
     Then the checker's feed is read with the run's own token
     And no stored token is used to read it
+
+  @B-018
+  Scenario: The workflows regenerate in Renovate's own clone
+    Given an update that can change a generated workflow
+    When the dependency-update workflow runs
+    Then the build regenerates the workflows in Renovate's own clone of this repository

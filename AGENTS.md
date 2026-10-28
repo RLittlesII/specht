@@ -439,7 +439,9 @@ none of them changes:
 - **`.github/workflows/ci.yml` is generated.** Regenerate it with
   `./build.sh Compile`, commit the regeneration, and **diff the step order** — the
   generator orders CI steps by dependency-graph depth, not declaration order, and
-  can push `Format` late in the workflow.
+  can push `Format` late in the workflow. `Compile` keeps the action versions a
+  workflow already names; an action version change needs
+  `./build.sh GenerateWorkflows`.
 - **Every test class declares exactly one `Tier` trait.** Why is in
   [`specht-conventions` § Testing](.agents/skills/specht-conventions/references/testing.md).
 - **Never pin a package version in a `.csproj`.** Versions are central. The

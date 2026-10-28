@@ -116,7 +116,7 @@ internal sealed partial class SpechtBuild
             buildJob.Steps.IndexOf(checkoutStep) + 1,
             [
                 new RunStep("Fetch all history for all tags and branches") { Run = "git fetch --prune" },
-                new SetupDotNetStep("Use .NET 10 and 11 SDKs") { DotNetVersion = "10.0.401", With = { ["global-json-file"] = "global.json" } }
+                new SetupDotNetStep("Use .NET 10 and 11 SDKs") { DotNetVersion = BuildHostSdkVersion, With = { ["global-json-file"] = "global.json" } }
             ]
         );
 
@@ -356,4 +356,6 @@ internal sealed partial class SpechtBuild
 
     // C-12 (decision 0005): the owner's self-hosted macOS pool takes every leg that ran on ubuntu-latest.
     private const string RunnerPool = "[self-hosted, macOS, ARM64]";
+
+    private const string BuildHostSdkVersion = "10.0.401";
 }

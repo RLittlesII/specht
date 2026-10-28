@@ -33,6 +33,7 @@
         "CreateGitHubRelease",
         "CutSchemaVersion",
         "Format",
+        "GenerateWorkflows",
         "IntegrationTest",
         "LockSchemaVersion",
         "Mirror",

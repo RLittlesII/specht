@@ -1,7 +1,11 @@
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Reflection;
+using Nuke.Common;
 using Nuke.Common.CI.GitHubActions;
+using Nuke.Common.IO;
+using Nuke.Common.Tooling;
 using Rocket.Surgery.Nuke.GithubActions;
 
 [GitHubActionsSteps(
@@ -14,6 +18,20 @@ using Rocket.Surgery.Nuke.GithubActions;
 [SuppressMessage("Design", "RSA2002:Private members should appear after non-private members", Justification = "Build")]
 internal sealed partial class SpechtBuild
 {
+    private Target GenerateWorkflows => static definition => definition
+        .Executes(static () =>
+        {
+            foreach (var workflow in typeof(SpechtBuild).GetCustomAttributes<GitHubActionsStepsAttribute>())
+            {
+                workflow.ConfigurationFile.DeleteFile();
+                ProcessTasks.StartProcess(
+                        BuildAssemblyFile,
+                        $"--generate-configuration {workflow.Id} --host {workflow.HostName}",
+                        RootDirectory)
+                    .AssertZeroExitCode();
+            }
+        });
+
     public static RocketSurgeonGitHubActionsConfiguration RenovateMiddleware(
         RocketSurgeonGitHubActionsConfiguration configuration)
     {
@@ -38,6 +56,7 @@ internal sealed partial class SpechtBuild
                 Environment = new Dictionary<string, string>
                 {
                     ["RENOVATE_REPOSITORIES"] = "${{ github.repository }}",
+                    ["DOTNET_BUILD_SDK_VERSION"] = BuildHostSdkVersion,
                 },
                 With = new Dictionary<string, string>
                 {
@@ -45,7 +64,7 @@ internal sealed partial class SpechtBuild
                     ["configurationFile"] = ".github/renovate-global.json",
                     ["docker-cmd-file"] = ".github/renovate-entrypoint.sh",
                     ["docker-user"] = "root",
-                    ["additional-env-list"] = "DOTNET_SDK_VERSION",
+                    ["additional-env-list"] = "|\nDOTNET_SDK_VERSION\nDOTNET_BUILD_SDK_VERSION",
                 },
             },
         ];

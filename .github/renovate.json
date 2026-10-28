@@ -9,8 +9,19 @@
     "enabled": true
   },
   "github-actions": {
-    "enabled": true
+    "enabled": false
   },
+  "customManagers": [
+    {
+      "description": "0055-F4 C-6: the action versions the build project declares; nothing under .github/workflows/ is read.",
+      "customType": "regex",
+      "managerFilePatterns": ["/^\\.build/[^/]+\\.cs$/"],
+      "matchStrings": ["Uses = \"(?<depName>[\\w.-]+/[\\w.-]+)@(?<currentValue>[^\"]+)\""],
+      "datasourceTemplate": "github-tags",
+      "versioningTemplate": "github-actions",
+      "depTypeTemplate": "action"
+    }
+  ],
   "packageRules": [
     {
       "description": "0055-F4 B-001: NuGet minor and patch updates in Directory.Packages.props, one pull request.",
@@ -32,6 +43,32 @@
       "matchFileNames": [".config/dotnet-tools.json"],
       "matchUpdateTypes": ["minor", "patch"],
       "groupName": "dotnet local tools"
+    },
+    {
+      "description": "0055-F4 B-002: minor and patch updates to the actions the build project declares, one pull request.",
+      "matchManagers": ["custom.regex"],
+      "matchFileNames": [".build/*.cs"],
+      "matchUpdateTypes": ["minor", "patch"],
+      "groupName": "GitHub Actions"
+    },
+    {
+      "description": "0055-F4 B-013, C-7: an action update carries the workflows regenerated from scratch.",
+      "matchManagers": ["custom.regex"],
+      "matchFileNames": [".build/*.cs"],
+      "postUpgradeTasks": {
+        "commands": ["./build.sh GenerateWorkflows"],
+        "fileFilters": [".github/workflows/*.yml"]
+      }
+    },
+    {
+      "description": "0055-F4 B-014, C-7: a NUKE package update carries the workflows regenerated from scratch.",
+      "matchManagers": ["nuget"],
+      "matchFileNames": ["Directory.Packages.props"],
+      "matchPackageNames": ["Nuke.Common", "Rocket.Surgery.Nuke"],
+      "postUpgradeTasks": {
+        "commands": ["./build.sh GenerateWorkflows"],
+        "fileFilters": [".github/workflows/*.yml"]
+      }
     },
     {
       "description": "0055-F4 C-4: a version is changed only where it is declared once.",

@@ -2,5 +2,9 @@
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "platform": "github",
   "onboarding": false,
-  "requireConfig": "required"
+  "requireConfig": "required",
+  "allowedCommands": ["^\\./build\\.sh GenerateWorkflows$"],
+  "customEnvVariables": {
+    "NBGV_GitEngine": "Disabled"
+  }
 }
