@@ -69,4 +69,12 @@ type: decision
 
 ## Reversal
 
-None.
+2026-10-27, reconcile the fault boundary with the later accepted schema-source
+contract, `0001-F7` B-105 and decision 0011. The typed root and manifest input
+failures retain their existing command-owned exits; they are not rule faults.
+This includes unresolved local schema references translated during frontmatter
+evaluation. A-4 and the B-013 boundary scenario make that distinction explicit.
+Catching these input rejections as error findings is rejected: it changes the
+specified exit 3 to exit 1 and puts a report on stdout where none is allowed.
+Moving reference resolution upfront is also rejected: the schema-source design
+preserves valid dynamic references and resolves them only when used.

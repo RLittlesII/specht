@@ -55,6 +55,8 @@ public static class SpechtEngineServiceCollectionExtensions
         services.AddSingleton<ISpecRule, DependencyRule>();
         services.AddSingleton<ISpecRule, ApprovalRule>();
 
+        services.Decorate<ISpecRule, FaultIsolatedRule>();
+
         return services;
     }
 }

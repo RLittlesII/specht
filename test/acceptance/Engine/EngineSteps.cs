@@ -28,7 +28,7 @@ namespace Specht.Acceptance.Engine;
 /// </summary>
 [Binding]
 [Scope(Feature = "The engine, extracted unchanged")]
-public sealed class EngineSteps
+public sealed partial class EngineSteps
 {
     [Given("a repository root holding a manifest and the three frontmatter schemas of schema version {word}")]
     public void GivenARepositoryRootHoldingAManifestAndTheThreeFrontmatterSchemasOfSchemaVersion(string version)
@@ -85,7 +85,17 @@ public sealed class EngineSteps
 
     [When("the engine runs")]
     [When("the engine runs on that tree")]
-    public void WhenTheEngineRuns() => _report = Tree.Run();
+    public void WhenTheEngineRuns()
+    {
+        if (_inputFailure is not null)
+        {
+            _inputRejection = Record.Exception(() => SpechtRunner.Evaluate(EngineServices.Loader().Load(Tree.Root), FaultRules()));
+            return;
+        }
+
+        _report = _fault is null ? Tree.Run()
+            : SpechtRunner.Evaluate(EngineServices.Loader().Load(Tree.Root), FaultRules());
+    }
 
     [Then("a violation is reported under each of the twenty-one rule ids")]
     public void ThenAViolationIsReportedUnderEachOfTheTwentyOneRuleIds() =>

@@ -91,6 +91,12 @@ Feature: The engine, extracted unchanged
     Then exactly one violation is reported under that rule's id, as an error
     And it points at the manifest as a whole, with no identifier
 
+  @B-013 @boundary
+  Scenario: An invalid schema input keeps its input rejection
+    Given one rule rejects an invalid schema input
+    When the engine runs
+    Then the caller receives the input rejection instead of a rule failure report
+
   @B-014 @boundary
   Scenario: Nothing a rule found before it failed is reported
     Given one rule finds two violations and then fails
@@ -111,3 +117,10 @@ Feature: The engine, extracted unchanged
     When the engine runs
     Then the failure's message names the rule and the kind of error
     And it carries none of the error's own text
+
+  @B-017 @boundary
+  Scenario: The original rule failure is retained without changing the report
+    Given one rule fails with an error whose text holds an absolute path on this machine
+    When the engine runs
+    Then the fault keeps the identity of the original failure
+    And the retained failure adds no field or private detail to the report
