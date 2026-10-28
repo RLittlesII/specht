@@ -6,9 +6,9 @@ type: epic
 status: needs-decomposition
 priority: med
 milestone: null
-children: []
+children: ["0228-F1", "0228-F2"]
 created: "2026-10-15"
-updated: "2026-10-27"
+updated: "2026-10-28"
 github_issue: null
 ---
 
@@ -106,6 +106,15 @@ epic; a Could is delivered only if the owner's answer admits it.
 agreed. No Feature here has an id, a specification or a place in `children`:
 a candidate takes its Feature id when its specification is written, and joins
 `children` then, so that every child resolves to a file.
+
+On 2026-10-28 the owner had two mechanical checks specified, from a
+consumer's ten review rounds that the check passed with 0 errors
+(`0228-F1` decision 0001). Candidate D is `0228-F1`, the open-question gate,
+at `src/specht/Rules/OpenQuestions/.spec/`. The rule half of candidate C,
+for unqualified ids within one specification, is `0228-F2`, dangling id
+references, at `src/specht/Rules/References/.spec/`; the qualified half and
+the command stay with candidate C and item `0307` (`0228-F2` decision 0001).
+The rest of the cut is unconfirmed.
 
 The candidates are cut by capability dimension, where the invariant changes:
 
@@ -231,8 +240,8 @@ glob `epics/**/epic.md` discovers it (`0001-F6` decision 0001).
 
 ## Status
 
-`needs-decomposition`: the candidate cut is not confirmed and no child
-exists. The epic is not `blocked`: nothing in "What this epic waits on" stops
+`needs-decomposition`: the candidate cut is not confirmed beyond
+`0228-F1` and `0228-F2`, both drafts. The epic is not `blocked`: nothing in "What this epic waits on" stops
 a Feature specification being written, and the owner did not decide that the
 epic waits. The next step is the owner's: confirm or change the candidate
 cut, answer OQ-2, OQ-4 and OQ-5, and each confirmed Feature then begins with
