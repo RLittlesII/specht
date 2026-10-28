@@ -2,7 +2,7 @@ id: "0078"
 type: feature
 title: Package versioning
 
-status: ready-for-architecture
+status: done
 
 value: 4
 risk: 3
@@ -26,8 +26,8 @@ claims:
   - B-008
 
 created: "2026-10-08"
-updated: "2026-10-13"
-closed: null
+updated: "2026-10-28"
+closed: "2026-10-28"
 
 summary: |
   As the maintainer, I want the package version to be a function of the
@@ -51,6 +51,13 @@ decisions:
     version (0079), carrying it into the package (0080), which the release
     needs, and the independence test (0081), which needs epic 0001's schema
     versioning and so must not hold the release back.
+
+  - |
+    2026-10-28: 0081 completes the last planned child. The all-tests
+    criterion is superseded for 0079's claims by its recorded owner
+    decision; B-005 and B-006 have executable proofs. OQ-2 and OQ-3
+    remain open as recorded design questions and do not change those
+    delivered claims.
 
 out_of_scope:
   - "Everything in § 5 of the spec."

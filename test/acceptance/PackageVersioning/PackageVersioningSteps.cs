@@ -11,7 +11,7 @@ namespace Specht.Acceptance.PackageVersioning;
 /// call (decision 0002). The commit is the one this repository has checked out. "The tool is packed" is
 /// <see cref="PackedToolSteps"/>'s, shared with the check's scenarios. The version is asked of the <c>nbgv</c> tool on the
 /// same commit and ref, never written here. The package's id is the one 0001-F2 B-017 claims, never read back from the
-/// project that packs. The file's other scenarios stay pending for their items.
+/// project that packs. B-006 is bound by SchemaVersionIndependenceSteps; the remaining scenarios stay pending.
 /// </summary>
 [Binding]
 [Scope(Feature = "Package versioning")]

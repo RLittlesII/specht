@@ -36,7 +36,7 @@ Feature: Package versioning
   @B-006 @boundary
   Scenario: A package version change leaves the schema version
     Given a commit that changes only the package's version
-    When the tool is packed
+    When both package versions are packed
     Then the schema versions the tool embeds are unchanged
     And the schema version a new repository is initialised with is unchanged
 

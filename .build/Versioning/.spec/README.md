@@ -20,7 +20,7 @@ depends_on: ["F1"]
 blocks: ["F6"]
 spikes: []
 created: "2026-10-08"
-updated: "2026-10-13"
+updated: "2026-10-28"
 github_issue: null
 synced_at: null
 ---
@@ -106,9 +106,9 @@ Nothing sets the package's version, so every `Pack` would produce the same defau
 
 ## 7. Technical Design
 
-<!-- last written by: implementer, 2026-10-09 -->
+<!-- last written by: implementer, 2026-10-28 -->
 
-Item 0079 built what the list below describes, and item 0080 built B-005 under its own heading. The schema version staying put when `version.json` moves (B-006) is 0081.
+Item 0079 built what the list below describes, and item 0080 built B-005 under its own heading. Item 0081 proves schema independence (B-006) with two isolated package builds; it changes no production code.
 
 - **The source** is [`version.json`](../../../version.json) at the repository root: `version` `0.1` (OQ-1), `publicReleaseRefSpec` `^refs/heads/main$` and `^refs/tags/v\d+(?:\.\d+)*$` (A-2), and `release.tagName` `v{version}`. It carries no comments; the reasons live here.
 - **The tool** is `nbgv` 3.10.94 in the local tool manifest, [`.config/dotnet-tools.json`](../../../.config/dotnet-tools.json), `rollForward: false`. The build's `Restore` target restores it with `DotNetToolRestore` (item 0057), so a fresh clone has it after `./build.sh` or `dotnet tool restore`. Renovate keeps the pin current through the manifest.
@@ -143,24 +143,46 @@ Item 0079 built what the list below describes, and item 0080 built B-005 under i
   - **The pre-commit hook still passes.** It runs `Format` over an export of the index outside the repository (`0055-F1` § 7), where there is no git history. A commit staging a `.cs` file went through the hook: `dotnet restore` and `dotnet format --verify-no-changes` on the exported solution both succeeded. The export is not a git repository at all, which the package tolerates; only a shallow one stops it.
   - **On GitHub Actions the package writes to `GITHUB_ENV`.** Running `GetBuildVersion` on `specht.tool` with `GITHUB_ACTIONS=true`, `GITHUB_REF=refs/heads/main` and `GITHUB_ENV` naming a file gave `PackageVersion` `0.1.8` (B-003) and appended `GitBuildVersion`, `GitBuildVersionSimple` and `GitAssemblyInformationalVersion` to that file. With `GITHUB_ACTIONS` set and `GITHUB_ENV` unset the `SetCloudBuildVariables` task fails with `ArgumentNullException`; a real runner always sets both. Not yet seen on a runner.
 
+### B-006: package and schema versions stay independent (item 0081)
+
+`SchemaVersionIndependenceSteps` makes a full local clone and captures the working
+checkout's tracked and unignored inputs in a baseline commit. A second commit
+changes only `version.json`'s version to the next minor line. The fixture verifies
+that commit's file set, builds and packs each commit into separate output trees,
+and requires different nuspec versions before comparing the packed commands.
+It runs each package's extracted tool directly, comparing `schema list` against
+an empty root and the `schemaVersion` each `init` writes into its own fresh root.
+The original checkout and its version file are untouched.
+
+The packs target the framework running the scenario. A fixture NuGet configuration
+clears all sources, uses the restored global package cache and disables audit.
+Package pruning is disabled for this single-framework fixture to preserve the
+multi-target build's dependency graph; otherwise the SDK reports NU1510 for the
+engine's explicit dependency-injection abstraction reference. Git commits disable
+hooks and signing within the clone. All temporary files are deleted on disposal.
+The fixture disables GitHub Actions detection to keep its version variables
+out of the enclosing runner's environment file.
+
 ## 8. Testing Strategy
 
-<!-- last written by: test-writer, 2026-10-11 (the pack is shared with `0001-F2`'s package scenarios) -->
+<!-- last written by: test-writer, 2026-10-28 -->
 
-- **The build has no tests (owner, 2026-10-08), and versioning is the build's, with one exception: B-005.** The standing decision is recorded in [`0055-F2` § 8](../../ContinuousIntegration/.spec/README.md). The owner narrowed it on 2026-10-09 for B-005 only ([decision 0002](decisions/0002-b-005-has-an-executable-proof.md)). `versioning.feature` is therefore linked into `test/acceptance` as `Features\package-versioning.feature`, and `PackageVersioningSteps`, scoped to this Feature's title, binds the `@B-005` scenario and no other; the scenario's `When` is `PackedToolSteps`'s. The file's other seven scenarios are discovered and reported skipped, their steps undefined; their § 9 rows stay `Missing`, and nothing pins those claims.
+- **Executable proofs cover B-005 and B-006.** Decision 0002 introduced the B-005 exception to the build's original no-tests decision. The 2026-10-28 delivery request for this Feature takes its remaining test item 0081 and adds B-006's executable proof. The other six scenarios remain unbound and skipped, with honest `Missing` rows. `versioning.feature` is linked into `test/acceptance`; B-005 keeps the shared `PackedToolSteps` pack, while B-006 uses its own two-build fixture.
+- **How B-006 is proved.** `SchemaVersionIndependenceSteps` binds the existing boundary scenario, with a distinct `When both package versions are packed` step so B-005's shared pack remains unchanged. It requires a real nuspec-version change, equal nonempty schema listings, and equal nonempty pins from two fresh `init` runs. Existing unit tests cover the mechanisms: `SchemaVersionsUnitTests.VersionsGivenOutOfOrder_WhenEnumerated_ShouldAscendByMajorThenMinorThenPatch` and `InitWriterUnitTests.AShippingCopyOfSeveralVersions_WhenWritten_ShouldWriteOnlyTheHighestNumberedVersion`. No new product mechanism needs a unit test.
 - **How B-005 is proved.** The scenario runs against the commit the repository has checked out.
   - `Given a commit` asks the `nbgv` tool for that commit's version: `dotnet nbgv get-version --variable NuGetPackageVersion`, from the repository root.
   - `When the tool is packed` issues the command the `Pack` target issues, `dotnet pack specht.slnx --configuration <the configuration the test assembly was built in> --no-build`, with `--output` naming a temporary directory deleted when the test run ends. Since 2026-10-11 the step is bound by `PackedToolSteps`, scoped to no feature, and the pack is `PackedTool`'s, made once for the test run and read by this scenario and by `0001-F2`'s package scenarios (`0001-F2` § 8). It does not run `./build.sh Pack`: that would start the build from inside the build's own test target and clean `.artifacts/nupkg/`. It packs what `Compile` already built, which is what `AcceptanceTest` runs after, so CI needs no `Pack` step before the tier (`0055-F2` B-004 is unchanged).
   - `Then the package's version is the version computed for that commit` asserts the three things § 7 names: the temporary directory holds exactly one file; its name is `specht.tool.<computed>.nupkg`; and the `<version>` of the `specht.tool.nuspec` inside it is `<computed>`. The expectation is the tool's answer, never a literal, so the scenario holds on a pull request (a prerelease) and on `main` (public): both processes inherit the same `GITHUB_REF`.
   - **Seen red.** With the two § 7 edits reverted in the working tree and nothing else changed, the scenario failed on the file name, `specht.tool.1.0.0.nupkg` where `specht.tool.0.1.10-gfc45647ca3.nupkg` was expected; restored, it passes. The revert was not committed.
   - **Cost.** The scenario took 2.8 seconds on the machine it was written on; every acceptance run now packs once.
-- **Mechanisms, per claim.** Read in [`version.json`](../../../version.json) and [`.config/dotnet-tools.json`](../../../.config/dotnet-tools.json) and, for B-005, in [`Directory.Packages.props`](../../../Directory.Packages.props), [`Directory.Build.props`](../../../Directory.Build.props) and [`.build/SpechtBuild.cs`](../../SpechtBuild.cs). None but B-005 has a test, by the owner's standing decision.
+- **B-006 mutation checks, 2026-10-28 (`net11.0`).** Temporarily printing the assembly version from `schema list` made the listing assertion fail (`0.2.0.0` versus `0.3.0.0`). After restoring that code, temporarily writing the assembly version as init's pin made the pin assertion fail (`0.2.0` versus `0.3.0`), after the catalog assertion passed. Both mutations were removed; no production change ships. The unmutated focused scenario passed.
+- **Mechanisms, per claim.** Read in [`version.json`](../../../version.json) and [`.config/dotnet-tools.json`](../../../.config/dotnet-tools.json) and, for B-005, in [`Directory.Packages.props`](../../../Directory.Packages.props), [`Directory.Build.props`](../../../Directory.Build.props) and [`.build/SpechtBuild.cs`](../../SpechtBuild.cs). B-005 and B-006 have executable proofs; the other claims retain their recorded hand checks.
   - B-001, B-002: no mechanism of their own. Nerdbank.GitVersioning derives the version from `version.json`'s `version` and the git height of the commit, so both follow from the tool, not from code here.
   - B-003, B-004: a literal setting. `publicReleaseRefSpec` names `^refs/heads/main$` and `^refs/tags/v\d+(?:\.\d+)*$` and nothing else; every other ref gets the `-g<commit>` suffix.
   - B-007: a literal setting. `release.tagName` is `v{version}`, and the local tool manifest pins `nbgv` 3.10.94 with `rollForward: false`.
   - B-008: a literal setting. `version` is `0.1`.
   - B-005: two declarations and no code. `Directory.Packages.props` pins `Nerdbank.GitVersioning`, and `Directory.Build.props` references it from every project; the package's own `GetBuildVersion` target sets `PackageVersion`. `SpechtBuild.cs` `Pack` sets the project, the configuration, the output directory and `--no-build`, and derives no version and passes none. There is no decision, derivation or mapping of this repository's beneath the claim, so it has no unit test; the scenario observes the declarations' effect directly.
-  - B-006: item 0081; not verified here.
+  - B-006: the embedded schema catalog derives its numbers from resource folders in `SchemaVersions.ReadVersions`; `InitWriter.Selected` chooses the newest shipped manifest. Neither reads the package version. Existing unit tests cover catalog ordering and newest-manifest selection; the two-package acceptance proof covers their independence from the package version.
 - **Verified by hand on 2026-10-09, for 0079.**
   - B-004, B-008: on branch `0079/nbgv-version`, `dotnet nbgv get-version` gave NuGetPackageVersion `0.1.1-g7a88c23105`.
   - B-003: with `GITHUB_ACTIONS=true` and `GITHUB_REF=refs/heads/main`, and again with `refs/tags/v0.1.1`, it gave `0.1.1`. With `refs/pull/9/merge` and `refs/heads/feature/x` it gave `0.1.1-g7a88c23105`.
@@ -168,7 +190,7 @@ Item 0079 built what the list below describes, and item 0080 built B-005 under i
   - B-002: in a throwaway clone, an empty commit on a local `main` took the version from `0.1.1` to `0.1.2`.
   - B-007: `dotnet nbgv tag` there created `v0.1.2` at HEAD, equal to the computed SimpleVersion. The clone was deleted and nothing was pushed.
   - Those results describe the code as it was then. Nothing re-checks them.
-- **Verdict.** Every claim built here rests on a literal setting in `version.json`, a package declaration, or Nerdbank.GitVersioning itself; there is no code in this repository beneath them to unit-test. Each is testable as it stands, the way the hand checks ran: a temporary git repository with `version.json` committed, `dotnet nbgv get-version` run under a set `GITHUB_REF`. B-005 has its scenario. No other claim has a test because the owner decided the build needs none, not because the design prevents it.
+- **Verdict.** Package-version computation rests on literal settings, package declarations and Nerdbank.GitVersioning. B-006 also exercises the existing catalog and init mechanisms covered by the unit tests named above. Each is testable as it stands, the way the hand checks ran: a temporary git repository with `version.json` committed, `dotnet nbgv get-version` run under a set `GITHUB_REF`. B-005 and B-006 have scenarios; the remaining claims keep the original recorded-verification policy.
 - **Hard to test, for the implementer.**
   - `Pack` cannot be run from a test: its output directory is fixed at `.artifacts/nupkg/`, which it cleans, and it is reached only through the build. The step therefore restates the target's `dotnet pack` command. A version argument later added to `Pack` in `SpechtBuild.cs` (which C-3 rules out) would not turn this scenario red.
   - The scenario's result depends on the `nbgv` tool being restored and on full history; in a shallow clone `Given a commit` fails with the tool's own message (C-2).
@@ -176,28 +198,29 @@ Item 0079 built what the list below describes, and item 0080 built B-005 under i
 
 ## 9. Traceability Matrix
 
-<!-- last written by: test-writer, 2026-10-09 -->
+<!-- last written by: test-writer, 2026-10-28 -->
 
-| Claim ID | Scenario                                           | Test                     | Status  |
-| -------- | -------------------------------------------------- | ------------------------ | ------- |
-| B-001    | One commit has one version everywhere              | Missing                  | Missing |
-| B-002    | A later commit has a higher version                | Missing                  | Missing |
-| B-003    | A main-branch build is a public version            | Missing                  | Missing |
-| B-004    | A branch build is a prerelease                     | Missing                  | Missing |
-| B-005    | The package carries the computed version           | `PackageVersioningSteps` | Covered |
-| B-006    | A package version change leaves the schema version | Missing                  | Missing |
-| B-007    | The release tag is made from the computed version  | Missing                  | Missing |
-| B-008    | The first version line is 0.1                      | Missing                  | Missing |
+| Claim ID | Scenario                                           | Test                                                                                                                                                                                                                                                | Status  |
+| -------- | -------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------- |
+| B-001    | One commit has one version everywhere              | Missing                                                                                                                                                                                                                                             | Missing |
+| B-002    | A later commit has a higher version                | Missing                                                                                                                                                                                                                                             | Missing |
+| B-003    | A main-branch build is a public version            | Missing                                                                                                                                                                                                                                             | Missing |
+| B-004    | A branch build is a prerelease                     | Missing                                                                                                                                                                                                                                             | Missing |
+| B-005    | The package carries the computed version           | `PackageVersioningSteps`                                                                                                                                                                                                                            | Covered |
+| B-006    | A package version change leaves the schema version | `SchemaVersionIndependenceSteps`; `SchemaVersionsUnitTests.VersionsGivenOutOfOrder_WhenEnumerated_ShouldAscendByMajorThenMinorThenPatch`; `InitWriterUnitTests.AShippingCopyOfSeveralVersions_WhenWritten_ShouldWriteOnlyTheHighestNumberedVersion` | Covered |
+| B-007    | The release tag is made from the computed version  | Missing                                                                                                                                                                                                                                             | Missing |
+| B-008    | The first version line is 0.1                      | Missing                                                                                                                                                                                                                                             | Missing |
 
 ## 10. Lessons / Spec Deltas
 
-<!-- last written by: spec-author, 2026-10-09, 2026-10-11 (§ 5 row 3) -->
+<!-- last written by: spec-author, 2026-10-28 -->
 
 - 2026-10-09, the owner chose an executable proof for B-005 over a recorded hand check, while item 0080 was being delivered ([decision 0002](decisions/0002-b-005-has-an-executable-proof.md)). The standing decision that the build has no tests (`0055-F2` § 8) is narrowed for B-005 only: `versioning.feature` is linked into the acceptance tier and the `@B-005` scenario is bound. B-005's text and its scenario are unchanged, and B-001 to B-004 and B-006 to B-008 keep their § 9 rows. § 8 and § 9 follow with the test.
 - 2026-10-09, item 0080 as built stops every build target in a shallow clone, where C-2 rules out a shallow checkout only in a build that packs. OQ-2 raised; C-2 is unchanged until it is answered.
 - 2026-10-09, B-005 is the `nbgv` tool and the Nerdbank.GitVersioning package agreeing, and their two pins sit in files `0055-F4` updates in separate pull requests. OQ-3 raised.
 - 2026-10-11, § 5 row 3 withdrawn: the owner asked for `specht --version` (`0001-F2` decision 0010), claimed by `0001-F2` B-040 to B-044. No claim, constraint or scenario of this Feature changed.
 - 2026-10-09, decision 0002 records that the owner was told `Pack` runs inside the acceptance tier; what was built issues the target's `dotnet pack` command and never runs the target, so the proof does not watch `Pack` itself (§ 7, § 8). An addendum to [decision 0002](decisions/0002-b-005-has-an-executable-proof.md) says so, raised by spec-reviewer round 4 (§ 12). The call, B-005 and its scenario are unchanged. Not yet put to the owner.
+- 2026-10-28, item 0081 binds B-006 at the owner's request to deliver `0055-F5`. Its `When` names both package builds explicitly; the claim and boundary stay unchanged. This extends the executable-proof exception to B-006; decision 0002 remains the historical B-005 call. OQ-2 and OQ-3 do not block B-006 and remain open.
 
 ## 11. Open Questions
 
