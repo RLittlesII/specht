@@ -6,7 +6,7 @@
 # with # are comments. docs/roadmap.md says what each milestone makes better.
 
 0.3.0
-# Complete the tool contract; the repository runs itself
+# Complete the tool contract
 0041
 0050
 0025
@@ -20,11 +20,7 @@
 0286
 0287
 0288
-0063
 0078
-0072
-0089
-0293
 0303
 
 0.4.0
