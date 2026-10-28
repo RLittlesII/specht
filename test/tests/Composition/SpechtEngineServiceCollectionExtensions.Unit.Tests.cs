@@ -31,14 +31,15 @@ public sealed class SpechtEngineServiceCollectionExtensionsUnitTests
         // Given
         var declared = typeof(ISpecRule).Assembly
             .GetTypes()
-            .Where(static type => typeof(ISpecRule).IsAssignableFrom(type) && type is { IsAbstract: false, IsInterface: false })
+            .Where(static type => typeof(ISpecRule).IsAssignableFrom(type) && type is { IsAbstract: false, IsInterface: false }
+                && type != typeof(FaultIsolatedRule))
             .Select(static type => type.FullName)
             .ToList();
         using var resolver = (TypeResolver)new TypeRegistrar(new ServiceCollection().AddSpechtEngine()).Build();
 
         // When
         var resolved = ((IEnumerable<ISpecRule>)resolver.Resolve(typeof(IEnumerable<ISpecRule>))!)
-            .Select(static rule => rule.GetType().FullName)
+            .Select(static rule => rule.Should().BeOfType<FaultIsolatedRule>().Which.Inner.GetType().FullName)
             .ToList();
 
         // Then
