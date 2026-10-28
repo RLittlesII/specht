@@ -96,7 +96,7 @@ authoritative.
 | `priority`, `rank`, `blocks` | the item          | never stored; the queue script computes rank and priority each run |
 | `claims`                     | the item          | ids only; the claim text lives in the spec's § 3                   |
 | `priority`                   | the specification | authored in its frontmatter, permanently                           |
-| `github_issue`, `synced_at`  | the specification | `null` — there is no issue to link and nothing to mirror from      |
+| `github_issue`, `synced_at`  | the specification | `null` — the mirror finds each issue by its marker (ADR-0022)      |
 
 An item's rank moves when any item in its Feature's closure changes `status`,
 `risk` or `depends_on`, in any Feature. Nothing is recomputed by hand: the next
@@ -243,8 +243,8 @@ So a citation that lives only in the pull-request body survives **neither** merg
 path. **Every commit on a branch** carries the citation as the first line of
 its body: `Delivers <id>` — or `Specifies <feature path>` when authoring a
 specification — with the claims it satisfies. A commit that is a subject and no
-body is a defect, however long the subject. There is no issue for `Closes` to
-close.
+body is a defect, however long the subject. Neither a commit nor a pull-request
+body closes a mirrored issue with `Closes`; the mirror closes it from the item.
 
 A squash of one commit takes that commit's body. A squash of several builds a
 `* <subject>` list, each entry followed by its commit's body, so the squashed
@@ -352,6 +352,7 @@ publication remains pending. Specifications, scenarios and epic files stay in gi
 ## Never add
 
 - A GitHub issue, label or milestone as a tracker.
+- A mirrored issue, label or milestone edited by hand, or read back into an item.
 - An item id not claimed from `.issue/.sequence`, or a reused one.
 - An id claimed by reading `main` alone while a pull request is open.
 - A second branch amending a Feature's § 1-5 while another is open on them.
