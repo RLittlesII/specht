@@ -2,7 +2,7 @@ id: "0287"
 type: task
 title: Edit one rule level in the manifest bytes
 
-status: ready-for-architecture
+status: done
 
 value: 2
 risk: 3
@@ -23,8 +23,8 @@ claims:
   - B-012
 
 created: "2026-10-24"
-updated: "2026-10-24"
-closed: null
+updated: "2026-10-28"
+closed: "2026-10-28"
 
 summary: |
   As the set command I want the engine to change one rule's level in the manifest bytes, so that only that entry differs and the manifest stays one the check accepts.

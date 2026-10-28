@@ -80,11 +80,11 @@ public sealed class ManifestPinEditor(SpecManifestParser parser, SchemaVersions 
     }
 
     /// <implements epic="0001" feature="F7" claim="B-043" />
-    private static int OriginalOffset(long utf8Offset, byte[] utf8, string text, Encoding encoding, int preamble) =>
+    internal int OriginalOffset(long utf8Offset, byte[] utf8, string text, Encoding encoding, int preamble) =>
         preamble + encoding.GetByteCount(text.AsSpan(0, Encoding.UTF8.GetCharCount(utf8.AsSpan(0, checked((int)utf8Offset)))));
 
     /// <implements epic="0001" feature="F7" claim="B-043" />
-    private static (Encoding Encoding, int Offset) Format(byte[] bytes)
+    internal (Encoding Encoding, int Offset) Format(byte[] bytes)
     {
         ReadOnlySpan<byte> value = bytes;
         if (value.StartsWith(new byte[] { 0xFF, 0xFE, 0x00, 0x00 }))
@@ -105,5 +105,4 @@ public sealed class ManifestPinEditor(SpecManifestParser parser, SchemaVersions 
         }
         return (Encoding.UTF8, value.StartsWith(new byte[] { 0xEF, 0xBB, 0xBF }) ? 3 : 0);
     }
-
 }
