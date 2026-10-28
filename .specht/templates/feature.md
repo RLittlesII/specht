@@ -25,24 +25,14 @@ github_issue: null
 synced_at: null
 ---
 
-<!-- Copy to <feature>/.spec/README.md. The companion Gherkin file sits beside
-     it as <feature>/.spec/<feature-name>.feature, and the three record folders
-     decisions/ adr/ lessons/ beside that.
-
-     spec_status is DOCUMENT maturity (draft|in-review|approved|superseded) and
-     is owned by this file.
-
-     status is DELIVERY lifecycle — MIRRORED from the issue's status:* label
-     once github_issue is set; never hand-edit it after that point.
-
-     priority is authored HERE, permanently. No priority:* label is applied to a
-     Feature issue, so there is nothing to mirror it from. priority, rank and
-     blocks are DERIVED from value/risk and the dependency graph — recompute,
-     never hand-edit.
-
-     Delete this comment and every <!-- Owner: --> guidance comment from the
-
-     copy. Guidance lives in the template; a copy carries content only. -->
+<!-- Copy to <feature>/.spec/README.md with one sibling .feature file and
+     decisions/, adr/ and lessons/ records. Delete guidance from the copy.
+     Use the fewest words preserving meaning; amend content in place.
+     Cite siblings by qualified keys (0001-F2, 0001-F2 B-044, 0001-F2 C-3),
+     including external Feature-local decisions and ADRs; no sibling-spec links.
+     Own scenarios and supporting records may be linked. Keep required stamps.
+     Delivery status mirrors the configured tracker; priority is authored here;
+     rank and blocks are derived. spec_status records document maturity. -->
 
 # Specification: {{feature_title}}
 
@@ -52,8 +42,7 @@ synced_at: null
 
 {{business_goal}}
 
-<!-- Owner: spec-author. One paragraph. The outcome, not the implementation.
-     Name the failure state being removed. -->
+<!-- Outcome and failure state, one paragraph. -->
 
 ## 2. User Needs
 
@@ -63,18 +52,13 @@ synced_at: null
 | --- | ----------- | -------- | ---------------- |
 | 1   | {{persona}} | {{need}} | {{pain}}         |
 
-<!-- Owner: spec-author. A sibling Feature is a legitimate persona — say so and
-     mark its Pain Point "N/A (internal dependency)". -->
-
 ### Assumptions
 
 | ID  | Assumption     |
 | --- | -------------- |
 | A-1 | {{assumption}} |
 
-<!-- Owner: spec-author. An assumption that later gets decided is marked
-     RESOLVED in place with the date and the OQ it answered, and the decided
-     requirement becomes a § 3 claim — the assumption row is never deleted. -->
+<!-- Resolve in place with date and decision; retain IDs. -->
 
 ## 3. Acceptance Criteria
 
@@ -84,11 +68,8 @@ synced_at: null
 | ----- | --------- | ---------- | ------ |
 | B-001 | {{claim}} | {{source}} | Active |
 
-<!-- Owner: spec-author. Each claim is one falsifiable statement in
-     Given/this Feature form, scoped to this Feature. Claim ids are permanent
-     and never renumbered — a withdrawn claim is marked Withdrawn, not deleted,
-     or § 9 and the .feature file lose their anchors. Status is Active,
-     Amended, Withdrawn or Superseded. -->
+<!-- One falsifiable Given/this Feature statement per permanent ID.
+     Withdraw rather than delete or renumber. -->
 
 ## 4. Constraints
 
@@ -98,9 +79,7 @@ synced_at: null
 | --- | -------------- | --------------------- |
 | C-1 | {{constraint}} | {{what_it_rules_out}} |
 
-<!-- Owner: spec-author. A constraint states what it rules out, or a designer
-     cannot act on it. Cited from outside this Feature as `<epic>-F<n> C-<n>`.
-     An imported external rule is a decision record, not a constraint row. -->
+<!-- State what each constraint rules out; adopted external rules are decisions. -->
 
 ## 5. Out of Scope
 
@@ -110,10 +89,6 @@ synced_at: null
 | --- | -------- | ---------------- |
 | 1   | {{item}} | {{reason}}       |
 
-<!-- Owner: spec-author. A specification that states only the target invites
-     over-delivery. Where an exclusion clarifies a scenario, add an
-     @boundary-tagged scenario to the .feature file as well. -->
-
 ## 6. Concern Separation
 
 <!-- last written by: implementer, {{date}} -->
@@ -122,18 +97,14 @@ synced_at: null
 | --- | ----------- | ----------------------------- |
 | 1   | {{concern}} | Business \| Technical \| Both |
 
-<!-- Owner: implementer. -->
-
 ## 7. Technical Design
 
 <!-- last written by: implementer, {{date}} -->
 
 {{technical_design}}
 
-<!-- Owner: implementer. Design positions, the domain model, interface
-     declarations, and diagrams. Once code exists the compiler is the authority:
-     reference the file, do not restate a signature. A durable decision made
-     here is an ADR in adr/, not a paragraph. -->
+<!-- Architectural intent, boundaries and necessary contracts. After implementation,
+     remove copied declarations and code pointers. Durable choices belong in ADRs. -->
 
 ## 8. Testing Strategy
 
@@ -141,13 +112,9 @@ synced_at: null
 
 {{testing_strategy}}
 
-<!-- Owner: test-writer. Which claims are covered by an acceptance scenario and
-     which by unit tests, the testability verdict, and anything the design makes
-     hard to test. Reqnroll runs the acceptance tier only — unit tests still
-     cover the concerns. One line per claim: the mechanism beneath it (the
-     decision, derivation, boundary, ordering or mapping that makes it true) and
-     its unit test, or the reason it has none, naming the code read. "No unit
-     tier" is never a Feature-wide verdict. -->
+<!-- Strategy, testability and coverage requirements. Require acceptance and
+     mechanism coverage where applicable; explain absent mechanisms. No concrete
+     test names or locators here. -->
 
 ## 9. Traceability Matrix
 
@@ -157,27 +124,20 @@ synced_at: null
 | -------- | ------------ | ------- | ------- |
 | B-001    | {{scenario}} | Missing | Missing |
 
-<!-- Owner: test-writer. Every ID in § 3 appears here exactly once. The row is
-     anchored to the scenario's `@B-00n` TAG, not to the title in the Scenario
-     column — that title is a human-reading courtesy and a stale one is a
-     cleanup, not a gate failure. The Test cell names every test that pins the
-     claim, step class and unit test both. `Covered` means the mechanism is
-     pinned too; a scenario over a mechanism with no unit test is `Partial`,
-     unless § 8 records the claim as having no mechanism of its own.
-     A `Missing` row blocks the item reaching done;
-     it does not block spec_status reaching approved. -->
+<!-- Each § 3 ID appears once, anchored by its scenario tag. All concrete test
+     names and locators belong here; verify targets exist. Covered requires
+     mechanism coverage; Partial lacks it. Missing blocks delivery, not agreement. -->
 
 ## 10. Lessons / Spec Deltas
 
 <!-- last written by: spec-author, {{date}} -->
 
-| Lesson     | Delta     | Claim        |
-| ---------- | --------- | ------------ |
-| {{lesson}} | {{delta}} | {{claim_id}} |
+| Trigger     | Change     | Affected IDs     |
+| ----------- | ---------- | ---------------- |
+| {{trigger}} | {{change}} | {{affected_ids}} |
 
-<!-- Owner: spec-author. One row per lesson in this Feature's lessons/ folder.
-     A repo-wide lesson lives in the root .spec/lessons/ and has no row here,
-     because it belongs to no one Feature. "None." is a valid body. -->
+<!-- Compact trigger/change/affected-ID rows; amend owning sections in place.
+     Link local lessons when applicable. None. is valid. -->
 
 ## 11. Open Questions
 
@@ -187,8 +147,7 @@ synced_at: null
 | ---- | ------------ | ------------ | ---------- |
 | OQ-1 | {{question}} | {{claim_id}} | Open       |
 
-<!-- Owner: whoever is blocked. Resolved in place with the date and the
-     decision, never deleted. "None." is a valid body. -->
+<!-- Resolve in place with date and decision. None. is valid. -->
 
 ## 12. Sign-off
 
@@ -198,14 +157,13 @@ synced_at: null
 | ------- | ------ | ------------- | -------- |
 | 1-5     | 🟡     | spec-reviewer | {{note}} |
 
-<!-- Owner: spec-reviewer. 🟡 Draft, 🟢 Approved, 🔴 Blocked with a reason.
-     Flip the frontmatter spec_status to approved only when every row is 🟢. -->
+<!-- Record returned independent verdicts with unit, scope and recoverable subject
+     revision in Note. Current approval requires applicable green coverage;
+     preserve superseded evidence as labeled history, not current approval. -->
 
 ## Tasks
 
-<!-- Child items cut from § 3 after stakeholder agreement. Each is a GitHub
-     issue; this list names them, and the issue carries the delivery state.
-     A Feature's specification exists before any task does. -->
+<!-- Child tracker paths only; delivery state stays in the tracker. -->
 
 ## Scoring
 
@@ -213,6 +171,3 @@ synced_at: null
 | ----- | ----- | --------- |
 | value | 0     | {{basis}} |
 | risk  | 0     | {{basis}} |
-
-<!-- priority and rank are derived from value and risk — recompute, never
-     hand-edit. -->

@@ -15,6 +15,7 @@ public sealed class SchemaListCommandIntegrationTests
     {
         // Given
         using var tree = new SpecTree();
+        tree.WriteRaw(SpecTree.ManifestPath, "{\"schemaVersion\":\"0.2.0\"}");
         if (!manifestPresent)
         {
             File.Delete(Path.Combine(tree.Root, SpecTree.ManifestPath));
