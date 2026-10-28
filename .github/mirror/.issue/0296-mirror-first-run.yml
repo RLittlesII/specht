@@ -2,7 +2,7 @@ id: "0296"
 type: task
 title: Run the mirror to convergence, backfill once, and amend the docs that deny issues
 
-status: ready-for-architecture
+status: done
 
 risk: 3
 
@@ -17,8 +17,8 @@ spec: .github/mirror/.spec/README.md
 claims: []
 
 created: "2026-10-24"
-updated: "2026-10-24"
-closed: null
+updated: "2026-10-28"
+closed: "2026-10-28"
 
 summary: |
   The first live run: dispatch the mirror workflow, or run 0294's script

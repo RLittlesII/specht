@@ -82,7 +82,8 @@ delete its guidance comments in the copy.
 **delivery lifecycle**, authored in place — there is no issue label to mirror it
 from. Delivery state for the work cut from the Feature lives in its `.issue/`
 items; see [delivery.md](delivery.md) for which fields are authored where and
-which are derived. `github_issue` and `synced_at` stay `null`.
+which are derived. `github_issue` and `synced_at` stay `null`: the mirror finds each issue by its
+marker ([ADR-0022](../../../../.spec/adr/0022-github-issue-stays-null-and-issues-are-found-by-marker.md)).
 
 ## § 9 is the gate, and `Missing` is honest
 

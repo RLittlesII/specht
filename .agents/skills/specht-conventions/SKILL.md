@@ -74,9 +74,11 @@ test/
 .build/                        the NUKE build project - targets and CI generation; tooling, not product
 .nuke/                         NUKE parameters and the generated build schema
 .husky/                        git hooks - pre-commit verifies staged .cs and .md through Format; specht from 0062
-.github/                       workflows (ci, release), renovate.json, settings checklist; issue
-                               templates for outside reports only - github_mode stays false and a
-                               maintainer turns a report into a .issue/ item. PR labels group release notes;
+.github/                       workflows (ci, main, mirror, release, renovate), renovate.json, settings
+                               checklist; mirror/ - the script that mirrors items and epics as
+                               read-only issues, and its tests (0055-F9); issue templates for
+                               outside reports only - github_mode stays false and a maintainer turns
+                               a report into a .issue/ item. PR labels group release notes;
                                Renovate keeps `dependencies` beside its emoji category (epic 0055)
 .issue/                        item.yml (the work-item schema), .sequence, and items
                                belonging to no Feature; a Feature's items sit in
@@ -182,7 +184,8 @@ still uses ordinals.
 ## The spec / item split
 
 **Delivery state is tracked in `.issue/` work items; content is tracked in the
-specification.** There are no GitHub issues or milestones. PR labels categorize
+specification.** GitHub issues and milestones are a read-only mirror of the
+items and `.issue/.goal` (`0055-F9`). PR labels categorize
 release notes, never delivery state. The item cites claim ids and never their text; the specification never carries an item's
 status. Which fields are authored where, and which are derived and must never be
 hand-edited, is in [references/delivery.md](references/delivery.md) § "What is
@@ -211,7 +214,7 @@ none.
 ./build.sh AcceptanceTest   # test/acceptance, Reqnroll, no filter
 ./build.sh Pack             # specht.tool and Specht.CodeAnalysis packages into .artifacts/nupkg
 ./build.sh Specht           # the tool checking this repository's own .spec/ tree
-./build.sh MirrorTest       # python3 -m unittest over .github/mirror/tests; not in Default or CI yet
+./build.sh MirrorTest       # python3 -m unittest over .github/mirror/tests; the mirror workflow runs it, Default and CI do not
 ./build.sh VerifyTag        # on a tag build, fails unless the tag is v<version> on a commit of main; skipped otherwise
 ```
 
@@ -236,6 +239,7 @@ a commit of `main` creates `v<version>` (`0055-F5` A-1, B-007).
   reinstall; installed copies are gitignored and cannot be reviewed.
 - A renumbered claim, constraint, question, task or rule id.
 - A GitHub issue, label or milestone as a tracker.
+- A mirrored issue, label or milestone edited by hand, or read back into an item.
 - A hand edit to any derived field.
 - A hand edit to `.github/workflows/ci.yml` or `.github/workflows/release.yml`.
   Both are NUKE-generated.

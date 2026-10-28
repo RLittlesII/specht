@@ -2,7 +2,7 @@ id: "0293"
 type: feature
 title: Work-item mirror
 
-status: ready-for-architecture
+status: done
 
 value: 3
 risk: 4
@@ -81,8 +81,8 @@ claims:
   - B-063
 
 created: "2026-10-24"
-updated: "2026-10-25"
-closed: null
+updated: "2026-10-28"
+closed: "2026-10-28"
 
 summary: |
   As a reader of this repository on GitHub, I want every work item and
@@ -148,6 +148,8 @@ acceptance_criteria:
   - "B-049 — a duplicated id's marker names its path (0294)"
   - "B-050 — no `status:` label on a done epic (0294)"
   - "B-051 — no Summary: the epic's `description` in its place (0294)"
+  - "B-052 — an oversize body links its file instead of copying it (0294)"
+  - "B-053 — still oversize: the sections after the Summary left out (0294)"
   - "B-054 — an issue created in a run linked under its parent in that run (0297)"
   - "B-055 — one open milestone per versioned goal section (0300)"
   - "B-056 — the milestone marker; an unmarked namesake adopted (0300)"
