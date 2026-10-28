@@ -20,10 +20,10 @@ public sealed class CutFileBytes : TheoryData<string, string, byte[], byte[]>
             "docs/rules/v0.3.0/SPEC001.md",
             [.. Bom, .. Encoding.UTF8.GetBytes(
                 "# SPEC001\r\n\r\nIntroduced in 0.2.0.\r\n\r\n| Property         | Value       |\r\n"
-                + "| ---------------- | ----------- |\r\n| Schema version   | 0.2.0       |")],
+                + "| ---------------- | ----------- |\r\n| Introduced       | 0.2.0       |\r\n| Schema version   | 0.2.0       |")],
             [.. Bom, .. Encoding.UTF8.GetBytes(
                 "# SPEC001\r\n\r\nIntroduced in 0.2.0.\r\n\r\n| Property         | Value       |\r\n"
-                + "| ---------------- | ----------- |\r\n| Schema version   | 0.3.0       |")]);
+                + "| ---------------- | ----------- |\r\n| Introduced       | 0.2.0       |\r\n| Schema version   | 0.3.0       |")]);
         Add(
             "src/tool/manifest/v0.2.0/manifest.json",
             "src/tool/manifest/v0.3.0/manifest.json",
