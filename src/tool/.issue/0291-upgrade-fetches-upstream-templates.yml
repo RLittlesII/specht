@@ -15,7 +15,6 @@ spikes: []
 spec: src/tool/.spec/README.md
 
 claims:
-  - B-129
   - B-130
   - B-132
   - B-133
@@ -24,7 +23,7 @@ claims:
   - B-137
 
 created: "2026-10-24"
-updated: "2026-10-24"
+updated: "2026-10-28"
 closed: null
 
 summary: |
@@ -32,9 +31,10 @@ summary: |
   and the manifest does not name as the consumer's is written only from
   fetched content that matches its hash (C-9), a local copy that matches
   is kept over the pinned version's (C-10), a match everywhere makes no
-  network call (C-8), and no credential is sent (C-15). Below schema
-  `0.3.0` no template is requested (B-129, on OQ-66's proposed default).
-  0093 stays the schemas' fetch; this item extends it to templates.
+  network call (C-8), and no credential is sent (C-15). The fetch runs
+  under every pin: the repository owner resolved OQ-66 on 2026-10-28,
+  and B-129 is withdrawn. 0093 stays the schemas' fetch; this item
+  extends it to templates.
 
   Waits on 0093 for the fetch and the hash check, which 0045's rewrite
   sits under, and on 0290 for the hashes and the address. A named
@@ -44,7 +44,6 @@ summary: |
   - the consumer, the source and the pinned version.
 
 acceptance_criteria:
-  - "B-129 — a `templates` member below `0.3.0`: no request for a template"
   - "B-130 — local copy differs, fetched content matches: written under the template's file name"
   - "B-132 — fetched content mismatches the hash: stderr, nothing written, exit 3"
   - "B-133 — source unreachable, asks for a credential, or lacks the template: stderr, nothing written, exit 3"

@@ -61,7 +61,8 @@ public sealed class SchemaVersionRulePagesUnitTests
 
         // When
         var embedded = typeof(SchemaVersions).Assembly.GetManifestResourceNames()
-            .Count(static name => name.EndsWith(".md", StringComparison.OrdinalIgnoreCase));
+            .Count(static name => name.StartsWith("rules/", StringComparison.Ordinal)
+                                  && name.EndsWith(".md", StringComparison.OrdinalIgnoreCase));
 
         // Then
         embedded.Should().Be(given);

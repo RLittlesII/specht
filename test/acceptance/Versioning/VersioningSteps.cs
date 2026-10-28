@@ -33,6 +33,9 @@ namespace Specht.Acceptance.Versioning;
 /// and records that copy's hashes, and each run launches the built tool. "The network is unavailable" points the launched
 /// process's proxy variables at a closed loopback port, and "no network call was attempted" reads the built engine and
 /// tool assemblies for a <c>System.Net</c> reference (OQ-39, the owner's ruling of 2026-10-12). B-074 is item 0093's.
+/// Item 0290 binds B-125 to B-127: each adds a synthetic <c>templates</c> member to that recorded source and launches the
+/// built tool; B-125 reads the templates the engine's parser takes from the root's manifest, and B-126 and B-127 read the
+/// rejection from stderr as the template's file name, in quotes.
 /// Item 0126 binds B-086 and B-087 over the embedded resources and their declared addresses. The
 /// partial lock bindings execute B-092 and B-093 over synthetic shipping files on disk.
 /// B-012 runs the existing init writer over synthetic versioned manifests on disk and reads the written pin. The
@@ -348,7 +351,7 @@ public sealed partial class VersioningSteps
     [Then("the manifest is rejected")]
     public void ThenTheManifestIsRejected() => _exitCode.Should().Be(3, _stderr);
 
-    [Then(@"^the rejection names the (address|version|content hashes|item schema|epic schema)$")]
+    [Then(@"^the rejection names the (address|version|content hashes|item schema|epic schema|feature template|runbook template)$")]
     public void ThenTheRejectionNamesThe(string part) =>
         _stderr.Should().Contain($"'{SourceNames[part]}'", "the rejection names the {0}", part);
 
@@ -459,6 +462,8 @@ public sealed partial class VersioningSteps
         ["content hashes"] = "hashes",
         ["item schema"] = "task",
         ["epic schema"] = "epic",
+        ["feature template"] = "feature.md",
+        ["runbook template"] = "runbook.md",
     };
 
     private static readonly Dictionary<string, string> SchemaPaths = new(StringComparer.Ordinal)

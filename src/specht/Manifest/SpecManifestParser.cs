@@ -116,7 +116,8 @@ public sealed class SpecManifestParser(SchemaVersions versions)
     }
 
     /// <implements epic="0001" feature="F5" claim="B-048" />
-    private static UpstreamSchemaSource? SpechtSchema(JsonObject manifest, Dictionary<string, string> fileNames, List<string> faults)
+    private static UpstreamSchemaSource? SpechtSchema(
+        JsonObject manifest, Dictionary<string, string> fileNames, SchemaVersion? pinned, List<string> faults)
     {
         if (!manifest.TryGetPropertyValue("spechtSchema", out var node))
         {
@@ -169,7 +170,41 @@ public sealed class SpecManifestParser(SchemaVersions versions)
             }
         }
 
-        return faults.Count == 0 ? new UpstreamSchemaSource(location!, version!, files) : null;
+        var templates = Templates(source, location, pinned, faults);
+
+        return faults.Count == 0 ? new UpstreamSchemaSource(location!, version!, files) { Templates = templates } : null;
+    }
+
+    /// <implements epic="0001" feature="F7" claim="B-125" />
+    /// <implements epic="0001" feature="F7" claim="B-126" />
+    /// <implements epic="0001" feature="F7" claim="B-127" />
+    /// <implements epic="0001" feature="F7" claim="B-131" />
+    private static List<UpstreamTemplateFile> Templates(JsonObject source, string? location, SchemaVersion? pinned, List<string> faults)
+    {
+        var templates = new List<UpstreamTemplateFile>();
+        if (!source.TryGetPropertyValue("templates", out var declared))
+        {
+            return templates;
+        }
+
+        foreach (var (fileName, entry) in Present(declared).AsObject())
+        {
+            if (Text(entry) is not { } hash || !IsSha256(hash))
+            {
+                faults.Add(
+                    $"the 'templates' entry of spechtSchema for the template '{fileName}' is not 'sha256:' followed by 64 lowercase hexadecimal digits");
+            }
+            else if (pinned is not null && !pinned.Templates.Contains(fileName))
+            {
+                faults.Add($"the 'templates' of spechtSchema names '{fileName}', which schemaVersion {pinned.Number} does not ship as a template");
+            }
+            else
+            {
+                templates.Add(new UpstreamTemplateFile(fileName, location + fileName, hash));
+            }
+        }
+
+        return templates;
     }
 
     /// <implements epic="0001" feature="F5" claim="B-048" />
@@ -466,7 +501,7 @@ public sealed class SpecManifestParser(SchemaVersions versions)
             ClaimTagIgnoreCase = tags && Selected(claim, claimDefaults!, "tagIgnoreCase", claimDocument).GetValue<bool>(),
             SchemaSource = SourceSelection(manifest, sourceFaults),
             DeclaresEpicGrammar = manifest["identifiers"]?["epic"] is not null,
-            SpechtSchema = SpechtSchema(manifest, frontmatterSchemas, sourceFaults),
+            SpechtSchema = SpechtSchema(manifest, frontmatterSchemas, versions.Find(number), sourceFaults),
             Tests = matrix ? TestSettings(manifest["tests"]) : null,
             MatrixScenarioTitles = matrix && manifest["matrix"]?["scenarioTitles"] is { } titles && titles.GetValue<bool>(),
             Owners = matrix && manifest["owners"] is { } owners ? Tables(owners) : new Dictionary<string, IReadOnlyList<string>>(StringComparer.Ordinal),

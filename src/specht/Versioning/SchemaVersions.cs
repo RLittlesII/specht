@@ -48,6 +48,10 @@ public sealed class SchemaVersions
                 RulePages = resources.Keys
                     .Where(name => name.StartsWith($"{PagePrefix}{folder}/", StringComparison.Ordinal))
                     .ToDictionary(static name => Path.GetFileNameWithoutExtension(name), name => resources[name], StringComparer.Ordinal),
+                Templates = resources.Keys
+                    .Where(name => name.StartsWith($"{TemplatePrefix}{folder}/", StringComparison.Ordinal))
+                    .Select(static name => name[(name.LastIndexOf('/') + 1)..])
+                    .ToHashSet(StringComparer.Ordinal),
             };
         });
     }
@@ -75,4 +79,5 @@ public sealed class SchemaVersions
 
     private const string Prefix = "schema/v";
     private const string PagePrefix = "rules/v";
+    private const string TemplatePrefix = "templates/v";
 }
