@@ -1,0 +1,39 @@
+id: "0313"
+type: chore
+title: State the checker's limit in the user docs
+status: ready
+value: 3
+risk: 1
+parent: null
+children: []
+depends_on: []
+spikes: []
+spec: null
+claims: []
+created: "2026-10-28"
+updated: "2026-10-28"
+closed: null
+summary: |
+  A consumer ran ten specification review rounds. Each run specht reported
+  0 errors and the same 10 warnings (SPEC040, SPEC051), while the reviews
+  found a term in two forms, constraints contradicting claims, scenarios
+  that cannot fail, stale cross-references and open questions answered
+  late. specht checks structure, not meaning, and the user docs do not say
+  so, so "0 errors" reads as "ready for review".
+  State the limit where a consumer reads what the tool does: README.md's
+  paragraph on what specht checks and docs/what-it-checks.md. Say that a
+  clean run proves a tree well-formed and traceable, not consistent or
+  testable, and that 0 errors is not ready for review. Point at the rule
+  pages under docs/rules/ for what is checked. Terse, per the root docs/
+  convention.
+acceptance_criteria:
+  - "README.md, beside the paragraph naming what specht checks, states that a clean run proves the tree well-formed and traceable, not consistent or testable."
+  - "docs/what-it-checks.md states the same limit once and links the rule pages under docs/rules/."
+  - "Neither page lists the unchecked findings as future rules or cites an unshipped rule id."
+  - "./build.sh Specht passes and the docs/cli.md help test is unchanged."
+decisions:
+  - "2026-10-28, repository owner, chose to specify the two mechanical checks now and park the rest as spikes; this chore states today's limit and does not wait on them."
+out_of_scope:
+  - "New rules: the open-question gate and dangling id references are drafted as Features; Then-step wording, constraint tracing, term variants and a warning baseline are spikes 0315 to 0318."
+  - "Rewriting the rule pages under docs/rules/ or brief § 4."
+  - "Changing a check's verdict or the report shape."

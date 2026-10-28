@@ -1,0 +1,51 @@
+id: "0316"
+type: spike
+title: Analyze tracing constraints the way claims are traced
+status: ready
+value: 3
+risk: 3
+parent: null
+children: []
+depends_on: []
+spikes: []
+spec: null
+claims: []
+created: "2026-10-28"
+updated: "2026-10-28"
+closed: null
+summary: |
+  A consumer's review found constraints that contradict claims. specht
+  traces every claim from § 3 through a .feature tag to a § 9 row, but a
+  constraint is traced nowhere, so nothing ties a constraint to the
+  scenario or test that would expose the contradiction.
+  Evaluate constraint tracing. Answer, deciding or raising each as an open
+  question with a recommendation:
+  (1) Tag grammar: a constraint tag such as @C-n beside the manifest's
+  "tag": "@{claim}", and whether one manifest key or two carries it.
+  (2) Uniqueness: C-id uniqueness inside a specification, and its relation
+  to 0101-F6 (src/specht/Rules/DuplicateIds/.spec/README.md), which
+  already owns in-specification id uniqueness.
+  (3) Coverage: whether a constraint gets a § 9 row, a scenario tag, both
+  or neither, and what a constraint no test can exercise does instead.
+  (4) Migration: the template change under .specht/templates/, what an
+  existing consumer tree must add, and the schema step it forces; state
+  whether it is breaking against 0001-F7 C-11.
+  (5) Current tree: count, at the commit read, the constraints in this
+  repository's specifications and the constraint-shaped tags in its
+  .feature files.
+  Time box: one session; return an agreement handoff for spec-author. No
+  implementation.
+acceptance_criteria:
+  - "Recommend a constraint tag grammar and its manifest key beside the claim tag."
+  - "Divide the ground with 0101-F6 on C-id uniqueness."
+  - "Recommend whether constraints get § 9 rows, scenario tags, both or neither."
+  - "State the template migration and the schema-version step, and whether it is breaking, against 0001-F7 C-11."
+  - "Report constraint and constraint-tag counts in this tree, with the commit read."
+  - "Return an agreement handoff for spec-author: candidate claims, constraints, out-of-scope rows and open questions."
+decisions:
+  - "2026-10-28, repository owner, chose to specify the two mechanical checks now and park the rest as spikes; this is one of the parked spikes."
+out_of_scope:
+  - "Rule, engine, template or host implementation."
+  - "Editing 0101-F6 or any other specification; the handoff recommends edits for spec-author."
+  - "Detecting a contradiction between a constraint and a claim by meaning; that stays with review."
+  - "Dangling id references, drafted as its own Feature."

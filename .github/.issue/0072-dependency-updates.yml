@@ -2,13 +2,13 @@ id: "0072"
 type: feature
 title: Dependency updates
 
-status: ready-for-architecture
+status: deferred
 
 value: 4
 risk: 4
 
 parent: "0055"
-children: ["0073", "0074", "0075", "0076", "0077"]
+children: ["0073", "0074"]
 
 depends_on: []
 spikes: []
@@ -35,7 +35,7 @@ claims:
   - B-017
 
 created: "2026-10-08"
-updated: "2026-10-13"
+updated: "2026-10-28"
 closed: null
 
 summary: |
