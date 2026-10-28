@@ -2,7 +2,7 @@ id: "0189"
 type: task
 title: Cut the next schema version
 
-status: ready-for-architecture
+status: in-progress
 
 risk: 3
 
@@ -24,7 +24,7 @@ claims:
   - B-100
 
 created: "2026-10-11"
-updated: "2026-10-12"
+updated: "2026-10-28"
 closed: null
 
 summary: |
