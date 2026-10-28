@@ -1,0 +1,77 @@
+id: "0311"
+type: spike
+title: Analyze an amendment comment written beside a section stamp
+status: ready
+value: 3
+risk: 2
+parent: null
+children: []
+depends_on: []
+spikes: []
+spec: null
+claims: []
+created: "2026-10-28"
+updated: "2026-10-28"
+closed: null
+summary: |
+  Specify a finding for a comment that announces an amendment beside a
+  section stamp. The owner found this in a specification section:
+    <!-- last written by: spec-author, 2026-10-28 -->
+    <!-- Amended 2026-10-28 by spec-author (#625): row 10's DESIGN.md citation names the current section; no constraint changes. -->
+  The stamp already records the amendment: who wrote the section last and
+  when. A second comment duplicates it and restarts the change log the stamp
+  rule exists to stop; history is § 10's and the commit's
+  (specht-conventions references/specs.md, the stamp paragraph).
+  0101-F9 cannot see it: C-3 never reads a note, C-4 judges each stamp
+  alone, B-021 does not report text after the note, and § 5 rows 5, 6 and
+  10 exclude what a note says and the change log. 0289 is opt-in, default
+  off and bounded by size; this case is one line, so its boundary misses it,
+  and the owner's "never" conflicts with default off.
+  Read first: src/specht/Rules/Stamps/.spec/README.md (0101-F9, draft, not
+  built) with its decisions 0001 to 0004, and
+  .issue/0289-analyze-large-markdown-comments.yml.
+  Answer, deciding or raising each as an open question with a
+  recommendation:
+  (1) Home: new claims and constraint amendments in 0101-F9, unbuilt and
+  holding no rule id (OQ-1), versus a new rule. A new SPEC### is a new
+  schema version (AGENTS.md § Invariants); state the version impact either
+  way against 0101-F9 OQ-2 and 0001-F7 OQ-18.
+  (2) Detection, deterministic: a comment whose text opens with "Amended"
+  (and which case), or any comment in a stamped section other than the stamp
+  and template guidance; whether a position right after the stamp matters;
+  text quoted as code (0101-F9 B-017) and fenced examples; generated markers
+  stay valid.
+  (3) Whether the ruling reaches "amended" inside a stamp's own note, which
+  this repository already writes (.build/ContinuousIntegration/.spec/README.md
+  line 64, "(B-012 amended, ADR-0011)"), against 0101-F9 C-3; and confirm
+  that "Amended YYYY-MM-DD" text in a § 3 or § 4 row and the claim Status
+  value Amended stay out of reach: they are records, not comments.
+  (4) Default severity: error, per the owner's "never", versus 0101-F9
+  decision 0002, warning by default. Recommend; the owner decides.
+  (5) Current tree: at 7895fa82 no standalone amendment comment exists, no
+  comment in a Feature specification other than a stamp opens a line, 35
+  stamps in 17 Feature specifications carry "amended" in a note, 52 table
+  rows carry "Amended YYYY-MM-DD" text and 200 claims carry the Status
+  Amended. Confirm the verdict on this repository before the rule lands.
+  (6) Process: name the instruction text that let the comment be written and
+  the skill text the delivering pull request changes - the stamp paragraph
+  in specht-conventions references/specs.md and .agents/roles/spec-author.md.
+  (7) Diagnostics: root-relative path, the amendment comment's line, no
+  replacement text (0101-F9 C-6, B-018).
+  Time box: one session, at most two hours; return an agreement handoff.
+acceptance_criteria:
+  - "Recommend the home, 0101-F9 claims or a new rule, and state the schema-version impact against 0101-F9 OQ-2 and 0001-F7 OQ-18."
+  - "Define a deterministic detection shape: comment text, case, position relative to the stamp, file scope, code-quoted text, fenced examples and generated markers."
+  - "Decide or raise whether a stamp note's 'amended' is in reach, against 0101-F9 C-3; record table-cell Amended text and the claim Status Amended as out of reach."
+  - "Recommend a default severity against 0101-F9 decision 0002, leaving the call to the owner."
+  - "Divide the ground with 0289: this one-line case versus its opt-in, size-bounded narratives."
+  - "State the verdict on this repository's tree at the commit read, with counts."
+  - "Name the skill and role text the delivering pull request changes."
+  - "Specify diagnostics: root-relative path, the comment's line, no replacement text; include report/accept examples."
+decisions:
+  - '2026-10-28, repository owner, on a stamp followed by a one-line Amended comment: "We should NEVER allow this. ... last written should never be "amended" it IS the amendment."'
+  - "2026-10-28: filed as a spike apart from 0289; 0289's size boundary does not catch a one-line comment, and its default off conflicts with the owner's never. Value reflects the owner's ruling; risk estimates bounded agreement discovery."
+out_of_scope:
+  - "Rule, engine or host implementation; rewriting existing comments or stamps."
+  - "Editing 0101-F9 or 0289; the handoff recommends those edits for spec-author."
+  - "Changing the skill or role text; the delivering pull request does that."
