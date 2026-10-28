@@ -173,6 +173,7 @@ specht --explain SPEC031
 specht --version
 specht manifest [--root <dir>] [--defaults] [--json]
 specht rules [--root <dir>] [--json]
+specht rules set <id> <level> [--root <dir>]
 ```
 
 Stdout: one MSBuild-shaped line per violation
@@ -210,8 +211,7 @@ for the manifest's exact pin without running a check. It is built (item `0040`).
 
 `specht rules` lists the pinned rules as tab-separated text and is built (item
 `0281`); its `--json` form prints the same entries as one document (item `0282`, `0001-F10`).
-`specht manifest` prints the effective or newest shipped default manifest as text or JSON and is built (`0001-F9`, items `0284` to `0286`). A command that sets one rule's level is specified and not yet
-named (`0001-F11` OQ-1).
+`specht manifest` prints the effective or newest shipped default manifest as text or JSON and is built (`0001-F9`, items `0284` to `0286`). `specht rules set <id> <level>` sets one rule level and is built (`0001-F11`, items `0287` and `0288`), using the working name recorded in decision 0003.
 
 ## Invariants
 

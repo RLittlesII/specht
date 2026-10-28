@@ -30,6 +30,7 @@
     <ReqnrollFeatureFile Include="..\..\src\tool\Features\Init\.spec\init.feature" Link="Features\init.feature" />
     <ReqnrollFeatureFile Include="../../src/tool/Features/Frontmatter/.spec/frontmatter.feature" Link="Features/frontmatter.feature" />
     <ReqnrollFeatureFile Include="../../src/tool/Features/Rules/.spec/rules.feature" Link="Features/rules.feature" />
+    <ReqnrollFeatureFile Include="../../src/tool/Features/Rules/Set/.spec/set-rule-level.feature" Link="Features/rule-setting.feature" />
     <ReqnrollFeatureFile Include="../../src/tool/Features/Manifest/.spec/manifest.feature" Link="Features/effective-manifest.feature" />
     <ReqnrollFeatureFile Include="..\..\docs\.spec\docs-as-first-class-citizen.feature" Link="Features\docs-as-first-class-citizen.feature" />
   </ItemGroup>

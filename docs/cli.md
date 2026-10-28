@@ -150,6 +150,36 @@ specht rules --root .
 specht rules --root . --json
 ```
 
+## `specht rules set`
+
+```text
+specht rules set <id> <level> [--root <DIR>]
+```
+
+Sets one rule of the manifest's exact pinned schema version to lower-case
+`error`, `warning` or `off`. `--root` defaults to the working directory and
+may appear before or after `set`. It is inherited from `specht rules`.
+
+| Option       | Value | Default | Does                 |
+| ------------ | ----- | ------- | -------------------- |
+| `-h, --help` | none  | Off     | Prints command help. |
+
+An existing entry changes only in its value; a missing entry or `rules` object
+is added. Other manifest values and every other file are preserved, including
+the schema pin. Existing encoding and BOM are retained. Setting the same level
+again leaves the bytes unchanged. The command is offline and prints nothing
+on success.
+
+**Exit codes.** `0` on success; `2` for a missing root or manifest; `3` for an
+invalid manifest or pin; `4` for an unknown rule id or a level other than the
+three exact lower-case words. Root and manifest validation precede argument
+validation. Failures go to stderr with empty stdout and leave files unchanged.
+An invalid manifest is refused even when the requested edit could repair it.
+
+```sh
+specht rules set SPEC010 warning --root .
+```
+
 ## `specht evidence`
 
 ```text
