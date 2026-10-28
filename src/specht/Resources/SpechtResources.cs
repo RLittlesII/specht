@@ -6,7 +6,7 @@ namespace Specht.Resources;
 /// <implements epic="0001" feature="F4" claim="B-004" />
 public sealed class SpechtResources
 {
-    /// <summary>Reads the default manifest, versioned frontmatter schemas and rule pages.</summary>
+    /// <summary>Reads the default manifest, versioned frontmatter schemas, rule pages and templates.</summary>
     /// <implements epic="0001" feature="F4" claim="B-004" />
     public SpechtResources()
     {
@@ -15,7 +15,8 @@ public sealed class SpechtResources
             .Where(static name => name == ManifestName
                 || name.StartsWith("manifest/v", StringComparison.Ordinal)
                 || name.StartsWith("schema/v", StringComparison.Ordinal)
-                || name.StartsWith("rules/v", StringComparison.Ordinal))
+                || name.StartsWith("rules/v", StringComparison.Ordinal)
+                || name.StartsWith("templates/v", StringComparison.Ordinal))
             .ToDictionary(static name => name, name =>
             {
                 using var stream = assembly.GetManifestResourceStream(name)!;

@@ -11,9 +11,10 @@ using Specht.Versioning;
 namespace Specht.Tests.Versioning;
 
 /// <summary>
-/// The schema version set (<c>0001-F7</c> B-003, B-004, B-014, B-022, B-023, B-055; C-6): the embedded set names its
+/// The schema version set (<c>0001-F7</c> B-003, B-004, B-014, B-022, B-023, B-055, B-127; C-6): the embedded set names its
 /// versions as <c>major.minor.patch</c> and holds <c>0.1.0</c>, a set given its versions out of order holds them ascending
-/// by major, then minor, then patch, each frontmatter schema sits in its own slot, version 0.1.0's epic schema accepts a
+/// by major, then minor, then patch, each frontmatter schema sits in its own slot, each version names the templates the
+/// tool ships for it, version 0.1.0's epic schema accepts a
 /// non-empty title and description and rejects an empty one, version 0.1.0's vocabulary is the twenty-one rule ids, a pin
 /// selects exactly the version it names although a later patch and a later minor are held, and selecting a version the set
 /// does not hold is a rejected manifest naming the pin and the set.
@@ -114,6 +115,23 @@ public sealed class SchemaVersionsUnitTests
         // Then
         ids.Should().NotBeEmpty().And.AllSatisfy(pair =>
             pair.Id.Should().Be($"https://github.com/rlittlesii/specht/schema/v{pair.Folder}/frontmatter/{file}"));
+    }
+
+    [Fact]
+    public void EachEmbeddedVersion_WhenItsTemplatesAreRead_ShouldNameExactlyTheTemplateFilesTheToolShipsForThatVersion()
+    {
+        // Given
+        var shipped = typeof(Specht.Tool.ExitCodes).Assembly.GetManifestResourceNames()
+            .Where(static name => name.StartsWith("templates/", StringComparison.Ordinal))
+            .Select(static name => name.Split('/'))
+            .ToLookup(static parts => parts[1], static parts => parts[2]);
+
+        // When
+        var versions = EngineServices.Versions().Versions;
+
+        // Then
+        versions.Should().NotBeEmpty().And.AllSatisfy(version =>
+            version.Templates.Should().NotBeEmpty().And.BeEquivalentTo(shipped[$"v{version.Number}"], "version {0}", version.Number));
     }
 
     [Fact]

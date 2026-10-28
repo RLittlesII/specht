@@ -65,6 +65,8 @@ the calls marked as spec-author's reading below.
    pin below `0.3.0` the member changes nothing, which is how today's tool
    treats an unknown member of `spechtSchema`; spec-author's reading of C-1,
    since rejecting it would change a published version's verdict (OQ-66).
+   Overruled by the owner 2026-10-28: the member needs no schema version and
+   is read under every pin (OQ-66).
 9. **The check reads no fetched template (§ 5 row 28).** B-065 and § 5 row 15
    stand: the check neither verifies a template against its hash nor stops
    when one is absent, as it does for a frontmatter schema (B-077, B-080).

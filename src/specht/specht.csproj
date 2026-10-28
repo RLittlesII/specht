@@ -39,6 +39,14 @@
                       LogicalName="schema/$([MSBuild]::ValueOrDefault('%(RecursiveDir)', '').Replace('\', '/'))%(Filename)%(Extension)" />
   </ItemGroup>
 
+  <!-- Every shipped version's templates (0001-F7 B-127), linked from the tool's shipping copy, under the same
+       templates/v<major.minor.patch>/<file> names. -->
+  <ItemGroup>
+    <EmbeddedResource Include="..\tool\templates\v*\*.md"
+                      Link="templates\%(RecursiveDir)%(Filename)%(Extension)"
+                      LogicalName="templates/$([MSBuild]::ValueOrDefault('%(RecursiveDir)', '').Replace('\', '/'))%(Filename)%(Extension)" />
+  </ItemGroup>
+
   <!-- Every shipped version's rule pages (0001-F3 B-031, A-4), linked from docs/rules at the repository root and
        embedded as rules/v<major.minor.patch>/<file>, as the schemas are as schema/v<major.minor.patch>/<file>. -->
   <ItemGroup>

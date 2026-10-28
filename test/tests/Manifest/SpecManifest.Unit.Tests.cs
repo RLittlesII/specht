@@ -11,9 +11,9 @@ namespace Specht.Tests.Manifest;
 
 /// <summary>
 /// The manifest loader over an in-memory file system (0001-F5 B-001, B-002, B-003, B-008, B-012, B-015, B-017, B-019, B-020,
-/// B-021, B-039, B-040, B-041, B-043, B-044, B-045; 0001-F2 B-005, B-006, B-007; 0001-F7 B-002, B-039, B-068 to B-076): what
-/// it rejects and as which failure, what it ignores, the schema version it reads, the upstream schema source it records, what
-/// it fills from the default manifest, and that it fills no rule setting.
+/// B-021, B-039, B-040, B-041, B-043, B-044, B-045; 0001-F2 B-005, B-006, B-007; 0001-F7 B-002, B-039, B-068 to B-076,
+/// B-125 to B-127, B-131): what it rejects and as which failure, what it ignores, the schema version it reads, the upstream
+/// schema source and the templates it records, what it fills from the default manifest, and that it fills no rule setting.
 /// </summary>
 [Trait("Tier", "Unit")]
 public sealed class SpecManifestUnitTests
@@ -165,6 +165,24 @@ public sealed class SpecManifestUnitTests
         { "written in capital digits", "sha256:" + new string('B', 64) },
         { "shorter than the algorithm's", "sha256:" + new string('b', 63) },
         { "another algorithm's", "sha512:" + new string('b', 128) },
+    };
+
+    /// <summary>Gets a file name no shipped version ships as a template (<c>0001-F7</c> B-127).</summary>
+    public static TheoryData<string, string> TemplatesNoVersionShips { get; } = new()
+    {
+        { "a template of the consumer's own", "runbook.md" },
+        { "a shipped template's name in another case", "Feature.md" },
+        { "a shipped template's name without its extension", "feature" },
+    };
+
+    /// <summary>
+    /// Gets the version a manifest pins from a set where only the later one ships <c>lesson.md</c>, and whether a hash for
+    /// <c>lesson.md</c> is accepted under it (<c>0001-F7</c> B-127).
+    /// </summary>
+    public static TheoryData<string, SemanticVersion, bool> PinsShippingTheLesson { get; } = new()
+    {
+        { "the pinned version does not ship lesson.md, though another version does", new SemanticVersion(0, 1, 0), false },
+        { "the pinned version ships lesson.md", new SemanticVersion(0, 1, 1), true },
     };
 
     /// <summary>
@@ -971,6 +989,157 @@ public sealed class SpecManifestUnitTests
         // Then
         structure.SpechtSchema.Should().NotBeNull(because);
         structure.SpechtSchema!.Files.Select(static file => file.Kind).Should().BeEquivalentTo(kinds, because);
+    }
+
+    [Fact]
+    public void AManifestWhoseSpechtSchemaHashesTemplates_WhenLoaded_ShouldTakeEachMemberAsATemplateTheSourceSuppliesByItsFileName()
+    {
+        // Given
+        var manifest = DefaultManifest();
+        var source = UpstreamSchemaSource();
+        source["templates"] = new JsonObject
+        {
+            ["feature.md"] = "sha256:" + new string('d', 64),
+            ["adr.md"] = "sha256:" + new string('e', 64),
+        };
+        manifest["spechtSchema"] = source;
+        var fileSystem = Holding(manifest);
+
+        // When
+        var structure = Parse(fileSystem, Root);
+
+        // Then
+        structure.SpechtSchema.Should().NotBeNull();
+        structure.SpechtSchema!.Templates.ToDictionary(static template => template.FileName, static template => template.Hash).Should().Equal(
+            new Dictionary<string, string>
+            {
+                ["feature.md"] = "sha256:" + new string('d', 64),
+                ["adr.md"] = "sha256:" + new string('e', 64),
+            });
+    }
+
+    [Fact]
+    public void AManifestWhoseSpechtSchemaHashesNoTemplate_WhenLoaded_ShouldRecordNoTemplateTheSourceSupplies()
+    {
+        // Given
+        var manifest = DefaultManifest();
+        manifest["spechtSchema"] = UpstreamSchemaSource();
+        var fileSystem = Holding(manifest);
+
+        // When
+        var structure = Parse(fileSystem, Root);
+
+        // Then
+        structure.SpechtSchema.Should().NotBeNull();
+        structure.SpechtSchema!.Templates.Should().BeEmpty();
+    }
+
+    [Theory]
+    [MemberData(nameof(HashesInAnotherForm))]
+    public void AManifestWhoseSpechtSchemaTemplateHashIsNotSha256AndSixtyFourLowercaseHexDigits_WhenLoaded_ShouldRejectItNamingTheTemplate(
+        string because,
+        string hash)
+    {
+        // Given
+        var manifest = DefaultManifest();
+        var source = UpstreamSchemaSource();
+        source["templates"] = new JsonObject
+        {
+            ["adr.md"] = "sha256:" + new string('e', 64),
+            ["feature.md"] = hash,
+        };
+        manifest["spechtSchema"] = source;
+        var fileSystem = Holding(manifest);
+
+        // When
+        var load = () => Parse(fileSystem, Root);
+
+        // Then
+        load.Should().ThrowExactly<SpechtManifestException>(because).Which.Message.Should()
+            .Contain("'feature.md'", because).And.NotContain("'adr.md'", because);
+    }
+
+    [Theory]
+    [MemberData(nameof(TemplatesNoVersionShips))]
+    public void AManifestWhoseSpechtSchemaHashesAFileThePinnedVersionDoesNotShip_WhenLoaded_ShouldRejectItNamingTheFile(
+        string because,
+        string fileName)
+    {
+        // Given
+        var manifest = DefaultManifest();
+        var source = UpstreamSchemaSource();
+        source["templates"] = new JsonObject
+        {
+            ["adr.md"] = "sha256:" + new string('e', 64),
+            [fileName] = "sha256:" + new string('d', 64),
+        };
+        manifest["spechtSchema"] = source;
+        var fileSystem = Holding(manifest);
+
+        // When
+        var load = () => Parse(fileSystem, Root);
+
+        // Then
+        load.Should().ThrowExactly<SpechtManifestException>(because).Which.Message.Should()
+            .Contain($"'{fileName}'", because).And.NotContain("'adr.md'", because);
+    }
+
+    [Theory]
+    [MemberData(nameof(PinsShippingTheLesson))]
+    public void AManifestHashingATemplateOnlyOneVersionShips_WhenLoadedUnderEachPin_ShouldAcceptItOnlyWhereThePinnedVersionShipsIt(
+        string because,
+        SemanticVersion pin,
+        bool accepted)
+    {
+        // Given
+        var parser = new SpecManifestParser(new SchemaVersions(
+        [
+            new SchemaVersionFixture().WithNumber(new SemanticVersion(0, 1, 0))
+                .WithTemplates(new HashSet<string>(StringComparer.Ordinal) { "feature.md" }),
+            new SchemaVersionFixture().WithNumber(new SemanticVersion(0, 1, 1))
+                .WithTemplates(new HashSet<string>(StringComparer.Ordinal) { "feature.md", "lesson.md" }),
+        ]));
+        var manifest = DefaultManifest();
+        manifest["schemaVersion"] = pin.ToString();
+        var source = UpstreamSchemaSource();
+        source["templates"] = new JsonObject { ["lesson.md"] = "sha256:" + new string('d', 64) };
+        manifest["spechtSchema"] = source;
+
+        // When
+        var parse = () => parser.Parse(manifest.ToJsonString());
+
+        // Then
+        if (accepted)
+        {
+            parse.Should().NotThrow(because).Which.SpechtSchema!.Templates.Should()
+                .ContainSingle(because).Which.FileName.Should().Be("lesson.md", because);
+        }
+        else
+        {
+            parse.Should().ThrowExactly<SpechtManifestException>(because).Which.Message.Should().Contain("'lesson.md'", because);
+        }
+    }
+
+    [Theory]
+    [InlineData("feature.md")]
+    [InlineData("lesson.md")]
+    public void AManifestWhoseSpechtSchemaHashesATemplate_WhenLoaded_ShouldAddressItAtTheLocationFollowedByItsFileName(string fileName)
+    {
+        // Given
+        var manifest = DefaultManifest();
+        var source = UpstreamSchemaSource();
+        source["location"] = "https://schemas.example/specht-";
+        source["templates"] = new JsonObject { [fileName] = "sha256:" + new string('d', 64) };
+        manifest["spechtSchema"] = source;
+        var fileSystem = Holding(manifest);
+
+        // When
+        var structure = Parse(fileSystem, Root);
+
+        // Then
+        structure.SpechtSchema.Should().NotBeNull();
+        structure.SpechtSchema!.Templates.Should().ContainSingle(template => template.FileName == fileName)
+            .Which.Address.Should().Be("https://schemas.example/specht-" + fileName);
     }
 
     private static MockFileSystem Holding(JsonObject manifest) => Holding(manifest.ToJsonString());

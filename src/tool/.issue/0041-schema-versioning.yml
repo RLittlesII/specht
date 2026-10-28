@@ -122,8 +122,6 @@ claims:
   - B-125
   - B-126
   - B-127
-  - B-128
-  - B-129
   - B-130
   - B-131
   - B-132
@@ -134,7 +132,7 @@ claims:
   - B-137
 
 created: "2026-10-08"
-updated: "2026-10-24"
+updated: "2026-10-28"
 closed: null
 
 summary: |
@@ -289,11 +287,9 @@ acceptance_criteria:
   - "B-099 — a cut file is otherwise byte-identical (0189)"
   - "B-100 — the cut touches nothing outside the new folders (0189)"
   - "B-115 — each id enters 0.2.0's vocabulary with its rule: SPEC034, SPEC035 (0001-F12, 0227); SPEC022, SPEC023, SPEC032, SPEC033 (0001-F12, not cut); SPEC014, SPEC024 (0001-F6, no item); SPEC015 (0101-F9, draft)"
-  - "B-125 — a `templates` member at `0.3.0` or later: each a hashed template (0290)"
+  - "B-125 — a `templates` member under any pin: each a hashed template (0290)"
   - "B-126 — a template hash not in the sha256 form: invalid (0290)"
   - "B-127 — a hash for a file the version does not ship: invalid (0290)"
-  - "B-128 — a `templates` member below `0.3.0`: report unchanged (0290)"
-  - "B-129 — upgrade below `0.3.0`: no template requested (0291)"
   - "B-130 — upgrade writes a fetched template matching its hash (0291)"
   - "B-131 — a template's address: the location followed by its file name (0290)"
   - "B-132 — upgrade, fetched template mismatches: exit 3 (0291)"
@@ -388,6 +384,11 @@ decisions:
     which 0290's claims name; that is left for the owner (0290's
     decisions). OQ-65 and OQ-66 are open and no item answers them. The
     cut is spec-author's, not an owner ruling.
+  - |
+    2026-10-28, the repository owner, resolving OQ-66: the `templates`
+    member needs no schema version and is read under every pin; no
+    `0.3.0` is cut for it. B-128 and B-129 are withdrawn and carried by
+    no item; 0290 no longer depends on 0189.
 
 out_of_scope:
   - "Everything in § 5 of the spec."

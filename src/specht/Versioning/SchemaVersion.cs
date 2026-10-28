@@ -16,4 +16,7 @@ public sealed record SchemaVersion(
 {
     /// <summary>Gets each rule page this version ships, its Markdown text keyed by rule id (<c>0001-F3</c> B-031, C-6).</summary>
     public IReadOnlyDictionary<string, string> RulePages { get; init; } = new Dictionary<string, string>(StringComparer.Ordinal);
+
+    /// <summary>Gets the file name of each template this version ships (<c>0001-F7</c> B-127).</summary>
+    public IReadOnlySet<string> Templates { get; init; } = new HashSet<string>(StringComparer.Ordinal);
 }
