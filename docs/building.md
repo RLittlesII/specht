@@ -16,7 +16,7 @@ dotnet tool restore
 ./build.sh Benchmark --benchmark-filter '*CheckBenchmarks*' --benchmark-job Short
 ./build.sh Specht   # run specht on this repository's own specifications
 ./build.sh LockSchemaVersion # record the newest schema version's digest once
-./build.sh CutSchemaVersion --cut-version 0.3.0 # copy the newest schema version to 0.3.0
+./build.sh CutSchemaVersion --cut-version <major.minor.patch> # copy the newest schema version to a higher one
 ```
 
 `LockSchemaVersion` adds the newest shipped schema version to
