@@ -459,8 +459,10 @@ When the manifest records `spechtSchema`, each present schema whose SHA-256
 differs from its recorded hash is fetched from that source and verified, then
 written under its `frontmatterSchemas` name. A matching schema is not fetched,
 and an absent one stays absent. A failed fetch or hash check writes nothing.
-The record itself is never changed. Templates still come from the pinned
-version.
+The record itself is never changed. A template the record hashes under
+`templates`, and the manifest does not name in `consumerTemplates`, is treated
+the same way; one it hashes and the manifest names there is left untouched, and
+every template it does not hash still comes from the pinned version.
 
 | Option         | Value   | Default               | Does                                          |
 | -------------- | ------- | --------------------- | --------------------------------------------- |

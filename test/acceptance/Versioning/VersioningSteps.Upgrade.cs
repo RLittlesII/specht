@@ -21,8 +21,7 @@ public sealed partial class VersioningSteps
     public void GivenTheRootIsPinnedWithTheEmbeddedSource(string version) => GivenTheManifestPinsVersion(version);
 
     [Given("its manifest names no template as the consumer's")]
-    public void GivenTheManifestNamesNoConsumerTemplate() =>
-        File.ReadAllText(Path.Combine(Tree.Root, SpecTree.ManifestPath)).Should().NotContain("templates");
+    public void GivenTheManifestNamesNoConsumerTemplate() => ManifestAfter().ContainsKey("consumerTemplates").Should().BeFalse();
 
     [Given("one of its templates has been edited by hand")]
     public void GivenOneTemplateHasBeenEditedByHand() =>

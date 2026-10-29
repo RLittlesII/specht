@@ -164,7 +164,11 @@ public sealed partial class VersioningSteps
         File.Exists(Path.Combine(Tree.Root, SpecTree.FrontmatterSchemaFolder, SchemaNames()["feature"])).Should().BeFalse(_stderr);
 
     [Then(@"^the root still has no (feature frontmatter schema|feature template)$")]
-    public void ThenTheRootStillHasNo(string file) => File.Exists(Path.Combine(Tree.Root, AbsentFiles[file])).Should().BeFalse(_stderr);
+    public void ThenTheRootStillHasNo(string file)
+    {
+        _exitCode.Should().Be(0, _stderr);
+        File.Exists(Path.Combine(Tree.Root, AbsentFiles[file])).Should().BeFalse(_stderr);
+    }
 
     [Then("nothing the tool asked the source for carried a credential")]
     public void ThenNothingTheToolAskedTheSourceForCarriedACredential()

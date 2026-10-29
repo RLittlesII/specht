@@ -6,9 +6,11 @@ namespace Specht.Tests.Upgrade;
 
 /// <summary>
 /// Manifests under which <c>specht upgrade</c> has nothing to fetch, over a root holding version 0.2.0's shipped frontmatter
-/// schemas (<c>0001-F7</c> B-033, B-067): version 0.2.0's shipped manifest recording an upstream schema source whose hashes are
-/// the SHA-256 of those schemas, so every local copy matches; that manifest recording no source, so the embedded source is
-/// selected; and that manifest recording no source with the on-disk source selected.
+/// schemas and templates (<c>0001-F7</c> B-033, B-067, B-134): version 0.2.0's shipped manifest recording an upstream schema
+/// source whose hashes are the SHA-256 of those schemas, so every local copy matches; the same source also hashing every
+/// template with the SHA-256 of its shipped bytes, naming none as the consumer's, so every template matches too; that
+/// manifest recording no source, so the embedded source is selected; and that manifest recording no source with the on-disk
+/// source selected.
 /// </summary>
 public sealed class UpgradeOfflineManifests : TheoryData<string>
 {
@@ -28,6 +30,14 @@ public sealed class UpgradeOfflineManifests : TheoryData<string>
                     shipped.Single(file => file.Relative == $".specht/schema/frontmatter/{kind}.schema.json").Bytes)))))),
         };
         Add(recorded.ToJsonString());
+
+        var templates = recorded.DeepClone().AsObject();
+        templates["spechtSchema"]!["templates"] = new JsonObject(shipped
+            .Where(static file => file.Relative.StartsWith(".specht/templates/", StringComparison.Ordinal))
+            .Select(static file => KeyValuePair.Create(
+                file.Relative[".specht/templates/".Length..],
+                (JsonNode?)("sha256:" + System.Convert.ToHexStringLower(SHA256.HashData(file.Bytes))))));
+        Add(templates.ToJsonString());
 
         Add(defined.ToJsonString());
 

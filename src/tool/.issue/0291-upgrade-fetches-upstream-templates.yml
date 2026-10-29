@@ -2,7 +2,7 @@ id: "0291"
 type: task
 title: Fetch and verify the templates a recorded upstream source hashes on upgrade
 
-status: ready-for-architecture
+status: done
 
 risk: 3
 
@@ -25,7 +25,7 @@ claims:
 
 created: "2026-10-24"
 updated: "2026-10-29"
-closed: null
+closed: "2026-10-29"
 
 summary: |
   Upgrade's template fetch (decision 0016): a template the record hashes

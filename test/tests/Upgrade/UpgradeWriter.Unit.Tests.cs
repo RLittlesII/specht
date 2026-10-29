@@ -16,7 +16,10 @@ namespace Specht.Tests.Upgrade;
 /// written. Under a recorded upstream schema source (B-026, B-027, B-033, B-034, B-035, B-067, B-082, B-083, B-140; C-9, C-10,
 /// C-15) the writer resolves with the production fetcher over a synthetic message handler: a differing copy is fetched and
 /// written under its kind's file name, a refused fetch writes nothing, a matching copy or an absent one asks for nothing, the
-/// record is kept, and no request carries a credential.
+/// record is kept, and no request carries a credential. A template that source hashes and the manifest does not name as the
+/// consumer's (B-130, B-132 to B-134, B-136, B-137, B-141; C-8 to C-10) is fetched and written only when its present copy
+/// differs from its hash, is kept when it matches even where the pinned version's differs, stays absent when the root lacks
+/// it, refuses a fetch it cannot verify before anything is written, and is asked for without a credential.
 /// </summary>
 [Trait("Tier", "Unit")]
 public sealed class UpgradeWriterUnitTests
@@ -346,7 +349,7 @@ public sealed class UpgradeWriterUnitTests
         var stamp = new DateTime(2026, 1, 2, 3, 4, 5, DateTimeKind.Utc);
         var fileSystem = new MockFileSystem();
         fileSystem.AddFile("repo/.specht/manifest.json", new MockFileData(manifest) { LastWriteTime = stamp });
-        foreach (var name in content.Keys)
+        foreach (var name in content.Keys.Where(static name => name.EndsWith(".schema.json", StringComparison.Ordinal)))
         {
             fileSystem.AddFile(
                 "repo/.specht/schema/frontmatter/" + name, new MockFileData("{\"title\":\"A synthetic local copy\"}\n") { LastWriteTime = stamp });
@@ -504,6 +507,127 @@ public sealed class UpgradeWriterUnitTests
         // Then
         fileSystem.File.Exists("repo/.specht/schema/frontmatter/" + absent).Should().BeFalse();
         requested.Should().NotBeEmpty().And.NotContain(absent);
+    }
+
+    [Theory]
+    [ClassData(typeof(UpstreamTemplateRoots))]
+    public async Task ADifferingCopyOfAHashedTemplate_WhenUpgraded_ShouldWriteTheFetchedTemplateUnderItsFileName(string manifest, string name, string served)
+    {
+        // Given
+        var fetched = Encoding.UTF8.GetBytes(served);
+        var fileSystem = new MockFileSystem();
+        fileSystem.AddFile("repo/.specht/manifest.json", new MockFileData(manifest));
+        foreach (var file in UpgradeServices.Shipped().At(new SemanticVersion(0, 2, 0)).Where(static file => file.Relative != ".specht/manifest.json"))
+        {
+            fileSystem.AddFile("repo/" + file.Relative, new MockFileData(file.Bytes));
+        }
+
+        fileSystem.File.WriteAllText("repo/.specht/templates/" + name, "# A synthetic template with local edits\n");
+        using var source = new HttpClient(new SyntheticSource(request => request.RequestUri!.Segments[^1] == name
+            ? new HttpResponseMessage(HttpStatusCode.OK) { Content = new ByteArrayContent(fetched) }
+            : new HttpResponseMessage(HttpStatusCode.NotFound)));
+
+        // When
+        await UpgradeServices.Writer(fileSystem, source).Upgrade("repo", CancellationToken.None);
+
+        // Then
+        fileSystem.File.ReadAllBytes("repo/.specht/templates/" + name).Should().Equal(fetched, name);
+    }
+
+    [Theory]
+    [ClassData(typeof(UpstreamTemplateRoots))]
+    public async Task AHashedTemplateMatchingItsHashAndNotThePinnedVersions_WhenUpgraded_ShouldLeaveItsBytesAndStillRewriteAnUnhashedOne(
+        string manifest, string name, string served)
+    {
+        // Given
+        var recorded = Encoding.UTF8.GetBytes(served);
+        var shipped = UpgradeServices.Shipped().At(new SemanticVersion(0, 2, 0));
+        shipped.Single(file => file.Relative == ".specht/templates/" + name).Bytes.Should().NotEqual(recorded);
+        var fileSystem = new MockFileSystem();
+        fileSystem.AddFile("repo/.specht/manifest.json", new MockFileData(manifest));
+        foreach (var file in shipped.Where(static file => file.Relative != ".specht/manifest.json"))
+        {
+            fileSystem.AddFile("repo/" + file.Relative, new MockFileData(file.Bytes));
+        }
+
+        fileSystem.File.WriteAllBytes("repo/.specht/templates/" + name, recorded);
+        fileSystem.File.WriteAllText("repo/.specht/templates/adr.md", "# A synthetic template with local edits\n");
+
+        // When
+        await UpgradeServices.Writer(fileSystem).Upgrade("repo", CancellationToken.None);
+
+        // Then
+        fileSystem.File.ReadAllBytes("repo/.specht/templates/" + name).Should().Equal(recorded, name);
+        fileSystem.File.ReadAllBytes("repo/.specht/templates/adr.md")
+            .Should().Equal(shipped.Single(static file => file.Relative == ".specht/templates/adr.md").Bytes, "adr.md is not hashed");
+    }
+
+    [Theory]
+    [ClassData(typeof(UpstreamTemplateRoots))]
+    public async Task AHashedTemplateAbsentFromTheRoot_WhenUpgraded_ShouldNotCreateIt(string manifest, string name, string served)
+    {
+        // Given
+        var fetched = Encoding.UTF8.GetBytes(served);
+        var fileSystem = new MockFileSystem();
+        fileSystem.AddFile("repo/.specht/manifest.json", new MockFileData(manifest));
+        foreach (var file in UpgradeServices.Shipped().At(new SemanticVersion(0, 2, 0))
+                     .Where(file => file.Relative != ".specht/manifest.json" && file.Relative != ".specht/templates/" + name))
+        {
+            fileSystem.AddFile("repo/" + file.Relative, new MockFileData(file.Bytes));
+        }
+
+        using var source = new HttpClient(new SyntheticSource(request => request.RequestUri!.Segments[^1] == name
+            ? new HttpResponseMessage(HttpStatusCode.OK) { Content = new ByteArrayContent(fetched) }
+            : new HttpResponseMessage(HttpStatusCode.NotFound)));
+
+        // When
+        await UpgradeServices.Writer(fileSystem, source).Upgrade("repo", CancellationToken.None);
+
+        // Then
+        fileSystem.File.Exists("repo/.specht/templates/" + name).Should().BeFalse(name);
+    }
+
+    [Theory]
+    [ClassData(typeof(UpstreamTemplateRoots))]
+    public async Task AHashedTemplateUnderASourceWithUserInformationAndATokenOnTheMachine_WhenUpgraded_ShouldSendNoCredential(
+        string manifest, string name, string served)
+    {
+        // Given
+        var fetched = Encoding.UTF8.GetBytes(served);
+        var fileSystem = new MockFileSystem();
+        fileSystem.AddFile("repo/.specht/manifest.json", new MockFileData(manifest));
+        foreach (var file in UpgradeServices.Shipped().At(new SemanticVersion(0, 2, 0)).Where(static file => file.Relative != ".specht/manifest.json"))
+        {
+            fileSystem.AddFile("repo/" + file.Relative, new MockFileData(file.Bytes));
+        }
+
+        fileSystem.File.WriteAllText("repo/.specht/templates/" + name, "# A synthetic template with local edits\n");
+        var requests = new List<(Uri Address, string Headers)>();
+        using var source = new HttpClient(new SyntheticSource(request =>
+        {
+            requests.Add((request.RequestUri!, request.Headers.ToString()));
+            return new HttpResponseMessage(HttpStatusCode.OK) { Content = new ByteArrayContent(fetched) };
+        }));
+        var token = Environment.GetEnvironmentVariable("SPECHT_SCHEMA_TOKEN");
+        Environment.SetEnvironmentVariable("SPECHT_SCHEMA_TOKEN", "synthetic-machine-token");
+
+        // When
+        try
+        {
+            await UpgradeServices.Writer(fileSystem, source).Upgrade("repo", CancellationToken.None);
+        }
+        finally
+        {
+            Environment.SetEnvironmentVariable("SPECHT_SCHEMA_TOKEN", token);
+        }
+
+        // Then
+        requests.Should().NotBeEmpty();
+        requests.Should().AllSatisfy(static request =>
+        {
+            request.Address.UserInfo.Should().BeEmpty();
+            request.Headers.Should().NotContain("Authorization").And.NotContain("synthetic-machine-token").And.NotContain("secret");
+        });
     }
 
     private sealed class SyntheticSource(Func<HttpRequestMessage, HttpResponseMessage> respond) : HttpMessageHandler
