@@ -309,9 +309,12 @@ Feature: Schema versioning
   Scenario: Upgrade says which schemas it skipped and why
     Given the tool ships schema versions 0.1.0 and 0.2.0
     And the root is pinned to version 0.2.0 with the on-disk source selected
+    And its manifest records no upstream schema source
+    And the root holds the Feature and task schemas and no epic schema
+    And the root's templates are version 0.1.0's
     When upgrade runs against it
-    Then the output names each frontmatter schema it skipped
-    And the reason it skipped them
+    Then after the templates it rewrote, the output names the Feature and task schemas as skipped, each with the reason
+    And the output names no epic schema
 
   @B-031
   Scenario: Upgrade still rewrites the templates under the on-disk source
@@ -322,6 +325,28 @@ Feature: Schema versioning
     When upgrade runs against it
     Then the templates are version 0.2.0's
     And the output names each template it rewrote
+
+  @B-142
+  Scenario Outline: A root whose only changes are skips is current
+    Given the tool ships schema versions 0.1.0 and 0.2.0
+    And the root is pinned to version 0.2.0 and already holds what upgrade would write, apart from the files it skips
+    And its manifest records no upstream schema source
+    And <skipping>
+    When upgrade runs against it
+    Then the standard output says the repository is current, then names each file it skipped
+    And the exit code is 0
+
+    Examples:
+      | skipping                                                                      |
+      | its manifest names the feature template as the consumer's                     |
+      | the on-disk source is selected and the root's frontmatter schemas are its own |
+
+  @B-143 @boundary
+  Scenario: A recorded upstream source gives upgrade no schema to skip
+    Given the manifest records an upstream schema source with its version and content hash
+    And the root's local copy matches that hash
+    When upgrade runs
+    Then the output names no frontmatter schema as skipped
 
   @B-032
   Scenario: Recording an upstream source selects the on-disk source
@@ -793,8 +818,22 @@ Feature: Schema versioning
     And the root is pinned to version 0.2.0 and its frontmatter schemas and templates are version 0.1.0's
     And its manifest names the feature template as the consumer's
     When upgrade runs against it
-    Then the output names the feature template as skipped
-    And the reason it skipped it
+    Then after the templates it rewrote, the output names the feature template as skipped, with the reason
+
+  @B-061 @boundary
+  Scenario Outline: A template the consumer owns is skipped whatever the root holds
+    Given the tool ships schema versions 0.1.0 and 0.2.0
+    And the root is pinned to version 0.2.0 and its frontmatter schemas and templates are version 0.1.0's
+    And its manifest names the feature template as the consumer's
+    And the root's feature template is <held>
+    When upgrade runs against it
+    Then the output names the feature template as skipped, with the reason
+
+    Examples:
+      | held                     |
+      | absent                   |
+      | version 0.2.0's          |
+      | as the consumer wrote it |
 
   @B-062
   Scenario: Upgrade still rewrites the templates the consumer does not own
@@ -818,6 +857,20 @@ Feature: Schema versioning
       | naming        |
       | names         |
       | does not name |
+
+  @B-144 @boundary
+  Scenario Outline: A template name the pinned version does not ship changes nothing in upgrade
+    Given the tool ships schema versions 0.1.0 and 0.2.0
+    And two copies of a root pinned to version 0.2.0 whose frontmatter schemas and templates are version 0.1.0's
+    And one copy's manifest names <name> as the consumer's and the other's names no template
+    When upgrade runs against each copy
+    Then the two outputs are the same
+    And the two exit codes are the same
+
+    Examples:
+      | name                                                  |
+      | a runbook template, which version 0.2.0 does not ship |
+      | a misspelling of the feature template                 |
 
   @B-005 @boundary
   Scenario: Owning a template leaves the frontmatter schemas the tool's
@@ -849,9 +902,9 @@ Feature: Schema versioning
 
   @B-088
   Scenario Outline: A change to a template or a rule page alone is a patch
-    Given the tool ships schema version 0.1.0 and the next version above it
+    Given two neighbouring schema versions the tool ships
     And the two differ only in <what>, the version each states aside
-    When the two version numbers are compared
+    When their numbers are compared
     Then they differ in their patch alone
 
     Examples:

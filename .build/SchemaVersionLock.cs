@@ -49,11 +49,7 @@ public sealed class SchemaVersionLock(IFileSystem fileSystem, string root)
     /// <summary>Refuses publication while any shipped schema version is unlocked (0055-F6 B-013).</summary>
     public async Task RequireAllLockedAsync()
     {
-        var lockPath = fileSystem.Path.Combine(root, RelativePath);
-        var entries = fileSystem.File.Exists(lockPath)
-            ? JsonSerializer.Deserialize<Dictionary<string, string>>(await fileSystem.File.ReadAllTextAsync(lockPath))
-                ?? throw new JsonException($"{RelativePath} must contain a version lock object.")
-            : new Dictionary<string, string>(StringComparer.Ordinal);
+        var entries = await ReadEntriesAsync();
         var unlocked = ReadVersions()
             .Select(static version => version.ToString(3))
             .Where(version => !entries.ContainsKey(version))
@@ -64,6 +60,44 @@ public sealed class SchemaVersionLock(IFileSystem fileSystem, string root)
             throw new InvalidOperationException(
                 $"Shipped schema versions are not locked in {RelativePath}: {string.Join(", ", unlocked)}.");
         }
+    }
+
+    /// <summary>Compares the committed lock with the shipped versions and returns every fault (0001-F7 B-004, B-089 to B-091).</summary>
+    public async Task<IReadOnlyList<SchemaVersionLockFinding>> VerifyAsync()
+    {
+        var entries = await ReadEntriesAsync();
+        var shipped = ReadVersions().Order().ToArray();
+        var findings = new List<SchemaVersionLockFinding>();
+        foreach (var (version, digest) in entries.OrderBy(static entry => entry.Key, StringComparer.Ordinal))
+        {
+            if (shipped.Any(number => string.Equals(number.ToString(3), version, StringComparison.Ordinal)))
+            {
+                if (!string.Equals(await ComputeDigestAsync(version), digest, StringComparison.Ordinal))
+                {
+                    findings.Add(new(version, SchemaVersionLockFault.DigestMismatch));
+                }
+            }
+            else if (TryParseVersion(version, out var number) && number.Major >= 1)
+            {
+                findings.Add(new(version, SchemaVersionLockFault.LockedVersionNotShipped));
+            }
+        }
+
+        var unlocked = shipped.Where(number => !entries.ContainsKey(number.ToString(3))).ToArray();
+        foreach (var number in unlocked)
+        {
+            if (unlocked.Length > 1)
+            {
+                findings.Add(new(number.ToString(3), SchemaVersionLockFault.MoreThanOneUnlocked));
+            }
+
+            if (number < shipped[^1])
+            {
+                findings.Add(new(number.ToString(3), SchemaVersionLockFault.UnlockedNotNewest));
+            }
+        }
+
+        return findings;
     }
 
     /// <summary>Computes the SHA-256 over one version's ordered paths and bytes.</summary>
@@ -112,6 +146,15 @@ public sealed class SchemaVersionLock(IFileSystem fileSystem, string root)
         .Select(static text => TryParseVersion(text, out var version)
             ? version
             : throw new InvalidOperationException($"schema/v{text}/ has an invalid schema version."));
+
+    private async Task<Dictionary<string, string>> ReadEntriesAsync()
+    {
+        var lockPath = fileSystem.Path.Combine(root, RelativePath);
+        return fileSystem.File.Exists(lockPath)
+            ? JsonSerializer.Deserialize<Dictionary<string, string>>(await fileSystem.File.ReadAllTextAsync(lockPath))
+                ?? throw new JsonException($"{RelativePath} must contain a version lock object.")
+            : new Dictionary<string, string>(StringComparer.Ordinal);
+    }
 
     private static readonly JsonSerializerOptions LockJson = new() { WriteIndented = true };
 }

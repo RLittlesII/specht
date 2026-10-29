@@ -75,6 +75,7 @@ resolved against the scenarios and tests it cites.
 | `0001-F1`  | The engine's rules split one per id, the evaluator an instance, the runner gone - conditional on `0216` |
 | `0109-F4`  | Tool cold start, with peak memory per row                                                               |
 | `0109-F5`  | Release baseline comparison: advisory regressions between two published revisions                       |
+| `0001-F7`  | The pin policy `0124`: a pin that floats to the newest shipped patch or minor, moved here from 0.3.0    |
 
 Refactors `0168`, `0207` and `0218` simplify the test composition; spikes
 `0141` (rule settings from `.editorconfig`), `0169` (four-digit rule ids) and
