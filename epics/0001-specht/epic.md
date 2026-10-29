@@ -22,9 +22,10 @@ children:
     "0001-F12",
     "0001-F13",
     "0001-F14",
+    "0001-F17",
   ]
 created: "2026-10-07"
-updated: "2026-10-15"
+updated: "2026-10-29"
 github_issue: null
 ---
 
@@ -77,6 +78,7 @@ request; a Feature is a thing the tool does, with its own invariant.
 | `0001-F12` | Matrix resolution               | `src/specht/Rules/Matrix/.spec/README.md`          | after 6        |
 | `0001-F13` | The trace command               | `src/tool/Features/Trace/.spec/README.md`          | after 6        |
 | `0001-F14` | The schema folder               | `src/specht/Manifest/SchemaFolder/.spec/README.md` | after 6        |
+| `0001-F17` | Output verbosity                | `src/tool/Features/Verbosity/.spec/README.md`      | after 6        |
 
 The initial draft bundled the command, `init`, the manifest roles, discovery and the baseline in
 one Feature. Each of those has a different invariant - the command never
@@ -107,6 +109,11 @@ schemas where a repository's tree wants them, named in the manifest rather than
 fixed under the configuration folder. Its invariant: the engine and the tool
 read and write the frontmatter schemas where the manifest says, never where a
 literal says, and the default manifest changes no verdict.
+
+`0001-F17` joined on 2026-10-29 from the owner's question whether some
+people want the tool quiet. Its invariant: a verbosity level changes only what
+a command prints on stdout, never the verdict, the report or a rule's level
+(`0001-F17` decision 0001). Its need is open (`0001-F17` OQ-5).
 
 Dependencies are declared in each Feature's frontmatter and checked by the tool
 (`SPEC050`-`SPEC052`). The order they imply is brief § 8's.
