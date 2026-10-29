@@ -280,7 +280,7 @@ cat drafts/issue.md | specht frontmatter --kind task --stdin --root .
 ## `specht init`
 
 ```text
-specht init [--root <DIR>] [--schemas] [--templates] [--all]
+specht init [--root <DIR>] [--schemas] [--templates] [--all] [--epics]
             [--upstream <ADDRESS>] [--upstream-version <LABEL>]
             [--upstream-hash <KIND=HASH>]...
 ```
@@ -296,23 +296,26 @@ templates. Existing files are skipped byte-for-byte, even if edited or truncated
 init does not validate or repair their contents. An unshipped pin exits `3`,
 lists the shipped versions on stderr and writes nothing, whatever parts are selected.
 
-| Option                        | Value                   | Default               | Does                                                        |
-| ----------------------------- | ----------------------- | --------------------- | ----------------------------------------------------------- |
-| `--root <DIR>`                | `<DIR>`                 | The working directory | Names the repository root to write under.                   |
-| `--schemas`                   | none                    | Off                   | Adds the selected frontmatter schemas.                      |
-| `--templates`                 | none                    | Off                   | Adds the four templates.                                    |
-| `--all`                       | none                    | Off                   | Adds the frontmatter schemas and templates.                 |
-| `--upstream <ADDRESS>`        | HTTPS base address      | None                  | Records a public schema source in a new manifest.           |
-| `--upstream-version <LABEL>`  | Nonempty label          | None                  | Records the upstream version label; required with a source. |
-| `--upstream-hash <KIND=HASH>` | Repeated kind/hash pair | None                  | Supplies a SHA-256 hash for every declared schema kind.     |
-| `-h, --help`                  | none                    | Off                   | Prints the command's help and writes nothing.               |
+| Option                        | Value                   | Default               | Does                                                                       |
+| ----------------------------- | ----------------------- | --------------------- | -------------------------------------------------------------------------- |
+| `--root <DIR>`                | `<DIR>`                 | The working directory | Names the repository root to write under.                                  |
+| `--schemas`                   | none                    | Off                   | Adds the selected frontmatter schemas.                                     |
+| `--templates`                 | none                    | Off                   | Adds the four templates.                                                   |
+| `--all`                       | none                    | Off                   | Adds the frontmatter schemas and templates.                                |
+| `--epics`                     | none                    | Off                   | Keeps a new manifest's epic grammar, and the epic schema with the schemas. |
+| `--upstream <ADDRESS>`        | HTTPS base address      | None                  | Records a public schema source in a new manifest.                          |
+| `--upstream-version <LABEL>`  | Nonempty label          | None                  | Records the upstream version label; required with a source.                |
+| `--upstream-hash <KIND=HASH>` | Repeated kind/hash pair | None                  | Supplies a SHA-256 hash for every declared schema kind.                    |
+| `-h, --help`                  | none                    | Off                   | Prints the command's help and writes nothing.                              |
 
 **Stdout.** One line per file, relative to the root: `written` for a file it
 created, `skipped` for one that was already there. A run that exits `2` or `3` says
 why on stderr.
 
-Into a bare root, the selected schemas are Feature and item. Beside an existing
-manifest that declares the epic grammar, the selection includes the epic schema.
+Into a bare root, the selected schemas are Feature and item, and the manifest
+declares no epic grammar; `--epics` keeps the grammar, and with `--schemas` or
+`--all` adds the epic schema.
+Beside an existing manifest, its epic grammar alone decides the epic schema.
 
 When the existing manifest records `spechtSchema`, `--schemas` or `--all`
 fetches each missing schema from that source and verifies its recorded SHA-256

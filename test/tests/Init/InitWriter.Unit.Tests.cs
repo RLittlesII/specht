@@ -11,7 +11,8 @@ namespace Specht.Tests.Init;
 /// The init writer over an in-memory file system (<c>0001-F4</c> B-001, B-003, B-006, B-008, B-010; C-1, C-3, C-4): which
 /// shipped version it writes, where each embedded name lands - the manifest at <c>.specht/manifest.json</c>, a frontmatter
 /// schema under <c>.specht/schema/frontmatter/</c>, a template under <c>.specht/templates/</c> (<c>0001-F5</c> decision 0011) -
-/// and the choice between written and skipped, file by file.
+/// and the choice between written and skipped, file by file. A test that compares a written manifest with its embedded bytes
+/// writes it with epics, the one run whose manifest B-003 holds to the embedded copy (B-021, B-022).
 /// </summary>
 [Trait("Tier", "Unit")]
 public sealed class InitWriterUnitTests
@@ -97,7 +98,7 @@ public sealed class InitWriterUnitTests
             .WithShippingCopy(shippingCopy);
 
         // When
-        var listing = await writer.Write(Root, schemas: true, templates: true, CancellationToken.None);
+        var listing = await writer.Write(Root, schemas: true, templates: true, CancellationToken.None, epics: true);
 
         // Then
         listing.Should().Equal((".specht/manifest.json", true), (".specht/templates/feature.md", true));
@@ -142,7 +143,7 @@ public sealed class InitWriterUnitTests
             .WithShippingCopy(new Dictionary<string, byte[]> { [name] = bytes });
 
         // When
-        var listing = await writer.Write(Root, schemas: true, templates: true, CancellationToken.None);
+        var listing = await writer.Write(Root, schemas: true, templates: true, CancellationToken.None, epics: true);
 
         // Then
         listing.Should().Equal((relative, true));

@@ -9,7 +9,10 @@ using Specht.Tool.Features.Init;
 
 namespace Specht.Tests.Init;
 
-/// <summary>New source recording, validation and preparation (0001-F4 B-035 to B-040).</summary>
+/// <summary>
+/// New source recording, validation and preparation (0001-F4 B-035 to B-040). Into a bare root with epics, the manifest
+/// recording a new source keeps the epic grammar (B-035, C-5), so the epic kind needs its hash like every declared kind (B-038).
+/// </summary>
 [Trait("Tier", "Unit")]
 public sealed class NewSourceInitWriterUnitTests
 {
@@ -169,6 +172,54 @@ public sealed class NewSourceInitWriterUnitTests
         requests.Should().Be(failure == "later mismatch" ? 2 : 1);
         fileSystem.AllFiles.Should().BeEmpty();
         fileSystem.Directory.Exists("repo/.specht").Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task ANewSourceWithEpics_WhenInitRuns_ShouldRecordTheSourceAndKeepTheEpicGrammar()
+    {
+        // Given
+        var fileSystem = new MockFileSystem();
+        fileSystem.AddDirectory("repo");
+        using var client = new HttpClient(new Handler(static _ => throw new HttpRequestException("No request expected.")));
+        InitWriter writer = new InitWriterFixture()
+            .WithFileSystem(fileSystem)
+            .WithShippingCopy(Copy)
+            .WithUpstreamSchemaFetcher(new UpstreamSchemaFetcher(client));
+
+        // When
+        await writer.Write("repo", false, false, CancellationToken.None, Location, "release-label", [.. Hashes, "epic=" + Hash], epics: true);
+
+        // Then
+        var written = JsonNode.Parse(fileSystem.File.ReadAllText("repo/.specht/manifest.json"))!;
+        written["identifiers"]!["epic"]!.GetValue<string>().Should().Be("^[0-9]{4}$");
+        written["spechtSchema"]!["hashes"]!["epic"]!.GetValue<string>().Should().Be(Hash);
+        EngineServices.Manifest(fileSystem, "repo").SpechtSchema!.Files.Select(static file => file.Kind).Should().Equal("feature", "task", "epic");
+    }
+
+    [Fact]
+    public async Task ANewSourceWithEpicsAndNoEpicHash_WhenInitRuns_ShouldRefuseBeforeAnyFetchOrWrite()
+    {
+        // Given
+        var fileSystem = new MockFileSystem();
+        fileSystem.AddDirectory("repo");
+        var requests = 0;
+        using var client = new HttpClient(new Handler(_ =>
+        {
+            requests++;
+            throw new HttpRequestException("No request expected.");
+        }));
+        InitWriter writer = new InitWriterFixture()
+            .WithFileSystem(fileSystem)
+            .WithShippingCopy(Copy)
+            .WithUpstreamSchemaFetcher(new UpstreamSchemaFetcher(client));
+
+        // When
+        var write = () => writer.Write("repo", true, true, CancellationToken.None, Location, "release-label", Hashes, epics: true);
+
+        // Then
+        (await write.Should().ThrowExactlyAsync<SpechtManifestException>()).Which.Message.Should().Contain("epic");
+        requests.Should().Be(0);
+        fileSystem.AllFiles.Should().BeEmpty();
     }
 
     private sealed class Handler(Func<HttpRequestMessage, HttpResponseMessage> respond) : HttpMessageHandler

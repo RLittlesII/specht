@@ -51,10 +51,14 @@ public sealed class InitWriter(
     /// <param name="upstream">The HTTPS base address to record in a new manifest.</param>
     /// <param name="upstreamVersion">The upstream version label.</param>
     /// <param name="upstreamHashes">Repeated kind=hash pairs for the declared schema kinds.</param>
+    /// <param name="epics">Whether a new manifest keeps the epic grammar and the schemas include the epic schema.</param>
     /// <returns>Each file, relative to the root with <c>/</c> separators in ordinal order, and whether it was written or skipped.</returns>
     /// <exception cref="SpechtRootNotFoundException"><paramref name="root"/> is not a directory.</exception>
     /// <implements epic="0001" feature="F4" claim="B-019" />
     /// <implements epic="0001" feature="F4" claim="B-041" />
+    /// <implements epic="0001" feature="F4" claim="B-018" />
+    /// <implements epic="0001" feature="F4" claim="B-021" />
+    /// <implements epic="0001" feature="F4" claim="B-023" />
     public async Task<IReadOnlyList<(string Path, bool Written)>> Write(
         string root,
         bool schemas,
@@ -62,7 +66,8 @@ public sealed class InitWriter(
         CancellationToken cancellationToken,
         string? upstream = null,
         string? upstreamVersion = null,
-        IReadOnlyList<string>? upstreamHashes = null)
+        IReadOnlyList<string>? upstreamHashes = null,
+        bool epics = false)
     {
         if (!fileSystem.Directory.Exists(root))
         {
@@ -75,6 +80,7 @@ public sealed class InitWriter(
         UpstreamSchemaSource? source = null;
         SemanticVersion? pinned = null;
         IReadOnlyList<string> consumerTemplates = [];
+        var epicTier = epics;
 
         if (hasSourceOptions && manifestPresent)
         {
@@ -89,6 +95,7 @@ public sealed class InitWriter(
                 pinned = manifestParser.PinnedVersion(structure).Number;
                 source = structure.SpechtSchema;
                 consumerTemplates = structure.ConsumerTemplates;
+                epicTier = structure.DeclaresEpicGrammar;
             }
             catch (Exception exception) when (exception is JsonException or InvalidOperationException or FormatException)
             {
@@ -96,7 +103,13 @@ public sealed class InitWriter(
             }
         }
 
-        var selected = Selected(schemas, templates, manifestPresent, pinned).ToList();
+        var selected = Selected(schemas, templates, epicTier, pinned).ToList();
+        var manifestIndex = selected.FindIndex(static entry => entry.Relative == SpecManifestStore.RelativePath);
+
+        if (!manifestPresent && !epics && manifestIndex >= 0)
+        {
+            selected[manifestIndex] = (SpecManifestStore.RelativePath, WithoutEpicGrammar(selected[manifestIndex].Bytes));
+        }
 
         if (hasSourceOptions)
         {
@@ -121,9 +134,7 @@ public sealed class InitWriter(
                 hashes[kind] = pair[(separator + 1)..];
             }
 
-            var manifestIndex = selected.FindIndex(static entry => entry.Relative == SpecManifestStore.RelativePath);
             var manifest = JsonNode.Parse(selected[manifestIndex].Bytes)!.AsObject();
-            manifest["identifiers"]?.AsObject().Remove("epic");
             manifest["spechtSchema"] = new JsonObject
             {
                 ["location"] = upstream,
@@ -223,8 +234,57 @@ public sealed class InitWriter(
         return buffer.ToArray();
     }
 
+    /// <implements epic="0001" feature="F4" claim="B-003" />
+    /// <implements epic="0001" feature="F4" claim="B-021" />
+    private static byte[] WithoutEpicGrammar(byte[] manifest)
+    {
+        var reader = new Utf8JsonReader(manifest);
+        var members = new List<(string Name, int Start, int End)>();
+
+        if (!reader.Read() || reader.TokenType != JsonTokenType.StartObject)
+        {
+            return manifest;
+        }
+
+        while (reader.Read() && reader.TokenType == JsonTokenType.PropertyName)
+        {
+            var identifiers = reader.ValueTextEquals("identifiers"u8);
+            reader.Read();
+
+            if (identifiers && reader.TokenType == JsonTokenType.StartObject)
+            {
+                while (reader.Read() && reader.TokenType == JsonTokenType.PropertyName)
+                {
+                    var name = reader.GetString()!;
+                    var start = (int)reader.TokenStartIndex;
+                    reader.Read();
+                    reader.Skip();
+                    members.Add((name, start, (int)reader.BytesConsumed));
+                }
+
+                break;
+            }
+
+            reader.Skip();
+        }
+
+        var epic = members.FindIndex(static member => member.Name == "epic");
+
+        if (epic < 0)
+        {
+            return manifest;
+        }
+
+        var (from, to) = epic > 0
+            ? (members[epic - 1].End, members[epic].End)
+            : members.Count > 1 ? (members[0].Start, members[1].Start) : (members[0].Start, members[0].End);
+
+        return [.. manifest.AsSpan(0, from), .. manifest.AsSpan(to)];
+    }
+
     /// <implements epic="0001" feature="F4" claim="B-019" />
-    private IEnumerable<(string Relative, byte[] Bytes)> Selected(bool schemas, bool templates, bool manifestPresent, SemanticVersion? pinned)
+    /// <implements epic="0001" feature="F4" claim="B-023" />
+    private IEnumerable<(string Relative, byte[] Bytes)> Selected(bool schemas, bool templates, bool epicTier, SemanticVersion? pinned)
     {
         var shipped = new ShippedFiles(shippingCopy);
 
@@ -233,7 +293,7 @@ public sealed class InitWriter(
             {
                 SpecManifestStore.RelativePath => true,
                 var relative when relative.StartsWith(SpecManifestStore.ConfigurationFolder + "/schema/", StringComparison.Ordinal) =>
-                    schemas && (manifestPresent || relative != EpicSchemaRelative),
+                    schemas && (epicTier || relative != EpicSchemaRelative),
                 var relative when relative.StartsWith(SpecManifestStore.TemplateFolder + "/", StringComparison.Ordinal) => templates,
                 _ => false,
             })

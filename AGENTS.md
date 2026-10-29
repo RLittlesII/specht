@@ -127,14 +127,16 @@ verification under `disk`; explicit `embedded` contradicts that record.
 
 `specht init` writes the manifest and nothing else. `--schemas` adds the
 frontmatter schemas, `--templates` adds the templates and `--all` adds both;
-the epic schema is written only with the schemas, and only with `--epics` or
-beside a manifest that declares the epic grammar (`0001-F4` decision 0004,
-B-029 to B-032). Each file comes from the embedded copies - the frontmatter
-schemas from an upstream schema source instead, where the manifest records one
-(`0001-F4` B-014) - and `init` never overwrites a file that exists.
+the epic schema is written only with the schemas, and into a bare root only
+with `--epics`, beside an existing manifest only when it declares the epic
+grammar; a manifest written without `--epics` declares none (`0001-F4`
+decision 0004, B-021, B-023, B-029 to B-032). Each file comes from the
+embedded copies - the frontmatter schemas from an upstream schema source
+instead, where the manifest records one (`0001-F4` B-014) - and `init` never
+overwrites a file that exists.
 
 The layout and the three part options are built (items `0185` and `0186`).
-`--epics` is specified and not built; it has no item (`0001-F5` OQ-18).
+`--epics` is built (item `0319`).
 
 `schemaVersion` is a `major.minor.patch` schema version, numbered apart from
 the `specht.tool` package version; the first is `0.1.0`, and a manifest with no
@@ -203,8 +205,8 @@ separate versioned report (`0201-F5`, item `0246`).
 
 `specht upgrade` rewrites present schema and template files to the pin and is built
 (item `0045`); the manifest-key step and the listing are built (item `0047`); the
-fetch of a recorded upstream source's differing schemas is built (item `0093`). The check command's `--report` and
-the `init --epics` option are specified and not built (`0001-F3`, `0001-F4`). What the tool accepts today is
+fetch of a recorded upstream source's differing schemas is built (item `0093`). The check command's `--report` is
+specified and not built (`0001-F3`). What the tool accepts today is
 [`docs/cli.md`](docs/cli.md), which a test holds to its help (`0002-F1`).
 
 `specht --explain <SPEC###>` prints the entire rule page, including YAML frontmatter,
