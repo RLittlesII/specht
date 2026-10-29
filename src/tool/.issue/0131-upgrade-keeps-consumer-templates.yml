@@ -22,9 +22,10 @@ claims:
   - B-062
   - B-063
   - B-135
+  - B-144
 
 created: "2026-10-09"
-updated: "2026-10-24"
+updated: "2026-10-29"
 closed: null
 
 summary: |
@@ -41,10 +42,11 @@ summary: |
 
 acceptance_criteria:
   - "B-060 — a named template is not written"
-  - "B-061 — each skipped template printed with the reason"
+  - "B-061 — one `skipped <path>: <reason>` line after the rewritten ones, for each named template the pinned version ships, present or not"
   - "B-062 — an unnamed template no source hashes, that differs, is rewritten"
   - "B-063 — no template file the pinned version does not ship is touched"
   - "B-135 — a named template the upstream source hashes is not written"
+  - "B-144 — a named template the pinned version does not ship: output and exit code as with no such name"
   - "B-005 — a template named: the frontmatter schemas still rewritten (its `@boundary` scenario)"
   - "B-006 — only a named template differs: current, nothing rewritten (its second scenario)"
   - "§ 9 carries a row naming a test for each id above."
@@ -64,10 +66,18 @@ decisions:
     source's (0291). Both halves need the hashes, so the item waits on
     0290. Rejected: B-135 in 0291, which would split the named template's
     two claims across items.
+  - |
+    2026-10-29, the repository owner (decision 0019): every named
+    template the pinned version ships gets a skip line without being
+    read, in the line 0094 prints; a name the pinned version does not
+    ship is accepted with no effect (OQ-27 (b)); names match ordinally
+    on the bare file name, a design choice for § 7. B-061 amended.
+    spec-author's cut, not an owner ruling: B-144 joins this item beside
+    B-063.
 
 out_of_scope:
   - "The key and the check under it — 0130."
-  - "A name the pinned version does not ship as an invalid manifest — OQ-27; no claim yet."
+  - "A name the pinned version does not ship as an invalid manifest — rejected by the owner, OQ-27 (b); § 5 #32."
   - "Fetching a template an upstream source hashes — 0291."
   - "`init` beside a named template — § 5 #18."
   - "Validating a template's content — § 5 #15."

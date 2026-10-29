@@ -8,7 +8,7 @@ value: 4
 risk: 4
 
 parent: "0001"
-children: ["0042", "0043", "0044", "0045", "0046", "0047", "0048", "0049", "0092", "0093", "0094", "0120", "0121", "0122", "0123", "0124", "0125", "0126", "0130", "0131", "0176", "0177", "0188", "0189", "0290", "0291"]
+children: ["0042", "0043", "0044", "0045", "0046", "0047", "0048", "0049", "0092", "0093", "0094", "0120", "0121", "0122", "0123", "0125", "0126", "0130", "0131", "0176", "0177", "0188", "0189", "0290", "0291"]
 
 depends_on: []
 spikes: []
@@ -134,6 +134,9 @@ claims:
   - B-139
   - B-140
   - B-141
+  - B-142
+  - B-143
+  - B-144
 
 created: "2026-10-08"
 updated: "2026-10-29"
@@ -223,7 +226,7 @@ acceptance_criteria:
   - "B-027 — upgrade, any fetched schema mismatches: nothing written, exit 3 (0093)"
   - "B-028 — upstream recorded: pinned embedded vocabulary (0092)"
   - "B-029 — upgrade, on-disk source: no frontmatter schema written (0094)"
-  - "B-030 — upgrade prints each skipped schema and why (0094)"
+  - "B-030 — upgrade, on-disk source, no record: a skip line for each present schema the pin ships (0094)"
   - "B-031 — upgrade, on-disk source: rewrites and lists the templates the manifest does not name (0094)"
   - "B-032 — upstream recorded, nothing selected: on-disk (0092)"
   - "B-033 — upgrade, local copy matches the hash: no network call (0093)"
@@ -252,7 +255,7 @@ acceptance_criteria:
   - "B-058 — the chosen version is pinned (0125)"
   - "B-059 — upgrade that only adds a key: exit 0 (0047)"
   - "B-060 — upgrade does not write a named template (0131)"
-  - "B-061 — upgrade prints each skipped template and why (0131)"
+  - "B-061 — upgrade prints a skip line for each named template the pin ships, unread (0131)"
   - "B-062 — upgrade rewrites an unnamed template that differs (0131)"
   - "B-063 — upgrade touches no template file the pinned version does not ship (0131)"
   - "B-065 — a named template leaves the check's report unchanged (0130)"
@@ -306,6 +309,9 @@ acceptance_criteria:
   - "B-139 — upgrade, no upstream source: an absent schema or template stays absent (0093)"
   - "B-140 — upgrade, upstream recorded: an absent fetched schema stays absent (0093)"
   - "B-141 — upgrade, upstream recorded: an absent hashed template stays absent (0291)"
+  - "B-142 — upgrade that only skips: current, then the skip lines, exit 0 (0094)"
+  - "B-143 — upgrade, upstream recorded: no skip line for a schema (0094)"
+  - "B-144 — upgrade, a named template the pin does not ship: output and exit code unchanged (0131)"
   - "§ 9 carries a row naming a test for each id above."
 
 decisions:
@@ -404,6 +410,19 @@ decisions:
     join 0093, B-141 joins 0291. B-139's mechanism is 0045's, built;
     0045 is closed, so 0093, the open item that answers OQ-51, carries
     its scenario and its § 9 row.
+  - |
+    2026-10-29, the repository owner, choosing the recommended default:
+    0124, the pin policy, leaves this Feature's children and milestone
+    0.3.0 and is listed under 0.4.0. B-053, B-054 and B-056 stay in
+    `claims` and Missing, carried by 0124, so this item cannot close
+    clean until they are re-homed or withdrawn. That is raised in the
+    spec's Tasks section, not decided.
+  - |
+    2026-10-29, the repository owner (decision 0019), resolving OQ-27
+    and OQ-1 for `upgrade`: B-030 and B-061 amended; B-142 to B-144
+    added. spec-author's cut, not an owner ruling: B-142 and B-143 join
+    0094, which prints the first skip line, and B-144 joins 0131 beside
+    B-063.
 
 out_of_scope:
   - "Everything in § 5 of the spec."

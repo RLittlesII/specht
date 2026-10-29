@@ -24,8 +24,9 @@ namespace Specht.Acceptance.Versioning;
 /// every other run launches the built tool with <c>--json</c> over a synthetic root, so B-003 and B-039 see the process's
 /// stderr and exit code and B-002, B-022 and B-023 read the document it printed. "The tool ships schema version 0.1.0"
 /// selects the real embedded version. "The manifest's schema version is ..." writes a value of digits
-/// alone as a JSON number, the integer the retired pin was, and any other value as a JSON string. B-004's three steps stay
-/// unbound: its proof against what was published is item 0044's. Item 0176 binds B-069 to B-073 and B-076: each writes a
+/// alone as a JSON number, the integer the retired pin was, and any other value as a JSON string. Item 0044 binds B-004,
+/// B-013, B-015, B-040, B-066 and B-088 in <see cref="ShippedVersionSteps"/>, over this repository's own lock and shipping trees.
+/// Item 0176 binds B-069 to B-073 and B-076: each writes a
 /// synthetic <c>spechtSchema</c> into the root's manifest with one fault and launches the built tool, and the rejection is
 /// read from its stderr as the manifest's own name for the member or the kind, in quotes. Item 0092 binds B-024, B-025,
 /// B-028, B-032, B-068, B-075 and B-077 to B-081: a recorded source carries the SHA-256 of each schema file the root holds,
@@ -48,7 +49,7 @@ namespace Specht.Acceptance.Versioning;
 /// written by the step that says how it stands against that hash, and each refusal is the source answering for that file
 /// name, or for every file, as for a schema. B-135's consumer-named template stays unbound for item 0131.
 /// Item 0126 binds B-086 and B-087 over the embedded resources and their declared addresses. The
-/// partial lock bindings execute B-092 and B-093 over synthetic shipping files on disk.
+/// partial lock bindings execute B-089 to B-093 over synthetic shipping files on disk.
 /// B-012 runs the existing init writer over synthetic versioned manifests on disk and reads the written pin. Item 0046
 /// binds B-018 to B-020: each launches the built tool's upgrade over the Background root - against <c>no-such-root</c>
 /// beneath it, without its manifest, with a rule set to a level no version defines, or pinned to 0.2.0 with a recorded

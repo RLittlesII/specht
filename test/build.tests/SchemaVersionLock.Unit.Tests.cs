@@ -130,4 +130,128 @@ public sealed class SchemaVersionLockUnitTests
         // Then
         after.Should().NotBe(before);
     }
+
+    [Fact]
+    public async Task ALockedVersionWhoseFilesAreUnchanged_WhenVerified_ShouldReportNoFinding()
+    {
+        // Given
+        var fileSystem = new MockFileSystem();
+        fileSystem.AddFile("repo/src/tool/schema/v0.1.0/frontmatter/feature.schema.json", new MockFileData("schema"));
+        fileSystem.AddFile("repo/src/tool/manifest/v0.1.0/manifest.json", new MockFileData("manifest"));
+        fileSystem.AddFile("repo/src/tool/templates/v0.1.0/feature.md", new MockFileData("template"));
+        fileSystem.AddFile("repo/docs/rules/v0.1.0/SPEC001.md", new MockFileData("rule page"));
+        var versionLock = new SchemaVersionLock(fileSystem, "repo");
+        fileSystem.AddFile(
+            $"repo/{SchemaVersionLock.RelativePath}",
+            new MockFileData(JsonSerializer.Serialize(new Dictionary<string, string> { ["0.1.0"] = await versionLock.ComputeDigestAsync("0.1.0") })));
+
+        // When
+        var findings = await versionLock.VerifyAsync();
+
+        // Then
+        findings.Should().BeEmpty();
+    }
+
+    [Theory]
+    [InlineData("src/tool/schema/v0.1.0/frontmatter/feature.schema.json")]
+    [InlineData("src/tool/manifest/v0.1.0/manifest.json")]
+    [InlineData("src/tool/templates/v0.1.0/feature.md")]
+    [InlineData("docs/rules/v0.1.0/SPEC001.md")]
+    public async Task ALockedVersionWithAnEditedFile_WhenVerified_ShouldReportThatItsDigestDoesNotMatch(string path)
+    {
+        // Given
+        var fileSystem = new MockFileSystem();
+        fileSystem.AddFile("repo/src/tool/schema/v0.1.0/frontmatter/feature.schema.json", new MockFileData("schema"));
+        fileSystem.AddFile("repo/src/tool/manifest/v0.1.0/manifest.json", new MockFileData("manifest"));
+        fileSystem.AddFile("repo/src/tool/templates/v0.1.0/feature.md", new MockFileData("template"));
+        fileSystem.AddFile("repo/docs/rules/v0.1.0/SPEC001.md", new MockFileData("rule page"));
+        var versionLock = new SchemaVersionLock(fileSystem, "repo");
+        fileSystem.AddFile(
+            $"repo/{SchemaVersionLock.RelativePath}",
+            new MockFileData(JsonSerializer.Serialize(new Dictionary<string, string> { ["0.1.0"] = await versionLock.ComputeDigestAsync("0.1.0") })));
+        fileSystem.AddFile($"repo/{path}", new MockFileData("edited"));
+
+        // When
+        var findings = await versionLock.VerifyAsync();
+
+        // Then
+        findings.Should().Equal(new SchemaVersionLockFinding("0.1.0", SchemaVersionLockFault.DigestMismatch));
+    }
+
+    [Fact]
+    public async Task TwoShippedVersionsTheLockDoesNotRecord_WhenVerified_ShouldReportEachAsOneOfMoreThanOneUnlocked()
+    {
+        // Given
+        var fileSystem = new MockFileSystem();
+        foreach (var version in new[] { "0.1.0", "0.2.0", "0.3.0" })
+        {
+            fileSystem.AddFile($"repo/src/tool/schema/v{version}/frontmatter/feature.schema.json", new MockFileData(version));
+        }
+
+        var versionLock = new SchemaVersionLock(fileSystem, "repo");
+        fileSystem.AddFile(
+            $"repo/{SchemaVersionLock.RelativePath}",
+            new MockFileData(JsonSerializer.Serialize(new Dictionary<string, string> { ["0.1.0"] = await versionLock.ComputeDigestAsync("0.1.0") })));
+
+        // When
+        var findings = await versionLock.VerifyAsync();
+
+        // Then
+        findings.Where(static finding => finding.Fault == SchemaVersionLockFault.MoreThanOneUnlocked).Should().BeEquivalentTo(
+        [
+            new SchemaVersionLockFinding("0.2.0", SchemaVersionLockFault.MoreThanOneUnlocked),
+            new SchemaVersionLockFinding("0.3.0", SchemaVersionLockFault.MoreThanOneUnlocked),
+        ]);
+    }
+
+    [Theory]
+    [InlineData("0.10.0", "0.9.0", true)]
+    [InlineData("0.9.0", "0.10.0", false)]
+    public async Task OneShippedVersionTheLockDoesNotRecord_WhenVerified_ShouldBeReportedOnlyWhenAHigherVersionShips(
+        string locked, string unlocked, bool reported)
+    {
+        // Given
+        var fileSystem = new MockFileSystem();
+        foreach (var version in new[] { locked, unlocked })
+        {
+            fileSystem.AddFile($"repo/src/tool/schema/v{version}/frontmatter/feature.schema.json", new MockFileData(version));
+        }
+
+        var versionLock = new SchemaVersionLock(fileSystem, "repo");
+        fileSystem.AddFile(
+            $"repo/{SchemaVersionLock.RelativePath}",
+            new MockFileData(JsonSerializer.Serialize(new Dictionary<string, string> { [locked] = await versionLock.ComputeDigestAsync(locked) })));
+
+        // When
+        var findings = await versionLock.VerifyAsync();
+
+        // Then
+        findings.Should().Equal(reported ? [new SchemaVersionLockFinding(unlocked, SchemaVersionLockFault.UnlockedNotNewest)] : []);
+    }
+
+    [Theory]
+    [InlineData("0.1.0", false)]
+    [InlineData("0.99.9", false)]
+    [InlineData("1.0.0", true)]
+    [InlineData("1.4.2", true)]
+    public async Task ALockedVersionWithNoFolder_WhenVerified_ShouldBeReportedOnlyFromOneZeroZeroOn(string removed, bool reported)
+    {
+        // Given
+        var fileSystem = new MockFileSystem();
+        fileSystem.AddFile("repo/src/tool/schema/v2.0.0/frontmatter/feature.schema.json", new MockFileData("schema"));
+        var versionLock = new SchemaVersionLock(fileSystem, "repo");
+        fileSystem.AddFile(
+            $"repo/{SchemaVersionLock.RelativePath}",
+            new MockFileData(JsonSerializer.Serialize(new Dictionary<string, string>
+            {
+                [removed] = "digest-recorded-when-it-shipped",
+                ["2.0.0"] = await versionLock.ComputeDigestAsync("2.0.0"),
+            })));
+
+        // When
+        var findings = await versionLock.VerifyAsync();
+
+        // Then
+        findings.Should().Equal(reported ? [new SchemaVersionLockFinding(removed, SchemaVersionLockFault.LockedVersionNotShipped)] : []);
+    }
 }

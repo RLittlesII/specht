@@ -18,9 +18,11 @@ claims:
   - B-029
   - B-030
   - B-031
+  - B-142
+  - B-143
 
 created: "2026-10-08"
-updated: "2026-10-24"
+updated: "2026-10-29"
 closed: null
 
 summary: |
@@ -31,8 +33,10 @@ summary: |
 
 acceptance_criteria:
   - "B-029 — on-disk source: none of the pinned version's frontmatter schemas written"
-  - "B-030 — each skipped schema printed with the reason"
+  - "B-030 — no record: one `skipped <path>: <reason>` line after the rewritten ones, for each present schema the pinned version ships, by its shipped name"
   - "B-031 — the templates the manifest does not name rewritten to the pinned version's and listed"
+  - "B-142 — nothing rewritten and a file skipped: current, then the skip lines, exit 0"
+  - "B-143 — an upstream source recorded: no skip line for a schema"
   - "§ 9 carries a row naming a test for each id above."
 
 decisions:
@@ -50,6 +54,14 @@ decisions:
     2026-10-24, spec-author, recording the owner's decision 0016: B-031
     as amended also leaves out each template the recorded upstream source
     hashes (0001-F7 B-125, item 0290). Claims and dependencies unchanged.
+  - |
+    2026-10-29, the repository owner (decision 0019): the skip line is
+    `skipped <path>: <reason>`, after the rewritten lines; a run that
+    only skips is current; schema skip lines only with no `spechtSchema`
+    recorded; `upgrade` takes no `--schema-source`. B-030 amended.
+    spec-author's cut, not an owner ruling: B-142 and B-143 join this
+    item, which prints the first skip line; 0131 reuses the line.
 
 out_of_scope:
   - "Overwriting a consumer's frontmatter schemas — C-2."
+  - "`--schema-source` on `upgrade` — § 5 #31."

@@ -35,4 +35,24 @@ public sealed class SchemaVersionLockIntegrationTests
             Directory.Delete(root, recursive: true);
         }
     }
+
+    [Fact]
+    public async Task TheRepositorysShippedVersions_WhenVerifiedAgainstTheCommittedLock_ShouldReportNoFinding()
+    {
+        // Given
+        var root = AppContext.BaseDirectory;
+        while (!File.Exists(Path.Combine(root, "specht.slnx")))
+        {
+            root = Path.GetDirectoryName(root.TrimEnd(Path.DirectorySeparatorChar))
+                ?? throw new DirectoryNotFoundException("No repository root above the test assembly.");
+        }
+
+        var versionLock = new SchemaVersionLock(new FileSystem(), root);
+
+        // When
+        var findings = await versionLock.VerifyAsync();
+
+        // Then
+        findings.Should().BeEmpty();
+    }
 }
