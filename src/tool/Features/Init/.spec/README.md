@@ -151,7 +151,7 @@ A repository adopting the model copies the consumer's `.spec/schema/` and `.spec
 
 ## 6. Concern Separation
 
-<!-- last written by: implementer, 2026-10-16 -->
+<!-- last written by: implementer, 2026-10-28 -->
 
 | Concern                                                                                                                                                                                                                                                             | Classification | Where                                                                                 |
 | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------- | ------------------------------------------------------------------------------------- |
@@ -162,6 +162,8 @@ A repository adopting the model copies the consumer's `.spec/schema/` and `.spec
 | Reading the embedded resources; writing through `IFileSystem`                                                                                                                                                                                                       | Technical      | `Features/Init/InitWriter.cs`                                                         |
 | The embedded logical names `manifest/v<major.minor.patch>/manifest.json`, `schema/v<major.minor.patch>/frontmatter/<file>`, `templates/v<major.minor.patch>/<file>`                                                                                                 | Technical      | `tool.csproj`                                                                         |
 | Fetching public schema bytes and verifying their recorded SHA-256 (B-014 to B-016; `0001-F7` C-9, C-15)                                                                                                                                                             | Both           | `src/specht/Manifest/UpstreamSchemaFetcher.cs`                                        |
+| Which recorded templates are fetched: selected, absent, and not named in `consumerTemplates` (B-034, B-041, B-044)                                                                                                                                                  | Business       | `Features/Init/InitWriter.cs`                                                         |
+| Fetching public template bytes and verifying their recorded SHA-256 through the schema fetch core (B-041 to B-043; `0001-F7` C-15)                                                                                                                                  | Both           | `src/specht/Manifest/UpstreamSchemaFetcher.cs`                                        |
 | Preparing all absent upstream schemas before any selected file is written (B-015, B-016)                                                                                                                                                                            | Business       | `Features/Init/InitWriter.cs`                                                         |
 | Recording and validating a new source before fetching or writing (B-035 to B-040)                                                                                                                                                                                   | Both           | `Features/Init/InitWriter.cs`, `src/specht/Manifest/SpecManifestParser.cs`            |
 | Reading the embedded default manifest for the pure parser                                                                                                                                                                                                           | Technical      | `src/specht/Resources/SpechtResources.cs`                                             |
@@ -174,7 +176,7 @@ A repository adopting the model copies the consumer's `.spec/schema/` and `.spec
 
 ## 7. Technical Design
 
-<!-- last written by: implementer, 2026-10-16 -->
+<!-- last written by: implementer, 2026-10-28 -->
 
 **The shipping copy (B-004, B-005, C-2).** `src/tool/manifest/v<major.minor.patch>/` holds the manifest, `manifest.json`; `src/tool/schema/v<major.minor.patch>/frontmatter/` the three frontmatter schemas (`feature.schema.json`, `task.schema.json`, `epic.schema.json`), each with an `$id` ending in `schema/v<major.minor.patch>/frontmatter/<file>` (B-005); and `src/tool/templates/v<major.minor.patch>/` the four templates (`feature.md`, `decision.md`, `adr.md`, `lesson.md`); `item.yml` is not shipped. `tool.csproj` embeds them under the logical names `manifest/v<major.minor.patch>/manifest.json`, `schema/v<major.minor.patch>/frontmatter/<file>` and `templates/v<major.minor.patch>/<file>`, `/`-separated on every OS (item `0185`, `0001-F5` decision 0011). The newest version is the highest by major, minor and patch, parsed with the engine's `SemanticVersion`. `v0.1.0` is a byte copy of the live `.specht/`.
 
@@ -245,6 +247,14 @@ validation diagnostic. No new network adapter or command is introduced;
 ADR-0013's transport policy still applies. `--epics` remains unbuilt.
 
 **Explicit rule defaults (B-004, B-024 to B-026; decision 0006).** The working `0.2.0` embedded manifest carries exactly its vocabulary's rule IDs, each at the rule's own default level. `InitWriter.Selected` selects that manifest and `Write` copies it without deriving levels from the live repository's overrides. New upstream-source recording preserves this map. The original `0.1.0` resources and digest stay unchanged. The `rules` key is consumer configuration and is excluded by name in both shipping-copy comparisons; all other embedded keys remain compared. The live manifest keeps its repository-specific levels. OQ-5 is resolved by that existing separation, not by adding defaults to the live file.
+
+### Fetching the templates a source hashes (item `0292`)
+
+**B-034, B-041 to B-044; decision 0005; `0001-F7` decision 0016, C-15.** After the schema preparation and before the write loop, `InitWriter.Write` prepares the templates when `templates` is selected and the manifest records a source. For each `UpstreamSchemaSource.Templates` entry whose `FileName` the existing manifest's `ConsumerTemplates` does not name, the path is `SpecManifestStore.TemplateFolder` plus that name: a present file is not requested (B-044) and the loop skips it as before (C-1); an absent one is fetched and its bytes replace the embedded entry in the selection (B-041). Schemas are fetched first, then templates, all before any write, so a refusal (B-042, B-043) throws `SpechtUpstreamSchemaException` before anything is written, and `InitCommand` folds it to stderr and exit `3` unchanged. A run without templates selected, or with no absent unnamed hashed template, makes no template request (B-034). The parser's `0001-F7` B-127 check already confines each name to a template the pin ships, so no path check is added here. A manifest built from `--upstream` options records no templates, so that path is unchanged.
+
+`UpstreamSchemaFetcher.Fetch(UpstreamTemplateFile, CancellationToken)` is an overload beside the schema one; both delegate to one private address-and-hash core, so credential stripping, the transport exception filter and the two diagnostics, `upstream schema source '<address>' could not be reached.` and `does not match its recorded SHA-256.`, are shared and unchanged. An HTTP 401 or 404 surfaces through `GetByteArrayAsync` as `HttpRequestException` and so reads as unreachable.
+
+A hashed template the manifest names in `consumerTemplates` keeps today's behaviour, the embedded copy and no request, pending OQ-10, which is open and the owner's; this item does not answer it.
 
 ## 8. Testing Strategy
 

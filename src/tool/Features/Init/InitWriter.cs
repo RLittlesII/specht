@@ -54,6 +54,7 @@ public sealed class InitWriter(
     /// <returns>Each file, relative to the root with <c>/</c> separators in ordinal order, and whether it was written or skipped.</returns>
     /// <exception cref="SpechtRootNotFoundException"><paramref name="root"/> is not a directory.</exception>
     /// <implements epic="0001" feature="F4" claim="B-019" />
+    /// <implements epic="0001" feature="F4" claim="B-041" />
     public async Task<IReadOnlyList<(string Path, bool Written)>> Write(
         string root,
         bool schemas,
@@ -73,6 +74,7 @@ public sealed class InitWriter(
         var hasSourceOptions = upstream is not null || upstreamVersion is not null || upstreamHashes is { Count: > 0 };
         UpstreamSchemaSource? source = null;
         SemanticVersion? pinned = null;
+        IReadOnlyList<string> consumerTemplates = [];
 
         if (hasSourceOptions && manifestPresent)
         {
@@ -86,6 +88,7 @@ public sealed class InitWriter(
                 var structure = manifestParser.Parse(manifestStore.ReadManifest(root));
                 pinned = manifestParser.PinnedVersion(structure).Number;
                 source = structure.SpechtSchema;
+                consumerTemplates = structure.ConsumerTemplates;
             }
             catch (Exception exception) when (exception is JsonException or InvalidOperationException or FormatException)
             {
@@ -166,6 +169,24 @@ public sealed class InitWriter(
                     ? []
                     : await (upstreamSchemaFetcher ?? throw new InvalidOperationException("An upstream schema fetcher is required."))
                         .Fetch(file, cancellationToken);
+                selected.Add((relative, bytes));
+            }
+        }
+
+        if (templates && source is not null)
+        {
+            foreach (var file in source.Templates.Where(file => !consumerTemplates.Contains(file.FileName, StringComparer.Ordinal)))
+            {
+                var relative = $"{SpecManifestStore.TemplateFolder}/{file.FileName}";
+
+                if (fileSystem.File.Exists(fileSystem.Path.Combine([root, .. relative.Split('/')])))
+                {
+                    continue;
+                }
+
+                var bytes = await (upstreamSchemaFetcher ?? throw new InvalidOperationException("An upstream schema fetcher is required."))
+                    .Fetch(file, cancellationToken);
+                selected.RemoveAll(entry => entry.Relative == relative);
                 selected.Add((relative, bytes));
             }
         }
