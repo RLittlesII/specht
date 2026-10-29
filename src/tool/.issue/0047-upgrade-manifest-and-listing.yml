@@ -2,7 +2,7 @@ id: "0047"
 type: task
 title: Keep manifest settings on upgrade and print what changed
 
-status: ready-for-architecture
+status: done
 
 risk: 3
 
@@ -18,24 +18,29 @@ claims:
   - B-016
   - B-017
   - B-059
+  - B-138
 
 created: "2026-10-08"
-updated: "2026-10-10"
-closed: null
+updated: "2026-10-28"
+closed: "2026-10-28"
 
 summary: |
   In the manifest, upgrade adds only the keys the pinned version defines
   that the manifest lacks; every key already present keeps the consumer's
   value, and `schemaVersion` is not touched (decision 0001, decision 0005,
-  OQ-6). It prints the pinned version and each file rewritten, and no
-  diff. Open, and the owner's: whether it also names the version the
-  files were at (OQ-21), what it prints when it only adds a key (OQ-24),
-  and a key only a higher version defines after a move down (OQ-14).
+  OQ-6); `identifiers` is never added, so upgrade never opts a manifest
+  into epics (OQ-68). It prints the pinned version and each file
+  rewritten, the manifest among them when a key is added (OQ-24), and no
+  diff. A root is current only when no key is missing (OQ-64, taken on
+  its default (a)). A key only a higher version defines after a move down
+  was resolved by decision 0012 (OQ-14). Still open, and the owner's:
+  whether it also names the version the files were at (OQ-21).
 
 acceptance_criteria:
   - "B-016 — the pinned version's absent keys added; present keys keep their value"
   - "B-017 — the pinned version and each rewritten file; no diff; provisional on OQ-21"
   - "B-059 — files already at the pin, a key added: exit 0"
+  - "B-138 — a manifest declaring no epic grammar declares none after upgrade"
   - "§ 9 carries a row naming a test for each id above."
 
 decisions:
@@ -49,6 +54,15 @@ decisions:
     no longer moves `schemaVersion` (B-052, in 0045), so the version pair
     of OQ-3 lost its first member; B-017 states the pinned version and is
     provisional on OQ-21. B-059 added.
+  - |
+    2026-10-28, the repository owner: OQ-24 resolved as reading (a), the
+    manifest named in B-017's file list when upgrade adds a key, over
+    naming each key or both. A-3 and B-017 amended.
+  - |
+    2026-10-28, spec-author, recording the owner's OQ-68 ruling: the keys
+    a version defines exclude `identifiers`, so upgrade never opts a
+    manifest into epics (`0001-F5` decision 0004), over adding it without
+    its `epic` member or keeping the copy. B-016 amended; B-138 added.
 
 out_of_scope:
   - "A consumer-side migration script or changelog — C-5."

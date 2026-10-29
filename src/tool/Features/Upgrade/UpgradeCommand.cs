@@ -10,10 +10,11 @@ using Spectre.Console.Cli;
 namespace Specht.Tool.Features.Upgrade;
 
 /// <summary>
-/// <c>specht upgrade</c> (<c>0001-F7</c>): brings the root's present frontmatter schemas and templates to the pinned version
-/// and says when they already are. It parses, calls the writer, and folds - nothing else.
+/// <c>specht upgrade</c> (<c>0001-F7</c>): brings the root's present frontmatter schemas and templates to the pinned version,
+/// adds the manifest keys that version defines, and names the version and each rewritten file, or says the root is already
+/// current. It parses, calls the writer, prints, and folds - nothing else.
 /// </summary>
-/// <param name="console">Where the current notice goes.</param>
+/// <param name="console">Where the current notice and the listing go.</param>
 /// <param name="writer">The comparison and rewrite.</param>
 /// <param name="errorWriter">Where failures go; standard error when omitted.</param>
 /// <implements epic="0001" feature="F7" claim="B-005" />
@@ -22,6 +23,8 @@ public sealed class UpgradeCommand(IAnsiConsole console, UpgradeWriter writer, T
 {
     /// <inheritdoc />
     /// <implements epic="0001" feature="F7" claim="B-005" />
+    /// <implements epic="0001" feature="F7" claim="B-017" />
+    /// <implements epic="0001" feature="F7" claim="B-059" />
     public override async Task<int> ExecuteAsync(CommandContext context, Settings settings, CancellationToken cancellationToken)
     {
         try
@@ -31,6 +34,14 @@ public sealed class UpgradeCommand(IAnsiConsole console, UpgradeWriter writer, T
             if (result.Rewritten.Count == 0)
             {
                 console.Profile.Out.Writer.WriteLine($"{SpecManifestStore.ConfigurationFolder}/ is current at schemaVersion {result.Pinned}");
+            }
+            else
+            {
+                console.Profile.Out.Writer.WriteLine($"{SpecManifestStore.ConfigurationFolder}/ rewritten to schemaVersion {result.Pinned}");
+                foreach (var path in result.Rewritten)
+                {
+                    console.Profile.Out.Writer.WriteLine($"rewritten {path}");
+                }
             }
 
             return ExitCodes.Success;

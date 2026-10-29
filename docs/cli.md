@@ -444,17 +444,24 @@ specht upgrade [--root <DIR>]
 Brings the frontmatter schemas and templates under `<DIR>/.specht/` to the bytes
 the manifest's pinned version ships. It rewrites a file that is present and
 differs, and leaves a file that is absent absent; `specht init --schemas` or
-`--templates` adds a missing part. It never changes the manifest, a pin, a file
-the pinned version does not ship, or anything outside `.specht/schema/frontmatter/`
-and `.specht/templates/`.
+`--templates` adds a missing part. It adds to the manifest each top-level key
+the pinned version's manifest defines and it lacks, other than `schemaVersion`,
+`$`-prefixed keys and `identifiers`, so it never opts a repository into epics,
+and keeps every key already there, whatever its value. It
+never changes a pin, a file the pinned version does not ship, or anything
+outside `.specht/manifest.json`, `.specht/schema/frontmatter/` and
+`.specht/templates/`.
 
 | Option         | Value   | Default               | Does                                          |
 | -------------- | ------- | --------------------- | --------------------------------------------- |
 | `--root <DIR>` | `<DIR>` | The working directory | Names the repository root to upgrade.         |
 | `-h, --help`   | none    | none                  | Prints the command's help and writes nothing. |
 
-**Stdout.** When nothing differs, `.specht/ is current at schemaVersion <pin>`.
-After a rewrite, nothing.
+**Stdout.** When nothing differs and no key is missing,
+`.specht/ is current at schemaVersion <pin>`. After a rewrite,
+`.specht/ rewritten to schemaVersion <pin>`, then `rewritten <path>` for each
+rewritten file; `.specht/manifest.json` is listed only when a key was added, and
+then first. No diff.
 
 **Exit codes.** `0` on success; `2` for a missing root or manifest; `3` for an
 invalid manifest or an unshipped pin. Failures explain the problem on stderr.

@@ -145,6 +145,14 @@ Feature: Schema versioning
     And the key version 0.2.0 defines keeps the consumer's value
     And every other key version 0.2.0 defines is added
 
+  @B-138 @boundary
+  Scenario: Upgrade never opts a repository into epics
+    Given the tool ships schema versions 0.1.0 and 0.2.0
+    And the root is pinned to version 0.2.0 and its frontmatter schemas and templates are version 0.1.0's
+    And its manifest declares no epic grammar
+    When upgrade runs against it
+    Then the manifest declares no epic grammar
+
   @B-017
   Scenario: Upgrade prints what it changed
     Given the tool ships schema versions 0.1.0 and 0.2.0
@@ -152,6 +160,14 @@ Feature: Schema versioning
     When upgrade runs against it
     Then the standard output names version 0.2.0 and each file rewritten
     And the standard output carries no diff of any file
+
+  @B-017
+  Scenario: Upgrade that only adds a manifest key names the manifest
+    Given the tool ships schema versions 0.1.0 and 0.2.0
+    And the root is pinned to version 0.2.0 and its frontmatter schemas and templates are already version 0.2.0's
+    And its manifest lacks a key version 0.2.0 defines
+    When upgrade runs against it
+    Then the standard output names version 0.2.0 and the manifest
 
   @B-018
   Scenario: Upgrade under a missing root is a missing-input failure

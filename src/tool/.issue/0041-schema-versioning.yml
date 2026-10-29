@@ -130,6 +130,7 @@ claims:
   - B-135
   - B-136
   - B-137
+  - B-138
 
 created: "2026-10-08"
 updated: "2026-10-28"
@@ -298,6 +299,7 @@ acceptance_criteria:
   - "B-135 — upgrade does not write a named template a source hashes (0131)"
   - "B-136 — upgrade keeps a local template matching its hash (0291)"
   - "B-137 — upgrade sends no credential for a template (0291)"
+  - "B-138 — upgrade never opts a manifest into the epic grammar (0047)"
   - "§ 9 carries a row naming a test for each id above."
 
 decisions:
