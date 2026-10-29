@@ -84,6 +84,20 @@ public sealed partial class VersioningSteps
         GivenManifestEmbeddedSource();
     }
 
+    [Then("the standard error names version {word} and the versions the tool ships, as the check's does")]
+    public void ThenTheStandardErrorNamesVersionAndTheVersionsTheToolShipsAsTheChecksDoes(string version)
+    {
+        ThenTheStandardErrorNamesVersionAndTheVersionsTheToolShips(version);
+        _stderr.Should().Be(AcceptanceTool.Launch(Tree.Root).Stderr);
+    }
+
+    [Then("the standard error names {word}, as the check's does")]
+    public void ThenTheStandardErrorNamesAsTheChecksDoes(string value)
+    {
+        ThenTheStandardErrorNames(value);
+        _stderr.Should().Be(AcceptanceTool.Launch(Tree.Root).Stderr);
+    }
+
     [Then("the frontmatter schemas and the templates are version {word}'s")]
     public void ThenTheFilesAreVersion(string version)
     {

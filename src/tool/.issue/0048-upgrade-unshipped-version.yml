@@ -2,7 +2,7 @@ id: "0048"
 type: task
 title: Refuse to upgrade under a schemaVersion the check rejects
 
-status: ready-for-architecture
+status: done
 
 risk: 1
 
@@ -18,8 +18,8 @@ claims:
   - B-021
 
 created: "2026-10-08"
-updated: "2026-10-10"
-closed: null
+updated: "2026-10-29"
+closed: "2026-10-29"
 
 summary: |
   Under a root whose `schemaVersion` the check rejects — a version the

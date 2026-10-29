@@ -30,6 +30,7 @@ public sealed class UpgradeCommand(IAnsiConsole console, UpgradeWriter writer, T
     /// <implements epic="0001" feature="F7" claim="B-059" />
     /// <implements epic="0001" feature="F7" claim="B-027" />
     /// <implements epic="0001" feature="F7" claim="B-035" />
+    /// <implements epic="0001" feature="F7" claim="B-021" />
     public override async Task<int> ExecuteAsync(CommandContext context, Settings settings, CancellationToken cancellationToken)
     {
         try

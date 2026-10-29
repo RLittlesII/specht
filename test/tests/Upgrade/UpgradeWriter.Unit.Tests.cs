@@ -11,15 +11,16 @@ namespace Specht.Tests.Upgrade;
 
 /// <summary>
 /// The comparison and rewrite beneath <c>specht upgrade</c> (<c>0001-F7</c> B-005, B-006, B-007, B-016, B-017, B-018, B-019,
-/// B-020, B-029, B-052, B-059, B-138, B-139; C-2): the manifest is planned like any file, its planned bytes those with the pinned
-/// version's missing keys added, and a missing root or manifest, or a manifest the loader rejects, throws before any file is
-/// written. Under a recorded upstream schema source (B-026, B-027, B-033, B-034, B-035, B-067, B-082, B-083, B-140; C-9, C-10,
-/// C-15) the writer resolves with the production fetcher over a synthetic message handler: a differing copy is fetched and
-/// written under its kind's file name, a refused fetch writes nothing, a matching copy or an absent one asks for nothing, the
-/// record is kept, and no request carries a credential. A template that source hashes and the manifest does not name as the
-/// consumer's (B-130, B-132 to B-134, B-136, B-137, B-141; C-8 to C-10) is fetched and written only when its present copy
-/// differs from its hash, is kept when it matches even where the pinned version's differs, stays absent when the root lacks
-/// it, refuses a fetch it cannot verify before anything is written, and is asked for without a credential.
+/// B-020, B-021, B-029, B-052, B-059, B-138, B-139; C-2): the manifest is planned like any file, its planned bytes those with
+/// the pinned version's missing keys added, and a missing root or manifest, or a manifest the loader rejects, throws before any
+/// file is written; a pin the check rejects throws the rejection the check's schema loader throws for the same root. Under a
+/// recorded upstream schema source (B-026, B-027, B-033, B-034, B-035, B-067, B-082, B-083, B-140; C-9, C-10, C-15) the writer
+/// resolves with the production fetcher over a synthetic message handler: a differing copy is fetched and written under its
+/// kind's file name, a refused fetch writes nothing, a matching copy or an absent one asks for nothing, the record is kept, and
+/// no request carries a credential. A template that source hashes and the manifest does not name as the consumer's (B-130,
+/// B-132 to B-134, B-136, B-137, B-141; C-8 to C-10) is fetched and written only when its present copy differs from its hash,
+/// is kept when it matches even where the pinned version's differs, stays absent when the root lacks it, refuses a fetch it
+/// cannot verify before anything is written, and is asked for without a credential.
 /// </summary>
 [Trait("Tier", "Unit")]
 public sealed class UpgradeWriterUnitTests
@@ -305,6 +306,37 @@ public sealed class UpgradeWriterUnitTests
         foreach (var (path, (bytes, written)) in before)
         {
             fileSystem.File.ReadAllBytes(path).Should().Equal(bytes);
+            fileSystem.File.GetLastWriteTimeUtc(path).Should().Be(written, path);
+        }
+    }
+
+    [Theory]
+    [ClassData(typeof(UpgradeRejectedPins))]
+    public async Task APinTheCheckRejects_WhenUpgraded_ShouldThrowTheChecksRejectionAndWriteNothing(string schemaVersion)
+    {
+        // Given
+        var stamp = new DateTime(2026, 1, 2, 3, 4, 5, DateTimeKind.Utc);
+        var fileSystem = new MockFileSystem();
+        fileSystem.AddFile("repo/.specht/manifest.json", new MockFileData($"{{\"schemaVersion\":{schemaVersion}}}") { LastWriteTime = stamp });
+        foreach (var file in UpgradeServices.Shipped().At(new SemanticVersion(0, 1, 0)).Where(static file => file.Relative != ".specht/manifest.json"))
+        {
+            fileSystem.AddFile("repo/" + file.Relative, new MockFileData(file.Bytes) { LastWriteTime = stamp });
+        }
+
+        var before = fileSystem.AllFiles.ToDictionary(
+            static path => path, path => (fileSystem.File.ReadAllBytes(path), fileSystem.File.GetLastWriteTimeUtc(path)));
+        var check = () => EngineServices.Schemas(fileSystem).Load("repo");
+
+        // When
+        var upgrade = () => UpgradeServices.Writer(fileSystem).Upgrade("repo", CancellationToken.None);
+
+        // Then
+        var rejection = check.Should().ThrowExactly<SpechtManifestException>(schemaVersion).Which.Message;
+        (await upgrade.Should().ThrowExactlyAsync<SpechtManifestException>(schemaVersion)).Which.Message.Should().Be(rejection);
+        fileSystem.AllFiles.Should().BeEquivalentTo(before.Keys);
+        foreach (var (path, (bytes, written)) in before)
+        {
+            fileSystem.File.ReadAllBytes(path).Should().Equal(bytes, path);
             fileSystem.File.GetLastWriteTimeUtc(path).Should().Be(written, path);
         }
     }
