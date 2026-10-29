@@ -3,7 +3,7 @@ using System.Security.Cryptography;
 
 namespace Specht.Manifest;
 
-/// <summary>Fetches one public upstream schema or template and verifies its recorded SHA-256 (<c>0001-F4</c> B-014 to B-016, B-041 to B-043).</summary>
+/// <summary>Fetches an upstream schema or template without a credential and checks its SHA-256 (<c>0001-F4</c> B-014 to B-016, B-041 to B-043).</summary>
 /// <param name="client">The credential-free HTTP client; a test substitutes its message handler.</param>
 /// <implements epic="0001" feature="F7" claim="B-068" />
 public sealed class UpstreamSchemaFetcher(HttpClient client)
