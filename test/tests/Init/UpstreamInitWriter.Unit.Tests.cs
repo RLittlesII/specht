@@ -8,18 +8,22 @@ using Specht.Tool.Features.Init;
 
 namespace Specht.Tests.Init;
 
-/// <summary>The upstream selection and validation before any init write (0001-F4 B-014 to B-016, B-027, B-034).</summary>
+/// <summary>The upstream selection and validation before any init write (0001-F4 B-014 to B-016, B-027, B-034, B-041 to B-044).</summary>
 [Trait("Tier", "Unit")]
 public sealed class UpstreamInitWriterUnitTests
 {
-    public static TheoryData<bool, bool, bool, bool, bool> OfflineSelections => new()
+    public static TheoryData<bool, bool, bool, bool, bool, bool, bool> OfflineSelections => new()
     {
-        { false, true, true, false, false },
-        { false, false, true, false, false },
-        { false, true, false, false, true },
-        { true, false, false, false, true },
-        { true, false, true, false, true },
-        { true, true, true, true, true },
+        { false, true, true, false, false, false, false },
+        { false, false, true, false, false, false, false },
+        { false, true, false, false, true, false, false },
+        { true, false, false, false, true, false, false },
+        { true, false, true, false, true, false, false },
+        { true, true, true, true, true, false, false },
+        { true, false, false, false, true, true, false },
+        { true, true, false, true, true, true, false },
+        { true, false, true, false, true, true, true },
+        { true, true, true, true, true, true, true },
     };
 
     [Fact]
@@ -110,14 +114,14 @@ public sealed class UpstreamInitWriterUnitTests
     [Theory]
     [MemberData(nameof(OfflineSelections))]
     public async Task ARunWithoutWorkForTheSource_WhenSelected_ShouldAttemptNoNetworkCall(
-        bool source, bool schemas, bool templates, bool present, bool manifestPresent)
+        bool source, bool schemas, bool templates, bool present, bool manifestPresent, bool hashesTemplate, bool templatePresent)
     {
         // Given
         var fileSystem = new MockFileSystem();
         fileSystem.AddDirectory("repo");
         if (source)
         {
-            fileSystem.AddFile("repo/.specht/manifest.json", new MockFileData(Manifest()));
+            fileSystem.AddFile("repo/.specht/manifest.json", new MockFileData(Manifest(hashesTemplate)));
         }
         else if (manifestPresent)
         {
@@ -130,6 +134,11 @@ public sealed class UpstreamInitWriterUnitTests
             {
                 fileSystem.AddFile($"repo/.specht/schema/frontmatter/custom-{kind}.json", new MockFileData("local bytes"));
             }
+        }
+
+        if (templatePresent)
+        {
+            fileSystem.AddFile("repo/.specht/templates/feature.md", new MockFileData("local template"));
         }
 
         var requests = 0;
@@ -155,6 +164,89 @@ public sealed class UpstreamInitWriterUnitTests
             {
                 fileSystem.File.ReadAllText($"repo/.specht/schema/frontmatter/custom-{kind}.json").Should().Be("local bytes");
             }
+        }
+
+        if (templatePresent)
+        {
+            fileSystem.File.ReadAllText("repo/.specht/templates/feature.md").Should().Be("local template");
+        }
+    }
+
+    [Fact]
+    public async Task AnAbsentHashedTemplate_WhenTemplatesAreSelected_ShouldWriteTheFetchedBytesInPlaceOfTheEmbeddedCopy()
+    {
+        // Given
+        var fileSystem = new MockFileSystem();
+        fileSystem.AddDirectory("repo");
+        fileSystem.AddFile("repo/.specht/manifest.json", new MockFileData(Manifest(hashesTemplate: true)));
+        var addresses = new List<string>();
+        using var client = new HttpClient(new SyntheticHandler(request =>
+        {
+            addresses.Add(request.RequestUri!.AbsoluteUri);
+            return new HttpResponseMessage(HttpStatusCode.OK) { Content = new ByteArrayContent(TemplateContent) };
+        }));
+        InitWriter writer = new InitWriterFixture()
+            .WithFileSystem(fileSystem)
+            .WithShippingCopy(ShippingCopy)
+            .WithUpstreamSchemaFetcher(new UpstreamSchemaFetcher(client));
+
+        // When
+        var listing = await writer.Write("repo", schemas: false, templates: true, CancellationToken.None);
+
+        // Then
+        addresses.Should().Equal("https://schemas.example/specht/feature.md");
+        listing.Should().Equal(
+            (".specht/manifest.json", false),
+            (".specht/templates/feature.md", true),
+            (".specht/templates/lesson.md", true));
+        fileSystem.File.ReadAllBytes("repo/.specht/templates/feature.md").Should().Equal(TemplateContent);
+        fileSystem.File.ReadAllBytes("repo/.specht/templates/lesson.md").Should().Equal(ShippingCopy["templates/v0.1.0/lesson.md"]);
+        fileSystem.File.ReadAllText("repo/.specht/manifest.json").Should().Be(Manifest(hashesTemplate: true));
+    }
+
+    [Theory]
+    [InlineData("hash")]
+    [InlineData("unreachable")]
+    [InlineData("401")]
+    [InlineData("404")]
+    public async Task AnAbsentHashedTemplateTheSourceRefuses_WhenEveryPartIsSelected_ShouldWriteNoFile(string failure)
+    {
+        // Given
+        var fileSystem = new MockFileSystem();
+        fileSystem.AddDirectory("repo");
+        fileSystem.AddFile("repo/.specht/manifest.json", new MockFileData(Manifest(hashesTemplate: true)));
+        var before = fileSystem.AllFiles.ToDictionary(static path => path, fileSystem.File.ReadAllBytes);
+        var addresses = new List<string>();
+        using var client = new HttpClient(new SyntheticHandler(request =>
+        {
+            addresses.Add(request.RequestUri!.AbsoluteUri);
+            if (!request.RequestUri.AbsoluteUri.EndsWith("/feature.md", StringComparison.Ordinal))
+            {
+                return new HttpResponseMessage(HttpStatusCode.OK) { Content = new ByteArrayContent(Content) };
+            }
+
+            return failure switch
+            {
+                "hash" => new HttpResponseMessage(HttpStatusCode.OK) { Content = new ByteArrayContent(Content) },
+                "unreachable" => throw new HttpRequestException("Synthetic source is unreachable."),
+                _ => new HttpResponseMessage((HttpStatusCode)int.Parse(failure, System.Globalization.CultureInfo.InvariantCulture)),
+            };
+        }));
+        InitWriter writer = new InitWriterFixture()
+            .WithFileSystem(fileSystem)
+            .WithShippingCopy(ShippingCopy)
+            .WithUpstreamSchemaFetcher(new UpstreamSchemaFetcher(client));
+
+        // When
+        var write = () => writer.Write("repo", schemas: true, templates: true, CancellationToken.None);
+
+        // Then
+        (await write.Should().ThrowExactlyAsync<SpechtUpstreamSchemaException>()).Which.Message.Should().Contain("schemas.example");
+        addresses.Should().Contain("https://schemas.example/specht/feature.md");
+        fileSystem.AllFiles.Should().BeEquivalentTo(before.Keys);
+        foreach (var (path, bytes) in before)
+        {
+            fileSystem.File.ReadAllBytes(path).Should().Equal(bytes);
         }
     }
 
@@ -220,9 +312,23 @@ public sealed class UpstreamInitWriterUnitTests
         fileSystem.File.Exists(present).Should().BeFalse("a skipped file must not be recreated from an empty download buffer");
     }
 
-    private static string Manifest()
+    private static string Manifest(bool hashesTemplate = false)
     {
         var hash = "sha256:" + Convert.ToHexStringLower(SHA256.HashData(Content));
+        var source = new JsonObject
+        {
+            ["location"] = "https://schemas.example/specht/",
+            ["version"] = "2026.10",
+            ["hashes"] = new JsonObject { ["feature"] = hash, ["task"] = hash, ["epic"] = hash },
+        };
+        if (hashesTemplate)
+        {
+            source["templates"] = new JsonObject
+            {
+                ["feature.md"] = "sha256:" + Convert.ToHexStringLower(SHA256.HashData(TemplateContent)),
+            };
+        }
+
         return new JsonObject
         {
             ["identifiers"] = new JsonObject { ["feature"] = "^F[0-9]+$", ["epic"] = "^[0-9]{4}$" },
@@ -232,12 +338,7 @@ public sealed class UpstreamInitWriterUnitTests
                 ["task"] = "custom-task.json",
                 ["epic"] = "custom-epic.json",
             },
-            ["spechtSchema"] = new JsonObject
-            {
-                ["location"] = "https://schemas.example/specht/",
-                ["version"] = "2026.10",
-                ["hashes"] = new JsonObject { ["feature"] = hash, ["task"] = hash, ["epic"] = hash },
-            },
+            ["spechtSchema"] = source,
         }.ToJsonString();
     }
 
@@ -248,13 +349,13 @@ public sealed class UpstreamInitWriterUnitTests
     }
 
     private static readonly byte[] Content = [0xEF, 0xBB, 0xBF, 0x7B, 0x0D, 0x0A, 0x7D];
+    private static readonly byte[] TemplateContent = [0xEF, 0xBB, 0xBF, 0x23, 0x20, 0x46, 0x0D, 0x0A];
     private static readonly Dictionary<string, byte[]> ShippingCopy = new()
     {
         ["manifest/v0.1.0/manifest.json"] = "{}"u8.ToArray(),
         ["schema/v0.1.0/frontmatter/feature.schema.json"] = "{}"u8.ToArray(),
         ["schema/v0.1.0/frontmatter/task.schema.json"] = "{}"u8.ToArray(),
         ["templates/v0.1.0/feature.md"] = "# Synthetic template"u8.ToArray(),
+        ["templates/v0.1.0/lesson.md"] = "# Synthetic lesson template"u8.ToArray(),
     };
-
-
 }
