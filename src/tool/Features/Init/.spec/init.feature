@@ -491,7 +491,7 @@ Feature: init
       | asks for a credential               |
       | does not serve the feature template |
 
-  @B-044 @boundary
+  @B-034 @B-044 @boundary
   Scenario: Init keeps a present template without fetching it
     Given a root whose manifest records an upstream schema source whose record holds a content hash for the feature template
     And the feature template is present under the root
