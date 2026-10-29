@@ -21,9 +21,10 @@ claims:
   - B-134
   - B-136
   - B-137
+  - B-141
 
 created: "2026-10-24"
-updated: "2026-10-28"
+updated: "2026-10-29"
 closed: null
 
 summary: |
@@ -38,8 +39,8 @@ summary: |
 
   Waits on 0093 for the fetch and the hash check, which 0045's rewrite
   sits under, and on 0290 for the hashes and the address. A named
-  template is never written (B-135) and is 0131's. Whether an absent
-  template is fetched is OQ-51, open. Risk 3: the network path exists
+  template is never written (B-135) and is 0131's. An absent template
+  stays absent (B-141; OQ-51, resolved 2026-10-29). Risk 3: the network path exists
   when this starts, and the rewrite now has three owners for a template
   - the consumer, the source and the pinned version.
 
@@ -50,6 +51,7 @@ acceptance_criteria:
   - "B-134 — every fetched schema and unnamed hashed template matches: no network call"
   - "B-136 — a local copy matching the hash, differing from the pinned version's: left as it was"
   - "B-137 — no credential sent with the fetch"
+  - "B-141 — a hashed template absent from the root: not created"
   - "§ 9 carries a row naming a test for each id above."
 
 decisions:
@@ -63,12 +65,16 @@ decisions:
     depending on 0045 directly: 0093 does. Rejected: the template claims
     added to 0093, which would hold its claims behind 0290 and schema
     `0.3.0`. The cut is spec-author's, not an owner ruling.
+  - |
+    2026-10-29, spec-author, recording the repository owner's rulings
+    (decision 0018): OQ-51 resolved, reading (a), and B-141 added here;
+    OQ-44 and OQ-45 resolved for `upgrade`, so B-132 and B-133 rest on
+    the rulings, not on proposed defaults. The cut is spec-author's.
 
 out_of_scope:
   - "The schemas' fetch — 0093."
   - "A template the manifest names as the consumer's — 0131 (B-135); § 5 #30."
   - "The record, its rejections and the address — 0290."
-  - "Creating an absent template — OQ-51, open; no claim yet."
   - "Moving the upstream version — C-10."
   - "A credential — § 5 #20."
   - "init's template fetch — 0292."

@@ -1,7 +1,5 @@
 using System.IO.Abstractions;
-using System.Net.Http;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.DependencyInjection.Extensions;
 using Specht.Manifest;
 using Spectre.Console.Cli;
 
@@ -15,15 +13,7 @@ public static class InitRegistration
     /// <implements epic="0001" feature="F4" claim="B-019" />
     public static IServiceCollection AddInit(this IServiceCollection services)
     {
-        services.TryAddSingleton(static _ => new HttpClient(new HttpClientHandler
-        {
-            AllowAutoRedirect = false,
-            UseCookies = false,
-            UseDefaultCredentials = false,
-            Credentials = null,
-            DefaultProxyCredentials = null,
-        }));
-        services.AddSingleton<UpstreamSchemaFetcher>();
+        services.AddUpstreamSchemaFetch();
         services.AddSingleton(static provider => new InitWriter(
             InitWriter.ShippingCopy(typeof(InitWriter).Assembly),
             provider.GetRequiredService<IFileSystem>(),

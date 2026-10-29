@@ -73,6 +73,19 @@ Feature: Schema versioning
     And no file was rewritten
     And the exit code is 0
 
+  @B-139 @boundary
+  Scenario Outline: Upgrade does not create a file the root lacks
+    Given the tool ships schema versions 0.1.0 and 0.2.0
+    And the root is pinned to version 0.2.0 with the embedded source and no upstream schema source
+    And the root has no <file>
+    When upgrade runs against it
+    Then the root still has no <file>
+
+    Examples:
+      | file                       |
+      | feature frontmatter schema |
+      | feature template           |
+
   @B-007 @boundary
   Scenario: Upgrade never touches a document
     Given the tool ships schema versions 0.1.0 and 0.2.0
@@ -268,6 +281,17 @@ Feature: Schema versioning
     And the standard error names the source
     And the exit code is 3
 
+  @B-027 @boundary
+  Scenario: Upgrade writes nothing when one fetched schema matches and another does not
+    Given the manifest records an upstream schema source with its version and content hash
+    And the root's local copies of two schemas do not match their hashes
+    And the source serves one of those schemas matching its recorded hash and the other not
+    And a snapshot of every file under the root
+    When upgrade runs
+    Then no file under the root has changed
+    And the standard error names the source
+    And the exit code is 3
+
   @B-028
   Scenario: An upstream schema does not change the rule vocabulary
     Given the manifest pins version 0.1.0 and records an upstream schema source
@@ -337,6 +361,30 @@ Feature: Schema versioning
     Then no file under the root has changed
     And the standard error names the source
     And the exit code is 3
+
+  @B-035
+  Scenario Outline: Upgrade refuses an upstream source that will not serve a schema
+    Given the manifest records an upstream schema source with its version and content hash
+    And the root's local copy does not match that hash
+    And the source <refusal>
+    And a snapshot of every file under the root
+    When upgrade runs
+    Then no file under the root has changed
+    And the standard error names the source
+    And the exit code is 3
+
+    Examples:
+      | refusal                           |
+      | asks for a credential             |
+      | does not serve the feature schema |
+
+  @B-140 @boundary
+  Scenario: Upgrade leaves a recorded schema the root lacks absent
+    Given the manifest records an upstream schema source with its version and content hash
+    And the root has no copy of the feature schema
+    And the source serves a feature schema matching that hash
+    When upgrade runs
+    Then the root still has no copy of the feature schema
 
   @B-036
   Scenario: An upstream source with the embedded source selected is rejected
@@ -1283,3 +1331,12 @@ Feature: Schema versioning
     And the machine holds a token the source would accept
     When upgrade runs
     Then nothing the tool asked the source for carried a credential
+
+  @B-141 @boundary
+  Scenario: Upgrade leaves a hashed template the root lacks absent
+    Given the manifest records an upstream schema source whose record holds a content hash for the feature template
+    And its manifest names no template as the consumer's
+    And the root has no feature template
+    And the source serves a feature template matching that hash
+    When upgrade runs
+    Then the root still has no feature template

@@ -2,7 +2,7 @@ id: "0093"
 type: task
 title: Fetch and verify a recorded upstream schema source on upgrade
 
-status: ready-for-implementation
+status: done
 
 risk: 3
 
@@ -23,10 +23,12 @@ claims:
   - B-067
   - B-082
   - B-083
+  - B-139
+  - B-140
 
 created: "2026-10-08"
-updated: "2026-10-24"
-closed: null
+updated: "2026-10-29"
+closed: "2026-10-29"
 
 summary: |
   Upgrade's fetch: on a hash mismatch, write only content matching the
@@ -38,13 +40,15 @@ summary: |
 
 acceptance_criteria:
   - "B-026 — local hash differs, fetched content matches: written"
-  - "B-027 — fetched content mismatches the hash: stderr, nothing written, exit 3"
+  - "B-027 — any fetched schema mismatches its hash: stderr, nothing written, the matching ones included, exit 3"
   - "B-033 — local copy matches the hash: no network call"
   - "B-034 — the recorded upstream version and hash unchanged"
-  - "B-035 — source unreachable when a fetch is needed: stderr, nothing written, exit 3"
+  - "B-035 — source unreachable, asks for a credential, or lacks the file when a fetch is needed: stderr, nothing written, exit 3"
   - "B-067 — no upstream source recorded: no network call"
   - "B-082 — each fetched schema written under the file name the manifest gives its kind"
   - "B-083 — no credential sent with the fetch"
+  - "B-139 — no upstream source recorded, a schema or template absent: not created"
+  - "B-140 — upstream source recorded, a fetched kind's schema absent: not created"
   - "§ 9 carries a row naming a test for each id above."
 
 decisions:
@@ -84,9 +88,15 @@ decisions:
     stay compared to the pinned version's until the template fetch
     (B-130 to B-137) lands. ADR-0013 and ADR-0014 hold: existing
     stores, the handler as the test seam, no mediator.
+  - |
+    2026-10-29, spec-author, recording the repository owner's rulings
+    (decision 0018): OQ-44 and OQ-45 resolved for `upgrade` on the
+    defaults the design took, and OQ-51 resolved, reading (a). B-027 and
+    B-035 amended; B-139 and B-140 added. B-139's mechanism is 0045's
+    and built; this item owes its scenario and § 9 row. The cut is
+    spec-author's.
 
 out_of_scope:
   - "Moving the upstream version — C-10."
   - "A credential for a source that asks for one — C-15; OQ-41, open."
-  - "One file of several failing its hash, and a source that refuses — OQ-44 and OQ-45, open; no claim yet."
   - "init's fetch — 0095."

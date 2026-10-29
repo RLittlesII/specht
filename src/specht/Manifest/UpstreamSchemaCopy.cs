@@ -1,4 +1,3 @@
-using System.Security.Cryptography;
 using System.Text;
 
 namespace Specht.Manifest;
@@ -25,7 +24,7 @@ public sealed class UpstreamSchemaCopy
             {
                 faults.Add($"'{path}' is absent; run specht init to fetch it");
             }
-            else if ("sha256:" + Convert.ToHexStringLower(SHA256.HashData(bytes)) != file.Hash)
+            else if (!file.Matches(bytes))
             {
                 faults.Add($"'{path}' does not match its recorded SHA-256 hash");
             }

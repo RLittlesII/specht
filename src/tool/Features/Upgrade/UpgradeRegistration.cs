@@ -9,11 +9,12 @@ namespace Specht.Tool.Features.Upgrade;
 /// <implements epic="0001" feature="F7" claim="B-005" />
 public static class UpgradeRegistration
 {
-    /// <summary>Adds upgrade over the engine's manifest services and the embedded shipped files.</summary>
+    /// <summary>Adds upgrade over the engine's manifest services, the embedded shipped files and the upstream fetch.</summary>
     /// <implements epic="0001" feature="F7" claim="B-005" />
     public static IServiceCollection AddUpgrade(this IServiceCollection services)
     {
         services.TryAddSingleton(static _ => new ShippedFiles(InitWriter.ShippingCopy(typeof(ShippedFiles).Assembly)));
+        services.AddUpstreamSchemaFetch();
         services.AddSingleton<UpgradeWriter>();
         return services;
     }

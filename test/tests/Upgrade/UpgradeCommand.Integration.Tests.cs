@@ -1,4 +1,5 @@
 using System.IO.Abstractions.TestingHelpers;
+using System.Net;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
@@ -16,7 +17,9 @@ namespace Specht.Tests.Upgrade;
 /// consumer's settings kept, a root already at its pin prints that it is current and rewrites nothing, only the manifest,
 /// the frontmatter schema folder and the templates folder may change, a manifest that lacks no key is never rewritten, a
 /// rewrite prints the pinned version and each rewritten file, and a missing root or manifest exits <c>2</c> and an invalid
-/// manifest <c>3</c>, writing nothing and naming no absolute path.
+/// manifest <c>3</c>, writing nothing and naming no absolute path. Under a recorded upstream schema source whose fetch the
+/// synthetic source refuses - content failing its hash, an unreachable source, or a 401 or 404 - the command names the
+/// source on standard error, writes nothing and exits <c>3</c> (B-027, B-035).
 /// </summary>
 [Trait("Tier", "Integration")]
 public sealed class UpgradeCommandIntegrationTests
@@ -341,6 +344,63 @@ public sealed class UpgradeCommandIntegrationTests
         errors.ToString().Should().NotContain(root);
     }
 
+    [Theory]
+    [ClassData(typeof(UpstreamFetchRefusals))]
+    public void ARefusedFetch_WhenUpgraded_ShouldNameTheSourceOnStandardErrorWriteNothingAndExitThree(
+        string manifest, string served, string refused, string failure)
+    {
+        // Given
+        var root = Path.GetFullPath("repo");
+        var content = JsonNode.Parse(served)!.AsObject()
+            .ToDictionary(static pair => pair.Key, static pair => Encoding.UTF8.GetBytes(pair.Value!.GetValue<string>()), StringComparer.Ordinal);
+        var stamp = new DateTime(2026, 1, 2, 3, 4, 5, DateTimeKind.Utc);
+        var fileSystem = new MockFileSystem();
+        fileSystem.AddFile(Path.Combine(root, ".specht/manifest.json"), new MockFileData(manifest) { LastWriteTime = stamp });
+        foreach (var name in content.Keys)
+        {
+            fileSystem.AddFile(
+                Path.Combine(root, ".specht/schema/frontmatter", name), new MockFileData("{\"title\":\"A synthetic local copy\"}\n") { LastWriteTime = stamp });
+        }
+
+        fileSystem.AddFile(
+            Path.Combine(root, ".specht/templates/feature.md"), new MockFileData("# A synthetic template with local edits\n") { LastWriteTime = stamp });
+        var before = fileSystem.AllFiles.ToDictionary(
+            static path => path, path => (fileSystem.File.ReadAllBytes(path), fileSystem.File.GetLastWriteTimeUtc(path)));
+        using var source = new HttpClient(new SyntheticSource(request =>
+        {
+            var name = request.RequestUri!.Segments[^1];
+            return name != refused
+                ? new HttpResponseMessage(HttpStatusCode.OK) { Content = new ByteArrayContent(content[name]) }
+                : failure switch
+                {
+                    "mismatch" => new HttpResponseMessage(HttpStatusCode.OK) { Content = new ByteArrayContent("{}"u8.ToArray()) },
+                    "unreachable" => throw new HttpRequestException("Synthetic source is unreachable."),
+                    _ => new HttpResponseMessage((HttpStatusCode)int.Parse(failure, System.Globalization.CultureInfo.InvariantCulture)),
+                };
+        }));
+        var errors = new StringWriter();
+        var app = UpgradeServices.App(fileSystem, new TestConsole(), errors, source);
+
+        // When
+        var result = app.Run("upgrade", "--root", "repo");
+
+        // Then
+        result.ExitCode.Should().Be(3, $"{refused} {failure}: {errors}{result.Output}");
+        errors.ToString().Should().Contain("https://schemas.example/specht/").And.NotContain(root);
+        fileSystem.AllFiles.Should().BeEquivalentTo(before.Keys);
+        foreach (var (path, (bytes, written)) in before)
+        {
+            fileSystem.File.ReadAllBytes(path).Should().Equal(bytes, path);
+            fileSystem.File.GetLastWriteTimeUtc(path).Should().Be(written, path);
+        }
+    }
+
     private static SemanticVersion Version(string text) =>
         SemanticVersion.TryParse(text, out var version) ? version : throw new FormatException(text);
+
+    private sealed class SyntheticSource(Func<HttpRequestMessage, HttpResponseMessage> respond) : HttpMessageHandler
+    {
+        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) =>
+            Task.FromResult(respond(request));
+    }
 }

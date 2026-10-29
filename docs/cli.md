@@ -455,6 +455,13 @@ never changes a pin, a file the pinned version does not ship, or anything
 outside `.specht/manifest.json`, `.specht/schema/frontmatter/` and
 `.specht/templates/`.
 
+When the manifest records `spechtSchema`, each present schema whose SHA-256
+differs from its recorded hash is fetched from that source and verified, then
+written under its `frontmatterSchemas` name. A matching schema is not fetched,
+and an absent one stays absent. A failed fetch or hash check writes nothing.
+The record itself is never changed. Templates still come from the pinned
+version.
+
 | Option         | Value   | Default               | Does                                          |
 | -------------- | ------- | --------------------- | --------------------------------------------- |
 | `--root <DIR>` | `<DIR>` | The working directory | Names the repository root to upgrade.         |
@@ -467,4 +474,6 @@ rewritten file; `.specht/manifest.json` is listed only when a key was added, and
 then first. No diff.
 
 **Exit codes.** `0` on success; `2` for a missing root or manifest; `3` for an
-invalid manifest or an unshipped pin. Failures explain the problem on stderr.
+invalid manifest, an unshipped pin, or a recorded source that cannot be
+reached, refuses, or serves content that fails its hash. Failures explain the
+problem on stderr; a source failure names the source's address.
