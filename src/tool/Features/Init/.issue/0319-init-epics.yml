@@ -1,0 +1,78 @@
+id: "0319"
+type: task
+title: Init writes the epic tier only with --epics or beside a manifest that declares it
+
+status: done
+
+risk: 3
+
+parent: "0050"
+children: []
+
+depends_on: ["0186", "0178"] # extends 0186's part selection and the writer it built; generalises 0178's removal of the epic grammar from the upstream-source path to every manifest init writes
+spikes: []
+
+spec: src/tool/Features/Init/.spec/README.md
+
+claims:
+  - B-002
+  - B-003
+  - B-018
+  - B-020
+  - B-021
+  - B-022
+  - B-023
+
+created: "2026-10-29"
+updated: "2026-10-29"
+closed: "2026-10-29"
+
+summary: |
+  `specht init --epics`, on the repository owner's ruling of 2026-10-29.
+  Into a root with no manifest, only `--epics` puts the epic tier in the
+  run (C-5): with it, the manifest keeps the epic grammar and `--schemas`
+  writes the epic frontmatter schema; without it, the written manifest
+  declares no epic grammar and its task grammar names no `epic` group.
+  Beside an existing manifest, that manifest's epic grammar alone decides
+  the epic frontmatter schema, whatever `--epics` says (C-6). Today every
+  manifest init writes carries the shipped epic grammar, which 0178 strips
+  only on the upstream-source path, and `--schemas` beside any existing
+  manifest writes the epic schema.
+
+  Changes only the files `init` writes. The engine still fills the epic
+  grammar from the defaults until `0001-F5` OQ-18 is answered, so a tree
+  initialised without `--epics` is checked with the default grammar
+  until then. The same build completes B-002's `--epics` boundary and
+  B-003's exception for a manifest written without `--epics`, whose
+  § 9 rows were `Partial` for want of it; this item carries both.
+
+  Risk 3: it changes the bytes of every manifest a bare `init` writes,
+  and the engine does not yet read the absence it writes.
+
+acceptance_criteria:
+  - "B-002 — the `--epics` boundary: an existing manifest left byte-for-byte"
+  - "B-003 — the exception: a manifest written without `--epics`"
+  - "B-018 — `--all --epics` into a bare root: manifest, three schemas, four templates"
+  - "B-020 — bare root, any part option with or without `--epics`: exit 0"
+  - "B-021 — manifest written without `--epics`: no epic grammar"
+  - "B-022 — manifest written without `--epics`: no named `epic` group in the task grammar"
+  - "B-023 — `--schemas`, with or without `--epics`, beside a manifest declaring no epic grammar: no epic schema"
+  - "`docs/cli.md` gains one line for `--epics`."
+  - "§ 9 carries a row naming a test for each id above."
+
+decisions:
+  - |
+    2026-10-29, the repository owner's ruling, relayed by the
+    coordinating session: build B-018 and B-020 to B-023 as one item
+    under 0050 - the `--epics` flag; without it, a written manifest that
+    declares no epic grammar; beside an existing manifest, the epic
+    schema following that manifest's grammar; their tests; one
+    `docs/cli.md` line. These claims no longer wait on `0001-F5` OQ-18,
+    which stays open and the engine's. Rejected: holding them until
+    OQ-18 is answered, which kept 0050 from done for a change to the
+    files `init` writes alone.
+
+out_of_scope:
+  - "The engine's epic opt-in - `0001-F5` OQ-18, open; `0001-F5` B-024 to B-035, B-042. No item."
+  - "Adding the epic grammar to, or removing it from, an existing manifest - § 5 #7."
+  - "The epic schema on `--epics` beside a manifest declaring no epic grammar - § 5 #8."

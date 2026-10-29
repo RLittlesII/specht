@@ -2,13 +2,13 @@ id: "0050"
 type: feature
 title: init
 
-status: ready-for-architecture
+status: done
 
 value: 4
 risk: 3
 
 parent: "0001"
-children: ["0051", "0052", "0053", "0054", "0095", "0096", "0175", "0178", "0186", "0292"]
+children: ["0051", "0052", "0053", "0054", "0095", "0096", "0175", "0178", "0186", "0292", "0319"]
 
 depends_on: []
 spikes: []
@@ -33,7 +33,12 @@ claims:
   - B-015
   - B-016
   - B-017
+  - B-018
   - B-019
+  - B-020
+  - B-021
+  - B-022
+  - B-023
   - B-027
   - B-029
   - B-030
@@ -47,8 +52,8 @@ claims:
   - B-044
 
 created: "2026-10-08"
-updated: "2026-10-24"
-closed: null
+updated: "2026-10-29"
+closed: "2026-10-29"
 
 summary: |
   As the maintainer adopting the tool, I want `specht init` to write the
@@ -77,8 +82,8 @@ summary: |
 
 acceptance_criteria:
   - "B-001 — bare root: the eight files of the newest version; exit 0 (0052)"
-  - "B-002 — an existing file left byte-for-byte (0054)"
-  - "B-003 — written file equals the embedded copy (0052)"
+  - "B-002 — an existing file left byte-for-byte (0054); its `--epics` boundary (0319)"
+  - "B-003 — written file equals the embedded copy (0052); the manifest written without `--epics` (0319)"
   - "B-004 — embedded newest equals this repository's live copy (0051)"
   - "B-005 — written schema `$id` names this repository and the version (0051)"
   - "B-006 — stdout lists each file as written or skipped (0052)"
@@ -93,7 +98,12 @@ acceptance_criteria:
   - "B-015 — upstream content mismatches the hash: exit 3 (0095)"
   - "B-016 — upstream source unreachable: exit 3 (0095)"
   - "B-017 — a manifest the check rejects: nothing written, exit 3 (0096)"
+  - "B-018 — `--all --epics` into a bare root: manifest, three schemas, four templates (0319)"
   - "B-019 — `--all` without `--epics` into a bare root: no epic frontmatter schema (0186)"
+  - "B-020 — bare root, any part option with or without `--epics`: exit 0 (0319)"
+  - "B-021 — manifest written without `--epics`: no epic grammar (0319)"
+  - "B-022 — manifest written without `--epics`: no named `epic` group in the task grammar (0319)"
+  - "B-023 — `--schemas` beside a manifest declaring no epic grammar: no epic schema (0319)"
   - "B-027 — nothing asks for a fetch: no network call (0095)"
   - "B-029 — bare init writes only the manifest (0186)"
   - "B-030 — `--schemas` adds the frontmatter schemas (0186)"
@@ -138,6 +148,12 @@ decisions:
     template fetch, B-041 to B-044 and the amended B-034, is 0292, under
     this item and waiting on 0001-F7's 0290 for the record. 0095 stays
     done. OQ-10 is the repository owner's, open, and no item answers it.
+  - |
+    2026-10-29, spec-author's cut, on the repository owner's ruling of
+    the same day: `--epics`, B-018 and B-020 to B-023, is 0319, under
+    this item and waiting on 0186 and 0178. They no longer wait on
+    `0001-F5` OQ-18, which stays open; 0319 changes only the files init
+    writes. Rejected: holding them for OQ-18.
 
 out_of_scope:
   - "Everything in § 5 of the spec."
