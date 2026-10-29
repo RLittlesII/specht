@@ -28,6 +28,8 @@ public sealed class UpgradeCommand(IAnsiConsole console, UpgradeWriter writer, T
     /// <implements epic="0001" feature="F7" claim="B-019" />
     /// <implements epic="0001" feature="F7" claim="B-020" />
     /// <implements epic="0001" feature="F7" claim="B-059" />
+    /// <implements epic="0001" feature="F7" claim="B-027" />
+    /// <implements epic="0001" feature="F7" claim="B-035" />
     public override async Task<int> ExecuteAsync(CommandContext context, Settings settings, CancellationToken cancellationToken)
     {
         try
@@ -55,7 +57,7 @@ public sealed class UpgradeCommand(IAnsiConsole console, UpgradeWriter writer, T
 
             return ExitCodes.MissingInput;
         }
-        catch (Exception exception) when (exception is SpechtManifestException or SpechtManifestUnreadableException)
+        catch (Exception exception) when (exception is SpechtManifestException or SpechtManifestUnreadableException or SpechtUpstreamSchemaException)
         {
             await (errorWriter ?? Console.Error).WriteLineAsync($"specht: {exception.Message}");
 

@@ -1,4 +1,5 @@
 using System.IO.Abstractions.TestingHelpers;
+using System.Net;
 using System.Text;
 using System.Text.Json.Nodes;
 using AwesomeAssertions;
@@ -10,9 +11,12 @@ namespace Specht.Tests.Upgrade;
 
 /// <summary>
 /// The comparison and rewrite beneath <c>specht upgrade</c> (<c>0001-F7</c> B-005, B-006, B-007, B-016, B-017, B-018, B-019,
-/// B-020, B-029, B-052, B-059, B-138; C-2): the manifest is planned like any file, its planned bytes those with the pinned
+/// B-020, B-029, B-052, B-059, B-138, B-139; C-2): the manifest is planned like any file, its planned bytes those with the pinned
 /// version's missing keys added, and a missing root or manifest, or a manifest the loader rejects, throws before any file is
-/// written.
+/// written. Under a recorded upstream schema source (B-026, B-027, B-033, B-034, B-035, B-067, B-082, B-083, B-140; C-9, C-10,
+/// C-15) the writer resolves with the production fetcher over a synthetic message handler: a differing copy is fetched and
+/// written under its kind's file name, a refused fetch writes nothing, a matching copy or an absent one asks for nothing, the
+/// record is kept, and no request carries a credential.
 /// </summary>
 [Trait("Tier", "Unit")]
 public sealed class UpgradeWriterUnitTests
@@ -86,10 +90,11 @@ public sealed class UpgradeWriterUnitTests
 
     [Theory]
     [ClassData(typeof(UpgradeRootSources))]
-    public async Task HandEditedSchemasUnderADiskOrUpstreamSource_WhenUpgraded_ShouldLeaveThemByteIdenticalAndStillRewriteTheTemplates(string manifest)
+    public async Task HandEditedSchemasUnderADiskOrUpstreamSource_WhenUpgraded_ShouldLeaveThemByteIdenticalAndStillRewriteTheTemplates(
+        string manifest, string schema)
     {
         // Given
-        var edited = Encoding.UTF8.GetBytes("{\"title\":\"A synthetic consumer schema\"}\r\n");
+        var edited = Encoding.UTF8.GetBytes(schema);
         var shipped = UpgradeServices.Shipped().At(new SemanticVersion(0, 2, 0))
             .Where(static file => file.Relative != ".specht/manifest.json").ToList();
         var fileSystem = new MockFileSystem();
@@ -299,5 +304,211 @@ public sealed class UpgradeWriterUnitTests
             fileSystem.File.ReadAllBytes(path).Should().Equal(bytes);
             fileSystem.File.GetLastWriteTimeUtc(path).Should().Be(written, path);
         }
+    }
+
+    [Theory]
+    [ClassData(typeof(UpstreamFetchedRoots))]
+    public async Task DifferingCopiesOfARecordedSource_WhenUpgraded_ShouldWriteEachFetchedSchemaUnderTheFileNameTheManifestGivesItsKind(
+        string manifest, string served)
+    {
+        // Given
+        var content = JsonNode.Parse(served)!.AsObject()
+            .ToDictionary(static pair => pair.Key, static pair => Encoding.UTF8.GetBytes(pair.Value!.GetValue<string>()), StringComparer.Ordinal);
+        var fileSystem = new MockFileSystem();
+        fileSystem.AddFile("repo/.specht/manifest.json", new MockFileData(manifest));
+        foreach (var name in content.Keys)
+        {
+            fileSystem.AddFile("repo/.specht/schema/frontmatter/" + name, new MockFileData("{\"title\":\"A synthetic local copy\"}\n"));
+        }
+
+        using var source = new HttpClient(new SyntheticSource(request =>
+            new HttpResponseMessage(HttpStatusCode.OK) { Content = new ByteArrayContent(content[request.RequestUri!.Segments[^1]]) }));
+
+        // When
+        await UpgradeServices.Writer(fileSystem, source).Upgrade("repo", CancellationToken.None);
+
+        // Then
+        fileSystem.Directory.GetFiles("repo/.specht/schema/frontmatter").Select(fileSystem.Path.GetFileName)
+            .Should().BeEquivalentTo(content.Keys);
+        foreach (var (name, bytes) in content)
+        {
+            fileSystem.File.ReadAllBytes("repo/.specht/schema/frontmatter/" + name).Should().Equal(bytes, name);
+        }
+    }
+
+    [Theory]
+    [ClassData(typeof(UpstreamFetchRefusals))]
+    public async Task ARefusedFetch_WhenUpgraded_ShouldThrowNamingTheSourceAndWriteNothing(string manifest, string served, string refused, string failure)
+    {
+        // Given
+        var content = JsonNode.Parse(served)!.AsObject()
+            .ToDictionary(static pair => pair.Key, static pair => Encoding.UTF8.GetBytes(pair.Value!.GetValue<string>()), StringComparer.Ordinal);
+        var stamp = new DateTime(2026, 1, 2, 3, 4, 5, DateTimeKind.Utc);
+        var fileSystem = new MockFileSystem();
+        fileSystem.AddFile("repo/.specht/manifest.json", new MockFileData(manifest) { LastWriteTime = stamp });
+        foreach (var name in content.Keys)
+        {
+            fileSystem.AddFile(
+                "repo/.specht/schema/frontmatter/" + name, new MockFileData("{\"title\":\"A synthetic local copy\"}\n") { LastWriteTime = stamp });
+        }
+
+        fileSystem.AddFile("repo/.specht/templates/feature.md", new MockFileData("# A synthetic template with local edits\n") { LastWriteTime = stamp });
+        var before = fileSystem.AllFiles.ToDictionary(
+            static path => path, path => (fileSystem.File.ReadAllBytes(path), fileSystem.File.GetLastWriteTimeUtc(path)));
+        using var source = new HttpClient(new SyntheticSource(request =>
+        {
+            var name = request.RequestUri!.Segments[^1];
+            return name != refused
+                ? new HttpResponseMessage(HttpStatusCode.OK) { Content = new ByteArrayContent(content[name]) }
+                : failure switch
+                {
+                    "mismatch" => new HttpResponseMessage(HttpStatusCode.OK) { Content = new ByteArrayContent("{}"u8.ToArray()) },
+                    "unreachable" => throw new HttpRequestException("Synthetic source is unreachable."),
+                    _ => new HttpResponseMessage((HttpStatusCode)int.Parse(failure, System.Globalization.CultureInfo.InvariantCulture)),
+                };
+        }));
+
+        // When
+        var upgrade = () => UpgradeServices.Writer(fileSystem, source).Upgrade("repo", CancellationToken.None);
+
+        // Then
+        (await upgrade.Should().ThrowExactlyAsync<SpechtUpstreamSchemaException>()).Which.Message.Should().Contain("https://schemas.example/specht/");
+        fileSystem.AllFiles.Should().BeEquivalentTo(before.Keys);
+        foreach (var (path, (bytes, written)) in before)
+        {
+            fileSystem.File.ReadAllBytes(path).Should().Equal(bytes, path);
+            fileSystem.File.GetLastWriteTimeUtc(path).Should().Be(written, path);
+        }
+    }
+
+    [Theory]
+    [ClassData(typeof(UpgradeOfflineManifests))]
+    public async Task ARootWithNothingToFetch_WhenUpgraded_ShouldSendNoRequest(string manifest)
+    {
+        // Given
+        var fileSystem = new MockFileSystem();
+        fileSystem.AddFile("repo/.specht/manifest.json", new MockFileData(manifest));
+        foreach (var file in UpgradeServices.Shipped().At(new SemanticVersion(0, 2, 0)).Where(static file => file.Relative != ".specht/manifest.json"))
+        {
+            fileSystem.AddFile("repo/" + file.Relative, new MockFileData(file.Bytes));
+        }
+
+        var requests = new List<Uri>();
+        using var source = new HttpClient(new SyntheticSource(request =>
+        {
+            requests.Add(request.RequestUri!);
+            return new HttpResponseMessage(HttpStatusCode.ServiceUnavailable);
+        }));
+
+        // When
+        await UpgradeServices.Writer(fileSystem, source).Upgrade("repo", CancellationToken.None);
+
+        // Then
+        requests.Should().BeEmpty();
+    }
+
+    [Theory]
+    [ClassData(typeof(UpstreamFetchedRoots))]
+    public async Task ARecordedSourceAndAManifestLackingAKey_WhenUpgraded_ShouldKeepTheRecordedVersionAndHashes(string manifest, string served)
+    {
+        // Given
+        var content = JsonNode.Parse(served)!.AsObject()
+            .ToDictionary(static pair => pair.Key, static pair => Encoding.UTF8.GetBytes(pair.Value!.GetValue<string>()), StringComparer.Ordinal);
+        var lacking = JsonNode.Parse(manifest)!.AsObject();
+        lacking.Remove("claim").Should().BeTrue();
+        var fileSystem = new MockFileSystem();
+        fileSystem.AddFile("repo/.specht/manifest.json", new MockFileData(lacking.ToJsonString()));
+        foreach (var name in content.Keys)
+        {
+            fileSystem.AddFile("repo/.specht/schema/frontmatter/" + name, new MockFileData("{\"title\":\"A synthetic local copy\"}\n"));
+        }
+
+        using var source = new HttpClient(new SyntheticSource(request =>
+            new HttpResponseMessage(HttpStatusCode.OK) { Content = new ByteArrayContent(content[request.RequestUri!.Segments[^1]]) }));
+
+        // When
+        await UpgradeServices.Writer(fileSystem, source).Upgrade("repo", CancellationToken.None);
+
+        // Then
+        var written = JsonNode.Parse(fileSystem.File.ReadAllBytes("repo/.specht/manifest.json"))!.AsObject();
+        JsonNode.DeepEquals(written["spechtSchema"], lacking["spechtSchema"]).Should().BeTrue();
+    }
+
+    [Theory]
+    [ClassData(typeof(UpstreamFetchedRoots))]
+    public async Task ARecordedSourceWithUserInformationAndATokenOnTheMachine_WhenUpgraded_ShouldSendNoCredential(string manifest, string served)
+    {
+        // Given
+        var content = JsonNode.Parse(served)!.AsObject()
+            .ToDictionary(static pair => pair.Key, static pair => Encoding.UTF8.GetBytes(pair.Value!.GetValue<string>()), StringComparer.Ordinal);
+        var fileSystem = new MockFileSystem();
+        fileSystem.AddFile("repo/.specht/manifest.json", new MockFileData(manifest));
+        foreach (var name in content.Keys)
+        {
+            fileSystem.AddFile("repo/.specht/schema/frontmatter/" + name, new MockFileData("{\"title\":\"A synthetic local copy\"}\n"));
+        }
+
+        var requests = new List<(Uri Address, string Headers)>();
+        using var source = new HttpClient(new SyntheticSource(request =>
+        {
+            requests.Add((request.RequestUri!, request.Headers.ToString()));
+            return new HttpResponseMessage(HttpStatusCode.OK) { Content = new ByteArrayContent(content[request.RequestUri!.Segments[^1]]) };
+        }));
+        var token = Environment.GetEnvironmentVariable("SPECHT_SCHEMA_TOKEN");
+        Environment.SetEnvironmentVariable("SPECHT_SCHEMA_TOKEN", "synthetic-machine-token");
+
+        // When
+        try
+        {
+            await UpgradeServices.Writer(fileSystem, source).Upgrade("repo", CancellationToken.None);
+        }
+        finally
+        {
+            Environment.SetEnvironmentVariable("SPECHT_SCHEMA_TOKEN", token);
+        }
+
+        // Then
+        requests.Should().NotBeEmpty();
+        requests.Should().AllSatisfy(static request =>
+        {
+            request.Address.UserInfo.Should().BeEmpty();
+            request.Headers.Should().NotContain("Authorization").And.NotContain("synthetic-machine-token").And.NotContain("secret");
+        });
+    }
+
+    [Theory]
+    [ClassData(typeof(UpstreamFetchedRoots))]
+    public async Task ARecordedKindWhoseCopyIsAbsent_WhenUpgraded_ShouldNotCreateIt(string manifest, string served)
+    {
+        // Given
+        var content = JsonNode.Parse(served)!.AsObject()
+            .ToDictionary(static pair => pair.Key, static pair => Encoding.UTF8.GetBytes(pair.Value!.GetValue<string>()), StringComparer.Ordinal);
+        var absent = content.Keys.First();
+        var fileSystem = new MockFileSystem();
+        fileSystem.AddFile("repo/.specht/manifest.json", new MockFileData(manifest));
+        foreach (var name in content.Keys.Where(name => name != absent))
+        {
+            fileSystem.AddFile("repo/.specht/schema/frontmatter/" + name, new MockFileData("{\"title\":\"A synthetic local copy\"}\n"));
+        }
+
+        var requested = new List<string>();
+        using var source = new HttpClient(new SyntheticSource(request =>
+        {
+            requested.Add(request.RequestUri!.Segments[^1]);
+            return new HttpResponseMessage(HttpStatusCode.OK) { Content = new ByteArrayContent(content[request.RequestUri.Segments[^1]]) };
+        }));
+
+        // When
+        await UpgradeServices.Writer(fileSystem, source).Upgrade("repo", CancellationToken.None);
+
+        // Then
+        fileSystem.File.Exists("repo/.specht/schema/frontmatter/" + absent).Should().BeFalse();
+        requested.Should().NotBeEmpty().And.NotContain(absent);
+    }
+
+    private sealed class SyntheticSource(Func<HttpRequestMessage, HttpResponseMessage> respond) : HttpMessageHandler
+    {
+        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) =>
+            Task.FromResult(respond(request));
     }
 }

@@ -131,9 +131,12 @@ claims:
   - B-136
   - B-137
   - B-138
+  - B-139
+  - B-140
+  - B-141
 
 created: "2026-10-08"
-updated: "2026-10-28"
+updated: "2026-10-29"
 closed: null
 
 summary: |
@@ -217,7 +220,7 @@ acceptance_criteria:
   - "B-024 — upstream recorded: schemas from the local copy (0092)"
   - "B-025 — upstream recorded: the check makes no network call (0092)"
   - "B-026 — upgrade writes fetched content matching the hash (0093)"
-  - "B-027 — upgrade, fetched content mismatches: exit 3 (0093)"
+  - "B-027 — upgrade, any fetched schema mismatches: nothing written, exit 3 (0093)"
   - "B-028 — upstream recorded: pinned embedded vocabulary (0092)"
   - "B-029 — upgrade, on-disk source: no frontmatter schema written (0094)"
   - "B-030 — upgrade prints each skipped schema and why (0094)"
@@ -225,7 +228,7 @@ acceptance_criteria:
   - "B-032 — upstream recorded, nothing selected: on-disk (0092)"
   - "B-033 — upgrade, local copy matches the hash: no network call (0093)"
   - "B-034 — upgrade leaves the upstream version and hash (0093)"
-  - "B-035 — upgrade, source unreachable: exit 3 (0093)"
+  - "B-035 — upgrade, source unreachable or refusing: exit 3 (0093)"
   - "B-036 — upstream recorded, embedded selected: exit 3 (0177)"
   - "B-039 — malformed `schemaVersion`: stderr, exit 3 (0120)"
   - "B-040 — a new rule id only in a higher major (0044)"
@@ -300,6 +303,9 @@ acceptance_criteria:
   - "B-136 — upgrade keeps a local template matching its hash (0291)"
   - "B-137 — upgrade sends no credential for a template (0291)"
   - "B-138 — upgrade never opts a manifest into the epic grammar (0047)"
+  - "B-139 — upgrade, no upstream source: an absent schema or template stays absent (0093)"
+  - "B-140 — upgrade, upstream recorded: an absent fetched schema stays absent (0093)"
+  - "B-141 — upgrade, upstream recorded: an absent hashed template stays absent (0291)"
   - "§ 9 carries a row naming a test for each id above."
 
 decisions:
@@ -391,6 +397,13 @@ decisions:
     member needs no schema version and is read under every pin; no
     `0.3.0` is cut for it. B-128 and B-129 are withdrawn and carried by
     no item; 0290 no longer depends on 0189.
+  - |
+    2026-10-29, the repository owner (decision 0018), resolving OQ-44
+    and OQ-45 for `upgrade` and OQ-51: B-027 and B-035 amended; B-139 to
+    B-141 added. spec-author's cut, not an owner ruling: B-139 and B-140
+    join 0093, B-141 joins 0291. B-139's mechanism is 0045's, built;
+    0045 is closed, so 0093, the open item that answers OQ-51, carries
+    its scenario and its § 9 row.
 
 out_of_scope:
   - "Everything in § 5 of the spec."

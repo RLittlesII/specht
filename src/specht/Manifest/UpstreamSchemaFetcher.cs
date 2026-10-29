@@ -15,7 +15,7 @@ public sealed class UpstreamSchemaFetcher(HttpClient client)
     /// <exception cref="SpechtUpstreamSchemaException">The source is unreachable or its bytes do not match the hash.</exception>
     /// <implements epic="0001" feature="F7" claim="B-068" />
     public Task<byte[]> Fetch(UpstreamSchemaFile file, CancellationToken cancellationToken) =>
-        Fetch(file.Address, file.Hash, cancellationToken);
+        Fetch(file.Address, file.Matches, cancellationToken);
 
     /// <summary>Returns the served template bytes only after their SHA-256 matches the manifest's hash.</summary>
     /// <param name="file">The template address and recorded hash from the manifest.</param>
@@ -24,11 +24,14 @@ public sealed class UpstreamSchemaFetcher(HttpClient client)
     /// <exception cref="SpechtUpstreamSchemaException">The source is unreachable or its bytes do not match the hash.</exception>
     /// <implements epic="0001" feature="F4" claim="B-041" />
     public Task<byte[]> Fetch(UpstreamTemplateFile file, CancellationToken cancellationToken) =>
-        Fetch(file.Address, file.Hash, cancellationToken);
+        Fetch(
+            file.Address,
+            bytes => string.Equals("sha256:" + Convert.ToHexStringLower(SHA256.HashData(bytes)), file.Hash, StringComparison.Ordinal),
+            cancellationToken);
 
     /// <implements epic="0001" feature="F7" claim="B-068" />
     /// <implements epic="0001" feature="F4" claim="B-041" />
-    private async Task<byte[]> Fetch(string recordedAddress, string recordedHash, CancellationToken cancellationToken)
+    private async Task<byte[]> Fetch(string recordedAddress, Func<byte[], bool> matches, CancellationToken cancellationToken)
     {
         var address = new UriBuilder(recordedAddress) { UserName = string.Empty, Password = string.Empty }.Uri;
         byte[] bytes;
@@ -44,9 +47,7 @@ public sealed class UpstreamSchemaFetcher(HttpClient client)
             throw new SpechtUpstreamSchemaException($"upstream schema source '{address}' could not be reached.");
         }
 
-        var hash = "sha256:" + Convert.ToHexStringLower(SHA256.HashData(bytes));
-
-        if (!string.Equals(hash, recordedHash, StringComparison.Ordinal))
+        if (!matches(bytes))
         {
             throw new SpechtUpstreamSchemaException($"upstream schema source '{address}' does not match its recorded SHA-256.");
         }

@@ -32,7 +32,14 @@ namespace Specht.Acceptance.Versioning;
 /// "the root holds the copy of that source" makes the Feature schema of that copy require a key the embedded one does not
 /// and records that copy's hashes, and each run launches the built tool. "The network is unavailable" points the launched
 /// process's proxy variables at a closed loopback port, and "no network call was attempted" reads the built engine and
-/// tool assemblies for a <c>System.Net</c> reference (OQ-39, the owner's ruling of 2026-10-12). B-074 is item 0093's.
+/// tool assemblies for a <c>System.Net</c> reference (OQ-39, the owner's ruling of 2026-10-12).
+/// Item 0093 binds B-026, B-027, B-033, B-035, B-067, B-082, B-083 and B-140: "upgrade runs" composes the upgrade command
+/// in process over the engine's and the slice's production registrations, with an HTTP client over a synthetic source
+/// registered first, so the fetch never leaves the process (ADR-0013). A differing local copy is recorded under the SHA-256
+/// of synthetic content the source serves under the manifest's file name for its kind; each refusal is that source
+/// answering with other content, an unreachable error, or a 401 or 404 status. Under that run "no network call was
+/// attempted" reads the source's requests. B-034 and B-139 launch the built tool's upgrade over a root that needs no fetch.
+/// B-074's steps are bound only where its scenarios share them.
 /// Item 0290 binds B-125 to B-127: each adds a synthetic <c>templates</c> member to that recorded source and launches the
 /// built tool; B-125 reads the templates the engine's parser takes from the root's manifest, and B-126 and B-127 read the
 /// rejection from stderr as the template's file name, in quotes.
@@ -265,9 +272,12 @@ public sealed partial class VersioningSteps
         File.AppendAllText(Path.Combine(Tree.Root, SpecTree.ItemSchemaPath), "\n");
 
     [Given("the network is unavailable")]
-    public void GivenTheNetworkIsUnavailable() =>
+    public void GivenTheNetworkIsUnavailable()
+    {
         _environment = new[] { "HTTP_PROXY", "HTTPS_PROXY", "ALL_PROXY", "http_proxy", "https_proxy", "all_proxy" }
             .ToDictionary(static name => name, static _ => ClosedLoopbackPort, StringComparer.Ordinal);
+        Upstream.Refused["*"] = "unreachable";
+    }
 
     [When("the check runs")]
     [When("the check runs with JSON output")]
@@ -309,6 +319,13 @@ public sealed partial class VersioningSteps
     [Then("no network call was attempted")]
     public void ThenNoNetworkCallWasAttempted()
     {
+        if (_upgradedInProcess)
+        {
+            _exitCode.Should().Be(0, _stderr);
+            Upstream.Requests.Should().BeEmpty();
+            return;
+        }
+
         EngineAssembly.CheckNetworkReferencesIn(EngineAssembly.Built).Should().BeEmpty();
         EngineAssembly.CheckNetworkReferencesIn(EngineAssembly.BuiltTool).Should().BeEmpty();
     }
