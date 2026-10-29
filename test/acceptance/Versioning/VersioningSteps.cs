@@ -38,7 +38,10 @@ namespace Specht.Acceptance.Versioning;
 /// rejection from stderr as the template's file name, in quotes.
 /// Item 0126 binds B-086 and B-087 over the embedded resources and their declared addresses. The
 /// partial lock bindings execute B-092 and B-093 over synthetic shipping files on disk.
-/// B-012 runs the existing init writer over synthetic versioned manifests on disk and reads the written pin. The
+/// B-012 runs the existing init writer over synthetic versioned manifests on disk and reads the written pin. Item 0046
+/// binds B-018 to B-020: each launches the built tool's upgrade over the Background root - against <c>no-such-root</c>
+/// beneath it, without its manifest, with a rule set to a level no version defines, or pinned to 0.2.0 with a recorded
+/// source and the embedded source selected - and compares every file under the root with its bytes before the run. The
 /// rest of the file's scenarios stay pending for their items; a step one of them shares with a scenario above is bound,
 /// and its other steps are not.
 /// </summary>
