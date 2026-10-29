@@ -22,6 +22,8 @@ public sealed class InitCommand(IAnsiConsole console, InitWriter writer, TextWri
 {
     /// <inheritdoc />
     /// <implements epic="0001" feature="F4" claim="B-019" />
+    /// <implements epic="0001" feature="F4" claim="B-018" />
+    /// <implements epic="0001" feature="F4" claim="B-020" />
     public override async Task<int> ExecuteAsync(CommandContext context, Settings settings, CancellationToken cancellationToken)
     {
         try
@@ -33,7 +35,8 @@ public sealed class InitCommand(IAnsiConsole console, InitWriter writer, TextWri
                          cancellationToken,
                          settings.Upstream,
                          settings.UpstreamVersion,
-                         settings.UpstreamHashes))
+                         settings.UpstreamHashes,
+                         epics: settings.Epics))
             {
                 console.Profile.Out.Writer.WriteLine($"{(written ? "written" : "skipped")} {path}");
             }
@@ -77,6 +80,11 @@ public sealed class InitCommand(IAnsiConsole console, InitWriter writer, TextWri
         [CommandOption("--all")]
         [Description("Write the frontmatter schemas and templates.")]
         public bool All { get; init; }
+
+        /// <summary>Gets whether a new manifest declares the epic grammar and the schemas include the epic schema.</summary>
+        [CommandOption("--epics")]
+        [Description("Declare the epic grammar in a new manifest and write the epic frontmatter schema with the schemas.")]
+        public bool Epics { get; init; }
 
         /// <summary>Gets the upstream HTTPS base address to record in a new manifest.</summary>
         [CommandOption("--upstream <ADDRESS>")]

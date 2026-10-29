@@ -21,7 +21,8 @@ namespace Specht.Tests.Init;
 /// this holds every file, over the composition root and the real shipping copy. Through Spectre's command tester over an
 /// in-memory file system: with no <c>--root</c>, the writer is handed the working directory, and a root that is not a
 /// directory is folded into the missing-input exit code with nothing written. The tester captures stdout alone, so the
-/// message on stderr is the acceptance tier's to pin.
+/// message on stderr is the acceptance tier's to pin. The part-selection theory runs the built tool into a bare root with each
+/// part option, alone or with <c>--epics</c>, and holds the run to exit <c>0</c> and exactly the selection (B-018 to B-020).
 /// </summary>
 [Trait("Tier", "Integration")]
 public sealed class InitCommandIntegrationTests : IDisposable
@@ -62,6 +63,29 @@ public sealed class InitCommandIntegrationTests : IDisposable
                 ["--schemas", "--templates"],
                 [
                     ".specht/manifest.json",
+                    ".specht/schema/frontmatter/feature.schema.json",
+                    ".specht/schema/frontmatter/task.schema.json",
+                    ".specht/templates/adr.md",
+                    ".specht/templates/decision.md",
+                    ".specht/templates/feature.md",
+                    ".specht/templates/lesson.md",
+                ]
+            },
+            { ["--epics"], [".specht/manifest.json"] },
+            {
+                ["--schemas", "--epics"],
+                [
+                    ".specht/manifest.json",
+                    ".specht/schema/frontmatter/epic.schema.json",
+                    ".specht/schema/frontmatter/feature.schema.json",
+                    ".specht/schema/frontmatter/task.schema.json",
+                ]
+            },
+            {
+                ["--all", "--epics"],
+                [
+                    ".specht/manifest.json",
+                    ".specht/schema/frontmatter/epic.schema.json",
                     ".specht/schema/frontmatter/feature.schema.json",
                     ".specht/schema/frontmatter/task.schema.json",
                     ".specht/templates/adr.md",
