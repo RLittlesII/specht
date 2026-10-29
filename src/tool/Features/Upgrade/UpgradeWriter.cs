@@ -13,19 +13,21 @@ namespace Specht.Tool.Features.Upgrade;
 
 /// <summary>
 /// Brings the frontmatter schemas and templates present under a root to the bytes the pinned version ships (<c>0001-F7</c>
-/// B-005), or each present schema of a recorded upstream source to the content its hash names (B-026, B-033), adds the keys
-/// the pinned version defines and the manifest lacks (B-016), leaves a root that already holds them as it was (B-006) and
-/// writes only through the store's replace once every read, comparison and fetch has succeeded (B-007, B-027, B-035, C-2).
+/// B-005), or each present schema and each present template a recorded upstream source hashes to the content its hash names
+/// (B-026, B-033, B-130, B-134, B-136), adds the keys the pinned version defines and the manifest lacks (B-016), leaves a
+/// root that already holds them as it was (B-006) and writes only through the store's replace once every read, comparison
+/// and fetch has succeeded (B-007, B-027, B-035, B-132, B-133, C-2).
 /// </summary>
 /// <param name="loader">Reads and validates the manifest as the check does.</param>
 /// <param name="parser">Selects the pinned version.</param>
 /// <param name="shipped">The embedded files.</param>
 /// <param name="store">Reads and replaces the configuration files.</param>
 /// <param name="keys">Adds the pinned version's missing keys to the manifest's bytes.</param>
-/// <param name="fetcher">Fetches and verifies a recorded upstream schema.</param>
+/// <param name="fetcher">Fetches and verifies a recorded upstream schema or template.</param>
 /// <implements epic="0001" feature="F7" claim="B-005" />
 /// <implements epic="0001" feature="F7" claim="B-016" />
 /// <implements epic="0001" feature="F7" claim="B-026" />
+/// <implements epic="0001" feature="F7" claim="B-130" />
 public sealed class UpgradeWriter(
     SpecSchemasLoader loader,
     SpecManifestParser parser,
@@ -35,8 +37,8 @@ public sealed class UpgradeWriter(
     UpstreamSchemaFetcher fetcher)
 {
     /// <summary>
-    /// Rewrites each present file that differs from the pinned version's, and the manifest when it lacks a key that version
-    /// defines, and none other.
+    /// Rewrites each present file that differs from the pinned version's, each present schema or template a recorded source
+    /// hashes that differs from its hash, and the manifest when it lacks a key that version defines, and none other.
     /// </summary>
     /// <param name="root">The repository root.</param>
     /// <param name="cancellationToken">Cancels the run between files.</param>
@@ -45,7 +47,9 @@ public sealed class UpgradeWriter(
     /// <exception cref="SpechtManifestNotFoundException">The root holds no manifest.</exception>
     /// <exception cref="SpechtManifestUnreadableException">The manifest cannot be parsed.</exception>
     /// <exception cref="SpechtManifestException">The pin is not shipped, a schema name leaves its folder, or a write failed.</exception>
-    /// <exception cref="SpechtUpstreamSchemaException">A recorded source is unreachable, refuses, or serves content that fails its hash.</exception>
+    /// <exception cref="SpechtUpstreamSchemaException">
+    /// A recorded source is unreachable, refuses, or serves a schema or template that fails its hash.
+    /// </exception>
     /// <implements epic="0001" feature="F7" claim="B-005" />
     /// <implements epic="0001" feature="F7" claim="B-016" />
     /// <implements epic="0001" feature="F7" claim="B-059" />
@@ -58,14 +62,25 @@ public sealed class UpgradeWriter(
     /// <implements epic="0001" feature="F7" claim="B-082" />
     /// <implements epic="0001" feature="F7" claim="B-139" />
     /// <implements epic="0001" feature="F7" claim="B-140" />
+    /// <implements epic="0001" feature="F7" claim="B-130" />
+    /// <implements epic="0001" feature="F7" claim="B-132" />
+    /// <implements epic="0001" feature="F7" claim="B-133" />
+    /// <implements epic="0001" feature="F7" claim="B-134" />
+    /// <implements epic="0001" feature="F7" claim="B-136" />
+    /// <implements epic="0001" feature="F7" claim="B-137" />
+    /// <implements epic="0001" feature="F7" claim="B-141" />
     public async Task<UpgradeResult> Upgrade(string root, CancellationToken cancellationToken)
     {
         var structure = loader.LoadManifest(root);
         var pinned = parser.PinnedVersion(structure).Number;
         var frontmatterFromRoot = structure.SchemaSource == SchemaSourceSelection.Disk || structure.SpechtSchema is not null;
+        var hashedTemplates = (structure.SpechtSchema?.Templates ?? [])
+            .Select(static file => (File: file, Relative: SpecManifestStore.TemplateFolder + "/" + file.FileName))
+            .ToList();
         var plan = shipped.At(pinned)
             .Where(file => !frontmatterFromRoot
                            || !file.Relative.StartsWith(SpecManifestStore.FrontmatterSchemaFolder + "/", StringComparison.Ordinal))
+            .Where(file => !hashedTemplates.Exists(hashed => hashed.Relative == file.Relative))
             .Select(file => (File: file, Present: store.ReadConfigurationFile(root, file.Relative)))
             .Where(static entry => entry.Present is not null)
             .Select(entry => (entry.Present, Planned: new ShippedFile(
@@ -79,7 +94,17 @@ public sealed class UpgradeWriter(
             .Select(entry => (entry.File, entry.Relative, Present: store.ReadConfigurationFile(root, entry.Relative)))
             .Where(static entry => entry.Present is not null && !entry.File.Matches(entry.Present))
             .ToList();
+        var differingTemplates = hashedTemplates
+            .Where(entry => !structure.ConsumerTemplates.Contains(entry.File.FileName, StringComparer.Ordinal))
+            .Select(entry => (entry.File, entry.Relative, Present: store.ReadConfigurationFile(root, entry.Relative)))
+            .Where(static entry => entry.Present is not null && !entry.File.Matches(entry.Present))
+            .ToList();
         foreach (var entry in differing)
+        {
+            plan.Add(new ShippedFile(entry.Relative, await fetcher.Fetch(entry.File, cancellationToken)));
+        }
+
+        foreach (var entry in differingTemplates)
         {
             plan.Add(new ShippedFile(entry.Relative, await fetcher.Fetch(entry.File, cancellationToken)));
         }

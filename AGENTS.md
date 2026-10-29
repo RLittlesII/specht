@@ -205,7 +205,7 @@ separate versioned report (`0201-F5`, item `0246`).
 
 `specht upgrade` rewrites present schema and template files to the pin and is built
 (item `0045`); the manifest-key step and the listing are built (item `0047`); the
-fetch of a recorded upstream source's differing schemas is built (item `0093`). The check command's `--report` is
+fetch of a recorded upstream source's differing schemas is built (item `0093`), and of the templates it hashes (item `0291`). The check command's `--report` is
 specified and not built (`0001-F3`). What the tool accepts today is
 [`docs/cli.md`](docs/cli.md), which a test holds to its help (`0002-F1`).
 

@@ -6,12 +6,13 @@ using Specht.Versioning;
 namespace Specht.Tests.Upgrade;
 
 /// <summary>
-/// A recorded upstream schema source that refuses one schema (<c>0001-F7</c> B-027, B-035): the manifest, the content the
-/// synthetic source serves for every other file, as a JSON object from file name to text, the file refused, and how - served
-/// content that fails its hash, an unreachable source, or an HTTP status of 401 or 404. The manifest is version 0.2.0's
-/// shipped manifest without <c>claim</c>, so the run plans a manifest write, recording the source at
-/// <c>https://schemas.example/specht/</c> with the SHA-256 of the served text for each kind. A refusal of the item or epic
-/// schema follows a fetch of the Feature schema that verifies.
+/// A recorded upstream schema source that refuses one schema or one template (<c>0001-F7</c> B-027, B-035, B-132, B-133):
+/// the manifest, the content the synthetic source serves for every other file, as a JSON object from file name to text, the
+/// file refused, and how - served content that fails its hash, an unreachable source, or an HTTP status of 401 or 404. The
+/// manifest is version 0.2.0's shipped manifest without <c>claim</c>, so the run plans a manifest write, recording the source
+/// at <c>https://schemas.example/specht/</c> with the SHA-256 of the served text for each kind. A refusal of the item or epic
+/// schema follows a fetch of the Feature schema that verifies. A refusal of the feature template is made under a record that
+/// also hashes that template, and names no template as the consumer's, so it follows a fetch of every schema that verifies.
 /// </summary>
 public sealed class UpstreamFetchRefusals : TheoryData<string, string, string, string>
 {
@@ -45,6 +46,17 @@ public sealed class UpstreamFetchRefusals : TheoryData<string, string, string, s
                  })
         {
             Add(manifest.ToJsonString(), served.ToJsonString(), refused, failure);
+        }
+
+        const string template = "# A synthetic upstream feature template\r\n";
+        manifest["spechtSchema"]!["templates"] = new JsonObject
+        {
+            ["feature.md"] = "sha256:" + System.Convert.ToHexStringLower(SHA256.HashData(Encoding.UTF8.GetBytes(template))),
+        };
+        served["feature.md"] = template;
+        foreach (var failure in new[] { "mismatch", "unreachable", "401", "404" })
+        {
+            Add(manifest.ToJsonString(), served.ToJsonString(), "feature.md", failure);
         }
     }
 }

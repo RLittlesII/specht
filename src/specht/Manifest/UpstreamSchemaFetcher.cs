@@ -1,5 +1,4 @@
 using System.Net.Http;
-using System.Security.Cryptography;
 
 namespace Specht.Manifest;
 
@@ -23,11 +22,10 @@ public sealed class UpstreamSchemaFetcher(HttpClient client)
     /// <returns>The verified bytes without decoding or transformation.</returns>
     /// <exception cref="SpechtUpstreamSchemaException">The source is unreachable or its bytes do not match the hash.</exception>
     /// <implements epic="0001" feature="F4" claim="B-041" />
+    /// <implements epic="0001" feature="F7" claim="B-130" />
+    /// <implements epic="0001" feature="F7" claim="B-137" />
     public Task<byte[]> Fetch(UpstreamTemplateFile file, CancellationToken cancellationToken) =>
-        Fetch(
-            file.Address,
-            bytes => string.Equals("sha256:" + Convert.ToHexStringLower(SHA256.HashData(bytes)), file.Hash, StringComparison.Ordinal),
-            cancellationToken);
+        Fetch(file.Address, file.Matches, cancellationToken);
 
     /// <implements epic="0001" feature="F7" claim="B-068" />
     /// <implements epic="0001" feature="F4" claim="B-041" />

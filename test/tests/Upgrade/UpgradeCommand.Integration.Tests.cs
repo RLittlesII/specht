@@ -19,7 +19,8 @@ namespace Specht.Tests.Upgrade;
 /// rewrite prints the pinned version and each rewritten file, and a missing root or manifest exits <c>2</c> and an invalid
 /// manifest <c>3</c>, writing nothing and naming no absolute path. Under a recorded upstream schema source whose fetch the
 /// synthetic source refuses - content failing its hash, an unreachable source, or a 401 or 404 - the command names the
-/// source on standard error, writes nothing and exits <c>3</c> (B-027, B-035).
+/// source on standard error, writes nothing and exits <c>3</c> (B-027, B-035), and so for a refused fetch of a template that
+/// source hashes (B-132, B-133).
 /// </summary>
 [Trait("Tier", "Integration")]
 public sealed class UpgradeCommandIntegrationTests
@@ -356,7 +357,7 @@ public sealed class UpgradeCommandIntegrationTests
         var stamp = new DateTime(2026, 1, 2, 3, 4, 5, DateTimeKind.Utc);
         var fileSystem = new MockFileSystem();
         fileSystem.AddFile(Path.Combine(root, ".specht/manifest.json"), new MockFileData(manifest) { LastWriteTime = stamp });
-        foreach (var name in content.Keys)
+        foreach (var name in content.Keys.Where(static name => name.EndsWith(".schema.json", StringComparison.Ordinal)))
         {
             fileSystem.AddFile(
                 Path.Combine(root, ".specht/schema/frontmatter", name), new MockFileData("{\"title\":\"A synthetic local copy\"}\n") { LastWriteTime = stamp });

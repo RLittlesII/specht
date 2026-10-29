@@ -90,7 +90,8 @@ A missing or changed local file exits `3`, naming its relative path on stderr.
 For a missing file, the message names `specht init`; use `specht init --schemas`
 to fetch missing schema files from the recorded source. `specht upgrade`
 replaces a changed file with the verified source copy and leaves a missing one
-missing. The check never fetches, and it never writes
+missing, and does the same for each template the record hashes under
+`templates`, except one named in `consumerTemplates`, which it leaves untouched. The check never fetches, and it never writes
 into the root.
 
 Under schema `0.2.0`, companion claim tags follow `identifiers.claim` inside the literal tag form. For example, `@req:{claim}` recognizes `@req:B-001`; punctuation in the form is literal. SPEC021 quotes an unresolved tag exactly as written and carries the claim id alone as its identifier. Claim and matrix ids remain case-sensitive even when tags ignore case. Full-line comments are skipped.
