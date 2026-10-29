@@ -456,7 +456,7 @@ Feature: init
 
   @B-041
   Scenario: Init writes a fetched template that matches its hash
-    Given a root whose manifest pins schema version 0.3.0 and records an upstream schema source whose record holds a content hash for the feature template
+    Given a root whose manifest records an upstream schema source whose record holds a content hash for the feature template
     And its manifest names no template as the consumer's
     And no template file under the root
     And the source serves a feature template matching that hash
@@ -465,7 +465,7 @@ Feature: init
 
   @B-042
   Scenario: Init refuses a fetched template that does not match its hash
-    Given a root whose manifest pins schema version 0.3.0 and records an upstream schema source whose record holds a content hash for the feature template
+    Given a root whose manifest records an upstream schema source whose record holds a content hash for the feature template
     And no template file under the root
     And the source serves a feature template that does not match that hash
     And a snapshot of every file under the root
@@ -476,7 +476,7 @@ Feature: init
 
   @B-043
   Scenario Outline: Init refuses a source that will not serve a template
-    Given a root whose manifest pins schema version 0.3.0 and records an upstream schema source whose record holds a content hash for the feature template
+    Given a root whose manifest records an upstream schema source whose record holds a content hash for the feature template
     And no template file under the root
     And the source <refusal>
     And a snapshot of every file under the root
@@ -491,9 +491,9 @@ Feature: init
       | asks for a credential               |
       | does not serve the feature template |
 
-  @B-044 @boundary
+  @B-034 @B-044 @boundary
   Scenario: Init keeps a present template without fetching it
-    Given a root whose manifest pins schema version 0.3.0 and records an upstream schema source whose record holds a content hash for the feature template
+    Given a root whose manifest records an upstream schema source whose record holds a content hash for the feature template
     And the feature template is present under the root
     And the network is unavailable
     When init runs against it with templates

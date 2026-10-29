@@ -682,6 +682,8 @@ public sealed partial class InitSteps
 
         public List<string> Requests { get; } = [];
 
+        public Dictionary<string, byte[]> Served { get; } = new(StringComparer.Ordinal);
+
         protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
             Requests.Add(request.RequestUri!.AbsoluteUri);
@@ -690,9 +692,13 @@ public sealed partial class InitSteps
                 throw new HttpRequestException("Synthetic network unavailable.");
             }
 
+            var matching = Mode == "matching" || (Mode == "mixed" && Requests.Count == 1);
             return Task.FromResult(new HttpResponseMessage(Status ?? HttpStatusCode.OK)
             {
-                Content = new ByteArrayContent(Mode == "matching" || (Mode == "mixed" && Requests.Count == 1) ? SourceContent : "{}"u8.ToArray()),
+                Content = new ByteArrayContent(
+                    !matching ? "{}"u8.ToArray()
+                    : Served.TryGetValue(request.RequestUri.AbsoluteUri, out var served) ? served
+                    : SourceContent),
             });
         }
     }

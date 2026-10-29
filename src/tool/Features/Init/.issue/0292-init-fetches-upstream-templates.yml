@@ -2,7 +2,7 @@ id: "0292"
 type: task
 title: Write the templates a recorded upstream source hashes into absent files on init
 
-status: ready-for-architecture
+status: done
 
 risk: 3
 
@@ -22,8 +22,8 @@ claims:
   - B-044
 
 created: "2026-10-24"
-updated: "2026-10-24"
-closed: null
+updated: "2026-10-28"
+closed: "2026-10-28"
 
 summary: |
   Init's side of 0001-F7 decision 0016: with the templates in the run's

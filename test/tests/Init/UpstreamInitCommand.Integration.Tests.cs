@@ -14,14 +14,17 @@ using Spectre.Console.Testing;
 
 namespace Specht.Tests.Init;
 
-/// <summary>Init folds an upstream refusal into stderr and exit 3 without a listing or writes (0001-F4 B-015, B-016).</summary>
+/// <summary>Init folds an upstream refusal into stderr and exit 3 without a listing or writes (0001-F4 B-015, B-016, B-042, B-043).</summary>
 [Trait("Tier", "Integration")]
 public sealed class UpstreamInitCommandIntegrationTests
 {
     [Theory]
-    [InlineData(false, "does not match its recorded SHA-256.")]
-    [InlineData(true, "could not be reached.")]
-    public void ARefusedUpstreamSource_WhenInitRuns_ShouldNameItOnStandardErrorExitThreeAndWriteNothing(bool unreachable, string reason)
+    [InlineData("--all", "feature.schema.json", false, "does not match its recorded SHA-256.")]
+    [InlineData("--all", "feature.schema.json", true, "could not be reached.")]
+    [InlineData("--templates", "feature.md", false, "does not match its recorded SHA-256.")]
+    [InlineData("--templates", "feature.md", true, "could not be reached.")]
+    public void ARefusedUpstreamSource_WhenInitRuns_ShouldNameItOnStandardErrorExitThreeAndWriteNothing(
+        string part, string refused, bool unreachable, string reason)
     {
         // Given
         var fileSystem = new MockFileSystem();
@@ -34,11 +37,12 @@ public sealed class UpstreamInitCommandIntegrationTests
                 ["location"] = "https://schemas.example/specht/",
                 ["version"] = "2026.10",
                 ["hashes"] = new JsonObject { ["feature"] = hash, ["task"] = hash },
+                ["templates"] = new JsonObject { ["feature.md"] = hash },
             },
         }.ToJsonString();
         fileSystem.AddFile(Path.Combine(root, ".specht", "manifest.json"), new MockFileData(manifest));
         var before = fileSystem.AllFiles.ToDictionary(static path => path, fileSystem.File.ReadAllBytes);
-        using var client = new HttpClient(new SyntheticHandler(unreachable));
+        using var client = new HttpClient(new SyntheticHandler(refused, unreachable));
         using var errors = new StringWriter();
         var services = new ServiceCollection();
         services.AddSingleton<IFileSystem>(fileSystem);
@@ -49,12 +53,12 @@ public sealed class UpstreamInitCommandIntegrationTests
         app.Configure(static config => config.AddInit());
 
         // When
-        var result = app.Run("init", "--root", root, "--all");
+        var result = app.Run("init", "--root", root, part);
 
         // Then
         result.ExitCode.Should().Be(ExitCodes.InvalidManifest);
         result.Output.Should().BeEmpty();
-        errors.ToString().Should().Be($"specht: upstream schema source 'https://schemas.example/specht/feature.schema.json' {reason}{Environment.NewLine}");
+        errors.ToString().Should().Be($"specht: upstream schema source 'https://schemas.example/specht/{refused}' {reason}{Environment.NewLine}");
         fileSystem.AllFiles.Should().BeEquivalentTo(before.Keys);
         foreach (var (path, bytes) in before)
         {
@@ -62,10 +66,15 @@ public sealed class UpstreamInitCommandIntegrationTests
         }
     }
 
-    private sealed class SyntheticHandler(bool unreachable) : HttpMessageHandler
+    private sealed class SyntheticHandler(string refused, bool unreachable) : HttpMessageHandler
     {
         protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
+            if (!request.RequestUri!.AbsoluteUri.EndsWith("/" + refused, StringComparison.Ordinal))
+            {
+                return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK) { Content = new ByteArrayContent("expected bytes"u8.ToArray()) });
+            }
+
             if (unreachable)
             {
                 throw new HttpRequestException("Synthetic source is unreachable.");
