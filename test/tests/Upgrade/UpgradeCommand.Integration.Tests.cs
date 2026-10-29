@@ -11,11 +11,12 @@ namespace Specht.Tests.Upgrade;
 
 /// <summary>
 /// <c>specht upgrade</c> through Spectre's command tester over an in-memory file system and the shipped files (<c>0001-F7</c>
-/// B-005, B-006, B-007, B-016, B-017, B-052, B-059): a root's frontmatter schemas and templates are brought to the pin from an
-/// older or a newer version, the keys the pin defines are added to the manifest and the consumer's settings kept, a root
-/// already at its pin prints that it is current and rewrites nothing, only the manifest, the frontmatter schema folder and
-/// the templates folder may change, a manifest that lacks no key is never rewritten, and a rewrite prints the pinned
-/// version and each rewritten file.
+/// B-005, B-006, B-007, B-016, B-017, B-018, B-019, B-020, B-052, B-059): a root's frontmatter schemas and templates are
+/// brought to the pin from an older or a newer version, the keys the pin defines are added to the manifest and the
+/// consumer's settings kept, a root already at its pin prints that it is current and rewrites nothing, only the manifest,
+/// the frontmatter schema folder and the templates folder may change, a manifest that lacks no key is never rewritten, a
+/// rewrite prints the pinned version and each rewritten file, and a missing root or manifest exits <c>2</c> and an invalid
+/// manifest <c>3</c>, writing nothing and naming no absolute path.
 /// </summary>
 [Trait("Tier", "Integration")]
 public sealed class UpgradeCommandIntegrationTests
@@ -266,6 +267,78 @@ public sealed class UpgradeCommandIntegrationTests
         // Then
         result.ExitCode.Should().Be(3, result.Output);
         errors.ToString().Should().Contain(".specht/templates/feature.md: could not be replaced.").And.NotContain(root);
+    }
+
+    [Theory]
+    [ClassData(typeof(UpgradeMissingInputs))]
+    public void AMissingRootOrManifest_WhenUpgraded_ShouldWriteNothingAndExitTwoWithNoAbsolutePathOnStandardError(string typedRoot, bool manifest, Type fault)
+    {
+        // Given
+        var root = Path.GetFullPath("repo");
+        var stamp = new DateTime(2026, 1, 2, 3, 4, 5, DateTimeKind.Utc);
+        var fileSystem = new MockFileSystem();
+        if (manifest)
+        {
+            fileSystem.AddFile(Path.Combine(root, ".specht/manifest.json"), new MockFileData("{\"schemaVersion\":\"0.2.0\"}") { LastWriteTime = stamp });
+        }
+
+        foreach (var file in UpgradeServices.Shipped().At(Version("0.1.0")).Where(static file => file.Relative != ".specht/manifest.json"))
+        {
+            fileSystem.AddFile(Path.Combine(root, file.Relative), new MockFileData(file.Bytes) { LastWriteTime = stamp });
+        }
+
+        var before = fileSystem.AllFiles.ToDictionary(
+            static path => path, path => (fileSystem.File.ReadAllBytes(path), fileSystem.File.GetLastWriteTimeUtc(path)));
+        var errors = new StringWriter();
+        var app = UpgradeServices.App(fileSystem, new TestConsole(), errors);
+
+        // When
+        var result = app.Run("upgrade", "--root", Path.Combine("repo", typedRoot));
+
+        // Then
+        result.ExitCode.Should().Be(2, $"{fault.Name}: {errors}");
+        fileSystem.AllFiles.Should().BeEquivalentTo(before.Keys);
+        foreach (var (path, (bytes, written)) in before)
+        {
+            fileSystem.File.ReadAllBytes(path).Should().Equal(bytes);
+            fileSystem.File.GetLastWriteTimeUtc(path).Should().Be(written, path);
+        }
+
+        errors.ToString().Should().NotContain(root);
+    }
+
+    [Theory]
+    [ClassData(typeof(UpgradeInvalidManifests))]
+    public void AnInvalidManifest_WhenUpgraded_ShouldWriteNothingAndExitThreeWithNoAbsolutePathOnStandardError(string manifest, Type fault)
+    {
+        // Given
+        var root = Path.GetFullPath("repo");
+        var stamp = new DateTime(2026, 1, 2, 3, 4, 5, DateTimeKind.Utc);
+        var fileSystem = new MockFileSystem();
+        fileSystem.AddFile(Path.Combine(root, ".specht/manifest.json"), new MockFileData(manifest) { LastWriteTime = stamp });
+        foreach (var file in UpgradeServices.Shipped().At(Version("0.1.0")).Where(static file => file.Relative != ".specht/manifest.json"))
+        {
+            fileSystem.AddFile(Path.Combine(root, file.Relative), new MockFileData(file.Bytes) { LastWriteTime = stamp });
+        }
+
+        var before = fileSystem.AllFiles.ToDictionary(
+            static path => path, path => (fileSystem.File.ReadAllBytes(path), fileSystem.File.GetLastWriteTimeUtc(path)));
+        var errors = new StringWriter();
+        var app = UpgradeServices.App(fileSystem, new TestConsole(), errors);
+
+        // When
+        var result = app.Run("upgrade", "--root", "repo");
+
+        // Then
+        result.ExitCode.Should().Be(3, $"{fault.Name}: {errors}");
+        fileSystem.AllFiles.Should().BeEquivalentTo(before.Keys);
+        foreach (var (path, (bytes, written)) in before)
+        {
+            fileSystem.File.ReadAllBytes(path).Should().Equal(bytes);
+            fileSystem.File.GetLastWriteTimeUtc(path).Should().Be(written, path);
+        }
+
+        errors.ToString().Should().NotContain(root);
     }
 
     private static SemanticVersion Version(string text) =>

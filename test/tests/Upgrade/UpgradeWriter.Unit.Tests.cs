@@ -9,9 +9,10 @@ using Specht.Versioning;
 namespace Specht.Tests.Upgrade;
 
 /// <summary>
-/// The comparison and rewrite beneath <c>specht upgrade</c> (<c>0001-F7</c> B-005, B-006, B-007, B-016, B-017, B-029, B-052,
-/// B-059, B-138; C-2): the manifest is planned like any file, its planned bytes those with the pinned version's missing keys
-/// added.
+/// The comparison and rewrite beneath <c>specht upgrade</c> (<c>0001-F7</c> B-005, B-006, B-007, B-016, B-017, B-018, B-019,
+/// B-020, B-029, B-052, B-059, B-138; C-2): the manifest is planned like any file, its planned bytes those with the pinned
+/// version's missing keys added, and a missing root or manifest, or a manifest the loader rejects, throws before any file is
+/// written.
 /// </summary>
 [Trait("Tier", "Unit")]
 public sealed class UpgradeWriterUnitTests
@@ -236,5 +237,67 @@ public sealed class UpgradeWriterUnitTests
         (await upgrade.Should().ThrowAsync<SpechtManifestException>())
             .WithMessage(".specht/templates/feature.md: could not be replaced.");
         fileSystem.File.ReadAllText("repo/.specht/templates/feature.md").Should().Be("# A synthetic template with local edits\n");
+    }
+
+    [Theory]
+    [ClassData(typeof(UpgradeMissingInputs))]
+    public async Task AMissingRootOrManifest_WhenUpgraded_ShouldThrowTheLoadersFailureAndWriteNothing(string typedRoot, bool manifest, Type fault)
+    {
+        // Given
+        var stamp = new DateTime(2026, 1, 2, 3, 4, 5, DateTimeKind.Utc);
+        var fileSystem = new MockFileSystem();
+        if (manifest)
+        {
+            fileSystem.AddFile("repo/.specht/manifest.json", new MockFileData("{\"schemaVersion\":\"0.2.0\"}") { LastWriteTime = stamp });
+        }
+
+        foreach (var file in UpgradeServices.Shipped().At(new SemanticVersion(0, 1, 0)).Where(static file => file.Relative != ".specht/manifest.json"))
+        {
+            fileSystem.AddFile("repo/" + file.Relative, new MockFileData(file.Bytes) { LastWriteTime = stamp });
+        }
+
+        var before = fileSystem.AllFiles.ToDictionary(
+            static path => path, path => (fileSystem.File.ReadAllBytes(path), fileSystem.File.GetLastWriteTimeUtc(path)));
+
+        // When
+        var upgrade = () => UpgradeServices.Writer(fileSystem).Upgrade(Path.Combine("repo", typedRoot), CancellationToken.None);
+
+        // Then
+        await upgrade.Should().ThrowAsync<Exception>().Where(exception => exception.GetType() == fault);
+        fileSystem.AllFiles.Should().BeEquivalentTo(before.Keys);
+        foreach (var (path, (bytes, written)) in before)
+        {
+            fileSystem.File.ReadAllBytes(path).Should().Equal(bytes);
+            fileSystem.File.GetLastWriteTimeUtc(path).Should().Be(written, path);
+        }
+    }
+
+    [Theory]
+    [ClassData(typeof(UpgradeInvalidManifests))]
+    public async Task AnInvalidManifest_WhenUpgraded_ShouldThrowTheLoadersFailureAndWriteNothing(string manifest, Type fault)
+    {
+        // Given
+        var stamp = new DateTime(2026, 1, 2, 3, 4, 5, DateTimeKind.Utc);
+        var fileSystem = new MockFileSystem();
+        fileSystem.AddFile("repo/.specht/manifest.json", new MockFileData(manifest) { LastWriteTime = stamp });
+        foreach (var file in UpgradeServices.Shipped().At(new SemanticVersion(0, 1, 0)).Where(static file => file.Relative != ".specht/manifest.json"))
+        {
+            fileSystem.AddFile("repo/" + file.Relative, new MockFileData(file.Bytes) { LastWriteTime = stamp });
+        }
+
+        var before = fileSystem.AllFiles.ToDictionary(
+            static path => path, path => (fileSystem.File.ReadAllBytes(path), fileSystem.File.GetLastWriteTimeUtc(path)));
+
+        // When
+        var upgrade = () => UpgradeServices.Writer(fileSystem).Upgrade("repo", CancellationToken.None);
+
+        // Then
+        await upgrade.Should().ThrowAsync<Exception>().Where(exception => exception.GetType() == fault);
+        fileSystem.AllFiles.Should().BeEquivalentTo(before.Keys);
+        foreach (var (path, (bytes, written)) in before)
+        {
+            fileSystem.File.ReadAllBytes(path).Should().Equal(bytes);
+            fileSystem.File.GetLastWriteTimeUtc(path).Should().Be(written, path);
+        }
     }
 }
