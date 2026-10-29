@@ -2,7 +2,7 @@ id: "0046"
 type: task
 title: Fail upgrade on a missing root, missing manifest or invalid manifest
 
-status: ready-for-architecture
+status: done
 
 risk: 2
 
@@ -20,8 +20,8 @@ claims:
   - B-020
 
 created: "2026-10-08"
-updated: "2026-10-10"
-closed: null
+updated: "2026-10-28"
+closed: "2026-10-28"
 
 summary: |
   `upgrade` writes nothing and exits 2 for a root that is not a directory or

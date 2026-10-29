@@ -29,6 +29,7 @@ public sealed partial class VersioningSteps
     }
 
     [Given("the root's manifest is not valid for a reason other than its schema version")]
+    [Given("the root's manifest is not valid")]
     public void GivenTheManifestHasInvalidSettings() =>
         EditManifest(static manifest => manifest["rules"] = new JsonObject { ["SPEC031"] = "invalid" });
 

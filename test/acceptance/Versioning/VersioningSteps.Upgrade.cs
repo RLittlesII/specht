@@ -70,6 +70,21 @@ public sealed partial class VersioningSteps
         (_stdout, _stderr, _exitCode) = AcceptanceTool.Launch(Tree.Root, "upgrade");
     }
 
+    [When("upgrade runs against a path that is not a directory")]
+    public void WhenUpgradeRunsAgainstAPathThatIsNotADirectory()
+    {
+        _filesBefore = SnapshotFiles();
+        (_stdout, _stderr, _exitCode) = AcceptanceTool.Launch(Tree.Root, "upgrade", "--root", "no-such-root");
+    }
+
+    [Given("the root's manifest records an upstream schema source and explicitly selects the embedded source")]
+    public void GivenTheManifestRecordsAnUpstreamSchemaSourceAndExplicitlySelectsTheEmbeddedSource()
+    {
+        EditManifest(static manifest => manifest["schemaVersion"] = "0.2.0");
+        GivenTheManifestRecordsAnUpstreamSchemaSource();
+        GivenManifestEmbeddedSource();
+    }
+
     [Then("the frontmatter schemas and the templates are version {word}'s")]
     public void ThenTheFilesAreVersion(string version)
     {
