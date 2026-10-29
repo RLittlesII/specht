@@ -2,7 +2,7 @@ id: "0044"
 type: test
 title: Prove a shipped version never changes
 
-status: ready-for-architecture
+status: done
 
 risk: 2
 
@@ -26,8 +26,8 @@ claims:
   - B-091
 
 created: "2026-10-08"
-updated: "2026-10-12"
-closed: null
+updated: "2026-10-29"
+closed: "2026-10-29"
 
 summary: |
   A test that every version published from `1.0.0` on is still embedded,
@@ -47,8 +47,10 @@ summary: |
   when more than one shipped version is unlocked (B-090) or the unlocked
   one is not the newest (B-091). A template-only or page-only change is
   a patch (B-088). Waits on 0126 for the folders the digest reads and on
-  0188 for the lock and its digest. What the test does with a locked
-  version that has no folder is OQ-55, open.
+  0188 for the lock and its digest. A locked version with no folder is
+  passed over below `1.0.0` and fails the check from `1.0.0` on, which
+  is B-004's mechanism, and no lock entry is removed (OQ-55, resolved
+  by the repository owner 2026-10-29).
 
 acceptance_criteria:
   - "B-004 — every version published from `1.0.0` on still in the embedded set; 0120 converts the enumeration"

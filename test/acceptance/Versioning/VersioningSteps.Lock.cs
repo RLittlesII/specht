@@ -25,18 +25,56 @@ public sealed partial class VersioningSteps
     }
 
     [Given("the tool ships schema version {word} and the version lock records it")]
-    public void GivenTheShippedVersionIsLocked(string version)
+    public async Task GivenTheShippedVersionIsLocked(string version)
     {
         PrepareLockTree([version]);
-        WriteLock(new Dictionary<string, string> { [version] = "original-digest" });
+        WriteLock(new Dictionary<string, string>
+        {
+            [version] = await new SchemaVersionLock(new FileSystem(), _lockRoot!).ComputeDigestAsync(version),
+        });
     }
 
-    [Given("a template of version {word} has been edited since")]
-    public void GivenATemplateHasBeenEditedSince(string version) =>
-        File.WriteAllText(Path.Combine(_lockRoot!, $"src/tool/templates/v{version}/feature.md"), "changed template");
+    [Given("none of its schemas, templates or rule pages has changed since")]
+    public void GivenNoneOfItsFilesHasChangedSince()
+    {
+    }
+
+    [Given(@"^(a frontmatter schema|the manifest|a template|a rule page) of version (\S+) has been edited since$")]
+    public void GivenAFileHasBeenEditedSince(string file, string version) =>
+        File.AppendAllText(
+            Path.Combine(_lockRoot!, file switch
+            {
+                "a frontmatter schema" => $"src/tool/schema/v{version}/frontmatter/feature.schema.json",
+                "the manifest" => $"src/tool/manifest/v{version}/manifest.json",
+                "a template" => $"src/tool/templates/v{version}/feature.md",
+                _ => $"docs/rules/v{version}/SPEC001.md",
+            }),
+            "edited\n");
 
     [When("the newest version is locked")]
     public Task WhenTheNewestVersionIsLocked() => new SchemaVersionLock(new FileSystem(), _lockRoot!).LockNewestAsync();
+
+    [When("the shipped versions are checked against the version lock")]
+    public async Task WhenTheShippedVersionsAreCheckedAgainstTheVersionLock() =>
+        _lockFindings = await new SchemaVersionLock(new FileSystem(), _lockRoot!).VerifyAsync();
+
+    [Then("version {word} matches the digest the lock records")]
+    public void ThenTheVersionMatchesItsDigest(string version) =>
+        _lockFindings.Should().NotContain(new SchemaVersionLockFinding(version, SchemaVersionLockFault.DigestMismatch));
+
+    [Then("version {word} does not match the digest the lock records")]
+    public void ThenTheVersionDoesNotMatchItsDigest(string version) =>
+        _lockFindings.Should().Contain(new SchemaVersionLockFinding(version, SchemaVersionLockFault.DigestMismatch));
+
+    [Then("the check fails because two versions are unlocked")]
+    public void ThenTheCheckFailsBecauseTwoVersionsAreUnlocked() =>
+        _lockFindings.Where(static finding => finding.Fault == SchemaVersionLockFault.MoreThanOneUnlocked)
+            .Select(static finding => finding.Version)
+            .Should().BeEquivalentTo(Unlocked());
+
+    [Then("the check fails because the unlocked version is not the newest")]
+    public void ThenTheCheckFailsBecauseTheUnlockedVersionIsNotTheNewest() =>
+        _lockFindings.Should().Contain(new SchemaVersionLockFinding(Unlocked().Should().ContainSingle().Subject, SchemaVersionLockFault.UnlockedNotNewest));
 
     [Then("the version lock records version {word} with the digest of its files")]
     public async Task ThenTheVersionLockRecordsTheDigest(string version)
@@ -62,6 +100,12 @@ public sealed partial class VersioningSteps
     }
 
     private string LockPath => Path.Combine(_lockRoot!, SchemaVersionLock.RelativePath);
+
+    private List<string> Unlocked()
+    {
+        var locked = JsonSerializer.Deserialize<Dictionary<string, string>>(File.ReadAllText(LockPath))!;
+        return [.. Shipped.Keys.Select(static number => number.ToString()).Where(number => !locked.ContainsKey(number))];
+    }
 
     private void PrepareLockTree(IEnumerable<string> versions)
     {
@@ -95,4 +139,5 @@ public sealed partial class VersioningSteps
 
     private string? _lockRoot;
     private byte[] _lockBefore = [];
+    private IReadOnlyList<SchemaVersionLockFinding> _lockFindings = [];
 }

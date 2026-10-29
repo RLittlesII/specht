@@ -7,7 +7,7 @@ status: blocked
 value: 2
 risk: 3
 
-parent: "0041"
+parent: null
 children: []
 
 depends_on: ["0120"] # floats from the exact semver pin 0120 delivers
@@ -21,7 +21,7 @@ claims:
   - B-056
 
 created: "2026-10-09"
-updated: "2026-10-10"
+updated: "2026-10-29"
 closed: null
 
 summary: |
@@ -48,6 +48,15 @@ decisions:
     in round 7, so no Must item waits on a Could. The claims it carries
     are spec-author's cut. Status blocked: OQ-11 and
     OQ-16 are open.
+  - |
+    2026-10-29, the repository owner, choosing the recommended default:
+    this item leaves milestone 0.3.0 and 0041's children, with no
+    parent, and is listed under 0.4.0 in .issue/.goal. It is a Could,
+    and 0.3.0's done condition does not need it. B-053, B-054 and B-056
+    stay 0001-F7 claims carried here, and Missing, so 0041 cannot close
+    clean until they are re-homed or withdrawn; the spec's Tasks section
+    raises it and does not decide it. OQ-11, OQ-16, OQ-29 and OQ-50 stay
+    open, and the item stays blocked.
 
 out_of_scope:
   - "Any range but `latest-patch` and `latest-minor` — § 5 #8."
