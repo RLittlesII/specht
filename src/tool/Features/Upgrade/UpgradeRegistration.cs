@@ -23,7 +23,7 @@ public static class UpgradeRegistration
     public static IConfigurator AddUpgrade(this IConfigurator configuration)
     {
         configuration.AddCommand<UpgradeCommand>("upgrade")
-            .WithDescription("Bring the present frontmatter schemas and templates to the pinned schema version, never moving the pin.");
+            .WithDescription("Bring the present frontmatter schemas, templates and manifest keys to the pinned schema version, never moving the pin.");
         return configuration;
     }
 }

@@ -1,5 +1,7 @@
 using System.IO.Abstractions.TestingHelpers;
 using System.Text;
+using System.Text.Json;
+using System.Text.Json.Nodes;
 using AwesomeAssertions;
 using Specht.Tests.Shared;
 using Specht.Versioning;
@@ -9,9 +11,11 @@ namespace Specht.Tests.Upgrade;
 
 /// <summary>
 /// <c>specht upgrade</c> through Spectre's command tester over an in-memory file system and the shipped files (<c>0001-F7</c>
-/// B-005, B-006, B-007, B-052): a root's frontmatter schemas and templates are brought to the pin from an older or a newer
-/// version, a root already at its pin prints that it is current and rewrites nothing, only the manifest, the frontmatter
-/// schema folder and the templates folder may change, and the manifest is never rewritten.
+/// B-005, B-006, B-007, B-016, B-017, B-052, B-059): a root's frontmatter schemas and templates are brought to the pin from an
+/// older or a newer version, the keys the pin defines are added to the manifest and the consumer's settings kept, a root
+/// already at its pin prints that it is current and rewrites nothing, only the manifest, the frontmatter schema folder and
+/// the templates folder may change, a manifest that lacks no key is never rewritten, and a rewrite prints the pinned
+/// version and each rewritten file.
 /// </summary>
 [Trait("Tier", "Integration")]
 public sealed class UpgradeCommandIntegrationTests
@@ -54,8 +58,7 @@ public sealed class UpgradeCommandIntegrationTests
         var stamp = new DateTime(2026, 1, 2, 3, 4, 5, DateTimeKind.Utc);
         var shipped = UpgradeServices.Shipped();
         var fileSystem = new MockFileSystem();
-        fileSystem.AddFile(Path.Combine(root, ".specht/manifest.json"), new MockFileData($"{{\"schemaVersion\":\"{pin}\"}}") { LastWriteTime = stamp });
-        foreach (var file in shipped.At(Version(pin)).Where(static file => file.Relative != ".specht/manifest.json"))
+        foreach (var file in shipped.At(Version(pin)))
         {
             fileSystem.AddFile(Path.Combine(root, file.Relative), new MockFileData(file.Bytes) { LastWriteTime = stamp });
         }
@@ -118,7 +121,12 @@ public sealed class UpgradeCommandIntegrationTests
     {
         // Given
         var root = Path.GetFullPath("repo");
-        var manifest = Encoding.UTF8.GetBytes($"{{\r\n  \"schemaVersion\" : \"{pin}\",\r\n  \"rules\": {{\"SPEC031\": \"warning\"}}\r\n}}\r\n");
+        var defined = JsonNode.Parse(
+            UpgradeServices.Shipped().At(Version(pin)).Single(static file => file.Relative == ".specht/manifest.json").Bytes)!.AsObject();
+        defined["schemaVersion"] = pin;
+        defined["rules"] = new JsonObject { ["SPEC031"] = "warning" };
+        var manifest = Encoding.UTF8.GetBytes(
+            defined.ToJsonString(new JsonSerializerOptions { WriteIndented = true }).ReplaceLineEndings("\r\n") + "\r\n");
         var fileSystem = new MockFileSystem();
         fileSystem.AddFile(Path.Combine(root, ".specht/manifest.json"), new MockFileData(manifest));
         foreach (var file in UpgradeServices.Shipped().At(Version(files)).Where(static file => file.Relative != ".specht/manifest.json"))
@@ -136,13 +144,116 @@ public sealed class UpgradeCommandIntegrationTests
         fileSystem.File.ReadAllBytes(Path.Combine(root, ".specht/manifest.json")).Should().Equal(manifest);
     }
 
+    [Theory]
+    [ClassData(typeof(UpgradeVersionPairs))]
+    public void FilesOfAnotherVersionAndAManifestLackingKeys_WhenUpgraded_ShouldPrintTheVersionLineThenOneLinePerRewrittenFileAndNoDiff(
+        string files, string pin)
+    {
+        // Given
+        var root = Path.GetFullPath("repo");
+        var shipped = UpgradeServices.Shipped();
+        var present = shipped.At(Version(files)).Where(static file => file.Relative != ".specht/manifest.json").ToList();
+        var fileSystem = new MockFileSystem();
+        fileSystem.AddFile(Path.Combine(root, ".specht/manifest.json"), new MockFileData($"{{\"schemaVersion\":\"{pin}\"}}"));
+        foreach (var file in present)
+        {
+            fileSystem.AddFile(Path.Combine(root, file.Relative), new MockFileData(file.Bytes));
+        }
+
+        var app = UpgradeServices.App(fileSystem, new TestConsole());
+
+        // When
+        var result = app.Run("upgrade", "--root", "repo");
+
+        // Then
+        result.ExitCode.Should().Be(0, result.Output);
+        var differing = shipped.At(Version(pin))
+            .Where(file => present.Any(old => old.Relative == file.Relative && !old.Bytes.SequenceEqual(file.Bytes)))
+            .Select(static file => $"rewritten {file.Relative}");
+        result.Output.Split('\n').Should().Equal(
+            [$".specht/ rewritten to schemaVersion {pin}", "rewritten .specht/manifest.json", .. differing]);
+    }
+
+    [Fact]
+    public void CurrentFilesAndAManifestLackingOneKey_WhenUpgraded_ShouldExitZeroAndNameTheVersionAndTheManifest()
+    {
+        // Given
+        var root = Path.GetFullPath("repo");
+        var fileSystem = new MockFileSystem();
+        foreach (var file in UpgradeServices.Shipped().At(Version("0.2.0")))
+        {
+            fileSystem.AddFile(Path.Combine(root, file.Relative), new MockFileData(file.Bytes));
+        }
+
+        var manifest = JsonNode.Parse(fileSystem.File.ReadAllBytes(Path.Combine(root, ".specht/manifest.json")))!.AsObject();
+        manifest.Remove("claim").Should().BeTrue();
+        fileSystem.File.WriteAllText(Path.Combine(root, ".specht/manifest.json"), manifest.ToJsonString());
+        var app = UpgradeServices.App(fileSystem, new TestConsole());
+
+        // When
+        var result = app.Run("upgrade", "--root", "repo");
+
+        // Then
+        result.ExitCode.Should().Be(0, result.Output);
+        result.Output.Split('\n').Should().Equal(".specht/ rewritten to schemaVersion 0.2.0", "rewritten .specht/manifest.json");
+    }
+
+    [Fact]
+    public void ConsumerSettingsAndADefinedKeyWithTheConsumersValue_WhenUpgraded_ShouldKeepThemAndAddEveryOtherDefinedKey()
+    {
+        // Given
+        var root = Path.GetFullPath("repo");
+        var shipped = UpgradeServices.Shipped();
+        var defined = JsonNode.Parse(
+            shipped.At(Version("0.2.0")).Single(static file => file.Relative == ".specht/manifest.json").Bytes)!.AsObject();
+        var sections = defined["sections"]!.DeepClone().AsArray();
+        sections[2] = "3. Release criteria";
+        var roles = defined["roles"]!.DeepClone().AsObject();
+        roles["claims"] = "3. Release criteria";
+        var consumer = new JsonObject
+        {
+            ["schemaVersion"] = "0.2.0",
+            ["rules"] = new JsonObject { ["SPEC031"] = "warning", ["SPEC020"] = "off" },
+            ["sections"] = sections,
+            ["roles"] = roles,
+            ["claim"] = new JsonObject { ["tag"] = "@req:{claim}", ["tagIgnoreCase"] = true },
+        };
+        var fileSystem = new MockFileSystem();
+        fileSystem.AddFile(Path.Combine(root, ".specht/manifest.json"), new MockFileData(consumer.ToJsonString()));
+        foreach (var file in shipped.At(Version("0.1.0")).Where(static file => file.Relative != ".specht/manifest.json"))
+        {
+            fileSystem.AddFile(Path.Combine(root, file.Relative), new MockFileData(file.Bytes));
+        }
+
+        var app = UpgradeServices.App(fileSystem, new TestConsole());
+
+        // When
+        var result = app.Run("upgrade", "--root", "repo");
+
+        // Then
+        result.ExitCode.Should().Be(0, result.Output);
+        var written = JsonNode.Parse(fileSystem.File.ReadAllBytes(Path.Combine(root, ".specht/manifest.json")))!.AsObject();
+        foreach (var (key, value) in consumer)
+        {
+            JsonNode.DeepEquals(written[key], value).Should().BeTrue(key);
+        }
+
+        foreach (var (key, value) in defined.Where(member =>
+                     member.Key is not ("schemaVersion" or "identifiers") && !member.Key.StartsWith('$') && !consumer.ContainsKey(member.Key)))
+        {
+            JsonNode.DeepEquals(written[key], value).Should().BeTrue(key);
+        }
+    }
+
     [Fact]
     public void ATemplateThatCannotBeReplaced_WhenUpgraded_ShouldNameTheFileOnStandardErrorAndExitThree()
     {
         // Given
         var root = Path.GetFullPath("repo");
         var fileSystem = new MockFileSystem();
-        fileSystem.AddFile(Path.Combine(root, ".specht/manifest.json"), new MockFileData("{\"schemaVersion\":\"0.1.0\"}"));
+        fileSystem.AddFile(
+            Path.Combine(root, ".specht/manifest.json"),
+            new MockFileData(UpgradeServices.Shipped().At(Version("0.1.0")).Single(static file => file.Relative == ".specht/manifest.json").Bytes));
         fileSystem.AddFile(
             Path.Combine(root, ".specht/templates/feature.md"),
             new MockFileData("# A synthetic template with local edits\n") { Attributes = FileAttributes.ReadOnly });
