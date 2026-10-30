@@ -24,7 +24,9 @@ public static class UpgradeRegistration
     public static IConfigurator AddUpgrade(this IConfigurator configuration)
     {
         configuration.AddCommand<UpgradeCommand>("upgrade")
-            .WithDescription("Bring the present frontmatter schemas, templates and manifest keys to the pinned schema version, never moving the pin.");
+            .WithDescription(
+                "Bring the present frontmatter schemas, templates and manifest keys to the pinned schema version, never moving the pin; "
+                + "under schemaSource disk with no spechtSchema recorded, the schemas are left as they are and listed as skipped.");
         return configuration;
     }
 }

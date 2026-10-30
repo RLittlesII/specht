@@ -16,7 +16,9 @@ namespace Specht.Tool.Features.Upgrade;
 /// B-005), or each present schema and each present template a recorded upstream source hashes to the content its hash names
 /// (B-026, B-033, B-130, B-134, B-136), adds the keys the pinned version defines and the manifest lacks (B-016), leaves a
 /// root that already holds them as it was (B-006) and writes only through the store's replace once every read, comparison
-/// and fetch has succeeded (B-007, B-027, B-035, B-132, B-133, C-2).
+/// and fetch has succeeded (B-007, B-027, B-035, B-132, B-133, C-2). Under the on-disk source it plans no frontmatter
+/// schema (B-029, B-031) and, with no upstream source recorded, lists each one the pinned version ships that the root holds
+/// as skipped (B-030, B-143).
 /// </summary>
 /// <param name="loader">Reads and validates the manifest as the check does.</param>
 /// <param name="parser">Selects the pinned version.</param>
@@ -28,6 +30,7 @@ namespace Specht.Tool.Features.Upgrade;
 /// <implements epic="0001" feature="F7" claim="B-016" />
 /// <implements epic="0001" feature="F7" claim="B-026" />
 /// <implements epic="0001" feature="F7" claim="B-130" />
+/// <implements epic="0001" feature="F7" claim="B-030" />
 public sealed class UpgradeWriter(
     SpecSchemasLoader loader,
     SpecManifestParser parser,
@@ -38,11 +41,13 @@ public sealed class UpgradeWriter(
 {
     /// <summary>
     /// Rewrites each present file that differs from the pinned version's, each present schema or template a recorded source
-    /// hashes that differs from its hash, and the manifest when it lacks a key that version defines, and none other.
+    /// hashes that differs from its hash, and the manifest when it lacks a key that version defines, and none other; under
+    /// the on-disk source with no recorded source, lists each present shipped frontmatter schema as skipped without comparing
+    /// or writing it.
     /// </summary>
     /// <param name="root">The repository root.</param>
     /// <param name="cancellationToken">Cancels the run between files.</param>
-    /// <returns>The pin and the rewritten files.</returns>
+    /// <returns>The pin, the rewritten files and the skipped files.</returns>
     /// <exception cref="SpechtRootNotFoundException"><paramref name="root"/> is not a directory.</exception>
     /// <exception cref="SpechtManifestNotFoundException">The root holds no manifest.</exception>
     /// <exception cref="SpechtManifestUnreadableException">The manifest cannot be parsed.</exception>
@@ -70,6 +75,10 @@ public sealed class UpgradeWriter(
     /// <implements epic="0001" feature="F7" claim="B-137" />
     /// <implements epic="0001" feature="F7" claim="B-141" />
     /// <implements epic="0001" feature="F7" claim="B-021" />
+    /// <implements epic="0001" feature="F7" claim="B-029" />
+    /// <implements epic="0001" feature="F7" claim="B-030" />
+    /// <implements epic="0001" feature="F7" claim="B-031" />
+    /// <implements epic="0001" feature="F7" claim="B-143" />
     public async Task<UpgradeResult> Upgrade(string root, CancellationToken cancellationToken)
     {
         var structure = loader.LoadManifest(root);
@@ -78,6 +87,14 @@ public sealed class UpgradeWriter(
         var hashedTemplates = (structure.SpechtSchema?.Templates ?? [])
             .Select(static file => (File: file, Relative: SpecManifestStore.TemplateFolder + "/" + file.FileName))
             .ToList();
+        var skipped = structure.SchemaSource == SchemaSourceSelection.Disk && structure.SpechtSchema is null
+            ? shipped.At(pinned)
+                .Where(static file => file.Relative.StartsWith(SpecManifestStore.FrontmatterSchemaFolder + "/", StringComparison.Ordinal))
+                .Where(file => store.ReadConfigurationFile(root, file.Relative) is not null)
+                .Select(static file => new UpgradeSkip(file.Relative, "the on-disk source is selected"))
+                .OrderBy(static skip => skip.Relative, StringComparer.Ordinal)
+                .ToList()
+            : [];
         var plan = shipped.At(pinned)
             .Where(file => !frontmatterFromRoot
                            || !file.Relative.StartsWith(SpecManifestStore.FrontmatterSchemaFolder + "/", StringComparison.Ordinal))
@@ -124,6 +141,6 @@ public sealed class UpgradeWriter(
             }
         }
 
-        return new UpgradeResult(pinned, plan.Select(static file => file.Relative).ToList());
+        return new UpgradeResult(pinned, plan.Select(static file => file.Relative).ToList(), skipped);
     }
 }

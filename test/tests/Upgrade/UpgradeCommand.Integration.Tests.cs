@@ -23,7 +23,9 @@ namespace Specht.Tests.Upgrade;
 /// source on standard error, writes nothing and exits <c>3</c> (B-027, B-035), and so for a refused fetch of a template that
 /// source hashes (B-132, B-133). Under a pin the check rejects (B-021) the built tool is launched for both commands over a root
 /// on disk, since the check writes its standard error to the process's own stream, and the upgrade's standard error is the
-/// check's byte for byte.
+/// check's byte for byte. Under the on-disk source with no recorded source, one skip line per present shipped frontmatter
+/// schema follows the lines naming the rewritten files (B-030), or the current line when nothing is rewritten, and the run
+/// exits <c>0</c> (B-142).
 /// </summary>
 [Trait("Tier", "Integration")]
 public sealed class UpgradeCommandIntegrationTests
@@ -204,6 +206,42 @@ public sealed class UpgradeCommandIntegrationTests
         // Then
         result.ExitCode.Should().Be(0, result.Output);
         result.Output.Split('\n').Should().Equal(".specht/ rewritten to schemaVersion 0.2.0", "rewritten .specht/manifest.json");
+    }
+
+    [Theory]
+    [ClassData(typeof(UpgradeSkipListings))]
+    public void SchemasOfTheConsumersUnderTheOnDiskSource_WhenUpgraded_ShouldPrintTheCurrentOrRewrittenLinesThenOneSkipLinePerSchemaAndExitZero(
+        string edited, string[] lines)
+    {
+        // Given
+        var root = Path.GetFullPath("repo");
+        var shipped = UpgradeServices.Shipped().At(Version("0.2.0"));
+        var manifest = JsonNode.Parse(shipped.Single(static file => file.Relative == ".specht/manifest.json").Bytes)!.AsObject();
+        manifest["schemaSource"] = "disk";
+        var fileSystem = new MockFileSystem();
+        fileSystem.AddFile(Path.Combine(root, ".specht/manifest.json"), new MockFileData(manifest.ToJsonString()));
+        foreach (var file in shipped.Where(static file => file.Relative != ".specht/manifest.json"))
+        {
+            fileSystem.AddFile(
+                Path.Combine(root, file.Relative),
+                file.Relative.StartsWith(".specht/schema/frontmatter/", StringComparison.Ordinal)
+                    ? new MockFileData("{\"title\":\"A synthetic consumer schema\"}\n")
+                    : new MockFileData(file.Bytes));
+        }
+
+        if (edited.Length > 0)
+        {
+            fileSystem.File.WriteAllText(Path.Combine(root, ".specht/templates", edited), "# A synthetic template with local edits\n");
+        }
+
+        var app = UpgradeServices.App(fileSystem, new TestConsole());
+
+        // When
+        var result = app.Run("upgrade", "--root", "repo");
+
+        // Then
+        result.ExitCode.Should().Be(0, result.Output);
+        result.Output.Split('\n').Should().Equal(lines);
     }
 
     [Fact]

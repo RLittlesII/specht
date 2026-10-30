@@ -12,9 +12,9 @@ namespace Specht.Tool.Features.Upgrade;
 /// <summary>
 /// <c>specht upgrade</c> (<c>0001-F7</c>): brings the root's present frontmatter schemas and templates to the pinned version,
 /// adds the manifest keys that version defines, and names the version and each rewritten file, or says the root is already
-/// current. It parses, calls the writer, prints, and folds - nothing else.
+/// current, then names each skipped file and its reason. It parses, calls the writer, prints, and folds - nothing else.
 /// </summary>
-/// <param name="console">Where the current notice and the listing go.</param>
+/// <param name="console">Where the current notice, the listing and the skip lines go.</param>
 /// <param name="writer">The comparison and rewrite.</param>
 /// <param name="errorWriter">Where failures go; standard error when omitted.</param>
 /// <implements epic="0001" feature="F7" claim="B-005" />
@@ -31,6 +31,8 @@ public sealed class UpgradeCommand(IAnsiConsole console, UpgradeWriter writer, T
     /// <implements epic="0001" feature="F7" claim="B-027" />
     /// <implements epic="0001" feature="F7" claim="B-035" />
     /// <implements epic="0001" feature="F7" claim="B-021" />
+    /// <implements epic="0001" feature="F7" claim="B-030" />
+    /// <implements epic="0001" feature="F7" claim="B-142" />
     public override async Task<int> ExecuteAsync(CommandContext context, Settings settings, CancellationToken cancellationToken)
     {
         try
@@ -48,6 +50,11 @@ public sealed class UpgradeCommand(IAnsiConsole console, UpgradeWriter writer, T
                 {
                     console.Profile.Out.Writer.WriteLine($"rewritten {path}");
                 }
+            }
+
+            foreach (var skip in result.Skipped)
+            {
+                console.Profile.Out.Writer.WriteLine($"skipped {skip.Relative}: {skip.Reason}");
             }
 
             return ExitCodes.Success;

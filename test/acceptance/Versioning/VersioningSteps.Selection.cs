@@ -13,6 +13,7 @@ public sealed partial class VersioningSteps
     public void GivenTheManifestPinsSchemaVersion(string version) => WriteSchemaVersion(JsonValue.Create(version));
 
     [Given("the manifest records no upstream schema source")]
+    [Given("its manifest records no upstream schema source")]
     public void GivenNoUpstreamSource() => EditManifest(static manifest => manifest.Remove("spechtSchema"));
 
     [Given("the manifest selects the disk schema source")]

@@ -311,7 +311,8 @@ Feature: Schema versioning
     And the root is pinned to version 0.2.0 with the on-disk source selected
     And its manifest records no upstream schema source
     And the root holds the Feature and task schemas and no epic schema
-    And the root's templates are version 0.1.0's
+    And the root's templates are version 0.2.0's
+    And one of its templates has been edited by hand
     When upgrade runs against it
     Then after the templates it rewrote, the output names the Feature and task schemas as skipped, each with the reason
     And the output names no epic schema
@@ -320,7 +321,8 @@ Feature: Schema versioning
   Scenario: Upgrade still rewrites the templates under the on-disk source
     Given the tool ships schema versions 0.1.0 and 0.2.0
     And the root is pinned to version 0.2.0 with the on-disk source selected
-    And the root's templates are version 0.1.0's
+    And the root's templates are version 0.2.0's
+    And one of its templates has been edited by hand
     And its manifest names no template as the consumer's
     When upgrade runs against it
     Then the templates are version 0.2.0's

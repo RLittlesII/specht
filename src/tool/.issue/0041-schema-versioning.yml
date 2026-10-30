@@ -309,7 +309,7 @@ acceptance_criteria:
   - "B-139 — upgrade, no upstream source: an absent schema or template stays absent (0093)"
   - "B-140 — upgrade, upstream recorded: an absent fetched schema stays absent (0093)"
   - "B-141 — upgrade, upstream recorded: an absent hashed template stays absent (0291)"
-  - "B-142 — upgrade that only skips: current, then the skip lines, exit 0 (0094)"
+  - "B-142 — upgrade that only skips: current, then the skip lines, exit 0 (0094 on-disk-schema row, 0131 consumer-template row)"
   - "B-143 — upgrade, upstream recorded: no skip line for a schema (0094)"
   - "B-144 — upgrade, a named template the pin does not ship: output and exit code unchanged (0131)"
   - "§ 9 carries a row naming a test for each id above."
@@ -423,6 +423,10 @@ decisions:
     added. spec-author's cut, not an owner ruling: B-142 and B-143 join
     0094, which prints the first skip line, and B-144 joins 0131 beside
     B-063.
+  - |
+    2026-10-29, spec-author's cut, not an owner ruling: B-142 is carried
+    by 0094 for its on-disk-schema row and by 0131 for its
+    consumer-template row, which needs B-061's template skips.
 
 out_of_scope:
   - "Everything in § 5 of the spec."

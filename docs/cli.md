@@ -7,7 +7,7 @@ type: reference
 # Command line
 
 `specht` checks a tree, `frontmatter` checks one document, `specht init` writes the files a check needs, and
-`schema` groups commands for the repository's schema version. `specht upgrade` brings its schemas and templates to the pin.
+`schema` groups commands for the repository's schema version. `specht upgrade` brings its schemas and templates to the pin, skipping the schemas under `schemaSource` `disk` with no `spechtSchema`.
 `evidence` reconciles supplied build and runner exports. `rules` lists the pinned rules and their effective levels.
 `manifest` prints the effective configuration or the newest shipped default.
 Installed as a local tool, each runs as `dotnet specht`.
@@ -445,7 +445,9 @@ specht upgrade [--root <DIR>]
 ```
 
 Brings the frontmatter schemas and templates under `<DIR>/.specht/` to the bytes
-the manifest's pinned version ships. It rewrites a file that is present and
+the manifest's pinned version ships. Under `schemaSource` `disk` with no
+`spechtSchema` recorded, the schemas are left as they are and listed as
+skipped. It rewrites a file that is present and
 differs, and leaves a file that is absent absent; `specht init --schemas` or
 `--templates` adds a missing part. It adds to the manifest each top-level key
 the pinned version's manifest defines and it lacks, other than `schemaVersion`,
@@ -473,7 +475,9 @@ every template it does not hash still comes from the pinned version.
 `.specht/ is current at schemaVersion <pin>`. After a rewrite,
 `.specht/ rewritten to schemaVersion <pin>`, then `rewritten <path>` for each
 rewritten file; `.specht/manifest.json` is listed only when a key was added, and
-then first. No diff.
+then first. Then `skipped <path>: <reason>` for each file left alone: with
+`schemaSource` `disk` and no `spechtSchema`, each present frontmatter schema the
+pinned version ships. A run that only skips is current. No diff.
 
 **Exit codes.** `0` on success; `2` for a missing root or manifest; `3` for an
 invalid manifest, an unshipped pin, or a recorded source that cannot be
