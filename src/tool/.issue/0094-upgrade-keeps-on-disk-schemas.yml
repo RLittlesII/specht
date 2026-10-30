@@ -2,7 +2,7 @@ id: "0094"
 type: task
 title: Leave on-disk frontmatter schemas alone on upgrade
 
-status: ready-for-architecture
+status: done
 
 risk: 2
 
@@ -23,7 +23,7 @@ claims:
 
 created: "2026-10-08"
 updated: "2026-10-29"
-closed: null
+closed: "2026-10-29"
 
 summary: |
   With the on-disk source selected, `upgrade` brings the templates the
@@ -35,7 +35,7 @@ acceptance_criteria:
   - "B-029 — on-disk source: none of the pinned version's frontmatter schemas written"
   - "B-030 — no record: one `skipped <path>: <reason>` line after the rewritten ones, for each present schema the pinned version ships, by its shipped name"
   - "B-031 — the templates the manifest does not name rewritten to the pinned version's and listed"
-  - "B-142 — nothing rewritten and a file skipped: current, then the skip lines, exit 0"
+  - "B-142 — nothing rewritten and a schema skipped: current, then the skip lines, exit 0 (its on-disk-schema row)"
   - "B-143 — an upstream source recorded: no skip line for a schema"
   - "§ 9 carries a row naming a test for each id above."
 
@@ -61,6 +61,11 @@ decisions:
     recorded; `upgrade` takes no `--schema-source`. B-030 amended.
     spec-author's cut, not an owner ruling: B-142 and B-143 join this
     item, which prints the first skip line; 0131 reuses the line.
+  - |
+    2026-10-29, spec-author's cut, not an owner ruling: B-142's
+    consumer-template Examples row passes to 0131, which builds B-061's
+    template skips; this item carries its on-disk-schema row. Claims
+    and dependencies unchanged.
 
 out_of_scope:
   - "Overwriting a consumer's frontmatter schemas — C-2."

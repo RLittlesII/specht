@@ -9,7 +9,7 @@ risk: 3
 parent: "0041"
 children: []
 
-depends_on: ["0130", "0045", "0047", "0290"] # reads 0130's key; narrows the rewrite 0045 performs; extends 0047's listing of what changed; reads the template hashes 0290 defines
+depends_on: ["0130", "0045", "0047", "0290", "0094"] # reads 0130's key; narrows the rewrite 0045 performs; extends 0047's listing of what changed; reads the template hashes 0290 defines; reuses the skip record and line 0094 adds
 spikes: []
 
 spec: src/tool/.spec/README.md
@@ -22,6 +22,7 @@ claims:
   - B-062
   - B-063
   - B-135
+  - B-142
   - B-144
 
 created: "2026-10-09"
@@ -46,6 +47,7 @@ acceptance_criteria:
   - "B-062 — an unnamed template no source hashes, that differs, is rewritten"
   - "B-063 — no template file the pinned version does not ship is touched"
   - "B-135 — a named template the upstream source hashes is not written"
+  - "B-142 — only a named template skipped: current, then its skip line, exit 0 (its consumer-template row)"
   - "B-144 — a named template the pinned version does not ship: output and exit code as with no such name"
   - "B-005 — a template named: the frontmatter schemas still rewritten (its `@boundary` scenario)"
   - "B-006 — only a named template differs: current, nothing rewritten (its second scenario)"
@@ -74,6 +76,11 @@ decisions:
     on the bare file name, a design choice for § 7. B-061 amended.
     spec-author's cut, not an owner ruling: B-144 joins this item beside
     B-063.
+  - |
+    2026-10-29, spec-author's cut, not an owner ruling: B-142 joins this
+    item for its consumer-template Examples row, which needs B-061's
+    template skips; 0094 carries its on-disk-schema row. Without it no
+    open item would finish B-142 once 0094 closes.
 
 out_of_scope:
   - "The key and the check under it — 0130."

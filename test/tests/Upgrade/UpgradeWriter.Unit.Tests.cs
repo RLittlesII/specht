@@ -5,13 +5,14 @@ using System.Text.Json.Nodes;
 using AwesomeAssertions;
 using Specht.Manifest;
 using Specht.Tests.Shared;
+using Specht.Tool.Features.Upgrade;
 using Specht.Versioning;
 
 namespace Specht.Tests.Upgrade;
 
 /// <summary>
 /// The comparison and rewrite beneath <c>specht upgrade</c> (<c>0001-F7</c> B-005, B-006, B-007, B-016, B-017, B-018, B-019,
-/// B-020, B-021, B-029, B-052, B-059, B-138, B-139; C-2): the manifest is planned like any file, its planned bytes those with
+/// B-020, B-021, B-029, B-031, B-052, B-059, B-138, B-139; C-2): the manifest is planned like any file, its planned bytes those with
 /// the pinned version's missing keys added, and a missing root or manifest, or a manifest the loader rejects, throws before any
 /// file is written; a pin the check rejects throws the rejection the check's schema loader throws for the same root. Under a
 /// recorded upstream schema source (B-026, B-027, B-033, B-034, B-035, B-067, B-082, B-083, B-140; C-9, C-10, C-15) the writer
@@ -20,7 +21,10 @@ namespace Specht.Tests.Upgrade;
 /// no request carries a credential. A template that source hashes and the manifest does not name as the consumer's (B-130,
 /// B-132 to B-134, B-136, B-137, B-141; C-8 to C-10) is fetched and written only when its present copy differs from its hash,
 /// is kept when it matches even where the pinned version's differs, stays absent when the root lacks it, refuses a fetch it
-/// cannot verify before anything is written, and is asked for without a credential.
+/// cannot verify before anything is written, and is asked for without a credential. Under the on-disk source with no
+/// recorded source (B-030) each frontmatter schema the pinned version ships that the root holds by its shipped name is listed
+/// as skipped with its reason and left as it was, and an absent one is not listed; a recorded source, with or without the
+/// on-disk selection, gives no skip (B-143), and the embedded source rewrites the schemas and skips nothing.
 /// </summary>
 [Trait("Tier", "Unit")]
 public sealed class UpgradeWriterUnitTests
@@ -127,6 +131,84 @@ public sealed class UpgradeWriterUnitTests
             {
                 bytes.Should().Equal(file.Bytes, file.Relative);
             }
+        }
+    }
+
+    [Theory]
+    [ClassData(typeof(OnDiskSchemaRoots))]
+    public async Task PresentShippedSchemasUnderTheOnDiskSourceWithNoRecord_WhenUpgraded_ShouldListEachByItsShippedNameAsSkippedAndLeaveItsBytes(
+        string manifest, string[] present, string[] skipped)
+    {
+        // Given
+        var stamp = new DateTime(2026, 1, 2, 3, 4, 5, DateTimeKind.Utc);
+        var fileSystem = new MockFileSystem();
+        fileSystem.AddFile("repo/.specht/manifest.json", new MockFileData(manifest) { LastWriteTime = stamp });
+        foreach (var name in present)
+        {
+            fileSystem.AddFile(
+                "repo/.specht/schema/frontmatter/" + name, new MockFileData("{\"title\":\"A synthetic consumer schema\"}\n") { LastWriteTime = stamp });
+        }
+
+        var before = fileSystem.AllFiles.ToDictionary(
+            static path => path, path => (fileSystem.File.ReadAllBytes(path), fileSystem.File.GetLastWriteTimeUtc(path)));
+
+        // When
+        var result = await UpgradeServices.Writer(fileSystem).Upgrade("repo", CancellationToken.None);
+
+        // Then
+        result.Skipped.Should().Equal(skipped.Select(static path => new UpgradeSkip(path, "the on-disk source is selected")));
+        result.Rewritten.Should().BeEmpty();
+        fileSystem.AllFiles.Should().BeEquivalentTo(before.Keys);
+        foreach (var (path, (bytes, written)) in before)
+        {
+            fileSystem.File.ReadAllBytes(path).Should().Equal(bytes, path);
+            fileSystem.File.GetLastWriteTimeUtc(path).Should().Be(written, path);
+        }
+    }
+
+    [Theory]
+    [ClassData(typeof(UpgradeRecordedSourceManifests))]
+    public async Task ARecordedSourceWithOrWithoutTheOnDiskSelection_WhenUpgraded_ShouldSkipNoSchema(string manifest)
+    {
+        // Given
+        var fileSystem = new MockFileSystem();
+        fileSystem.AddFile("repo/.specht/manifest.json", new MockFileData(manifest));
+        foreach (var file in UpgradeServices.Shipped().At(new SemanticVersion(0, 2, 0)).Where(static file => file.Relative != ".specht/manifest.json"))
+        {
+            fileSystem.AddFile("repo/" + file.Relative, new MockFileData(file.Bytes));
+        }
+
+        // When
+        var result = await UpgradeServices.Writer(fileSystem).Upgrade("repo", CancellationToken.None);
+
+        // Then
+        result.Skipped.Should().BeEmpty();
+    }
+
+    [Theory]
+    [ClassData(typeof(UpgradeEmbeddedManifests))]
+    public async Task SchemasOfAnotherVersionUnderTheEmbeddedSource_WhenUpgraded_ShouldRewriteThemAndSkipNothing(string manifest)
+    {
+        // Given
+        var pinned = UpgradeServices.Shipped().At(new SemanticVersion(0, 2, 0));
+        var fileSystem = new MockFileSystem();
+        fileSystem.AddFile("repo/.specht/manifest.json", new MockFileData(manifest));
+        foreach (var file in UpgradeServices.Shipped().At(new SemanticVersion(0, 1, 0)).Where(static file => file.Relative != ".specht/manifest.json"))
+        {
+            fileSystem.AddFile("repo/" + file.Relative, new MockFileData(file.Bytes));
+        }
+
+        // When
+        var result = await UpgradeServices.Writer(fileSystem).Upgrade("repo", CancellationToken.None);
+
+        // Then
+        result.Skipped.Should().BeEmpty();
+        var schemas = pinned.Where(static file => file.Relative.StartsWith(".specht/schema/frontmatter/", StringComparison.Ordinal)).ToList();
+        schemas.Should().NotBeEmpty();
+        result.Rewritten.Should().Contain(schemas.Select(static file => file.Relative));
+        foreach (var file in schemas)
+        {
+            fileSystem.File.ReadAllBytes("repo/" + file.Relative).Should().Equal(file.Bytes, file.Relative);
         }
     }
 
