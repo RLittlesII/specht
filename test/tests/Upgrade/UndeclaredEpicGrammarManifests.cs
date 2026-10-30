@@ -1,5 +1,6 @@
 using System.Security.Cryptography;
 using System.Text.Json.Nodes;
+using Specht.Tool.Features;
 using Specht.Versioning;
 
 namespace Specht.Tests.Upgrade;
@@ -14,7 +15,7 @@ public sealed class UndeclaredEpicGrammarManifests : TheoryData<string>
 {
     public UndeclaredEpicGrammarManifests()
     {
-        var shipped = UpgradeServices.Shipped();
+        ShippedFiles shipped = new ShippedFilesFixture();
         var defined = JsonNode.Parse(
             shipped.At(new SemanticVersion(0, 2, 0)).Single(static file => file.Relative == ".specht/manifest.json").Bytes)!.AsObject();
         var schemas = shipped.At(new SemanticVersion(0, 1, 0)).ToDictionary(static file => file.Relative, static file => file.Bytes, StringComparer.Ordinal);

@@ -7,7 +7,7 @@ type: reference
 # Command line
 
 `specht` checks a tree, `frontmatter` checks one document, `specht init` writes the files a check needs, and
-`schema` groups commands for the repository's schema version. `specht upgrade` brings its schemas and templates to the pin, skipping the schemas under `schemaSource` `disk` with no `spechtSchema`.
+`schema` groups commands for the repository's schema version. `specht upgrade` brings its schemas and templates to the pin, skipping the schemas under `schemaSource` `disk` with no `spechtSchema` and the templates named in `consumerTemplates`.
 `evidence` reconciles supplied build and runner exports. `rules` lists the pinned rules and their effective levels.
 `manifest` prints the effective configuration or the newest shipped default.
 Installed as a local tool, each runs as `dotnet specht`.
@@ -447,7 +447,10 @@ specht upgrade [--root <DIR>]
 Brings the frontmatter schemas and templates under `<DIR>/.specht/` to the bytes
 the manifest's pinned version ships. Under `schemaSource` `disk` with no
 `spechtSchema` recorded, the schemas are left as they are and listed as
-skipped. It rewrites a file that is present and
+skipped. A template named in `consumerTemplates` is never read or written,
+whatever source is selected or recorded, and is listed as skipped. A name
+matches a shipped template's file name exactly, case included; a name the
+pinned version does not ship has no effect. It rewrites a file that is present and
 differs, and leaves a file that is absent absent; `specht init --schemas` or
 `--templates` adds a missing part. It adds to the manifest each top-level key
 the pinned version's manifest defines and it lacks, other than `schemaVersion`,
@@ -464,7 +467,8 @@ and an absent one stays absent. A failed fetch or hash check writes nothing.
 The record itself is never changed. A template the record hashes under
 `templates`, and the manifest does not name in `consumerTemplates`, is treated
 the same way; one it hashes and the manifest names there is left untouched, and
-every template it does not hash still comes from the pinned version.
+every template it neither hashes nor the manifest names still comes from the
+pinned version.
 
 | Option         | Value   | Default               | Does                                          |
 | -------------- | ------- | --------------------- | --------------------------------------------- |
@@ -475,9 +479,12 @@ every template it does not hash still comes from the pinned version.
 `.specht/ is current at schemaVersion <pin>`. After a rewrite,
 `.specht/ rewritten to schemaVersion <pin>`, then `rewritten <path>` for each
 rewritten file; `.specht/manifest.json` is listed only when a key was added, and
-then first. Then `skipped <path>: <reason>` for each file left alone: with
-`schemaSource` `disk` and no `spechtSchema`, each present frontmatter schema the
-pinned version ships. A run that only skips is current. No diff.
+then first. Then `skipped <path>: <reason>` for each file left alone, in path
+order: with `schemaSource` `disk` and no `spechtSchema`, each present frontmatter
+schema the pinned version ships; and each template named in `consumerTemplates`
+that the pinned version ships, present or not, as
+`skipped .specht/templates/<name>: named in consumerTemplates`. A run that only
+skips is current. No diff.
 
 **Exit codes.** `0` on success; `2` for a missing root or manifest; `3` for an
 invalid manifest, an unshipped pin, or a recorded source that cannot be

@@ -2,7 +2,7 @@ id: "0131"
 type: task
 title: Leave the consumer's templates alone on upgrade
 
-status: ready-for-architecture
+status: done
 
 risk: 3
 
@@ -27,7 +27,7 @@ claims:
 
 created: "2026-10-09"
 updated: "2026-10-29"
-closed: null
+closed: "2026-10-29"
 
 summary: |
   As a maintainer with a template of my own, I want `upgrade` to leave

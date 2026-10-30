@@ -26,7 +26,8 @@ public static class UpgradeRegistration
         configuration.AddCommand<UpgradeCommand>("upgrade")
             .WithDescription(
                 "Bring the present frontmatter schemas, templates and manifest keys to the pinned schema version, never moving the pin; "
-                + "under schemaSource disk with no spechtSchema recorded, the schemas are left as they are and listed as skipped.");
+                + "under schemaSource disk with no spechtSchema recorded, the schemas are left as they are and listed as skipped, "
+                + "and each template named in consumerTemplates is always left as it is and listed as skipped.");
         return configuration;
     }
 }

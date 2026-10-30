@@ -1,5 +1,6 @@
 using System.Security.Cryptography;
 using System.Text.Json.Nodes;
+using Specht.Tool.Features;
 using Specht.Versioning;
 
 namespace Specht.Tests.Upgrade;
@@ -16,7 +17,7 @@ public sealed class UpgradeOfflineManifests : TheoryData<string>
 {
     public UpgradeOfflineManifests()
     {
-        var shipped = UpgradeServices.Shipped().At(new SemanticVersion(0, 2, 0));
+        var shipped = _shipped.At(new SemanticVersion(0, 2, 0));
         var defined = JsonNode.Parse(shipped.Single(static file => file.Relative == ".specht/manifest.json").Bytes)!.AsObject();
 
         var recorded = defined.DeepClone().AsObject();
@@ -45,4 +46,6 @@ public sealed class UpgradeOfflineManifests : TheoryData<string>
         disk["schemaSource"] = "disk";
         Add(disk.ToJsonString());
     }
+
+    private readonly ShippedFiles _shipped = new ShippedFilesFixture();
 }

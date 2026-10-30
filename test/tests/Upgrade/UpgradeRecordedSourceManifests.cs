@@ -1,5 +1,6 @@
 using System.Security.Cryptography;
 using System.Text.Json.Nodes;
+using Specht.Tool.Features;
 using Specht.Versioning;
 
 namespace Specht.Tests.Upgrade;
@@ -14,7 +15,7 @@ public sealed class UpgradeRecordedSourceManifests : TheoryData<string>
 {
     public UpgradeRecordedSourceManifests()
     {
-        var shipped = UpgradeServices.Shipped().At(new SemanticVersion(0, 2, 0));
+        var shipped = _shipped.At(new SemanticVersion(0, 2, 0));
         var recorded = JsonNode.Parse(shipped.Single(static file => file.Relative == ".specht/manifest.json").Bytes)!.AsObject();
         recorded["spechtSchema"] = new JsonObject
         {
@@ -31,4 +32,6 @@ public sealed class UpgradeRecordedSourceManifests : TheoryData<string>
         disk["schemaSource"] = "disk";
         Add(disk.ToJsonString());
     }
+
+    private readonly ShippedFiles _shipped = new ShippedFilesFixture();
 }

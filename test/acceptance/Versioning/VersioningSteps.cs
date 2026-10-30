@@ -47,7 +47,7 @@ namespace Specht.Acceptance.Versioning;
 /// Item 0291 binds B-130 to B-134, B-136, B-137 and B-141 over that in-process upgrade: the record hashes synthetic
 /// feature-template bytes the source serves at its location followed by <c>feature.md</c>, the root's feature template is
 /// written by the step that says how it stands against that hash, and each refusal is the source answering for that file
-/// name, or for every file, as for a schema. B-135's consumer-named template stays unbound for item 0131.
+/// name, or for every file, as for a schema. B-135's consumer-named template is item 0131's, bound in the consumer-template steps.
 /// Item 0126 binds B-086 and B-087 over the embedded resources and their declared addresses. The
 /// partial lock bindings execute B-089 to B-093 over synthetic shipping files on disk.
 /// B-012 runs the existing init writer over synthetic versioned manifests on disk and reads the written pin. Item 0046

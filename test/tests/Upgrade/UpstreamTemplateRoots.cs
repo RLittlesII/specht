@@ -1,6 +1,7 @@
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json.Nodes;
+using Specht.Tool.Features;
 using Specht.Versioning;
 
 namespace Specht.Tests.Upgrade;
@@ -18,7 +19,7 @@ public sealed class UpstreamTemplateRoots : TheoryData<string, string, string>
 {
     public UpstreamTemplateRoots()
     {
-        var shipped = UpgradeServices.Shipped().At(new SemanticVersion(0, 2, 0));
+        var shipped = _shipped.At(new SemanticVersion(0, 2, 0));
         foreach (var name in new[] { "feature.md", "lesson.md" })
         {
             var manifest = JsonNode.Parse(shipped.Single(static file => file.Relative == ".specht/manifest.json").Bytes)!.AsObject();
@@ -39,4 +40,6 @@ public sealed class UpstreamTemplateRoots : TheoryData<string, string, string>
             Add(manifest.ToJsonString(), name, text);
         }
     }
+
+    private readonly ShippedFiles _shipped = new ShippedFilesFixture();
 }

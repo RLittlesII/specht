@@ -10,9 +10,10 @@ using Spectre.Console.Cli;
 namespace Specht.Tool.Features.Upgrade;
 
 /// <summary>
-/// <c>specht upgrade</c> (<c>0001-F7</c>): brings the root's present frontmatter schemas and templates to the pinned version,
-/// adds the manifest keys that version defines, and names the version and each rewritten file, or says the root is already
-/// current, then names each skipped file and its reason. It parses, calls the writer, prints, and folds - nothing else.
+/// <c>specht upgrade</c> (<c>0001-F7</c>): brings the root's present frontmatter schemas and templates, other than those the
+/// manifest names as the consumer's, to the pinned version, adds the manifest keys that version defines, and names the
+/// version and each rewritten file, or says the root is already current, then names each skipped file and its reason. It
+/// parses, calls the writer, prints, and folds - nothing else.
 /// </summary>
 /// <param name="console">Where the current notice, the listing and the skip lines go.</param>
 /// <param name="writer">The comparison and rewrite.</param>
@@ -33,6 +34,8 @@ public sealed class UpgradeCommand(IAnsiConsole console, UpgradeWriter writer, T
     /// <implements epic="0001" feature="F7" claim="B-021" />
     /// <implements epic="0001" feature="F7" claim="B-030" />
     /// <implements epic="0001" feature="F7" claim="B-142" />
+    /// <implements epic="0001" feature="F7" claim="B-006" />
+    /// <implements epic="0001" feature="F7" claim="B-061" />
     public override async Task<int> ExecuteAsync(CommandContext context, Settings settings, CancellationToken cancellationToken)
     {
         try

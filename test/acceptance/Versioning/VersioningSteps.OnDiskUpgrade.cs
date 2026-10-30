@@ -15,7 +15,7 @@ namespace Specht.Acceptance.Versioning;
 /// Upgrade under the on-disk source (0001-F7 B-029 to B-031, B-142, B-143; item 0094): each scenario launches the built
 /// tool's upgrade over the Background root, or runs it in process under a recorded source, and reads its standard output.
 /// A skip line is read as <c>skipped &lt;path&gt;: &lt;reason&gt;</c> with a reason that is not empty. B-142's row whose
-/// manifest names the feature template as the consumer's stays unbound for item 0131.
+/// manifest names the feature template as the consumer's is item 0131's, bound in the consumer-template steps.
 /// </summary>
 public sealed partial class VersioningSteps
 {

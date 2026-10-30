@@ -1,4 +1,5 @@
 using System.Text.Json.Nodes;
+using Specht.Tool.Features;
 using Specht.Versioning;
 
 namespace Specht.Tests.Upgrade;
@@ -13,11 +14,13 @@ public sealed class UpgradeEmbeddedManifests : TheoryData<string>
     public UpgradeEmbeddedManifests()
     {
         var defined = JsonNode.Parse(
-            UpgradeServices.Shipped().At(new SemanticVersion(0, 2, 0)).Single(static file => file.Relative == ".specht/manifest.json").Bytes)!.AsObject();
+            _shipped.At(new SemanticVersion(0, 2, 0)).Single(static file => file.Relative == ".specht/manifest.json").Bytes)!.AsObject();
         Add(defined.ToJsonString());
 
         var embedded = defined.DeepClone().AsObject();
         embedded["schemaSource"] = "embedded";
         Add(embedded.ToJsonString());
     }
+
+    private readonly ShippedFiles _shipped = new ShippedFilesFixture();
 }

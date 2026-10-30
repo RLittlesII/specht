@@ -816,8 +816,8 @@ Feature: Schema versioning
 
   @B-061
   Scenario: Upgrade says which templates it skipped and why
-    Given the tool ships schema versions 0.1.0 and 0.2.0
-    And the root is pinned to version 0.2.0 and its frontmatter schemas and templates are version 0.1.0's
+    Given the tool ships schema versions 0.2.0 and 0.2.1
+    And the root is pinned to version 0.2.1 and its frontmatter schemas and templates are version 0.2.0's
     And its manifest names the feature template as the consumer's
     When upgrade runs against it
     Then after the templates it rewrote, the output names the feature template as skipped, with the reason
@@ -839,21 +839,21 @@ Feature: Schema versioning
 
   @B-062
   Scenario: Upgrade still rewrites the templates the consumer does not own
-    Given the tool ships schema versions 0.1.0 and 0.2.0
-    And the root is pinned to version 0.2.0 and its templates are version 0.1.0's, which differ from version 0.2.0's
+    Given the tool ships schema versions 0.2.0 and 0.2.1
+    And the root is pinned to version 0.2.1 and its templates are version 0.2.0's, which differ from version 0.2.1's
     And its manifest names the feature template as the consumer's
     When upgrade runs against it
-    Then every template but the feature template is version 0.2.0's
+    Then every template but the feature template is version 0.2.1's
 
   @B-063 @boundary
   Scenario Outline: Upgrade leaves alone a template file the tool does not ship
-    Given the tool ships schema versions 0.1.0 and 0.2.0
-    And the root is pinned to version 0.2.0 and its frontmatter schemas and templates are version 0.1.0's
-    And its templates folder holds a runbook template that version 0.2.0 does not ship
+    Given the tool ships schema versions 0.2.0 and 0.2.1
+    And the root is pinned to version 0.2.1 and its frontmatter schemas and templates are version 0.2.0's
+    And its templates folder holds a runbook template that version 0.2.1 does not ship
     And its manifest <naming> the runbook template as the consumer's
     When upgrade runs against it
     Then the runbook template is still there, as the consumer wrote it
-    And the templates folder holds no new file that version 0.2.0 does not ship
+    And the templates folder holds no new file that version 0.2.1 does not ship
 
     Examples:
       | naming        |
@@ -862,8 +862,8 @@ Feature: Schema versioning
 
   @B-144 @boundary
   Scenario Outline: A template name the pinned version does not ship changes nothing in upgrade
-    Given the tool ships schema versions 0.1.0 and 0.2.0
-    And two copies of a root pinned to version 0.2.0 whose frontmatter schemas and templates are version 0.1.0's
+    Given the tool ships schema versions 0.2.0 and 0.2.1
+    And two copies of a root pinned to version 0.2.1 whose frontmatter schemas and templates are version 0.2.0's
     And one copy's manifest names <name> as the consumer's and the other's names no template
     When upgrade runs against each copy
     Then the two outputs are the same
@@ -871,7 +871,7 @@ Feature: Schema versioning
 
     Examples:
       | name                                                  |
-      | a runbook template, which version 0.2.0 does not ship |
+      | a runbook template, which version 0.2.1 does not ship |
       | a misspelling of the feature template                 |
 
   @B-005 @boundary
