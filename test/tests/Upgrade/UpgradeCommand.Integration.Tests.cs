@@ -25,7 +25,10 @@ namespace Specht.Tests.Upgrade;
 /// on disk, since the check writes its standard error to the process's own stream, and the upgrade's standard error is the
 /// check's byte for byte. Under the on-disk source with no recorded source, one skip line per present shipped frontmatter
 /// schema follows the lines naming the rewritten files (B-030), or the current line when nothing is rewritten, and the run
-/// exits <c>0</c> (B-142).
+/// exits <c>0</c> (B-142). A template the manifest names in <c>consumerTemplates</c> and the pinned version ships gets one
+/// skip line, edited, identical or absent, after the lines naming the rewritten files or the current line, in one ordinal
+/// listing with the on-disk schema skips, and the run exits <c>0</c> (B-006, B-061, B-062, B-142); a name the pinned version
+/// does not ship gives the output and exit code of the same root without the name (B-144).
 /// </summary>
 [Trait("Tier", "Integration")]
 public sealed class UpgradeCommandIntegrationTests
@@ -458,6 +461,68 @@ public sealed class UpgradeCommandIntegrationTests
             fileSystem.File.ReadAllBytes(path).Should().Equal(bytes, path);
             fileSystem.File.GetLastWriteTimeUtc(path).Should().Be(written, path);
         }
+    }
+
+    [Theory]
+    [ClassData(typeof(ConsumerTemplateListings))]
+    public void TemplatesTheManifestNamesAsTheConsumers_WhenUpgraded_ShouldPrintTheCurrentOrRewrittenLinesThenOneSkipLinePerSkippedFileAndExitZero(
+        string manifest, string[] edited, string[] absent, string[] lines)
+    {
+        // Given
+        var root = Path.GetFullPath("repo");
+        var fileSystem = new MockFileSystem();
+        fileSystem.AddFile(Path.Combine(root, ".specht/manifest.json"), new MockFileData(manifest));
+        foreach (var file in UpgradeServices.Shipped().At(Version("0.2.0"))
+                     .Where(file => file.Relative != ".specht/manifest.json" && !absent.Any(name => file.Relative == ".specht/templates/" + name)))
+        {
+            fileSystem.AddFile(Path.Combine(root, file.Relative), new MockFileData(file.Bytes));
+        }
+
+        foreach (var name in edited)
+        {
+            fileSystem.File.WriteAllText(Path.Combine(root, ".specht/templates", name), "# A synthetic template with local edits\n");
+        }
+
+        var app = UpgradeServices.App(fileSystem, new TestConsole());
+
+        // When
+        var result = app.Run("upgrade", "--root", "repo");
+
+        // Then
+        result.ExitCode.Should().Be(0, result.Output);
+        result.Output.Split('\n').Should().Equal(lines);
+    }
+
+    [Theory]
+    [ClassData(typeof(UnshippedTemplateNames))]
+    public void ATemplateNameThePinnedVersionDoesNotShip_WhenUpgraded_ShouldPrintAndExitAsTheSameRootWithoutTheName(string manifest, string name)
+    {
+        // Given
+        var root = Path.GetFullPath("repo");
+        var named = JsonNode.Parse(manifest)!.AsObject();
+        named["consumerTemplates"] = new JsonArray(name);
+        var withName = new MockFileSystem();
+        var without = new MockFileSystem();
+        foreach (var (fileSystem, text) in new[] { (withName, named.ToJsonString()), (without, manifest) })
+        {
+            fileSystem.AddFile(Path.Combine(root, ".specht/manifest.json"), new MockFileData(text));
+            foreach (var file in UpgradeServices.Shipped().At(Version("0.1.0")).Where(static file => file.Relative != ".specht/manifest.json"))
+            {
+                fileSystem.AddFile(Path.Combine(root, file.Relative), new MockFileData(file.Bytes));
+            }
+
+            fileSystem.File.WriteAllText(Path.Combine(root, ".specht/templates/feature.md"), "# A synthetic template with local edits\n");
+            fileSystem.File.WriteAllText(Path.Combine(root, ".specht/templates/runbook.md"), "# A synthetic runbook template of the consumer's\n");
+        }
+
+        // When
+        var expected = UpgradeServices.App(without, new TestConsole()).Run("upgrade", "--root", "repo");
+        var result = UpgradeServices.App(withName, new TestConsole()).Run("upgrade", "--root", "repo");
+
+        // Then
+        expected.Output.Should().Contain("rewritten .specht/templates/feature.md");
+        result.Output.Should().Be(expected.Output);
+        result.ExitCode.Should().Be(expected.ExitCode);
     }
 
     private static SemanticVersion Version(string text) =>

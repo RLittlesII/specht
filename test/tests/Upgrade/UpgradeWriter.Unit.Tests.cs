@@ -24,7 +24,14 @@ namespace Specht.Tests.Upgrade;
 /// cannot verify before anything is written, and is asked for without a credential. Under the on-disk source with no
 /// recorded source (B-030) each frontmatter schema the pinned version ships that the root holds by its shipped name is listed
 /// as skipped with its reason and left as it was, and an absent one is not listed; a recorded source, with or without the
-/// on-disk selection, gives no skip (B-143), and the embedded source rewrites the schemas and skips nothing.
+/// on-disk selection, gives no skip (B-143), and the embedded source rewrites the schemas and skips nothing. A template the
+/// manifest names in <c>consumerTemplates</c> (B-005, B-060 to B-063, B-135, B-144) is left as the consumer wrote it, write
+/// time included, while an unnamed one that differs is rewritten; each named template the pinned version ships is listed as
+/// skipped whether the root holds it or not and whatever it holds, under any source, in one ordinal list with the on-disk
+/// schema skips; a named template a recorded source hashes is neither asked for nor written; a name the pinned version does
+/// not ship, including one that differs from a shipped template only in case, gives the result and the files of the same
+/// root without the name and leaves the consumer's own template file as it was; and the frontmatter schemas are still
+/// rewritten beside a named template.
 /// </summary>
 [Trait("Tier", "Unit")]
 public sealed class UpgradeWriterUnitTests
@@ -742,6 +749,201 @@ public sealed class UpgradeWriterUnitTests
             request.Address.UserInfo.Should().BeEmpty();
             request.Headers.Should().NotContain("Authorization").And.NotContain("synthetic-machine-token").And.NotContain("secret");
         });
+    }
+
+    [Theory]
+    [ClassData(typeof(ConsumerTemplatePairs))]
+    public async Task ANamedTemplateAndAnUnnamedOneEditedByHand_WhenUpgraded_ShouldLeaveTheNamedOneAsWrittenAndRewriteOnlyTheUnnamedOne(
+        string manifest, string named, string unnamed)
+    {
+        // Given
+        var stamp = new DateTime(2026, 1, 2, 3, 4, 5, DateTimeKind.Utc);
+        var shipped = UpgradeServices.Shipped().At(new SemanticVersion(0, 2, 0));
+        var edited = Encoding.UTF8.GetBytes("# A synthetic template of the consumer's\n");
+        var fileSystem = new MockFileSystem();
+        fileSystem.AddFile("repo/.specht/manifest.json", new MockFileData(manifest) { LastWriteTime = stamp });
+        foreach (var file in shipped.Where(static file => file.Relative != ".specht/manifest.json"))
+        {
+            fileSystem.AddFile("repo/" + file.Relative, new MockFileData(file.Bytes) { LastWriteTime = stamp });
+        }
+
+        fileSystem.AddFile("repo/.specht/templates/" + named, new MockFileData(edited) { LastWriteTime = stamp });
+        fileSystem.AddFile("repo/.specht/templates/" + unnamed, new MockFileData(edited) { LastWriteTime = stamp });
+
+        // When
+        var result = await UpgradeServices.Writer(fileSystem).Upgrade("repo", CancellationToken.None);
+
+        // Then
+        result.Rewritten.Should().Equal(".specht/templates/" + unnamed);
+        fileSystem.File.ReadAllBytes("repo/.specht/templates/" + named).Should().Equal(edited, named);
+        fileSystem.File.GetLastWriteTimeUtc("repo/.specht/templates/" + named).Should().Be(stamp, named);
+        fileSystem.File.ReadAllBytes("repo/.specht/templates/" + unnamed)
+            .Should().Equal(shipped.Single(file => file.Relative == ".specht/templates/" + unnamed).Bytes, unnamed);
+    }
+
+    [Theory]
+    [ClassData(typeof(NamedTemplateHoldings))]
+    public async Task ANamedShippedTemplateWhateverTheRootHolds_WhenUpgraded_ShouldBeListedAsSkippedAndLeftAsItWas(string manifest, byte[]? held)
+    {
+        // Given
+        var stamp = new DateTime(2026, 1, 2, 3, 4, 5, DateTimeKind.Utc);
+        var fileSystem = new MockFileSystem();
+        fileSystem.AddFile("repo/.specht/manifest.json", new MockFileData(manifest) { LastWriteTime = stamp });
+        foreach (var file in UpgradeServices.Shipped().At(new SemanticVersion(0, 2, 0))
+                     .Where(static file => file.Relative is not (".specht/manifest.json" or ".specht/templates/feature.md")))
+        {
+            fileSystem.AddFile("repo/" + file.Relative, new MockFileData(file.Bytes) { LastWriteTime = stamp });
+        }
+
+        if (held is not null)
+        {
+            fileSystem.AddFile("repo/.specht/templates/feature.md", new MockFileData(held) { LastWriteTime = stamp });
+        }
+
+        var before = fileSystem.AllFiles.ToDictionary(
+            static path => path, path => (fileSystem.File.ReadAllBytes(path), fileSystem.File.GetLastWriteTimeUtc(path)));
+
+        // When
+        var result = await UpgradeServices.Writer(fileSystem).Upgrade("repo", CancellationToken.None);
+
+        // Then
+        result.Skipped.Should().Equal(new UpgradeSkip(".specht/templates/feature.md", "named in consumerTemplates"));
+        result.Rewritten.Should().BeEmpty();
+        fileSystem.AllFiles.Should().BeEquivalentTo(before.Keys);
+        foreach (var (path, (bytes, written)) in before)
+        {
+            fileSystem.File.ReadAllBytes(path).Should().Equal(bytes, path);
+            fileSystem.File.GetLastWriteTimeUtc(path).Should().Be(written, path);
+        }
+    }
+
+    [Fact]
+    public async Task PresentSchemasUnderTheOnDiskSourceAndTwoNamedTemplates_WhenUpgraded_ShouldListEverySkipInOneListInOrdinalPathOrder()
+    {
+        // Given
+        var shipped = UpgradeServices.Shipped().At(new SemanticVersion(0, 2, 0));
+        var manifest = JsonNode.Parse(shipped.Single(static file => file.Relative == ".specht/manifest.json").Bytes)!.AsObject();
+        manifest["schemaSource"] = "disk";
+        manifest["consumerTemplates"] = new JsonArray("lesson.md", "adr.md");
+        var fileSystem = new MockFileSystem();
+        fileSystem.AddFile("repo/.specht/manifest.json", new MockFileData(manifest.ToJsonString()));
+        foreach (var file in shipped.Where(static file => file.Relative != ".specht/manifest.json"))
+        {
+            fileSystem.AddFile("repo/" + file.Relative, new MockFileData(file.Bytes));
+        }
+
+        // When
+        var result = await UpgradeServices.Writer(fileSystem).Upgrade("repo", CancellationToken.None);
+
+        // Then
+        result.Skipped.Should().Equal(
+            new UpgradeSkip(".specht/schema/frontmatter/epic.schema.json", "the on-disk source is selected"),
+            new UpgradeSkip(".specht/schema/frontmatter/feature.schema.json", "the on-disk source is selected"),
+            new UpgradeSkip(".specht/schema/frontmatter/task.schema.json", "the on-disk source is selected"),
+            new UpgradeSkip(".specht/templates/adr.md", "named in consumerTemplates"),
+            new UpgradeSkip(".specht/templates/lesson.md", "named in consumerTemplates"));
+    }
+
+    [Theory]
+    [ClassData(typeof(NamedUpstreamTemplateRoots))]
+    public async Task ANamedTemplateTheRecordedSourceHashes_WhenUpgraded_ShouldNeitherAskForItNorWriteIt(string manifest, string name)
+    {
+        // Given
+        var stamp = new DateTime(2026, 1, 2, 3, 4, 5, DateTimeKind.Utc);
+        var edited = Encoding.UTF8.GetBytes("# A synthetic template of the consumer's\n");
+        var fileSystem = new MockFileSystem();
+        fileSystem.AddFile("repo/.specht/manifest.json", new MockFileData(manifest));
+        foreach (var file in UpgradeServices.Shipped().At(new SemanticVersion(0, 2, 0)).Where(static file => file.Relative != ".specht/manifest.json"))
+        {
+            fileSystem.AddFile("repo/" + file.Relative, new MockFileData(file.Bytes));
+        }
+
+        fileSystem.AddFile("repo/.specht/templates/" + name, new MockFileData(edited) { LastWriteTime = stamp });
+        var requests = new List<Uri>();
+        using var source = new HttpClient(new SyntheticSource(request =>
+        {
+            requests.Add(request.RequestUri!);
+            return new HttpResponseMessage(HttpStatusCode.ServiceUnavailable);
+        }));
+
+        // When
+        var result = await UpgradeServices.Writer(fileSystem, source).Upgrade("repo", CancellationToken.None);
+
+        // Then
+        requests.Should().BeEmpty();
+        result.Rewritten.Should().NotContain(".specht/templates/" + name);
+        fileSystem.File.ReadAllBytes("repo/.specht/templates/" + name).Should().Equal(edited, name);
+        fileSystem.File.GetLastWriteTimeUtc("repo/.specht/templates/" + name).Should().Be(stamp, name);
+    }
+
+    [Theory]
+    [ClassData(typeof(UnshippedTemplateNames))]
+    public async Task ATemplateNameThePinnedVersionDoesNotShip_WhenUpgraded_ShouldGiveTheResultAndFilesOfTheSameRootWithoutTheName(
+        string manifest, string name)
+    {
+        // Given
+        var stamp = new DateTime(2026, 1, 2, 3, 4, 5, DateTimeKind.Utc);
+        var runbook = Encoding.UTF8.GetBytes("# A synthetic runbook template of the consumer's\n");
+        var named = JsonNode.Parse(manifest)!.AsObject();
+        named["consumerTemplates"] = new JsonArray(name);
+        var withName = new MockFileSystem();
+        var without = new MockFileSystem();
+        foreach (var (fileSystem, text) in new[] { (withName, named.ToJsonString()), (without, manifest) })
+        {
+            fileSystem.AddFile("repo/.specht/manifest.json", new MockFileData(text) { LastWriteTime = stamp });
+            foreach (var file in UpgradeServices.Shipped().At(new SemanticVersion(0, 2, 0)).Where(static file => file.Relative != ".specht/manifest.json"))
+            {
+                fileSystem.AddFile("repo/" + file.Relative, new MockFileData(file.Bytes) { LastWriteTime = stamp });
+            }
+
+            fileSystem.AddFile("repo/.specht/templates/feature.md", new MockFileData("# A synthetic template with local edits\n") { LastWriteTime = stamp });
+            fileSystem.AddFile("repo/.specht/templates/runbook.md", new MockFileData(runbook) { LastWriteTime = stamp });
+        }
+
+        var templates = withName.Directory.GetFiles("repo/.specht/templates").Select(withName.Path.GetFileName).ToList();
+
+        // When
+        var expected = await UpgradeServices.Writer(without).Upgrade("repo", CancellationToken.None);
+        var result = await UpgradeServices.Writer(withName).Upgrade("repo", CancellationToken.None);
+
+        // Then
+        expected.Rewritten.Should().Contain(".specht/templates/feature.md");
+        result.Rewritten.Should().Equal(expected.Rewritten);
+        result.Skipped.Should().Equal(expected.Skipped);
+        withName.Directory.GetFiles("repo/.specht/templates").Select(withName.Path.GetFileName).Should().BeEquivalentTo(templates);
+        withName.File.ReadAllBytes("repo/.specht/templates/runbook.md").Should().Equal(runbook);
+        withName.File.GetLastWriteTimeUtc("repo/.specht/templates/runbook.md").Should().Be(stamp);
+        foreach (var path in without.AllFiles.Where(static path => !path.EndsWith("manifest.json", StringComparison.Ordinal)))
+        {
+            withName.File.ReadAllBytes(path).Should().Equal(without.File.ReadAllBytes(path), path);
+        }
+    }
+
+    [Fact]
+    public async Task SchemasOfAnotherVersionBesideANamedTemplateUnderTheEmbeddedSource_WhenUpgraded_ShouldStillRewriteTheSchemas()
+    {
+        // Given
+        var pinned = UpgradeServices.Shipped().At(new SemanticVersion(0, 2, 0));
+        var manifest = JsonNode.Parse(pinned.Single(static file => file.Relative == ".specht/manifest.json").Bytes)!.AsObject();
+        manifest["consumerTemplates"] = new JsonArray("feature.md");
+        var fileSystem = new MockFileSystem();
+        fileSystem.AddFile("repo/.specht/manifest.json", new MockFileData(manifest.ToJsonString()));
+        foreach (var file in UpgradeServices.Shipped().At(new SemanticVersion(0, 1, 0)).Where(static file => file.Relative != ".specht/manifest.json"))
+        {
+            fileSystem.AddFile("repo/" + file.Relative, new MockFileData(file.Bytes));
+        }
+
+        // When
+        var result = await UpgradeServices.Writer(fileSystem).Upgrade("repo", CancellationToken.None);
+
+        // Then
+        var schemas = pinned.Where(static file => file.Relative.StartsWith(".specht/schema/frontmatter/", StringComparison.Ordinal)).ToList();
+        schemas.Should().HaveCount(3);
+        result.Rewritten.Should().Contain(schemas.Select(static file => file.Relative));
+        foreach (var file in schemas)
+        {
+            fileSystem.File.ReadAllBytes("repo/" + file.Relative).Should().Equal(file.Bytes, file.Relative);
+        }
     }
 
     private sealed class SyntheticSource(Func<HttpRequestMessage, HttpResponseMessage> respond) : HttpMessageHandler

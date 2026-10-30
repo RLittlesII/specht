@@ -18,7 +18,10 @@ namespace Specht.Tool.Features.Upgrade;
 /// root that already holds them as it was (B-006) and writes only through the store's replace once every read, comparison
 /// and fetch has succeeded (B-007, B-027, B-035, B-132, B-133, C-2). Under the on-disk source it plans no frontmatter
 /// schema (B-029, B-031) and, with no upstream source recorded, lists each one the pinned version ships that the root holds
-/// as skipped (B-030, B-143).
+/// as skipped (B-030, B-143). A template the pinned version ships whose bare file name the manifest names, ordinally, in
+/// <c>consumerTemplates</c> is never read, compared, fetched or written, whatever source is selected or recorded, and is
+/// listed as skipped whether the root holds it or not (B-060, B-061, B-135), while every other template is still brought to
+/// its source (B-005, B-062); a name the pinned version does not ship changes nothing (B-063, B-144).
 /// </summary>
 /// <param name="loader">Reads and validates the manifest as the check does.</param>
 /// <param name="parser">Selects the pinned version.</param>
@@ -31,6 +34,8 @@ namespace Specht.Tool.Features.Upgrade;
 /// <implements epic="0001" feature="F7" claim="B-026" />
 /// <implements epic="0001" feature="F7" claim="B-130" />
 /// <implements epic="0001" feature="F7" claim="B-030" />
+/// <implements epic="0001" feature="F7" claim="B-060" />
+/// <implements epic="0001" feature="F7" claim="B-061" />
 public sealed class UpgradeWriter(
     SpecSchemasLoader loader,
     SpecManifestParser parser,
@@ -43,7 +48,8 @@ public sealed class UpgradeWriter(
     /// Rewrites each present file that differs from the pinned version's, each present schema or template a recorded source
     /// hashes that differs from its hash, and the manifest when it lacks a key that version defines, and none other; under
     /// the on-disk source with no recorded source, lists each present shipped frontmatter schema as skipped without comparing
-    /// or writing it.
+    /// or writing it; and lists each shipped template named in <c>consumerTemplates</c> as skipped, present or not, without
+    /// reading, fetching or writing it. Every skip is in one list, in ordinal order of its relative path.
     /// </summary>
     /// <param name="root">The repository root.</param>
     /// <param name="cancellationToken">Cancels the run between files.</param>
@@ -79,25 +85,39 @@ public sealed class UpgradeWriter(
     /// <implements epic="0001" feature="F7" claim="B-030" />
     /// <implements epic="0001" feature="F7" claim="B-031" />
     /// <implements epic="0001" feature="F7" claim="B-143" />
+    /// <implements epic="0001" feature="F7" claim="B-060" />
+    /// <implements epic="0001" feature="F7" claim="B-061" />
+    /// <implements epic="0001" feature="F7" claim="B-062" />
+    /// <implements epic="0001" feature="F7" claim="B-063" />
+    /// <implements epic="0001" feature="F7" claim="B-135" />
+    /// <implements epic="0001" feature="F7" claim="B-144" />
     public async Task<UpgradeResult> Upgrade(string root, CancellationToken cancellationToken)
     {
         var structure = loader.LoadManifest(root);
         var pinned = parser.PinnedVersion(structure).Number;
         var frontmatterFromRoot = structure.SchemaSource == SchemaSourceSelection.Disk || structure.SpechtSchema is not null;
+        var schemasSkipped = structure.SchemaSource == SchemaSourceSelection.Disk && structure.SpechtSchema is null;
+        var consumerTemplates = structure.ConsumerTemplates.ToHashSet(StringComparer.Ordinal);
+        var namedTemplates = shipped.At(pinned)
+            .Where(file => file.Relative.StartsWith(SpecManifestStore.TemplateFolder + "/", StringComparison.Ordinal)
+                           && consumerTemplates.Contains(file.Relative[(SpecManifestStore.TemplateFolder.Length + 1)..]))
+            .Select(static file => file.Relative)
+            .ToList();
         var hashedTemplates = (structure.SpechtSchema?.Templates ?? [])
             .Select(static file => (File: file, Relative: SpecManifestStore.TemplateFolder + "/" + file.FileName))
             .ToList();
-        var skipped = structure.SchemaSource == SchemaSourceSelection.Disk && structure.SpechtSchema is null
-            ? shipped.At(pinned)
-                .Where(static file => file.Relative.StartsWith(SpecManifestStore.FrontmatterSchemaFolder + "/", StringComparison.Ordinal))
-                .Where(file => store.ReadConfigurationFile(root, file.Relative) is not null)
-                .Select(static file => new UpgradeSkip(file.Relative, "the on-disk source is selected"))
-                .OrderBy(static skip => skip.Relative, StringComparer.Ordinal)
-                .ToList()
-            : [];
+        var skipped = shipped.At(pinned)
+            .Where(file => schemasSkipped
+                           && file.Relative.StartsWith(SpecManifestStore.FrontmatterSchemaFolder + "/", StringComparison.Ordinal)
+                           && store.ReadConfigurationFile(root, file.Relative) is not null)
+            .Select(static file => new UpgradeSkip(file.Relative, "the on-disk source is selected"))
+            .Concat(namedTemplates.Select(static relative => new UpgradeSkip(relative, "named in consumerTemplates")))
+            .OrderBy(static skip => skip.Relative, StringComparer.Ordinal)
+            .ToList();
         var plan = shipped.At(pinned)
             .Where(file => !frontmatterFromRoot
                            || !file.Relative.StartsWith(SpecManifestStore.FrontmatterSchemaFolder + "/", StringComparison.Ordinal))
+            .Where(file => !namedTemplates.Contains(file.Relative, StringComparer.Ordinal))
             .Where(file => !hashedTemplates.Exists(hashed => hashed.Relative == file.Relative))
             .Select(file => (File: file, Present: store.ReadConfigurationFile(root, file.Relative)))
             .Where(static entry => entry.Present is not null)
@@ -113,7 +133,7 @@ public sealed class UpgradeWriter(
             .Where(static entry => entry.Present is not null && !entry.File.Matches(entry.Present))
             .ToList();
         var differingTemplates = hashedTemplates
-            .Where(entry => !structure.ConsumerTemplates.Contains(entry.File.FileName, StringComparer.Ordinal))
+            .Where(entry => !consumerTemplates.Contains(entry.File.FileName))
             .Select(entry => (entry.File, entry.Relative, Present: store.ReadConfigurationFile(root, entry.Relative)))
             .Where(static entry => entry.Present is not null && !entry.File.Matches(entry.Present))
             .ToList();

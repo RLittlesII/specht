@@ -9,4 +9,5 @@ namespace Specht.Tool.Features.Upgrade;
 /// <param name="Skipped">Each skipped file and its reason, in ordinal order of its relative path.</param>
 /// <implements epic="0001" feature="F7" claim="B-005" />
 /// <implements epic="0001" feature="F7" claim="B-030" />
+/// <implements epic="0001" feature="F7" claim="B-061" />
 public sealed record UpgradeResult(SemanticVersion Pinned, IReadOnlyList<string> Rewritten, IReadOnlyList<UpgradeSkip> Skipped);
