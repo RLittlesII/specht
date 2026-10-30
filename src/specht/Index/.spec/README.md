@@ -20,7 +20,7 @@ depends_on: []
 blocks: []
 spikes: []
 created: "2026-10-19"
-updated: "2026-10-19"
+updated: "2026-10-30"
 github_issue: null
 synced_at: null
 ---
@@ -35,7 +35,7 @@ An MCP client repeatedly needs facts and relationships already present in a repo
 
 ## 2. User Needs
 
-<!-- last written by: spec-author, 2026-10-19 -->
+<!-- last written by: spec-author, 2026-10-30 -->
 
 | #   | Persona                                     | Need                                                                                                          | Pain Point Today                                             |
 | --- | ------------------------------------------- | ------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------ |
@@ -48,6 +48,16 @@ An MCP client repeatedly needs facts and relationships already present in a repo
 | --- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | A-1 | The database is a derived index. Markdown in the repository remains authoritative (decision 0001). The database engine and physical schema are design choices, not part of this agreement.                                                          |
 | A-2 | The tree-facts answer in epic `0132` candidate A and the citation resolver in epic `0228` candidate C own their public document shapes. This Feature supplies indexed facts to those answers; it does not define a second facts or citation format. |
+
+**Requirements revision requested, 2026-10-30.** Epic `0132` records the owner's
+request for an opt-in database authority over all managed documents, with
+repository and GitHub projections, solo local use and optional shared access.
+Every entering record receives a unique key retained throughout its lifecycle.
+The owner also requires complete specification and feature documents for
+retrieval and rendering, alongside keyed scenario-coverage relationships.
+Before implementation, reconcile this Feature's file-index scope, decision
+0001, B-001 to B-006 and C-1, C-2, C-3, C-8 with the optional authority mode.
+The revised agreement remains open; existing file-based use must stay supported.
 
 ## 3. Acceptance Criteria
 

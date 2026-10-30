@@ -8,7 +8,7 @@ priority: med
 milestone: null
 children: ["0132-F1"]
 created: "2026-10-09"
-updated: "2026-10-21"
+updated: "2026-10-30"
 github_issue: null
 ---
 
@@ -125,6 +125,113 @@ Spike `0252` compares direct filesystem access, MCP lookup that opens source
 files, and MCP retrieval of complete stored documents. A recommendation for
 database-owned documents or a hosted mode must name the agreements and
 repository invariants to amend; this epic does not change them implicitly.
+
+### Service requirements session, 2026-10-30
+
+The owner requests an opt-in, database-driven mode covering every document
+managed by specht: Markdown, YAML, specifications and supporting records. In
+that mode the database behind MCP is the source of truth, projecting repository
+files for check-in and GitHub issues. Existing file-based use remains supported;
+database authority is not imposed on every consumer. This request does not
+require converting every document into structured YAML.
+
+The service must accommodate an individual developer working entirely locally,
+including originating and grooming their own requirements. A team-accessible
+database may be local or remote. Business requirements intake is a possible
+additional entry point into the same system, not a mandatory actor or starting
+stage. The broader direction is a potential service for specification-driven
+development, with GitHub serving as one integration. Exact service capabilities
+and their delivery scope remain to be agreed.
+
+**Identity rule, confirmed by the owner:** every record receives a unique key
+when it enters the system and retains that key throughout its entire lifecycle.
+This applies regardless of entry point or whether one developer or a team uses
+the system. Grooming and projection preserve that identity. Key syntax,
+namespace and allocation remain to be specified; this rule does not authorize
+renumbering existing stable identifiers.
+
+The owner raised Snowflake as a candidate for these lifetime keys. Existing
+spike `0256` already compares Snowflake with alternative allocation strategies;
+carry the solo-local and optional shared-service requirements into that
+evaluation. A candidate must address concurrent generators, restarts and clock
+rollback within its claimed uniqueness scope. The algorithm is not selected by
+this discussion. The original implementation comes from Twitter; its source is
+the `snowflake-2010` tag in `twitter-archive/snowflake`.
+
+The requirements session focuses first on the specification's shape, its
+traceability matrix and keys throughout the model. Database selection and
+implementation follow the agreement.
+
+**Document retrieval and traceability, clarified by the owner:** retain complete
+documents as well as their keyed relationships. The scenario-coverage relation
+connects an acceptance criterion key, its specification key and the covering
+scenario key. Retrieving a specification returns its complete document for
+rendering; retrieving the feature file containing a scenario returns that whole
+file. Keyed lookup must not restrict reading to extracted rows or snippets.
+The representation must retain the relationship from a scenario to its
+containing feature document. This establishes structural scenario coverage;
+test bindings and execution evidence remain separate coverage concerns.
+
+Both relational links and complete-document retrieval are required capabilities.
+Whether one database engine or multiple stores provide them remains a design
+choice. Rendering behavior, document revision consistency and synchronization
+between content and relationships still need an agreement. No database product
+is chosen by this requirement.
+
+**Revision model proposed for discussion, not yet agreed:** separate each
+record's permanent key from immutable content revisions. A saved project
+snapshot selects exact document revisions and the traceability relationships
+applicable to them. Keyed elements resolve within their containing document's
+selected revision, so a scenario lookup retrieves the complete feature file
+from that same snapshot. Relationships must resolve to elements present in the
+selected document revisions. A historical matrix and links opened from it
+retain the snapshot context rather than resolving independently to latest.
+
+An approved baseline could name such a snapshot; a current-work view could
+resolve a selected workspace's head to one snapshot before generating its
+matrix. Database transactions alone do not preserve a reader's context across
+later requests; responses and follow-up links would carry the saved snapshot
+identity. Repository projections would record their snapshot identity, with
+Git commit associations recorded when available. GitHub projection freshness
+would be recorded separately because external publication is not atomic with
+database updates.
+
+Under this proposal, editing retains identity and creates a new revision;
+previous snapshots remain readable. A retained coverage relationship does not
+transfer approval or passing evidence to changed inputs automatically.
+Revalidation policy, snapshot scope, concurrent-edit handling, revision
+identifier generation and retention still require agreement. Retaining this
+history would also amend `0132-F1` section 5 row 5, which currently excludes a
+revision archive from the derived index.
+
+Database authority revises `0132-F1` decision 0001 for consumers opting into
+that mode. Before implementation, record the mode boundary in that decision
+and update the owning claims, scenarios and constraints, including current-tree
+freshness. The permitted-write boundary and `0055-F9`'s local-item authority
+also need explicit reconciliation with database-owned projections. File-based
+offline checking remains supported; a remote service is not a prerequisite for
+the solo local workflow.
+
+The following questions remain for this session; they are not agreed behavior:
+
+- How does the database represent document content and keyed elements while
+  preserving the readable specification and its versioned schema contract?
+- How are keys scoped and allocated, and which elements within a document are
+  independently keyed? The owner identifies the acceptance criterion,
+  specification and scenario keys for scenario coverage; how do test and
+  evidence links extend that view, and is the matrix generated from those links?
+- How do edits to repository files or GitHub issues enter the authority, if
+  allowed, and what happens when a projection differs from its source?
+- Which authoritative revision belongs to a branch, worktree or commit, and
+  how do review, concurrent edits and projection failures affect publication?
+- How are existing files imported and the authoritative database recovered?
+- How does a consumer opt into database authority or return to file-based use,
+  preserving keys and relationships? What capabilities require shared access?
+
+Qualified-key resolution remains epic `0228` candidate C and item `0307`;
+`0132-F1` and spike `0252` own the existing indexing and storage investigation.
+The session must reconcile those agreements rather than introduce a second
+resolver or infer a database product from the requested authority model.
 
 ## Document sequence allocation
 
