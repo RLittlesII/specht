@@ -5,6 +5,7 @@ using System.Text.Json.Nodes;
 using AwesomeAssertions;
 using Specht.Manifest;
 using Specht.Tests.Shared;
+using Specht.Tool.Features;
 using Specht.Tool.Features.Upgrade;
 using Specht.Versioning;
 
@@ -40,7 +41,7 @@ public sealed class UpgradeWriterUnitTests
     public async Task OneDifferingAndOneEqualPresentFile_WhenUpgraded_ShouldRewriteOnlyTheDifferingOneAndNameItRelativeToTheRoot()
     {
         // Given
-        var shipped = UpgradeServices.Shipped().At(new SemanticVersion(0, 1, 0));
+        var shipped = _shipped.At(new SemanticVersion(0, 1, 0));
         var stamp = new DateTime(2026, 1, 2, 3, 4, 5, DateTimeKind.Utc);
         var fileSystem = new MockFileSystem();
         foreach (var file in shipped)
@@ -52,7 +53,8 @@ public sealed class UpgradeWriterUnitTests
         fileSystem.File.SetLastWriteTimeUtc("repo/.specht/templates/feature.md", stamp);
 
         // When
-        var result = await UpgradeServices.Writer(fileSystem).Upgrade("repo", CancellationToken.None);
+        UpgradeWriter writer = new UpgradeWriterFixture().WithFileSystem(fileSystem);
+        var result = await writer.Upgrade("repo", CancellationToken.None);
 
         // Then
         result.Rewritten.Should().Equal(".specht/templates/feature.md");
@@ -72,12 +74,13 @@ public sealed class UpgradeWriterUnitTests
         var fileSystem = new MockFileSystem();
         fileSystem.AddFile(
             "repo/.specht/manifest.json",
-            new MockFileData(UpgradeServices.Shipped().At(new SemanticVersion(0, 1, 0)).Single(static file => file.Relative == ".specht/manifest.json").Bytes));
+            new MockFileData(_shipped.At(new SemanticVersion(0, 1, 0)).Single(static file => file.Relative == ".specht/manifest.json").Bytes));
         fileSystem.AddFile("repo/.specht/templates/consumer-own.md", new MockFileData("# A synthetic consumer template\n"));
         fileSystem.AddFile("repo/.specht/schema/frontmatter/consumer-own.schema.json", new MockFileData("{}"));
 
         // When
-        var result = await UpgradeServices.Writer(fileSystem).Upgrade("repo", CancellationToken.None);
+        UpgradeWriter writer = new UpgradeWriterFixture().WithFileSystem(fileSystem);
+        var result = await writer.Upgrade("repo", CancellationToken.None);
 
         // Then
         result.Rewritten.Should().BeEmpty();
@@ -92,10 +95,11 @@ public sealed class UpgradeWriterUnitTests
         var fileSystem = new MockFileSystem();
         fileSystem.AddFile(
             "repo/.specht/manifest.json",
-            new MockFileData(UpgradeServices.Shipped().At(new SemanticVersion(0, 1, 0)).Single(static file => file.Relative == ".specht/manifest.json").Bytes));
+            new MockFileData(_shipped.At(new SemanticVersion(0, 1, 0)).Single(static file => file.Relative == ".specht/manifest.json").Bytes));
 
         // When
-        var result = await UpgradeServices.Writer(fileSystem).Upgrade("repo", CancellationToken.None);
+        UpgradeWriter writer = new UpgradeWriterFixture().WithFileSystem(fileSystem);
+        var result = await writer.Upgrade("repo", CancellationToken.None);
 
         // Then
         result.Pinned.Should().Be(new SemanticVersion(0, 1, 0));
@@ -110,7 +114,7 @@ public sealed class UpgradeWriterUnitTests
     {
         // Given
         var edited = Encoding.UTF8.GetBytes(schema);
-        var shipped = UpgradeServices.Shipped().At(new SemanticVersion(0, 2, 0))
+        var shipped = _shipped.At(new SemanticVersion(0, 2, 0))
             .Where(static file => file.Relative != ".specht/manifest.json").ToList();
         var fileSystem = new MockFileSystem();
         fileSystem.AddFile("repo/.specht/manifest.json", new MockFileData(manifest));
@@ -123,7 +127,8 @@ public sealed class UpgradeWriterUnitTests
         fileSystem.File.WriteAllText("repo/.specht/templates/feature.md", "# A synthetic template with local edits\n");
 
         // When
-        var result = await UpgradeServices.Writer(fileSystem).Upgrade("repo", CancellationToken.None);
+        UpgradeWriter writer = new UpgradeWriterFixture().WithFileSystem(fileSystem);
+        var result = await writer.Upgrade("repo", CancellationToken.None);
 
         // Then
         result.Rewritten.Should().Equal(".specht/templates/feature.md");
@@ -160,7 +165,8 @@ public sealed class UpgradeWriterUnitTests
             static path => path, path => (fileSystem.File.ReadAllBytes(path), fileSystem.File.GetLastWriteTimeUtc(path)));
 
         // When
-        var result = await UpgradeServices.Writer(fileSystem).Upgrade("repo", CancellationToken.None);
+        UpgradeWriter writer = new UpgradeWriterFixture().WithFileSystem(fileSystem);
+        var result = await writer.Upgrade("repo", CancellationToken.None);
 
         // Then
         result.Skipped.Should().Equal(skipped.Select(static path => new UpgradeSkip(path, "the on-disk source is selected")));
@@ -180,13 +186,14 @@ public sealed class UpgradeWriterUnitTests
         // Given
         var fileSystem = new MockFileSystem();
         fileSystem.AddFile("repo/.specht/manifest.json", new MockFileData(manifest));
-        foreach (var file in UpgradeServices.Shipped().At(new SemanticVersion(0, 2, 0)).Where(static file => file.Relative != ".specht/manifest.json"))
+        foreach (var file in _shipped.At(new SemanticVersion(0, 2, 0)).Where(static file => file.Relative != ".specht/manifest.json"))
         {
             fileSystem.AddFile("repo/" + file.Relative, new MockFileData(file.Bytes));
         }
 
         // When
-        var result = await UpgradeServices.Writer(fileSystem).Upgrade("repo", CancellationToken.None);
+        UpgradeWriter writer = new UpgradeWriterFixture().WithFileSystem(fileSystem);
+        var result = await writer.Upgrade("repo", CancellationToken.None);
 
         // Then
         result.Skipped.Should().BeEmpty();
@@ -197,16 +204,17 @@ public sealed class UpgradeWriterUnitTests
     public async Task SchemasOfAnotherVersionUnderTheEmbeddedSource_WhenUpgraded_ShouldRewriteThemAndSkipNothing(string manifest)
     {
         // Given
-        var pinned = UpgradeServices.Shipped().At(new SemanticVersion(0, 2, 0));
+        var pinned = _shipped.At(new SemanticVersion(0, 2, 0));
         var fileSystem = new MockFileSystem();
         fileSystem.AddFile("repo/.specht/manifest.json", new MockFileData(manifest));
-        foreach (var file in UpgradeServices.Shipped().At(new SemanticVersion(0, 1, 0)).Where(static file => file.Relative != ".specht/manifest.json"))
+        foreach (var file in _shipped.At(new SemanticVersion(0, 1, 0)).Where(static file => file.Relative != ".specht/manifest.json"))
         {
             fileSystem.AddFile("repo/" + file.Relative, new MockFileData(file.Bytes));
         }
 
         // When
-        var result = await UpgradeServices.Writer(fileSystem).Upgrade("repo", CancellationToken.None);
+        UpgradeWriter writer = new UpgradeWriterFixture().WithFileSystem(fileSystem);
+        var result = await writer.Upgrade("repo", CancellationToken.None);
 
         // Then
         result.Skipped.Should().BeEmpty();
@@ -226,14 +234,15 @@ public sealed class UpgradeWriterUnitTests
         // Given
         var fileSystem = new MockFileSystem();
         fileSystem.AddFile("repo/.specht/manifest.json", new MockFileData(manifest));
-        foreach (var file in UpgradeServices.Shipped().At(new SemanticVersion(0, 1, 0))
+        foreach (var file in _shipped.At(new SemanticVersion(0, 1, 0))
                      .Where(static file => file.Relative is not (".specht/manifest.json" or ".specht/schema/frontmatter/epic.schema.json")))
         {
             fileSystem.AddFile("repo/" + file.Relative, new MockFileData(file.Bytes));
         }
 
         // When
-        await UpgradeServices.Writer(fileSystem).Upgrade("repo", CancellationToken.None);
+        UpgradeWriter writer = new UpgradeWriterFixture().WithFileSystem(fileSystem);
+        await writer.Upgrade("repo", CancellationToken.None);
         var loaded = EngineServices.Schemas(fileSystem).Load("repo");
 
         // Then
@@ -244,8 +253,8 @@ public sealed class UpgradeWriterUnitTests
     public async Task FilesOfAnotherVersionAndAManifestLackingKeys_WhenUpgraded_ShouldAddThePinsKeysAndNameTheManifestFirst()
     {
         // Given
-        var pinned = UpgradeServices.Shipped().At(new SemanticVersion(0, 2, 0));
-        var older = UpgradeServices.Shipped().At(new SemanticVersion(0, 1, 0)).Where(static file => file.Relative != ".specht/manifest.json").ToList();
+        var pinned = _shipped.At(new SemanticVersion(0, 2, 0));
+        var older = _shipped.At(new SemanticVersion(0, 1, 0)).Where(static file => file.Relative != ".specht/manifest.json").ToList();
         var fileSystem = new MockFileSystem();
         fileSystem.AddFile("repo/.specht/manifest.json", new MockFileData("{\"schemaVersion\":\"0.2.0\"}"));
         foreach (var file in older)
@@ -254,7 +263,8 @@ public sealed class UpgradeWriterUnitTests
         }
 
         // When
-        var result = await UpgradeServices.Writer(fileSystem).Upgrade("repo", CancellationToken.None);
+        UpgradeWriter writer = new UpgradeWriterFixture().WithFileSystem(fileSystem);
+        var result = await writer.Upgrade("repo", CancellationToken.None);
 
         // Then
         var differing = pinned.Where(file => older.Any(present => present.Relative == file.Relative && !present.Bytes.SequenceEqual(file.Bytes)))
@@ -273,7 +283,7 @@ public sealed class UpgradeWriterUnitTests
     public async Task CurrentFilesAndAManifestLackingOneKey_WhenUpgraded_ShouldRewriteOnlyTheManifest()
     {
         // Given
-        var pinned = UpgradeServices.Shipped().At(new SemanticVersion(0, 2, 0));
+        var pinned = _shipped.At(new SemanticVersion(0, 2, 0));
         var stamp = new DateTime(2026, 1, 2, 3, 4, 5, DateTimeKind.Utc);
         var fileSystem = new MockFileSystem();
         foreach (var file in pinned)
@@ -286,7 +296,8 @@ public sealed class UpgradeWriterUnitTests
         fileSystem.AddFile("repo/.specht/manifest.json", new MockFileData(manifest.ToJsonString()) { LastWriteTime = stamp });
 
         // When
-        var result = await UpgradeServices.Writer(fileSystem).Upgrade("repo", CancellationToken.None);
+        UpgradeWriter writer = new UpgradeWriterFixture().WithFileSystem(fileSystem);
+        var result = await writer.Upgrade("repo", CancellationToken.None);
 
         // Then
         result.Rewritten.Should().Equal(".specht/manifest.json");
@@ -307,7 +318,8 @@ public sealed class UpgradeWriterUnitTests
         fileSystem.AddFile("repo/.specht/manifest.json", new MockFileData("{ " + pin + " }"));
 
         // When
-        var result = await UpgradeServices.Writer(fileSystem).Upgrade("repo", CancellationToken.None);
+        UpgradeWriter writer = new UpgradeWriterFixture().WithFileSystem(fileSystem);
+        var result = await writer.Upgrade("repo", CancellationToken.None);
 
         // Then
         result.Rewritten.Should().Equal(".specht/manifest.json");
@@ -323,13 +335,14 @@ public sealed class UpgradeWriterUnitTests
         var fileSystem = new MockFileSystem();
         fileSystem.AddFile(
             "repo/.specht/manifest.json",
-            new MockFileData(UpgradeServices.Shipped().At(new SemanticVersion(0, 1, 0)).Single(static file => file.Relative == ".specht/manifest.json").Bytes));
+            new MockFileData(_shipped.At(new SemanticVersion(0, 1, 0)).Single(static file => file.Relative == ".specht/manifest.json").Bytes));
         fileSystem.AddFile(
             "repo/.specht/templates/feature.md",
             new MockFileData("# A synthetic template with local edits\n") { Attributes = FileAttributes.ReadOnly });
 
         // When
-        var upgrade = () => UpgradeServices.Writer(fileSystem).Upgrade("repo", CancellationToken.None);
+        UpgradeWriter writer = new UpgradeWriterFixture().WithFileSystem(fileSystem);
+        var upgrade = () => writer.Upgrade("repo", CancellationToken.None);
 
         // Then
         (await upgrade.Should().ThrowAsync<SpechtManifestException>())
@@ -349,7 +362,7 @@ public sealed class UpgradeWriterUnitTests
             fileSystem.AddFile("repo/.specht/manifest.json", new MockFileData("{\"schemaVersion\":\"0.2.0\"}") { LastWriteTime = stamp });
         }
 
-        foreach (var file in UpgradeServices.Shipped().At(new SemanticVersion(0, 1, 0)).Where(static file => file.Relative != ".specht/manifest.json"))
+        foreach (var file in _shipped.At(new SemanticVersion(0, 1, 0)).Where(static file => file.Relative != ".specht/manifest.json"))
         {
             fileSystem.AddFile("repo/" + file.Relative, new MockFileData(file.Bytes) { LastWriteTime = stamp });
         }
@@ -358,7 +371,8 @@ public sealed class UpgradeWriterUnitTests
             static path => path, path => (fileSystem.File.ReadAllBytes(path), fileSystem.File.GetLastWriteTimeUtc(path)));
 
         // When
-        var upgrade = () => UpgradeServices.Writer(fileSystem).Upgrade(Path.Combine("repo", typedRoot), CancellationToken.None);
+        UpgradeWriter writer = new UpgradeWriterFixture().WithFileSystem(fileSystem);
+        var upgrade = () => writer.Upgrade(Path.Combine("repo", typedRoot), CancellationToken.None);
 
         // Then
         await upgrade.Should().ThrowAsync<Exception>().Where(exception => exception.GetType() == fault);
@@ -378,7 +392,7 @@ public sealed class UpgradeWriterUnitTests
         var stamp = new DateTime(2026, 1, 2, 3, 4, 5, DateTimeKind.Utc);
         var fileSystem = new MockFileSystem();
         fileSystem.AddFile("repo/.specht/manifest.json", new MockFileData(manifest) { LastWriteTime = stamp });
-        foreach (var file in UpgradeServices.Shipped().At(new SemanticVersion(0, 1, 0)).Where(static file => file.Relative != ".specht/manifest.json"))
+        foreach (var file in _shipped.At(new SemanticVersion(0, 1, 0)).Where(static file => file.Relative != ".specht/manifest.json"))
         {
             fileSystem.AddFile("repo/" + file.Relative, new MockFileData(file.Bytes) { LastWriteTime = stamp });
         }
@@ -387,7 +401,8 @@ public sealed class UpgradeWriterUnitTests
             static path => path, path => (fileSystem.File.ReadAllBytes(path), fileSystem.File.GetLastWriteTimeUtc(path)));
 
         // When
-        var upgrade = () => UpgradeServices.Writer(fileSystem).Upgrade("repo", CancellationToken.None);
+        UpgradeWriter writer = new UpgradeWriterFixture().WithFileSystem(fileSystem);
+        var upgrade = () => writer.Upgrade("repo", CancellationToken.None);
 
         // Then
         await upgrade.Should().ThrowAsync<Exception>().Where(exception => exception.GetType() == fault);
@@ -407,7 +422,7 @@ public sealed class UpgradeWriterUnitTests
         var stamp = new DateTime(2026, 1, 2, 3, 4, 5, DateTimeKind.Utc);
         var fileSystem = new MockFileSystem();
         fileSystem.AddFile("repo/.specht/manifest.json", new MockFileData($"{{\"schemaVersion\":{schemaVersion}}}") { LastWriteTime = stamp });
-        foreach (var file in UpgradeServices.Shipped().At(new SemanticVersion(0, 1, 0)).Where(static file => file.Relative != ".specht/manifest.json"))
+        foreach (var file in _shipped.At(new SemanticVersion(0, 1, 0)).Where(static file => file.Relative != ".specht/manifest.json"))
         {
             fileSystem.AddFile("repo/" + file.Relative, new MockFileData(file.Bytes) { LastWriteTime = stamp });
         }
@@ -417,7 +432,8 @@ public sealed class UpgradeWriterUnitTests
         var check = () => EngineServices.Schemas(fileSystem).Load("repo");
 
         // When
-        var upgrade = () => UpgradeServices.Writer(fileSystem).Upgrade("repo", CancellationToken.None);
+        UpgradeWriter writer = new UpgradeWriterFixture().WithFileSystem(fileSystem);
+        var upgrade = () => writer.Upgrade("repo", CancellationToken.None);
 
         // Then
         var rejection = check.Should().ThrowExactly<SpechtManifestException>(schemaVersion).Which.Message;
@@ -449,7 +465,8 @@ public sealed class UpgradeWriterUnitTests
             new HttpResponseMessage(HttpStatusCode.OK) { Content = new ByteArrayContent(content[request.RequestUri!.Segments[^1]]) }));
 
         // When
-        await UpgradeServices.Writer(fileSystem, source).Upgrade("repo", CancellationToken.None);
+        UpgradeWriter writer = new UpgradeWriterFixture().WithFileSystem(fileSystem).WithSource(source);
+        await writer.Upgrade("repo", CancellationToken.None);
 
         // Then
         fileSystem.Directory.GetFiles("repo/.specht/schema/frontmatter").Select(fileSystem.Path.GetFileName)
@@ -493,7 +510,8 @@ public sealed class UpgradeWriterUnitTests
         }));
 
         // When
-        var upgrade = () => UpgradeServices.Writer(fileSystem, source).Upgrade("repo", CancellationToken.None);
+        UpgradeWriter writer = new UpgradeWriterFixture().WithFileSystem(fileSystem).WithSource(source);
+        var upgrade = () => writer.Upgrade("repo", CancellationToken.None);
 
         // Then
         (await upgrade.Should().ThrowExactlyAsync<SpechtUpstreamSchemaException>()).Which.Message.Should().Contain("https://schemas.example/specht/");
@@ -512,7 +530,7 @@ public sealed class UpgradeWriterUnitTests
         // Given
         var fileSystem = new MockFileSystem();
         fileSystem.AddFile("repo/.specht/manifest.json", new MockFileData(manifest));
-        foreach (var file in UpgradeServices.Shipped().At(new SemanticVersion(0, 2, 0)).Where(static file => file.Relative != ".specht/manifest.json"))
+        foreach (var file in _shipped.At(new SemanticVersion(0, 2, 0)).Where(static file => file.Relative != ".specht/manifest.json"))
         {
             fileSystem.AddFile("repo/" + file.Relative, new MockFileData(file.Bytes));
         }
@@ -525,7 +543,8 @@ public sealed class UpgradeWriterUnitTests
         }));
 
         // When
-        await UpgradeServices.Writer(fileSystem, source).Upgrade("repo", CancellationToken.None);
+        UpgradeWriter writer = new UpgradeWriterFixture().WithFileSystem(fileSystem).WithSource(source);
+        await writer.Upgrade("repo", CancellationToken.None);
 
         // Then
         requests.Should().BeEmpty();
@@ -551,7 +570,8 @@ public sealed class UpgradeWriterUnitTests
             new HttpResponseMessage(HttpStatusCode.OK) { Content = new ByteArrayContent(content[request.RequestUri!.Segments[^1]]) }));
 
         // When
-        await UpgradeServices.Writer(fileSystem, source).Upgrade("repo", CancellationToken.None);
+        UpgradeWriter writer = new UpgradeWriterFixture().WithFileSystem(fileSystem).WithSource(source);
+        await writer.Upgrade("repo", CancellationToken.None);
 
         // Then
         var written = JsonNode.Parse(fileSystem.File.ReadAllBytes("repo/.specht/manifest.json"))!.AsObject();
@@ -584,7 +604,8 @@ public sealed class UpgradeWriterUnitTests
         // When
         try
         {
-            await UpgradeServices.Writer(fileSystem, source).Upgrade("repo", CancellationToken.None);
+            UpgradeWriter writer = new UpgradeWriterFixture().WithFileSystem(fileSystem).WithSource(source);
+            await writer.Upgrade("repo", CancellationToken.None);
         }
         finally
         {
@@ -623,7 +644,8 @@ public sealed class UpgradeWriterUnitTests
         }));
 
         // When
-        await UpgradeServices.Writer(fileSystem, source).Upgrade("repo", CancellationToken.None);
+        UpgradeWriter writer = new UpgradeWriterFixture().WithFileSystem(fileSystem).WithSource(source);
+        await writer.Upgrade("repo", CancellationToken.None);
 
         // Then
         fileSystem.File.Exists("repo/.specht/schema/frontmatter/" + absent).Should().BeFalse();
@@ -638,7 +660,7 @@ public sealed class UpgradeWriterUnitTests
         var fetched = Encoding.UTF8.GetBytes(served);
         var fileSystem = new MockFileSystem();
         fileSystem.AddFile("repo/.specht/manifest.json", new MockFileData(manifest));
-        foreach (var file in UpgradeServices.Shipped().At(new SemanticVersion(0, 2, 0)).Where(static file => file.Relative != ".specht/manifest.json"))
+        foreach (var file in _shipped.At(new SemanticVersion(0, 2, 0)).Where(static file => file.Relative != ".specht/manifest.json"))
         {
             fileSystem.AddFile("repo/" + file.Relative, new MockFileData(file.Bytes));
         }
@@ -649,7 +671,8 @@ public sealed class UpgradeWriterUnitTests
             : new HttpResponseMessage(HttpStatusCode.NotFound)));
 
         // When
-        await UpgradeServices.Writer(fileSystem, source).Upgrade("repo", CancellationToken.None);
+        UpgradeWriter writer = new UpgradeWriterFixture().WithFileSystem(fileSystem).WithSource(source);
+        await writer.Upgrade("repo", CancellationToken.None);
 
         // Then
         fileSystem.File.ReadAllBytes("repo/.specht/templates/" + name).Should().Equal(fetched, name);
@@ -662,7 +685,7 @@ public sealed class UpgradeWriterUnitTests
     {
         // Given
         var recorded = Encoding.UTF8.GetBytes(served);
-        var shipped = UpgradeServices.Shipped().At(new SemanticVersion(0, 2, 0));
+        var shipped = _shipped.At(new SemanticVersion(0, 2, 0));
         shipped.Single(file => file.Relative == ".specht/templates/" + name).Bytes.Should().NotEqual(recorded);
         var fileSystem = new MockFileSystem();
         fileSystem.AddFile("repo/.specht/manifest.json", new MockFileData(manifest));
@@ -675,7 +698,8 @@ public sealed class UpgradeWriterUnitTests
         fileSystem.File.WriteAllText("repo/.specht/templates/adr.md", "# A synthetic template with local edits\n");
 
         // When
-        await UpgradeServices.Writer(fileSystem).Upgrade("repo", CancellationToken.None);
+        UpgradeWriter writer = new UpgradeWriterFixture().WithFileSystem(fileSystem);
+        await writer.Upgrade("repo", CancellationToken.None);
 
         // Then
         fileSystem.File.ReadAllBytes("repo/.specht/templates/" + name).Should().Equal(recorded, name);
@@ -691,7 +715,7 @@ public sealed class UpgradeWriterUnitTests
         var fetched = Encoding.UTF8.GetBytes(served);
         var fileSystem = new MockFileSystem();
         fileSystem.AddFile("repo/.specht/manifest.json", new MockFileData(manifest));
-        foreach (var file in UpgradeServices.Shipped().At(new SemanticVersion(0, 2, 0))
+        foreach (var file in _shipped.At(new SemanticVersion(0, 2, 0))
                      .Where(file => file.Relative != ".specht/manifest.json" && file.Relative != ".specht/templates/" + name))
         {
             fileSystem.AddFile("repo/" + file.Relative, new MockFileData(file.Bytes));
@@ -702,7 +726,8 @@ public sealed class UpgradeWriterUnitTests
             : new HttpResponseMessage(HttpStatusCode.NotFound)));
 
         // When
-        await UpgradeServices.Writer(fileSystem, source).Upgrade("repo", CancellationToken.None);
+        UpgradeWriter writer = new UpgradeWriterFixture().WithFileSystem(fileSystem).WithSource(source);
+        await writer.Upgrade("repo", CancellationToken.None);
 
         // Then
         fileSystem.File.Exists("repo/.specht/templates/" + name).Should().BeFalse(name);
@@ -717,7 +742,7 @@ public sealed class UpgradeWriterUnitTests
         var fetched = Encoding.UTF8.GetBytes(served);
         var fileSystem = new MockFileSystem();
         fileSystem.AddFile("repo/.specht/manifest.json", new MockFileData(manifest));
-        foreach (var file in UpgradeServices.Shipped().At(new SemanticVersion(0, 2, 0)).Where(static file => file.Relative != ".specht/manifest.json"))
+        foreach (var file in _shipped.At(new SemanticVersion(0, 2, 0)).Where(static file => file.Relative != ".specht/manifest.json"))
         {
             fileSystem.AddFile("repo/" + file.Relative, new MockFileData(file.Bytes));
         }
@@ -735,7 +760,8 @@ public sealed class UpgradeWriterUnitTests
         // When
         try
         {
-            await UpgradeServices.Writer(fileSystem, source).Upgrade("repo", CancellationToken.None);
+            UpgradeWriter writer = new UpgradeWriterFixture().WithFileSystem(fileSystem).WithSource(source);
+            await writer.Upgrade("repo", CancellationToken.None);
         }
         finally
         {
@@ -758,7 +784,7 @@ public sealed class UpgradeWriterUnitTests
     {
         // Given
         var stamp = new DateTime(2026, 1, 2, 3, 4, 5, DateTimeKind.Utc);
-        var shipped = UpgradeServices.Shipped().At(new SemanticVersion(0, 2, 0));
+        var shipped = _shipped.At(new SemanticVersion(0, 2, 0));
         var edited = Encoding.UTF8.GetBytes("# A synthetic template of the consumer's\n");
         var fileSystem = new MockFileSystem();
         fileSystem.AddFile("repo/.specht/manifest.json", new MockFileData(manifest) { LastWriteTime = stamp });
@@ -771,7 +797,8 @@ public sealed class UpgradeWriterUnitTests
         fileSystem.AddFile("repo/.specht/templates/" + unnamed, new MockFileData(edited) { LastWriteTime = stamp });
 
         // When
-        var result = await UpgradeServices.Writer(fileSystem).Upgrade("repo", CancellationToken.None);
+        UpgradeWriter writer = new UpgradeWriterFixture().WithFileSystem(fileSystem);
+        var result = await writer.Upgrade("repo", CancellationToken.None);
 
         // Then
         result.Rewritten.Should().Equal(".specht/templates/" + unnamed);
@@ -789,7 +816,7 @@ public sealed class UpgradeWriterUnitTests
         var stamp = new DateTime(2026, 1, 2, 3, 4, 5, DateTimeKind.Utc);
         var fileSystem = new MockFileSystem();
         fileSystem.AddFile("repo/.specht/manifest.json", new MockFileData(manifest) { LastWriteTime = stamp });
-        foreach (var file in UpgradeServices.Shipped().At(new SemanticVersion(0, 2, 0))
+        foreach (var file in _shipped.At(new SemanticVersion(0, 2, 0))
                      .Where(static file => file.Relative is not (".specht/manifest.json" or ".specht/templates/feature.md")))
         {
             fileSystem.AddFile("repo/" + file.Relative, new MockFileData(file.Bytes) { LastWriteTime = stamp });
@@ -804,7 +831,8 @@ public sealed class UpgradeWriterUnitTests
             static path => path, path => (fileSystem.File.ReadAllBytes(path), fileSystem.File.GetLastWriteTimeUtc(path)));
 
         // When
-        var result = await UpgradeServices.Writer(fileSystem).Upgrade("repo", CancellationToken.None);
+        UpgradeWriter writer = new UpgradeWriterFixture().WithFileSystem(fileSystem);
+        var result = await writer.Upgrade("repo", CancellationToken.None);
 
         // Then
         result.Skipped.Should().Equal(new UpgradeSkip(".specht/templates/feature.md", "named in consumerTemplates"));
@@ -821,7 +849,7 @@ public sealed class UpgradeWriterUnitTests
     public async Task PresentSchemasUnderTheOnDiskSourceAndTwoNamedTemplates_WhenUpgraded_ShouldListEverySkipInOneListInOrdinalPathOrder()
     {
         // Given
-        var shipped = UpgradeServices.Shipped().At(new SemanticVersion(0, 2, 0));
+        var shipped = _shipped.At(new SemanticVersion(0, 2, 0));
         var manifest = JsonNode.Parse(shipped.Single(static file => file.Relative == ".specht/manifest.json").Bytes)!.AsObject();
         manifest["schemaSource"] = "disk";
         manifest["consumerTemplates"] = new JsonArray("lesson.md", "adr.md");
@@ -833,7 +861,8 @@ public sealed class UpgradeWriterUnitTests
         }
 
         // When
-        var result = await UpgradeServices.Writer(fileSystem).Upgrade("repo", CancellationToken.None);
+        UpgradeWriter writer = new UpgradeWriterFixture().WithFileSystem(fileSystem);
+        var result = await writer.Upgrade("repo", CancellationToken.None);
 
         // Then
         result.Skipped.Should().Equal(
@@ -853,7 +882,7 @@ public sealed class UpgradeWriterUnitTests
         var edited = Encoding.UTF8.GetBytes("# A synthetic template of the consumer's\n");
         var fileSystem = new MockFileSystem();
         fileSystem.AddFile("repo/.specht/manifest.json", new MockFileData(manifest));
-        foreach (var file in UpgradeServices.Shipped().At(new SemanticVersion(0, 2, 0)).Where(static file => file.Relative != ".specht/manifest.json"))
+        foreach (var file in _shipped.At(new SemanticVersion(0, 2, 0)).Where(static file => file.Relative != ".specht/manifest.json"))
         {
             fileSystem.AddFile("repo/" + file.Relative, new MockFileData(file.Bytes));
         }
@@ -867,7 +896,8 @@ public sealed class UpgradeWriterUnitTests
         }));
 
         // When
-        var result = await UpgradeServices.Writer(fileSystem, source).Upgrade("repo", CancellationToken.None);
+        UpgradeWriter writer = new UpgradeWriterFixture().WithFileSystem(fileSystem).WithSource(source);
+        var result = await writer.Upgrade("repo", CancellationToken.None);
 
         // Then
         requests.Should().BeEmpty();
@@ -891,7 +921,7 @@ public sealed class UpgradeWriterUnitTests
         foreach (var (fileSystem, text) in new[] { (withName, named.ToJsonString()), (without, manifest) })
         {
             fileSystem.AddFile("repo/.specht/manifest.json", new MockFileData(text) { LastWriteTime = stamp });
-            foreach (var file in UpgradeServices.Shipped().At(new SemanticVersion(0, 2, 0)).Where(static file => file.Relative != ".specht/manifest.json"))
+            foreach (var file in _shipped.At(new SemanticVersion(0, 2, 0)).Where(static file => file.Relative != ".specht/manifest.json"))
             {
                 fileSystem.AddFile("repo/" + file.Relative, new MockFileData(file.Bytes) { LastWriteTime = stamp });
             }
@@ -903,8 +933,10 @@ public sealed class UpgradeWriterUnitTests
         var templates = withName.Directory.GetFiles("repo/.specht/templates").Select(withName.Path.GetFileName).ToList();
 
         // When
-        var expected = await UpgradeServices.Writer(without).Upgrade("repo", CancellationToken.None);
-        var result = await UpgradeServices.Writer(withName).Upgrade("repo", CancellationToken.None);
+        UpgradeWriter withoutWriter = new UpgradeWriterFixture().WithFileSystem(without);
+        var expected = await withoutWriter.Upgrade("repo", CancellationToken.None);
+        UpgradeWriter withNameWriter = new UpgradeWriterFixture().WithFileSystem(withName);
+        var result = await withNameWriter.Upgrade("repo", CancellationToken.None);
 
         // Then
         expected.Rewritten.Should().Contain(".specht/templates/feature.md");
@@ -923,18 +955,19 @@ public sealed class UpgradeWriterUnitTests
     public async Task SchemasOfAnotherVersionBesideANamedTemplateUnderTheEmbeddedSource_WhenUpgraded_ShouldStillRewriteTheSchemas()
     {
         // Given
-        var pinned = UpgradeServices.Shipped().At(new SemanticVersion(0, 2, 0));
+        var pinned = _shipped.At(new SemanticVersion(0, 2, 0));
         var manifest = JsonNode.Parse(pinned.Single(static file => file.Relative == ".specht/manifest.json").Bytes)!.AsObject();
         manifest["consumerTemplates"] = new JsonArray("feature.md");
         var fileSystem = new MockFileSystem();
         fileSystem.AddFile("repo/.specht/manifest.json", new MockFileData(manifest.ToJsonString()));
-        foreach (var file in UpgradeServices.Shipped().At(new SemanticVersion(0, 1, 0)).Where(static file => file.Relative != ".specht/manifest.json"))
+        foreach (var file in _shipped.At(new SemanticVersion(0, 1, 0)).Where(static file => file.Relative != ".specht/manifest.json"))
         {
             fileSystem.AddFile("repo/" + file.Relative, new MockFileData(file.Bytes));
         }
 
         // When
-        var result = await UpgradeServices.Writer(fileSystem).Upgrade("repo", CancellationToken.None);
+        UpgradeWriter writer = new UpgradeWriterFixture().WithFileSystem(fileSystem);
+        var result = await writer.Upgrade("repo", CancellationToken.None);
 
         // Then
         var schemas = pinned.Where(static file => file.Relative.StartsWith(".specht/schema/frontmatter/", StringComparison.Ordinal)).ToList();
@@ -951,4 +984,6 @@ public sealed class UpgradeWriterUnitTests
         protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) =>
             Task.FromResult(respond(request));
     }
+
+    private readonly ShippedFiles _shipped = new ShippedFilesFixture();
 }

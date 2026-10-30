@@ -1,6 +1,7 @@
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json.Nodes;
+using Specht.Tool.Features;
 using Specht.Versioning;
 
 namespace Specht.Tests.Upgrade;
@@ -20,7 +21,7 @@ public sealed class UpgradeRootSources : TheoryData<string, string>
         const string edited = "{\"title\":\"A synthetic consumer schema\"}\r\n";
         var hash = "sha256:" + System.Convert.ToHexStringLower(SHA256.HashData(Encoding.UTF8.GetBytes(edited)));
         var defined = JsonNode.Parse(
-            UpgradeServices.Shipped().At(new SemanticVersion(0, 2, 0)).Single(static file => file.Relative == ".specht/manifest.json").Bytes)!.AsObject();
+            _shipped.At(new SemanticVersion(0, 2, 0)).Single(static file => file.Relative == ".specht/manifest.json").Bytes)!.AsObject();
         var undeclared = defined.DeepClone().AsObject();
         undeclared.Remove("identifiers");
         foreach (var (manifest, hashes) in new[]
@@ -42,4 +43,6 @@ public sealed class UpgradeRootSources : TheoryData<string, string>
             Add(upstream.ToJsonString(), edited);
         }
     }
+
+    private readonly ShippedFiles _shipped = new ShippedFilesFixture();
 }

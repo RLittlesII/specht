@@ -1,4 +1,5 @@
 using System.Text.Json.Nodes;
+using Specht.Tool.Features;
 using Specht.Versioning;
 
 namespace Specht.Tests.Upgrade;
@@ -17,7 +18,7 @@ public sealed class ConsumerTemplateListings : TheoryData<string, string[], stri
     public ConsumerTemplateListings()
     {
         var defined = JsonNode.Parse(
-            UpgradeServices.Shipped().At(new SemanticVersion(0, 2, 0)).Single(static file => file.Relative == ".specht/manifest.json").Bytes)!.AsObject();
+            _shipped.At(new SemanticVersion(0, 2, 0)).Single(static file => file.Relative == ".specht/manifest.json").Bytes)!.AsObject();
         const string current = ".specht/ is current at schemaVersion 0.2.0";
         const string feature = "skipped .specht/templates/feature.md: named in consumerTemplates";
 
@@ -54,4 +55,6 @@ public sealed class ConsumerTemplateListings : TheoryData<string, string[], stri
                 feature,
             ]);
     }
+
+    private readonly ShippedFiles _shipped = new ShippedFilesFixture();
 }

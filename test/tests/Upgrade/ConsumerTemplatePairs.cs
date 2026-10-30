@@ -1,4 +1,5 @@
 using System.Text.Json.Nodes;
+using Specht.Tool.Features;
 using Specht.Versioning;
 
 namespace Specht.Tests.Upgrade;
@@ -14,7 +15,7 @@ public sealed class ConsumerTemplatePairs : TheoryData<string, string, string>
     public ConsumerTemplatePairs()
     {
         var defined = JsonNode.Parse(
-            UpgradeServices.Shipped().At(new SemanticVersion(0, 2, 0)).Single(static file => file.Relative == ".specht/manifest.json").Bytes)!.AsObject();
+            _shipped.At(new SemanticVersion(0, 2, 0)).Single(static file => file.Relative == ".specht/manifest.json").Bytes)!.AsObject();
         foreach (var (named, unnamed) in new[] { ("feature.md", "adr.md"), ("lesson.md", "feature.md") })
         {
             var manifest = defined.DeepClone().AsObject();
@@ -22,4 +23,6 @@ public sealed class ConsumerTemplatePairs : TheoryData<string, string, string>
             Add(manifest.ToJsonString(), named, unnamed);
         }
     }
+
+    private readonly ShippedFiles _shipped = new ShippedFilesFixture();
 }

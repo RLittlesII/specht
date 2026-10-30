@@ -1,6 +1,7 @@
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json.Nodes;
+using Specht.Tool.Features;
 using Specht.Versioning;
 
 namespace Specht.Tests.Upgrade;
@@ -19,7 +20,7 @@ public sealed class UpstreamFetchRefusals : TheoryData<string, string, string, s
     public UpstreamFetchRefusals()
     {
         var manifest = JsonNode.Parse(
-            UpgradeServices.Shipped().At(new SemanticVersion(0, 2, 0)).Single(static file => file.Relative == ".specht/manifest.json").Bytes)!.AsObject();
+            _shipped.At(new SemanticVersion(0, 2, 0)).Single(static file => file.Relative == ".specht/manifest.json").Bytes)!.AsObject();
         manifest.Remove("claim");
         var served = new JsonObject();
         var hashes = new JsonObject();
@@ -59,4 +60,6 @@ public sealed class UpstreamFetchRefusals : TheoryData<string, string, string, s
             Add(manifest.ToJsonString(), served.ToJsonString(), "feature.md", failure);
         }
     }
+
+    private readonly ShippedFiles _shipped = new ShippedFilesFixture();
 }

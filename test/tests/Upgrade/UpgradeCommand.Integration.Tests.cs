@@ -6,8 +6,9 @@ using System.Text.Json.Nodes;
 using AwesomeAssertions;
 using Specht.Acceptance;
 using Specht.Tests.Shared;
+using Specht.Tool.Features;
 using Specht.Versioning;
-using Spectre.Console.Testing;
+using Spectre.Console.Cli.Testing;
 
 namespace Specht.Tests.Upgrade;
 
@@ -39,7 +40,7 @@ public sealed class UpgradeCommandIntegrationTests
     {
         // Given
         var root = Path.GetFullPath("repo");
-        var shipped = UpgradeServices.Shipped();
+        ShippedFiles shipped = new ShippedFilesFixture();
         var fileSystem = new MockFileSystem();
         fileSystem.AddFile(Path.Combine(root, ".specht/manifest.json"), new MockFileData($"{{\"schemaVersion\":\"{pin}\"}}"));
         foreach (var file in shipped.At(Version(files)).Where(static file => file.Relative != ".specht/manifest.json"))
@@ -49,7 +50,7 @@ public sealed class UpgradeCommandIntegrationTests
 
         var edited = Path.Combine(root, ".specht/templates/feature.md");
         fileSystem.File.WriteAllText(edited, "# A synthetic template with local edits\n");
-        var app = UpgradeServices.App(fileSystem, new TestConsole());
+        CommandAppTester app = new UpgradeAppFixture().WithFileSystem(fileSystem);
 
         // When
         var result = app.Run("upgrade", "--root", "repo");
@@ -69,7 +70,7 @@ public sealed class UpgradeCommandIntegrationTests
         // Given
         var root = Path.GetFullPath("repo");
         var stamp = new DateTime(2026, 1, 2, 3, 4, 5, DateTimeKind.Utc);
-        var shipped = UpgradeServices.Shipped();
+        ShippedFiles shipped = new ShippedFilesFixture();
         var fileSystem = new MockFileSystem();
         foreach (var file in shipped.At(Version(pin)))
         {
@@ -78,7 +79,7 @@ public sealed class UpgradeCommandIntegrationTests
 
         var before = fileSystem.AllFiles.ToDictionary(
             static path => path, path => (fileSystem.File.ReadAllBytes(path), fileSystem.File.GetLastWriteTimeUtc(path)));
-        var app = UpgradeServices.App(fileSystem, new TestConsole());
+        CommandAppTester app = new UpgradeAppFixture().WithFileSystem(fileSystem);
 
         // When
         var result = app.Run("upgrade", "--root", "repo");
@@ -100,7 +101,7 @@ public sealed class UpgradeCommandIntegrationTests
     {
         // Given
         var root = Path.GetFullPath("repo");
-        var shipped = UpgradeServices.Shipped();
+        ShippedFiles shipped = new ShippedFilesFixture();
         var fileSystem = new MockFileSystem();
         fileSystem.AddFile(Path.Combine(root, ".specht/manifest.json"), new MockFileData($"{{\"schemaVersion\":\"{pin}\"}}"));
         foreach (var file in shipped.At(Version(files)).Where(static file => file.Relative != ".specht/manifest.json"))
@@ -113,7 +114,7 @@ public sealed class UpgradeCommandIntegrationTests
         fileSystem.AddFile(Path.Combine(root, "examples/.spec/decisions/example.md"), new MockFileData("synthetic record"));
         fileSystem.AddFile(Path.Combine(root, ".specht/schema/notes.md"), new MockFileData("synthetic note beside the schema folder"));
         var before = fileSystem.AllFiles.ToDictionary(static path => path, path => fileSystem.File.ReadAllBytes(path));
-        var app = UpgradeServices.App(fileSystem, new TestConsole());
+        CommandAppTester app = new UpgradeAppFixture().WithFileSystem(fileSystem);
 
         // When
         var result = app.Run("upgrade", "--root", "repo");
@@ -135,19 +136,19 @@ public sealed class UpgradeCommandIntegrationTests
         // Given
         var root = Path.GetFullPath("repo");
         var defined = JsonNode.Parse(
-            UpgradeServices.Shipped().At(Version(pin)).Single(static file => file.Relative == ".specht/manifest.json").Bytes)!.AsObject();
+            _shipped.At(Version(pin)).Single(static file => file.Relative == ".specht/manifest.json").Bytes)!.AsObject();
         defined["schemaVersion"] = pin;
         defined["rules"] = new JsonObject { ["SPEC031"] = "warning" };
         var manifest = Encoding.UTF8.GetBytes(
             defined.ToJsonString(new JsonSerializerOptions { WriteIndented = true }).ReplaceLineEndings("\r\n") + "\r\n");
         var fileSystem = new MockFileSystem();
         fileSystem.AddFile(Path.Combine(root, ".specht/manifest.json"), new MockFileData(manifest));
-        foreach (var file in UpgradeServices.Shipped().At(Version(files)).Where(static file => file.Relative != ".specht/manifest.json"))
+        foreach (var file in _shipped.At(Version(files)).Where(static file => file.Relative != ".specht/manifest.json"))
         {
             fileSystem.AddFile(Path.Combine(root, file.Relative), new MockFileData(file.Bytes));
         }
 
-        var app = UpgradeServices.App(fileSystem, new TestConsole());
+        CommandAppTester app = new UpgradeAppFixture().WithFileSystem(fileSystem);
 
         // When
         var result = app.Run("upgrade", "--root", "repo");
@@ -164,7 +165,7 @@ public sealed class UpgradeCommandIntegrationTests
     {
         // Given
         var root = Path.GetFullPath("repo");
-        var shipped = UpgradeServices.Shipped();
+        ShippedFiles shipped = new ShippedFilesFixture();
         var present = shipped.At(Version(files)).Where(static file => file.Relative != ".specht/manifest.json").ToList();
         var fileSystem = new MockFileSystem();
         fileSystem.AddFile(Path.Combine(root, ".specht/manifest.json"), new MockFileData($"{{\"schemaVersion\":\"{pin}\"}}"));
@@ -173,7 +174,7 @@ public sealed class UpgradeCommandIntegrationTests
             fileSystem.AddFile(Path.Combine(root, file.Relative), new MockFileData(file.Bytes));
         }
 
-        var app = UpgradeServices.App(fileSystem, new TestConsole());
+        CommandAppTester app = new UpgradeAppFixture().WithFileSystem(fileSystem);
 
         // When
         var result = app.Run("upgrade", "--root", "repo");
@@ -193,7 +194,7 @@ public sealed class UpgradeCommandIntegrationTests
         // Given
         var root = Path.GetFullPath("repo");
         var fileSystem = new MockFileSystem();
-        foreach (var file in UpgradeServices.Shipped().At(Version("0.2.0")))
+        foreach (var file in _shipped.At(Version("0.2.0")))
         {
             fileSystem.AddFile(Path.Combine(root, file.Relative), new MockFileData(file.Bytes));
         }
@@ -201,7 +202,7 @@ public sealed class UpgradeCommandIntegrationTests
         var manifest = JsonNode.Parse(fileSystem.File.ReadAllBytes(Path.Combine(root, ".specht/manifest.json")))!.AsObject();
         manifest.Remove("claim").Should().BeTrue();
         fileSystem.File.WriteAllText(Path.Combine(root, ".specht/manifest.json"), manifest.ToJsonString());
-        var app = UpgradeServices.App(fileSystem, new TestConsole());
+        CommandAppTester app = new UpgradeAppFixture().WithFileSystem(fileSystem);
 
         // When
         var result = app.Run("upgrade", "--root", "repo");
@@ -218,7 +219,7 @@ public sealed class UpgradeCommandIntegrationTests
     {
         // Given
         var root = Path.GetFullPath("repo");
-        var shipped = UpgradeServices.Shipped().At(Version("0.2.0"));
+        var shipped = _shipped.At(Version("0.2.0"));
         var manifest = JsonNode.Parse(shipped.Single(static file => file.Relative == ".specht/manifest.json").Bytes)!.AsObject();
         manifest["schemaSource"] = "disk";
         var fileSystem = new MockFileSystem();
@@ -237,7 +238,7 @@ public sealed class UpgradeCommandIntegrationTests
             fileSystem.File.WriteAllText(Path.Combine(root, ".specht/templates", edited), "# A synthetic template with local edits\n");
         }
 
-        var app = UpgradeServices.App(fileSystem, new TestConsole());
+        CommandAppTester app = new UpgradeAppFixture().WithFileSystem(fileSystem);
 
         // When
         var result = app.Run("upgrade", "--root", "repo");
@@ -252,7 +253,7 @@ public sealed class UpgradeCommandIntegrationTests
     {
         // Given
         var root = Path.GetFullPath("repo");
-        var shipped = UpgradeServices.Shipped();
+        ShippedFiles shipped = new ShippedFilesFixture();
         var defined = JsonNode.Parse(
             shipped.At(Version("0.2.0")).Single(static file => file.Relative == ".specht/manifest.json").Bytes)!.AsObject();
         var sections = defined["sections"]!.DeepClone().AsArray();
@@ -274,7 +275,7 @@ public sealed class UpgradeCommandIntegrationTests
             fileSystem.AddFile(Path.Combine(root, file.Relative), new MockFileData(file.Bytes));
         }
 
-        var app = UpgradeServices.App(fileSystem, new TestConsole());
+        CommandAppTester app = new UpgradeAppFixture().WithFileSystem(fileSystem);
 
         // When
         var result = app.Run("upgrade", "--root", "repo");
@@ -302,12 +303,12 @@ public sealed class UpgradeCommandIntegrationTests
         var fileSystem = new MockFileSystem();
         fileSystem.AddFile(
             Path.Combine(root, ".specht/manifest.json"),
-            new MockFileData(UpgradeServices.Shipped().At(Version("0.1.0")).Single(static file => file.Relative == ".specht/manifest.json").Bytes));
+            new MockFileData(_shipped.At(Version("0.1.0")).Single(static file => file.Relative == ".specht/manifest.json").Bytes));
         fileSystem.AddFile(
             Path.Combine(root, ".specht/templates/feature.md"),
             new MockFileData("# A synthetic template with local edits\n") { Attributes = FileAttributes.ReadOnly });
         var errors = new StringWriter();
-        var app = UpgradeServices.App(fileSystem, new TestConsole(), errors);
+        CommandAppTester app = new UpgradeAppFixture().WithFileSystem(fileSystem).WithErrors(errors);
 
         // When
         var result = app.Run("upgrade", "--root", "repo");
@@ -330,7 +331,7 @@ public sealed class UpgradeCommandIntegrationTests
             fileSystem.AddFile(Path.Combine(root, ".specht/manifest.json"), new MockFileData("{\"schemaVersion\":\"0.2.0\"}") { LastWriteTime = stamp });
         }
 
-        foreach (var file in UpgradeServices.Shipped().At(Version("0.1.0")).Where(static file => file.Relative != ".specht/manifest.json"))
+        foreach (var file in _shipped.At(Version("0.1.0")).Where(static file => file.Relative != ".specht/manifest.json"))
         {
             fileSystem.AddFile(Path.Combine(root, file.Relative), new MockFileData(file.Bytes) { LastWriteTime = stamp });
         }
@@ -338,7 +339,7 @@ public sealed class UpgradeCommandIntegrationTests
         var before = fileSystem.AllFiles.ToDictionary(
             static path => path, path => (fileSystem.File.ReadAllBytes(path), fileSystem.File.GetLastWriteTimeUtc(path)));
         var errors = new StringWriter();
-        var app = UpgradeServices.App(fileSystem, new TestConsole(), errors);
+        CommandAppTester app = new UpgradeAppFixture().WithFileSystem(fileSystem).WithErrors(errors);
 
         // When
         var result = app.Run("upgrade", "--root", Path.Combine("repo", typedRoot));
@@ -364,7 +365,7 @@ public sealed class UpgradeCommandIntegrationTests
         var stamp = new DateTime(2026, 1, 2, 3, 4, 5, DateTimeKind.Utc);
         var fileSystem = new MockFileSystem();
         fileSystem.AddFile(Path.Combine(root, ".specht/manifest.json"), new MockFileData(manifest) { LastWriteTime = stamp });
-        foreach (var file in UpgradeServices.Shipped().At(Version("0.1.0")).Where(static file => file.Relative != ".specht/manifest.json"))
+        foreach (var file in _shipped.At(Version("0.1.0")).Where(static file => file.Relative != ".specht/manifest.json"))
         {
             fileSystem.AddFile(Path.Combine(root, file.Relative), new MockFileData(file.Bytes) { LastWriteTime = stamp });
         }
@@ -372,7 +373,7 @@ public sealed class UpgradeCommandIntegrationTests
         var before = fileSystem.AllFiles.ToDictionary(
             static path => path, path => (fileSystem.File.ReadAllBytes(path), fileSystem.File.GetLastWriteTimeUtc(path)));
         var errors = new StringWriter();
-        var app = UpgradeServices.App(fileSystem, new TestConsole(), errors);
+        CommandAppTester app = new UpgradeAppFixture().WithFileSystem(fileSystem).WithErrors(errors);
 
         // When
         var result = app.Run("upgrade", "--root", "repo");
@@ -447,7 +448,7 @@ public sealed class UpgradeCommandIntegrationTests
                 };
         }));
         var errors = new StringWriter();
-        var app = UpgradeServices.App(fileSystem, new TestConsole(), errors, source);
+        CommandAppTester app = new UpgradeAppFixture().WithFileSystem(fileSystem).WithErrors(errors).WithSource(source);
 
         // When
         var result = app.Run("upgrade", "--root", "repo");
@@ -472,7 +473,7 @@ public sealed class UpgradeCommandIntegrationTests
         var root = Path.GetFullPath("repo");
         var fileSystem = new MockFileSystem();
         fileSystem.AddFile(Path.Combine(root, ".specht/manifest.json"), new MockFileData(manifest));
-        foreach (var file in UpgradeServices.Shipped().At(Version("0.2.0"))
+        foreach (var file in _shipped.At(Version("0.2.0"))
                      .Where(file => file.Relative != ".specht/manifest.json" && !absent.Any(name => file.Relative == ".specht/templates/" + name)))
         {
             fileSystem.AddFile(Path.Combine(root, file.Relative), new MockFileData(file.Bytes));
@@ -483,7 +484,7 @@ public sealed class UpgradeCommandIntegrationTests
             fileSystem.File.WriteAllText(Path.Combine(root, ".specht/templates", name), "# A synthetic template with local edits\n");
         }
 
-        var app = UpgradeServices.App(fileSystem, new TestConsole());
+        CommandAppTester app = new UpgradeAppFixture().WithFileSystem(fileSystem);
 
         // When
         var result = app.Run("upgrade", "--root", "repo");
@@ -506,7 +507,7 @@ public sealed class UpgradeCommandIntegrationTests
         foreach (var (fileSystem, text) in new[] { (withName, named.ToJsonString()), (without, manifest) })
         {
             fileSystem.AddFile(Path.Combine(root, ".specht/manifest.json"), new MockFileData(text));
-            foreach (var file in UpgradeServices.Shipped().At(Version("0.1.0")).Where(static file => file.Relative != ".specht/manifest.json"))
+            foreach (var file in _shipped.At(Version("0.1.0")).Where(static file => file.Relative != ".specht/manifest.json"))
             {
                 fileSystem.AddFile(Path.Combine(root, file.Relative), new MockFileData(file.Bytes));
             }
@@ -516,8 +517,10 @@ public sealed class UpgradeCommandIntegrationTests
         }
 
         // When
-        var expected = UpgradeServices.App(without, new TestConsole()).Run("upgrade", "--root", "repo");
-        var result = UpgradeServices.App(withName, new TestConsole()).Run("upgrade", "--root", "repo");
+        CommandAppTester withoutApp = new UpgradeAppFixture().WithFileSystem(without);
+        var expected = withoutApp.Run("upgrade", "--root", "repo");
+        CommandAppTester withNameApp = new UpgradeAppFixture().WithFileSystem(withName);
+        var result = withNameApp.Run("upgrade", "--root", "repo");
 
         // Then
         expected.Output.Should().Contain("rewritten .specht/templates/feature.md");
@@ -533,4 +536,6 @@ public sealed class UpgradeCommandIntegrationTests
         protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) =>
             Task.FromResult(respond(request));
     }
+
+    private readonly ShippedFiles _shipped = new ShippedFilesFixture();
 }
