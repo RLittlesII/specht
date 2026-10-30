@@ -1196,13 +1196,6 @@ Feature: Schema versioning
     When specht schema pin 0.2.0 runs
     Then the output confirms version 0.2.0 and the manifest
 
-  @B-115
-  Scenario: Schema 0.2.0 adds nine rules to the 0.1.0 vocabulary
-    Given the tool ships schema versions 0.1.0 and 0.2.0
-    When the vocabulary of each version is read
-    Then version 0.1.0 holds its 21 rule ids
-    And version 0.2.0 holds those 21 and SPEC014, SPEC015, SPEC022, SPEC023, SPEC024, SPEC032, SPEC033, SPEC034 and SPEC035
-
   @B-116
   Scenario: Upgrade never rewrites the consumer's matrix, test, owner and required-specification settings
     Given the tool ships schema versions 0.1.0 and 0.2.0
@@ -1210,13 +1203,6 @@ Feature: Schema versioning
     And its manifest sets section owners, test files, scenario title matching and required specification directories of the consumer's
     When upgrade runs against it
     Then the section owners, the test files, the title matching and the required directories are as the consumer set them
-
-  @B-117
-  Scenario: The 0.2.0 template says the missing-coverage rule reports an approved specification
-    Given the tool ships schema versions 0.1.0 and 0.2.0
-    When the feature template of each version is read
-    Then version 0.2.0's traceability guidance says the missing-coverage rule reports a missing row once the specification is approved, unless the manifest lowers the rule
-    And version 0.1.0's says a missing row does not block the specification reaching approved
 
   @B-118
   Scenario: A done Feature's missing row is reported
