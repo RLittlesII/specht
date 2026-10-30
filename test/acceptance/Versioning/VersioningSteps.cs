@@ -53,7 +53,9 @@ namespace Specht.Acceptance.Versioning;
 /// B-012 runs the existing init writer over synthetic versioned manifests on disk and reads the written pin. Item 0046
 /// binds B-018 to B-020: each launches the built tool's upgrade over the Background root - against <c>no-such-root</c>
 /// beneath it, without its manifest, with a rule set to a level no version defines, or pinned to 0.2.0 with a recorded
-/// source and the embedded source selected - and compares every file under the root with its bytes before the run. The
+/// source and the embedded source selected - and compares every file under the root with its bytes before the run. Item 0048
+/// binds B-021 the same way, under a pin of 7.0.0 and under the integer 1, and launches the built tool's check over the same
+/// root to compare the upgrade's standard error with the check's, byte for byte. The
 /// rest of the file's scenarios stay pending for their items; a step one of them shares with a scenario above is bound,
 /// and its other steps are not.
 /// </summary>

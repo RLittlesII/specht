@@ -69,6 +69,7 @@ public sealed class UpgradeWriter(
     /// <implements epic="0001" feature="F7" claim="B-136" />
     /// <implements epic="0001" feature="F7" claim="B-137" />
     /// <implements epic="0001" feature="F7" claim="B-141" />
+    /// <implements epic="0001" feature="F7" claim="B-021" />
     public async Task<UpgradeResult> Upgrade(string root, CancellationToken cancellationToken)
     {
         var structure = loader.LoadManifest(root);

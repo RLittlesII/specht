@@ -4,6 +4,7 @@ using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using AwesomeAssertions;
+using Specht.Acceptance;
 using Specht.Tests.Shared;
 using Specht.Versioning;
 using Spectre.Console.Testing;
@@ -20,7 +21,9 @@ namespace Specht.Tests.Upgrade;
 /// manifest <c>3</c>, writing nothing and naming no absolute path. Under a recorded upstream schema source whose fetch the
 /// synthetic source refuses - content failing its hash, an unreachable source, or a 401 or 404 - the command names the
 /// source on standard error, writes nothing and exits <c>3</c> (B-027, B-035), and so for a refused fetch of a template that
-/// source hashes (B-132, B-133).
+/// source hashes (B-132, B-133). Under a pin the check rejects (B-021) the built tool is launched for both commands over a root
+/// on disk, since the check writes its standard error to the process's own stream, and the upgrade's standard error is the
+/// check's byte for byte.
 /// </summary>
 [Trait("Tier", "Integration")]
 public sealed class UpgradeCommandIntegrationTests
@@ -343,6 +346,29 @@ public sealed class UpgradeCommandIntegrationTests
         }
 
         errors.ToString().Should().NotContain(root);
+    }
+
+    [Theory]
+    [ClassData(typeof(UpgradeRejectedPins))]
+    public void APinTheCheckRejects_WhenUpgraded_ShouldPrintTheChecksStandardErrorWriteNothingAndExitThree(string schemaVersion)
+    {
+        // Given
+        using var tree = new SpecTree();
+        tree.WriteRaw(SpecTree.ManifestPath, $"{{\"schemaVersion\":{schemaVersion}}}");
+        var check = AcceptanceTool.Launch(tree.Root);
+        var before = Directory.GetFiles(tree.Root, "*", SearchOption.AllDirectories)
+            .ToDictionary(path => Path.GetRelativePath(tree.Root, path), static path => File.ReadAllBytes(path));
+
+        // When
+        var result = AcceptanceTool.Launch(tree.Root, "upgrade");
+
+        // Then
+        check.ExitCode.Should().Be(3, check.Stderr);
+        result.ExitCode.Should().Be(3, result.Stderr);
+        result.Stderr.Should().NotBeEmpty().And.Be(check.Stderr);
+        Directory.GetFiles(tree.Root, "*", SearchOption.AllDirectories)
+            .ToDictionary(path => Path.GetRelativePath(tree.Root, path), static path => File.ReadAllBytes(path))
+            .Should().BeEquivalentTo(before);
     }
 
     [Theory]
