@@ -65,4 +65,26 @@ Recorded by spec-author as what the call rules out:
 
 ## Reversal
 
-None.
+2026-10-30, calls 2 to 4, on the repository owner's approval of item
+`0041`'s close-out; recorded by spec-author. A release went before the
+nine rules were built. Two `0.2.0`s were carried by packages, and OQ-60
+asks which is published: tag `v0.1.131`'s adds no rule id to `0.1.0`'s
+21, and from `v0.2.4` on it adds `SPEC034` and `SPEC035`. Neither holds
+the other seven ids, and neither feature template changed `0.1.0`'s § 9
+guidance. Call 1 and C-1 forbid relocking whichever is published, so call
+3's vocabulary and call 4's wording never held, under either answer to
+OQ-60. B-115 is withdrawn by spec-author and B-117 by the owner, their
+numbers retired; OQ-58 is resolved; C-17 is amended. Call 1 stands.
+
+Each of the seven ids enters with its own rule, at least a
+`0.minor` step above the newest published version (C-11); which version
+is not decided. B-124 gives `0.3.0`'s feature template new § 9 guidance,
+after decision 0015.
+
+Considered and not chosen, by spec-author:
+
+- B-115 retargeted to `0.3.0`: no owner call names it, and it would hold
+  B-118 to B-124 back for rules not yet built or specified (`SPEC015`'s
+  specification is a draft; `SPEC014` and `SPEC024` have no item).
+- B-115 retargeted to "the version that ships the seven ids": it names no
+  version, so it says no more than B-014.

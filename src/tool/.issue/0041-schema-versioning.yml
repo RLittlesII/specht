@@ -65,10 +65,7 @@ claims:
   - B-050
   - B-051
   - B-052
-  - B-053
-  - B-054
   - B-055
-  - B-056
   - B-057
   - B-058
   - B-059
@@ -118,7 +115,6 @@ claims:
   - B-105
   - B-106
   - B-107
-  - B-115
   - B-125
   - B-126
   - B-127
@@ -139,7 +135,7 @@ claims:
   - B-144
 
 created: "2026-10-08"
-updated: "2026-10-29"
+updated: "2026-10-30"
 closed: null
 
 summary: |
@@ -247,10 +243,7 @@ acceptance_criteria:
   - "B-050 — pin, no manifest: exit 2 (0123)"
   - "B-051 — pin, rejected manifest: exit 3 (0123)"
   - "B-052 — upgrade leaves `schemaVersion` (0045)"
-  - "B-053 — `latest-patch` floats to the newest patch (0124)"
-  - "B-054 — `latest-minor` floats to the newest minor (0124)"
   - "B-055 — no policy: exactly the pinned version (0120)"
-  - "B-056 — undefined pin policy: exit 3 (0124)"
   - "B-057 — pin with no version offers a selection list (0125)"
   - "B-058 — the chosen version is pinned (0125)"
   - "B-059 — upgrade that only adds a key: exit 0 (0047)"
@@ -293,7 +286,6 @@ acceptance_criteria:
   - "B-098 — a cut rule page gives the new version (0189)"
   - "B-099 — a cut file is otherwise byte-identical (0189)"
   - "B-100 — the cut touches nothing outside the new folders (0189)"
-  - "B-115 — each id enters 0.2.0's vocabulary with its rule: SPEC034, SPEC035 (0001-F12, 0227); SPEC022, SPEC023, SPEC032, SPEC033 (0001-F12, not cut); SPEC014, SPEC024 (0001-F6, no item); SPEC015 (0101-F9, draft)"
   - "B-125 — a `templates` member under any pin: each a hashed template (0290)"
   - "B-126 — a template hash not in the sha256 form: invalid (0290)"
   - "B-127 — a hash for a file the version does not ship: invalid (0290)"
@@ -427,6 +419,18 @@ decisions:
     2026-10-29, spec-author's cut, not an owner ruling: B-142 is carried
     by 0094 for its on-disk-schema row and by 0131 for its
     consumer-template row, which needs B-061's template skips.
+  - |
+    2026-10-30, the repository owner approved this item's close-out
+    plan. B-053, B-054 and B-056 leave `claims`: they are 0124's alone,
+    in milestone 0.4.0, and this item no longer waits on them. B-115 is
+    withdrawn and leaves `claims`: neither 0.2.0 a package carried (tag
+    v0.1.131's, or the one from v0.2.4 on; OQ-60 asks which is
+    published) holds SPEC014, SPEC015, SPEC022 to SPEC024, SPEC032 or
+    SPEC033 (OQ-58; decision 0014, Reversal). Withdrawing it rather than
+    retargeting it is spec-author's choice, not an owner ruling. B-117 is
+    withdrawn by the owner: neither 0.2.0 feature template changed
+    0.1.0's § 9 guidance, and B-124 replaces it in 0.3.0; it was never in
+    `claims`.
 
 out_of_scope:
   - "Everything in § 5 of the spec."
