@@ -194,7 +194,7 @@ public sealed partial class DocumentationSteps
         result.InputDiagnostics.Where(static diagnostic => diagnostic.Severity == DiagnosticSeverity.Error).Should().BeEmpty();
         var project = result.ProjectInformation.SourceProject;
         project = project.Solution.WithDocumentFilePath(project.DocumentIds.Single(), "test/Example.cs").GetProject(project.Id)!;
-        var inputs = new[]
+        var inputs = _repairRecords ?? new[]
         {
             ("configuration", "config/consumer.json", """
              {"schemaVersion":"0.1.0","identifiers":{"feature":"^F[0-9]+$","claim":"^B-[0-9]{3}$"},
@@ -281,6 +281,7 @@ public sealed partial class DocumentationSteps
     private bool _repairBulk;
     private bool _repairAmbiguous;
     private (string Kind, string Path, string Text)[] _repairInputs = [];
+    private (string Kind, string Path, string Text)[]? _repairRecords;
     private Project? _repairProject;
     private ImmutableArray<Diagnostic> _repairDiagnostics;
 }
