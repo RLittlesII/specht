@@ -1,0 +1,27 @@
+id: "0320"
+type: task
+title: "Order binding elements and target choices"
+status: in-progress
+value: 2
+risk: 2
+parent: "0201"
+children: []
+depends_on: []
+spikes: []
+spec: src/codefixes/.spec/README.md
+claims: ["B-039", "B-040"]
+created: "2026-10-30"
+updated: "2026-10-30"
+closed: null
+summary: |
+  Order the binding elements an invoked repair writes into a documentation
+  comment, and the target choices a repair offers, by the identity order
+  decision 0010 sets. Individual repairs and Fix All share the order. The
+  repairs 0241 delivered are the base; nothing open is waited on.
+acceptance_criteria:
+  - "0201-F2 B-039 - binding elements a repair writes into a comment"
+  - "0201-F2 B-040 - target choices a repair offers"
+  - "§ 9 names passing acceptance and mechanism tests for every delivered claim before this item is done."
+decisions: []
+out_of_scope:
+  - "Everything in § 5 of the cited specification; row 4 excludes an ordering diagnostic and reordering comments no repair writes into."
