@@ -54,6 +54,20 @@ the only claimant: an open pull request holds ids too, and
 says how to count them. Ids are never reused, and a closed item stays as
 permanent history.
 
+## Removing an item leaves its issue on the board
+
+The mirror labels `stale` and keeps open the issue of an item or an epic whose
+file is gone; it never closes one (`0055-F9` B-033, B-034). The issue stays in
+its milestone and counts as open work on the public board. A pull request that
+removes an item or an epic therefore names, in its report to the owner, the
+issues it leaves behind, found by the id in each issue's `specht-item` marker.
+After the merge the author reads the `### Stale` lines of the mirror run on
+`main` and hands the owner those issue numbers to close as not planned. A
+mirrored issue is never closed or edited by hand to skip that hand-off.
+A status read compares the queue's open count for a milestone with the board's
+open issues for it before it calls them the same
+([lesson 0002](../../../../.github/mirror/.spec/lessons/0002-a-removed-item-leaves-its-issue-on-the-board.md)).
+
 ## Each step of brief § 8 is a pull request
 
 The order of work is fixed and each step is one pull request whose description
@@ -363,6 +377,8 @@ publication remains pending. Specifications, scenarios and epic files stay in gi
 - Claim text copied into an item — cite the id.
 - A `priority`, `rank` or `blocks` field stored on an item.
 - A deleted item — a closed one stays as history.
+- A pull request that removes an item or an epic without naming the mirrored
+  issues it leaves open.
 - A claim citation that exists only in the pull-request body.
 - A commit that is a subject and no body.
 - A merge that overrides the squash body, or one whose merged message was not
