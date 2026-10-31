@@ -91,14 +91,14 @@ The revised agreement remains open; existing file-based use must stay supported.
 
 <!-- last written by: spec-author, 2026-10-19 -->
 
-| #   | Item                                                                                             | Exclusion Reason                                                              |
-| --- | ------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------- |
-| 1   | Editing, creating or deleting repository documents through the index.                            | C-1; existing commands own the permitted writes.                              |
-| 2   | Defining the public tree-facts document or citation-resolution command.                          | Epic `0132` candidate A and epic `0228` candidate C own those answers.        |
-| 3   | Document-number reservation state.                                                               | Epic `0132` candidate F owns allocation and its separate authority.           |
-| 4   | Cross-machine index sharing or a network service.                                                | The MCP host is local and offline.                                            |
-| 5   | Retaining specification history after files change.                                              | The index represents one current tree, not a revision archive.                |
-| 6   | Choosing a document or relational database before the query and freshness contracts are settled. | Either physical model may satisfy the claims; § 7 belongs to the implementer. |
+| #   | Item                                                                                             | Exclusion Reason                                                                                         |
+| --- | ------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------- |
+| 1   | Editing, creating or deleting repository documents through the index.                            | C-1; existing commands own the permitted writes.                                                         |
+| 2   | Defining the public tree-facts document or citation-resolution command.                          | Epic `0132` candidate A and epic `0228` candidate C own those answers.                                   |
+| 3   | Document-number reservation state.                                                               | Epic `0324` candidate F owns allocation and its separate authority (moved from epic `0132`, 2026-10-30). |
+| 4   | Cross-machine index sharing or a network service.                                                | The MCP host is local and offline.                                                                       |
+| 5   | Retaining specification history after files change.                                              | The index represents one current tree, not a revision archive.                                           |
+| 6   | Choosing a document or relational database before the query and freshness contracts are settled. | Either physical model may satisfy the claims; § 7 belongs to the implementer.                            |
 
 ## 6. Concern Separation
 
