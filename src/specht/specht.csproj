@@ -47,12 +47,14 @@
                       LogicalName="templates/$([MSBuild]::ValueOrDefault('%(RecursiveDir)', '').Replace('\', '/'))%(Filename)%(Extension)" />
   </ItemGroup>
 
-  <!-- Every shipped version's rule pages (0001-F3 B-031, A-4), linked from docs/rules at the repository root and
-       embedded as rules/v<major.minor.patch>/<file>, as the schemas are as schema/v<major.minor.patch>/<file>. -->
-  <ItemGroup>
-    <EmbeddedResource Include="..\..\docs\rules\v*\*.md"
-                      Link="rules\%(RecursiveDir)%(Filename)%(Extension)"
-                      LogicalName="rules/$([MSBuild]::ValueOrDefault('%(RecursiveDir)', '').Replace('\', '/'))%(Filename)%(Extension)" />
-  </ItemGroup>
+  <Target Name="GenerateRulePages" BeforeTargets="AssignTargetPaths">
+    <Exec Command="python3 &quot;$(MSBuildThisFileDirectory)..\..\.build\rules\generate.py&quot; &quot;$(MSBuildThisFileDirectory)..\..&quot;" />
+    <ItemGroup>
+      <RulePage Include="..\..\docs\rules\v*\*.md" />
+      <EmbeddedResource Include="@(RulePage)"
+                        Link="rules\%(RulePage.RecursiveDir)%(RulePage.Filename)%(RulePage.Extension)"
+                        LogicalName="rules/$([MSBuild]::ValueOrDefault('%(RulePage.RecursiveDir)', '').Replace('\', '/'))%(RulePage.Filename)%(RulePage.Extension)" />
+    </ItemGroup>
+  </Target>
 
 </Project>

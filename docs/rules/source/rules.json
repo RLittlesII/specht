@@ -1,0 +1,152 @@
+{
+  "versions": [
+    "0.1.0",
+    "0.2.0",
+    "0.2.1"
+  ],
+  "rules": {
+    "SPEC001": [
+      {
+        "from": "0.1.0",
+        "file": "SPEC001.md"
+      }
+    ],
+    "SPEC002": [
+      {
+        "from": "0.1.0",
+        "file": "SPEC002.md"
+      }
+    ],
+    "SPEC003": [
+      {
+        "from": "0.1.0",
+        "file": "SPEC003.md"
+      }
+    ],
+    "SPEC004": [
+      {
+        "from": "0.1.0",
+        "file": "SPEC004.md"
+      }
+    ],
+    "SPEC010": [
+      {
+        "from": "0.1.0",
+        "file": "SPEC010.md"
+      }
+    ],
+    "SPEC011": [
+      {
+        "from": "0.1.0",
+        "file": "SPEC011.md"
+      }
+    ],
+    "SPEC012": [
+      {
+        "from": "0.1.0",
+        "file": "SPEC012.md"
+      }
+    ],
+    "SPEC013": [
+      {
+        "from": "0.1.0",
+        "file": "SPEC013.md"
+      }
+    ],
+    "SPEC020": [
+      {
+        "from": "0.1.0",
+        "file": "SPEC020.md"
+      }
+    ],
+    "SPEC021": [
+      {
+        "from": "0.1.0",
+        "file": "SPEC021@0.1.0.md",
+        "to": "0.1.0"
+      },
+      {
+        "from": "0.2.0",
+        "file": "SPEC021.md"
+      }
+    ],
+    "SPEC030": [
+      {
+        "from": "0.1.0",
+        "file": "SPEC030.md"
+      }
+    ],
+    "SPEC031": [
+      {
+        "from": "0.1.0",
+        "file": "SPEC031.md"
+      }
+    ],
+    "SPEC034": [
+      {
+        "from": "0.2.0",
+        "file": "SPEC034.md"
+      }
+    ],
+    "SPEC035": [
+      {
+        "from": "0.2.0",
+        "file": "SPEC035.md"
+      }
+    ],
+    "SPEC040": [
+      {
+        "from": "0.1.0",
+        "file": "SPEC040.md"
+      }
+    ],
+    "SPEC041": [
+      {
+        "from": "0.1.0",
+        "file": "SPEC041.md"
+      }
+    ],
+    "SPEC043": [
+      {
+        "from": "0.1.0",
+        "file": "SPEC043.md"
+      }
+    ],
+    "SPEC044": [
+      {
+        "from": "0.1.0",
+        "file": "SPEC044.md"
+      }
+    ],
+    "SPEC050": [
+      {
+        "from": "0.1.0",
+        "file": "SPEC050.md"
+      }
+    ],
+    "SPEC051": [
+      {
+        "from": "0.1.0",
+        "file": "SPEC051.md"
+      }
+    ],
+    "SPEC052": [
+      {
+        "from": "0.1.0",
+        "file": "SPEC052.md"
+      }
+    ],
+    "SPEC060": [
+      {
+        "from": "0.1.0",
+        "file": "SPEC060.md"
+      }
+    ],
+    "SPEC061": [
+      {
+        "from": "0.1.0",
+        "file": "SPEC061.md"
+      }
+    ]
+  }
+}
