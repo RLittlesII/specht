@@ -218,10 +218,24 @@ Feature: Work-item mirror
     And it carries no comment from the mirror
 
   @B-033 @boundary
-  Scenario: A removed item's issue is kept
+  Scenario: A removed item's issue is never deleted
     Given a work item's file was removed from the main branch
     When the mirror runs
-    Then its issue is neither closed nor deleted
+    Then its issue is not deleted
+
+  @B-064
+  Scenario: A removed item's open issue is closed as not planned
+    Given a work item's file was removed from the main branch
+    And its issue is open
+    When the mirror runs
+    Then its issue is closed with the reason not planned
+
+  @B-065 @boundary
+  Scenario: A removed item's closed issue keeps its state
+    Given a work item's file was removed from the main branch
+    And its issue was closed as completed
+    When the mirror runs
+    Then its issue stays closed with the reason completed
 
   @B-034
   Scenario: A removed item's issue is marked stale

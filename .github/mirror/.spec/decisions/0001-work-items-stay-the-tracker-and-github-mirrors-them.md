@@ -49,7 +49,9 @@ owner cite this list.
    second comment.
 10. An issue without the marker is never touched.
 11. An item file deleted from the tree: its issue is neither closed nor
-    deleted, it is labelled `stale`, and the step summary warns.
+    deleted, it is labelled `stale`, and the step summary warns. (The
+    "neither closed" part is superseded by decision 0012: an open issue is
+    closed as not planned.)
 12. The workflow runs on a push to `main` touching `**/.issue/**`,
     `epics/**/epic.md` or the mirror's own files, and on manual dispatch; one
     run at a time, none cancelled; a step summary counts issues created,

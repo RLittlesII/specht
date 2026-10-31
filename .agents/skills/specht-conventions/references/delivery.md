@@ -56,14 +56,17 @@ permanent history.
 
 ## Removing an item leaves its issue on the board
 
-The mirror labels `stale` and keeps open the issue of an item or an epic whose
-file is gone; it never closes one (`0055-F9` B-033, B-034). The issue stays in
-its milestone and counts as open work on the public board. A pull request that
-removes an item or an epic therefore names, in its report to the owner, the
-issues it leaves behind, found by the id in each issue's `specht-item` marker.
-After the merge the author reads the `### Stale` lines of the mirror run on
-`main` and hands the owner those issue numbers to close as not planned. A
-mirrored issue is never closed or edited by hand to skip that hand-off.
+The mirror closes as not planned the open issue of an item or an epic whose
+file is gone, labels it `stale` and never deletes it (`0055-F9` B-033, B-064).
+Until B-064's row in that specification's § 9 is `Covered`, the script leaves it
+open in its milestone, and it counts as open work on the public board. A pull
+request that removes an item or an epic therefore names, in its report to the
+owner, the issues it leaves behind, found by the id in each issue's
+`specht-item` marker. After the merge the author reads the `### Stale` lines of
+the mirror run on `main`; while B-064 is not `Covered` the author hands the
+owner those issue numbers to close as not planned, and once it is the author
+confirms each is closed. A mirrored issue is never closed or edited by hand to
+skip that step.
 A status read compares the queue's open count for a milestone with the board's
 open issues for it before it calls them the same
 ([lesson 0002](../../../../.github/mirror/.spec/lessons/0002-a-removed-item-leaves-its-issue-on-the-board.md)).
