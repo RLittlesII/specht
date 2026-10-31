@@ -1,0 +1,199 @@
+Feature: The facts command
+  As an agent or a maintainer working in a repository that pins specht
+  I want what the specification tree holds given as structured data
+  So that I stop reading and searching Markdown to learn where a claim stands
+
+  Background:
+    Given a repository whose manifest pins schema version 0.2.0
+    And two Feature specifications, each with claims, constraints, out-of-scope rows and open questions
+
+  @B-001
+  Scenario: The facts cover every specification the check discovers
+    When the facts are given
+    Then they hold both specifications, in the order the check discovers them
+
+  @B-002
+  Scenario: The JSON facts validate against the published schema
+    When the facts are given as JSON
+    Then the output is one JSON document
+    And the document validates against the published facts schema
+
+  @B-003
+  Scenario: A specification is given with its path, identity and statuses
+    When the facts are given as JSON
+    Then each specification carries its path relative to the root, its qualified Feature id, its document maturity and its delivery status
+
+  @B-004
+  Scenario: A specification is given with its dependencies
+    Given the first specification depends on the second
+    And the second specification lists the first among what it blocks
+    When the facts are given as JSON
+    Then the first specification carries the second among what it depends on
+    And the second carries the first among what it blocks
+
+  @B-005
+  Scenario: A claim is given with its text, status and line
+    When the facts are given as JSON
+    Then each claim carries its id, its text, its status and the line it is on
+
+  @B-006
+  Scenario: A constraint is given with what it rules out
+    When the facts are given as JSON
+    Then each constraint carries its id, its text, what it rules out and the line it is on
+
+  @B-007
+  Scenario: An out-of-scope row is given with its reason
+    When the facts are given as JSON
+    Then each out-of-scope row carries its number, its item, its reason and the line it is on
+
+  @B-008
+  Scenario Outline: An open question is given with whether it is resolved
+    Given an open question whose resolution reads "<resolution>"
+    When the facts are given as JSON
+    Then the open question carries its id, its question, what it blocks, its resolution and the line it is on
+    And it is given as <state>
+
+    Examples:
+      | resolution                                   | state      |
+      | Open                                         | unresolved |
+      | Open. Proceeds on the default.               | unresolved |
+      | Resolved 2026-10-30 by the owner: the answer | resolved   |
+
+  @B-009
+  Scenario Outline: A lessons and deltas entry is given with its text and line
+    Given the first specification records two lessons and deltas entries as <form>
+    When the facts are given as JSON
+    Then the first specification carries both entries, each with the line it is on
+    And each entry carries <content>
+
+    Examples:
+      | form       | content         |
+      | list items | its text        |
+      | table rows | its row's cells |
+
+  @B-010
+  Scenario: A sign-off row is given with its reviewer and note
+    When the facts are given as JSON
+    Then each sign-off row carries its section, its status, its reviewer, its note and the line it is on
+
+  @B-011
+  Scenario: The records beside a specification are given by number and title
+    Given the first specification has one decision record, one architecture decision record and one lesson beside it
+    When the facts are given as JSON
+    Then the first specification carries three records
+    And each record carries its kind, its number, its title, its status and its path relative to the root
+
+  @B-012
+  Scenario: A withdrawn claim is still given
+    Given a claim of the first specification is withdrawn
+    When the facts are given as JSON
+    Then that claim is given with the withdrawn status
+
+  @B-013
+  Scenario: The facts succeed on a tree the check fails
+    Given the first specification has two claims sharing one id
+    When the facts are given
+    Then the command succeeds
+    And both claims are given
+
+  @B-014 @boundary
+  Scenario: The facts carry no verdict
+    Given the first specification has a violation the check reports
+    When the facts are given as JSON
+    Then the document carries no violation, no count and no verdict
+
+  @B-015
+  Scenario Outline: A missing section or an unreadable table leaves only its own facts out
+    Given the first specification <fault>
+    When the facts are given as JSON
+    Then the first specification carries no out-of-scope rows
+    And it still carries its claims, constraints and open questions
+
+    Examples:
+      | fault                                                         |
+      | has no out-of-scope section                                   |
+      | has an out-of-scope section whose table the parse cannot read |
+
+  @B-016
+  Scenario Outline: A section the manifest renames is read under its new name
+    Given the manifest names the <section> section "<heading>"
+    And the first specification's <section> sit under "<heading>"
+    When the facts are given as JSON
+    Then the first specification's <section> are given
+
+    Examples:
+      | section       | heading         |
+      | claims        | 3. Requirements |
+      | constraints   | 4. Limits       |
+      | sign-off rows | 12. Approval    |
+
+  @B-016
+  Scenario: Sign-off headers the manifest renames are read under their new names
+    Given the manifest gives every column of the sign-off table a name other than the default
+    And the first specification's sign-off table uses those names
+    When the facts are given as JSON
+    Then each sign-off row is given with its section, its status, its reviewer and its note
+
+  @B-017
+  Scenario: The facts have one shape under every pin
+    Given the same specifications under a manifest pinning schema version 0.1.0
+    When the facts are given as JSON under each pin
+    Then both documents carry the same members
+
+  @B-018
+  Scenario: A path selects one specification
+    When the facts are given for the first specification's path
+    Then they hold the first specification only
+
+  @B-019
+  Scenario: A directory selects every specification under it
+    Given both specifications sit under one directory
+    When the facts are given for that directory
+    Then they hold both specifications
+
+  @B-020
+  Scenario: A path that selects nothing fails
+    When the facts are given for a path that holds no specification
+    Then the command fails with the not-found exit code
+    And nothing is written to the standard output
+
+  @B-021
+  Scenario Outline: The facts fail on a broken root as the check does
+    Given <condition>
+    When the facts are given
+    Then the command exits with code <code>
+
+    Examples:
+      | condition                                          | code |
+      | the root does not exist                            | 2    |
+      | the root holds no manifest                         | 2    |
+      | the manifest is invalid                            | 3    |
+      | the manifest pins a version the tool does not ship | 3    |
+
+  @B-022
+  Scenario: The same tree gives the same facts
+    When the facts are given twice
+    Then both outputs are byte-identical
+
+  @B-023
+  Scenario: The facts write nothing
+    When the facts are given
+    Then no file under the root or elsewhere is created, modified or deleted
+
+  @B-024
+  Scenario: The text form gives one line per fact
+    When the facts are given as text
+    Then each claim, constraint, out-of-scope row and open question is one line
+    And each line begins with its specification's path relative to the root
+
+  @B-025 @boundary
+  Scenario: The facts carry no claim coverage
+    Given a claim with a traceability row and a scenario carrying its tag
+    When the facts are given as JSON
+    Then the claim carries no traceability row, no scenario and no test
+
+  @B-026 @boundary
+  Scenario: An epic file is not given
+    Given the repository holds an epic file the check discovers
+    When the facts are given
+    Then they hold the two Feature specifications and not the epic

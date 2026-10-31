@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Editing;
+using Microsoft.CodeAnalysis.Text;
 
 namespace Specht.Codefixes.Documentation;
 
@@ -25,13 +26,39 @@ internal sealed class DocumentationEdits
             }
 
             var updated = text.WithChanges(changes);
+            var options = (CSharpParseOptions?)document.Project.ParseOptions;
+            var path = document.FilePath ?? document.Name;
+            var root = await CSharpSyntaxTree.ParseText(updated, options, path, cancellationToken).GetRootAsync(cancellationToken).ConfigureAwait(false);
+            var order = new DocumentationOrder().Read(updated, root, Written(changes));
+            if (order.Count > 0)
+            {
+                root = await CSharpSyntaxTree.ParseText(updated.WithChanges(order), options, path, cancellationToken)
+                    .GetRootAsync(cancellationToken).ConfigureAwait(false);
+            }
+
             var editor = await DocumentEditor.CreateAsync(document, cancellationToken).ConfigureAwait(false);
-            var root = await CSharpSyntaxTree.ParseText(updated, (CSharpParseOptions?)document.Project.ParseOptions,
-                document.FilePath ?? document.Name, cancellationToken).GetRootAsync(cancellationToken).ConfigureAwait(false);
             editor.ReplaceNode(editor.OriginalRoot, root);
             solution = editor.GetChangedDocument().Project.Solution;
         }
 
         return solution;
+    }
+
+    private static IReadOnlyList<TextSpan> Written(IReadOnlyList<TextChange> changes)
+    {
+        var written = new List<TextSpan>();
+        var delta = 0;
+        foreach (var change in changes)
+        {
+            var length = change.NewText?.Length ?? 0;
+            if (length > 0)
+            {
+                written.Add(new TextSpan(change.Span.Start + delta, length));
+            }
+
+            delta += length - change.Span.Length;
+        }
+
+        return written;
     }
 }

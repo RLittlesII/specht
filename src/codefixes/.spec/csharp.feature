@@ -341,3 +341,36 @@ Feature: CSharp binding authoring
     Given a repository pinned to a checker schema version
     When an analyzer release adds an analyzer-only rule
     Then the pinned checker's SPEC rule vocabulary remains unchanged
+
+  @B-039
+  Scenario Outline: Ordered binding elements
+    Given a documentation comment with "<existing>" binding elements of one role
+    When "<repair>" writes a binding element into that comment
+    Then that comment's binding elements of that role are ordered by epic, then feature, then claim or ADR
+    And "<earlier>" precedes "<later>"
+
+    Examples:
+      | existing           | repair                                      | earlier              | later                 |
+      | epic 0201 claim    | an existing record selected for epic 0001   | the epic 0001 claim  | the epic 0201 claim   |
+      | Feature F10 claim  | an existing record selected for Feature F2  | the Feature F2 claim | the Feature F10 claim |
+      | epic 0201 ADR      | an existing ADR selected for epic 0001      | the epic 0001 ADR    | the epic 0201 ADR     |
+      | several claim-only | Fix All unambiguous default materialization | the lower claim id   | the higher claim id   |
+
+  @B-039 @boundary
+  Scenario: Content outside the binding order
+    Given a documentation comment with summary text and a binding element sharing its line with other content
+    When a repair writes a binding element into that comment
+    Then the summary text and the shared-line binding element keep their places
+
+  @B-040
+  Scenario Outline: Ordered target choices
+    Given existing records for "<first>" and "<second>"
+    And a binding repair that offers target choices
+    When the target choices are listed
+    Then the choice for "<first>" is listed before the choice for "<second>"
+
+    Examples:
+      | first       | second      |
+      | epic 0001   | epic 0201   |
+      | Feature F2  | Feature F10 |
+      | claim B-002 | claim B-010 |
