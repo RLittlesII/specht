@@ -570,16 +570,16 @@ Feature: Schema versioning
     Then nothing the tool asked the source for carried a credential
 
   @B-037
-  Scenario: Version 0.1.0 accepts a specification with no epic when there are no epics
-    Given the manifest pins version 0.1.0
+  Scenario: Version 0.3.0 accepts a specification with no epic when there are no epics
+    Given the manifest pins version 0.3.0
     And the manifest declares no epic grammar
     And the root holds a specification whose frontmatter carries no epic
     When the check runs
     Then no frontmatter violation is reported for the specification
 
   @B-038
-  Scenario: Version 0.1.0 accepts a bare parent when there are no epics
-    Given the manifest pins version 0.1.0
+  Scenario: Version 0.3.0 accepts a bare parent when there are no epics
+    Given the manifest pins version 0.3.0
     And the manifest declares no epic grammar
     And the root holds an item whose parent is "F2"
     When the check runs
