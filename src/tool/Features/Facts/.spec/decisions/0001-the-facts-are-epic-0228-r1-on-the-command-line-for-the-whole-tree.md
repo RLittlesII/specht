@@ -63,3 +63,9 @@ B-001 to B-026; C-3, C-5; § 5 rows 1, 3; OQ-1 to OQ-6; `0001-F9` OQ-4;
 
 Narrowing the document or dropping the published schema is a breaking change
 to a published contract: a new tool major version (C-3).
+
+## Amended
+
+2026-10-30, by the owner: call 5's "values read through the pinned manifest"
+applies only to the roles and tables the shipped manifest declares, and call
+1's record status is claimed in B-011 ([decision 0002](0002-only-the-sections-the-manifest-names-follow-it-and-a-records-status-is-claimed.md)).

@@ -26,9 +26,10 @@ Feature: The facts command
   @B-004
   Scenario: A specification is given with its dependencies
     Given the first specification depends on the second
+    And the second specification lists the first among what it blocks
     When the facts are given as JSON
-    Then the first specification lists the second among what it depends on
-    And the second lists the first among what it blocks
+    Then the first specification carries the second among what it depends on
+    And the second carries the first among what it blocks
 
   @B-005
   Scenario: A claim is given with its text, status and line
@@ -59,10 +60,16 @@ Feature: The facts command
       | Resolved 2026-10-30 by the owner: the answer | resolved   |
 
   @B-009
-  Scenario: A lessons and deltas entry is given with its text and line
-    Given the first specification records two lessons and deltas entries
+  Scenario Outline: A lessons and deltas entry is given with its text and line
+    Given the first specification records two lessons and deltas entries as <form>
     When the facts are given as JSON
-    Then the first specification carries both entries, each with its text and the line it is on
+    Then the first specification carries both entries, each with the line it is on
+    And each entry carries <content>
+
+    Examples:
+      | form       | content         |
+      | list items | its text        |
+      | table rows | its row's cells |
 
   @B-010
   Scenario: A sign-off row is given with its reviewer and note
@@ -74,7 +81,7 @@ Feature: The facts command
     Given the first specification has one decision record, one architecture decision record and one lesson beside it
     When the facts are given as JSON
     Then the first specification carries three records
-    And each record carries its kind, its number, its title and its path relative to the root
+    And each record carries its kind, its number, its title, its status and its path relative to the root
 
   @B-012
   Scenario: A withdrawn claim is still given
@@ -96,18 +103,36 @@ Feature: The facts command
     Then the document carries no violation, no count and no verdict
 
   @B-015
-  Scenario: A missing section leaves only its own facts out
-    Given the first specification has no out-of-scope section
+  Scenario Outline: A missing section or an unreadable table leaves only its own facts out
+    Given the first specification <fault>
     When the facts are given as JSON
     Then the first specification carries no out-of-scope rows
     And it still carries its claims, constraints and open questions
 
+    Examples:
+      | fault                                                         |
+      | has no out-of-scope section                                   |
+      | has an out-of-scope section whose table the parse cannot read |
+
   @B-016
-  Scenario: A section the manifest renames is read under its new name
-    Given the manifest names the constraints section "4. Limits"
-    And the first specification's constraints sit under "4. Limits"
+  Scenario Outline: A section the manifest renames is read under its new name
+    Given the manifest names the <section> section "<heading>"
+    And the first specification's <section> sit under "<heading>"
     When the facts are given as JSON
-    Then the first specification's constraints are given
+    Then the first specification's <section> are given
+
+    Examples:
+      | section       | heading         |
+      | claims        | 3. Requirements |
+      | constraints   | 4. Limits       |
+      | sign-off rows | 12. Approval    |
+
+  @B-016
+  Scenario: Sign-off headers the manifest renames are read under their new names
+    Given the manifest gives every column of the sign-off table a name other than the default
+    And the first specification's sign-off table uses those names
+    When the facts are given as JSON
+    Then each sign-off row is given with its section, its status, its reviewer and its note
 
   @B-017
   Scenario: The facts have one shape under every pin
