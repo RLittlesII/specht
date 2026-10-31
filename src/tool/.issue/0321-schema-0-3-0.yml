@@ -1,0 +1,106 @@
+id: "0321"
+type: task
+title: Cut schema 0.3.0, where SPEC060 follows delivery status against a done marker and epics may be absent
+
+status: ready-for-architecture
+
+value: 4
+risk: 4
+
+parent: null
+children: []
+
+depends_on: ["0188", "0189"] # cut through 0189's target, which refuses unless 0188's lock records every shipped version
+spikes: []
+
+spec: src/tool/.spec/README.md
+
+claims:
+  - B-037
+  - B-038
+  - B-118
+  - B-119
+  - B-120
+  - B-121
+  - B-122
+  - B-123
+  - B-124
+  - 0001-F5 B-063
+  - 0001-F5 B-064
+
+created: "2026-10-30"
+updated: "2026-10-30"
+closed: null
+
+summary: |
+  As a maintainer whose reviewer approves a specification before its
+  tests exist, I want `SPEC060` to report a § 9 `Missing` row once the
+  Feature is done, not once it is approved, so that an honest approval
+  passes and a done Feature with an untested claim fails (decision
+  0015). And, with no epics declared, a specification without an
+  `epic` and an item with a bare parent pass under `0.3.0` (B-037,
+  B-038; `0001-F5` decision 0004), which the locked `0.1.0` rejects.
+
+  The change is a new schema version, `0.3.0` (decision 0015 call 7),
+  made through 0189's cut target (B-094 to B-100; decision 0009), locked
+  through 0188's, and relocked only as decision 0014 allows. `0.1.0` and
+  `0.2.0` keep the approved axis (B-120; C-1). Risk 4: once a package
+  carries `0.3.0` it is never changed in place (C-1, C-17).
+
+  Proceeds on the defaults of OQ-60 (the change is `0.3.0`, not a
+  `0.2.0` relock) and OQ-56 (this repository's live copy moves by hand
+  in the same change). The `done` marker the rule compares is read
+  here too (`0001-F5 B-063`, `0001-F5 B-064`), since both are given a
+  `0.3.0` manifest, which this item's cut creates.
+
+  It delivers `0001-F7` claims and has no parent, as 0124 has none:
+  under 0041 the queue would rank it with 0041 in milestone 0.3.0.
+  Value 4, the one it inherited from 0041, since an item with no parent
+  inherits none.
+  B-037, B-038 and B-118 to B-124 are this item's alone and not in
+  0041's `claims`, and `0001-F5 B-063` and `0001-F5 B-064` are in no
+  other item's, so 0041 closes in 0.3.0 while this item stays open
+  in 0.4.0.
+
+acceptance_criteria:
+  - "B-037 — `0.3.0`, no epic grammar: a specification with no `epic` passes"
+  - "B-038 — `0.3.0`, no epic grammar: an item with a bare parent passes"
+  - "B-118 — `0.3.0`, status done: each `Missing` row reported, any `spec_status`"
+  - "B-119 — `0.3.0`, status not done: nothing reported, any `spec_status`"
+  - "B-120 — `0.1.0` or `0.2.0`: the approved axis, unchanged"
+  - "B-121 — `0.3.0`: the fixed message naming the done status"
+  - "B-122 — `0.3.0`: `SPEC061` still follows approval"
+  - "B-123 — `0.3.0`: `SPEC060` keeps its id and error severity; no new id"
+  - "B-124 — `0.3.0`'s feature template: the § 9 guidance text"
+  - "`0001-F5 B-063` — `0.3.0`: `markers.done`, `done` when left out"
+  - "`0001-F5 B-064` — `0.3.0`: an empty `done` marker rejected, naming it"
+  - "§ 9 carries a row naming a test for each id above."
+
+decisions:
+  - |
+    2026-10-30, the repository owner approved 0041's close-out plan,
+    which named this item for B-118 to B-124, in milestone 0.4.0, apart
+    from 0041's claims. spec-author's cut, not an owner ruling: the
+    claims it carries, the cut through 0189's target, and no parent,
+    following 0124's precedent (0041's decisions, 2026-10-29), so the
+    queue ranks it in 0.4.0 and not in 0041's 0.3.0 closure.
+  - |
+    2026-10-30, the repository owner, after 0323's tests showed the
+    locked 0.1.0 rejects both cases: B-037 and B-038 move to schema
+    0.3.0, their numbers kept, and this item carries them. C-1 forbids
+    adding `0001-F5` decision 0004's loosening to 0.1.0, and it shipped
+    in no version. OQ-30 stays open for its other parts.
+  - |
+    2026-10-30, the repository owner: `0001-F5 B-063` and `0001-F5
+    B-064`, the `done` marker, join this item, so one item cuts schema
+    0.3.0 with the marker key and the `SPEC060` behaviour. Both claims
+    are given a 0.3.0 manifest, which only this item's cut creates, so
+    an item of their own and this one waited on each other: 0322,
+    retired 2026-10-30, folded into 0321. Raised, not decided: 0001-F5's
+    Feature item, 0010, never listed B-063 or B-064 in its `claims`.
+
+out_of_scope:
+  - "This repository's pin move and dropping its `SPEC060` override — `0055-F1` B-026, B-027 (decision 0015 call 8)."
+  - "`SPEC060` scoped per claim — § 5 #27."
+  - "Writing the cut version's rule vocabulary — § 5 #25; by hand."
+  - "Relocking a version a package has carried — C-17; OQ-60."
