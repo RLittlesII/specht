@@ -13,26 +13,27 @@ namespace Specht.Tests.Upgrade;
 
 /// <summary>
 /// The comparison and rewrite beneath <c>specht upgrade</c> (<c>0001-F7</c> B-005, B-006, B-007, B-016, B-017, B-018, B-019,
-/// B-020, B-021, B-029, B-031, B-052, B-059, B-138, B-139; C-2): the manifest is planned like any file, its planned bytes those with
-/// the pinned version's missing keys added, and a missing root or manifest, or a manifest the loader rejects, throws before any
-/// file is written; a pin the check rejects throws the rejection the check's schema loader throws for the same root. Under a
-/// recorded upstream schema source (B-026, B-027, B-033, B-034, B-035, B-067, B-082, B-083, B-140; C-9, C-10, C-15) the writer
-/// resolves with the production fetcher over a synthetic message handler: a differing copy is fetched and written under its
-/// kind's file name, a refused fetch writes nothing, a matching copy or an absent one asks for nothing, the record is kept, and
-/// no request carries a credential. A template that source hashes and the manifest does not name as the consumer's (B-130,
-/// B-132 to B-134, B-136, B-137, B-141; C-8 to C-10) is fetched and written only when its present copy differs from its hash,
-/// is kept when it matches even where the pinned version's differs, stays absent when the root lacks it, refuses a fetch it
-/// cannot verify before anything is written, and is asked for without a credential. Under the on-disk source with no
-/// recorded source (B-030) each frontmatter schema the pinned version ships that the root holds by its shipped name is listed
-/// as skipped with its reason and left as it was, and an absent one is not listed; a recorded source, with or without the
-/// on-disk selection, gives no skip (B-143), and the embedded source rewrites the schemas and skips nothing. A template the
-/// manifest names in <c>consumerTemplates</c> (B-005, B-060 to B-063, B-135, B-144) is left as the consumer wrote it, write
-/// time included, while an unnamed one that differs is rewritten; each named template the pinned version ships is listed as
-/// skipped whether the root holds it or not and whatever it holds, under any source, in one ordinal list with the on-disk
-/// schema skips; a named template a recorded source hashes is neither asked for nor written; a name the pinned version does
-/// not ship, including one that differs from a shipped template only in case, gives the result and the files of the same
-/// root without the name and leaves the consumer's own template file as it was; and the frontmatter schemas are still
-/// rewritten beside a named template.
+/// B-020, B-021, B-029, B-031, B-052, B-059, B-116, B-138, B-139; C-2): the manifest is planned like any file, its planned
+/// bytes those with the pinned version's missing keys added and its <c>owners</c>, <c>tests</c>, <c>matrix</c> and
+/// <c>requiredSpecifications</c> as the consumer set them, and a missing root or manifest, or a manifest the loader rejects,
+/// throws before any file is written; a pin the check rejects throws the rejection the check's schema loader throws for the
+/// same root. Under a recorded upstream schema source (B-026, B-027, B-033, B-034, B-035, B-067, B-074, B-082, B-083, B-140;
+/// C-9, C-10, C-15) the writer resolves with the production fetcher over a synthetic message handler: a differing copy is
+/// fetched from the location followed by its kind's file name, nothing else is asked for, and it is written under that file
+/// name; a refused fetch writes nothing, a matching copy or an absent one asks for nothing, the record is kept, and no request
+/// carries a credential. A template that source hashes and the manifest does not name as the consumer's (B-130, B-132 to B-134,
+/// B-136, B-137, B-141; C-8 to C-10) is fetched and written only when its present copy differs from its hash, is kept when it
+/// matches even where the pinned version's differs, stays absent when the root lacks it, refuses a fetch it cannot verify
+/// before anything is written, and is asked for without a credential. Under the on-disk source with no recorded source (B-030)
+/// each frontmatter schema the pinned version ships that the root holds by its shipped name is listed as skipped with its
+/// reason and left as it was, and an absent one is not listed; a recorded source, with or without the on-disk selection, gives
+/// no skip (B-143), and the embedded source rewrites the schemas and skips nothing. A template the manifest names in
+/// <c>consumerTemplates</c> (B-005, B-060 to B-063, B-135, B-144) is left as the consumer wrote it, write time included, while
+/// an unnamed one that differs is rewritten; each named template the pinned version ships is listed as skipped whether the root
+/// holds it or not and whatever it holds, under any source, in one ordinal list with the on-disk schema skips; a named template
+/// a recorded source hashes is neither asked for nor written; a name the pinned version does not ship, including one that
+/// differs from a shipped template only in case, gives the result and the files of the same root without the name and leaves
+/// the consumer's own template file as it was; and the frontmatter schemas are still rewritten beside a named template.
 /// </summary>
 [Trait("Tier", "Unit")]
 public sealed class UpgradeWriterUnitTests
@@ -329,6 +330,39 @@ public sealed class UpgradeWriterUnitTests
     }
 
     [Fact]
+    public async Task AManifestSettingOwnersTestsMatrixAndRequiredSpecifications_WhenUpgraded_ShouldKeepEachAsTheConsumerSetIt()
+    {
+        // Given
+        var settings = new JsonObject
+        {
+            ["owners"] = new JsonObject { ["3. Acceptance Criteria"] = new JsonArray("product-owner") },
+            ["tests"] = new JsonObject { ["files"] = new JsonArray("checks/**/*.cs"), ["declarations"] = new JsonArray("void {test}(") },
+            ["matrix"] = new JsonObject { ["scenarioTitles"] = true },
+            ["requiredSpecifications"] = new JsonArray("src/area"),
+        };
+        var manifest = new JsonObject { ["schemaVersion"] = "0.2.0" };
+        foreach (var (key, value) in settings)
+        {
+            manifest[key] = value!.DeepClone();
+        }
+
+        var fileSystem = new MockFileSystem();
+        fileSystem.AddFile("repo/.specht/manifest.json", new MockFileData(manifest.ToJsonString()));
+
+        // When
+        UpgradeWriter writer = new UpgradeWriterFixture().WithFileSystem(fileSystem);
+        var result = await writer.Upgrade("repo", CancellationToken.None);
+
+        // Then
+        result.Rewritten.Should().Contain(".specht/manifest.json");
+        var written = JsonNode.Parse(fileSystem.File.ReadAllBytes("repo/.specht/manifest.json"))!.AsObject();
+        foreach (var (key, value) in settings)
+        {
+            JsonNode.DeepEquals(written[key], value).Should().BeTrue(key);
+        }
+    }
+
+    [Fact]
     public async Task ATemplateThatCannotBeReplaced_WhenUpgraded_ShouldThrowNamingTheRootRelativeFileAndLeaveItsBytes()
     {
         // Given
@@ -475,6 +509,40 @@ public sealed class UpgradeWriterUnitTests
         {
             fileSystem.File.ReadAllBytes("repo/.specht/schema/frontmatter/" + name).Should().Equal(bytes, name);
         }
+    }
+
+    [Theory]
+    [ClassData(typeof(UpstreamFetchedRoots))]
+    public async Task DifferingCopiesOfARecordedSourceBesideAnEditedTemplate_WhenUpgraded_ShouldAskOnlyForEachSchemaAtTheLocationFollowedByItsFileName(
+        string manifest, string served)
+    {
+        // Given
+        var content = JsonNode.Parse(served)!.AsObject()
+            .ToDictionary(static pair => pair.Key, static pair => Encoding.UTF8.GetBytes(pair.Value!.GetValue<string>()), StringComparer.Ordinal);
+        var fileSystem = new MockFileSystem();
+        fileSystem.AddFile("repo/.specht/manifest.json", new MockFileData(manifest));
+        foreach (var name in content.Keys)
+        {
+            fileSystem.AddFile("repo/.specht/schema/frontmatter/" + name, new MockFileData("{\"title\":\"A synthetic local copy\"}\n"));
+        }
+
+        fileSystem.AddFile("repo/.specht/templates/feature.md", new MockFileData("# A synthetic template with local edits\n"));
+        var requests = new List<Uri>();
+        using var source = new HttpClient(new SyntheticSource(request =>
+        {
+            requests.Add(request.RequestUri!);
+            return new HttpResponseMessage(HttpStatusCode.OK) { Content = new ByteArrayContent(content[request.RequestUri!.Segments[^1]]) };
+        }));
+
+        // When
+        UpgradeWriter writer = new UpgradeWriterFixture().WithFileSystem(fileSystem).WithSource(source);
+        await writer.Upgrade("repo", CancellationToken.None);
+
+        // Then
+        var location = JsonNode.Parse(manifest)!["spechtSchema"]!["location"]!.GetValue<string>();
+        requests.Select(static address => address.GetComponents(UriComponents.HttpRequestUrl, UriFormat.UriEscaped))
+            .Should().BeEquivalentTo(
+                content.Keys.Select(name => new Uri(location + name).GetComponents(UriComponents.HttpRequestUrl, UriFormat.UriEscaped)));
     }
 
     [Theory]

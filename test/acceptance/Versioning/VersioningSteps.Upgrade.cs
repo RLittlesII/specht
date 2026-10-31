@@ -18,6 +18,7 @@ public sealed partial class VersioningSteps
 
     [Given("the root is pinned to version {word} with the embedded source and no upstream schema source")]
     [Given("the root is pinned to version {word} and records no upstream schema source")]
+    [Given("the root is pinned to version {word}")]
     public void GivenTheRootIsPinnedWithTheEmbeddedSource(string version) => GivenTheManifestPinsVersion(version);
 
     [Given("its manifest names no template as the consumer's")]
@@ -61,6 +62,25 @@ public sealed partial class VersioningSteps
     [Given("its manifest declares no epic grammar")]
     public void GivenItsManifestDeclaresNoEpicGrammar() =>
         EditManifest(static manifest => manifest.Remove("identifiers").Should().BeTrue());
+
+    [Given("its manifest sets section owners, test files, scenario title matching and required specification directories of the consumer's")]
+    public void GivenItsManifestSetsTheConsumersMatrixSettings()
+    {
+        _consumerMatrixSettings = new JsonObject
+        {
+            ["owners"] = new JsonObject { ["3. Acceptance Criteria"] = new JsonArray("product-owner") },
+            ["tests"] = new JsonObject { ["files"] = new JsonArray("checks/**/*.cs"), ["declarations"] = new JsonArray("void {test}(") },
+            ["matrix"] = new JsonObject { ["scenarioTitles"] = true },
+            ["requiredSpecifications"] = new JsonArray("src/area"),
+        };
+        EditManifest(manifest =>
+        {
+            foreach (var (key, value) in _consumerMatrixSettings)
+            {
+                manifest[key] = value!.DeepClone();
+            }
+        });
+    }
 
     [When("upgrade runs against it")]
     public void WhenUpgradeRunsAgainstIt()
@@ -138,6 +158,18 @@ public sealed partial class VersioningSteps
         JsonNode.DeepEquals(after["rules"], new JsonObject { ["SPEC031"] = "warning", ["SPEC020"] = "off" }).Should().BeTrue();
         after["sections"]![2]!.GetValue<string>().Should().Be("3. Release criteria");
         after["roles"]!["claims"]!.GetValue<string>().Should().Be("3. Release criteria");
+    }
+
+    [Then("the section owners, the test files, the title matching and the required directories are as the consumer set them")]
+    public void ThenTheConsumersMatrixSettingsAreAsSet()
+    {
+        _exitCode.Should().Be(0, _stderr);
+        var after = ManifestAfter();
+        _consumerMatrixSettings.Should().HaveCount(4);
+        foreach (var (key, value) in _consumerMatrixSettings)
+        {
+            JsonNode.DeepEquals(after[key], value).Should().BeTrue("upgrade keeps the consumer's {0}: {1}", key, after[key]?.ToJsonString());
+        }
     }
 
     [Then("the key version {word} defines keeps the consumer's value")]
@@ -237,4 +269,6 @@ public sealed partial class VersioningSteps
     private const string ConsumerValuedKey = "exclusions";
 
     private JsonArray _consumerValue = [];
+
+    private JsonObject _consumerMatrixSettings = new();
 }

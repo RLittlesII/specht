@@ -8,7 +8,7 @@ value: 4
 risk: 4
 
 parent: "0001"
-children: ["0042", "0043", "0044", "0045", "0046", "0047", "0048", "0049", "0092", "0093", "0094", "0120", "0121", "0122", "0123", "0125", "0126", "0130", "0131", "0176", "0177", "0188", "0189", "0290", "0291"]
+children: ["0042", "0043", "0044", "0045", "0046", "0047", "0048", "0049", "0092", "0093", "0094", "0120", "0121", "0122", "0123", "0125", "0126", "0130", "0131", "0176", "0177", "0188", "0189", "0290", "0291", "0320"]
 
 depends_on: []
 spikes: []
@@ -51,6 +51,8 @@ claims:
   - B-034
   - B-035
   - B-036
+  - B-037
+  - B-038
   - B-039
   - B-040
   - B-041
@@ -115,6 +117,7 @@ claims:
   - B-105
   - B-106
   - B-107
+  - B-116
   - B-125
   - B-126
   - B-127
@@ -229,6 +232,8 @@ acceptance_criteria:
   - "B-034 — upgrade leaves the upstream version and hash (0093)"
   - "B-035 — upgrade, source unreachable or refusing: exit 3 (0093)"
   - "B-036 — upstream recorded, embedded selected: exit 3 (0177)"
+  - "B-037 — `0.1.0`, no epic grammar: no epic accepted (0320)"
+  - "B-038 — `0.1.0`, no epic grammar: a bare parent accepted (0320)"
   - "B-039 — malformed `schemaVersion`: stderr, exit 3 (0120)"
   - "B-040 — a new rule id only in a higher major (0044)"
   - "B-041 — list prints each shipped version (0121)"
@@ -259,7 +264,7 @@ acceptance_criteria:
   - "B-071 — a version that is not a non-empty string: invalid (0176)"
   - "B-072 — no hash for a fetched kind: invalid (0176)"
   - "B-073 — a hash not in the sha256 form: invalid (0176)"
-  - "B-074 — each fetched kind's address: the location followed by the manifest's file name (0176)"
+  - "B-074 — each fetched kind's address: the location followed by the manifest's file name (0176, 0320)"
   - "B-075 — no epic grammar: the Feature and item kinds are fetched (0176)"
   - "B-076 — the epic grammar: the epic kind is fetched too (0176)"
   - "B-077 — upstream recorded, a schema file absent: exit 3 (0092)"
@@ -286,6 +291,7 @@ acceptance_criteria:
   - "B-098 — a cut rule page gives the new version (0189)"
   - "B-099 — a cut file is otherwise byte-identical (0189)"
   - "B-100 — the cut touches nothing outside the new folders (0189)"
+  - "B-116 — upgrade never rewrites `owners`, `tests`, `matrix` or `requiredSpecifications` (0320)"
   - "B-125 — a `templates` member under any pin: each a hashed template (0290)"
   - "B-126 — a template hash not in the sha256 form: invalid (0290)"
   - "B-127 — a hash for a file the version does not ship: invalid (0290)"
@@ -431,6 +437,17 @@ decisions:
     withdrawn by the owner: neither 0.2.0 feature template changed
     0.1.0's § 9 guidance, and B-124 replaces it in 0.3.0; it was never in
     `claims`.
+  - |
+    2026-10-30, the repository owner approved the rest of this item's
+    close-out plan: 0320 proves B-037, B-038 and B-116, believed built,
+    with tests alone, and they join `claims`; 0321 cuts schema 0.3.0 for
+    B-118 to B-124 in milestone 0.4.0. B-118 to B-124 stay out of
+    `claims`, carried by 0321 alone, so this item can close while 0321
+    is open. spec-author's cut, not in the owner's plan: B-074 joins
+    0320, since its § 9 row is Partial with scenarios unbound until
+    0093, now done; and 0321 has no parent and is not among `children`,
+    following 0124's precedent (2026-10-29), since a child ranks in this
+    item's 0.3.0 closure.
 
 out_of_scope:
   - "Everything in § 5 of the spec."

@@ -12,6 +12,7 @@ using Reqnroll;
 using Specht.Composition;
 using Specht.Tests.Shared;
 using Specht.Tool;
+using Specht.Tool.Features.Init;
 using Specht.Tool.Features.Upgrade;
 using Spectre.Console;
 using Spectre.Console.Cli.Testing;
@@ -179,6 +180,28 @@ public sealed partial class VersioningSteps
             request.Address.UserInfo.Should().BeEmpty();
             request.Headers.Should().NotContain("Authorization").And.NotContain(MachineToken);
         });
+    }
+
+    [Then("each schema was asked for at the source's address followed by that schema's file name")]
+    public void ThenEachSchemaWasAskedForAtTheSourcesAddressFollowedByThatSchemasFileName()
+    {
+        _exitCode.Should().Be(0, _stderr);
+        Upstream.Requests.Select(static request => request.Address.AbsoluteUri)
+            .Should().BeEquivalentTo(SchemaNames().Values.Select(static name => SourceAddress + name));
+    }
+
+    [Then("neither the manifest nor a template was asked for at the source")]
+    public void ThenNeitherTheManifestNorATemplateWasAskedForAtTheSource()
+    {
+        _exitCode.Should().Be(0, _stderr);
+        var templates = InitWriter.ShippingCopy(typeof(InitWriter).Assembly).Keys
+            .Where(static resource => resource.StartsWith("templates/", StringComparison.Ordinal))
+            .Select(static resource => resource[(resource.LastIndexOf('/') + 1)..])
+            .ToHashSet(StringComparer.Ordinal);
+        templates.Should().NotBeEmpty();
+        Upstream.Requests.Should().NotBeEmpty("the differing copies are fetched: {0}", _stderr);
+        Upstream.Requests.Select(static request => request.Address.Segments[^1])
+            .Should().NotContain(Path.GetFileName(SpecTree.ManifestPath)).And.NotContain(name => templates.Contains(name));
     }
 
     [Then("the standard error names the source")]
