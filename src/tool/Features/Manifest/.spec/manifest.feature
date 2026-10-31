@@ -154,3 +154,13 @@ Feature: The manifest command
     Then the text is the document the JSON form prints, indented
     And its keys are in the order the default manifest holds them
     And its rule settings are in ascending order of rule id
+
+  @B-021
+  Scenario Outline: The JSON form validates against its published schema
+    When <which> manifest is printed as JSON
+    Then the document validates against the published schema for the manifest document
+
+    Examples:
+      | which         |
+      | the effective |
+      | the default   |

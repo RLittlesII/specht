@@ -152,3 +152,8 @@ Feature: The rules command
     When the rules are listed
     Then the out-of-order-section rule is on one line holding its rule id, family, default severity and effective level in that order
     And the default severity and the effective level are in lower case
+
+  @B-020
+  Scenario: The JSON form validates against its published schema
+    When the rules are listed as JSON
+    Then the document validates against the published schema for the rule listing
