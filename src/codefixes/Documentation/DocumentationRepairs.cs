@@ -186,9 +186,11 @@ internal sealed class DocumentationRepairs
             ? catalog.Adrs.Select(adr => resolver.Resolve(new AdrReference(adr.Owner?.Epic, adr.Owner?.Feature, adr.Id)))
             : catalog.Features.SelectMany(feature => feature.Claims.Select(claim =>
                 resolver.Resolve(new ClaimReference(feature.Identity.Epic, feature.Identity.Feature, claim.Id))));
+        var order = new DocumentationOrder();
         return results.Where(static result => result.Status == BindingResolution.Resolved && result.IsEligible == true)
-            .Select(static result => result.Target!).Distinct().OrderBy(static target => target.RelativePath, StringComparer.Ordinal)
-            .ThenBy(static target => target.Line).ThenBy(static target => target.Id, StringComparer.Ordinal);
+            .Select(static result => result.Target!).Distinct().OrderBy(static target => target.Epic, order)
+            .ThenBy(static target => target.Feature, order).ThenBy(static target => target.Id, order)
+            .ThenBy(static target => target.RelativePath, StringComparer.Ordinal).ThenBy(static target => target.Line);
     }
 
     private static string Xml(string role, BindingTarget target)
