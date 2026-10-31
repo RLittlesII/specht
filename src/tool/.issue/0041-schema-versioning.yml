@@ -2,7 +2,7 @@ id: "0041"
 type: feature
 title: Schema versioning
 
-status: ready-for-architecture
+status: done
 
 value: 4
 risk: 4
@@ -51,8 +51,6 @@ claims:
   - B-034
   - B-035
   - B-036
-  - B-037
-  - B-038
   - B-039
   - B-040
   - B-041
@@ -139,7 +137,7 @@ claims:
 
 created: "2026-10-08"
 updated: "2026-10-30"
-closed: null
+closed: "2026-10-30"
 
 summary: |
   As the maintainer of a lagging repository, I want the manifest to pin a
@@ -232,8 +230,6 @@ acceptance_criteria:
   - "B-034 — upgrade leaves the upstream version and hash (0093)"
   - "B-035 — upgrade, source unreachable or refusing: exit 3 (0093)"
   - "B-036 — upstream recorded, embedded selected: exit 3 (0177)"
-  - "B-037 — `0.1.0`, no epic grammar: no epic accepted (0320)"
-  - "B-038 — `0.1.0`, no epic grammar: a bare parent accepted (0320)"
   - "B-039 — malformed `schemaVersion`: stderr, exit 3 (0120)"
   - "B-040 — a new rule id only in a higher major (0044)"
   - "B-041 — list prints each shipped version (0121)"
@@ -447,7 +443,16 @@ decisions:
     0320, since its § 9 row is Partial with scenarios unbound until
     0093, now done; and 0321 has no parent and is not among `children`,
     following 0124's precedent (2026-10-29), since a child ranks in this
-    item's 0.3.0 closure.
+    item's 0.3.0 closure. The same day 0320's tests showed B-037 and
+    B-038 not built: the locked 0.1.0 rejects both cases, and `0001-F5`
+    decision 0004's loosening shipped in no version. The owner chose to
+    close 0320 without them, then ruled them to schema 0.3.0, their
+    numbers kept: they leave `claims` and belong to 0321, in milestone
+    0.4.0, as B-118 to B-124 do.
+  - |
+    2026-10-30, spec-author, under the owner's approved close-out plan:
+    this item closes as its last child, 0320, delivers;
+    every claim left in `claims` is Covered in § 9.
 
 out_of_scope:
   - "Everything in § 5 of the spec."

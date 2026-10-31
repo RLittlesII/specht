@@ -2,33 +2,30 @@ id: "0320"
 type: test
 title: Prove the versioning claims already built
 
-status: ready
+status: done
 
 risk: 2
 
 parent: "0041"
 children: []
 
-depends_on: ["0120", "0047", "0093"] # B-037 and B-038 run on the 0.1.0 pin 0120 delivers; B-116 on the manifest step 0047 builds; B-074's scenarios run the fetch 0093 builds
+depends_on: ["0047", "0093"] # B-116 runs on the manifest step 0047 builds; B-074's scenarios run the fetch 0093 builds
 spikes: []
 
 spec: src/tool/.spec/README.md
 
 claims:
-  - B-037
-  - B-038
   - B-074
   - B-116
 
 created: "2026-10-30"
 updated: "2026-10-30"
-closed: null
+closed: "2026-10-30"
 
 summary: |
-  Tests only, no production code: binds the scenarios of four claims
-  whose behaviour is believed built, so 0041 can close with no § 9 row
-  Missing or Partial. B-037 and B-038 are the check under 0.1.0 with no
-  epic grammar (0120). B-116 is upgrade's manifest step (0047, B-016).
+  Tests only, no production code: binds the scenarios of two claims
+  whose behaviour is built, so neither leaves a § 9 row Missing or
+  Partial on 0041. B-116 is upgrade's manifest step (0047, B-016).
   B-074's address is unit-tested under 0176 and § 9 holds it Partial,
   its two scenarios unbound until upgrade fetched (0093, done).
 
@@ -39,8 +36,6 @@ summary: |
   hash (B-130).
 
 acceptance_criteria:
-  - "B-037 — 0.1.0, no epic grammar: no epic, no frontmatter violation"
-  - "B-038 — 0.1.0, no epic grammar: a bare parent, no frontmatter violation"
   - "B-074 — both scenarios bound through upgrade's fetch; the boundary one under a source hashing no template"
   - "B-116 — upgrade keeps `owners`, `tests`, `matrix` and `requiredSpecifications` as set"
   - "§ 9 carries a row naming a test for each id above."
@@ -52,6 +47,14 @@ decisions:
     proved by tests alone. spec-author's cut, not in the owner's plan:
     B-074 joins, since its § 9 row is Partial with scenarios unbound
     until 0093, now done, and 0041 cannot close while it is Partial.
+  - |
+    2026-10-30, the repository owner, after this item's tests showed
+    B-037 and B-038 not built: they leave this item, which closes with
+    B-074 and B-116. The locked 0.1.0 Feature schema requires `epic`
+    (SPEC002) and its task schema's `parent` pattern rejects `F2`
+    (SPEC003); `0001-F5` decision 0004's loosening shipped in no version.
+    The owner then ruled both to schema 0.3.0, their numbers kept,
+    carried by 0321.
 
 out_of_scope:
   - "Building a behaviour a scenario shows missing — this item stops and reports it."

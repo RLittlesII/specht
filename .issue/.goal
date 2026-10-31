@@ -23,7 +23,7 @@
 0078
 0293
 0303
-# Proves 0041's built claims, so it closes: owner 2026-10-30
+# Proves 0041's built claims B-074 and B-116: owner 2026-10-30
 0320
 
 0.4.0
@@ -58,7 +58,7 @@
 0208
 # The pin policy, moved out of 0.3.0 by the owner 2026-10-29
 0124
-# Schema 0.3.0, SPEC060 by delivery status: owner 2026-10-30
+# Schema 0.3.0: SPEC060 by delivery status, the done marker, epics optional: owner 2026-10-30
 0321
 
 0.5.0
