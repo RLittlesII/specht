@@ -8,7 +8,7 @@ priority: med
 milestone: null
 children: []
 created: "2026-10-10"
-updated: "2026-10-15"
+updated: "2026-10-30"
 github_issue: null
 ---
 
@@ -30,7 +30,8 @@ The need and its scope were decided by the repository owner on 2026-10-10.
 This file is the record of that decision. Nothing here is designed: the
 action's form, its folder and its inputs' final names are not chosen. The
 split into Features is a candidate the owner has not confirmed, and no
-Feature specification exists yet.
+Feature specification exists yet. 2026-10-30, the owner: F3 merges into F2;
+the rest of the cut is not confirmed ("Features").
 
 ## Business Value
 
@@ -78,19 +79,25 @@ agreed. No Feature here has an id, a specification or a place in `children`:
 a candidate takes its Feature id when its specification is written, and joins
 `children` then, so that every child resolves to a file.
 
-| Candidate | Name                              | Covers                                                                                                         | Serves     |
-| --------- | --------------------------------- | -------------------------------------------------------------------------------------------------------------- | ---------- |
-| F1        | Run and verdict                   | The inputs (`root`, `strict`, `command`), the restore from the manifest, the run, and passing the exit code on | R4, R5, R7 |
-| F2        | Diff annotations                  | The workflow commands, the changed-file scope and the input that widens it, the cap, and the one-leg rule      | R2, R3     |
-| F3        | Step summary                      | The Markdown summary of every violation and the counts                                                         | R2         |
-| F4        | This repository adopts the action | Retiring `AnnotateChangedFiles`, amending `0055-F2`, and correcting the two stale statements                   | R1         |
-| F5        | Releasing the action              | The tag shared with the tool, and the consumer-facing usage document under `docs/`                             | R6, R8     |
+**2026-10-30, the owner.** Asked to confirm the cut, the owner merged F2 and
+F3 into one candidate, F2. The owner changed nothing else: F1, F4 and F5
+stand as written and remain unconfirmed beyond that call. F3 keeps its row,
+marked merged, and no candidate is renumbered.
+
+| Candidate | Name                              | Covers                                                                                                                                                                               | Serves     |
+| --------- | --------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ---------- |
+| F1        | Run and verdict                   | The inputs (`root`, `strict`, `command`), the restore from the manifest, the run, and passing the exit code on                                                                       | R4, R5, R7 |
+| F2        | Diff annotations                  | The workflow commands, the changed-file scope and the input that widens it, the cap, and the one-leg rule. 2026-10-30, the owner: also F3's step summary, merged into this candidate | R2, R3     |
+| F3        | Step summary                      | Merged into F2, 2026-10-30, by the owner. Was: the Markdown summary of every violation and the counts                                                                                | R2         |
+| F4        | This repository adopts the action | Retiring `AnnotateChangedFiles`, amending `0055-F2`, and correcting the two stale statements                                                                                         | R1         |
+| F5        | Releasing the action              | The tag shared with the tool, and the consumer-facing usage document under `docs/`                                                                                                   | R6, R8     |
 
 What the owner is asked to confirm:
 
 - **F2 and F3 are cut apart.** The annotations are scoped to the pull
   request's files and capped by GitHub; the summary lists everything and has
-  no cap. Each can fail with the other correct.
+  no cap. Each can fail with the other correct. Resolved 2026-10-30 by the
+  owner: not cut apart; F3 merges into F2.
 - **F4 is cut from F1 to F3.** It changes this repository's build and three
   recorded specifications, and delivers nothing to a consumer.
 - **F1 names `command`**, an input that exists only on OQ-2's default. If
@@ -180,6 +187,8 @@ exists. The epic is not `blocked`: nothing in "What this epic waits on" stops
 a Feature specification being written, and the owner did not decide that the
 epic waits. The next step is the owner's: confirm or change the candidate
 cut, and each confirmed Feature then begins with its own specification.
+2026-10-30: the owner merged F3 into F2 and confirmed nothing else; the rest
+of the cut still awaits the owner, and no child exists.
 
 ## Out of this epic
 

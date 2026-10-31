@@ -1,6 +1,6 @@
 ---
 title: "Epic 0132: specht through the Model Context Protocol"
-description: "A second door onto specht for agents and editors: pinned rule knowledge, structured tree facts and check verdicts matching the CLI, a persistent keyed index of Markdown, and project-scoped document sequences independent of git"
+description: "A second door onto specht for agents and editors: pinned rule knowledge, structured tree facts and check verdicts matching the CLI, and a persistent keyed index of Markdown; document sequences and the service mode moved to epic 0324 on 2026-10-30"
 id: "0132"
 type: epic
 status: needs-decomposition
@@ -34,7 +34,8 @@ serves the same one.
 The owner added a request on 2026-10-17 for unique document sequences per
 project and document type, allocated through MCP without coordinating through
 git. The requirement is recorded under "Document sequence allocation";
-project identity and reservation storage remain open.
+project identity and reservation storage remain open. Moved to epic `0324`,
+2026-10-30, with the service mode and lifetime keys.
 
 The owner added a persistent specification index on 2026-10-19. Markdown remains
 authoritative, while a local database keeps keyed facts and relationships for
@@ -48,7 +49,8 @@ as well as their keys and sequence values. Whether agents answer better from
 indexed files or complete documents served by MCP is unresolved. The owner also
 raised optional online mode; if adopted, it would use one project sequence
 shared across machines. Spike `0252` will test the access paths and storage
-options before those choices amend the existing agreement.
+options before those choices amend the existing agreement. The online
+sequence proposal moved to epic `0324`, 2026-10-30.
 
 The need and its scope were decided by the repository owner on 2026-10-09.
 This file is the record of that decision. Nothing here is designed: no MCP
@@ -56,7 +58,8 @@ tool is named, no transport is chosen, no project is laid out and no package
 is decided. Candidates A to F remain an unconfirmed cut; the owner confirmed
 the distinct indexed-storage capability in Feature `0132-F1`. Resolved
 2026-10-30: the owner confirmed the cut as amended in "Features"; candidate A
-is `0132-F2`, specified as a draft.
+is `0132-F2`, specified as a draft. Candidate F, the service mode and lifetime
+keys moved to epic `0324`, 2026-10-30.
 
 ## Business Value
 
@@ -85,38 +88,41 @@ need wins.
 
 What it costs them today:
 
-| Pain                    | Cost                                                                              |
-| ----------------------- | --------------------------------------------------------------------------------- |
-| Copied skills drift     | A copy falls behind the pinned schema version, and agents follow stale rules      |
-| Context spent on lookup | Every working session rediscovers structure the tool already knows                |
-| Wrong work ships        | A guessed rule or a missed dependency surfaces at the build or in review          |
-| Adoption stalls         | A new repository ports rule knowledge by hand before its agents are useful        |
-| Sequence files conflict | Parallel authors claim the same next id or conflict when merging a shared counter |
+| Pain                    | Cost                                                                         |
+| ----------------------- | ---------------------------------------------------------------------------- |
+| Copied skills drift     | A copy falls behind the pinned schema version, and agents follow stale rules |
+| Context spent on lookup | Every working session rediscovers structure the tool already knows           |
+| Wrong work ships        | A guessed rule or a missed dependency surfaces at the build or in review     |
+| Adoption stalls         | A new repository ports rule knowledge by hand before its agents are useful   |
+| Sequence files conflict | Moved to epic `0324`, 2026-10-30                                             |
 
 ## Success criteria
 
 Each criterion carries the tier the owner gave it. A Must is the epic; a Could
 is delivered only if it is cheap once the Musts exist. The work queue is the
 first thing dropped, and the existing writes are dropped with it. Requested
-marks the new sequence capability, whose tier has not been decided.
+marks the new sequence capability, whose tier has not been decided. Moved to
+epic `0324`, 2026-10-30: the sequence capability's row. Requested still marks
+the rows added after 2026-10-09, whose tiers have not been decided.
 
-| Criterion                                                                                                                                                                                     | Tier      | Notes                                                                                                                                                                                                     |
-| --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Rule and schema knowledge for the pinned schema version is answerable: what each `SPEC###` requires, the sections, the table headers, the id grammars, the frontmatter keys and the templates | Must      | Facts only; no guidance on how to author                                                                                                                                                                  |
-| The tree's facts are answerable as structured data: its Features, claims, constraints, open questions, dependencies and claim coverage                                                        | Must      | From the command line and through MCP, as one answer, with a test proving they agree. The command line gains a command                                                                                    |
-| The check's verdict is answerable on request                                                                                                                                                  | Must      | On request only; not feedback while a document is being typed                                                                                                                                             |
-| Every answer is the answer for the schema version the repository pins                                                                                                                         | Must      | Proven by a test across two schema versions                                                                                                                                                               |
-| A verdict or a fact given through MCP is identical to the `specht` command's on the same tree                                                                                                 | Must      | Proven by a test                                                                                                                                                                                          |
-| One client configuration entry gives a fresh repository every fact: an agent with no `specht`-specific skill authors a Feature specification that passes the check                            | Must      | The claim covers facts about `specht` and its schema. Method skills - how to write a good specification - are outside                                                                                     |
-| The existing writes are reachable through MCP: `init`, `upgrade`, the pin command and `format`                                                                                                | Could     | Each bound by the same write rule as its command (brief § 9). Dropped alongside the work queue                                                                                                            |
-| The work queue is answerable: items, their status, their derived priority and rank, and which are startable                                                                                   | Could     | Only if cheap once the tree's facts exist. The first thing dropped                                                                                                                                        |
-| A caller can obtain a unique sequence value for a project and a supported document type without git coordination                                                                              | Requested | Added by the owner, 2026-10-17; tier and authority boundaries await agreement under "Document sequence allocation". Moves to a new epic with candidate F (owner, 2026-10-30; destination not yet created) |
-| Repeated MCP key lookups can follow stored specification relationships without reparsing unchanged Markdown, while each answer remains current with the repository tree                       | Requested | Added by the owner, 2026-10-19; `0132-F1` is draft, with key scope and measurement open                                                                                                                   |
-| A caller can find the items, Features, epics, ADRs, lessons and decisions related to a specification                                                                                          | Requested | Clarified by the owner, 2026-10-20; spike `0252` will evaluate how their content is served                                                                                                                |
+| Criterion                                                                                                                                                                                     | Tier      | Notes                                                                                                                  |
+| --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- | ---------------------------------------------------------------------------------------------------------------------- |
+| Rule and schema knowledge for the pinned schema version is answerable: what each `SPEC###` requires, the sections, the table headers, the id grammars, the frontmatter keys and the templates | Must      | Facts only; no guidance on how to author                                                                               |
+| The tree's facts are answerable as structured data: its Features, claims, constraints, open questions, dependencies and claim coverage                                                        | Must      | From the command line and through MCP, as one answer, with a test proving they agree. The command line gains a command |
+| The check's verdict is answerable on request                                                                                                                                                  | Must      | On request only; not feedback while a document is being typed                                                          |
+| Every answer is the answer for the schema version the repository pins                                                                                                                         | Must      | Proven by a test across two schema versions                                                                            |
+| A verdict or a fact given through MCP is identical to the `specht` command's on the same tree                                                                                                 | Must      | Proven by a test                                                                                                       |
+| One client configuration entry gives a fresh repository every fact: an agent with no `specht`-specific skill authors a Feature specification that passes the check                            | Must      | The claim covers facts about `specht` and its schema. Method skills - how to write a good specification - are outside  |
+| The existing writes are reachable through MCP: `init`, `upgrade`, the pin command and `format`                                                                                                | Could     | Each bound by the same write rule as its command (brief § 9). Dropped alongside the work queue                         |
+| The work queue is answerable: items, their status, their derived priority and rank, and which are startable                                                                                   | Could     | Only if cheap once the tree's facts exist. The first thing dropped                                                     |
+| A caller can obtain a unique sequence value for a project and a supported document type without git coordination                                                                              | Requested | Moved to epic `0324`, 2026-10-30                                                                                       |
+| Repeated MCP key lookups can follow stored specification relationships without reparsing unchanged Markdown, while each answer remains current with the repository tree                       | Requested | Added by the owner, 2026-10-19; `0132-F1` is draft, with key scope and measurement open                                |
+| A caller can find the items, Features, epics, ADRs, lessons and decisions related to a specification                                                                                          | Requested | Clarified by the owner, 2026-10-20; spike `0252` will evaluate how their content is served                             |
 
 ## Related records
 
-The store request is broader than candidate F's sequence allocator. It asks
+The store request is broader than candidate F's sequence allocator (moved to
+epic `0324`, 2026-10-30). It asks
 MCP to connect items, Features, epics, ADRs, lessons and decisions to their
 specifications. These records have different scopes and relationships, so a
 single parent link or number counter does not describe the whole model.
@@ -130,159 +136,13 @@ repository invariants to amend; this epic does not change them implicitly.
 
 ### Service requirements session, 2026-10-30
 
-**Decided 2026-10-30 by the owner to move to a new epic, destination epic not yet created; the text stays here until it moves.** It covers the database-authority service mode, lifetime keys,
-revisions and snapshots, GitHub projection and a team or remote store.
-
-The owner requests an opt-in, database-driven mode covering every document
-managed by specht: Markdown, YAML, specifications and supporting records. In
-that mode the database behind MCP is the source of truth, projecting repository
-files for check-in and GitHub issues. Existing file-based use remains supported;
-database authority is not imposed on every consumer. This request does not
-require converting every document into structured YAML.
-
-The service must accommodate an individual developer working entirely locally,
-including originating and grooming their own requirements. A team-accessible
-database may be local or remote. Business requirements intake is a possible
-additional entry point into the same system, not a mandatory actor or starting
-stage. The broader direction is a potential service for specification-driven
-development, with GitHub serving as one integration. Exact service capabilities
-and their delivery scope remain to be agreed.
-
-**Identity rule, confirmed by the owner:** every record receives a unique key
-when it enters the system and retains that key throughout its entire lifecycle.
-This applies regardless of entry point or whether one developer or a team uses
-the system. Grooming and projection preserve that identity. Key syntax,
-namespace and allocation remain to be specified; this rule does not authorize
-renumbering existing stable identifiers.
-
-The owner raised Snowflake as a candidate for these lifetime keys. Existing
-spike `0256` already compares Snowflake with alternative allocation strategies;
-carry the solo-local and optional shared-service requirements into that
-evaluation. A candidate must address concurrent generators, restarts and clock
-rollback within its claimed uniqueness scope. The algorithm is not selected by
-this discussion. The original implementation comes from Twitter; its source is
-the `snowflake-2010` tag in `twitter-archive/snowflake`.
-
-The requirements session focuses first on the specification's shape, its
-traceability matrix and keys throughout the model. Database selection and
-implementation follow the agreement.
-
-**Document retrieval and traceability, clarified by the owner:** retain complete
-documents as well as their keyed relationships. The scenario-coverage relation
-connects an acceptance criterion key, its specification key and the covering
-scenario key. Retrieving a specification returns its complete document for
-rendering; retrieving the feature file containing a scenario returns that whole
-file. Keyed lookup must not restrict reading to extracted rows or snippets.
-The representation must retain the relationship from a scenario to its
-containing feature document. This establishes structural scenario coverage;
-test bindings and execution evidence remain separate coverage concerns.
-
-Both relational links and complete-document retrieval are required capabilities.
-Whether one database engine or multiple stores provide them remains a design
-choice. Rendering behavior, document revision consistency and synchronization
-between content and relationships still need an agreement. No database product
-is chosen by this requirement.
-
-**Revision model proposed for discussion, not yet agreed:** separate each
-record's permanent key from immutable content revisions. A saved project
-snapshot selects exact document revisions and the traceability relationships
-applicable to them. Keyed elements resolve within their containing document's
-selected revision, so a scenario lookup retrieves the complete feature file
-from that same snapshot. Relationships must resolve to elements present in the
-selected document revisions. A historical matrix and links opened from it
-retain the snapshot context rather than resolving independently to latest.
-
-An approved baseline could name such a snapshot; a current-work view could
-resolve a selected workspace's head to one snapshot before generating its
-matrix. Database transactions alone do not preserve a reader's context across
-later requests; responses and follow-up links would carry the saved snapshot
-identity. Repository projections would record their snapshot identity, with
-Git commit associations recorded when available. GitHub projection freshness
-would be recorded separately because external publication is not atomic with
-database updates.
-
-Under this proposal, editing retains identity and creates a new revision;
-previous snapshots remain readable. A retained coverage relationship does not
-transfer approval or passing evidence to changed inputs automatically.
-Revalidation policy, snapshot scope, concurrent-edit handling, revision
-identifier generation and retention still require agreement. Retaining this
-history would also amend `0132-F1` section 5 row 5, which currently excludes a
-revision archive from the derived index.
-
-Database authority revises `0132-F1` decision 0001 for consumers opting into
-that mode. Before implementation, record the mode boundary in that decision
-and update the owning claims, scenarios and constraints, including current-tree
-freshness. The permitted-write boundary and `0055-F9`'s local-item authority
-also need explicit reconciliation with database-owned projections. File-based
-offline checking remains supported; a remote service is not a prerequisite for
-the solo local workflow.
-
-The following questions remain for this session; they are not agreed behavior:
-
-- How does the database represent document content and keyed elements while
-  preserving the readable specification and its versioned schema contract?
-- How are keys scoped and allocated, and which elements within a document are
-  independently keyed? The owner identifies the acceptance criterion,
-  specification and scenario keys for scenario coverage; how do test and
-  evidence links extend that view, and is the matrix generated from those links?
-- How do edits to repository files or GitHub issues enter the authority, if
-  allowed, and what happens when a projection differs from its source?
-- Which authoritative revision belongs to a branch, worktree or commit, and
-  how do review, concurrent edits and projection failures affect publication?
-- How are existing files imported and the authoritative database recovered?
-- How does a consumer opt into database authority or return to file-based use,
-  preserving keys and relationships? What capabilities require shared access?
-
-Qualified-key resolution remains epic `0228` candidate C and item `0307`;
-`0132-F1` and spike `0252` own the existing indexing and storage investigation.
-The session must reconcile those agreements rather than introduce a second
-resolver or infer a database product from the requested authority model.
+Moved to epic `0324`, 2026-10-30: the database-authority service mode,
+lifetime keys, revisions and snapshots, GitHub projection and a team or remote
+store.
 
 ## Document sequence allocation
 
-**Decided 2026-10-30 by the owner to move to a new epic, destination epic not yet created; the text stays here until it moves.** Candidate F moves with the service mode.
-
-**Feature request, 2026-10-17.** A caller supplies a project and a document
-type supported by `specht`, and an MCP operation allocates a unique sequence
-value for that project and type on one machine. Concurrent callers across
-that project's worktrees and processes on the machine must receive distinct
-values within the same sequence scope (owner, 2026-10-17). Allocation must not
-depend on a git repository, branch, commit, merge, pull request or tracked
-counter file.
-
-The operation reserves a value; merely reading the highest id and returning
-the next one cannot meet the concurrency requirement. It does not create,
-edit or renumber a document. The set of supported document types and their
-sequence scopes must be agreed before a Feature specification is cut; the
-request is not limited to this repository's work-item sequence.
-
-This is a new capability, separate from the optional existing writes and
-work queue. It needs an allocation authority and durable reservation state.
-The authority is machine-local and offline; its storage is not chosen here.
-The permitted-write list does not yet cover reservation state; its owning
-records must explicitly permit those state changes before implementation.
-CLI parity still applies: the same allocation capability needs a command-line
-entry point, whose name is open.
-
-Examples to carry into that Feature's scenarios once the scope is agreed:
-
-- Two concurrent requests from different worktrees or processes for the same
-  project and document type on one machine receive different values without a
-  git operation or a tracked counter edit.
-- Restarting the allocation host does not make a reserved value available
-  for allocation again.
-- Requesting a sequence value leaves the project's documents unchanged.
-
-The open questions below block implementation, not recording this request.
-The current offline allocation scope is one machine; the online proposal below
-would extend coordination across machines if adopted.
-
-**Conditional online proposal, 2026-10-20.** If an online mode is adopted, the
-owner wants one project sequence across machines. That requires a shared
-allocation authority and an explicit change to the current offline boundary.
-Independent local counters cannot provide that guarantee. Spike `0252` will
-examine mode switching and an unavailable online authority before the owner
-decides whether to adopt the mode.
+Moved to epic `0324`, 2026-10-30, with candidate F.
 
 ## Features
 
@@ -292,17 +152,20 @@ its specification is written. Candidate G is confirmed as a separate draft
 Feature and is listed in `children`.
 
 **Resolved 2026-10-30 by the owner: the cut is confirmed as amended here.**
+The owner reserved Feature ids on 2026-10-30: `0132-F3` for candidate B,
+`0132-F4` for candidate C and `0001-F18` for the new epic `0001` Feature.
+Each joins its epic's `children` when its specification is written.
 
-| Candidate     | Decision, 2026-10-30                                                                                                                                                                                     |
-| ------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| A (`0132-F2`) | Confirmed and owned here; epic `0228` depends on it (its OQ-2). Specified as a draft at `src/tool/Features/Facts/.spec/`, working name `specht facts`                                                    |
-| B             | Confirmed, not yet specified. A Feature of its own, shipped with C; its items are cut so that no B item is done while serving nothing. Packaging is its open question                                    |
-| C             | Confirmed, not yet specified. The verdict for the whole tree only; no single-specification filter. Its open questions: which clients, how the sixth Must is proven, and what a person in an editor needs |
-| D             | Could, deferred                                                                                                                                                                                          |
-| E             | Parked, unconfirmed                                                                                                                                                                                      |
-| F             | Moves to a new epic with the service mode; destination epic not yet created                                                                                                                              |
-| G (`0132-F1`) | Unchanged: a draft; its decision 0001 and C-1 stand                                                                                                                                                      |
-| New, `0001`   | Decided and pending: a Feature in epic `0001` printing the frontmatter schemas and the templates, with `specht schema list --json`. Not yet specified                                                    |
+| Candidate     | Decision, 2026-10-30                                                                                                                                                                                                                                |
+| ------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| A (`0132-F2`) | Confirmed and owned here; epic `0228` depends on it (its OQ-2). Specified as a draft at `src/tool/Features/Facts/.spec/`, working name `specht facts`                                                                                               |
+| B             | Confirmed, not yet specified. A Feature of its own, shipped with C; its items are cut so that no B item is done while serving nothing. Packaging is its open question. Feature id `0132-F3` reserved, 2026-10-30                                    |
+| C             | Confirmed, not yet specified. The verdict for the whole tree only; no single-specification filter. Its open questions: which clients, how the sixth Must is proven, and what a person in an editor needs. Feature id `0132-F4` reserved, 2026-10-30 |
+| D             | Could, deferred                                                                                                                                                                                                                                     |
+| E             | Parked, unconfirmed                                                                                                                                                                                                                                 |
+| F             | Moved to epic `0324` with the service mode, 2026-10-30. Was: moves to a new epic with the service mode; destination epic not yet created                                                                                                            |
+| G (`0132-F1`) | Unchanged: a draft; its decision 0001 and C-1 stand                                                                                                                                                                                                 |
+| New, `0001`   | Decided and pending: a Feature in epic `0001` printing the frontmatter schemas and the templates, with `specht schema list --json`. Not yet specified. Feature id `0001-F18` reserved, 2026-10-30                                                   |
 
 Claim coverage is `specht trace` (`0001-F13`), which candidate A leaves out;
 cutting `0001-F13`'s items is on the Must path (owner, 2026-10-30). No item
@@ -310,15 +173,15 @@ is cut by this record. The table below is the cut as first proposed.
 
 The candidates are cut by capability dimension, where the invariant changes:
 
-| Candidate     | Name                           | Invariant it would carry                                                                                                      | Tier      |
-| ------------- | ------------------------------ | ----------------------------------------------------------------------------------------------------------------------------- | --------- |
-| A             | Tree facts on the command line | The tree's facts are a read-only function of the tree and the pinned schema version, given as structured data                 | Must      |
-| B             | The MCP host                   | A local process the client starts, the same version as the tool, reached by one client configuration entry, with no port      | Must      |
-| C             | Reading through MCP            | Every answer MCP gives is the command line's answer on the same tree, and nothing is written                                  | Must      |
-| D             | Writing through MCP            | A write through MCP is one an existing command already makes, bound by that command's write rule                              | Could     |
-| E             | The work queue                 | The work items' delivery state is answerable, read-only                                                                       | Could     |
-| F             | Document sequence allocation   | Concurrent allocations within an agreed project and document-type scope never return the same value, without git coordination | Requested |
-| G (`0132-F1`) | Persistent specification index | A local, rebuildable database holds keyed facts and relationships; current-tree answers avoid reparsing unchanged Markdown    | Requested |
+| Candidate     | Name                           | Invariant it would carry                                                                                                   | Tier      |
+| ------------- | ------------------------------ | -------------------------------------------------------------------------------------------------------------------------- | --------- |
+| A             | Tree facts on the command line | The tree's facts are a read-only function of the tree and the pinned schema version, given as structured data              | Must      |
+| B             | The MCP host                   | A local process the client starts, the same version as the tool, reached by one client configuration entry, with no port   | Must      |
+| C             | Reading through MCP            | Every answer MCP gives is the command line's answer on the same tree, and nothing is written                               | Must      |
+| D             | Writing through MCP            | A write through MCP is one an existing command already makes, bound by that command's write rule                           | Could     |
+| E             | The work queue                 | The work items' delivery state is answerable, read-only                                                                    | Could     |
+| F             | Document sequence allocation   | Moved to epic `0324`, 2026-10-30                                                                                           | Requested |
+| G (`0132-F1`) | Persistent specification index | A local, rebuildable database holds keyed facts and relationships; current-tree answers avoid reparsing unchanged Markdown | Requested |
 
 Where the candidate cut was tested, and what the owner is asked to confirm:
 
@@ -346,7 +209,8 @@ Where the candidate cut was tested, and what the owner is asked to confirm:
 - **The AGENTS.md "&" heuristic** found no conjunction in any candidate name.
 - **Candidate F is cut from candidates D and E.** It reserves identifiers,
   rather than exposing an existing tree write or reading delivery state;
-  its machine-local reservations need their own state contract.
+  its machine-local reservations need their own state contract. Moved to
+  epic `0324`, 2026-10-30.
 - **Candidate G is cut from A and C.** A defines the public facts, and C serves
   the same answer through MCP. G owns durable indexing, key traversal and
   freshness underneath those answers. It keeps Markdown authoritative and
@@ -384,12 +248,13 @@ written it was open as pull request #79.
 The tree-facts command is not in this table: it is this epic's own
 (candidate A). The new sequence capability (candidate F) also belongs to
 this epic; its unresolved authority boundaries are separate from these
-dependencies on existing capabilities.
+dependencies on existing capabilities. Moved to epic `0324`, 2026-10-30:
+candidate F no longer belongs to this epic.
 
 What is still unbuilt for the Musts is not in this table (2026-10-30): the
 tree-facts command, now the draft `0132-F2`; a printer for the frontmatter
 schemas and the templates, decided as a new epic `0001` Feature not yet
-specified; and the published schemas for the rule listing and the manifest
+specified, its id `0001-F18` reserved; and the published schemas for the rule listing and the manifest
 (`0001-F10` B-020, `0001-F9` B-021). A check of one specification is decided:
 no single-specification form; scoping is epic `0228` candidate E. Claim
 coverage is decided as `specht trace` (`0001-F13`, approved, `blocked`, no
@@ -469,7 +334,8 @@ Feature specification cut from this epic carries it forward.
 
 The sequence and related-record requests do not silently waive these
 constraints. Their authorities must fit them, or their owning records must be
-amended by an explicit decision before implementation.
+amended by an explicit decision before implementation. The sequence request
+moved to epic `0324`, 2026-10-30, and its constraints are recorded there.
 
 | Constraint                                                                                                                                   | Source                                                       | What it rules out                                                                                       |
 | -------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------- |
@@ -502,26 +368,15 @@ pass on 2026-10-30; the answers are recorded in each row.
 
 ### Questions for document sequence allocation
 
-Decided 2026-10-30 by the owner to move to a new epic, destination epic not yet created; the text stays here until it moves. Each question travels with candidate F.
-
-| Question                                                                                                                                                                                                                                                                                                  | Who answers                                                               |
-| --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------- |
-| Must allocations stay unique across machines and clones of one project, or only across worktrees and processes on one machine? Resolved 2026-10-17 for the current offline scope: one machine. Conditional online scope clarified 2026-10-20: if adopted, one project sequence is shared across machines. | Resolved by the owner for each mode; online adoption remains open         |
-| Should online mode be adopted, and which offline, permitted-write and CLI parity rules would need amendment?                                                                                                                                                                                              | The owner after spike `0252`                                              |
-| If online allocation is adopted, how does it handle an unreachable authority or a project changing modes without reissuing a value?                                                                                                                                                                       | The owner, then the design                                                |
-| What stable identity denotes a project across paths and worktrees without depending on git, and how are separate clones on the same machine associated with it?                                                                                                                                           | The owner, then the design                                                |
-| Which document types are supported, and which share a sequence or require a parent scope? This repository shares epic and work-item numbers; Features and their claims use other scopes.                                                                                                                  | The spec-author, then the owner                                           |
-| Where does the machine-local, offline authority persist reservations, and what narrow permission for reservation-state writes is added to the owning records?                                                                                                                                             | The owner, then the design                                                |
-| How are existing document numbers adopted without reissuing them, and what are the rules for abandoned reservations, gaps and retries after an uncertain response?                                                                                                                                        | The owner, then the design                                                |
-| What MCP operation and equivalent CLI command expose allocation, and what priority does this capability have relative to the existing Musts?                                                                                                                                                              | The owner for priority; the Feature specification for the public contract |
+Moved to epic `0324`, 2026-10-30, with candidate F.
 
 ### Questions for related records
 
-| Question                                                                                                                        | Who answers                                                                                                                                |
-| ------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
-| Does an MCP index over authoritative files improve agent answers enough, or does serving complete database documents help more? | Spike `0252`, then the owner                                                                                                               |
-| Which record types, links and lifecycle fields must a first query cover, and how are missing or stale links reported?           | The Feature specification and owner                                                                                                        |
-| If full documents move into a database, which copy owns edits, Git history and conflicts between worktrees or machines?         | The owner, then the design. 2026-10-30: decided by the owner to move to a new epic with the service mode, destination epic not yet created |
+| Question                                                                                                                        | Who answers                         |
+| ------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------- |
+| Does an MCP index over authoritative files improve agent answers enough, or does serving complete database documents help more? | Spike `0252`, then the owner        |
+| Which record types, links and lifecycle fields must a first query cover, and how are missing or stale links reported?           | The Feature specification and owner |
+| If full documents move into a database, which copy owns edits, Git history and conflicts between worktrees or machines?         | Moved to epic `0324`, 2026-10-30    |
 
 ## Placement
 
@@ -543,26 +398,28 @@ decision 0001).
 the epic waits on what it exposes; those capabilities are delivered ("What
 this epic waits on"). The owner answered the requirements pass on 2026-10-30
 and confirmed the cut in "Features". Candidate A is `0132-F2`, a draft with
-open questions. Candidates B and C are confirmed and not yet specified, and
-the new epic `0001` printer Feature is pending. The service mode and
-candidate F are decided to move to an epic not yet created. The epic stays
-`needs-decomposition` until B, C and the printer Feature are specified.
+open questions. Candidates B and C are confirmed and not yet specified, with
+`0132-F3` and `0132-F4` reserved, and the new epic `0001` printer Feature is
+pending, with `0001-F18` reserved; none is in `children` until its
+specification exists. The service mode and candidate F moved to epic `0324`
+on 2026-10-30. Was: decided to move to an epic not yet created. The epic
+stays `needs-decomposition` until B, C and the printer Feature are specified.
 
 ## Out of this epic
 
-| Item                                                                    | Where it lives instead                                                                |
-| ----------------------------------------------------------------------- | ------------------------------------------------------------------------------------- |
-| A caller with no .NET SDK                                               | Nowhere: the .NET SDK is required, and there is no second distribution                |
-| Remote or hosted access, or a network port                              | Never: the offline invariant binds MCP as it binds the check (AGENTS.md § Invariants) |
-| A new authoring write - MCP scaffolding or editing a specification      | Never: the list of writes stands unchanged (brief § 9)                                |
-| Authoring guidance, method skills, role contracts and the delivery flow | The consumer's own skills: `specht` serves facts and does not distribute skills       |
-| Anything MCP can say that the command line cannot                       | Never: MCP is additive, and the command line stays the contract of record             |
-| Feedback while a document is being typed                                | Not built: running the check on request is enough for the authoring loop              |
-| Rule text, `--explain` and `expected`                                   | `0001-F3`; this epic only serves them                                                 |
-| The list and pin commands, `init` and `upgrade`                         | `0001-F7`, `0001-F4`; this epic only reaches them, and only under the Could criterion |
-| `format`                                                                | `0101-F5`; reached only under the Could criterion                                     |
+| Item                                                                                | Where it lives instead                                                                |
+| ----------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------- |
+| A caller with no .NET SDK                                                           | Nowhere: the .NET SDK is required, and there is no second distribution                |
+| Remote or hosted access, or a network port                                          | Never: the offline invariant binds MCP as it binds the check (AGENTS.md § Invariants) |
+| A new authoring write - MCP scaffolding or editing a specification                  | Never: the list of writes stands unchanged (brief § 9)                                |
+| Authoring guidance, method skills, role contracts and the delivery flow             | The consumer's own skills: `specht` serves facts and does not distribute skills       |
+| Anything MCP can say that the command line cannot                                   | Never: MCP is additive, and the command line stays the contract of record             |
+| Feedback while a document is being typed                                            | Not built: running the check on request is enough for the authoring loop              |
+| Rule text, `--explain` and `expected`                                               | `0001-F3`; this epic only serves them                                                 |
+| The list and pin commands, `init` and `upgrade`                                     | `0001-F7`, `0001-F4`; this epic only reaches them, and only under the Could criterion |
+| `format`                                                                            | `0101-F5`; reached only under the Could criterion                                     |
+| Document sequence allocation, the database-authority service mode and lifetime keys | Epic `0324`, moved 2026-10-30                                                         |
 
-The sequence request reserves values only; document scaffolding and editing
-remain outside this epic. Cross-machine coordination is outside the current
-offline scope; online adoption remains open. The existing write exclusion must
-explicitly account for reservation state before candidate F is implemented.
+Moved to epic `0324`, 2026-10-30: the sequence request's boundaries -
+reservation only, the offline scope and the write exclusion for reservation
+state.
