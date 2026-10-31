@@ -1,7 +1,7 @@
 id: "0320"
 type: task
 title: "Order binding elements and target choices"
-status: in-progress
+status: done
 value: 2
 risk: 2
 parent: "0201"
@@ -12,7 +12,7 @@ spec: src/codefixes/.spec/README.md
 claims: ["B-039", "B-040"]
 created: "2026-10-30"
 updated: "2026-10-30"
-closed: null
+closed: "2026-10-30"
 summary: |
   Order the binding elements an invoked repair writes into a documentation
   comment, and the target choices a repair offers, by the identity order
