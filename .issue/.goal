@@ -62,13 +62,26 @@
 0321
 
 0.5.0
-# Beyond the command line: epics 0142, 0132, 0194, 0196, 0193, 0228, 0101 and
-# the 0002 site. Their Features are not yet specified; a Feature item joins this
-# list once cut.
-0252
-0256
+# Pull-request surface: epic 0142, whose Features are not yet specified; a
+# Feature's items join this list once cut.
 0289
 0128
 # Epic 0201 for consumer request #256: native Gherkin claims with xUnit v2
 # VSTest evidence, proven end to end in one packaged consumer.
 0302
+
+0.6.0
+# Agent surface: epic 0132, Features 0132-F1 to 0132-F4, specified with no
+# items cut yet; a Feature's items join this list once cut.
+0252
+0256
+
+0.7.0
+# Review and presentation: epics 0228, 0194 and 0101. Their Features' items
+# join this list once cut.
+# Epic 0228 candidate C, qualified key resolution
+0307
+
+0.8.0
+# Onboarding and documentation: epics 0196 and 0002, Features 0002-F1 and
+# 0002-F2. A Feature's items join this list once cut.

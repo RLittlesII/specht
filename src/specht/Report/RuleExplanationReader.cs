@@ -7,7 +7,7 @@ namespace Specht.Report;
 /// <param name="schemas">The existing manifest reader.</param>
 /// <param name="parser">The parser that validates the exact schema pin and its vocabulary.</param>
 /// <implements epic="0001" feature="F3" claim="B-019" />
-public sealed class RuleExplanationReader(SpecSchemasLoader schemas, SpecManifestParser parser)
+public sealed class RuleExplanationReader(SpechtSchemasLoader schemas, SpechtManifestParser parser)
 {
     /// <summary>Returns the entire embedded page, including frontmatter, or null for an id outside the pinned vocabulary.</summary>
     /// <param name="root">The repository root.</param>

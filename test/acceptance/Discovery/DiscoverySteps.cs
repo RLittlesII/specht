@@ -23,7 +23,7 @@ namespace Specht.Acceptance.Discovery;
 public sealed class DiscoverySteps
 {
     [Given("a repository root holding a manifest and the three frontmatter schemas")]
-    public void GivenARepositoryRootHoldingAManifestAndTheThreeFrontmatterSchemas() => _tree = new SpecTree();
+    public void GivenARepositoryRootHoldingAManifestAndTheThreeFrontmatterSchemas() => _tree = new SpechtTree();
 
     [Given("the manifest is the default one this repository checks itself with")]
     public void GivenTheManifestIsTheDefaultOneThisRepositoryChecksItselfWith() =>
@@ -214,7 +214,7 @@ public sealed class DiscoverySteps
     [Then("it is checked by every rule")]
     public void ThenItIsCheckedByEveryRule()
     {
-        using var twin = new SpecTree();
+        using var twin = new SpechtTree();
         twin.WriteSpecification("src/area/.spec/README.md", "0001", "F1", sections: ThreeDefects);
         var expected = twin.Run().Violations.Select(Verdict).ToList();
         expected.Select(static verdict => verdict.RuleId).Distinct().Should().HaveCountGreaterThanOrEqualTo(3);
@@ -257,7 +257,7 @@ public sealed class DiscoverySteps
         Report.Violations.Should().NotContain(static violation => violation.RuleId == "SPEC020");
         Report.Violations.Where(static violation => violation.RuleId == "SPEC021")
             .Should().ContainSingle()
-            .Which.Should().Match<SpecViolation>(static violation => violation.File == Companion && violation.Identifier == "B-404");
+            .Which.Should().Match<SpechtViolation>(static violation => violation.File == Companion && violation.Identifier == "B-404");
     }
 
     [Then("the summary counts two items")]
@@ -276,7 +276,7 @@ public sealed class DiscoverySteps
         Report.Violations.Should().NotContain(static violation => violation.RuleId == "SPEC020" && violation.File == SecondSpecification);
         Report.Violations.Where(static violation => violation.RuleId == "SPEC021")
             .Should().ContainSingle()
-            .Which.Should().Match<SpecViolation>(static violation => violation.File == SecondCompanion && violation.Identifier == "B-404");
+            .Which.Should().Match<SpechtViolation>(static violation => violation.File == SecondCompanion && violation.Identifier == "B-404");
     }
 
     [Then("the summary and the report name the layouts {string} and {string}")]
@@ -284,7 +284,7 @@ public sealed class DiscoverySteps
     public void ThenTheSummaryAndTheReportNameTheLayouts(string first, string second)
     {
         Summary[0].Should().Be($"specifications: {first} 1, {second} 1");
-        JsonNode.Parse(SpecReportDocument.From(Report).ToJson())!["layouts"]!.AsArray()
+        JsonNode.Parse(SpechtReportDocument.From(Report).ToJson())!["layouts"]!.AsArray()
             .Select(static layout => layout!["layout"]!.GetValue<string>())
             .Should().Equal(first, second);
     }
@@ -306,14 +306,14 @@ public sealed class DiscoverySteps
     public void DeleteTree() => _tree?.Dispose();
 
     private static IReadOnlyList<string> ThreeDefects =>
-        SpecTree.SectionsWith(
+        SpechtTree.SectionsWith(
                 "3. Acceptance Criteria",
                 "## 3. Acceptance Criteria\n\n| ID | Claim | Source | Status |\n| -- | ----- | ------ | ------ |\n"
                     + "| B-001 | It does the thing. | brd | Active |\n| B-002 | It does another thing. | brd | Active |\n")
             .Where(static section => !section.StartsWith("## 11.", StringComparison.Ordinal))
             .ToList();
 
-    private SpecTree Tree => _tree ?? throw new InvalidOperationException("No repository root was prepared.");
+    private SpechtTree Tree => _tree ?? throw new InvalidOperationException("No repository root was prepared.");
 
     private JsonObject Manifest => _manifest ?? throw new InvalidOperationException("No manifest was read.");
 
@@ -321,23 +321,23 @@ public sealed class DiscoverySteps
 
     private string Subject => _subject ?? throw new InvalidOperationException("No step named that specification.");
 
-    private string ManifestPath => Path.Combine(Tree.Root, SpecTree.ManifestPath);
+    private string ManifestPath => Path.Combine(Tree.Root, SpechtTree.ManifestPath);
 
     private IEnumerable<string> Reported => Report.Violations.Select(static violation => violation.File).Distinct();
 
-    private IReadOnlyList<string> Summary => SpecReportDocument.From(Report).SummaryLines();
+    private IReadOnlyList<string> Summary => SpechtReportDocument.From(Report).SummaryLines();
 
     private static JsonObject Layout(string name, string glob) => new() { ["name"] = name, ["glob"] = glob };
 
     private static JsonObject Identity(int epic, int feature) => new() { ["epic"] = epic, ["feature"] = feature };
 
-    private static (string RuleId, SpecSeverity Severity, int Line, string? Identifier, string Message) Verdict(SpecViolation violation) =>
+    private static (string RuleId, SpechtSeverity Severity, int Line, string? Identifier, string Message) Verdict(SpechtViolation violation) =>
         (violation.RuleId, violation.Severity, violation.Line, violation.Identifier, violation.Message);
 
     private JsonObject Entry(string layout) =>
         Manifest["layouts"]!.AsArray().Select(static entry => entry!.AsObject()).Single(entry => entry["name"]!.GetValue<string>() == layout);
 
-    private IEnumerable<SpecViolation> Mismatches(string? specification) =>
+    private IEnumerable<SpechtViolation> Mismatches(string? specification) =>
         Report.Violations.Where(violation =>
             violation.RuleId == "SPEC011"
             && violation.File == (specification ?? throw new InvalidOperationException("No step wrote that specification.")));
@@ -366,7 +366,7 @@ public sealed class DiscoverySteps
     private const string PhantomTag =
         "Feature: it\n\n  @B-001\n  Scenario: It does the thing\n    Given a thing\n\n  @B-404\n  Scenario: Phantom\n    Given nothing\n";
 
-    private SpecTree? _tree;
+    private SpechtTree? _tree;
     private JsonObject? _manifest;
     private SpechtReport? _report;
     private string? _subject;

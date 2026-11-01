@@ -11,12 +11,12 @@ public sealed partial class RuleEntriesSteps
     public void GivenMissingRoot() => _rootArgument = "missing-root";
 
     [Given("a root with no manifest")]
-    public void GivenNoManifest() => File.Delete(Path.Combine(Tree.Root, SpecTree.ManifestPath));
+    public void GivenNoManifest() => File.Delete(Path.Combine(Tree.Root, SpechtTree.ManifestPath));
 
     [Given("a root whose manifest (.*)")]
     public void GivenRejectedManifest(string reason)
     {
-        var path = Path.Combine(Tree.Root, SpecTree.ManifestPath);
+        var path = Path.Combine(Tree.Root, SpechtTree.ManifestPath);
         var manifest = JsonNode.Parse(File.ReadAllText(path))!.AsObject();
         switch (reason)
         {
@@ -90,7 +90,7 @@ public sealed partial class RuleEntriesSteps
     public void ThenStderrNamesRoot() => _result.Stderr.Should().Contain(_rootArgument);
 
     [Then("the standard error names the manifest path")]
-    public void ThenStderrNamesManifest() => _result.Stderr.Should().Contain(SpecTree.ManifestPath);
+    public void ThenStderrNamesManifest() => _result.Stderr.Should().Contain(SpechtTree.ManifestPath);
 
     [Then("the standard error names what the check names for that manifest")]
     public void ThenStderrMatchesCheck()
@@ -111,7 +111,7 @@ public sealed partial class RuleEntriesSteps
     public void ThenManifestUnchanged()
     {
         _result.ExitCode.Should().Be(0, _result.Stderr);
-        File.ReadAllBytes(Path.Combine(Tree.Root, SpecTree.ManifestPath)).Should().Equal(_manifestBefore);
+        File.ReadAllBytes(Path.Combine(Tree.Root, SpechtTree.ManifestPath)).Should().Equal(_manifestBefore);
     }
 
     [Then("every path the output names other than those typed is relative to the root and uses forward slashes")]
@@ -119,7 +119,7 @@ public sealed partial class RuleEntriesSteps
     {
         _result.ExitCode.Should().Be(2, _result.Stderr);
         _result.Stdout.Should().BeEmpty();
-        _result.Stderr.Should().Contain(SpecTree.ManifestPath).And.NotContain(Tree.Root).And.NotContain("\\");
+        _result.Stderr.Should().Contain(SpechtTree.ManifestPath).And.NotContain(Tree.Root).And.NotContain("\\");
     }
 
     [Then("both runs print the same standard output and exit with the same code")]

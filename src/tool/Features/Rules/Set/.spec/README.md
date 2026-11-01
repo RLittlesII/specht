@@ -110,7 +110,7 @@ The engine owns validation, token editing and the atomic manifest replacement. T
 
 <!-- last written by: implementer, 2026-10-28 -->
 
-`ManifestRuleEditor` replaces a root `rules` entry value or inserts a missing entry/object. It shares BOM decoding and byte-offset conversion with `ManifestPinEditor`; unrelated tokens, encoding and BOM survive. `RuleLevelSetter` validates the root and complete manifest, resolves the exact pinned vocabulary, validates the id and lower-case level together so both faults are named when both are invalid, then uses `SpecManifestStore.WriteManifest` for an atomic replacement only when bytes differ. The command registers beneath the existing rules branch. [Decision 0003](decisions/0003-deliver-on-the-recorded-working-defaults.md) records the working defaults. No architecture migration is required.
+`ManifestRuleEditor` replaces a root `rules` entry value or inserts a missing entry/object. It shares BOM decoding and byte-offset conversion with `ManifestPinEditor`; unrelated tokens, encoding and BOM survive. `RuleLevelSetter` validates the root and complete manifest, resolves the exact pinned vocabulary, validates the id and lower-case level together so both faults are named when both are invalid, then uses `SpechtManifestStore.WriteManifest` for an atomic replacement only when bytes differ. The command registers beneath the existing rules branch. [Decision 0003](decisions/0003-deliver-on-the-recorded-working-defaults.md) records the working defaults. No architecture migration is required.
 
 ## 8. Testing Strategy
 

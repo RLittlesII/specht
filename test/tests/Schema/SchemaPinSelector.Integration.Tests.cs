@@ -16,8 +16,8 @@ public sealed class SchemaPinSelectorIntegrationTests
     public void InteractiveTerminal_WhenChoosingWithArrowKeysAndEnter_ShouldOfferEveryVersionAndPinTheChoice(int moves, string target)
     {
         // Given
-        using var tree = new SpecTree();
-        tree.WriteRaw(SpecTree.ManifestPath, "{\"schemaVersion\":\"wrong\"}");
+        using var tree = new SpechtTree();
+        tree.WriteRaw(SpechtTree.ManifestPath, "{\"schemaVersion\":\"wrong\"}");
         var console = new TestConsole().Width(100);
         console.Profile.Capabilities.Interactive = true;
         for (var move = 0; move < moves; move++)
@@ -36,7 +36,7 @@ public sealed class SchemaPinSelectorIntegrationTests
         {
             result.Output.Should().Contain(version.Number.ToString());
         }
-        File.ReadAllText(Path.Combine(tree.Root, SpecTree.ManifestPath)).Should().Be("{\"schemaVersion\":\"" + target + "\"}");
+        File.ReadAllText(Path.Combine(tree.Root, SpechtTree.ManifestPath)).Should().Be("{\"schemaVersion\":\"" + target + "\"}");
         result.Output.Should().Contain("pinned schemaVersion " + target);
     }
 
@@ -44,8 +44,8 @@ public sealed class SchemaPinSelectorIntegrationTests
     public void RedirectedInput_WhenNoVersionIsSupplied_ShouldSuggestAnExplicitVersionAndWriteNothing()
     {
         // Given
-        using var tree = new SpecTree();
-        var path = Path.Combine(tree.Root, SpecTree.ManifestPath);
+        using var tree = new SpechtTree();
+        var path = Path.Combine(tree.Root, SpechtTree.ManifestPath);
         var before = File.ReadAllBytes(path);
 
         // When

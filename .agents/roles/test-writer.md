@@ -16,7 +16,7 @@ produced it — if the claim does not say it, the test does not assert it.
   in the `*.Tests` project that references the code under test -
   `test/tests` for `src/`; any other home is named in
   [`specht-conventions` § Testing](../skills/specht-conventions/references/testing.md).
-  An engine fixture is a `SpecTree` the test constructs; a `SpecTree` is a
+  An engine fixture is a `SpechtTree` the test constructs; a `SpechtTree` is a
   fixture, not what makes a test a unit test.
 
 Writes no production code and no claims.
@@ -83,7 +83,7 @@ Writes no production code and no claims.
 - `Thread.Sleep`, a retry loop, or a delay to stabilise a test.
 - `@ignore` on a scenario, or deleting a § 9 row to clear a `Missing`.
 - A fixture copied from a real repository's `.spec/` tree, this one's included.
-  A tree is built with `SpecTree` in the test, with repository-relative paths
+  A tree is built with `SpechtTree` in the test, with repository-relative paths
   throughout, never captured.
 - A test fixture, builder or base class with one call site.
 - Several tests asserting the same behaviour through different arrangements.

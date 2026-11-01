@@ -14,7 +14,7 @@ namespace Specht.Rules;
 /// first specification to be approved gets the check for free.
 /// </remarks>
 /// <implements epic="0001" feature="F1" claim="B-001" />
-public sealed class ApprovalRule : ISpecRule
+public sealed class ApprovalRule : ISpechtRule
 {
     /// <inheritdoc />
     public string Id => "SPEC060";
@@ -24,7 +24,7 @@ public sealed class ApprovalRule : ISpecRule
 
     /// <inheritdoc />
     /// <implements epic="0001" feature="F1" claim="B-001" />
-    public IEnumerable<SpecViolation> Evaluate(SpecModel model)
+    public IEnumerable<SpechtViolation> Evaluate(SpechtModel model)
     {
         var roles = model.Schemas.Structure.Roles;
         var markers = model.Schemas.Structure.Markers;
@@ -46,9 +46,9 @@ public sealed class ApprovalRule : ISpecRule
 
                     if (row.Any(cell => string.Equals(cell.Trim(), markers["missing"], StringComparison.Ordinal)))
                     {
-                        yield return new SpecViolation(
+                        yield return new SpechtViolation(
                             "SPEC060",
-                            SpecSeverity.Error,
+                            SpechtSeverity.Error,
                             feature.RelativePath,
                             matrix.RowLines[index],
                             row.Count > 0 ? row[0].Trim() : null,
@@ -80,9 +80,9 @@ public sealed class ApprovalRule : ISpecRule
 
                 if (row.Any(cell => cell.Contains(markers["draft"], StringComparison.Ordinal) || cell.Contains(markers["blocked"], StringComparison.Ordinal)))
                 {
-                    yield return new SpecViolation(
+                    yield return new SpechtViolation(
                         "SPEC061",
-                        SpecSeverity.Error,
+                        SpechtSeverity.Error,
                         feature.RelativePath,
                         signOff.RowLines[index],
                         row.Count > 0 ? row[0].Trim() : null,

@@ -14,7 +14,7 @@ public sealed partial class EffectiveManifestSteps
     [Given("a repository root holding a manifest that pins schema version {word}")]
     public void GivenRoot(string pin)
     {
-        _tree = new SpecTree();
+        _tree = new SpechtTree();
         var manifest = Manifest;
         manifest["schemaVersion"] = pin;
         Write(manifest);
@@ -53,7 +53,7 @@ public sealed partial class EffectiveManifestSteps
     [Given("the root holds specifications with violations")]
     public void GivenViolations()
     {
-        Tree.WriteFeature("0001", "F1", sections: SpecTree.SectionsWith("3. Acceptance Criteria", "## 3. Acceptance Criteria\n\nNo claims table.\n"));
+        Tree.WriteFeature("0001", "F1", sections: SpechtTree.SectionsWith("3. Acceptance Criteria", "## 3. Acceptance Criteria\n\nNo claims table.\n"));
         var manifest = Manifest;
         manifest["identifiers"]!.AsObject().Remove("epic");
         Write(manifest);
@@ -64,7 +64,7 @@ public sealed partial class EffectiveManifestSteps
     {
         Print("--json");
         _result.ExitCode.Should().Be(0, _result.Stderr);
-        _copy = new SpecTree();
+        _copy = new SpechtTree();
         foreach (var file in Directory.EnumerateFiles(Tree.Root, "*", SearchOption.AllDirectories))
         {
             var destination = Path.Combine(_copy.Root, Path.GetRelativePath(Tree.Root, file));
@@ -72,7 +72,7 @@ public sealed partial class EffectiveManifestSteps
             File.Copy(file, destination, overwrite: true);
         }
 
-        File.WriteAllText(Path.Combine(_copy.Root, SpecTree.ManifestPath), _result.Stdout);
+        File.WriteAllText(Path.Combine(_copy.Root, SpechtTree.ManifestPath), _result.Stdout);
     }
 
     [Then("the claims section carries the name the manifest gives it")]
@@ -97,7 +97,7 @@ public sealed partial class EffectiveManifestSteps
         var original = Tree.Run();
         original.Violations.Should().NotBeEmpty();
         var copy = _copy!.Run();
-        SpecReportDocument.From(copy).ToJson().Should().Be(SpecReportDocument.From(original).ToJson());
+        SpechtReportDocument.From(copy).ToJson().Should().Be(SpechtReportDocument.From(original).ToJson());
         copy.SpecificationCount.Should().Be(original.SpecificationCount);
         _document!["identifiers"]!.AsObject().Should().NotContainKey("epic");
     }
@@ -109,13 +109,13 @@ public sealed partial class EffectiveManifestSteps
         _copy?.Dispose();
     }
 
-    private SpecTree Tree => _tree ?? throw new InvalidOperationException("No synthetic root was prepared.");
+    private SpechtTree Tree => _tree ?? throw new InvalidOperationException("No synthetic root was prepared.");
 
-    private JsonObject Manifest => JsonNode.Parse(File.ReadAllText(Path.Combine(Tree.Root, SpecTree.ManifestPath)))!.AsObject();
+    private JsonObject Manifest => JsonNode.Parse(File.ReadAllText(Path.Combine(Tree.Root, SpechtTree.ManifestPath)))!.AsObject();
 
-    private void Write(JsonObject manifest) => File.WriteAllText(Path.Combine(Tree.Root, SpecTree.ManifestPath), manifest.ToJsonString());
+    private void Write(JsonObject manifest) => File.WriteAllText(Path.Combine(Tree.Root, SpechtTree.ManifestPath), manifest.ToJsonString());
 
-    private SpecTree? _tree;
-    private SpecTree? _copy;
+    private SpechtTree? _tree;
+    private SpechtTree? _copy;
     private JsonObject? _document;
 }

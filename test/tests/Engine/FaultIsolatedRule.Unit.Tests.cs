@@ -17,7 +17,7 @@ public sealed class FaultIsolatedRuleUnitTests
     public void TheSameRuleException_WhenReportedAgain_ShouldRetainItsIdentityAndKeepCopiesEqual()
     {
         // Given
-        SpecModel model = new SpecModelFixture();
+        SpechtModel model = new SpechtModelFixture();
         var secret = Path.GetFullPath("private-failure-detail");
         Exception exception = new FormatException(secret);
         exception.Data["private detail"] = secret;
@@ -40,7 +40,7 @@ public sealed class FaultIsolatedRuleUnitTests
     public void ATypedInputFailure_WhenARuleRaisesIt_ShouldReachTheCallerUnchanged(Exception failure)
     {
         // Given
-        SpecModel model = new SpecModelFixture();
+        SpechtModel model = new SpechtModelFixture();
         var rule = new FaultIsolatedRule(new Rule("SPEC030", () => throw failure));
 
         // When
@@ -55,7 +55,7 @@ public sealed class FaultIsolatedRuleUnitTests
     public void ARuleThatThrows_WhenEvaluated_ShouldReplaceAllItsOutputWithOneSafeError(int yielded, bool immediate)
     {
         // Given
-        SpecModel model = new SpecModelFixture();
+        SpechtModel model = new SpechtModelFixture();
         var calls = 0;
         var secret = Path.GetFullPath("sensitive-input");
         var rule = new FaultIsolatedRule(new Rule("SPEC030", () =>
@@ -70,18 +70,18 @@ public sealed class FaultIsolatedRuleUnitTests
         // Then
         var failure = actual.Should().ContainSingle().Which;
         failure.RuleId.Should().Be("SPEC030");
-        failure.Severity.Should().Be(SpecSeverity.Error);
-        failure.File.Should().Be(SpecTree.ManifestPath);
+        failure.Severity.Should().Be(SpechtSeverity.Error);
+        failure.File.Should().Be(SpechtTree.ManifestPath);
         failure.Line.Should().Be(0);
         failure.Identifier.Should().BeNull();
         failure.Message.Should().Contain("SPEC030").And.Contain(nameof(FormatException)).And.NotContain(secret);
         calls.Should().Be(1);
 
-        IEnumerable<SpecViolation> Findings()
+        IEnumerable<SpechtViolation> Findings()
         {
             for (var index = 0; index < yielded; index++)
             {
-                yield return new SpecViolationFixture().WithRuleId("SPEC030").WithMessage($"partial {index}");
+                yield return new SpechtViolationFixture().WithRuleId("SPEC030").WithMessage($"partial {index}");
             }
 
             throw new FormatException(secret);
@@ -92,9 +92,9 @@ public sealed class FaultIsolatedRuleUnitTests
     public void AHealthyRule_WhenDecorated_ShouldKeepItsIdentityDefaultLevelAndFindings()
     {
         // Given
-        SpecModel model = new SpecModelFixture();
-        SpecViolation finding = new SpecViolationFixture().WithRuleId("SPEC030");
-        var inner = new Rule("SPEC030", () => [finding], SpecRuleLevel.Off);
+        SpechtModel model = new SpechtModelFixture();
+        SpechtViolation finding = new SpechtViolationFixture().WithRuleId("SPEC030");
+        var inner = new Rule("SPEC030", () => [finding], SpechtRuleLevel.Off);
         var rule = new FaultIsolatedRule(inner);
 
         // When
@@ -103,7 +103,7 @@ public sealed class FaultIsolatedRuleUnitTests
         // Then
         rule.Id.Should().Be(inner.Id);
         rule.ReportedIds.Should().Equal(inner.ReportedIds);
-        rule.DefaultLevel.Should().Be(SpecRuleLevel.Off);
+        rule.DefaultLevel.Should().Be(SpechtRuleLevel.Off);
         actual.Should().Equal(finding);
     }
 
@@ -112,7 +112,7 @@ public sealed class FaultIsolatedRuleUnitTests
     public void AFaultBesideHealthyRules_WhenTheModelIsEvaluated_ShouldContinueAndKeepTheFaultAtError(string level)
     {
         // Given
-        SpecModel model = new SpecModelFixture().WithManifest(JsonNode.Parse(
+        SpechtModel model = new SpechtModelFixture().WithManifest(JsonNode.Parse(
             $$"""{ "rules": { "SPEC030": "{{level}}" } }""")!.AsObject());
         var calls = 0;
         var fault = new FaultIsolatedRule(new Rule("SPEC030", () =>
@@ -120,8 +120,8 @@ public sealed class FaultIsolatedRuleUnitTests
             calls++;
             throw new InvalidOperationException("sensitive detail");
         }));
-        SpecViolation before = new SpecViolationFixture().WithRuleId("SPEC020");
-        SpecViolation after = new SpecViolationFixture().WithRuleId("SPEC040");
+        SpechtViolation before = new SpechtViolationFixture().WithRuleId("SPEC020");
+        SpechtViolation after = new SpechtViolationFixture().WithRuleId("SPEC040");
 
         // When
         var report = SpechtRunner.Evaluate(model,
@@ -130,10 +130,10 @@ public sealed class FaultIsolatedRuleUnitTests
         // Then
         report.Violations.Should().Contain(before).And.Contain(after);
         report.Violations.Should().ContainSingle(static violation => violation.RuleId == "SPEC030")
-            .Which.Severity.Should().Be(SpecSeverity.Error);
+            .Which.Severity.Should().Be(SpechtSeverity.Error);
         report.ErrorCount.Should().Be(3);
         calls.Should().Be(1);
-        using var json = JsonDocument.Parse(SpecReportDocument.From(report).ToJson());
+        using var json = JsonDocument.Parse(SpechtReportDocument.From(report).ToJson());
         var serialized = json.RootElement.GetProperty("violations").EnumerateArray()
             .Single(static violation => violation.GetProperty("ruleId").GetString() == "SPEC030");
         serialized.EnumerateObject().Select(static property => property.Name).Should()
@@ -144,7 +144,7 @@ public sealed class FaultIsolatedRuleUnitTests
     public void ADisabledRule_WhenTheModelIsEvaluated_ShouldNeverRunOrReportAFault()
     {
         // Given
-        SpecModel model = new SpecModelFixture().WithManifest(JsonNode.Parse(
+        SpechtModel model = new SpechtModelFixture().WithManifest(JsonNode.Parse(
             """{ "rules": { "SPEC030": "off", "SPEC031": "off" } }""")!.AsObject());
         var calls = 0;
         var fault = new FaultIsolatedRule(new Rule("SPEC030", () =>
@@ -162,11 +162,11 @@ public sealed class FaultIsolatedRuleUnitTests
         report.RulesEvaluated.Should().Be(0);
     }
 
-    private sealed class Rule(string id, Func<IEnumerable<SpecViolation>> evaluate, SpecRuleLevel level = SpecRuleLevel.Error) : ISpecRule
+    private sealed class Rule(string id, Func<IEnumerable<SpechtViolation>> evaluate, SpechtRuleLevel level = SpechtRuleLevel.Error) : ISpechtRule
     {
         public string Id => id;
         public IReadOnlyList<string> ReportedIds => id == "SPEC030" ? [id, "SPEC031"] : [id];
-        public SpecRuleLevel DefaultLevel => level;
-        public IEnumerable<SpecViolation> Evaluate(SpecModel model) => evaluate();
+        public SpechtRuleLevel DefaultLevel => level;
+        public IEnumerable<SpechtViolation> Evaluate(SpechtModel model) => evaluate();
     }
 }

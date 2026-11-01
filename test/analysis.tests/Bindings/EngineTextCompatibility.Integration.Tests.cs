@@ -44,7 +44,7 @@ public sealed class EngineTextCompatibilityIntegrationTests
 
         // When
         var frontmatter = new FrontmatterReader(fileSystem).Read(path);
-        var document = SpecDocument.Parse(File.ReadAllText(path), "src/sample/.spec/README.md");
+        var document = SpechtDocument.Parse(File.ReadAllText(path), "src/sample/.spec/README.md");
         var projected = new BindingFeatureReader().Read(text, "src/sample/.spec/README.md", new BindingPolicyFixture());
 
         // Then
@@ -109,14 +109,14 @@ public sealed class EngineTextCompatibilityIntegrationTests
         using var directory = new BindingTextDirectory();
         var path = Path.Combine(directory.FullName, "README.md");
         File.WriteAllText(path, text);
-        var structure = new SpecStructure([], new Dictionary<string, IReadOnlyList<string>>(), policy.Identifiers, new SemanticVersion(0, 5, 0))
+        var structure = new SpechtStructure([], new Dictionary<string, IReadOnlyList<string>>(), policy.Identifiers, new SemanticVersion(0, 5, 0))
         {
             Roles = new Dictionary<string, string> { ["claims"] = "Promises" },
         };
 
         // When
-        var document = SpecDocument.Parse(File.ReadAllText(path), "src/sample/.spec/README.md");
-        var engineClaims = new SpecClaims(document, structure, new Regex("^B-[0-9]{3}$"));
+        var document = SpechtDocument.Parse(File.ReadAllText(path), "src/sample/.spec/README.md");
+        var engineClaims = new SpechtClaims(document, structure, new Regex("^B-[0-9]{3}$"));
         var projected = new BindingFeatureReader().Read(text, "src/sample/.spec/README.md", policy);
 
         // Then
@@ -157,7 +157,7 @@ public sealed class EngineTextCompatibilityIntegrationTests
         using var directory = new BindingTextDirectory();
         var path = Path.Combine(directory.FullName, "README.md");
         File.WriteAllText(path, text);
-        var engineDocument = SpecDocument.Parse(File.ReadAllText(path), "src/sample/.spec/README.md");
+        var engineDocument = SpechtDocument.Parse(File.ReadAllText(path), "src/sample/.spec/README.md");
 
         // When
         var projected = new BindingFeatureReader().Read(text, "src/sample/.spec/README.md", policy);

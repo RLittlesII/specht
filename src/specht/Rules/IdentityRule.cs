@@ -16,7 +16,7 @@ namespace Specht.Rules;
 /// exists to end.
 /// </remarks>
 /// <implements epic="0001" feature="F1" claim="B-001" />
-public sealed class IdentityRule : ISpecRule
+public sealed class IdentityRule : ISpechtRule
 {
     /// <inheritdoc />
     public string Id => "SPEC011";
@@ -26,7 +26,7 @@ public sealed class IdentityRule : ISpecRule
 
     /// <inheritdoc />
     /// <implements epic="0001" feature="F1" claim="B-001" />
-    public IEnumerable<SpecViolation> Evaluate(SpecModel model)
+    public IEnumerable<SpechtViolation> Evaluate(SpechtModel model)
     {
         foreach (var feature in model.Features)
         {
@@ -45,9 +45,9 @@ public sealed class IdentityRule : ISpecRule
                 && segments[epicSegment] is var epicDirectory
                 && !epicDirectory.StartsWith(feature.Epic + "-", StringComparison.Ordinal))
             {
-                yield return new SpecViolation(
+                yield return new SpechtViolation(
                     "SPEC011",
-                    SpecSeverity.Error,
+                    SpechtSeverity.Error,
                     feature.RelativePath,
                     feature.Document.Frontmatter.LineOf("epic"),
                     feature.Identity,
@@ -65,9 +65,9 @@ public sealed class IdentityRule : ISpecRule
                 && segments[featureSegment] is var featureDirectory
                 && !featureDirectory.StartsWith(feature.Id + "-", StringComparison.Ordinal))
             {
-                yield return new SpecViolation(
+                yield return new SpechtViolation(
                     "SPEC011",
-                    SpecSeverity.Error,
+                    SpechtSeverity.Error,
                     feature.RelativePath,
                     feature.Document.Frontmatter.LineOf("id"),
                     feature.Identity,
@@ -92,9 +92,9 @@ public sealed class IdentityRule : ISpecRule
 
             foreach (var feature in group)
             {
-                yield return new SpecViolation(
+                yield return new SpechtViolation(
                     "SPEC012",
-                    SpecSeverity.Error,
+                    SpechtSeverity.Error,
                     feature.RelativePath,
                     feature.Document.Frontmatter.LineOf("id"),
                     group.Key,

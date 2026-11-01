@@ -24,11 +24,11 @@ public sealed class ClaimRuleUnitTests
             ["roles"] = new JsonObject { ["claims"] = "3. Claims" },
         };
         FeatureSpec feature = new FeatureSpecFixture().WithDocument(
-            SpecDocument.Parse(
+            SpechtDocument.Parse(
                 "## 3. Acceptance Criteria\n\n| ID | Claim |\n| -- | ----- |\n| OLD-1 | Under the title no role names. |\n\n"
                     + "## 3. Claims\n\n| ID | Claim |\n| -- | ----- |\n| B-1 | Under the claims role's section. |\n",
                 "src/sample/.spec/README.md"));
-        SpecModel model = new SpecModelFixture().WithManifest(manifest).WithFeatures(feature);
+        SpechtModel model = new SpechtModelFixture().WithManifest(manifest).WithFeatures(feature);
 
         // When
         var violations = new ClaimRule().Evaluate(model).ToList();
@@ -47,12 +47,12 @@ public sealed class ClaimRuleUnitTests
             ["roles"] = new JsonObject { ["matrix"] = "9. Coverage" },
         };
         FeatureSpec feature = new FeatureSpecFixture().WithDocument(
-            SpecDocument.Parse(
+            SpechtDocument.Parse(
                 "## 3. Acceptance Criteria\n\n| ID | Claim |\n| -- | ----- |\n| B-001 | It does the thing. |\n| B-002 | It does another. |\n\n"
                     + "## 9. Traceability Matrix\n\n| Claim ID | Test |\n| -------- | ---- |\n| B-001 | A test |\n| B-002 | A test |\n\n"
                     + "## 9. Coverage\n\n| Claim ID | Test |\n| -------- | ---- |\n| B-001 | A test |\n",
                 "src/sample/.spec/README.md"));
-        SpecModel model = new SpecModelFixture().WithManifest(manifest).WithFeatures(feature);
+        SpechtModel model = new SpechtModelFixture().WithManifest(manifest).WithFeatures(feature);
 
         // When
         var violations = new ClaimRule().Evaluate(model).ToList();

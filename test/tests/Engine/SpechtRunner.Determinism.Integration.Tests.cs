@@ -24,8 +24,8 @@ public sealed class SpechtRunnerDeterminismIntegrationTests
     public void TheBaselineTree_WhenCheckedAtANestedRootUnderAnotherCultureWithAnExtraEnvironmentVariable_ShouldGiveTheGoldenReport()
     {
         // Given
-        using var tree = new SpecTree();
-        using var moved = new SpecTree(["moved", "elsewhere"]);
+        using var tree = new SpechtTree();
+        using var moved = new SpechtTree(["moved", "elsewhere"]);
         BaselineTree.Write(tree);
         BaselineTree.Write(moved);
         var golden = GoldenReport.Read();
@@ -60,11 +60,11 @@ public sealed class SpechtRunnerDeterminismIntegrationTests
     public void AViolationUnderADeeplyNestedRoot_WhenChecked_ShouldCarryItsFileRelativeToTheRootWithForwardSlashes()
     {
         // Given
-        using var tree = new SpecTree(["a", "deeply", "nested", "folder", "on", "this", "machine"]);
+        using var tree = new SpechtTree(["a", "deeply", "nested", "folder", "on", "this", "machine"]);
         tree.WriteFeature(
             "0001",
             "F1",
-            sections: SpecTree.SectionsWith(
+            sections: SpechtTree.SectionsWith(
                 "3. Acceptance Criteria",
                 "## 3. Acceptance Criteria\n\n| ID | Claim | Source | Status |\n| -- | ----- | ------ | ------ |\n"
                     + "| B-001 | It does the thing. | brd | Active |\n| B-002 | It does another. | brd | Active |\n"));

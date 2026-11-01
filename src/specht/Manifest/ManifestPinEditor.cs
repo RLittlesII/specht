@@ -9,7 +9,7 @@ namespace Specht.Manifest;
 /// <param name="parser">The existing manifest parser.</param>
 /// <param name="versions">The shipped catalog used for validation and repair.</param>
 /// <implements epic="0001" feature="F7" claim="B-043" />
-public sealed class ManifestPinEditor(SpecManifestParser parser, SchemaVersions versions)
+public sealed class ManifestPinEditor(SpechtManifestParser parser, SchemaVersions versions)
 {
     /// <summary>Decodes the BOM encodings accepted by the existing manifest reader, or UTF-8 without a BOM.</summary>
     /// <implements epic="0001" feature="F7" claim="B-043" />
@@ -76,7 +76,7 @@ public sealed class ManifestPinEditor(SpecManifestParser parser, SchemaVersions 
                 return [.. bytes.AsSpan(0, end), .. addition, .. bytes.AsSpan(end)];
             }
         }
-        throw new SpechtManifestException($"{SpecManifestStore.RelativePath}: expected a manifest object.");
+        throw new SpechtManifestException($"{SpechtManifestStore.RelativePath}: expected a manifest object.");
     }
 
     /// <implements epic="0001" feature="F7" claim="B-043" />

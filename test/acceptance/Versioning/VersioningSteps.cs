@@ -109,7 +109,7 @@ public sealed partial class VersioningSteps
             pair.Value.Should().Be($"https://github.com/rlittlesii/specht/schema/v{_embedded!.Number}/frontmatter/{pair.Key}"));
 
     [Given("a repository root holding a manifest and the three frontmatter schemas")]
-    public void GivenARepositoryRootHoldingAManifestAndTheThreeFrontmatterSchemas() => _tree = new SpecTree();
+    public void GivenARepositoryRootHoldingAManifestAndTheThreeFrontmatterSchemas() => _tree = new SpechtTree();
 
     [Given(@"^the tool ships schema versions (.+) and (\S+)$")]
     public void GivenTheToolShipsSchemaVersions(string earlier, string last)
@@ -122,7 +122,7 @@ public sealed partial class VersioningSteps
 
     [Given("a root directory with no manifest")]
     [Given("the manifest has been removed from the root")]
-    public void GivenARootDirectoryWithNoManifest() => File.Delete(Path.Combine(Tree.Root, SpecTree.ManifestPath));
+    public void GivenARootDirectoryWithNoManifest() => File.Delete(Path.Combine(Tree.Root, SpechtTree.ManifestPath));
 
     [When("init runs against it")]
     public async Task WhenInitRunsAgainstIt()
@@ -134,13 +134,13 @@ public sealed partial class VersioningSteps
             shippingCopy,
             new FileSystem(),
             EngineServices.Parser(),
-            new SpecManifestStore(new FileSystem())).Write(Tree.Root, schemas: false, templates: false, CancellationToken.None);
+            new SpechtManifestStore(new FileSystem())).Write(Tree.Root, schemas: false, templates: false, CancellationToken.None);
     }
 
     [Then("the written manifest pins version {word}")]
     public void ThenTheWrittenManifestPinsVersion(string version)
     {
-        var manifest = JsonNode.Parse(File.ReadAllText(Path.Combine(Tree.Root, SpecTree.ManifestPath)))!.AsObject();
+        var manifest = JsonNode.Parse(File.ReadAllText(Path.Combine(Tree.Root, SpechtTree.ManifestPath)))!.AsObject();
         manifest["schemaVersion"]!.GetValue<string>().Should().Be(version);
     }
 
@@ -182,7 +182,7 @@ public sealed partial class VersioningSteps
     [Given("the root holds a specification that breaks only that rule")]
     public void GivenTheRootHoldsASpecificationThatBreaksOnlyThatRule()
     {
-        Tree.WriteFeature("0001", "F1", sections: SpecTree.SectionsWith("3. Acceptance Criteria", TwoClaims));
+        Tree.WriteFeature("0001", "F1", sections: SpechtTree.SectionsWith("3. Acceptance Criteria", TwoClaims));
         Tree.Run().Violations.Should().NotBeEmpty().And.OnlyContain(static violation => violation.RuleId == MissingRule);
     }
 
@@ -235,7 +235,7 @@ public sealed partial class VersioningSteps
 
     [Given("the manifest declares the epic grammar")]
     public void GivenTheManifestDeclaresTheEpicGrammar() =>
-        (JsonNode.Parse(File.ReadAllText(Path.Combine(Tree.Root, SpecTree.ManifestPath)))!["identifiers"]?["epic"])
+        (JsonNode.Parse(File.ReadAllText(Path.Combine(Tree.Root, SpechtTree.ManifestPath)))!["identifiers"]?["epic"])
             .Should()
             .NotBeNull("the manifest declares the epic grammar");
 
@@ -259,7 +259,7 @@ public sealed partial class VersioningSteps
     [Given("the root holds the copy of that source under its schema folder")]
     public void GivenTheRootHoldsTheCopyOfThatSourceUnderItsSchemaFolder()
     {
-        var path = Path.Combine(Tree.Root, SpecTree.FeatureSchemaPath);
+        var path = Path.Combine(Tree.Root, SpechtTree.FeatureSchemaPath);
         var schema = JsonNode.Parse(File.ReadAllText(path))!.AsObject();
         schema["required"]!.AsArray().Add(UpstreamKey);
         File.WriteAllText(path, schema.ToJsonString());
@@ -275,11 +275,11 @@ public sealed partial class VersioningSteps
     }
 
     [Given("the root's schema folder does not hold the item schema")]
-    public void GivenTheRootsSchemaFolderDoesNotHoldTheItemSchema() => File.Delete(Path.Combine(Tree.Root, SpecTree.ItemSchemaPath));
+    public void GivenTheRootsSchemaFolderDoesNotHoldTheItemSchema() => File.Delete(Path.Combine(Tree.Root, SpechtTree.ItemSchemaPath));
 
     [Given("the root's copy of the item schema has been edited since it was fetched")]
     public void GivenTheRootsCopyOfTheItemSchemaHasBeenEditedSinceItWasFetched() =>
-        File.AppendAllText(Path.Combine(Tree.Root, SpecTree.ItemSchemaPath), "\n");
+        File.AppendAllText(Path.Combine(Tree.Root, SpechtTree.ItemSchemaPath), "\n");
 
     [Given("the network is unavailable")]
     public void GivenTheNetworkIsUnavailable()
@@ -341,7 +341,7 @@ public sealed partial class VersioningSteps
     }
 
     [Then("the standard error names the item schema's file")]
-    public void ThenTheStandardErrorNamesTheItemSchemasFile() => _stderr.Should().Contain(SpecTree.ItemSchemaPath);
+    public void ThenTheStandardErrorNamesTheItemSchemasFile() => _stderr.Should().Contain(SpechtTree.ItemSchemaPath);
 
     [Then("the standard error names the command that fetches it")]
     public void ThenTheStandardErrorNamesTheCommandThatFetchesIt() => _stderr.Should().Contain("specht init");
@@ -402,7 +402,7 @@ public sealed partial class VersioningSteps
     [AfterScenario]
     public void DeleteTree() => _tree?.Dispose();
 
-    private SpecTree Tree => _tree ?? throw new InvalidOperationException("No repository root was prepared.");
+    private SpechtTree Tree => _tree ?? throw new InvalidOperationException("No repository root was prepared.");
 
     private Dictionary<SemanticVersion, SchemaVersion> Shipped =>
         _shipped ?? throw new InvalidOperationException("No version set was built.");
@@ -415,7 +415,7 @@ public sealed partial class VersioningSteps
         {
             if (_report is not null)
             {
-                return JsonNode.Parse(SpecReportDocument.From(_report).ToJson())!.AsObject();
+                return JsonNode.Parse(SpechtReportDocument.From(_report).ToJson())!.AsObject();
             }
 
             _stdout.Should().NotBeEmpty("the check wrote its document: {0}", _stderr);
@@ -434,7 +434,7 @@ public sealed partial class VersioningSteps
 
     private void WriteSchemaVersion(JsonNode? value)
     {
-        var path = Path.Combine(Tree.Root, SpecTree.ManifestPath);
+        var path = Path.Combine(Tree.Root, SpechtTree.ManifestPath);
         var manifest = JsonNode.Parse(File.ReadAllText(path))!.AsObject();
         manifest.Remove("schemaVersion");
         if (value is not null)
@@ -460,7 +460,7 @@ public sealed partial class VersioningSteps
 
     private void EditManifest(Action<JsonObject> edit)
     {
-        var path = Path.Combine(Tree.Root, SpecTree.ManifestPath);
+        var path = Path.Combine(Tree.Root, SpechtTree.ManifestPath);
         var manifest = JsonNode.Parse(File.ReadAllText(path))!.AsObject();
         edit(manifest);
         File.WriteAllText(path, manifest.ToJsonString());
@@ -498,16 +498,16 @@ public sealed partial class VersioningSteps
 
     private static readonly Dictionary<string, string> SchemaPaths = new(StringComparer.Ordinal)
     {
-        ["feature"] = SpecTree.FeatureSchemaPath,
-        ["task"] = SpecTree.ItemSchemaPath,
-        ["epic"] = SpecTree.EpicSchemaPath,
+        ["feature"] = SpechtTree.FeatureSchemaPath,
+        ["task"] = SpechtTree.ItemSchemaPath,
+        ["epic"] = SpechtTree.EpicSchemaPath,
     };
 
     private Dictionary<string, string> _environment = new(StringComparer.Ordinal);
     private SchemaVersion? _embedded;
     private IReadOnlyList<string> _folders = [];
     private IReadOnlyDictionary<string, string> _addresses = new Dictionary<string, string>();
-    private SpecTree? _tree;
+    private SpechtTree? _tree;
     private Dictionary<SemanticVersion, SchemaVersion>? _shipped;
     private SpechtReport? _report;
     private string _stdout = string.Empty;

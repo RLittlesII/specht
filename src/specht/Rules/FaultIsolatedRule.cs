@@ -5,10 +5,10 @@ namespace Specht.Rules;
 
 /// <summary>Isolates evaluation of one registered rule (ADR-0005 (c)).</summary>
 /// <implements epic="0001" feature="F1" claim="B-012" />
-public sealed class FaultIsolatedRule(ISpecRule inner) : ISpecRule
+public sealed class FaultIsolatedRule(ISpechtRule inner) : ISpechtRule
 {
     /// <summary>Gets the wrapped rule, including its specialized entry points.</summary>
-    public ISpecRule Inner { get; } = inner;
+    public ISpechtRule Inner { get; } = inner;
 
     /// <inheritdoc />
     public string Id => Inner.Id;
@@ -17,12 +17,12 @@ public sealed class FaultIsolatedRule(ISpecRule inner) : ISpecRule
     public IReadOnlyList<string> ReportedIds => Inner.ReportedIds;
 
     /// <inheritdoc />
-    public SpecRuleLevel DefaultLevel => Inner.DefaultLevel;
+    public SpechtRuleLevel DefaultLevel => Inner.DefaultLevel;
 
     /// <inheritdoc />
     /// <implements epic="0001" feature="F1" claim="B-012" />
     /// <implements epic="0001" feature="F1" claim="B-017" />
-    public IEnumerable<SpecViolation> Evaluate(SpecModel model)
+    public IEnumerable<SpechtViolation> Evaluate(SpechtModel model)
     {
         try
         {
@@ -33,7 +33,7 @@ public sealed class FaultIsolatedRule(ISpecRule inner) : ISpecRule
         {
             return
             [
-                new SpecViolation(Id, SpecSeverity.Error, SpecManifestStore.RelativePath, 0, null,
+                new SpechtViolation(Id, SpechtSeverity.Error, SpechtManifestStore.RelativePath, 0, null,
                     $"Rule {Id} failed with {exception.GetType().Name}.") { RuleFailure = exception },
             ];
         }

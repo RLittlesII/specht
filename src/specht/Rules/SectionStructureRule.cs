@@ -10,7 +10,7 @@ namespace Specht.Rules;
 /// headers the contract names.
 /// </summary>
 /// <implements epic="0001" feature="F1" claim="B-001" />
-public sealed class SectionStructureRule : ISpecRule
+public sealed class SectionStructureRule : ISpechtRule
 {
     /// <inheritdoc />
     public string Id => "SPEC010";
@@ -20,7 +20,7 @@ public sealed class SectionStructureRule : ISpecRule
 
     /// <inheritdoc />
     /// <implements epic="0001" feature="F1" claim="B-001" />
-    public IEnumerable<SpecViolation> Evaluate(SpecModel model)
+    public IEnumerable<SpechtViolation> Evaluate(SpechtModel model)
     {
         var expected = model.Schemas.Structure.Sections;
 
@@ -34,20 +34,20 @@ public sealed class SectionStructureRule : ISpecRule
 
                 if (count == 0)
                 {
-                    yield return new SpecViolation(
+                    yield return new SpechtViolation(
                         "SPEC010",
-                        SpecSeverity.Error,
+                        SpechtSeverity.Error,
                         feature.RelativePath,
                         0,
                         title,
-                        $"missing section '## {title}' - the contracted sections are in {SpecManifestStore.RelativePath}")
+                        $"missing section '## {title}' - the contracted sections are in {SpechtManifestStore.RelativePath}")
                     { Expected = Sections(expected) };
                 }
                 else if (count > 1)
                 {
-                    yield return new SpecViolation(
+                    yield return new SpechtViolation(
                         "SPEC010",
-                        SpecSeverity.Error,
+                        SpechtSeverity.Error,
                         feature.RelativePath,
                         0,
                         title,
@@ -65,9 +65,9 @@ public sealed class SectionStructureRule : ISpecRule
                 {
                     var section = feature.Document.Section(ordered[index]);
 
-                    yield return new SpecViolation(
+                    yield return new SpechtViolation(
                         "SPEC010",
-                        SpecSeverity.Error,
+                        SpechtSeverity.Error,
                         feature.RelativePath,
                         section?.Line ?? 0,
                         ordered[index],
@@ -86,7 +86,7 @@ public sealed class SectionStructureRule : ISpecRule
     }
 
     /// <implements epic="0001" feature="F1" claim="B-001" />
-    private static IEnumerable<SpecViolation> CheckTables(SpecModel model, FeatureSpec feature)
+    private static IEnumerable<SpechtViolation> CheckTables(SpechtModel model, FeatureSpec feature)
     {
         foreach (var (role, headers) in model.Schemas.Structure.Tables)
         {
@@ -105,9 +105,9 @@ public sealed class SectionStructureRule : ISpecRule
 
             if (section.Headers.Count == 0)
             {
-                yield return new SpecViolation(
+                yield return new SpechtViolation(
                     "SPEC013",
-                    SpecSeverity.Error,
+                    SpechtSeverity.Error,
                     feature.RelativePath,
                     section.Line,
                     title,
@@ -119,9 +119,9 @@ public sealed class SectionStructureRule : ISpecRule
 
             if (!section.Headers.SequenceEqual(headers, StringComparer.Ordinal))
             {
-                yield return new SpecViolation(
+                yield return new SpechtViolation(
                     "SPEC013",
-                    SpecSeverity.Error,
+                    SpechtSeverity.Error,
                     feature.RelativePath,
                     section.Line,
                     title,

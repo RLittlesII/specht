@@ -1,0 +1,139 @@
+using System.IO.Abstractions;
+using System.Text.RegularExpressions;
+
+namespace Specht.Discovery;
+
+/// <summary>
+/// Finds the repository's specifications, items, epics and companion files where the manifest says they are
+/// (<c>0001-F6</c> B-001, B-002, B-003, B-012).
+/// </summary>
+/// <param name="fileSystem">The file system the tree is read through.</param>
+/// <implements epic="0001" feature="F6" claim="B-001" />
+public sealed class SpechtDiscovery(IFileSystem fileSystem)
+{
+    /// <summary>
+    /// Discovers every specification under <paramref name="root"/> in the layouts <paramref name="inputs"/> declares,
+    /// skipping what it excludes (<c>0001-F6</c> B-001, B-002, C-6, C-7).
+    /// </summary>
+    /// <param name="root">The repository root.</param>
+    /// <param name="inputs">The manifest's discovery inputs.</param>
+    /// <returns>Each specification, carrying the layout it was found in.</returns>
+    /// <implements epic="0001" feature="F6" claim="B-001" />
+    public IReadOnlyList<SpechtLocation> FindSpecifications(string root, SpechtDiscoveryInputs inputs)
+    {
+        var files = Files(root);
+
+        return inputs.Layouts
+            .SelectMany(layout => Matching(files, [layout.Glob], inputs.Exclusions)
+                .Select(file => new SpechtLocation(file.Path, file.Relative, layout, fileSystem.Path.GetDirectoryName(file.Path)!)))
+            .ToList();
+    }
+
+    /// <summary>
+    /// Discovers the item files beside each specification: every file whose name matches one of the manifest's task file
+    /// shapes, <c>{task}</c> standing for <paramref name="taskGrammar"/> (<c>0001-F6</c> B-003, B-012).
+    /// </summary>
+    /// <param name="specifications">The discovered specifications.</param>
+    /// <param name="inputs">The manifest's discovery inputs.</param>
+    /// <param name="taskGrammar">The manifest's <c>identifiers.task</c> grammar.</param>
+    /// <returns>The path of each item file.</returns>
+    /// <implements epic="0001" feature="F6" claim="B-001" />
+    public IReadOnlyList<string> FindChildItems(
+        IEnumerable<SpechtLocation> specifications,
+        SpechtDiscoveryInputs inputs,
+        string taskGrammar)
+    {
+        var task = $"(?:{taskGrammar.TrimStart('^').TrimEnd('$')})";
+        var shapes = inputs.TaskFiles
+            .Select(shape => new Regex(Pattern(shape).Replace(@"\{task}", task, StringComparison.Ordinal)))
+            .ToList();
+
+        return specifications.SelectMany(specification => Beside(specification, shapes)).ToList();
+    }
+
+    /// <summary>
+    /// Discovers every epic file under <paramref name="root"/>: each file one of the manifest's epic globs matches and
+    /// its exclusions do not skip (<c>0001-F6</c> B-002, B-003, B-012).
+    /// </summary>
+    /// <param name="root">The repository root.</param>
+    /// <param name="inputs">The manifest's discovery inputs.</param>
+    /// <returns>The path of each epic file.</returns>
+    /// <implements epic="0001" feature="F6" claim="B-001" />
+    public IReadOnlyList<string> FindEpics(string root, SpechtDiscoveryInputs inputs) =>
+        Matching(Files(root), inputs.EpicFiles, inputs.Exclusions).Select(static file => file.Path).ToList();
+
+    /// <summary>
+    /// Discovers the companion files beside <paramref name="specification"/>: every file whose name matches one of the
+    /// manifest's companion globs (<c>0001-F6</c> B-003, B-012).
+    /// </summary>
+    /// <param name="specification">The specification.</param>
+    /// <param name="inputs">The manifest's discovery inputs.</param>
+    /// <returns>The path of each companion file.</returns>
+    /// <implements epic="0001" feature="F6" claim="B-001" />
+    public IReadOnlyList<string> FindCompanions(SpechtLocation specification, SpechtDiscoveryInputs inputs) =>
+        Beside(specification, inputs.CompanionFiles.Select(static glob => new Regex(Pattern(glob))).ToList()).ToList();
+
+    /// <summary>Reads each declared test file once, in root-relative ordinal order, outside the manifest's exclusions.</summary>
+    /// <param name="root">The repository root.</param>
+    /// <param name="globs">The test file globs.</param>
+    /// <param name="exclusions">The selected manifest's directory exclusions.</param>
+    /// <returns>The selected files with root-relative paths and text.</returns>
+    /// <implements epic="0001" feature="F6" claim="B-001" />
+    public IReadOnlyList<SpechtTestFile> ReadTestFiles(
+        string root, IReadOnlyList<string> globs, IReadOnlyList<string> exclusions) =>
+        globs.Count == 0
+            ? []
+            : Matching(Files(root), globs, exclusions)
+                .Select(file => new SpechtTestFile(file.Relative, fileSystem.File.ReadAllText(file.Path)))
+                .ToArray();
+
+    /// <implements epic="0001" feature="F6" claim="B-001" />
+    private static IEnumerable<(string Path, string Relative)> Matching(
+        List<(string Path, string Relative)> files,
+        IReadOnlyList<string> globs,
+        IReadOnlyList<string> exclusions)
+    {
+        var expressions = globs.Select(static glob => new Regex(Pattern(glob))).ToList();
+
+        return files
+            .Where(file => expressions.Any(expression => expression.IsMatch(file.Relative)) && !IsExcluded(file.Relative, exclusions))
+            .OrderBy(static file => file.Relative, StringComparer.Ordinal);
+    }
+
+    /// <implements epic="0001" feature="F6" claim="B-001" />
+    private static string Pattern(string glob)
+    {
+        var segments = glob.Split('/').Select(static segment =>
+            segment == "**" ? "(?:[^/]+/)*" : Regex.Escape(segment).Replace(@"\*", "[^/]*", StringComparison.Ordinal) + "/");
+
+        return @"\A" + string.Concat(segments).TrimEnd('/') + @"\z";
+    }
+
+    /// <implements epic="0001" feature="F6" claim="B-001" />
+    private static bool IsExcluded(string relative, IReadOnlyList<string> exclusions)
+    {
+        var directories = relative.Split('/')[..^1];
+        var anchored = $"/{string.Join('/', directories)}/";
+
+        return exclusions.Any(entry => entry.StartsWith('/')
+            ? anchored.StartsWith(entry + "/", StringComparison.Ordinal)
+            : directories.Contains(entry, StringComparer.Ordinal));
+    }
+
+    /// <implements epic="0001" feature="F6" claim="B-001" />
+    private List<(string Path, string Relative)> Files(string root)
+    {
+        var origin = fileSystem.Path.GetFullPath(root);
+        var separator = fileSystem.Path.DirectorySeparatorChar;
+
+        return fileSystem.Directory.EnumerateFiles(root, "*", SearchOption.AllDirectories)
+            .Select(path => (path, fileSystem.Path.GetRelativePath(origin, fileSystem.Path.GetFullPath(path)).Replace(separator, '/')))
+            .ToList();
+    }
+
+    /// <implements epic="0001" feature="F6" claim="B-001" />
+    private IEnumerable<string> Beside(SpechtLocation specification, List<Regex> names) =>
+        fileSystem.Directory.EnumerateFiles(specification.Directory)
+            .Where(path => names.Any(name => name.IsMatch(fileSystem.Path.GetFileName(path))))
+            .Order(StringComparer.Ordinal);
+}

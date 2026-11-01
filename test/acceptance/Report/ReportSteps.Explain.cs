@@ -8,7 +8,7 @@ namespace Specht.Acceptance.Report;
 public sealed partial class ReportSteps
 {
     [Given("the manifest is deleted from the root")]
-    public void GivenTheExplainManifestIsDeleted() => File.Delete(Path.Combine(Tree.Root, SpecTree.ManifestPath));
+    public void GivenTheExplainManifestIsDeleted() => File.Delete(Path.Combine(Tree.Root, SpechtTree.ManifestPath));
 
     [Given("the root's manifest is replaced by a file that is not well-formed JSON")]
     public void GivenTheExplainManifestDoesNotParse() => WriteExplainManifest("{");
@@ -30,7 +30,7 @@ public sealed partial class ReportSteps
     public void WhenTheToolIsAskedToExplain(string id)
     {
         _explainedId = id;
-        if (id == "SPEC031" && File.Exists(Path.Combine(Tree.Root, SpecTree.ManifestPath)))
+        if (id == "SPEC031" && File.Exists(Path.Combine(Tree.Root, SpechtTree.ManifestPath)))
         {
             // A normal check of this tree fails. Explain must still print only the page.
             Tree.WriteFeature("0001", "F1", featureFile: null);
@@ -72,13 +72,13 @@ public sealed partial class ReportSteps
     {
         get
         {
-            var manifest = JsonNode.Parse(File.ReadAllText(Path.Combine(Tree.Root, SpecTree.ManifestPath)))!.AsObject();
+            var manifest = JsonNode.Parse(File.ReadAllText(Path.Combine(Tree.Root, SpechtTree.ManifestPath)))!.AsObject();
             var pin = manifest["schemaVersion"]?.GetValue<string>() ?? "0.1.0";
             return EngineServices.Versions().Versions.Single(version => version.Number.ToString() == pin).RulePages[_explainedId];
         }
     }
 
-    private void WriteExplainManifest(string text) => File.WriteAllText(Path.Combine(Tree.Root, SpecTree.ManifestPath), text);
+    private void WriteExplainManifest(string text) => File.WriteAllText(Path.Combine(Tree.Root, SpechtTree.ManifestPath), text);
 
     private int _explainExit;
     private string _explainedId = string.Empty;

@@ -15,7 +15,7 @@ public sealed class ClaimTagParityUnitTests
         string form, bool ignoreCase, string grammar, string token, string? expected)
     {
         // Given
-        var structure = new SpecStructure(
+        var structure = new SpechtStructure(
             [],
             new Dictionary<string, IReadOnlyList<string>>(),
             new Dictionary<string, string> { ["claim"] = grammar },

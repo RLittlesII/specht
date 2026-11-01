@@ -22,10 +22,10 @@ public sealed class SchemaSourceIntegrationTests
         string pin, string? manifestSource, string? argument, string expectedSource, bool missingKey)
     {
         // Given
-        using var tree = new SpecTree();
+        using var tree = new SpechtTree();
         tree.WriteFeature("0001", "F1");
-        tree.WriteRaw(SpecTree.FeatureSchemaPath, """{ "required": ["local_key"] }""");
-        var path = Path.Combine(tree.Root, SpecTree.ManifestPath);
+        tree.WriteRaw(SpechtTree.FeatureSchemaPath, """{ "required": ["local_key"] }""");
+        var path = Path.Combine(tree.Root, SpechtTree.ManifestPath);
         var manifest = JsonNode.Parse(File.ReadAllText(path))!.AsObject();
         manifest["schemaVersion"] = pin;
         manifest["identifiers"]!.AsObject().Remove("epic");
@@ -34,7 +34,7 @@ public sealed class SchemaSourceIntegrationTests
             manifest["schemaSource"] = manifestSource;
         }
         File.WriteAllText(path, manifest.ToJsonString());
-        File.Delete(Path.Combine(tree.Root, SpecTree.EpicSchemaPath));
+        File.Delete(Path.Combine(tree.Root, SpechtTree.EpicSchemaPath));
         string[] args = argument is null ? ["--json"] : ["--json", "--schema-source", argument];
 
         var before = Directory.EnumerateFiles(tree.Root, "*", SearchOption.AllDirectories).ToDictionary(
@@ -75,7 +75,7 @@ public sealed class SchemaSourceIntegrationTests
     public void AFaultySelectedDiskSchema_WhenChecked_ShouldExitThreeWithRelativeStderrAndEmptyStdout(string kind, string? text)
     {
         // Given
-        using var tree = new SpecTree();
+        using var tree = new SpechtTree();
         var feature = tree.WriteFeature("0001", "F1");
         if (kind == "task")
         {
@@ -85,7 +85,7 @@ public sealed class SchemaSourceIntegrationTests
         {
             tree.WriteEpic("0001");
         }
-        var relative = SpecTree.FrontmatterSchemaFolder + "/" + kind + ".schema.json";
+        var relative = SpechtTree.FrontmatterSchemaFolder + "/" + kind + ".schema.json";
         if (text is null)
         {
             File.Delete(Path.Combine(tree.Root, relative));
@@ -113,8 +113,8 @@ public sealed class SchemaSourceIntegrationTests
         string? manifestSource, string argument, bool changed, string? provenance)
     {
         // Given
-        using var tree = new SpecTree();
-        var path = Path.Combine(tree.Root, SpecTree.ManifestPath);
+        using var tree = new SpechtTree();
+        var path = Path.Combine(tree.Root, SpechtTree.ManifestPath);
         var manifest = JsonNode.Parse(File.ReadAllText(path))!.AsObject();
         manifest["spechtSchema"] = new JsonObject
         {
@@ -122,7 +122,7 @@ public sealed class SchemaSourceIntegrationTests
             ["version"] = "v1",
             ["hashes"] = new JsonObject(new[] { "feature", "task", "epic" }.Select(kind =>
                 KeyValuePair.Create(kind, (JsonNode?)("sha256:" + Convert.ToHexStringLower(SHA256.HashData(
-                    File.ReadAllBytes(Path.Combine(tree.Root, SpecTree.FrontmatterSchemaFolder, kind + ".schema.json")))))))),
+                    File.ReadAllBytes(Path.Combine(tree.Root, SpechtTree.FrontmatterSchemaFolder, kind + ".schema.json")))))))),
         };
         if (manifestSource is not null)
         {
@@ -131,7 +131,7 @@ public sealed class SchemaSourceIntegrationTests
         File.WriteAllText(path, manifest.ToJsonString());
         if (changed)
         {
-            File.AppendAllText(Path.Combine(tree.Root, SpecTree.FeatureSchemaPath), "\n");
+            File.AppendAllText(Path.Combine(tree.Root, SpechtTree.FeatureSchemaPath), "\n");
         }
 
         // When

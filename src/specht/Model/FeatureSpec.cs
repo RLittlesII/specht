@@ -9,7 +9,7 @@ public sealed class FeatureSpec
 {
     /// <summary>A Feature's specification from its parts.</summary>
     /// <implements epic="0001" feature="F1" claim="B-004" />
-    public FeatureSpec(SpecLocation location, SpecDocument document, IReadOnlyList<FeatureFile> featureFiles)
+    public FeatureSpec(SpechtLocation location, SpechtDocument document, IReadOnlyList<FeatureFile> featureFiles)
     {
         Location = location;
         Document = document;
@@ -17,10 +17,10 @@ public sealed class FeatureSpec
     }
 
     /// <summary>Where it was discovered, and in which layout.</summary>
-    public SpecLocation Location { get; }
+    public SpechtLocation Location { get; }
 
     /// <summary>The parsed document.</summary>
-    public SpecDocument Document { get; }
+    public SpechtDocument Document { get; }
 
     /// <summary>The Gherkin files beside it - exactly one is expected.</summary>
     public IReadOnlyList<FeatureFile> FeatureFiles { get; }

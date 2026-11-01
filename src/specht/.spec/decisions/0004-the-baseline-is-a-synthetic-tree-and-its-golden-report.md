@@ -12,7 +12,7 @@ type: decision
 ## The call
 
 1. **B-004's input is synthetic.** The tests build the baseline tree with
-   `SpecTree` (`test/specht.tests/SpecTree.cs`). It breaks each of the
+   `SpechtTree` (`test/specht.tests/SpechtTree.cs`). It breaks each of the
    twenty-one rules, `SPEC001` to `SPEC061`, in each layout the rule applies
    to, and is never copied from a real `.spec/` tree.
 2. **The golden report is the engine's output on that tree at commit
