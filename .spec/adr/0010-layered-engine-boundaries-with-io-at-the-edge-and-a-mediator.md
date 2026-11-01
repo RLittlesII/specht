@@ -22,6 +22,10 @@ rollout waits for repository benchmark evidence, including evaluation of the
 source-generated martinothamar/Mediator candidate. Acceptance of this target
 does not authorize production migration before that gate.
 
+Mediator clauses superseded 2026-10-31 by
+[ADR-0026](0026-the-source-generated-mediator-measured-no-benefit-and-direct-calls-stay.md):
+the owner declined the source-generated mediator; hosts keep direct calls.
+
 Supersedes in part, each record's body unedited and its Status gaining one
 line pointing here:
 [ADR-0001](0001-resolve-the-engine-from-the-container.md),

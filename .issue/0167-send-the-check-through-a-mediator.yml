@@ -1,6 +1,6 @@
 id: "0167"
 type: refactor
-title: Run the check as a query a mediator dispatches, and delete the runner
+title: Run the check through one engine entry point, and delete the runner
 
 status: blocked
 
@@ -10,7 +10,7 @@ risk: 4
 parent: null
 children: []
 
-depends_on: ["0164", "0166", "0216"] # reader/evaluator prerequisites and the benchmark adoption gate
+depends_on: ["0164", "0166", "0216"] # reader/evaluator prerequisites from 0164 and 0166; 0216 is closed (ADR-0026) and stays as the record of the evaluation - the gate that still holds this item is ADR-0014's, pending the owner
 spikes: []
 
 spec: null
@@ -18,32 +18,38 @@ spec: null
 claims: []
 
 created: "2026-10-11"
-updated: "2026-10-14"
+updated: "2026-10-31"
 closed: null
 
 summary: |
-  Paused by ADR-0014: benchmark evaluation 0216 must establish that the
-  architecture benefit justifies its cost before this migration proceeds.
+  Rescoped 2026-10-31 after ADR-0026
+  (.spec/adr/0026-the-source-generated-mediator-measured-no-benefit-and-direct-calls-stay.md),
+  which records item 0216's evidence and the repository owner's ruling not
+  to adopt a mediator. Until then this item ran the check as a query a
+  mediator dispatches: `Specht.Cqrs` with `ICqrs`, `IQuery<T>`,
+  `ICommand<T>`, two handler contracts and a handwritten dispatcher, and a
+  static `Check` in cqrsz's shape nesting `Check.Query` and
+  `Check.Handler`. ADR-0026 supersedes those clauses of ADR-0010 and
+  assigns this item the engine's direct check entry point in their place.
+
+  Still paused by ADR-0014: its gate is answered for the mediator only and
+  stands for the rest of ADR-0010's rollout, pending the owner.
 
   ADR-0010 (accepted 2026-10-11,
   .spec/adr/0010-layered-engine-boundaries-with-io-at-the-edge-and-a-mediator.md),
-  stage 7 (E) of "The order of work". Its scope, from the record's § "A
-  host sends a request", § "I/O is confined", § "The guard" and § "The
-  whole-check benchmark":
+  stage 7 (E) of "The order of work", as ADR-0026 leaves it. Its scope,
+  from the record's § "The layout", § "I/O is confined", § "The guard" and
+  § "The whole-check benchmark", and ADR-0026 § "The revised migration
+  design":
 
-  The handwritten dispatcher below is the historical ADR-0010 proposal,
-  superseded by ADR-0014. Evaluate martinothamar/Mediator through 0216
-  and revise these contracts and registrations before implementation.
-
-  - `Specht.Cqrs`: `ICqrs`, `IQuery<T>`, `ICommand<T>`, the two handler
-    contracts and the dispatcher, which resolves a handler from
-    registrations `AddSpechtEngine()` writes by hand, one per message, with
-    no assembly scan and no reflection.
-  - `Specht.Check`: the static class `Check`, nesting `Check.Query` and
-    `Check.Handler` in cqrsz's shape. The handler takes `SpecModelReader`
-    and `SpecEvaluator`, reads the model and evaluates it, and does nothing
-    else. It returns the report and lets the four input-failure exceptions
-    cross (owner decision 4).
+  - `Specht.Check`: `SpecCheck`, a sealed class `AddSpechtEngine()`
+    registers by its concrete type. It takes `SpecModelReader` and
+    `SpecEvaluator`, reads the model and evaluates it, and does nothing
+    else. It returns `SpechtReport` and lets the four input-failure
+    exceptions cross (owner decision 4). It lives in the engine, so the
+    tool, the benchmarks and any later host call the same one (owner
+    decision 3). A host takes it by constructor and calls it; no interface
+    stands in front of it.
   - `Specht.Report`: `SpecReportDocumentMapper` in place of the static
     `SpecReportDocument.From` (`src/specht/Report/SpecReportDocument.cs:33`),
     `SpecReportSerializer`, and `SpecReportStore`, the fourth and last type
@@ -52,15 +58,13 @@ summary: |
     and `WriteReport` (`:69`, `:76`, `:81`).
   - The guard: a test that asserts, from the engine assembly's metadata,
     the downward order of the namespaces and where I/O is allowed.
-  - The whole-check benchmark's measured call is re-pointed at
-    `Check.Handler`.
+  - The whole-check benchmark's measured call is re-pointed at `SpecCheck`.
 
-  The host changes as little as it can here. `src/tool/Program.cs:14`
-  registers a `Func<string, SpechtReport>` over `SpechtRunner.Run`; with
-  the runner gone that one registration is re-pointed at the engine's
-  check, and `CheckCommand` is untouched. Making the command send
-  `Check.Query` through `ICqrs`, removing the function seam and the
-  factory are item 0144, stage 8.
+  The host changes as little as it can here. `src/tool/Program.cs`
+  registers a delegate over `SpechtRunner.Run`; with the runner gone that
+  one registration is re-pointed at `SpecCheck`, and `CheckCommand` is
+  untouched. Removing the delegate, with `CheckCommand` taking `SpecCheck`
+  directly, and the factory are item 0144, stage 8.
 
   It restructures code of `0001-F1`, `0001-F3` and `0001-F2`, and the
   benchmark of `0109-F3`, so it sits at the repository root with
@@ -69,34 +73,35 @@ summary: |
   The benchmark. `.performance/benchmarks/Check/CheckBenchmarks.cs` is
   pull request #118's (item 0150) and is not on this item's base at
   `eb7c161`; ADR-0010 assumes #118 has landed before stage 1. This item
-  re-points it as the record writes: `[GlobalSetup]` builds a provider
-  from `AddSpechtEngine()` and resolves `Check.Handler`, and the measured
-  method calls that handler with a `Check.Query` of the root - the
-  handler, not a send. A finding recorded before this item and one
-  recorded after it are measured through different entry points; the
-  `benchmarker` records the entry point beside each.
+  re-points it: `[GlobalSetup]` builds a provider from `AddSpechtEngine()`
+  and resolves `SpecCheck`, and the measured method calls it with the
+  root. A finding recorded before this item and one recorded after it are
+  measured through different entry points; the `benchmarker` records the
+  entry point beside each.
 
   The guard is a new test with no claim behind it. `0001-F1` B-005 and
   B-006 are the claims of the reference guard it is built on; ADR-0010
   decides the guard and writes no claim for it. Criterion 2 says what is
   owed first.
 
-  Type names and lines are ADR-0010's and the source's at `eb7c161`; once
-  item 0100 lands each carries the prefix that item gives it, and the
-  casing of the namespaces is that item's (ADR-0010 open point 3).
+  Type names and lines are ADR-0010's and the source's at `eb7c161`;
+  `SpecCheck` is this item's, since ADR-0010 names no entry point outside
+  the mediator. Once item 0100 lands each carries the prefix that item
+  gives it, and the casing of the namespaces is that item's (ADR-0010 open
+  point 3).
 
 acceptance_criteria:
   - "1. Specification first, by the owning role, in the same pull request and before the code (ADR-0010 'Specification deltas owed', stage 7). `spec-author`: `0001-F2` C-4, 'calls the runner'; `0109-F3` A-2 and § 6 row 2 as pull request #118 leaves them, which name `SpechtRunner.Run`. `implementer`: `0001-F2` § 7 on the injected runner; `0001-F3` § 7 on `SpecReportDocument.From` and `SpechtRunner.WriteReport`; `0109-F3` § 7 and § 8; `0109-F1` § 7 and § 8 where they name the runner. `test-writer`: `0109-F3` § 9 and every other § 9 row criterion 9 names."
   - "2. The guard's place in the chain, by `spec-author`, before the test is written: `0001-F1` says whether the namespace order and the confinement of I/O are a claim, with its scenario, or the test of a constraint, and the guard cites what is written. No claim is invented in this item."
-  - "3. `Specht.Cqrs` holds `ICqrs`, `IQuery<T>`, `ICommand<T>`, the two handler contracts and one dispatcher, and references no engine namespace. A handler is registered by its concrete type in `AddSpechtEngine()`, one registration per message, by hand; nothing scans an assembly, and a handler never takes the mediator."
-  - "4. `Check` is a static class that holds no member but `Check.Query` and `Check.Handler`, as ADR-0010 § 'A host sends a request' writes them. The handler reads the model and evaluates it and does nothing else; it returns `SpechtReport` and catches none of the four input-failure exceptions."
+  - "3. `Specht.Check` holds `SpecCheck`, a sealed class that `AddSpechtEngine()` registers by its concrete type. It takes `SpecModelReader` and `SpecEvaluator`; its one public method takes the root and the schema-source selection, reads the model and evaluates it, and does nothing else. It returns `SpechtReport` and catches none of the four input-failure exceptions."
+  - "4. No mediator, dispatcher, request or handler contract is added, and no interface stands in front of `SpecCheck` (ADR-0026; ADR-0005 (d)). `Specht.Check` holds no static class."
   - "5. `SpecReportDocumentMapper`, `SpecReportSerializer` and `SpecReportStore` replace `SpecReportDocument.From` and `SpechtRunner.WriteReport`. The mapper and the serializer hold no `IFileSystem`; the store parses and decides nothing. The report document's bytes for a given report are unchanged."
   - "6. `SpechtRunner` is deleted and nothing in `src/` or `.performance/` names it. `src/tool/Program.cs` composes the check without it, `CheckCommand` is unchanged, and the tool's output, its exit codes and the file `--report` writes are unchanged."
-  - "7. The guard is a test built on `test/tests/Shared/EngineAssembly.cs` with no new package. It fails when a namespace references one above it in ADR-0010 § 'The layout', when a type other than `SpecManifestStore`, `SpecDiscovery`, `SpechtTreeStore` and `SpecReportStore` references `IFileSystem`, or when a type other than `SpechtResources` reads an embedded resource. It passes on this item's tree with no exemption beyond `Specht.Cqrs` and `Specht.Composition`, which stand outside the order."
-  - "8. The whole-check benchmark measures `Check.Handler` called with a `Check.Query` of the root; building the provider and resolving the handler are outside the measured call (`0109-F2` C-9). No production type changes shape for the benchmark (`0109-F2` C-11). `.performance/benchmarks` still compiles."
+  - "7. The guard is a test built on `test/tests/Shared/EngineAssembly.cs` with no new package. It fails when a namespace references one above it in ADR-0010 § 'The layout', when a type other than `SpecManifestStore`, `SpecDiscovery`, `SpechtTreeStore` and `SpecReportStore` references `IFileSystem`, or when a type other than `SpechtResources` reads an embedded resource. It passes on this item's tree with no exemption beyond `Specht.Composition`, which stands outside the order."
+  - "8. The whole-check benchmark measures `SpecCheck` called with the root; building the provider and resolving `SpecCheck` are outside the measured call (`0109-F2` C-9). No production type changes shape for the benchmark (`0109-F2` C-11). `.performance/benchmarks` still compiles."
   - "9. Not a refactor until re-pointed. These tests are named by § 9 rows and are rewritten or deleted here: `SpechtRunnerRunUnitTests` (`0001-F5` B-018), `SpechtRunnerBaselineIntegrationTests` (`0001-F1` B-001, B-002, B-004, B-010), `SpechtRunnerIntegrationTests` (`0001-F1` B-002, B-008, B-011), `SpechtRunnerRulesIntegrationTests` (`0001-F1` B-004), `SpechtRunnerViolationsIntegrationTests` (`0001-F1` B-004, B-010; `0001-F7` B-023), `SpechtRunnerDeterminismIntegrationTests` (`0001-F1` B-006, B-007), `SpechtRunnerDeterminismUnitTests` (`0001-F1` B-006), `SpechtRunnerDiscoveryIntegrationTests` (`0001-F6` B-001, B-003, B-004, B-009), `SpechtRunnerVersionsIntegrationTests` (`0001-F7` B-001, B-002, B-014, B-055), `SpecReportDocumentUnitTests` (`0001-F6` B-009; `0001-F3` B-005, B-006, B-007; `0001-F7` B-002; `0001-F2` B-002), `SpecReportDocumentIntegrationTests` (`0001-F3` B-005, B-006, B-008, B-021) and `SpechtEngineServiceCollectionExtensionsUnitTests` (`0001-F1` B-001, B-004). `test-writer` re-points each row in the same pull request; no row names a test that no longer exists and no claim loses its proof."
   - "10. The golden report `test/tests/Engine/Baseline/engine-e7dba24.json` is unchanged, byte for byte; the test that compares it changes only in how it reaches the check, and not in what it compares. The unit, integration and acceptance tiers pass."
-  - "No .feature change needed: refactor - the check becomes a query its handler answers, the report's mapping, serialising and writing become three types, and the runner is deleted; the report, the tool's output and its exit codes are unchanged."
+  - "No .feature change needed: refactor - the check becomes one engine entry point that reads the model and evaluates it, the report's mapping, serialising and writing become three types, and the runner is deleted; the report, the tool's output and its exit codes are unchanged."
   - "Constraints preserved: 0001-F1 C-1, 0001-F1 C-3, 0001-F1 C-4, 0001-F1 C-7, 0001-F1 C-9, 0001-F1 C-10, 0001-F2 C-2, 0001-F2 C-3, 0001-F3 C-1, 0001-F3 C-3, 0001-F3 C-4, 0001-F3 C-5, 0109-F2 C-11, 0109-F3 C-2, 0109-F3 C-3, 0109-F3 C-4"
 
 decisions:
@@ -107,12 +112,41 @@ decisions:
     `ready-for-implementation`, as items 0104 to 0107 were cut on ADR-0001:
     the design is the accepted record's. `0001-F2` C-4 is not among the
     constraints preserved: it is amended first, by criterion 1.
+  - |
+    2026-10-31, spec-author: rescoped on the repository owner's request of
+    2026-10-31, "Rescope 0167 and 0144", after ADR-0026, accepted the same
+    day on the owner's ruling "(a) Don't adopt". Removed, as ADR-0026
+    § "Consequences" names them: the mediator title, the summary's
+    `Specht.Cqrs` bullet, criterion 3 (`Specht.Cqrs`), criterion 4 (the
+    cqrsz `Check` class), criterion 7's exemption for `Specht.Cqrs`, and
+    criterion 8's `Check.Handler` and `Check.Query`; with them the
+    out-of-scope rows on what a send costs and on a generated port.
+    Criteria 3 and 4 are rewritten in place, so the numbers other criteria
+    cite hold. Kept, and still gated: the report types, the runner's
+    deletion, the guard, the benchmark's re-pointing, and criteria 1, 2, 5,
+    6, 9 and 10. In place of `Check.Query` and `Check.Handler` stands the
+    engine's direct check entry point ADR-0026 assigns to this redesign:
+    `SpecCheck`, sealed, in `Specht.Check`, registered by
+    `AddSpechtEngine()` and called directly (ADR-0010 owner decisions 3
+    and 4, which ADR-0026 keeps). The name is this item's; ADR-0010 names
+    none outside the mediator. No interface fronts it: it has one
+    implementation and no substitution exists today (ADR-0005 (d),
+    `coding-conventions` § Design). Judgement, for the owner's review: it
+    takes the root and the schema-source selection, because the runner's
+    `Run` has taken the selection since `--schema-source` and ADR-0010's
+    `Check.Query` predates it; a root alone would drop the option. Also
+    judgement: the `--report` row no longer names a `SaveReport` command
+    and handler, a cqrsz shape resting on the superseded mediator; item
+    0036's own shape is that item's to revise. Status
+    stays `blocked` and every `depends_on` edge stays: 0216 is closed, but
+    ADR-0014's gate stands for the rest of ADR-0010's rollout, pending the
+    owner.
 
 out_of_scope:
-  - "`CheckCommand` sending `Check.Query` through `ICqrs`, removing the `Func<string, SpechtReport>` seam, the host factory and `ShippingCopy` - item 0144."
-  - "`--report` as a `SaveReport` command and handler - item 0036."
-  - "Where `init`'s handler lives - ADR-0010 open point 2; on its default it is the tool's, and no item owns it yet."
-  - "A handler that returns its failures as a value - ADR-0009, proposed; owner decision 4."
-  - "What a send through the dispatcher costs - `0109-F4`."
-  - "A generated port in place of the dispatcher, and Native AOT - item 0170."
+  - "`CheckCommand` taking `SpecCheck` in place of the runner delegate, removing that delegate, the host factory and `ShippingCopy` - item 0144."
+  - "`--report` written through `SpecReportStore` - item 0036."
+  - "Where `init`'s logic lives - ADR-0010 open point 2, without the dispatch through `ICqrs` ADR-0026 supersedes; on its default it is the tool's, and no item owns it yet."
+  - "An entry point that returns its failures as a value - ADR-0009, proposed; owner decision 4."
+  - "Any mediator or dispatcher, third-party or handwritten - ADR-0026."
+  - "Native AOT - item 0170."
   - "Any change to a verdict, to the report or to an exit code - `0001-F1` C-9."

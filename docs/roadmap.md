@@ -59,23 +59,24 @@ document.
 grammars in the manifest and gets rule messages that name them, and a
 maintainer who restructures the engine only on evidence.
 
-The benchmark spike `0216` runs first and decides, under ADR-0014, whether the
-engine moves to one rule per id behind a mediator. If it does, the refactors
-follow in this milestone; if it does not, the milestone closes without them and
-the manifest work stands on the engine as built. Either way discovery lists
-files through git, the report writes to a path, and the traceability matrix is
-resolved against the scenarios and tests it cites.
+The benchmark spike `0216` ran first: the engine takes no mediator
+(ADR-0026). Whether it moves to one rule per id stays gated by ADR-0014 and is
+the owner's to rule. If it does, the refactors follow in this milestone; if it
+does not, the milestone closes without them and the manifest work stands on
+the engine as built. Either way discovery lists files through git, the report
+writes to a path, and the traceability matrix is resolved against the
+scenarios and tests it cites.
 
-| Feature    | Delivers                                                                                                |
-| ---------- | ------------------------------------------------------------------------------------------------------- |
-| `0001-F5`  | Frontmatter keys, edge forms and id grammars from the manifest, named in messages                       |
-| `0001-F6`  | Discovery through `git ls-files`, with the pruned walk as fallback, proven equal                        |
-| `0001-F3`  | The report written to the `--report` path                                                               |
-| `0001-F12` | Matrix resolution: § 9 rows held against the scenarios and the declared tests                           |
-| `0001-F1`  | The engine's rules split one per id, the evaluator an instance, the runner gone - conditional on `0216` |
-| `0109-F4`  | Tool cold start, with peak memory per row                                                               |
-| `0109-F5`  | Release baseline comparison: advisory regressions between two published revisions                       |
-| `0001-F7`  | The pin policy `0124`: a pin that floats to the newest shipped patch or minor, moved here from 0.3.0    |
+| Feature    | Delivers                                                                                             |
+| ---------- | ---------------------------------------------------------------------------------------------------- |
+| `0001-F5`  | Frontmatter keys, edge forms and id grammars from the manifest, named in messages                    |
+| `0001-F6`  | Discovery through `git ls-files`, with the pruned walk as fallback, proven equal                     |
+| `0001-F3`  | The report written to the `--report` path                                                            |
+| `0001-F12` | Matrix resolution: § 9 rows held against the scenarios and the declared tests                        |
+| `0001-F1`  | The engine's rules split one per id, the evaluator an instance, the runner gone - gated by ADR-0014  |
+| `0109-F4`  | Tool cold start, with peak memory per row                                                            |
+| `0109-F5`  | Release baseline comparison: advisory regressions between two published revisions                    |
+| `0001-F7`  | The pin policy `0124`: a pin that floats to the newest shipped patch or minor, moved here from 0.3.0 |
 
 Refactors `0168`, `0207` and `0218` simplify the test composition; spikes
 `0141` (rule settings from `.editorconfig`), `0169` (four-digit rule ids) and

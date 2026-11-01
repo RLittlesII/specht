@@ -1,7 +1,7 @@
 id: "0216"
 type: spike
 title: Evaluate source-generated Mediator against direct calls
-status: ready
+status: done
 value: 4
 risk: 3
 parent: null
@@ -11,8 +11,8 @@ spikes: []
 spec: null
 claims: []
 created: "2026-10-14"
-updated: "2026-10-14"
-closed: null
+updated: "2026-10-31"
+closed: "2026-10-31"
 summary: |
   ADR-0014 records the owner's benchmark gate and names
   https://github.com/martinothamar/Mediator as the candidate. Compare
@@ -25,6 +25,31 @@ acceptance_criteria:
   - "Evaluate the named source-generated candidate, not a handwritten substitute."
   - "Record whether measured benefit justifies complexity and maintenance cost."
   - "Record the owner's evidence decision and revise the migration design before adoption."
+decisions:
+  - |
+    2026-10-31, implementer: the evidence is recorded in ADR-0026
+    (`.spec/adr/0026-the-source-generated-mediator-measured-no-benefit-and-direct-calls-stay.md`,
+    proposed), measured on trial branch `0216/trial-mediator` at
+    `66e82c43`, never merged. Recommendation, a judgement: do not adopt
+    martinothamar/Mediator; on performance the measured benefit does not
+    justify the complexity and maintenance cost, so ADR-0014's gate is not
+    met; the record also sets out adoption for structure and a re-measure.
+    The fourth acceptance criterion, the owner's evidence decision and the
+    revised migration design, waits on the owner's ruling on ADR-0026, so
+    the item is not done.
+  - |
+    2026-10-31, the repository owner (relayed): ruled on ADR-0026, "(a)
+    Don't adopt". ADR-0026 is accepted: martinothamar/Mediator is not
+    adopted and ADR-0014's gate is not met for the mediator. ADR-0026
+    supersedes ADR-0010's mediator clauses, and its "The revised migration
+    design" is the revision this item's fourth criterion asks for: hosts
+    keep direct calls through the existing composition, with no mediator,
+    dispatcher or handwritten substitute; the check entry point is item
+    0167's redesign; ADR-0010's other stages stay gated by ADR-0014,
+    pending the owner. ADR-0010 and ADR-0014 each gain one Status line.
+    The dependent items (0100, 0144, 0153, 0156 to 0164, 0166, 0167) are
+    not edited; ADR-0026 names the rescoping 0167 and 0144 need. All four
+    criteria hold, so the item is done.
 out_of_scope:
   - "Adopting a mediator or structural migration without the evidence decision."
   - "Changing schema command behavior or consumer files."

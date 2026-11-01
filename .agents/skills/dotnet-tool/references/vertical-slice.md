@@ -58,13 +58,15 @@ caller earns it a folder.
 
 **The decided direction for the engine**
 ([ADR-0010](../../../../.spec/adr/0010-layered-engine-boundaries-with-io-at-the-edge-and-a-mediator.md),
-accepted 2026-10-11). The tree above is the engine as built; the staged work
-of ADR-0010 moves it to this, and a new engine file goes where this says:
+accepted 2026-10-11; its mediator clauses superseded by
+[ADR-0026](../../../../.spec/adr/0026-the-source-generated-mediator-measured-no-benefit-and-direct-calls-stay.md),
+2026-10-31). The tree above is the engine as built; the staged work of
+ADR-0010, gated by ADR-0014, moves it to this, and a new engine file goes
+where this says:
 
 ```
 src/specht/                     no .cs at the project root
-  Check/                        `Check.Query` and `Check.Handler`; later handlers join it
-  Cqrs/                         `ICqrs`, the message and handler contracts, the dispatcher
+  Check/                        the engine's check entry point - its shape is item 0167's redesign
   Composition/                  `AddSpechtEngine()` - references every folder; nothing references it
   Report/                       the document, its mapper, its serializer, `SpecReportStore`
   Evaluation/                   `SpecEvaluator`, `SpechtReport`, the violation and its order
@@ -76,11 +78,11 @@ src/specht/                     no .cs at the project root
   Versioning/                   the schema versions
 ```
 
-A folder references only folders below it in that list, `Cqrs/` references
-none of them, and a test holds the direction. Only the four stores and the
-embedded-resource reader touch the file system or a resource. A command sends
-a request through `ICqrs` and folds the result; it calls no engine type by
-name.
+A folder references only folders below it in that list, and a test holds the
+direction. Only the four stores and the embedded-resource reader touch the
+file system or a resource. A command calls the engine directly through the
+existing composition and folds the result; no mediator or dispatcher stands
+between them.
 
 Tests are **not** co-located here: they live in `test/tests` and
 `test/acceptance`. Why, the tiers, and the folders inside `test/tests` are in
