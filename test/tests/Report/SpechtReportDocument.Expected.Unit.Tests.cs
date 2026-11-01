@@ -83,7 +83,7 @@ public sealed class SpechtReportDocumentExpectedUnitTests
             .WithFeatures(feature);
 
         // When
-        var document = SpechtReportDocument.From(SpechtRunner.Evaluate(model, [new SectionStructureRule()]));
+        var document = SpechtReportDocument.From(SpechtRunner.Evaluate(model, [new SectionContractRule()]));
 
         // Then
         document.Violations.Where(static violation => violation.RuleId == "SPEC010").Should().NotBeEmpty(because)
@@ -104,7 +104,7 @@ public sealed class SpechtReportDocumentExpectedUnitTests
         SpechtModel model = new SpechtModelFixture().WithManifest(manifest).WithFeatures(feature);
 
         // When
-        var document = SpechtReportDocument.From(SpechtRunner.Evaluate(model, [new SectionStructureRule()]));
+        var document = SpechtReportDocument.From(SpechtRunner.Evaluate(model, [new TableHeaderRule()]));
 
         // Then
         var expected = document.Violations.Should()

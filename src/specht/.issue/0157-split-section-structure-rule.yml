@@ -2,7 +2,7 @@ id: "0157"
 type: refactor
 title: Split SectionStructureRule into one rule per id
 
-status: in-progress
+status: done
 
 value: 3
 risk: 2
@@ -19,7 +19,7 @@ claims: []
 
 created: "2026-10-11"
 updated: "2026-11-01"
-closed: null
+closed: "2026-11-01"
 
 summary: |
   ADR-0027 lifted ADR-0014's benchmark gate on 2026-10-31: this stage
@@ -92,6 +92,26 @@ decisions:
     splits"; 0100 also renames every engine type a split touches. Status
     `blocked` to `ready-for-implementation`, as cut: the design is ADR-0010's
     and 0100 is open.
+  - |
+    2026-11-01, implementer: `SectionStructureRule` is deleted and two
+    rules stand in its place, `SectionContractRule` (SPEC010,
+    `src/specht/Rules/SectionContractRule.cs`) and `TableHeaderRule`
+    (SPEC013, `src/specht/Rules/TableHeaderRule.cs`), each named for its
+    rule page's title. Each copies the old class's loops and guards
+    unchanged, so each id is emitted in the old order. Placement:
+    `TableHeaderRule` is registered after `IdentityRule` (SPEC011), not
+    beside `SectionContractRule`, because the composition test requires
+    ordinal order of `Id` and SPEC013 sorts after SPEC011; registering it
+    where `SectionStructureRule` stood would fail that test. The two
+    `expected` builders moved with the rule that uses each, and the
+    one-line string-array helper is inlined into each rather than shared.
+    `SectionStructureRuleUnitTests` pins SPEC013 alone, so it becomes
+    `TableHeaderRuleUnitTests` with "SectionStructureRule" in each method
+    name read as "TableHeaderRule"; `0001-F5` § 9 B-002 is owed that
+    re-point by test-writer. A fault in one rule now discards that id's
+    violations alone, where the class discarded both; no clean run sees
+    it. The ADR-0027 benchmark guard runs once on the batched pull
+    request for 0156 to 0163.
 
 out_of_scope:
   - "The collapse of `ISpechtRule`, `SpecFinding`, `DefaultSeverity` and the evaluator - item 0164."

@@ -118,7 +118,7 @@ The rule engine exists only inside a consumer repository, as a project reference
 
 ## 6. Concern Separation
 
-<!-- last written by: implementer, 2026-10-27 -->
+<!-- last written by: implementer, 2026-11-01 (item 0157); implementer, 2026-10-27 -->
 
 | Concern                                                                                 | Class     | Where                                                                                                                                              |
 | --------------------------------------------------------------------------------------- | --------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -198,7 +198,7 @@ Delivered so far by items 0021, 0104, 0103, 0024, 0105, 0106 and 0107. A bullet 
 
 - **Fault isolation, B-012 to B-016** (ADR-0005 (c), decision 0005). [`FaultIsolatedRule`](../Rules/FaultIsolatedRule.cs) is applied by Scrutor to each explicitly registered rule in [`AddSpechtEngine`](../Composition/SpechtEngineServiceCollectionExtensions.cs), forwarding its id, reported ids and default level. Typed root and manifest input failures pass through unchanged under A-4; other exceptions are rule faults. It materializes the iterator once within the catch boundary; on failure it discards all findings and returns one error at `SpechtManifestStore.RelativePath`, line zero, without an identifier. The message contains the rule id and exception type name only. `SpechtViolation.RuleFailure` retains the original exception as internal provenance, excluded from the report DTO (B-017, decision 0007); `SpechtRunner` preserves faults through filtering and grading, including a selected family whose primary id is off. A fully disabled rule is never evaluated. The standalone frontmatter entry points select the underlying frontmatter implementation for their specialized methods; ordinary checks keep the decorator. No mediator or architecture migration is introduced.
 
-### ADR-0010 stage 3: the frontmatter rules, one per id
+### ADR-0010 stage 3: one rule per id
 
 Item `0156` split `FrontmatterSchemaRule` into four rules, each reporting its own id alone, registered by name in [`AddSpechtEngine()`](../Composition/SpechtEngineServiceCollectionExtensions.cs) in ordinal order of their ids, where the old class was: [`FrontmatterPresentRule`](../Rules/FrontmatterPresentRule.cs) (`SPEC001`), [`FeatureFrontmatterRule`](../Rules/FeatureFrontmatterRule.cs) (`SPEC002`), [`ItemFrontmatterRule`](../Rules/ItemFrontmatterRule.cs) (`SPEC003`) and [`EpicFrontmatterRule`](../Rules/EpicFrontmatterRule.cs) (`SPEC004`). `ISpechtRule`, `SpechtRunner.Evaluate` and `SpechtRunner.Order` are untouched.
 
@@ -207,6 +207,8 @@ Item `0156` split `FrontmatterSchemaRule` into four rules, each reporting its ow
 - **Guards.** The check reports nothing for a document with no frontmatter, so `SPEC002` to `SPEC004` stay silent for it whether `SPEC001` is on or off. With all three schema ids off, no schema is evaluated, so a disk schema's unresolvable reference is no longer reached through `SPEC001` alone.
 - **The single-document check.** `SpechtRunner` takes the check for `ParseFrontmatterKind`; `CheckFrontmatter` evaluates the four rules, unwrapped from the decorator, through their document overloads: `SPEC001` for any kind and only the kind's schema rule beside it. The rules evaluated are counted as before, one per enabled id of the four.
 - **A rule fault** now names the id whose rule threw and leaves the other three ids' violations in the report, where the old class reported every fault as `SPEC001` and dropped all four ids' violations.
+
+- **`SectionStructureRule` is two rules** (item `0157`, built 2026-11-01). [`SectionContractRule`](../Rules/SectionContractRule.cs) reports `SPEC010` and [`TableHeaderRule`](../Rules/TableHeaderRule.cs) reports `SPEC013`; each one's `ReportedIds` is its `Id` alone. `AddSpechtEngine()` registers `SectionContractRule` where `SectionStructureRule` stood and `TableHeaderRule` after `IdentityRule` (`SPEC011`), so the registrations stay in ordinal order of `Id`. Each rule keeps the old class's loops and guards as they were: `SPEC010` walks the Features and, for one, reports every missing or duplicated section in the manifest's section order, then at most one out-of-order section, stopping at the first; `SPEC013` walks the Features and, for one, the manifest's `tables` in order, skips a role whose section is absent, and reports a section with no table once without comparing its headers. Within an id the emission order is the old class's, and rule id is `Order`'s last key on a stable sort, so the report is unchanged (C-9). Two things differ in what runs, not in what a clean run reports: with `SPEC010` set `off`, its check no longer executes for `SPEC013`'s sake, and a rule fault now names and discards one id's violations, not both. The `expected` builders moved with the one rule that uses each, `Sections` to `SectionContractRule` and `Table` to `TableHeaderRule`; nothing is shared between them. `ISpechtRule`, `SpechtRunner.Evaluate` and `SpechtRunner.Order` are untouched; the interface's collapse is item `0164`.
 
 ## 8. Testing Strategy
 
