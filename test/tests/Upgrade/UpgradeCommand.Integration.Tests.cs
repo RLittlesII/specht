@@ -395,8 +395,8 @@ public sealed class UpgradeCommandIntegrationTests
     public void APinTheCheckRejects_WhenUpgraded_ShouldPrintTheChecksStandardErrorWriteNothingAndExitThree(string schemaVersion)
     {
         // Given
-        using var tree = new SpecTree();
-        tree.WriteRaw(SpecTree.ManifestPath, $"{{\"schemaVersion\":{schemaVersion}}}");
+        using var tree = new SpechtTree();
+        tree.WriteRaw(SpechtTree.ManifestPath, $"{{\"schemaVersion\":{schemaVersion}}}");
         var check = AcceptanceTool.Launch(tree.Root);
         var before = Directory.GetFiles(tree.Root, "*", SearchOption.AllDirectories)
             .ToDictionary(path => Path.GetRelativePath(tree.Root, path), static path => File.ReadAllBytes(path));

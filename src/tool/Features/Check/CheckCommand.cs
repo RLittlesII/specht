@@ -67,7 +67,7 @@ public sealed class CheckCommand(IAnsiConsole console, Func<string, SchemaSource
             return Fail(ExitCodes.InvalidManifest, $"specht: {exception.Message}");
         }
 
-        var document = SpecReportDocument.From(report);
+        var document = SpechtReportDocument.From(report);
 
         if (settings.Json)
         {

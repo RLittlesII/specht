@@ -14,11 +14,11 @@ public sealed class SchemaListCommandIntegrationTests
     public void Repository_WhenListing_ShouldListEveryShippedVersionAndMarkOnlyItsPin(bool manifestPresent)
     {
         // Given
-        using var tree = new SpecTree();
-        tree.WriteRaw(SpecTree.ManifestPath, "{\"schemaVersion\":\"0.2.0\"}");
+        using var tree = new SpechtTree();
+        tree.WriteRaw(SpechtTree.ManifestPath, "{\"schemaVersion\":\"0.2.0\"}");
         if (!manifestPresent)
         {
-            File.Delete(Path.Combine(tree.Root, SpecTree.ManifestPath));
+            File.Delete(Path.Combine(tree.Root, SpechtTree.ManifestPath));
         }
 
         var versions = EngineServices.Versions().Versions.Select(static version => version.Number.ToString()).ToArray();
@@ -37,8 +37,8 @@ public sealed class SchemaListCommandIntegrationTests
     public void UnsupportedPin_WhenListing_ShouldGiveRecoveryWithoutAList()
     {
         // Given
-        using var tree = new SpecTree();
-        tree.WriteRaw(SpecTree.ManifestPath, "{\"schemaVersion\":\"7.0.0\"}");
+        using var tree = new SpechtTree();
+        tree.WriteRaw(SpechtTree.ManifestPath, "{\"schemaVersion\":\"7.0.0\"}");
 
         // When
         var result = AcceptanceTool.Launch(tree.Root, "schema", "list");

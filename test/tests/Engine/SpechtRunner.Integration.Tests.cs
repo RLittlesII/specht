@@ -16,7 +16,7 @@ public sealed class SpechtRunnerIntegrationTests
     public void ATreeInBothLayouts_WhenChecked_ShouldAcceptBothAndCountTheSpecificationsOfEachLayout()
     {
         // Given
-        using var tree = new SpecTree();
+        using var tree = new SpechtTree();
         tree.WriteFeature("0001", "F1");
         tree.WriteFeature("0001", "F2");
         tree.WriteFeature("0002", "F1");
@@ -28,7 +28,7 @@ public sealed class SpechtRunnerIntegrationTests
         // Then
         report.Violations.Should().BeEmpty();
         report.SpecificationCount.Should().Be(4);
-        report.Layouts.Should().Equal(new SpecReportLayout("epics", 3), new SpecReportLayout("features", 1));
+        report.Layouts.Should().Equal(new SpechtReportLayout("epics", 3), new SpechtReportLayout("features", 1));
     }
 
     [Fact]
@@ -36,7 +36,7 @@ public sealed class SpechtRunnerIntegrationTests
     {
         // Given - a migration that copied the specification without removing
         // the original, which is the failure mode SPEC012 exists to catch.
-        using var tree = new SpecTree();
+        using var tree = new SpechtTree();
         tree.WriteFeature("0001", "F1");
         tree.WriteCoLocatedFeature("src/Backplane/Features/Ingestion", "0001", "F1");
 
@@ -52,7 +52,7 @@ public sealed class SpechtRunnerIntegrationTests
     public void ARepositoryWideSpecDirectory_WhenChecked_ShouldNotBeTreatedAsASpecification()
     {
         // Given - the root .spec/ holds the brief, adr/ and lessons/.
-        using var tree = new SpecTree();
+        using var tree = new SpechtTree();
         tree.WriteFeature("0001", "F1");
         Directory.CreateDirectory(Path.Combine(tree.Root, ".spec"));
         File.WriteAllText(Path.Combine(tree.Root, ".spec", "README.md"), "# Records\n");
@@ -69,7 +69,7 @@ public sealed class SpechtRunnerIntegrationTests
     public void AReportWrittenToDisk_WhenRead_ShouldCarryRelativePathsOnly()
     {
         // Given
-        using var tree = new SpecTree();
+        using var tree = new SpechtTree();
         tree.WriteFeature("0001", "F1", new Dictionary<string, string> { ["spec_status"] = "nearly" });
         var report = tree.Run();
         var path = Path.Combine(tree.Root, ".artifacts", "spec-check", "spec-check.json");
@@ -88,7 +88,7 @@ public sealed class SpechtRunnerIntegrationTests
     public void AnItemFileBesideAMigratedSpecification_WhenChecked_ShouldResolve()
     {
         // Given
-        using var tree = new SpecTree();
+        using var tree = new SpechtTree();
         var path = tree.WriteCoLocatedFeature(
             "src/Backplane/Features/Ingestion",
             "0001",
@@ -108,13 +108,13 @@ public sealed class SpechtRunnerIntegrationTests
     public void ATraceabilitySectionHoldingAGridTable_WhenChecked_ShouldReportNoTableAndReadNoRowAsAClaim()
     {
         // Given
-        using var tree = new SpecTree();
+        using var tree = new SpechtTree();
         var path = Path.GetRelativePath(
             tree.Root,
             tree.WriteFeature(
                 "0001",
                 "F1",
-                sections: SpecTree.SectionsWith(
+                sections: SpechtTree.SectionsWith(
                     "9. Traceability Matrix",
                     "## 9. Traceability Matrix\n\n"
                         + "+----------+-------------------+---------+---------+\n"
@@ -130,7 +130,7 @@ public sealed class SpechtRunnerIntegrationTests
 
         // Then
         violations.Should().ContainSingle(static violation => violation.RuleId == "SPEC013")
-            .Which.Should().Match<SpecViolation>(violation => violation.File == path && violation.Identifier == "9. Traceability Matrix");
+            .Which.Should().Match<SpechtViolation>(violation => violation.File == path && violation.Identifier == "9. Traceability Matrix");
         violations.Should().ContainSingle(static violation => violation.RuleId == "SPEC031")
             .Which.Identifier.Should().Be("B-001");
         violations.Should().NotContain(static violation => violation.Identifier == "B-999");

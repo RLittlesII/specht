@@ -4,14 +4,14 @@ using Specht.Model;
 namespace Specht.Tests.Shared;
 
 /// <summary>
-/// Builds a <see cref="FeatureSpec"/>: a <see cref="SpecLocationFixture"/> location and a <see cref="SpecDocumentFixture"/>
+/// Builds a <see cref="FeatureSpec"/>: a <see cref="SpechtLocationFixture"/> location and a <see cref="SpechtDocumentFixture"/>
 /// document, with no companion <c>.feature</c> file, until a test overrides what it asserts on. The generated location and
 /// document are <see langword="null"/>, which discovery never gives.
 /// </summary>
 [AutoFixture(typeof(FeatureSpec))]
 internal sealed partial class FeatureSpecFixture
 {
-    public FeatureSpecFixture() => WithLocation(new SpecLocationFixture()).WithDocument(new SpecDocumentFixture());
+    public FeatureSpecFixture() => WithLocation(new SpechtLocationFixture()).WithDocument(new SpechtDocumentFixture());
 
     /// <summary>Sets the companion <c>.feature</c> files.</summary>
     /// <remarks>The generator names the list's setter <c>WithList</c>, after its type; this names it after the Feature's.</remarks>

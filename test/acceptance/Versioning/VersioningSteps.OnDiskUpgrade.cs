@@ -29,7 +29,7 @@ public sealed partial class VersioningSteps
     [Given("the root's templates are version {word}'s")]
     public void GivenTheRootsTemplatesAreVersion(string version)
     {
-        foreach (var file in ShippedAt(version).Where(static file => file.Relative.StartsWith(SpecTree.TemplatesFolder + "/", StringComparison.Ordinal)))
+        foreach (var file in ShippedAt(version).Where(static file => file.Relative.StartsWith(SpechtTree.TemplatesFolder + "/", StringComparison.Ordinal)))
         {
             var path = Path.Combine(Tree.Root, file.Relative);
             Directory.CreateDirectory(Path.GetDirectoryName(path)!);
@@ -48,7 +48,7 @@ public sealed partial class VersioningSteps
     public void GivenTheOnDiskSourceIsSelectedAndTheRootsFrontmatterSchemasAreItsOwn()
     {
         GivenManifestSource("disk");
-        var schemas = Directory.GetFiles(Path.Combine(Tree.Root, SpecTree.FrontmatterSchemaFolder))
+        var schemas = Directory.GetFiles(Path.Combine(Tree.Root, SpechtTree.FrontmatterSchemaFolder))
             .Select(path => Path.GetRelativePath(Tree.Root, path).Replace('\\', '/'))
             .ToList();
         schemas.Should().NotBeEmpty();
@@ -65,7 +65,7 @@ public sealed partial class VersioningSteps
     {
         _exitCode.Should().Be(0, _stderr);
         var embedded = ShippedAt(version).ToDictionary(static file => file.Relative, static file => file.Bytes, StringComparer.Ordinal);
-        var present = SnapshotFiles().Where(static pair => pair.Key.StartsWith(SpecTree.FrontmatterSchemaFolder + "/", StringComparison.Ordinal)).ToList();
+        var present = SnapshotFiles().Where(static pair => pair.Key.StartsWith(SpechtTree.FrontmatterSchemaFolder + "/", StringComparison.Ordinal)).ToList();
         present.Should().NotBeEmpty();
         foreach (var (path, bytes) in present.Where(pair => embedded.ContainsKey(pair.Key)))
         {
@@ -81,7 +81,7 @@ public sealed partial class VersioningSteps
         var rewritten = lines.Select(static (line, index) => (Line: line, Index: index))
             .Where(static entry => entry.Line.StartsWith("rewritten ", StringComparison.Ordinal))
             .ToList();
-        var templates = RewrittenFiles().Where(static path => path.StartsWith(SpecTree.TemplatesFolder + "/", StringComparison.Ordinal)).ToList();
+        var templates = RewrittenFiles().Where(static path => path.StartsWith(SpechtTree.TemplatesFolder + "/", StringComparison.Ordinal)).ToList();
         templates.Should().NotBeEmpty(_stdout);
         foreach (var template in templates)
         {
@@ -89,7 +89,7 @@ public sealed partial class VersioningSteps
         }
 
         var lastRewritten = rewritten.Max(static entry => entry.Index);
-        foreach (var schema in new[] { SpecTree.FeatureSchemaPath, SpecTree.ItemSchemaPath })
+        foreach (var schema in new[] { SpechtTree.FeatureSchemaPath, SpechtTree.ItemSchemaPath })
         {
             var index = lines.FindIndex(line => SkipLine(line) == schema);
             index.Should().BeGreaterThan(lastRewritten, "{0} is named as skipped after every rewritten file: {1}", schema, _stdout);
@@ -98,13 +98,13 @@ public sealed partial class VersioningSteps
 
     [Then("the output names no epic schema")]
     public void ThenTheOutputNamesNoEpicSchema() =>
-        OutputLines().Should().NotContain(static line => line.Contains(Path.GetFileName(SpecTree.EpicSchemaPath), StringComparison.Ordinal));
+        OutputLines().Should().NotContain(static line => line.Contains(Path.GetFileName(SpechtTree.EpicSchemaPath), StringComparison.Ordinal));
 
     [Then("the templates are version {word}'s")]
     public void ThenTheTemplatesAreVersion(string version)
     {
         _exitCode.Should().Be(0, _stderr);
-        var templates = ShippedAt(version).Where(static file => file.Relative.StartsWith(SpecTree.TemplatesFolder + "/", StringComparison.Ordinal)).ToList();
+        var templates = ShippedAt(version).Where(static file => file.Relative.StartsWith(SpechtTree.TemplatesFolder + "/", StringComparison.Ordinal)).ToList();
         templates.Should().NotBeEmpty();
         var after = SnapshotFiles();
         foreach (var file in templates)
@@ -117,7 +117,7 @@ public sealed partial class VersioningSteps
     public void ThenTheOutputNamesEachTemplateItRewrote()
     {
         var lines = OutputLines();
-        var templates = RewrittenFiles().Where(static path => path.StartsWith(SpecTree.TemplatesFolder + "/", StringComparison.Ordinal)).ToList();
+        var templates = RewrittenFiles().Where(static path => path.StartsWith(SpechtTree.TemplatesFolder + "/", StringComparison.Ordinal)).ToList();
         templates.Should().NotBeEmpty(_stdout);
         foreach (var path in templates)
         {
@@ -140,7 +140,7 @@ public sealed partial class VersioningSteps
     {
         _exitCode.Should().Be(0, _stderr);
         OutputLines().Select(SkipLine)
-            .Should().NotContain(static path => path != null && path.StartsWith(SpecTree.FrontmatterSchemaFolder + "/", StringComparison.Ordinal));
+            .Should().NotContain(static path => path != null && path.StartsWith(SpechtTree.FrontmatterSchemaFolder + "/", StringComparison.Ordinal));
     }
 
     private static string? SkipLine(string line)

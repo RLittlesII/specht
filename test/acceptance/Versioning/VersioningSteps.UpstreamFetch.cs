@@ -34,7 +34,7 @@ public sealed partial class VersioningSteps
         var hashes = ManifestAfter()["spechtSchema"]!["hashes"]!.AsObject();
         foreach (var (kind, name) in SchemaNames())
         {
-            hashes[kind]!.GetValue<string>().Should().Be(HashOf($"{SpecTree.FrontmatterSchemaFolder}/{name}"));
+            hashes[kind]!.GetValue<string>().Should().Be(HashOf($"{SpechtTree.FrontmatterSchemaFolder}/{name}"));
         }
     }
 
@@ -60,7 +60,7 @@ public sealed partial class VersioningSteps
     [Given("the root has no copy of the feature schema")]
     public void GivenTheRootHasNoCopyOfTheFeatureSchema()
     {
-        var path = Path.Combine(Tree.Root, SpecTree.FrontmatterSchemaFolder, SchemaNames()["feature"]);
+        var path = Path.Combine(Tree.Root, SpechtTree.FrontmatterSchemaFolder, SchemaNames()["feature"]);
         _absentFeatureSchema = File.ReadAllBytes(path);
         File.Delete(path);
     }
@@ -79,8 +79,8 @@ public sealed partial class VersioningSteps
             {
                 var renamed = $"consumer-{kind}.schema.json";
                 File.Move(
-                    Path.Combine(Tree.Root, SpecTree.FrontmatterSchemaFolder, name),
-                    Path.Combine(Tree.Root, SpecTree.FrontmatterSchemaFolder, renamed));
+                    Path.Combine(Tree.Root, SpechtTree.FrontmatterSchemaFolder, name),
+                    Path.Combine(Tree.Root, SpechtTree.FrontmatterSchemaFolder, renamed));
                 names[kind] = renamed;
             }
 
@@ -145,7 +145,7 @@ public sealed partial class VersioningSteps
     {
         foreach (var (_, name) in SchemaNames())
         {
-            File.ReadAllBytes(Path.Combine(Tree.Root, SpecTree.FrontmatterSchemaFolder, name))
+            File.ReadAllBytes(Path.Combine(Tree.Root, SpechtTree.FrontmatterSchemaFolder, name))
                 .Should().Equal(Upstream.Served[name], "{0} is fetched and verified: {1}", name, _stderr);
         }
     }
@@ -162,7 +162,7 @@ public sealed partial class VersioningSteps
 
     [Then("the root still has no copy of the feature schema")]
     public void ThenTheRootStillHasNoCopyOfTheFeatureSchema() =>
-        File.Exists(Path.Combine(Tree.Root, SpecTree.FrontmatterSchemaFolder, SchemaNames()["feature"])).Should().BeFalse(_stderr);
+        File.Exists(Path.Combine(Tree.Root, SpechtTree.FrontmatterSchemaFolder, SchemaNames()["feature"])).Should().BeFalse(_stderr);
 
     [Then(@"^the root still has no (feature frontmatter schema|feature template)$")]
     public void ThenTheRootStillHasNo(string file)
@@ -201,7 +201,7 @@ public sealed partial class VersioningSteps
         templates.Should().NotBeEmpty();
         Upstream.Requests.Should().NotBeEmpty("the differing copies are fetched: {0}", _stderr);
         Upstream.Requests.Select(static request => request.Address.Segments[^1])
-            .Should().NotContain(Path.GetFileName(SpecTree.ManifestPath)).And.NotContain(name => templates.Contains(name));
+            .Should().NotContain(Path.GetFileName(SpechtTree.ManifestPath)).And.NotContain(name => templates.Contains(name));
     }
 
     [Then("the standard error names the source")]
@@ -231,7 +231,7 @@ public sealed partial class VersioningSteps
         });
         foreach (var kind in names.Keys.Except(kinds))
         {
-            Upstream.Served[names[kind]] = File.ReadAllBytes(Path.Combine(Tree.Root, SpecTree.FrontmatterSchemaFolder, names[kind]));
+            Upstream.Served[names[kind]] = File.ReadAllBytes(Path.Combine(Tree.Root, SpechtTree.FrontmatterSchemaFolder, names[kind]));
         }
     }
 
@@ -276,8 +276,8 @@ public sealed partial class VersioningSteps
 
     private static readonly Dictionary<string, string> AbsentFiles = new(StringComparer.Ordinal)
     {
-        ["feature frontmatter schema"] = SpecTree.FeatureSchemaPath,
-        ["feature template"] = SpecTree.TemplatesFolder + "/feature.md",
+        ["feature frontmatter schema"] = SpechtTree.FeatureSchemaPath,
+        ["feature template"] = SpechtTree.TemplatesFolder + "/feature.md",
     };
 
     private UpstreamSource? _upstream;

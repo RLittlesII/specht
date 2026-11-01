@@ -56,7 +56,7 @@ public sealed class ManifestKeyEditor(ManifestPinEditor manifest)
         var reader = new Utf8JsonReader(utf8);
         if (!reader.Read() || reader.TokenType != JsonTokenType.StartObject)
         {
-            throw new SpechtManifestException($"{SpecManifestStore.RelativePath}: expected a manifest object.");
+            throw new SpechtManifestException($"{SpechtManifestStore.RelativePath}: expected a manifest object.");
         }
 
         var members = new List<(string Name, long Start, long End)>();

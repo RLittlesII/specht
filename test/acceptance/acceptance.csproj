@@ -84,8 +84,8 @@
     <Compile Include="..\tests\Rules\RulePage.cs">
       <Link>Rules\RulePage.cs</Link>
     </Compile>
-    <Compile Include="..\tests\Shared\SpecTree.cs">
-      <Link>Check\SpecTree.cs</Link>
+    <Compile Include="..\tests\Shared\SpechtTree.cs">
+      <Link>Check\SpechtTree.cs</Link>
     </Compile>
     <Content Include="..\tests\Engine\Baseline\engine-e7dba24.json">
       <Link>Baseline\engine-e7dba24.json</Link>

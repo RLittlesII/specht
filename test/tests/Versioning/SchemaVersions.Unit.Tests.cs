@@ -178,7 +178,7 @@ public sealed class SchemaVersionsUnitTests
 
         // When
         using var instance = JsonDocument.Parse(epic.ToJsonString());
-        var result = schema.Evaluate(instance.RootElement, SpecSchemas.Options);
+        var result = schema.Evaluate(instance.RootElement, SpechtSchemas.Options);
 
         // Then
         (result.Details ?? [])
@@ -227,7 +227,7 @@ public sealed class SchemaVersionsUnitTests
         var versions = new SchemaVersions([new SchemaVersionFixture(), new SchemaVersionFixture().WithNumber(new SemanticVersion(0, 2, 0))]);
 
         // When
-        var parser = new SpecManifestParser(versions);
+        var parser = new SpechtManifestParser(versions);
         var structure = parser.Parse("""{"schemaVersion":"7.0.0"}""");
         var select = () => parser.PinnedVersion(structure);
 

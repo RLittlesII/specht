@@ -18,7 +18,7 @@ spec: src/specht/.spec/README.md
 claims: []
 
 created: "2026-10-11"
-updated: "2026-10-31"
+updated: "2026-11-01"
 closed: null
 
 summary: |
@@ -35,7 +35,7 @@ summary: |
   shows"). This item splits it into four rules, each reporting its own id
   and no other.
 
-  The evaluator is untouched. `ISpecRule` keeps `Id`, `ReportedIds` and
+  The evaluator is untouched. `ISpechtRule` keeps `Id`, `ReportedIds` and
   `Evaluate`; each new rule's `ReportedIds` names its one id;
   `SpechtRunner.Evaluate` selects, filters and counts as it does today.
   Collapsing the interface is item 0164. `AddSpechtEngine()` registers each
@@ -70,7 +70,7 @@ acceptance_criteria:
   - "Order kept: SPEC040 and SPEC041 keep the Features' order and, within one, the order `children` declares them (`src/specht/Rules/ChildItemRule.cs:68`). SPEC043 keeps the items' order and, for one item, the file-name mismatch before the parent mismatch (`:124-159`). SPEC044 emits every reused id (`:135-144`) before any gap in a sequence (`:163-194`)."
   - "Guards kept: each rule applies every guard the old class applied before its id, whichever id's branch holds it today - the Feature-level skips (`:33-46`), the child-level skips and the resolution of a child to its file (`:74-98`, `:100-109`), the item-level skip (`:119-122`) and the conditions under which a sequence is checked for gaps (`:166-193`). A violation of one id is reported with the other three off exactly when it is reported with them on."
   - "Shared work: what two of the four rules both need - resolving a declared child to its file, reading an item's id and its sequence - is one class they take or a derivation on the model, with no base class (ADR-0010 § 'One rule per id')."
-  - "Untouched: `ISpecRule`, `SpechtRunner.Evaluate` and `SpechtRunner.Order`, and every violation's file, line, identifier, message and severity."
+  - "Untouched: `ISpechtRule`, `SpechtRunner.Evaluate` and `SpechtRunner.Order`, and every violation's file, line, identifier, message and severity."
   - "The composition tests still hold: every concrete rule the engine declares is registered exactly once, the rules resolve in ordinal order of their ids, and the reported ids are the twenty-one of the pinned vocabulary, each once (`test/tests/Composition/SpechtEngineServiceCollectionExtensions.Unit.Tests.cs`)."
   - "No test names `ChildItemRule` and no § 9 row names one, so no row is re-pointed here. The four ids are held by the golden report and the acceptance tier, both green unedited."
   - "The golden report `test/tests/Engine/Baseline/engine-e7dba24.json` is unchanged, byte for byte, and the test that compares it is green unedited. The unit, integration and acceptance tiers pass, and the benchmark project `.performance/benchmarks` still compiles."
@@ -101,7 +101,7 @@ decisions:
     and 0100 is open.
 
 out_of_scope:
-  - "The collapse of `ISpecRule`, `SpecFinding`, `DefaultSeverity` and the evaluator - item 0164."
+  - "The collapse of `ISpechtRule`, `SpecFinding`, `DefaultSeverity` and the evaluator - item 0164."
   - "A unit-test class for each new rule that pins every id it reports - item 0152."
   - "A folder for each rule group under `src/specht/Rules/`, and any new rule id - item 0169."
   - "The other seven rule classes - items 0156 to 0160, 0162 and 0163, one each."

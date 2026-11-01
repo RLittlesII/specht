@@ -29,7 +29,7 @@ public sealed class EpicsInitWriterUnitTests
         fileSystem.AddDirectory(Root);
         if (manifest is not null)
         {
-            fileSystem.AddFile(Path.Combine(Root, SpecTree.ManifestPath), new MockFileData(manifest));
+            fileSystem.AddFile(Path.Combine(Root, SpechtTree.ManifestPath), new MockFileData(manifest));
         }
 
         var shippingCopy = new Dictionary<string, byte[]>
@@ -48,8 +48,8 @@ public sealed class EpicsInitWriterUnitTests
         var listing = await writer.Write(Root, schemas: true, templates: false, CancellationToken.None, epics: epics);
 
         // Then
-        listing.Select(static entry => entry.Path).Contains(SpecTree.EpicSchemaPath).Should().Be(epicSchema, because);
-        fileSystem.File.Exists(Path.Combine(Root, SpecTree.EpicSchemaPath)).Should().Be(epicSchema, because);
+        listing.Select(static entry => entry.Path).Contains(SpechtTree.EpicSchemaPath).Should().Be(epicSchema, because);
+        fileSystem.File.Exists(Path.Combine(Root, SpechtTree.EpicSchemaPath)).Should().Be(epicSchema, because);
     }
 
     [Fact]
@@ -71,7 +71,7 @@ public sealed class EpicsInitWriterUnitTests
         await writer.Write(Root, schemas: false, templates: false, CancellationToken.None, epics: false);
 
         // Then
-        var written = JsonNode.Parse(fileSystem.File.ReadAllText(Path.Combine(Root, SpecTree.ManifestPath)))!.AsObject();
+        var written = JsonNode.Parse(fileSystem.File.ReadAllText(Path.Combine(Root, SpechtTree.ManifestPath)))!.AsObject();
         (written["identifiers"] as JsonObject ?? new JsonObject()).Should().NotContainKey("epic");
     }
 
@@ -89,7 +89,7 @@ public sealed class EpicsInitWriterUnitTests
         await writer.Write(Root, schemas: false, templates: false, CancellationToken.None, epics: false);
 
         // Then
-        var written = JsonNode.Parse(fileSystem.File.ReadAllText(Path.Combine(Root, SpecTree.ManifestPath)))!.AsObject();
+        var written = JsonNode.Parse(fileSystem.File.ReadAllText(Path.Combine(Root, SpechtTree.ManifestPath)))!.AsObject();
         var task = written["identifiers"]?["task"]?.GetValue<string>();
         task.Should().NotBeNull("the manifest written declares a task grammar");
         new Regex(task!).GetGroupNames().Should().NotContain("epic");

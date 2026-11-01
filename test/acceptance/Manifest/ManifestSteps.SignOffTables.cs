@@ -23,7 +23,7 @@ public sealed partial class ManifestSteps
     public void GivenSignOffWithWrongStatusHeader(string header) => Tree.WriteFeature(
         "0001",
         "F1",
-        sections: SpecTree.SectionsWith(
+        sections: SpechtTree.SectionsWith(
             "12. Sign-off",
             $"## 12. Sign-off\n\n| Section | {header} | Reviewer | Note |\n| --- | --- | --- | --- |\n| 1-5 | 🟡 | spec-reviewer | Draft |\n"));
 

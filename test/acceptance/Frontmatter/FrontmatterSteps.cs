@@ -14,8 +14,8 @@ public sealed class FrontmatterSteps
     [Given("a repository root holding a manifest that pins schema version 0.1.0")]
     public void GivenAPinnedRoot()
     {
-        _tree = new SpecTree();
-        Tree.WriteRaw(SpecTree.ManifestPath, "{\"schemaVersion\":\"0.1.0\"}");
+        _tree = new SpechtTree();
+        Tree.WriteRaw(SpechtTree.ManifestPath, "{\"schemaVersion\":\"0.1.0\"}");
     }
 
     [Given("a task document outside the tree whose frontmatter lacks a required key")]
@@ -42,12 +42,12 @@ public sealed class FrontmatterSteps
     public void GivenAStricterSchema()
     {
         _document = TaskDocument;
-        Tree.WriteRaw(SpecTree.ItemSchemaPath, """{"type":"object","required":["additionalKey"]}""");
+        Tree.WriteRaw(SpechtTree.ItemSchemaPath, """{"type":"object","required":["additionalKey"]}""");
     }
 
     [Given("the root's manifest selects that on-disk schema under version 0.2.0")]
     public void GivenTheSelectedDiskSchema() =>
-        Tree.WriteRaw(SpecTree.ManifestPath, """{"schemaVersion":"0.2.0","schemaSource":"disk","identifiers":{"epic":"^[0-9]{4}$"}}""");
+        Tree.WriteRaw(SpechtTree.ManifestPath, """{"schemaVersion":"0.2.0","schemaSource":"disk","identifiers":{"epic":"^[0-9]{4}$"}}""");
 
     [Given("a task document whose valid frontmatter depends on a file that does not exist")]
     public void GivenAnUnresolvedDependency() =>
@@ -94,13 +94,13 @@ public sealed class FrontmatterSteps
     public void GivenAMissingRoot() => _root = "absent";
 
     [Given("a root with no manifest")]
-    public void GivenNoManifest() => File.Delete(Path.Combine(Tree.Root, SpecTree.ManifestPath));
+    public void GivenNoManifest() => File.Delete(Path.Combine(Tree.Root, SpechtTree.ManifestPath));
 
     [Given("a root whose manifest is not well-formed")]
-    public void GivenAMalformedManifest() => Tree.WriteRaw(SpecTree.ManifestPath, "{");
+    public void GivenAMalformedManifest() => Tree.WriteRaw(SpechtTree.ManifestPath, "{");
 
     [Given("a root whose manifest pins a version the tool does not ship")]
-    public void GivenAnUnshippedPin() => Tree.WriteRaw(SpecTree.ManifestPath, "{\"schemaVersion\":\"99.0.0\"}");
+    public void GivenAnUnshippedPin() => Tree.WriteRaw(SpechtTree.ManifestPath, "{\"schemaVersion\":\"99.0.0\"}");
 
     [Given(@"^no file at drafts/missing\.md$")]
     public void GivenNoDocument() => _path = "drafts/missing.md";
@@ -110,7 +110,7 @@ public sealed class FrontmatterSteps
 
     [Given("a root with a manifest")]
     [Given(@"^a root with a manifest and no file at drafts/missing\.md$")]
-    public void GivenAManifest() => File.Exists(Path.Combine(Tree.Root, SpecTree.ManifestPath)).Should().BeTrue();
+    public void GivenAManifest() => File.Exists(Path.Combine(Tree.Root, SpechtTree.ManifestPath)).Should().BeTrue();
 
     [Given(@"^a root path that is not a directory and no file at drafts/missing\.md$")]
     public void GivenSeveralMissingInputs() => GivenAMissingRoot();
@@ -217,7 +217,7 @@ public sealed class FrontmatterSteps
 
     [Then("the standard error names the manifest path")]
     [Then("the standard error names the manifest path relative to the root")]
-    public void ThenTheManifestIsPrinted() => _result.Stderr.Should().Contain(SpecTree.ManifestPath).And.NotContain(Tree.Root);
+    public void ThenTheManifestIsPrinted() => _result.Stderr.Should().Contain(SpechtTree.ManifestPath).And.NotContain(Tree.Root);
 
     [Then("the standard output is empty")]
     public void ThenStdoutIsEmpty() => _result.Stdout.Should().BeEmpty();
@@ -254,7 +254,7 @@ public sealed class FrontmatterSteps
 
     [Then("every path the output names other than those typed is relative to the root and uses forward slashes")]
     public void ThenPathsAreRelative() =>
-        _result.Stderr.Should().Contain(SpecTree.ManifestPath).And.NotContain(Tree.Root).And.NotContain("\\");
+        _result.Stderr.Should().Contain(SpechtTree.ManifestPath).And.NotContain(Tree.Root).And.NotContain("\\");
 
     [Then("both runs print the same standard output and exit with the same code")]
     public void ThenRunsAreDeterministic() => _result.Should().Be(_first);
@@ -262,7 +262,7 @@ public sealed class FrontmatterSteps
     [AfterScenario]
     public void DisposeTree() => _tree?.Dispose();
 
-    private SpecTree Tree => _tree ?? throw new InvalidOperationException("No root was prepared.");
+    private SpechtTree Tree => _tree ?? throw new InvalidOperationException("No root was prepared.");
 
     private string Document(string kind) => kind switch
     {
@@ -295,7 +295,7 @@ public sealed class FrontmatterSteps
     private const string TaskDocument = "---\nid: '0001-01'\nparent: '0001-F1'\ntype: task\ncreated: '2026-10-01'\n"
         + "status: ready\npriority: med\nupdated: '2026-10-01'\ngithub_issue: null\n---\n";
 
-    private SpecTree? _tree;
+    private SpechtTree? _tree;
     private string _document = TaskDocument;
     private string _path = "drafts/issue.md";
     private string _root = ".";

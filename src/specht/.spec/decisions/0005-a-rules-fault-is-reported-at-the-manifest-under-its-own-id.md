@@ -20,8 +20,8 @@ type: decision
    - **file:** the manifest's path relative to the root,
      `.spec/schema/spec-structure.schema.json` under schema version 1 (C-8);
    - **line:** `0`, so the rendered line is `<manifest path>: error SPEC###: <message>`,
-     the whole-file form `SpecViolation.ToString()` already gives
-     (`src/specht/SpecViolation.cs:25-27`) and `0001-F2` B-001's line shape
+     the whole-file form `SpechtViolation.ToString()` already gives
+     (`src/specht/SpechtViolation.cs:25-27`) and `0001-F2` B-001's line shape
      admits;
    - **identifier:** none;
    - **message:** names the failing rule's id and the exception's type name,

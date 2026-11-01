@@ -73,7 +73,7 @@ public sealed class ManifestRuleEditorUnitTests
 
         // Then
         Encoding.UTF8.GetString(changed).Should().Be("""{"rules":{"SPEC010":"off"},"$comment":"kept"}""");
-        EngineServices.Parser().Parse(Encoding.UTF8.GetString(changed)).Rules["SPEC010"].Should().Be(SpecRuleLevel.Off);
+        EngineServices.Parser().Parse(Encoding.UTF8.GetString(changed)).Rules["SPEC010"].Should().Be(SpechtRuleLevel.Off);
     }
 
     [Fact]

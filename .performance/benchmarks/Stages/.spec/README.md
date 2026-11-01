@@ -45,11 +45,11 @@ A check's time is one number, and nothing says which stage spends it: a slower c
 
 ### Assumptions
 
-| ID  | Assumption                                                                                                                                                                    |
-| --- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| A-1 | The stages are those ADR-0005 § Decision (a) names. From item `0107` they are `SpecSchemasLoader`, `SpecDiscovery`, `SpecModelLoader` and the static `SpechtRunner.Evaluate`. |
-| A-2 | The model is built before measurement and carries every companion file’s parsed tags. Rules and evaluation read that snapshot without file-system access (ADR-0010 stage 2).  |
-| A-3 | The tree sizes and the generated tree are `0109-F1`'s (`0109-F1` decision 0004).                                                                                              |
+| ID  | Assumption                                                                                                                                                                          |
+| --- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| A-1 | The stages are those ADR-0005 § Decision (a) names. From item `0107` they are `SpechtSchemasLoader`, `SpechtDiscovery`, `SpechtModelLoader` and the static `SpechtRunner.Evaluate`. |
+| A-2 | The model is built before measurement and carries every companion file’s parsed tags. Rules and evaluation read that snapshot without file-system access (ADR-0010 stage 2).        |
+| A-3 | The tree sizes and the generated tree are `0109-F1`'s (`0109-F1` decision 0004).                                                                                                    |
 
 ## 3. Acceptance Criteria
 

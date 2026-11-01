@@ -19,8 +19,8 @@ public sealed class MatrixSteps
     [Given("a repository whose manifest pins schema version 0.2.0")]
     public void GivenRepository()
     {
-        _tree = new SpecTree();
-        _manifest = JsonNode.Parse(File.ReadAllText(Path.Combine(Tree.Root, SpecTree.ManifestPath)))!.AsObject();
+        _tree = new SpechtTree();
+        _manifest = JsonNode.Parse(File.ReadAllText(Path.Combine(Tree.Root, SpechtTree.ManifestPath)))!.AsObject();
         Manifest["schemaVersion"] = "0.2.0";
     }
 
@@ -117,7 +117,7 @@ public sealed class MatrixSteps
     [When("the check runs")]
     public void WhenCheckRuns()
     {
-        var sections = SpecTree.Sections.Select(section => section.Split('\n')[0] switch
+        var sections = SpechtTree.Sections.Select(section => section.Split('\n')[0] switch
         {
             "## 3. Acceptance Criteria" => "## 3. Acceptance Criteria\n\n| ID | Claim | Source | Status |\n| --- | --- | --- | --- |\n"
                 + $"| B-004 | Behavior | Decision | {_claim} |\n",
@@ -128,7 +128,7 @@ public sealed class MatrixSteps
         }).ToArray();
         var path = Tree.WriteFeature("0001", "F1", sections: sections);
         Tree.WriteFeatureFile(path, $"Feature: Sample\n{_tags}Scenario: A scenario\n  Given a thing\n");
-        Tree.WriteRaw(SpecTree.ManifestPath, Manifest.ToJsonString());
+        Tree.WriteRaw(SpechtTree.ManifestPath, Manifest.ToJsonString());
         _report = EngineServices.Runner().Run(Tree.Root);
     }
 
@@ -153,24 +153,24 @@ public sealed class MatrixSteps
     public void ThenOriginalReport()
     {
         using var services = (TypeResolver)new TypeRegistrar(new ServiceCollection().AddSpechtEngine()).Build();
-        var original = ((IEnumerable<ISpecRule>)services.Resolve(typeof(IEnumerable<ISpecRule>))!).Where(static rule =>
+        var original = ((IEnumerable<ISpechtRule>)services.Resolve(typeof(IEnumerable<ISpechtRule>))!).Where(static rule =>
             rule.Id != "SPEC034" && rule.Id != "SPEC035");
         var baseline = SpechtRunner.Evaluate(EngineServices.Loader().Load(Tree.Root), original);
-        SpecReportDocument.From(_report!).ToJson().Should().Be(SpecReportDocument.From(baseline).ToJson());
+        SpechtReportDocument.From(_report!).ToJson().Should().Be(SpechtReportDocument.From(baseline).ToJson());
         _report!.RulesEvaluated.Should().Be(21);
     }
 
     [AfterScenario]
     public void DisposeTree() => _tree?.Dispose();
 
-    private SpecTree Tree => _tree ?? throw new InvalidOperationException("No tree was prepared.");
+    private SpechtTree Tree => _tree ?? throw new InvalidOperationException("No tree was prepared.");
     private JsonObject Manifest => _manifest ?? throw new InvalidOperationException("No manifest was read.");
     private JsonObject Rules => Manifest["rules"] as JsonObject ?? (JsonObject)(Manifest["rules"] = new JsonObject());
 
-    private IEnumerable<SpecViolation> Findings(string id) => (_report ?? throw new InvalidOperationException("No check ran.")).Violations
+    private IEnumerable<SpechtViolation> Findings(string id) => (_report ?? throw new InvalidOperationException("No check ran.")).Violations
         .Where(violation => violation.RuleId == id);
 
-    private SpecTree? _tree;
+    private SpechtTree? _tree;
     private JsonObject? _manifest;
     private SpechtReport? _report;
     private string _claim = "Active";

@@ -25,14 +25,14 @@ public sealed class SpechtTree
     /// <param name="structure">The parsed manifest.</param>
     /// <param name="version">The selected version.</param>
     /// <returns>A new tree, holding the same files with the same contents for the same size.</returns>
-    public static SpechtTree Of(int specifications, ReadOnlyMemory<byte> manifest, SpecStructure structure, SchemaVersion version)
+    public static SpechtTree Of(int specifications, ReadOnlyMemory<byte> manifest, SpechtStructure structure, SchemaVersion version)
     {
         var names = structure.FrontmatterSchemas;
-        var schema = SpecManifestStore.FrontmatterSchemaFolder + "/";
+        var schema = SpechtManifestStore.FrontmatterSchemaFolder + "/";
 
         List<SpechtTreeFile> files =
         [
-            new(SpecManifestStore.RelativePath, manifest.ToArray()),
+            new(SpechtManifestStore.RelativePath, manifest.ToArray()),
             Text(schema + names["feature"], version.FeatureSchema),
             Text(schema + names["task"], version.ItemSchema),
             Text(schema + names["epic"], version.EpicSchema),

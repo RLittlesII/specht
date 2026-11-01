@@ -12,7 +12,7 @@ using Specht.Versioning;
 namespace Specht.Acceptance.Engine;
 
 /// <summary>
-/// Steps for <c>src/specht/.spec/engine.feature</c> (0001-F1). The Background is a <see cref="SpecTree"/> holding the live
+/// Steps for <c>src/specht/.spec/engine.feature</c> (0001-F1). The Background is a <see cref="SpechtTree"/> holding the live
 /// version 0.1.0 schema set (A-3), selected from the embedded set and explicitly pinned in the fixture's manifest.
 /// The Background reads it back from the root it built. B-001 builds the baseline
 /// tree on it and reads the rule ids the engine reports; B-004 holds the engine to the golden report on the same tree;
@@ -33,16 +33,16 @@ public sealed partial class EngineSteps
     [Given("a repository root holding a manifest and the three frontmatter schemas of schema version {word}")]
     public void GivenARepositoryRootHoldingAManifestAndTheThreeFrontmatterSchemasOfSchemaVersion(string version)
     {
-        _tree = new SpecTree();
+        _tree = new SpechtTree();
         SemanticVersion.TryParse(version, out var number).Should().BeTrue();
         var schemas = EngineServices.Versions().Find(number)!;
-        var manifestPath = Path.Combine(_tree.Root, SpecTree.ManifestPath);
+        var manifestPath = Path.Combine(_tree.Root, SpechtTree.ManifestPath);
         var manifest = JsonNode.Parse(File.ReadAllText(manifestPath))!.AsObject();
         manifest["schemaVersion"] = version;
         File.WriteAllText(manifestPath, manifest.ToJsonString());
-        File.WriteAllText(Path.Combine(_tree.Root, SpecTree.FeatureSchemaPath), schemas.FeatureSchema);
-        File.WriteAllText(Path.Combine(_tree.Root, SpecTree.ItemSchemaPath), schemas.ItemSchema);
-        File.WriteAllText(Path.Combine(_tree.Root, SpecTree.EpicSchemaPath), schemas.EpicSchema);
+        File.WriteAllText(Path.Combine(_tree.Root, SpechtTree.FeatureSchemaPath), schemas.FeatureSchema);
+        File.WriteAllText(Path.Combine(_tree.Root, SpechtTree.ItemSchemaPath), schemas.ItemSchema);
+        File.WriteAllText(Path.Combine(_tree.Root, SpechtTree.EpicSchemaPath), schemas.EpicSchema);
         EngineServices.Loader().Load(_tree.Root).Schemas.Version.Number.ToString().Should().Be(version);
     }
 
@@ -57,7 +57,7 @@ public sealed partial class EngineSteps
         Tree.WriteFeature(
             "0001",
             "F1",
-            sections: SpecTree.SectionsWith(
+            sections: SpechtTree.SectionsWith(
                 "3. Acceptance Criteria",
                 "## 3. Acceptance Criteria\n\n| ID | Claim | Source | Status |\n| -- | ----- | ------ | ------ |\n"
                     + $"| B-001 | It does the thing. | brd | Active |\n| {claim} | It does another. | brd | Active |\n"));
@@ -206,7 +206,7 @@ public sealed partial class EngineSteps
     public void WhenTheEngineRunsAgainAtADifferentRootLocationUnderADifferentLocaleAndWithAnExtraEnvironmentVariableSet()
     {
         Tree.Dispose();
-        _tree = new SpecTree(["moved", "elsewhere"]);
+        _tree = new SpechtTree(["moved", "elsewhere"]);
         BaselineTree.Write(_tree);
         var variable = "SPECHT_B006_" + Guid.NewGuid().ToString("N");
         var culture = CultureInfo.CurrentCulture;
@@ -238,7 +238,7 @@ public sealed partial class EngineSteps
     public void GivenTheRootIsADeeplyNestedDirectoryOnThisMachine()
     {
         Tree.Dispose();
-        _tree = new SpecTree(["a", "deeply", "nested", "folder", "on", "this", "machine"]);
+        _tree = new SpechtTree(["a", "deeply", "nested", "folder", "on", "this", "machine"]);
     }
 
     [Given("the root holds a specification with one violation")]
@@ -246,7 +246,7 @@ public sealed partial class EngineSteps
         Tree.WriteFeature(
             "0001",
             "F1",
-            sections: SpecTree.SectionsWith(
+            sections: SpechtTree.SectionsWith(
                 "3. Acceptance Criteria",
                 "## 3. Acceptance Criteria\n\n| ID | Claim | Source | Status |\n| -- | ----- | ------ | ------ |\n"
                     + "| B-001 | It does the thing. | brd | Active |\n| B-002 | It does another. | brd | Active |\n"));
@@ -268,7 +268,7 @@ public sealed partial class EngineSteps
         Tree.WriteFeature(
             "0001",
             "F1",
-            sections: SpecTree.SectionsWith(
+            sections: SpechtTree.SectionsWith(
                 Traceability,
                 $"## {Traceability}\n\n"
                     + "+----------+-------------------+---------+---------+\n"
@@ -294,7 +294,7 @@ public sealed partial class EngineSteps
     [AfterScenario]
     public void DeleteRoot() => _tree?.Dispose();
 
-    private SpecTree Tree => _tree ?? throw new InvalidOperationException("No repository root was prepared.");
+    private SpechtTree Tree => _tree ?? throw new InvalidOperationException("No repository root was prepared.");
 
     private SpechtReport Report => _report ?? throw new InvalidOperationException("The engine has not run.");
 
@@ -344,11 +344,11 @@ public sealed partial class EngineSteps
     ];
 
     private static readonly IReadOnlyList<string> WithoutTraceability =
-        [.. SpecTree.Sections.Where(static section => !section.StartsWith($"## {Traceability}\n", StringComparison.Ordinal))];
+        [.. SpechtTree.Sections.Where(static section => !section.StartsWith($"## {Traceability}\n", StringComparison.Ordinal))];
 
     private readonly List<string> _specifications = [];
 
-    private SpecTree? _tree;
+    private SpechtTree? _tree;
 
     private SpechtReport? _report;
 

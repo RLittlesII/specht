@@ -89,7 +89,7 @@ public sealed class ToolVersionIntegrationTests : IDisposable
         _tree.WriteFeature("0001", "F1", featureFile: null);
         if (!manifest)
         {
-            File.Delete(Path.Combine(_tree.Root, SpecTree.ManifestPath));
+            File.Delete(Path.Combine(_tree.Root, SpechtTree.ManifestPath));
         }
     }
 
@@ -101,5 +101,5 @@ public sealed class ToolVersionIntegrationTests : IDisposable
                     static file => Convert.ToHexString(SHA256.HashData(File.ReadAllBytes(file)))),
             StringComparer.Ordinal);
 
-    private readonly SpecTree _tree = new();
+    private readonly SpechtTree _tree = new();
 }

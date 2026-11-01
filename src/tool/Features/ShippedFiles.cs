@@ -47,7 +47,7 @@ public sealed partial class ShippedFiles(IReadOnlyDictionary<string, byte[]> shi
                     ? version
                     : throw new InvalidOperationException($"{entry.Name.Value} is embedded with an invalid schema version."),
                 Relative: entry.Name.Groups["folder"].Success
-                    ? $"{SpecManifestStore.ConfigurationFolder}/{entry.Name.Groups["folder"].Value}/{entry.Name.Groups["path"].Value}"
-                    : SpecManifestStore.RelativePath,
+                    ? $"{SpechtManifestStore.ConfigurationFolder}/{entry.Name.Groups["folder"].Value}/{entry.Name.Groups["path"].Value}"
+                    : SpechtManifestStore.RelativePath,
                 entry.Bytes));
 }

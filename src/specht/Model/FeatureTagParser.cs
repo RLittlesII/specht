@@ -12,7 +12,7 @@ public sealed class FeatureTagParser
     /// <param name="structure">The effective manifest, or null for the legacy scanner.</param>
     /// <returns>Each recognized claim tag in file order.</returns>
     /// <implements epic="0001" feature="F1" claim="B-004" />
-    public IReadOnlyList<FeatureTag> Parse(string text, SpecStructure? structure = null)
+    public IReadOnlyList<FeatureTag> Parse(string text, SpechtStructure? structure = null)
     {
         var tags = new List<FeatureTag>();
         var form = structure?.ClaimTagForm;

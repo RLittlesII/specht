@@ -15,7 +15,7 @@ namespace Specht.Rules;
 /// that happens to hold the file.
 /// </remarks>
 /// <implements epic="0001" feature="F1" claim="B-001" />
-public sealed class ChildItemRule : ISpecRule
+public sealed class ChildItemRule : ISpechtRule
 {
     /// <inheritdoc />
     public string Id => "SPEC040";
@@ -25,7 +25,7 @@ public sealed class ChildItemRule : ISpecRule
 
     /// <inheritdoc />
     /// <implements epic="0001" feature="F1" claim="B-001" />
-    public IEnumerable<SpecViolation> Evaluate(SpecModel model)
+    public IEnumerable<SpechtViolation> Evaluate(SpechtModel model)
     {
         var byDirectory = model.Items
             .GroupBy(static item => item.ParentDirectory, StringComparer.Ordinal)
@@ -62,7 +62,7 @@ public sealed class ChildItemRule : ISpecRule
     }
 
     /// <implements epic="0001" feature="F1" claim="B-001" />
-    private static IEnumerable<SpecViolation> CheckDeclared(
+    private static IEnumerable<SpechtViolation> CheckDeclared(
         FeatureSpec feature,
         IReadOnlyCollection<ChildItem> candidates,
         string key,
@@ -77,9 +77,9 @@ public sealed class ChildItemRule : ISpecRule
 
             if (matches.Count == 0)
             {
-                yield return new SpecViolation(
+                yield return new SpechtViolation(
                     ruleId,
-                    SpecSeverity.Error,
+                    SpechtSeverity.Error,
                     feature.RelativePath,
                     feature.Document.Frontmatter.LineOf(key),
                     declared,
@@ -93,9 +93,9 @@ public sealed class ChildItemRule : ISpecRule
 
             if (matches.Count > 1)
             {
-                yield return new SpecViolation(
+                yield return new SpechtViolation(
                     ruleId,
-                    SpecSeverity.Error,
+                    SpechtSeverity.Error,
                     feature.RelativePath,
                     feature.Document.Frontmatter.LineOf(key),
                     declared,
@@ -109,9 +109,9 @@ public sealed class ChildItemRule : ISpecRule
 
             if (requiredType is not null && !string.Equals(matches[0].Type, requiredType, StringComparison.Ordinal))
             {
-                yield return new SpecViolation(
+                yield return new SpechtViolation(
                     ruleId,
-                    SpecSeverity.Error,
+                    SpechtSeverity.Error,
                     matches[0].RelativePath,
                     matches[0].Frontmatter.LineOf("type"),
                     declared,
@@ -124,7 +124,7 @@ public sealed class ChildItemRule : ISpecRule
     }
 
     /// <implements epic="0001" feature="F1" claim="B-001" />
-    private static IEnumerable<SpecViolation> CheckItems(SpecModel model)
+    private static IEnumerable<SpechtViolation> CheckItems(SpechtModel model)
     {
         var seen = new Dictionary<string, string>(StringComparer.Ordinal);
 
@@ -137,9 +137,9 @@ public sealed class ChildItemRule : ISpecRule
 
             if (!string.Equals(item.Id, item.FileNameId, StringComparison.Ordinal))
             {
-                yield return new SpecViolation(
+                yield return new SpechtViolation(
                     "SPEC043",
-                    SpecSeverity.Error,
+                    SpechtSeverity.Error,
                     item.RelativePath,
                     item.Frontmatter.LineOf("id"),
                     item.Id,
@@ -151,9 +151,9 @@ public sealed class ChildItemRule : ISpecRule
 
             if (!seen.TryAdd(item.Id, item.RelativePath))
             {
-                yield return new SpecViolation(
+                yield return new SpechtViolation(
                     "SPEC044",
-                    SpecSeverity.Error,
+                    SpechtSeverity.Error,
                     item.RelativePath,
                     item.Frontmatter.LineOf("id"),
                     item.Id,
@@ -169,9 +169,9 @@ public sealed class ChildItemRule : ISpecRule
             if (parent is not null && item.Parent is not null
                                    && !string.Equals(item.Parent, parent.Identity, StringComparison.Ordinal))
             {
-                yield return new SpecViolation(
+                yield return new SpechtViolation(
                     "SPEC043",
-                    SpecSeverity.Error,
+                    SpechtSeverity.Error,
                     item.RelativePath,
                     item.Frontmatter.LineOf("parent"),
                     item.Id,
@@ -184,7 +184,7 @@ public sealed class ChildItemRule : ISpecRule
     }
 
     /// <implements epic="0001" feature="F1" claim="B-001" />
-    private static IEnumerable<SpecViolation> CheckSequences(SpecModel model)
+    private static IEnumerable<SpechtViolation> CheckSequences(SpechtModel model)
     {
         var byEpic = model.Items
             .Where(static item => item.Id is not null)
@@ -204,9 +204,9 @@ public sealed class ChildItemRule : ISpecRule
 
                 if (numbers[index].Number != expected)
                 {
-                    yield return new SpecViolation(
+                    yield return new SpechtViolation(
                         "SPEC044",
-                        SpecSeverity.Error,
+                        SpechtSeverity.Error,
                         numbers[index].Item.RelativePath,
                         numbers[index].Item.Frontmatter.LineOf("id"),
                         numbers[index].Item.Id,

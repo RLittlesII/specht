@@ -165,7 +165,7 @@ public sealed class InitCommandIntegrationTests : IDisposable
     {
         // Given
         var root = Path.Combine(_sandbox, "repo");
-        var manifestPath = Path.Combine(root, SpecTree.ManifestPath);
+        var manifestPath = Path.Combine(root, SpechtTree.ManifestPath);
         const string manifest = "{\r\n  \"schemaVersion\": \"7.0.0\"\r\n}\r\n";
         Directory.CreateDirectory(Path.GetDirectoryName(manifestPath)!);
         File.WriteAllText(manifestPath, manifest);
@@ -192,7 +192,7 @@ public sealed class InitCommandIntegrationTests : IDisposable
     {
         // Given
         var root = Path.Combine(_sandbox, "repo");
-        var manifestPath = Path.Combine(root, SpecTree.ManifestPath);
+        var manifestPath = Path.Combine(root, SpechtTree.ManifestPath);
         Directory.CreateDirectory(Path.GetDirectoryName(manifestPath)!);
         File.WriteAllText(manifestPath, manifest);
         File.WriteAllText(Path.Combine(root, "README.md"), "Synthetic repository\r\n");
@@ -226,7 +226,7 @@ public sealed class InitCommandIntegrationTests : IDisposable
 
         // Then
         exitCode.Should().Be(ExitCodes.Success, stdout + stderr);
-        using var manifest = JsonDocument.Parse(File.ReadAllText(Path.Combine(_sandbox, SpecTree.ManifestPath)));
+        using var manifest = JsonDocument.Parse(File.ReadAllText(Path.Combine(_sandbox, SpechtTree.ManifestPath)));
         manifest.RootElement.GetProperty("schemaVersion").GetString().Should().Be(newest.ToString());
     }
 
@@ -248,7 +248,7 @@ public sealed class InitCommandIntegrationTests : IDisposable
 
         // Then
         result.ExitCode.Should().Be(0, result.Output);
-        fileSystem.File.Exists(Path.Combine(workingDirectory, SpecTree.ManifestPath)).Should().BeTrue(result.Output);
+        fileSystem.File.Exists(Path.Combine(workingDirectory, SpechtTree.ManifestPath)).Should().BeTrue(result.Output);
     }
 
     [Theory]

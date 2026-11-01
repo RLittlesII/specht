@@ -31,8 +31,8 @@ public sealed class SchemaPinUnitTests
             files.AddFile("repo/.specht/manifest.json", new MockFileData(manifest));
         }
         var versions = EngineServices.Versions();
-        var handler = new SchemaVersionManager(new SpecManifestStore(files), new SpecManifestParser(versions),
-            new ManifestPinEditor(new SpecManifestParser(versions), versions), versions);
+        var handler = new SchemaVersionManager(new SpechtManifestStore(files), new SpechtManifestParser(versions),
+            new ManifestPinEditor(new SpechtManifestParser(versions), versions), versions);
         var before = files.AllFiles.ToDictionary(static path => path, files.File.ReadAllBytes);
 
         // When
@@ -53,7 +53,7 @@ public sealed class SchemaPinUnitTests
         // Given
         var files = new MockFileSystem();
         files.AddFile("repo/.specht/manifest.json", new MockFileData("original bytes"));
-        var store = new SpecManifestStore(files);
+        var store = new SpechtManifestStore(files);
         using var cancellation = new CancellationTokenSource();
         await cancellation.CancelAsync();
         var before = files.AllFiles.ToArray();

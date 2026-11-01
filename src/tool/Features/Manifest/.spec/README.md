@@ -117,8 +117,8 @@ A manifest states only what its author wrote; every key it leaves out is read fr
 | ------------------------------------------------------------------------ | -------------- | ------------------------------------------------------------------------------- |
 | Declared values and exact-pin omission defaults (B-003, B-004, B-006)    | Business       | The existing manifest parser, alongside its current value selection             |
 | Omission that disables an optional capability (B-007, OQ-2)              | Business       | The parser's existing declaration checks; the effective document preserves them |
-| Effective levels from the pinned vocabulary and rule pages (B-005)       | Business       | The existing `RuleEntriesReader.Read(SpecStructure)`                            |
-| Root observation, one manifest read and input failures                   | Technical      | The existing `SpecManifestStore` and `SpecSchemasLoader`                        |
+| Effective levels from the pinned vocabulary and rule pages (B-005)       | Business       | The existing `RuleEntriesReader.Read(SpechtStructure)`                          |
+| Root observation, one manifest read and input failures                   | Technical      | The existing `SpechtManifestStore` and `SpechtSchemasLoader`                    |
 | A reusable effective JSON document with no file writes (B-007, C-1, C-2) | Both           | A concrete engine reader under `Specht.Manifest`                                |
 | Console output, formatting and command exit codes                        | Technical      | The manifest command folds failures and writes reader-produced text             |
 
@@ -128,20 +128,20 @@ A manifest states only what its author wrote; every key it leaves out is read fr
 
 ### Existing implementation to extend
 
-- [`SpecSchemasLoader.LoadManifest`](../../../../specht/Model/SpecSchemasLoader.cs)
+- [`SpechtSchemasLoader.LoadManifest`](../../../../specht/Model/SpechtSchemasLoader.cs)
   owns root and manifest observation and the wrapping of malformed input.
-  [`SpecManifestStore.ReadManifest`](../../../../specht/Manifest/SpecManifestStore.cs)
+  [`SpechtManifestStore.ReadManifest`](../../../../specht/Manifest/SpechtManifestStore.cs)
   is the file read; it already handles the encodings the check accepts.
-- [`SpecManifestParser.Parse`](../../../../specht/Manifest/SpecManifestParser.cs)
+- [`SpechtManifestParser.Parse`](../../../../specht/Manifest/SpechtManifestParser.cs)
   selects the exact pin's embedded `SchemaVersion.Manifest` and resolves each
   value. `Filled`, `Discovery`, table-role filling and claim-tag selection
   already define omission granularity. `PinnedVersion` rejects unshipped pins
   and rule ids outside their vocabulary.
-- [`RuleEntriesReader.Read(SpecStructure)`](../../../../specht/Rules/RuleEntriesReader.cs)
+- [`RuleEntriesReader.Read(SpechtStructure)`](../../../../specht/Rules/RuleEntriesReader.cs)
   is the pure, already-loaded path that supplies each rule's effective level.
   Its explicit-level precedence includes `off`; an omitted level comes from
   the rule page, even when the embedded manifest declares another level.
-- [`SpecStructure`](../../../../specht/Manifest/SpecStructure.cs) is the rules'
+- [`SpechtStructure`](../../../../specht/Manifest/SpechtStructure.cs) is the rules'
   typed view, not a serializable manifest. It contains declaration flags and
   derived upstream addresses, and omits accepted `$` metadata and
   `codeAnalysis`. Serializing that record would lose declared JSON and could
@@ -152,12 +152,12 @@ A manifest states only what its author wrote; every key it leaves out is read fr
 The parser and loader retain their current entry points and expose a document
 path through the same parsing and failure handling.
 
-| Implementation                                                                            | Responsibility                                                                                                                      |
-| ----------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
-| [`SpecManifestParser.ParseDocument`](../../../../specht/Manifest/SpecManifestParser.cs)   | Capture selected defaults during the existing parse, returning the validated structure with an owned JSON document                  |
-| [`SpecManifestDocument`](../../../../specht/Manifest/SpecManifestDocument.cs)             | Carry the invocation-local structure and document without behavior or loaded state                                                  |
-| [`SpecSchemasLoader.LoadManifestDocument`](../../../../specht/Model/SpecSchemasLoader.cs) | Share the existing root checks, one store read and malformed-input wrapping through its two-caller `ReadManifest` helper            |
-| [`EffectiveManifestReader.Read`](../../../../specht/Manifest/EffectiveManifestReader.cs)  | Call the document loader once and expand effective rule levels through the already-loaded structure overload of `RuleEntriesReader` |
+| Implementation                                                                                | Responsibility                                                                                                                      |
+| --------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| [`SpechtManifestParser.ParseDocument`](../../../../specht/Manifest/SpechtManifestParser.cs)   | Capture selected defaults during the existing parse, returning the validated structure with an owned JSON document                  |
+| [`SpechtManifestDocument`](../../../../specht/Manifest/SpechtManifestDocument.cs)             | Carry the invocation-local structure and document without behavior or loaded state                                                  |
+| [`SpechtSchemasLoader.LoadManifestDocument`](../../../../specht/Model/SpechtSchemasLoader.cs) | Share the existing root checks, one store read and malformed-input wrapping through its two-caller `ReadManifest` helper            |
+| [`EffectiveManifestReader.Read`](../../../../specht/Manifest/EffectiveManifestReader.cs)      | Call the document loader once and expand effective rule levels through the already-loaded structure overload of `RuleEntriesReader` |
 
 The paired parser result is an invocation-local data value; it carries no
 store, root path, cache or behavior. Keep the existing `Parse` and

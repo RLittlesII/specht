@@ -17,7 +17,7 @@ namespace Specht.Composition;
 public static class SpechtEngineServiceCollectionExtensions
 {
     /// <summary>
-    /// Registers every engine type as a singleton, each rule by name in ordinal order of its <see cref="ISpecRule.Id"/>,
+    /// Registers every engine type as a singleton, each rule by name in ordinal order of its <see cref="ISpechtRule.Id"/>,
     /// the order the report's violations are collected in (<c>0001-F1</c> B-004, C-9). A rule that is not registered
     /// here does not run, and a file system registered earlier is kept.
     /// </summary>
@@ -29,36 +29,36 @@ public static class SpechtEngineServiceCollectionExtensions
         services.TryAddSingleton<IFileSystem, FileSystem>();
         services.AddSingleton<SpechtResources>();
         services.TryAddSingleton(static provider => new SchemaVersions(provider.GetRequiredService<SpechtResources>().Texts));
-        services.AddSingleton<SpecManifestParser>();
+        services.AddSingleton<SpechtManifestParser>();
         services.AddSingleton<FrontmatterReader>();
         services.AddSingleton<FeatureTagParser>();
-        services.AddSingleton<SpecDiscovery>();
+        services.AddSingleton<SpechtDiscovery>();
         services.AddSingleton<MatrixResolver>();
-        services.AddSingleton<SpecManifestStore>();
+        services.AddSingleton<SpechtManifestStore>();
         services.AddSingleton<ManifestPinEditor>();
         services.AddSingleton<ManifestRuleEditor>();
         services.AddSingleton<ManifestKeyEditor>();
         services.AddSingleton<RuleLevelSetter>();
         services.AddSingleton<SchemaVersionManager>();
         services.AddSingleton<UpstreamSchemaCopy>();
-        services.AddSingleton<SpecSchemasLoader>();
+        services.AddSingleton<SpechtSchemasLoader>();
         services.AddSingleton<RuleExplanationReader>();
         services.AddSingleton<RuleEntriesReader>();
         services.AddSingleton<EffectiveManifestReader>();
-        services.AddSingleton<SpecModelLoader>();
+        services.AddSingleton<SpechtModelLoader>();
         services.AddSingleton<SpechtRunner>();
-        services.AddSingleton<ISpecRule, FrontmatterSchemaRule>();
-        services.AddSingleton<ISpecRule, SectionStructureRule>();
-        services.AddSingleton<ISpecRule, IdentityRule>();
-        services.AddSingleton<ISpecRule, FeatureFileRule>();
-        services.AddSingleton<ISpecRule, ClaimRule>();
-        services.AddSingleton<ISpecRule, WaiverRule>();
-        services.AddSingleton<ISpecRule, RetiredClaimRule>();
-        services.AddSingleton<ISpecRule, ChildItemRule>();
-        services.AddSingleton<ISpecRule, DependencyRule>();
-        services.AddSingleton<ISpecRule, ApprovalRule>();
+        services.AddSingleton<ISpechtRule, FrontmatterSchemaRule>();
+        services.AddSingleton<ISpechtRule, SectionStructureRule>();
+        services.AddSingleton<ISpechtRule, IdentityRule>();
+        services.AddSingleton<ISpechtRule, FeatureFileRule>();
+        services.AddSingleton<ISpechtRule, ClaimRule>();
+        services.AddSingleton<ISpechtRule, WaiverRule>();
+        services.AddSingleton<ISpechtRule, RetiredClaimRule>();
+        services.AddSingleton<ISpechtRule, ChildItemRule>();
+        services.AddSingleton<ISpechtRule, DependencyRule>();
+        services.AddSingleton<ISpechtRule, ApprovalRule>();
 
-        services.Decorate<ISpecRule, FaultIsolatedRule>();
+        services.Decorate<ISpechtRule, FaultIsolatedRule>();
 
         return services;
     }

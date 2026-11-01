@@ -21,19 +21,19 @@ public sealed class DiskSchemaEvaluationUnitTests
         // Given
         var files = new MockFileSystem(new Dictionary<string, MockFileData>
         {
-            ["repo/" + SpecTree.ManifestPath] = new("""{ "identifiers": { "epic": "^[0-9]{4}$" } }"""),
-            ["repo/" + SpecTree.FeatureSchemaPath] = new("{}"),
-            ["repo/" + SpecTree.ItemSchemaPath] = new("{}"),
-            ["repo/" + SpecTree.EpicSchemaPath] = new("{}"),
+            ["repo/" + SpechtTree.ManifestPath] = new("""{ "identifiers": { "epic": "^[0-9]{4}$" } }"""),
+            ["repo/" + SpechtTree.FeatureSchemaPath] = new("{}"),
+            ["repo/" + SpechtTree.ItemSchemaPath] = new("{}"),
+            ["repo/" + SpechtTree.EpicSchemaPath] = new("{}"),
         });
-        var relative = SpecTree.FrontmatterSchemaFolder + "/" + kind + ".schema.json";
+        var relative = SpechtTree.FrontmatterSchemaFolder + "/" + kind + ".schema.json";
         files.AddFile("repo/" + relative, new MockFileData("{ \"$ref\": \"#/missing\" }"));
         var schemas = EngineServices.Schemas(files).Load("repo", SchemaSourceSelection.Disk);
         Frontmatter frontmatter = new FrontmatterFixture().WithNode(new JsonObject());
-        FeatureSpec feature = new FeatureSpecFixture().WithDocument(new SpecDocumentFixture().WithFrontmatter(frontmatter));
+        FeatureSpec feature = new FeatureSpecFixture().WithDocument(new SpechtDocumentFixture().WithFrontmatter(frontmatter));
         ChildItem task = new ChildItemFixture().WithFrontmatter(frontmatter);
         EpicFile epic = new EpicFileFixture().WithFrontmatter(frontmatter);
-        SpecModel model = new SpecModelFixture().WithSchemas(schemas).WithFeatures(feature).WithItems(task).WithList([epic]);
+        SpechtModel model = new SpechtModelFixture().WithSchemas(schemas).WithFeatures(feature).WithItems(task).WithList([epic]);
         var rule = new FrontmatterSchemaRule();
 
         // When

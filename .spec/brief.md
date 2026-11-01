@@ -93,17 +93,17 @@ and its tests before changing it; do not regenerate the checker.
 
 The source of truth is in this repository:
 
-| Path                                                                          | What                                                                                         |
-| ----------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
-| `src/specht/`                                                                 | The rule engine: discovery, Markdown model, frontmatter, schemas, rules, runner and report   |
-| `test/tests/`                                                                 | Unit and integration tests, including the synthetic `SpecTree` builder and baseline fixtures |
-| `src/tool/schema/v0.1.0/frontmatter/`                                         | The embedded frontmatter schemas                                                             |
-| `src/tool/manifest/v0.1.0/`                                                   | The embedded manifest                                                                        |
-| `src/tool/templates/v0.1.0/`                                                  | The embedded templates                                                                       |
-| `.specht/`                                                                    | The live configuration this repository checks itself with                                    |
-| `.build/SpechtBuild.cs`, `.husky/pre-commit`                                  | Build and pre-commit call sites                                                              |
-| `.claude/skills/spec-and-traceability/`, `.claude/skills/specht-conventions/` | The specification model and repository conventions                                           |
-| `Directory.Packages.props`                                                    | Central dependency versions, including the baseline engine pins                              |
+| Path                                                                          | What                                                                                           |
+| ----------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| `src/specht/`                                                                 | The rule engine: discovery, Markdown model, frontmatter, schemas, rules, runner and report     |
+| `test/tests/`                                                                 | Unit and integration tests, including the synthetic `SpechtTree` builder and baseline fixtures |
+| `src/tool/schema/v0.1.0/frontmatter/`                                         | The embedded frontmatter schemas                                                               |
+| `src/tool/manifest/v0.1.0/`                                                   | The embedded manifest                                                                          |
+| `src/tool/templates/v0.1.0/`                                                  | The embedded templates                                                                         |
+| `.specht/`                                                                    | The live configuration this repository checks itself with                                      |
+| `.build/SpechtBuild.cs`, `.husky/pre-commit`                                  | Build and pre-commit call sites                                                                |
+| `.claude/skills/spec-and-traceability/`, `.claude/skills/specht-conventions/` | The specification model and repository conventions                                             |
+| `Directory.Packages.props`                                                    | Central dependency versions, including the baseline engine pins                                |
 
 `0001-F1` decision 0004 defines the synthetic baseline tree and golden report.
 Tests never require a consumer checkout. The requirements and rule vocabulary
