@@ -18,10 +18,24 @@ milestone: null
 children: []
 depends_on: ["F1"]
 blocks:
-  ["F3", "F4", "F5", "F8", "F9", "F10", "F11", "F13", "F15", "F17", "0132/F2"]
+  [
+    "F3",
+    "F4",
+    "F5",
+    "F8",
+    "F9",
+    "F10",
+    "F11",
+    "F13",
+    "F15",
+    "F17",
+    "0132/F2",
+    "0132/F3",
+    "0132/F4",
+  ]
 spikes: []
 created: "2026-10-07"
-updated: "2026-10-30"
+updated: "2026-10-31"
 github_issue: null
 synced_at: null
 ---
