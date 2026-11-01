@@ -26,6 +26,11 @@ Mediator clauses superseded 2026-10-31 by
 [ADR-0026](0026-the-source-generated-mediator-measured-no-benefit-and-direct-calls-stay.md):
 the owner declined the source-generated mediator; hosts keep direct calls.
 
+Execution gate for the remaining structural stages replaced 2026-10-31 by
+[ADR-0027](0027-structural-stages-proceed-on-a-no-regression-guard.md): each
+stage's pull request shows no regression on the whole-check benchmark beside
+the golden report, and item `0153` follows stage 3.
+
 Supersedes in part, each record's body unedited and its Status gaining one
 line pointing here:
 [ADR-0001](0001-resolve-the-engine-from-the-container.md),

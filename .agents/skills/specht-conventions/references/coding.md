@@ -94,10 +94,14 @@ without an ADR.
 ## Architecture execution
 
 [ADR-0014](../../../../.spec/adr/0014-architecture-rollout-requires-benchmark-evidence.md)
-owns the benchmark gate. Read it before applying ADR-0010's target or moving a
-staged architecture item into a feature. Its acceptance is not permission to
-skip evidence or prerequisites. The mediator evaluation it required ended in
-no adoption
+holds that an accepted target is not permission to skip a stage's
+prerequisites. Read it before applying ADR-0010's target or moving a staged
+architecture item into a feature.
+[ADR-0027](../../../../.spec/adr/0027-structural-stages-proceed-on-a-no-regression-guard.md)
+lifts its benchmark gate for ADR-0010's structural stages and owns the
+per-stage guard: the whole-check benchmark on the base `main` commit and the
+branch head, judged by `0109-F5`'s review screens, the owner ruling on a flag.
+The mediator evaluation ADR-0014 required ended in no adoption
 ([ADR-0026](../../../../.spec/adr/0026-the-source-generated-mediator-measured-no-benefit-and-direct-calls-stay.md)):
 hosts call the engine directly, with no dispatcher and no handwritten
 substitute.

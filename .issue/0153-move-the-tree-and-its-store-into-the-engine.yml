@@ -2,7 +2,7 @@ id: "0153"
 type: refactor
 title: Move SpechtTree and its store out of the benchmarks into the engine
 
-status: blocked
+status: ready-for-architecture
 
 value: 3
 risk: 3
@@ -10,7 +10,7 @@ risk: 3
 parent: null
 children: []
 
-depends_on: ["0147", "0216"] # the three types this moves are built by 0147; nothing to move until it lands
+depends_on: ["0147", "0216", "0156", "0157", "0158", "0159", "0160", "0161", "0162", "0163"] # the three types this moves are built by 0147; nothing to move until it lands. 0156 to 0163 by the owner's order in ADR-0027, not a code dependency; 0216 is done and stays as the record of the evaluation
 spikes: []
 
 spec: null
@@ -18,12 +18,13 @@ spec: null
 claims: []
 
 created: "2026-10-11"
-updated: "2026-10-14"
+updated: "2026-10-31"
 closed: null
 
 summary: |
-  Paused by ADR-0014: benchmark evaluation 0216 must establish that the
-  architecture benefit justifies its cost before this migration proceeds.
+  ADR-0027 lifted ADR-0014's benchmark gate on 2026-10-31: this stage
+  proceeds without benefit evidence, and its pull request carries the
+  no-regression guard.
 
   The refactor story the repository owner asked for on pull request #114,
   2026-10-11, reviewing `test/tests/Benchmarks/SpechtTree.Integration.Tests.cs`:
@@ -94,6 +95,7 @@ acceptance_criteria:
   - "10. `0109-F3` C-3 holds: the measured check reads a tree on disk, written by the store before the measurement."
   - "No .feature change needed: refactor - the tree and its store move from the benchmark project into production code; a tree of a given size holds the same files at the same relative paths with the same contents, the check reports no violation on it, and the tool's report is unchanged."
   - "Constraints preserved: 0001-F1 C-9, 0109-F1 C-8, 0109-F1 C-9, 0109-F1 C-10, 0109-F3 C-3"
+  - "The guard of ADR-0027: CheckBenchmarks at 100 and 1,000 specifications on the base `main` commit and on the branch head, judged by 0211's rule, numbers in the PR description and in a decisions entry; a flag waits for the owner's ruling."
 
 decisions:
   - |
@@ -151,6 +153,21 @@ decisions:
     `ready-for-architecture`: criterion 3 has the owner say whether the
     load is built in this item, and ADR-0010's split answers it without
     the owner's word on this item's own page.
+  - |
+    2026-10-31, spec-author: on ADR-0027
+    (.spec/adr/0027-structural-stages-proceed-on-a-no-regression-guard.md),
+    accepted by the repository owner the same day, which lifts ADR-0014's
+    benchmark gate for ADR-0010's remaining structural stages and puts a
+    no-regression guard on each stage's pull request. The pause in the
+    summary is replaced and a criterion for the guard is added. 0216 is
+    done and stays in `depends_on` as the record of the evaluation.
+    Status `blocked` to `ready-for-architecture`, as it stood before the
+    gate. Criterion 3 still asks the owner's word on this page on whether the
+    load is built here, which ADR-0010's split with 0166 answers without it,
+    and criterion 5's design - which of `InitWriter` and the test tree the
+    moved types replace, feed or leave alone - is not decided. `depends_on`
+    gains 0156 to 0163 by the owner's order "then splits", which runs this
+    item after the stage-3 splits; it is an ordering, not a code dependency.
 
 out_of_scope:
   - 'Anything in pull request #114 - the owner''s "later". The tests under `test/tests/Benchmarks/` and the reference stay as #114 has them until this item (`0109-F1` OQ-5).'
