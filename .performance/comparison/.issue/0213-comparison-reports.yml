@@ -2,7 +2,7 @@ id: "0213"
 type: task
 title: Render and retain release comparison reports
 
-status: in-progress
+status: done
 
 risk: 3
 
@@ -16,7 +16,7 @@ claims: ["B-015", "B-016", "B-022"]
 
 created: "2026-10-13"
 updated: "2026-11-01"
-closed: null
+closed: "2026-11-01"
 
 summary: |
   Render and persist the comparison document produced by 0211 using the design's
