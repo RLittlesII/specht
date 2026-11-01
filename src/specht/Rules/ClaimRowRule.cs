@@ -7,7 +7,7 @@ namespace Specht.Rules;
 /// <remarks>
 /// A <c>Missing</c> test cell is deliberately not a violation here. It is the
 /// honest value until the test exists, and it blocks the issue reaching done
-/// rather than the specification being agreed - see ApprovalRule for the point
+/// rather than the specification being agreed - see <see cref="ApprovalCoverageRule"/> for the point
 /// at which it does become one.
 /// </remarks>
 /// <implements epic="0001" feature="F1" claim="B-001" />

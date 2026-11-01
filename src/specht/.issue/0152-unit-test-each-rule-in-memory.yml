@@ -30,13 +30,17 @@ summary: |
 
   Each of the eight rules AddSpechtEngine() registers gets one Unit class
   that calls the rule's Evaluate over a SpechtModel built with
-  SpechtModelFixture, with no tree on disk and no container. FeatureFileRule
-  is built over a FeatureFileReader on a MockFileSystem, as
-  FeatureFileRuleUnitTests already does. Four rules have a Unit class today
-  (ApprovalRule, ClaimRule, SectionStructureRule, FeatureFileRule) and four
-  have none (ChildItemRule, DependencyRule, FrontmatterSchemaRule,
-  IdentityRule); the existing classes are extended where a rule id they
-  report is pinned by none of their tests.
+  SpechtModelFixture, with no tree on disk and no container. Before the
+  splits, four of the eight classes had a Unit class and four had none.
+  The rules split from the first four are ApprovalCoverageRule and
+  ApprovalSignOffRule; ClaimIdRule and ClaimRowRule; SectionContractRule
+  and TableHeaderRule; and CompanionFileRule and ClaimTagRule. The rules
+  split from the other four are DeclaredChildrenRule, DeclaredSpikesRule,
+  ItemPlacementRule and ItemSequenceRule; DependencyTargetRule,
+  DependencySymmetryRule and DependencyCycleRule; FrontmatterPresentRule,
+  FeatureFrontmatterRule, ItemFrontmatterRule and EpicFrontmatterRule; and
+  PathIdentityRule and DuplicateIdentityRule. The existing classes are
+  extended where a rule id they report is pinned by none of their tests.
 
   Depends on 0107 for the constructor-injected reader. It needs no design
   pass: § 8 says nothing in the design stands in the way since item 0104.
@@ -55,8 +59,8 @@ summary: |
   tests owed for B-004 are still owed after the last split.
 
   After item 0155 the companion tags are on the model, so the rules of
-  SPEC020 and SPEC021 are built with no reader and no MockFileSystem; the
-  second paragraph's sentence on FeatureFileRule no longer holds. How the
+  SPEC020 and SPEC021, CompanionFileRule and ClaimTagRule, are built with
+  no reader and no MockFileSystem. How the
   schema set of an in-memory model is built follows whichever of items
   0165 and 0166 has landed when this is taken.
 
@@ -71,7 +75,8 @@ acceptance_criteria:
   - "B-004 — every rule id a rule reports is pinned by at least one unit
     test of that rule: all twenty-one"
   - "B-004 — no test of these classes writes a tree to disk or builds a
-    container; `FeatureFileRule` reads through a `MockFileSystem`"
+    container; `CompanionFileRule` and `ClaimTagRule` read the companion
+    tags from the model (item 0155)"
   - "0001-F1 § 9's B-004 row moves `Partial` to `Covered` and names the
     classes."
   - "C-9 — no verdict changes; the golden-report test green, unedited"
@@ -107,6 +112,14 @@ decisions:
     dependencies are resolved, and eight of them are now open. The earlier
     criteria and summary are kept as written and read through the three
     criteria added.
+  - |
+    2026-11-01, spec-author: the splits 0156 to 0163 have built the
+    twenty-one rules, so the summary's second paragraph names them in place
+    of the eight classes they replaced, and the sentence and criterion
+    reading `FeatureFileRule` through a `MockFileSystem` now name
+    `CompanionFileRule` and `ClaimTagRule` reading the companion tags from
+    the model, as the reshaped criterion on item 0155 already required. No
+    claim, scope, dependency or status changes.
 
 out_of_scope:
   - "Rewriting or deleting the Integration rule tests - they stay as the tree-on-disk proof."
