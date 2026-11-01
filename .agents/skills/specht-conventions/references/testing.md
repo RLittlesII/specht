@@ -256,6 +256,17 @@ console output: the CLI prints MSBuild-server and other diagnostics there, and
 under load one landed after the value and became a framework name
 ([lesson 0014](../../../../.spec/lessons/0014-read-an-msbuild-property-from-its-result-file.md)).
 
+**A test never writes to the runner's own command files.** The runner parses
+the files `GITHUB_ENV`, `GITHUB_OUTPUT`, `GITHUB_STEP_SUMMARY` and
+`GITHUB_PATH` name after the step. A build a test starts writes nothing to
+them: `version.json` sets `cloudBuild.setVersionVariables` to `false`, and
+`RunnerCommandFilesIntegrationTests` proves it. A test that simulates a runner,
+setting `GITHUB_ACTIONS=true`, gives it private `GITHUB_ENV`, `GITHUB_OUTPUT`,
+`GITHUB_STEP_SUMMARY` and `GITHUB_PATH` files under its own scratch directory
+and deletes them. Child builds that appended version variables to the real
+`GITHUB_ENV` preceded two failed runs that had passed every test
+([lesson 0015](../../../../.spec/lessons/0015-a-test-never-shares-the-runners-command-files.md)).
+
 Never a copy of a real repository's `.spec/` tree, this one's included: a copied
 tree carries every rule's happy path at once and pins the test to whatever that
 tree happened to contain. No test touches the network, a live provider, or the
@@ -287,3 +298,5 @@ wall clock.
 - A literal `<TargetFramework>` in a project generated at run time and restored
   from an isolated feed.
 - A `-getProperty` value parsed from `dotnet msbuild` console output.
+- A test that simulates a runner with the runner's own `GITHUB_ENV`,
+  `GITHUB_OUTPUT`, `GITHUB_STEP_SUMMARY` or `GITHUB_PATH`.
