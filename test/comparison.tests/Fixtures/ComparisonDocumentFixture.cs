@@ -15,7 +15,7 @@ internal sealed partial class ComparisonDocumentFixture
     {
         WorkloadCase small = new WorkloadCaseFixture().WithOperationRevision("operation-revision-2").WithFixtureRevision("fixture-revision-3");
         var large = small with { Parameters = small.Parameters.SetItem("Specifications", new ParameterValue("number", "10")) };
-        SessionManifest session = new SessionManifestFixture().WithPairDigest(ComparisonJson.Digest((ReleasePair)new ReleasePairFixture()));
+        SessionManifest session = new SessionManifestFixture().WithPairDigest(ComparisonJson.Digest((ReleasePair)ReportFixtures.Pair()));
         MeasurementInventory previous = new MeasurementInventoryFixture().WithCases([new CaseEvidenceFixture().WithCase(small).WithObservations([
             new ObservationFixture().WithSourceFile(previousExport),
             new ObservationFixture().WithMetric(MetricKind.ManagedAllocation).WithValue(32).WithUnit("B").WithInterval(null)

@@ -22,10 +22,10 @@ public sealed class ReportBundlerIntegrationTests
             Directory.CreateDirectory(Path.Combine(root, ".artifacts", "benchmarks", "current"));
             File.WriteAllText(Path.Combine(root, ComparisonDocumentFixture.PreviousExport), ExportData.FullJson);
             File.WriteAllText(Path.Combine(root, ComparisonDocumentFixture.CurrentExport), ExportData.CurrentJson);
-            ReleasePair pair = new ReleasePairFixture();
+            ReleasePair pair = ReportFixtures.Pair();
             ComparisonDocument document = new ComparisonDocumentFixture();
-            IdentityMapping later = new IdentityMappingFixture().WithFullName("Synthetic.Check(2)");
-            IdentityMapping earlier = new IdentityMappingFixture();
+            IdentityMapping later = ReportFixtures.Mapping().WithFullName("Synthetic.Check(2)");
+            IdentityMapping earlier = ReportFixtures.Mapping();
             RawExport previous = new RawExportFixture().WithSide("previous").WithSourcePath(ComparisonDocumentFixture.PreviousExport);
             RawExport current = new RawExportFixture();
             var previousDigest = Convert.ToHexStringLower(SHA256.HashData(Encoding.UTF8.GetBytes(ExportData.FullJson)));
@@ -99,14 +99,14 @@ public sealed class ReportBundlerIntegrationTests
             Directory.CreateDirectory(Path.Combine(root, ".artifacts", "benchmarks", "current"));
             File.WriteAllText(Path.Combine(root, ComparisonDocumentFixture.PreviousExport), ExportData.FullJson);
             File.WriteAllText(Path.Combine(root, ComparisonDocumentFixture.CurrentExport), ExportData.CurrentJson);
-            ReleasePair pair = new ReleasePairFixture();
+            ReleasePair pair = ReportFixtures.Pair();
             ComparisonDocument document = new ComparisonDocumentFixture();
             RawExport previous = new RawExportFixture().WithSide("previous").WithSourcePath(ComparisonDocumentFixture.PreviousExport);
             var bundler = new ReportBundler(new FileSystem(), root);
 
             // When
-            var first = bundler.Create(pair, document, [new IdentityMappingFixture()], [previous, new RawExportFixture()], ".artifacts/benchmarks/first");
-            var second = bundler.Create(pair, document, [new IdentityMappingFixture()], [previous, new RawExportFixture()], ".artifacts/benchmarks/second");
+            var first = bundler.Create(pair, document, [ReportFixtures.Mapping()], [previous, new RawExportFixture()], ".artifacts/benchmarks/first");
+            var second = bundler.Create(pair, document, [ReportFixtures.Mapping()], [previous, new RawExportFixture()], ".artifacts/benchmarks/second");
 
             // Then
             var zip = File.ReadAllBytes(Path.Combine(root, first.Path));
@@ -143,8 +143,8 @@ public sealed class ReportBundlerIntegrationTests
             RawExport previous = new RawExportFixture().WithSide("previous").WithSourcePath(ComparisonDocumentFixture.PreviousExport);
 
             // When
-            var create = () => new ReportBundler(new FileSystem(), root).Create(new ReleasePairFixture(), new ComparisonDocumentFixture(),
-                [new IdentityMappingFixture()], [previous, new RawExportFixture()], ".artifacts/benchmarks/comparison");
+            var create = () => new ReportBundler(new FileSystem(), root).Create(ReportFixtures.Pair(), new ComparisonDocumentFixture(),
+                [ReportFixtures.Mapping()], [previous, new RawExportFixture()], ".artifacts/benchmarks/comparison");
 
             // Then
             create.Should().ThrowExactly<IOException>();
@@ -181,8 +181,8 @@ public sealed class ReportBundlerIntegrationTests
             RawExport previous = new RawExportFixture().WithSide("previous").WithSourcePath(ComparisonDocumentFixture.PreviousExport);
 
             // When
-            var bundle = new ReportBundler(new FileSystem(), root).Create(new ReleasePairFixture(), new ComparisonDocumentFixture(),
-                [new IdentityMappingFixture()], [previous, new RawExportFixture()], ".artifacts/benchmarks/comparison");
+            var bundle = new ReportBundler(new FileSystem(), root).Create(ReportFixtures.Pair(), new ComparisonDocumentFixture(),
+                [ReportFixtures.Mapping()], [previous, new RawExportFixture()], ".artifacts/benchmarks/comparison");
 
             // Then
             using var archive = new ZipArchive(new MemoryStream(File.ReadAllBytes(Path.Combine(root, bundle.Path))));
@@ -240,8 +240,8 @@ public sealed class ReportBundlerIntegrationTests
             RawExport previous = new RawExportFixture().WithSide("previous").WithSourcePath(ComparisonDocumentFixture.PreviousExport);
 
             // When
-            var bundle = new ReportBundler(new FileSystem(), root).Create(new ReleasePairFixture(), new ComparisonDocumentFixture(),
-                [new IdentityMappingFixture()], [previous, new RawExportFixture()], ".artifacts/benchmarks/comparison");
+            var bundle = new ReportBundler(new FileSystem(), root).Create(ReportFixtures.Pair(), new ComparisonDocumentFixture(),
+                [ReportFixtures.Mapping()], [previous, new RawExportFixture()], ".artifacts/benchmarks/comparison");
 
             // Then
             using var archive = new ZipArchive(new MemoryStream(File.ReadAllBytes(Path.Combine(root, bundle.Path))));
@@ -273,8 +273,8 @@ public sealed class ReportBundlerIntegrationTests
             RawExport previous = new RawExportFixture().WithSide("previous").WithSourcePath(ComparisonDocumentFixture.PreviousExport);
 
             // When
-            var create = () => new ReportBundler(new FileSystem(), root).Create(new ReleasePairFixture(),
-                new ComparisonDocumentFixture(ComparisonDocumentFixture.PreviousExport, source), [new IdentityMappingFixture()],
+            var create = () => new ReportBundler(new FileSystem(), root).Create(ReportFixtures.Pair(),
+                new ComparisonDocumentFixture(ComparisonDocumentFixture.PreviousExport, source), [ReportFixtures.Mapping()],
                 [previous, new RawExportFixture().WithSourcePath(source)], ".artifacts/benchmarks/comparison");
 
             // Then
@@ -307,7 +307,7 @@ public sealed class ReportBundlerIntegrationTests
             File.WriteAllText(Path.Combine(root, CaseOnlyName), ExportData.CurrentJson);
             File.WriteAllText(Path.Combine(parent, "outside", "Synthetic-report-full.json"), ExportData.CurrentJson);
             const string escaping = "../outside/Synthetic-report-full.json";
-            ReleasePair pair = new ReleasePairFixture();
+            ReleasePair pair = ReportFixtures.Pair();
             ComparisonDocument document = new ComparisonDocumentFixture();
             RawExport previous = new RawExportFixture().WithSide("previous").WithSourcePath(ComparisonDocumentFixture.PreviousExport);
             RawExport current = new RawExportFixture();
@@ -336,7 +336,7 @@ public sealed class ReportBundlerIntegrationTests
             }
 
             // When
-            var create = () => new ReportBundler(new FileSystem(), root).Create(pair, document, [new IdentityMappingFixture()], [.. exports],
+            var create = () => new ReportBundler(new FileSystem(), root).Create(pair, document, [ReportFixtures.Mapping()], [.. exports],
                 ".artifacts/benchmarks/comparison");
 
             // Then

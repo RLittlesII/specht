@@ -38,8 +38,8 @@ public sealed class ReportBundleAssetStoreIntegrationTests
             [Path.Combine("repo", ComparisonDocumentFixture.CurrentExport)] = new(ExportData.CurrentJson),
         });
         RawExport previous = new RawExportFixture().WithSide("previous").WithSourcePath(ComparisonDocumentFixture.PreviousExport);
-        var bundle = new ReportBundler(fileSystem, "repo").Create(new ReleasePairFixture(), new ComparisonDocumentFixture(),
-            [new IdentityMappingFixture()], [previous, new RawExportFixture()], ".artifacts/benchmarks/comparison");
+        var bundle = new ReportBundler(fileSystem, "repo").Create(ReportFixtures.Pair(), new ComparisonDocumentFixture(),
+            [ReportFixtures.Mapping()], [previous, new RawExportFixture()], ".artifacts/benchmarks/comparison");
         var zip = fileSystem.File.ReadAllBytes(Path.Combine("repo", bundle.Path));
         ReleaseRecord current = new ReleaseRecordFixture().WithId(20);
         var storage = new ReleaseAssetStorage();
@@ -77,8 +77,8 @@ public sealed class ReportBundleAssetStoreIntegrationTests
             [Path.Combine("repo", ComparisonDocumentFixture.CurrentExport)] = new(ExportData.CurrentJson),
         });
         RawExport previous = new RawExportFixture().WithSide("previous").WithSourcePath(ComparisonDocumentFixture.PreviousExport);
-        var bundle = new ReportBundler(fileSystem, "repo").Create(new ReleasePairFixture(), new ComparisonDocumentFixture(),
-            [new IdentityMappingFixture()], [previous, new RawExportFixture()], ".artifacts/benchmarks/comparison");
+        var bundle = new ReportBundler(fileSystem, "repo").Create(ReportFixtures.Pair(), new ComparisonDocumentFixture(),
+            [ReportFixtures.Mapping()], [previous, new RawExportFixture()], ".artifacts/benchmarks/comparison");
         var zip = fileSystem.File.ReadAllBytes(Path.Combine("repo", bundle.Path));
         ReleaseRecord current = new ReleaseRecordFixture().WithId(20);
         var storage = new ReleaseAssetStorage();
@@ -107,8 +107,8 @@ public sealed class ReportBundleAssetStoreIntegrationTests
             [Path.Combine("repo", ComparisonDocumentFixture.CurrentExport)] = new(ExportData.CurrentJson),
         });
         RawExport previous = new RawExportFixture().WithSide("previous").WithSourcePath(ComparisonDocumentFixture.PreviousExport);
-        var bundle = new ReportBundler(fileSystem, "repo").Create(new ReleasePairFixture(), new ComparisonDocumentFixture(),
-            [new IdentityMappingFixture()], [previous, new RawExportFixture()], ".artifacts/benchmarks/comparison");
+        var bundle = new ReportBundler(fileSystem, "repo").Create(ReportFixtures.Pair(), new ComparisonDocumentFixture(),
+            [ReportFixtures.Mapping()], [previous, new RawExportFixture()], ".artifacts/benchmarks/comparison");
         var zip = fileSystem.File.ReadAllBytes(Path.Combine("repo", bundle.Path));
         ReleaseRecord current = new ReleaseRecordFixture().WithId(20);
         var storage = new ReleaseAssetStorage();
@@ -137,8 +137,8 @@ public sealed class ReportBundleAssetStoreIntegrationTests
             [Path.Combine("repo", ComparisonDocumentFixture.CurrentExport)] = new(ExportData.CurrentJson),
         });
         RawExport previous = new RawExportFixture().WithSide("previous").WithSourcePath(ComparisonDocumentFixture.PreviousExport);
-        var bundle = new ReportBundler(fileSystem, "repo").Create(new ReleasePairFixture(), new ComparisonDocumentFixture(),
-            [new IdentityMappingFixture()], [previous, new RawExportFixture()], ".artifacts/benchmarks/comparison");
+        var bundle = new ReportBundler(fileSystem, "repo").Create(ReportFixtures.Pair(), new ComparisonDocumentFixture(),
+            [ReportFixtures.Mapping()], [previous, new RawExportFixture()], ".artifacts/benchmarks/comparison");
         var zip = fileSystem.File.ReadAllBytes(Path.Combine("repo", bundle.Path));
         ReleaseRecord current = new ReleaseRecordFixture().WithId(20);
         var storage = new ReleaseAssetStorage();
@@ -169,8 +169,8 @@ public sealed class ReportBundleAssetStoreIntegrationTests
             [Path.Combine("repo", ComparisonDocumentFixture.CurrentExport)] = new(ExportData.CurrentJson),
         });
         RawExport previous = new RawExportFixture().WithSide("previous").WithSourcePath(ComparisonDocumentFixture.PreviousExport);
-        var bundle = new ReportBundler(fileSystem, "repo").Create(new ReleasePairFixture(), new ComparisonDocumentFixture(),
-            [new IdentityMappingFixture()], [previous, new RawExportFixture()], ".artifacts/benchmarks/comparison");
+        var bundle = new ReportBundler(fileSystem, "repo").Create(ReportFixtures.Pair(), new ComparisonDocumentFixture(),
+            [ReportFixtures.Mapping()], [previous, new RawExportFixture()], ".artifacts/benchmarks/comparison");
         var zip = fileSystem.File.ReadAllBytes(Path.Combine("repo", bundle.Path));
         ReleaseRecord current = new ReleaseRecordFixture().WithId(20);
         var storage = new ReleaseAssetStorage();
@@ -197,8 +197,8 @@ public sealed class ReportBundleAssetStoreIntegrationTests
             [Path.Combine("repo", ComparisonDocumentFixture.CurrentExport)] = new(ExportData.CurrentJson),
         });
         RawExport previous = new RawExportFixture().WithSide("previous").WithSourcePath(ComparisonDocumentFixture.PreviousExport);
-        var bundle = new ReportBundler(fileSystem, "repo").Create(new ReleasePairFixture(), new ComparisonDocumentFixture(),
-            [new IdentityMappingFixture()], [previous, new RawExportFixture()], ".artifacts/benchmarks/comparison");
+        var bundle = new ReportBundler(fileSystem, "repo").Create(ReportFixtures.Pair(), new ComparisonDocumentFixture(),
+            [ReportFixtures.Mapping()], [previous, new RawExportFixture()], ".artifacts/benchmarks/comparison");
         var zip = fileSystem.File.ReadAllBytes(Path.Combine("repo", bundle.Path));
         ReleaseRecord current = new ReleaseRecordFixture().WithId(20);
         var storage = new ReleaseAssetStorage { UploadStatus = status, Racer = static content => content };
@@ -226,8 +226,8 @@ public sealed class ReportBundleAssetStoreIntegrationTests
             [Path.Combine("repo", ComparisonDocumentFixture.CurrentExport)] = new(ExportData.CurrentJson),
         });
         RawExport previous = new RawExportFixture().WithSide("previous").WithSourcePath(ComparisonDocumentFixture.PreviousExport);
-        var bundle = new ReportBundler(fileSystem, "repo").Create(new ReleasePairFixture(), new ComparisonDocumentFixture(),
-            [new IdentityMappingFixture()], [previous, new RawExportFixture()], ".artifacts/benchmarks/comparison");
+        var bundle = new ReportBundler(fileSystem, "repo").Create(ReportFixtures.Pair(), new ComparisonDocumentFixture(),
+            [ReportFixtures.Mapping()], [previous, new RawExportFixture()], ".artifacts/benchmarks/comparison");
         var zip = fileSystem.File.ReadAllBytes(Path.Combine("repo", bundle.Path));
         ReleaseRecord current = new ReleaseRecordFixture().WithId(20);
         var storage = new ReleaseAssetStorage { UploadStatus = status, Racer = static _ => [9, 9, 9] };
@@ -255,8 +255,8 @@ public sealed class ReportBundleAssetStoreIntegrationTests
             [Path.Combine("repo", ComparisonDocumentFixture.CurrentExport)] = new(ExportData.CurrentJson),
         });
         RawExport previous = new RawExportFixture().WithSide("previous").WithSourcePath(ComparisonDocumentFixture.PreviousExport);
-        var bundle = new ReportBundler(fileSystem, "repo").Create(new ReleasePairFixture(), new ComparisonDocumentFixture(),
-            [new IdentityMappingFixture()], [previous, new RawExportFixture()], ".artifacts/benchmarks/comparison");
+        var bundle = new ReportBundler(fileSystem, "repo").Create(ReportFixtures.Pair(), new ComparisonDocumentFixture(),
+            [ReportFixtures.Mapping()], [previous, new RawExportFixture()], ".artifacts/benchmarks/comparison");
         var zip = fileSystem.File.ReadAllBytes(Path.Combine("repo", bundle.Path));
         ReleaseRecord current = new ReleaseRecordFixture().WithId(20);
         var storage = new ReleaseAssetStorage();

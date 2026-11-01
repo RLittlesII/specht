@@ -10,6 +10,7 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using AwesomeAssertions;
+using Microsoft.Extensions.Time.Testing;
 using Reqnroll;
 using Specht.Comparison;
 
@@ -674,6 +675,43 @@ public sealed class ComparisonSteps : IDisposable
     public void ThenRemovalRecorded() => _bundle!.Manifest.Files.Single(static file => file.Path == "raw/current/Invented-report-full.json")
         .Transformation.Should().Be("absolute-paths-removed");
 
+    [Given("a previous release has been selected")]
+    public void GivenSelectedPredecessor() => _pair = ReleaseSelection.Select(_release, new ReleaseCatalog(
+        [_release with { Id = 10, Tag = "v1", PublishedAt = _release.PublishedAt!.Value.AddDays(-1), Commit = new string('1', 40) }], true, null),
+        "run-1");
+
+    [When("their measurements are collected")]
+    public async Task WhenCollecting()
+    {
+        var plan = CollectionPlan.For(_pair!, new string('c', 40), "1", "run-1", 1, "session-1", "runner-1", "Specht.Benchmarks.*", null, []);
+        Directory.CreateDirectory(_directory);
+        _collection = await new PairedCollector(new FileSystem(), new FakeTimeProvider(), RunRevisionAsync, _directory,
+                new Dictionary<string, string> { ["PATH"] = "synthetic-path", ["GITHUB_TOKEN"] = "synthetic-secret" })
+            .CollectAsync(plan!, CancellationToken.None);
+    }
+
+    [Then("both revisions are measured in the same comparison session on the same runner")]
+    public async Task ThenOneSession()
+    {
+        _collection!.Previous.Status.Should().Be(CollectionStatus.Collected);
+        _collection.Current.Status.Should().Be(CollectionStatus.Collected);
+        _collection.Session.SessionId.Should().Be("session-1");
+        _collection.Session.RunnerIdentity.Should().Be("runner-1");
+        _collection.Session.Previous.ProductCommit.Should().Be(new string('1', 40));
+        _collection.Session.Current.ProductCommit.Should().Be(new string('a', 40));
+        _checkouts.Should().Equal(new string('1', 40), new string('a', 40));
+        (await File.ReadAllTextAsync(Path.Combine(_directory, ".artifacts/benchmarks/comparison/session-1/session-manifest.json"),
+            CancellationToken.None)).Should().Be(ComparisonJson.Write(_collection.Session));
+    }
+
+    [Then("the report identifies the environment of each measurement")]
+    public void ThenEachEnvironment()
+    {
+        foreach (var side in new[] { _collection!.Session.Previous, _collection.Session.Current })
+            side.Conditions.Should().Be(new MeasurementConditions("Invented OS 1.0", ".NET 10.0.0", "X64", "11.0.100-invented.1", "Job default",
+                "ShortRun(Toolchain=.NET 10.0, IterationCount=3, LaunchCount=1, WarmupCount=3)"));
+    }
+
     public void Dispose()
     {
         if (Directory.Exists(_directory)) Directory.Delete(_directory, true);
@@ -694,6 +732,35 @@ public sealed class ComparisonSteps : IDisposable
         JsonValueKind.String => [element.GetString()!],
         _ => [],
     };
+
+    private async Task<ProcessOutcome> RunRevisionAsync(ProcessRequest request, CancellationToken cancellationToken)
+    {
+        var side = string.Join(' ', request.Arguments.Append(request.WorkingDirectory)).Contains("/previous/", StringComparison.Ordinal)
+            ? "previous" : "current";
+        var workspace = Path.Combine(_directory, ".artifacts", "benchmarks", "comparison", "session-1", side);
+        switch (request.Arguments[0])
+        {
+            case "clone":
+                Directory.CreateDirectory(Path.Combine(workspace, "source", ".performance", "benchmarks"));
+                await File.WriteAllTextAsync(Path.Combine(workspace, "source", ".performance", "benchmarks", "benchmarks.csproj"), "<Project />",
+                    cancellationToken);
+                break;
+            case "checkout":
+                _checkouts.Add(request.Arguments[^1]);
+                break;
+            case "rev-parse":
+                return new ProcessOutcome(0, [_checkouts[^1]]);
+            case "run" when request.Arguments.Contains("--list"):
+                return new ProcessOutcome(0, ["Specht.Benchmarks.Engine.CheckBenchmarks.Check"]);
+            case "run":
+                Directory.CreateDirectory(Path.Combine(workspace, "results", "results"));
+                await File.WriteAllTextAsync(Path.Combine(workspace, "results", "results", "Specht.Benchmarks.Engine.CheckBenchmarks-report-full.json"),
+                    CollectedExportJson, cancellationToken);
+                break;
+        }
+
+        return new ProcessOutcome(0, []);
+    }
 
     private void ThenJudgment(MetricKind metric, string judgment)
     {
@@ -801,6 +868,14 @@ public sealed class ComparisonSteps : IDisposable
          "Memory":{"BytesAllocatedPerOperation":64},"Measurements":[]}]}
         """;
 
+    private const string CollectedExportJson = """
+        {"Title":"Invented","HostEnvironmentInfo":{"BenchmarkDotNetVersion":"0.15.8","OsVersion":"Invented OS 1.0","RuntimeVersion":".NET 10.0.0",
+         "Architecture":"X64","Configuration":"RELEASE","HasAttachedDebugger":false,"DotNetCliVersion":"11.0.100-invented.1"},
+         "Benchmarks":[{"DisplayInfo":"CheckBenchmarks.Check: ShortRun(Toolchain=.NET 10.0, IterationCount=3, LaunchCount=1, WarmupCount=3)",
+         "FullName":"Specht.Benchmarks.Engine.CheckBenchmarks.Check","Statistics":{"Mean":100,
+         "ConfidenceInterval":{"Level":12,"Lower":98,"Upper":102}},"Memory":{"BytesAllocatedPerOperation":32},"Measurements":[]}]}
+        """;
+
     private const string MappingJson = """
         {"fullName":"Invented.Check(1)","productCommit":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
          "sourceFile":"Check.cs","sourceDigest":"dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
@@ -823,6 +898,7 @@ public sealed class ComparisonSteps : IDisposable
     private readonly string _directory = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
     private readonly string _extracted = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
     private readonly HttpClient _releaseClient = new(new ReleaseAssets());
+    private readonly List<string> _checkouts = [];
     private readonly ReleaseRecord _release = JsonSerializer.Deserialize<ReleaseRecord>("""
         {"Repository":"example/tool","Id":20,"Tag":"v2","PublishedAt":"2026-01-04T00:00:00Z","Draft":false,
          "Prerelease":false,"Commit":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","ResolutionFailure":null}
@@ -849,4 +925,5 @@ public sealed class ComparisonSteps : IDisposable
     private string? _bundleAction;
     private EvidenceManifest? _validated;
     private InvalidDataException? _rejection;
+    private CollectionResult? _collection;
 }

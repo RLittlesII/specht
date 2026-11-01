@@ -13,7 +13,7 @@ public sealed class ComparisonReportUnitTests
     public void CompletedComparison_WhenRendered_ShouldGiveBothFormsTheSameOrderedFindings()
     {
         // Given
-        ReleasePair pair = new ReleasePairFixture();
+        ReleasePair pair = ReportFixtures.Pair();
         ComparisonDocument document = new ComparisonDocumentFixture();
 
         // When
@@ -57,7 +57,7 @@ public sealed class ComparisonReportUnitTests
     public void UndefinedPercentage_WhenRenderedAsMarkdown_ShouldReadNotDefined()
     {
         // Given
-        ReleasePair pair = new ReleasePairFixture();
+        ReleasePair pair = ReportFixtures.Pair();
         ComparisonDocument document = new ComparisonDocumentFixture();
         var flagged = document.Cases[0];
         document = document with
@@ -84,7 +84,7 @@ public sealed class ComparisonReportUnitTests
     public void HostileDisplayText_WhenRenderedAsMarkdown_ShouldNotBreakTheTableOrInjectHtml(string hostile, string forbidden, string visible)
     {
         // Given
-        ReleasePair pair = new ReleasePairFixture();
+        ReleasePair pair = ReportFixtures.Pair();
         ComparisonDocument document = new ComparisonDocumentFixture();
         var flagged = document.Cases[0];
         document = document with
@@ -116,7 +116,7 @@ public sealed class ComparisonReportUnitTests
     public void CompletedComparison_WhenRendered_ShouldIdentifyThePairSessionPolicyWorkloadsAndRawEvidence()
     {
         // Given
-        ReleasePair pair = new ReleasePairFixture()
+        ReleasePair pair = ReportFixtures.Pair()
             .WithCurrent(new ReleaseRecordFixture().WithId(731).WithTag("v2.0.0").WithPublishedAt(new DateTimeOffset(2026, 1, 4, 0, 0, 0, TimeSpan.Zero)))
             .WithPrevious(new ReleaseRecordFixture().WithId(529).WithTag("v1.9.0").WithCommit(new string('e', 40)));
         ComparisonDocument document = new ComparisonDocumentFixture();
