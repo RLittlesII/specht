@@ -15,7 +15,7 @@ spec: .performance/comparison/.spec/README.md
 claims: ["B-015", "B-016", "B-022"]
 
 created: "2026-10-13"
-updated: "2026-10-31"
+updated: "2026-11-01"
 closed: null
 
 summary: |
@@ -47,6 +47,11 @@ acceptance_criteria:
 
 decisions:
   - "2026-10-13: design contract reviewed under 0209; scope and prerequisites retained. Ready-for-implementation names design maturity, not permission to bypass depends_on or the one-writer Feature lane."
+  - "2026-10-31: report.json is the canonical ComparisonJson encoding of { formatVersion: 1, pair, comparison }, where comparison is the document with each observation's sourceFile rewritten from its workspace path to its bundle path raw/<side>/<file name>; nothing is recomputed, and no separate report reader is added. report.md shows the same bundle paths with their locators."
+  - "2026-10-31: a supplied raw export that no observation cites is retained in the bundle with empty cases, not rejected."
+  - "2026-10-31: publication requires the asset name's release id, run id and attempt to equal the bundle's pair.json release and session.json run and attempt, not only the release id."
+  - "2026-10-31: report.md rounds numbers for display only - half away from zero to at most two decimal places, trailing zeros dropped, invariant culture; a null number reads Not defined. report.json keeps the unrounded values."
+  - "2026-11-01: owner, \"Widen the check\": an absolute path embedded in a longer string value of any JSON entry of the report bundle - a session invocation, workload parameter, reason or raw export value, such as Root=/home/runner/..., file:///... or C:\\... - rejects the bundle when it is built and when it is validated, never rewritten. A raw export value that is wholly a rooted path is still removed and recorded as absolute-paths-removed. Units, ratios, relative paths and locators that resolve in their cited export are kept. Basis: brief § 9 and C-8; rule in C-11 and decision 0004."
 
 out_of_scope:
   - "Everything in § 5 of the specification."

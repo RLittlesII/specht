@@ -207,6 +207,39 @@ Feature: Release baseline comparison
     When its report is published
     Then it records the release pair, measurement environments, workload identities, comparison policy and raw result references
 
+  @B-016 @boundary
+  Scenario Outline: An absolute path inside a recorded value rejects the report bundle
+    Given release comparison evidence whose <source> contains "<value>"
+    When a report bundle holding it is <action>
+    Then the bundle is rejected
+    And no recorded value is rewritten to make it pass
+
+    Examples:
+      | source                 | value                                   | action    |
+      | session invocation     | --artifacts /home/runner/work/out       | built     |
+      | workload parameter     | Root=D:/a/specht/fixtures               | built     |
+      | case reason            | export read from file:///tmp/run.json   | validated |
+      | raw measurement export | Command=dotnet /home/runner/bin/run.dll | validated |
+
+  @B-016 @boundary
+  Scenario Outline: A recorded value with slashes that is not an absolute path is kept
+    Given release comparison evidence whose <source> contains "<value>"
+    When a report bundle holding it is built and validated
+    Then the bundle is accepted with "<value>" unchanged
+
+    Examples:
+      | source             | value                     |
+      | measurement unit   | ns/op                     |
+      | case reason        | 1/2 of the samples failed |
+      | session invocation | --artifacts raw/current   |
+
+  @B-016 @boundary
+  Scenario: A raw measurement value that is wholly an absolute path is removed and recorded
+    Given raw measurement evidence holding the value "/home/runner/work/specht"
+    When a report bundle holding it is built
+    Then that value is replaced with a removal marker
+    And the bundle records that absolute paths were removed from that evidence
+
   @B-017 @boundary
   Scenario: A meaningful regression leaves the build successful
     Given the correctness gates passed and the release was published

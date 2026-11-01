@@ -14,4 +14,22 @@ internal static class ExportData
           }]
         }
         """;
+
+    public const string CurrentJson = """
+        {
+          "Title": "Synthetic workload",
+          "HostEnvironmentInfo": { "BenchmarkDotNetVersion": "0.15.8", "Configuration": "Release", "HasAttachedDebugger": false },
+          "Benchmarks": [{
+            "FullName": "Synthetic.Check(1)", "DisplayInfo": "check", "Parameters": "Specifications=1",
+            "Statistics": { "Mean": 120, "ConfidenceInterval": { "Mean": 120, "Level": 12, "Lower": 118, "Upper": 122 } },
+            "Memory": { "BytesAllocatedPerOperation": 32 },
+            "Measurements": []
+          }, {
+            "FullName": "Synthetic.Check(10)", "DisplayInfo": "check", "Parameters": "Specifications=10",
+            "Statistics": { "Mean": 100, "ConfidenceInterval": { "Mean": 100, "Level": 12, "Lower": 98, "Upper": 102 } },
+            "Memory": { "BytesAllocatedPerOperation": 64 },
+            "Measurements": []
+          }]
+        }
+        """;
 }
