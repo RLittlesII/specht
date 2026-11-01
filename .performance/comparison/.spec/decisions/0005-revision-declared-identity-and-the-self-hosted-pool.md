@@ -103,11 +103,9 @@ measured revision away from the release job's write token? The options offered
 were separate operating-system accounts, separate machines, or the same
 operating-system account.
 
-**The owner's answer**, verbatim, with the original's "teo" read as "two":
+**The owner's answer**, verbatim (read "teo" as "two"):
 
-> "This is the same problem you'd have without everything co-located on the
-> same machine. You have to explicitly NOT kick off two releases to ensure
-> this. :shrug:"
+> This is the same problem you'd have without everything co-located on the same machine. You have to explicitly NOT kick off teo releases to ensure this. :shrug:
 
 ### The call
 

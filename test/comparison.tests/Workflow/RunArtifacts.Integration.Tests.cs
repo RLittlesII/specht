@@ -117,6 +117,29 @@ public sealed class RunArtifactsIntegrationTests : IDisposable
     }
 
     [Fact(Timeout = 20_000)]
+    public async Task DownloadThatFailsTransientlyOnce_WhenTheNextPollSucceeds_ShouldUnpackTheArtifact()
+    {
+        // Given
+        _artifacts.Add(7, "comparison-result-1234-2", false, ActionsArtifacts.Zip(("outcome.json", "result")));
+        _faulting = "/zip";
+        _faults = 1;
+        _status = HttpStatusCode.ServiceUnavailable;
+        var waiting = Waiter().WaitAsync("example/tool", "1234", "comparison-result-1234-2", "result", TimeSpan.FromMinutes(5),
+            TestContext.Current.CancellationToken);
+        await _faulted.Task;
+
+        // When
+        _time.Advance(TimeSpan.FromSeconds(30));
+        var found = await waiting;
+
+        // Then
+        found.Should().BeTrue();
+        (await File.ReadAllTextAsync(Path.Combine(_root, "result", "outcome.json"), TestContext.Current.CancellationToken)).Should().Be("result");
+        _artifacts.Requests.Where(static request => request.EndsWith("/zip", StringComparison.Ordinal))
+            .Should().Equal("/repos/example/tool/actions/artifacts/7/zip");
+    }
+
+    [Fact(Timeout = 20_000)]
     public async Task ListingThatKeepsFailingTransiently_WhenTheBoundPasses_ShouldStopWaitingWithoutDownloading()
     {
         // Given
@@ -166,7 +189,7 @@ public sealed class RunArtifactsIntegrationTests : IDisposable
 
     private HttpResponseMessage? Fault(HttpRequestMessage request)
     {
-        if (!request.RequestUri!.AbsolutePath.EndsWith("/artifacts", StringComparison.Ordinal) || Interlocked.Decrement(ref _faults) < 0) return null;
+        if (!request.RequestUri!.AbsolutePath.EndsWith(_faulting, StringComparison.Ordinal) || Interlocked.Decrement(ref _faults) < 0) return null;
         _faulted.TrySetResult();
         return _status is { } status ? new HttpResponseMessage(status) : throw new HttpRequestException("The connection was reset.");
     }
@@ -177,6 +200,7 @@ public sealed class RunArtifactsIntegrationTests : IDisposable
     private readonly TaskCompletionSource _faulted = new(TaskCreationOptions.RunContinuationsAsynchronously);
     private readonly ScriptedHttpHandler _handler;
     private readonly HttpClient _client;
+    private string _faulting = "/artifacts";
     private int _faults;
     private HttpStatusCode? _status;
 }

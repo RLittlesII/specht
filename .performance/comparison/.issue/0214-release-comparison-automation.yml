@@ -2,7 +2,7 @@ id: "0214"
 type: task
 title: Automate advisory reporting in the release workflow
 
-status: in-progress
+status: done
 
 risk: 4
 
@@ -16,7 +16,7 @@ claims: ["B-001", "B-003", "B-014", "B-017", "B-018", "B-023", "B-024", "B-025"]
 
 created: "2026-10-13"
 updated: "2026-11-01"
-closed: null
+closed: "2026-11-01"
 
 summary: |
   Wire the reviewed design into the existing generated release workflow.
@@ -68,6 +68,8 @@ decisions:
   - "2026-11-01: implementation - collection runs filter * with the short job: the default job over the full selection is judged, not measured, to exceed the 25-minute revision bound. Run artifacts are polled every 30 seconds."
   - "2026-11-01: implementation - WorkloadIdentityAttribute declares operation, fixture, boundary and [CallerFilePath]; DeclaredIdentity reads it from metadata without loading the assembly, reads integral [Params] only, and relativises the compiled path against the side's checkout. No PathMap: the child environment omits GITHUB_ACTIONS, so ContinuousIntegrationBuild is off and the physical checkout path is what relativises."
   - "2026-11-01: implementation - no predecessor gives a No baseline document with a forty-zero previous commit and an unmeasured session; no process runs."
+  - "2026-11-01: owner answered the host question in review (decision 0005 addendum, A-5) - one release run at a time; no isolation between the pool's runners on one host is assumed; the same-host exposure within one release run is accepted. Separate operating-system accounts and separate machines are not requirements. C-10 is unchanged."
+  - "2026-11-01: corrects the one-runner note above (decision 0005 addendum, A-4) - with one runner, every release ends Incomplete after the bounded release-side wait only when the release job takes the runner first; when the comparison job takes it first, the comparison ends at its own bounded receipt wait and the release job reports that result at once. Both remain advisory, never a failed build."
 
 out_of_scope:
   - "Everything in § 5 of the specification."
