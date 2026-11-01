@@ -169,6 +169,7 @@ public sealed class CodeAnalysisReleaseIntegrationTests
             Directory.CreateDirectory(Path.Combine(Root, "src", "tool"));
             Directory.CreateDirectory(Path.Combine(Root, "src", "codeanalysis"));
             Directory.CreateDirectory(Path.Combine(Root, "bin"));
+            Directory.CreateDirectory(Path.Combine(Root, "runner"));
             File.WriteAllText(Path.Combine(Root, "fixture.slnx"), "<Solution />");
             File.WriteAllText(Path.Combine(Root, ".nuke", "parameters.json"), "{\"Solution\":\"fixture.slnx\"}");
             File.WriteAllText(
@@ -232,6 +233,10 @@ public sealed class CodeAnalysisReleaseIntegrationTests
             process.StartInfo.Environment["GITHUB_TOKEN"] = "fixture-token";
             process.StartInfo.Environment["GH_TOKEN"] = "fixture-token";
             process.StartInfo.Environment["GITHUB_REPOSITORY"] = "RLittlesII/specht";
+            process.StartInfo.Environment["GITHUB_ENV"] = Path.GetFullPath(Path.Combine(Root, "runner", "environment"));
+            process.StartInfo.Environment["GITHUB_OUTPUT"] = Path.GetFullPath(Path.Combine(Root, "runner", "output"));
+            process.StartInfo.Environment["GITHUB_STEP_SUMMARY"] = Path.GetFullPath(Path.Combine(Root, "runner", "summary"));
+            process.StartInfo.Environment["GITHUB_PATH"] = Path.GetFullPath(Path.Combine(Root, "runner", "path"));
             process.StartInfo.Environment["PATH"] =
                 Path.GetFullPath(Path.Combine(Root, "bin")) + Path.PathSeparator + Environment.GetEnvironmentVariable("PATH");
             process.StartInfo.Environment["INVOCATIONS"] = Path.GetFullPath(GhLog);

@@ -7,7 +7,7 @@ namespace Specht.Rules;
 /// <param name="schemas">The existing root and manifest loader.</param>
 /// <param name="parser">The existing exact-pin resolver.</param>
 /// <implements epic="0001" feature="F10" claim="B-001" />
-public sealed class RuleEntriesReader(SpecSchemasLoader schemas, SpecManifestParser parser)
+public sealed class RuleEntriesReader(SpechtSchemasLoader schemas, SpechtManifestParser parser)
 {
     /// <summary>Reads only the root's validated manifest before producing its rule entries.</summary>
     /// <param name="root">The repository root.</param>
@@ -26,15 +26,15 @@ public sealed class RuleEntriesReader(SpecSchemasLoader schemas, SpecManifestPar
     /// <implements epic="0001" feature="F10" claim="B-006" />
     /// <implements epic="0001" feature="F10" claim="B-007" />
     /// <implements epic="0001" feature="F10" claim="B-008" />
-    public IReadOnlyList<RuleEntry> Read(SpecStructure structure)
+    public IReadOnlyList<RuleEntry> Read(SpechtStructure structure)
     {
         var version = parser.PinnedVersion(structure);
         return version.RuleIds.Order(StringComparer.Ordinal).Select(id =>
         {
-            var page = SpecDocument.Parse(version.RulePages[id], $"rules/v{version.Number}/{id}.md");
+            var page = SpechtDocument.Parse(version.RulePages[id], $"rules/v{version.Number}/{id}.md");
             var metadata = page.Section("Metadata")!.Rows;
             var family = metadata.Single(static row => row[0] == "Family")[1];
-            var severity = Enum.Parse<SpecRuleLevel>(metadata.Single(static row => row[0] == "Default severity")[1], ignoreCase: true);
+            var severity = Enum.Parse<SpechtRuleLevel>(metadata.Single(static row => row[0] == "Default severity")[1], ignoreCase: true);
             var effective = structure.Rules.TryGetValue(id, out var level) ? level : severity;
             return new RuleEntry(id, family, severity, effective);
         }).ToArray();

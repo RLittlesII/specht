@@ -22,7 +22,7 @@ public sealed class RuleEntriesReaderUnitTests
             .WithRuleIds(new HashSet<string>(StringComparer.Ordinal) { "SPEC010" });
         later = later with { RulePages = new Dictionary<string, string>(StringComparer.Ordinal) { ["SPEC010"] = Page } };
         var versions = new SchemaVersions([original, later]);
-        var parser = new SpecManifestParser(versions);
+        var parser = new SpechtManifestParser(versions);
         var reader = new RuleEntriesReader(EngineServices.Schemas(new MockFileSystem(), versions), parser);
         var structure = parser.Parse($$"""{"schemaVersion":"{{pin}}"}""");
 
@@ -35,7 +35,7 @@ public sealed class RuleEntriesReaderUnitTests
 
     [Theory]
     [ClassData(typeof(RulePageMetadata))]
-    public void APageMetadataValue_WhenRead_ShouldSupplyTheFamilyAndDefaultSeverity(string family, SpecRuleLevel severity)
+    public void APageMetadataValue_WhenRead_ShouldSupplyTheFamilyAndDefaultSeverity(string family, SpechtRuleLevel severity)
     {
         // Given
         SchemaVersion version = new SchemaVersionFixture().WithRuleIds(new HashSet<string>(StringComparer.Ordinal) { "SPEC010" });
@@ -54,7 +54,7 @@ public sealed class RuleEntriesReaderUnitTests
             },
         };
         var versions = new SchemaVersions([version]);
-        var parser = new SpecManifestParser(versions);
+        var parser = new SpechtManifestParser(versions);
         var reader = new RuleEntriesReader(EngineServices.Schemas(new MockFileSystem(), versions), parser);
         var structure = parser.Parse("{}");
 
@@ -67,13 +67,13 @@ public sealed class RuleEntriesReaderUnitTests
 
     [Theory]
     [ClassData(typeof(RuleCatalogueLevels))]
-    public void AnExplicitLevel_WhenRead_ShouldOverrideThePageDefaultWithoutRemovingTheEntry(SpecRuleLevel level)
+    public void AnExplicitLevel_WhenRead_ShouldOverrideThePageDefaultWithoutRemovingTheEntry(SpechtRuleLevel level)
     {
         // Given
         SchemaVersion version = new SchemaVersionFixture().WithRuleIds(new HashSet<string>(StringComparer.Ordinal) { "SPEC010" });
         version = version with { RulePages = new Dictionary<string, string>(StringComparer.Ordinal) { ["SPEC010"] = Page } };
         var versions = new SchemaVersions([version]);
-        var parser = new SpecManifestParser(versions);
+        var parser = new SpechtManifestParser(versions);
         var reader = new RuleEntriesReader(EngineServices.Schemas(new MockFileSystem(), versions), parser);
         var structure = parser.Parse("{\"rules\":{\"SPEC010\":\"" + level.ToString().ToLowerInvariant() + "\"}}");
 
@@ -86,7 +86,7 @@ public sealed class RuleEntriesReaderUnitTests
 
     [Theory]
     [ClassData(typeof(RuleCatalogueLevels))]
-    public void NoExplicitLevel_WhenRead_ShouldUseTheRulesOwnSeverity(SpecRuleLevel severity)
+    public void NoExplicitLevel_WhenRead_ShouldUseTheRulesOwnSeverity(SpechtRuleLevel severity)
     {
         // Given
         SchemaVersion version = new SchemaVersionFixture().WithRuleIds(new HashSet<string>(StringComparer.Ordinal) { "SPEC010" });
@@ -105,7 +105,7 @@ public sealed class RuleEntriesReaderUnitTests
             },
         };
         var versions = new SchemaVersions([version]);
-        var parser = new SpecManifestParser(versions);
+        var parser = new SpechtManifestParser(versions);
         var reader = new RuleEntriesReader(EngineServices.Schemas(new MockFileSystem(), versions), parser);
         var structure = parser.Parse("{}");
 
@@ -126,7 +126,7 @@ public sealed class RuleEntriesReaderUnitTests
         });
         version = version with { RulePages = version.RuleIds.ToDictionary(static id => id, static _ => Page, StringComparer.Ordinal) };
         var versions = new SchemaVersions([version]);
-        var parser = new SpecManifestParser(versions);
+        var parser = new SpechtManifestParser(versions);
         var reader = new RuleEntriesReader(EngineServices.Schemas(new MockFileSystem(), versions), parser);
         var structure = parser.Parse("{}");
 

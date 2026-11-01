@@ -42,7 +42,7 @@ The line between the first two tiers is the file system: a unit test exercises
 one decision, derivation or mapping in memory; an integration test touches the
 disk or a process. In the engine, a unit test runs one rule or one reader over
 documents built in memory, and an integration test runs `SpechtRunner` over
-a `SpecTree` written to a temporary directory and asserts the report. The 56
+a `SpechtTree` written to a temporary directory and asserts the report. The 56
 baseline tests already draw it this way (brief § 3); follow them.
 
 The tiers are defined by what is under test, not by where it lives. Code
@@ -65,7 +65,7 @@ accepted 2026-10-10). The factory is the one the host calls, so a test builds
 the graph that ships. The file system and the console are the only things a
 test hands it. The wrap is the only `new CommandAppTester` in the tree, and it
 sets the default command. A check test supplies a synthetic tree - a
-`SpecTree` - and the real engine runs over it; it never hands the command a
+`SpechtTree` - and the real engine runs over it; it never hands the command a
 canned report. The rule binds from item `0144`, which builds the factory and
 moves the existing tests onto it. Today's command tests predate it and still
 build their own tester; do not copy them.
@@ -100,7 +100,7 @@ empty formatter and quoted arguments - [lesson 0003](../../../../.spec/lessons/0
   `Unit`; give it repository-relative paths, as any fixture.
 - **Rocket Surgery AutoFixtures** for test data —
   `Rocket.Surgery.Extensions.Testing.AutoFixtures`, a source generator. A value a
-  test hands the code under test, such as a `SpecViolation` or a
+  test hands the code under test, such as a `SpechtViolation` or a
   `SpecCheckReport`, comes from an `[AutoFixture(typeof(T))]` partial named
   `<T>Fixture`, not a hand-rolled `Report(...)` or `Violation(...)` helper. The
   generator handles a positional record. The fixture's constructor sets only the
@@ -225,7 +225,7 @@ changed.
 
 ## Fixtures
 
-A fixture is a specification tree, and it is **built, not copied**: `SpecTree`
+A fixture is a specification tree, and it is **built, not copied**: `SpechtTree`
 in `test/tests/Shared/` constructs the files a test needs — frontmatter, sections,
 tables, a companion `.feature`, child items — and writes them to a temporary
 root the test owns. Every path inside a fixture, and every path in an expected
@@ -233,7 +233,7 @@ report, is relative to that root; an absolute path in either is the defect
 brief § 9 names.
 
 **A path a test compares as a string is normalized first**, through the file
-system it came from: `fileSystem.Path.GetFullPath(...)`. The `SpecTree` folder
+system it came from: `fileSystem.Path.GetFullPath(...)`. The `SpechtTree` folder
 constants carry `/` (`.specht/schema`) and `Path.Combine` keeps it, so the
 comparison fails on Windows only - and the pull-request build does not run
 Windows, so `main` is where it shows
@@ -255,6 +255,17 @@ reads the file, which holds the value alone. It never parses `dotnet msbuild`
 console output: the CLI prints MSBuild-server and other diagnostics there, and
 under load one landed after the value and became a framework name
 ([lesson 0014](../../../../.spec/lessons/0014-read-an-msbuild-property-from-its-result-file.md)).
+
+**A test never writes to the runner's own command files.** The runner parses
+the files `GITHUB_ENV`, `GITHUB_OUTPUT`, `GITHUB_STEP_SUMMARY` and
+`GITHUB_PATH` name after the step. A build a test starts writes nothing to
+them: `version.json` sets `cloudBuild.setVersionVariables` to `false`, and
+`RunnerCommandFilesIntegrationTests` proves it. A test that simulates a runner,
+setting `GITHUB_ACTIONS=true`, gives it private `GITHUB_ENV`, `GITHUB_OUTPUT`,
+`GITHUB_STEP_SUMMARY` and `GITHUB_PATH` files under its own scratch directory
+and deletes them. Child builds that appended version variables to the real
+`GITHUB_ENV` preceded two failed runs that had passed every test
+([lesson 0015](../../../../.spec/lessons/0015-a-test-never-shares-the-runners-command-files.md)).
 
 Never a copy of a real repository's `.spec/` tree, this one's included: a copied
 tree carries every rule's happy path at once and pins the test to whatever that
@@ -287,3 +298,5 @@ wall clock.
 - A literal `<TargetFramework>` in a project generated at run time and restored
   from an isolated feed.
 - A `-getProperty` value parsed from `dotnet msbuild` console output.
+- A test that simulates a runner with the runner's own `GITHUB_ENV`,
+  `GITHUB_OUTPUT`, `GITHUB_STEP_SUMMARY` or `GITHUB_PATH`.

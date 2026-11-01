@@ -13,8 +13,8 @@ public sealed class ManifestCommandIntegrationTests
     public void AValidRoot_WhenPrinting_ShouldEmitOnlyTheEffectiveDocumentInDefaultOrder()
     {
         // Given
-        using var tree = new SpecTree();
-        tree.WriteRaw(SpecTree.ManifestPath, "{\"roles\":{\"claims\":\"3. Acceptance Criteria\"},\"schemaVersion\":\"0.1.0\"}");
+        using var tree = new SpechtTree();
+        tree.WriteRaw(SpechtTree.ManifestPath, "{\"roles\":{\"claims\":\"3. Acceptance Criteria\"},\"schemaVersion\":\"0.1.0\"}");
         tree.WriteRaw("broken/.spec/README.md", "not a specification");
         var expected = EngineServices.EffectiveManifest(tree.Root);
         var defaults = JsonNode.Parse(EngineServices.Versions().Versions[0].Manifest)!.AsObject();
@@ -38,14 +38,14 @@ public sealed class ManifestCommandIntegrationTests
     public void InvalidInput_WhenPrinting_ShouldMatchTheChecksFailure(string? manifest, string root, int exitCode)
     {
         // Given
-        using var tree = new SpecTree();
+        using var tree = new SpechtTree();
         if (manifest is null)
         {
-            File.Delete(Path.Combine(tree.Root, SpecTree.ManifestPath));
+            File.Delete(Path.Combine(tree.Root, SpechtTree.ManifestPath));
         }
         else
         {
-            tree.WriteRaw(SpecTree.ManifestPath, manifest);
+            tree.WriteRaw(SpechtTree.ManifestPath, manifest);
         }
         var check = AcceptanceTool.Launch(tree.Root, "--root", root);
 
@@ -63,7 +63,7 @@ public sealed class ManifestCommandIntegrationTests
     public void RepeatedRuns_WhenPrinting_ShouldPreserveFilesAndOutput()
     {
         // Given
-        using var tree = new SpecTree();
+        using var tree = new SpechtTree();
         tree.WriteRaw("sentinel.bin", "unchanged");
         var before = Directory.GetFiles(tree.Root, "*", SearchOption.AllDirectories)
             .ToDictionary(path => Path.GetRelativePath(tree.Root, path), static path => File.ReadAllBytes(path));

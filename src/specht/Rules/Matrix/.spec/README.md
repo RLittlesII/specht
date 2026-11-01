@@ -116,7 +116,7 @@ A § 9 row says which scenario and which tests pin a claim and how far, and toda
 | Concern                                                              | Classification | Owner                                                              |
 | -------------------------------------------------------------------- | -------------- | ------------------------------------------------------------------ |
 | Column roles, inline-code test names and declared-form matching      | Business       | `MatrixResolver`                                                   |
-| Root-relative test-file selection and reads through `IFileSystem`    | Technical      | Existing `SpecDiscovery` store                                     |
+| Root-relative test-file selection and reads through `IFileSystem`    | Technical      | Existing `SpechtDiscovery` store                                   |
 | Retaining code-span contents alongside unchanged visible table cells | Both           | Existing Markdig document parse                                    |
 | Rule diagnostics, row exemptions and scenario resolution             | Business       | WaiverRule and RetiredClaimRule; other rule slices remain deferred |
 
@@ -124,9 +124,9 @@ A § 9 row says which scenario and which tests pin a claim and how far, and toda
 
 <!-- last written by: implementer, 2026-10-17 (0227) -->
 
-[`SpecDocument`](../../../Model/SpecDocument.cs) keeps the existing flattened cells and additionally retains inline-code contents per row/cell in [`SpecSection`](../../../Model/SpecSection.cs). Both come from the same Markdig pipe-table parse. Existing rule inputs and baseline verdicts remain unchanged; prose, escaped backticks and code outside the matrix do not become test names.
+[`SpechtDocument`](../../../Model/SpechtDocument.cs) keeps the existing flattened cells and additionally retains inline-code contents per row/cell in [`SpechtSection`](../../../Model/SpechtSection.cs). Both come from the same Markdig pipe-table parse. Existing rule inputs and baseline verdicts remain unchanged; prose, escaped backticks and code outside the matrix do not become test names.
 
-The existing [`SpecDiscovery`](../../../Discovery/SpecDiscovery.cs) store adds `ReadTestFiles`, reusing its glob and exclusion matcher rather than introducing a second file walker or an I/O dependency in a parser. It reads each matched file once, deduplicated across overlapping globs and ordered by root-relative path. No globs means no directory or file read. `SpecTestFile` carries that relative path and text for reuse across specifications and consumers.
+The existing [`SpechtDiscovery`](../../../Discovery/SpechtDiscovery.cs) store adds `ReadTestFiles`, reusing its glob and exclusion matcher rather than introducing a second file walker or an I/O dependency in a parser. It reads each matched file once, deduplicated across overlapping globs and ordered by root-relative path. No globs means no directory or file read. `SpechtTestFile` carries that relative path and text for reuse across specifications and consumers.
 
 [`MatrixResolver.Resolve`](../MatrixResolver.cs) is pure: the caller supplies the parsed document, selected structure and the already-read files. It selects the matrix role's section, reads the first four columns by position and preserves row order/line. Only the third cell's inline-code contents are split on comma/semicolon, with whitespace trimmed and empty fragments omitted. It reports neither violations nor exemptions. Consumers reuse its returned row resolutions; no check/trace-specific reader is added.
 
@@ -163,7 +163,7 @@ B-018's unit cases isolate waiver form, date, approver, sign-off marker and non-
 | B-004 | Two and three dotted segments must occur in the same file; missing qualifiers and longer words remain unresolved in unit cases and a real-files integration case. |
 | B-005 | Whole-word and literal declaration-form matching, name boundaries, multiple forms and file/line evidence have unit cases and a real-files integration proof.      |
 
-File-selection tests use `MockFileSystem` for globs, deduplication, exclusions and no-selection behavior; integration cases use an invented `SpecTree`. Acceptance scenarios already observe the future SPEC032 rule and remain unbound until that rule's item, as the resolver item's cut records. These four matrix rows remain `Partial`, naming the unit and integration evidence rather than claiming an end-to-end rule verdict. Existing golden/determinism checks prove that adding this reader changes no check output.
+File-selection tests use `MockFileSystem` for globs, deduplication, exclusions and no-selection behavior; integration cases use an invented `SpechtTree`. Acceptance scenarios already observe the future SPEC032 rule and remain unbound until that rule's item, as the resolver item's cut records. These four matrix rows remain `Partial`, naming the unit and integration evidence rather than claiming an end-to-end rule verdict. Existing golden/determinism checks prove that adding this reader changes no check output.
 
 ## 9. Traceability Matrix
 

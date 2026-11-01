@@ -18,7 +18,7 @@ spec: null
 claims: []
 
 created: "2026-10-11"
-updated: "2026-10-31"
+updated: "2026-11-01"
 closed: null
 
 summary: |
@@ -35,20 +35,20 @@ summary: |
   from § "I/O is confined", § "The model is an immutable snapshot" and
   § "How each cycle is cut", 3:
 
-  - `SpecModelBuilder` turns text into one immutable `SpecModel` and
+  - `SpecModelBuilder` turns text into one immutable `SpechtModel` and
     touches no file system. The parsers it uses are instances: the
-    statics `SpecDocument.Parse` (`src/specht/Model/SpecDocument.cs:37`)
+    statics `SpechtDocument.Parse` (`src/specht/Model/SpechtDocument.cs:37`)
     and `FrontmatterReader.Parse` (`src/specht/Model/FrontmatterReader.cs:28`)
     go, and so does the reader's own I/O (`:26`).
   - `SpecModelReader` is the one type that sequences the stores: it takes
-    a root, asks `SpecManifestStore`, `SpecDiscovery` and `SpechtTreeStore`
+    a root, asks `SpechtManifestStore`, `SpechtDiscovery` and `SpechtTreeStore`
     for what each holds, and hands the text to the builder. No other type
     holds a store.
-  - `SpecSchemas` becomes data, built by a pure `SpecSchemaCompiler` from
-    the pinned version's schema text. `SpecSchemas.Load`, both overloads
-    (`src/specht/Model/SpecSchemas.cs:72`, `:100`), and
-    `SpecSchemas.Options` (`:31`) go; so do `SpecSchemasLoader` and
-    `SpecModelLoader`.
+  - `SpechtSchemas` becomes data, built by a pure `SpecSchemaCompiler` from
+    the pinned version's schema text. `SpechtSchemas.Load`, both overloads
+    (`src/specht/Model/SpechtSchemas.cs:72`, `:100`), and
+    `SpechtSchemas.Options` (`:31`) go; so do `SpechtSchemasLoader` and
+    `SpechtModelLoader`.
   - The model carries paths relative to the root and no other kind; the
     root is the reader's and the stores' and is not in the model. What
     item 0155 left of the absolute-to-relative mapping inside the loader
@@ -72,21 +72,21 @@ summary: |
 
   `ISpecDiscovery` is not added here; it arrives with items 0007 and 0008
   (ADR-0001, as ADR-0010 leaves it). The reader takes the concrete
-  `SpecDiscovery`. `SpechtRunner.Run` keeps its signature and calls the
+  `SpechtDiscovery`. `SpechtRunner.Run` keeps its signature and calls the
   reader, until item 0167 deletes the runner.
 
   Type names and lines are ADR-0010's and the source's at `eb7c161`; once
   item 0100 lands each carries the prefix that item gives it.
 
 acceptance_criteria:
-  - "1. Specification first, by the owning role, in the same pull request and before the code (ADR-0010 'Specification deltas owed', stage 6). `spec-author`: `0109-F2` B-003 and C-3, the frontmatter read as a unit, and `0109-F2` A-1, which names `SpecSchemasLoader` and `SpecModelLoader`. `implementer`: `0109-F1` § 7 and § 8, which place the tree types in the benchmark project, where item 0153 has not already brought them true. A claim that is amended keeps its id; one that no longer holds is marked `Withdrawn`."
-  - "2. `SpecModelBuilder` takes text and returns one `SpecModel`; neither it nor any parser holds an `IFileSystem`. `SpecDocument.Parse` and `FrontmatterReader.Parse` are not static, and no data type parses or loads itself."
-  - "3. `SpecModelReader` takes a root, sequences `SpecManifestStore`, `SpecDiscovery` and `SpechtTreeStore`, and hands text to the builder. It is the only type that holds a store. Within `Specht.Model`, `Specht.Tree`, `Specht.Manifest` and `Specht.Discovery`, only those three stores reference `IFileSystem`."
-  - "4. `SpecSchemas` is data built by `SpecSchemaCompiler`, which reads nothing. `SpecSchemas.Load`, `SpecSchemas.Options`, `SpecSchemasLoader` and `SpecModelLoader` are gone, and the frontmatter rules take the evaluation options from a value they are given."
+  - "1. Specification first, by the owning role, in the same pull request and before the code (ADR-0010 'Specification deltas owed', stage 6). `spec-author`: `0109-F2` B-003 and C-3, the frontmatter read as a unit, and `0109-F2` A-1, which names `SpechtSchemasLoader` and `SpechtModelLoader`. `implementer`: `0109-F1` § 7 and § 8, which place the tree types in the benchmark project, where item 0153 has not already brought them true. A claim that is amended keeps its id; one that no longer holds is marked `Withdrawn`."
+  - "2. `SpecModelBuilder` takes text and returns one `SpechtModel`; neither it nor any parser holds an `IFileSystem`. `SpechtDocument.Parse` and `FrontmatterReader.Parse` are not static, and no data type parses or loads itself."
+  - "3. `SpecModelReader` takes a root, sequences `SpechtManifestStore`, `SpechtDiscovery` and `SpechtTreeStore`, and hands text to the builder. It is the only type that holds a store. Within `Specht.Model`, `Specht.Tree`, `Specht.Manifest` and `Specht.Discovery`, only those three stores reference `IFileSystem`."
+  - "4. `SpechtSchemas` is data built by `SpecSchemaCompiler`, which reads nothing. `SpechtSchemas.Load`, `SpechtSchemas.Options`, `SpechtSchemasLoader` and `SpechtModelLoader` are gone, and the frontmatter rules take the evaluation options from a value they are given."
   - "5. Every path in the model is relative to the root, the model holds no root, and no type maps an absolute path back. Every violation still names its file as it did (`0001-F1` C-4)."
   - "6. `SpechtRootNotFoundException` is in `Specht.Tree`. A missing root is reported before a missing manifest, and an invalid manifest as before: the exit codes and messages of `0001-F2` are unchanged."
   - "7. The order the model lists Features, items and epics in is the order the loader produced, so every rule emits in the order it did."
-  - "8. Not a refactor until re-pointed. These tests are named by § 9 rows and are rewritten or deleted here: `SpecModelLoaderUnitTests`, `SpecSchemasLoaderUnitTests` and `FrontmatterReaderUnitTests` (`0001-F1` B-004), `SpecSchemasUnitTests` (`0001-F1` B-004; `0001-F5` B-008, B-013; `0001-F7` B-001, B-014), `SpecDocumentUnitTests` (`0001-F1` B-004, B-008), and the `SpechtRunner*IntegrationTests` classes where they construct a loader. `test-writer` re-points each row in the same pull request; no row names a test that no longer exists and no claim loses its proof."
+  - "8. Not a refactor until re-pointed. These tests are named by § 9 rows and are rewritten or deleted here: `SpechtModelLoaderUnitTests`, `SpechtSchemasLoaderUnitTests` and `FrontmatterReaderUnitTests` (`0001-F1` B-004), `SpechtSchemasUnitTests` (`0001-F1` B-004; `0001-F5` B-008, B-013; `0001-F7` B-001, B-014), `SpechtDocumentUnitTests` (`0001-F1` B-004, B-008), and the `SpechtRunner*IntegrationTests` classes where they construct a loader. `test-writer` re-points each row in the same pull request; no row names a test that no longer exists and no claim loses its proof."
   - "9. The benchmark project's use of `SpechtTree` and `SpechtTreeStore` is re-pointed in this pull request or in item 0153's (ADR-0010 § 'The whole-check benchmark'), `0109-F3` C-3 holds, and `.performance/benchmarks` still compiles."
   - "10. The golden report `test/tests/Engine/Baseline/engine-e7dba24.json` is unchanged, byte for byte, and the test that compares it is green unedited. The unit, integration and acceptance tiers pass."
   - "No .feature change needed: refactor - the model is built from text by a builder that one reader feeds from the stores, in place of loaders and self-loading data types; the model's content, every violation and the report are unchanged."
@@ -116,7 +116,7 @@ decisions:
 out_of_scope:
   - "Moving `SpechtTree`, `SpechtTreeFile` and `SpechtTreeStore` into the engine, and their tests - item 0153."
   - "`ISpecDiscovery`, the pruned walk and the git-backed listing - items 0007 and 0008."
-  - "The glob helpers of `SpecDiscovery` as a value object - ADR-0010 open point 4; no item owns it yet."
+  - "The glob helpers of `SpechtDiscovery` as a value object - ADR-0010 open point 4; no item owns it yet."
   - "`Check.Query`, its handler, the report's mapper, serializer and store, and deleting `SpechtRunner` - item 0167."
   - "Asynchronous I/O - ADR-0010 open point 6."
   - "Any change to a verdict or to the report - `0001-F1` C-9."

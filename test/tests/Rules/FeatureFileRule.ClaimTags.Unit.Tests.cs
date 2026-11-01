@@ -33,11 +33,11 @@ public sealed class FeatureFileRuleClaimTagsUnitTests
             [companion] = new($"# {unresolved}\nFeature: sample\n  {resolved} {unresolved} @B-9999extra\n"),
         });
         FeatureSpec feature = new FeatureSpecFixture()
-            .WithDocument(SpecDocument.Parse($"## 3. Acceptance Criteria\n\n| ID | Claim |\n| -- | ----- |\n| {claim} | Declared. |\n",
+            .WithDocument(SpechtDocument.Parse($"## 3. Acceptance Criteria\n\n| ID | Claim |\n| -- | ----- |\n| {claim} | Declared. |\n",
                 "src/sample/.spec/README.md"))
             .WithFeatureFiles(new FeatureFileFixture().WithTags(new FeatureTagParser().Parse(
                 fileSystem.File.ReadAllText(companion), EngineServices.Parser().Parse(manifest.ToJsonString()))));
-        SpecModel model = new SpecModelFixture().WithManifest(manifest).WithFeatures(feature);
+        SpechtModel model = new SpechtModelFixture().WithManifest(manifest).WithFeatures(feature);
 
         // When
         var violations = new FeatureFileRule().Evaluate(model).ToList();
@@ -62,10 +62,10 @@ public sealed class FeatureFileRuleClaimTagsUnitTests
             [companion] = new("@B-0001 @B-002\n"),
         });
         FeatureSpec feature = new FeatureSpecFixture()
-            .WithDocument(SpecDocument.Parse("## 3. Acceptance Criteria\n\n| ID | Claim |\n| -- | ----- |\n| B-0001 | Declared. |\n",
+            .WithDocument(SpechtDocument.Parse("## 3. Acceptance Criteria\n\n| ID | Claim |\n| -- | ----- |\n| B-0001 | Declared. |\n",
                 "src/sample/.spec/README.md"))
             .WithFeatureFiles(new FeatureFileFixture().WithTags(new FeatureTagParser().Parse(fileSystem.File.ReadAllText(companion))));
-        SpecModel model = new SpecModelFixture().WithManifest(new JsonObject
+        SpechtModel model = new SpechtModelFixture().WithManifest(new JsonObject
         {
             ["schemaVersion"] = pin,
             ["identifiers"] = new JsonObject { ["claim"] = "^B-[0-9]{4}$" },
@@ -96,7 +96,7 @@ public sealed class FeatureFileRuleClaimTagsUnitTests
         };
         FeatureSpec feature = new FeatureSpecFixture().WithFeatureFiles(new FeatureFileFixture().WithTags(new FeatureTagParser().Parse(
             fileSystem.File.ReadAllText(companion), EngineServices.Parser().Parse(manifest.ToJsonString()))));
-        SpecModel model = new SpecModelFixture().WithManifest(manifest).WithFeatures(feature);
+        SpechtModel model = new SpechtModelFixture().WithManifest(manifest).WithFeatures(feature);
 
         // When
         var violations = new FeatureFileRule().Evaluate(model);

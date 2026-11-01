@@ -36,10 +36,10 @@ public sealed class WaiverAndRetiredRulesUnitTests
             | --- | --- | --- | --- |
             | 1-5 | {{signOff}} | {{approver}} | Decision |
             """;
-        FeatureSpec feature = new FeatureSpecFixture().WithDocument(SpecDocument.Parse(text, "src/sample/.spec/README.md"));
-        SpecModel model = new SpecModelFixture().WithManifest(manifest).WithFeatures(feature);
+        FeatureSpec feature = new FeatureSpecFixture().WithDocument(SpechtDocument.Parse(text, "src/sample/.spec/README.md"));
+        SpechtModel model = new SpechtModelFixture().WithManifest(manifest).WithFeatures(feature);
         using var services = (TypeResolver)new TypeRegistrar(new ServiceCollection().AddSpechtEngine()).Build();
-        var rule = ((IEnumerable<ISpecRule>)services.Resolve(typeof(IEnumerable<ISpecRule>))!).SingleOrDefault(static rule => rule.Id == "SPEC034");
+        var rule = ((IEnumerable<ISpechtRule>)services.Resolve(typeof(IEnumerable<ISpechtRule>))!).SingleOrDefault(static rule => rule.Id == "SPEC034");
 
         // When
         rule.Should().NotBeNull("schema 0.2.0 ships the waiver rule");
@@ -47,7 +47,7 @@ public sealed class WaiverAndRetiredRulesUnitTests
 
         // Then
         violations.Should().HaveCount(finding ? 1 : 0);
-        rule.DefaultLevel.Should().Be(SpecRuleLevel.Off);
+        rule.DefaultLevel.Should().Be(SpechtRuleLevel.Off);
         if (finding)
         {
             violations[0].Identifier.Should().Be("B-018");
@@ -80,11 +80,11 @@ public sealed class WaiverAndRetiredRulesUnitTests
             """;
         var structure = EngineServices.Parser().Parse(manifest.ToJsonString());
         var tags = tag is null ? [] : new FeatureTagParser().Parse($"@{tag}\nScenario: Old behavior\n", structure);
-        FeatureSpec feature = new FeatureSpecFixture().WithDocument(SpecDocument.Parse(text, "src/sample/.spec/README.md"))
+        FeatureSpec feature = new FeatureSpecFixture().WithDocument(SpechtDocument.Parse(text, "src/sample/.spec/README.md"))
             .WithFeatureFiles(new FeatureFileFixture().WithTags(tags));
-        SpecModel model = new SpecModelFixture().WithManifest(manifest).WithFeatures(feature);
+        SpechtModel model = new SpechtModelFixture().WithManifest(manifest).WithFeatures(feature);
         using var services = (TypeResolver)new TypeRegistrar(new ServiceCollection().AddSpechtEngine()).Build();
-        var rule = ((IEnumerable<ISpecRule>)services.Resolve(typeof(IEnumerable<ISpecRule>))!).SingleOrDefault(static rule => rule.Id == "SPEC035");
+        var rule = ((IEnumerable<ISpechtRule>)services.Resolve(typeof(IEnumerable<ISpechtRule>))!).SingleOrDefault(static rule => rule.Id == "SPEC035");
 
         // When
         rule.Should().NotBeNull("schema 0.2.0 ships the retired-claim rule");
@@ -92,7 +92,7 @@ public sealed class WaiverAndRetiredRulesUnitTests
 
         // Then
         violations.Should().HaveCount(finding ? 1 : 0);
-        rule.DefaultLevel.Should().Be(SpecRuleLevel.Off);
+        rule.DefaultLevel.Should().Be(SpechtRuleLevel.Off);
         if (finding)
         {
             violations[0].Identifier.Should().Be("B-004");

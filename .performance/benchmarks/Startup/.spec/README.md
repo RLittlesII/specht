@@ -182,7 +182,7 @@ only to child processes. Resolver-cache isolation was observed in the manual
 probe. No feed, global install, user-cache fallback or repository manifest edit
 is part of setup.
 
-The session resolves the registered SpechtResources and SpecManifestParser
+The session resolves the registered SpechtResources and SpechtManifestParser
 outside measurement, supplying the shipped manifest bytes, parsed structure and
 pinned version to SpechtTree, then saves it through SpechtTreeStore. This follows
 CheckBenchmarks after the manifest-resource refactor; no consumer tree or

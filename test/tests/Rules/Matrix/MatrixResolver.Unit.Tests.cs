@@ -16,7 +16,7 @@ public sealed class MatrixResolverUnitTests
     public void ATestCell_WhenResolved_ShouldReadOnlyInlineCodeNamesInOrder(string cell, string[] expected)
     {
         // Given
-        var document = SpecDocument.Parse($$"""
+        var document = SpechtDocument.Parse($$"""
             ## 9. Traceability Matrix
             | Claim | Scenario | Tests | State |
             | --- | --- | --- | --- |
@@ -38,7 +38,7 @@ public sealed class MatrixResolverUnitTests
         string name, string text, string[] declarations, int? line)
     {
         // Given
-        var document = SpecDocument.Parse($$"""
+        var document = SpechtDocument.Parse($$"""
             ## 9. Traceability Matrix
             | Claim ID | Scenario | Test | Status |
             | --- | --- | --- | --- |
@@ -54,7 +54,7 @@ public sealed class MatrixResolverUnitTests
             },
         };
         var structure = EngineServices.Parser().Parse(manifest.ToJsonString());
-        SpecTestFile file = new SpecTestFileFixture().WithText(text);
+        SpechtTestFile file = new SpechtTestFileFixture().WithText(text);
 
         // When
         var test = new MatrixResolver().Resolve(document, structure, [file]).Single().Tests.Single();
@@ -70,7 +70,7 @@ public sealed class MatrixResolverUnitTests
     public void RenamedMatrixHeaders_WhenResolved_ShouldKeepColumnRolesAndSourceLines()
     {
         // Given
-        var document = SpecDocument.Parse("""
+        var document = SpechtDocument.Parse("""
             ## 9. Traceability Matrix
 
             | Requirement | Description | Evidence | State |
@@ -98,15 +98,15 @@ public sealed class MatrixResolverUnitTests
     public void DottedPartsInSeparateFiles_WhenResolved_ShouldNotCombineThem()
     {
         // Given
-        var document = SpecDocument.Parse("""
+        var document = SpechtDocument.Parse("""
             ## 9. Traceability Matrix
             | Claim ID | Scenario | Test | Status |
             | --- | --- | --- | --- |
             | B-004 | Matching | `Steps.Alpha` | Covered |
             """, "src/sample/.spec/README.md");
         var structure = EngineServices.Parser().Parse("""{"schemaVersion":"0.2.0","tests":{"files":["test/**/*.cs"]}}""");
-        SpecTestFile qualifier = new SpecTestFileFixture().WithRelativePath("test/Steps.cs").WithText("class Steps");
-        SpecTestFile method = new SpecTestFileFixture().WithRelativePath("test/Alpha.cs").WithText("void Alpha()");
+        SpechtTestFile qualifier = new SpechtTestFileFixture().WithRelativePath("test/Steps.cs").WithText("class Steps");
+        SpechtTestFile method = new SpechtTestFileFixture().WithRelativePath("test/Alpha.cs").WithText("void Alpha()");
 
         // When
         var result = new MatrixResolver().Resolve(document, structure, [qualifier, method]).Single().Tests.Single();
@@ -121,15 +121,15 @@ public sealed class MatrixResolverUnitTests
     public void SeveralMatchingFilesAndDeclarations_WhenResolved_ShouldReturnTheFirstOrdinalFileAndNameLine()
     {
         // Given
-        var document = SpecDocument.Parse("""
+        var document = SpechtDocument.Parse("""
             ## 9. Traceability Matrix
             | Claim ID | Scenario | Test | Status |
             | --- | --- | --- | --- |
             | B-005 | Matching | `Alpha` | Covered |
             """, "src/sample/.spec/README.md");
         var structure = EngineServices.Parser().Parse("""{"schemaVersion":"0.2.0","tests":{"files":["test/**/*.cs"]}}""");
-        SpecTestFile later = new SpecTestFileFixture().WithRelativePath("test/z.cs").WithText("Alpha");
-        SpecTestFile first = new SpecTestFileFixture().WithRelativePath("test/a.cs").WithText("// preface\nAlpha\nAlpha");
+        SpechtTestFile later = new SpechtTestFileFixture().WithRelativePath("test/z.cs").WithText("Alpha");
+        SpechtTestFile first = new SpechtTestFileFixture().WithRelativePath("test/a.cs").WithText("// preface\nAlpha\nAlpha");
 
         // When
         var result = new MatrixResolver().Resolve(document, structure, [later, first]).Single().Tests.Single();
@@ -143,14 +143,14 @@ public sealed class MatrixResolverUnitTests
     public void NoTestsSetting_WhenResolved_ShouldKeepNamesUnconfiguredWithoutUsingSuppliedFileTexts()
     {
         // Given
-        var document = SpecDocument.Parse("""
+        var document = SpechtDocument.Parse("""
             ## 9. Traceability Matrix
             | Claim ID | Scenario | Test | Status |
             | --- | --- | --- | --- |
             | B-005 | Matching | `Alpha` | Covered |
             """, "src/sample/.spec/README.md");
         var structure = EngineServices.Parser().Parse("""{"schemaVersion":"0.1.0"}""");
-        SpecTestFile file = new SpecTestFileFixture().WithText("Alpha");
+        SpechtTestFile file = new SpechtTestFileFixture().WithText("Alpha");
 
         // When
         var result = new MatrixResolver().Resolve(document, structure, [file]).Single().Tests.Single();
@@ -165,7 +165,7 @@ public sealed class MatrixResolverUnitTests
     public void NoMatrixSection_WhenResolved_ShouldReturnNoRows()
     {
         // Given
-        var document = SpecDocument.Parse("## Other\n`Alpha`", "src/sample/.spec/README.md");
+        var document = SpechtDocument.Parse("## Other\n`Alpha`", "src/sample/.spec/README.md");
         var structure = EngineServices.Parser().Parse("""{"schemaVersion":"0.2.0"}""");
 
         // When

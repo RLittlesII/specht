@@ -2,6 +2,7 @@ using AwesomeAssertions;
 using Specht.Benchmarks;
 using Specht.Manifest;
 using Specht.Tests.Shared;
+using SpechtTree = Specht.Benchmarks.SpechtTree;
 
 namespace Specht.Tests.Benchmarks;
 
@@ -19,7 +20,7 @@ public sealed class SpechtTreeUnitTests
     {
         // Given
         var resources = new Specht.Resources.SpechtResources();
-        var parser = new SpecManifestParser(new Specht.Versioning.SchemaVersions(resources.Texts));
+        var parser = new SpechtManifestParser(new Specht.Versioning.SchemaVersions(resources.Texts));
         var structure = parser.Parse(resources.DefaultManifest);
         var first = SpechtTree.Of(specifications, resources.DefaultManifestBytes, structure, parser.PinnedVersion(structure));
 
@@ -41,7 +42,7 @@ public sealed class SpechtTreeUnitTests
     {
         // Given
         var resources = new Specht.Resources.SpechtResources();
-        var parser = new SpecManifestParser(new Specht.Versioning.SchemaVersions(resources.Texts));
+        var parser = new SpechtManifestParser(new Specht.Versioning.SchemaVersions(resources.Texts));
         var structure = parser.Parse(resources.DefaultManifest);
         // When
         var tree = SpechtTree.Of(specifications, resources.DefaultManifestBytes, structure, parser.PinnedVersion(structure));
@@ -60,7 +61,7 @@ public sealed class SpechtTreeUnitTests
     {
         // Given
         var resources = new Specht.Resources.SpechtResources();
-        var parser = new SpecManifestParser(new Specht.Versioning.SchemaVersions(resources.Texts));
+        var parser = new SpechtManifestParser(new Specht.Versioning.SchemaVersions(resources.Texts));
         var structure = parser.Parse(resources.DefaultManifest);
         // When
         var tree = SpechtTree.Of(specifications, resources.DefaultManifestBytes, structure, parser.PinnedVersion(structure));
@@ -74,7 +75,7 @@ public sealed class SpechtTreeUnitTests
     {
         // Given
         var resources = new Specht.Resources.SpechtResources();
-        var parser = new SpecManifestParser(EngineServices.Versions());
+        var parser = new SpechtManifestParser(EngineServices.Versions());
         const string manifest = "{ \"frontmatterSchemas\": { \"feature\": \"custom.json\" } }\r\n";
         var structure = parser.Parse(manifest);
         const string schema = """{"title":"selected schema text"}""";
@@ -85,8 +86,8 @@ public sealed class SpechtTreeUnitTests
         var tree = SpechtTree.Of(1, bytes, structure, selected);
 
         // Then
-        tree.Files.Single(static file => file.RelativePath == SpecTree.ManifestPath).Content.ToArray().Should().Equal(bytes);
+        tree.Files.Single(static file => file.RelativePath == Specht.Tests.Shared.SpechtTree.ManifestPath).Content.ToArray().Should().Equal(bytes);
         System.Text.Encoding.UTF8.GetString(tree.Files.Single(static file =>
-            file.RelativePath == SpecTree.FrontmatterSchemaFolder + "/custom.json").Content.Span).Should().Be(schema);
+            file.RelativePath == Specht.Tests.Shared.SpechtTree.FrontmatterSchemaFolder + "/custom.json").Content.Span).Should().Be(schema);
     }
 }

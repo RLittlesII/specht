@@ -18,7 +18,7 @@ spec: null
 claims: []
 
 created: "2026-10-11"
-updated: "2026-10-11"
+updated: "2026-11-01"
 closed: null
 
 summary: |
@@ -33,7 +33,7 @@ summary: |
   `SpechtManifestException` - are thrown from
   `src/specht/Manifest/SpecManifest.cs`,
   `src/specht/Versioning/SchemaVersions.cs` and
-  `src/specht/Model/SpecSchemas.cs`, and the catch ladder in
+  `src/specht/Model/SpechtSchemas.cs`, and the catch ladder in
   `src/tool/Features/Check/CheckCommand.cs` folds them into exit `2` or `3`.
   `0001-F2` § 7 ("Input failures are engine exceptions the command folds")
   records the first three; the fourth, a well-formed manifest the engine
@@ -47,8 +47,8 @@ summary: |
 
   The slice, identical for every candidate: the manifest load
   (`SpecManifest.Load` and what it calls), `SchemaVersions.Select`, the
-  vocabulary check in `SpecSchemas`, the frames that pass the result up
-  (`SpecModel.Load`, `SpechtRunner.Run`), and the catch ladder in
+  vocabulary check in `SpechtSchemas`, the frames that pass the result up
+  (`SpechtModel.Load`, `SpechtRunner.Run`), and the catch ladder in
   `CheckCommand`. Behaviour is frozen: the same stderr text and the same exit
   codes, with the acceptance scenarios unedited.
 

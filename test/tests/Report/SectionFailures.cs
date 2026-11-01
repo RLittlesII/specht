@@ -13,17 +13,17 @@ public sealed class SectionFailures : TheoryData<string, FeatureSpec>
     {
         Add(
             "a missing section",
-            new FeatureSpecFixture().WithDocument(SpecDocument.Parse(
+            new FeatureSpecFixture().WithDocument(SpechtDocument.Parse(
                 "## Goal\n\nText.\n\n## Design\n\nText.\n",
                 "src/sample/.spec/README.md")));
         Add(
             "a section twice",
-            new FeatureSpecFixture().WithDocument(SpecDocument.Parse(
+            new FeatureSpecFixture().WithDocument(SpechtDocument.Parse(
                 "## Goal\n\nText.\n\n## Needs\n\nText.\n\n## Needs\n\nText.\n\n## Design\n\nText.\n",
                 "src/sample/.spec/README.md")));
         Add(
             "sections out of order",
-            new FeatureSpecFixture().WithDocument(SpecDocument.Parse(
+            new FeatureSpecFixture().WithDocument(SpechtDocument.Parse(
                 "## Needs\n\nText.\n\n## Goal\n\nText.\n\n## Design\n\nText.\n",
                 "src/sample/.spec/README.md")));
     }

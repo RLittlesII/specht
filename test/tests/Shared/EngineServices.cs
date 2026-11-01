@@ -61,30 +61,30 @@ public static class EngineServices
     public static SpechtRunner Runner(SchemaVersions? versions = null) => (SpechtRunner)Resolve(typeof(SpechtRunner), versions: versions);
 
     /// <summary>Resolves the model loader.</summary>
-    public static SpecModelLoader Loader() => (SpecModelLoader)Resolve(typeof(SpecModelLoader));
+    public static SpechtModelLoader Loader() => (SpechtModelLoader)Resolve(typeof(SpechtModelLoader));
 
     /// <summary>Resolves the shipped instance catalog.</summary>
     public static SchemaVersions Versions() => (SchemaVersions)Resolve(typeof(SchemaVersions));
 
     /// <summary>Resolves the pure manifest parser.</summary>
-    public static SpecManifestParser Parser() => (SpecManifestParser)Resolve(typeof(SpecManifestParser));
+    public static SpechtManifestParser Parser() => (SpechtManifestParser)Resolve(typeof(SpechtManifestParser));
 
     /// <summary>Resolves the schema stage over the supplied file system and catalog.</summary>
-    public static SpecSchemasLoader Schemas(IFileSystem fileSystem, SchemaVersions? versions = null) =>
-        (SpecSchemasLoader)Resolve(typeof(SpecSchemasLoader), fileSystem, versions);
+    public static SpechtSchemasLoader Schemas(IFileSystem fileSystem, SchemaVersions? versions = null) =>
+        (SpechtSchemasLoader)Resolve(typeof(SpechtSchemasLoader), fileSystem, versions);
 
     /// <summary>Reads and parses a manifest without check-only pin resolution.</summary>
-    public static SpecStructure Manifest(IFileSystem fileSystem, string root) => Schemas(fileSystem).LoadManifest(root);
+    public static SpechtStructure Manifest(IFileSystem fileSystem, string root) => Schemas(fileSystem).LoadManifest(root);
 
     /// <summary>Reads the manifest document over the existing validation and file-system seams.</summary>
     public static JsonObject EffectiveManifest(string root, IFileSystem? fileSystem = null, SchemaVersions? versions = null) =>
         ((EffectiveManifestReader)Resolve(typeof(EffectiveManifestReader), fileSystem, versions)).Read(root);
 
     /// <summary>Loads the embedded or verified upstream schemas.</summary>
-    public static SpecSchemas LoadSchemas(IFileSystem fileSystem, string root, SchemaVersions versions) => Schemas(fileSystem, versions).Load(root);
+    public static SpechtSchemas LoadSchemas(IFileSystem fileSystem, string root, SchemaVersions versions) => Schemas(fileSystem, versions).Load(root);
 
     /// <summary>Loads the explicitly requested local schemas.</summary>
-    public static SpecSchemas LoadOnDiskSchemas(IFileSystem fileSystem, string root) => Schemas(fileSystem).LoadOnDisk(root);
+    public static SpechtSchemas LoadOnDiskSchemas(IFileSystem fileSystem, string root) => Schemas(fileSystem).LoadOnDisk(root);
 
     private static object Resolve(Type service, IFileSystem? fileSystem = null, SchemaVersions? versions = null)
     {

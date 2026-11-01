@@ -18,7 +18,7 @@ namespace Specht.Rules;
 /// file's frontmatter and belongs with the rest of them.
 /// </remarks>
 /// <implements epic="0001" feature="F5" claim="B-008" />
-public sealed class FrontmatterSchemaRule : ISpecRule
+public sealed class FrontmatterSchemaRule : ISpechtRule
 {
     /// <inheritdoc />
     public string Id => "SPEC001";
@@ -28,7 +28,7 @@ public sealed class FrontmatterSchemaRule : ISpecRule
 
     /// <inheritdoc />
     /// <implements epic="0001" feature="F5" claim="B-008" />
-    public IEnumerable<SpecViolation> Evaluate(SpecModel model)
+    public IEnumerable<SpechtViolation> Evaluate(SpechtModel model)
     {
         foreach (var feature in model.Features)
         {
@@ -67,7 +67,7 @@ public sealed class FrontmatterSchemaRule : ISpecRule
 
     /// <summary>Evaluates one document using the same kind mapping and schema evaluation as the tree.</summary>
     /// <implements epic="0001" feature="F5" claim="B-008" />
-    public IEnumerable<SpecViolation> Evaluate(string path, Frontmatter frontmatter, SpecSchemas schemas, FrontmatterKind kind)
+    public IEnumerable<SpechtViolation> Evaluate(string path, Frontmatter frontmatter, SpechtSchemas schemas, FrontmatterKind kind)
     {
         var selected = kind switch
         {
@@ -81,16 +81,16 @@ public sealed class FrontmatterSchemaRule : ISpecRule
     }
 
     /// <implements epic="0001" feature="F5" claim="B-008" />
-    private static IEnumerable<SpecViolation> Check(
-        string path, Frontmatter frontmatter, JsonSchema schema, string ruleId, SpecSchemas schemas, string kind)
+    private static IEnumerable<SpechtViolation> Check(
+        string path, Frontmatter frontmatter, JsonSchema schema, string ruleId, SpechtSchemas schemas, string kind)
     {
-        var schemaFile = SpecManifestStore.FrontmatterSchemaFolder + "/" + schemas.Structure.FrontmatterSchemas[kind];
+        var schemaFile = SpechtManifestStore.FrontmatterSchemaFolder + "/" + schemas.Structure.FrontmatterSchemas[kind];
 
         if (frontmatter.Node is null)
         {
-            yield return new SpecViolation(
+            yield return new SpechtViolation(
                 "SPEC001",
-                SpecSeverity.Error,
+                SpechtSeverity.Error,
                 path,
                 1,
                 null,
@@ -103,7 +103,7 @@ public sealed class FrontmatterSchemaRule : ISpecRule
         }
 
         var instance = JsonSerializer.SerializeToElement(frontmatter.Node);
-        var result = EvaluateInvariant(schema, instance, schemas.Source == SpecSchemaSource.Embedded ? null : schemaFile);
+        var result = EvaluateInvariant(schema, instance, schemas.Source == SpechtSchemaSource.Embedded ? null : schemaFile);
 
         if (result.IsValid)
         {
@@ -114,9 +114,9 @@ public sealed class FrontmatterSchemaRule : ISpecRule
         {
             var key = KeyOf(detail);
 
-            yield return new SpecViolation(
+            yield return new SpechtViolation(
                 ruleId,
-                SpecSeverity.Error,
+                SpechtSeverity.Error,
                 path,
                 frontmatter.LineOf(key),
                 key,
@@ -136,7 +136,7 @@ public sealed class FrontmatterSchemaRule : ISpecRule
         {
             CultureInfo.CurrentCulture = CultureInfo.InvariantCulture;
 
-            return schema.Evaluate(instance, SpecSchemas.Options);
+            return schema.Evaluate(instance, SpechtSchemas.Options);
         }
         catch (RefResolutionException) when (schemaPath is not null)
         {

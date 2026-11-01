@@ -640,7 +640,7 @@ public sealed partial class InitSteps
             InitWriter.ShippingCopy(Shipped),
             new FileSystem(),
             EngineServices.Parser(),
-            new SpecManifestStore(new FileSystem()),
+            new SpechtManifestStore(new FileSystem()),
             new UpstreamSchemaFetcher(client)));
         services.AddSingleton<TextWriter>(errors);
         var app = new CommandAppTester(new TypeRegistrar(services), console: new TestConsole().Width(80));

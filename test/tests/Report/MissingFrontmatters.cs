@@ -7,7 +7,7 @@ namespace Specht.Tests.Report;
 /// <see cref="SyntheticSchemaModelFixture"/>, the path of the schema the manifest names for the document's kind, and that
 /// schema's required keys in its order.
 /// </summary>
-public sealed class MissingFrontmatters : TheoryData<string, SpecModel, string, string[]>
+public sealed class MissingFrontmatters : TheoryData<string, SpechtModel, string, string[]>
 {
     public MissingFrontmatters()
     {

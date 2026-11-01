@@ -27,9 +27,9 @@ public sealed class PinnedInitWriterUnitTests
         byte[] localTemplate = "# Local edits\r\n"u8.ToArray();
         var fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>
         {
-            [Path.Combine("repo", SpecTree.ManifestPath)] = new(manifest),
-            [Path.Combine("repo", SpecTree.FeatureSchemaPath)] = new(localSchema),
-            [Path.Combine("repo", SpecTree.TemplatesFolder, "feature.md")] = new(localTemplate),
+            [Path.Combine("repo", SpechtTree.ManifestPath)] = new(manifest),
+            [Path.Combine("repo", SpechtTree.FeatureSchemaPath)] = new(localSchema),
+            [Path.Combine("repo", SpechtTree.TemplatesFolder, "feature.md")] = new(localTemplate),
         });
         var shipping = new[] { "0.1.0", "0.2.0", "0.3.0" }
             .SelectMany(number => new[]
@@ -51,15 +51,15 @@ public sealed class PinnedInitWriterUnitTests
         listing.Where(static entry => !entry.Written).Select(static entry => entry.Path)
             .Should().BeEquivalentTo(new[]
             {
-                schemas ? SpecTree.FeatureSchemaPath : null,
-                templates ? $"{SpecTree.TemplatesFolder}/feature.md" : null,
+                schemas ? SpechtTree.FeatureSchemaPath : null,
+                templates ? $"{SpechtTree.TemplatesFolder}/feature.md" : null,
             }.OfType<string>());
         rerun.Should().Equal(listing.Select(static entry => (entry.Path, false)));
-        fileSystem.File.ReadAllText(Path.Combine("repo", SpecTree.ManifestPath)).Should().Be(manifest);
-        fileSystem.File.ReadAllBytes(Path.Combine("repo", SpecTree.FeatureSchemaPath)).Should().Equal(localSchema);
-        fileSystem.File.ReadAllBytes(Path.Combine("repo", SpecTree.TemplatesFolder, "feature.md")).Should().Equal(localTemplate);
-        fileSystem.File.Exists(Path.Combine("repo", SpecTree.ItemSchemaPath)).Should().Be(schemas);
-        fileSystem.File.Exists(Path.Combine("repo", SpecTree.TemplatesFolder, "adr.md")).Should().Be(templates);
+        fileSystem.File.ReadAllText(Path.Combine("repo", SpechtTree.ManifestPath)).Should().Be(manifest);
+        fileSystem.File.ReadAllBytes(Path.Combine("repo", SpechtTree.FeatureSchemaPath)).Should().Equal(localSchema);
+        fileSystem.File.ReadAllBytes(Path.Combine("repo", SpechtTree.TemplatesFolder, "feature.md")).Should().Equal(localTemplate);
+        fileSystem.File.Exists(Path.Combine("repo", SpechtTree.ItemSchemaPath)).Should().Be(schemas);
+        fileSystem.File.Exists(Path.Combine("repo", SpechtTree.TemplatesFolder, "adr.md")).Should().Be(templates);
         foreach (var (relative, _) in listing.Where(static entry => entry.Written))
         {
             var local = relative[".specht/".Length..];
@@ -79,7 +79,7 @@ public sealed class PinnedInitWriterUnitTests
         const string manifest = """{"schemaVersion":"7.0.0"}""";
         var fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>
         {
-            [Path.Combine("repo", SpecTree.ManifestPath)] = new(manifest),
+            [Path.Combine("repo", SpechtTree.ManifestPath)] = new(manifest),
         });
         InitWriter writer = new InitWriterFixture().WithFileSystem(fileSystem);
 
@@ -90,6 +90,6 @@ public sealed class PinnedInitWriterUnitTests
         (await write.Should().ThrowExactlyAsync<SpechtManifestException>()).Which.Message
             .Should().Contain("schemaVersion 7.0.0 is not shipped").And.Contain("0.1.0").And.Contain("0.2.0");
         fileSystem.AllFiles.Should().ContainSingle();
-        fileSystem.File.ReadAllText(Path.Combine("repo", SpecTree.ManifestPath)).Should().Be(manifest);
+        fileSystem.File.ReadAllText(Path.Combine("repo", SpechtTree.ManifestPath)).Should().Be(manifest);
     }
 }

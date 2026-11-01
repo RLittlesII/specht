@@ -14,14 +14,14 @@ public sealed class ManifestDefaultsIntegrationTests
     public void AnyRoot_WhenPrintingDefaults_ShouldIgnoreTheRootAndPrintTheNewestEmbeddedDocument(string? manifest, string root, int expectedCheckExit)
     {
         // Given
-        using var tree = new SpecTree();
+        using var tree = new SpechtTree();
         if (manifest is null)
         {
-            File.Delete(Path.Combine(tree.Root, SpecTree.ManifestPath));
+            File.Delete(Path.Combine(tree.Root, SpechtTree.ManifestPath));
         }
         else
         {
-            tree.WriteRaw(SpecTree.ManifestPath, manifest);
+            tree.WriteRaw(SpechtTree.ManifestPath, manifest);
         }
         AcceptanceTool.Launch(tree.Root, "--root", root).ExitCode.Should().Be(expectedCheckExit);
         var expected = JsonNode.Parse(EngineServices.Versions().Versions[^1].Manifest);

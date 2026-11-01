@@ -35,12 +35,12 @@ public sealed class FeatureFileRuleUnitTests
             });
         FeatureSpec feature = new FeatureSpecFixture()
             .WithDocument(
-                SpecDocument.Parse(
+                SpechtDocument.Parse(
                     "## 3. Acceptance Criteria\n\n| ID | Claim |\n| -- | ----- |\n| B-404 | Under the title no role names. |\n\n"
                         + "## 3. Claims\n\n| ID | Claim |\n| -- | ----- |\n| B-001 | Under the claims role's section. |\n",
                     "src/sample/.spec/README.md"))
             .WithFeatureFiles(new FeatureFileFixture().WithTags(new FeatureTagParser().Parse(fileSystem.File.ReadAllText(companion))));
-        SpecModel model = new SpecModelFixture().WithManifest(manifest).WithFeatures(feature);
+        SpechtModel model = new SpechtModelFixture().WithManifest(manifest).WithFeatures(feature);
 
         // When
         var violations = new FeatureFileRule().Evaluate(model).ToList();

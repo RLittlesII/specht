@@ -34,7 +34,7 @@ public sealed partial class ShippingCopyIntegrationTests
     {
         // Given
         var name = $"{folder}/v{NewestVersion()}/{file}";
-        var path = Path.Combine([AppContext.BaseDirectory, SpecTree.ConfigurationFolder, folder, .. file.Split('/')]);
+        var path = Path.Combine([AppContext.BaseDirectory, SpechtTree.ConfigurationFolder, folder, .. file.Split('/')]);
         File.Exists(path).Should().BeTrue($"this repository's live copy holds .specht/{folder}/{file}");
         var live = File.ReadAllBytes(path);
 
@@ -50,8 +50,8 @@ public sealed partial class ShippingCopyIntegrationTests
     {
         // Given
         var name = $"manifest/v{NewestVersion()}/manifest.json";
-        var path = Path.Combine([AppContext.BaseDirectory, .. SpecTree.ManifestPath.Split('/')]);
-        File.Exists(path).Should().BeTrue($"this repository's live manifest is {SpecTree.ManifestPath}");
+        var path = Path.Combine([AppContext.BaseDirectory, .. SpechtTree.ManifestPath.Split('/')]);
+        File.Exists(path).Should().BeTrue($"this repository's live manifest is {SpechtTree.ManifestPath}");
         var live = JsonNode.Parse(File.ReadAllText(path))!.AsObject();
         live["rules"] = new JsonObject { ["SPEC031"] = "warning" };
 
@@ -67,10 +67,10 @@ public sealed partial class ShippingCopyIntegrationTests
                 continue;
             }
 
-            live.ContainsKey(key).Should().BeTrue($"{SpecTree.ManifestPath} carries the tool-owned key {key}");
+            live.ContainsKey(key).Should().BeTrue($"{SpechtTree.ManifestPath} carries the tool-owned key {key}");
             JsonNode.DeepEquals(value, live[key])
                 .Should()
-                .BeTrue($"{name} and {SpecTree.ManifestPath} agree on the tool-owned key {key}");
+                .BeTrue($"{name} and {SpechtTree.ManifestPath} agree on the tool-owned key {key}");
         }
     }
 

@@ -16,7 +16,7 @@ public sealed partial class ManifestSteps
     public void GivenWaiverWarning() => Named("rules")["SPEC034"] = "warning";
 
     [Given("the root holds a specification with a waived row that names no approver")]
-    public void GivenUnsignedWaiver() => Tree.WriteFeature("0001", "F1", sections: SpecTree.SectionsWith(
+    public void GivenUnsignedWaiver() => Tree.WriteFeature("0001", "F1", sections: SpechtTree.SectionsWith(
         "9. Traceability Matrix", "## 9. Traceability Matrix\n\n| Claim ID | Scenario | Test | Status |\n| --- | --- | --- | --- |\n"
             + "| B-001 | A waiver | | Waived |\n"));
 
@@ -33,7 +33,7 @@ public sealed partial class ManifestSteps
         _rejection.Should().BeNull();
         var violation = _report!.Violations.Where(static violation => violation.RuleId == "SPEC034").Should().ContainSingle().Subject;
         violation.Identifier.Should().Be("B-001");
-        violation.Severity.Should().Be(Specht.Model.SpecSeverity.Warning);
+        violation.Severity.Should().Be(Specht.Model.SpechtSeverity.Warning);
     }
 
     [Given("the default manifest of schema version {string}")]
@@ -46,8 +46,8 @@ public sealed partial class ManifestSteps
     [Then("the waiver rule and the retired-claim rule are set to off")]
     public void ThenDefaultWaiverLevels()
     {
-        Structure.Rules["SPEC034"].Should().Be(SpecRuleLevel.Off);
-        Structure.Rules["SPEC035"].Should().Be(SpecRuleLevel.Off);
+        Structure.Rules["SPEC034"].Should().Be(SpechtRuleLevel.Off);
+        Structure.Rules["SPEC035"].Should().Be(SpechtRuleLevel.Off);
     }
 
     [Then("the count of rules evaluated excludes the waiver rule")]

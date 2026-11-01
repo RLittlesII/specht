@@ -29,7 +29,7 @@ public class CheckBenchmarks
         _root = Directory.CreateTempSubdirectory("specht-check-").FullName;
         _resolver = new TypeRegistrar(new ServiceCollection().AddSpechtEngine()).Build();
         var resources = (SpechtResources)_resolver.Resolve(typeof(SpechtResources))!;
-        var parser = (SpecManifestParser)_resolver.Resolve(typeof(SpecManifestParser))!;
+        var parser = (SpechtManifestParser)_resolver.Resolve(typeof(SpechtManifestParser))!;
         var structure = parser.Parse(resources.DefaultManifest);
         new SpechtTreeStore(new FileSystem()).Save(
             SpechtTree.Of(Specifications, resources.DefaultManifestBytes, structure, parser.PinnedVersion(structure)), _root);

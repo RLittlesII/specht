@@ -34,7 +34,7 @@ public sealed class RuleSetCommandUnitTests
         }
         var parser = EngineServices.Parser();
         var pinEditor = new ManifestPinEditor(parser, EngineServices.Versions());
-        var setter = new RuleLevelSetter(new SpecManifestStore(files), parser, new ManifestRuleEditor(pinEditor), pinEditor);
+        var setter = new RuleLevelSetter(new SpechtManifestStore(files), parser, new ManifestRuleEditor(pinEditor), pinEditor);
         using var errors = new StringWriter(CultureInfo.InvariantCulture);
         var command = new RuleSetCommand(setter, errors);
         var root = files.Path.GetFullPath("consumer");

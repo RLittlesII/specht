@@ -95,7 +95,7 @@ public sealed class PinnedDefaultsSteps
         var texts = resources.Texts.ToDictionary(static pair => pair.Key, static pair => pair.Value, StringComparer.Ordinal);
         texts["manifest/v0.1.0/manifest.json"] = _older.ToJsonString();
         texts["manifest/v0.2.0/manifest.json"] = _newer.ToJsonString();
-        var parser = new SpecManifestParser(new SchemaVersions(texts));
+        var parser = new SpechtManifestParser(new SchemaVersions(texts));
         _structure = parser.Parse(_manifest.ToJsonString());
     }
 
@@ -135,10 +135,10 @@ public sealed class PinnedDefaultsSteps
     [Then("its rule map is empty")]
     public void ThenRulesAreNotInherited() => Structure.Rules.Should().BeEmpty();
 
-    private SpecStructure Structure => _structure ?? throw new InvalidOperationException("No manifest was loaded.");
+    private SpechtStructure Structure => _structure ?? throw new InvalidOperationException("No manifest was loaded.");
 
     private readonly JsonObject _older = JsonNode.Parse(new SpechtResources().DefaultManifest)!.AsObject();
     private readonly JsonObject _newer = JsonNode.Parse(new SpechtResources().DefaultManifest)!.AsObject();
     private JsonObject _manifest = new();
-    private SpecStructure? _structure;
+    private SpechtStructure? _structure;
 }

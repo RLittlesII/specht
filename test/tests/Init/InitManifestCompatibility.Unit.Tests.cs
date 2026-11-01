@@ -17,8 +17,8 @@ public sealed class InitManifestCompatibilityUnitTests
         // Given
         var fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>
         {
-            [Path.Combine("repo", SpecTree.ManifestPath)] = new(manifest),
-            [Path.Combine("repo", SpecTree.TemplatesFolder, "feature.md")] = new("Local template edits\r\n"),
+            [Path.Combine("repo", SpechtTree.ManifestPath)] = new(manifest),
+            [Path.Combine("repo", SpechtTree.TemplatesFolder, "feature.md")] = new("Local template edits\r\n"),
             [Path.Combine("repo", "README.md")] = new("Synthetic repository\n"),
         });
         var before = fileSystem.AllFiles.ToDictionary(
@@ -47,7 +47,7 @@ public sealed class InitManifestCompatibilityUnitTests
         const string manifest = """{"schemaVersion":"7.0.0","rules":{"SPEC999":"off"}}""";
         var fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>
         {
-            [Path.Combine("repo", SpecTree.ManifestPath)] = new(manifest),
+            [Path.Combine("repo", SpechtTree.ManifestPath)] = new(manifest),
         });
         InitWriter writer = new InitWriterFixture()
             .WithFileSystem(fileSystem)
@@ -58,8 +58,8 @@ public sealed class InitManifestCompatibilityUnitTests
 
         // Then
         (await write.Should().ThrowExactlyAsync<SpechtManifestException>()).Which.Message.Should().Contain("schemaVersion 7.0.0 is not shipped");
-        fileSystem.File.ReadAllText(Path.Combine("repo", SpecTree.ManifestPath)).Should().Be(manifest);
-        fileSystem.File.Exists(Path.Combine("repo", SpecTree.ItemSchemaPath)).Should().BeFalse();
+        fileSystem.File.ReadAllText(Path.Combine("repo", SpechtTree.ManifestPath)).Should().Be(manifest);
+        fileSystem.File.Exists(Path.Combine("repo", SpechtTree.ItemSchemaPath)).Should().BeFalse();
     }
 
     [Theory]
@@ -70,7 +70,7 @@ public sealed class InitManifestCompatibilityUnitTests
         // Given
         var fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>
         {
-            [Path.Combine("repo", SpecTree.ManifestPath)] = new(manifest),
+            [Path.Combine("repo", SpechtTree.ManifestPath)] = new(manifest),
         });
         InitWriter writer = new InitWriterFixture()
             .WithFileSystem(fileSystem)

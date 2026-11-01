@@ -14,8 +14,8 @@ public sealed class ExplainIntegrationTests
     public void AValidPin_WhenExplained_ShouldPrintTheExactPageWithoutCheckingAnInvalidTree(string pin, string id)
     {
         // Given
-        using var tree = new SpecTree();
-        File.WriteAllText(Path.Combine(tree.Root, SpecTree.ManifestPath), $$"""{"schemaVersion":"{{pin}}"}""");
+        using var tree = new SpechtTree();
+        File.WriteAllText(Path.Combine(tree.Root, SpechtTree.ManifestPath), $$"""{"schemaVersion":"{{pin}}"}""");
         tree.DeleteFrontmatterSchemas();
         tree.WriteFeature("0001", "F1", featureFile: null);
         var page = EngineServices.Versions().Versions.Single(version => version.Number.ToString() == pin).RulePages[id];
@@ -35,8 +35,8 @@ public sealed class ExplainIntegrationTests
     public void AnIdOutsideThePin_WhenExplained_ShouldNameItOnStderrAndExitFour(string id)
     {
         // Given
-        using var tree = new SpecTree();
-        File.WriteAllText(Path.Combine(tree.Root, SpecTree.ManifestPath), """{"schemaVersion":"0.1.0"}""");
+        using var tree = new SpechtTree();
+        File.WriteAllText(Path.Combine(tree.Root, SpechtTree.ManifestPath), """{"schemaVersion":"0.1.0"}""");
 
         // When
         var result = AcceptanceTool.Launch(tree.Root, "--root", ".", "--explain", id);
@@ -56,8 +56,8 @@ public sealed class ExplainIntegrationTests
     public void ARejectedInput_WhenExplained_ShouldWriteOnlyStderrAndPreserveTheCheckExit(string? manifest, int exit)
     {
         // Given
-        using var tree = new SpecTree();
-        var path = Path.Combine(tree.Root, SpecTree.ManifestPath);
+        using var tree = new SpechtTree();
+        var path = Path.Combine(tree.Root, SpechtTree.ManifestPath);
         File.Delete(path);
         if (manifest is not null)
         {

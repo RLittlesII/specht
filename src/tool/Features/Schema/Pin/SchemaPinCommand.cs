@@ -37,7 +37,7 @@ public sealed class SchemaPinCommand(IAnsiConsole console, SchemaVersionManager 
                     .AddChoices(choices)).ToString();
             }
             var selected = await schemas.Pin(root, version, cancellationToken);
-            console.Profile.Out.Writer.WriteLine($"pinned schemaVersion {selected} in {SpecManifestStore.RelativePath}");
+            console.Profile.Out.Writer.WriteLine($"pinned schemaVersion {selected} in {SpechtManifestStore.RelativePath}");
             return ExitCodes.Success;
         }
         catch (SpechtRootNotFoundException)

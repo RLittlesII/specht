@@ -7,7 +7,7 @@ using Specht.Tests.Shared;
 namespace Specht.Tests.Report;
 
 /// <summary>
-/// Builds a <see cref="SpecModel"/> under a synthetic manifest that renames all three frontmatter schema files, with
+/// Builds a <see cref="SpechtModel"/> under a synthetic manifest that renames all three frontmatter schema files, with
 /// synthetic schemas loaded from a <see cref="MockFileSystem"/>, holding one Feature specification whose frontmatter the
 /// synthetic Feature schema accepts, until a test overrides what it asserts on: the kind of the one document, its whole
 /// frontmatter, or one key of it.
@@ -21,13 +21,13 @@ namespace Specht.Tests.Report;
 internal sealed class SyntheticSchemaModelFixture : AutoFixtureBase<SyntheticSchemaModelFixture>
 {
     /// <summary>The Feature schema's path under the root, by the synthetic manifest's file name.</summary>
-    public const string SpecSchemaPath = SpecTree.FrontmatterSchemaFolder + "/spec.json";
+    public const string SpecSchemaPath = SpechtTree.FrontmatterSchemaFolder + "/spec.json";
 
     /// <summary>The item schema's path under the root, by the synthetic manifest's file name.</summary>
-    public const string ItemSchemaPath = SpecTree.FrontmatterSchemaFolder + "/item.json";
+    public const string ItemSchemaPath = SpechtTree.FrontmatterSchemaFolder + "/item.json";
 
     /// <summary>The epic schema's path under the root, by the synthetic manifest's file name.</summary>
-    public const string GroupSchemaPath = SpecTree.FrontmatterSchemaFolder + "/group.json";
+    public const string GroupSchemaPath = SpechtTree.FrontmatterSchemaFolder + "/group.json";
 
     /// <summary>Sets the kind of the one document: <c>feature</c>, <c>task</c> or <c>epic</c>.</summary>
     /// <param name="kind">The kind.</param>
@@ -60,14 +60,14 @@ internal sealed class SyntheticSchemaModelFixture : AutoFixtureBase<SyntheticSch
         return WithNode(node);
     }
 
-    public static implicit operator SpecModel(SyntheticSchemaModelFixture fixture) => fixture.Build();
+    public static implicit operator SpechtModel(SyntheticSchemaModelFixture fixture) => fixture.Build();
 
-    private SpecModel Build()
+    private SpechtModel Build()
     {
         Frontmatter frontmatter = new FrontmatterFixture().WithNode(_node?.DeepClone().AsObject());
         var files = new MockFileSystem(new Dictionary<string, MockFileData>
         {
-            [Path.Combine("repo", SpecTree.ManifestPath)] = new(
+            [Path.Combine("repo", SpechtTree.ManifestPath)] = new(
                 """
                 {
                   "identifiers": { "epic": "^[0-9]{4}$" },
@@ -78,11 +78,11 @@ internal sealed class SyntheticSchemaModelFixture : AutoFixtureBase<SyntheticSch
             [Path.Combine("repo", ItemSchemaPath)] = new(ItemSchema),
             [Path.Combine("repo", GroupSchemaPath)] = new(GroupSchema),
         });
-        var model = new SpecModelFixture().WithSchemas(EngineServices.LoadOnDiskSchemas(files, "repo"));
+        var model = new SpechtModelFixture().WithSchemas(EngineServices.LoadOnDiskSchemas(files, "repo"));
 
         return _kind switch
         {
-            "feature" => model.WithFeatures(new FeatureSpecFixture().WithDocument(new SpecDocumentFixture().WithFrontmatter(frontmatter))),
+            "feature" => model.WithFeatures(new FeatureSpecFixture().WithDocument(new SpechtDocumentFixture().WithFrontmatter(frontmatter))),
             "task" => model.WithItems(new ChildItemFixture().WithFrontmatter(frontmatter)),
             "epic" => model.WithList([(EpicFile)new EpicFileFixture().WithFrontmatter(frontmatter)]),
             _ => throw new ArgumentOutOfRangeException(nameof(_kind), _kind, "The kind is feature, task or epic."),
