@@ -10,7 +10,7 @@ risk: 3
 parent: null
 children: []
 
-depends_on: ["0099", "0167", "0168", "0216"] # ADR-0007's factory from 0099; the engine's check entry point `SpecCheck` from 0167; the home both test projects compile from 0168; 0216 is closed (ADR-0026) and stays as the record of the evaluation - the gate that still holds this item is ADR-0014's, pending the owner
+depends_on: ["0099", "0167", "0168", "0216"] # ADR-0007's factory from 0099; the engine's check entry point `SpecCheck` from 0167; the home both test projects compile from 0168; 0216 is closed (ADR-0026) and stays as the record of the evaluation; ADR-0027 lifted ADR-0014's gate
 spikes: []
 
 spec: null
@@ -30,8 +30,9 @@ summary: |
   open point 2). Both are gone; the command calls item 0167's engine entry
   point directly.
 
-  Still paused by ADR-0014: its gate is answered for the mediator only and
-  stands for the rest of ADR-0010's rollout, pending the owner.
+  ADR-0027 lifted ADR-0014's benchmark gate on 2026-10-31; the pull request
+  carries the no-regression guard. Still `blocked`: see the decision of
+  2026-10-31 on ADR-0027.
 
   ADR-0007 (accepted 2026-10-10,
   .spec/adr/0007-each-part-registers-itself-and-one-factory-composes-the-host.md)
@@ -165,6 +166,7 @@ acceptance_criteria:
     registrations, and the check command calls the engine's check entry
     point directly; no command's behaviour changes."
   - "Constraints preserved: 0001-F2 C-2, 0001-F2 C-3, 0001-F2 C-7, ADR-0003"
+  - "The guard of ADR-0027: CheckBenchmarks at 100 and 1,000 specifications on the base `main` commit and on the branch head, judged by 0211's rule, numbers in the PR description and in a decisions entry; a flag waits for the owner's ruling."
 
 decisions:
   - |
@@ -234,6 +236,20 @@ decisions:
     Status stays `blocked` and every
     `depends_on` edge stays: 0216 is closed, but ADR-0014's gate stands for
     the rest of ADR-0010's rollout, pending the owner.
+  - |
+    2026-10-31, spec-author: on ADR-0027
+    (.spec/adr/0027-structural-stages-proceed-on-a-no-regression-guard.md),
+    accepted by the repository owner the same day, which lifts ADR-0014's
+    benchmark gate for ADR-0010's remaining structural stages and puts a
+    no-regression guard on each stage's pull request. The pause in the
+    summary is replaced and a criterion for the guard is added. 0216 is
+    done and stays in `depends_on` as the record of the evaluation.
+    Status stays `blocked`. ADR-0027 lifts the benchmark gate only. The
+    rescoping ADR-0026 requires is written (the decision above), with
+    `CheckCommand` taking 0167's `SpecCheck` directly left as this item's
+    design for the owner's review. This item is released when the owner
+    accepts that rescoping; the registration tests' collection and open
+    point 5 remain for the architecture pass.
 
 out_of_scope:
   - "What any command does - 0001-F2 and 0001-F4 own that."
