@@ -2,7 +2,7 @@ id: "0158"
 type: refactor
 title: Split IdentityRule into one rule per id
 
-status: in-progress
+status: done
 
 value: 3
 risk: 2
@@ -19,7 +19,7 @@ claims: []
 
 created: "2026-10-11"
 updated: "2026-11-01"
-closed: null
+closed: "2026-11-01"
 
 summary: |
   ADR-0027 lifted ADR-0014's benchmark gate on 2026-10-31: this stage
@@ -91,6 +91,23 @@ decisions:
     splits"; 0100 also renames every engine type a split touches. Status
     `blocked` to `ready-for-implementation`, as cut: the design is ADR-0010's
     and 0100 is open.
+  - |
+    2026-11-01, implementer: `IdentityRule` is gone. `PathIdentityRule`
+    (src/specht/Rules/PathIdentityRule.cs) reports SPEC011 and
+    `DuplicateIdentityRule` (src/specht/Rules/DuplicateIdentityRule.cs)
+    reports SPEC012, each with `ReportedIds` of its own id alone, registered
+    by name in that order where `IdentityRule` was. Each is the old class's
+    branch for its id, moved unchanged with its guards and its emission
+    order; the private `DirectoryIdentity` helper moves with SPEC011, its
+    only user, so the two share nothing. The two tests that constructed
+    `IdentityRule` now construct the rule for the id each pins and keep
+    their names, so no § 9 row needs re-pointing; the § 8 prose that names
+    `IdentityRule` is test-writer's to update. Judged: a rule that throws is
+    now isolated per id, so a fault in one identity check no longer discards
+    the other id's findings or reports under SPEC011 for both; no tree a
+    test checks reaches it, and fault isolation is out of scope. The
+    ADR-0027 benchmark guard is run once for the batched pull request of
+    0156 to 0163, not in this worktree.
 
 out_of_scope:
   - "The collapse of `ISpechtRule`, `SpecFinding`, `DefaultSeverity` and the evaluator - item 0164."

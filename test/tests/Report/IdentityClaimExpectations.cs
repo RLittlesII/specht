@@ -22,7 +22,7 @@ public sealed class IdentityClaimExpectations : TheoryData<string, SpechtModel, 
                 .WithLocation(new SpechtLocationFixture().WithRelativePath(path)
                     .WithLayout(new SpechtLayout("epics", "epics/**/spec.md", new SpechtPathIdentity(1, 2))))
                 .WithDocument(SpechtDocument.Parse($"---\nepic: \"{epic}\"\nid: \"{id}\"\n---\n", path));
-            Add(key + " differs from its directory", new SpechtModelFixture().WithFeatures(feature), new IdentityRule(),
+            Add(key + " differs from its directory", new SpechtModelFixture().WithFeatures(feature), new PathIdentityRule(),
                 "SPEC011", feature.Identity, new JsonObject { ["form"] = form, ["value"] = value });
         }
 
@@ -33,7 +33,7 @@ public sealed class IdentityClaimExpectations : TheoryData<string, SpechtModel, 
             .WithDocument(SpechtDocument.Parse("---\nepic: \"EP-09\"\nid: \"F1\"\n---\n", hyphenPath));
         Add("a configured identity grammar can contain a hyphen", new SpechtModelFixture()
                 .WithManifest(new JsonObject { ["identifiers"] = new JsonObject { ["epic"] = "^EP-[0-9]{2}$" } })
-                .WithFeatures(hyphenIdentity), new IdentityRule(), "SPEC011", hyphenIdentity.Identity,
+                .WithFeatures(hyphenIdentity), new PathIdentityRule(), "SPEC011", hyphenIdentity.Identity,
             new JsonObject { ["form"] = "^EP-[0-9]{2}$", ["value"] = "EP-01" });
 
         FeatureSpec first = new FeatureSpecFixture()
@@ -43,7 +43,7 @@ public sealed class IdentityClaimExpectations : TheoryData<string, SpechtModel, 
             .WithLocation(new SpechtLocationFixture().WithRelativePath("src/a-second/.spec/README.md"))
             .WithDocument(SpechtDocument.Parse("---\nepic: \"0001\"\nid: \"F1\"\n---\n", "src/a-second/.spec/README.md"));
         Add("the first identity follows model order, not path order", new SpechtModelFixture().WithFeatures(first, second),
-            new IdentityRule(), "SPEC012", "0001-F1", new JsonObject
+            new DuplicateIdentityRule(), "SPEC012", "0001-F1", new JsonObject
             {
                 ["form"] = "{epic}-{feature}",
                 ["value"] = "0001-F1",

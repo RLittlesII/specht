@@ -53,7 +53,8 @@ public static class SpechtEngineServiceCollectionExtensions
         services.AddSingleton<ISpechtRule, ItemFrontmatterRule>();
         services.AddSingleton<ISpechtRule, EpicFrontmatterRule>();
         services.AddSingleton<ISpechtRule, SectionContractRule>();
-        services.AddSingleton<ISpechtRule, IdentityRule>();
+        services.AddSingleton<ISpechtRule, PathIdentityRule>();
+        services.AddSingleton<ISpechtRule, DuplicateIdentityRule>();
         services.AddSingleton<ISpechtRule, TableHeaderRule>();
         services.AddSingleton<ISpechtRule, FeatureFileRule>();
         services.AddSingleton<ISpechtRule, ClaimRule>();
