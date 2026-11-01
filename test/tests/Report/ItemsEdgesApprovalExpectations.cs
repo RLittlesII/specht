@@ -68,21 +68,21 @@ public sealed class ItemsEdgesApprovalExpectations : TheoryData<string, SpechtMo
                 "---\nepic: \"0002\"\nid: \"F2\"\n---\n", "src/target/.spec/README.md"));
             Add("unknown " + key + " gets sorted distinct qualified targets",
                 new SpechtModelFixture().WithFeatures(target, source, new FeatureSpecFixture().WithDocument(target.Document)),
-                new DependencyRule(), "SPEC050", "not a discovered Feature", null, new JsonObject { ["features"] = new JsonArray("0001-F1", "0002-F2") });
+                new DependencyTargetRule(), "SPEC050", "not a discovered Feature", null, new JsonObject { ["features"] = new JsonArray("0001-F1", "0002-F2") });
             FeatureSpec linked = new FeatureSpecFixture().WithDocument(SpechtDocument.Parse(
                 $"---\nepic: \"0001\"\nid: \"F1\"\n{key}: [\"0002/F2\"]\n---\n", "src/source/.spec/README.md"));
-            Add("missing reciprocal " + key, new SpechtModelFixture().WithFeatures(linked, target), new DependencyRule(), "SPEC051",
+            Add("missing reciprocal " + key, new SpechtModelFixture().WithFeatures(linked, target), new DependencySymmetryRule(), "SPEC051",
                 "does not declare", null, new JsonObject
                 {
                     ["edge"] = new JsonObject { ["feature"] = "0002-F2", ["key"] = key == "depends_on" ? "blocks" : "depends_on", ["value"] = "0001-F1" },
                 });
             FeatureSpec self = new FeatureSpecFixture().WithDocument(SpechtDocument.Parse(
                 $"---\nepic: \"0001\"\nid: \"F1\"\n{key}: [\"F1\"]\n---\n", "src/source/.spec/README.md"));
-            Add("direct self " + key, new SpechtModelFixture().WithFeatures(self), new DependencyRule(), "SPEC052", "this Feature itself", null,
+            Add("direct self " + key, new SpechtModelFixture().WithFeatures(self), new DependencyCycleRule(), "SPEC052", "this Feature itself", null,
             new JsonObject { ["cycle"] = new JsonArray("0001-F1", "0001-F1") });
             if (key == "depends_on")
             {
-                Add("the existing self-cycle traversal finding remains", new SpechtModelFixture().WithFeatures(self), new DependencyRule(),
+                Add("the existing self-cycle traversal finding remains", new SpechtModelFixture().WithFeatures(self), new DependencyCycleRule(),
                     "SPEC052", "dependency cycle:", null, new JsonObject { ["cycle"] = new JsonArray("0001-F1", "0001-F1") });
             }
         }
@@ -93,7 +93,7 @@ public sealed class ItemsEdgesApprovalExpectations : TheoryData<string, SpechtMo
                 "---\nepic: \"0001\"\nid: \"F1\"\ndepends_on: [\"F2\"]\n---\n", "src/lead/.spec/README.md"));
             FeatureSpec tail = new FeatureSpecFixture().WithDocument(SpechtDocument.Parse(
                 $"---\nepic: \"0001\"\nid: \"F2\"\ndepends_on: [\"{end}\"]\n---\n", "src/tail/.spec/README.md"));
-            Add("ordered cycle ending in " + end, new SpechtModelFixture().WithFeatures(lead, tail), new DependencyRule(), "SPEC052",
+            Add("ordered cycle ending in " + end, new SpechtModelFixture().WithFeatures(lead, tail), new DependencyCycleRule(), "SPEC052",
                 "dependency cycle: 0001-F1 ->", null, new JsonObject { ["cycle"] = new JsonArray("0001-F1", "0001-F2", "0001-" + end) });
         }
 

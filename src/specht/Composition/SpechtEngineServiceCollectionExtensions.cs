@@ -67,7 +67,9 @@ public static class SpechtEngineServiceCollectionExtensions
         services.AddSingleton<ISpechtRule, DeclaredSpikesRule>();
         services.AddSingleton<ISpechtRule, ItemPlacementRule>();
         services.AddSingleton<ISpechtRule, ItemSequenceRule>();
-        services.AddSingleton<ISpechtRule, DependencyRule>();
+        services.AddSingleton<ISpechtRule, DependencyTargetRule>();
+        services.AddSingleton<ISpechtRule, DependencySymmetryRule>();
+        services.AddSingleton<ISpechtRule, DependencyCycleRule>();
         services.AddSingleton<ISpechtRule, ApprovalRule>();
 
         services.Decorate<ISpechtRule, FaultIsolatedRule>();

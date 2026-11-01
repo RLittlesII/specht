@@ -2,7 +2,7 @@ id: "0162"
 type: refactor
 title: Split DependencyRule into one rule per id
 
-status: in-progress
+status: done
 
 value: 3
 risk: 3
@@ -19,7 +19,7 @@ claims: []
 
 created: "2026-10-11"
 updated: "2026-11-01"
-closed: null
+closed: "2026-11-01"
 
 summary: |
   ADR-0027 lifted ADR-0014's benchmark gate on 2026-10-31: this stage
@@ -99,6 +99,26 @@ decisions:
     splits"; 0100 also renames every engine type a split touches. Status
     `blocked` to `ready-for-implementation`, as cut: the design is ADR-0010's
     and 0100 is open.
+  - |
+    2026-11-01, implementer: `DependencyRule` is deleted and three rules
+    stand in its place: `DependencyTargetRule` (SPEC050),
+    `DependencySymmetryRule` (SPEC051) and `DependencyCycleRule` (SPEC052),
+    registered in that order where `DependencyRule` was. Each walks
+    `FeaturesWithIdentity` and a Feature's `depends_on` edges before its
+    `blocks` edges, reading the model's `SpechtDependencyGraph`.
+    `DependencySymmetryRule` skips an unresolved target and a self-edge
+    itself, the guards that sat in the SPEC050 and SPEC052 branches;
+    `DependencyCycleRule` keeps the resolved-target guard on its self-edge
+    test, emits self-dependencies before cycles and keeps the old walk and
+    its once-per-identity set unchanged. The edge walk is repeated in each
+    rule rather than shared, since the three read different things from it.
+    Judged: the summary says no test names `DependencyRule`, but
+    `test/tests/Report/ItemsEdgesApprovalExpectations.cs` constructed it as
+    theory data; its cases now construct the rule for their id, and no test
+    name or § 9 row changes. A rule that throws now faults under its own id
+    rather than SPEC050; none of the three throws on a loaded model. The
+    ADR-0027 benchmark guard was not run with this change; it is owed by
+    the pull request that carries it.
 
 out_of_scope:
   - "The collapse of `ISpechtRule`, `SpecFinding`, `DefaultSeverity` and the evaluator - item 0164."
