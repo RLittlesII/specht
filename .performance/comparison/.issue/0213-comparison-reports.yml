@@ -2,7 +2,7 @@ id: "0213"
 type: task
 title: Render and retain release comparison reports
 
-status: ready-for-implementation
+status: in-progress
 
 risk: 3
 
@@ -15,7 +15,7 @@ spec: .performance/comparison/.spec/README.md
 claims: ["B-015", "B-016", "B-022"]
 
 created: "2026-10-13"
-updated: "2026-10-13"
+updated: "2026-10-31"
 closed: null
 
 summary: |
