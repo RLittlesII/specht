@@ -19,7 +19,7 @@ Feature: Release
   Scenario: A green tag publishes both packages
     Given a tagged commit that passes every gate
     When its version tag is pushed
-    Then the tool and analysis packages are published to the repository's package feed
+    Then the tool and analysis packages are published to nuget.org
 
   @B-004
   Scenario: A published version gets a release
@@ -87,7 +87,7 @@ Feature: Release
 
   @B-010
   Scenario: A release reads the feed with its own token
-    Given this repository's tool manifest names the published checker
+    Given this repository's tool manifest names a checker published only to the authenticated feed
     When a version tag is pushed
     Then the checker is restored with the run's own token
     And no stored token is read
@@ -117,3 +117,16 @@ Feature: Release
     And three pull requests were merged before the tagged commit
     When the first version tag is published
     Then its release notes list all three pull requests
+
+  @B-014 @boundary
+  Scenario: A version tag below 1.0.0 without a prerelease label publishes nothing
+    Given a version tag whose computed version is below 1.0.0 and carries no prerelease label
+    When the tag is pushed
+    Then the run fails before anything is packed
+    And no package is published
+    And no release is created
+
+  @B-015
+  Scenario: A prerelease version gets a prerelease Release
+    Given the packages for a version tag carrying a prerelease label were published
+    Then the release for that tag is marked a prerelease

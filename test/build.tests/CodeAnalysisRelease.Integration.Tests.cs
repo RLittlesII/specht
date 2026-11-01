@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Text.RegularExpressions;
 using AwesomeAssertions;
 using YamlDotNet.RepresentationModel;
 
@@ -52,7 +53,43 @@ public sealed class CodeAnalysisReleaseIntegrationTests
     }
 
     [Fact]
-    public async Task CreateGitHubRelease_ShouldAttachBothPackedProjects()
+    public void ReleaseWorkflow_ShouldPushWithTheKeyTheNuGetLoginIssues()
+    {
+        var root = FindRepositoryRoot();
+        var stream = new YamlStream();
+        using var input = File.OpenText(Path.Combine(root, ".github", "workflows", "release.yml"));
+        stream.Load(input);
+        var workflow = (YamlMappingNode)stream.Documents[0].RootNode;
+        var release = (YamlMappingNode)((YamlMappingNode)workflow["jobs"])["release"];
+        var steps = ((YamlSequenceNode)release["steps"]).Cast<YamlMappingNode>().ToList();
+        var login = steps.Single(static step => step.Children.ContainsKey("uses") && step["uses"].ToString() == "NuGet/login@v1");
+        var push = steps.Single(static step => step["name"].ToString() == "Push release packages");
+
+        ((YamlMappingNode)release["permissions"])["id-token"].ToString().Should().Be("write");
+        steps.IndexOf(login).Should().BeLessThan(steps.IndexOf(push));
+        ((YamlMappingNode)push["env"])["NUGET_API_KEY"].ToString()
+            .Should().Be($"${{{{ steps.{login["id"]}.outputs.NUGET_API_KEY }}}}");
+    }
+
+    [Fact]
+    public void ReleaseWorkflow_ShouldRestoreTheCheckerWithTheRunsOwnToken()
+    {
+        var path = Path.Combine(FindRepositoryRoot(), ".github", "workflows", "release.yml");
+        var stream = new YamlStream();
+        using var input = File.OpenText(path);
+        stream.Load(input);
+        var workflow = (YamlMappingNode)stream.Documents[0].RootNode;
+        var build = (YamlMappingNode)((YamlMappingNode)workflow["jobs"])["build"];
+
+        ((YamlMappingNode)workflow["permissions"])["packages"].ToString().Should().Be("read");
+        ((YamlMappingNode)build["env"])["NuGetPackageSourceCredentials_specht"].ToString()
+            .Should().Contain("Password=${{ secrets.GITHUB_TOKEN }}");
+        Regex.Matches(File.ReadAllText(path), @"secrets\.(\w+)").Select(static match => match.Groups[1].Value).Distinct()
+            .Should().Equal("GITHUB_TOKEN");
+    }
+
+    [Fact]
+    public async Task PushReleasePackages_WhenRunOnATagPush_ShouldPushBothPackagesToNuGetOrgWithTheIssuedKey()
     {
         if (OperatingSystem.IsWindows())
         {
@@ -61,12 +98,36 @@ public sealed class CodeAnalysisReleaseIntegrationTests
 
         using var fixture = new ReleaseFixture();
         fixture.WritePackages();
+        var result = await fixture.RunTarget("PushReleasePackages", "push");
+        result.ExitCode.Should().Be(0, result.Output);
+        var pushes = File.ReadAllLines(fixture.DotNetLog);
+        pushes.Should().HaveCount(2).And.AllSatisfy(static push => push.Should()
+            .StartWith("nuget push ")
+            .And.Contain("--source https://api.nuget.org/v3/index.json")
+            .And.Contain("--api-key fixture-key"));
+        pushes.Should().ContainSingle(static push => push.Contains("specht.tool.1.2.3.nupkg", StringComparison.Ordinal))
+            .And.ContainSingle(static push => push.Contains("Specht.CodeAnalysis.1.2.3.nupkg", StringComparison.Ordinal));
+    }
+
+    [Theory]
+    [InlineData("1.2.3", false)]
+    [InlineData("0.3.12-preview", true)]
+    public async Task CreateGitHubRelease_ShouldAttachBothPackedProjects(string version, bool prerelease)
+    {
+        if (OperatingSystem.IsWindows())
+        {
+            Assert.Skip("The release job runs on Ubuntu.");
+        }
+
+        using var fixture = new ReleaseFixture(version);
+        fixture.WritePackages();
         var result = await fixture.RunTarget("CreateGitHubRelease", "push");
         result.ExitCode.Should().Be(0, result.Output);
         var invocation = File.ReadAllText(fixture.GhLog);
-        invocation.Should().Contain("specht.tool.1.2.3.nupkg")
-            .And.Contain("Specht.CodeAnalysis.1.2.3.nupkg")
+        invocation.Should().Contain($"specht.tool.{version}.nupkg")
+            .And.Contain($"Specht.CodeAnalysis.{version}.nupkg")
             .And.Contain("--generate-notes --verify-tag");
+        invocation.Contains("--prerelease", StringComparison.Ordinal).Should().Be(prerelease);
     }
 
     private static string FindRepositoryRoot()
@@ -84,13 +145,15 @@ public sealed class CodeAnalysisReleaseIntegrationTests
 
     private sealed class ReleaseFixture : IDisposable
     {
-        public ReleaseFixture()
+        public ReleaseFixture(string version = "1.2.3")
         {
+            _version = version;
             Directory.CreateDirectory(Path.Combine(Root, ".nuke"));
             Directory.CreateDirectory(Path.Combine(Root, "src", "tool"));
             Directory.CreateDirectory(Path.Combine(Root, "src", "codeanalysis"));
             Directory.CreateDirectory(Path.Combine(Root, "bin"));
             Directory.CreateDirectory(Path.Combine(Root, "runner"));
+            Directory.CreateDirectory(Path.Combine(Root, "tools"));
             File.WriteAllText(Path.Combine(Root, "fixture.slnx"), "<Solution />");
             File.WriteAllText(Path.Combine(Root, ".nuke", "parameters.json"), "{\"Solution\":\"fixture.slnx\"}");
             File.WriteAllText(
@@ -101,9 +164,12 @@ public sealed class CodeAnalysisReleaseIntegrationTests
                 "<Project><PropertyGroup><PackageId>Specht.CodeAnalysis</PackageId></PropertyGroup></Project>");
             var gh = Path.Combine(Root, "bin", "gh");
             File.WriteAllText(gh, "#!/bin/sh\nprintf '%s\\n' \"$*\" > \"$INVOCATIONS\"\n");
+            var dotnet = Path.Combine(Root, "tools", "dotnet");
+            File.WriteAllText(dotnet, "#!/bin/sh\nprintf '%s\\n' \"$*\" >> \"$DOTNET_INVOCATIONS\"\n");
             if (!OperatingSystem.IsWindows())
             {
                 File.SetUnixFileMode(gh, UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute);
+                File.SetUnixFileMode(dotnet, UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute);
             }
         }
 
@@ -111,12 +177,14 @@ public sealed class CodeAnalysisReleaseIntegrationTests
 
         public string GhLog => Path.Combine(Root, "gh-arguments.txt");
 
+        public string DotNetLog => Path.Combine(Root, "dotnet-arguments.txt");
+
         public void WritePackages()
         {
             var packages = Path.Combine(Root, ".artifacts", "nupkg");
             Directory.CreateDirectory(packages);
-            File.WriteAllText(Path.Combine(packages, "specht.tool.1.2.3.nupkg"), "tool");
-            File.WriteAllText(Path.Combine(packages, "Specht.CodeAnalysis.1.2.3.nupkg"), "analysis");
+            File.WriteAllText(Path.Combine(packages, $"specht.tool.{_version}.nupkg"), "tool");
+            File.WriteAllText(Path.Combine(packages, $"Specht.CodeAnalysis.{_version}.nupkg"), "analysis");
         }
 
         public async Task<(int ExitCode, string Output)> RunTarget(string target, string eventName)
@@ -138,7 +206,7 @@ public sealed class CodeAnalysisReleaseIntegrationTests
             process.StartInfo.Environment["GITHUB_ACTIONS"] = "true";
             process.StartInfo.Environment["GITHUB_EVENT_NAME"] = eventName;
             process.StartInfo.Environment["GITHUB_REF_TYPE"] = "tag";
-            process.StartInfo.Environment["GITHUB_REF_NAME"] = "v1.2.3";
+            process.StartInfo.Environment["GITHUB_REF_NAME"] = $"v{_version}";
             process.StartInfo.Environment["GITHUB_TOKEN"] = "fixture-token";
             process.StartInfo.Environment["GH_TOKEN"] = "fixture-token";
             process.StartInfo.Environment["GITHUB_REPOSITORY"] = "RLittlesII/specht";
@@ -149,6 +217,9 @@ public sealed class CodeAnalysisReleaseIntegrationTests
             process.StartInfo.Environment["PATH"] =
                 Path.GetFullPath(Path.Combine(Root, "bin")) + Path.PathSeparator + Environment.GetEnvironmentVariable("PATH");
             process.StartInfo.Environment["INVOCATIONS"] = Path.GetFullPath(GhLog);
+            process.StartInfo.Environment["NUGET_API_KEY"] = "fixture-key";
+            process.StartInfo.Environment["DOTNET_EXE"] = Path.GetFullPath(Path.Combine(Root, "tools", "dotnet"));
+            process.StartInfo.Environment["DOTNET_INVOCATIONS"] = Path.GetFullPath(DotNetLog);
 
             process.Start();
             var stdout = process.StandardOutput.ReadToEndAsync(TestContext.Current.CancellationToken);
@@ -158,5 +229,7 @@ public sealed class CodeAnalysisReleaseIntegrationTests
         }
 
         public void Dispose() => Directory.Delete(Root, recursive: true);
+
+        private readonly string _version;
     }
 }

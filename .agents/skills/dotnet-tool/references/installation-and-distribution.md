@@ -91,71 +91,27 @@ beside a pinned `schemaVersion` is what makes lagging deliberate rather than dri
 
 ## Publish to NuGet.org
 
-```bash
-dotnet nuget push .artifacts/nupkg/specht.tool.1.0.0.nupkg \
-  --api-key $NUGET_API_KEY \
-  --source https://api.nuget.org/v3/index.json
-```
+Every version below `1.0.0` is an explicit SemVer prerelease: `version.json`
+carries `-preview` (`0.3-preview`), so a tag build packs `0.3.<height>-preview`
+and a consumer opts in with `--prerelease`. NuGet treats a bare `0.x` as stable.
+`VerifyTag` fails a major-`0` version with no label (`0055-F6` decision 0007).
 
-## Publish to a Private Feed (GitHub Packages)
+Only a `v*` tag publishes. A nuget.org version is permanent - it can be unlisted,
+never deleted - so a branch build (`-preview-g<commit>`) is never pushed.
 
-Not the chosen channel — the four consumer repositories span organisations and
-NuGet.org needs no feed configuration on their side. Kept because the command is
-the same shape:
+## CI Workflow - GitHub Actions
 
-```bash
-dotnet nuget push .artifacts/nupkg/specht.tool.1.0.0.nupkg \
-  --api-key $GITHUB_TOKEN \
-  --source https://nuget.pkg.github.com/YOUR_ORG/index.json
-```
-
-A private feed needs a `nuget.config` at the consumer's repository root so
-teammates don't pass `--source` by hand:
-
-```xml
-<?xml version="1.0" encoding="utf-8"?>
-<configuration>
-  <packageSources>
-    <add key="github" value="https://nuget.pkg.github.com/YOUR_ORG/index.json" />
-  </packageSources>
-</configuration>
-```
-
-## CI Workflow — GitHub Actions
-
-This repository's `ci.yml` is NUKE-generated and builds, tests and packs on every
-push. Publishing is a separate, tag-triggered workflow of this shape:
-
-```yaml
-name: publish
-
-on:
-  push:
-    tags: ["v*"]
-
-jobs:
-  publish:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: actions/setup-dotnet@v4
-        with:
-          global-json-file: global.json
-
-      - run: dotnet pack -c Release -p:Version=${GITHUB_REF_NAME#v}
-
-      - run: |
-          dotnet nuget push .artifacts/nupkg/*.nupkg \
-            --api-key ${{ secrets.NUGET_API_KEY }} \
-            --source https://api.nuget.org/v3/index.json
-```
+`release.yml` is NUKE-generated from `.build/SpechtBuild.Release.cs`. On a `v*`
+tag the `release` job logs in with NuGet trusted publishing - `NuGet/login@v1`
+exchanges the job's OIDC token (`id-token: write`) for a short-lived key, the
+nuget.org profile name coming from the repository variable `NUGET_USER` - then
+runs the `PushReleasePackages` target with that key. No API key is stored.
 
 Tag and release:
 
 ```bash
-git tag v1.2.0
-git push --tags
+dotnet nbgv tag
+git push origin v0.3.<height>-preview
 ```
 
 A consumer's CI needs only:

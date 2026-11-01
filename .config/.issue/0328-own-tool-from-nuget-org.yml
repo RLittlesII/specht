@@ -1,0 +1,54 @@
+id: "0328"
+type: task
+title: Install this repository's own tool from nuget.org and drop the authenticated feed
+
+status: blocked # on the first nuget.org release, which no item tracks
+
+risk: 2
+
+parent: "0086"
+children: []
+
+depends_on: ["0327"] # needs the first version 0327's release path publishes to nuget.org
+spikes: []
+
+spec: .config/.spec/README.md
+
+claims:
+  - B-010
+  - B-011
+  - C-5
+
+created: "2026-11-01"
+updated: "2026-11-01"
+closed: null
+
+summary: |
+  After the first nuget.org release, move `.config/dotnet-tools.json`'s
+  `specht.tool` pin from `0.1.131`, published only to GitHub Packages, to
+  that preview version, and remove the `specht` package source from
+  `nuget.config` and the `NuGetPackageSourceCredentials_specht`
+  credential from this repository's runs (0055-F6 decision 0007, its
+  Transition).
+
+  Waits on 0327, which moves the release path, and on the maintainer
+  pushing the first `v*-preview` tag after it merges. No item tracks the
+  tag, which is the maintainer's act (0055-F6 § 5 row 5), so this item is
+  `blocked` until that version is on nuget.org; then it becomes `ready`.
+
+acceptance_criteria:
+  - "B-010 — the pin names a version published to nuget.org"
+  - "B-011 — `nuget.config` names no GitHub Packages source"
+  - "C-5 — no package-read credential in this repository's own runs"
+  - "§ 9 carries a row naming a test for each id above."
+
+decisions:
+  - |
+    2026-11-01, spec-author's cut, on the repository owner's decision to
+    move the feed (0055-F6 decision 0007): the follow-up the owner named
+    for the transition. 0055-F6 B-010 then holds vacuously, and whether
+    it is withdrawn is that Feature's next amendment.
+
+out_of_scope:
+  - "The release path and the install document — 0327."
+  - "Everything in § 5 of the spec."
