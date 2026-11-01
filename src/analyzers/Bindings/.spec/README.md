@@ -131,9 +131,9 @@ code-fix, discovery adapter or deployment project. Existing engine, CLI and test
 targets remain unchanged; ADR-0014's architecture gate remains in force.
 
 The resolver receives an in-memory catalog and an effective pinned policy. The
-policy is a projection of the existing `SpecStructure`: `Identifiers`,
+policy is a projection of the existing `SpechtStructure`: `Identifiers`,
 `DeclaresEpicGrammar`, `Markers`, `SchemaVersion` and `Roles["claims"]`. In particular, epic
-presence comes from `DeclaresEpicGrammar`, which `SpecManifestParser.Parse`
+presence comes from `DeclaresEpicGrammar`, which `SpechtManifestParser.Parse`
 captures before filling omitted identifier defaults. It is not inferred from
 the effective dictionary. No new manifest field or parallel JSON parser is added.
 The input owner validates the manifest and schema and supplies lifecycle omission
@@ -240,8 +240,8 @@ without obtaining a checked binding. The API has no enclosing-default input.
 The existing source authorities are
 [`FrontmatterReader.Parse`](../../../specht/Model/FrontmatterReader.cs),
 [`Frontmatter.Text`](../../../specht/Model/Frontmatter.cs),
-[`SpecDocument.Parse`](../../../specht/Model/SpecDocument.cs),
-[`SpecClaims`](../../../specht/Model/SpecClaims.cs) and
+[`SpechtDocument.Parse`](../../../specht/Model/SpechtDocument.cs),
+[`SpechtClaims`](../../../specht/Model/SpechtClaims.cs) and
 [`MatrixResolver.ResolveClaims`](../../../specht/Rules/Matrix/MatrixResolver.cs).
 They define YAML scalar preservation, top-level section and first-table selection,
 visible inline/code-span text, trimmed first-cell claim identity, duplicate

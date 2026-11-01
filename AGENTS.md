@@ -81,12 +81,12 @@ Every target, the tier filters, and what CI actually runs:
 Two projects, one direction of dependency:
 
 - **`src/specht`** — the rule engine, imported at commit `e7dba24` (brief § 3). A
-  pipeline: `SpecDiscovery` finds specifications (co-located `**/.spec/README.md`
+  pipeline: `SpechtDiscovery` finds specifications (co-located `**/.spec/README.md`
   and consumers' legacy `epics/**/spec.md`) → `FrontmatterReader` reads YAML
   through YamlDotNet's representation model, so dates stay strings →
-  `SpecSchemas` loads the frontmatter schemas and the manifest with JsonSchema.Net
-  → `SpecDocument`/`SpecStructure` model the Markdown with Markdig, pipe tables
-  only → the `ISpecRule`s run → `SpechtRunner` collects → `SpechtReport`
+  `SpechtSchemas` loads the frontmatter schemas and the manifest with JsonSchema.Net
+  → `SpechtDocument`/`SpechtStructure` model the Markdown with Markdig, pipe tables
+  only → the `ISpechtRule`s run → `SpechtRunner` collects → `SpechtReport`
   carries violations and counts. It is foldered by Feature, with a shared
   `Model/`; the layout is
   [`dotnet-tool` § Vertical Slice](.agents/skills/dotnet-tool/references/vertical-slice.md).

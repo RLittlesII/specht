@@ -20,14 +20,14 @@ public sealed class SpechtRunnerDefaultLevelUnitTests
         string[] reportedIds,
         bool expectedRun,
         string[] expectedIds,
-        SpecSeverity expectedSeverity)
+        SpechtSeverity expectedSeverity)
     {
         // Given
         SchemaVersion version = new SchemaVersionFixture().WithRuleIds(
             new HashSet<string>(["FAKE001", "FAKE002", "FAKE003"], StringComparer.Ordinal));
         var fileSystem = new MockFileSystem(
-            new Dictionary<string, MockFileData> { [Path.Combine("repo", SpecTree.ManifestPath)] = new(manifest) });
-        SpecModel model = new SpecModelFixture().WithSchemas(
+            new Dictionary<string, MockFileData> { [Path.Combine("repo", SpechtTree.ManifestPath)] = new(manifest) });
+        SpechtModel model = new SpechtModelFixture().WithSchemas(
             EngineServices.LoadSchemas(fileSystem, "repo", new SchemaVersions([version])));
         var calls = 0;
         var offRule = new OffRule(reportedIds, () => calls++);
@@ -49,8 +49,8 @@ public sealed class SpechtRunnerDefaultLevelUnitTests
         // Given
         SchemaVersion version = new SchemaVersionFixture().WithRuleIds(new HashSet<string>(["FAKE001"], StringComparer.Ordinal));
         var fileSystem = new MockFileSystem(
-            new Dictionary<string, MockFileData> { [Path.Combine("repo", SpecTree.ManifestPath)] = new("{}") });
-        SpecModel model = new SpecModelFixture().WithSchemas(
+            new Dictionary<string, MockFileData> { [Path.Combine("repo", SpechtTree.ManifestPath)] = new("{}") });
+        SpechtModel model = new SpechtModelFixture().WithSchemas(
             EngineServices.LoadSchemas(fileSystem, "repo", new SchemaVersions([version])));
         var calls = 0;
         var offRule = new OffRule(["FAKE001"], () => calls++);
@@ -64,27 +64,27 @@ public sealed class SpechtRunnerDefaultLevelUnitTests
         report.Violations.Should().BeEmpty();
     }
 
-    private sealed class OffRule(IReadOnlyList<string> reportedIds, Action evaluated) : ISpecRule
+    private sealed class OffRule(IReadOnlyList<string> reportedIds, Action evaluated) : ISpechtRule
     {
         public string Id => reportedIds[0];
 
         public IReadOnlyList<string> ReportedIds => reportedIds;
 
-        public SpecRuleLevel DefaultLevel => SpecRuleLevel.Off;
+        public SpechtRuleLevel DefaultLevel => SpechtRuleLevel.Off;
 
-        public IEnumerable<SpecViolation> Evaluate(SpecModel model)
+        public IEnumerable<SpechtViolation> Evaluate(SpechtModel model)
         {
             evaluated();
-            return reportedIds.Select(static id => (SpecViolation)new SpecViolationFixture().WithRuleId(id));
+            return reportedIds.Select(static id => (SpechtViolation)new SpechtViolationFixture().WithRuleId(id));
         }
     }
 
-    private sealed class EnabledRule(string id) : ISpecRule
+    private sealed class EnabledRule(string id) : ISpechtRule
     {
         public string Id => id;
 
         public IReadOnlyList<string> ReportedIds => [Id];
 
-        public IEnumerable<SpecViolation> Evaluate(SpecModel model) => [];
+        public IEnumerable<SpechtViolation> Evaluate(SpechtModel model) => [];
     }
 }

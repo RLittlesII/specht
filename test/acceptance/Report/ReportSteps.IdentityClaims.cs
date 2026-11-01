@@ -86,7 +86,7 @@ public sealed partial class ReportSteps
 
     [Given("the root holds a specification declaring a claim as {string}")]
     public void GivenTheSpecificationDeclaresAMalformedClaim(string claim) =>
-        Tree.WriteFeature("0001", "F1", sections: SpecTree.SectionsWith("3. Acceptance Criteria", TwoClaims.Replace("B-002", claim)));
+        Tree.WriteFeature("0001", "F1", sections: SpechtTree.SectionsWith("3. Acceptance Criteria", TwoClaims.Replace("B-002", claim)));
 
     [Then("the violation's expectation carries the claim grammar")]
     public void ThenTheClaimExpectationCarriesItsGrammar() =>
@@ -97,9 +97,9 @@ public sealed partial class ReportSteps
     [Given("the root holds a specification declaring B-001 twice")]
     public void GivenTheSpecificationDeclaresAClaimTwice()
     {
-        var path = Tree.WriteFeature("0001", "F1", sections: SpecTree.SectionsWith("3. Acceptance Criteria",
+        var path = Tree.WriteFeature("0001", "F1", sections: SpechtTree.SectionsWith("3. Acceptance Criteria",
             TwoClaims + "| B-001 | Duplicate. | brd | Active |\n"));
-        _firstClaimLine = SpecDocument.Parse(File.ReadAllText(path), "epics/0001-epic/F1-feature/spec.md")
+        _firstClaimLine = SpechtDocument.Parse(File.ReadAllText(path), "epics/0001-epic/F1-feature/spec.md")
             .Section("3. Acceptance Criteria")!.RowLines[0];
     }
 
@@ -129,7 +129,7 @@ public sealed partial class ReportSteps
             "undeclared" => "| B-404 | Unknown | Test | Covered |\n",
             _ => string.Empty,
         };
-        var sections = SpecTree.SectionsWith("3. Acceptance Criteria", TwoClaims + "| B-003 | Three. | brd | Active |\n").ToList();
+        var sections = SpechtTree.SectionsWith("3. Acceptance Criteria", TwoClaims + "| B-003 | Three. | brd | Active |\n").ToList();
         sections[8] = "## 9. Traceability Matrix\n\n| Claim ID | Scenario | Test | Status |\n| -------- | -------- | ---- | ------ |\n" + rows;
         Tree.WriteFeature("0001", "F1", sections: sections);
         _matrixCounts = new JsonObject { ["B-001"] = 1, ["B-002"] = 1, ["B-003"] = defect == "missing" ? 0 : defect == "duplicate" ? 2 : 1 };

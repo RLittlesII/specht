@@ -73,7 +73,7 @@ runner.
 in a folder, so an adopting repository adds its own `SPEC` rules.
 
 - Assembly loading at run time is a second product surface - versioning,
-  isolation, a contract `ISpecRule` was never designed to be - for a need no
+  isolation, a contract `ISpechtRule` was never designed to be - for a need no
   adopter has stated.
 - A rule id minted outside the engine collides with the next one the engine
   ships, and the vocabulary stops meaning one thing.

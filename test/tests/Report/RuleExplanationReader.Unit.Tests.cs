@@ -28,7 +28,7 @@ public sealed class RuleExplanationReaderUnitTests
         {
             ["repo/.specht/manifest.json"] = new($$"""{"schemaVersion":"{{pin}}"}"""),
         });
-        var reader = new RuleExplanationReader(EngineServices.Schemas(fileSystem, versions), new SpecManifestParser(versions));
+        var reader = new RuleExplanationReader(EngineServices.Schemas(fileSystem, versions), new SpechtManifestParser(versions));
 
         // When
         var text = reader.Read("repo", "SPEC031");
@@ -49,7 +49,7 @@ public sealed class RuleExplanationReaderUnitTests
         {
             ["repo/.specht/manifest.json"] = new("""{"schemaVersion":"0.1.0"}"""),
         });
-        var reader = new RuleExplanationReader(EngineServices.Schemas(fileSystem, versions), new SpecManifestParser(versions));
+        var reader = new RuleExplanationReader(EngineServices.Schemas(fileSystem, versions), new SpechtManifestParser(versions));
 
         // When
         var text = reader.Read("repo", id);

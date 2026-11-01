@@ -4,7 +4,7 @@ namespace Specht.Manifest;
 
 /// <summary>Validates the current manifest and atomically sets one pinned rule's explicit level.</summary>
 /// <implements epic="0001" feature="F11" claim="B-001" />
-public sealed class RuleLevelSetter(SpecManifestStore store, SpecManifestParser parser, ManifestRuleEditor editor, ManifestPinEditor encoding)
+public sealed class RuleLevelSetter(SpechtManifestStore store, SpechtManifestParser parser, ManifestRuleEditor editor, ManifestPinEditor encoding)
 {
     /// <summary>Changes one rule only after validating the root, complete manifest, pinned id and exact level.</summary>
     /// <implements epic="0001" feature="F11" claim="B-001" />
@@ -35,7 +35,7 @@ public sealed class RuleLevelSetter(SpecManifestStore store, SpecManifestParser 
         {
             throw new SpechtManifestUnreadableException(exception);
         }
-        SpecStructure structure;
+        SpechtStructure structure;
         try
         {
             structure = parser.Parse(encoding.Decode(bytes));
@@ -69,7 +69,7 @@ public sealed class RuleLevelSetter(SpecManifestStore store, SpecManifestParser 
         }
         catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
         {
-            throw new SpechtManifestException($"{SpecManifestStore.RelativePath}: the manifest could not be replaced; check write access.");
+            throw new SpechtManifestException($"{SpechtManifestStore.RelativePath}: the manifest could not be replaced; check write access.");
         }
     }
 }

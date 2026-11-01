@@ -38,7 +38,7 @@ public sealed partial class VersioningSteps
 
     [Then("the feature template is one the source supplies")]
     public void ThenTheFeatureTemplateIsOneTheSourceSupplies() =>
-        EngineServices.Parser().Parse(File.ReadAllText(Path.Combine(Tree.Root, SpecTree.ManifestPath)))
+        EngineServices.Parser().Parse(File.ReadAllText(Path.Combine(Tree.Root, SpechtTree.ManifestPath)))
             .SpechtSchema!.Templates.Should().ContainSingle()
             .Which.Should().Be(new UpstreamTemplateFile(
                 "feature.md", "https://schemas.example/specht/feature.md", TemplateHash));
@@ -102,7 +102,7 @@ public sealed partial class VersioningSteps
         File.WriteAllBytes(path, bytes);
     }
 
-    private const string FeatureTemplatePath = SpecTree.TemplatesFolder + "/feature.md";
+    private const string FeatureTemplatePath = SpechtTree.TemplatesFolder + "/feature.md";
 
     private static readonly string TemplateHash = "sha256:" + new string('d', 64);
 

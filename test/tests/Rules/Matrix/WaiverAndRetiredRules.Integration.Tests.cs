@@ -15,8 +15,8 @@ public sealed class WaiverAndRetiredRulesIntegrationTests
         string pin, string? level, int findings, int evaluated)
     {
         // Given
-        using var tree = new SpecTree();
-        var sections = SpecTree.Sections.Select(static section => section.Split('\n')[0] switch
+        using var tree = new SpechtTree();
+        var sections = SpechtTree.Sections.Select(static section => section.Split('\n')[0] switch
         {
             "## 3. Acceptance Criteria" => "## 3. Acceptance Criteria\n\n| ID | Claim | Source | Status |\n| --- | --- | --- | --- |\n"
                 + "| B-001 | Retired | Decision | Withdrawn |\n",
@@ -32,7 +32,7 @@ public sealed class WaiverAndRetiredRulesIntegrationTests
             manifest["rules"] = new JsonObject { ["SPEC034"] = level, ["SPEC035"] = level };
         }
 
-        tree.WriteRaw(SpecTree.ManifestPath, manifest.ToJsonString());
+        tree.WriteRaw(SpechtTree.ManifestPath, manifest.ToJsonString());
 
         // When
         var report = EngineServices.Runner().Run(tree.Root);
@@ -43,7 +43,7 @@ public sealed class WaiverAndRetiredRulesIntegrationTests
         if (findings > 0)
         {
             report.Violations.Select(static violation => violation.RuleId).Should().BeEquivalentTo("SPEC034", "SPEC035");
-            report.Violations.Should().OnlyContain(violation => violation.Severity == (level == "warning" ? SpecSeverity.Warning : SpecSeverity.Error));
+            report.Violations.Should().OnlyContain(violation => violation.Severity == (level == "warning" ? SpechtSeverity.Warning : SpechtSeverity.Error));
             report.Violations.Should().OnlyContain(static violation => violation.File == "epics/0001-epic/F1-feature/spec.md" && violation.Line > 0);
         }
     }

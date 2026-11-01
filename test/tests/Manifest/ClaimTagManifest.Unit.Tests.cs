@@ -40,7 +40,7 @@ public sealed class ClaimTagManifestUnitTests
         var newer = older.DeepClone().AsObject();
         newer["claim"]!["tag"] = "@NEW:{claim}";
         newer["claim"]!["tagIgnoreCase"] = true;
-        var parser = new SpecManifestParser(new SchemaVersions([
+        var parser = new SpechtManifestParser(new SchemaVersions([
             original,
             new SchemaVersionFixture().WithNumber(new SemanticVersion(0, 2, 0)).WithManifest(older.ToJsonString()),
             new SchemaVersionFixture().WithNumber(new SemanticVersion(0, 3, 0)).WithManifest(newer.ToJsonString()),

@@ -21,7 +21,7 @@ internal sealed class InitWriterFixture : AutoFixtureBase<InitWriterFixture>
         fixture._shippingCopy,
         fixture._fileSystem,
         EngineServices.Parser(),
-        new SpecManifestStoreFixture().WithFileSystem(fixture._fileSystem),
+        new SpechtManifestStoreFixture().WithFileSystem(fixture._fileSystem),
         fixture._upstreamSchemaFetcher);
 
     private IReadOnlyDictionary<string, byte[]> _shippingCopy = InitWriter.ShippingCopy(typeof(InitWriter).Assembly);

@@ -21,7 +21,7 @@ public sealed class SpechtRunnerDeterminismUnitTests
         // Given
         var model = ModelExpectingAnInteger();
         var caller = CultureInfo.CurrentCulture;
-        List<SpecViolation> violations;
+        List<SpechtViolation> violations;
 
         // When
         try
@@ -63,20 +63,20 @@ public sealed class SpechtRunnerDeterminismUnitTests
         after.Name.Should().Be("tr-TR");
     }
 
-    private static SpecModel ModelExpectingAnInteger()
+    private static SpechtModel ModelExpectingAnInteger()
     {
         var schemas = EngineServices.LoadOnDiskSchemas(new MockFileSystem(
                 new Dictionary<string, MockFileData>
                 {
-                    [Path.Combine("repo", SpecTree.ManifestPath)] = new("{}"),
-                    [Path.Combine("repo", SpecTree.FeatureSchemaPath)] =
+                    [Path.Combine("repo", SpechtTree.ManifestPath)] = new("{}"),
+                    [Path.Combine("repo", SpechtTree.FeatureSchemaPath)] =
                         new("""{ "properties": { "github_issue": { "type": "integer" } } }"""),
-                    [Path.Combine("repo", SpecTree.ItemSchemaPath)] = new("{}"),
-                    [Path.Combine("repo", SpecTree.EpicSchemaPath)] = new("{}"),
+                    [Path.Combine("repo", SpechtTree.ItemSchemaPath)] = new("{}"),
+                    [Path.Combine("repo", SpechtTree.EpicSchemaPath)] = new("{}"),
                 }), "repo");
         FeatureSpec feature = new FeatureSpecFixture().WithDocument(
-            new SpecDocumentFixture().WithFrontmatter(new FrontmatterFixture().WithNode(new JsonObject { ["github_issue"] = "null" })));
+            new SpechtDocumentFixture().WithFrontmatter(new FrontmatterFixture().WithNode(new JsonObject { ["github_issue"] = "null" })));
 
-        return new SpecModelFixture().WithSchemas(schemas).WithFeatures(feature);
+        return new SpechtModelFixture().WithSchemas(schemas).WithFeatures(feature);
     }
 }

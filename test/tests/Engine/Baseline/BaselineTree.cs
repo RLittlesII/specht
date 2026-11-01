@@ -3,7 +3,7 @@ using Specht.Tests.Shared;
 namespace Specht.Tests.Engine.Baseline;
 
 /// <summary>
-/// Writes the baseline tree (<c>0001-F1</c> B-004, C-10, decision 0004) into a <see cref="SpecTree"/>: every rule,
+/// Writes the baseline tree (<c>0001-F1</c> B-004, C-10, decision 0004) into a <see cref="SpechtTree"/>: every rule,
 /// <c>SPEC001</c> to <c>SPEC061</c>, broken in each layout it applies to - the legacy layout under epic
 /// <see cref="LegacyEpic"/>, the co-located layout under epic <see cref="CoLocatedEpic"/>. Its content is fixed, so the
 /// same tree is written every time; <c>Baseline/engine-e7dba24.json</c> is the engine's verdict on it at commit
@@ -19,7 +19,7 @@ public static class BaselineTree
 
     /// <summary>Writes the baseline tree under <paramref name="tree"/>'s root.</summary>
     /// <param name="tree">A tree holding only the schema set.</param>
-    public static void Write(SpecTree tree)
+    public static void Write(SpechtTree tree)
     {
         Break(new Layout(tree, LegacyEpic, Legacy: true));
         Break(new Layout(tree, CoLocatedEpic, Legacy: false));
@@ -40,21 +40,21 @@ public static class BaselineTree
         var item = layout.Spec("F3", "item-status-outside-enum", Frontmatter("children", $"[\"{epic}-01\"]"));
         layout.Item(item, "01", "F3", frontmatter: Frontmatter("status", "nearly"));
 
-        layout.Spec("F4", "section-missing", sections: [.. SpecTree.Sections.Where(static section => !section.StartsWith("## 8. ", Ordinal))]);
-        layout.Spec("F5", "section-twice", sections: [.. SpecTree.Sections, "## 7. Technical Design\n\nAgain.\n"]);
+        layout.Spec("F4", "section-missing", sections: [.. SpechtTree.Sections.Where(static section => !section.StartsWith("## 8. ", Ordinal))]);
+        layout.Spec("F5", "section-twice", sections: [.. SpechtTree.Sections, "## 7. Technical Design\n\nAgain.\n"]);
         layout.Spec("F6", "sections-out-of-order", sections: Swapped(5, 6));
-        layout.Spec("F7", "matrix-without-table", sections: SpecTree.SectionsWith(Matrix, $"## {Matrix}\n\nNone yet.\n"));
-        layout.Spec("F8", "matrix-wrong-headers", sections: SpecTree.SectionsWith(Matrix, ThreeColumnMatrix));
+        layout.Spec("F7", "matrix-without-table", sections: SpechtTree.SectionsWith(Matrix, $"## {Matrix}\n\nNone yet.\n"));
+        layout.Spec("F8", "matrix-wrong-headers", sections: SpechtTree.SectionsWith(Matrix, ThreeColumnMatrix));
 
         DeleteFeatureFile(layout.Spec("F9", "no-feature-file"));
         AddFeatureFile(layout.Spec("F10", "two-feature-files"));
         layout.Tree.WriteFeatureFile(layout.Spec("F11", "tag-without-claim"), GhostScenario);
 
-        layout.Spec("F12", "claim-id-grammar", sections: SpecTree.SectionsWith(Claims, ClaimRows(Claim("B-001"), Claim("B-1"))));
-        layout.Spec("F13", "claim-twice", sections: SpecTree.SectionsWith(Claims, ClaimRows(Claim("B-001"), Claim("B-001"))));
-        layout.Spec("F14", "claim-without-row", sections: SpecTree.SectionsWith(Claims, ClaimRows(Claim("B-001"), Claim("B-002"))));
-        layout.Spec("F15", "claim-with-two-rows", sections: SpecTree.SectionsWith(Matrix, MatrixRows(Row("B-001"), Row("B-001"))));
-        layout.Spec("F16", "row-without-claim", sections: SpecTree.SectionsWith(Matrix, MatrixRows(Row("B-001"), Row("B-999"))));
+        layout.Spec("F12", "claim-id-grammar", sections: SpechtTree.SectionsWith(Claims, ClaimRows(Claim("B-001"), Claim("B-1"))));
+        layout.Spec("F13", "claim-twice", sections: SpechtTree.SectionsWith(Claims, ClaimRows(Claim("B-001"), Claim("B-001"))));
+        layout.Spec("F14", "claim-without-row", sections: SpechtTree.SectionsWith(Claims, ClaimRows(Claim("B-001"), Claim("B-002"))));
+        layout.Spec("F15", "claim-with-two-rows", sections: SpechtTree.SectionsWith(Matrix, MatrixRows(Row("B-001"), Row("B-001"))));
+        layout.Spec("F16", "row-without-claim", sections: SpechtTree.SectionsWith(Matrix, MatrixRows(Row("B-001"), Row("B-999"))));
 
         layout.Spec("F17", "child-without-file", Frontmatter("children", $"[\"{epic}-97\"]"));
         var twice = layout.Spec("F18", "child-in-two-files", Frontmatter("children", $"[\"{epic}-05\"]"));
@@ -79,15 +79,15 @@ public static class BaselineTree
         layout.Spec("F28", "cycle-first", new Dictionary<string, string> { ["depends_on"] = "[\"F29\"]", ["blocks"] = "[\"F29\"]" });
         layout.Spec("F29", "cycle-second", new Dictionary<string, string> { ["depends_on"] = "[\"F28\"]", ["blocks"] = "[\"F28\"]" });
 
-        layout.Spec("F30", "approved-with-missing", Frontmatter("spec_status", "approved"), SignedOff(SpecTree.Sections));
-        layout.Spec("F31", "approved-in-draft", Frontmatter("spec_status", "approved"), SpecTree.SectionsWith(Matrix, MatrixRows(Proven)));
+        layout.Spec("F30", "approved-with-missing", Frontmatter("spec_status", "approved"), SignedOff(SpechtTree.Sections));
+        layout.Spec("F31", "approved-in-draft", Frontmatter("spec_status", "approved"), SpechtTree.SectionsWith(Matrix, MatrixRows(Proven)));
     }
 
     private static Dictionary<string, string> Frontmatter(string key, string value) => new(StringComparer.Ordinal) { [key] = value };
 
     private static List<string> Swapped(int first, int second)
     {
-        var sections = SpecTree.Sections.ToList();
+        var sections = SpechtTree.Sections.ToList();
         (sections[first], sections[second]) = (sections[second], sections[first]);
 
         return sections;
@@ -117,7 +117,7 @@ public static class BaselineTree
     private static void AddFeatureFile(string specPath) =>
         File.WriteAllText(Path.Combine(Path.GetDirectoryName(specPath)!, "second.feature"), "Feature: another\n");
 
-    private sealed record Layout(SpecTree Tree, string Epic, bool Legacy)
+    private sealed record Layout(SpechtTree Tree, string Epic, bool Legacy)
     {
         public string Spec(
             string id,

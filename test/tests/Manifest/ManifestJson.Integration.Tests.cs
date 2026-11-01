@@ -14,8 +14,8 @@ public sealed class ManifestJsonIntegrationTests
     public void EitherSelection_WhenPrintingJson_ShouldEmitOneDocumentEquivalentToTheTextForm(bool defaults)
     {
         // Given
-        using var tree = new SpecTree();
-        tree.WriteRaw(SpecTree.ManifestPath, "{}");
+        using var tree = new SpechtTree();
+        tree.WriteRaw(SpechtTree.ManifestPath, "{}");
         string[] textArguments = defaults ? ["manifest", "--defaults"] : ["manifest"];
         var text = AcceptanceTool.Launch(tree.Root, textArguments);
 

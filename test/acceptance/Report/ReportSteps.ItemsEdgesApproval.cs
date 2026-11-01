@@ -57,14 +57,14 @@ public sealed partial class ReportSteps
     [Given("the root holds an approved specification with one missing cell in its traceability table")]
     public void GivenApprovedCoverageIsMissing() =>
         Tree.WriteFeature("0001", "F1", new Dictionary<string, string> { ["spec_status"] = "approved" },
-            sections: SpecTree.SectionsWith("9. Traceability Matrix",
+            sections: SpechtTree.SectionsWith("9. Traceability Matrix",
                 "## 9. Traceability Matrix\n\n| Claim ID | Scenario | Test | Status |\n| - | - | - | - |\n"
                 + "| B-001 | It does the thing | Missing | Covered |\n"));
 
     [Given("the root holds an approved specification with a blocked sign-off row")]
     public void GivenApprovedSignOffIsBlocked() =>
         Tree.WriteFeature("0001", "F1", new Dictionary<string, string> { ["spec_status"] = "approved" },
-            sections: SpecTree.SectionsWith("12. Sign-off",
+            sections: SpechtTree.SectionsWith("12. Sign-off",
                 "## 12. Sign-off\n\n| Section | Status | Reviewer | Note |\n| - | - | - | - |\n"
                 + "| 1-5 | 🟢 | spec-reviewer | Ready |\n| 6-9 | 🔴 | spec-reviewer | Blocked |\n"));
 

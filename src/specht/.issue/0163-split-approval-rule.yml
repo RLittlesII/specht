@@ -18,7 +18,7 @@ spec: src/specht/.spec/README.md
 claims: []
 
 created: "2026-10-11"
-updated: "2026-10-31"
+updated: "2026-11-01"
 closed: null
 
 summary: |
@@ -34,7 +34,7 @@ summary: |
   class still runs (ADR-0010 § "What the source shows"). This item splits
   it into two rules, each reporting its own id and no other.
 
-  The evaluator is untouched. `ISpecRule` keeps `Id`, `ReportedIds` and
+  The evaluator is untouched. `ISpechtRule` keeps `Id`, `ReportedIds` and
   `Evaluate`; each new rule's `ReportedIds` names its one id;
   `SpechtRunner.Evaluate` selects, filters and counts as it does today.
   Collapsing the interface is item 0164. `AddSpechtEngine()` registers each
@@ -62,7 +62,7 @@ acceptance_criteria:
   - "Split: `ApprovalRule` is gone and two rules stand in its place, one each for SPEC060 and SPEC061; each one's `ReportedIds` names its own id alone, and `AddSpechtEngine()` registers each by name in ordinal order of its id."
   - "Order kept: SPEC060 and SPEC061 each keep the Features' order and, within one, the row order of the table each reads (`src/specht/Rules/ApprovalRule.cs:40-54`, `:64-78`)."
   - "Guards kept: both rules read only the Features whose status is the manifest's approved marker (`:31-34`); SPEC060 skips a Feature with no matrix section (`:38`) and SPEC061 one with no sign-off section (`:59-62`), each whether the other id is on or off."
-  - "Untouched: `ISpecRule`, `SpechtRunner.Evaluate` and `SpechtRunner.Order`, and every violation's file, line, identifier, message and severity."
+  - "Untouched: `ISpechtRule`, `SpechtRunner.Evaluate` and `SpechtRunner.Order`, and every violation's file, line, identifier, message and severity."
   - "The composition tests still hold: every concrete rule the engine declares is registered exactly once, the rules resolve in ordinal order of their ids, and the reported ids are the twenty-one of the pinned vocabulary, each once (`test/tests/Composition/SpechtEngineServiceCollectionExtensions.Unit.Tests.cs`)."
   - "Not a refactor until re-pointed: `ApprovalRuleUnitTests` (`0001-F5` § 9 B-001, B-003) constructs `ApprovalRule`. Its tests are aimed at the rule that reports the id each pins, and `test-writer` re-points the rows in the same pull request if the class or a method they name is renamed."
   - "The golden report `test/tests/Engine/Baseline/engine-e7dba24.json` is unchanged, byte for byte, and the test that compares it is green unedited. The unit, integration and acceptance tiers pass, and the benchmark project `.performance/benchmarks` still compiles."
@@ -93,7 +93,7 @@ decisions:
     and 0100 is open.
 
 out_of_scope:
-  - "The collapse of `ISpecRule`, `SpecFinding`, `DefaultSeverity` and the evaluator - item 0164."
+  - "The collapse of `ISpechtRule`, `SpecFinding`, `DefaultSeverity` and the evaluator - item 0164."
   - "A unit-test class for each new rule that pins every id it reports - item 0152."
   - "A folder for each rule group under `src/specht/Rules/`, and any new rule id - item 0169."
   - "The other seven rule classes - items 0156 to 0162, one each."

@@ -23,7 +23,7 @@ namespace Specht.Acceptance.Report;
 public sealed partial class ReportSteps
 {
     [Given("a repository root holding a manifest and the three frontmatter schemas")]
-    public void GivenARepositoryRootHoldingAManifestAndTheThreeFrontmatterSchemas() => _tree = new SpecTree();
+    public void GivenARepositoryRootHoldingAManifestAndTheThreeFrontmatterSchemas() => _tree = new SpechtTree();
 
     [Given("the root holds two specifications in the epics layout and one in the features layout")]
     public void GivenTheRootHoldsTwoSpecificationsInTheEpicsLayoutAndOneInTheFeaturesLayout()
@@ -35,7 +35,7 @@ public sealed partial class ReportSteps
 
     [Given("the root holds a specification whose claim B-002 has no traceability row")]
     public void GivenTheRootHoldsASpecificationWhoseClaimB002HasNoTraceabilityRow() =>
-        Tree.WriteFeature("0001", "F1", sections: SpecTree.SectionsWith("3. Acceptance Criteria", TwoClaims));
+        Tree.WriteFeature("0001", "F1", sections: SpechtTree.SectionsWith("3. Acceptance Criteria", TwoClaims));
 
     [Given("the root holds a specification with one violation")]
     public void GivenTheRootHoldsASpecificationWithOneViolation()
@@ -48,10 +48,11 @@ public sealed partial class ReportSteps
     public void GivenTheRootHoldsSpecificationsWithViolationsOfEveryRuleFamily()
     {
         Tree.WriteFeature("0001", "F1", new Dictionary<string, string> { ["spec_status"] = "nearly" });
-        Tree.WriteFeature("0002", "F1", sections: SpecTree.Sections.Where(static section => !section.StartsWith("## 11.", StringComparison.Ordinal)).ToList());
+        Tree.WriteFeature("0002", "F1",
+            sections: SpechtTree.Sections.Where(static section => !section.StartsWith("## 11.", StringComparison.Ordinal)).ToList());
         Tree.WriteFeature("0003", "F1", new Dictionary<string, string> { ["epic"] = "\"0009\"" });
         Tree.WriteFeature("0004", "F1", featureFile: null);
-        Tree.WriteFeature("0005", "F1", sections: SpecTree.SectionsWith("3. Acceptance Criteria", TwoClaims));
+        Tree.WriteFeature("0005", "F1", sections: SpechtTree.SectionsWith("3. Acceptance Criteria", TwoClaims));
         Tree.WriteFeature("0006", "F1", new Dictionary<string, string> { ["children"] = "[\"0006-01\"]" });
         Tree.WriteFeature("0007", "F1", new Dictionary<string, string> { ["depends_on"] = "[\"F2\"]" });
         Tree.WriteFeature("0007", "F2");
@@ -80,21 +81,21 @@ public sealed partial class ReportSteps
         Tree.WriteFeature(
             "0001",
             "F1",
-            sections: SpecTree.Sections.Where(static section => !section.StartsWith("## 4.", StringComparison.Ordinal)).ToList());
+            sections: SpechtTree.Sections.Where(static section => !section.StartsWith("## 4.", StringComparison.Ordinal)).ToList());
 
     [Given("the root holds a specification whose traceability table has a column named {string}")]
     public void GivenTheRootHoldsASpecificationWhoseTraceabilityTableHasAColumnNamed(string column) =>
         Tree.WriteFeature(
             "0001",
             "F1",
-            sections: SpecTree.SectionsWith(
+            sections: SpechtTree.SectionsWith(
                 "9. Traceability Matrix",
                 $"## 9. Traceability Matrix\n\n| Claim ID | Scenario | {column} | Status |\n| - | - | - | - |\n"
                     + "| B-001 | It does the thing | Missing | Missing |\n"));
 
     [Given("the root holds a specification with no frontmatter")]
     public void GivenTheRootHoldsASpecificationWithNoFrontmatter() =>
-        Tree.WriteRaw("epics/0001-epic/F1-feature/spec.md", "# Specification: F1\n\n" + string.Join('\n', SpecTree.Sections));
+        Tree.WriteRaw("epics/0001-epic/F1-feature/spec.md", "# Specification: F1\n\n" + string.Join('\n', SpechtTree.Sections));
 
     [Given("the frontmatter schema files are deleted from the root")]
     public void GivenTheFrontmatterSchemaFilesAreDeletedFromTheRoot() => Tree.DeleteFrontmatterSchemas();
@@ -116,7 +117,7 @@ public sealed partial class ReportSteps
 
         _root = root;
         _report = EngineServices.Runner().Run(root);
-        _document = SpecReportDocument.From(_report);
+        _document = SpechtReportDocument.From(_report);
         (_stdout, _stderr, _) = AcceptanceTool.Launch(root, "--root", ".", "--json");
         _json = _stdout.EndsWith(Environment.NewLine, StringComparison.Ordinal) ? _stdout[..^Environment.NewLine.Length] : _stdout;
     }
@@ -131,17 +132,17 @@ public sealed partial class ReportSteps
     [Then("the document names the schema version checked against")]
     public void ThenTheDocumentNamesTheSchemaVersionCheckedAgainst()
     {
-        var manifest = JsonNode.Parse(File.ReadAllText(Path.Combine(Tree.Root, SpecTree.ManifestPath)))!.AsObject();
+        var manifest = JsonNode.Parse(File.ReadAllText(Path.Combine(Tree.Root, SpechtTree.ManifestPath)))!.AsObject();
         Document.SchemaVersion.Should().Be(manifest["schemaVersion"]!.GetValue<string>());
     }
 
     [Then("whether the schemas came from the tool or from the repository's own files")]
     public void ThenWhetherTheSchemasCameFromTheToolOrFromTheRepositorysOwnFiles() =>
-        Document.SchemaSource.Should().Be(SpecSchemaSource.Embedded);
+        Document.SchemaSource.Should().Be(SpechtSchemaSource.Embedded);
 
     [Then("each layout by name with its specification count")]
     public void ThenEachLayoutByNameWithItsSpecificationCount() =>
-        Document.Layouts.Should().BeEquivalentTo([new SpecReportLayout("epics", 2), new SpecReportLayout("features", 1)]);
+        Document.Layouts.Should().BeEquivalentTo([new SpechtReportLayout("epics", 2), new SpechtReportLayout("features", 1)]);
 
     [Then("the item count, the count of rule ids evaluated, the error count and the warning count")]
     public void ThenTheItemCountTheCountOfRuleIdsEvaluatedTheErrorCountAndTheWarningCount()
@@ -158,7 +159,7 @@ public sealed partial class ReportSteps
         var source = Report.Violations.Should().ContainSingle(static violation => violation.Identifier == "B-002").Which;
         var carried = Document.Violations.Should().ContainSingle(static violation => violation.Identifier == "B-002").Which;
         carried.RuleId.Should().Be("SPEC031");
-        carried.Severity.Should().Be(SpecSeverity.Error);
+        carried.Severity.Should().Be(SpechtSeverity.Error);
         carried.File.Should().Be("epics/0001-epic/F1-feature/spec.md");
         carried.Line.Should().Be(source.Line);
         carried.Message.Should().Be(source.Message);
@@ -196,7 +197,7 @@ public sealed partial class ReportSteps
     [Then("the violation's expectation names the Feature schema file by the path it has under the configuration folder")]
     public void ThenTheViolationsExpectationNamesTheFeatureSchemaFileByItsPathUnderTheConfigurationFolder()
     {
-        var path = SpecTree.FrontmatterSchemaFolder + "/" + Manifest["frontmatterSchemas"]!["feature"]!.GetValue<string>();
+        var path = SpechtTree.FrontmatterSchemaFolder + "/" + Manifest["frontmatterSchemas"]!["feature"]!.GetValue<string>();
         Violations(static violation => violation["ruleId"]!.GetValue<string>() is "SPEC001" or "SPEC002").Should().NotBeEmpty(Json)
             .And.AllSatisfy(violation => (violation["expected"]?["schema"]?.GetValue<string>()).Should().Be(path, Json));
     }
@@ -269,19 +270,19 @@ public sealed partial class ReportSteps
         }
     }
 
-    private SpecTree Tree => _tree ?? throw new InvalidOperationException("No repository root was prepared.");
+    private SpechtTree Tree => _tree ?? throw new InvalidOperationException("No repository root was prepared.");
 
     private SpechtReport Report => _report ?? throw new InvalidOperationException("The check has not run.");
 
-    private SpecReportDocument Document => _document ?? throw new InvalidOperationException("No document was made.");
+    private SpechtReportDocument Document => _document ?? throw new InvalidOperationException("No document was made.");
 
     private string Json => _json ?? throw new InvalidOperationException("No document was serialized.");
 
-    private JsonObject Manifest => JsonNode.Parse(File.ReadAllText(Path.Combine(Tree.Root, SpecTree.ManifestPath)))!.AsObject();
+    private JsonObject Manifest => JsonNode.Parse(File.ReadAllText(Path.Combine(Tree.Root, SpechtTree.ManifestPath)))!.AsObject();
 
     private JsonNode FeatureSchema =>
         JsonNode.Parse(File.ReadAllText(
-            Path.Combine(Tree.Root, SpecTree.FrontmatterSchemaFolder, Manifest["frontmatterSchemas"]!["feature"]!.GetValue<string>())))!;
+            Path.Combine(Tree.Root, SpechtTree.FrontmatterSchemaFolder, Manifest["frontmatterSchemas"]!["feature"]!.GetValue<string>())))!;
 
     private JsonNode Table =>
         Violations(static violation => violation["ruleId"]!.GetValue<string>() == "SPEC013").Should().ContainSingle(Json).Which;
@@ -320,11 +321,11 @@ public sealed partial class ReportSteps
         "## 3. Acceptance Criteria\n\n| ID | Claim | Source | Status |\n| -- | ----- | ------ | ------ |\n"
             + "| B-001 | It does the thing. | brd | Active |\n| B-002 | It does another thing. | brd | Active |\n";
 
-    private SpecTree? _tree;
+    private SpechtTree? _tree;
     private string? _nested;
     private string? _root;
     private SpechtReport? _report;
-    private SpecReportDocument? _document;
+    private SpechtReportDocument? _document;
     private string? _json;
     private string? _key;
     private string _stdout = string.Empty;

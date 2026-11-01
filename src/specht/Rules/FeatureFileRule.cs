@@ -8,7 +8,7 @@ namespace Specht.Rules;
 /// file beside it, and every claim tag in that file resolves to a § 3 claim.
 /// </summary>
 /// <implements epic="0001" feature="F1" claim="B-001" />
-public sealed class FeatureFileRule : ISpecRule
+public sealed class FeatureFileRule : ISpechtRule
 {
     /// <inheritdoc />
     public string Id => "SPEC020";
@@ -18,16 +18,16 @@ public sealed class FeatureFileRule : ISpecRule
 
     /// <inheritdoc />
     /// <implements epic="0001" feature="F1" claim="B-001" />
-    public IEnumerable<SpecViolation> Evaluate(SpecModel model)
+    public IEnumerable<SpechtViolation> Evaluate(SpechtModel model)
     {
         model.EnsureClaimGrammar();
         foreach (var feature in model.Features)
         {
             if (feature.FeatureFiles.Count != 1)
             {
-                yield return new SpecViolation(
+                yield return new SpechtViolation(
                     "SPEC020",
-                    SpecSeverity.Error,
+                    SpechtSeverity.Error,
                     feature.RelativePath,
                     0,
                     feature.Identity,
@@ -46,9 +46,9 @@ public sealed class FeatureFileRule : ISpecRule
             {
                 if (!claims.Contains(tag.Id))
                 {
-                    yield return new SpecViolation(
+                    yield return new SpechtViolation(
                         "SPEC021",
-                        SpecSeverity.Error,
+                        SpechtSeverity.Error,
                         companion.RelativePath,
                         tag.Line,
                         tag.Id,

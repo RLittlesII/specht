@@ -33,7 +33,7 @@ namespace Specht.Acceptance.Manifest;
 public sealed partial class ManifestSteps
 {
     [Given("a repository root holding a manifest and the three frontmatter schemas")]
-    public void GivenARepositoryRootHoldingAManifestAndTheThreeFrontmatterSchemas() => _tree = new SpecTree();
+    public void GivenARepositoryRootHoldingAManifestAndTheThreeFrontmatterSchemas() => _tree = new SpechtTree();
 
     [Given("the manifest is the default one this repository checks itself with")]
     public void GivenTheManifestIsTheDefaultOneThisRepositoryChecksItselfWith() =>
@@ -62,7 +62,7 @@ public sealed partial class ManifestSteps
         _tagSpecification = Tree.WriteFeature(
             "0001",
             "F1",
-            sections: SpecTree.SectionsWith(
+            sections: SpechtTree.SectionsWith(
                 "3. Acceptance Criteria",
                 "## 3. Acceptance Criteria\n\n| ID | Claim | Source | Status |\n| -- | ----- | ------ | ------ |\n"
                     + $"| {claim} | It does the thing. | brd | Active |\n"));
@@ -185,7 +185,7 @@ public sealed partial class ManifestSteps
         Tree.WriteFeatureFile(
             Write(
                 "F1",
-                SpecTree.SectionsWith(
+                SpechtTree.SectionsWith(
                     DefaultTitles["claims"],
                     $"## {title}\n\n| ID | Claim | Source | Status |\n| -- | ----- | ------ | ------ |\n"
                         + "| B-001 | It does the thing. | brd | Active |\n| B-1 | Its id is malformed. | brd | Active |\n"
@@ -194,15 +194,15 @@ public sealed partial class ManifestSteps
 
     [Given("the root holds a specification whose traceability table has a {string} column in third place")]
     public void GivenTheRootHoldsASpecificationWhoseTraceabilityTableHasAColumnInThirdPlace(string header) =>
-        Write("F1", SpecTree.SectionsWith(DefaultTitles["matrix"], Matrix(DefaultTitles["matrix"], $"Scenario | {header}", "It does the thing | A test")));
+        Write("F1", SpechtTree.SectionsWith(DefaultTitles["matrix"], Matrix(DefaultTitles["matrix"], $"Scenario | {header}", "It does the thing | A test")));
 
     [Given("the root holds a second specification whose traceability table has a {string} column in third place")]
     public void GivenTheRootHoldsASecondSpecificationWhoseTraceabilityTableHasAColumnInThirdPlace(string header) =>
-        Write("F2", SpecTree.SectionsWith(DefaultTitles["matrix"], Matrix(DefaultTitles["matrix"], $"Scenario | {header}", "It does the thing | A test")));
+        Write("F2", SpechtTree.SectionsWith(DefaultTitles["matrix"], Matrix(DefaultTitles["matrix"], $"Scenario | {header}", "It does the thing | A test")));
 
     [Given("the root holds a specification whose {string} table lacks one of the matrix role's columns")]
     public void GivenTheRootHoldsASpecificationWhoseTableLacksOneOfTheMatrixRolesColumns(string title) =>
-        Write("F1", SpecTree.SectionsWith(DefaultTitles["matrix"], Matrix(title, "Scenario", "It does the thing")));
+        Write("F1", SpechtTree.SectionsWith(DefaultTitles["matrix"], Matrix(title, "Scenario", "It does the thing")));
 
     [Given("the root holds an approved specification with a {string} cell in its traceability table")]
     public void GivenTheRootHoldsAnApprovedSpecificationWithACellInItsTraceabilityTable(string cell) =>
@@ -212,7 +212,7 @@ public sealed partial class ManifestSteps
                     "0001",
                     "F1",
                     new Dictionary<string, string> { ["spec_status"] = "approved" },
-                    SpecTree.SectionsWith(DefaultTitles["matrix"], Matrix(DefaultTitles["matrix"], "Scenario | Test", $"It does the thing | {cell}")))));
+                    SpechtTree.SectionsWith(DefaultTitles["matrix"], Matrix(DefaultTitles["matrix"], "Scenario | Test", $"It does the thing | {cell}")))));
 
     [Then("the claims are read from that section")]
     public void ThenTheClaimsAreReadFromThatSection()
@@ -288,12 +288,12 @@ public sealed partial class ManifestSteps
     [Given("the root holds a specification with its sections out of order")]
     public void GivenTheRootHoldsASpecificationWithItsSectionsOutOfOrder()
     {
-        var sections = SpecTree.Sections.ToList();
+        var sections = SpechtTree.Sections.ToList();
         (sections[5], sections[6]) = (sections[6], sections[5]);
         Write("F1", sections);
         var report = Tree.Run();
-        report.Violations.Should().ContainSingle().Which.Should().Match<SpecViolation>(static violation =>
-            violation.RuleId == OutOfOrderRule && violation.Severity == SpecSeverity.Error);
+        report.Violations.Should().ContainSingle().Which.Should().Match<SpechtViolation>(static violation =>
+            violation.RuleId == OutOfOrderRule && violation.Severity == SpechtSeverity.Error);
         _rulesEvaluatedByDefault = report.RulesEvaluated;
     }
 
@@ -325,13 +325,13 @@ public sealed partial class ManifestSteps
     [Given("the root holds a specification that rule reports")]
     public void GivenTheRootHoldsASpecificationThatRuleReports()
     {
-        Write("F1", SpecTree.Sections);
+        Write("F1", SpechtTree.Sections);
         SpechtRunner.Evaluate(EngineServices.Loader().Load(Tree.Root), [StandIn])
             .Violations.Should()
             .ContainSingle()
             .Which.Should()
-            .Match<SpecViolation>(violation =>
-                violation.RuleId == StandIn.Id && violation.Severity == SpecSeverity.Warning && violation.File == _specifications[0]);
+            .Match<SpechtViolation>(violation =>
+                violation.RuleId == StandIn.Id && violation.Severity == SpechtSeverity.Warning && violation.File == _specifications[0]);
     }
 
     [When("the check runs with that rule")]
@@ -346,8 +346,8 @@ public sealed partial class ManifestSteps
         _report!.Violations.Should()
             .ContainSingle()
             .Which.Should()
-            .Match<SpecViolation>(violation =>
-                violation.RuleId == StandIn.Id && violation.Severity == SpecSeverity.Error && violation.File == _specifications[0]);
+            .Match<SpechtViolation>(violation =>
+                violation.RuleId == StandIn.Id && violation.Severity == SpechtSeverity.Error && violation.File == _specifications[0]);
 
     [Then("the violation is reported at {word} severity")]
     public void ThenTheViolationIsReportedAtSeverity(string severity) =>
@@ -412,10 +412,10 @@ public sealed partial class ManifestSteps
     [Given("the schema folder holds that file and not the default name")]
     public void GivenTheSchemaFolderHoldsThatFileAndNotTheDefaultName()
     {
-        var schema = Path.Combine(Tree.Root, SpecTree.FrontmatterSchemaFolder);
+        var schema = Path.Combine(Tree.Root, SpechtTree.FrontmatterSchemaFolder);
         Directory.CreateDirectory(schema);
         File.WriteAllText(Path.Combine(schema, FeatureSchema), FeatureSchemaRejectingTheDomain);
-        File.Delete(Path.Combine(Tree.Root, SpecTree.FeatureSchemaPath));
+        File.Delete(Path.Combine(Tree.Root, SpechtTree.FeatureSchemaPath));
     }
 
     [Then("every specification's frontmatter is checked against {string}")]
@@ -442,7 +442,7 @@ public sealed partial class ManifestSteps
     [Given("the root holds a specification with three violations")]
     public void GivenTheRootHoldsASpecificationWithThreeViolations()
     {
-        var sections = SpecTree.SectionsWith("3. Acceptance Criteria", TwoClaims)
+        var sections = SpechtTree.SectionsWith("3. Acceptance Criteria", TwoClaims)
             .Where(static section => !section.StartsWith("## 11.", StringComparison.Ordinal))
             .ToList();
         Tree.WriteFeatureFile(Tree.WriteFeature("0001", "F1", sections: sections), PhantomTag);
@@ -547,13 +547,13 @@ public sealed partial class ManifestSteps
     [AfterScenario]
     public void DeleteTree() => _tree?.Dispose();
 
-    private SpecTree Tree => _tree ?? throw new InvalidOperationException("No repository root was prepared.");
+    private SpechtTree Tree => _tree ?? throw new InvalidOperationException("No repository root was prepared.");
 
     private (string Stdout, string Stderr, int ExitCode) Run => _run ?? throw new InvalidOperationException("The tool was not run.");
 
     private JsonObject Manifest => _manifest ?? throw new InvalidOperationException("No manifest was read.");
 
-    private string ManifestPath => Path.Combine(Tree.Root, SpecTree.ManifestPath);
+    private string ManifestPath => Path.Combine(Tree.Root, SpechtTree.ManifestPath);
 
     private string FeatureSchema => _featureSchema ?? throw new InvalidOperationException("The manifest names no Feature schema file.");
 
@@ -606,15 +606,15 @@ public sealed partial class ManifestSteps
         _tagSpecification ?? throw new InvalidOperationException("No claim specification was written."),
         "Feature: synthetic tags\n\n" + string.Join("\n", _claimTags.Select(static tag => $"  {tag}\n  Scenario: synthetic\n    Given a sample\n")));
 
-    private sealed class WarningRule(string id) : ISpecRule
+    private sealed class WarningRule(string id) : ISpechtRule
     {
         public string Id => id;
 
         public IReadOnlyList<string> ReportedIds => [id];
 
-        public IEnumerable<SpecViolation> Evaluate(SpecModel model) =>
+        public IEnumerable<SpechtViolation> Evaluate(SpechtModel model) =>
             model.Features.Select(feature =>
-                new SpecViolation(id, SpecSeverity.Warning, feature.RelativePath, 1, null, "A stand-in rule reports this specification."));
+                new SpechtViolation(id, SpechtSeverity.Warning, feature.RelativePath, 1, null, "A stand-in rule reports this specification."));
     }
 
     private const string UnknownKey = "glossary";
@@ -643,7 +643,7 @@ public sealed partial class ManifestSteps
     private readonly List<string> _specifications = [];
     private string? _tagSpecification;
     private List<string> _claimTags = [];
-    private SpecTree? _tree;
+    private SpechtTree? _tree;
     private JsonObject? _manifest;
     private SpechtReport? _report;
     private (string Stdout, string Stderr, int ExitCode)? _run;
@@ -651,8 +651,8 @@ public sealed partial class ManifestSteps
     private string? _defaultClaimGrammar;
     private bool _fromRoot;
     private string? _featureSchema;
-    private SpecModel? _model;
-    private IReadOnlyList<SpecViolation> _frontmatterViolations = [];
+    private SpechtModel? _model;
+    private IReadOnlyList<SpechtViolation> _frontmatterViolations = [];
     private IReadOnlyList<GoldenReport.Verdict>? _golden;
     private string? _ruleId;
     private int? _rulesEvaluatedByDefault;

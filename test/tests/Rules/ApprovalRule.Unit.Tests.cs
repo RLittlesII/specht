@@ -31,12 +31,12 @@ public sealed class ApprovalRuleUnitTests
             ["roles"] = new JsonObject { ["matrix"] = "9. Coverage" },
         };
         FeatureSpec feature = new FeatureSpecFixture().WithDocument(
-            SpecDocument.Parse(
+            SpechtDocument.Parse(
                 "---\nspec_status: approved\n---\n\n"
                     + "## 9. Traceability Matrix\n\n| Claim ID | Test |\n| -------- | ---- |\n| B-001 | Missing |\n\n"
                     + "## 9. Coverage\n\n| Claim ID | Test |\n| -------- | ---- |\n| B-002 | Missing |\n",
                 "src/sample/.spec/README.md"));
-        SpecModel model = new SpecModelFixture().WithManifest(manifest).WithFeatures(feature);
+        SpechtModel model = new SpechtModelFixture().WithManifest(manifest).WithFeatures(feature);
 
         // When
         var violations = new ApprovalRule().Evaluate(model).ToList();
@@ -51,11 +51,11 @@ public sealed class ApprovalRuleUnitTests
         // Given
         var manifest = new JsonObject { ["markers"] = new JsonObject { ["missing"] = "TBD" } };
         FeatureSpec feature = new FeatureSpecFixture().WithDocument(
-            SpecDocument.Parse(
+            SpechtDocument.Parse(
                 "---\nspec_status: approved\n---\n\n"
                     + "## 9. Traceability Matrix\n\n| Claim ID | Test |\n| -------- | ---- |\n| B-001 | Missing |\n| B-002 | TBD |\n",
                 "src/sample/.spec/README.md"));
-        SpecModel model = new SpecModelFixture().WithManifest(manifest).WithFeatures(feature);
+        SpechtModel model = new SpechtModelFixture().WithManifest(manifest).WithFeatures(feature);
 
         // When
         var violations = new ApprovalRule().Evaluate(model).ToList();
@@ -71,12 +71,12 @@ public sealed class ApprovalRuleUnitTests
         const string matrix = "## 9. Traceability Matrix\n\n| Claim ID | Test |\n| -------- | ---- |\n| B-001 | Missing |\n";
         var manifest = new JsonObject { ["markers"] = new JsonObject { ["approved"] = "agreed" } };
         FeatureSpec defaultStatus = new FeatureSpecFixture()
-            .WithLocation(new SpecLocationFixture().WithRelativePath("src/first/.spec/README.md"))
-            .WithDocument(SpecDocument.Parse("---\nspec_status: approved\n---\n\n" + matrix, "src/first/.spec/README.md"));
+            .WithLocation(new SpechtLocationFixture().WithRelativePath("src/first/.spec/README.md"))
+            .WithDocument(SpechtDocument.Parse("---\nspec_status: approved\n---\n\n" + matrix, "src/first/.spec/README.md"));
         FeatureSpec manifestStatus = new FeatureSpecFixture()
-            .WithLocation(new SpecLocationFixture().WithRelativePath("src/second/.spec/README.md"))
-            .WithDocument(SpecDocument.Parse("---\nspec_status: agreed\n---\n\n" + matrix, "src/second/.spec/README.md"));
-        SpecModel model = new SpecModelFixture().WithManifest(manifest).WithFeatures(defaultStatus, manifestStatus);
+            .WithLocation(new SpechtLocationFixture().WithRelativePath("src/second/.spec/README.md"))
+            .WithDocument(SpechtDocument.Parse("---\nspec_status: agreed\n---\n\n" + matrix, "src/second/.spec/README.md"));
+        SpechtModel model = new SpechtModelFixture().WithManifest(manifest).WithFeatures(defaultStatus, manifestStatus);
 
         // When
         var violations = new ApprovalRule().Evaluate(model).ToList();
@@ -95,12 +95,12 @@ public sealed class ApprovalRuleUnitTests
             ["roles"] = new JsonObject { ["signOff"] = "12. Approval" },
         };
         FeatureSpec feature = new FeatureSpecFixture().WithDocument(
-            SpecDocument.Parse(
+            SpechtDocument.Parse(
                 "---\nspec_status: approved\n---\n\n"
                     + "## 12. Sign-off\n\n| Section | Status |\n| ------- | ------ |\n| 1-5 | \U0001F534 |\n\n"
                     + "## 12. Approval\n\n| Section | Status |\n| ------- | ------ |\n| 6-8 | \U0001F534 |\n",
                 "src/sample/.spec/README.md"));
-        SpecModel model = new SpecModelFixture().WithManifest(manifest).WithFeatures(feature);
+        SpechtModel model = new SpechtModelFixture().WithManifest(manifest).WithFeatures(feature);
 
         // When
         var violations = new ApprovalRule().Evaluate(model).ToList();
@@ -118,11 +118,11 @@ public sealed class ApprovalRuleUnitTests
         // Given
         var manifest = new JsonObject { ["markers"] = new JsonObject { [marker] = "HELD" } };
         FeatureSpec feature = new FeatureSpecFixture().WithDocument(
-            SpecDocument.Parse(
+            SpechtDocument.Parse(
                 "---\nspec_status: approved\n---\n\n"
                     + $"## 12. Sign-off\n\n| Section | Status |\n| ------- | ------ |\n| 1-5 | {defaultText} |\n| 6-8 | HELD for review |\n",
                 "src/sample/.spec/README.md"));
-        SpecModel model = new SpecModelFixture().WithManifest(manifest).WithFeatures(feature);
+        SpechtModel model = new SpechtModelFixture().WithManifest(manifest).WithFeatures(feature);
 
         // When
         var violations = new ApprovalRule().Evaluate(model).ToList();

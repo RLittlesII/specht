@@ -26,7 +26,7 @@ public sealed partial class RuleSettingSteps
             "pins a version the tool does not ship" => "{\"schemaVersion\":\"9.0.0\"}",
             _ => throw new ArgumentException("Unknown rejection case.", nameof(reason)),
         };
-        Tree.WriteRaw(SpecTree.ManifestPath, text);
+        Tree.WriteRaw(SpechtTree.ManifestPath, text);
     }
 
     [When("the out-of-order-section rule is set to {word} against that root")]
@@ -72,8 +72,8 @@ public sealed partial class RuleSettingSteps
     {
         _result.ExitCode.Should().Be(0, _result.Stderr);
         var after = Snapshot();
-        after.Remove(SpecTree.ManifestPath);
-        _filesBefore.Remove(SpecTree.ManifestPath);
+        after.Remove(SpechtTree.ManifestPath);
+        _filesBefore.Remove(SpechtTree.ManifestPath);
         after.Should().BeEquivalentTo(_filesBefore);
     }
 
@@ -91,7 +91,7 @@ public sealed partial class RuleSettingSteps
     {
         _result.ExitCode.Should().Be(2, _result.Stderr);
         _result.Stdout.Should().BeEmpty();
-        _result.Stderr.Should().Contain(SpecTree.ManifestPath).And.NotContain(Tree.Root).And.NotContain("\\");
+        _result.Stderr.Should().Contain(SpechtTree.ManifestPath).And.NotContain(Tree.Root).And.NotContain("\\");
     }
 
     private void Run(string id, string level) => _result = AcceptanceTool.Launch(Tree.Root, "rules", "set", id, level, "--root", _root);
