@@ -5,12 +5,12 @@ using Specht.Tests.Shared;
 namespace Specht.Tests.Rules;
 
 /// <summary>
-/// The feature-file rule over a tree on disk under a manifest that renames the claims section (<c>0001-F5</c> B-001,
+/// The claim-tag rule over a tree on disk under a manifest that renames the claims section (<c>0001-F5</c> B-001,
 /// decision 0006): a scenario tag resolves against the section the claims role names, through the runner. The rule's own
-/// lookup is pinned in memory by <see cref="FeatureFileRuleUnitTests"/>.
+/// lookup is pinned in memory by <see cref="ClaimTagRuleUnitTests"/>.
 /// </summary>
 [Trait("Tier", "Integration")]
-public sealed class FeatureFileRuleIntegrationTests
+public sealed class ClaimTagRuleIntegrationTests
 {
     [Fact]
     public void ATagDeclaredOnlyUnderTheTitleNoRoleNames_WhenChecked_ShouldReportSpec021OnItAndNotOnTheTagTheClaimsRolesSectionDeclares()

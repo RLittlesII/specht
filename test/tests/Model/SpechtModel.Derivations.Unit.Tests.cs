@@ -20,7 +20,7 @@ public sealed class SpechtModelDerivationsUnitTests
         });
 
         // When
-        var report = SpechtRunner.Evaluate(model, [new Specht.Rules.FeatureFileRule(), new Specht.Rules.ClaimRule()]);
+        var report = SpechtRunner.Evaluate(model, [new Specht.Rules.CompanionFileRule(), new Specht.Rules.ClaimTagRule(), new Specht.Rules.ClaimRule()]);
 
         // Then
         report.RulesEvaluated.Should().Be(0);

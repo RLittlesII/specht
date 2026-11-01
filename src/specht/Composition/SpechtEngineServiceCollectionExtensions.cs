@@ -56,7 +56,8 @@ public static class SpechtEngineServiceCollectionExtensions
         services.AddSingleton<ISpechtRule, PathIdentityRule>();
         services.AddSingleton<ISpechtRule, DuplicateIdentityRule>();
         services.AddSingleton<ISpechtRule, TableHeaderRule>();
-        services.AddSingleton<ISpechtRule, FeatureFileRule>();
+        services.AddSingleton<ISpechtRule, CompanionFileRule>();
+        services.AddSingleton<ISpechtRule, ClaimTagRule>();
         services.AddSingleton<ISpechtRule, ClaimRule>();
         services.AddSingleton<ISpechtRule, WaiverRule>();
         services.AddSingleton<ISpechtRule, RetiredClaimRule>();

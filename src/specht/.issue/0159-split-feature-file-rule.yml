@@ -2,7 +2,7 @@ id: "0159"
 type: refactor
 title: Split FeatureFileRule into one rule per id
 
-status: in-progress
+status: done
 
 value: 3
 risk: 2
@@ -19,7 +19,7 @@ claims: []
 
 created: "2026-10-11"
 updated: "2026-11-01"
-closed: null
+closed: "2026-11-01"
 
 summary: |
   ADR-0027 lifted ADR-0014's benchmark gate on 2026-10-31: this stage
@@ -95,6 +95,27 @@ decisions:
     splits"; 0100 also renames every engine type a split touches. Status
     `blocked` to `ready-for-implementation`, as cut: the design is ADR-0010's
     and 0100 is open.
+  - |
+    2026-11-01, implementer: `FeatureFileRule` is gone; `CompanionFileRule`
+    (`src/specht/Rules/CompanionFileRule.cs`) reports SPEC020 and
+    `ClaimTagRule` (`src/specht/Rules/ClaimTagRule.cs`) reports SPEC021,
+    each with `Id` and `ReportedIds` naming its one id, registered by name
+    in that order where the old class was. `ClaimTagRule` keeps the
+    exactly-one-companion guard from the old SPEC020 branch, and both rules
+    keep the `EnsureClaimGrammar()` call the old class made before either
+    id. Judged: under a legacy manifest whose claim grammar does not
+    compile, the old class faulted once as SPEC020; each enabled rule now
+    faults under its own id, so with both on the report gains a second
+    rule-failure violation, and with SPEC020 off the one fault names
+    SPEC021. No tree whose grammar compiles changes, and the golden report
+    is byte-unchanged. Recorded in `0001-F1` § 7. The tests that named the
+    old class are aimed at the rule that reports their id; the three
+    `FeatureFileRule*Tests` classes are renamed `ClaimTagRule*Tests` and
+    `SpechtModelUnitTests`' SPEC020 fact names `CompanionFileRule`, with
+    the § 8 and § 9 rows that cite them left to `test-writer`. The ADR-0027
+    guard was not run in this worker tree: eight builds shared the host, so
+    its numbers would not be comparable; it is owed by the batched pull
+    request.
 
 out_of_scope:
   - "Reading the companion tags at load and removing the reader - item 0155."
