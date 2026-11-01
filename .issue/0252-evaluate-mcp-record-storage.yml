@@ -46,8 +46,8 @@ acceptance_criteria:
 decisions:
   - |
     2026-11-01, implementer: the evidence and its proposal are recorded in
-    ADR-0027
-    (`.spec/adr/0027-files-stay-the-reading-path-and-online-allocation-waits.md`,
+    ADR-0028
+    (`.spec/adr/0028-files-stay-the-reading-path-and-online-allocation-waits.md`,
     proposed), which carries the trial itself - the corpus at `51c00ffd`,
     the twelve questions and answer key, the rubric, the agent setup, the
     disposable adapter, the results, the storage survey and the allocation
@@ -61,7 +61,7 @@ decisions:
     0001 stands; no persistent index on answer-quality grounds; an index, if
     `0132-F1` OQ-3 justifies one, keyed by path with id collisions reported;
     no online allocation now. The survey's matrix covers durability, schema
-    migration and security; it had no CLI/MCP parity column, so ADR-0027
+    migration and security; it had no CLI/MCP parity column, so ADR-0028
     gives its own labelled reasoning for parity.
     The owner's ruling is `0132-F1` OQ-4 and epic `0324`'s online-mode
     question; no claim, decision or invariant is amended.

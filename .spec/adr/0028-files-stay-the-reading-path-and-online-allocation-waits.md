@@ -1,10 +1,10 @@
 ---
-title: "ADR-0027: Files stay the reading path; an index, if built, is keyed by path; online allocation waits"
+title: "ADR-0028: Files stay the reading path; an index, if built, is keyed by path; online allocation waits"
 description: "Item 0252's proposal, carrying its own evidence. Filesystem search, a keyed index followed by source reads, and complete documents stored in a database answered one question set over one corpus; no path improved on filesystem search, which used the fewest tokens and tool calls, and the id-keyed store lost a record. Proposed: keep Markdown as the reading path and decision 0001 as it stands, build no index on answer-quality grounds, key any index by path, and do not adopt online allocation now. The record adopts nothing."
 type: adr
 ---
 
-# ADR-0027: Files stay the reading path; an index, if built, is keyed by path; online allocation waits
+# ADR-0028: Files stay the reading path; an index, if built, is keyed by path; online allocation waits
 
 ## Status
 
