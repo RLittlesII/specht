@@ -46,6 +46,7 @@ acceptance_criteria:
 
 decisions:
   - "2026-10-13: design contract reviewed under 0209; scope and prerequisites retained. Ready-for-implementation names design maturity, not permission to bypass depends_on or the one-writer Feature lane."
+  - "2026-10-31: ReportingOutcome moves to 0214. No 0211 claim or caller produces one; the first is a reporting-stage failure under B-018, which 0214 owns. This item delivers ComparisonDocument only."
 
 out_of_scope:
   - "Everything in § 5 of the specification."
