@@ -13,9 +13,14 @@ namespace Specht;
 /// <param name="rules">The rule set, in the order it is evaluated.</param>
 /// <param name="fileSystem">The file system a report is written through.</param>
 /// <param name="schemas">The shared root and schema selection stage.</param>
+/// <param name="check">The frontmatter schema evaluation, for the manifest's kind names.</param>
 /// <implements epic="0001" feature="F1" claim="B-001" />
 public sealed class SpechtRunner(
-    SpechtModelLoader loader, IEnumerable<ISpechtRule> rules, IFileSystem fileSystem, SpechtSchemasLoader schemas)
+    SpechtModelLoader loader,
+    IEnumerable<ISpechtRule> rules,
+    IFileSystem fileSystem,
+    SpechtSchemasLoader schemas,
+    FrontmatterSchemaCheck check)
 {
     /// <summary>
     /// Evaluates <paramref name="rules"/>, in the order given, over <paramref name="model"/> under the vocabulary of the
@@ -56,7 +61,7 @@ public sealed class SpechtRunner(
 
     /// <summary>Parses a frontmatter kind before the caller reads its document or root.</summary>
     /// <implements epic="0001" feature="F1" claim="B-001" />
-    public FrontmatterKind ParseFrontmatterKind(string kind) => FrontmatterRule.ParseKind(kind);
+    public FrontmatterKind ParseFrontmatterKind(string kind) => check.ParseKind(kind);
 
     /// <summary>Checks only the supplied document's frontmatter against the root's selected schemas.</summary>
     /// <implements epic="0001" feature="F1" claim="B-001" />
@@ -66,8 +71,14 @@ public sealed class SpechtRunner(
         var model = new SpechtModel(root, [], [], [], loaded);
         var frontmatter = FrontmatterReader.Parse(text);
 
-        return Evaluate(model, [FrontmatterRule],
-            rule => ((FrontmatterSchemaRule)rule).Evaluate(path, frontmatter, loaded, kind));
+        return Evaluate(model, FrontmatterRules, rule => rule switch
+        {
+            FrontmatterPresentRule present => present.Evaluate(path, frontmatter, loaded, kind),
+            FeatureFrontmatterRule feature when kind == FrontmatterKind.Feature => feature.Evaluate(path, frontmatter, loaded),
+            ItemFrontmatterRule item when kind == FrontmatterKind.Task => item.Evaluate(path, frontmatter, loaded),
+            EpicFrontmatterRule epic when kind == FrontmatterKind.Epic => epic.Evaluate(path, frontmatter, loaded),
+            _ => [],
+        });
     }
 
     /// <summary>Writes <paramref name="report"/> to <paramref name="path"/> as the report document (<c>0001-F3</c> B-008).</summary>
@@ -80,9 +91,12 @@ public sealed class SpechtRunner(
         fileSystem.File.WriteAllText(path, SpechtReportDocument.From(report).ToJson());
     }
 
-    private FrontmatterSchemaRule FrontmatterRule => rules
-        .Select(static rule => rule is FaultIsolatedRule isolated ? isolated.Inner : rule)
-        .OfType<FrontmatterSchemaRule>().Single();
+    private List<ISpechtRule> FrontmatterRules =>
+    [
+        .. rules
+            .Select(static rule => rule is FaultIsolatedRule isolated ? isolated.Inner : rule)
+            .Where(static rule => rule is FrontmatterPresentRule or FeatureFrontmatterRule or ItemFrontmatterRule or EpicFrontmatterRule),
+    ];
 
     /// <implements epic="0001" feature="F1" claim="B-001" />
     private static SpechtReport Evaluate(

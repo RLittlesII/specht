@@ -8,54 +8,16 @@ using Specht.Model;
 namespace Specht.Rules;
 
 /// <summary>
-/// SPEC001-SPEC005 - every specification, item and epic file carries
-/// frontmatter that satisfies its schema in <c>.specht/schema/frontmatter/</c>.
+/// The frontmatter schema evaluation SPEC002, SPEC003 and SPEC004 share: the kind's schema in
+/// <c>.specht/schema/frontmatter/</c>, evaluated under the invariant culture, each failure of the walk reported at its key
+/// with its message and what the schema expected there (ADR-0010 § "One rule per id").
 /// </summary>
-/// <remarks>
-/// SPEC005 - a linked specification records when it last mirrored - is
-/// expressed inside the Feature schema as an <c>if</c>/<c>then</c>, because
-/// "github_issue set implies synced_at present" is a statement about one
-/// file's frontmatter and belongs with the rest of them.
-/// </remarks>
 /// <implements epic="0001" feature="F5" claim="B-008" />
-public sealed class FrontmatterSchemaRule : ISpechtRule
+public sealed class FrontmatterSchemaCheck
 {
-    /// <inheritdoc />
-    public string Id => "SPEC001";
-
-    /// <inheritdoc />
-    public IReadOnlyList<string> ReportedIds => ["SPEC001", "SPEC002", "SPEC003", "SPEC004"];
-
-    /// <inheritdoc />
-    /// <implements epic="0001" feature="F5" claim="B-008" />
-    public IEnumerable<SpechtViolation> Evaluate(SpechtModel model)
-    {
-        foreach (var feature in model.Features)
-        {
-            foreach (var violation in Evaluate(feature.RelativePath, feature.Document.Frontmatter, model.Schemas, FrontmatterKind.Feature))
-            {
-                yield return violation;
-            }
-        }
-
-        foreach (var item in model.Items)
-        {
-            foreach (var violation in Evaluate(item.RelativePath, item.Frontmatter, model.Schemas, FrontmatterKind.Task))
-            {
-                yield return violation;
-            }
-        }
-
-        foreach (var epic in model.Epics)
-        {
-            foreach (var violation in Evaluate(epic.RelativePath, epic.Frontmatter, model.Schemas, FrontmatterKind.Epic))
-            {
-                yield return violation;
-            }
-        }
-    }
-
     /// <summary>Parses the manifest's exact kind names without reading a document or root.</summary>
+    /// <param name="kind">The kind as the caller typed it.</param>
+    /// <returns>The kind.</returns>
     /// <implements epic="0001" feature="F5" claim="B-008" />
     public FrontmatterKind ParseKind(string kind) => kind switch
     {
@@ -65,40 +27,40 @@ public sealed class FrontmatterSchemaRule : ISpechtRule
         _ => throw new ArgumentException($"Unknown frontmatter kind '{kind}'. Available kinds: feature, task, epic.", nameof(kind)),
     };
 
-    /// <summary>Evaluates one document using the same kind mapping and schema evaluation as the tree.</summary>
+    /// <summary>The kind's schema file, relative to the root, as the manifest names it under every source.</summary>
+    /// <param name="schemas">The selected schemas.</param>
+    /// <param name="kind">The kind.</param>
+    /// <returns>The schema file's repository-relative path.</returns>
     /// <implements epic="0001" feature="F5" claim="B-008" />
-    public IEnumerable<SpechtViolation> Evaluate(string path, Frontmatter frontmatter, SpechtSchemas schemas, FrontmatterKind kind)
-    {
-        var selected = kind switch
-        {
-            FrontmatterKind.Feature => (Schema: schemas.Feature, Rule: "SPEC002", Key: "feature"),
-            FrontmatterKind.Task => (Schema: schemas.Item, Rule: "SPEC003", Key: "task"),
-            FrontmatterKind.Epic => (Schema: schemas.Epic, Rule: "SPEC004", Key: "epic"),
-            _ => throw new ArgumentOutOfRangeException(nameof(kind), kind, "The kind must be feature, task or epic."),
-        };
+    public string SchemaFile(SpechtSchemas schemas, FrontmatterKind kind) =>
+        SpechtManifestStore.FrontmatterSchemaFolder + "/" + schemas.Structure.FrontmatterSchemas[Select(schemas, kind).Key];
 
-        return Check(path, frontmatter, selected.Schema, selected.Rule, schemas, selected.Key);
-    }
-
+    /// <summary>The keys the kind's schema requires at its root, in the schema's order.</summary>
+    /// <param name="schemas">The selected schemas.</param>
+    /// <param name="kind">The kind.</param>
+    /// <returns>The required keys.</returns>
     /// <implements epic="0001" feature="F5" claim="B-008" />
-    private static IEnumerable<SpechtViolation> Check(
-        string path, Frontmatter frontmatter, JsonSchema schema, string ruleId, SpechtSchemas schemas, string kind)
+    public JsonArray Required(SpechtSchemas schemas, FrontmatterKind kind) => Required(Select(schemas, kind).Schema);
+
+    /// <summary>
+    /// Evaluates one document's frontmatter against its kind's schema and reports each failure under
+    /// <paramref name="ruleId"/>; a document with no frontmatter is SPEC001's and reports nothing here.
+    /// </summary>
+    /// <param name="ruleId">The rule id the failures are reported under.</param>
+    /// <param name="path">The document's repository-relative path.</param>
+    /// <param name="frontmatter">The document's frontmatter.</param>
+    /// <param name="schemas">The selected schemas.</param>
+    /// <param name="kind">The kind whose schema is evaluated.</param>
+    /// <returns>The failures, in the order the walk yields them.</returns>
+    /// <implements epic="0001" feature="F5" claim="B-008" />
+    public IEnumerable<SpechtViolation> Evaluate(
+        string ruleId, string path, Frontmatter frontmatter, SpechtSchemas schemas, FrontmatterKind kind)
     {
-        var schemaFile = SpechtManifestStore.FrontmatterSchemaFolder + "/" + schemas.Structure.FrontmatterSchemas[kind];
+        var schema = Select(schemas, kind).Schema;
+        var schemaFile = SchemaFile(schemas, kind);
 
         if (frontmatter.Node is null)
         {
-            yield return new SpechtViolation(
-                "SPEC001",
-                SpechtSeverity.Error,
-                path,
-                1,
-                null,
-                "no YAML frontmatter - every tracked specification artifact opens with a '---' delimited mapping")
-            {
-                Expected = new JsonObject { ["schema"] = schemaFile, ["required"] = Required(schema) },
-            };
-
             yield break;
         }
 
@@ -126,6 +88,15 @@ public sealed class FrontmatterSchemaRule : ISpechtRule
             };
         }
     }
+
+    /// <implements epic="0001" feature="F5" claim="B-008" />
+    private static (JsonSchema Schema, string Key) Select(SpechtSchemas schemas, FrontmatterKind kind) => kind switch
+    {
+        FrontmatterKind.Feature => (schemas.Feature, "feature"),
+        FrontmatterKind.Task => (schemas.Item, "task"),
+        FrontmatterKind.Epic => (schemas.Epic, "epic"),
+        _ => throw new ArgumentOutOfRangeException(nameof(kind), kind, "The kind must be feature, task or epic."),
+    };
 
     /// <implements epic="0001" feature="F5" claim="B-008" />
     private static EvaluationResults EvaluateInvariant(JsonSchema schema, JsonElement instance, string? schemaPath)

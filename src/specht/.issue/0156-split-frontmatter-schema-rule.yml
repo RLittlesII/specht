@@ -2,7 +2,7 @@ id: "0156"
 type: refactor
 title: Split FrontmatterSchemaRule into one rule per id
 
-status: in-progress
+status: done
 
 value: 3
 risk: 3
@@ -19,7 +19,7 @@ claims: []
 
 created: "2026-10-11"
 updated: "2026-11-01"
-closed: null
+closed: "2026-11-01"
 
 summary: |
   ADR-0027 lifted ADR-0014's benchmark gate on 2026-10-31: this stage
@@ -102,6 +102,31 @@ decisions:
     splits"; 0100 also renames every engine type a split touches. Status
     `blocked` to `ready-for-implementation`, as cut: the design is ADR-0010's
     and 0100 is open.
+  - |
+    2026-11-01, implementer: `FrontmatterSchemaRule` is gone; four rules of
+    one id each stand in its place, `FrontmatterPresentRule` (SPEC001),
+    `FeatureFrontmatterRule` (SPEC002), `ItemFrontmatterRule` (SPEC003) and
+    `EpicFrontmatterRule` (SPEC004), each registered by name in ordinal order
+    of its id where the old class was. `FrontmatterSchemaCheck`, a sealed
+    class registered as a singleton beside them, holds the kind's schema and
+    schema file, `EvaluateInvariant` (the reference guard's one exemption,
+    re-pointed), the failure walk, the key and the message; the three schema
+    rules take it, and `FrontmatterPresentRule` takes it only for the schema
+    file and required keys its violation expects, evaluating no schema. The
+    check yields nothing for a document with no frontmatter, so SPEC002 to
+    SPEC004 stay silent there whether SPEC001 is on or off. Judged: the item
+    does not name `SpechtRunner.CheckFrontmatter`, the `specht frontmatter`
+    path, which cast the old class to call its document overload. It now
+    takes the check for `ParseFrontmatterKind` and evaluates the four
+    rules, unwrapped from the decorator, through their document overloads,
+    SPEC001 for any kind and only the kind's schema rule beside it, so its
+    violations and its count of rules evaluated are unchanged. Also judged:
+    a rule fault now names the id whose rule threw and keeps the other ids'
+    violations, where the old class reported every fault as SPEC001; fault
+    isolation is out of scope and no test pins the old attribution.
+    `test/acceptance/Manifest/ManifestSteps.cs` no longer constructs the
+    old class, so nothing there was re-pointed. The benchmark guard of
+    ADR-0027 runs once the eight splits are folded, on the pull request.
 
 out_of_scope:
   - "The collapse of `ISpechtRule`, `SpecFinding`, `DefaultSeverity` and the evaluator - item 0164."

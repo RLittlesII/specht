@@ -39,11 +39,11 @@ public static class EngineAssembly
     ];
 
     /// <summary>
-    /// Gets the one allowed reference: the frontmatter rule saves, sets and restores the current culture around its schema
+    /// Gets the one allowed reference: the frontmatter schema check saves, sets and restores the current culture around its schema
     /// evaluation, so a dependency's culture-sensitive lowercasing cannot reach a message.
     /// </summary>
     public static Reference Exemption { get; } =
-        new("System.Globalization.CultureInfo.CurrentCulture", "Specht.Rules.FrontmatterSchemaRule.EvaluateInvariant");
+        new("System.Globalization.CultureInfo.CurrentCulture", "Specht.Rules.FrontmatterSchemaCheck.EvaluateInvariant");
 
     /// <summary>Gets the path of the library <c>src/specht</c> built for this configuration and target framework.</summary>
     public static string Built => BuiltUnder("specht", typeof(SpechtRunner).Assembly);

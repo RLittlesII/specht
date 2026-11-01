@@ -27,7 +27,7 @@ public sealed class SpechtRunnerDeterminismUnitTests
         try
         {
             CultureInfo.CurrentCulture = CultureInfo.GetCultureInfo("tr-TR");
-            violations = [.. new FrontmatterSchemaRule().Evaluate(model)];
+            violations = [.. new FeatureFrontmatterRule(new FrontmatterSchemaCheck()).Evaluate(model)];
         }
         finally
         {
@@ -51,7 +51,7 @@ public sealed class SpechtRunnerDeterminismUnitTests
         try
         {
             CultureInfo.CurrentCulture = CultureInfo.GetCultureInfo("tr-TR");
-            _ = new FrontmatterSchemaRule().Evaluate(model).ToList();
+            _ = new FeatureFrontmatterRule(new FrontmatterSchemaCheck()).Evaluate(model).ToList();
             after = CultureInfo.CurrentCulture;
         }
         finally

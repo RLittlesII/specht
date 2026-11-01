@@ -47,7 +47,11 @@ public static class SpechtEngineServiceCollectionExtensions
         services.AddSingleton<EffectiveManifestReader>();
         services.AddSingleton<SpechtModelLoader>();
         services.AddSingleton<SpechtRunner>();
-        services.AddSingleton<ISpechtRule, FrontmatterSchemaRule>();
+        services.AddSingleton<FrontmatterSchemaCheck>();
+        services.AddSingleton<ISpechtRule, FrontmatterPresentRule>();
+        services.AddSingleton<ISpechtRule, FeatureFrontmatterRule>();
+        services.AddSingleton<ISpechtRule, ItemFrontmatterRule>();
+        services.AddSingleton<ISpechtRule, EpicFrontmatterRule>();
         services.AddSingleton<ISpechtRule, SectionStructureRule>();
         services.AddSingleton<ISpechtRule, IdentityRule>();
         services.AddSingleton<ISpechtRule, FeatureFileRule>();

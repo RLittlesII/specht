@@ -310,7 +310,7 @@ Item `0042` built the version set and the pin as an integer; item `0120` convert
 | The pinned version's frontmatter schemas validate the tree; the manifest stays on disk (B-001, C-4)                                 | Both           | `SpechtSchemasLoader.Load`: the manifest from `<root>/.specht/manifest.json`, the three frontmatter schemas from the selected version                                                   |
 | Each version's rule vocabulary (B-014, brief § 4)                                                                                   | Business       | `SchemaVersions.Shipped`, hand-written per `SemanticVersion`                                                                                                                            |
 | Only the pinned vocabulary is evaluated, counted and reported (B-014)                                                               | Business       | `SpechtRunner.Evaluate(SpechtModel, IEnumerable<ISpechtRule>)`, over `model.Schemas.Version.RuleIds` (item `0105`, ADR-0008; `0001-F1` § 7)                                             |
-| Version `0.1.0`'s epic `title` and `description` (B-022, B-023, decision 0003)                                                      | Business       | `src/tool/schema/v0.1.0/frontmatter/epic.schema.json`, embedded into the engine; `FrontmatterSchemaRule` already maps an epic failure to `SPEC004`                                      |
+| Version `0.1.0`'s epic `title` and `description` (B-022, B-023, decision 0003)                                                      | Business       | `src/tool/schema/v0.1.0/frontmatter/epic.schema.json`, embedded into the engine; `EpicFrontmatterRule` reports an epic failure as `SPEC004`                                             |
 | The report names the version and the embedded source (B-002, `0001-F3` B-005)                                                       | Business       | `SpechtReport.SchemaVersion`; `SpechtReportDocument.From` writes its text                                                                                                               |
 | Embedding the shipping copy into the engine without a second copy                                                                   | Technical      | `src/specht/specht.csproj` links `src/tool/schema/v*/frontmatter/*.schema.json` as `EmbeddedResource`                                                                                   |
 | A manifest records an upstream schema source in `spechtSchema`; no key records none (B-068)                                         | Business       | `SpechtManifestParser.Parse`, onto `SpechtStructure.SpechtSchema`: an `UpstreamSchemaSource`, or null                                                                                   |
@@ -549,7 +549,7 @@ The loader translates local read and JSON Schema compilation failures into
 separators and no underlying exception text. The command's existing fold produces
 stderr, empty stdout and exit `3`. JsonSchema.Net defers unresolved reference
 failures until a schema is used. The existing evaluation boundary in
-[`FrontmatterSchemaRule`](../../specht/Rules/FrontmatterSchemaRule.cs) catches
+[`FrontmatterSchemaCheck`](../../specht/Rules/FrontmatterSchemaCheck.cs) catches
 `RefResolutionException` for local schemas and translates it with the named
 schema's relative path. This preserves valid dynamic references and the existing
 upfront read/syntax failure order without fetching or creating a separate
