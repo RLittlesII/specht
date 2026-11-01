@@ -12,6 +12,7 @@
     <PackageReference Include="Rocket.Surgery.Extensions.Testing.AutoFixtures" />
     <PackageReference Include="TestableIO.System.IO.Abstractions.TestingHelpers" />
     <PackageReference Include="Microsoft.Extensions.TimeProvider.Testing" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" />
     <ProjectReference Include="../../.performance/comparison/comparison.csproj" />
     <Using Include="Xunit" />
   </ItemGroup>

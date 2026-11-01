@@ -16,7 +16,7 @@ public sealed class CollectionPlanUnitTests
             .WithCurrent(new ReleaseRecordFixture().WithId(20).WithCommit(current));
 
         // When
-        var plan = CollectionPlan.For(pair, new string('c', 40), "1", "run-1", 1, "session-1", "runner-1", "Specht.Benchmarks.*", "Short", []);
+        var plan = CollectionPlan.For(pair, new string('c', 40), "1", "run-1", 1, "session-1", "runner-1", "Specht.Benchmarks.*", "Short");
 
         // Then
         plan.Should().NotBeNull();
@@ -38,7 +38,7 @@ public sealed class CollectionPlanUnitTests
             .WithCurrent(new ReleaseRecordFixture().WithId(20).WithCommit(current).WithResolutionFailure(current is null ? "Tag unavailable" : null));
 
         // When
-        var plan = CollectionPlan.For(pair, new string('c', 40), "1", "run-1", 1, "session-1", "runner-1", "Specht.Benchmarks.*", "Short", []);
+        var plan = CollectionPlan.For(pair, new string('c', 40), "1", "run-1", 1, "session-1", "runner-1", "Specht.Benchmarks.*", "Short");
 
         // Then
         plan.Should().BeNull();
@@ -51,7 +51,7 @@ public sealed class CollectionPlanUnitTests
         ReleasePair pair = new ReleasePairFixture();
 
         // When
-        var plan = CollectionPlan.For(pair, new string('c', 40), "1", "run-1", 1, "session-7", "runner-1", "Specht.Benchmarks.*", null, []);
+        var plan = CollectionPlan.For(pair, new string('c', 40), "1", "run-1", 1, "session-7", "runner-1", "Specht.Benchmarks.*", null);
 
         // Then
         plan!.Workspace.Should().Be(".artifacts/benchmarks/comparison/session-7");
@@ -65,7 +65,7 @@ public sealed class CollectionPlanUnitTests
         ReleasePair pair = new ReleasePairFixture();
 
         // When
-        var plan = CollectionPlan.For(pair, comparatorCommit, "1", "run-1", 1, sessionId, "runner-1", "Specht.Benchmarks.*", "Short", []);
+        var plan = CollectionPlan.For(pair, comparatorCommit, "1", "run-1", 1, sessionId, "runner-1", "Specht.Benchmarks.*", "Short");
 
         // Then
         plan.Should().BeNull();
@@ -79,7 +79,7 @@ public sealed class CollectionPlanUnitTests
         ReleasePair pair = new ReleasePairFixture();
 
         // When
-        var plan = CollectionPlan.For(pair, comparatorCommit, "1", "run-1", 1, sessionId, "runner-1", "Specht.Benchmarks.*", "Short", []);
+        var plan = CollectionPlan.For(pair, comparatorCommit, "1", "run-1", 1, sessionId, "runner-1", "Specht.Benchmarks.*", "Short");
 
         // Then
         plan.Should().NotBeNull();

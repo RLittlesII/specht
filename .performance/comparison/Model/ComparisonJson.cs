@@ -32,6 +32,35 @@ public static class ComparisonJson
         return pair;
     }
 
+    public static ReleasePair ReadPair(string json)
+    {
+        var pair = Read<ReleasePair>(json);
+        ValidatePair(pair, pair.Current);
+        return pair;
+    }
+
+    public static ComparisonReceipt ReadReceipt(string json)
+    {
+        var receipt = Read<ComparisonReceipt>(json);
+        if (receipt.FormatVersion != 1 || !IsRepository(receipt.Repository) || string.IsNullOrWhiteSpace(receipt.RunId) || receipt.Attempt < 1
+            || !IsCommit(receipt.Commit) || receipt.ReleaseId <= 0 || !IsHash(receipt.PairDigest, 64))
+            throw new InvalidDataException("Comparison request has an unsupported version or invalid identity.");
+        return receipt;
+    }
+
+    public static ReportingOutcome ReadOutcome(string json)
+    {
+        var outcome = Read<ReportingOutcome>(json);
+        if (!Enum.IsDefined(outcome.Stage) || !Enum.IsDefined(outcome.State) || outcome.Judgment is { } judgment && !Enum.IsDefined(judgment)
+            || outcome.Flags.IsDefault || outcome.Flags.Any(static flag => flag is null || string.IsNullOrWhiteSpace(flag.CaseKey)
+                || !Enum.IsDefined(flag.Metric) || flag.Reason is null)
+            || outcome.State == ReportingState.Incomplete && string.IsNullOrWhiteSpace(outcome.Reason)
+            || new[] { outcome.Reason }.Concat(outcome.Flags.Select(static flag => flag.Reason)).Any(static text => text is not null
+                && (ReportBundler.IsRooted(text) || ReportBundler.EmbedsPath(text))))
+            throw new InvalidDataException("Reporting outcome is malformed or holds an absolute path.");
+        return outcome;
+    }
+
     public static SessionManifest ReadSession(string json)
     {
         var session = Read<SessionManifest>(json);

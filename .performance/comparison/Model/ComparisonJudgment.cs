@@ -6,4 +6,5 @@ public enum ComparisonJudgment
     ReviewRequired,
     Incomplete,
     NoRegressionFlagged,
+    NoBaseline,
 }

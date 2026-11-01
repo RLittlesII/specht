@@ -7,6 +7,7 @@ using System.Linq;
 using System.Xml.Linq;
 using Nuke.Common;
 using Nuke.Common.CI.GitHubActions;
+using Nuke.Common.IO;
 using Nuke.Common.Tooling;
 using Nuke.Common.Tools.DotNet;
 using Rocket.Surgery.Nuke.GithubActions;
@@ -28,7 +29,18 @@ internal sealed partial class SpechtBuild
 {
     private Target Release => definition => definition
         .DependsOn(VerifyTag)
-        .DependsOn(Pack);
+        .DependsOn(Pack)
+        .DependsOn(PublishComparator);
+
+    private Target PublishComparator => definition => definition
+        .DependsOn(Build)
+        .Produces(ComparatorDirectory / "*")
+        .Executes(() => DotNetPublish(settings => settings
+            .SetProject(RootDirectory / ".performance" / "comparison" / "comparison.csproj")
+            .SetFramework("net10.0")
+            .SetConfiguration(Configuration)
+            .SetOutput(ComparatorDirectory)
+            .EnableNoRestore()));
 
     private Target VerifyTag => definition => definition
         .DependsOn(Restore)
@@ -49,6 +61,8 @@ internal sealed partial class SpechtBuild
 
             await new SchemaVersionLock(new FileSystem(), RootDirectory).RequireAllLockedAsync();
         });
+
+    private AbsolutePath ComparatorDirectory => RootDirectory / ComparatorPath;
 
     private Target PushReleasePackages => definition => definition
         .Executes(() =>
@@ -139,6 +153,23 @@ internal sealed partial class SpechtBuild
                 },
             });
 
+        var publishComparatorStep = buildJob.Steps.Cast<BaseGitHubActionsStep>().Single(static z => z.Id == "publishComparator");
+        publishComparatorStep.ContinueOnError = true;
+        buildJob.Steps.Insert(
+            buildJob.Steps.IndexOf(publishComparatorStep) + 1,
+            new UploadArtifactStep("Upload the comparator")
+            {
+                Name = ComparatorArtifact,
+                Path = ComparatorPath,
+                IfNoFilesFound = "error",
+                RetentionDays = 1,
+                ContinueOnError = true,
+                With = new Dictionary<string, string>
+                {
+                    ["include-hidden-files"] = "true",
+                },
+            });
+
         configuration.Permissions = Rocket.Surgery.Nuke.GithubActions.GitHubActionsPermissions.None with
         {
             Contents = GitHubActionsPermission.Read,
@@ -151,6 +182,7 @@ internal sealed partial class SpechtBuild
             If = "${{ github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v') }}",
             Permissions = Rocket.Surgery.Nuke.GithubActions.GitHubActionsPermissions.None with
             {
+                Actions = GitHubActionsPermission.Read,
                 Contents = GitHubActionsPermission.Write,
                 Packages = GitHubActionsPermission.Write,
             },
@@ -184,13 +216,118 @@ internal sealed partial class SpechtBuild
                     },
                     Run = $"./build.cmd --target {nameof(CreateGitHubRelease)}",
                 },
+                DownloadComparator(),
+                new RunStep("Request the release comparison")
+                {
+                    Id = "comparisonRequest",
+                    ContinueOnError = true,
+                    Environment = new Dictionary<string, string>
+                    {
+                        ["GITHUB_TOKEN"] = "${{ secrets.GITHUB_TOKEN }}",
+                    },
+                    Run = $"dotnet {Comparator} request {RequestPath}",
+                },
+                new UploadArtifactStep("Upload the comparison request")
+                {
+                    Name = "comparison-request-${{ github.run_id }}-${{ github.run_attempt }}",
+                    Path = RequestPath,
+                    IfNoFilesFound = "error",
+                    RetentionDays = 1,
+                    ContinueOnError = true,
+                    With = new Dictionary<string, string>
+                    {
+                        ["include-hidden-files"] = "true",
+                    },
+                },
+                new RunStep("Attach the comparison report")
+                {
+                    Id = "comparisonAttach",
+                    ContinueOnError = true,
+                    Environment = new Dictionary<string, string>
+                    {
+                        ["GITHUB_TOKEN"] = "${{ secrets.GITHUB_TOKEN }}",
+                    },
+                    Run = $"dotnet {Comparator} attach {RequestPath}",
+                },
+                ComparatorDidNotRun("comparisonAttach", "${{ steps.comparisonAttach.outcome != 'success' }}"),
+            ],
+        });
+
+        configuration.Jobs.Add(new RocketSurgeonsGithubActionsJob("comparison")
+        {
+            Needs = ["build"],
+            If = "${{ github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v') }}",
+            Permissions = Rocket.Surgery.Nuke.GithubActions.GitHubActionsPermissions.None with
+            {
+                Actions = GitHubActionsPermission.Read,
+                Contents = GitHubActionsPermission.Read,
+            },
+            Matrix = [RunnerPool],
+            Steps =
+            [
+                new CheckoutStep("Checkout") { FetchDepth = 0, Clean = true, PersistCredentials = false, ContinueOnError = true },
+                new SetupDotNetStep("Use .NET 10 and 11 SDKs")
+                {
+                    DotNetVersion = "10.0.401",
+                    ContinueOnError = true,
+                    With = { ["global-json-file"] = "global.json" },
+                },
+                DownloadComparator(),
+                new RunStep("Compare against the previous release")
+                {
+                    Id = "comparisonCompare",
+                    ContinueOnError = true,
+                    Environment = new Dictionary<string, string>
+                    {
+                        ["GITHUB_TOKEN"] = "${{ github.token }}",
+                    },
+                    Run = $"dotnet {Comparator} compare {ResultPath}",
+                },
+                new UploadArtifactStep("Upload the comparison result")
+                {
+                    Name = "comparison-result-${{ github.run_id }}-${{ github.run_attempt }}",
+                    Path = ResultPath,
+                    IfNoFilesFound = "error",
+                    RetentionDays = 1,
+                    ContinueOnError = true,
+                    With = new Dictionary<string, string>
+                    {
+                        ["include-hidden-files"] = "true",
+                    },
+                },
+                ComparatorDidNotRun("comparisonCompare", "${{ always() && steps.comparisonCompare.outcome != 'success' }}"),
             ],
         });
 
         return configuration;
     }
 
+    private static DownloadArtifactStep DownloadComparator() => new("Download the comparator")
+    {
+        Name = ComparatorArtifact,
+        Path = ComparatorPath,
+        ContinueOnError = true,
+    };
+
+    private static RunStep ComparatorDidNotRun(string step, string condition) => new("Summarise a comparator that did not run")
+    {
+        Id = $"{step}Summary",
+        If = condition,
+        ContinueOnError = true,
+        Run = "printf '## Release baseline comparison\\n\\nIncomplete: the comparator did not run. Re-run all jobs to retry.\\n' >> \"$GITHUB_STEP_SUMMARY\"",
+    };
+
     private const string PackageArtifact = "nupkg";
 
     private const string PackagePath = ".artifacts/nupkg";
+
+    private const string ComparatorArtifact = "comparator";
+
+    private const string ComparatorPath = ".artifacts/comparator";
+
+    private const string Comparator = ComparatorPath + "/specht.comparison.dll";
+
+    private const string RequestPath = ".artifacts/benchmarks/comparison/request";
+
+    private const string ResultPath = ".artifacts/benchmarks/comparison/result";
 }

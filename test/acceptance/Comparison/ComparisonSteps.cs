@@ -10,6 +10,8 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using AwesomeAssertions;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.Extensions.Time.Testing;
 using Reqnroll;
 using Specht.Comparison;
@@ -22,6 +24,7 @@ public sealed class ComparisonSteps : IDisposable
 {
     public ComparisonSteps()
     {
+        _actionsClient = new HttpClient(_actions);
         _session = ComparisonJson.ReadSession(SessionJson);
         _mapping = JsonSerializer.Deserialize<IdentityMapping>(MappingJson,
             new JsonSerializerOptions { PropertyNameCaseInsensitive = true, Converters = { new System.Text.Json.Serialization.JsonStringEnumConverter() } })!;
@@ -681,9 +684,10 @@ public sealed class ComparisonSteps : IDisposable
         "run-1");
 
     [When("their measurements are collected")]
+    [When("that release's measurements are collected")]
     public async Task WhenCollecting()
     {
-        var plan = CollectionPlan.For(_pair!, new string('c', 40), "1", "run-1", 1, "session-1", "runner-1", "Specht.Benchmarks.*", null, []);
+        var plan = CollectionPlan.For(_pair!, new string('c', 40), "1", "run-1", 1, "session-1", "runner-1", "Specht.Benchmarks.*", null);
         Directory.CreateDirectory(_directory);
         _collection = await new PairedCollector(new FileSystem(), new FakeTimeProvider(), RunRevisionAsync, _directory,
                 new Dictionary<string, string> { ["PATH"] = "synthetic-path", ["GITHUB_TOKEN"] = "synthetic-secret" })
@@ -712,11 +716,343 @@ public sealed class ComparisonSteps : IDisposable
                 "ShortRun(Toolchain=.NET 10.0, IterationCount=3, LaunchCount=1, WarmupCount=3)"));
     }
 
+    [Given("a release has been successfully published")]
+    [Given("the correctness gates passed and the release was published")]
+    public void GivenReleasePublished() => Published(new string('e', 40));
+
+    [Given("no earlier eligible published release exists")]
+    public void GivenFirstRelease() => Published(null);
+
+    [Given("the immediately preceding eligible release has been selected")]
+    public void GivenImmediatePredecessor()
+    {
+        Published(new string('e', 40));
+        _actions.Catalog["/repos/example/tool/releases?per_page=100&page=1"] = JsonSerializer.Serialize(new[]
+        {
+            new { id = 20, tag_name = "v2", draft = false, prerelease = false, published_at = "2026-01-04T00:00:00Z" },
+            new { id = 10, tag_name = "v1", draft = false, prerelease = false, published_at = "2026-01-01T00:00:00Z" },
+            new { id = 5, tag_name = "v0", draft = false, prerelease = false, published_at = "2025-12-30T00:00:00Z" },
+        });
+        _actions.Catalog["/repos/example/tool/git/ref/tags/v0"] = """{"object":{"type":"commit","sha":"0000000000000000000000000000000000000000"}}""";
+    }
+
+    [Given("its revision cannot be resolved or measured")]
+    public void GivenUnresolvablePredecessor() => _actions.Catalog.Remove("/repos/example/tool/git/ref/tags/v1");
+
+    [When("its release run reaches performance reporting")]
+    [When("a release comparison runs")]
+    [When("the comparison runs")]
+    public async Task WhenReleaseRunReports()
+    {
+        Directory.CreateDirectory(_directory);
+        _requested = await Reporting().RequestAsync(_run!, "request", CancellationToken.None);
+        _actions.Add("comparison-request-1234-2", Artifact("request"));
+        _outcome = await Comparison().RunAsync(_run!, "result", CancellationToken.None);
+        _actions.Add("comparison-result-1234-2", Artifact("result"));
+        _step = async cancellationToken => await Reporting().AttachAsync(_run!, "request", cancellationToken);
+        _stage = ReportingStage.Attachment;
+        await WhenReportingCompletes();
+    }
+
+    [Then("a baseline comparison is started automatically for that release")]
+    public void ThenComparisonStarted()
+    {
+        _requested.Should().BeNull();
+        _outcome.Should().NotBeNull();
+        _checkouts.Should().Equal(new string('e', 40), new string('a', 40));
+        _actions.Requests.Should().Contain(static request => request.StartsWith("GET /repos/example/tool/actions/artifacts/", StringComparison.Ordinal));
+    }
+
+    [Then("it publishes a report marked \"No baseline\"")]
+    public void ThenNoBaselinePublished()
+    {
+        _outcome!.Judgment.Should().Be(ComparisonJudgment.NoBaseline);
+        _summary.Should().Contain("No baseline").And.Contain("https://github.com/example/tool/releases/download/v2/comparison-20-1234-2.zip");
+        using var bundle = new ZipArchive(new MemoryStream(File.ReadAllBytes(Path.Combine(_directory, "result", "comparison-20-1234-2.zip"))));
+        using var report = new StreamReader(bundle.GetEntry("report.md")!.Open(), Encoding.UTF8);
+        report.ReadToEnd().Should().Contain("Overall judgment: No baseline");
+    }
+
+    [Then("it makes no regression judgment")]
+    public void ThenNoRegressionJudgment()
+    {
+        _outcome!.Flags.Should().BeEmpty();
+        _summary.Should().NotContain("No regression flagged").And.NotContain("Review required");
+    }
+
+    [Then("the comparison is marked \"Incomplete\" with the reason")]
+    public void ThenIncompleteWithResolutionReason()
+    {
+        _outcome!.State.Should().Be(ReportingState.Incomplete);
+        _outcome.Judgment.Should().BeNull();
+        _outcome.Reason.Should().Contain("Selected release tag cannot be resolved to an exact commit.");
+        _summary.Should().Contain("Incomplete").And.Contain("Selected release tag cannot be resolved to an exact commit.");
+    }
+
+    [Then("an older release is not substituted")]
+    public void ThenNoOlderRelease()
+    {
+        var pair = ComparisonJson.ReadPair(File.ReadAllText(Path.Combine(_directory, "request", "pair.json")), _release);
+        pair.Previous!.Id.Should().Be(10);
+        pair.Previous.Commit.Should().BeNull();
+        _checkouts.Should().NotContain(new string('0', 40));
+        _actions.Requests.Count(static request => request.StartsWith("GET /repos/example/tool/releases?", StringComparison.Ordinal)).Should().Be(1);
+    }
+
+    [Given("a comparison contains results flagged \"Review required\"")]
+    public void GivenFlaggedComparison()
+    {
+        GivenCompletedComparison();
+        ReportingOutcome.Completed(_document!, null).Flags.Should().NotBeEmpty();
+    }
+
+    [Then("the release run summary identifies those results and links to the report")]
+    public void ThenSummaryLinksReport()
+    {
+        var outcome = ReportingOutcome.Completed(_document!, null).Attached(new ReportReference(_release, _published!));
+        var summary = RunSummary.Markdown(outcome);
+        summary.Should().Contain("Review required").And.ContainAll(outcome.Flags.Select(static flag => flag.CaseKey))
+            .And.Contain($"https://github.com/example/tool/releases/download/v2/{_published!.Name}");
+    }
+
+    [Given("its comparison flags a meaningful regression")]
+    public void GivenMeaningfulRegression()
+    {
+        GivenCompletedComparison();
+        var outcome = ReportingOutcome.Completed(_document!, null);
+        outcome.Flags.Should().NotBeEmpty();
+        _step = _ => Task.FromResult<ReportingOutcome?>(outcome);
+        _stage = ReportingStage.Evaluation;
+    }
+
+    [Given("the (.*) stage fails")]
+    public void GivenStageFails(string stage)
+    {
+        _stage = stage switch
+        {
+            "benchmark collection" => ReportingStage.Collection,
+            "result parsing" => ReportingStage.Parsing,
+            "comparison evaluation" => ReportingStage.Evaluation,
+            "report rendering" => ReportingStage.Rendering,
+            "release attachment" => ReportingStage.Attachment,
+            _ => throw new ArgumentOutOfRangeException(nameof(stage), stage, null),
+        };
+        _step = static _ => Task.FromException<ReportingOutcome?>(new InvalidDataException("secret-detail: the stage failed"));
+    }
+
+    [Given("the release was published and its comparison computed a review flag")]
+    public void GivenComputedReviewFlag()
+    {
+        GivenReleasePublished();
+        GivenCompletedComparison();
+        _session = _session with { RunId = "1234", Attempt = 2 };
+        WhenComparing();
+        _bundle = new ReportBundler(new FileSystem(), _directory).Create(_reportPair!, _document!, _reportMappings,
+            [new RawExport("previous", PreviousReportExport), new RawExport("current", CurrentReportExport)], ReportWorkspace);
+        Directory.CreateDirectory(Path.Combine(_directory, "result"));
+        File.Copy(Path.Combine(_directory, _bundle.Path), Path.Combine(_directory, "result", _bundle.Name));
+        File.WriteAllText(Path.Combine(_directory, "result", "outcome.json"), ComparisonJson.Write(ReportingOutcome.Completed(_document!, null)));
+        _actions.Add("comparison-result-1234-2", Artifact("result"));
+        Requested(_reportPair!);
+    }
+
+    [Given("attaching the report to the release fails")]
+    public void GivenAttachmentFails()
+    {
+        _actions.FailUploads = true;
+        _step = async cancellationToken => await Reporting().AttachAsync(_run!, "request", cancellationToken);
+        _stage = ReportingStage.Attachment;
+    }
+
+    [Given("no runner is free to collect its measurements before the release run stops waiting for them")]
+    public void GivenNoFreeRunner()
+    {
+        Requested(ReleaseSelection.Select(_release, new ReleaseCatalog([_release with
+        {
+            Id = 10, Tag = "v1", PublishedAt = _release.PublishedAt!.Value.AddDays(-3), Commit = new string('e', 40),
+        }], true, null), "1234"));
+        _step = async cancellationToken => await Reporting().AttachAsync(_run!, "request", cancellationToken);
+        _stage = ReportingStage.ResultWait;
+        _resultWait = TimeSpan.FromMinutes(100);
+    }
+
+    [When("performance reporting completes")]
+    [When("the run summary is produced")]
+    public async Task WhenReportingCompletes()
+    {
+        Directory.CreateDirectory(_directory);
+        var summary = Path.Combine(_directory, "summary.md");
+        var reporting = AdvisoryStep.RunAsync(_step!, _stage, new FileSystem(), summary, CancellationToken.None);
+        if (_resultWait is { } bound)
+        {
+            await _actions.Listed.Task;
+            _time.Advance(bound);
+        }
+
+        _exitCode = await reporting;
+        _summary = await File.ReadAllTextAsync(summary, CancellationToken.None);
+    }
+
+    [Then("the build remains successful")]
+    public void ThenBuildSucceeds()
+    {
+        _exitCode.Should().Be(0);
+        _summary.Should().NotBeNullOrWhiteSpace();
+    }
+
+    [Then("the run summary marks the comparison \"Incomplete\" with an actionable reason")]
+    public void ThenSummaryIncomplete()
+    {
+        var reason = ReportingOutcome.Failed(_stage, null).Reason;
+        reason.Should().NotBeNullOrWhiteSpace();
+        _summary.Should().Contain("Incomplete").And.Contain(reason!).And.NotContain("secret-detail");
+    }
+
+    [Then("no successful performance verdict is reported")]
+    public void ThenNoVerdict()
+    {
+        _summary.Should().Be(RunSummary.Markdown(ReportingOutcome.Failed(_stage, null)));
+        _summary.Should().NotContain("No regression flagged").And.NotContain("Review required").And.NotContain("releases/download");
+    }
+
+    [Then("the known review flag remains visible alongside the incomplete reporting state")]
+    public void ThenFlagKept()
+    {
+        var flags = ReportingOutcome.Completed(_document!, null).Flags;
+        flags.Should().NotBeEmpty();
+        _summary.Should().Contain("Incomplete").And.Contain("Review required").And.ContainAll(flags.Select(static flag => flag.CaseKey));
+    }
+
+    [Then("no report link is presented as a successful attachment")]
+    public void ThenNoReportLink() => _summary.Should().NotContain("releases/download");
+
+    [Given("a pull request, a push to main or a release dry run")]
+    public void GivenOrdinaryBuilds() => _ordinary =
+    [
+        RunContext.From(ActionsEnvironment("pull_request", "refs/pull/7/merge"))!,
+        RunContext.From(ActionsEnvironment("push", "refs/heads/main"))!,
+        RunContext.From(ActionsEnvironment("workflow_dispatch", "refs/tags/v2"))!,
+    ];
+
+    [When("its build runs without publishing a release")]
+    public async Task WhenOrdinaryBuildRuns()
+    {
+        Directory.CreateDirectory(_directory);
+        foreach (var context in _ordinary)
+            _ordinaryOutcomes.Add(await Comparison().RunAsync(context, "result", CancellationToken.None));
+    }
+
+    [Then("no automatic release baseline comparison starts")]
+    public void ThenNoComparisonStarts()
+    {
+        _ordinary.Should().HaveCount(3).And.OnlyContain(static context => !ReleaseTrigger.IsReleasePublication(context));
+        _ordinaryOutcomes.Should().HaveCount(3).And.OnlyContain(static outcome => outcome == null);
+        _actions.Requests.Should().BeEmpty();
+        _checkouts.Should().BeEmpty();
+        Directory.Exists(Path.Combine(_directory, "result")).Should().BeFalse();
+    }
+
+    [Given("a release's benchmarks declare the workload each one measures")]
+    public void GivenDeclaredWorkloads()
+    {
+        GivenSelectedPredecessor();
+        _declared["previous"] = Declared("1");
+        _declared["current"] = Declared("2");
+    }
+
+    [Then("each measured workload's identity is taken from that release's own declaration")]
+    public void ThenOwnDeclaration()
+    {
+        _collection!.Previous.Mappings.Should().ContainSingle().Which.Case.OperationRevision.Should().Be("1");
+        _collection.Current.Mappings.Should().ContainSingle().Which.Case.OperationRevision.Should().Be("2");
+        _collection.Previous.Mappings.Concat(_collection.Current.Mappings).Should().OnlyContain(static mapping =>
+            mapping.FullName == "Specht.Benchmarks.Engine.CheckBenchmarks.Check" && mapping.Case.OperationId == "check"
+            && mapping.Case.FixtureId == "synthetic-tree" && mapping.Case.FixtureRevision == "1" && mapping.Case.Boundary == "engine-run");
+    }
+
+    [Then("each identity records the file and the revision that declared it")]
+    public void ThenDeclarationRecorded()
+    {
+        foreach (var (mapping, commit, source) in new[]
+        {
+            (_collection!.Previous.Mappings.Single(), new string('1', 40), Declared("1")),
+            (_collection.Current.Mappings.Single(), new string('a', 40), Declared("2")),
+        })
+        {
+            mapping.SourceFile.Should().Be(CheckSource);
+            mapping.ProductCommit.Should().Be(commit);
+            mapping.SourceDigest.Should().Be(Convert.ToHexStringLower(SHA256.HashData(Encoding.UTF8.GetBytes(source))));
+        }
+    }
+
+    [Given("the previous release's benchmarks declare no workload identity")]
+    public void GivenPreviousUndeclared()
+    {
+        GivenSelectedPredecessor();
+        _declared["previous"] = UndeclaredCheck;
+    }
+
+    [Given("the current release's benchmarks declare theirs")]
+    public async Task GivenCurrentDeclared()
+    {
+        _declared["current"] = Declared("1");
+        await WhenCollecting();
+        _session = _collection!.Session;
+        _previous = BenchmarkEvidenceReader.Read(CollectedExportJson, "previous/full.json", _session.Previous, _collection.Previous.Mappings);
+        _current = BenchmarkEvidenceReader.Read(CollectedExportJson, "current/full.json", _session.Current, _collection.Current.Mappings);
+    }
+
+    [Then("the previous release's measurement inventory is unknown")]
+    [Then("that release's measurement inventory is unknown")]
+    public void ThenPreviousInventoryUnknown()
+    {
+        _collection!.Previous.Evidence.InventoryKnown.Should().BeFalse();
+        _collection.Previous.InventoryReason.Should().Be("Revision benchmarks declare no workload identity.");
+    }
+
+    [Then("the comparison is marked \"Incomplete\" with that reason")]
+    public void ThenIncompleteWithDeclarationReason()
+    {
+        _document!.Judgment.Should().Be(ComparisonJudgment.Incomplete);
+        RunSummary.Markdown(ReportingOutcome.Completed(_document, _collection!.Previous.InventoryReason))
+            .Should().Contain("Incomplete").And.Contain("Revision benchmarks declare no workload identity.");
+    }
+
+    [Then("no workload identity declared by the current release is applied to the previous release")]
+    public void ThenNoCrossRevisionIdentity()
+    {
+        _collection!.Current.Mappings.Should().ContainSingle();
+        _collection.Previous.Mappings.Should().BeEmpty();
+        _collection.Session.Previous.ExpectedCases.Should().BeEmpty();
+        _previous.Known.Should().BeFalse();
+    }
+
+    [Given("a release's benchmarks declare no workload identity")]
+    public void GivenUndeclared()
+    {
+        GivenSelectedPredecessor();
+        _declared["previous"] = UndeclaredCheck;
+        _declared["current"] = UndeclaredCheck;
+    }
+
+    [Given("workload identities for its benchmarks are written down outside that release")]
+    public async Task GivenIdentitiesOutside() => await Declare(_directory, Declared("1"), CancellationToken.None);
+
+    [Then("those workload identities are not used")]
+    public void ThenOutsideIdentitiesUnused()
+    {
+        _collection!.Previous.Mappings.Should().BeEmpty();
+        _collection.Current.Mappings.Should().BeEmpty();
+        _collection.Session.Previous.ExpectedCases.Should().BeEmpty();
+        _collection.Session.Current.ExpectedCases.Should().BeEmpty();
+    }
+
     public void Dispose()
     {
         if (Directory.Exists(_directory)) Directory.Delete(_directory, true);
         if (Directory.Exists(_extracted)) Directory.Delete(_extracted, true);
         _releaseClient.Dispose();
+        _actionsClient.Dispose();
     }
 
     private static MeasurementInventory Change(MeasurementInventory inventory, MetricKind metric, Func<Observation, Observation> change) =>
@@ -733,11 +1069,49 @@ public sealed class ComparisonSteps : IDisposable
         _ => [],
     };
 
+    private static Dictionary<string, string> ActionsEnvironment(string eventName, string reference) => new(StringComparer.Ordinal)
+    {
+        ["GITHUB_EVENT_NAME"] = eventName,
+        ["GITHUB_REF"] = reference,
+        ["GITHUB_REPOSITORY"] = "example/tool",
+        ["GITHUB_RUN_ID"] = "1234",
+        ["GITHUB_RUN_ATTEMPT"] = "2",
+        ["GITHUB_SHA"] = new string('a', 40),
+    };
+
+    private static string Declared(string revision) => $$"""
+        namespace Specht.Benchmarks.Engine
+        {
+            public class CheckBenchmarks
+            {
+                [Specht.Benchmarks.WorkloadIdentity("check", "{{revision}}", "synthetic-tree", "1", "engine-run")]
+                public void Check() { }
+            }
+        }
+        """;
+
+    private static async Task Declare(string checkout, string source, CancellationToken cancellationToken)
+    {
+        var path = Path.Combine(checkout, CheckSource);
+        Directory.CreateDirectory(Path.GetDirectoryName(path)!);
+        await File.WriteAllTextAsync(path, source, cancellationToken);
+        var compilation = CSharpCompilation.Create("specht.benchmarks",
+            [CSharpSyntaxTree.ParseText(source, path: path, encoding: Encoding.UTF8),
+                CSharpSyntaxTree.ParseText(IdentityDeclarations, path: "declarations/Declarations.cs", encoding: Encoding.UTF8)],
+            [MetadataReference.CreateFromFile(typeof(object).Assembly.Location)], new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+        using var assembly = new MemoryStream();
+        compilation.Emit(assembly).Success.Should().BeTrue();
+        var output = Path.Combine(checkout, ".performance", "benchmarks", "bin", "Release", "net10.0");
+        Directory.CreateDirectory(output);
+        await File.WriteAllBytesAsync(Path.Combine(output, "specht.benchmarks.dll"), assembly.ToArray(), cancellationToken);
+    }
+
     private async Task<ProcessOutcome> RunRevisionAsync(ProcessRequest request, CancellationToken cancellationToken)
     {
         var side = string.Join(' ', request.Arguments.Append(request.WorkingDirectory)).Contains("/previous/", StringComparison.Ordinal)
             ? "previous" : "current";
-        var workspace = Path.Combine(_directory, ".artifacts", "benchmarks", "comparison", "session-1", side);
+        var source = request.Arguments[0] == "clone" ? request.Arguments[^1] : request.WorkingDirectory;
+        var workspace = Path.Combine(_directory, Path.GetDirectoryName(source)!);
         switch (request.Arguments[0])
         {
             case "clone":
@@ -747,6 +1121,9 @@ public sealed class ComparisonSteps : IDisposable
                 break;
             case "checkout":
                 _checkouts.Add(request.Arguments[^1]);
+                break;
+            case "build" when _declared.TryGetValue(side, out var declared):
+                await Declare(Path.Combine(workspace, "source"), declared, cancellationToken);
                 break;
             case "rev-parse":
                 return new ProcessOutcome(0, [_checkouts[^1]]);
@@ -760,6 +1137,42 @@ public sealed class ComparisonSteps : IDisposable
         }
 
         return new ProcessOutcome(0, []);
+    }
+
+    private void Published(string? previousCommit)
+    {
+        _run = RunContext.From(ActionsEnvironment("push", "refs/tags/v2"));
+        object[] releases = previousCommit is null
+            ? [new { id = 20, tag_name = "v2", draft = false, prerelease = false, published_at = "2026-01-04T00:00:00Z" }]
+            :
+            [
+                new { id = 20, tag_name = "v2", draft = false, prerelease = false, published_at = "2026-01-04T00:00:00Z" },
+                new { id = 10, tag_name = "v1", draft = false, prerelease = false, published_at = "2026-01-01T00:00:00Z" },
+            ];
+        _actions.Catalog["/repos/example/tool/releases?per_page=100&page=1"] = JsonSerializer.Serialize(releases);
+        _actions.Catalog["/repos/example/tool/git/ref/tags/v2"] = """{"object":{"type":"commit","sha":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"}}""";
+        if (previousCommit is not null)
+            _actions.Catalog["/repos/example/tool/git/ref/tags/v1"] = $$$"""{"object":{"type":"commit","sha":"{{{previousCommit}}}"}}""";
+    }
+
+    private ReleaseReporting Reporting() => new(_actionsClient, new FileSystem(), _time, _directory);
+
+    private ComparisonRun Comparison() => new(_actionsClient, new FileSystem(), _time,
+        new PairedCollector(new FileSystem(), _time, RunRevisionAsync, _directory, new Dictionary<string, string>()), _directory);
+
+    private byte[] Artifact(string directory)
+    {
+        using var zip = new MemoryStream();
+        ZipFile.CreateFromDirectory(Path.Combine(_directory, directory), zip);
+        return zip.ToArray();
+    }
+
+    private void Requested(ReleasePair pair)
+    {
+        Directory.CreateDirectory(Path.Combine(_directory, "request"));
+        File.WriteAllText(Path.Combine(_directory, "request", "pair.json"), ComparisonJson.Write(pair));
+        File.WriteAllText(Path.Combine(_directory, "request", "receipt.json"),
+            ComparisonJson.Write(new ComparisonReceipt(1, "example/tool", "1234", 2, new string('a', 40), 20, ComparisonJson.Digest(pair))));
     }
 
     private void ThenJudgment(MetricKind metric, string judgment)
@@ -895,6 +1308,32 @@ public sealed class ComparisonSteps : IDisposable
          "toolchain":"out-of-process","garbageCollection":"workstation","job":"Short"},"inventoryKnown":true,"expectedCases":[]}}
         """;
 
+    private const string CheckSource = ".performance/benchmarks/Engine/CheckBenchmarks.cs";
+
+    private const string UndeclaredCheck = """
+        namespace Specht.Benchmarks.Engine
+        {
+            public class CheckBenchmarks
+            {
+                public void Check() { }
+            }
+        }
+        """;
+
+    private const string IdentityDeclarations = """
+        namespace Specht.Benchmarks
+        {
+            [System.AttributeUsage(System.AttributeTargets.Method)]
+            public sealed class WorkloadIdentityAttribute : System.Attribute
+            {
+                public WorkloadIdentityAttribute(string operationId, string operationRevision, string fixtureId, string fixtureRevision,
+                    string boundary, [System.Runtime.CompilerServices.CallerFilePath] string sourceFile = "")
+                {
+                }
+            }
+        }
+        """;
+
     private readonly string _directory = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
     private readonly string _extracted = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
     private readonly HttpClient _releaseClient = new(new ReleaseAssets());
@@ -904,6 +1343,11 @@ public sealed class ComparisonSteps : IDisposable
          "Prerelease":false,"Commit":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","ResolutionFailure":null}
         """)!;
     private readonly IdentityMapping _mapping;
+    private readonly ActionsRun _actions = new();
+    private readonly HttpClient _actionsClient;
+    private readonly FakeTimeProvider _time = new();
+    private readonly Dictionary<string, string> _declared = new(StringComparer.Ordinal);
+    private readonly List<ReportingOutcome?> _ordinaryOutcomes = [];
     private SessionManifest _session;
     private ReleaseCatalog _catalog = new([], true, null);
     private ReleasePair? _pair;
@@ -926,4 +1370,13 @@ public sealed class ComparisonSteps : IDisposable
     private EvidenceManifest? _validated;
     private InvalidDataException? _rejection;
     private CollectionResult? _collection;
+    private RunContext? _run;
+    private ReportingOutcome? _requested;
+    private ReportingOutcome? _outcome;
+    private Func<CancellationToken, Task<ReportingOutcome?>>? _step;
+    private ReportingStage _stage;
+    private TimeSpan? _resultWait;
+    private int _exitCode = -1;
+    private string _summary = string.Empty;
+    private RunContext[] _ordinary = [];
 }

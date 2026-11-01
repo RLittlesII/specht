@@ -47,6 +47,8 @@ internal sealed class ScriptedRevisions(string root)
         ],
     };
 
+    public Dictionary<string, (string Path, string Source)[]> Declarations { get; } = [];
+
     public Func<string, string, CancellationToken, Task> During { get; set; } = static (_, _, _) => Task.CompletedTask;
 
     public static string SideOf(ProcessRequest request) =>
@@ -72,7 +74,8 @@ internal sealed class ScriptedRevisions(string root)
             if (ExitCodes.TryGetValue((side, step), out var exitCode))
                 return new ProcessOutcome(exitCode, [$"fatal: secret-detail under {root}"]);
 
-            var workspace = Path.Combine(root, ".artifacts", "benchmarks", "comparison", "session-1", side);
+            var source = step == "clone" ? request.Arguments[^1] : request.WorkingDirectory;
+            var workspace = Path.Combine(root, Path.GetDirectoryName(source)!);
             switch (step)
             {
                 case "clone":
@@ -82,6 +85,19 @@ internal sealed class ScriptedRevisions(string root)
                     var harness = Path.Combine(workspace, "source", ".performance", "benchmarks");
                     Directory.CreateDirectory(harness);
                     await File.WriteAllTextAsync(Path.Combine(harness, "benchmarks.csproj"), "<Project />", cancellationToken);
+                    break;
+                case "build" when Declarations.TryGetValue(side, out var declared):
+                    var checkout = Path.Combine(workspace, "source");
+                    foreach (var (path, text) in declared)
+                    {
+                        Directory.CreateDirectory(Path.GetDirectoryName(Path.Combine(checkout, path))!);
+                        await File.WriteAllTextAsync(Path.Combine(checkout, path), text, cancellationToken);
+                    }
+
+                    var output = Path.Combine(checkout, ".performance", "benchmarks", "bin", "Release", "net10.0");
+                    Directory.CreateDirectory(output);
+                    await File.WriteAllBytesAsync(Path.Combine(output, "specht.benchmarks.dll"),
+                        SyntheticBenchmarks.Compile([.. declared.Select(file => (Path.Combine(checkout, file.Path), file.Source))]), cancellationToken);
                     break;
                 case "rev-parse":
                     return new ProcessOutcome(0, [Heads[side]]);

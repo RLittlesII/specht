@@ -1,6 +1,8 @@
 using System.Collections.Immutable;
 using System.ComponentModel;
 using System.IO.Abstractions;
+using System.Security.Cryptography;
+using System.Text;
 using AwesomeAssertions;
 using Microsoft.Extensions.Time.Testing;
 using Specht.Comparison.Tests.Evidence;
@@ -275,19 +277,9 @@ public sealed class PairedCollectorIntegrationTests : IDisposable
     public async Task ParameterisedIdentityMappings_WhenCollecting_ShouldKnowARevisionsInventoryOnlyWhenEachSelectedNameHasAMapping()
     {
         // Given
-        CollectionPlan plan = new CollectionPlanFixture().WithMappings(
-        [
-            new IdentityMappingFixture().WithFullName("Specht.Benchmarks.Engine.CheckBenchmarks.Check(Specifications: 10)")
-                .WithCase(new WorkloadCaseFixture().WithParameters(
-                    ImmutableSortedDictionary<string, ParameterValue>.Empty.Add("Specifications", new ParameterValue("number", "10")))),
-            new IdentityMappingFixture().WithFullName("Specht.Benchmarks.Engine.CheckBenchmarks.Check(Specifications: 1)"),
-            new IdentityMappingFixture().WithFullName("Specht.Benchmarks.Startup.ColdStartBenchmarks.Start")
-                .WithCase(new WorkloadCaseFixture().WithOperationId("start").WithParameters(ImmutableSortedDictionary<string, ParameterValue>.Empty)),
-            new IdentityMappingFixture().WithFullName("Specht.Benchmarks.Engine.CheckBenchmarks.Unselected(Specifications: 1)")
-                .WithCase(new WorkloadCaseFixture().WithOperationId("unselected")),
-            new IdentityMappingFixture().WithProductCommit(new string('2', 40))
-                .WithFullName("Specht.Benchmarks.Engine.CheckBenchmarks.Check(Specifications: 1)"),
-        ]);
+        _processes.Declarations["previous"] = [(CheckFile, SyntheticBenchmarks.Check), (StartupFile, SyntheticBenchmarks.Startup)];
+        _processes.Declarations["current"] = [(CheckFile, SyntheticBenchmarks.Check)];
+        CollectionPlan plan = new CollectionPlanFixture();
 
         // When
         var result = await Collector().CollectAsync(plan, TestContext.Current.CancellationToken);
@@ -299,6 +291,83 @@ public sealed class PairedCollectorIntegrationTests : IDisposable
             .Should().Equal("check(1)", "check(10)", "start()");
         result.Session.Current.InventoryKnown.Should().BeFalse();
         result.Session.Current.ExpectedCases.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task RevisionsDeclaringTheirWorkloads_WhenCollecting_ShouldTakeEachRevisionsMappingsFromItsOwnDeclarations()
+    {
+        // Given
+        var revised = SyntheticBenchmarks.Check.Replace("\"check\", \"1\"", "\"check\", \"2\"", StringComparison.Ordinal);
+        _processes.Declarations["previous"] = [(CheckFile, SyntheticBenchmarks.Check), (StartupFile, SyntheticBenchmarks.Startup)];
+        _processes.Declarations["current"] = [(CheckFile, revised), (StartupFile, SyntheticBenchmarks.Startup)];
+        CollectionPlan plan = new CollectionPlanFixture();
+
+        // When
+        var result = await Collector().CollectAsync(plan, TestContext.Current.CancellationToken);
+
+        // Then
+        var previousCheck = Convert.ToHexStringLower(SHA256.HashData(Encoding.UTF8.GetBytes(SyntheticBenchmarks.Check)));
+        var currentCheck = Convert.ToHexStringLower(SHA256.HashData(Encoding.UTF8.GetBytes(revised)));
+        result.Previous.Mappings.Should().HaveCount(3).And.OnlyContain(static mapping => mapping.ProductCommit == new string('1', 40));
+        result.Current.Mappings.Should().HaveCount(3).And.OnlyContain(static mapping => mapping.ProductCommit == new string('2', 40));
+        result.Previous.Mappings.Where(static mapping => mapping.Case.OperationId == "check")
+            .Select(static mapping => (mapping.SourceFile, mapping.SourceDigest, mapping.Case.OperationRevision))
+            .Should().AllBeEquivalentTo((CheckFile, previousCheck, "1"));
+        result.Current.Mappings.Where(static mapping => mapping.Case.OperationId == "check")
+            .Select(static mapping => (mapping.SourceFile, mapping.SourceDigest, mapping.Case.OperationRevision))
+            .Should().AllBeEquivalentTo((CheckFile, currentCheck, "2"));
+        result.Session.Previous.ExpectedCases.Where(static workload => workload.OperationId == "check")
+            .Select(static workload => workload.OperationRevision).Should().Equal("1", "1");
+        result.Session.Current.ExpectedCases.Where(static workload => workload.OperationId == "check")
+            .Select(static workload => workload.OperationRevision).Should().Equal("2", "2");
+    }
+
+    [Fact]
+    public async Task PreviousRevisionDeclaringNoWorkloadIdentity_WhenCollecting_ShouldLeaveItsInventoryUnknownWithoutTheCurrentRevisionsIdentities()
+    {
+        // Given
+        _processes.Declarations["previous"] = [(CheckFile, SyntheticBenchmarks.Undeclared)];
+        _processes.Declarations["current"] = [(CheckFile, SyntheticBenchmarks.Check), (StartupFile, SyntheticBenchmarks.Startup)];
+        CollectionPlan plan = new CollectionPlanFixture();
+
+        // When
+        var result = await Collector().CollectAsync(plan, TestContext.Current.CancellationToken);
+
+        // Then
+        result.Previous.Status.Should().Be(CollectionStatus.Collected);
+        result.Previous.Mappings.Should().BeEmpty();
+        result.Previous.InventoryReason.Should().Be("Revision benchmarks declare no workload identity.");
+        result.Session.Previous.InventoryKnown.Should().BeFalse();
+        result.Session.Previous.ExpectedCases.Should().BeEmpty();
+        result.Current.Mappings.Should().NotBeEmpty().And.OnlyContain(static mapping => mapping.ProductCommit == new string('2', 40));
+        result.Session.Current.InventoryKnown.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task WorkloadIdentitiesWrittenOutsideTheRevision_WhenCollecting_ShouldNotBeUsed()
+    {
+        // Given
+        _processes.Declarations["previous"] = [(CheckFile, SyntheticBenchmarks.Undeclared)];
+        var output = Path.Combine(_root, ".performance", "benchmarks", "bin", "Release", "net10.0");
+        Directory.CreateDirectory(output);
+        Directory.CreateDirectory(Path.Combine(_root, ".performance", "benchmarks", "Check"));
+        Directory.CreateDirectory(Path.Combine(_root, ".performance", "benchmarks", "Startup"));
+        await File.WriteAllTextAsync(Path.Combine(_root, CheckFile), SyntheticBenchmarks.Check, TestContext.Current.CancellationToken);
+        await File.WriteAllTextAsync(Path.Combine(_root, StartupFile), SyntheticBenchmarks.Startup, TestContext.Current.CancellationToken);
+        await File.WriteAllBytesAsync(Path.Combine(output, "specht.benchmarks.dll"), SyntheticBenchmarks.Compile(
+            (Path.Combine(_root, CheckFile), SyntheticBenchmarks.Check), (Path.Combine(_root, StartupFile), SyntheticBenchmarks.Startup)),
+            TestContext.Current.CancellationToken);
+        CollectionPlan plan = new CollectionPlanFixture();
+
+        // When
+        var result = await Collector().CollectAsync(plan, TestContext.Current.CancellationToken);
+
+        // Then
+        result.Previous.Mappings.Should().BeEmpty();
+        result.Previous.InventoryReason.Should().Be("Revision benchmarks declare no workload identity.");
+        result.Session.Previous.InventoryKnown.Should().BeFalse();
+        result.Current.Mappings.Should().BeEmpty();
+        result.Session.Current.InventoryKnown.Should().BeFalse();
     }
 
     [Theory]
@@ -582,6 +651,9 @@ public sealed class PairedCollectorIntegrationTests : IDisposable
         token.ThrowIfCancellationRequested();
         return Task.CompletedTask;
     }
+
+    private const string CheckFile = ".performance/benchmarks/Check/CheckBenchmarks.cs";
+    private const string StartupFile = ".performance/benchmarks/Startup/ColdStartBenchmarks.cs";
 
     private static readonly Dictionary<string, string> Parent = new()
     {
