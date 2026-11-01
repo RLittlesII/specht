@@ -2,7 +2,7 @@ id: "0156"
 type: refactor
 title: Split FrontmatterSchemaRule into one rule per id
 
-status: blocked
+status: ready-for-implementation
 
 value: 3
 risk: 3
@@ -10,7 +10,7 @@ risk: 3
 parent: null
 children: []
 
-depends_on: ["0155", "0216"] # the split rules read the model 0155 leaves
+depends_on: ["0155", "0216", "0100"] # the split rules read the model 0155 leaves; 0100 first, by the owner's order in ADR-0027; 0216 is done and stays as the record of the evaluation
 spikes: []
 
 spec: src/specht/.spec/README.md
@@ -18,12 +18,13 @@ spec: src/specht/.spec/README.md
 claims: []
 
 created: "2026-10-11"
-updated: "2026-10-14"
+updated: "2026-10-31"
 closed: null
 
 summary: |
-  Paused by ADR-0014: benchmark evaluation 0216 must establish that the
-  architecture benefit justifies its cost before this migration proceeds.
+  ADR-0027 lifted ADR-0014's benchmark gate on 2026-10-31: this stage
+  proceeds without benefit evidence, and its pull request carries the
+  no-regression guard.
 
   ADR-0010 (accepted 2026-10-11,
   .spec/adr/0010-layered-engine-boundaries-with-io-at-the-edge-and-a-mediator.md),
@@ -78,6 +79,7 @@ acceptance_criteria:
   - "The golden report `test/tests/Engine/Baseline/engine-e7dba24.json` is unchanged, byte for byte, and the test that compares it is green unedited. The unit, integration and acceptance tiers pass, and the benchmark project `.performance/benchmarks` still compiles."
   - "No .feature change needed: refactor - `FrontmatterSchemaRule` becomes four rules of one id each; every violation, its severity, the report's order and its counts are unchanged."
   - "Constraints preserved: 0001-F1 C-3, 0001-F1 C-5, 0001-F1 C-9, 0001-F1 C-10, 0001-F5 C-3"
+  - "The guard of ADR-0027: CheckBenchmarks at 100 and 1,000 specifications on the base `main` commit and on the branch head, judged by 0211's rule, numbers in the PR description and in a decisions entry; a flag waits for the owner's ruling."
 
 decisions:
   - |
@@ -88,6 +90,18 @@ decisions:
     and left the cut to spec-author: eight items, one for each class, 0156
     to 0163. Status `ready-for-implementation`, as items 0104 to 0107 were
     cut on ADR-0001: the design is the accepted record's.
+  - |
+    2026-10-31, spec-author: on ADR-0027
+    (.spec/adr/0027-structural-stages-proceed-on-a-no-regression-guard.md),
+    accepted by the repository owner the same day, which lifts ADR-0014's
+    benchmark gate for ADR-0010's remaining structural stages and puts a
+    no-regression guard on each stage's pull request. The pause in the
+    summary is replaced and a criterion for the guard is added. 0216 is
+    done and stays in `depends_on` as the record of the evaluation.
+    `depends_on` gains 0100, by the owner's order "ADR, then 0100, then
+    splits"; 0100 also renames every engine type a split touches. Status
+    `blocked` to `ready-for-implementation`, as cut: the design is ADR-0010's
+    and 0100 is open.
 
 out_of_scope:
   - "The collapse of `ISpecRule`, `SpecFinding`, `DefaultSeverity` and the evaluator - item 0164."

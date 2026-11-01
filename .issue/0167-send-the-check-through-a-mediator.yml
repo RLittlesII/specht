@@ -10,7 +10,7 @@ risk: 4
 parent: null
 children: []
 
-depends_on: ["0164", "0166", "0216"] # reader/evaluator prerequisites from 0164 and 0166; 0216 is closed (ADR-0026) and stays as the record of the evaluation - the gate that still holds this item is ADR-0014's, pending the owner
+depends_on: ["0164", "0166", "0216"] # reader/evaluator prerequisites from 0164 and 0166; 0216 is closed (ADR-0026) and stays as the record of the evaluation; ADR-0027 lifted ADR-0014's gate
 spikes: []
 
 spec: null
@@ -32,8 +32,9 @@ summary: |
   `Check.Handler`. ADR-0026 supersedes those clauses of ADR-0010 and
   assigns this item the engine's direct check entry point in their place.
 
-  Still paused by ADR-0014: its gate is answered for the mediator only and
-  stands for the rest of ADR-0010's rollout, pending the owner.
+  ADR-0027 lifted ADR-0014's benchmark gate on 2026-10-31; the pull request
+  carries the no-regression guard. Still `blocked`: see the decision of
+  2026-10-31 on ADR-0027.
 
   ADR-0010 (accepted 2026-10-11,
   .spec/adr/0010-layered-engine-boundaries-with-io-at-the-edge-and-a-mediator.md),
@@ -103,6 +104,7 @@ acceptance_criteria:
   - "10. The golden report `test/tests/Engine/Baseline/engine-e7dba24.json` is unchanged, byte for byte; the test that compares it changes only in how it reaches the check, and not in what it compares. The unit, integration and acceptance tiers pass."
   - "No .feature change needed: refactor - the check becomes one engine entry point that reads the model and evaluates it, the report's mapping, serialising and writing become three types, and the runner is deleted; the report, the tool's output and its exit codes are unchanged."
   - "Constraints preserved: 0001-F1 C-1, 0001-F1 C-3, 0001-F1 C-4, 0001-F1 C-7, 0001-F1 C-9, 0001-F1 C-10, 0001-F2 C-2, 0001-F2 C-3, 0001-F3 C-1, 0001-F3 C-3, 0001-F3 C-4, 0001-F3 C-5, 0109-F2 C-11, 0109-F3 C-2, 0109-F3 C-3, 0109-F3 C-4"
+  - "The guard of ADR-0027: CheckBenchmarks at 100 and 1,000 specifications on the base `main` commit and on the branch head, judged by 0211's rule, numbers in the PR description and in a decisions entry; a flag waits for the owner's ruling."
 
 decisions:
   - |
@@ -141,6 +143,20 @@ decisions:
     stays `blocked` and every `depends_on` edge stays: 0216 is closed, but
     ADR-0014's gate stands for the rest of ADR-0010's rollout, pending the
     owner.
+  - |
+    2026-10-31, spec-author: on ADR-0027
+    (.spec/adr/0027-structural-stages-proceed-on-a-no-regression-guard.md),
+    accepted by the repository owner the same day, which lifts ADR-0014's
+    benchmark gate for ADR-0010's remaining structural stages and puts a
+    no-regression guard on each stage's pull request. The pause in the
+    summary is replaced and a criterion for the guard is added. 0216 is
+    done and stays in `depends_on` as the record of the evaluation.
+    Status stays `blocked`. ADR-0027 lifts the benchmark gate only. The
+    rescoping ADR-0026 requires is written (the decision above), with
+    judgements left for the owner's review: `SpecCheck` taking the root and
+    the schema-source selection, and the `--report` row. This item is
+    released when the owner accepts that rescoping; the design is then the
+    rescoped one and the dependencies 0164 and 0166 are open.
 
 out_of_scope:
   - "`CheckCommand` taking `SpecCheck` in place of the runner delegate, removing that delegate, the host factory and `ShippingCopy` - item 0144."

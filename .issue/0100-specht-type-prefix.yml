@@ -2,7 +2,7 @@ id: "0100"
 type: task
 title: Prefix the engine's types with Specht rather than Spec
 
-status: blocked
+status: ready
 
 value: 2
 risk: 2
@@ -10,7 +10,7 @@ risk: 2
 parent: null
 children: []
 
-depends_on: ["0150", "0216"] # ADR-0010 runs this as stage 1, after pull request #118, which delivers 0150
+depends_on: ["0150", "0216"] # ADR-0010 runs this as stage 1, after pull request #118, which delivers 0150; 0216 is done and stays as the record of the evaluation
 spikes: []
 
 spec: null
@@ -18,12 +18,13 @@ spec: null
 claims: []
 
 created: "2026-10-08"
-updated: "2026-10-14"
+updated: "2026-10-31"
 closed: null
 
 summary: |
-  Paused by ADR-0014: benchmark evaluation 0216 must establish that the
-  architecture benefit justifies its cost before this migration proceeds.
+  ADR-0027 lifted ADR-0014's benchmark gate on 2026-10-31: this stage
+  proceeds without benefit evidence, and its pull request carries the
+  no-regression guard.
 
   A rename chore, raised by the owner on PR #11 (review comment on
   src/specht/SpecManifest.cs: "Likely a tech debt for later. Add an item that
@@ -82,6 +83,7 @@ acceptance_criteria:
   - "The commit message carries the exemption: No .feature change needed: rename; the report and every verdict are unchanged. Constraints preserved: 0001-F1 C-3, 0001-F1 C-4, 0001-F1 C-5, 0001-F1 C-9, 0001-F3 C-3, 0001-F3 C-4, 0001-F5 C-3, 0001-F2 C-4."
   - "./build.sh and ./build.sh SpecCheck are green, and SpecCheck's report on this repository equals the report before the rename."
   - "ADR-0010 open point 3, settled here and recorded in `decisions` before the rename: the casing of the engine's namespaces, `Specht.*` or `specht.*`, with the owner's answer where the default is not taken. The golden report `test/tests/Engine/Baseline/engine-e7dba24.json` is unchanged and the benchmark project `.performance/benchmarks` still compiles."
+  - "The guard of ADR-0027: CheckBenchmarks at 100 and 1,000 specifications on the base `main` commit and on the branch head, judged by 0211's rule, numbers in the PR description and in a decisions entry; a flag waits for the owner's ruling."
 
 decisions:
   - "2026-10-08, repository owner (PR #11 review): engine types take the `Specht` prefix; SpechtManifestException is the precedent. Cut as an item rather than done inside 0011. Recorded by spec-author."
@@ -95,6 +97,16 @@ decisions:
     `task`, as the owner's item was cut before the `refactor` type
     existed; ADR-0010's table calls the stage a refactor, and the item
     already claims the rename exemption.
+  - |
+    2026-10-31, spec-author: on ADR-0027
+    (.spec/adr/0027-structural-stages-proceed-on-a-no-regression-guard.md),
+    accepted by the repository owner the same day, which lifts ADR-0014's
+    benchmark gate for ADR-0010's remaining structural stages and puts a
+    no-regression guard on each stage's pull request. The pause in the
+    summary is replaced and a criterion for the guard is added. 0216 is
+    done and stays in `depends_on` as the record of the evaluation.
+    Status `blocked` to `ready`: the dependencies, 0150 and 0216, are done,
+    and the owner's order runs this item first and alone.
 
 out_of_scope:
   - "The `SPEC###` rule ids - fixed per schema version (0001-F1 C-5)."
