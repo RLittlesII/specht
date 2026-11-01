@@ -2,7 +2,7 @@ id: "0220"
 type: spike
 title: Weigh how rule pages are versioned without a full copy per schema version
 
-status: ready
+status: done
 
 value: 3
 risk: 3
@@ -18,8 +18,8 @@ spec: null
 claims: []
 
 created: "2026-10-14"
-updated: "2026-10-14"
-closed: null
+updated: "2026-10-31"
+closed: "2026-10-31"
 
 summary: |
   2026-10-14, the repository owner: "add a spike item to ensure we find a
