@@ -1,0 +1,66 @@
+id: "0326"
+type: bug
+title: Keep test child builds out of the runner's own command files
+status: done
+value: 3
+risk: 2
+parent: null
+children: []
+depends_on: []
+spikes: []
+spec: null
+claims: []
+created: "2026-11-01"
+updated: "2026-11-01"
+closed: "2026-11-01"
+summary: |
+  On pull request #648 the CI `build` job failed twice after its NUKE
+  target reported Succeeded with 0 failed tests: run 41274511771 attempt 1
+  on runner vitruvius-2, step "💨 Acceptance Test", and run 41277685527
+  attempt 1 on vitruvius-3, step "💨 Integration Test". Both times the
+  runner then printed `Unable to process file command 'env' successfully.`
+  and `Value cannot be null. (Parameter 'name')`. A rerun of the first
+  passed, and `main` at the same code passed.
+
+  Every project references Nerdbank.GitVersioning 3.10.94
+  (`Directory.Build.props`). With its default cloud-build settings a build
+  under `GITHUB_ACTIONS=true` appends `GitAssemblyInformationalVersion`,
+  `GitBuildVersion` and `GitBuildVersionSimple` to the file `GITHUB_ENV`
+  names: `GITHUB_ACTIONS=true GITHUB_ENV=<scratch> dotnet build
+  src/specht/specht.csproj -f net10.0` wrote exactly those three lines.
+  Tests start child `dotnet` and build processes that inherit the step's
+  environment (`test/acceptance/AcceptanceTool.cs`,
+  `test/acceptance/PackedTool.cs`,
+  `test/acceptance/Check/CheckSteps.CallSites.cs`,
+  `test/build.tests/CodeAnalysisPackage.Integration.Tests.cs` and others),
+  so in CI every one of them appended to the runner's real `GITHUB_ENV`.
+  `test/build.tests/CodeAnalysisRelease.Integration.Tests.cs` runs the NUKE
+  build as a simulated runner and also left the runner's real `GITHUB_ENV`
+  in place. Nothing in `.github/`, `.build/`, `version.json` or
+  `Directory.Build.props` reads `GitBuildVersion*`,
+  `GitAssemblyInformationalVersion` or `NBGV_*`.
+
+  Working hypothesis, not observed: parallel child builds appended to the
+  same file at once and corrupted a line the runner could not parse. The
+  runner deletes the file at the end of the step, so the bad line was never
+  seen.
+
+  `version.json` now sets `cloudBuild.setVersionVariables` to `false`, so no
+  build writes the version variables, and the release test gives its
+  simulated runner private `GITHUB_ENV`, `GITHUB_OUTPUT`,
+  `GITHUB_STEP_SUMMARY` and `GITHUB_PATH` files under its own scratch
+  directory. Nerdbank.GitVersioning reads the setting from the committed
+  `version.json`: in a scratch clone with the change committed the build
+  wrote nothing and the version height continued (`0.3.9` one commit above
+  `7ee35dbf`'s `0.3.8`), while an uncommitted edit changed nothing. Lesson
+  `0015` records the incident.
+acceptance_criteria:
+  - "A repository build under `GITHUB_ACTIONS=true` writes nothing to the file `GITHUB_ENV` names; `RunnerCommandFilesIntegrationTests` proves it and fails without the `version.json` change."
+  - "The release test's simulated runner writes only to command files under its own scratch directory, and removes them."
+  - "`./build.sh Specht` reports 0 errors."
+  - "Constraints preserved: the package version, the assembly informational version and the release tag check are computed as before; no workflow, target or production code changes."
+decisions:
+  - "2026-11-01, owner: stop the writes at their source in `version.json` and isolate the one simulated runner; not every child process in the test tree."
+out_of_scope:
+  - "Isolating every child process the tests start; with no version variables written, no write path into the runner's files was found. A hand run of the NUKE build's `CreateGitHubRelease` and `PushReleasePackages` targets as a simulated runner wrote none of the four files."
+  - "The `cloudBuild.buildNumber` setting, already off by default."
