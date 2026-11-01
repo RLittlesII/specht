@@ -10,7 +10,11 @@ public sealed class ItemsEdgesApprovalExpectations : TheoryData<string, SpechtMo
 {
     public ItemsEdgesApprovalExpectations()
     {
-        foreach (var (key, ruleId) in new[] { ("children", "SPEC040"), ("spikes", "SPEC041") })
+        foreach (var (key, ruleId, rule) in new (string, string, ISpechtRule)[]
+        {
+            ("children", "SPEC040", new DeclaredChildrenRule(new DeclaredItemCheck())),
+            ("spikes", "SPEC041", new DeclaredSpikesRule(new DeclaredItemCheck())),
+        })
         {
             FeatureSpec feature = new FeatureSpecFixture().WithDocument(SpechtDocument.Parse(
                 $"---\nepic: \"0001\"\nid: \"F1\"\n{key}: [\"0001-01\"]\n---\n", "src/sample/.spec/README.md"));
@@ -26,7 +30,7 @@ public sealed class ItemsEdgesApprovalExpectations : TheoryData<string, SpechtMo
                 }
 
                 Add($"{key} resolves to {count} files", new SpechtModelFixture().WithFeatures(feature).WithItems(items),
-                    new ChildItemRule(), ruleId, count == 0 ? "was discovered" : "resolves to 2 files", null, expected);
+                    rule, ruleId, count == 0 ? "was discovered" : "resolves to 2 files", null, expected);
             }
 
             if (key == "spikes")
@@ -34,7 +38,7 @@ public sealed class ItemsEdgesApprovalExpectations : TheoryData<string, SpechtMo
                 ChildItem task = new ChildItemFixture().WithFrontmatter(new FrontmatterFixture()
                     .WithNode(new JsonObject { ["id"] = "0001-01", ["type"] = "task" }));
                 Add("a declared spike is a task", new SpechtModelFixture().WithFeatures(feature).WithItems(task),
-                    new ChildItemRule(), ruleId, "not 'spike'", null, new JsonObject { ["fileName"] = "0001-01-*.md", ["type"] = "spike" });
+                    rule, ruleId, "not 'spike'", null, new JsonObject { ["fileName"] = "0001-01-*.md", ["type"] = "spike" });
             }
         }
 
@@ -43,17 +47,17 @@ public sealed class ItemsEdgesApprovalExpectations : TheoryData<string, SpechtMo
         ChildItem duplicate = new ChildItemFixture().WithRelativePath("src/a-second/.spec/0001-01-task.md")
             .WithFrontmatter(new FrontmatterFixture().WithNode(new JsonObject { ["id"] = "0001-01" }));
         SpechtModel repeated = new SpechtModelFixture().WithItems(first, duplicate);
-        Add("first holder follows model order rather than path order", repeated, new ChildItemRule(), "SPEC044", "already used", null,
+        Add("first holder follows model order rather than path order", repeated, new ItemSequenceRule(), "SPEC044", "already used", null,
             new JsonObject { ["fileName"] = "0001-01-*.md", ["firstDeclaration"] = "src/z-first/.spec/0001-01-task.md" });
-        Add("the existing duplicate-induced sequence finding is preserved", repeated, new ChildItemRule(), "SPEC044", "sequence skips 02", null,
+        Add("the existing duplicate-induced sequence finding is preserved", repeated, new ItemSequenceRule(), "SPEC044", "sequence skips 02", null,
             new JsonObject { ["fileName"] = "0001-02-*.md", ["nextNumber"] = 2 });
         ChildItem fourth = new ChildItemFixture().WithFileName("0001-04-task.md")
             .WithFrontmatter(new FrontmatterFixture().WithNode(new JsonObject { ["id"] = "0001-04" }));
         ChildItem second = new ChildItemFixture().WithFileName("0001-02-task.md")
             .WithFrontmatter(new FrontmatterFixture().WithNode(new JsonObject { ["id"] = "0001-02" }));
         Add("an interior gap names the first missing number", new SpechtModelFixture().WithItems(fourth, first, second),
-            new ChildItemRule(), "SPEC044", "sequence skips 03", null, new JsonObject { ["fileName"] = "0001-03-*.md", ["nextNumber"] = 3 });
-        Add("a sequence must begin at one", new SpechtModelFixture().WithItems(fourth), new ChildItemRule(), "SPEC044", "sequence skips 01", null,
+            new ItemSequenceRule(), "SPEC044", "sequence skips 03", null, new JsonObject { ["fileName"] = "0001-03-*.md", ["nextNumber"] = 3 });
+        Add("a sequence must begin at one", new SpechtModelFixture().WithItems(fourth), new ItemSequenceRule(), "SPEC044", "sequence skips 01", null,
             new JsonObject { ["fileName"] = "0001-01-*.md", ["nextNumber"] = 1 });
 
         foreach (var key in new[] { "depends_on", "blocks" })

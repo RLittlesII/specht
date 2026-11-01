@@ -60,7 +60,7 @@ public sealed class IdentityClaimExpectations : TheoryData<string, SpechtModel, 
                 ["parent"] = key == "parent" ? "0009-F9" : "0001-F1",
             }));
             Add("item " + key + " differs from its source", new SpechtModelFixture().WithFeatures(parent).WithItems(item),
-                new ChildItemRule(), "SPEC043", item.Id!, new JsonObject
+                new ItemPlacementRule(), "SPEC043", item.Id!, new JsonObject
                 {
                     ["form"] = key == "id" ? "^[0-9]{4}-[0-9]{2}$" : "{epic}-{feature}",
                     ["value"] = key == "id" ? "0001-01" : "0001-F1",

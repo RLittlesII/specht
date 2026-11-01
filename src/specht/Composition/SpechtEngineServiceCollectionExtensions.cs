@@ -62,7 +62,11 @@ public static class SpechtEngineServiceCollectionExtensions
         services.AddSingleton<ISpechtRule, ClaimRowRule>();
         services.AddSingleton<ISpechtRule, WaiverRule>();
         services.AddSingleton<ISpechtRule, RetiredClaimRule>();
-        services.AddSingleton<ISpechtRule, ChildItemRule>();
+        services.AddSingleton<DeclaredItemCheck>();
+        services.AddSingleton<ISpechtRule, DeclaredChildrenRule>();
+        services.AddSingleton<ISpechtRule, DeclaredSpikesRule>();
+        services.AddSingleton<ISpechtRule, ItemPlacementRule>();
+        services.AddSingleton<ISpechtRule, ItemSequenceRule>();
         services.AddSingleton<ISpechtRule, DependencyRule>();
         services.AddSingleton<ISpechtRule, ApprovalRule>();
 
