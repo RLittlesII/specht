@@ -2,7 +2,7 @@ id: "0212"
 type: task
 title: Collect both published revisions in one comparison session
 
-status: in-progress
+status: done
 
 risk: 4
 
@@ -16,7 +16,7 @@ claims: ["B-004"]
 
 created: "2026-10-13"
 updated: "2026-10-31"
-closed: null
+closed: "2026-10-31"
 
 summary: |
   Implement the collection boundary from the design using the release pair and
@@ -45,6 +45,8 @@ acceptance_criteria:
 
 decisions:
   - "2026-10-13: design contract reviewed under 0209; scope and prerequisites retained. Ready-for-implementation names design maturity, not permission to bypass depends_on or the one-writer Feature lane."
+  - "2026-10-31: owner chose option A — the collector builds and runs each revision's benchmark project directly, replicating the Benchmark target's selection and conditional packing, because the target's Restore dependency needs the package-source credential C-10 keeps from measured revisions; the target is unchanged."
+  - "2026-10-31: identity mappings are caller-supplied; who authors them stays open as OQ-3. The console entry point lands with 0214."
 
 out_of_scope:
   - "Everything in § 5 of the specification."
