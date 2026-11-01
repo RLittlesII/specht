@@ -5,27 +5,6 @@
 # work-item mirror labels the current milestone's items `goal`. Lines starting
 # with # are comments. docs/roadmap.md says what each milestone makes better.
 
-0.3.0
-# Complete the tool contract
-0041
-0050
-0025
-0220
-0280
-0281
-0282
-0283
-0284
-0285
-0286
-0287
-0288
-0078
-0293
-0303
-# Proves 0041's built claims B-074 and B-116: owner 2026-10-30
-0323
-
 0.4.0
 # A manifest-driven engine, measured before it is restructured
 0216
