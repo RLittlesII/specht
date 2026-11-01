@@ -47,6 +47,7 @@ acceptance_criteria:
 decisions:
   - "2026-10-13: design contract reviewed under 0209; scope and prerequisites retained. Ready-for-implementation names design maturity, not permission to bypass depends_on or the one-writer Feature lane."
   - "2026-10-31: ReportingOutcome moves to 0214. No 0211 claim or caller produces one; the first is a reporting-stage failure under B-018, which 0214 owns. This item delivers ComparisonDocument only."
+  - "2026-10-31: #644 merged to main as `feat(0211): …`; the subject should have been `task(0211): …` per specht-conventions delivery.md (`<type>(<id>)` takes the item's type). main is not rewritten; the miss is recorded here. 0212 onward use `task(<id>)`."
 
 out_of_scope:
   - "Everything in § 5 of the specification."
