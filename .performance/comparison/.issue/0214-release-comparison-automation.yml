@@ -2,7 +2,7 @@ id: "0214"
 type: task
 title: Automate advisory reporting in the release workflow
 
-status: ready-for-implementation
+status: in-progress
 
 risk: 4
 
@@ -15,7 +15,7 @@ spec: .performance/comparison/.spec/README.md
 claims: ["B-001", "B-003", "B-014", "B-017", "B-018", "B-023", "B-024"]
 
 created: "2026-10-13"
-updated: "2026-10-31"
+updated: "2026-11-01"
 closed: null
 
 summary: |
