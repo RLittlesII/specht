@@ -7,5 +7,8 @@
   ],
   "release": {
     "tagName": "v{version}"
+  },
+  "cloudBuild": {
+    "setVersionVariables": false
   }
 }
