@@ -2,7 +2,7 @@ id: "0211"
 type: task
 title: Evaluate advisory performance regressions
 
-status: in-progress
+status: done
 
 risk: 3
 
@@ -16,7 +16,7 @@ claims: ["B-009", "B-010", "B-011", "B-012", "B-013", "B-019", "B-020", "B-021"]
 
 created: "2026-10-13"
 updated: "2026-10-31"
-closed: null
+closed: "2026-10-31"
 
 summary: |
   Implement verdicts over the normalised evidence supplied by 0210, without

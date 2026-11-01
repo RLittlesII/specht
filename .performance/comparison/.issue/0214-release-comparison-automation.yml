@@ -15,7 +15,7 @@ spec: .performance/comparison/.spec/README.md
 claims: ["B-001", "B-003", "B-014", "B-017", "B-018", "B-023", "B-024"]
 
 created: "2026-10-13"
-updated: "2026-10-13"
+updated: "2026-10-31"
 closed: null
 
 summary: |
@@ -59,6 +59,7 @@ acceptance_criteria:
 
 decisions:
   - "2026-10-13: design contract reviewed under 0209; scope and prerequisites retained. Ready-for-implementation names design maturity, not permission to bypass depends_on or the one-writer Feature lane."
+  - "2026-10-31: receives ReportingOutcome from 0211. No 0211 claim or caller produces one; the first is a reporting-stage failure under B-018, so this item builds it beside the stage outcome mapping that consumes 0211's ComparisonDocument."
 
 out_of_scope:
   - "Everything in § 5 of the specification."

@@ -23,12 +23,14 @@ public static class ComparisonEvaluation
 
     private static IEnumerable<CoverageGap> Gaps(CaseComparison comparison)
     {
-        if (comparison.Metrics.IsEmpty && comparison.Status != PairingStatus.Comparable)
-            return [new CoverageGap(comparison.Key, null, comparison.Reason ?? comparison.Status switch
-            {
-                PairingStatus.Added => "Workload is only in the current release; it has no regression judgment.",
-                _ => "Workload is only in the previous release; it has no regression judgment.",
-            })];
+        if (!comparison.Metrics.Any(static m => m.Metric is MetricKind.Time or MetricKind.ManagedAllocation))
+            return [new CoverageGap(comparison.Key, null, comparison.Reason
+                ?? comparison.Evidence.Previous?.Failure ?? comparison.Evidence.Current?.Failure ?? comparison.Status switch
+                {
+                    PairingStatus.Added => "Workload is only in the current release; it has no regression judgment.",
+                    PairingStatus.Removed => "Workload is only in the previous release; it has no regression judgment.",
+                    _ => "Workload case has no timing or managed-allocation result to judge.",
+                })];
         return comparison.Metrics
             .Where(static m => m.Judgment is MetricJudgment.InsufficientEvidence or MetricJudgment.NotComparable)
             .Select(m => new CoverageGap(comparison.Key, m.Metric, m.Reason!));
@@ -55,16 +57,14 @@ public static class ComparisonEvaluation
             var (judgment, reason) = pair.Metric switch
             {
                 MetricKind.Time => percent > policy.TimingIncreasePercent && currentInterval!.Lower > previousInterval!.Upper
-                    ? (MetricJudgment.ReviewRequired,
-                        Invariant($"Mean time rose {percent}%, more than {policy.TimingIncreasePercent}%, and the current interval's lower bound ")
-                        + Invariant($"{currentInterval.Lower} ns lies above the previous upper bound {previousInterval.Upper} ns."))
+                    ? (MetricJudgment.ReviewRequired, Invariant($"Mean time rose more than {policy.TimingIncreasePercent}% ")
+                        + "and the current confidence interval lies strictly above the previous interval.")
                     : (MetricJudgment.NoRegressionFlagged, null),
                 MetricKind.ManagedAllocation when previous == 0 => current == 0 ? (MetricJudgment.NoRegressionFlagged, null)
-                    : (MetricJudgment.InsufficientEvidence, Invariant(
-                        $"Managed allocation rose from 0 B to {current} B; its percentage change is not defined.")),
+                    : (MetricJudgment.InsufficientEvidence, "Managed allocation rose from zero bytes; its percentage change is not defined."),
                 MetricKind.ManagedAllocation => percent > policy.AllocationIncreasePercent
                     ? (MetricJudgment.ReviewRequired, Invariant(
-                        $"Managed allocation rose {percent}%, more than {policy.AllocationIncreasePercent}%, from {previous} B to {current} B per operation."))
+                        $"Managed allocation rose more than {policy.AllocationIncreasePercent}% above a positive previous allocation."))
                     : (MetricJudgment.NoRegressionFlagged, (string?)null),
                 _ => (MetricJudgment.Informational, null),
             };

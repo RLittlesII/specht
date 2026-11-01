@@ -434,6 +434,125 @@ public sealed class ComparisonEvaluationUnitTests
         document.Judgment.Should().Be(ComparisonJudgment.NoRegressionFlagged);
     }
 
+    [Theory]
+    [ClassData(typeof(MixedScaleTimingRows))]
+    public void TimingInDifferentScales_WhenEvaluating_ShouldScreenTheNormalisedIntervals(decimal previousMean, decimal previousHalfWidth,
+        string previousUnit, decimal currentMean, decimal currentHalfWidth, string currentUnit, MetricJudgment judgment)
+    {
+        // Given
+        Observation allocation = new ObservationFixture().WithMetric(MetricKind.ManagedAllocation).WithValue(32).WithUnit("B").WithInterval(null);
+        MeasurementInventory previous = new MeasurementInventoryFixture().WithCases([new CaseEvidenceFixture().WithObservations([
+            new ObservationFixture().WithValue(previousMean).WithUnit(previousUnit).WithInterval(new TimingIntervalFixture()
+                .WithLower(previousMean - previousHalfWidth).WithUpper(previousMean + previousHalfWidth)),
+            allocation])]);
+        MeasurementInventory current = new MeasurementInventoryFixture().WithCases([new CaseEvidenceFixture().WithObservations([
+            new ObservationFixture().WithValue(currentMean).WithUnit(currentUnit).WithInterval(new TimingIntervalFixture()
+                .WithLower(currentMean - currentHalfWidth).WithUpper(currentMean + currentHalfWidth)),
+            allocation])]);
+        SessionManifest session = new SessionManifestFixture();
+        var pairs = CasePairing.Pair(previous, current, session);
+
+        // When
+        var document = ComparisonEvaluation.Evaluate(session, pairs);
+
+        // Then
+        document.Cases.Single().Metrics.Single(static m => m.Metric == MetricKind.Time).Judgment.Should().Be(judgment);
+    }
+
+    [Theory]
+    [ClassData(typeof(OneThirdIncreaseRows))]
+    public void FlaggedMetric_WhenEvaluating_ShouldNotEmbedTheUnroundedPercentageInItsReason(MetricKind metric, string unit, decimal halfWidth)
+    {
+        // Given
+        Observation timing = new ObservationFixture();
+        Observation allocation = new ObservationFixture().WithMetric(MetricKind.ManagedAllocation).WithValue(32).WithUnit("B").WithInterval(null);
+        Observation changed = new ObservationFixture().WithMetric(metric).WithUnit(unit).WithInterval(metric == MetricKind.Time
+            ? new TimingIntervalFixture().WithLower(300 - halfWidth).WithUpper(300 + halfWidth) : (TimingInterval?)null).WithValue(300);
+        MeasurementInventory previous = new MeasurementInventoryFixture().WithCases([new CaseEvidenceFixture().WithObservations(
+            metric == MetricKind.Time ? [changed, allocation] : [timing, changed])]);
+        changed = changed with
+        {
+            Value = 400,
+            Interval = changed.Interval is null ? null : changed.Interval with { Lower = 400 - halfWidth, Upper = 400 + halfWidth },
+        };
+        MeasurementInventory current = new MeasurementInventoryFixture().WithCases([new CaseEvidenceFixture().WithObservations(
+            metric == MetricKind.Time ? [changed, allocation] : [timing, changed])]);
+        SessionManifest session = new SessionManifestFixture();
+        var pairs = CasePairing.Pair(previous, current, session);
+
+        // When
+        var document = ComparisonEvaluation.Evaluate(session, pairs);
+
+        // Then
+        var result = document.Cases.Single().Metrics.Single(m => m.Metric == metric);
+        result.Judgment.Should().Be(MetricJudgment.ReviewRequired);
+        result.PercentChange.Should().Be(100m * 100m / 300m);
+        result.Reason.Should().NotBeNullOrWhiteSpace().And
+            .NotContain(result.PercentChange!.Value.ToString(System.Globalization.CultureInfo.InvariantCulture));
+    }
+
+    [Theory]
+    [ClassData(typeof(NoRequiredRowCaseRows))]
+    public void CaseWithoutATimeOrAllocationRow_WhenEvaluating_ShouldReportACaseGapAndBeIncomplete(string arrangement)
+    {
+        // Given
+        WorkloadCase workload = new WorkloadCaseFixture().WithRequiredMetrics([]);
+        MeasurementInventory previous = new MeasurementInventoryFixture().WithCases([]);
+        MeasurementInventory current = previous;
+        SessionManifest session = new SessionManifestFixture();
+        if (arrangement == "expected case with no required metrics missing from both exports")
+        {
+            session = session with
+            {
+                Previous = session.Previous with { ExpectedCases = [workload] },
+                Current = session.Current with { ExpectedCases = [workload] },
+            };
+        }
+        else
+        {
+            CaseEvidence peakOnly = new CaseEvidenceFixture().WithCase(workload).WithObservations([new ObservationFixture()
+                .WithMetric(MetricKind.ToolPeakMemory).WithValue(2000).WithUnit("B").WithObserver("tool-process").WithInterval(null)]);
+            previous = previous with { Cases = [peakOnly] };
+            current = previous;
+            session = session with { Current = session.Current with { Conditions = session.Current.Conditions with { Runtime = "other" } } };
+        }
+        var pairs = CasePairing.Pair(previous, current, session);
+
+        // When
+        var document = ComparisonEvaluation.Evaluate(session, pairs);
+
+        // Then
+        var comparison = document.Cases.Single();
+        comparison.Metrics.Should().NotContain(static m => m.Metric == MetricKind.Time || m.Metric == MetricKind.ManagedAllocation);
+        document.Gaps.Should().ContainSingle().Which.Should().Match<CoverageGap>(gap =>
+            gap.CaseKey == comparison.Key && gap.Metric == null && !string.IsNullOrWhiteSpace(gap.Reason));
+        document.Judgment.Should().Be(ComparisonJudgment.Incomplete);
+    }
+
+    [Theory]
+    [ClassData(typeof(NoMetricPairingReasonRows))]
+    public void NoMetricCaseWithAPairingReason_WhenEvaluating_ShouldCarryThatReasonAsACaseGap(bool inventoryKnown, bool identityKnown,
+        PairingStatus status)
+    {
+        // Given
+        MeasurementInventory previous = new MeasurementInventoryFixture().WithKnown(inventoryKnown).WithCases([]);
+        CaseEvidence evidence = new CaseEvidenceFixture();
+        if (!identityKnown) evidence = evidence with { IdentityKnown = false, Failure = "Audited workload identity is unavailable." };
+        MeasurementInventory current = new MeasurementInventoryFixture().WithCases([evidence]);
+        SessionManifest session = new SessionManifestFixture();
+        var pairs = CasePairing.Pair(previous, current, session);
+
+        // When
+        var document = ComparisonEvaluation.Evaluate(session, pairs);
+
+        // Then
+        var paired = pairs.Single();
+        paired.Status.Should().Be(status);
+        paired.Metrics.Should().BeEmpty();
+        document.Gaps.Should().ContainSingle().Which.Should().Be(new CoverageGap(paired.Key, null, paired.Reason!));
+        document.Judgment.Should().Be(ComparisonJudgment.Incomplete);
+    }
+
     public sealed class ByteScaleRows : TheoryData<decimal, string, decimal, string, decimal>
     {
         public ByteScaleRows()
@@ -531,6 +650,42 @@ public sealed class ComparisonEvaluationUnitTests
         {
             Add(1000m);
             Add((decimal?)null);
+        }
+    }
+
+    public sealed class MixedScaleTimingRows : TheoryData<decimal, decimal, string, decimal, decimal, string, MetricJudgment>
+    {
+        public MixedScaleTimingRows()
+        {
+            Add(100000000m, 2000000m, "ns", 112m, 2m, "ms", MetricJudgment.ReviewRequired);
+            Add(100m, 2m, "ms", 111000000m, 9000000m, "ns", MetricJudgment.NoRegressionFlagged);
+        }
+    }
+
+    public sealed class OneThirdIncreaseRows : TheoryData<MetricKind, string, decimal>
+    {
+        public OneThirdIncreaseRows()
+        {
+            Add(MetricKind.Time, "ms", 1m);
+            Add(MetricKind.ManagedAllocation, "B", 0m);
+        }
+    }
+
+    public sealed class NoRequiredRowCaseRows : TheoryData<string>
+    {
+        public NoRequiredRowCaseRows()
+        {
+            Add("expected case with no required metrics missing from both exports");
+            Add("tool peak memory only with a different runtime");
+        }
+    }
+
+    public sealed class NoMetricPairingReasonRows : TheoryData<bool, bool, PairingStatus>
+    {
+        public NoMetricPairingReasonRows()
+        {
+            Add(false, true, PairingStatus.InsufficientEvidence);
+            Add(true, false, PairingStatus.NotComparable);
         }
     }
 }
