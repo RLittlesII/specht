@@ -1,0 +1,46 @@
+id: "0325"
+type: bug
+title: Build the tool in Release before the Benchmark target packs it
+status: done
+value: 3
+risk: 1
+parent: null
+children: []
+depends_on: []
+spikes: []
+spec: null
+claims: []
+created: "2026-10-31"
+updated: "2026-10-31"
+closed: "2026-10-31"
+summary: |
+  Spike 0216 (pull request #643) measured cold start with
+  `ColdStartBenchmarks`, and every first attempt of
+  `./build.sh Benchmark --benchmark-filter '*ColdStart*'` failed with
+  MSB3030: "Could not copy the file obj/Release/net11.0/specht.tool.dll
+  because it was not found".
+
+  The `Benchmark` target in `.build/SpechtBuild.cs` builds
+  `.performance/benchmarks/benchmarks.csproj` for `net10.0` only. When a
+  `Specht.Benchmarks.Startup.*` benchmark is selected it calls
+  `PackTool("Release")`, which packs `src/tool/tool.csproj` with
+  `--no-build`. `src/tool` targets `net10.0` and `net11.0`, so on a tree
+  with no Release `net11.0` build of the tool the pack has nothing to copy.
+  Building the tool by hand first, `dotnet build src/tool/tool.csproj -c
+  Release`, worked around it.
+
+  The main workflow does not hit it: `ContinuousIntegration` runs first
+  with the non-local `Release` configuration, so `Compile` has built every
+  framework before `Benchmark` packs. A local run starts from `Debug`.
+
+  The target now builds the tool in Release for every framework it
+  targets before it packs it, only when cold start is selected.
+acceptance_criteria:
+  - "`./build.sh Benchmark --benchmark-filter '*ColdStart*' --benchmark-job Dry` succeeds on a tree with no Release build of `src/tool`."
+  - "A run that selects no `Specht.Benchmarks.Startup.*` benchmark neither builds nor packs the tool."
+  - "The generated workflows are unchanged."
+  - "No production code path changes."
+decisions: []
+out_of_scope:
+  - "Changing `PackTool` or the `Pack` target, which pack after `Build` and are correct."
+  - "Any benchmark class or the cold-start session."

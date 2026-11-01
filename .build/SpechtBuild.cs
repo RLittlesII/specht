@@ -186,6 +186,10 @@ internal partial class SpechtBuild : NukeBuild
             Assert.True(selected.Length > 0, "No benchmarks selected; check --benchmark-filter and --benchmark-job.");
             if (selected.Any(static name => name.StartsWith("Specht.Benchmarks.Startup.", StringComparison.Ordinal)))
             {
+                DotNetBuild(static settings => settings
+                    .SetProjectFile(RootDirectory / "src" / "tool" / "tool.csproj")
+                    .SetConfiguration("Release")
+                    .EnableNoRestore());
                 PackTool("Release");
             }
 
