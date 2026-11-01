@@ -62,9 +62,10 @@ summary: |
     linked into every project whose name ends in `tests`.
 
   Two items already own slices of this: `0168`, the test-support project
-  ADR-0010 track T decided, for the linked sources; and `0153`, blocked on
-  `0216` under ADR-0014, whose move of the tree generator into the engine
-  removes the reason `test/tests` references the benchmarks. This item
+  ADR-0010 track T decided, for the linked sources; and `0153`, released
+  from ADR-0014's gate by ADR-0027 and ordered after `0156` to `0163`,
+  whose move of the tree generator into the engine removes the reason
+  `test/tests` references the benchmarks. This item
   decides the whole shape first, then delivers what neither owns, and the
   decision record says whether `0168` and `0153` deliver inside that shape
   as they stand, or are re-scoped with the owner.
@@ -104,9 +105,13 @@ decisions:
     `ready-for-architecture`: the ADR in criterion 1 comes before any code
     moves. `0168` and `0153` are left as they are; the record decides their
     boundary with this item.
+  - |
+    2026-11-01, spec-author: the summary and the out-of-scope line no
+    longer say ADR-0014 and `0216` gate `0153`. ADR-0027 lifted that gate
+    on 2026-10-31 and `0216` is done; `0153` now follows `0156` to `0163`.
 
 out_of_scope:
-  - "Moving the tree generator into the engine - item 0153, gated by ADR-0014 and item 0216."
+  - "Moving the tree generator into the engine - item 0153, released by ADR-0027 and ordered after items 0156 to 0163."
   - "The composition inside `EngineServices` - item 0207."
   - "The shared host factory - item 0144."
   - "The package's target frameworks - `0001-F2` B-045, item 0217."

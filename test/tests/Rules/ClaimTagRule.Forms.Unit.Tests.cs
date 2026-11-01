@@ -9,7 +9,7 @@ namespace Specht.Tests.Rules;
 
 /// <summary>Claim-tag grammar, literal form, case and diagnostic mechanisms (0001-F5 B-007, B-036, B-037).</summary>
 [Trait("Tier", "Unit")]
-public sealed class FeatureFileRuleClaimTagsUnitTests
+public sealed class ClaimTagRuleFormsUnitTests
 {
     [Theory]
     [InlineData("^B-[0-9]{4}$", "@{claim}", false, "B-0001", "@B-0001", "@B-0002", "B-0002")]
@@ -40,7 +40,7 @@ public sealed class FeatureFileRuleClaimTagsUnitTests
         SpechtModel model = new SpechtModelFixture().WithManifest(manifest).WithFeatures(feature);
 
         // When
-        var violations = new FeatureFileRule().Evaluate(model).ToList();
+        var violations = new ClaimTagRule().Evaluate(model).ToList();
 
         // Then
         var violation = violations.Should().ContainSingle().Subject;
@@ -72,7 +72,7 @@ public sealed class FeatureFileRuleClaimTagsUnitTests
         }).WithFeatures(feature);
 
         // When
-        var violations = new FeatureFileRule().Evaluate(model).ToList();
+        var violations = new ClaimTagRule().Evaluate(model).ToList();
 
         // Then
         violations.Should().ContainSingle().Which.Identifier.Should().Be("B-002");
@@ -99,7 +99,7 @@ public sealed class FeatureFileRuleClaimTagsUnitTests
         SpechtModel model = new SpechtModelFixture().WithManifest(manifest).WithFeatures(feature);
 
         // When
-        var violations = new FeatureFileRule().Evaluate(model);
+        var violations = new ClaimTagRule().Evaluate(model);
 
         // Then
         violations.Should().BeEmpty();

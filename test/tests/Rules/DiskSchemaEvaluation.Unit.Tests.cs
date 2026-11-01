@@ -34,10 +34,11 @@ public sealed class DiskSchemaEvaluationUnitTests
         ChildItem task = new ChildItemFixture().WithFrontmatter(frontmatter);
         EpicFile epic = new EpicFileFixture().WithFrontmatter(frontmatter);
         SpechtModel model = new SpechtModelFixture().WithSchemas(schemas).WithFeatures(feature).WithItems(task).WithList([epic]);
-        var rule = new FrontmatterSchemaRule();
+        var check = new FrontmatterSchemaCheck();
+        ISpechtRule[] rules = [new FeatureFrontmatterRule(check), new ItemFrontmatterRule(check), new EpicFrontmatterRule(check)];
 
         // When
-        var evaluate = () => rule.Evaluate(model).ToList();
+        var evaluate = () => rules.SelectMany(rule => rule.Evaluate(model)).ToList();
 
         // Then
         evaluate.Should().Throw<SpechtManifestException>().Which.Message

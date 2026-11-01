@@ -34,7 +34,8 @@ public sealed class SpechtRunnerRunUnitTests
                 EngineServices.Schemas(fileSystem), new FeatureTagParser()),
             [rule],
             fileSystem,
-            EngineServices.Schemas(fileSystem));
+            EngineServices.Schemas(fileSystem),
+            new FrontmatterSchemaCheck());
 
         // When
         var running = () => runner.Run(fileSystem.Path.GetFullPath("repo"));

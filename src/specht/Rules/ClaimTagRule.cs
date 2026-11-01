@@ -4,17 +4,17 @@ using Specht.Model;
 namespace Specht.Rules;
 
 /// <summary>
-/// SPEC020 and SPEC021 - a specification has exactly one companion Gherkin
-/// file beside it, and every claim tag in that file resolves to a § 3 claim.
+/// SPEC021 - every claim tag in a specification's one companion Gherkin file
+/// resolves to a § 3 claim.
 /// </summary>
 /// <implements epic="0001" feature="F1" claim="B-001" />
-public sealed class FeatureFileRule : ISpechtRule
+public sealed class ClaimTagRule : ISpechtRule
 {
     /// <inheritdoc />
-    public string Id => "SPEC020";
+    public string Id => "SPEC021";
 
     /// <inheritdoc />
-    public IReadOnlyList<string> ReportedIds => ["SPEC020", "SPEC021"];
+    public IReadOnlyList<string> ReportedIds => ["SPEC021"];
 
     /// <inheritdoc />
     /// <implements epic="0001" feature="F1" claim="B-001" />
@@ -25,17 +25,6 @@ public sealed class FeatureFileRule : ISpechtRule
         {
             if (feature.FeatureFiles.Count != 1)
             {
-                yield return new SpechtViolation(
-                    "SPEC020",
-                    SpechtSeverity.Error,
-                    feature.RelativePath,
-                    0,
-                    feature.Identity,
-                    $"found {feature.FeatureFiles.Count} '.feature' files beside this specification - expected exactly one companion")
-                {
-                    Expected = new JsonObject { ["companionCount"] = 1 },
-                };
-
                 continue;
             }
 
@@ -63,5 +52,4 @@ public sealed class FeatureFileRule : ISpechtRule
             }
         }
     }
-
 }

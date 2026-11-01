@@ -2,7 +2,7 @@ id: "0162"
 type: refactor
 title: Split DependencyRule into one rule per id
 
-status: ready-for-implementation
+status: done
 
 value: 3
 risk: 3
@@ -19,7 +19,7 @@ claims: []
 
 created: "2026-10-11"
 updated: "2026-11-01"
-closed: null
+closed: "2026-11-01"
 
 summary: |
   ADR-0027 lifted ADR-0014's benchmark gate on 2026-10-31: this stage
@@ -99,6 +99,52 @@ decisions:
     splits"; 0100 also renames every engine type a split touches. Status
     `blocked` to `ready-for-implementation`, as cut: the design is ADR-0010's
     and 0100 is open.
+  - |
+    2026-11-01, implementer: `DependencyRule` is deleted and three rules
+    stand in its place: `DependencyTargetRule` (SPEC050),
+    `DependencySymmetryRule` (SPEC051) and `DependencyCycleRule` (SPEC052),
+    registered in that order where `DependencyRule` was. Each walks
+    `FeaturesWithIdentity` and a Feature's `depends_on` edges before its
+    `blocks` edges, reading the model's `SpechtDependencyGraph`.
+    `DependencySymmetryRule` skips an unresolved target and a self-edge
+    itself, the guards that sat in the SPEC050 and SPEC052 branches;
+    `DependencyCycleRule` keeps the resolved-target guard on its self-edge
+    test, emits self-dependencies before cycles and keeps the old walk and
+    its once-per-identity set unchanged. The edge walk is repeated in each
+    rule rather than shared, since the three read different things from it.
+    Judged: the summary says no test names `DependencyRule`, but
+    `test/tests/Report/ItemsEdgesApprovalExpectations.cs` constructed it as
+    theory data; its cases now construct the rule for their id, and no test
+    name or § 9 row changes. A rule that throws now faults under its own id
+    rather than SPEC050; none of the three throws on a loaded model. The
+    ADR-0027 benchmark guard was not run with this change; it is owed by
+    the pull request that carries it.
+  - |
+    2026-11-01, benchmarker: the guard of ADR-0027, run once for the
+    batched pull request of 0156 to 0163, ADR-0010 stage 3. Base `6788caaf`
+    (main, the branch's merge base, 0100's rename included), head
+    `1d72a7b2` (all eight splits folded; the branch's later changes touch
+    documents, item files and one XML remark, no executed code). Separate
+    detached checkouts on one host, run alternately base-100, head-100,
+    base-1000, head-1000 from 04:01 to 04:04 with `./build.sh Benchmark
+    --benchmark-filter '*CheckBenchmarks.Check(Specifications: N)'`,
+    BenchmarkDotNet 0.15.8 default job. Host: Apple M1 Max, 10 cores,
+    macOS Tahoe 26.4 (25E246), .NET SDK 11.0.100-rc.2.26504.105, runtime
+    .NET 10.0.12 Arm64 RyuJIT; 1-minute load average 10.49 falling to 6.45
+    on 10 cores during the runs (5-minute 60.8 to 38.2), a shared host
+    settling.
+    100 specifications: base Mean 45.18 ms, Error 0.601 ms (CI 44.58 to
+    45.78 ms), Allocated 33.42 MB; head 45.51 ms, Error 0.603 ms (CI 44.91
+    to 46.11 ms), 33.43 MB. Time +0.7%, allocation +0.03%.
+    1,000 specifications: base Mean 455.5 ms, Error 6.90 ms (CI 448.6 to
+    462.4 ms), Allocated 329.6 MB; head 456.1 ms, Error 4.15 ms (CI 452.0
+    to 460.3 ms), 329.88 MB. Time +0.1%, allocation +0.08%.
+    Judged by 0109-F5 B-011 and B-012 under ComparisonPolicy.Initial: no
+    flag at either size; neither mean rose more than 10% and each head
+    interval overlaps its base's, and neither allocation rose more than
+    10%. Only the absence of a flag is claimed: one run per side, the
+    differences sit inside the intervals, and no change in either direction
+    is claimed. The net11.0 runtime was not measured.
 
 out_of_scope:
   - "The collapse of `ISpechtRule`, `SpecFinding`, `DefaultSeverity` and the evaluator - item 0164."

@@ -5,18 +5,16 @@ using Specht.Model;
 namespace Specht.Rules;
 
 /// <summary>
-/// SPEC010 and SPEC013 - a specification carries the contracted sections,
-/// exactly once each and in order, and the tables that gate coverage have the
-/// headers the contract names.
+/// SPEC010 - a specification carries the contracted sections, exactly once each and in order.
 /// </summary>
 /// <implements epic="0001" feature="F1" claim="B-001" />
-public sealed class SectionStructureRule : ISpechtRule
+public sealed class SectionContractRule : ISpechtRule
 {
     /// <inheritdoc />
     public string Id => "SPEC010";
 
     /// <inheritdoc />
-    public IReadOnlyList<string> ReportedIds => ["SPEC010", "SPEC013"];
+    public IReadOnlyList<string> ReportedIds => [Id];
 
     /// <inheritdoc />
     /// <implements epic="0001" feature="F1" claim="B-001" />
@@ -35,7 +33,7 @@ public sealed class SectionStructureRule : ISpechtRule
                 if (count == 0)
                 {
                     yield return new SpechtViolation(
-                        "SPEC010",
+                        Id,
                         SpechtSeverity.Error,
                         feature.RelativePath,
                         0,
@@ -46,7 +44,7 @@ public sealed class SectionStructureRule : ISpechtRule
                 else if (count > 1)
                 {
                     yield return new SpechtViolation(
-                        "SPEC010",
+                        Id,
                         SpechtSeverity.Error,
                         feature.RelativePath,
                         0,
@@ -66,7 +64,7 @@ public sealed class SectionStructureRule : ISpechtRule
                     var section = feature.Document.Section(ordered[index]);
 
                     yield return new SpechtViolation(
-                        "SPEC010",
+                        Id,
                         SpechtSeverity.Error,
                         feature.RelativePath,
                         section?.Line ?? 0,
@@ -77,66 +75,10 @@ public sealed class SectionStructureRule : ISpechtRule
                     break;
                 }
             }
-
-            foreach (var violation in CheckTables(model, feature))
-            {
-                yield return violation;
-            }
         }
     }
 
     /// <implements epic="0001" feature="F1" claim="B-001" />
-    private static IEnumerable<SpechtViolation> CheckTables(SpechtModel model, FeatureSpec feature)
-    {
-        foreach (var (role, headers) in model.Schemas.Structure.Tables)
-        {
-            var title = model.Schemas.Structure.Roles[role];
-            var section = role switch
-            {
-                "claims" => model.Claims[feature].Section,
-                "matrix" => model.MatrixSections[feature],
-                _ => feature.Document.Section(title),
-            };
-
-            if (section is null)
-            {
-                continue;
-            }
-
-            if (section.Headers.Count == 0)
-            {
-                yield return new SpechtViolation(
-                    "SPEC013",
-                    SpechtSeverity.Error,
-                    feature.RelativePath,
-                    section.Line,
-                    title,
-                    $"section '## {title}' carries no table - expected a table with headers {string.Join(" | ", headers)}")
-                { Expected = Table(title, headers) };
-
-                continue;
-            }
-
-            if (!section.Headers.SequenceEqual(headers, StringComparer.Ordinal))
-            {
-                yield return new SpechtViolation(
-                    "SPEC013",
-                    SpechtSeverity.Error,
-                    feature.RelativePath,
-                    section.Line,
-                    title,
-                    $"section '## {title}' has headers {string.Join(" | ", section.Headers)} - expected {string.Join(" | ", headers)}")
-                { Expected = Table(title, headers) };
-            }
-        }
-    }
-
-    /// <implements epic="0001" feature="F1" claim="B-001" />
-    private static JsonObject Sections(IEnumerable<string> titles) => new() { ["sections"] = Strings(titles) };
-
-    /// <implements epic="0001" feature="F1" claim="B-001" />
-    private static JsonObject Table(string title, IEnumerable<string> headers) => new() { ["section"] = title, ["headers"] = Strings(headers) };
-
-    /// <implements epic="0001" feature="F1" claim="B-001" />
-    private static JsonArray Strings(IEnumerable<string> values) => new([.. values.Select(static value => JsonValue.Create(value))]);
+    private static JsonObject Sections(IEnumerable<string> titles) =>
+        new() { ["sections"] = new JsonArray([.. titles.Select(static title => JsonValue.Create(title))]) };
 }
