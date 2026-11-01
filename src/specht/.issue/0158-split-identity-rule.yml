@@ -108,6 +108,32 @@ decisions:
     test checks reaches it, and fault isolation is out of scope. The
     ADR-0027 benchmark guard is run once for the batched pull request of
     0156 to 0163, not in this worktree.
+  - |
+    2026-11-01, benchmarker: the guard of ADR-0027, run once for the
+    batched pull request of 0156 to 0163, ADR-0010 stage 3. Base `6788caaf`
+    (main, the branch's merge base, 0100's rename included), head
+    `1d72a7b2` (all eight splits folded; the branch's later changes touch
+    documents, item files and one XML remark, no executed code). Separate
+    detached checkouts on one host, run alternately base-100, head-100,
+    base-1000, head-1000 from 04:01 to 04:04 with `./build.sh Benchmark
+    --benchmark-filter '*CheckBenchmarks.Check(Specifications: N)'`,
+    BenchmarkDotNet 0.15.8 default job. Host: Apple M1 Max, 10 cores,
+    macOS Tahoe 26.4 (25E246), .NET SDK 11.0.100-rc.2.26504.105, runtime
+    .NET 10.0.12 Arm64 RyuJIT; 1-minute load average 10.49 falling to 6.45
+    on 10 cores during the runs (5-minute 60.8 to 38.2), a shared host
+    settling.
+    100 specifications: base Mean 45.18 ms, Error 0.601 ms (CI 44.58 to
+    45.78 ms), Allocated 33.42 MB; head 45.51 ms, Error 0.603 ms (CI 44.91
+    to 46.11 ms), 33.43 MB. Time +0.7%, allocation +0.03%.
+    1,000 specifications: base Mean 455.5 ms, Error 6.90 ms (CI 448.6 to
+    462.4 ms), Allocated 329.6 MB; head 456.1 ms, Error 4.15 ms (CI 452.0
+    to 460.3 ms), 329.88 MB. Time +0.1%, allocation +0.08%.
+    Judged by 0109-F5 B-011 and B-012 under ComparisonPolicy.Initial: no
+    flag at either size; neither mean rose more than 10% and each head
+    interval overlaps its base's, and neither allocation rose more than
+    10%. Only the absence of a flag is claimed: one run per side, the
+    differences sit inside the intervals, and no change in either direction
+    is claimed. The net11.0 runtime was not measured.
 
 out_of_scope:
   - "The collapse of `ISpechtRule`, `SpecFinding`, `DefaultSeverity` and the evaluator - item 0164."
