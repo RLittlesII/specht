@@ -1,7 +1,7 @@
 id: "0252"
 type: spike
 title: Evaluate MCP access to linked records and local or online storage
-status: ready
+status: in-progress
 value: 4
 risk: 3
 parent: "0132"
@@ -11,7 +11,7 @@ spikes: []
 spec: null
 claims: []
 created: "2026-10-21"
-updated: "2026-10-21"
+updated: "2026-11-01"
 closed: null
 summary: |
   The MCP key dictionary needs to relate the records around a specification:
