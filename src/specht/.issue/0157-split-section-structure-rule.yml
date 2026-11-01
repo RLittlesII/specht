@@ -2,7 +2,7 @@ id: "0157"
 type: refactor
 title: Split SectionStructureRule into one rule per id
 
-status: ready-for-implementation
+status: in-progress
 
 value: 3
 risk: 2
