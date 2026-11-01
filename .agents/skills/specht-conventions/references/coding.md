@@ -94,9 +94,13 @@ without an ADR.
 ## Architecture execution
 
 [ADR-0014](../../../../.spec/adr/0014-architecture-rollout-requires-benchmark-evidence.md)
-owns the benchmark gate and the source-generated mediator evaluation. Read it
-before applying ADR-0010's target or moving a staged architecture item into a
-feature. Its acceptance is not permission to skip evidence or prerequisites.
+owns the benchmark gate. Read it before applying ADR-0010's target or moving a
+staged architecture item into a feature. Its acceptance is not permission to
+skip evidence or prerequisites. The mediator evaluation it required ended in
+no adoption
+([ADR-0026](../../../../.spec/adr/0026-the-source-generated-mediator-measured-no-benefit-and-direct-calls-stay.md)):
+hosts call the engine directly, with no dispatcher and no handwritten
+substitute.
 
 ## File access goes through `IFileSystem`
 
@@ -123,9 +127,9 @@ stages; new code does not add to it.
 Owner decision, 2026-10-11 (ADR-0010). A type that computes, reads or loads is
 an instance, registered in `AddSpechtEngine()` and taken by constructor. What
 stays static: a private `static readonly` constant, a private helper of an
-instance class, an extension-method class, and an operation class that only
-nests a message and its handler. A data type does not load or parse itself -
-no `Load`, `Parse` or `From` factory on the type it returns. The statics the
+instance class, and an extension-method class. ADR-0010's cqrsz operation
+class went with the mediator (ADR-0026). A data type does not load or parse
+itself - no `Load`, `Parse` or `From` factory on the type it returns. The statics the
 engine has today go in ADR-0010's stages, not in a sweep.
 
 ## Paths are repository-relative

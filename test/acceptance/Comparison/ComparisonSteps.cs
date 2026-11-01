@@ -17,10 +17,10 @@ public sealed class ComparisonSteps : IDisposable
     public ComparisonSteps()
     {
         _session = ComparisonJson.ReadSession(SessionJson);
-        var mapping = JsonSerializer.Deserialize<IdentityMapping>(MappingJson,
+        _mapping = JsonSerializer.Deserialize<IdentityMapping>(MappingJson,
             new JsonSerializerOptions { PropertyNameCaseInsensitive = true, Converters = { new System.Text.Json.Serialization.JsonStringEnumConverter() } })!;
-        _previous = BenchmarkEvidenceReader.Read(ExportJson, "previous/full.json", _session.Previous, [mapping]);
-        _current = BenchmarkEvidenceReader.Read(ExportJson, "current/full.json", _session.Current, [mapping]);
+        _previous = BenchmarkEvidenceReader.Read(ExportJson, "previous/full.json", _session.Previous, [_mapping]);
+        _current = BenchmarkEvidenceReader.Read(ExportJson, "current/full.json", _session.Current, [_mapping]);
     }
 
     [Given("earlier published stable releases, published prereleases, draft releases and unpublished tags exist")]
@@ -152,7 +152,12 @@ public sealed class ComparisonSteps : IDisposable
     }
 
     [When("the comparison is generated")]
-    public void WhenPairing() => _pairs = CasePairing.Pair(_previous, _current, _session);
+    [When("the comparison is summarised")]
+    public void WhenComparing()
+    {
+        _pairs = CasePairing.Pair(_previous, _current, _session);
+        _document = ComparisonEvaluation.Evaluate(_session, _pairs);
+    }
 
     [Then("those measurements are paired as comparable")]
     public void ThenComparable() => _pairs.Should().ContainSingle().Which.Status.Should().Be(PairingStatus.Comparable);
@@ -281,6 +286,164 @@ public sealed class ComparisonSteps : IDisposable
         _session = _session with { Current = _session.Current with { ExpectedCases = [expected] } };
     }
 
+    [Given("comparable measurements with a positive previous value")]
+    public void GivenPositivePreviousValues()
+    {
+        _current = Change(_current, MetricKind.Time, static o => o with { Value = 110, Interval = o.Interval! with { Lower = 108, Upper = 112 } });
+        _current = Change(_current, MetricKind.ManagedAllocation, static o => o with { Value = 40 });
+    }
+
+    [Then("each metric shows both values, its unit, its absolute change and its percentage change")]
+    public void ThenEachMetricShowsItsChange()
+    {
+        var metrics = _document!.Cases.Single().Metrics;
+        metrics.Single(static m => m.Metric == MetricKind.Time).Should().Match<MetricComparison>(static m =>
+            m.Previous == 100 && m.Current == 110 && m.Unit == "ns" && m.AbsoluteChange == 10 && m.PercentChange == 10);
+        metrics.Single(static m => m.Metric == MetricKind.ManagedAllocation).Should().Match<MetricComparison>(static m =>
+            m.Previous == 32 && m.Current == 40 && m.Unit == "B" && m.AbsoluteChange == 8 && m.PercentChange == 25);
+    }
+
+    [Given("a previous comparable timing of 1 millisecond")]
+    public void GivenPreviousMillisecond() => _previous = Change(_previous, MetricKind.Time,
+        static o => o with { Value = 1, Unit = "ms", Interval = o.Interval! with { Lower = 0.98m, Upper = 1.02m } });
+
+    [Given("a current comparable timing of 1000000 nanoseconds")]
+    public void GivenCurrentNanoseconds() => _current = Change(_current, MetricKind.Time,
+        static o => o with { Value = 1000000, Unit = "ns", Interval = o.Interval! with { Lower = 980000, Upper = 1020000 } });
+
+    [Then("the timing change is zero with a shared time unit")]
+    public void ThenTimingChangeIsZero() => Metric(MetricKind.Time).Should().Match<MetricComparison>(static m =>
+        m.Unit == "ns" && m.Previous == 1000000 && m.Current == 1000000 && m.AbsoluteChange == 0 && m.PercentChange == 0);
+
+    [Given("the previous release allocated zero bytes for a comparable workload")]
+    public void GivenPreviousZeroAllocation() => _previous = Change(_previous, MetricKind.ManagedAllocation, static o => o with { Value = 0 });
+
+    [Given("the current release allocates a positive number of bytes")]
+    public void GivenCurrentPositiveAllocation() => _current = Change(_current, MetricKind.ManagedAllocation, static o => o with { Value = 64 });
+
+    [Given("both releases allocated zero bytes for a comparable workload")]
+    public void GivenBothZeroAllocation()
+    {
+        GivenPreviousZeroAllocation();
+        _current = Change(_current, MetricKind.ManagedAllocation, static o => o with { Value = 0 });
+    }
+
+    [Then("the allocation percentage change is marked \"Not defined\"")]
+    public void ThenAllocationPercentNotDefined() => Metric(MetricKind.ManagedAllocation).PercentChange.Should().BeNull();
+
+    [Then("both allocation values and the absolute increase remain visible")]
+    public void ThenAllocationValuesVisible() => Metric(MetricKind.ManagedAllocation).Should().Match<MetricComparison>(static m =>
+        m.Previous == 0 && m.Current == 64 && m.AbsoluteChange == 64);
+
+    [Then("the allocation is reported as unchanged without a review flag")]
+    public void ThenAllocationUnchanged() => Metric(MetricKind.ManagedAllocation).Should().Match<MetricComparison>(static m =>
+        m.Judgment == MetricJudgment.NoRegressionFlagged && m.AbsoluteChange == 0);
+
+    [Given(@"a previous comparable mean time of (\d+(?:\.\d+)?) milliseconds with confidence interval half-width (\d+(?:\.\d+)?) milliseconds")]
+    public void GivenPreviousMeanTime(decimal mean, decimal halfWidth) => _previous = Change(_previous, MetricKind.Time,
+        o => o with { Value = mean, Unit = "ms", Interval = o.Interval! with { Lower = mean - halfWidth, Upper = mean + halfWidth } });
+
+    [Given(@"a current comparable mean time of (\d+(?:\.\d+)?) milliseconds with confidence interval half-width (\d+(?:\.\d+)?) milliseconds")]
+    public void GivenCurrentMeanTime(decimal mean, decimal halfWidth) => _current = Change(_current, MetricKind.Time,
+        o => o with { Value = mean, Unit = "ms", Interval = o.Interval! with { Lower = mean - halfWidth, Upper = mean + halfWidth } });
+
+    [Given(@"a previous comparable allocation of (\d+) bytes per operation")]
+    public void GivenPreviousAllocation(decimal bytes) => _previous = Change(_previous, MetricKind.ManagedAllocation, o => o with { Value = bytes });
+
+    [Given(@"a current comparable allocation of (\d+) bytes per operation")]
+    public void GivenCurrentAllocation(decimal bytes) => _current = Change(_current, MetricKind.ManagedAllocation, o => o with { Value = bytes });
+
+    [Then("the timing judgment is {string}")]
+    [Then("its timing judgment is marked {string}")]
+    public void ThenTimingJudgment(string judgment) => ThenJudgment(MetricKind.Time, judgment);
+
+    [Then("the allocation judgment is {string}")]
+    [Then("its allocation judgment is {string}")]
+    public void ThenAllocationJudgment(string judgment) => ThenJudgment(MetricKind.ManagedAllocation, judgment);
+
+    [Given("a comparable timing pair lacks valid uncertainty measurements")]
+    public void GivenMissingUncertainty() => _current = BenchmarkEvidenceReader.Read(
+        ExportJson.Replace(",\"ConfidenceInterval\":{\"Level\":12,\"Lower\":98,\"Upper\":102}", "", StringComparison.Ordinal),
+        "current/full.json", _session.Current, [_mapping]);
+
+    [Given("a timing pair has (.*)")]
+    public void GivenInvalidTiming(string invalid)
+    {
+        var statistics = invalid switch
+        {
+            "a zero previous mean" => """{"Mean":0,"ConfidenceInterval":{"Level":12,"Lower":-2,"Upper":2}}""",
+            "a negative mean" => """{"Mean":-100,"ConfidenceInterval":{"Level":12,"Lower":-102,"Upper":-98}}""",
+            "a non-finite mean" => """{"Mean":"NaN","ConfidenceInterval":{"Level":12,"Lower":98,"Upper":102}}""",
+            "a negative interval half-width" => """{"Mean":100,"ConfidenceInterval":{"Level":12,"Lower":102,"Upper":98}}""",
+            "an unknown timing confidence level" => """{"Mean":100,"ConfidenceInterval":{"Level":99,"Lower":98,"Upper":102}}""",
+            _ => throw new ArgumentOutOfRangeException(nameof(invalid), invalid, "Unbound invalid timing example."),
+        };
+        var json = ExportJson.Replace(ValidStatistics, statistics, StringComparison.Ordinal);
+        if (invalid == "a zero previous mean") _previous = BenchmarkEvidenceReader.Read(json, "previous/full.json", _session.Previous, [_mapping]);
+        else _current = BenchmarkEvidenceReader.Read(json, "current/full.json", _session.Current, [_mapping]);
+    }
+
+    [Given("some comparable metrics need no review")]
+    [Given("no metric meets its regression policy")]
+    public void GivenUnflaggedMetrics() => _current.Cases.SelectMany(static c => c.Observations).Should().OnlyContain(o =>
+        _previous.Cases.SelectMany(static c => c.Observations).Any(p => p.Metric == o.Metric && p.Value == o.Value && p.Unit == o.Unit));
+
+    [Given("another comparable metric is flagged {string}")]
+    public void GivenFlaggedMetric(string judgment)
+    {
+        judgment.Should().Be("Review required");
+        _current = Change(_current, MetricKind.ManagedAllocation, static o => o with { Value = 64 });
+    }
+
+    [Given("no metric is flagged {string}")]
+    [Given("no other metric is flagged {string}")]
+    public void GivenNoFlag(string judgment)
+    {
+        judgment.Should().Be("Review required");
+        GivenUnflaggedMetrics();
+    }
+
+    [Given("a required metric is missing, not comparable or has insufficient evidence")]
+    public void GivenRequiredMetricGap() => _current = _current with
+    {
+        Cases = [_current.Cases[0] with { Observations = [.. _current.Cases[0].Observations.Where(static o => o.Metric != MetricKind.ManagedAllocation)] }],
+    };
+
+    [Given("the release pair has no measurable workload cases")]
+    public void GivenEmptyInventory()
+    {
+        _previous = _previous with { Cases = [] };
+        _current = _current with { Cases = [] };
+    }
+
+    [Given("a workload case has more than one result for the same release and comparison session")]
+    public void GivenDuplicateResult()
+    {
+        var evidence = _current.Cases[0];
+        var timing = evidence.Observations.Single(static o => o.Metric == MetricKind.Time);
+        _current = _current with { Cases = [evidence with { Observations = evidence.Observations.Add(timing with { Locator = "/Benchmarks/1/Statistics" }) }] };
+    }
+
+    [Then("the duplicate case is reported as invalid evidence")]
+    public void ThenDuplicateInvalid()
+    {
+        var timing = Metric(MetricKind.Time);
+        timing.Judgment.Should().Be(MetricJudgment.InsufficientEvidence);
+        timing.Evidence.Current.Select(static o => o.Locator).Should().Equal("/Benchmarks/0/Statistics", "/Benchmarks/1/Statistics");
+        _document!.Gaps.Should().Contain(gap => gap.CaseKey == _document.Cases[0].Key && gap.Metric == MetricKind.Time);
+    }
+
+    [Given("the release comparison requires at least one workload case")]
+    public void GivenRequiredCase() => _previous.Cases.Should().NotBeEmpty();
+
+    [Given("every metric required for the release comparison has a valid comparable result")]
+    public void GivenValidRequiredMetrics() => _previous.Cases.Concat(_current.Cases).SelectMany(static c => c.Observations)
+        .Should().OnlyContain(static o => o.InvalidReason == null);
+
+    [Then("the overall judgment is {string}")]
+    public void ThenOverallJudgment(string judgment) => _document!.Judgment.Should().Be(
+        Enum.Parse<ComparisonJudgment>(judgment.Replace(" ", "", StringComparison.Ordinal), ignoreCase: true));
+
     [Given("a saved pair names the current release as its own predecessor")]
     public async Task GivenSavedSelfPair()
     {
@@ -341,6 +504,12 @@ public sealed class ComparisonSteps : IDisposable
         if (Directory.Exists(_directory)) Directory.Delete(_directory, true);
     }
 
+    private static MeasurementInventory Change(MeasurementInventory inventory, MetricKind metric, Func<Observation, Observation> change) =>
+        inventory with
+        {
+            Cases = [inventory.Cases[0] with { Observations = [.. inventory.Cases[0].Observations.Select(o => o.Metric == metric ? change(o) : o)] }],
+        };
+
     private async Task<ProcessOutcome> RunRevisionAsync(ProcessRequest request, CancellationToken cancellationToken)
     {
         var side = string.Join(' ', request.Arguments.Append(request.WorkingDirectory)).Contains("/previous/", StringComparison.Ordinal)
@@ -369,6 +538,18 @@ public sealed class ComparisonSteps : IDisposable
 
         return new ProcessOutcome(0, []);
     }
+
+    private void ThenJudgment(MetricKind metric, string judgment)
+    {
+        var result = Metric(metric);
+        result.Judgment.Should().Be(Enum.Parse<MetricJudgment>(judgment.Replace(" ", "", StringComparison.Ordinal), ignoreCase: true));
+        if (result.Judgment is MetricJudgment.ReviewRequired or MetricJudgment.InsufficientEvidence)
+            result.Reason.Should().NotBeNullOrWhiteSpace();
+    }
+
+    private MetricComparison Metric(MetricKind metric) => _document!.Cases.Single().Metrics.Single(m => m.Metric == metric);
+
+    private const string ValidStatistics = """{"Mean":100,"ConfidenceInterval":{"Level":12,"Lower":98,"Upper":102}}""";
 
     private const string ExportJson = """
         {"Title":"Invented","HostEnvironmentInfo":{"BenchmarkDotNetVersion":"0.15.8","Configuration":"Release","HasAttachedDebugger":false},
@@ -409,6 +590,7 @@ public sealed class ComparisonSteps : IDisposable
         {"Repository":"example/tool","Id":20,"Tag":"v2","PublishedAt":"2026-01-04T00:00:00Z","Draft":false,
          "Prerelease":false,"Commit":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","ResolutionFailure":null}
         """)!;
+    private readonly IdentityMapping _mapping;
     private SessionManifest _session;
     private ReleaseCatalog _catalog = new([], true, null);
     private ReleasePair? _pair;
@@ -416,6 +598,7 @@ public sealed class ComparisonSteps : IDisposable
     private MeasurementInventory _previous;
     private MeasurementInventory _current;
     private ImmutableArray<PairedCase> _pairs = [];
+    private ComparisonDocument? _document;
     private string? _condition;
     private InvalidDataException? _selectionFailure;
     private string? _invalidSavedJson;
