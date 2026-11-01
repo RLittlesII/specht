@@ -94,3 +94,56 @@ measuring Features `0109-F2` to `0109-F4` keep their measurement boundaries
 ## Reversal
 
 None.
+
+## Addendum - 2026-11-01: one release at a time on a shared host
+
+**Asked** directly in the session while item `0214` was in review: when
+`release` and `comparison` run at the same time on the pool, what keeps a
+measured revision away from the release job's write token? The options offered
+were separate operating-system accounts, separate machines, or the same
+operating-system account.
+
+**The owner's answer**, verbatim, with the original's "teo" read as "two":
+
+> "This is the same problem you'd have without everything co-located on the
+> same machine. You have to explicitly NOT kick off two releases to ensure
+> this. :shrug:"
+
+### The call
+
+- The design does not rely on isolation between the pool's runners on one
+  host; no separate operating-system account or machine per runner is assumed.
+- The owner accepts the exposure that remains when a release run's `release`
+  and `comparison` jobs share a host as no different from the exposure without
+  co-location.
+- The safeguard the owner names is that two releases are never started at
+  once. A-5 records it.
+
+### Rejected
+
+The owner chose none of the three host arrangements and named the release
+practice instead. Separate operating-system accounts and separate machines are
+therefore not requirements of the design. Cost of rejection: within one release
+run, nothing in the host keeps a measured revision from the release job's step
+environment while `attach` waits.
+
+### Consequences
+
+- **The "C-10 on a shared host" consequence above is corrected.** § 7 shows the
+  job-scope boundary: the comparison job is granted no publishing credential,
+  its measured processes receive none, and no artifact carries one. It does not
+  show a host boundary. C-10's meaning is unchanged: no publishing credential is
+  granted to measurement or handed from one job to another.
+- **ADR-0001 is not edited.** Its credential separation is the separate job's
+  permission boundary, which still holds; it never claimed a host boundary.
+- **The one-runner consequence above is corrected.** "Every release ends
+  `Incomplete` after that wait" holds when the release job takes the single
+  runner first. When the comparison job takes it, the comparison ends at its own
+  receipt wait and the release job reports that result at once (§ 7). A-4 and
+  OQ-4's default say so.
+
+### Affects
+
+`0109-F5` A-4 and OQ-4's default (corrected), A-5 (added), C-10 (unchanged),
+and the § 7 sentence on what keeps the release job's token from a measured
+revision on the same host.

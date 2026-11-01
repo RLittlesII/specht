@@ -46,13 +46,17 @@ public sealed class ReportBundler(IFileSystem fileSystem, string repositoryRoot)
                 || ComparisonJson.Write(ComparisonJson.ReadSession(comparison.GetProperty("session").GetRawText()))
                     != Encoding.UTF8.GetString(entries["session.json"])
                 || SourceFiles(comparison).Any(path => !listed.TryGetValue(path, out var file) || file.Role != RawExportRole)
-                || Locators(comparison).Any(cited => cited.SourceFile is null || !listed.TryGetValue(cited.SourceFile, out var file)
+                || Locators(root).Any(cited => cited.SourceFile is null || !listed.TryGetValue(cited.SourceFile, out var file)
                     || file.Role != RawExportRole || !ResolvesParent(documents[cited.SourceFile].RootElement, cited.Locator)))
                 throw new InvalidDataException("Report evidence references are not files and records of this bundle.");
             if (documents.Any(static document => HoldsAbsolutePath(document.Value.RootElement, document.Key == "report.json")))
                 throw new InvalidDataException("Report bundle holds an absolute path.");
+            if (Encoding.UTF8.GetString(entries["report.md"]) != ComparisonReport.Markdown(ComparisonJson.ReadPair(root.GetProperty("pair").GetRawText()),
+                    ComparisonJson.ReadDocument(comparison.GetRawText())))
+                throw new InvalidDataException("Report bundle Markdown is not the rendering of its JSON report.");
         }
-        catch (Exception exception) when (exception is JsonException or InvalidOperationException or KeyNotFoundException or FormatException)
+        catch (Exception exception) when (exception is JsonException or InvalidOperationException or KeyNotFoundException or FormatException
+            or NullReferenceException)
         {
             throw new InvalidDataException("Report bundle document is malformed.");
         }

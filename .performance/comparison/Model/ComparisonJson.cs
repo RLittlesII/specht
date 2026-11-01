@@ -119,6 +119,8 @@ public static class ComparisonJson
         && parts.All(static part => part.Length > 0 && part is not "." and not ".."
             && part.All(static c => char.IsAsciiLetterOrDigit(c) || c is '-' or '_' or '.'));
 
+    internal static ComparisonDocument ReadDocument(string json) => Read<ComparisonDocument>(json);
+
     internal static void CheckDuplicateProperties(JsonElement element)
     {
         if (element.ValueKind == JsonValueKind.Object)

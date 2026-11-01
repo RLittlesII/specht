@@ -286,10 +286,12 @@ public sealed class PairedCollectorIntegrationTests : IDisposable
 
         // Then
         result.Session.Previous.InventoryKnown.Should().BeTrue();
+        result.Previous.InventoryReason.Should().BeNull();
         result.Session.Previous.ExpectedCases
             .Select(static workload => $"{workload.OperationId}({string.Join(',', workload.Parameters.Values.Select(static value => value.Value))})")
             .Should().Equal("check(1)", "check(10)", "start()");
         result.Session.Current.InventoryKnown.Should().BeFalse();
+        result.Current.InventoryReason.Should().Be("Revision benchmarks do not declare one workload identity for every selected benchmark.");
         result.Session.Current.ExpectedCases.Should().BeEmpty();
     }
 

@@ -177,7 +177,9 @@ public sealed class ComparisonReportUnitTests
     {
         // Given
         ReleasePair pair = ReportFixtures.Pair().WithPrevious(null);
-        ComparisonDocument document = new ComparisonDocumentFixture().WithJudgment(ComparisonJudgment.NoBaseline).WithCases([]).WithGaps([]);
+        var unmeasured = new string('0', 40);
+        ComparisonDocument document = new ComparisonDocumentFixture().WithJudgment(ComparisonJudgment.NoBaseline).WithCases([]).WithGaps([])
+            .WithSession(new SessionManifestFixture().WithPrevious(new SessionSideFixture().WithProductCommit(unmeasured)));
 
         // When
         var markdown = ComparisonReport.Markdown(pair, document);
@@ -185,6 +187,7 @@ public sealed class ComparisonReportUnitTests
 
         // Then
         markdown.Should().Contain("Overall judgment: No baseline");
+        markdown.Should().Contain("| Previous | None |").And.NotContain(unmeasured);
         markdown.Should().NotContain("No regression flagged").And.NotContain("Review required");
         using var report = JsonDocument.Parse(json);
         report.RootElement.GetProperty("comparison").GetProperty("judgment").GetString().Should().Be("NoBaseline");

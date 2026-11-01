@@ -77,12 +77,246 @@ public sealed class DeclaredIdentityUnitTests
         mappings.Should().BeEmpty();
     }
 
+    [Theory]
+    [ClassData(typeof(UnreadableDeclarations))]
+    public void DeclarationTheReaderCannotRead_WhenRead_ShouldMapNothingFromIt(string source)
+    {
+        // Given
+        var sources = new Dictionary<string, byte[]>(StringComparer.Ordinal)
+        {
+            [CheckFile] = Encoding.UTF8.GetBytes(source),
+            [StartupFile] = Encoding.UTF8.GetBytes(SyntheticBenchmarks.Startup),
+        };
+        using var assembly = new MemoryStream(SyntheticBenchmarks.Compile(($"checkout/{CheckFile}", source),
+            ($"checkout/{StartupFile}", SyntheticBenchmarks.Startup)));
+
+        // When
+        var mappings = DeclaredIdentity.Read(assembly, new string('1', 40), "checkout", path => sources.GetValueOrDefault(path));
+
+        // Then
+        mappings.Select(static mapping => mapping.FullName).Should().Equal("Specht.Benchmarks.Startup.ColdStartBenchmarks.Start");
+    }
+
+    [Theory]
+    [ClassData(typeof(SeveralParameters))]
+    public void SeveralParameters_WhenRead_ShouldNameEachCombinationFieldsBeforePropertiesAsBenchmarkDotNetExportsIt(string source, string[] expected)
+    {
+        // Given
+        var sources = new Dictionary<string, byte[]>(StringComparer.Ordinal) { [CheckFile] = Encoding.UTF8.GetBytes(source) };
+        using var assembly = new MemoryStream(SyntheticBenchmarks.Compile(($"checkout/{CheckFile}", source)));
+
+        // When
+        var mappings = DeclaredIdentity.Read(assembly, new string('1', 40), "checkout", path => sources.GetValueOrDefault(path));
+
+        // Then
+        mappings.Select(static mapping => mapping.FullName).Should().BeEquivalentTo(expected);
+    }
+
     public sealed class UnverifiableDeclarations : TheoryData<string, bool>
     {
         public UnverifiableDeclarations()
         {
             Add($"elsewhere/{CheckFile}", true);
             Add($"checkout/{CheckFile}", false);
+        }
+    }
+
+    public sealed class UnreadableDeclarations : TheoryData<string>
+    {
+        public UnreadableDeclarations()
+        {
+            Add("""
+                namespace Specht.Benchmarks.Engine
+                {
+                    public class CheckBenchmarks
+                    {
+                        [BenchmarkDotNet.Attributes.Params(1.5, 2.5)]
+                        public double Scale { get; set; }
+
+                        [Specht.Benchmarks.WorkloadIdentity("check", "1", "synthetic-tree", "1", "engine-run")]
+                        public void Check() { }
+                    }
+                }
+                """);
+            Add("""
+                namespace Specht.Benchmarks.Engine
+                {
+                    public class CheckBenchmarks
+                    {
+                        [BenchmarkDotNet.Attributes.Params("small", "large")]
+                        public string Size { get; set; }
+
+                        [Specht.Benchmarks.WorkloadIdentity("check", "1", "synthetic-tree", "1", "engine-run")]
+                        public void Check() { }
+                    }
+                }
+                """);
+            Add("""
+                namespace Specht.Benchmarks.Engine
+                {
+                    public class CheckBenchmarks
+                    {
+                        [BenchmarkDotNet.Attributes.Arguments(1)]
+                        [Specht.Benchmarks.WorkloadIdentity("check", "1", "synthetic-tree", "1", "engine-run")]
+                        public void Check(int specifications) { }
+                    }
+                }
+                """);
+            Add("""
+                namespace Specht.Benchmarks.Engine
+                {
+                    public class CheckBenchmarks
+                    {
+                        public static int[] Counts => new[] { 1, 10 };
+
+                        [BenchmarkDotNet.Attributes.ArgumentsSource("Counts")]
+                        [Specht.Benchmarks.WorkloadIdentity("check", "1", "synthetic-tree", "1", "engine-run")]
+                        public void Check(int specifications) { }
+                    }
+                }
+                """);
+            Add("""
+                namespace Specht.Benchmarks.Engine
+                {
+                    public class CheckBenchmarks
+                    {
+                        public static int[] Counts => new[] { 1, 10 };
+
+                        [BenchmarkDotNet.Attributes.ParamsSource("Counts")]
+                        public int Specifications { get; set; }
+
+                        [Specht.Benchmarks.WorkloadIdentity("check", "1", "synthetic-tree", "1", "engine-run")]
+                        public void Check() { }
+                    }
+                }
+                """);
+            Add("""
+                namespace Specht.Benchmarks.Engine
+                {
+                    public class CheckBenchmarks
+                    {
+                        [BenchmarkDotNet.Attributes.ParamsAllValues]
+                        public bool Cached;
+
+                        [Specht.Benchmarks.WorkloadIdentity("check", "1", "synthetic-tree", "1", "engine-run")]
+                        public void Check() { }
+                    }
+                }
+                """);
+            Add("""
+                namespace Specht.Benchmarks.Engine
+                {
+                    public class Outer
+                    {
+                        public class CheckBenchmarks
+                        {
+                            [Specht.Benchmarks.WorkloadIdentity("check", "1", "synthetic-tree", "1", "engine-run")]
+                            public void Check() { }
+                        }
+                    }
+                }
+                """);
+            Add("""
+                namespace Specht.Benchmarks.Engine
+                {
+                    public class CheckBenchmarks<T>
+                    {
+                        [Specht.Benchmarks.WorkloadIdentity("check", "1", "synthetic-tree", "1", "engine-run")]
+                        public void Check() { }
+                    }
+                }
+                """);
+            Add("""
+                namespace Specht.Benchmarks.Engine
+                {
+                    public class CheckBenchmarks
+                    {
+                        [Specht.Benchmarks.WorkloadIdentity("", "1", "synthetic-tree", "1", "engine-run")]
+                        public void Check() { }
+                    }
+                }
+                """);
+            Add("""
+                namespace Specht.Benchmarks.Engine
+                {
+                    public class CheckBenchmarks
+                    {
+                        [Specht.Benchmarks.WorkloadIdentity("check", "1", null, "1", "engine-run")]
+                        public void Check() { }
+                    }
+                }
+                """);
+            Add("""
+                namespace Specht.Benchmarks.Engine
+                {
+                    public class CheckBenchmarks
+                    {
+                        [Specht.Benchmarks.WorkloadIdentity("check", "1", "synthetic-tree", "1", "engine-run", "")]
+                        public void Check() { }
+                    }
+                }
+                """);
+            Add("""
+                namespace Specht.Benchmarks.Engine
+                {
+                    public class CheckBenchmarks
+                    {
+                        [Specht.Benchmarks.WorkloadIdentity("check", "1", "synthetic-tree", "1")]
+                        public void Check() { }
+                    }
+                }
+                """);
+        }
+    }
+
+    public sealed class SeveralParameters : TheoryData<string, string[]>
+    {
+        public SeveralParameters()
+        {
+            Add("""
+                namespace Specht.Benchmarks.Analysis
+                {
+                    public class BindingLookupBenchmarks
+                    {
+                        [BenchmarkDotNet.Attributes.Params(1, 40, 160)]
+                        public int Records { get; set; }
+
+                        [BenchmarkDotNet.Attributes.Params(1, 40)]
+                        public int Bindings { get; set; }
+
+                        [Specht.Benchmarks.WorkloadIdentity("resolve-bindings", "1", "synthetic-binding-catalog", "1", "in-process")]
+                        public int ResolveBindings() => 0;
+                    }
+                }
+                """,
+                [
+                    "Specht.Benchmarks.Analysis.BindingLookupBenchmarks.ResolveBindings(Records: 1, Bindings: 1)",
+                    "Specht.Benchmarks.Analysis.BindingLookupBenchmarks.ResolveBindings(Records: 1, Bindings: 40)",
+                    "Specht.Benchmarks.Analysis.BindingLookupBenchmarks.ResolveBindings(Records: 40, Bindings: 1)",
+                    "Specht.Benchmarks.Analysis.BindingLookupBenchmarks.ResolveBindings(Records: 40, Bindings: 40)",
+                    "Specht.Benchmarks.Analysis.BindingLookupBenchmarks.ResolveBindings(Records: 160, Bindings: 1)",
+                    "Specht.Benchmarks.Analysis.BindingLookupBenchmarks.ResolveBindings(Records: 160, Bindings: 40)",
+                ]);
+            Add("""
+                namespace Specht.Benchmarks.Analysis
+                {
+                    public class BindingLookupBenchmarks
+                    {
+                        [BenchmarkDotNet.Attributes.Params(1, 40)]
+                        public int Bindings { get; set; }
+
+                        [BenchmarkDotNet.Attributes.Params(160)]
+                        public int Records;
+
+                        [Specht.Benchmarks.WorkloadIdentity("resolve-bindings", "1", "synthetic-binding-catalog", "1", "in-process")]
+                        public int ResolveBindings() => 0;
+                    }
+                }
+                """,
+                [
+                    "Specht.Benchmarks.Analysis.BindingLookupBenchmarks.ResolveBindings(Records: 160, Bindings: 1)",
+                    "Specht.Benchmarks.Analysis.BindingLookupBenchmarks.ResolveBindings(Records: 160, Bindings: 40)",
+                ]);
         }
     }
 

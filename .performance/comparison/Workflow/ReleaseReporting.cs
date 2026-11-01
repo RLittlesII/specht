@@ -57,9 +57,9 @@ public sealed class ReleaseReporting(HttpClient client, IFileSystem fileSystem, 
         return null;
     }
 
-    public async Task<ReportingOutcome> AttachAsync(RunContext context, string directory, CancellationToken cancellationToken)
+    public async Task<ReportingOutcome?> AttachAsync(RunContext context, string directory, CancellationToken cancellationToken)
     {
-        if (!ReleaseTrigger.IsReleasePublication(context)) return ReportingOutcome.Failed(ReportingStage.Receipt, "This run published no release.");
+        if (!ReleaseTrigger.IsReleasePublication(context)) return null;
         enter?.Invoke(ReportingStage.Receipt);
         ReleasePair pair;
         ComparisonReceipt receipt;
@@ -98,7 +98,8 @@ public sealed class ReleaseReporting(HttpClient client, IFileSystem fileSystem, 
             if (outcome.Report is not null) return ReportingOutcome.Failed(ReportingStage.ResultTransport, null);
             if (outcome.State == ReportingState.Incomplete) return outcome;
             bundle = await fileSystem.File.ReadAllBytesAsync(Full($"{returned}/{name}"), cancellationToken);
-            if (!IsThisRequests(bundle, pair, context, outcome)) return ReportingOutcome.Failed(ReportingStage.ResultTransport, null);
+            if (ThisRequests(bundle, pair, context, outcome) is not { } reported) return ReportingOutcome.Failed(ReportingStage.ResultTransport, null);
+            outcome = reported;
         }
         catch (Exception exception) when (IsUnusable(exception, cancellationToken))
         {
@@ -117,14 +118,15 @@ public sealed class ReleaseReporting(HttpClient client, IFileSystem fileSystem, 
         }
     }
 
-    private static bool IsThisRequests(byte[] bundle, ReleasePair pair, RunContext context, ReportingOutcome outcome)
+    private static ReportingOutcome? ThisRequests(byte[] bundle, ReleasePair pair, RunContext context, ReportingOutcome outcome)
     {
         _ = ReportBundler.Validate(new MemoryStream(bundle));
         using var archive = new ZipArchive(new MemoryStream(bundle), ZipArchiveMode.Read);
         var session = ComparisonJson.ReadSession(Entry(archive, "session.json"));
         using var report = JsonDocument.Parse(Entry(archive, "report.json"));
+        var reported = ReportingOutcome.Completed(ComparisonJson.ReadDocument(report.RootElement.GetProperty("comparison").GetRawText()), outcome.Reason);
         return Entry(archive, "pair.json") == ComparisonJson.Write(pair) && session.RunId == context.RunId && session.Attempt == context.Attempt
-            && report.RootElement.GetProperty("comparison").GetProperty("judgment").GetString() == outcome.Judgment?.ToString();
+            && reported.Judgment == outcome.Judgment && reported.Flags.SequenceEqual(outcome.Flags) ? reported : null;
     }
 
     private static string Entry(ZipArchive archive, string name)

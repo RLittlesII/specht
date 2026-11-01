@@ -12,7 +12,7 @@ public sealed class RunArtifactsIntegrationTests : IDisposable
     public RunArtifactsIntegrationTests()
     {
         Directory.CreateDirectory(_root);
-        _handler = new ScriptedHttpHandler(request => _artifacts.Respond(request) ?? new HttpResponseMessage(HttpStatusCode.NotFound));
+        _handler = new ScriptedHttpHandler(request => Fault(request) ?? _artifacts.Respond(request) ?? new HttpResponseMessage(HttpStatusCode.NotFound));
         _client = new HttpClient(_handler);
     }
 
@@ -93,6 +93,68 @@ public sealed class RunArtifactsIntegrationTests : IDisposable
         File.Exists(Path.Combine(_root, "escaped.json")).Should().BeFalse();
     }
 
+    [Theory(Timeout = 20_000)]
+    [InlineData(HttpStatusCode.ServiceUnavailable)]
+    [InlineData(HttpStatusCode.TooManyRequests)]
+    [InlineData(null)]
+    public async Task ListingThatFailsTransientlyOnce_WhenTheNextPollSucceeds_ShouldDownloadTheArtifact(HttpStatusCode? status)
+    {
+        // Given
+        _artifacts.Add(7, "comparison-result-1234-2", false, ActionsArtifacts.Zip(("outcome.json", "result")));
+        _faults = 1;
+        _status = status;
+        var waiting = Waiter().WaitAsync("example/tool", "1234", "comparison-result-1234-2", "result", TimeSpan.FromMinutes(5),
+            TestContext.Current.CancellationToken);
+        await _faulted.Task;
+
+        // When
+        _time.Advance(TimeSpan.FromSeconds(30));
+        var found = await waiting;
+
+        // Then
+        found.Should().BeTrue();
+        File.Exists(Path.Combine(_root, "result", "outcome.json")).Should().BeTrue();
+    }
+
+    [Fact(Timeout = 20_000)]
+    public async Task ListingThatKeepsFailingTransiently_WhenTheBoundPasses_ShouldStopWaitingWithoutDownloading()
+    {
+        // Given
+        _artifacts.Add(7, "comparison-result-1234-2", false, ActionsArtifacts.Zip(("outcome.json", "result")));
+        _faults = int.MaxValue;
+        _status = HttpStatusCode.BadGateway;
+        var waiting = Waiter().WaitAsync("example/tool", "1234", "comparison-result-1234-2", "result", TimeSpan.FromMinutes(5),
+            TestContext.Current.CancellationToken);
+        await _faulted.Task;
+
+        // When
+        _time.Advance(TimeSpan.FromMinutes(5));
+        var found = await waiting;
+
+        // Then
+        found.Should().BeFalse();
+        _artifacts.Requests.Should().BeEmpty();
+        Directory.Exists(Path.Combine(_root, "result")).Should().BeFalse();
+    }
+
+    [Theory]
+    [InlineData(HttpStatusCode.Unauthorized)]
+    [InlineData(HttpStatusCode.Forbidden)]
+    [InlineData(HttpStatusCode.NotFound)]
+    public async Task ListingThatIsRefused_WhenWaiting_ShouldFailWithoutWaitingForTheBound(HttpStatusCode status)
+    {
+        // Given
+        _faults = int.MaxValue;
+        _status = status;
+
+        // When
+        var waiting = () => Waiter().WaitAsync("example/tool", "1234", "comparison-result-1234-2", "result", TimeSpan.FromMinutes(5),
+            TestContext.Current.CancellationToken);
+
+        // Then
+        (await waiting.Should().ThrowAsync<HttpRequestException>()).Which.StatusCode.Should().Be(status);
+    }
+
     public void Dispose()
     {
         _client.Dispose();
@@ -102,9 +164,19 @@ public sealed class RunArtifactsIntegrationTests : IDisposable
 
     private RunArtifacts Waiter() => new(_client, new FileSystem(), _time, _root);
 
+    private HttpResponseMessage? Fault(HttpRequestMessage request)
+    {
+        if (!request.RequestUri!.AbsolutePath.EndsWith("/artifacts", StringComparison.Ordinal) || Interlocked.Decrement(ref _faults) < 0) return null;
+        _faulted.TrySetResult();
+        return _status is { } status ? new HttpResponseMessage(status) : throw new HttpRequestException("The connection was reset.");
+    }
+
     private readonly string _root = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
     private readonly FakeTimeProvider _time = new();
     private readonly ActionsArtifacts _artifacts = new();
+    private readonly TaskCompletionSource _faulted = new(TaskCreationOptions.RunContinuationsAsynchronously);
     private readonly ScriptedHttpHandler _handler;
     private readonly HttpClient _client;
+    private int _faults;
+    private HttpStatusCode? _status;
 }

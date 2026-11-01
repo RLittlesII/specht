@@ -128,7 +128,7 @@ Nothing publishes `specht.tool`: `0001-F2` § 5 row 7 hands the release workflow
 
 ## 7. Technical Design
 
-<!-- last written by: implementer, 2026-10-14 (the `build` job's step 3, `0001-F2` B-045 and its decision 0011), 2026-10-23 (item 0264, both jobs on the macOS pool, `0055-F2` decision 0005) -->
+<!-- last written by: implementer, 2026-10-14 (the `build` job's step 3, `0001-F2` B-045 and its decision 0011), 2026-10-23 (item 0264, both jobs on the macOS pool, `0055-F2` decision 0005), 2026-11-01 (item 0214, a rerun past a published Release, `0109-F5` decision 0005) -->
 
 On 2026-10-14, B-010 uses the native NuGet environment credential
 `NuGetPackageSourceCredentials_specht`, supplied at the generated release build
@@ -143,6 +143,15 @@ The repository owner asked that the release job use NUKE targets instead of embe
 ### Item 0264 amendment (2026-10-23)
 
 Both jobs, `build` and `release`, run on the owner's self-hosted pool, `runs-on: [self-hosted, macOS, ARM64]`, in place of `ubuntu-latest` (C-9; `0055-F2` C-12, decision 0005). In [`.build/SpechtBuild.Release.cs`](../../SpechtBuild.Release.cs) the `release` job's `Matrix` is the `RunnerPool` constant that [`.build/SpechtBuild.GitHubActions.cs`](../../SpechtBuild.GitHubActions.cs) declares, and its checkout sets `Clean = true`; the `build` job takes the same substitution and the same clean checkout from the shared `Middleware` (`0055-F2` § 7). Every checkout in [`release.yml`](../../../.github/workflows/release.yml) therefore writes `clean: 'true'` where the generator wrote `clean: 'false'`, so a pool runner's untracked and ignored files from an earlier job, an earlier `.artifacts/nupkg/` among them, are removed before the job reads its workspace (`0055-F2` C-11). The `release` job still takes its package only from this run's artifact (C-4). No step, target, permission or trigger changed. Where the design detail below names `ubuntu-latest` for either job, it describes the file before this amendment.
+
+### Item 0214 amendment (2026-11-01)
+
+`0109-F5` adds advisory comparison steps to the `release` job after "Create GitHub Release" (`0109-F5` decision 0005, ADR-0001), so a rerun of the whole run reaches them only if both publication steps pass. Two changes follow; no claim, constraint, grant or trigger changes.
+
+- **The `release` job's checkout persists no credential** (`PersistCredentials = false`, `persist-credentials: 'false'`). The checkout this job has had since item 0250 no longer leaves the write token in the clone's git configuration; the token reaches only the steps that name it.
+- **`CreateGitHubRelease` keeps a Release already published at this commit.** Before `gh release create` it asks `gh release view <tag> --json tagName,isDraft,assets` and `gh api repos/<repository>/commits/tags/<tag> --jq .sha`. When the Release is under this tag, not a draft, its tag resolves to `GITHUB_SHA`, and both package file names are among its assets, the target logs that it keeps the Release and succeeds without changing it. Any other answer, a failed query or no Release included, runs `gh release create` exactly as before, so a first publication that fails still fails the job, and a Release left partly made - a draft, or one asset missing - still fails at creation and needs a hand. B-004 and B-007 hold: the Release kept is the one this Feature created for that tag, with both packages attached.
+
+This supersedes "A rerun after the Release exists fails at the Release step" and the last sentence of "What the flag costs" below, for a Release complete at this commit. The rest of that list, OQ-14 included, is unchanged: a whole rerun still packs again, and the kept Release carries the first run's files. "`release` has no checkout" below describes the file before item 0250. That GitHub answers these two queries as read here is `gh`'s documentation; no rerun has been observed.
 
 **Built by item 0083 for B-001, B-002, B-005, B-008 and B-009, and by item 0084 for B-003, B-004, B-006, B-007, B-011 and B-012**, in the shape decisions 0001 and 0003 record: the generated file `release.yml`, the targets `Release` and `VerifyTag`, the job `build` on `ubuntu-latest` (on the macOS pool since item 0264, 2026-10-23) and the job `release`. No test proves it: for item 0083's five claims by decision 0002 and § 5 #9, and for item 0084's six by § 5 #9 alone, since decision 0002 names only the five. Decision 0003's 2026-10-14 addendum resolves OQ-16 for the first-publication reconciliation; § 8 records the evidence. The manual trigger carries no input, which is OQ-7's proposed default; OQ-7 and OQ-14 are open and block nothing here. B-010 is item 0085's; where this design leaves room for it, it says so and builds nothing.
 

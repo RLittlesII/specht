@@ -27,11 +27,12 @@ public static class ComparisonReport
         text.Append("## Measurement conditions\n\n");
         Table(text, ["Side", "Product commit", "Operating system", "Runtime", "Architecture", "Toolchain", "Garbage collection", "Job",
                 "Harness", "Exporter", "Invocation"],
-            new[] { ("Previous", session.Previous), ("Current", session.Current) }.Select(static s => new[]
+            new[] { ("Previous", session.Previous), ("Current", session.Current) }.Select(s => new[]
             {
-                s.Item1, s.Item2.ProductCommit, Known(s.Item2.Conditions.OperatingSystem), Known(s.Item2.Conditions.Runtime),
-                Known(s.Item2.Conditions.Architecture), Known(s.Item2.Conditions.Toolchain), Known(s.Item2.Conditions.GarbageCollection),
-                Known(s.Item2.Conditions.Job), s.Item2.HarnessVersion, s.Item2.ExporterVersion, string.Join(' ', s.Item2.Invocation),
+                s.Item1, s.Item1 == "Previous" && pair.Previous is null ? "None" : s.Item2.ProductCommit,
+                Known(s.Item2.Conditions.OperatingSystem), Known(s.Item2.Conditions.Runtime), Known(s.Item2.Conditions.Architecture),
+                Known(s.Item2.Conditions.Toolchain), Known(s.Item2.Conditions.GarbageCollection), Known(s.Item2.Conditions.Job),
+                s.Item2.HarnessVersion, s.Item2.ExporterVersion, string.Join(' ', s.Item2.Invocation),
             }));
         text.Append("## Policy\n\n");
         Table(text, ["Policy version", "Timing screen", "Managed allocation screen"],

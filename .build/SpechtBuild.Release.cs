@@ -4,6 +4,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.IO.Abstractions;
 using System.Linq;
+using System.Text.Json;
 using System.Xml.Linq;
 using Nuke.Common;
 using Nuke.Common.CI.GitHubActions;
@@ -11,6 +12,7 @@ using Nuke.Common.IO;
 using Nuke.Common.Tooling;
 using Nuke.Common.Tools.DotNet;
 using Rocket.Surgery.Nuke.GithubActions;
+using Serilog;
 using Specht.Build;
 using static Nuke.Common.Tools.DotNet.DotNetTasks;
 using static Nuke.Common.Tools.Git.GitTasks;
@@ -90,9 +92,16 @@ internal sealed partial class SpechtBuild
             var repository = Environment.GetEnvironmentVariable("GITHUB_REPOSITORY");
             Assert.True(!string.IsNullOrWhiteSpace(repository), "The release job has no repository.");
             var tag = Environment.GetEnvironmentVariable("GITHUB_REF_NAME");
+            var gh = ToolPathResolver.GetPathExecutable("gh");
+
+            if (IsPublishedAtThisCommit(gh, repository!, tag!, packages))
+            {
+                Log.Information("The GitHub Release {Tag} is already published at this commit with both packages, so it is kept as it is.", tag);
+                return;
+            }
 
             ProcessTasks.StartProcess(
-                    ToolPathResolver.GetPathExecutable("gh"),
+                    gh,
                     $"release create \"{tag}\" {string.Join(' ', packages.Select(static package => $"\"{package}\""))} " +
                     $"--generate-notes --verify-tag --repo \"{repository}\"",
                     RootDirectory)
@@ -125,6 +134,39 @@ internal sealed partial class SpechtBuild
         {
             var packageId = XDocument.Load(RootDirectory / project).Descendants("PackageId").Single().Value;
             return PackageDirectory / $"{packageId}.{version}.nupkg";
+        }
+    }
+
+    private bool IsPublishedAtThisCommit(string gh, string repository, string tag, string[] packages)
+    {
+        var commit = Environment.GetEnvironmentVariable("GITHUB_SHA");
+        if (string.IsNullOrWhiteSpace(commit)
+            || Query(gh, $"release view \"{tag}\" --repo \"{repository}\" --json tagName,isDraft,assets") is not { } release
+            || Query(gh, $"api \"repos/{repository}/commits/tags/{tag}\" --jq .sha") is not { } tagged)
+        {
+            return false;
+        }
+
+        try
+        {
+            using var document = JsonDocument.Parse(release);
+            var root = document.RootElement;
+            var assets = root.GetProperty("assets").EnumerateArray().Select(static asset => asset.GetProperty("name").GetString()).ToArray();
+            return tagged.Trim() == commit && root.GetProperty("tagName").GetString() == tag && !root.GetProperty("isDraft").GetBoolean()
+                && packages.All(package => assets.Contains(Path.GetFileName(package), StringComparer.Ordinal));
+        }
+        catch (Exception exception) when (exception is JsonException or InvalidOperationException or KeyNotFoundException)
+        {
+            return false;
+        }
+
+        string? Query(string executable, string arguments)
+        {
+            var process = ProcessTasks.StartProcess(executable, arguments, RootDirectory, logOutput: false);
+            process.AssertWaitForExit();
+            return process.ExitCode == 0
+                ? string.Join('\n', process.Output.Where(static line => line.Type == OutputType.Std).Select(static line => line.Text))
+                : null;
         }
     }
 
@@ -189,7 +231,7 @@ internal sealed partial class SpechtBuild
             Matrix = [RunnerPool],
             Steps =
             [
-                new CheckoutStep("Checkout") { FetchDepth = 0, Clean = true },
+                new CheckoutStep("Checkout") { FetchDepth = 0, Clean = true, PersistCredentials = false },
                 new DownloadArtifactStep("Download the package")
                 {
                     Name = PackageArtifact,

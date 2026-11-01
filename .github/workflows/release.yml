@@ -154,6 +154,7 @@ jobs:
         with:
           clean: 'true'
           fetch-depth: '0'
+          persist-credentials: 'false'
       - name: 🚀 Download the package
         uses: actions/download-artifact@v4
         with:

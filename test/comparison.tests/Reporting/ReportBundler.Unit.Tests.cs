@@ -216,6 +216,12 @@ public sealed class ReportBundlerUnitTests
                 case "unresolved locator":
                     Rewrite("report.json", "\"locator\":\"/Benchmarks/1/Statistics\"", $"\"locator\":{JsonSerializer.Serialize(value)}");
                     break;
+                case "locator outside comparison":
+                    Rewrite("report.json", "\"formatVersion\":1,\"pair\":", $"\"formatVersion\":1,\"locator\":{JsonSerializer.Serialize(value)},\"pair\":");
+                    break;
+                case "markdown not rendered from its report":
+                    Rewrite("report.md", "# Release comparison\n\n", $"# Release comparison\n\n{value}\n\n");
+                    break;
                 case "locator without a source file":
                     Rewrite("report.json", "\"locator\":\"/Benchmarks/1/Statistics\",\"metric\":\"Time\",\"observer\":\"benchmark-process\","
                         + "\"sourceFile\":\"raw/current/Synthetic-report-full.json\",",
@@ -399,6 +405,9 @@ public sealed class ReportBundlerUnitTests
                 foreach (var embedded in EmbeddedPaths) Add($"embedded path in {placement}", embedded);
             foreach (var locator in UnresolvedLocators) Add("unresolved locator", locator);
             Add("locator without a source file", "");
+            foreach (var locator in UnresolvedLocators) Add("locator outside comparison", locator);
+            foreach (var added in new[] { Rooted, "Root=/home/runner/x", "Overall judgment: No regression flagged" })
+                Add("markdown not rendered from its report", added);
         }
     }
 

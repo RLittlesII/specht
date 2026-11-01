@@ -69,6 +69,85 @@ public sealed class CodeAnalysisReleaseIntegrationTests
             .And.Contain("--generate-notes --verify-tag");
     }
 
+    [Fact]
+    public async Task CreateGitHubRelease_WhenTheReleaseIsAlreadyPublishedAtThisCommitWithBothPackages_ShouldKeepItAndSucceed()
+    {
+        if (OperatingSystem.IsWindows())
+        {
+            Assert.Skip("The release job runs on Ubuntu.");
+        }
+
+        // Given
+        using var fixture = new ReleaseFixture();
+        fixture.WritePackages();
+
+        // When
+        var result = await fixture.RunTarget("CreateGitHubRelease", "push", Published, ReleaseFixture.Commit);
+
+        // Then
+        result.ExitCode.Should().Be(0, result.Output);
+        var invocations = File.ReadAllLines(fixture.GhLog);
+        invocations.Should().Contain("release view v1.2.3 --repo RLittlesII/specht --json tagName,isDraft,assets")
+            .And.Contain("api repos/RLittlesII/specht/commits/tags/v1.2.3 --jq .sha")
+            .And.NotContain(static invocation => invocation.StartsWith("release create", StringComparison.Ordinal));
+    }
+
+    [Theory]
+    [ClassData(typeof(ReleasesNotPublishedAtThisCommit))]
+    public async Task CreateGitHubRelease_WhenNoReleaseIsPublishedAtThisCommitWithBothPackages_ShouldCreateIt(string existing, string tagged)
+    {
+        if (OperatingSystem.IsWindows())
+        {
+            Assert.Skip("The release job runs on Ubuntu.");
+        }
+
+        // Given
+        using var fixture = new ReleaseFixture();
+        fixture.WritePackages();
+
+        // When
+        var result = await fixture.RunTarget("CreateGitHubRelease", "push", existing, tagged);
+
+        // Then
+        result.ExitCode.Should().Be(0, result.Output);
+        File.ReadAllLines(fixture.GhLog).Should().ContainSingle(static invocation => invocation.StartsWith("release create v1.2.3", StringComparison.Ordinal))
+            .Which.Should().Contain("--generate-notes --verify-tag");
+    }
+
+    [Fact]
+    public async Task CreateGitHubRelease_WhenCreationFails_ShouldFail()
+    {
+        if (OperatingSystem.IsWindows())
+        {
+            Assert.Skip("The release job runs on Ubuntu.");
+        }
+
+        // Given
+        using var fixture = new ReleaseFixture();
+        fixture.WritePackages();
+
+        // When
+        var result = await fixture.RunTarget("CreateGitHubRelease", "push", Draft, ReleaseFixture.Commit, createFails: true);
+
+        // Then
+        result.ExitCode.Should().NotBe(0);
+        File.ReadAllLines(fixture.GhLog).Should().Contain(static invocation => invocation.StartsWith("release create v1.2.3", StringComparison.Ordinal));
+    }
+
+    public sealed class ReleasesNotPublishedAtThisCommit : TheoryData<string, string>
+    {
+        public ReleasesNotPublishedAtThisCommit()
+        {
+            Add("", ReleaseFixture.Commit);
+            Add(Published, "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb");
+            Add(Draft, ReleaseFixture.Commit);
+            Add("""{"tagName":"v1.2.3","isDraft":false,"assets":[{"name":"specht.tool.1.2.3.nupkg"}]}""", ReleaseFixture.Commit);
+            Add("""{"tagName":"v1.2.4","isDraft":false,"assets":[{"name":"specht.tool.1.2.3.nupkg"},{"name":"Specht.CodeAnalysis.1.2.3.nupkg"}]}""",
+                ReleaseFixture.Commit);
+            Add("not json", ReleaseFixture.Commit);
+        }
+    }
+
     private static string FindRepositoryRoot()
     {
         for (var directory = new DirectoryInfo(AppContext.BaseDirectory); directory is not null; directory = directory.Parent)
@@ -99,12 +178,23 @@ public sealed class CodeAnalysisReleaseIntegrationTests
                 Path.Combine(Root, "src", "codeanalysis", "codeanalysis.csproj"),
                 "<Project><PropertyGroup><PackageId>Specht.CodeAnalysis</PackageId></PropertyGroup></Project>");
             var gh = Path.Combine(Root, "bin", "gh");
-            File.WriteAllText(gh, "#!/bin/sh\nprintf '%s\\n' \"$*\" > \"$INVOCATIONS\"\n");
+            File.WriteAllText(gh, """
+                #!/bin/sh
+                printf '%s\n' "$*" >> "$INVOCATIONS"
+                case "$1 $2" in
+                  "release view") [ -n "$EXISTING_RELEASE" ] || exit 1; printf '%s\n' "$EXISTING_RELEASE" ;;
+                  "release create") [ "$CREATE_FAILS" != "true" ] || exit 1 ;;
+                  "api "*) printf '%s\n' "$TAG_COMMIT" ;;
+                esac
+
+                """);
             if (!OperatingSystem.IsWindows())
             {
                 File.SetUnixFileMode(gh, UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute);
             }
         }
+
+        public const string Commit = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
 
         public string Root { get; } = Path.Combine(".artifacts", "release-tests", Guid.NewGuid().ToString("N"));
 
@@ -118,7 +208,8 @@ public sealed class CodeAnalysisReleaseIntegrationTests
             File.WriteAllText(Path.Combine(packages, "Specht.CodeAnalysis.1.2.3.nupkg"), "analysis");
         }
 
-        public async Task<(int ExitCode, string Output)> RunTarget(string target, string eventName)
+        public async Task<(int ExitCode, string Output)> RunTarget(string target, string eventName, string existingRelease = "",
+            string tagCommit = Commit, bool createFails = false)
         {
             using var process = new Process();
             process.StartInfo = new ProcessStartInfo("dotnet")
@@ -144,6 +235,10 @@ public sealed class CodeAnalysisReleaseIntegrationTests
             process.StartInfo.Environment["PATH"] =
                 Path.GetFullPath(Path.Combine(Root, "bin")) + Path.PathSeparator + Environment.GetEnvironmentVariable("PATH");
             process.StartInfo.Environment["INVOCATIONS"] = Path.GetFullPath(GhLog);
+            process.StartInfo.Environment["GITHUB_SHA"] = Commit;
+            process.StartInfo.Environment["EXISTING_RELEASE"] = existingRelease;
+            process.StartInfo.Environment["TAG_COMMIT"] = tagCommit;
+            process.StartInfo.Environment["CREATE_FAILS"] = createFails ? "true" : "false";
 
             process.Start();
             var stdout = process.StandardOutput.ReadToEndAsync(TestContext.Current.CancellationToken);
@@ -154,4 +249,10 @@ public sealed class CodeAnalysisReleaseIntegrationTests
 
         public void Dispose() => Directory.Delete(Root, recursive: true);
     }
+
+    private const string Published =
+        """{"tagName":"v1.2.3","isDraft":false,"assets":[{"name":"specht.tool.1.2.3.nupkg"},{"name":"Specht.CodeAnalysis.1.2.3.nupkg"}]}""";
+
+    private const string Draft =
+        """{"tagName":"v1.2.3","isDraft":true,"assets":[{"name":"specht.tool.1.2.3.nupkg"},{"name":"Specht.CodeAnalysis.1.2.3.nupkg"}]}""";
 }

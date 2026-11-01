@@ -102,7 +102,7 @@ public sealed class ReleaseReportingIntegrationTests : IDisposable
         // Then
         var retained = _storage.Assets.Should().ContainSingle(static asset => asset.Name == "comparison-20-1234-2.zip").Subject;
         retained.Content.Should().Equal(bundle);
-        outcome.State.Should().Be(ReportingState.Completed);
+        outcome!.State.Should().Be(ReportingState.Completed);
         outcome.Stage.Should().Be(ReportingStage.Attachment);
         outcome.Judgment.Should().Be(ComparisonJudgment.ReviewRequired);
         outcome.Flags.Should().Equal(ReportingOutcome.Completed(document, null).Flags);
@@ -150,7 +150,7 @@ public sealed class ReleaseReportingIntegrationTests : IDisposable
         var outcome = await Reporting().AttachAsync(new RunContextFixture(), "request", TestContext.Current.CancellationToken);
 
         // Then
-        outcome.Stage.Should().Be(ReportingStage.Attachment);
+        outcome!.Stage.Should().Be(ReportingStage.Attachment);
         outcome.State.Should().Be(ReportingState.Incomplete);
         outcome.Judgment.Should().Be(ComparisonJudgment.ReviewRequired);
         outcome.Flags.Should().NotBeEmpty().And.Equal(ReportingOutcome.Completed(document, null).Flags);
@@ -174,7 +174,7 @@ public sealed class ReleaseReportingIntegrationTests : IDisposable
 
         // Then
         beforeTheBound.Should().BeFalse();
-        outcome.Stage.Should().Be(ReportingStage.ResultWait);
+        outcome!.Stage.Should().Be(ReportingStage.ResultWait);
         outcome.State.Should().Be(ReportingState.Incomplete);
         outcome.Judgment.Should().BeNull();
         _storage.Requests.Should().NotContain(static request => request.Method == HttpMethod.Post);
@@ -193,8 +193,47 @@ public sealed class ReleaseReportingIntegrationTests : IDisposable
         var outcome = await Reporting().AttachAsync(new RunContextFixture(), "request", TestContext.Current.CancellationToken);
 
         // Then
-        outcome.Stage.Should().Be(ReportingStage.ResultTransport);
+        outcome!.Stage.Should().Be(ReportingStage.ResultTransport);
         outcome.State.Should().Be(ReportingState.Incomplete);
+        outcome.Report.Should().BeNull();
+        _storage.Requests.Should().NotContain(static request => request.Method == HttpMethod.Post);
+    }
+
+    [Theory]
+    [ClassData(typeof(RunsPublishingNoRelease))]
+    public async Task RunThatPublishesNoRelease_WhenAttaching_ShouldDoNothingAndLeaveNoSummary(string eventName, string reference)
+    {
+        // Given
+        Requested();
+        Result("comparison-result-1234-2", "comparison-20-1234-2.zip", Bundle(2, ReportFixtures.Pair(), out var document), document);
+
+        // When
+        var outcome = await Reporting().AttachAsync(new RunContextFixture().WithEventName(eventName).WithRef(reference), "request",
+            TestContext.Current.CancellationToken);
+
+        // Then
+        outcome.Should().BeNull();
+        _artifacts.Requests.Should().BeEmpty();
+        _storage.Requests.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task ResultWhoseOutcomeFlagsDisagreeWithItsReport_WhenAttaching_ShouldBeIncompleteWithoutPublishing()
+    {
+        // Given
+        Requested();
+        var bundle = Bundle(2, ReportFixtures.Pair(), out var document);
+        var unflagged = ReportingOutcome.Completed(document, null) with { Flags = [] };
+        _artifacts.Add(9, "comparison-result-1234-2", false, ActionsArtifacts.Zip(("outcome.json", Encoding.UTF8.GetBytes(ComparisonJson.Write(unflagged))),
+            ("comparison-20-1234-2.zip", bundle)));
+
+        // When
+        var outcome = await Reporting().AttachAsync(new RunContextFixture(), "request", TestContext.Current.CancellationToken);
+
+        // Then
+        outcome!.Stage.Should().Be(ReportingStage.ResultTransport);
+        outcome.State.Should().Be(ReportingState.Incomplete);
+        outcome.Flags.Should().BeEmpty();
         outcome.Report.Should().BeNull();
         _storage.Requests.Should().NotContain(static request => request.Method == HttpMethod.Post);
     }

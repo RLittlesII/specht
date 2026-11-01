@@ -69,6 +69,21 @@ public sealed class ReleaseComparisonWorkflowIntegrationTests
     }
 
     [Fact]
+    public void ReleaseJob_WhenGenerated_ShouldCheckOutWithoutPersistedCredentials()
+    {
+        // Given
+        var steps = Steps("release");
+
+        // When
+        var checkout = steps.Single(static step => Uses(step).StartsWith("actions/checkout@", StringComparison.Ordinal));
+
+        // Then
+        var with = (YamlMappingNode)checkout["with"];
+        with["persist-credentials"].ToString().Should().Be("false");
+        with["fetch-depth"].ToString().Should().Be("0");
+    }
+
+    [Fact]
     public void ComparisonJob_WhenGenerated_ShouldContinueOnErrorAtEveryStepAndAlwaysSummarise()
     {
         // Given

@@ -1,5 +1,6 @@
 using AwesomeAssertions;
 using Specht.Comparison.Tests.Reporting;
+using Specht.Comparison.Tests.Selection;
 
 namespace Specht.Comparison.Tests.Workflow;
 
@@ -79,6 +80,43 @@ public sealed class ReportingOutcomeUnitTests
 
         // Then
         outcome.Reason.Should().NotBeNullOrWhiteSpace().And.NotContain(rooted).And.NotContain(Path.GetTempPath());
+    }
+
+    [Theory]
+    [InlineData(ReportingStage.PairPersistence, "Re-run all jobs to retry.")]
+    [InlineData(ReportingStage.Receipt, "Re-run all jobs to retry; a pair already saved on the release is reused.")]
+    [InlineData(ReportingStage.ReceiptWait, "Re-run all jobs to retry; a pair already saved on the release is reused.")]
+    [InlineData(ReportingStage.Collection, "Re-run all jobs to retry with the saved pair.")]
+    [InlineData(ReportingStage.ResultWait, "Re-run all jobs to retry with the saved pair.")]
+    [InlineData(ReportingStage.Attachment, "Re-run all jobs to retry with the saved pair.")]
+    public void FailedStage_WhenMapped_ShouldEndWithTheRemedyThatStageAllows(ReportingStage stage, string remedy)
+    {
+        // When
+        var outcome = ReportingOutcome.Failed(stage, null);
+
+        // Then
+        outcome.Reason.Should().EndWith(remedy);
+    }
+
+    [Fact]
+    public void PredecessorThatCannotBeResolved_WhenMapped_ShouldSayARerunReportsTheSameRatherThanOfferARetry()
+    {
+        // Given
+        ReleaseRecord previous = new ReleaseRecordFixture().WithId(10).WithTag("v1").WithCommit(null)
+            .WithResolutionFailure("Selected release tag cannot be resolved to an exact commit.");
+
+        // When
+        var outcome = ReportingOutcome.UnresolvedPredecessor(previous);
+
+        // Then
+        outcome.Stage.Should().Be(ReportingStage.Collection);
+        outcome.State.Should().Be(ReportingState.Incomplete);
+        outcome.Judgment.Should().BeNull();
+        outcome.Flags.Should().BeEmpty();
+        outcome.Report.Should().BeNull();
+        outcome.Reason.Should().Be("The benchmarks of both release revisions could not be collected. "
+            + "Previous release v1: Selected release tag cannot be resolved to an exact commit. "
+            + "The saved pair fixes this predecessor for every rerun, so a rerun reports the same.");
     }
 
     [Fact]

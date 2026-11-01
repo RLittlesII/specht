@@ -76,7 +76,7 @@ public sealed class ComparisonRun(HttpClient client, IFileSystem fileSystem, Tim
         if (pair.Previous is null) return NoBaseline(pair, context, session, directory);
         enter?.Invoke(ReportingStage.Collection);
         if (pair.Previous.Commit is null)
-            return ReportingOutcome.Failed(ReportingStage.Collection, $"Previous release {pair.Previous.Tag}: {pair.Previous.ResolutionFailure}");
+            return ReportingOutcome.UnresolvedPredecessor(pair.Previous);
         var plan = CollectionPlan.For(pair, context.Sha, Version(), context.RunId, context.Attempt, session, runnerIdentity, Filter, Job);
         if (plan is null) return ReportingOutcome.Failed(ReportingStage.Collection, null);
         var collection = await collector.CollectAsync(plan, cancellationToken);

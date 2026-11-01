@@ -4,6 +4,7 @@ using System.IO;
 using System.IO.Abstractions;
 using System.IO.Compression;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Text.Json;
 using System.Threading;
@@ -26,10 +27,16 @@ public sealed class RunArtifacts(HttpClient client, IFileSystem fileSystem, Time
             while (true)
             {
                 var poll = Task.Delay(PollInterval, time, waiting.Token);
-                if (await FindAsync(repository, runId, name, waiting.Token) is { } id)
+                try
                 {
-                    await UnpackAsync(repository, id, directory, cancellationToken);
-                    return true;
+                    if (await FindAsync(repository, runId, name, waiting.Token) is { } id)
+                    {
+                        await UnpackAsync(repository, id, directory, cancellationToken);
+                        return true;
+                    }
+                }
+                catch (Exception exception) when (IsTransient(exception, waiting.Token, cancellationToken))
+                {
                 }
 
                 await poll;
@@ -40,6 +47,13 @@ public sealed class RunArtifacts(HttpClient client, IFileSystem fileSystem, Time
             return false;
         }
     }
+
+    private static bool IsTransient(Exception exception, CancellationToken waiting, CancellationToken cancellationToken) => exception switch
+    {
+        HttpRequestException { StatusCode: null or HttpStatusCode.TooManyRequests or >= HttpStatusCode.InternalServerError } => true,
+        OperationCanceledException => !waiting.IsCancellationRequested && !cancellationToken.IsCancellationRequested,
+        _ => false,
+    };
 
     private async Task<long?> FindAsync(string repository, string runId, string name, CancellationToken cancellationToken)
     {

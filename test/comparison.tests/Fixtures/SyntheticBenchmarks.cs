@@ -73,15 +73,48 @@ internal static class SyntheticBenchmarks
                     string boundary, [System.Runtime.CompilerServices.CallerFilePath] string sourceFile = "")
                 {
                 }
+
+                public WorkloadIdentityAttribute(string operationId, string operationRevision, string fixtureId, string fixtureRevision)
+                {
+                }
             }
         }
 
         namespace BenchmarkDotNet.Attributes
         {
-            [System.AttributeUsage(System.AttributeTargets.Property)]
+            [System.AttributeUsage(System.AttributeTargets.Property | System.AttributeTargets.Field)]
             public sealed class ParamsAttribute : System.Attribute
             {
                 public ParamsAttribute(params object[] values)
+                {
+                }
+            }
+
+            [System.AttributeUsage(System.AttributeTargets.Property | System.AttributeTargets.Field)]
+            public sealed class ParamsSourceAttribute : System.Attribute
+            {
+                public ParamsSourceAttribute(string name)
+                {
+                }
+            }
+
+            [System.AttributeUsage(System.AttributeTargets.Property | System.AttributeTargets.Field)]
+            public sealed class ParamsAllValuesAttribute : System.Attribute
+            {
+            }
+
+            [System.AttributeUsage(System.AttributeTargets.Method, AllowMultiple = true)]
+            public sealed class ArgumentsAttribute : System.Attribute
+            {
+                public ArgumentsAttribute(params object[] values)
+                {
+                }
+            }
+
+            [System.AttributeUsage(System.AttributeTargets.Method)]
+            public sealed class ArgumentsSourceAttribute : System.Attribute
+            {
+                public ArgumentsSourceAttribute(string name)
                 {
                 }
             }
