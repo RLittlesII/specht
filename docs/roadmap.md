@@ -1,6 +1,6 @@
 ---
 title: "Roadmap"
-description: "The next three milestones of the specht tool, what each one makes better for a consumer repository, and the Features that deliver it"
+description: "The planned milestones of the specht tool, what each one makes better for a consumer repository, the Features that deliver it, and the epics not yet scheduled"
 type: reference
 ---
 
@@ -85,35 +85,122 @@ Refactors `0168`, `0207` and `0218` simplify the test composition; spike
 every moved literal, and the benchmark finding is recorded whichever way it
 went.
 
-## 0.5.0 - Beyond the command line
+## 0.5.0 - Pull-request surface
 
-**Better for:** a pull request author who sees violations on the diff with one
-step, an agent that asks the tool instead of parsing its output, and a person
-starting specification-driven development from nothing.
+**Better for:** a pull request author, who sees violations on the diff from one
+workflow step.
 
-The tool reaches new surfaces. Each epic below has its need written and its
-Features still to cut; a Feature joins the goal file when it is.
+A GitHub Action runs `specht` in any repository, writes its violations onto the
+pull request's diff and into the step summary, and passes on the tool's exit
+code; this repository's CI adopts it. Epic `0142` has its need written and its
+Features still to cut; a Feature joins the goal file when it is. Code analysis
+reaches a consumer whose claims live only in Gherkin, for consumer request
+#256.
 
-| Epic   | Delivers                                                                                   |
-| ------ | ------------------------------------------------------------------------------------------ |
-| `0142` | A GitHub Action that runs `specht` and annotates the pull request                          |
-| `0132` | `specht` through the Model Context Protocol, starting from spike `0252`                    |
-| `0196` | Guided onboarding from an unconfigured repository to a first checked specification         |
-| `0228` | Review surfaces: the tree as one document, the delta between two runs, a citation resolved |
-| `0194` | Spectre console presentation of trees, options and diagnostics                             |
-| `0193` | JSON as a first-class specification format                                                 |
-| `0101` | Specification linting and `specht format`                                                  |
-| `0002` | The documentation site                                                                     |
+| Epic or Feature | Delivers                                                                                       |
+| --------------- | ---------------------------------------------------------------------------------------------- |
+| `0142`          | A GitHub Action that runs `specht`, annotates the pull request and writes the step summary     |
+| `0201-F6`       | One packaged consumer proving native Gherkin claims with xUnit v2 VSTest evidence, item `0302` |
 
-Spikes `0256` (collision-free record ids) and `0289` (large comment chunks in
-specification markdown), and item `0128` (an id claimed twice), land here.
-
-Code analysis reaches a consumer whose claims live only in Gherkin, for
-consumer request #256: one packaged consumer proving native claims with xUnit
-v2 VSTest evidence end to end (`0201-F6`). Its documentation lands in 0.3.0.
+Item `0128` (an id claimed twice) and spike `0289` (large comment chunks in
+specification markdown) land here. The Gherkin claims' documentation lands in
+0.3.0.
 
 **Done means:** a consumer repository gets its violations on a pull request with
 one workflow step and no code of its own.
+
+## 0.6.0 - Agent surface
+
+**Better for:** an agent that asks the tool instead of parsing its output.
+
+`specht` answers through the Model Context Protocol: a local host the client
+starts, answers equal to the command line's on the same tree, and an index that
+spares reparsing unchanged Markdown. The four Features are specified; their
+items are still to cut.
+
+| Feature   | Delivers                                                                                        |
+| --------- | ----------------------------------------------------------------------------------------------- |
+| `0132-F2` | The tree's facts as structured data on the command line, working name `specht facts`            |
+| `0132-F3` | The MCP host: a local process the client starts, the tool's own version, no port                |
+| `0132-F4` | Reading through MCP: each answer is the command line's on the same tree, and nothing is written |
+| `0132-F1` | A persistent specification index of keyed facts and relationships, rebuildable from the tree    |
+
+Spike `0252` (MCP access to linked records, and local or online storage) lands
+here; its proposal is ADR-0028. Spike `0256` (collision-free record ids) lands
+here too.
+
+**Done means:** an MCP client configured with one entry starts the host and
+reads the rules, the tree's facts and the check's verdict, each equal to the
+command line's `--json` answer on the same tree, and no file in the tree
+changes.
+
+## 0.7.0 - Review and presentation
+
+**Better for:** a reviewer, who judges a change from the tool's answers, and a
+person reading the console output.
+
+The reviewer gets read-only answers the check does not give: the delta between
+two runs, a citation resolved to its row, an approval gate on open questions and
+a report scoped to the files a change touched. At a terminal the tree shows as a
+tree, a closed-set argument is chosen from a list, and diagnostics read as a
+coloured table; the MSBuild-shaped stream, the JSON document and the exit code
+stay as they are. Linting adds style, ordering and uniqueness rules, and
+`specht format` moves whole table rows and frontmatter keys.
+
+| Epic or Feature        | Delivers                                                                                            |
+| ---------------------- | --------------------------------------------------------------------------------------------------- |
+| `0228-F1`              | The open-question gate: a specification approved with an open question is a violation               |
+| `0228-F2`              | Dangling id references within one specification                                                     |
+| `0228-F3` to `0228-F7` | The delta between two runs, citation resolution, a scoped report, item and commit-message checks    |
+| `0194`                 | Spectre.Console presentation: the tree as a tree, a selection list, diagnostics as a coloured table |
+| `0101`                 | Specification linting and `specht format`                                                           |
+
+Spike `0307` (qualified key resolution, epic `0228` candidate C) lands here.
+Epic `0228` reads the tree's facts from `0132-F2`, in 0.6.0. Epic `0101` is
+`blocked`: every Feature waits on the schema version mechanism, `0001-F7`, its
+rule Features on per-rule severity, `0001-F5`, and two of them on discovery,
+`0001-F6`.
+
+**Done means:** a reviewer gets the violations a change added and removed from
+two report documents and resolves a cited id to its file and row; at a terminal
+the check prints a coloured table while its redirected output is unchanged; and
+`specht format` leaves a tree with no ordering finding, every other byte as it
+was.
+
+## 0.8.0 - Onboarding and documentation
+
+**Better for:** a newcomer starting specification-driven development from
+nothing.
+
+A resumable journey reads the repository's state, explains the next step and
+the condition that completes it, and leads from an unconfigured repository to a
+first checked specification. The documentation the build generates and checks
+is published as a static site.
+
+| Epic or Feature | Delivers                                                                                        |
+| --------------- | ----------------------------------------------------------------------------------------------- |
+| `0196`          | Guided onboarding from an unconfigured repository to a first checked specification              |
+| `0002-F1`       | Documentation generated and checked in the build: doc comments, an API reference, `docs/cli.md` |
+| `0002-F2`       | The documentation site: `0002-F1`'s output at a stable URL                                      |
+
+`0002-F2` waits on `0002-F1`, and its framework is not chosen.
+
+**Done means:** a newcomer in a repository with no `.specht/manifest.json`
+follows the journey to a Feature specification the check passes with 0 errors,
+and the site serves the command-line and API references at a stable URL.
+
+## Unscheduled
+
+No milestone holds these epics yet. The goal file holds only milestones, so
+this list is this page's alone.
+
+| Epic   | Delivers                                                                                                                                          |
+| ------ | ------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `0193` | JSON as a first-class specification format                                                                                                        |
+| `0324` | A `specht` service: document sequences allocated without git coordination, and a database mode where each managed document keeps one lifetime key |
+
+The online allocation in `0324` follows spike `0256` and ADR-0028's
+recommendation that online allocation waits.
 
 ## What this page is not
 
