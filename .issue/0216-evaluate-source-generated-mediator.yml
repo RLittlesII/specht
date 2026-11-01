@@ -1,7 +1,7 @@
 id: "0216"
 type: spike
 title: Evaluate source-generated Mediator against direct calls
-status: ready
+status: in-progress
 value: 4
 risk: 3
 parent: null
@@ -11,7 +11,7 @@ spikes: []
 spec: null
 claims: []
 created: "2026-10-14"
-updated: "2026-10-14"
+updated: "2026-10-31"
 closed: null
 summary: |
   ADR-0014 records the owner's benchmark gate and names
