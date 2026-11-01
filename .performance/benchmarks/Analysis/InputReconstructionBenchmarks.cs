@@ -45,6 +45,7 @@ public class InputReconstructionBenchmarks
     /// <summary>Builds a fresh content key, policy and catalog from the supplied texts.</summary>
     /// <returns>The fresh analysis snapshot.</returns>
     [Benchmark]
+    [WorkloadIdentity("reconstruct-analysis-input", "1", "synthetic-analysis-inputs", "1", "in-process")]
     public AnalysisSnapshot Reconstruct() => _reader.Read(_inputs);
 
     private static string Feature(string identity) => $"""

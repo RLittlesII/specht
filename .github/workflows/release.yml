@@ -99,6 +99,20 @@ jobs:
         id: build
         run: |
           ./build.cmd --target Build --skip Test
+      - name: 🚀 Publish Comparator
+        id: publishComparator
+        continue-on-error: true
+        run: |
+          ./build.cmd --target PublishComparator --skip Build
+      - name: 🏺 Upload the comparator
+        continue-on-error: true
+        uses: actions/upload-artifact@v4
+        with:
+          include-hidden-files: 'true'
+          if-no-files-found: 'error'
+          name: 'comparator'
+          path: '.artifacts/comparator'
+          retention-days: '1'
       - name: 📦 Pack
         id: pack
         run: |
@@ -114,13 +128,13 @@ jobs:
       - name: Release
         id: release
         run: |
-          ./build.cmd --target Release --skip VerifyTag Pack
+          ./build.cmd --target Release --skip VerifyTag Pack PublishComparator
   release:
     needs:
       - build
     if: ${{ github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v') }}
     permissions:
-      actions: none
+      actions: read
       checks: none
       contents: write
       deployments: none
@@ -140,6 +154,7 @@ jobs:
         with:
           clean: 'true'
           fetch-depth: '0'
+          persist-credentials: 'false'
       - name: 🚀 Download the package
         uses: actions/download-artifact@v4
         with:
@@ -165,3 +180,99 @@ jobs:
           GH_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
         run: |
           ./build.cmd --target CreateGitHubRelease
+      - name: 🚀 Download the comparator
+        continue-on-error: true
+        uses: actions/download-artifact@v4
+        with:
+          name: 'comparator'
+          path: '.artifacts/comparator'
+      - name: Request the release comparison
+        id: comparisonRequest
+        env:
+          GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
+        continue-on-error: true
+        run: |
+          dotnet .artifacts/comparator/specht.comparison.dll request .artifacts/benchmarks/comparison/request
+      - name: 🏺 Upload the comparison request
+        continue-on-error: true
+        uses: actions/upload-artifact@v4
+        with:
+          include-hidden-files: 'true'
+          if-no-files-found: 'error'
+          name: 'comparison-request-${{ github.run_id }}-${{ github.run_attempt }}'
+          path: '.artifacts/benchmarks/comparison/request'
+          retention-days: '1'
+      - name: Attach the comparison report
+        id: comparisonAttach
+        env:
+          GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
+        continue-on-error: true
+        run: |
+          dotnet .artifacts/comparator/specht.comparison.dll attach .artifacts/benchmarks/comparison/request
+      - name: Summarise a comparator that did not run
+        id: comparisonAttachSummary
+        if: ${{ steps.comparisonAttach.outcome != 'success' }}
+        continue-on-error: true
+        run: |
+          printf '## Release baseline comparison\n\nIncomplete: the comparator did not run. Re-run all jobs to retry.\n' >> "$GITHUB_STEP_SUMMARY"
+  comparison:
+    needs:
+      - build
+    if: ${{ github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v') }}
+    permissions:
+      actions: read
+      checks: none
+      contents: read
+      deployments: none
+      id-token: none
+      issues: none
+      discussions: none
+      packages: none
+      pages: none
+      pull-requests: none
+      repository-projects: none
+      security-events: none
+      statuses: none
+    runs-on: [self-hosted, macOS, ARM64]
+    steps:
+      - name: Checkout
+        continue-on-error: true
+        uses: actions/checkout@v4
+        with:
+          clean: 'true'
+          fetch-depth: '0'
+          persist-credentials: 'false'
+      - name: 🔨 Use .NET 10 and 11 SDKs
+        continue-on-error: true
+        uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: 'global.json'
+          dotnet-version: '10.0.401'
+      - name: 🚀 Download the comparator
+        continue-on-error: true
+        uses: actions/download-artifact@v4
+        with:
+          name: 'comparator'
+          path: '.artifacts/comparator'
+      - name: Compare against the previous release
+        id: comparisonCompare
+        env:
+          GITHUB_TOKEN: '${{ github.token }}'
+        continue-on-error: true
+        run: |
+          dotnet .artifacts/comparator/specht.comparison.dll compare .artifacts/benchmarks/comparison/result
+      - name: 🏺 Upload the comparison result
+        continue-on-error: true
+        uses: actions/upload-artifact@v4
+        with:
+          include-hidden-files: 'true'
+          if-no-files-found: 'error'
+          name: 'comparison-result-${{ github.run_id }}-${{ github.run_attempt }}'
+          path: '.artifacts/benchmarks/comparison/result'
+          retention-days: '1'
+      - name: Summarise a comparator that did not run
+        id: comparisonCompareSummary
+        if: ${{ always() && steps.comparisonCompare.outcome != 'success' }}
+        continue-on-error: true
+        run: |
+          printf '## Release baseline comparison\n\nIncomplete: the comparator did not run. Re-run all jobs to retry.\n' >> "$GITHUB_STEP_SUMMARY"

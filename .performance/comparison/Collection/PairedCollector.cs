@@ -35,7 +35,7 @@ public sealed class PairedCollector(IFileSystem fileSystem, TimeProvider time,
 
     private static RevisionCollection Unavailable(string side, string commit, ImmutableArray<string> invocation, string reason) =>
         new(side, CollectionStatus.Unavailable, reason, [], new SessionSide(commit, UnavailableEvidence, UnavailableEvidence, invocation,
-            new MeasurementConditions(null, null, null, null, null, null), false, []));
+            new MeasurementConditions(null, null, null, null, null, null), false, []), [], null);
 
     private async Task<RevisionCollection> CollectRevisionAsync(CollectionPlan plan, string side, string commit,
         CancellationToken caller, CancellationToken total)
@@ -114,15 +114,29 @@ public sealed class PairedCollector(IFileSystem fileSystem, TimeProvider time,
         if (reading is not { ExporterVersion: { } exporter, Conditions: { } conditions })
             return Unavailable(side, commit, invocation, reading.Failure!);
 
-        var expected = RevisionEvidence.Inventory(plan.Mappings, commit, selected);
+        var mappings = Declarations(source, commit);
+        var expected = mappings.IsEmpty ? null : RevisionEvidence.Inventory(mappings, commit, selected);
         var evidence = new SessionSide(commit, NativeHarness, exporter, invocation, conditions, expected is not null, expected ?? []);
-        return new RevisionCollection(side, CollectionStatus.Collected, null, files, evidence);
+        return new RevisionCollection(side, CollectionStatus.Collected, null, files, evidence, mappings,
+            mappings.IsEmpty ? Undeclared : expected is null ? PartlyDeclared : null);
 
         Task<ProcessOutcome> Step(string fileName, string directory, ImmutableArray<string> arguments) =>
             run(new ProcessRequest(fileName, arguments, directory, environment), cancellationToken);
 
         RevisionCollection Failed(string step, ProcessOutcome outcome) => Unavailable(side, commit, invocation,
             $"{step} failed with exit code {outcome.ExitCode.ToString(CultureInfo.InvariantCulture)}.");
+    }
+
+    private ImmutableArray<IdentityMapping> Declarations(string source, string commit)
+    {
+        var assembly = Full($"{source}/{DeclaringAssembly}");
+        if (!fileSystem.File.Exists(assembly)) return [];
+        using var stream = fileSystem.File.OpenRead(assembly);
+        return DeclaredIdentity.Read(stream, commit, Full(source), relative =>
+        {
+            var path = Full($"{source}/{relative}");
+            return fileSystem.File.Exists(path) ? fileSystem.File.ReadAllBytes(path) : null;
+        });
     }
 
     private async Task WriteOnceAsync(string path, string content)
@@ -151,11 +165,14 @@ public sealed class PairedCollector(IFileSystem fileSystem, TimeProvider time,
     private string Full(string relative) => fileSystem.Path.GetFullPath(fileSystem.Path.Combine(repositoryRoot, relative));
 
     private const string Harness = ".performance/benchmarks/benchmarks.csproj";
+    private const string DeclaringAssembly = ".performance/benchmarks/bin/Release/net10.0/specht.benchmarks.dll";
     private const string NativeHarness = "native-v1";
     private const string UnavailableEvidence = "unavailable";
     private const string Cancelled = "Collection was cancelled.";
     private const string PairExceeded = "Paired collection exceeded its 60-minute bound.";
     private const string RevisionExceeded = "Revision collection exceeded its 25-minute bound.";
+    private const string Undeclared = "Revision benchmarks declare no workload identity.";
+    private const string PartlyDeclared = "Revision benchmarks do not declare one workload identity for every selected benchmark.";
 
     private static readonly ImmutableArray<string> RunPrefix =
         ["run", "--project", Harness, "--configuration", "Release", "--framework", "net10.0", "--no-build", "--"];

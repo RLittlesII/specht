@@ -21,6 +21,9 @@ public static class ComparisonEvaluation
         return new ComparisonDocument(1, session, policy, comparisons, judgment, gaps);
     }
 
+    public static ComparisonDocument NoBaseline(SessionManifest session) =>
+        new(1, session, ComparisonPolicy.Initial, [], ComparisonJudgment.NoBaseline, []);
+
     private static IEnumerable<CoverageGap> Gaps(CaseComparison comparison)
     {
         if (!comparison.Metrics.Any(static m => m.Metric is MetricKind.Time or MetricKind.ManagedAllocation))

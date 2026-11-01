@@ -172,6 +172,28 @@ public sealed class ComparisonReportUnitTests
         markdown.Should().ContainAll(identities).And.ContainAll("731", "529", "37", "10%");
     }
 
+    [Fact]
+    public void ComparisonWithoutABaseline_WhenRendered_ShouldMarkBothFormsNoBaselineWithoutARegressionJudgment()
+    {
+        // Given
+        ReleasePair pair = ReportFixtures.Pair().WithPrevious(null);
+        var unmeasured = new string('0', 40);
+        ComparisonDocument document = new ComparisonDocumentFixture().WithJudgment(ComparisonJudgment.NoBaseline).WithCases([]).WithGaps([])
+            .WithSession(new SessionManifestFixture().WithPrevious(new SessionSideFixture().WithProductCommit(unmeasured)));
+
+        // When
+        var markdown = ComparisonReport.Markdown(pair, document);
+        var json = ComparisonReport.Json(pair, document);
+
+        // Then
+        markdown.Should().Contain("Overall judgment: No baseline");
+        markdown.Should().Contain("| Previous | None |").And.NotContain(unmeasured);
+        markdown.Should().NotContain("No regression flagged").And.NotContain("Review required");
+        using var report = JsonDocument.Parse(json);
+        report.RootElement.GetProperty("comparison").GetProperty("judgment").GetString().Should().Be("NoBaseline");
+        report.RootElement.GetProperty("pair").GetProperty("previous").ValueKind.Should().Be(JsonValueKind.Null);
+    }
+
     public sealed class HostileTextRows : TheoryData<string, string, string>
     {
         public HostileTextRows()

@@ -2,7 +2,7 @@ id: "0214"
 type: task
 title: Automate advisory reporting in the release workflow
 
-status: ready-for-implementation
+status: done
 
 risk: 4
 
@@ -12,11 +12,11 @@ depends_on: ["0212", "0213", "0083", "0084"]
 spikes: []
 
 spec: .performance/comparison/.spec/README.md
-claims: ["B-001", "B-003", "B-014", "B-017", "B-018", "B-023", "B-024"]
+claims: ["B-001", "B-003", "B-014", "B-017", "B-018", "B-023", "B-024", "B-025"]
 
 created: "2026-10-13"
-updated: "2026-10-31"
-closed: null
+updated: "2026-11-01"
+closed: "2026-11-01"
 
 summary: |
   Wire the reviewed design into the existing generated release workflow.
@@ -54,12 +54,22 @@ acceptance_criteria:
   - "B-018 — failures throughout reporting"
   - "B-023 — excluded build events"
   - "B-024 — unavailable immediate predecessor"
+  - "B-025 — identity mappings derived from each measured revision's own benchmark declarations"
   - "§ 9 names evidence for each assigned claim; failure-injection checks cover collection, parsing, comparison, rendering and attachment while preserving pre-existing failing gates."
-  - "Generated workflow validation confirms C-10 and 0055-F6 C-7; no package or release is created by validation."
+  - "Generated workflow validation confirms C-10, C-12 and 0055-F6 C-7; no package or release is created by validation."
 
 decisions:
   - "2026-10-13: design contract reviewed under 0209; scope and prerequisites retained. Ready-for-implementation names design maturity, not permission to bypass depends_on or the one-writer Feature lane."
   - "2026-10-31: receives ReportingOutcome from 0211. No 0211 claim or caller produces one; the first is a reporting-stage failure under B-018, so this item builds it beside the stage outcome mapping that consumes 0211's ComparisonDocument."
+  - "2026-11-01: owner resolved OQ-3 - identity mappings are generated from the workload identity the benchmarks of each measured revision declare; a revision without declarations has an unknown inventory and an Incomplete comparison, with no hand-written fallback and no mapping borrowed from another revision. Chosen over a hand-audited file per revision and a hand-audited registry keyed by product commit. The owner was told this widens this item; B-025 is added to it. Decision 0005."
+  - "2026-11-01: owner placed the comparison job on the self-hosted pool [self-hosted, macOS, ARM64] that runs build and release, over GitHub-hosted Linux and macOS runners (C-12). The rendezvous completes only when the pool runs two or more jobs at once; with one runner every release ends Incomplete after the bounded release-side wait, advisory, never a failed build (A-4). OQ-4 asks whether a single runner taken first by the comparison job may delay publication. Decision 0005."
+  - "2026-11-01: implementation - the comparator is the PublishComparator target's net10.0 publish in the build job, uploaded as its own comparator artifact; both comparator build steps continue on error so a comparator failure never blocks publication (C-1). The release and comparison jobs run it with dotnet directly, not through ./build.cmd, whose tool restore needs the package-source credential the comparison job never holds (C-10)."
+  - "2026-11-01: implementation - each comparator command (request, attach, compare) prewrites a pending summary and always exits 0; a final shell step writes an Incomplete summary when the comparator step did not succeed, under always() in the comparison job."
+  - "2026-11-01: implementation - collection runs filter * with the short job: the default job over the full selection is judged, not measured, to exceed the 25-minute revision bound. Run artifacts are polled every 30 seconds."
+  - "2026-11-01: implementation - WorkloadIdentityAttribute declares operation, fixture, boundary and [CallerFilePath]; DeclaredIdentity reads it from metadata without loading the assembly, reads integral [Params] only, and relativises the compiled path against the side's checkout. No PathMap: the child environment omits GITHUB_ACTIONS, so ContinuousIntegrationBuild is off and the physical checkout path is what relativises."
+  - "2026-11-01: implementation - no predecessor gives a No baseline document with a forty-zero previous commit and an unmeasured session; no process runs."
+  - "2026-11-01: owner answered the host question in review (decision 0005 addendum, A-5) - one release run at a time; no isolation between the pool's runners on one host is assumed; the same-host exposure within one release run is accepted. Separate operating-system accounts and separate machines are not requirements. C-10 is unchanged."
+  - "2026-11-01: corrects the one-runner note above (decision 0005 addendum, A-4) - with one runner, every release ends Incomplete after the bounded release-side wait only when the release job takes the runner first; when the comparison job takes it first, the comparison ends at its own bounded receipt wait and the release job reports that result at once. Both remain advisory, never a failed build."
 
 out_of_scope:
   - "Everything in § 5 of the specification."

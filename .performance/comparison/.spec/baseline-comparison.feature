@@ -361,3 +361,35 @@ Feature: Release baseline comparison
     When the run summary is produced
     Then the known review flag remains visible alongside the incomplete reporting state
     And no report link is presented as a successful attachment
+
+  @B-018 @boundary
+  Scenario: A comparison no runner collects in time leaves an incomplete advisory outcome
+    Given the correctness gates passed and the release was published
+    And no runner is free to collect its measurements before the release run stops waiting for them
+    When performance reporting completes
+    Then the run summary marks the comparison "Incomplete" with an actionable reason
+    And the build remains successful
+
+  @B-025
+  Scenario: A release's own benchmarks declare its workload identities
+    Given a release's benchmarks declare the workload each one measures
+    When that release's measurements are collected
+    Then each measured workload's identity is taken from that release's own declaration
+    And each identity records the file and the revision that declared it
+
+  @B-025 @boundary
+  Scenario: A release without declarations has an unknown inventory
+    Given the previous release's benchmarks declare no workload identity
+    And the current release's benchmarks declare theirs
+    When the comparison is generated
+    Then the previous release's measurement inventory is unknown
+    And the comparison is marked "Incomplete" with that reason
+    And no workload identity declared by the current release is applied to the previous release
+
+  @B-025 @boundary
+  Scenario: Identities written outside a release are not used
+    Given a release's benchmarks declare no workload identity
+    And workload identities for its benchmarks are written down outside that release
+    When that release's measurements are collected
+    Then those workload identities are not used
+    And that release's measurement inventory is unknown

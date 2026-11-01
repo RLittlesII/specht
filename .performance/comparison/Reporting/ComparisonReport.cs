@@ -27,11 +27,12 @@ public static class ComparisonReport
         text.Append("## Measurement conditions\n\n");
         Table(text, ["Side", "Product commit", "Operating system", "Runtime", "Architecture", "Toolchain", "Garbage collection", "Job",
                 "Harness", "Exporter", "Invocation"],
-            new[] { ("Previous", session.Previous), ("Current", session.Current) }.Select(static s => new[]
+            new[] { ("Previous", session.Previous), ("Current", session.Current) }.Select(s => new[]
             {
-                s.Item1, s.Item2.ProductCommit, Known(s.Item2.Conditions.OperatingSystem), Known(s.Item2.Conditions.Runtime),
-                Known(s.Item2.Conditions.Architecture), Known(s.Item2.Conditions.Toolchain), Known(s.Item2.Conditions.GarbageCollection),
-                Known(s.Item2.Conditions.Job), s.Item2.HarnessVersion, s.Item2.ExporterVersion, string.Join(' ', s.Item2.Invocation),
+                s.Item1, s.Item1 == "Previous" && pair.Previous is null ? "None" : s.Item2.ProductCommit,
+                Known(s.Item2.Conditions.OperatingSystem), Known(s.Item2.Conditions.Runtime), Known(s.Item2.Conditions.Architecture),
+                Known(s.Item2.Conditions.Toolchain), Known(s.Item2.Conditions.GarbageCollection), Known(s.Item2.Conditions.Job),
+                s.Item2.HarnessVersion, s.Item2.ExporterVersion, string.Join(' ', s.Item2.Invocation),
             }));
         text.Append("## Policy\n\n");
         Table(text, ["Policy version", "Timing screen", "Managed allocation screen"],
@@ -77,6 +78,40 @@ public static class ComparisonReport
                 .Concat(sides.Current.Select(static o => (Side: "current", Observation: o))))
             .Select(cited => (c.Key, cited.Side, cited.Observation)));
 
+    internal static string Escape(string value)
+    {
+        var escaped = new StringBuilder(value.Length);
+        foreach (var c in value)
+        {
+            escaped.Append(c switch
+            {
+                '\\' => @"\\",
+                '|' => @"\|",
+                '`' => @"\`",
+                '<' => "&lt;",
+                '>' => "&gt;",
+                _ when char.IsControl(c) => " ",
+                _ => c.ToString(),
+            });
+        }
+        return escaped.ToString();
+    }
+
+    internal static string Display(ComparisonJudgment judgment) => judgment switch
+    {
+        ComparisonJudgment.ReviewRequired => "Review required",
+        ComparisonJudgment.Incomplete => "Incomplete",
+        ComparisonJudgment.NoBaseline => "No baseline",
+        _ => "No regression flagged",
+    };
+
+    internal static string Display(MetricKind metric) => metric switch
+    {
+        MetricKind.ManagedAllocation => "Managed allocation",
+        MetricKind.ToolPeakMemory => "Tool peak memory",
+        _ => "Time",
+    };
+
     private static ComparisonDocument Bundled(ComparisonDocument document) => document with
     {
         Cases = [.. document.Cases.Select(static c => c with
@@ -109,25 +144,6 @@ public static class ComparisonReport
         text.Append('\n');
     }
 
-    private static string Escape(string value)
-    {
-        var escaped = new StringBuilder(value.Length);
-        foreach (var c in value)
-        {
-            escaped.Append(c switch
-            {
-                '\\' => @"\\",
-                '|' => @"\|",
-                '`' => @"\`",
-                '<' => "&lt;",
-                '>' => "&gt;",
-                _ when char.IsControl(c) => " ",
-                _ => c.ToString(),
-            });
-        }
-        return escaped.ToString();
-    }
-
     private static string Known(string? value) => value ?? "Unknown";
 
     private static string Number(long value) => value.ToString(CultureInfo.InvariantCulture);
@@ -141,13 +157,6 @@ public static class ComparisonReport
 
     private static string Change(decimal? value, string suffix) => value is not { } known ? "Not defined"
         : (Math.Round(known, 2, MidpointRounding.AwayFromZero) > 0 ? "+" : "") + Rounded(known) + suffix;
-
-    private static string Display(ComparisonJudgment judgment) => judgment switch
-    {
-        ComparisonJudgment.ReviewRequired => "Review required",
-        ComparisonJudgment.Incomplete => "Incomplete",
-        _ => "No regression flagged",
-    };
 
     private static string Display(MetricJudgment judgment) => judgment switch
     {
@@ -165,12 +174,5 @@ public static class ComparisonReport
         PairingStatus.Removed => "Removed",
         PairingStatus.InsufficientEvidence => "Insufficient evidence",
         _ => "Comparable",
-    };
-
-    private static string Display(MetricKind metric) => metric switch
-    {
-        MetricKind.ManagedAllocation => "Managed allocation",
-        MetricKind.ToolPeakMemory => "Tool peak memory",
-        _ => "Time",
     };
 }

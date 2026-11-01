@@ -46,13 +46,17 @@ public sealed class ReportBundler(IFileSystem fileSystem, string repositoryRoot)
                 || ComparisonJson.Write(ComparisonJson.ReadSession(comparison.GetProperty("session").GetRawText()))
                     != Encoding.UTF8.GetString(entries["session.json"])
                 || SourceFiles(comparison).Any(path => !listed.TryGetValue(path, out var file) || file.Role != RawExportRole)
-                || Locators(comparison).Any(cited => cited.SourceFile is null || !listed.TryGetValue(cited.SourceFile, out var file)
+                || Locators(root).Any(cited => cited.SourceFile is null || !listed.TryGetValue(cited.SourceFile, out var file)
                     || file.Role != RawExportRole || !ResolvesParent(documents[cited.SourceFile].RootElement, cited.Locator)))
                 throw new InvalidDataException("Report evidence references are not files and records of this bundle.");
             if (documents.Any(static document => HoldsAbsolutePath(document.Value.RootElement, document.Key == "report.json")))
                 throw new InvalidDataException("Report bundle holds an absolute path.");
+            if (Encoding.UTF8.GetString(entries["report.md"]) != ComparisonReport.Markdown(ComparisonJson.ReadPair(root.GetProperty("pair").GetRawText()),
+                    ComparisonJson.ReadDocument(comparison.GetRawText())))
+                throw new InvalidDataException("Report bundle Markdown is not the rendering of its JSON report.");
         }
-        catch (Exception exception) when (exception is JsonException or InvalidOperationException or KeyNotFoundException or FormatException)
+        catch (Exception exception) when (exception is JsonException or InvalidOperationException or KeyNotFoundException or FormatException
+            or NullReferenceException)
         {
             throw new InvalidDataException("Report bundle document is malformed.");
         }
@@ -103,6 +107,27 @@ public sealed class ReportBundler(IFileSystem fileSystem, string repositoryRoot)
         if (!EvidencePaths.IsRelative(name) || name.Contains('/'))
             throw new InvalidDataException("Run identity cannot name a report bundle.");
         return name;
+    }
+
+    internal static bool IsRooted(string value) => value.StartsWith('/') || value.StartsWith('~') || value.StartsWith('\\')
+        || value.Length >= 3 && char.IsAsciiLetter(value[0]) && value[1] == ':' && value[2] is '\\' or '/';
+
+    internal static bool EmbedsPath(string value)
+    {
+        for (var start = 0; start < value.Length; start++)
+        {
+            if (start > 0 && !IsBoundary(value[start - 1])) continue;
+            var rest = value.AsSpan(start);
+            if (rest.StartsWith(@"\\") || rest.StartsWith("~/") || rest.StartsWith(@"~\")
+                || rest.Length >= 3 && char.IsAsciiLetter(rest[0]) && rest[1] == ':' && rest[2] is '\\' or '/'
+                || rest.Length >= 6 && rest[..5].Equals("file:", StringComparison.OrdinalIgnoreCase) && rest[5] == '/')
+                return true;
+            if (rest.Length < 3 || rest[0] != '/') continue;
+            var end = 1;
+            while (end < rest.Length && rest[end] != '/' && rest[end] != '\\' && !IsBoundary(rest[end])) end++;
+            if (end > 1 && end < rest.Length && rest[end] == '/') return true;
+        }
+        return false;
     }
 
     private static Dictionary<string, byte[]> Entries(Stream zip)
@@ -233,27 +258,6 @@ public sealed class ReportBundler(IFileSystem fileSystem, string repositoryRoot)
             removed = true;
         }
         else writer.WriteRawValue(element.GetRawText(), true);
-    }
-
-    private static bool IsRooted(string value) => value.StartsWith('/') || value.StartsWith('~') || value.StartsWith('\\')
-        || value.Length >= 3 && char.IsAsciiLetter(value[0]) && value[1] == ':' && value[2] is '\\' or '/';
-
-    private static bool EmbedsPath(string value)
-    {
-        for (var start = 0; start < value.Length; start++)
-        {
-            if (start > 0 && !IsBoundary(value[start - 1])) continue;
-            var rest = value.AsSpan(start);
-            if (rest.StartsWith(@"\\") || rest.StartsWith("~/") || rest.StartsWith(@"~\")
-                || rest.Length >= 3 && char.IsAsciiLetter(rest[0]) && rest[1] == ':' && rest[2] is '\\' or '/'
-                || rest.Length >= 6 && rest[..5].Equals("file:", StringComparison.OrdinalIgnoreCase) && rest[5] == '/')
-                return true;
-            if (rest.Length < 3 || rest[0] != '/') continue;
-            var end = 1;
-            while (end < rest.Length && rest[end] != '/' && rest[end] != '\\' && !IsBoundary(rest[end])) end++;
-            if (end > 1 && end < rest.Length && rest[end] == '/') return true;
-        }
-        return false;
     }
 
     private static bool IsBoundary(char character) =>

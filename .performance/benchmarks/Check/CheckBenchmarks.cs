@@ -58,6 +58,7 @@ public class CheckBenchmarks
     /// <summary>Runs the whole check from the tree's root.</summary>
     /// <returns>The report.</returns>
     [Benchmark]
+    [WorkloadIdentity("check", "1", "generated-specification-tree", "1", "in-process")]
     public SpechtReport Check() => _runner.Run(_root);
 
     private string _root = string.Empty;

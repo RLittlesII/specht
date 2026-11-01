@@ -2,7 +2,7 @@ id: "0208"
 type: feature
 title: Release baseline comparison
 
-status: ready-for-architecture
+status: done
 
 value: 3
 risk: 1
@@ -39,11 +39,12 @@ claims:
     "B-022",
     "B-023",
     "B-024",
+    "B-025",
   ]
 
 created: "2026-10-13"
-updated: "2026-10-13"
-closed: null
+updated: "2026-11-01"
+closed: "2026-11-01"
 
 summary: |
   As the release maintainer I want advisory performance evidence against the
@@ -56,12 +57,13 @@ summary: |
   and release integration. No child is taken by this decomposition.
 
 acceptance_criteria:
-  - "B-001 to B-024 — delivered by the child claim partition in Tasks."
+  - "B-001 to B-025 — delivered by the child claim partition in Tasks."
   - "Every child is done and § 9 names the actual evidence for every delivered claim; a Missing cell does not become coverage by closing the container."
 
 decisions:
   - "2026-10-13, spec-author: value 3 is provisional, matching the harness and cold-start containers; risk 1 covers final reconciliation. These are estimates, not owner-assigned scores."
   - "2026-10-13, spec-author: only the release integration child waits on successful publication delivery; core comparison and report work can proceed against synthetic evidence. No dependency on unbuilt stage or startup benchmarks is added."
+  - "2026-11-01, spec-author: B-025 added to claims and the first criterion widened to B-025. The owner widened 0109-F5 by resolving OQ-3 (decision 0005): identity mappings come from each measured revision's own benchmark declarations. Child 0214 delivers B-025."
 
 out_of_scope:
   - "Everything in § 5 of the specification."

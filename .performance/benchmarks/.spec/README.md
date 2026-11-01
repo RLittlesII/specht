@@ -20,7 +20,7 @@ depends_on: ["0055/F1", "0055/F2"]
 blocks: ["F2", "F3", "F4", "F5"]
 spikes: []
 created: "2026-10-09"
-updated: "2026-10-23"
+updated: "2026-11-01"
 github_issue: null
 synced_at: null
 ---
@@ -104,18 +104,18 @@ No cost the tool incurs is measured, so every specification constraint about tim
 
 ## 5. Out of Scope
 
-<!-- last written by: spec-author, 2026-10-13 -->
+<!-- last written by: spec-author, 2026-11-01 (`0109-F5` decision 0005, item 0214) -->
 
-| #   | Item                                                              | Exclusion Reason                                                                                                                                                  |
-| --- | ----------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 1   | Any gate on a time or an allocation                               | Owner, 2026-10-09; decision 0001; C-1.                                                                                                                            |
-| 2   | Comparing releases against a baseline                             | `0109-F5`, `.performance/comparison/.spec/README.md` (owner, 2026-10-13; OQ-4); consumes B-010's machine-readable results and owns the release comparison report. |
-| 3   | What any one benchmark measures                                   | `0109-F2`, `0109-F3`, `0109-F4`; this Feature runs and reports them.                                                                                              |
-| 4   | Profiling and tracing                                             | Not asked for (epic `0109` § Out of this epic).                                                                                                                   |
-| 5   | Committing a result, or a finding's raw output, to the repository | `.artifacts/` is gitignored; a finding goes in a § 8 `### Performance` row, owned by `benchmarker`.                                                               |
-| 6   | Scheduled or nightly benchmark runs                               | Not asked for; a benchmark run follows a CI run (`0055-F2` § 5 row 6).                                                                                            |
-| 7   | A tree with violations                                            | Decision 0004: the generated tree is clean; a violation-heavy tree is a later amendment if a constraint asks for one.                                             |
-| 8   | Automatic benchmarks and result uploads on pull requests          | Owner, 2026-10-13; OQ-2 revised to pushes to main only. Explicit local runs remain available.                                                                     |
+| #   | Item                                                              | Exclusion Reason                                                                                                                                                                                                                                                |
+| --- | ----------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | Any gate on a time or an allocation                               | Owner, 2026-10-09; decision 0001; C-1.                                                                                                                                                                                                                          |
+| 2   | Comparing releases against a baseline                             | `0109-F5`, `.performance/comparison/.spec/README.md` (owner, 2026-10-13; OQ-4); consumes B-010's machine-readable results and owns the release comparison report, including the workload identity a benchmark declares for it (`0109-F5` decision 0005, B-025). |
+| 3   | What any one benchmark measures                                   | `0109-F2`, `0109-F3`, `0109-F4`; this Feature runs and reports them.                                                                                                                                                                                            |
+| 4   | Profiling and tracing                                             | Not asked for (epic `0109` § Out of this epic).                                                                                                                                                                                                                 |
+| 5   | Committing a result, or a finding's raw output, to the repository | `.artifacts/` is gitignored; a finding goes in a § 8 `### Performance` row, owned by `benchmarker`.                                                                                                                                                             |
+| 6   | Scheduled or nightly benchmark runs                               | Not asked for; a benchmark run follows a CI run (`0055-F2` § 5 row 6).                                                                                                                                                                                          |
+| 7   | A tree with violations                                            | Decision 0004: the generated tree is clean; a violation-heavy tree is a later amendment if a constraint asks for one.                                                                                                                                           |
+| 8   | Automatic benchmarks and result uploads on pull requests          | Owner, 2026-10-13; OQ-2 revised to pushes to main only. Explicit local runs remain available.                                                                                                                                                                   |
 
 ## 6. Concern Separation
 
@@ -404,7 +404,9 @@ The probe classes were temporary and removed before delivery. No test or placeho
 
 ## 10. Lessons / Spec Deltas
 
-<!-- last written by: spec-author, 2026-10-13, 2026-10-23 (`0055-F2` decision 0005) -->
+<!-- last written by: spec-author, 2026-10-13, 2026-10-23 (`0055-F2` decision 0005), 2026-11-01 (`0109-F5` decision 0005, item 0214) -->
+
+- 2026-11-01, the owner resolved `0109-F5` OQ-3 ([`0109-F5` decision 0005](../../comparison/.spec/decisions/0005-revision-declared-identity-and-the-self-hosted-pool.md), item 0214): each benchmark declares the workload identity it measures, and the release comparison derives a revision's identity mappings from those declarations (`0109-F5` B-025). No claim or constraint of this Feature changes: a benchmark without a declaration is still selected, run and exported as before, and only its release comparison is `Incomplete`. What a benchmark measures stays with `0109-F2` to `0109-F4` (`0109-F5` C-3). § 5 row 2 cites the decision.
 
 - 2026-10-23, the owner moved CI's Linux leg to the owner's self-hosted macOS ARM64 pool, replacing it ([`0055-F2` decision 0005](../../../.build/ContinuousIntegration/.spec/decisions/0005-the-unix-leg-runs-on-the-owners-macos-pool.md), item 0264). B-017 amended in place from Linux to macOS; its two scenarios and the `@B-019` scenario follow. The results artifact is named for `macOS` in place of `Linux`, so results on either side of the change come from different hardware. The pool keeps its working directory between jobs; a run's `.artifacts/benchmarks/` is cleared by the clean checkout `0055-F2` C-11 requires, and C-10 is unchanged. Owed to the `implementer` and the `test-writer`: § 7 and § 8 where they name Linux. `spec_status` returns to `in-review` for the delta.
 

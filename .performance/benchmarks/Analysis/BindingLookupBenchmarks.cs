@@ -54,6 +54,7 @@ public class BindingLookupBenchmarks
     /// <summary>Resolves every explicit binding against one immutable catalog.</summary>
     /// <returns>The number of resolving references.</returns>
     [Benchmark]
+    [WorkloadIdentity("resolve-bindings", "1", "synthetic-binding-catalog", "1", "in-process")]
     public int ResolveBindings()
     {
         var resolved = 0;
