@@ -40,9 +40,9 @@ From brief § 2, § 5 and § 6, as of 2026-10-07:
   every consumer installs the tool.
 - **Delivered as a `dotnet tool`**, package `specht.tool`, command `specht`,
   installed per repository through a local tool manifest and published to
-  GitHub Packages on `rlittlesii/specht` first; NuGet.org is the reversal
-  (brief § 2, § 6). The consumer's build calls the tool; no consumer carries the
-  engine.
+  NuGet.org, every version below `1.0.0` an explicit `-preview` prerelease
+  (brief § 2, § 6; reversed from GitHub Packages 2026-11-01, `0055-F6`). The
+  consumer's build calls the tool; no consumer carries the engine.
 - **A schema version is the manifest's `schemaVersion`**, a `major.minor.patch`
   version numbered by verdict and apart from the package version; the first is
   `0.1.0`, and no key means it. The tool embeds every version it knows and

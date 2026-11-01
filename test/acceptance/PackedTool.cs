@@ -121,6 +121,40 @@ public sealed class PackedTool : IDisposable
     /// <returns>What the process wrote to stdout and to stderr, and its exit code.</returns>
     public Task<(string Stdout, string Stderr, int ExitCode)> DotNetAsync(params string[] arguments) => DotNetAsync([], arguments);
 
+    /// <summary>Runs <c>dotnet</c> from the root of the repository under the environment given and waits for it to exit.</summary>
+    /// <param name="environment">The variables set for the process, over the ones it inherits.</param>
+    /// <param name="arguments">The arguments, each passed as one.</param>
+    /// <returns>What the process wrote to stdout and to stderr, and its exit code.</returns>
+    public async Task<(string Stdout, string Stderr, int ExitCode)> DotNetAsync(Dictionary<string, string> environment, params string[] arguments)
+    {
+        var start = new ProcessStartInfo("dotnet")
+        {
+            WorkingDirectory = Repository,
+            RedirectStandardInput = true,
+            RedirectStandardOutput = true,
+            RedirectStandardError = true,
+            Environment = { ["MSBUILDDISABLENODEREUSE"] = "1", ["NO_COLOR"] = "1" },
+        };
+
+        foreach (var (name, value) in environment)
+        {
+            start.Environment[name] = value;
+        }
+
+        foreach (var argument in arguments)
+        {
+            start.ArgumentList.Add(argument);
+        }
+
+        using var process = Process.Start(start) ?? throw new InvalidOperationException("dotnet did not start.");
+        process.StandardInput.Close();
+        var stdout = process.StandardOutput.ReadToEndAsync();
+        var stderr = process.StandardError.ReadToEndAsync();
+        await process.WaitForExitAsync();
+
+        return (await stdout, await stderr, process.ExitCode);
+    }
+
     /// <inheritdoc />
     public void Dispose()
     {
@@ -156,36 +190,6 @@ public sealed class PackedTool : IDisposable
         exitCode.Should().Be(0, stdout + stderr);
 
         return Directory.GetFiles(_packages, "specht.tool.*.nupkg").Should().ContainSingle().Subject;
-    }
-
-    private async Task<(string Stdout, string Stderr, int ExitCode)> DotNetAsync(Dictionary<string, string> environment, params string[] arguments)
-    {
-        var start = new ProcessStartInfo("dotnet")
-        {
-            WorkingDirectory = Repository,
-            RedirectStandardInput = true,
-            RedirectStandardOutput = true,
-            RedirectStandardError = true,
-            Environment = { ["MSBUILDDISABLENODEREUSE"] = "1", ["NO_COLOR"] = "1" },
-        };
-
-        foreach (var (name, value) in environment)
-        {
-            start.Environment[name] = value;
-        }
-
-        foreach (var argument in arguments)
-        {
-            start.ArgumentList.Add(argument);
-        }
-
-        using var process = Process.Start(start) ?? throw new InvalidOperationException("dotnet did not start.");
-        process.StandardInput.Close();
-        var stdout = process.StandardOutput.ReadToEndAsync();
-        var stderr = process.StandardError.ReadToEndAsync();
-        await process.WaitForExitAsync();
-
-        return (await stdout, await stderr, process.ExitCode);
     }
 
     private const string Tool = "src/tool/tool.csproj";

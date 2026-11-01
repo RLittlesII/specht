@@ -41,8 +41,9 @@ public sealed class SchemaVersionIndependenceSteps(PackedTool tool) : IDisposabl
         await Commit("Capture working build inputs");
         var path = Path.Combine(Source, "version.json");
         var version = JsonNode.Parse(await File.ReadAllTextAsync(path))!.AsObject();
-        var current = Version.Parse(version["version"]!.GetValue<string>());
-        version["version"] = $"{current.Major}.{current.Minor + 1}";
+        var line = version["version"]!.GetValue<string>().Split('-', 2);
+        var current = Version.Parse(line[0]);
+        version["version"] = $"{current.Major}.{current.Minor + 1}" + (line.Length == 2 ? "-" + line[1] : string.Empty);
         await File.WriteAllTextAsync(path, version.ToJsonString());
         await Run(Source, "git", "add", "version.json");
         await Commit("Change package version");

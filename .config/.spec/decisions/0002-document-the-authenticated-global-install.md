@@ -36,3 +36,14 @@ B-001, B-004 to B-006, B-008; C-1 to C-4; OQ-3. No claim or constraint changes.
 Native behavior: [NuGet environment credentials](https://learn.microsoft.com/en-us/nuget/consume-packages/consuming-packages-authenticated-feeds),
 [named sources](https://learn.microsoft.com/en-us/dotnet/core/tools/dotnet-nuget-add-source)
 and [GitHub Packages authentication](https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-nuget-registry).
+
+## Reversal - 2026-11-01
+
+Reversed by the repository owner, 2026-11-01, when the feed moved to nuget.org
+([`0055-F6` decision 0007](../../../.build/Releasing/.spec/decisions/0007-publish-prereleases-to-nuget-org-through-trusted-publishing.md)).
+A global install is `dotnet tool install -g specht.tool --prerelease` from
+nuget.org, with no package source, no `--add-source` and no credential
+(OQ-3 resolved). The named user-level source and environment credential above
+were the answer to a feed that needed a token for every read; nuget.org does
+not. Not chosen: keeping the user-level source as an option beside nuget.org,
+since C-6 names nuget.org as the only feed a consumer is told to use.
