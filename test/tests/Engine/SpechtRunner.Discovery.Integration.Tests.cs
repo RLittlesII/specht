@@ -110,7 +110,7 @@ public sealed class SpechtRunnerDiscoveryIntegrationTests
         Declare(tree, "layouts", JsonNode.Parse(layouts)!);
 
         // When
-        var document = SpecReportDocument.From(tree.Run());
+        var document = SpechtReportDocument.From(tree.Run());
 
         // Then
         string.Join(", ", Listed(document)).Should().Be(expected, because);
@@ -130,7 +130,7 @@ public sealed class SpechtRunnerDiscoveryIntegrationTests
         var schema = JsonSchema.FromText(File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "docs", "schema", "report.schema.json")));
 
         // When
-        using var json = JsonDocument.Parse(SpecReportDocument.From(tree.Run()).ToJson());
+        using var json = JsonDocument.Parse(SpechtReportDocument.From(tree.Run()).ToJson());
         var result = schema.Evaluate(json.RootElement, new EvaluationOptions { OutputFormat = OutputFormat.List });
 
         // Then
@@ -143,7 +143,7 @@ public sealed class SpechtRunnerDiscoveryIntegrationTests
     public void AManifestWhoseTaskGrammarHasAThreeDigitSequence_WhenChecked_ShouldCountTheItemWhoseFileNameFollowsThatGrammar()
     {
         // Given
-        using var tree = new SpecTree();
+        using var tree = new SpechtTree();
         tree.WriteItem(tree.WriteFeature("0001", "F1"), "0001-001", "F1");
         Declare(tree, "identifiers", new JsonObject { ["task"] = "^[0-9]{4}-[0-9]{3}$" });
 
@@ -154,9 +154,9 @@ public sealed class SpechtRunnerDiscoveryIntegrationTests
         report.ItemCount.Should().Be(1);
     }
 
-    private static SpecTree TreeInThreePlaces()
+    private static SpechtTree TreeInThreePlaces()
     {
-        var tree = new SpecTree();
+        var tree = new SpechtTree();
         tree.WriteFeature("0001", "F1");
         tree.WriteFeature("0001", "F2");
         tree.WriteCoLocatedFeature("src/area", "0002", "F1");
@@ -165,15 +165,15 @@ public sealed class SpechtRunnerDiscoveryIntegrationTests
         return tree;
     }
 
-    private static void Declare(SpecTree tree, string key, JsonNode value)
+    private static void Declare(SpechtTree tree, string key, JsonNode value)
     {
-        var path = Path.Combine(tree.Root, SpecTree.ManifestPath);
+        var path = Path.Combine(tree.Root, SpechtTree.ManifestPath);
         var manifest = JsonNode.Parse(File.ReadAllText(path))!.AsObject();
         manifest[key] = value;
         File.WriteAllText(path, manifest.ToJsonString());
     }
 
-    private static IEnumerable<string> Listed(SpecReportDocument document) =>
+    private static IEnumerable<string> Listed(SpechtReportDocument document) =>
         JsonNode.Parse(document.ToJson())!["layouts"]!.AsArray().Select(static layout => string.Create(
             CultureInfo.InvariantCulture,
             $"{layout!["layout"]!.GetValue<string>()} {layout["specificationCount"]!.GetValue<int>()}"));

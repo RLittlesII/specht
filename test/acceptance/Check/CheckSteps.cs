@@ -33,11 +33,11 @@ namespace Specht.Acceptance.Check;
 public sealed partial class CheckSteps
 {
     [Given("a repository root holding a manifest and the three frontmatter schemas")]
-    public void GivenARepositoryRootHoldingAManifestAndTheThreeFrontmatterSchemas() => _tree = new SpecTree();
+    public void GivenARepositoryRootHoldingAManifestAndTheThreeFrontmatterSchemas() => _tree = new SpechtTree();
 
     [Given("the root holds a specification whose claim B-002 has no traceability row")]
     public void GivenTheRootHoldsASpecificationWhoseClaimB002HasNoTraceabilityRow() =>
-        Tree.WriteFeature("0001", "F1", sections: SpecTree.SectionsWith("3. Acceptance Criteria", TwoClaims));
+        Tree.WriteFeature("0001", "F1", sections: SpechtTree.SectionsWith("3. Acceptance Criteria", TwoClaims));
 
     [Given("the root holds two specifications in the epics layout and one in the features layout")]
     public void GivenTheRootHoldsTwoSpecificationsInTheEpicsLayoutAndOneInTheFeaturesLayout()
@@ -46,7 +46,7 @@ public sealed partial class CheckSteps
         Tree.WriteFeature("0001", "F2");
         Tree.WriteCoLocatedFeature("src/area", "0001", "F3");
         var report = Tree.Run();
-        report.Layouts.Should().Equal(new SpecReportLayout("epics", 2), new SpecReportLayout("features", 1));
+        report.Layouts.Should().Equal(new SpechtReportLayout("epics", 2), new SpechtReportLayout("features", 1));
     }
 
     [Given("the root holds a specification with one error-severity violation")]
@@ -54,13 +54,13 @@ public sealed partial class CheckSteps
     public void GivenTheRootHoldsASpecificationWithOneErrorSeverityViolation()
     {
         Tree.WriteFeature("0001", "F1", featureFile: null);
-        Tree.Run().Violations.Should().ContainSingle().Which.Severity.Should().Be(SpecSeverity.Error);
+        Tree.Run().Violations.Should().ContainSingle().Which.Severity.Should().Be(SpechtSeverity.Error);
     }
 
     [Given("the root holds a specification with no frontmatter")]
     public void GivenTheRootHoldsASpecificationWithNoFrontmatter()
     {
-        Tree.WriteRaw("epics/0001-epic/F1-feature/spec.md", "# Specification: F1\n\n" + string.Join('\n', SpecTree.Sections));
+        Tree.WriteRaw("epics/0001-epic/F1-feature/spec.md", "# Specification: F1\n\n" + string.Join('\n', SpechtTree.Sections));
         Tree.WriteRaw("epics/0001-epic/F1-feature/feature.feature", "Feature: it\n");
         MissingFrontmatter.Identifier.Should().BeNull();
     }
@@ -83,16 +83,16 @@ public sealed partial class CheckSteps
     [Given("a root directory with no manifest at the manifest path")]
     public void GivenARootDirectoryWithNoManifestAtTheManifestPath()
     {
-        File.Delete(Path.Combine(Tree.Root, SpecTree.ManifestPath));
+        File.Delete(Path.Combine(Tree.Root, SpechtTree.ManifestPath));
         _typed = ".";
     }
 
     [Given("a root directory with a manifest at the retired manifest path and none at the manifest path")]
     public void GivenARootDirectoryWithAManifestAtTheRetiredManifestPathAndNoneAtTheManifestPath()
     {
-        var retired = Path.Combine(Tree.Root, SpecTree.RetiredManifestPath);
+        var retired = Path.Combine(Tree.Root, SpechtTree.RetiredManifestPath);
         Directory.CreateDirectory(Path.GetDirectoryName(retired)!);
-        File.Move(Path.Combine(Tree.Root, SpecTree.ManifestPath), retired);
+        File.Move(Path.Combine(Tree.Root, SpechtTree.ManifestPath), retired);
         _typed = ".";
     }
 
@@ -100,14 +100,14 @@ public sealed partial class CheckSteps
     public void GivenAFileThatIsNotAManifestAtTheRetiredManifestPath()
     {
         _without = AcceptanceTool.Launch(Tree.Root, "--root", ".");
-        Tree.WriteRaw(SpecTree.RetiredManifestPath, "not a manifest\n");
+        Tree.WriteRaw(SpechtTree.RetiredManifestPath, "not a manifest\n");
     }
 
     [Given("the root's manifest is not well-formed JSON")]
-    public void GivenTheRootsManifestIsNotWellFormedJson() => Tree.WriteRaw(SpecTree.ManifestPath, "{ \"sections\": ");
+    public void GivenTheRootsManifestIsNotWellFormedJson() => Tree.WriteRaw(SpechtTree.ManifestPath, "{ \"sections\": ");
 
     [Given("a directory with no manifest at the manifest path")]
-    public void GivenADirectoryWithNoManifestAtTheManifestPath() => File.Delete(Path.Combine(Tree.Root, SpecTree.ManifestPath));
+    public void GivenADirectoryWithNoManifestAtTheManifestPath() => File.Delete(Path.Combine(Tree.Root, SpechtTree.ManifestPath));
 
     [Given("a snapshot of every file under the root")]
     public void GivenASnapshotOfEveryFileUnderTheRoot() => _snapshot = Snapshot(Tree.Root);
@@ -123,7 +123,7 @@ public sealed partial class CheckSteps
         }
 
         var services = new ServiceCollection().AddSpechtEngine();
-        services.AddSingleton<ISpecRule>(new FaultIsolatedRule(new FailingRule()));
+        services.AddSingleton<ISpechtRule>(new FaultIsolatedRule(new FailingRule()));
         services.AddSingleton<Func<string, SchemaSourceSelection?, SpechtReport>>(static provider => provider.GetRequiredService<SpechtRunner>().Run);
         var app = new CommandAppTester(new TypeRegistrar(services), console: new TestConsole());
         app.SetDefaultCommand<CheckCommand>();
@@ -252,11 +252,11 @@ public sealed partial class CheckSteps
     public void ThenTheStandardErrorNamesThatPathAsItWasTyped() => _stderr.Should().Contain(_typed);
 
     [Then("the standard error names the manifest path")]
-    public void ThenTheStandardErrorNamesTheManifestPath() => _stderr.Should().Contain(SpecTree.ManifestPath);
+    public void ThenTheStandardErrorNamesTheManifestPath() => _stderr.Should().Contain(SpechtTree.ManifestPath);
 
     [Then("the standard error says the manifest at the retired manifest path is not read")]
     public void ThenTheStandardErrorSaysTheManifestAtTheRetiredManifestPathIsNotRead() =>
-        _stderr.Should().Contain(SpecTree.RetiredManifestPath).And.Contain("not read");
+        _stderr.Should().Contain(SpechtTree.RetiredManifestPath).And.Contain("not read");
 
     [Then("the standard output, the standard error and the exit code are those of the same root without that file")]
     public void ThenTheStandardOutputTheStandardErrorAndTheExitCodeAreThoseOfTheSameRootWithoutThatFile() =>
@@ -264,7 +264,7 @@ public sealed partial class CheckSteps
 
     [Then("the standard error names the manifest path relative to the root")]
     public void ThenTheStandardErrorNamesTheManifestPathRelativeToTheRoot() =>
-        _stderr.Should().Contain(SpecTree.ManifestPath).And.NotContain(Tree.Root);
+        _stderr.Should().Contain(SpechtTree.ManifestPath).And.NotContain(Tree.Root);
 
     [Then("the standard output is empty")]
     public void ThenTheStandardOutputIsEmpty() => _stdout.Should().BeEmpty();
@@ -309,16 +309,16 @@ public sealed partial class CheckSteps
         }
     }
 
-    private SpecTree Tree => _tree ?? throw new InvalidOperationException("No repository root was prepared.");
+    private SpechtTree Tree => _tree ?? throw new InvalidOperationException("No repository root was prepared.");
 
     private string Nested => _nested ?? throw new InvalidOperationException("No nested root was named.");
 
-    private SpecViolation MissingFrontmatter =>
+    private SpechtViolation MissingFrontmatter =>
         Tree.Run().Violations.Should().ContainSingle(static violation => violation.RuleId == "SPEC001").Which;
 
     private string[] Violations => Tree.Run().Violations.Select(static violation => violation.ToString()).ToArray();
 
-    private IReadOnlyList<string> Summary => SpecReportDocument.From(Tree.Run()).SummaryLines();
+    private IReadOnlyList<string> Summary => SpechtReportDocument.From(Tree.Run()).SummaryLines();
 
     private string[] Expected => [.. Violations, .. Summary];
 
@@ -351,7 +351,7 @@ public sealed partial class CheckSteps
 
     private string[] ViolationLines() => Lines(_stdout).SkipLast(Summary.Count).ToArray();
 
-    private string LineReporting(SpecViolation violation) =>
+    private string LineReporting(SpechtViolation violation) =>
         ViolationLines()
             .Should()
             .ContainSingle(line => line.Contains($" {violation.RuleId}: {violation.Message}", StringComparison.Ordinal))
@@ -371,7 +371,7 @@ public sealed partial class CheckSteps
         "## 3. Acceptance Criteria\n\n| ID | Claim | Source | Status |\n| -- | ----- | ------ | ------ |\n"
             + "| B-001 | It does the thing. | brd | Active |\n| B-002 | It does another thing. | brd | Active |\n";
 
-    private SpecTree? _tree;
+    private SpechtTree? _tree;
     private string? _nested;
     private string? _typed;
     private Dictionary<string, string>? _snapshot;

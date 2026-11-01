@@ -37,13 +37,13 @@ public sealed partial class VersioningSteps
     public void GivenTheManifestUsesEncoding(string name)
     {
         _manifestEncoding = Encoding.GetEncoding(name);
-        var path = Path.Combine(Tree.Root, SpecTree.ManifestPath);
+        var path = Path.Combine(Tree.Root, SpechtTree.ManifestPath);
         var text = File.ReadAllText(path);
         File.WriteAllBytes(path, [.. _manifestEncoding.GetPreamble(), .. _manifestEncoding.GetBytes(text)]);
     }
 
     [Given("a snapshot of the manifest")]
-    public void GivenASnapshotOfTheManifest() => _manifestBefore = File.ReadAllBytes(Path.Combine(Tree.Root, SpecTree.ManifestPath));
+    public void GivenASnapshotOfTheManifest() => _manifestBefore = File.ReadAllBytes(Path.Combine(Tree.Root, SpechtTree.ManifestPath));
 
     [Given("a snapshot of every file under the root")]
     public void GivenASnapshotOfEveryFile() => _filesBefore = SnapshotFiles();
@@ -72,7 +72,7 @@ public sealed partial class VersioningSteps
     public void GivenTheRootAndFilesHaveVersions(string pin, string files)
     {
         GivenTheManifestPinsVersion(files);
-        var schemas = Path.Combine(Tree.Root, SpecTree.ConfigurationFolder, "schema");
+        var schemas = Path.Combine(Tree.Root, SpechtTree.ConfigurationFolder, "schema");
         Directory.Delete(schemas, recursive: true);
         var result = AcceptanceTool.Launch(Tree.Root, "init", "--all");
         result.ExitCode.Should().Be(0, result.Stderr);
@@ -91,7 +91,7 @@ public sealed partial class VersioningSteps
         var needle = "\"schemaVersion\":" + before["schemaVersion"]!.ToJsonString();
         original.Should().Contain(needle);
         var expected = original.Replace(needle, "\"schemaVersion\":" + JsonSerializer.Serialize(_pinTarget), StringComparison.Ordinal);
-        File.ReadAllBytes(Path.Combine(Tree.Root, SpecTree.ManifestPath)).Should().Equal([.. preamble, .. _manifestEncoding.GetBytes(expected)]);
+        File.ReadAllBytes(Path.Combine(Tree.Root, SpechtTree.ManifestPath)).Should().Equal([.. preamble, .. _manifestEncoding.GetBytes(expected)]);
     }
 
     [Then("the only file changed is the manifest")]
@@ -100,7 +100,7 @@ public sealed partial class VersioningSteps
         var after = SnapshotFiles();
         after.Keys.Should().BeEquivalentTo(_filesBefore!.Keys);
         after.Where(pair => !pair.Value.SequenceEqual(_filesBefore[pair.Key])).Select(static pair => pair.Key)
-            .Should().Equal(SpecTree.ManifestPath);
+            .Should().Equal(SpechtTree.ManifestPath);
     }
 
     [Then("the frontmatter schemas and the templates are still version {word}'s")]
@@ -108,7 +108,7 @@ public sealed partial class VersioningSteps
     {
         _ = version;
         var after = SnapshotFiles();
-        foreach (var entry in _filesBefore!.Where(static entry => entry.Key != SpecTree.ManifestPath))
+        foreach (var entry in _filesBefore!.Where(static entry => entry.Key != SpechtTree.ManifestPath))
         {
             after[entry.Key].Should().Equal(entry.Value);
         }
@@ -117,8 +117,8 @@ public sealed partial class VersioningSteps
     [Then("every other manifest key keeps its value")]
     public void ThenEveryOtherManifestKeyKeepsItsValue()
     {
-        var before = JsonNode.Parse(_filesBefore![SpecTree.ManifestPath])!.AsObject();
-        var after = JsonNode.Parse(File.ReadAllBytes(Path.Combine(Tree.Root, SpecTree.ManifestPath)))!.AsObject();
+        var before = JsonNode.Parse(_filesBefore![SpechtTree.ManifestPath])!.AsObject();
+        var after = JsonNode.Parse(File.ReadAllBytes(Path.Combine(Tree.Root, SpechtTree.ManifestPath)))!.AsObject();
         before.Remove("schemaVersion");
         after.Remove("schemaVersion");
         JsonNode.DeepEquals(before, after).Should().BeTrue();
@@ -137,7 +137,7 @@ public sealed partial class VersioningSteps
     }
 
     [Then("the output confirms version {word} and the manifest")]
-    public void ThenTheOutputConfirmsThePin(string version) => _stdout.Should().Contain(version).And.Contain(SpecTree.ManifestPath);
+    public void ThenTheOutputConfirmsThePin(string version) => _stdout.Should().Contain(version).And.Contain(SpechtTree.ManifestPath);
 
     private Dictionary<string, byte[]> SnapshotFiles() => Directory.GetFiles(Tree.Root, "*", SearchOption.AllDirectories)
         .ToDictionary(file => Path.GetRelativePath(Tree.Root, file).Replace('\\', '/'), File.ReadAllBytes, StringComparer.Ordinal);

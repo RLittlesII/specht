@@ -15,15 +15,15 @@ public sealed partial class RuleEntriesSteps
     [Given("a repository root holding a manifest that pins schema version {word}")]
     public void GivenRepositoryRoot(string pin)
     {
-        _tree = new SpecTree();
+        _tree = new SpechtTree();
         GivenManifestPins(pin);
-        _manifestBefore = File.ReadAllBytes(Path.Combine(Tree.Root, SpecTree.ManifestPath));
+        _manifestBefore = File.ReadAllBytes(Path.Combine(Tree.Root, SpechtTree.ManifestPath));
     }
 
     [Given("the manifest pins schema version {word}")]
     public void GivenManifestPins(string pin)
     {
-        var path = Path.Combine(Tree.Root, SpecTree.ManifestPath);
+        var path = Path.Combine(Tree.Root, SpechtTree.ManifestPath);
         var manifest = JsonNode.Parse(File.ReadAllText(path))!.AsObject();
         manifest["schemaVersion"] = pin;
         File.WriteAllText(path, manifest.ToJsonString());
@@ -33,7 +33,7 @@ public sealed partial class RuleEntriesSteps
     [Given("the manifest sets the out-of-order-section rule to {word}")]
     public void GivenManifestSetsLevel(string level)
     {
-        var path = Path.Combine(Tree.Root, SpecTree.ManifestPath);
+        var path = Path.Combine(Tree.Root, SpechtTree.ManifestPath);
         var manifest = JsonNode.Parse(File.ReadAllText(path))!.AsObject();
         manifest["rules"] = new JsonObject { [SectionRule] = level };
         File.WriteAllText(path, manifest.ToJsonString());
@@ -43,7 +43,7 @@ public sealed partial class RuleEntriesSteps
     [Given("the manifest sets no level for the out-of-order-section rule")]
     public void GivenManifestOmitsLevel()
     {
-        var manifest = JsonNode.Parse(File.ReadAllText(Path.Combine(Tree.Root, SpecTree.ManifestPath)))!.AsObject();
+        var manifest = JsonNode.Parse(File.ReadAllText(Path.Combine(Tree.Root, SpechtTree.ManifestPath)))!.AsObject();
         manifest["rules"]?.AsObject().ContainsKey(SectionRule).Should().NotBe(true);
     }
 
@@ -100,7 +100,7 @@ public sealed partial class RuleEntriesSteps
     [AfterScenario]
     public void DisposeTree() => _tree?.Dispose();
 
-    private SpecTree Tree => _tree ?? throw new InvalidOperationException("No repository root was prepared.");
+    private SpechtTree Tree => _tree ?? throw new InvalidOperationException("No repository root was prepared.");
 
     private string[][] Entries => _result.Stdout.Split('\n', StringSplitOptions.RemoveEmptyEntries)
         .Select(static line => line.TrimEnd('\r').Split('\t')).ToArray();
@@ -108,7 +108,7 @@ public sealed partial class RuleEntriesSteps
     private string[] Entry(string id) => Entries.Should().ContainSingle(entry => entry[0] == id).Which;
 
     private const string SectionRule = "SPEC010";
-    private SpecTree? _tree;
+    private SpechtTree? _tree;
     private SchemaVersion? _version;
     private RulePage? _explanation;
     private (string Stdout, string Stderr, int ExitCode) _result;

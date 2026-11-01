@@ -15,7 +15,7 @@ namespace Specht;
 /// <param name="schemas">The shared root and schema selection stage.</param>
 /// <implements epic="0001" feature="F1" claim="B-001" />
 public sealed class SpechtRunner(
-    SpecModelLoader loader, IEnumerable<ISpecRule> rules, IFileSystem fileSystem, SpecSchemasLoader schemas)
+    SpechtModelLoader loader, IEnumerable<ISpechtRule> rules, IFileSystem fileSystem, SpechtSchemasLoader schemas)
 {
     /// <summary>
     /// Evaluates <paramref name="rules"/>, in the order given, over <paramref name="model"/> under the vocabulary of the
@@ -27,7 +27,7 @@ public sealed class SpechtRunner(
     /// <param name="rules">The rule set.</param>
     /// <returns>The report.</returns>
     /// <implements epic="0001" feature="F1" claim="B-001" />
-    public static SpechtReport Evaluate(SpecModel model, IEnumerable<ISpecRule> rules) =>
+    public static SpechtReport Evaluate(SpechtModel model, IEnumerable<ISpechtRule> rules) =>
         Evaluate(model, rules, rule => rule.Evaluate(model));
 
     /// <summary>
@@ -38,7 +38,7 @@ public sealed class SpechtRunner(
     /// <param name="violations">The violations to order.</param>
     /// <returns>The violations, ordered.</returns>
     /// <implements epic="0001" feature="F1" claim="B-001" />
-    public static IReadOnlyList<SpecViolation> Order(IEnumerable<SpecViolation> violations) =>
+    public static IReadOnlyList<SpechtViolation> Order(IEnumerable<SpechtViolation> violations) =>
         violations
             .OrderByDescending(static violation => violation.Severity)
             .ThenBy(static violation => violation.File, StringComparer.Ordinal)
@@ -63,7 +63,7 @@ public sealed class SpechtRunner(
     public SpechtReport CheckFrontmatter(string root, FrontmatterKind kind, string path, string text)
     {
         var loaded = schemas.Load(root);
-        var model = new SpecModel(root, [], [], [], loaded);
+        var model = new SpechtModel(root, [], [], [], loaded);
         var frontmatter = FrontmatterReader.Parse(text);
 
         return Evaluate(model, [FrontmatterRule],
@@ -77,7 +77,7 @@ public sealed class SpechtRunner(
     public void WriteReport(SpechtReport report, string path)
     {
         fileSystem.Directory.CreateDirectory(fileSystem.Path.GetDirectoryName(path)!);
-        fileSystem.File.WriteAllText(path, SpecReportDocument.From(report).ToJson());
+        fileSystem.File.WriteAllText(path, SpechtReportDocument.From(report).ToJson());
     }
 
     private FrontmatterSchemaRule FrontmatterRule => rules
@@ -86,12 +86,12 @@ public sealed class SpechtRunner(
 
     /// <implements epic="0001" feature="F1" claim="B-001" />
     private static SpechtReport Evaluate(
-        SpecModel model, IEnumerable<ISpecRule> rules, Func<ISpecRule, IEnumerable<SpecViolation>> evaluate)
+        SpechtModel model, IEnumerable<ISpechtRule> rules, Func<ISpechtRule, IEnumerable<SpechtViolation>> evaluate)
     {
         var version = model.Schemas.Version;
         var settings = model.Schemas.Structure.Rules;
         var evaluated = rules.Where(rule => rule.ReportedIds.Any(id => Enabled(id, rule, version.RuleIds, settings))).ToList();
-        var violations = new List<SpecViolation>();
+        var violations = new List<SpechtViolation>();
 
         foreach (var rule in evaluated)
         {
@@ -106,7 +106,7 @@ public sealed class SpechtRunner(
             model.Features.Count,
             [
                 .. model.Schemas.Structure.Discovery.Layouts.Select(layout =>
-                    new SpecReportLayout(layout.Name, model.Features.Count(feature => feature.Location.Layout == layout))),
+                    new SpechtReportLayout(layout.Name, model.Features.Count(feature => feature.Location.Layout == layout))),
             ],
             model.Items.Count,
             evaluated.Sum(rule => rule.ReportedIds.Count(id => Enabled(id, rule, version.RuleIds, settings))),
@@ -115,15 +115,15 @@ public sealed class SpechtRunner(
     }
 
     /// <implements epic="0001" feature="F1" claim="B-001" />
-    private static bool Enabled(string id, ISpecRule rule, IReadOnlySet<string> vocabulary, SpecRuleSettings settings) =>
-        vocabulary.Contains(id) && (settings.TryGetValue(id, out var level) ? level : rule.DefaultLevel) != SpecRuleLevel.Off;
+    private static bool Enabled(string id, ISpechtRule rule, IReadOnlySet<string> vocabulary, SpechtRuleSettings settings) =>
+        vocabulary.Contains(id) && (settings.TryGetValue(id, out var level) ? level : rule.DefaultLevel) != SpechtRuleLevel.Off;
 
     /// <implements epic="0001" feature="F1" claim="B-001" />
-    private static SpecViolation Graded(SpecViolation violation, SpecRuleSettings settings) =>
+    private static SpechtViolation Graded(SpechtViolation violation, SpechtRuleSettings settings) =>
         violation.RuleFailure is null && settings.TryGetValue(violation.RuleId, out var level) ? level switch
         {
-            SpecRuleLevel.Warning => violation with { Severity = SpecSeverity.Warning },
-            SpecRuleLevel.Error => violation with { Severity = SpecSeverity.Error },
+            SpechtRuleLevel.Warning => violation with { Severity = SpechtSeverity.Warning },
+            SpechtRuleLevel.Error => violation with { Severity = SpechtSeverity.Error },
             _ => violation,
         } : violation;
 }

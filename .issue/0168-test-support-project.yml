@@ -18,7 +18,7 @@ spec: null
 claims: []
 
 created: "2026-10-11"
-updated: "2026-10-11"
+updated: "2026-11-01"
 closed: null
 
 summary: |
@@ -38,7 +38,7 @@ summary: |
     `test/tests/Shared/EmbeddedFolder.cs`,
     `test/tests/Shared/EngineAssembly.cs`,
     `test/tests/Shared/EngineServices.cs`, `test/tests/Rules/RulePage.cs`
-    and `test/tests/Shared/SpecTree.cs`;
+    and `test/tests/Shared/SpechtTree.cs`;
   - into `test/tests` (`test/tests/tests.csproj:67-69`):
     `test/acceptance/AcceptanceTool.cs`.
 

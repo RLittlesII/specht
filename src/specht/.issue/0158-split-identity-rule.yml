@@ -18,7 +18,7 @@ spec: src/specht/.spec/README.md
 claims: []
 
 created: "2026-10-11"
-updated: "2026-10-31"
+updated: "2026-11-01"
 closed: null
 
 summary: |
@@ -34,7 +34,7 @@ summary: |
   class still runs (ADR-0010 § "What the source shows"). This item splits
   it into two rules, each reporting its own id and no other.
 
-  The evaluator is untouched. `ISpecRule` keeps `Id`, `ReportedIds` and
+  The evaluator is untouched. `ISpechtRule` keeps `Id`, `ReportedIds` and
   `Evaluate`; each new rule's `ReportedIds` names its one id;
   `SpechtRunner.Evaluate` selects, filters and counts as it does today.
   Collapsing the interface is item 0164. `AddSpechtEngine()` registers each
@@ -62,9 +62,9 @@ acceptance_criteria:
   - "Split: `IdentityRule` is gone and two rules stand in its place, one each for SPEC011 and SPEC012; each one's `ReportedIds` names its own id alone, and `AddSpechtEngine()` registers each by name in ordinal order of its id."
   - "Order kept: SPEC011 keeps the Features' order and, for one Feature, the epic mismatch before the id mismatch (`src/specht/Rules/IdentityRule.cs:40-64`). SPEC012 keeps the identities in the order each first appears in the model and, within one identity, the Features' order (`:67-87`)."
   - "Guards kept: SPEC011 skips a Feature whose layout declares no path identity, that has no `epic` or no `id`, or whose declared segment falls outside its path (`:31-38`). SPEC012 groups only the Features that have both `epic` and `id` (`:68`), the derivation the model carries from item 0155."
-  - "Untouched: `ISpecRule`, `SpechtRunner.Evaluate` and `SpechtRunner.Order`, and every violation's file, line, identifier, message and severity."
+  - "Untouched: `ISpechtRule`, `SpechtRunner.Evaluate` and `SpechtRunner.Order`, and every violation's file, line, identifier, message and severity."
   - "The composition tests still hold: every concrete rule the engine declares is registered exactly once, the rules resolve in ordinal order of their ids, and the reported ids are the twenty-one of the pinned vocabulary, each once (`test/tests/Composition/SpechtEngineServiceCollectionExtensions.Unit.Tests.cs`)."
-  - "Not a refactor until re-pointed: `SpecModelUnitTests` constructs `IdentityRule` (`test/tests/Model/SpecModel.Unit.Tests.cs:102`, `:123`), and `0001-F1` § 9 (B-002, B-004, B-011) and `0001-F6` § 9 (B-004) name that class. The two tests are aimed at the rule that reports the id each pins, and `test-writer` re-points any row whose test is renamed, in the same pull request."
+  - "Not a refactor until re-pointed: `SpechtModelUnitTests` constructs `IdentityRule` (`test/tests/Model/SpechtModel.Unit.Tests.cs:102`, `:123`), and `0001-F1` § 9 (B-002, B-004, B-011) and `0001-F6` § 9 (B-004) name that class. The two tests are aimed at the rule that reports the id each pins, and `test-writer` re-points any row whose test is renamed, in the same pull request."
   - "The golden report `test/tests/Engine/Baseline/engine-e7dba24.json` is unchanged, byte for byte, and the test that compares it is green unedited. The unit, integration and acceptance tiers pass, and the benchmark project `.performance/benchmarks` still compiles."
   - "No .feature change needed: refactor - `IdentityRule` becomes two rules of one id each; every violation, its severity, the report's order and its counts are unchanged."
   - "Constraints preserved: 0001-F1 C-5, 0001-F1 C-9, 0001-F1 C-10, 0001-F5 C-3"
@@ -93,7 +93,7 @@ decisions:
     and 0100 is open.
 
 out_of_scope:
-  - "The collapse of `ISpecRule`, `SpecFinding`, `DefaultSeverity` and the evaluator - item 0164."
+  - "The collapse of `ISpechtRule`, `SpecFinding`, `DefaultSeverity` and the evaluator - item 0164."
   - "A unit-test class for each new rule that pins every id it reports - item 0152."
   - "A folder for each rule group under `src/specht/Rules/`, and any new rule id - item 0169."
   - "The other seven rule classes - items 0156, 0157 and 0159 to 0163, one each."

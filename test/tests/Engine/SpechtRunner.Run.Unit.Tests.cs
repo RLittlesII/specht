@@ -23,14 +23,14 @@ public sealed class SpechtRunnerRunUnitTests
         var fileSystem = new MockFileSystem(
             new Dictionary<string, MockFileData>
             {
-                [Path.Combine("repo", SpecTree.ManifestPath)] = new("""{ "notAKeyTheEngineKnows": true }"""),
+                [Path.Combine("repo", SpechtTree.ManifestPath)] = new("""{ "notAKeyTheEngineKnows": true }"""),
             });
         var rule = new RecordingRule();
         var runner = new SpechtRunner(
-            new SpecModelLoader(
+            new SpechtModelLoader(
                 fileSystem,
                 new FrontmatterReader(fileSystem),
-                new SpecDiscovery(fileSystem),
+                new SpechtDiscovery(fileSystem),
                 EngineServices.Schemas(fileSystem), new FeatureTagParser()),
             [rule],
             fileSystem,
@@ -44,7 +44,7 @@ public sealed class SpechtRunnerRunUnitTests
         rule.Evaluated.Should().BeFalse();
     }
 
-    private sealed class RecordingRule : ISpecRule
+    private sealed class RecordingRule : ISpechtRule
     {
         public bool Evaluated { get; private set; }
 
@@ -52,7 +52,7 @@ public sealed class SpechtRunnerRunUnitTests
 
         public IReadOnlyList<string> ReportedIds => ["SPEC010"];
 
-        public IEnumerable<SpecViolation> Evaluate(SpecModel model)
+        public IEnumerable<SpechtViolation> Evaluate(SpechtModel model)
         {
             Evaluated = true;
             return [];

@@ -44,7 +44,7 @@ public sealed class SpechtRunnerVersionsIntegrationTests
     public void AManifestPinningAVersion_WhenChecked_ShouldValidateFrontmatterWithThatVersionsSchemas(string pinned, bool rejected)
     {
         // Given
-        using var tree = new SpecTree();
+        using var tree = new SpechtTree();
         tree.WriteFeature("0001", "F1", new Dictionary<string, string> { ["priority"] = "med" });
         Pin(tree, pinned);
         var shipped = EngineServices.Versions().Find(new SemanticVersion(0, 1, 0))!;
@@ -70,7 +70,7 @@ public sealed class SpechtRunnerVersionsIntegrationTests
     public void AManifestsPin_WhenChecked_ShouldBeTheVersionTheReportNames(string because, string? pinned, SemanticVersion expected)
     {
         // Given
-        using var tree = new SpecTree();
+        using var tree = new SpechtTree();
         tree.WriteFeature("0001", "F1");
         Pin(tree, pinned);
         var shipped = EngineServices.Versions().Find(new SemanticVersion(0, 1, 0))!;
@@ -91,8 +91,8 @@ public sealed class SpechtRunnerVersionsIntegrationTests
     public void APinnedVersionsVocabulary_WhenChecked_ShouldBeExactlyTheRuleIdsEvaluated(string because, string[] removed, string[] expected)
     {
         // Given
-        using var tree = new SpecTree();
-        tree.WriteFeature("0001", "F1", sections: SpecTree.SectionsWith("3. Acceptance Criteria", TwoClaims));
+        using var tree = new SpechtTree();
+        tree.WriteFeature("0001", "F1", sections: SpechtTree.SectionsWith("3. Acceptance Criteria", TwoClaims));
         Pin(tree, "0.1.0");
         var shipped = EngineServices.Versions().Find(new SemanticVersion(0, 1, 0))!;
         var pinned = shipped with { RuleIds = shipped.RuleIds.Except(removed, StringComparer.Ordinal).ToHashSet(StringComparer.Ordinal) };
@@ -105,9 +105,9 @@ public sealed class SpechtRunnerVersionsIntegrationTests
         report.RulesEvaluated.Should().Be(pinned.RuleIds.Count, because);
     }
 
-    private static void Pin(SpecTree tree, string? version)
+    private static void Pin(SpechtTree tree, string? version)
     {
-        var path = Path.Combine(tree.Root, SpecTree.ManifestPath);
+        var path = Path.Combine(tree.Root, SpechtTree.ManifestPath);
         var manifest = JsonNode.Parse(File.ReadAllText(path))!.AsObject();
         manifest.Remove("schemaVersion");
         if (version is not null)

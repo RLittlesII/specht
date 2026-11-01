@@ -8,15 +8,15 @@ namespace Specht.Tests.Report;
 /// A synthetic Feature specification with no frontmatter and one whose priority is outside the enum, each under four
 /// schema sources, for 0001-F3 B-009 and B-026: the specification, the rule and key of its violation, the members its
 /// <c>expected</c> carries, what the root holds of the schema source, and the schema source the run selects. The expected
-/// <c>required</c> and <c>enum</c> are read from the shipped Feature schema, which <see cref="SpecTree"/> copies.
+/// <c>required</c> and <c>enum</c> are read from the shipped Feature schema, which <see cref="SpechtTree"/> copies.
 /// </summary>
-public sealed class SchemaSources : TheoryData<string, Action<SpecTree>, string, string?, JsonObject, Action<SpecTree>, SchemaSourceSelection?>
+public sealed class SchemaSources : TheoryData<string, Action<SpechtTree>, string, string?, JsonObject, Action<SpechtTree>, SchemaSourceSelection?>
 {
     public SchemaSources()
     {
-        var shipped = JsonNode.Parse(File.ReadAllText(Path.Combine(AppContext.BaseDirectory, SpecTree.FeatureSchemaPath)))!;
+        var shipped = JsonNode.Parse(File.ReadAllText(Path.Combine(AppContext.BaseDirectory, SpechtTree.FeatureSchemaPath)))!;
 
-        foreach (var (source, arrange, selection) in new (string, Action<SpecTree>, SchemaSourceSelection?)[]
+        foreach (var (source, arrange, selection) in new (string, Action<SpechtTree>, SchemaSourceSelection?)[]
         {
             ("the embedded schemas, the files on disk", static _ => { }, null),
             ("the embedded schemas, no file on disk", static tree => tree.DeleteFrontmatterSchemas(), null),
@@ -26,10 +26,10 @@ public sealed class SchemaSources : TheoryData<string, Action<SpecTree>, string,
         {
             Add(
                 $"no frontmatter, under {source}",
-                static tree => tree.WriteRaw("epics/0001-epic/F1-feature/spec.md", "# Specification: F1\n\n" + string.Join('\n', SpecTree.Sections)),
+                static tree => tree.WriteRaw("epics/0001-epic/F1-feature/spec.md", "# Specification: F1\n\n" + string.Join('\n', SpechtTree.Sections)),
                 "SPEC001",
                 null,
-                new JsonObject { ["schema"] = SpecTree.FeatureSchemaPath, ["required"] = shipped["required"]!.DeepClone() },
+                new JsonObject { ["schema"] = SpechtTree.FeatureSchemaPath, ["required"] = shipped["required"]!.DeepClone() },
                 arrange,
                 selection);
             Add(
@@ -39,7 +39,7 @@ public sealed class SchemaSources : TheoryData<string, Action<SpecTree>, string,
                 "priority",
                 new JsonObject
                 {
-                    ["schema"] = SpecTree.FeatureSchemaPath,
+                    ["schema"] = SpechtTree.FeatureSchemaPath,
                     ["key"] = "priority",
                     ["constraints"] = new JsonObject { ["enum"] = shipped["properties"]!["priority"]!["enum"]!.DeepClone() },
                 },

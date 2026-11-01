@@ -14,10 +14,10 @@ public sealed class RulesCommandIntegrationTests
     public void APinnedManifest_WhenListing_ShouldPrintOnlyThatCatalogueRegardlessOfTreeContent(string pin, bool explicitRoot)
     {
         // Given
-        using var tree = new SpecTree();
-        var manifest = JsonNode.Parse(File.ReadAllText(Path.Combine(tree.Root, SpecTree.ManifestPath)))!.AsObject();
+        using var tree = new SpechtTree();
+        var manifest = JsonNode.Parse(File.ReadAllText(Path.Combine(tree.Root, SpechtTree.ManifestPath)))!.AsObject();
         manifest["schemaVersion"] = pin;
-        tree.WriteRaw(SpecTree.ManifestPath, manifest.ToJsonString());
+        tree.WriteRaw(SpechtTree.ManifestPath, manifest.ToJsonString());
         tree.WriteRaw("broken/.spec/README.md", "not a specification");
         var version = EngineServices.Versions().Versions.Single(version => version.Number.ToString() == pin);
         string[] arguments = explicitRoot ? ["rules", "--root", "."] : ["rules"];
@@ -45,8 +45,8 @@ public sealed class RulesCommandIntegrationTests
     public void ARejectedManifest_WhenListing_ShouldMatchTheChecksErrorAndLeaveStdoutEmpty(string manifest, string namedFault)
     {
         // Given
-        using var tree = new SpecTree();
-        tree.WriteRaw(SpecTree.ManifestPath, manifest);
+        using var tree = new SpechtTree();
+        tree.WriteRaw(SpechtTree.ManifestPath, manifest);
         var check = AcceptanceTool.Launch(tree.Root);
 
         // When
@@ -65,7 +65,7 @@ public sealed class RulesCommandIntegrationTests
     public void AMissingRoot_WhenListing_ShouldEchoOnlyTheTypedRootOnStderr(bool absolute)
     {
         // Given
-        using var tree = new SpecTree();
+        using var tree = new SpechtTree();
         var typedRoot = absolute ? Path.Combine(tree.Root, "absent") : "absent";
 
         // When
@@ -81,8 +81,8 @@ public sealed class RulesCommandIntegrationTests
     public void ARootWithoutAManifest_WhenListing_ShouldNameOnlyTheRelativeManifestPath()
     {
         // Given
-        using var tree = new SpecTree();
-        File.Delete(Path.Combine(tree.Root, SpecTree.ManifestPath));
+        using var tree = new SpechtTree();
+        File.Delete(Path.Combine(tree.Root, SpechtTree.ManifestPath));
         var check = AcceptanceTool.Launch(tree.Root);
 
         // When
@@ -91,7 +91,7 @@ public sealed class RulesCommandIntegrationTests
         // Then
         result.ExitCode.Should().Be(2);
         result.Stdout.Should().BeEmpty();
-        result.Stderr.Should().Be(check.Stderr).And.Contain(SpecTree.ManifestPath).And.NotContain(tree.Root).And.NotContain("\\");
+        result.Stderr.Should().Be(check.Stderr).And.Contain(SpechtTree.ManifestPath).And.NotContain(tree.Root).And.NotContain("\\");
     }
 
     [Theory]
@@ -99,11 +99,11 @@ public sealed class RulesCommandIntegrationTests
     public void ARun_WhenListing_ShouldLeaveEveryOwnedFileUnchanged(bool valid)
     {
         // Given
-        using var tree = new SpecTree();
+        using var tree = new SpechtTree();
         tree.WriteRaw("sentinel.bin", "unchanged");
         if (!valid)
         {
-            tree.WriteRaw(SpecTree.ManifestPath, "{");
+            tree.WriteRaw(SpechtTree.ManifestPath, "{");
         }
         var before = Directory.GetFiles(tree.Root, "*", SearchOption.AllDirectories)
             .ToDictionary(path => Path.GetRelativePath(tree.Root, path).Replace('\\', '/'), static path => File.ReadAllBytes(path));

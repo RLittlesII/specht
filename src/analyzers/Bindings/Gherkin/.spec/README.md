@@ -185,7 +185,7 @@ zero is tested against the grammar like any other. The claim tag is
 its captured text is the claim identifier, exactly as authored (B-004). A tag for
 which it returns `null` is ordinary (B-025).
 
-This is the token rule of `FeatureTagParser.Parse` given a `SpecStructure` that
+This is the token rule of `FeatureTagParser.Parse` given a `SpechtStructure` that
 carries a claim tag form, written a second time. The owner withdrew the shared
 library and an MSBuild link is ruled out, so the rule has two
 implementations and one test holds them together: a characterization case list

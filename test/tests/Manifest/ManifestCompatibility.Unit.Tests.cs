@@ -29,7 +29,7 @@ public sealed class ManifestCompatibilityUnitTests
         // Given
         var fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>
         {
-            [Path.Combine("repo", SpecTree.ManifestPath)] = new(manifest),
+            [Path.Combine("repo", SpechtTree.ManifestPath)] = new(manifest),
         });
 
         // When

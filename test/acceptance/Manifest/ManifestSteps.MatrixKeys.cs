@@ -92,9 +92,9 @@ public sealed partial class ManifestSteps
     [Then("the required specification directories are an empty list")]
     public void ThenTheRequiredSpecificationDirectoriesAreAnEmptyList() => Structure.RequiredSpecifications.Should().BeEmpty();
 
-    private SpecStructure Structure => _structure ?? throw new InvalidOperationException("No manifest was loaded.");
+    private SpechtStructure Structure => _structure ?? throw new InvalidOperationException("No manifest was loaded.");
 
     private static readonly string[] StatusMarkers = ["covered", "partial", "waived", "withdrawn", "superseded"];
 
-    private SpecStructure? _structure;
+    private SpechtStructure? _structure;
 }

@@ -18,10 +18,10 @@ public sealed class SchemaPinCommandIntegrationTests
     public void SupportedManifestEncoding_WhenListingAndPinning_ShouldMatchTheCheckAndPreserveBytes(string name)
     {
         // Given
-        using var tree = new SpecTree();
+        using var tree = new SpechtTree();
         var encoding = Encoding.GetEncoding(name);
         const string text = "{\r\n\"$comment\":\"😀\",\r\n\"schemaVersion\":\"0.1.0\"\r\n}";
-        var path = Path.Combine(tree.Root, SpecTree.ManifestPath);
+        var path = Path.Combine(tree.Root, SpechtTree.ManifestPath);
         File.WriteAllBytes(path, [.. encoding.GetPreamble(), .. encoding.GetBytes(text)]);
 
         // When
@@ -41,8 +41,8 @@ public sealed class SchemaPinCommandIntegrationTests
     public void NewerSettings_WhenDowngrading_ShouldSurviveEvenWhenTheSubsequentCheckRejectsThem()
     {
         // Given
-        using var tree = new SpecTree();
-        var path = Path.Combine(tree.Root, SpecTree.ManifestPath);
+        using var tree = new SpechtTree();
+        var path = Path.Combine(tree.Root, SpechtTree.ManifestPath);
         const string before = "{\"schemaVersion\":\"0.2.0\",\"claim\":{\"tag\":\"@req:{claim}\",\"tagIgnoreCase\":false}}";
         File.WriteAllText(path, before);
 
@@ -65,10 +65,10 @@ public sealed class SchemaPinCommandIntegrationTests
     public void ExistingPin_WhenPinning_ShouldChangeOnlyItsValue(string before, string target)
     {
         // Given
-        using var tree = new SpecTree();
+        using var tree = new SpechtTree();
         var text = "{\r\n  \"$comment\": \"schemaVersion in a value is untouched 😀\",\r\n  \"schemaVersion\" : \"" + before
             + "\",\r\n  \"rules\": {\"SPEC031\": \"warning\"}\r\n}\r\n";
-        var path = Path.Combine(tree.Root, SpecTree.ManifestPath);
+        var path = Path.Combine(tree.Root, SpechtTree.ManifestPath);
         File.WriteAllBytes(path, [0xEF, 0xBB, 0xBF, .. Encoding.UTF8.GetBytes(text)]);
         var snapshot = Directory.GetFiles(tree.Root, "*", SearchOption.AllDirectories).ToDictionary(
             file => Path.GetRelativePath(tree.Root, file).Replace('\\', '/'), File.ReadAllBytes);
@@ -78,11 +78,11 @@ public sealed class SchemaPinCommandIntegrationTests
 
         // Then
         result.ExitCode.Should().Be(0, result.Stderr);
-        result.Stdout.Should().Contain(target).And.Contain(SpecTree.ManifestPath);
+        result.Stdout.Should().Contain(target).And.Contain(SpechtTree.ManifestPath);
         File.ReadAllBytes(path).Should().Equal([0xEF, 0xBB, 0xBF, .. Encoding.UTF8.GetBytes(text.Replace('"' + before + '"', '"' + target + '"'))]);
         Directory.GetFiles(tree.Root, "*", SearchOption.AllDirectories).Select(file => Path.GetRelativePath(tree.Root, file).Replace('\\', '/'))
             .Should().BeEquivalentTo(snapshot.Keys);
-        foreach (var entry in snapshot.Where(static entry => entry.Key != SpecTree.ManifestPath))
+        foreach (var entry in snapshot.Where(static entry => entry.Key != SpechtTree.ManifestPath))
         {
             File.ReadAllBytes(Path.Combine(tree.Root, entry.Key)).Should().Equal(entry.Value);
         }
@@ -94,8 +94,8 @@ public sealed class SchemaPinCommandIntegrationTests
     public void InvalidTarget_WhenPinning_ShouldWriteNothing(string target, int code)
     {
         // Given
-        using var tree = new SpecTree();
-        var path = Path.Combine(tree.Root, SpecTree.ManifestPath);
+        using var tree = new SpechtTree();
+        var path = Path.Combine(tree.Root, SpechtTree.ManifestPath);
         var before = File.ReadAllBytes(path);
 
         // When
@@ -117,8 +117,8 @@ public sealed class SchemaPinCommandIntegrationTests
     public void InvalidManifest_WhenNamingAnInvalidTarget_ShouldReportTheManifestFirst(string? text, int code)
     {
         // Given
-        using var tree = new SpecTree();
-        var path = Path.Combine(tree.Root, SpecTree.ManifestPath);
+        using var tree = new SpechtTree();
+        var path = Path.Combine(tree.Root, SpechtTree.ManifestPath);
         if (text is null)
         {
             File.Delete(path);
@@ -134,7 +134,7 @@ public sealed class SchemaPinCommandIntegrationTests
         // Then
         result.ExitCode.Should().Be(code);
         result.Stdout.Should().BeEmpty();
-        result.Stderr.Should().Contain(SpecTree.ManifestPath).And.NotContain(tree.Root);
+        result.Stderr.Should().Contain(SpechtTree.ManifestPath).And.NotContain(tree.Root);
         if (text is null)
         {
             File.Exists(path).Should().BeFalse();

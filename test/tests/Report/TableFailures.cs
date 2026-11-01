@@ -15,7 +15,7 @@ public sealed class TableFailures : TheoryData<string, JsonObject, FeatureSpec, 
         Add(
             "a matrix with another column",
             new JsonObject { ["tables"] = new JsonObject { ["matrix"] = new JsonArray("Claim ID", "Scenario", "Proof", "Status") } },
-            new FeatureSpecFixture().WithDocument(SpecDocument.Parse(
+            new FeatureSpecFixture().WithDocument(SpechtDocument.Parse(
                 "## 9. Traceability Matrix\n\n| Claim ID | Scenario | Test | Status |\n| - | - | - | - |\n| B-001 | It | A test | Covered |\n",
                 "src/sample/.spec/README.md")),
             "9. Traceability Matrix",
@@ -23,7 +23,7 @@ public sealed class TableFailures : TheoryData<string, JsonObject, FeatureSpec, 
         Add(
             "a matrix with no table",
             new JsonObject { ["tables"] = new JsonObject { ["matrix"] = new JsonArray("Claim ID", "Scenario", "Proof", "Status") } },
-            new FeatureSpecFixture().WithDocument(SpecDocument.Parse("## 9. Traceability Matrix\n\nNone.\n", "src/sample/.spec/README.md")),
+            new FeatureSpecFixture().WithDocument(SpechtDocument.Parse("## 9. Traceability Matrix\n\nNone.\n", "src/sample/.spec/README.md")),
             "9. Traceability Matrix",
             ["Claim ID", "Scenario", "Proof", "Status"]);
         Add(
@@ -34,7 +34,7 @@ public sealed class TableFailures : TheoryData<string, JsonObject, FeatureSpec, 
                 ["roles"] = new JsonObject { ["matrix"] = "9. Coverage" },
                 ["tables"] = new JsonObject { ["matrix"] = new JsonArray("Claim ID", "Scenario", "Test", "Status") },
             },
-            new FeatureSpecFixture().WithDocument(SpecDocument.Parse(
+            new FeatureSpecFixture().WithDocument(SpechtDocument.Parse(
                 "## 9. Coverage\n\n| Claim ID | Scenario | Status |\n| - | - | - |\n| B-001 | It | Covered |\n",
                 "src/sample/.spec/README.md")),
             "9. Coverage",
@@ -42,7 +42,7 @@ public sealed class TableFailures : TheoryData<string, JsonObject, FeatureSpec, 
         Add(
             "a claims table the manifest gives headers",
             new JsonObject { ["tables"] = new JsonObject { ["claims"] = new JsonArray("ID", "Claim", "Source", "Status") } },
-            new FeatureSpecFixture().WithDocument(SpecDocument.Parse(
+            new FeatureSpecFixture().WithDocument(SpechtDocument.Parse(
                 "## 3. Acceptance Criteria\n\n| ID | Claim | Status |\n| - | - | - |\n| B-001 | It does the thing. | Active |\n",
                 "src/sample/.spec/README.md")),
             "3. Acceptance Criteria",

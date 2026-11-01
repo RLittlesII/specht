@@ -37,10 +37,10 @@ namespace Specht.Tool.Features.Upgrade;
 /// <implements epic="0001" feature="F7" claim="B-060" />
 /// <implements epic="0001" feature="F7" claim="B-061" />
 public sealed class UpgradeWriter(
-    SpecSchemasLoader loader,
-    SpecManifestParser parser,
+    SpechtSchemasLoader loader,
+    SpechtManifestParser parser,
     ShippedFiles shipped,
-    SpecManifestStore store,
+    SpechtManifestStore store,
     ManifestKeyEditor keys,
     UpstreamSchemaFetcher fetcher)
 {
@@ -99,16 +99,16 @@ public sealed class UpgradeWriter(
         var schemasSkipped = structure.SchemaSource == SchemaSourceSelection.Disk && structure.SpechtSchema is null;
         var consumerTemplates = structure.ConsumerTemplates.ToHashSet(StringComparer.Ordinal);
         var namedTemplates = shipped.At(pinned)
-            .Where(file => file.Relative.StartsWith(SpecManifestStore.TemplateFolder + "/", StringComparison.Ordinal)
-                           && consumerTemplates.Contains(file.Relative[(SpecManifestStore.TemplateFolder.Length + 1)..]))
+            .Where(file => file.Relative.StartsWith(SpechtManifestStore.TemplateFolder + "/", StringComparison.Ordinal)
+                           && consumerTemplates.Contains(file.Relative[(SpechtManifestStore.TemplateFolder.Length + 1)..]))
             .Select(static file => file.Relative)
             .ToList();
         var hashedTemplates = (structure.SpechtSchema?.Templates ?? [])
-            .Select(static file => (File: file, Relative: SpecManifestStore.TemplateFolder + "/" + file.FileName))
+            .Select(static file => (File: file, Relative: SpechtManifestStore.TemplateFolder + "/" + file.FileName))
             .ToList();
         var skipped = shipped.At(pinned)
             .Where(file => schemasSkipped
-                           && file.Relative.StartsWith(SpecManifestStore.FrontmatterSchemaFolder + "/", StringComparison.Ordinal)
+                           && file.Relative.StartsWith(SpechtManifestStore.FrontmatterSchemaFolder + "/", StringComparison.Ordinal)
                            && store.ReadConfigurationFile(root, file.Relative) is not null)
             .Select(static file => new UpgradeSkip(file.Relative, "the on-disk source is selected"))
             .Concat(namedTemplates.Select(static relative => new UpgradeSkip(relative, "named in consumerTemplates")))
@@ -116,19 +116,19 @@ public sealed class UpgradeWriter(
             .ToList();
         var plan = shipped.At(pinned)
             .Where(file => !frontmatterFromRoot
-                           || !file.Relative.StartsWith(SpecManifestStore.FrontmatterSchemaFolder + "/", StringComparison.Ordinal))
+                           || !file.Relative.StartsWith(SpechtManifestStore.FrontmatterSchemaFolder + "/", StringComparison.Ordinal))
             .Where(file => !namedTemplates.Contains(file.Relative, StringComparer.Ordinal))
             .Where(file => !hashedTemplates.Exists(hashed => hashed.Relative == file.Relative))
             .Select(file => (File: file, Present: store.ReadConfigurationFile(root, file.Relative)))
             .Where(static entry => entry.Present is not null)
             .Select(entry => (entry.Present, Planned: new ShippedFile(
                 entry.File.Relative,
-                entry.File.Relative == SpecManifestStore.RelativePath ? keys.AddMissing(entry.Present!, entry.File.Bytes) : entry.File.Bytes)))
+                entry.File.Relative == SpechtManifestStore.RelativePath ? keys.AddMissing(entry.Present!, entry.File.Bytes) : entry.File.Bytes)))
             .Where(static entry => !entry.Present.AsSpan().SequenceEqual(entry.Planned.Bytes))
             .Select(static entry => entry.Planned)
             .ToList();
         var differing = (structure.SpechtSchema?.Files ?? [])
-            .Select(file => (File: file, Relative: SpecManifestStore.FrontmatterSchemaFolder + "/" + file.FileName))
+            .Select(file => (File: file, Relative: SpechtManifestStore.FrontmatterSchemaFolder + "/" + file.FileName))
             .Select(entry => (entry.File, entry.Relative, Present: store.ReadConfigurationFile(root, entry.Relative)))
             .Where(static entry => entry.Present is not null && !entry.File.Matches(entry.Present))
             .ToList();

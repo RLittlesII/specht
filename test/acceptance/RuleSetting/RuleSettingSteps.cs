@@ -14,8 +14,8 @@ public sealed partial class RuleSettingSteps
     [Given("a repository root holding a manifest that pins schema version {word}")]
     public void GivenRoot(string version)
     {
-        _tree = new SpecTree();
-        Tree.WriteRaw(SpecTree.ManifestPath, $$"""{"schemaVersion":"{{version}}","$comment":"sentinel"}""");
+        _tree = new SpechtTree();
+        Tree.WriteRaw(SpechtTree.ManifestPath, $$"""{"schemaVersion":"{{version}}","$comment":"sentinel"}""");
         CaptureManifest();
     }
 
@@ -24,7 +24,7 @@ public sealed partial class RuleSettingSteps
     {
         var manifest = ReadManifest();
         manifest["rules"] = new JsonObject { ["SPEC010"] = level };
-        Tree.WriteRaw(SpecTree.ManifestPath, manifest.ToJsonString());
+        Tree.WriteRaw(SpechtTree.ManifestPath, manifest.ToJsonString());
         CaptureManifest();
     }
 
@@ -33,7 +33,7 @@ public sealed partial class RuleSettingSteps
     {
         var manifest = ReadManifest();
         manifest["rules"] = new JsonObject { ["SPEC001"] = "off" };
-        Tree.WriteRaw(SpecTree.ManifestPath, manifest.ToJsonString());
+        Tree.WriteRaw(SpechtTree.ManifestPath, manifest.ToJsonString());
         CaptureManifest();
     }
 
@@ -42,7 +42,7 @@ public sealed partial class RuleSettingSteps
     {
         var manifest = ReadManifest();
         manifest.Remove("rules");
-        Tree.WriteRaw(SpecTree.ManifestPath, manifest.ToJsonString());
+        Tree.WriteRaw(SpechtTree.ManifestPath, manifest.ToJsonString());
         CaptureManifest();
     }
 
@@ -51,7 +51,7 @@ public sealed partial class RuleSettingSteps
     {
         var manifest = ReadManifest();
         manifest["rules"] = null;
-        Tree.WriteRaw(SpecTree.ManifestPath, manifest.ToJsonString());
+        Tree.WriteRaw(SpechtTree.ManifestPath, manifest.ToJsonString());
         CaptureManifest();
     }
 
@@ -111,10 +111,10 @@ public sealed partial class RuleSettingSteps
     [AfterScenario]
     public void DisposeTree() => _tree?.Dispose();
 
-    private SpecTree Tree => _tree ?? throw new InvalidOperationException("No root was prepared.");
-    private string ManifestPath => Path.Combine(Tree.Root, SpecTree.ManifestPath);
+    private SpechtTree Tree => _tree ?? throw new InvalidOperationException("No root was prepared.");
+    private string ManifestPath => Path.Combine(Tree.Root, SpechtTree.ManifestPath);
     private JsonObject ReadManifest() => JsonNode.Parse(File.ReadAllText(ManifestPath))!.AsObject();
     private void CaptureManifest() => _manifestBefore = File.ReadAllBytes(ManifestPath);
-    private SpecTree? _tree;
+    private SpechtTree? _tree;
     private byte[] _manifestBefore = [];
 }

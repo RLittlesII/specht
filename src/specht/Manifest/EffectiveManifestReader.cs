@@ -11,7 +11,7 @@ namespace Specht.Manifest;
 /// <param name="rules">The shared pinned rule catalogue and level precedence.</param>
 /// <param name="versions">The embedded manifests that define printed key order.</param>
 /// <implements epic="0001" feature="F9" claim="B-005" />
-public sealed class EffectiveManifestReader(SpecSchemasLoader schemas, RuleEntriesReader rules, SchemaVersions versions)
+public sealed class EffectiveManifestReader(SpechtSchemasLoader schemas, RuleEntriesReader rules, SchemaVersions versions)
 {
     /// <summary>Returns the root's effective manifest as an owned JSON object.</summary>
     /// <param name="root">The repository root.</param>

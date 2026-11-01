@@ -26,7 +26,7 @@ public sealed partial class VersioningSteps
 
     [Given("one of its templates has been edited by hand")]
     public void GivenOneTemplateHasBeenEditedByHand() =>
-        File.WriteAllText(Path.Combine(Tree.Root, SpecTree.TemplatesFolder, "feature.md"), "# A synthetic template with local edits\n");
+        File.WriteAllText(Path.Combine(Tree.Root, SpechtTree.TemplatesFolder, "feature.md"), "# A synthetic template with local edits\n");
 
     [Given("its frontmatter schemas, templates and manifest keys are already version {word}'s")]
     public void GivenTheRootIsAlreadyAtItsPin(string version)
@@ -121,7 +121,7 @@ public sealed partial class VersioningSteps
     [Then("the frontmatter schemas and the templates are version {word}'s")]
     public void ThenTheFilesAreVersion(string version)
     {
-        using var expected = new SpecTree();
+        using var expected = new SpechtTree();
         WriteShippedFiles(expected, version);
         var after = SnapshotFiles();
         var shipped = SnapshotFiles(expected.Root).Where(static pair => !pair.Key.EndsWith("manifest.json", StringComparison.Ordinal)).ToList();
@@ -146,9 +146,9 @@ public sealed partial class VersioningSteps
         after.Keys.Should().BeEquivalentTo(_filesBefore!.Keys);
         after.Where(pair => !pair.Value.SequenceEqual(_filesBefore[pair.Key])).Select(static pair => pair.Key)
             .Should().OnlyContain(static path =>
-                path == SpecTree.ManifestPath
-                || path.StartsWith(SpecTree.FrontmatterSchemaFolder + "/", StringComparison.Ordinal)
-                || path.StartsWith(SpecTree.TemplatesFolder + "/", StringComparison.Ordinal));
+                path == SpechtTree.ManifestPath
+                || path.StartsWith(SpechtTree.FrontmatterSchemaFolder + "/", StringComparison.Ordinal)
+                || path.StartsWith(SpechtTree.TemplatesFolder + "/", StringComparison.Ordinal));
     }
 
     [Then("the warning, the disabled rule and the renamed section are as the consumer set them")]
@@ -182,7 +182,7 @@ public sealed partial class VersioningSteps
     [Then("every other key version {word} defines is added")]
     public void ThenEveryOtherDefinedKeyIsAdded(string version)
     {
-        var before = JsonNode.Parse(_filesBefore![SpecTree.ManifestPath])!.AsObject();
+        var before = JsonNode.Parse(_filesBefore![SpechtTree.ManifestPath])!.AsObject();
         var after = ManifestAfter();
         var lacking = DefinedKeys(version).Where(member => !before.ContainsKey(member.Key)).ToList();
         lacking.Should().NotBeEmpty();
@@ -227,7 +227,7 @@ public sealed partial class VersioningSteps
     {
         var lines = OutputLines();
         lines.Should().Contain(line => Regex.IsMatch(line, Naming(version)));
-        lines.Should().Contain(static line => Regex.IsMatch(line, Naming(SpecTree.ManifestPath)));
+        lines.Should().Contain(static line => Regex.IsMatch(line, Naming(SpechtTree.ManifestPath)));
     }
 
     private static List<KeyValuePair<string, JsonNode?>> DefinedKeys(string version) =>
@@ -235,14 +235,14 @@ public sealed partial class VersioningSteps
             .Where(static member => member.Key is not ("schemaVersion" or "identifiers") && !member.Key.StartsWith('$'))
             .ToList();
 
-    private static void WriteShippedFiles(SpecTree tree, string version)
+    private static void WriteShippedFiles(SpechtTree tree, string version)
     {
-        var path = Path.Combine(tree.Root, SpecTree.ManifestPath);
+        var path = Path.Combine(tree.Root, SpechtTree.ManifestPath);
         var manifest = System.Text.Json.Nodes.JsonNode.Parse(File.ReadAllText(path))!.AsObject();
         var pinned = manifest["schemaVersion"]?.DeepClone();
         manifest["schemaVersion"] = version;
         File.WriteAllText(path, manifest.ToJsonString());
-        Directory.Delete(Path.Combine(tree.Root, SpecTree.ConfigurationFolder, "schema"), recursive: true);
+        Directory.Delete(Path.Combine(tree.Root, SpechtTree.ConfigurationFolder, "schema"), recursive: true);
         var result = AcceptanceTool.Launch(tree.Root, "init", "--all");
         result.ExitCode.Should().Be(0, result.Stderr);
         manifest["schemaVersion"] = pinned ?? version;
@@ -253,7 +253,7 @@ public sealed partial class VersioningSteps
         Directory.GetFiles(root, "*", SearchOption.AllDirectories)
             .ToDictionary(file => Path.GetRelativePath(root, file).Replace('\\', '/'), File.ReadAllBytes, StringComparer.Ordinal);
 
-    private JsonObject ManifestAfter() => JsonNode.Parse(File.ReadAllBytes(Path.Combine(Tree.Root, SpecTree.ManifestPath)))!.AsObject();
+    private JsonObject ManifestAfter() => JsonNode.Parse(File.ReadAllBytes(Path.Combine(Tree.Root, SpechtTree.ManifestPath)))!.AsObject();
 
     private List<string> OutputLines() =>
         _stdout.Split('\n').Select(static line => line.TrimEnd('\r')).Where(static line => line.Length > 0).ToList();

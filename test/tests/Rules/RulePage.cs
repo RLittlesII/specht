@@ -9,14 +9,14 @@ namespace Specht.Tests.Rules;
 
 /// <summary>
 /// A rule page as a test reads it (<c>0001-F3</c> B-032, B-033, C-8), shared by the unit tests and the acceptance steps.
-/// The frontmatter and the metadata table come from the engine's own <see cref="SpecDocument"/>; the headings of every
+/// The frontmatter and the metadata table come from the engine's own <see cref="SpechtDocument"/>; the headings of every
 /// level, a heading nested in a list or a quote included, come from Markdig with its frontmatter extension on, because
-/// <see cref="SpecDocument"/> keeps only the <c>## </c> sections and reads a frontmatter block's closing delimiter as a
+/// <see cref="SpechtDocument"/> keeps only the <c>## </c> sections and reads a frontmatter block's closing delimiter as a
 /// heading underline.
 /// </summary>
 internal sealed class RulePage
 {
-    private RulePage(SemanticVersion version, string id, string text, SpecDocument document, IReadOnlyList<(string Heading, int Line)> headings)
+    private RulePage(SemanticVersion version, string id, string text, SpechtDocument document, IReadOnlyList<(string Heading, int Line)> headings)
     {
         Version = version;
         Id = id;
@@ -50,7 +50,7 @@ internal sealed class RulePage
     public Frontmatter Frontmatter { get; }
 
     /// <summary>Gets the <c>## Metadata</c> section and its table, or <c>null</c>.</summary>
-    public SpecSection? Metadata { get; }
+    public SpechtSection? Metadata { get; }
 
     /// <summary>Gets every heading in document order, each with its <c>#</c> marker, such as <c>## Cause</c>.</summary>
     public IReadOnlyList<string> Outline => _headings.Select(static heading => heading.Heading).ToList();
@@ -67,7 +67,7 @@ internal sealed class RulePage
             .Select(static heading => ($"{new string('#', heading.Level)} {Flatten(heading)}", heading.Line))
             .ToList();
 
-        return new RulePage(version, id, text, SpecDocument.Parse(text, $"v{version}/{id}.md"), headings);
+        return new RulePage(version, id, text, SpechtDocument.Parse(text, $"v{version}/{id}.md"), headings);
     }
 
     /// <summary>The value the metadata table gives for <paramref name="property"/>, or <c>null</c>.</summary>

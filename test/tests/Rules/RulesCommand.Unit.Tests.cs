@@ -15,7 +15,7 @@ public sealed class RulesCommandUnitTests
 {
     [Theory]
     [ClassData(typeof(RuleCatalogueLevels))]
-    public async Task AValidManifest_WhenExecuted_ShouldWriteFourFieldsAndSucceedAtEveryLevel(SpecRuleLevel level)
+    public async Task AValidManifest_WhenExecuted_ShouldWriteFourFieldsAndSucceedAtEveryLevel(SpechtRuleLevel level)
     {
         // Given
         var files = new MockFileSystem();
@@ -107,6 +107,6 @@ public sealed class RulesCommandUnitTests
         // Then
         exit.Should().Be(2);
         console.Output.Should().BeEmpty();
-        errors.ToString().Should().StartWith("specht: ").And.Contain(SpecTree.ManifestPath).And.NotContain(root).And.NotContain("\\");
+        errors.ToString().Should().StartWith("specht: ").And.Contain(SpechtTree.ManifestPath).And.NotContain(root).And.NotContain("\\");
     }
 }

@@ -32,7 +32,7 @@ optional tier and can change a root's verdict. That conflicts with B-007 and
 loader supplies, and the OQ-2 row records that boundary. The design can follow
 it without choosing a new product behavior.
 
-The parser also accepts declared JSON that `SpecStructure` does not retain.
+The parser also accepts declared JSON that `SpechtStructure` does not retain.
 Keeping the document from the existing parse preserves B-003 without building
 a second file reader or a second table of defaults. Rule levels use the
 already-delivered rule-entry reader.
@@ -43,7 +43,7 @@ already-delivered rule-entry reader.
 broader reading and can enable capabilities the consumer omitted. Cost of
 rejecting: the effective document does not list every configurable key.
 
-**Serialize `SpecStructure` as the manifest.** Its declaration flags and derived
+**Serialize `SpechtStructure` as the manifest.** Its declaration flags and derived
 values are not manifest members, and accepted metadata and analyzer settings
 would be lost. Cost of rejecting: the parser must retain an owned JSON document
 for inspection callers.

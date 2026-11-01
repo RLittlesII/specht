@@ -15,7 +15,7 @@ public sealed class MatrixResolverIntegrationTests
     public void AParsedMatrixAndDeclaredFiles_WhenResolved_ShouldRetainColumnRolesNamesAndDeclarationEvidence()
     {
         // Given
-        using var tree = new SpecTree();
+        using var tree = new SpechtTree();
         tree.WriteRaw("test/sample.fs", "module Suite\nlet Alpha \nlet Beta ");
         tree.WriteRaw("test/obj/excluded.fs", "let Missing ");
         var path = tree.WriteRaw("src/sample/.spec/README.md", """
@@ -31,8 +31,8 @@ public sealed class MatrixResolverIntegrationTests
              "tests":{"files":["test/**/*.fs","test/sample.fs"],"declarations":["let {test} "]}}
             """);
         var fileSystem = new FileSystem();
-        var document = SpecDocument.Parse(fileSystem.File.ReadAllText(path), "src/sample/.spec/README.md");
-        var files = new SpecDiscovery(fileSystem).ReadTestFiles(tree.Root, structure.Tests!.Files, structure.Discovery.Exclusions);
+        var document = SpechtDocument.Parse(fileSystem.File.ReadAllText(path), "src/sample/.spec/README.md");
+        var files = new SpechtDiscovery(fileSystem).ReadTestFiles(tree.Root, structure.Tests!.Files, structure.Discovery.Exclusions);
 
         // When
         var rows = new MatrixResolver().Resolve(document, structure, files);
@@ -51,17 +51,17 @@ public sealed class MatrixResolverIntegrationTests
     public void QualifiersSplitAcrossDeclaredFiles_WhenResolved_ShouldLeaveTheDottedNameUnresolved()
     {
         // Given
-        using var tree = new SpecTree();
+        using var tree = new SpechtTree();
         tree.WriteRaw("test/steps.cs", "class Steps");
         tree.WriteRaw("test/alpha.cs", "void Alpha()");
-        var document = SpecDocument.Parse("""
+        var document = SpechtDocument.Parse("""
             ## 9. Traceability Matrix
             | Claim ID | Scenario | Test | Status |
             | --- | --- | --- | --- |
             | B-004 | Matching | `Steps.Alpha` | Covered |
             """, "src/sample/.spec/README.md");
         var structure = EngineServices.Parser().Parse("""{"schemaVersion":"0.2.0","tests":{"files":["test/**/*.cs"]}}""");
-        var files = new SpecDiscovery(new FileSystem()).ReadTestFiles(tree.Root, structure.Tests!.Files, structure.Discovery.Exclusions);
+        var files = new SpechtDiscovery(new FileSystem()).ReadTestFiles(tree.Root, structure.Tests!.Files, structure.Discovery.Exclusions);
 
         // When
         var test = new MatrixResolver().Resolve(document, structure, files).Single().Tests.Single();

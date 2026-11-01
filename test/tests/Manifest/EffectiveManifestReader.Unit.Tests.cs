@@ -143,7 +143,7 @@ public sealed class EffectiveManifestReaderUnitTests
 
     [Theory]
     [ClassData(typeof(RuleCatalogueLevels))]
-    public void ExplicitAndMissingLevels_WhenProjected_ShouldUseTheSharedPinnedPagePrecedence(SpecRuleLevel level)
+    public void ExplicitAndMissingLevels_WhenProjected_ShouldUseTheSharedPinnedPagePrecedence(SpechtRuleLevel level)
     {
         // Given
         var defaults = JsonNode.Parse(new SpechtResources().DefaultManifest)!.AsObject();
@@ -174,7 +174,7 @@ public sealed class EffectiveManifestReaderUnitTests
         document["rules"]!.AsObject().Select(static entry => entry.Key).Should().Equal("SPEC010", "SPEC020");
         document["rules"]!["SPEC010"]!.GetValue<string>().Should().Be(level.ToString().ToLowerInvariant());
         document["rules"]!["SPEC020"]!.GetValue<string>().Should().Be("off");
-        new SpecManifestParser(versions).Parse("{}").Rules.Should().BeEmpty();
+        new SpechtManifestParser(versions).Parse("{}").Rules.Should().BeEmpty();
     }
 
     [Fact]
@@ -268,7 +268,7 @@ public sealed class EffectiveManifestReaderUnitTests
         });
 
         var schemas = EngineServices.Schemas(files, data.Versions);
-        var reader = new EffectiveManifestReader(schemas, new RuleEntriesReader(schemas, new SpecManifestParser(data.Versions)), data.Versions);
+        var reader = new EffectiveManifestReader(schemas, new RuleEntriesReader(schemas, new SpechtManifestParser(data.Versions)), data.Versions);
 
         // When
         var older = reader.Read("older");

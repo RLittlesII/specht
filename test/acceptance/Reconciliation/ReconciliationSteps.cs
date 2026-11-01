@@ -123,7 +123,7 @@ public sealed class ReconciliationSteps
     [Given("the existing checker report contract")]
     public void GivenCheckerReport()
     {
-        _checker = new SpecTree();
+        _checker = new SpechtTree();
         _checkerBefore = AcceptanceTool.Launch(_checker.Root, "--root", _checker.Root, "--json").Stdout;
     }
 
@@ -647,7 +647,7 @@ public sealed class ReconciliationSteps
     private string[] Kinds() => Report()["findings"]!.AsArray().Select(static item => item!["kind"]!.GetValue<string>()).ToArray();
 
     private readonly EvidenceTree _tree = new();
-    private SpecTree? _checker;
+    private SpechtTree? _checker;
     private string? _checkerBefore;
     private (string Stdout, string Stderr, int ExitCode) _result;
     private string? _external;
