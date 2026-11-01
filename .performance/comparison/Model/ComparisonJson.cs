@@ -44,6 +44,19 @@ public static class ComparisonJson
         return session;
     }
 
+    public static EvidenceManifest ReadManifest(string json)
+    {
+        var manifest = Read<EvidenceManifest>(json);
+        if (manifest.FormatVersion != 1 || manifest.Files.IsDefault
+            || manifest.Files.Any(static file => file is null || !EvidencePaths.IsRelative(file.Path) || !IsHash(file.Sha256, 64)
+                || file.Length < 0 || file.Cases.IsDefault || file.Source is not null && !EvidencePaths.IsRelative(file.Source)
+                || file.SourceSha256 is not null && !IsHash(file.SourceSha256, 64)
+                || file.Transformation is not ("none" or "absolute-paths-removed") || file.MediaType is not ("application/json" or "text/markdown"))
+            || manifest.Files.GroupBy(static file => file.Path, StringComparer.OrdinalIgnoreCase).Any(static group => group.Count() > 1))
+            throw new InvalidDataException("Evidence manifest has an unsupported version or invalid file entries.");
+        return manifest;
+    }
+
     public static void ValidatePair(ReleasePair pair, ReleaseRecord current)
     {
         if (pair.FormatVersion != 1 || pair.SelectionPolicy != "publication-order-v1"

@@ -1,5 +1,11 @@
 using System.Collections.Immutable;
+using System.Globalization;
 using System.IO.Abstractions;
+using System.IO.Compression;
+using System.Net.Http;
+using System.Net.Http.Headers;
+using System.Security.Cryptography;
+using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -462,6 +468,213 @@ public sealed class ComparisonSteps : IDisposable
         (await File.ReadAllTextAsync(Path.Combine(_directory, "comparison-pair-v1.json"), CancellationToken.None)).Should().Be(_invalidSavedJson);
     }
 
+    [Given("a release comparison has completed")]
+    public void GivenCompletedComparison()
+    {
+        _reportPair = ReleaseSelection.Select(_release, new ReleaseCatalog([_release with
+        {
+            Id = 10, Tag = "v1", PublishedAt = _release.PublishedAt!.Value.AddDays(-3), Commit = new string('e', 40),
+        }], true, null), "run-1");
+        _session = _session with { PairDigest = ComparisonJson.Digest(_reportPair) };
+        _reportMappings = [_mapping, _mapping with
+        {
+            FullName = "Invented.Check(10)",
+            Case = _mapping.Case with { Parameters = _mapping.Case.Parameters.SetItem("Specifications", new ParameterValue("number", "10")) },
+        }];
+        Directory.CreateDirectory(Path.Combine(_directory, ".artifacts", "benchmarks", "previous"));
+        Directory.CreateDirectory(Path.Combine(_directory, ".artifacts", "benchmarks", "current"));
+        File.WriteAllText(Path.Combine(_directory, PreviousReportExport), ExportJson);
+        File.WriteAllText(Path.Combine(_directory, CurrentReportExport), CurrentReportJson);
+        _previous = BenchmarkEvidenceReader.Read(ExportJson, PreviousReportExport, _session.Previous, _reportMappings);
+        _current = BenchmarkEvidenceReader.Read(CurrentReportJson, CurrentReportExport, _session.Current, _reportMappings);
+        WhenComparing();
+    }
+
+    [Given("a release comparison report was published")]
+    public async Task GivenReportPublished()
+    {
+        GivenCompletedComparison();
+        await WhenReportPublished();
+    }
+
+    [When("its report is published")]
+    public async Task WhenReportPublished()
+    {
+        _bundle = new ReportBundler(new FileSystem(), _directory).Create(_reportPair!, _document!, _reportMappings,
+            [new RawExport("previous", PreviousReportExport), new RawExport("current", CurrentReportExport)], ".artifacts/benchmarks/comparison");
+        _bundleZip = await File.ReadAllBytesAsync(Path.Combine(_directory, _bundle.Path), CancellationToken.None);
+        _published = await new ReportBundleAssetStore(_releaseClient).PublishAsync(_release, _bundle.Name, _bundleZip, CancellationToken.None);
+    }
+
+    [When("its transient workflow artifacts expire")]
+    public void WhenArtifactsExpire()
+    {
+        File.Delete(Path.Combine(_directory, _bundle!.Path));
+        Directory.Delete(_directory, true);
+    }
+
+    [Then("human-readable and machine-readable reports describe the same findings")]
+    public void ThenSameFindings()
+    {
+        var markdown = Entry("report.md");
+        using var report = JsonDocument.Parse(Entry("report.json"));
+        var comparison = report.RootElement.GetProperty("comparison");
+        comparison.GetProperty("judgment").GetString().Should().Be(_document!.Judgment.ToString());
+        comparison.GetProperty("cases").EnumerateArray().Select(static c => c.GetProperty("key").GetString())
+            .Should().Equal(_document.Cases.Select(static c => c.Key));
+        _document.Cases.Select(c => markdown.IndexOf(c.Key, StringComparison.Ordinal)).Should().OnlyContain(static p => p >= 0)
+            .And.BeInAscendingOrder();
+        var reasons = _document.Cases.SelectMany(static c => c.Metrics.Select(static m => m.Reason).Append(c.Reason))
+            .Concat(_document.Gaps.Select(static g => g.Reason)).OfType<string>().Distinct().ToArray();
+        reasons.Should().NotBeEmpty();
+        NamesAndStrings(report.RootElement).Should().Contain(reasons);
+        markdown.Should().ContainAll(reasons).And.Contain("Review required");
+    }
+
+    [Then("it records the release pair, measurement environments, workload identities, comparison policy and raw result references")]
+    public void ThenRecordsEvidenceIdentity()
+    {
+        ComparisonJson.ReadPair(Entry("pair.json"), _release).Should().BeEquivalentTo(_reportPair);
+        ComparisonJson.ReadSession(Entry("session.json")).Should().BeEquivalentTo(_session);
+        string[] identities =
+        [
+            "v2", "v1", new string('a', 40), new string('e', 40), ComparisonJson.Digest(_reportPair), new string('c', 40), "run-1", "session-1",
+            "runner-1", "Linux", "10.0.0", "x64", "out-of-process", "workstation", "Short", "0.15.8", "check", "synthetic-tree", "engine-run",
+            "Specifications", "raw/previous/Invented-report-full.json", "raw/current/Invented-report-full.json", "/Benchmarks/0/Statistics",
+            "/Benchmarks/0/Memory", "/Benchmarks/1/Statistics", "/Benchmarks/1/Memory",
+        ];
+        using var report = JsonDocument.Parse(Entry("report.json"));
+        NamesAndStrings(report.RootElement).Should().Contain(identities);
+        var policy = report.RootElement.GetProperty("comparison").GetProperty("policy");
+        (policy.GetProperty("version").GetInt32(), policy.GetProperty("timingIncreasePercent").GetDecimal(),
+            policy.GetProperty("allocationIncreasePercent").GetDecimal()).Should().Be((1, 10m, 10m));
+        Entry("report.md").Should().ContainAll(identities).And.Contain("10%");
+        _bundle!.Manifest.Files.Where(static f => f.Role == "raw-export").Select(static f => (f.Path, f.Side, f.Source, f.SourceSha256))
+            .Should().Equal(
+                ("raw/current/Invented-report-full.json", "current", CurrentReportExport,
+                    Convert.ToHexStringLower(SHA256.HashData(Encoding.UTF8.GetBytes(CurrentReportJson)))),
+                ("raw/previous/Invented-report-full.json", "previous", PreviousReportExport,
+                    Convert.ToHexStringLower(SHA256.HashData(Encoding.UTF8.GetBytes(ExportJson)))));
+    }
+
+    [Then("its report and the raw evidence it references remain available with that release")]
+    public async Task ThenReportRetained()
+    {
+        Directory.Exists(_directory).Should().BeFalse();
+        using var listing = await _releaseClient.GetAsync(
+            new Uri("https://api.github.com/repos/example/tool/releases/20/assets?per_page=100&page=1"), CancellationToken.None);
+        using var assets = JsonDocument.Parse(await listing.Content.ReadAsStringAsync(CancellationToken.None));
+        var id = assets.RootElement.EnumerateArray().Single(asset => asset.GetProperty("name").GetString() == _bundle!.Name).GetProperty("id").GetInt64();
+        id.Should().Be(_published!.AssetId);
+        using var request = new HttpRequestMessage(HttpMethod.Get, new Uri($"https://api.github.com/repos/example/tool/releases/assets/{id}"));
+        request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/octet-stream"));
+        using var response = await _releaseClient.SendAsync(request, CancellationToken.None);
+        var zip = await response.Content.ReadAsByteArrayAsync(CancellationToken.None);
+        Convert.ToHexStringLower(SHA256.HashData(zip)).Should().Be(_published.Sha256);
+        var manifest = ReportBundler.Validate(new MemoryStream(zip));
+        ZipFile.ExtractToDirectory(new MemoryStream(zip), _extracted);
+        foreach (var file in manifest.Files)
+        {
+            var content = await File.ReadAllBytesAsync(Path.Combine(_extracted, file.Path), CancellationToken.None);
+            (content.LongLength, Convert.ToHexStringLower(SHA256.HashData(content))).Should().Be((file.Length, file.Sha256), file.Path);
+        }
+        var json = await File.ReadAllTextAsync(Path.Combine(_extracted, "report.json"), CancellationToken.None);
+        var markdown = await File.ReadAllTextAsync(Path.Combine(_extracted, "report.md"), CancellationToken.None);
+        var cited = _document!.Cases.SelectMany(static c => new[] { ("previous", c.Evidence.Previous), ("current", c.Evidence.Current) })
+            .SelectMany(static side => side.Item2?.Observations.Select(o => (Side: side.Item1, Observation: o)) ?? []).ToArray();
+        cited.Should().NotBeEmpty();
+        foreach (var (side, observation) in cited)
+        {
+            var path = $"raw/{side}/{Path.GetFileName(observation.SourceFile)}";
+            manifest.Files.Should().Contain(file => file.Path == path);
+            json.Should().Contain(path).And.Contain(observation.Locator);
+            markdown.Should().Contain(path).And.Contain(observation.Locator);
+            using var raw = JsonDocument.Parse(await File.ReadAllBytesAsync(Path.Combine(_extracted, path), CancellationToken.None));
+            var element = raw.RootElement;
+            foreach (var segment in observation.Locator.Split('/').Skip(1))
+                element = element.ValueKind == JsonValueKind.Array ? element[int.Parse(segment, CultureInfo.InvariantCulture)] : element.GetProperty(segment);
+            element.ValueKind.Should().Be(JsonValueKind.Object, observation.Locator);
+        }
+    }
+
+    [Given("release comparison evidence whose (.*) contains \"(.*)\"")]
+    public void GivenRecordedValue(string source, string value)
+    {
+        GivenCompletedComparison();
+        _recordedSource = source;
+        _recordedValue = value;
+    }
+
+    [Given("raw measurement evidence holding the value {string}")]
+    public void GivenRawMeasurementValue(string value) => GivenRecordedValue("raw measurement export", value);
+
+    [When("a report bundle holding it is (.*)")]
+    public void WhenRecordedValueBundled(string action)
+    {
+        _bundleAction = action;
+        try
+        {
+            _bundle = new ReportBundler(new FileSystem(), _directory).Create(_reportPair!, Recorded(action == "validated" ? Placeholder : _recordedValue!),
+                _reportMappings, [new RawExport("previous", PreviousReportExport), new RawExport("current", CurrentReportExport)], ReportWorkspace);
+            _bundleZip = File.ReadAllBytes(Path.Combine(_directory, _bundle.Path));
+            if (action == "validated") _bundleZip = Substituted(_bundleZip, _bundle.Manifest);
+            if (action != "built") _validated = ReportBundler.Validate(new MemoryStream(_bundleZip));
+        }
+        catch (InvalidDataException exception)
+        {
+            _rejection = exception;
+        }
+    }
+
+    [Then("the bundle is rejected")]
+    public void ThenBundleRejected()
+    {
+        _rejection.Should().NotBeNull();
+        _validated.Should().BeNull();
+        var workspace = Path.Combine(_directory, ReportWorkspace);
+        if (_bundleAction == "built") (Directory.Exists(workspace) ? Directory.GetFiles(workspace) : []).Should().BeEmpty();
+    }
+
+    [Then("no recorded value is rewritten to make it pass")]
+    public void ThenNoRecordedValueRewritten()
+    {
+        if (_bundleAction == "built") _bundleZip.Should().BeNull();
+        else
+        {
+            using var archive = new ZipArchive(new MemoryStream(_bundleZip!));
+            var recorded = JsonSerializer.Serialize(_recordedValue)[1..^1];
+            archive.Entries.Select(static entry =>
+            {
+                using var reader = new StreamReader(entry.Open(), Encoding.UTF8);
+                return reader.ReadToEnd();
+            }).Should().Contain(text => text.Contains(recorded, StringComparison.Ordinal) && !text.Contains("[path removed]", StringComparison.Ordinal));
+        }
+    }
+
+    [Then("the bundle is accepted with {string} unchanged")]
+    public void ThenBundleAccepted(string value)
+    {
+        _rejection.Should().BeNull();
+        _validated.Should().BeEquivalentTo(_bundle!.Manifest);
+        Entry(_recordedSource switch
+        {
+            "session invocation" => "session.json",
+            "raw measurement export" => "raw/current/Invented-report-full.json",
+            _ => "report.json",
+        }).Should().Contain(JsonSerializer.Serialize(value));
+    }
+
+    [Then("that value is replaced with a removal marker")]
+    public void ThenValueRemoved()
+    {
+        _rejection.Should().BeNull();
+        Entry("raw/current/Invented-report-full.json").Should().Contain("\"Title\":\"[path removed]\"").And.NotContain(_recordedValue!);
+    }
+
+    [Then("the bundle records that absolute paths were removed from that evidence")]
+    public void ThenRemovalRecorded() => _bundle!.Manifest.Files.Single(static file => file.Path == "raw/current/Invented-report-full.json")
+        .Transformation.Should().Be("absolute-paths-removed");
+
     [Given("a previous release has been selected")]
     public void GivenSelectedPredecessor() => _pair = ReleaseSelection.Select(_release, new ReleaseCatalog(
         [_release with { Id = 10, Tag = "v1", PublishedAt = _release.PublishedAt!.Value.AddDays(-1), Commit = new string('1', 40) }], true, null),
@@ -502,6 +715,8 @@ public sealed class ComparisonSteps : IDisposable
     public void Dispose()
     {
         if (Directory.Exists(_directory)) Directory.Delete(_directory, true);
+        if (Directory.Exists(_extracted)) Directory.Delete(_extracted, true);
+        _releaseClient.Dispose();
     }
 
     private static MeasurementInventory Change(MeasurementInventory inventory, MetricKind metric, Func<Observation, Observation> change) =>
@@ -509,6 +724,14 @@ public sealed class ComparisonSteps : IDisposable
         {
             Cases = [inventory.Cases[0] with { Observations = [.. inventory.Cases[0].Observations.Select(o => o.Metric == metric ? change(o) : o)] }],
         };
+
+    private static IEnumerable<string> NamesAndStrings(JsonElement element) => element.ValueKind switch
+    {
+        JsonValueKind.Object => element.EnumerateObject().SelectMany(static property => NamesAndStrings(property.Value).Prepend(property.Name)),
+        JsonValueKind.Array => element.EnumerateArray().SelectMany(NamesAndStrings),
+        JsonValueKind.String => [element.GetString()!],
+        _ => [],
+    };
 
     private async Task<ProcessOutcome> RunRevisionAsync(ProcessRequest request, CancellationToken cancellationToken)
     {
@@ -549,12 +772,100 @@ public sealed class ComparisonSteps : IDisposable
 
     private MetricComparison Metric(MetricKind metric) => _document!.Cases.Single().Metrics.Single(m => m.Metric == metric);
 
+    private ComparisonDocument Recorded(string value)
+    {
+        var document = _document!;
+        var flagged = document.Cases[0];
+        var evidence = flagged.Evidence.Current!;
+        if (_recordedSource == "session invocation")
+        {
+            return document with
+            {
+                Session = document.Session with { Previous = document.Session.Previous with { Invocation = [.. document.Session.Previous.Invocation, value] } },
+            };
+        }
+        if (_recordedSource == "raw measurement export")
+        {
+            File.WriteAllText(Path.Combine(_directory, CurrentReportExport),
+                CurrentReportJson.Replace("\"Title\":\"Invented\"", $"\"Title\":{JsonSerializer.Serialize(value)}", StringComparison.Ordinal));
+            return document;
+        }
+        if (_recordedSource == "workload parameter")
+        {
+            flagged = flagged with
+            {
+                Evidence = flagged.Evidence with
+                {
+                    Current = evidence with
+                    {
+                        Case = evidence.Case with { Parameters = evidence.Case.Parameters.SetItem("Root", new ParameterValue("string", value)) },
+                    },
+                },
+            };
+        }
+        else if (_recordedSource == "case reason") flagged = flagged with { Reason = value };
+        else flagged = flagged with { Metrics = [flagged.Metrics[0] with { Unit = value }, .. flagged.Metrics.Skip(1)] };
+        return document with { Cases = [flagged, .. document.Cases.Skip(1)] };
+    }
+
+    private byte[] Substituted(byte[] zip, EvidenceManifest manifest)
+    {
+        var replacement = JsonSerializer.Serialize(_recordedValue)[1..^1];
+        var entries = new Dictionary<string, byte[]>(StringComparer.Ordinal);
+        using (var archive = new ZipArchive(new MemoryStream(zip)))
+        {
+            foreach (var entry in archive.Entries)
+            {
+                using var reader = new StreamReader(entry.Open(), Encoding.UTF8);
+                entries.Add(entry.FullName, Encoding.UTF8.GetBytes(reader.ReadToEnd().Replace(Placeholder, replacement, StringComparison.Ordinal)));
+            }
+        }
+        manifest = manifest with
+        {
+            Files = [.. manifest.Files.Select(file => file with
+            {
+                Sha256 = Convert.ToHexStringLower(SHA256.HashData(entries[file.Path])), Length = entries[file.Path].LongLength,
+            })],
+        };
+        entries["evidence-manifest.json"] = Encoding.UTF8.GetBytes(ComparisonJson.Write(manifest));
+        using var buffer = new MemoryStream();
+        using (var archive = new ZipArchive(buffer, ZipArchiveMode.Create, true))
+        {
+            foreach (var (name, content) in entries)
+            {
+                using var stream = archive.CreateEntry(name).Open();
+                stream.Write(content);
+            }
+        }
+        return buffer.ToArray();
+    }
+
+    private string Entry(string name)
+    {
+        using var archive = new ZipArchive(new MemoryStream(_bundleZip!));
+        using var reader = new StreamReader(archive.GetEntry(name)!.Open(), Encoding.UTF8);
+        return reader.ReadToEnd();
+    }
+
     private const string ValidStatistics = """{"Mean":100,"ConfidenceInterval":{"Level":12,"Lower":98,"Upper":102}}""";
 
     private const string ExportJson = """
         {"Title":"Invented","HostEnvironmentInfo":{"BenchmarkDotNetVersion":"0.15.8","Configuration":"Release","HasAttachedDebugger":false},
          "Benchmarks":[{"FullName":"Invented.Check(1)","Statistics":{"Mean":100,"ConfidenceInterval":{"Level":12,"Lower":98,"Upper":102}},
          "Memory":{"BytesAllocatedPerOperation":32},"Measurements":[]}]}
+        """;
+
+    private const string Placeholder = "recorded-value-placeholder";
+    private const string ReportWorkspace = ".artifacts/benchmarks/comparison";
+    private const string PreviousReportExport = ".artifacts/benchmarks/previous/Invented-report-full.json";
+    private const string CurrentReportExport = ".artifacts/benchmarks/current/Invented-report-full.json";
+
+    private const string CurrentReportJson = """
+        {"Title":"Invented","HostEnvironmentInfo":{"BenchmarkDotNetVersion":"0.15.8","Configuration":"Release","HasAttachedDebugger":false},
+         "Benchmarks":[{"FullName":"Invented.Check(1)","Statistics":{"Mean":120,"ConfidenceInterval":{"Level":12,"Lower":118,"Upper":122}},
+         "Memory":{"BytesAllocatedPerOperation":32},"Measurements":[]},
+         {"FullName":"Invented.Check(10)","Statistics":{"Mean":300,"ConfidenceInterval":{"Level":12,"Lower":290,"Upper":310}},
+         "Memory":{"BytesAllocatedPerOperation":64},"Measurements":[]}]}
         """;
 
     private const string CollectedExportJson = """
@@ -585,6 +896,8 @@ public sealed class ComparisonSteps : IDisposable
         """;
 
     private readonly string _directory = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
+    private readonly string _extracted = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
+    private readonly HttpClient _releaseClient = new(new ReleaseAssets());
     private readonly List<string> _checkouts = [];
     private readonly ReleaseRecord _release = JsonSerializer.Deserialize<ReleaseRecord>("""
         {"Repository":"example/tool","Id":20,"Tag":"v2","PublishedAt":"2026-01-04T00:00:00Z","Draft":false,
@@ -602,5 +915,15 @@ public sealed class ComparisonSteps : IDisposable
     private string? _condition;
     private InvalidDataException? _selectionFailure;
     private string? _invalidSavedJson;
+    private ReleasePair? _reportPair;
+    private ImmutableArray<IdentityMapping> _reportMappings = [];
+    private ReportBundle? _bundle;
+    private byte[]? _bundleZip;
+    private PublishedBundle? _published;
+    private string? _recordedSource;
+    private string? _recordedValue;
+    private string? _bundleAction;
+    private EvidenceManifest? _validated;
+    private InvalidDataException? _rejection;
     private CollectionResult? _collection;
 }

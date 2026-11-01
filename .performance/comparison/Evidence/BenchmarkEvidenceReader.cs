@@ -20,7 +20,7 @@ public static class BenchmarkEvidenceReader
             var root = document.RootElement;
             ComparisonJson.CheckDuplicateProperties(root);
             var host = root.GetProperty("HostEnvironmentInfo");
-            if (Text(host, "BenchmarkDotNetVersion") is not ("0.15.8" or "0.15.8.0")
+            if (!IsSupportedProducer(Text(host, "BenchmarkDotNetVersion"))
                 || !string.Equals(Text(host, "Configuration"), "Release", StringComparison.OrdinalIgnoreCase)
                 || !host.TryGetProperty("HasAttachedDebugger", out var debugger) || debugger.ValueKind != JsonValueKind.False)
                 return Unavailable("Exporter version or Release/debugger evidence is unsupported.");
@@ -58,6 +58,8 @@ public static class BenchmarkEvidenceReader
 
         MeasurementInventory Unavailable(string reason) => new(false, cases.ToImmutable(), [reason]);
     }
+
+    public static bool IsSupportedProducer(string? version) => version is "0.15.8" or "0.15.8.0";
 
     private static Observation ReadTime(JsonElement benchmark, string source, string locator)
     {
