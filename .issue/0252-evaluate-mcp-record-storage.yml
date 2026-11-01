@@ -1,7 +1,7 @@
 id: "0252"
 type: spike
 title: Evaluate MCP access to linked records and local or online storage
-status: in-progress
+status: done
 value: 4
 risk: 3
 parent: "0132"
@@ -12,7 +12,7 @@ spec: null
 claims: []
 created: "2026-10-21"
 updated: "2026-11-01"
-closed: null
+closed: "2026-11-01"
 summary: |
   The MCP key dictionary needs to relate the records around a specification:
   items, Features, epics, ADRs, lessons and decisions. The owner wants to know
@@ -43,7 +43,28 @@ acceptance_criteria:
   - "A candidate matrix compares at least one embedded local document store and one hosted offering against offline operation, shared online project sequence, durability, concurrency, synchronization, migration, security, cost and CLI/MCP parity."
   - "The report recommends an access and storage direction from the evidence, states its limits, and identifies any changes needed in epic 0132, Feature 0132-F1, decision 0001, and repository invariants."
   - "A separate allocation analysis identifies how online reservations remain unique across machines and what happens on disconnection or mode change; it does not treat independent local counters as one shared sequence."
-decisions: []
+decisions:
+  - |
+    2026-11-01, implementer: the evidence and its proposal are recorded in
+    ADR-0027
+    (`.spec/adr/0027-files-stay-the-reading-path-and-online-allocation-waits.md`,
+    proposed), which carries the trial itself - the corpus at `51c00ffd`,
+    the twelve questions and answer key, the rubric, the agent setup, the
+    disposable adapter, the results, the storage survey and the allocation
+    analysis, each participant's prompt and raw answer verbatim, and the
+    versions (Python 3.15.2, SQLite 3.54.1 with FTS5) - so that no branch is
+    needed to read or re-run it. On this
+    corpus no access path improved on filesystem search, which used the
+    fewest tokens and tool calls, and the id-keyed store lost one of the two
+    items numbered `0220` (item `0128` is the existing item for that defect).
+    Recommendation, a judgement: Markdown stays the reading path and decision
+    0001 stands; no persistent index on answer-quality grounds; an index, if
+    `0132-F1` OQ-3 justifies one, keyed by path with id collisions reported;
+    no online allocation now. The survey's matrix covers durability, schema
+    migration and security; it had no CLI/MCP parity column, so ADR-0027
+    gives its own labelled reasoning for parity.
+    The owner's ruling is `0132-F1` OQ-4 and epic `0324`'s online-mode
+    question; no claim, decision or invariant is amended.
 out_of_scope:
   - "Production MCP or database implementation; this spike may use disposable trial adapters."
   - "Changing document authority, permitted writes, offline guarantees or public CLI/MCP contracts before the owner reviews the evidence and amends the owning agreements."
