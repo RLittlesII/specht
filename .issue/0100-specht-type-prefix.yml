@@ -2,7 +2,7 @@ id: "0100"
 type: task
 title: Prefix the engine's types with Specht rather than Spec
 
-status: in-progress
+status: done
 
 value: 2
 risk: 2
@@ -19,7 +19,7 @@ claims: []
 
 created: "2026-10-08"
 updated: "2026-11-01"
-closed: null
+closed: "2026-11-01"
 
 summary: |
   ADR-0027 lifted ADR-0014's benchmark gate on 2026-10-31: this stage
@@ -114,6 +114,27 @@ decisions:
     stay lowercase `specht` and `specht.tool`. No owner override was given.
     The out-of-scope line on the namespace and assembly is reworded to say
     so.
+  - |
+    2026-11-01, benchmarker: the guard of ADR-0027. Base `31abae4a`
+    (main, ADR-0027 merged), head `b8ec2808` (the rename), separate
+    checkouts on one host, run alternately base-100, head-100, base-1000,
+    head-1000 from 01:14 to 01:21 with `./build.sh Benchmark
+    --benchmark-filter '*CheckBenchmarks.Check(Specifications: N)'`,
+    BenchmarkDotNet 0.15.8 default job. Host: Apple M1 Max, 10 cores,
+    macOS Tahoe 26.4 (25E246), .NET SDK 11.0.100-rc.2.26504.105, runtime
+    .NET 10.0.12 Arm64 RyuJIT; 1-minute load average 21.8 to 61.6 on 10
+    cores during the runs, a heavily shared host.
+    100 specifications: base Mean 78.95 ms, Error 9.191 ms (CI 69.76 to
+    88.14 ms), Allocated 33.4 MB; head 72.95 ms, Error 6.195 ms (CI 66.76
+    to 79.15 ms), 33.4 MB. Time -7.6%, allocation 0%.
+    1,000 specifications: base Mean 1.065 s, Error 0.2099 s (CI 0.855 to
+    1.275 s), Allocated 329.36 MB; head 629.3 ms, Error 49.44 ms (CI 579.9
+    to 678.7 ms), 329.36 MB. Time -40.9%, allocation 0%.
+    Judged by 0109-F5 B-011 and B-012 under ComparisonPolicy.Initial: no
+    flag at either size; neither mean rose and allocation is unchanged.
+    The time differences are host noise, not a gain - a rename changes no
+    executed code, and StdDev ran 18 to 616 ms. Only the absence of a flag
+    is claimed.
 
 out_of_scope:
   - "The `SPEC###` rule ids - fixed per schema version (0001-F1 C-5)."
