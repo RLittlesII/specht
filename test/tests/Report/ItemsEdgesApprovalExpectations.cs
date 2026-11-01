@@ -116,11 +116,11 @@ public sealed class ItemsEdgesApprovalExpectations : TheoryData<string, SpechtMo
                 + $"| B-001 | Ready | Covered |\n| B-002 | {missing} | {missing} |\n\n## {signOff}\n\n| Section | Status |\n| - | - |\n"
                 + $"| 1-5 | 🟢 |\n| 6-9 | {draft} |\n| 10-12 | text {blocked} text |\n", "src/sample/.spec/README.md"));
             SpechtModel model = new SpechtModelFixture().WithManifest(manifest).WithFeatures(feature);
-            Add("all missing cells with custom names " + custom, model, new ApprovalRule(), "SPEC060", "§ 9", null,
+            Add("all missing cells with custom names " + custom, model, new ApprovalCoverageRule(), "SPEC060", "§ 9", null,
             new JsonObject { ["section"] = matrix, ["row"] = 2, ["columns"] = new JsonArray(2, 3) });
-            Add("draft sign-off row with custom names " + custom, model, new ApprovalRule(), "SPEC061", "§ 12", "6-9",
+            Add("draft sign-off row with custom names " + custom, model, new ApprovalSignOffRule(), "SPEC061", "§ 12", "6-9",
             new JsonObject { ["section"] = signOff, ["row"] = 2 });
-            Add("blocked sign-off row with custom names " + custom, model, new ApprovalRule(), "SPEC061", "§ 12", "10-12",
+            Add("blocked sign-off row with custom names " + custom, model, new ApprovalSignOffRule(), "SPEC061", "§ 12", "10-12",
             new JsonObject { ["section"] = signOff, ["row"] = 3 });
         }
     }

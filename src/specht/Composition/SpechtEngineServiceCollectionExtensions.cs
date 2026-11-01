@@ -70,7 +70,8 @@ public static class SpechtEngineServiceCollectionExtensions
         services.AddSingleton<ISpechtRule, DependencyTargetRule>();
         services.AddSingleton<ISpechtRule, DependencySymmetryRule>();
         services.AddSingleton<ISpechtRule, DependencyCycleRule>();
-        services.AddSingleton<ISpechtRule, ApprovalRule>();
+        services.AddSingleton<ISpechtRule, ApprovalCoverageRule>();
+        services.AddSingleton<ISpechtRule, ApprovalSignOffRule>();
 
         services.Decorate<ISpechtRule, FaultIsolatedRule>();
 

@@ -39,7 +39,7 @@ public sealed class ApprovalRuleUnitTests
         SpechtModel model = new SpechtModelFixture().WithManifest(manifest).WithFeatures(feature);
 
         // When
-        var violations = new ApprovalRule().Evaluate(model).ToList();
+        var violations = new ApprovalCoverageRule().Evaluate(model).ToList();
 
         // Then
         violations.Select(static violation => (violation.RuleId, violation.Identifier)).Should().Equal(("SPEC060", "B-002"));
@@ -58,7 +58,7 @@ public sealed class ApprovalRuleUnitTests
         SpechtModel model = new SpechtModelFixture().WithManifest(manifest).WithFeatures(feature);
 
         // When
-        var violations = new ApprovalRule().Evaluate(model).ToList();
+        var violations = new ApprovalCoverageRule().Evaluate(model).ToList();
 
         // Then
         violations.Select(static violation => (violation.RuleId, violation.Identifier)).Should().Equal(("SPEC060", "B-002"));
@@ -79,7 +79,7 @@ public sealed class ApprovalRuleUnitTests
         SpechtModel model = new SpechtModelFixture().WithManifest(manifest).WithFeatures(defaultStatus, manifestStatus);
 
         // When
-        var violations = new ApprovalRule().Evaluate(model).ToList();
+        var violations = new ApprovalCoverageRule().Evaluate(model).ToList();
 
         // Then
         violations.Select(static violation => (violation.RuleId, violation.File)).Should().Equal(("SPEC060", "src/second/.spec/README.md"));
@@ -103,7 +103,7 @@ public sealed class ApprovalRuleUnitTests
         SpechtModel model = new SpechtModelFixture().WithManifest(manifest).WithFeatures(feature);
 
         // When
-        var violations = new ApprovalRule().Evaluate(model).ToList();
+        var violations = new ApprovalSignOffRule().Evaluate(model).ToList();
 
         // Then
         violations.Select(static violation => (violation.RuleId, violation.Identifier)).Should().Equal(("SPEC061", "6-8"));
@@ -125,7 +125,7 @@ public sealed class ApprovalRuleUnitTests
         SpechtModel model = new SpechtModelFixture().WithManifest(manifest).WithFeatures(feature);
 
         // When
-        var violations = new ApprovalRule().Evaluate(model).ToList();
+        var violations = new ApprovalSignOffRule().Evaluate(model).ToList();
 
         // Then
         violations.Select(static violation => (violation.RuleId, violation.Identifier)).Should().Equal(("SPEC061", "6-8"));
