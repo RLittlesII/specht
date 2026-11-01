@@ -15,15 +15,17 @@ namespace Specht.Comparison;
 
 /// <summary>
 /// The comparison job's side: it waits for this attempt's request, collects both pinned revisions, evaluates and renders the bundle, and
-/// leaves the outcome and bundle for the release job to attach.
+/// leaves the outcome and bundle for the release job to attach. Each stage it enters is reported to <c>enter</c>, so an unexpected failure
+/// is summarised at the stage in progress.
 /// </summary>
 public sealed class ComparisonRun(HttpClient client, IFileSystem fileSystem, TimeProvider time, PairedCollector collector, string repositoryRoot,
-    string runnerIdentity = "unrecorded")
+    string runnerIdentity = "unrecorded", Action<ReportingStage>? enter = null)
 {
     public async Task<ReportingOutcome?> RunAsync(RunContext context, string directory, CancellationToken cancellationToken)
     {
         if (!ReleaseTrigger.IsReleasePublication(context)) return null;
         var outcome = await CompareAsync(context, directory, cancellationToken);
+        enter?.Invoke(ReportingStage.ResultTransport);
         try
         {
             fileSystem.Directory.CreateDirectory(Full(directory));
@@ -44,6 +46,7 @@ public sealed class ComparisonRun(HttpClient client, IFileSystem fileSystem, Tim
         var session = $"{context.RunId}-{context.Attempt}";
         var request = $"{Workspace}/{session}/request";
         bool found;
+        enter?.Invoke(ReportingStage.ReceiptWait);
         try
         {
             found = await new RunArtifacts(client, fileSystem, time, repositoryRoot).WaitAsync(context.Repository, context.RunId,
@@ -57,6 +60,7 @@ public sealed class ComparisonRun(HttpClient client, IFileSystem fileSystem, Tim
         }
 
         if (!found) return ReportingOutcome.Failed(ReportingStage.ReceiptWait, null);
+        enter?.Invoke(ReportingStage.Receipt);
         ReleasePair pair;
         try
         {
@@ -70,6 +74,7 @@ public sealed class ComparisonRun(HttpClient client, IFileSystem fileSystem, Tim
         }
 
         if (pair.Previous is null) return NoBaseline(pair, context, session, directory);
+        enter?.Invoke(ReportingStage.Collection);
         if (pair.Previous.Commit is null)
             return ReportingOutcome.Failed(ReportingStage.Collection, $"Previous release {pair.Previous.Tag}: {pair.Previous.ResolutionFailure}");
         var plan = CollectionPlan.For(pair, context.Sha, Version(), context.RunId, context.Attempt, session, runnerIdentity, Filter, Job);
@@ -80,6 +85,7 @@ public sealed class ComparisonRun(HttpClient client, IFileSystem fileSystem, Tim
             return ReportingOutcome.Failed(ReportingStage.Collection, string.Join(' ', sides.Where(static side => side.Status != CollectionStatus.Collected)
                 .Select(static side => $"{Capitalised(side.Side)} revision: {side.Reason}")));
 
+        enter?.Invoke(ReportingStage.Parsing);
         MeasurementInventory previous;
         MeasurementInventory current;
         try
@@ -87,21 +93,18 @@ public sealed class ComparisonRun(HttpClient client, IFileSystem fileSystem, Tim
             previous = await InventoryAsync(collection.Previous, collection.Session.Previous, cancellationToken);
             current = await InventoryAsync(collection.Current, collection.Session.Current, cancellationToken);
         }
-        catch (Exception exception) when (exception is InvalidDataException or IOException or UnauthorizedAccessException)
+        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
         {
             return ReportingOutcome.Failed(ReportingStage.Parsing, null);
         }
 
-        ComparisonDocument document;
-        try
-        {
-            document = ComparisonEvaluation.Evaluate(collection.Session, CasePairing.Pair(previous, current, collection.Session));
-        }
-        catch (Exception exception) when (exception is InvalidDataException or InvalidOperationException or ArgumentException)
-        {
-            return ReportingOutcome.Failed(ReportingStage.Evaluation, null);
-        }
-
+        var unread = new[] { (Side: "previous", Inventory: previous), (Side: "current", Inventory: current) }
+            .Where(static read => !read.Inventory.Diagnostics.IsEmpty)
+            .Select(static read => $"{Capitalised(read.Side)} revision: {string.Join(' ', read.Inventory.Diagnostics.Distinct(StringComparer.Ordinal))}")
+            .ToArray();
+        if (unread.Length > 0) return ReportingOutcome.Failed(ReportingStage.Parsing, string.Join(' ', unread));
+        enter?.Invoke(ReportingStage.Evaluation);
+        var document = ComparisonEvaluation.Evaluate(collection.Session, CasePairing.Pair(previous, current, collection.Session));
         var reasons = sides.Where(static side => side.InventoryReason is not null)
             .Select(static side => $"{Capitalised(side.Side)} revision: {side.InventoryReason}").ToArray();
         var outcome = ReportingOutcome.Completed(document, reasons.Length == 0 ? null : string.Join(' ', reasons));
@@ -111,6 +114,7 @@ public sealed class ComparisonRun(HttpClient client, IFileSystem fileSystem, Tim
 
     private ReportingOutcome NoBaseline(ReleasePair pair, RunContext context, string session, string directory)
     {
+        enter?.Invoke(ReportingStage.Evaluation);
         var unmeasured = new MeasurementConditions(null, null, null, null, null, null);
         var manifest = new SessionManifest(1, ComparisonJson.Digest(pair), context.Sha, Version(), context.RunId, context.Attempt, session,
             runnerIdentity, new SessionSide(NoPredecessor, Unmeasured, Unmeasured, [], unmeasured, false, []),
@@ -122,6 +126,7 @@ public sealed class ComparisonRun(HttpClient client, IFileSystem fileSystem, Tim
     private ReportingOutcome Render(ReportingOutcome outcome, ReleasePair pair, ComparisonDocument document,
         ImmutableArray<IdentityMapping> mappings, ImmutableArray<RawExport> exports, string directory)
     {
+        enter?.Invoke(ReportingStage.Rendering);
         try
         {
             _ = new ReportBundler(fileSystem, repositoryRoot).Create(pair, document, mappings, exports, directory);

@@ -111,6 +111,34 @@ public sealed class ReleaseReportingIntegrationTests : IDisposable
     }
 
     [Fact]
+    public async Task PublishedRelease_WhenRequestingItsComparison_ShouldEnterPairPersistenceThenTheReceipt()
+    {
+        // Given
+        List<ReportingStage> stages = [];
+
+        // When
+        await Reporting(stages.Add).RequestAsync(new RunContextFixture(), "request", TestContext.Current.CancellationToken);
+
+        // Then
+        stages.Should().Equal(ReportingStage.PairPersistence, ReportingStage.Receipt);
+    }
+
+    [Fact]
+    public async Task ConfirmedResultForThisAttempt_WhenAttaching_ShouldEnterEachStageInOrder()
+    {
+        // Given
+        Requested();
+        Result("comparison-result-1234-2", "comparison-20-1234-2.zip", Bundle(2, ReportFixtures.Pair(), out var document), document);
+        List<ReportingStage> stages = [];
+
+        // When
+        await Reporting(stages.Add).AttachAsync(new RunContextFixture(), "request", TestContext.Current.CancellationToken);
+
+        // Then
+        stages.Should().Equal(ReportingStage.Receipt, ReportingStage.ResultWait, ReportingStage.ResultTransport, ReportingStage.Attachment);
+    }
+
+    [Fact]
     public async Task ResultThatCannotBeAttached_WhenAttaching_ShouldKeepItsFlagsBesideTheIncompleteStateWithoutAReport()
     {
         // Given
@@ -203,7 +231,7 @@ public sealed class ReleaseReportingIntegrationTests : IDisposable
         return fileSystem.File.ReadAllBytes(Path.Combine("repo", bundle.Path));
     }
 
-    private ReleaseReporting Reporting() => new(_client, new FileSystem(), _time, _root);
+    private ReleaseReporting Reporting(Action<ReportingStage>? enter = null) => new(_client, new FileSystem(), _time, _root, enter);
 
     private void Requested()
     {

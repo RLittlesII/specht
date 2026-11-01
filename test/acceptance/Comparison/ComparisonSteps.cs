@@ -749,7 +749,7 @@ public sealed class ComparisonSteps : IDisposable
         _actions.Add("comparison-request-1234-2", Artifact("request"));
         _outcome = await Comparison().RunAsync(_run!, "result", CancellationToken.None);
         _actions.Add("comparison-result-1234-2", Artifact("result"));
-        _step = async cancellationToken => await Reporting().AttachAsync(_run!, "request", cancellationToken);
+        _step = async (_, cancellationToken) => await Reporting().AttachAsync(_run!, "request", cancellationToken);
         _stage = ReportingStage.Attachment;
         await WhenReportingCompletes();
     }
@@ -821,14 +821,14 @@ public sealed class ComparisonSteps : IDisposable
         GivenCompletedComparison();
         var outcome = ReportingOutcome.Completed(_document!, null);
         outcome.Flags.Should().NotBeEmpty();
-        _step = _ => Task.FromResult<ReportingOutcome?>(outcome);
+        _step = (_, _) => Task.FromResult<ReportingOutcome?>(outcome);
         _stage = ReportingStage.Evaluation;
     }
 
     [Given("the (.*) stage fails")]
     public void GivenStageFails(string stage)
     {
-        _stage = stage switch
+        var failed = stage switch
         {
             "benchmark collection" => ReportingStage.Collection,
             "result parsing" => ReportingStage.Parsing,
@@ -837,7 +837,13 @@ public sealed class ComparisonSteps : IDisposable
             "release attachment" => ReportingStage.Attachment,
             _ => throw new ArgumentOutOfRangeException(nameof(stage), stage, null),
         };
-        _step = static _ => Task.FromException<ReportingOutcome?>(new InvalidDataException("secret-detail: the stage failed"));
+        _start = failed == ReportingStage.Attachment ? ReportingStage.Receipt : ReportingStage.ReceiptWait;
+        _stage = failed;
+        _step = (enter, _) =>
+        {
+            enter(failed);
+            throw new InvalidDataException("secret-detail: the stage failed");
+        };
     }
 
     [Given("the release was published and its comparison computed a review flag")]
@@ -860,7 +866,7 @@ public sealed class ComparisonSteps : IDisposable
     public void GivenAttachmentFails()
     {
         _actions.FailUploads = true;
-        _step = async cancellationToken => await Reporting().AttachAsync(_run!, "request", cancellationToken);
+        _step = async (_, cancellationToken) => await Reporting().AttachAsync(_run!, "request", cancellationToken);
         _stage = ReportingStage.Attachment;
     }
 
@@ -871,7 +877,7 @@ public sealed class ComparisonSteps : IDisposable
         {
             Id = 10, Tag = "v1", PublishedAt = _release.PublishedAt!.Value.AddDays(-3), Commit = new string('e', 40),
         }], true, null), "1234"));
-        _step = async cancellationToken => await Reporting().AttachAsync(_run!, "request", cancellationToken);
+        _step = async (_, cancellationToken) => await Reporting().AttachAsync(_run!, "request", cancellationToken);
         _stage = ReportingStage.ResultWait;
         _resultWait = TimeSpan.FromMinutes(100);
     }
@@ -882,7 +888,7 @@ public sealed class ComparisonSteps : IDisposable
     {
         Directory.CreateDirectory(_directory);
         var summary = Path.Combine(_directory, "summary.md");
-        var reporting = AdvisoryStep.RunAsync(_step!, _stage, new FileSystem(), summary, CancellationToken.None);
+        var reporting = AdvisoryStep.RunAsync(_step!, _start ?? _stage, new FileSystem(), summary, CancellationToken.None);
         if (_resultWait is { } bound)
         {
             await _actions.Listed.Task;
@@ -1373,8 +1379,9 @@ public sealed class ComparisonSteps : IDisposable
     private RunContext? _run;
     private ReportingOutcome? _requested;
     private ReportingOutcome? _outcome;
-    private Func<CancellationToken, Task<ReportingOutcome?>>? _step;
+    private Func<Action<ReportingStage>, CancellationToken, Task<ReportingOutcome?>>? _step;
     private ReportingStage _stage;
+    private ReportingStage? _start;
     private TimeSpan? _resultWait;
     private int _exitCode = -1;
     private string _summary = string.Empty;

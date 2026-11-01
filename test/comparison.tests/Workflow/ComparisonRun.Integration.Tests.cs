@@ -192,6 +192,106 @@ public sealed class ComparisonRunIntegrationTests : IDisposable
             .Should().Equal(1, 2, 3);
     }
 
+    [Theory]
+    [ClassData(typeof(ExportsTheReaderRejects))]
+    public async Task ExportTheReaderRejects_WhenComparing_ShouldBeIncompleteAtParsingNamingEachRejectedSideWithoutABundle(string[] sides, string reason)
+    {
+        // Given
+        foreach (var side in sides)
+            _processes.Exports[side] = [.. _processes.Exports[side].Select(static export =>
+                (export.Name, export.Json.Replace("\"Configuration\": \"RELEASE\"", "\"Configuration\": \"DEBUG\"", StringComparison.Ordinal)))];
+        Request(new ComparisonReceiptFixture(), ReportFixtures.Pair());
+
+        // When
+        var outcome = await Comparison().RunAsync(new RunContextFixture(), "result", TestContext.Current.CancellationToken);
+
+        // Then
+        outcome.Should().NotBeNull();
+        outcome!.Stage.Should().Be(ReportingStage.Parsing);
+        outcome.State.Should().Be(ReportingState.Incomplete);
+        outcome.Judgment.Should().BeNull();
+        outcome.Flags.Should().BeEmpty();
+        outcome.Report.Should().BeNull();
+        outcome.Reason.Should().Be(reason);
+        File.Exists(Path.Combine(_root, "result", "comparison-20-1234-2.zip")).Should().BeFalse();
+        (await File.ReadAllTextAsync(Path.Combine(_root, "result", "outcome.json"), TestContext.Current.CancellationToken))
+            .Should().Be(ComparisonJson.Write(outcome));
+    }
+
+    [Fact]
+    public async Task ExportUnreadableAfterCollection_WhenComparing_ShouldBeIncompleteAtParsingWithoutABundle()
+    {
+        // Given
+        var previousResults = Path.Combine(_root, ".artifacts", "benchmarks", "comparison", "1234-2", "previous", "results", "results");
+        _processes.During = (side, step, _) =>
+        {
+            if (side == "current" && step == "run")
+                foreach (var export in Directory.GetFiles(previousResults, "*-report-full.json")) File.Delete(export);
+            return Task.CompletedTask;
+        };
+        Request(new ComparisonReceiptFixture(), ReportFixtures.Pair());
+
+        // When
+        var outcome = await Comparison().RunAsync(new RunContextFixture(), "result", TestContext.Current.CancellationToken);
+
+        // Then
+        outcome.Should().NotBeNull();
+        outcome!.Stage.Should().Be(ReportingStage.Parsing);
+        outcome.State.Should().Be(ReportingState.Incomplete);
+        outcome.Judgment.Should().BeNull();
+        outcome.Flags.Should().BeEmpty();
+        outcome.Report.Should().BeNull();
+        outcome.Reason.Should().Be("The collected benchmark exports could not be read. Re-run all jobs to retry with the saved pair.");
+        File.Exists(Path.Combine(_root, "result", "comparison-20-1234-2.zip")).Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task ReceiptOfThisRunsPublication_WhenComparing_ShouldEnterEachStageInOrder()
+    {
+        // Given
+        Request(new ComparisonReceiptFixture(), ReportFixtures.Pair());
+        List<ReportingStage> stages = [];
+
+        // When
+        await Comparison(stages.Add).RunAsync(new RunContextFixture(), "result", TestContext.Current.CancellationToken);
+
+        // Then
+        stages.Should().Equal(ReportingStage.ReceiptWait, ReportingStage.Receipt, ReportingStage.Collection, ReportingStage.Parsing,
+            ReportingStage.Evaluation, ReportingStage.Rendering, ReportingStage.ResultTransport);
+    }
+
+    [Fact]
+    public async Task PairWithoutAPredecessor_WhenComparing_ShouldEnterNoCollectionOrParsingStage()
+    {
+        // Given
+        ReleasePair pair = ReportFixtures.Pair().WithPrevious(null);
+        Request(new ComparisonReceiptFixture().WithPairDigest(ComparisonJson.Digest(pair)), pair);
+        List<ReportingStage> stages = [];
+
+        // When
+        await Comparison(stages.Add).RunAsync(new RunContextFixture(), "result", TestContext.Current.CancellationToken);
+
+        // Then
+        stages.Should().Equal(ReportingStage.ReceiptWait, ReportingStage.Receipt, ReportingStage.Evaluation, ReportingStage.Rendering,
+            ReportingStage.ResultTransport);
+    }
+
+    [Fact(Timeout = 20_000)]
+    public async Task NoReceiptForThisAttempt_WhenTheWaitPasses_ShouldEnterOnlyTheReceiptWaitAndTheResultTransport()
+    {
+        // Given
+        List<ReportingStage> stages = [];
+        var comparing = Comparison(stages.Add).RunAsync(new RunContextFixture(), "result", TestContext.Current.CancellationToken);
+        await _artifacts.Listed.Task;
+
+        // When
+        _time.Advance(TimeSpan.FromMinutes(30));
+        await comparing;
+
+        // Then
+        stages.Should().Equal(ReportingStage.ReceiptWait, ReportingStage.ResultTransport);
+    }
+
     [Fact]
     public async Task PreviousReleaseDeclaringNoWorkloadIdentity_WhenComparing_ShouldBeIncompleteWithThatReason()
     {
@@ -221,9 +321,9 @@ public sealed class ComparisonRunIntegrationTests : IDisposable
         if (Directory.Exists(_root)) Directory.Delete(_root, true);
     }
 
-    private ComparisonRun Comparison() =>
+    private ComparisonRun Comparison(Action<ReportingStage>? enter = null) =>
         new(_client, new FileSystem(), _time, new PairedCollector(new FileSystem(), _time, _processes.RunAsync, _root, new Dictionary<string, string>()),
-            _root);
+            _root, enter: enter);
 
     private void Request(ComparisonReceipt receipt, ReleasePair pair) => _artifacts.Add(4, "comparison-request-1234-2", false,
         ActionsArtifacts.Zip(("receipt.json", ComparisonJson.Write(receipt)), ("pair.json", ComparisonJson.Write(pair))));

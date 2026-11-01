@@ -6,21 +6,25 @@ using System.Threading.Tasks;
 
 namespace Specht.Comparison;
 
-/// <summary>Runs one comparison-owned workflow step so that it always succeeds and always leaves its summary.</summary>
+/// <summary>
+/// Runs one comparison-owned workflow step so that it always succeeds and always leaves its summary. The step reports each stage it
+/// enters through the action it is given; an unexpected failure is summarised at the last stage entered, else at <paramref name="stage"/>.
+/// </summary>
 public static class AdvisoryStep
 {
-    public static async Task<int> RunAsync(Func<CancellationToken, Task<ReportingOutcome?>> step, ReportingStage stage, IFileSystem fileSystem,
-        string summaryPath, CancellationToken cancellationToken)
+    public static async Task<int> RunAsync(Func<Action<ReportingStage>, CancellationToken, Task<ReportingOutcome?>> step, ReportingStage stage,
+        IFileSystem fileSystem, string summaryPath, CancellationToken cancellationToken)
     {
         await WriteAsync(fileSystem, summaryPath, RunSummary.Pending);
+        var current = stage;
         ReportingOutcome? outcome;
         try
         {
-            outcome = await step(cancellationToken);
+            outcome = await step(entered => current = entered, cancellationToken);
         }
         catch (Exception exception) when (exception is not OutOfMemoryException)
         {
-            outcome = ReportingOutcome.Failed(stage, null);
+            outcome = ReportingOutcome.Failed(current, null);
         }
 
         await WriteAsync(fileSystem, summaryPath, outcome is null ? "" : RunSummary.Markdown(outcome));

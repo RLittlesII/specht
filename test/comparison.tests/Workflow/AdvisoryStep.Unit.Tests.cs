@@ -15,7 +15,7 @@ public sealed class AdvisoryStepUnitTests
         var outcome = ReportingOutcome.Completed(new ComparisonDocumentFixture(), null).Attached(new ReportReferenceFixture());
 
         // When
-        var exitCode = await AdvisoryStep.RunAsync(_ => Task.FromResult<ReportingOutcome?>(outcome), ReportingStage.Attachment, fileSystem,
+        var exitCode = await AdvisoryStep.RunAsync((_, _) => Task.FromResult<ReportingOutcome?>(outcome), ReportingStage.Attachment, fileSystem,
             "summary.md", TestContext.Current.CancellationToken);
 
         // Then
@@ -32,7 +32,7 @@ public sealed class AdvisoryStepUnitTests
         var fileSystem = new MockFileSystem();
 
         // When
-        var exitCode = await AdvisoryStep.RunAsync(_ => Task.FromException<ReportingOutcome?>(failure), stage, fileSystem, "summary.md",
+        var exitCode = await AdvisoryStep.RunAsync((_, _) => Task.FromException<ReportingOutcome?>(failure), stage, fileSystem, "summary.md",
             TestContext.Current.CancellationToken);
 
         // Then
@@ -40,6 +40,46 @@ public sealed class AdvisoryStepUnitTests
         var summary = await fileSystem.File.ReadAllTextAsync("summary.md", TestContext.Current.CancellationToken);
         summary.Should().Be(RunSummary.Markdown(ReportingOutcome.Failed(stage, null)));
         summary.Should().NotContain("secret-detail");
+    }
+
+    [Fact]
+    public async Task StageEnteredBeforeAFailure_WhenRun_ShouldSummariseThatStageWithoutTheFailureText()
+    {
+        // Given
+        var fileSystem = new MockFileSystem();
+
+        // When
+        var exitCode = await AdvisoryStep.RunAsync(static (enter, _) =>
+        {
+            enter(ReportingStage.Evaluation);
+            throw new InvalidOperationException("secret-detail");
+        }, ReportingStage.ReceiptWait, fileSystem, "summary.md", TestContext.Current.CancellationToken);
+
+        // Then
+        exitCode.Should().Be(0);
+        var summary = await fileSystem.File.ReadAllTextAsync("summary.md", TestContext.Current.CancellationToken);
+        summary.Should().Be(RunSummary.Markdown(ReportingOutcome.Failed(ReportingStage.Evaluation, null)));
+        summary.Should().Contain("The collected measurements could not be compared. Re-run all jobs to retry with the saved pair.")
+            .And.NotContain("secret-detail");
+    }
+
+    [Fact]
+    public async Task SeveralStagesEntered_WhenTheStepFails_ShouldSummariseTheLastOne()
+    {
+        // Given
+        var fileSystem = new MockFileSystem();
+
+        // When
+        await AdvisoryStep.RunAsync(static (enter, _) =>
+        {
+            enter(ReportingStage.Collection);
+            enter(ReportingStage.Parsing);
+            throw new IOException("secret-detail");
+        }, ReportingStage.ReceiptWait, fileSystem, "summary.md", TestContext.Current.CancellationToken);
+
+        // Then
+        (await fileSystem.File.ReadAllTextAsync("summary.md", TestContext.Current.CancellationToken))
+            .Should().Be(RunSummary.Markdown(ReportingOutcome.Failed(ReportingStage.Parsing, null)));
     }
 
     [Fact]
@@ -51,7 +91,7 @@ public sealed class AdvisoryStepUnitTests
         string? whileWaiting = null;
 
         // When
-        var exitCode = await AdvisoryStep.RunAsync(async cancellationToken =>
+        var exitCode = await AdvisoryStep.RunAsync(async (_, cancellationToken) =>
         {
             whileWaiting = await fileSystem.File.ReadAllTextAsync("summary.md", cancellationToken);
             return outcome;

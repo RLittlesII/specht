@@ -14,13 +14,16 @@ namespace Specht.Comparison;
 
 /// <summary>
 /// The release job's side of the comparison: it saves the pair and writes the request after publication, then attaches the returned
-/// report to the release once it is confirmed to be this request's.
+/// report to the release once it is confirmed to be this request's. Each stage it enters is reported to <c>enter</c>, so an unexpected
+/// failure is summarised at the stage in progress.
 /// </summary>
-public sealed class ReleaseReporting(HttpClient client, IFileSystem fileSystem, TimeProvider time, string repositoryRoot)
+public sealed class ReleaseReporting(HttpClient client, IFileSystem fileSystem, TimeProvider time, string repositoryRoot,
+    Action<ReportingStage>? enter = null)
 {
     public async Task<ReportingOutcome?> RequestAsync(RunContext context, string directory, CancellationToken cancellationToken)
     {
         if (!ReleaseTrigger.IsReleasePublication(context)) return null;
+        enter?.Invoke(ReportingStage.PairPersistence);
         ReleasePair pair;
         try
         {
@@ -39,6 +42,7 @@ public sealed class ReleaseReporting(HttpClient client, IFileSystem fileSystem, 
 
         var receipt = new ComparisonReceipt(1, context.Repository, context.RunId, context.Attempt, context.Sha, pair.Current.Id,
             ComparisonJson.Digest(pair));
+        enter?.Invoke(ReportingStage.Receipt);
         try
         {
             fileSystem.Directory.CreateDirectory(Full(directory));
@@ -56,6 +60,7 @@ public sealed class ReleaseReporting(HttpClient client, IFileSystem fileSystem, 
     public async Task<ReportingOutcome> AttachAsync(RunContext context, string directory, CancellationToken cancellationToken)
     {
         if (!ReleaseTrigger.IsReleasePublication(context)) return ReportingOutcome.Failed(ReportingStage.Receipt, "This run published no release.");
+        enter?.Invoke(ReportingStage.Receipt);
         ReleasePair pair;
         ComparisonReceipt receipt;
         try
@@ -71,6 +76,7 @@ public sealed class ReleaseReporting(HttpClient client, IFileSystem fileSystem, 
         if (ReleaseTrigger.Validate(receipt, context, pair) is { } rejection) return ReportingOutcome.Failed(ReportingStage.Receipt, rejection);
         var returned = $"{Workspace}/{context.RunId}-{context.Attempt}/result";
         bool found;
+        enter?.Invoke(ReportingStage.ResultWait);
         try
         {
             found = await new RunArtifacts(client, fileSystem, time, repositoryRoot).WaitAsync(context.Repository, context.RunId,
@@ -82,6 +88,7 @@ public sealed class ReleaseReporting(HttpClient client, IFileSystem fileSystem, 
         }
 
         if (!found) return ReportingOutcome.Failed(ReportingStage.ResultWait, null);
+        enter?.Invoke(ReportingStage.ResultTransport);
         ReportingOutcome outcome;
         byte[] bundle;
         var name = $"comparison-{pair.Current.Id}-{context.RunId}-{context.Attempt}.zip";
@@ -98,6 +105,7 @@ public sealed class ReleaseReporting(HttpClient client, IFileSystem fileSystem, 
             return ReportingOutcome.Failed(ReportingStage.ResultTransport, null);
         }
 
+        enter?.Invoke(ReportingStage.Attachment);
         try
         {
             return outcome.Attached(new ReportReference(pair.Current,

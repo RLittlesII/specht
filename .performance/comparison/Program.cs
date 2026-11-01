@@ -39,20 +39,20 @@ internal static class Program
         var time = TimeProvider.System;
         return command switch
         {
-            "request" => await AdvisoryStep.RunAsync(cancellationToken => context is null
+            "request" => await AdvisoryStep.RunAsync((enter, cancellationToken) => context is null
                     ? Task.FromResult<ReportingOutcome?>(null)
-                    : new ReleaseReporting(client, fileSystem, time, root).RequestAsync(context, directory, cancellationToken),
+                    : new ReleaseReporting(client, fileSystem, time, root, enter).RequestAsync(context, directory, cancellationToken),
                 ReportingStage.PairPersistence, fileSystem, summary, cancellation.Token),
-            "attach" => await AdvisoryStep.RunAsync(async cancellationToken => context is null
+            "attach" => await AdvisoryStep.RunAsync(async (enter, cancellationToken) => context is null
                     ? null
-                    : await new ReleaseReporting(client, fileSystem, time, root).AttachAsync(context, directory, cancellationToken),
-                ReportingStage.Attachment, fileSystem, summary, cancellation.Token),
-            _ => await AdvisoryStep.RunAsync(cancellationToken => context is null
+                    : await new ReleaseReporting(client, fileSystem, time, root, enter).AttachAsync(context, directory, cancellationToken),
+                ReportingStage.Receipt, fileSystem, summary, cancellation.Token),
+            _ => await AdvisoryStep.RunAsync((enter, cancellationToken) => context is null
                     ? Task.FromResult<ReportingOutcome?>(null)
                     : new ComparisonRun(client, fileSystem, time,
                         new PairedCollector(fileSystem, time, new ProcessRunner(root, time).RunAsync, root, environment), root,
-                        environment.GetValueOrDefault("RUNNER_NAME") ?? "unrecorded").RunAsync(context, directory, cancellationToken),
-                ReportingStage.Collection, fileSystem, summary, cancellation.Token),
+                        environment.GetValueOrDefault("RUNNER_NAME") ?? "unrecorded", enter).RunAsync(context, directory, cancellationToken),
+                ReportingStage.ReceiptWait, fileSystem, summary, cancellation.Token),
         };
     }
 
