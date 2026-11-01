@@ -61,7 +61,8 @@ caller earns it a folder.
 accepted 2026-10-11; its mediator clauses superseded by
 [ADR-0026](../../../../.spec/adr/0026-the-source-generated-mediator-measured-no-benefit-and-direct-calls-stay.md),
 2026-10-31). The tree above is the engine as built; the staged work of
-ADR-0010, gated by ADR-0014, moves it to this, and a new engine file goes
+ADR-0010, each stage under ADR-0027's no-regression guard, moves it to this,
+and a new engine file goes
 where this says:
 
 ```

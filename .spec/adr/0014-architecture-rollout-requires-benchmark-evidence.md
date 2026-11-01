@@ -18,6 +18,12 @@ The evaluation this record requires is recorded in
 accepted 2026-10-31: not adopted. The gate is not met for the mediator and
 stands for the rest of ADR-0010's rollout.
 
+Gate lifted 2026-10-31 for ADR-0010's remaining structural stages by
+[ADR-0027](0027-structural-stages-proceed-on-a-no-regression-guard.md): they
+proceed without benefit evidence, and each stage's pull request shows no
+regression on the whole-check benchmark instead, with the owner ruling on a
+flag. The rest of this record stands.
+
 ## Context
 
 PR #185 introduced `Specht.Cqrs`, `SpecModelReader` and a host factory while

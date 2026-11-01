@@ -95,15 +95,17 @@ Two projects, one direction of dependency:
   Nothing else lives in a command.
 
 That is the engine as built. ADR-0010 describes a target architecture;
+[ADR-0027](.spec/adr/0027-structural-stages-proceed-on-a-no-regression-guard.md)
+lifts the benefit-evidence gate of
 [ADR-0014](.spec/adr/0014-architecture-rollout-requires-benchmark-evidence.md)
-gates further engine and host migration on repository benchmark evidence that
-justifies the added cost. The source-generated mediator candidate,
-martinothamar/Mediator, was measured and not adopted
+for its structural stages: each stage's pull request shows no regression on
+the whole-check benchmark against `main`, and the owner rules on a flag. The
+source-generated mediator candidate, martinothamar/Mediator, was measured and
+not adopted
 ([ADR-0026](.spec/adr/0026-the-source-generated-mediator-measured-no-benefit-and-direct-calls-stay.md)):
 hosts keep direct calls, and ADR-0010's mediator clauses are superseded. A
-feature does not waive the gate or the staged prerequisites. Existing stores,
-parsers and composition remain the implementation basis until that evidence is
-agreed.
+feature does not skip the staged prerequisites. Existing stores, parsers and
+composition remain the implementation basis until each stage lands.
 
 The design direction (brief § 5) moves every literal the engine hardcodes —
 layouts, section roles, table headers, markers, frontmatter key roles, id

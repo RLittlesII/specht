@@ -72,7 +72,11 @@ same rule as `format.json`.
 ## Nothing gates on time
 
 No build target, CI step or test fails on a measurement. A finding that moved is
-escalated by the benchmarker; it is not a red build.
+escalated by the benchmarker; it is not a red build. The guard on ADR-0010's
+structural stages
+([ADR-0027](../../../../.spec/adr/0027-structural-stages-proceed-on-a-no-regression-guard.md))
+is no exception: a flag holds the merge for the owner's ruling, and nothing
+automated blocks.
 
 ## Decided, and where
 
