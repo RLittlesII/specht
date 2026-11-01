@@ -142,7 +142,7 @@ A violation today says what is wrong and not what would be right, so the agent t
 
 ## 6. Concern Separation
 
-<!-- last written by: implementer, 2026-10-17 (item 0040); implementer, 2026-10-17 (item 0039); 2026-10-16 (item 0038) -->
+<!-- last written by: implementer, 2026-11-01 (item 0160); implementer, 2026-10-17 (item 0040); implementer, 2026-10-17 (item 0039); 2026-10-16 (item 0038) -->
 
 Item `0034` builds the document and its schema, `0035` writes it under `--json`, `0129` adds the rule pages, and `0120` makes the version a `major.minor.patch` string; `0036`-`0040` and `0043` extend this table.
 
@@ -163,8 +163,8 @@ Item `0034` builds the document and its schema, `0035` writes it under `--json`,
 | A section violation's `sections` and a table violation's `section` and `headers` (B-010, B-011)                                              | Business       | `SectionContractRule`, `TableHeaderRule`                                                                                     |
 | Identity forms and implied values (B-012)                                                                                                    | Business       | `PathIdentityRule`, `DuplicateIdentityRule`, `ChildItemRule`                                                                 |
 | Companion count and resolving claims (B-013)                                                                                                 | Business       | `CompanionFileRule`, `ClaimTagRule`                                                                                          |
-| Claim grammar and first declaration line (B-014)                                                                                             | Business       | `ClaimRule`, from `SpechtClaims`                                                                                             |
-| Complete declared-claim row counts (B-015)                                                                                                   | Business       | `ClaimRule.CheckMatrix`                                                                                                      |
+| Claim grammar and first declaration line (B-014)                                                                                             | Business       | `ClaimIdRule`, from `SpechtClaims`                                                                                           |
+| Complete declared-claim row counts (B-015)                                                                                                   | Business       | `ClaimRowRule.CheckMatrix`                                                                                                   |
 | Item, dependency and approval expectations (B-016-B-018, B-027, B-028)                                                                       | Business       | `ChildItemRule`, `DependencyRule`, `ApprovalRule`                                                                            |
 | `--json` writes the document in place of the lines and the summary (B-001, C-5)                                                              | Business       | `CheckCommand.ExecuteAsync`                                                                                                  |
 | `--report` and the file written (B-003, B-004, B-022-B-025, C-7)                                                                             | Business       | Not here: `0036`, in the host                                                                                                |

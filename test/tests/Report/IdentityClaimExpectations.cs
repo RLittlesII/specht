@@ -89,12 +89,12 @@ public sealed class IdentityClaimExpectations : TheoryData<string, SpechtModel, 
                 "src/sample/.spec/README.md"));
             SpechtModel model = new SpechtModelFixture().WithManifest(new JsonObject
             { ["identifiers"] = new JsonObject { ["claim"] = grammar } }).WithFeatures(feature);
-            Add("claim rejected by " + grammar, model, new ClaimRule(), "SPEC030", claim, new JsonObject { ["grammar"] = grammar });
+            Add("claim rejected by " + grammar, model, new ClaimIdRule(), "SPEC030", claim, new JsonObject { ["grammar"] = grammar });
         }
 
         FeatureSpec duplicate = new FeatureSpecFixture().WithDocument(SpechtDocument.Parse(
             Claims + "| B-001 | Duplicate. |\n", "src/sample/.spec/README.md"));
-        Add("duplicate claim names the original row", new SpechtModelFixture().WithFeatures(duplicate), new ClaimRule(), "SPEC030", "B-001",
+        Add("duplicate claim names the original row", new SpechtModelFixture().WithFeatures(duplicate), new ClaimIdRule(), "SPEC030", "B-001",
             new JsonObject { ["grammar"] = "^B-[0-9]{3}[a-z]?$", ["firstDeclarationLine"] = 6 });
 
         foreach (var (defect, rows, id, counts) in new[]
@@ -109,7 +109,7 @@ public sealed class IdentityClaimExpectations : TheoryData<string, SpechtModel, 
             FeatureSpec feature = new FeatureSpecFixture().WithDocument(SpechtDocument.Parse(
                 Claims + "\n## 9. Traceability Matrix\n\n| Claim ID | Test |\n| -------- | ---- |\n" + rows,
                 "src/sample/.spec/README.md"));
-            Add(defect + " matrix row", new SpechtModelFixture().WithFeatures(feature), new ClaimRule(), "SPEC031", id,
+            Add(defect + " matrix row", new SpechtModelFixture().WithFeatures(feature), new ClaimRowRule(), "SPEC031", id,
                 new JsonObject { ["requiredRows"] = 1, ["rowsByClaim"] = counts });
         }
     }

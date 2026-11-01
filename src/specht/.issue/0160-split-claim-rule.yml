@@ -2,7 +2,7 @@ id: "0160"
 type: refactor
 title: Split ClaimRule into one rule per id
 
-status: in-progress
+status: done
 
 value: 3
 risk: 2
@@ -19,7 +19,7 @@ claims: []
 
 created: "2026-10-11"
 updated: "2026-11-01"
-closed: null
+closed: "2026-11-01"
 
 summary: |
   ADR-0027 lifted ADR-0014's benchmark gate on 2026-10-31: this stage
@@ -93,6 +93,25 @@ decisions:
     splits"; 0100 also renames every engine type a split touches. Status
     `blocked` to `ready-for-implementation`, as cut: the design is ADR-0010's
     and 0100 is open.
+  - |
+    2026-11-01, implementer: `ClaimRule` is `ClaimIdRule` (SPEC030,
+    src/specht/Rules/ClaimIdRule.cs) and `ClaimRowRule` (SPEC031,
+    src/specht/Rules/ClaimRowRule.cs), registered in that order where
+    `ClaimRule` was, before `WaiverRule`. Both keep the claim-grammar
+    guard (`EnsureClaimGrammar()`) and skip a Feature with no claims
+    section; `ClaimRowRule` also skips one with no matrix section, the
+    claims-section guard that sat ahead of it in the old class. The
+    malformed-row guard needs no new code: `ClaimRowRule` counts
+    `SpechtClaims.Ids`, which holds valid ids only, whatever SPEC030's
+    level. The model already derives the empty-first-cell and no-table
+    cases, so no other guard moved. `ClaimRuleUnitTests` keeps its class
+    and method names, each test constructing the rule for the id it pins,
+    so no § 9 row is re-pointed. The acceptance fault seam `FailingRule`
+    stands in for the SPEC030 rule alone and evaluates `ClaimIdRule`;
+    B-012's step now expects every violation but SPEC030's, SPEC031's
+    included, because SPEC031 is another rule. Golden report unchanged.
+    The ADR-0027 benchmark guard is the coordinator's, on the folded
+    branch.
 
 out_of_scope:
   - "The collapse of `ISpechtRule`, `SpecFinding`, `DefaultSeverity` and the evaluator - item 0164."
