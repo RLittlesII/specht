@@ -2,7 +2,7 @@ id: "0212"
 type: task
 title: Collect both published revisions in one comparison session
 
-status: ready-for-implementation
+status: in-progress
 
 risk: 4
 
@@ -15,7 +15,7 @@ spec: .performance/comparison/.spec/README.md
 claims: ["B-004"]
 
 created: "2026-10-13"
-updated: "2026-10-13"
+updated: "2026-10-31"
 closed: null
 
 summary: |
