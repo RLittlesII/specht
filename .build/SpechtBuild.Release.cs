@@ -54,6 +54,10 @@ internal sealed partial class SpechtBuild
                 .Single(static line => line.Type == OutputType.Std).Text.Trim();
 
             Assert.True(
+                !version.StartsWith("0.", StringComparison.Ordinal) || version.Contains('-', StringComparison.Ordinal),
+                $"The version '{version}' is below 1.0.0 and carries no prerelease label");
+
+            Assert.True(
                 tag == $"v{version}",
                 $"The tag '{tag}' is not 'v{version}', the tag of the version '{version}' computed for this commit");
 
@@ -70,15 +74,15 @@ internal sealed partial class SpechtBuild
         .Executes(() =>
         {
             var packages = ReleasePackages();
-            var token = Environment.GetEnvironmentVariable("GITHUB_TOKEN");
-            Assert.True(!string.IsNullOrWhiteSpace(token), "The release job has no package token.");
+            var key = Environment.GetEnvironmentVariable("NUGET_API_KEY");
+            Assert.True(!string.IsNullOrWhiteSpace(key), "The release job has no package key.");
 
             foreach (var package in packages)
             {
                 DotNetNuGetPush(settings => settings
                     .SetTargetPath(package)
-                    .SetSource("https://nuget.pkg.github.com/rlittlesii/index.json")
-                    .SetApiKey(token)
+                    .SetSource("https://api.nuget.org/v3/index.json")
+                    .SetApiKey(key)
                     .EnableSkipDuplicate());
             }
         });
@@ -92,6 +96,7 @@ internal sealed partial class SpechtBuild
             var repository = Environment.GetEnvironmentVariable("GITHUB_REPOSITORY");
             Assert.True(!string.IsNullOrWhiteSpace(repository), "The release job has no repository.");
             var tag = Environment.GetEnvironmentVariable("GITHUB_REF_NAME");
+            var prerelease = tag!.Contains('-', StringComparison.Ordinal) ? "--prerelease " : string.Empty;
             var gh = ToolPathResolver.GetPathExecutable("gh");
 
             if (IsPublishedAtThisCommit(gh, repository!, tag!, packages))
@@ -103,7 +108,7 @@ internal sealed partial class SpechtBuild
             ProcessTasks.StartProcess(
                     gh,
                     $"release create \"{tag}\" {string.Join(' ', packages.Select(static package => $"\"{package}\""))} " +
-                    $"--generate-notes --verify-tag --repo \"{repository}\"",
+                    $"--generate-notes --verify-tag {prerelease}--repo \"{repository}\"",
                     RootDirectory)
                 .AssertZeroExitCode();
         });
@@ -226,7 +231,7 @@ internal sealed partial class SpechtBuild
             {
                 Actions = GitHubActionsPermission.Read,
                 Contents = GitHubActionsPermission.Write,
-                Packages = GitHubActionsPermission.Write,
+                IdToken = GitHubActionsPermission.Write,
             },
             Matrix = [RunnerPool],
             Steps =
@@ -242,11 +247,20 @@ internal sealed partial class SpechtBuild
                     DotNetVersion = "10.0.401",
                     With = { ["global-json-file"] = "global.json" },
                 },
+                new UsingStep("Log in to NuGet")
+                {
+                    Id = "nuget",
+                    Uses = "NuGet/login@v1",
+                    With = new Dictionary<string, string>
+                    {
+                        ["user"] = "${{ vars.NUGET_USER }}",
+                    },
+                },
                 new RunStep("Push release packages")
                 {
                     Environment = new Dictionary<string, string>
                     {
-                        ["GITHUB_TOKEN"] = "${{ secrets.GITHUB_TOKEN }}",
+                        ["NUGET_API_KEY"] = "${{ steps.nuget.outputs.NUGET_API_KEY }}",
                     },
                     Run = $"./build.cmd --target {nameof(PushReleasePackages)}",
                 },

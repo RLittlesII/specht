@@ -185,3 +185,11 @@ first-release work. This observation chooses no general rule about future
 release scope. Feed installation, build and workflow consumption, the
 package-version independence proof and later capabilities remain separate
 items; none is closed from a successful publication alone.
+
+## Reversal - 2026-11-01
+
+[Decision 0007](0007-publish-prereleases-to-nuget-org-through-trusted-publishing.md)
+moves the feed to nuget.org and the push credential to NuGet Trusted
+Publishing. The `release` job gains `id-token: write` in place of
+`packages: write`; contents write for the GitHub Release stays as ruled here.
+The names, the ancestry check and the Release step stand.

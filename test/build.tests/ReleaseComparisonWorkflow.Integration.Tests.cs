@@ -112,7 +112,7 @@ public sealed class ReleaseComparisonWorkflowIntegrationTests
         {
             ["actions"] = "read",
             ["contents"] = "write",
-            ["packages"] = "write",
+            ["id-token"] = "write",
         });
         Granted((YamlMappingNode)workflow["permissions"]).Values.Should().NotContain("write");
         jobs.Children.Where(static job => job.Key.ToString() != "release")

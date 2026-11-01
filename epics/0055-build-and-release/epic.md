@@ -1,6 +1,6 @@
 ---
 title: "Epic 0055: Build, versioning, release and consumption"
-description: "The infrastructure that lets this repository ship from its first push: the NUKE build, the pre-commit hook, CI on the owner's macOS runner pool and Windows, the coverage gate, dependency updates, versioning, the release to GitHub Packages, consumer install, the repository settings and the read-only issue mirror of the work items"
+description: "The infrastructure that lets this repository ship from its first push: the NUKE build, the pre-commit hook, CI on the owner's macOS runner pool and Windows, the coverage gate, dependency updates, versioning, the release to nuget.org, consumer install, the repository settings and the read-only issue mirror of the work items"
 id: "0055"
 type: epic
 status: ready-for-architecture
@@ -18,7 +18,7 @@ children:
     "0055-F9",
   ]
 created: "2026-10-08"
-updated: "2026-10-24"
+updated: "2026-11-01"
 github_issue: null
 ---
 
@@ -30,7 +30,8 @@ The infrastructure that turns this repository into one that ships: the NUKE
 build and its entry scripts, the local tool manifest and the pre-commit hook,
 continuous integration on the owner's macOS runner pool and Windows, the coverage gate,
 dependency updates, the package version, the release that publishes
-`specht.tool` to GitHub Packages, what a consumer needs to install it, the
+`specht.tool` to nuget.org (GitHub Packages until 2026-11-01, `0055-F6`
+decision 0007), what a consumer needs to install it, the
 GitHub repository settings that make the checks binding, and a read-only
 mirror of the work items as GitHub issues.
 
@@ -135,6 +136,6 @@ Nothing in the first two rows publishes a package.
 | Transporter installing the tool (brief § 8 step 7)                      | Transporter, tracked in that repository (owner, 2026-10-08)                                                                                    |
 | What the `SpecCheck` target's run does, and its three-call-site verdict | `0001-F2` B-010, B-011, B-014                                                                                                                  |
 | Schema versions and `schemaVersion`                                     | `0001-F7`; the package version is independent of it (`0055-F5` B-006)                                                                          |
-| Publishing to NuGet.org                                                 | brief § 2 constraint (Soft): NuGet.org is the reversal of GitHub Packages, not a plan                                                          |
+| Publishing to GitHub Packages, or to a second feed beside nuget.org     | `0055-F6` C-10 and decision 0007 (owner, 2026-11-01). Was: publishing to NuGet.org, out as brief § 2's reversal                                |
 | The documentation site's publish pipeline                               | `0002-F2`                                                                                                                                      |
 | GitHub issues, labels and milestones as a tracker                       | Not used: `github_mode: false` (AGENTS.md § SDLC); `0055-F8` § 5. The read-only mirror of the work items is `0055-F9`, and it is not a tracker |

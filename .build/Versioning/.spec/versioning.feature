@@ -19,7 +19,7 @@ Feature: Package versioning
   Scenario: A main-branch build is a public version
     Given a commit on the main branch
     When its package version is computed
-    Then the version carries no prerelease suffix
+    Then the version carries no suffix naming the commit
 
   @B-004
   Scenario: A branch build is a prerelease
@@ -51,3 +51,9 @@ Feature: Package versioning
     Given the version file as first committed
     When a commit on the main branch computes its package version
     Then the version begins 0.1
+
+  @B-009
+  Scenario: A version below 1.0.0 is labelled preview
+    Given a commit whose version line is below 1.0.0
+    When its package version is computed
+    Then the version carries the prerelease label "preview"

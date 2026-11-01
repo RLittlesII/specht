@@ -1,0 +1,89 @@
+id: "0327"
+type: task
+title: Publish to nuget.org as an explicit prerelease below 1.0.0
+
+status: done
+
+value: 4
+risk: 3
+
+parent: "0082"
+children: []
+
+depends_on: []
+spikes: []
+
+spec: .build/Releasing/.spec/README.md
+
+claims:
+  - B-003
+  - B-010
+  - B-014
+  - B-015
+  - C-5
+  - C-7
+  - C-10
+  - 0055-F5 B-003 # cross-Feature: the outside citation form (AGENTS.md § Stable IDs)
+  - 0055-F5 B-009
+  - 0055-F7 B-001
+  - 0055-F7 B-002
+  - 0055-F7 B-004
+  - 0055-F7 B-005
+  - 0055-F7 B-008
+  - 0055-F7 B-009
+  - 0055-F7 C-6
+
+created: "2026-11-01"
+updated: "2026-11-01"
+closed: "2026-11-01"
+
+summary: |
+  Move both packages from GitHub Packages to nuget.org, the reversal brief
+  § 2 names for its Soft feed constraint (0055-F6 decision 0007). GitHub
+  Packages needs a token even to read a public package, so every consumer
+  carried a token and a source entry, a global install had no clean answer
+  (0055-F7 OQ-3), and the package was not searchable.
+
+  Every version below 1.0.0 carries the `-preview` label, because NuGet
+  orders a bare `0.x` as stable; `VerifyTag` refuses a major-0 version
+  with no label. The push uses a short-lived key from NuGet Trusted
+  Publishing in place of the workflow token's package write. A prerelease
+  version's GitHub Release is marked prerelease.
+
+  This repository's own tool pin stays on GitHub Packages until the first
+  nuget.org release; 0328 moves it.
+
+acceptance_criteria:
+  - "B-003 — a green tag pushes both packages to nuget.org"
+  - "B-010 — the restore reads GitHub Packages only while the pin is there"
+  - "B-014 — a major-0 version with no prerelease label: fails before anything is packed"
+  - "B-015 — a prerelease version's Release is marked prerelease"
+  - "C-5, C-7, C-10 — trusted-publishing key, `id-token: write` in `release` only, nuget.org the only feed"
+  - "0055-F5 B-003 — a `main` or `v*` build has no suffix naming the commit"
+  - "0055-F5 B-009 — a major-0 version carries `-preview`"
+  - "0055-F7 B-001, B-002 — install and restore with no source and no credential"
+  - "0055-F7 B-004, B-005, B-008 — the document names nuget.org, no credential, the global install"
+  - "0055-F7 B-009 — every install command carries `--prerelease` below 1.0.0"
+  - "0055-F7 C-6 — nuget.org the only feed the document names"
+  - "§ 9 of each of the three specifications carries a row naming a test for each claim above."
+
+decisions:
+  - |
+    2026-11-01, the repository owner, in chat: nuget.org is the only feed;
+    every version below 1.0.0 is a `-preview` prerelease and only `v*` tag
+    builds publish; NuGet Trusted Publishing supplies the push key, with the
+    profile from the repository variable `NUGET_USER`; a prerelease
+    version's GitHub Release is created with `--prerelease`. Recorded as
+    0055-F6 decision 0007. Rejected: keeping GitHub Packages, publishing to
+    both feeds, a bare `0.x` version, a stored API key.
+  - |
+    2026-11-01, spec-author: this repository's own pin, `0.1.131`, exists
+    only on GitHub Packages, so its source and credential stay until the
+    first nuget.org release. That end state is 0055-F7 B-010 and B-011,
+    cut as 0328; 0055-F6 B-010 and 0055-F7 C-5 are amended to the
+    transition rather than left contradicting it.
+
+out_of_scope:
+  - "Moving this repository's own pin and removing the GitHub Packages source and credential — 0328 (0055-F7 B-010, B-011)."
+  - "Unlisting, deleting or replacing a published version — 0055-F6 § 5 row 4."
+  - "Everything in § 5 of each of the three specifications."

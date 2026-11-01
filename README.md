@@ -55,61 +55,24 @@ it chooses.
 ## Quick start
 
 Requires the .NET 10 SDK. `specht.tool` is published on
-[GitHub Packages](https://github.com/RLittlesII/specht/pkgs/nuget/specht.tool).
-Package reads require authentication, including for this public package.
+[nuget.org](https://www.nuget.org/packages/specht.tool). No package source entry
+is committed for it and no credential is needed to install or restore it.
 
-Commit this `nuget.config` in the consumer repository. The named `specht`
-source supplies the tool; nuget.org supplies other packages and audit data.
-Merge these entries into an existing configuration if the repository has one.
-
-```xml
-<configuration>
-  <packageSources>
-    <clear />
-    <add key="nuget.org" value="https://api.nuget.org/v3/index.json" />
-    <add key="specht" value="https://nuget.pkg.github.com/rlittlesii/index.json" />
-  </packageSources>
-  <packageSourceMapping>
-    <clear />
-    <packageSource key="nuget.org">
-      <package pattern="*" />
-    </packageSource>
-    <packageSource key="specht">
-      <package pattern="specht.tool" />
-    </packageSource>
-  </packageSourceMapping>
-  <auditSources>
-    <clear />
-    <add key="nuget.org" value="https://api.nuget.org/v3/index.json" />
-  </auditSources>
-</configuration>
-```
-
-Use a GitHub personal access token (classic) with `read:packages` and access to
-the package. Supply your GitHub username as `GITHUB_USER` and the token as
-`SPECHT_PACKAGES_TOKEN` through your shell's environment, then export NuGet's
-credential for the source named `specht`:
-
-```sh
-export NuGetPackageSourceCredentials_specht="Username=$GITHUB_USER;Password=$SPECHT_PACKAGES_TOKEN;ValidAuthenticationTypes=Basic"
-```
-
-Keep the token in the runtime environment; commit no credential. See
-[GitHub's authentication requirements](https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-nuget-registry)
-and [NuGet's environment credential format](https://learn.microsoft.com/en-us/nuget/consume-packages/consuming-packages-authenticated-feeds).
+Every version below `1.0.0` is a prerelease, so each install command below
+opts in to prereleases.
 
 For a new repository, create the manifest and install locally:
 
 ```sh
 dotnet new tool-manifest --output .config
-dotnet tool install --local specht.tool
+dotnet tool install --local specht.tool --prerelease
 dotnet specht init
 dotnet specht init --all
 dotnet specht
 ```
 
-Commit `.config/dotnet-tools.json` alongside `nuget.config` to pin the tool
-version. A clone supplies the same environment credential, then runs:
+Commit `.config/dotnet-tools.json` to pin the tool version. A clone, or CI,
+runs:
 
 ```sh
 dotnet tool restore
@@ -118,27 +81,10 @@ dotnet specht
 
 A local tool manifest install runs as `dotnet specht`.
 
-For CI, store the read token in the consumer repository's
-`SPECHT_PACKAGES_TOKEN` secret, store its owner's username in the
-`SPECHT_PACKAGES_USER` repository variable, and supply NuGet's credential as a
-job environment variable. The token's owner must have package access:
-
-```yaml
-env:
-  NuGetPackageSourceCredentials_specht: Username=${{ vars.SPECHT_PACKAGES_USER }};Password=${{ secrets.SPECHT_PACKAGES_TOKEN }};ValidAuthenticationTypes=Basic
-```
-
-This repository's own workflows use `${{ github.token }}` with `packages: read`
-instead of a stored read token. Another repository can use its workflow token
-only when it has been granted read access to the package.
-
-For a workstation shell outside a repository, use the same environment
-credential and register the named source in user-level NuGet configuration.
-Run this once, unless `dotnet nuget list source` already lists `specht`:
+For a workstation shell outside a repository, install globally:
 
 ```sh
-dotnet nuget add source https://nuget.pkg.github.com/rlittlesii/index.json --name specht
-dotnet tool install --global specht.tool --add-source https://nuget.pkg.github.com/rlittlesii/index.json
+dotnet tool install --global specht.tool --prerelease
 specht init
 specht
 ```
