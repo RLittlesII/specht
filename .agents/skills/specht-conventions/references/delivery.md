@@ -242,6 +242,14 @@ line is an edit to the goal file; the mirror's `goal` label follows the current
 milestone (`0055-F9` B-010), and each milestone is mirrored to a GitHub
 milestone of the same title (`0055-F9` B-055).
 
+**Releasing a milestone** is one pull request: it bumps the minor in
+`version.json` and deletes that milestone's section from `.issue/.goal`
+together. The mirror reopens a GitHub milestone on every run for as long as the
+goal file names it (`0055-F9` B-055), so closing it by hand on GitHub does not
+hold; it closes only once its section is gone (`0055-F9` B-060). Release `0.3.0`
+bumped `version.json` without the deletion, and the owner closed the GitHub
+milestone four times before the section was removed.
+
 **Lanes.** Two startable items share a lane when they name the same `spec:`, or
 when their homes fall under the same entry of `SHARED_WRITE_SETS` at the top of
 the script: `.build/ContinuousIntegration`, `.build/Releasing` and `.github`
