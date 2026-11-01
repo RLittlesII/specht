@@ -36,7 +36,7 @@ public sealed class SpechtRunnerBaselineIntegrationTests
     public void TheBaselineTree_WhenChecked_ShouldGiveTheGoldenReportsVerdictsFieldForFieldInOrder()
     {
         // Given
-        using var tree = new SpecTree();
+        using var tree = new SpechtTree();
         BaselineTree.Write(tree);
         var golden = GoldenReport.Read();
 
@@ -52,7 +52,7 @@ public sealed class SpechtRunnerBaselineIntegrationTests
     public void TheBaselineTree_WhenChecked_ShouldBreakTheRuleInTheLayout(string rule, string layout)
     {
         // Given
-        using var tree = new SpecTree();
+        using var tree = new SpechtTree();
         BaselineTree.Write(tree);
 
         // When
@@ -66,11 +66,11 @@ public sealed class SpechtRunnerBaselineIntegrationTests
     public void AClaimWithNoTraceabilityRow_WhenChecked_ShouldCarryARuleSeverityFileLineIdentifierAndMessage()
     {
         // Given
-        using var tree = new SpecTree();
+        using var tree = new SpechtTree();
         tree.WriteFeature(
             "0001",
             "F1",
-            sections: SpecTree.SectionsWith(
+            sections: SpechtTree.SectionsWith(
                 "3. Acceptance Criteria",
                 "## 3. Acceptance Criteria\n\n| ID | Claim | Source | Status |\n| -- | ----- | ------ | ------ |\n"
                     + "| B-001 | It does the thing. | brd | Active |\n| B-002 | It does another. | brd | Active |\n"));
@@ -92,7 +92,7 @@ public sealed class SpechtRunnerBaselineIntegrationTests
     public void EveryViolationOnTheBaselineTree_WhenChecked_ShouldCarryARuleSeverityFileLineAndMessage()
     {
         // Given
-        using var tree = new SpecTree();
+        using var tree = new SpechtTree();
         BaselineTree.Write(tree);
 
         // When

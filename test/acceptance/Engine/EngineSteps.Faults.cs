@@ -48,7 +48,7 @@ public sealed partial class EngineSteps
     [Given("the manifest sets one rule to warning severity")]
     public void GivenTheManifestSetsOneRuleToWarningSeverity()
     {
-        var path = Path.Combine(Tree.Root, SpecTree.ManifestPath);
+        var path = Path.Combine(Tree.Root, SpechtTree.ManifestPath);
         var manifest = JsonNode.Parse(File.ReadAllText(path))!.AsObject();
         manifest["rules"] = new JsonObject { ["SPEC030"] = "warning" };
         File.WriteAllText(path, manifest.ToJsonString());
@@ -71,12 +71,12 @@ public sealed partial class EngineSteps
 
     [Then("exactly one violation is reported under that rule's id, as an error")]
     [Then("the rule's failure is reported as an error")]
-    public void ThenTheRulesFailureIsReportedAsAnError() => Failure.Severity.Should().Be(SpecSeverity.Error);
+    public void ThenTheRulesFailureIsReportedAsAnError() => Failure.Severity.Should().Be(SpechtSeverity.Error);
 
     [Then("it points at the manifest as a whole, with no identifier")]
     public void ThenItPointsAtTheManifestAsAWholeWithNoIdentifier()
     {
-        Failure.File.Should().Be(SpecManifestStore.RelativePath);
+        Failure.File.Should().Be(SpechtManifestStore.RelativePath);
         Failure.Line.Should().Be(0);
         Failure.Identifier.Should().BeNull();
     }
@@ -113,7 +113,7 @@ public sealed partial class EngineSteps
     [Then("the retained failure adds no field or private detail to the report")]
     public void ThenTheRetainedFailureAddsNoFieldOrPrivateDetailToTheReport()
     {
-        var text = SpecReportDocument.From(Report).ToJson();
+        var text = SpechtReportDocument.From(Report).ToJson();
         using var json = JsonDocument.Parse(text);
         var fault = json.RootElement.GetProperty("violations").EnumerateArray()
             .Single(static violation => violation.GetProperty("ruleId").GetString() == "SPEC030");
@@ -123,12 +123,12 @@ public sealed partial class EngineSteps
         Failure.ToString().Should().NotContain(_faultText!);
     }
 
-    private SpecViolation Failure => Report.Violations.Should().ContainSingle(static violation => violation.RuleId == "SPEC030").Which;
+    private SpechtViolation Failure => Report.Violations.Should().ContainSingle(static violation => violation.RuleId == "SPEC030").Which;
 
-    private ISpecRule[] FaultRules()
+    private ISpechtRule[] FaultRules()
     {
         using var resolver = (TypeResolver)new TypeRegistrar(new ServiceCollection().AddSpechtEngine()).Build();
-        return ((IEnumerable<ISpecRule>)resolver.Resolve(typeof(IEnumerable<ISpecRule>))!)
+        return ((IEnumerable<ISpechtRule>)resolver.Resolve(typeof(IEnumerable<ISpechtRule>))!)
             .Select(rule => rule.Id == "SPEC030" ? new FaultIsolatedRule(_fault!) : rule).ToArray();
     }
 

@@ -23,8 +23,8 @@ public sealed class SchemaListUnitTests
             files.AddFile("repo/.specht/manifest.json", new MockFileData(manifest));
         }
         var versions = EngineServices.Versions();
-        var handler = new SchemaVersionManager(new SpecManifestStore(files), new SpecManifestParser(versions),
-            new ManifestPinEditor(new SpecManifestParser(versions), versions), versions);
+        var handler = new SchemaVersionManager(new SpechtManifestStore(files), new SpechtManifestParser(versions),
+            new ManifestPinEditor(new SpechtManifestParser(versions), versions), versions);
 
         // When
         Action action = () => handler.List("repo");
@@ -47,8 +47,8 @@ public sealed class SchemaListUnitTests
             files.AddFile("repo/.specht/manifest.json", new MockFileData(manifest));
         }
         var versions = EngineServices.Versions();
-        var handler = new SchemaVersionManager(new SpecManifestStore(files), new SpecManifestParser(versions),
-            new ManifestPinEditor(new SpecManifestParser(versions), versions), versions);
+        var handler = new SchemaVersionManager(new SpechtManifestStore(files), new SpechtManifestParser(versions),
+            new ManifestPinEditor(new SpechtManifestParser(versions), versions), versions);
 
         // When
         var result = handler.List("repo");

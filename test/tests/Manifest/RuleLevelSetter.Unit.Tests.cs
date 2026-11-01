@@ -23,7 +23,7 @@ public sealed class RuleLevelSetterUnitTests
             ["consumer/sentinel.txt"] = new("untouched"),
         });
         var parser = EngineServices.Parser();
-        var setter = new RuleLevelSetter(new SpecManifestStore(files), parser,
+        var setter = new RuleLevelSetter(new SpechtManifestStore(files), parser,
             new ManifestRuleEditor(new ManifestPinEditor(parser, EngineServices.Versions())), new ManifestPinEditor(parser, EngineServices.Versions()));
 
         // When
@@ -53,7 +53,7 @@ public sealed class RuleLevelSetterUnitTests
     {
         // Given
         var files = new MockFileSystem(new Dictionary<string, MockFileData> { ["consumer/.specht/manifest.json"] = new(text) });
-        var setter = new RuleLevelSetter(new SpecManifestStore(files), EngineServices.Parser(),
+        var setter = new RuleLevelSetter(new SpechtManifestStore(files), EngineServices.Parser(),
             new ManifestRuleEditor(new ManifestPinEditor(EngineServices.Parser(), EngineServices.Versions())),
             new ManifestPinEditor(EngineServices.Parser(), EngineServices.Versions()));
 
@@ -85,7 +85,7 @@ public sealed class RuleLevelSetterUnitTests
         {
             files.Directory.CreateDirectory("consumer");
         }
-        var setter = new RuleLevelSetter(new SpecManifestStore(files), EngineServices.Parser(),
+        var setter = new RuleLevelSetter(new SpechtManifestStore(files), EngineServices.Parser(),
             new ManifestRuleEditor(new ManifestPinEditor(EngineServices.Parser(), EngineServices.Versions())),
             new ManifestPinEditor(EngineServices.Parser(), EngineServices.Versions()));
 

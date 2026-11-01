@@ -15,7 +15,7 @@ public sealed class SpechtRunnerRulesIntegrationTests
     public void ATreeWithOneValidSpecification_WhenChecked_ShouldReportNoViolations()
     {
         // Given
-        using var tree = new SpecTree();
+        using var tree = new SpechtTree();
         tree.WriteFeature("0001", "F1");
 
         // When
@@ -24,14 +24,14 @@ public sealed class SpechtRunnerRulesIntegrationTests
         // Then
         report.Violations.Should().BeEmpty();
         report.SpecificationCount.Should().Be(1);
-        report.Layouts.Should().Equal(new SpecReportLayout("epics", 1), new SpecReportLayout("features", 0));
+        report.Layouts.Should().Equal(new SpechtReportLayout("epics", 1), new SpechtReportLayout("features", 0));
     }
 
     [Fact]
     public void AFrontmatterValueOutsideItsEnum_WhenChecked_ShouldReportSpec002()
     {
         // Given
-        using var tree = new SpecTree();
+        using var tree = new SpechtTree();
         tree.WriteFeature("0001", "F1", new Dictionary<string, string> { ["spec_status"] = "nearly" });
 
         // When
@@ -45,7 +45,7 @@ public sealed class SpechtRunnerRulesIntegrationTests
     public void ASpecificationCarryingAlignmentRejections_WhenChecked_ShouldReportNoViolations()
     {
         // Given
-        using var tree = new SpecTree();
+        using var tree = new SpechtTree();
         tree.WriteFeature("0001", "F1", new Dictionary<string, string> { ["alignment_rejections"] = "0" });
 
         // When
@@ -59,7 +59,7 @@ public sealed class SpechtRunnerRulesIntegrationTests
     public void AnUnquotedZeroPaddedEpic_WhenChecked_ShouldStayAString()
     {
         // Given - epic: 0001 without quotes, which a YAML deserializer would read as the integer 1
-        using var tree = new SpecTree();
+        using var tree = new SpechtTree();
         tree.WriteFeature("0001", "F1", new Dictionary<string, string> { ["epic"] = "0001" });
 
         // When
@@ -73,7 +73,7 @@ public sealed class SpechtRunnerRulesIntegrationTests
     public void AnUnscoredSpecificationAsTheTemplateWritesIt_WhenChecked_ShouldReportNoViolations()
     {
         // Given
-        using var tree = new SpecTree();
+        using var tree = new SpechtTree();
         tree.WriteFeature("0001", "F1", new Dictionary<string, string>
         {
             ["title"] = "\"Specification: A thing\"",
@@ -96,7 +96,7 @@ public sealed class SpechtRunnerRulesIntegrationTests
     public void AScoredSpecificationWithAZeroValue_WhenChecked_ShouldReportSpec002()
     {
         // Given
-        using var tree = new SpecTree();
+        using var tree = new SpechtTree();
         tree.WriteFeature("0001", "F1", new Dictionary<string, string> { ["value"] = "0" });
 
         // When
@@ -110,7 +110,7 @@ public sealed class SpechtRunnerRulesIntegrationTests
     public void ALinkedSpecificationWithNoSyncedAt_WhenChecked_ShouldReportSpec002()
     {
         // Given
-        using var tree = new SpecTree();
+        using var tree = new SpechtTree();
         tree.WriteFeature("0001", "F1", new Dictionary<string, string> { ["github_issue"] = "121" });
 
         // When
@@ -124,8 +124,8 @@ public sealed class SpechtRunnerRulesIntegrationTests
     public void AMissingSection_WhenChecked_ShouldReportSpec010()
     {
         // Given
-        using var tree = new SpecTree();
-        var sections = SpecTree.Sections.Where(static section => !section.StartsWith("## 11.", StringComparison.Ordinal)).ToList();
+        using var tree = new SpechtTree();
+        var sections = SpechtTree.Sections.Where(static section => !section.StartsWith("## 11.", StringComparison.Ordinal)).ToList();
         tree.WriteFeature("0001", "F1", sections: sections);
 
         // When
@@ -139,8 +139,8 @@ public sealed class SpechtRunnerRulesIntegrationTests
     public void ATraceabilityMatrixWithTheWrongHeaders_WhenChecked_ShouldReportSpec013()
     {
         // Given
-        using var tree = new SpecTree();
-        var sections = SpecTree.Sections
+        using var tree = new SpechtTree();
+        var sections = SpechtTree.Sections
             .Select(static section => section.StartsWith("## 9.", StringComparison.Ordinal)
                 ? "## 9. Traceability Matrix\n\n| Claim | Test |\n| ----- | ---- |\n| B-001 | Missing |\n"
                 : section)
@@ -158,7 +158,7 @@ public sealed class SpechtRunnerRulesIntegrationTests
     public void FrontmatterThatDisagreesWithItsDirectory_WhenChecked_ShouldReportSpec011()
     {
         // Given
-        using var tree = new SpecTree();
+        using var tree = new SpechtTree();
         tree.WriteFeature("0001", "F1", new Dictionary<string, string> { ["epic"] = "\"0002\"" });
 
         // When
@@ -172,8 +172,8 @@ public sealed class SpechtRunnerRulesIntegrationTests
     public void AClaimWithNoTraceabilityRow_WhenChecked_ShouldReportSpec031()
     {
         // Given
-        using var tree = new SpecTree();
-        var sections = SpecTree.Sections
+        using var tree = new SpechtTree();
+        var sections = SpechtTree.Sections
             .Select(static section => section.StartsWith("## 3.", StringComparison.Ordinal)
                 ? section + "| B-002 | It does another thing. | brd | Active |\n"
                 : section)
@@ -191,8 +191,8 @@ public sealed class SpechtRunnerRulesIntegrationTests
     public void ADuplicateTraceabilityRow_WhenChecked_ShouldReportSpec031()
     {
         // Given
-        using var tree = new SpecTree();
-        var sections = SpecTree.Sections
+        using var tree = new SpechtTree();
+        var sections = SpechtTree.Sections
             .Select(static section => section.StartsWith("## 9.", StringComparison.Ordinal)
                 ? section + "| B-001 | It does the thing again | Missing | Missing |\n"
                 : section)
@@ -211,7 +211,7 @@ public sealed class SpechtRunnerRulesIntegrationTests
     public void AScenarioTagThatResolvesToNoClaim_WhenChecked_ShouldReportSpec021()
     {
         // Given
-        using var tree = new SpecTree();
+        using var tree = new SpechtTree();
         var path = tree.WriteFeature("0001", "F1");
         tree.WriteFeatureFile(path, "Feature: it\n\n  @B-404\n  Scenario: Phantom\n    Given nothing\n");
 
@@ -226,7 +226,7 @@ public sealed class SpechtRunnerRulesIntegrationTests
     public void AClaimTagInsideAGherkinComment_WhenChecked_ShouldNotBeTreatedAsATag()
     {
         // Given
-        using var tree = new SpecTree();
+        using var tree = new SpechtTree();
         var path = tree.WriteFeature("0001", "F1");
         tree.WriteFeatureFile(
             path,
@@ -243,7 +243,7 @@ public sealed class SpechtRunnerRulesIntegrationTests
     public void ASpecificationWithNoCompanionGherkin_WhenChecked_ShouldReportSpec020()
     {
         // Given
-        using var tree = new SpecTree();
+        using var tree = new SpechtTree();
         tree.WriteFeature("0001", "F1", featureFile: null);
 
         // When
@@ -257,7 +257,7 @@ public sealed class SpechtRunnerRulesIntegrationTests
     public void ADeclaredChildWithNoFile_WhenChecked_ShouldReportSpec040()
     {
         // Given
-        using var tree = new SpecTree();
+        using var tree = new SpechtTree();
         tree.WriteFeature("0001", "F1", new Dictionary<string, string> { ["children"] = "[\"0001-01\"]" });
 
         // When
@@ -271,7 +271,7 @@ public sealed class SpechtRunnerRulesIntegrationTests
     public void AnItemWhoseIdDisagreesWithItsFileName_WhenChecked_ShouldReportSpec043()
     {
         // Given
-        using var tree = new SpecTree();
+        using var tree = new SpechtTree();
         var path = tree.WriteFeature("0001", "F1", new Dictionary<string, string> { ["children"] = "[\"0001-01\"]" });
         tree.WriteItem(path, "0001-01", "0001-F1", idOverride: "0001-09");
 
@@ -286,7 +286,7 @@ public sealed class SpechtRunnerRulesIntegrationTests
     public void AnItemSequenceThatSkipsANumber_WhenChecked_ShouldReportSpec044()
     {
         // Given
-        using var tree = new SpecTree();
+        using var tree = new SpechtTree();
         var path = tree.WriteFeature("0001", "F1", new Dictionary<string, string> { ["children"] = "[\"0001-02\"]" });
         tree.WriteItem(path, "0001-02", "0001-F1");
 
@@ -301,7 +301,7 @@ public sealed class SpechtRunnerRulesIntegrationTests
     public void ADependencyDeclaredFromOnlyOneEnd_WhenChecked_ShouldReportSpec051()
     {
         // Given
-        using var tree = new SpecTree();
+        using var tree = new SpechtTree();
         tree.WriteFeature("0001", "F1", new Dictionary<string, string> { ["depends_on"] = "[\"F2\"]" });
         tree.WriteFeature("0001", "F2");
 
@@ -316,7 +316,7 @@ public sealed class SpechtRunnerRulesIntegrationTests
     public void ASymmetricDependency_WhenChecked_ShouldReportNoViolations()
     {
         // Given
-        using var tree = new SpecTree();
+        using var tree = new SpechtTree();
         tree.WriteFeature("0001", "F1", new Dictionary<string, string> { ["depends_on"] = "[\"F2\"]" });
         tree.WriteFeature("0001", "F2", new Dictionary<string, string> { ["blocks"] = "[\"F1\"]" });
 
@@ -331,7 +331,7 @@ public sealed class SpechtRunnerRulesIntegrationTests
     public void ADependencyOnAFeatureThatDoesNotExist_WhenChecked_ShouldReportSpec050()
     {
         // Given
-        using var tree = new SpecTree();
+        using var tree = new SpechtTree();
         tree.WriteFeature("0001", "F1", new Dictionary<string, string> { ["depends_on"] = "[\"0009/F9\"]" });
 
         // When
@@ -345,7 +345,7 @@ public sealed class SpechtRunnerRulesIntegrationTests
     public void AnApprovedSpecificationWithAMissingTest_WhenChecked_ShouldReportSpec060()
     {
         // Given
-        using var tree = new SpecTree();
+        using var tree = new SpechtTree();
         tree.WriteFeature("0001", "F1", new Dictionary<string, string> { ["spec_status"] = "approved" });
 
         // When
@@ -359,7 +359,7 @@ public sealed class SpechtRunnerRulesIntegrationTests
     public void ADraftSpecificationWithAMissingTest_WhenChecked_ShouldNotFail()
     {
         // Given - every § 9 row in this repository currently reads Missing.
-        using var tree = new SpecTree();
+        using var tree = new SpechtTree();
         tree.WriteFeature("0001", "F1");
 
         // When

@@ -17,8 +17,8 @@ public static class InitRegistration
         services.AddSingleton(static provider => new InitWriter(
             InitWriter.ShippingCopy(typeof(InitWriter).Assembly),
             provider.GetRequiredService<IFileSystem>(),
-            provider.GetRequiredService<SpecManifestParser>(),
-            provider.GetRequiredService<SpecManifestStore>(),
+            provider.GetRequiredService<SpechtManifestParser>(),
+            provider.GetRequiredService<SpechtManifestStore>(),
             provider.GetRequiredService<UpstreamSchemaFetcher>()));
         return services;
     }

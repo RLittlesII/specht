@@ -11,9 +11,9 @@ public sealed partial class EffectiveManifestSteps
     public void GivenMissingRoot() => _rootArgument = "missing-root";
 
     [Given("a root with no manifest")]
-    public void GivenNoManifest() => File.Delete(Path.Combine(Tree.Root, SpecTree.ManifestPath));
+    public void GivenNoManifest() => File.Delete(Path.Combine(Tree.Root, SpechtTree.ManifestPath));
 
-    public void GivenMalformedManifest() => Tree.WriteRaw(SpecTree.ManifestPath, "{");
+    public void GivenMalformedManifest() => Tree.WriteRaw(SpechtTree.ManifestPath, "{");
 
     [Given("a root whose manifest (.*)")]
     public void GivenRejectedManifest(string reason)
@@ -79,7 +79,7 @@ public sealed partial class EffectiveManifestSteps
     public void ThenNamesRoot() => _result.Stderr.Should().Contain($"'{_rootArgument}'");
 
     [Then("the standard error names the manifest path")]
-    public void ThenNamesManifest() => _result.Stderr.Should().Contain(SpecTree.ManifestPath);
+    public void ThenNamesManifest() => _result.Stderr.Should().Contain(SpechtTree.ManifestPath);
 
     [Then("the standard error names what the check names for that manifest")]
     public void ThenMatchesCheck() => _result.Stderr.Should().Be(AcceptanceTool.Launch(Tree.Root).Stderr);
@@ -98,7 +98,7 @@ public sealed partial class EffectiveManifestSteps
     public void ThenUnchanged() => Snapshot().Should().BeEquivalentTo(_before);
 
     [Then("every path the output names other than those typed is relative to the root and uses forward slashes")]
-    public void ThenRelativePaths() => _result.Stderr.Should().Contain(SpecTree.ManifestPath).And.NotContain(Tree.Root).And.NotContain("\\");
+    public void ThenRelativePaths() => _result.Stderr.Should().Contain(SpechtTree.ManifestPath).And.NotContain(Tree.Root).And.NotContain("\\");
 
     [Then("both runs print the same standard output and exit with the same code")]
     public void ThenDeterministic() => _result.Should().Be(_first);
@@ -145,7 +145,7 @@ public sealed partial class EffectiveManifestSteps
     [Then("the standard output is what it is against a root with a valid manifest")]
     public void ThenIndependentOfRoot()
     {
-        using var valid = new SpecTree();
+        using var valid = new SpechtTree();
         _result.Stdout.Should().Be(AcceptanceTool.Launch(valid.Root, "manifest", "--defaults").Stdout);
     }
 

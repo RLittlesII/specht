@@ -76,7 +76,7 @@ public sealed class SpechtRunnerFrontmatterUnitTests
         var report = runner.CheckFrontmatter("repo", kind, "<stdin>", "# A document\n");
 
         // Then
-        report.Violations.Should().ContainSingle().Which.Should().Match<SpecViolation>(static v =>
+        report.Violations.Should().ContainSingle().Which.Should().Match<SpechtViolation>(static v =>
             v.RuleId == "SPEC001" && v.File == "<stdin>" && v.Line == 1, name + ruleId);
     }
 
@@ -94,7 +94,7 @@ public sealed class SpechtRunnerFrontmatterUnitTests
         report.ErrorCount.Should().Be(errors);
         report.WarningCount.Should().Be(warnings);
         report.Violations.Should().HaveCount(errors + warnings);
-        SpecReportDocument.From(report).SummaryLines()[^1].Should().Be($"errors: {errors}, warnings: {warnings}");
+        SpechtReportDocument.From(report).SummaryLines()[^1].Should().Be($"errors: {errors}, warnings: {warnings}");
     }
 
     [Fact]
@@ -118,7 +118,7 @@ public sealed class SpechtRunnerFrontmatterUnitTests
 
     [Theory]
     [ClassData(typeof(FrontmatterSources))]
-    public void APinnedRoot_WhenDocumentChecked_ShouldUseTheSameSchemaSourceAndVerdictAsTheTree(string source, SpecSchemaSource expected)
+    public void APinnedRoot_WhenDocumentChecked_ShouldUseTheSameSchemaSourceAndVerdictAsTheTree(string source, SpechtSchemaSource expected)
     {
         // Given
         var manifest = new JsonObject { ["schemaVersion"] = "0.2.0" };
@@ -139,8 +139,8 @@ public sealed class SpechtRunnerFrontmatterUnitTests
         }
 
         var files = Files(manifest.ToJsonString());
-        files.AddFile("repo/" + SpecTree.FeatureSchemaPath, new MockFileData(local));
-        files.AddFile("repo/" + SpecTree.ItemSchemaPath, new MockFileData(local));
+        files.AddFile("repo/" + SpechtTree.FeatureSchemaPath, new MockFileData(local));
+        files.AddFile("repo/" + SpechtTree.ItemSchemaPath, new MockFileData(local));
         const string path = "src/sample/.spec/README.md";
         const string text = "---\ntitle: feature\n---\n";
         files.AddFile("repo/" + path, new MockFileData(text));
@@ -176,7 +176,7 @@ public sealed class SpechtRunnerFrontmatterUnitTests
         var second = runner.CheckFrontmatter("repo", FrontmatterKind.Task, "draft.md", "---\ntitle: invalid\n---\n");
 
         // Then
-        SpecReportDocument.From(first).ToJson().Should().Be(SpecReportDocument.From(second).ToJson());
+        SpechtReportDocument.From(first).ToJson().Should().Be(SpechtReportDocument.From(second).ToJson());
     }
 
     [Theory]
@@ -192,7 +192,7 @@ public sealed class SpechtRunnerFrontmatterUnitTests
 
         if (manifest is not null)
         {
-            files.AddFile("repo/" + SpecTree.ManifestPath, new MockFileData(manifest));
+            files.AddFile("repo/" + SpechtTree.ManifestPath, new MockFileData(manifest));
         }
 
         var runner = Runner(files);
@@ -206,7 +206,7 @@ public sealed class SpechtRunnerFrontmatterUnitTests
 
     private static MockFileSystem Files(string manifest = "{}") => new(new Dictionary<string, MockFileData>
     {
-        ["repo/" + SpecTree.ManifestPath] = new(manifest),
+        ["repo/" + SpechtTree.ManifestPath] = new(manifest),
     });
 
     private static SchemaVersion Version(SemanticVersion number)
@@ -221,7 +221,7 @@ public sealed class SpechtRunnerFrontmatterUnitTests
         };
     }
 
-    private static SpechtRunner Runner(MockFileSystem files, SchemaVersions? versions = null, ISpecRule? extraRule = null)
+    private static SpechtRunner Runner(MockFileSystem files, SchemaVersions? versions = null, ISpechtRule? extraRule = null)
     {
         var services = new ServiceCollection();
         services.AddSingleton<IFileSystem>(files);
@@ -235,12 +235,12 @@ public sealed class SpechtRunnerFrontmatterUnitTests
         return services.BuildServiceProvider().GetRequiredService<SpechtRunner>();
     }
 
-    private sealed class ForbiddenRule : ISpecRule
+    private sealed class ForbiddenRule : ISpechtRule
     {
         public string Id => "SPEC010";
 
         public IReadOnlyList<string> ReportedIds => ["SPEC010"];
 
-        public IEnumerable<SpecViolation> Evaluate(SpecModel model) => throw new InvalidOperationException("A tree-only rule was evaluated.");
+        public IEnumerable<SpechtViolation> Evaluate(SpechtModel model) => throw new InvalidOperationException("A tree-only rule was evaluated.");
     }
 }

@@ -20,16 +20,16 @@ public sealed class SchemaSourceUnitTests
         // Given
         var files = new MockFileSystem(new Dictionary<string, MockFileData>
         {
-            ["repo/" + SpecTree.ManifestPath] = new("""{ "frontmatterSchemas": { "feature": "local.json" } }"""),
-            ["repo/" + SpecTree.FrontmatterSchemaFolder + "/local.json"] = new("\uFEFF{ \"required\": [\"local_key\"] }"),
-            ["repo/" + SpecTree.ItemSchemaPath] = new("{}"),
+            ["repo/" + SpechtTree.ManifestPath] = new("""{ "frontmatterSchemas": { "feature": "local.json" } }"""),
+            ["repo/" + SpechtTree.FrontmatterSchemaFolder + "/local.json"] = new("\uFEFF{ \"required\": [\"local_key\"] }"),
+            ["repo/" + SpechtTree.ItemSchemaPath] = new("{}"),
         });
 
         // When
         var schemas = EngineServices.Schemas(files).LoadOnDisk("repo");
 
         // Then
-        schemas.Source.Should().Be(SpecSchemaSource.Disk);
+        schemas.Source.Should().Be(SpechtSchemaSource.Disk);
         schemas.Feature.Evaluate(JsonSerializer.SerializeToElement(new { })).IsValid.Should().BeFalse();
         schemas.Version.Number.Should().Be(new SemanticVersion(0, 1, 0));
     }
@@ -49,12 +49,12 @@ public sealed class SchemaSourceUnitTests
         // Given
         var files = new MockFileSystem(new Dictionary<string, MockFileData>
         {
-            ["repo/" + SpecTree.ManifestPath] = new("""{ "identifiers": { "epic": "^[0-9]{4}$" } }"""),
-            ["repo/" + SpecTree.FeatureSchemaPath] = new("{}"),
-            ["repo/" + SpecTree.ItemSchemaPath] = new("{}"),
-            ["repo/" + SpecTree.EpicSchemaPath] = new("{}"),
+            ["repo/" + SpechtTree.ManifestPath] = new("""{ "identifiers": { "epic": "^[0-9]{4}$" } }"""),
+            ["repo/" + SpechtTree.FeatureSchemaPath] = new("{}"),
+            ["repo/" + SpechtTree.ItemSchemaPath] = new("{}"),
+            ["repo/" + SpechtTree.EpicSchemaPath] = new("{}"),
         });
-        var relative = SpecTree.FrontmatterSchemaFolder + "/" + kind + ".schema.json";
+        var relative = SpechtTree.FrontmatterSchemaFolder + "/" + kind + ".schema.json";
         var path = "repo/" + relative;
         if (text is null)
         {
@@ -82,11 +82,11 @@ public sealed class SchemaSourceUnitTests
         // Given
         var files = new MockFileSystem(new Dictionary<string, MockFileData>
         {
-            ["repo/" + SpecTree.ManifestPath] = new("""{ "identifiers": { "epic": "^[0-9]{4}$" } }"""),
+            ["repo/" + SpechtTree.ManifestPath] = new("""{ "identifiers": { "epic": "^[0-9]{4}$" } }"""),
         });
         if (first == "task")
         {
-            files.AddFile("repo/" + SpecTree.FeatureSchemaPath, new MockFileData("{}"));
+            files.AddFile("repo/" + SpechtTree.FeatureSchemaPath, new MockFileData("{}"));
         }
         var loader = EngineServices.Schemas(files);
 
@@ -95,8 +95,8 @@ public sealed class SchemaSourceUnitTests
 
         // Then
         load.Should().Throw<SpechtManifestException>().Which.Message
-            .Should().Contain(SpecTree.FrontmatterSchemaFolder + "/" + first + ".schema.json")
-            .And.NotContain(SpecTree.EpicSchemaPath);
+            .Should().Contain(SpechtTree.FrontmatterSchemaFolder + "/" + first + ".schema.json")
+            .And.NotContain(SpechtTree.EpicSchemaPath);
     }
 
     [Theory]
@@ -143,21 +143,21 @@ public sealed class SchemaSourceUnitTests
     }
 
     [Theory]
-    [InlineData("disk", SchemaSourceSelection.Embedded, SpecSchemaSource.Embedded, true)]
-    [InlineData("embedded", SchemaSourceSelection.Disk, SpecSchemaSource.Disk, false)]
-    [InlineData("disk", null, SpecSchemaSource.Disk, false)]
-    [InlineData(null, null, SpecSchemaSource.Embedded, true)]
+    [InlineData("disk", SchemaSourceSelection.Embedded, SpechtSchemaSource.Embedded, true)]
+    [InlineData("embedded", SchemaSourceSelection.Disk, SpechtSchemaSource.Disk, false)]
+    [InlineData("disk", null, SpechtSchemaSource.Disk, false)]
+    [InlineData(null, null, SpechtSchemaSource.Embedded, true)]
     public void OpposingSelections_WhenLoaded_ShouldChooseTheRunSelectionBeforeTheManifest(
-        string? configured, SchemaSourceSelection? selected, SpecSchemaSource expected, bool valid)
+        string? configured, SchemaSourceSelection? selected, SpechtSchemaSource expected, bool valid)
     {
         // Given
         var manifest = "{ \"schemaVersion\": \"0.2.0\""
             + (configured is null ? " }" : ", \"schemaSource\": \"" + configured + "\" }");
         var files = new MockFileSystem(new Dictionary<string, MockFileData>
         {
-            ["repo/" + SpecTree.ManifestPath] = new(manifest),
-            ["repo/" + SpecTree.FeatureSchemaPath] = new("{ \"required\": [\"local_key\"] }"),
-            ["repo/" + SpecTree.ItemSchemaPath] = new("{}"),
+            ["repo/" + SpechtTree.ManifestPath] = new(manifest),
+            ["repo/" + SpechtTree.FeatureSchemaPath] = new("{ \"required\": [\"local_key\"] }"),
+            ["repo/" + SpechtTree.ItemSchemaPath] = new("{}"),
         });
         var version = EngineServices.Versions().Find(new SemanticVersion(0, 2, 0))! with { FeatureSchema = "{}" };
         var loader = EngineServices.Schemas(files, new SchemaVersions([version]));
@@ -178,9 +178,9 @@ public sealed class SchemaSourceUnitTests
         // Given
         var files = new MockFileSystem(new Dictionary<string, MockFileData>
         {
-            ["repo/" + SpecTree.ManifestPath] = new("{}"),
-            ["repo/" + SpecTree.FeatureSchemaPath] = new("{}"),
-            ["repo/" + SpecTree.ItemSchemaPath] = new("{}"),
+            ["repo/" + SpechtTree.ManifestPath] = new("{}"),
+            ["repo/" + SpechtTree.FeatureSchemaPath] = new("{}"),
+            ["repo/" + SpechtTree.ItemSchemaPath] = new("{}"),
         });
         var loader = EngineServices.Schemas(files);
 
@@ -190,9 +190,9 @@ public sealed class SchemaSourceUnitTests
         var automatic = loader.Load("repo");
 
         // Then
-        disk.Source.Should().Be(SpecSchemaSource.Disk);
-        embedded.Source.Should().Be(SpecSchemaSource.Embedded);
-        automatic.Source.Should().Be(SpecSchemaSource.Embedded);
+        disk.Source.Should().Be(SpechtSchemaSource.Disk);
+        embedded.Source.Should().Be(SpechtSchemaSource.Embedded);
+        automatic.Source.Should().Be(SpechtSchemaSource.Embedded);
     }
 
     [Theory]
@@ -214,9 +214,9 @@ public sealed class SchemaSourceUnitTests
             """;
         var files = new MockFileSystem(new Dictionary<string, MockFileData>
         {
-            ["repo/" + SpecTree.ManifestPath] = new(manifest),
-            ["repo/" + SpecTree.FeatureSchemaPath] = new(changed ? "{}\n" : "{}"),
-            ["repo/" + SpecTree.ItemSchemaPath] = new("{}"),
+            ["repo/" + SpechtTree.ManifestPath] = new(manifest),
+            ["repo/" + SpechtTree.FeatureSchemaPath] = new(changed ? "{}\n" : "{}"),
+            ["repo/" + SpechtTree.ItemSchemaPath] = new("{}"),
         });
         var loader = EngineServices.Schemas(files);
 
@@ -226,7 +226,7 @@ public sealed class SchemaSourceUnitTests
         // Then
         if (valid)
         {
-            load().Source.Should().Be(SpecSchemaSource.Upstream);
+            load().Source.Should().Be(SpechtSchemaSource.Upstream);
         }
         else
         {

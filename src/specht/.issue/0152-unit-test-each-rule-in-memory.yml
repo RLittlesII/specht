@@ -19,18 +19,18 @@ claims:
   - B-004
 
 created: "2026-10-11"
-updated: "2026-10-11"
+updated: "2026-11-01"
 closed: null
 
 summary: |
-  Item 0107 re-tiered the rule-level tests that write a SpecTree to disk to
+  Item 0107 re-tiered the rule-level tests that write a SpechtTree to disk to
   Integration and rewrote none over an in-memory model, so 0001-F1 § 9 holds
-  B-004 Partial and § 8 records a unit test per rule over SpecModelFixture
+  B-004 Partial and § 8 records a unit test per rule over SpechtModelFixture
   as owed. This item writes them. No production code changes.
 
   Each of the eight rules AddSpechtEngine() registers gets one Unit class
-  that calls the rule's Evaluate over a SpecModel built with
-  SpecModelFixture, with no tree on disk and no container. FeatureFileRule
+  that calls the rule's Evaluate over a SpechtModel built with
+  SpechtModelFixture, with no tree on disk and no container. FeatureFileRule
   is built over a FeatureFileReader on a MockFileSystem, as
   FeatureFileRuleUnitTests already does. Four rules have a Unit class today
   (ApprovalRule, ClaimRule, SectionStructureRule, FeatureFileRule) and four
@@ -67,7 +67,7 @@ summary: |
 
 acceptance_criteria:
   - "B-004 — one Unit class per rule, for each of the eight rules, over
-    `SpecModelFixture`"
+    `SpechtModelFixture`"
   - "B-004 — every rule id a rule reports is pinned by at least one unit
     test of that rule: all twenty-one"
   - "B-004 — no test of these classes writes a tree to disk or builds a
@@ -110,7 +110,7 @@ decisions:
 
 out_of_scope:
   - "Rewriting or deleting the Integration rule tests - they stay as the tree-on-disk proof."
-  - "A public constructor on `SpecSchemas` - § 8 reports the gap to `implementer` and asks for no change."
+  - "A public constructor on `SpechtSchemas` - § 8 reports the gap to `implementer` and asks for no change."
   - "A test that a throwing rule propagates - § 8: 0001-F1 B-012 to B-016 replace that behaviour."
   - "Any production code, and everything in § 5 of the spec."
   - "Splitting a rule class - items 0156 to 0163 - and re-pointing a test a split renames, which is that split's."

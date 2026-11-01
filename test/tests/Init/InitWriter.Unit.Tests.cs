@@ -102,10 +102,10 @@ public sealed class InitWriterUnitTests
 
         // Then
         listing.Should().Equal((".specht/manifest.json", true), (".specht/templates/feature.md", true));
-        fileSystem.File.ReadAllText(Path.Combine(Root, SpecTree.ManifestPath))
+        fileSystem.File.ReadAllText(Path.Combine(Root, SpechtTree.ManifestPath))
             .Should()
             .Be($"manifest/v{newest}/manifest.json");
-        fileSystem.File.ReadAllText(Path.Combine(Root, SpecTree.TemplatesFolder, "feature.md")).Should().Be($"templates/v{newest}/feature.md");
+        fileSystem.File.ReadAllText(Path.Combine(Root, SpechtTree.TemplatesFolder, "feature.md")).Should().Be($"templates/v{newest}/feature.md");
     }
 
     [Theory]
@@ -126,7 +126,7 @@ public sealed class InitWriterUnitTests
         await writer.Write(Root, schemas: false, templates: false, CancellationToken.None);
 
         // Then
-        using var manifest = JsonDocument.Parse(fileSystem.File.ReadAllText(Path.Combine(Root, SpecTree.ManifestPath)));
+        using var manifest = JsonDocument.Parse(fileSystem.File.ReadAllText(Path.Combine(Root, SpechtTree.ManifestPath)));
         manifest.RootElement.GetProperty("schemaVersion").GetString().Should().Be(newest);
     }
 
@@ -154,7 +154,7 @@ public sealed class InitWriterUnitTests
     public async Task AFileThatExists_WhenWritten_ShouldBeListedSkippedAndLeftAsItWas()
     {
         // Given
-        var present = Path.Combine(Root, SpecTree.TemplatesFolder, "feature.md");
+        var present = Path.Combine(Root, SpechtTree.TemplatesFolder, "feature.md");
         var fileSystem = new MockFileSystem(new Dictionary<string, MockFileData> { [present] = new("# Local edits\n") });
         var shippingCopy = new Dictionary<string, byte[]>
         {
@@ -178,7 +178,7 @@ public sealed class InitWriterUnitTests
     public async Task SomeFilesPresentAndOthersAbsent_WhenWritten_ShouldWriteEachAbsentOneWithItsShippedBytes()
     {
         // Given
-        var present = Path.Combine(Root, SpecTree.TemplatesFolder, "decision.md");
+        var present = Path.Combine(Root, SpechtTree.TemplatesFolder, "decision.md");
         var fileSystem = new MockFileSystem(new Dictionary<string, MockFileData> { [present] = new("# Local edits\n") });
         var shippingCopy = new Dictionary<string, byte[]>
         {
@@ -216,7 +216,7 @@ public sealed class InitWriterUnitTests
         var fileSystem = BareRoot();
         if (manifestPresent)
         {
-            fileSystem.AddFile(Path.Combine(Root, SpecTree.ManifestPath), new MockFileData("{ \"identifiers\": { \"epic\": \"^[0-9]+$\" } }"));
+            fileSystem.AddFile(Path.Combine(Root, SpechtTree.ManifestPath), new MockFileData("{ \"identifiers\": { \"epic\": \"^[0-9]+$\" } }"));
         }
 
         var shippingCopy = new Dictionary<string, byte[]>
@@ -247,7 +247,7 @@ public sealed class InitWriterUnitTests
         var fileSystem = new MockFileSystem(
             new Dictionary<string, MockFileData>
             {
-                [Path.Combine(Root, SpecTree.RetiredManifestPath)] = new("{ \"sections\": [\"A synthetic section\"] }\n"),
+                [Path.Combine(Root, SpechtTree.RetiredManifestPath)] = new("{ \"sections\": [\"A synthetic section\"] }\n"),
                 [Path.Combine(Root, ".spec", "templates", "feature.md")] = new("# Local edits\n"),
                 [Path.Combine(Root, ".spec", "brief.md")] = new("# A synthetic brief\n"),
             });
@@ -319,9 +319,9 @@ public sealed class InitWriterUnitTests
             .Should()
             .HaveCount(7)
             .And.AllSatisfy(static path => path.Should().Match(static file =>
-                file == SpecTree.ManifestPath
-                || file.StartsWith(SpecTree.FrontmatterSchemaFolder + "/", StringComparison.Ordinal)
-                || file.StartsWith(SpecTree.TemplatesFolder + "/", StringComparison.Ordinal)));
+                file == SpechtTree.ManifestPath
+                || file.StartsWith(SpechtTree.FrontmatterSchemaFolder + "/", StringComparison.Ordinal)
+                || file.StartsWith(SpechtTree.TemplatesFolder + "/", StringComparison.Ordinal)));
     }
 
     private static MockFileSystem BareRoot()

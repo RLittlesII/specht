@@ -48,7 +48,7 @@ src/specht/
                                 the schema versions. No .spec/ here.
   Composition/                  shared - `AddSpechtEngine()`, the engine's one registration extension
                                 (ADR-0001 stage D). No .spec/ here.
-  Rules/                        shared - `ISpecRule`, the rules, the feature-file reader
+  Rules/                        shared - `ISpechtRule`, the rules, the feature-file reader
     <Name>/.spec/               a rule Feature's specification
 ```
 
@@ -71,10 +71,10 @@ src/specht/                     no .cs at the project root
   Composition/                  `AddSpechtEngine()` - references every folder; nothing references it
   Report/                       the document, its mapper, its serializer, `SpecReportStore`
   Evaluation/                   `SpecEvaluator`, `SpechtReport`, the violation and its order
-  Rules/                        `ISpecRule`, the finding, one rule per rule id in a folder per group
-  Model/                        the immutable `SpecModel`, the parsers, its builder and its reader
+  Rules/                        `ISpechtRule`, the finding, one rule per rule id in a folder per group
+  Model/                        the immutable `SpechtModel`, the parsers, its builder and its reader
   Tree/                         `SpechtTree`, its files, `SpechtTreeStore` (item 0153)
-  Manifest/                     the structure, the rule settings, the parser, `SpecManifestStore`
+  Manifest/                     the structure, the rule settings, the parser, `SpechtManifestStore`
   Discovery/                    finding specifications, layouts and locations
   Versioning/                   the schema versions
 ```

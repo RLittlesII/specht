@@ -15,17 +15,17 @@ namespace Specht;
 public sealed record SpechtReport(
     SemanticVersion SchemaVersion,
     int SpecificationCount,
-    IReadOnlyList<SpecReportLayout> Layouts,
+    IReadOnlyList<SpechtReportLayout> Layouts,
     int ItemCount,
     int RulesEvaluated,
-    IReadOnlyList<SpecViolation> Violations)
+    IReadOnlyList<SpechtViolation> Violations)
 {
     /// <summary>Where the check's frontmatter schemas came from (0001-F7 B-032).</summary>
-    public SpecSchemaSource SchemaSource { get; init; } = SpecSchemaSource.Embedded;
+    public SpechtSchemaSource SchemaSource { get; init; } = SpechtSchemaSource.Embedded;
 
     /// <summary>How many violations fail the target.</summary>
-    public int ErrorCount => Violations.Count(static violation => violation.Severity == SpecSeverity.Error);
+    public int ErrorCount => Violations.Count(static violation => violation.Severity == SpechtSeverity.Error);
 
     /// <summary>How many violations are reported without failing the target.</summary>
-    public int WarningCount => Violations.Count(static violation => violation.Severity == SpecSeverity.Warning);
+    public int WarningCount => Violations.Count(static violation => violation.Severity == SpechtSeverity.Warning);
 }

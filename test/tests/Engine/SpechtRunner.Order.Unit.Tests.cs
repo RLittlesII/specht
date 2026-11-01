@@ -13,28 +13,28 @@ namespace Specht.Tests.Engine;
 public sealed class SpechtRunnerOrderUnitTests
 {
     /// <summary>Gets two violations that differ first on one key, the one that sorts first given first.</summary>
-    public static TheoryData<string, SpecViolation, SpecViolation> Pairs =>
+    public static TheoryData<string, SpechtViolation, SpechtViolation> Pairs =>
         new()
         {
             {
                 "an error comes before a warning, whatever its file, line and rule id",
-                new SpecViolationFixture().WithFile("z/spec.md").WithLine(9).WithRuleId("SPEC061"),
-                new SpecViolationFixture().WithSeverity(SpecSeverity.Warning).WithFile("a/spec.md").WithLine(1).WithRuleId("SPEC001")
+                new SpechtViolationFixture().WithFile("z/spec.md").WithLine(9).WithRuleId("SPEC061"),
+                new SpechtViolationFixture().WithSeverity(SpechtSeverity.Warning).WithFile("a/spec.md").WithLine(1).WithRuleId("SPEC001")
             },
             {
                 "files compare ordinally, so an upper-case path comes before a lower-case one, whatever the line and rule id",
-                new SpecViolationFixture().WithFile("B/spec.md").WithLine(9).WithRuleId("SPEC061"),
-                new SpecViolationFixture().WithFile("a/spec.md").WithLine(1).WithRuleId("SPEC001")
+                new SpechtViolationFixture().WithFile("B/spec.md").WithLine(9).WithRuleId("SPEC061"),
+                new SpechtViolationFixture().WithFile("a/spec.md").WithLine(1).WithRuleId("SPEC001")
             },
             {
                 "lines ascend within a file, whatever the rule id",
-                new SpecViolationFixture().WithLine(2).WithRuleId("SPEC061"),
-                new SpecViolationFixture().WithLine(10).WithRuleId("SPEC001")
+                new SpechtViolationFixture().WithLine(2).WithRuleId("SPEC061"),
+                new SpechtViolationFixture().WithLine(10).WithRuleId("SPEC001")
             },
             {
                 "rule ids compare ordinally within a line, so an upper-case id comes before a lower-case one",
-                new SpecViolationFixture().WithRuleId("SPEC031"),
-                new SpecViolationFixture().WithRuleId("spec010")
+                new SpechtViolationFixture().WithRuleId("SPEC031"),
+                new SpechtViolationFixture().WithRuleId("spec010")
             },
         };
 
@@ -42,11 +42,11 @@ public sealed class SpechtRunnerOrderUnitTests
     [MemberData(nameof(Pairs))]
     public void TwoViolationsGivenOutOfOrder_WhenOrdered_ShouldPutTheOneThatSortsFirstFirst(
         string because,
-        SpecViolation first,
-        SpecViolation second)
+        SpechtViolation first,
+        SpechtViolation second)
     {
         // Given
-        SpecViolation[] violations = [second, first];
+        SpechtViolation[] violations = [second, first];
 
         // When
         var ordered = SpechtRunner.Order(violations);
@@ -59,12 +59,12 @@ public sealed class SpechtRunnerOrderUnitTests
     public void ViolationsEqualOnSeverityFileLineAndRuleId_WhenOrdered_ShouldKeepTheOrderTheyWereGivenIn()
     {
         // Given
-        SpecViolation warning = new SpecViolationFixture().WithSeverity(SpecSeverity.Warning).WithMessage("a warning");
-        SpecViolation[] tied =
+        SpechtViolation warning = new SpechtViolationFixture().WithSeverity(SpechtSeverity.Warning).WithMessage("a warning");
+        SpechtViolation[] tied =
         [
-            .. Enumerable.Range(1, 20).Select(static index => (SpecViolation)new SpecViolationFixture().WithMessage($"collected {index}")),
+            .. Enumerable.Range(1, 20).Select(static index => (SpechtViolation)new SpechtViolationFixture().WithMessage($"collected {index}")),
         ];
-        SpecViolation[] violations = [.. tied[..10], warning, .. tied[10..]];
+        SpechtViolation[] violations = [.. tied[..10], warning, .. tied[10..]];
 
         // When
         var ordered = SpechtRunner.Order(violations);

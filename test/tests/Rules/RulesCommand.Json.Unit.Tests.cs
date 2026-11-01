@@ -24,7 +24,7 @@ public sealed class RulesCommandJsonUnitTests
         files.AddFile(files.Path.Combine(root, ".specht", "manifest.json"), new MockFileData("{}"));
         SchemaVersion version = new SchemaVersionFixture();
         var versions = new SchemaVersions([version]);
-        var reader = new RuleEntriesReader(EngineServices.Schemas(files, versions), new SpecManifestParser(versions));
+        var reader = new RuleEntriesReader(EngineServices.Schemas(files, versions), new SpechtManifestParser(versions));
         var console = new TestConsole();
         using var errors = new StringWriter(CultureInfo.InvariantCulture);
         var command = new RulesCommand(console, reader, errors);
@@ -42,7 +42,7 @@ public sealed class RulesCommandJsonUnitTests
 
     [Theory]
     [ClassData(typeof(RuleCatalogueLevels))]
-    public async Task CatalogueValues_WhenJsonIsSelected_ShouldPreserveOrderedValuesAndEscapedFamilies(SpecRuleLevel level)
+    public async Task CatalogueValues_WhenJsonIsSelected_ShouldPreserveOrderedValuesAndEscapedFamilies(SpechtRuleLevel level)
     {
         // Given
         var files = new MockFileSystem();
@@ -59,7 +59,7 @@ public sealed class RulesCommandJsonUnitTests
             },
         };
         var versions = new SchemaVersions([version]);
-        var reader = new RuleEntriesReader(EngineServices.Schemas(files, versions), new SpecManifestParser(versions));
+        var reader = new RuleEntriesReader(EngineServices.Schemas(files, versions), new SpechtManifestParser(versions));
         var console = new TestConsole();
         using var errors = new StringWriter(CultureInfo.InvariantCulture);
         var command = new RulesCommand(console, reader, errors);

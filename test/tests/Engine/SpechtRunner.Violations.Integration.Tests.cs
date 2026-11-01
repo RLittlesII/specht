@@ -14,8 +14,8 @@ public sealed class SpechtRunnerViolationsIntegrationTests
     public void ASpecificationWithNoFrontmatter_WhenChecked_ShouldReportSpec001()
     {
         // Given
-        using var tree = new SpecTree();
-        tree.WriteRaw("epics/0001-epic/F1-feature/spec.md", "# Specification: F1\n\n" + string.Join('\n', SpecTree.Sections));
+        using var tree = new SpechtTree();
+        tree.WriteRaw("epics/0001-epic/F1-feature/spec.md", "# Specification: F1\n\n" + string.Join('\n', SpechtTree.Sections));
         tree.WriteRaw("epics/0001-epic/F1-feature/feature.feature", "Feature: it\n");
 
         // When
@@ -29,7 +29,7 @@ public sealed class SpechtRunnerViolationsIntegrationTests
     public void FrontmatterThatIsNotValidYaml_WhenChecked_ShouldReportSpec001()
     {
         // Given
-        using var tree = new SpecTree();
+        using var tree = new SpechtTree();
         tree.WriteRaw("epics/0001-epic/F1-feature/spec.md", "---\nid: [unclosed\n---\n\n# Specification: F1\n");
         tree.WriteRaw("epics/0001-epic/F1-feature/feature.feature", "Feature: it\n");
 
@@ -44,7 +44,7 @@ public sealed class SpechtRunnerViolationsIntegrationTests
     public void FrontmatterWithNoClosingDelimiter_WhenChecked_ShouldReportSpec001()
     {
         // Given
-        using var tree = new SpecTree();
+        using var tree = new SpechtTree();
         tree.WriteRaw("epics/0001-epic/F1-feature/spec.md", "---\nid: \"F1\"\n\n# Specification: F1\n");
         tree.WriteRaw("epics/0001-epic/F1-feature/feature.feature", "Feature: it\n");
 
@@ -59,7 +59,7 @@ public sealed class SpechtRunnerViolationsIntegrationTests
     public void AnItemWhoseStatusIsOutsideItsEnum_WhenChecked_ShouldReportSpec003()
     {
         // Given
-        using var tree = new SpecTree();
+        using var tree = new SpechtTree();
         var path = tree.WriteFeature("0001", "F1", new Dictionary<string, string> { ["children"] = "[\"0001-01\"]" });
         tree.WriteItem(path, "0001-01", "0001-F1", frontmatter: new Dictionary<string, string> { ["status"] = "nearly" });
 
@@ -74,7 +74,7 @@ public sealed class SpechtRunnerViolationsIntegrationTests
     public void AnEpicWhosePriorityIsOutsideItsEnum_WhenChecked_ShouldReportSpec004()
     {
         // Given
-        using var tree = new SpecTree();
+        using var tree = new SpechtTree();
         tree.WriteFeature("0001", "F1");
         tree.WriteEpic("0001", new Dictionary<string, string> { ["priority"] = "urgent" });
 
@@ -89,7 +89,7 @@ public sealed class SpechtRunnerViolationsIntegrationTests
     public void AValidEpic_WhenChecked_ShouldReportNoViolations()
     {
         // Given
-        using var tree = new SpecTree();
+        using var tree = new SpechtTree();
         tree.WriteFeature("0001", "F1");
         tree.WriteEpic("0001", new Dictionary<string, string> { ["children"] = "[\"0001-F1\"]" });
 
@@ -104,8 +104,8 @@ public sealed class SpechtRunnerViolationsIntegrationTests
     public void ASectionDeclaredTwice_WhenChecked_ShouldReportSpec010()
     {
         // Given
-        using var tree = new SpecTree();
-        var sections = SpecTree.Sections.Append("## 7. Technical Design\n\nAgain.\n").ToList();
+        using var tree = new SpechtTree();
+        var sections = SpechtTree.Sections.Append("## 7. Technical Design\n\nAgain.\n").ToList();
         tree.WriteFeature("0001", "F1", sections: sections);
 
         // When
@@ -120,8 +120,8 @@ public sealed class SpechtRunnerViolationsIntegrationTests
     public void SectionsOutOfOrder_WhenChecked_ShouldReportSpec010()
     {
         // Given
-        using var tree = new SpecTree();
-        var sections = SpecTree.Sections.ToList();
+        using var tree = new SpechtTree();
+        var sections = SpechtTree.Sections.ToList();
         (sections[5], sections[6]) = (sections[6], sections[5]);
         tree.WriteFeature("0001", "F1", sections: sections);
 
@@ -137,8 +137,8 @@ public sealed class SpechtRunnerViolationsIntegrationTests
     public void ATraceabilityMatrixWithNoTable_WhenChecked_ShouldReportSpec013()
     {
         // Given
-        using var tree = new SpecTree();
-        tree.WriteFeature("0001", "F1", sections: SpecTree.SectionsWith("9. Traceability Matrix", "## 9. Traceability Matrix\n\nNone yet.\n"));
+        using var tree = new SpechtTree();
+        tree.WriteFeature("0001", "F1", sections: SpechtTree.SectionsWith("9. Traceability Matrix", "## 9. Traceability Matrix\n\nNone yet.\n"));
 
         // When
         var report = tree.Run();
@@ -152,7 +152,7 @@ public sealed class SpechtRunnerViolationsIntegrationTests
     public void FrontmatterEpicThatDisagreesWithItsDirectory_WhenChecked_ShouldReportSpec011()
     {
         // Given
-        using var tree = new SpecTree();
+        using var tree = new SpechtTree();
         tree.WriteFeature("0001", "F1", new Dictionary<string, string> { ["epic"] = "\"0002\"" });
 
         // When
@@ -167,7 +167,7 @@ public sealed class SpechtRunnerViolationsIntegrationTests
     public void TwoCompanionGherkinFiles_WhenChecked_ShouldReportSpec020()
     {
         // Given
-        using var tree = new SpecTree();
+        using var tree = new SpechtTree();
         var path = tree.WriteFeature("0001", "F1");
         File.WriteAllText(Path.Combine(Path.GetDirectoryName(path)!, "second.feature"), "Feature: another\n");
 
@@ -183,11 +183,11 @@ public sealed class SpechtRunnerViolationsIntegrationTests
     public void AClaimIdThatBreaksTheGrammar_WhenChecked_ShouldReportSpec030()
     {
         // Given
-        using var tree = new SpecTree();
+        using var tree = new SpechtTree();
         tree.WriteFeature(
             "0001",
             "F1",
-            sections: SpecTree.SectionsWith(
+            sections: SpechtTree.SectionsWith(
                 "3. Acceptance Criteria",
                 "## 3. Acceptance Criteria\n\n| ID | Claim | Source | Status |\n| -- | ----- | ------ | ------ |\n| B-1 | Short id. | brd | Active |\n"));
 
@@ -202,11 +202,11 @@ public sealed class SpechtRunnerViolationsIntegrationTests
     public void AClaimDeclaredTwice_WhenChecked_ShouldReportSpec030()
     {
         // Given
-        using var tree = new SpecTree();
+        using var tree = new SpechtTree();
         tree.WriteFeature(
             "0001",
             "F1",
-            sections: SpecTree.SectionsWith(
+            sections: SpechtTree.SectionsWith(
                 "3. Acceptance Criteria",
                 "## 3. Acceptance Criteria\n\n| ID | Claim | Source | Status |\n| -- | ----- | ------ | ------ |\n"
                     + "| B-001 | It does the thing. | brd | Active |\n| B-001 | It does it again. | brd | Active |\n"));
@@ -223,11 +223,11 @@ public sealed class SpechtRunnerViolationsIntegrationTests
     public void ATraceabilityRowForAClaimThatDoesNotExist_WhenChecked_ShouldReportSpec031()
     {
         // Given
-        using var tree = new SpecTree();
+        using var tree = new SpechtTree();
         tree.WriteFeature(
             "0001",
             "F1",
-            sections: SpecTree.SectionsWith(
+            sections: SpechtTree.SectionsWith(
                 "9. Traceability Matrix",
                 "## 9. Traceability Matrix\n\n| Claim ID | Scenario | Test | Status |\n| -------- | -------- | ---- | ------ |\n"
                     + "| B-001 | It does the thing | Missing | Missing |\n| B-999 | Ghost | Missing | Missing |\n"));
@@ -243,7 +243,7 @@ public sealed class SpechtRunnerViolationsIntegrationTests
     public void ADeclaredChildThatResolvesToTwoFiles_WhenChecked_ShouldReportSpec040()
     {
         // Given
-        using var tree = new SpecTree();
+        using var tree = new SpechtTree();
         var path = tree.WriteFeature("0001", "F1", new Dictionary<string, string> { ["children"] = "[\"0001-01\"]" });
         tree.WriteItem(path, "0001-01", "0001-F1", slug: "first");
         tree.WriteItem(path, "0001-01", "0001-F1", slug: "second");
@@ -260,7 +260,7 @@ public sealed class SpechtRunnerViolationsIntegrationTests
     public void ADeclaredSpikeWhoseFileIsATask_WhenChecked_ShouldReportSpec041()
     {
         // Given
-        using var tree = new SpecTree();
+        using var tree = new SpechtTree();
         var path = tree.WriteFeature("0001", "F1", new Dictionary<string, string> { ["spikes"] = "[\"0001-01\"]" });
         tree.WriteItem(path, "0001-01", "0001-F1", type: "task");
 
@@ -275,7 +275,7 @@ public sealed class SpechtRunnerViolationsIntegrationTests
     public void ADeclaredSpikeWithNoFile_WhenChecked_ShouldReportSpec041()
     {
         // Given
-        using var tree = new SpecTree();
+        using var tree = new SpechtTree();
         tree.WriteFeature("0001", "F1", new Dictionary<string, string> { ["spikes"] = "[\"0001-16\"]" });
 
         // When
@@ -289,7 +289,7 @@ public sealed class SpechtRunnerViolationsIntegrationTests
     public void ASpikeCitedFromAnotherFeature_WhenChecked_ShouldResolveRepositoryWide()
     {
         // Given
-        using var tree = new SpecTree();
+        using var tree = new SpechtTree();
         var owner = tree.WriteFeature("0001", "F1", new Dictionary<string, string> { ["children"] = "[\"0001-01\"]" });
         tree.WriteItem(owner, "0001-01", "0001-F1", type: "spike");
         tree.WriteFeature("0001", "F2", new Dictionary<string, string> { ["spikes"] = "[\"0001-01\"]" });
@@ -305,7 +305,7 @@ public sealed class SpechtRunnerViolationsIntegrationTests
     public void AnItemWhoseParentDisagreesWithItsFeature_WhenChecked_ShouldReportSpec043()
     {
         // Given
-        using var tree = new SpecTree();
+        using var tree = new SpechtTree();
         var path = tree.WriteFeature("0001", "F1", new Dictionary<string, string> { ["children"] = "[\"0001-01\"]" });
         tree.WriteItem(path, "0001-01", "0001-F9");
 
@@ -321,7 +321,7 @@ public sealed class SpechtRunnerViolationsIntegrationTests
     public void AnItemIdUsedByTwoFeatures_WhenChecked_ShouldReportSpec044()
     {
         // Given
-        using var tree = new SpecTree();
+        using var tree = new SpechtTree();
         var first = tree.WriteFeature("0001", "F1", new Dictionary<string, string> { ["children"] = "[\"0001-01\"]" });
         var second = tree.WriteFeature("0001", "F2", new Dictionary<string, string> { ["children"] = "[\"0001-01\"]" });
         tree.WriteItem(first, "0001-01", "0001-F1");
@@ -339,7 +339,7 @@ public sealed class SpechtRunnerViolationsIntegrationTests
     public void AFeatureThatDependsOnItself_WhenChecked_ShouldReportSpec052()
     {
         // Given
-        using var tree = new SpecTree();
+        using var tree = new SpechtTree();
         tree.WriteFeature("0001", "F1", new Dictionary<string, string> { ["depends_on"] = "[\"F1\"]" });
 
         // When
@@ -354,7 +354,7 @@ public sealed class SpechtRunnerViolationsIntegrationTests
     public void ADependencyCycle_WhenChecked_ShouldReportSpec052()
     {
         // Given - F1 -> F2 -> F3 -> F1, every edge declared from both ends so SPEC051 stays quiet.
-        using var tree = new SpecTree();
+        using var tree = new SpechtTree();
         tree.WriteFeature("0001", "F1", new Dictionary<string, string> { ["depends_on"] = "[\"F2\"]", ["blocks"] = "[\"F3\"]" });
         tree.WriteFeature("0001", "F2", new Dictionary<string, string> { ["depends_on"] = "[\"F3\"]", ["blocks"] = "[\"F1\"]" });
         tree.WriteFeature("0001", "F3", new Dictionary<string, string> { ["depends_on"] = "[\"F1\"]", ["blocks"] = "[\"F2\"]" });
@@ -372,7 +372,7 @@ public sealed class SpechtRunnerViolationsIntegrationTests
     public void ABlocksEdgeDeclaredFromOnlyOneEnd_WhenChecked_ShouldReportSpec051()
     {
         // Given
-        using var tree = new SpecTree();
+        using var tree = new SpechtTree();
         tree.WriteFeature("0001", "F1", new Dictionary<string, string> { ["blocks"] = "[\"F2\"]" });
         tree.WriteFeature("0001", "F2");
 
@@ -388,12 +388,12 @@ public sealed class SpechtRunnerViolationsIntegrationTests
     public void AnApprovedSpecificationWithADraftSignOff_WhenChecked_ShouldReportSpec061()
     {
         // Given - § 9 is fully covered, so SPEC060 stays quiet and only the sign-off disagrees.
-        using var tree = new SpecTree();
+        using var tree = new SpechtTree();
         tree.WriteFeature(
             "0001",
             "F1",
             new Dictionary<string, string> { ["spec_status"] = "approved" },
-            SpecTree.SectionsWith(
+            SpechtTree.SectionsWith(
                 "9. Traceability Matrix",
                 "## 9. Traceability Matrix\n\n| Claim ID | Scenario | Test | Status |\n| -------- | -------- | ---- | ------ |\n"
                     + "| B-001 | It does the thing | It.Unit.Tests.cs | Done |\n"));
@@ -410,8 +410,8 @@ public sealed class SpechtRunnerViolationsIntegrationTests
     public void AnApprovedSpecificationFullyCoveredAndSignedOff_WhenChecked_ShouldReportNoViolations()
     {
         // Given
-        using var tree = new SpecTree();
-        var sections = SpecTree.SectionsWith(
+        using var tree = new SpechtTree();
+        var sections = SpechtTree.SectionsWith(
             "9. Traceability Matrix",
             "## 9. Traceability Matrix\n\n| Claim ID | Scenario | Test | Status |\n| -------- | -------- | ---- | ------ |\n"
                 + "| B-001 | It does the thing | It.Unit.Tests.cs | Done |\n");
@@ -431,8 +431,8 @@ public sealed class SpechtRunnerViolationsIntegrationTests
     public void AClaimIdWrittenAsACodeSpan_WhenChecked_ShouldStillBeAClaim()
     {
         // Given - the id is `B-001` in § 3; a code span is not a literal
-        using var tree = new SpecTree();
-        var sections = SpecTree.SectionsWith(
+        using var tree = new SpechtTree();
+        var sections = SpechtTree.SectionsWith(
             "3. Acceptance Criteria",
             "## 3. Acceptance Criteria\n\n| ID | Claim | Source | Status |\n"
                 + "| -- | ----- | ------ | ------ |\n"

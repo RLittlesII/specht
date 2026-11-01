@@ -16,14 +16,14 @@ public sealed class FeatureFileRuleIntegrationTests
     public void ATagDeclaredOnlyUnderTheTitleNoRoleNames_WhenChecked_ShouldReportSpec021OnItAndNotOnTheTagTheClaimsRolesSectionDeclares()
     {
         // Given
-        using var tree = new SpecTree();
-        var path = Path.Combine(tree.Root, SpecTree.ManifestPath);
+        using var tree = new SpechtTree();
+        var path = Path.Combine(tree.Root, SpechtTree.ManifestPath);
         var manifest = JsonNode.Parse(File.ReadAllText(path))!.AsObject();
         var titles = manifest["sections"]!.AsArray();
         titles[titles.Select(static title => title!.GetValue<string>()).ToList().IndexOf("3. Acceptance Criteria")] = "3. Claims";
         manifest["roles"] = new JsonObject { ["claims"] = "3. Claims" };
         File.WriteAllText(path, manifest.ToJsonString());
-        var sections = SpecTree.SectionsWith(
+        var sections = SpechtTree.SectionsWith(
                 "3. Acceptance Criteria",
                 "## 3. Claims\n\n| ID | Claim | Source | Status |\n| -- | ----- | ------ | ------ |\n"
                     + "| B-001 | It does the thing. | brd | Active |\n")

@@ -77,22 +77,22 @@ public sealed class SpechtRunnerEvaluateUnitTests
         };
 
     /// <summary>Gets a manifest under which <c>FAKE001</c> keeps its finding's severity, and the severity that rule gives its finding.</summary>
-    public static TheoryData<string, string, SpecSeverity> KeptSeverities =>
+    public static TheoryData<string, string, SpechtSeverity> KeptSeverities =>
         new()
         {
-            { "an id set to error keeps its error finding at error", """{ "rules": { "FAKE001": "error" } }""", SpecSeverity.Error },
+            { "an id set to error keeps its error finding at error", """{ "rules": { "FAKE001": "error" } }""", SpechtSeverity.Error },
             {
                 "an id the rule settings do not name keeps the rule's own severity beside one they lower",
                 """{ "rules": { "FAKE002": "warning" } }""",
-                SpecSeverity.Error
+                SpechtSeverity.Error
             },
             {
                 "an id the rule settings do not name keeps the rule's own severity beside one they raise",
                 """{ "rules": { "FAKE002": "error" } }""",
-                SpecSeverity.Warning
+                SpechtSeverity.Warning
             },
-            { "a manifest leaving its rule settings out keeps the rule's own warning", "{}", SpecSeverity.Warning },
-            { "a manifest leaving its rule settings out keeps the rule's own error", "{}", SpecSeverity.Error },
+            { "a manifest leaving its rule settings out keeps the rule's own warning", "{}", SpechtSeverity.Warning },
+            { "a manifest leaving its rule settings out keeps the rule's own error", "{}", SpechtSeverity.Error },
         };
 
     [Theory]
@@ -102,12 +102,12 @@ public sealed class SpechtRunnerEvaluateUnitTests
         // Given
         List<FeatureSpec> features =
         [
-            .. Enumerable.Repeat(new SpecLayout("epics", "epics/**/spec.md", new SpecPathIdentity(1, 2)), inEpics)
-                .Concat(Enumerable.Repeat(new SpecLayout("features", "**/.spec/README.md"), inFeatures))
-                .Select(static layout => (FeatureSpec)new FeatureSpecFixture().WithLocation(new SpecLocationFixture().WithLayout(layout))),
+            .. Enumerable.Repeat(new SpechtLayout("epics", "epics/**/spec.md", new SpechtPathIdentity(1, 2)), inEpics)
+                .Concat(Enumerable.Repeat(new SpechtLayout("features", "**/.spec/README.md"), inFeatures))
+                .Select(static layout => (FeatureSpec)new FeatureSpecFixture().WithLocation(new SpechtLocationFixture().WithLayout(layout))),
         ];
         List<ChildItem> children = [.. Enumerable.Range(0, items).Select(static _ => (ChildItem)new ChildItemFixture())];
-        SpecModel model = ModelWithVocabulary().WithFeatures(features).WithItems(children);
+        SpechtModel model = ModelWithVocabulary().WithFeatures(features).WithItems(children);
 
         // When
         var report = SpechtRunner.Evaluate(model, []);
@@ -132,19 +132,19 @@ public sealed class SpechtRunnerEvaluateUnitTests
     {
         // Given
         var fileSystem = new MockFileSystem(
-            new Dictionary<string, MockFileData> { [Path.Combine("repo", SpecTree.ManifestPath)] = new(manifest) });
+            new Dictionary<string, MockFileData> { [Path.Combine("repo", SpechtTree.ManifestPath)] = new(manifest) });
         SchemaVersion version = new SchemaVersionFixture();
         List<FeatureSpec> features =
         [
             .. names
                 .Select((name, index) => Enumerable.Repeat(
-                    new SpecLayout(name, globs[index], name == "epics" ? new SpecPathIdentity(1, 2) : null),
+                    new SpechtLayout(name, globs[index], name == "epics" ? new SpechtPathIdentity(1, 2) : null),
                     counts[index]))
                 .Reverse()
                 .SelectMany(static layouts => layouts)
-                .Select(static layout => (FeatureSpec)new FeatureSpecFixture().WithLocation(new SpecLocationFixture().WithLayout(layout))),
+                .Select(static layout => (FeatureSpec)new FeatureSpecFixture().WithLocation(new SpechtLocationFixture().WithLayout(layout))),
         ];
-        SpecModel model = new SpecModelFixture()
+        SpechtModel model = new SpechtModelFixture()
             .WithSchemas(EngineServices.LoadSchemas(fileSystem, "repo", new SchemaVersions([version])))
             .WithFeatures(features);
 
@@ -152,7 +152,7 @@ public sealed class SpechtRunnerEvaluateUnitTests
         var report = SpechtRunner.Evaluate(model, []);
 
         // Then
-        report.Layouts.Should().Equal(names.Zip(counts, static (name, count) => new SpecReportLayout(name, count)), because);
+        report.Layouts.Should().Equal(names.Zip(counts, static (name, count) => new SpechtReportLayout(name, count)), because);
     }
 
     [Fact]
@@ -164,9 +164,9 @@ public sealed class SpechtRunnerEvaluateUnitTests
         var fileSystem = new MockFileSystem(
             new Dictionary<string, MockFileData>
             {
-                [Path.Combine("repo", SpecTree.ManifestPath)] = new("""{ "schemaVersion": "0.2.0" }"""),
+                [Path.Combine("repo", SpechtTree.ManifestPath)] = new("""{ "schemaVersion": "0.2.0" }"""),
             });
-        SpecModel model = new SpecModelFixture().WithSchemas(EngineServices.LoadSchemas(fileSystem, "repo", new SchemaVersions([one, two])));
+        SpechtModel model = new SpechtModelFixture().WithSchemas(EngineServices.LoadSchemas(fileSystem, "repo", new SchemaVersions([one, two])));
 
         // When
         var report = SpechtRunner.Evaluate(model, []);
@@ -184,7 +184,7 @@ public sealed class SpechtRunnerEvaluateUnitTests
         var fileSystem = new MockFileSystem(
             new Dictionary<string, MockFileData>
             {
-                [Path.Combine("repo", SpecTree.ManifestPath)] = new(
+                [Path.Combine("repo", SpechtTree.ManifestPath)] = new(
                     $$"""
                     {
                       "spechtSchema": {
@@ -194,17 +194,17 @@ public sealed class SpechtRunnerEvaluateUnitTests
                       }
                     }
                     """),
-                [Path.Combine("repo", SpecTree.FeatureSchemaPath)] = new(copy),
-                [Path.Combine("repo", SpecTree.ItemSchemaPath)] = new(copy),
+                [Path.Combine("repo", SpechtTree.FeatureSchemaPath)] = new(copy),
+                [Path.Combine("repo", SpechtTree.ItemSchemaPath)] = new(copy),
             });
-        SpecModel model = new SpecModelFixture().WithSchemas(
+        SpechtModel model = new SpechtModelFixture().WithSchemas(
             EngineServices.Schemas(fileSystem).Load("repo"));
 
         // When
         var report = SpechtRunner.Evaluate(model, []);
 
         // Then
-        report.SchemaSource.Should().Be(SpecSchemaSource.Upstream);
+        report.SchemaSource.Should().Be(SpechtSchemaSource.Upstream);
     }
 
     [Theory]
@@ -216,8 +216,8 @@ public sealed class SpechtRunnerEvaluateUnitTests
         int expected)
     {
         // Given
-        SpecModel model = ModelWithVocabulary(vocabulary);
-        List<ISpecRule> rules = [.. reportedIds.Select(static ids => new FakeRule(ids[0], ids))];
+        SpechtModel model = ModelWithVocabulary(vocabulary);
+        List<ISpechtRule> rules = [.. reportedIds.Select(static ids => new FakeRule(ids[0], ids))];
 
         // When
         var report = SpechtRunner.Evaluate(model, rules);
@@ -230,18 +230,18 @@ public sealed class SpechtRunnerEvaluateUnitTests
     public void RulesReturningViolationsOutOfOrder_WhenEvaluated_ShouldReportWhatTheRulesReturnedInTheRunnersOrder()
     {
         // Given
-        SpecModel model = ModelWithVocabulary("FAKE001", "FAKE002");
-        SpecViolation[] first =
+        SpechtModel model = ModelWithVocabulary("FAKE001", "FAKE002");
+        SpechtViolation[] first =
         [
-            new SpecViolationFixture().WithRuleId("FAKE001").WithSeverity(SpecSeverity.Warning).WithFile("b/spec.md").WithLine(5),
-            new SpecViolationFixture().WithRuleId("FAKE001").WithFile("b/spec.md").WithLine(9),
+            new SpechtViolationFixture().WithRuleId("FAKE001").WithSeverity(SpechtSeverity.Warning).WithFile("b/spec.md").WithLine(5),
+            new SpechtViolationFixture().WithRuleId("FAKE001").WithFile("b/spec.md").WithLine(9),
         ];
-        SpecViolation[] second =
+        SpechtViolation[] second =
         [
-            new SpecViolationFixture().WithRuleId("FAKE002").WithFile("b/spec.md").WithLine(2),
-            new SpecViolationFixture().WithRuleId("FAKE002").WithFile("a/spec.md").WithLine(3),
+            new SpechtViolationFixture().WithRuleId("FAKE002").WithFile("b/spec.md").WithLine(2),
+            new SpechtViolationFixture().WithRuleId("FAKE002").WithFile("a/spec.md").WithLine(3),
         ];
-        List<ISpecRule> rules = [new FakeRule("FAKE001", ["FAKE001"], first), new FakeRule("FAKE002", ["FAKE002"], second)];
+        List<ISpechtRule> rules = [new FakeRule("FAKE001", ["FAKE001"], first), new FakeRule("FAKE002", ["FAKE002"], second)];
 
         // When
         var report = SpechtRunner.Evaluate(model, rules);
@@ -254,9 +254,9 @@ public sealed class SpechtRunnerEvaluateUnitTests
     public void ARuleReportingNoIdInTheVocabulary_WhenEvaluated_ShouldNotRunSoAViolationItWouldReturnIsNotReported()
     {
         // Given
-        SpecModel model = ModelWithVocabulary("FAKE001");
-        SpecViolation inVocabulary = new SpecViolationFixture().WithRuleId("FAKE001");
-        List<ISpecRule> rules = [new FakeRule("FAKE002", ["FAKE002"], inVocabulary)];
+        SpechtModel model = ModelWithVocabulary("FAKE001");
+        SpechtViolation inVocabulary = new SpechtViolationFixture().WithRuleId("FAKE001");
+        List<ISpechtRule> rules = [new FakeRule("FAKE002", ["FAKE002"], inVocabulary)];
 
         // When
         var report = SpechtRunner.Evaluate(model, rules);
@@ -269,10 +269,10 @@ public sealed class SpechtRunnerEvaluateUnitTests
     public void AViolationWhoseRuleIdIsOutsideTheVocabulary_WhenEvaluated_ShouldBeDroppedAndTheRulesOtherViolationsKept()
     {
         // Given
-        SpecModel model = ModelWithVocabulary("FAKE001");
-        SpecViolation kept = new SpecViolationFixture().WithRuleId("FAKE001");
-        SpecViolation dropped = new SpecViolationFixture().WithRuleId("FAKE002");
-        List<ISpecRule> rules = [new FakeRule("FAKE001", ["FAKE001", "FAKE002"], dropped, kept)];
+        SpechtModel model = ModelWithVocabulary("FAKE001");
+        SpechtViolation kept = new SpechtViolationFixture().WithRuleId("FAKE001");
+        SpechtViolation dropped = new SpechtViolationFixture().WithRuleId("FAKE002");
+        List<ISpechtRule> rules = [new FakeRule("FAKE001", ["FAKE001", "FAKE002"], dropped, kept)];
 
         // When
         var report = SpechtRunner.Evaluate(model, rules);
@@ -285,10 +285,10 @@ public sealed class SpechtRunnerEvaluateUnitTests
     public void RulesGivenOutOfIdOrder_WhenEvaluated_ShouldRunInTheOrderGivenSoTiedViolationsKeepThatOrder()
     {
         // Given
-        SpecModel model = ModelWithVocabulary("FAKE001");
-        SpecViolation fromTheFirst = new SpecViolationFixture().WithRuleId("FAKE001").WithMessage("from the rule given first");
-        SpecViolation fromTheSecond = new SpecViolationFixture().WithRuleId("FAKE001").WithMessage("from the rule given second");
-        List<ISpecRule> rules = [new FakeRule("FAKE900", ["FAKE001"], fromTheFirst), new FakeRule("FAKE100", ["FAKE001"], fromTheSecond)];
+        SpechtModel model = ModelWithVocabulary("FAKE001");
+        SpechtViolation fromTheFirst = new SpechtViolationFixture().WithRuleId("FAKE001").WithMessage("from the rule given first");
+        SpechtViolation fromTheSecond = new SpechtViolationFixture().WithRuleId("FAKE001").WithMessage("from the rule given second");
+        List<ISpechtRule> rules = [new FakeRule("FAKE900", ["FAKE001"], fromTheFirst), new FakeRule("FAKE100", ["FAKE001"], fromTheSecond)];
 
         // When
         var report = SpechtRunner.Evaluate(model, rules);
@@ -301,10 +301,10 @@ public sealed class SpechtRunnerEvaluateUnitTests
     public void ARuleReportingTwoIdsOneOfThemSetOff_WhenEvaluated_ShouldReportTheOtherIdsViolationsAndCountThatIdAlone()
     {
         // Given
-        SpecModel model = ModelUnderManifest("""{ "rules": { "FAKE002": "off" } }""");
-        SpecViolation kept = new SpecViolationFixture().WithRuleId("FAKE001");
-        SpecViolation disabled = new SpecViolationFixture().WithRuleId("FAKE002");
-        List<ISpecRule> rules = [new FakeRule("FAKE001", ["FAKE001", "FAKE002"], disabled, kept)];
+        SpechtModel model = ModelUnderManifest("""{ "rules": { "FAKE002": "off" } }""");
+        SpechtViolation kept = new SpechtViolationFixture().WithRuleId("FAKE001");
+        SpechtViolation disabled = new SpechtViolationFixture().WithRuleId("FAKE002");
+        List<ISpechtRule> rules = [new FakeRule("FAKE001", ["FAKE001", "FAKE002"], disabled, kept)];
 
         // When
         var report = SpechtRunner.Evaluate(model, rules);
@@ -318,9 +318,9 @@ public sealed class SpechtRunnerEvaluateUnitTests
     public void ARuleWhoseEveryReportedIdIsSetOff_WhenEvaluated_ShouldNotBeAskedForItsViolationsAndShouldLeaveTheCount()
     {
         // Given
-        SpecModel model = ModelUnderManifest("""{ "rules": { "FAKE001": "off", "FAKE002": "off" } }""");
+        SpechtModel model = ModelUnderManifest("""{ "rules": { "FAKE001": "off", "FAKE002": "off" } }""");
         var asked = false;
-        List<ISpecRule> rules =
+        List<ISpechtRule> rules =
         [
             new AskedRule("FAKE001", ["FAKE001", "FAKE002"], () => asked = true),
             new FakeRule("FAKE003", ["FAKE003"]),
@@ -338,31 +338,31 @@ public sealed class SpechtRunnerEvaluateUnitTests
     public void ARuleIdSetToWarning_WhenEvaluated_ShouldReportItsErrorFindingAtWarningSeverityAfterTheErrors()
     {
         // Given
-        SpecModel model = ModelUnderManifest("""{ "rules": { "FAKE001": "warning" } }""");
-        SpecViolation lowered = new SpecViolationFixture().WithRuleId("FAKE001").WithSeverity(SpecSeverity.Error).WithFile("a/spec.md");
-        SpecViolation error = new SpecViolationFixture().WithRuleId("FAKE002").WithSeverity(SpecSeverity.Error).WithFile("b/spec.md");
-        List<ISpecRule> rules = [new FakeRule("FAKE001", ["FAKE001"], lowered), new FakeRule("FAKE002", ["FAKE002"], error)];
+        SpechtModel model = ModelUnderManifest("""{ "rules": { "FAKE001": "warning" } }""");
+        SpechtViolation lowered = new SpechtViolationFixture().WithRuleId("FAKE001").WithSeverity(SpechtSeverity.Error).WithFile("a/spec.md");
+        SpechtViolation error = new SpechtViolationFixture().WithRuleId("FAKE002").WithSeverity(SpechtSeverity.Error).WithFile("b/spec.md");
+        List<ISpechtRule> rules = [new FakeRule("FAKE001", ["FAKE001"], lowered), new FakeRule("FAKE002", ["FAKE002"], error)];
 
         // When
         var report = SpechtRunner.Evaluate(model, rules);
 
         // Then
-        report.Violations.Should().Equal(error, lowered with { Severity = SpecSeverity.Warning });
+        report.Violations.Should().Equal(error, lowered with { Severity = SpechtSeverity.Warning });
     }
 
     [Fact]
     public void ARuleIdSetToError_WhenEvaluated_ShouldReportItsWarningFindingAtErrorSeverity()
     {
         // Given
-        SpecModel model = ModelUnderManifest("""{ "rules": { "FAKE001": "error" } }""");
-        SpecViolation raised = new SpecViolationFixture().WithRuleId("FAKE001").WithSeverity(SpecSeverity.Warning);
-        List<ISpecRule> rules = [new FakeRule("FAKE001", ["FAKE001"], raised)];
+        SpechtModel model = ModelUnderManifest("""{ "rules": { "FAKE001": "error" } }""");
+        SpechtViolation raised = new SpechtViolationFixture().WithRuleId("FAKE001").WithSeverity(SpechtSeverity.Warning);
+        List<ISpechtRule> rules = [new FakeRule("FAKE001", ["FAKE001"], raised)];
 
         // When
         var report = SpechtRunner.Evaluate(model, rules);
 
         // Then
-        report.Violations.Should().Equal(raised with { Severity = SpecSeverity.Error });
+        report.Violations.Should().Equal(raised with { Severity = SpechtSeverity.Error });
     }
 
     [Theory]
@@ -370,12 +370,12 @@ public sealed class SpechtRunnerEvaluateUnitTests
     public void ARuleIdSetToErrorOrNotNamed_WhenEvaluated_ShouldReportItsFindingAtTheSeverityTheRuleGaveIt(
         string because,
         string manifest,
-        SpecSeverity severity)
+        SpechtSeverity severity)
     {
         // Given
-        SpecModel model = ModelUnderManifest(manifest);
-        SpecViolation finding = new SpecViolationFixture().WithRuleId("FAKE001").WithSeverity(severity);
-        List<ISpecRule> rules = [new FakeRule("FAKE001", ["FAKE001"], finding)];
+        SpechtModel model = ModelUnderManifest(manifest);
+        SpechtViolation finding = new SpechtViolationFixture().WithRuleId("FAKE001").WithSeverity(severity);
+        List<ISpechtRule> rules = [new FakeRule("FAKE001", ["FAKE001"], finding)];
 
         // When
         var report = SpechtRunner.Evaluate(model, rules);
@@ -384,32 +384,32 @@ public sealed class SpechtRunnerEvaluateUnitTests
         report.Violations.Should().Equal([finding], because);
     }
 
-    private static SpecModelFixture ModelUnderManifest(string manifest)
+    private static SpechtModelFixture ModelUnderManifest(string manifest)
     {
         SchemaVersion version = new SchemaVersionFixture().WithRuleIds(
             new HashSet<string>(["FAKE001", "FAKE002", "FAKE003"], StringComparer.Ordinal));
         var fileSystem = new MockFileSystem(
-            new Dictionary<string, MockFileData> { [Path.Combine("repo", SpecTree.ManifestPath)] = new(manifest) });
+            new Dictionary<string, MockFileData> { [Path.Combine("repo", SpechtTree.ManifestPath)] = new(manifest) });
 
-        return new SpecModelFixture().WithSchemas(EngineServices.LoadSchemas(fileSystem, "repo", new SchemaVersions([version])));
+        return new SpechtModelFixture().WithSchemas(EngineServices.LoadSchemas(fileSystem, "repo", new SchemaVersions([version])));
     }
 
-    private static SpecModelFixture ModelWithVocabulary(params string[] ruleIds)
+    private static SpechtModelFixture ModelWithVocabulary(params string[] ruleIds)
     {
         SchemaVersion version = new SchemaVersionFixture().WithRuleIds(new HashSet<string>(ruleIds, StringComparer.Ordinal));
         var fileSystem = new MockFileSystem(
-            new Dictionary<string, MockFileData> { [Path.Combine("repo", SpecTree.ManifestPath)] = new("{}") });
+            new Dictionary<string, MockFileData> { [Path.Combine("repo", SpechtTree.ManifestPath)] = new("{}") });
 
-        return new SpecModelFixture().WithSchemas(EngineServices.LoadSchemas(fileSystem, "repo", new SchemaVersions([version])));
+        return new SpechtModelFixture().WithSchemas(EngineServices.LoadSchemas(fileSystem, "repo", new SchemaVersions([version])));
     }
 
-    private sealed class AskedRule(string id, IReadOnlyList<string> reportedIds, Action asked) : ISpecRule
+    private sealed class AskedRule(string id, IReadOnlyList<string> reportedIds, Action asked) : ISpechtRule
     {
         public string Id => id;
 
         public IReadOnlyList<string> ReportedIds => reportedIds;
 
-        public IEnumerable<SpecViolation> Evaluate(SpecModel model)
+        public IEnumerable<SpechtViolation> Evaluate(SpechtModel model)
         {
             asked();
 
@@ -417,12 +417,12 @@ public sealed class SpechtRunnerEvaluateUnitTests
         }
     }
 
-    private sealed class FakeRule(string id, IReadOnlyList<string> reportedIds, params SpecViolation[] violations) : ISpecRule
+    private sealed class FakeRule(string id, IReadOnlyList<string> reportedIds, params SpechtViolation[] violations) : ISpechtRule
     {
         public string Id => id;
 
         public IReadOnlyList<string> ReportedIds => reportedIds;
 
-        public IEnumerable<SpecViolation> Evaluate(SpecModel model) => violations;
+        public IEnumerable<SpechtViolation> Evaluate(SpechtModel model) => violations;
     }
 }

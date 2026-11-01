@@ -73,7 +73,7 @@ public sealed class ManifestCommandUnitTests
         }
         else
         {
-            errors.ToString().Should().Contain(SpecTree.ManifestPath).And.NotContain(files.Path.GetFullPath("repo"));
+            errors.ToString().Should().Contain(SpechtTree.ManifestPath).And.NotContain(files.Path.GetFullPath("repo"));
         }
         files.AllFiles.ToDictionary(static path => path, path => files.File.ReadAllText(path)).Should().BeEquivalentTo(before);
     }

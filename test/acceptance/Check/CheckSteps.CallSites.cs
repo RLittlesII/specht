@@ -20,7 +20,7 @@ public sealed partial class CheckSteps(IUnitTestRuntimeProvider runtime, PackedT
             runtime.TestIgnore("The pre-commit hook is POSIX sh and the Specht target is reached through build.sh; neither runs on Windows.");
         }
 
-        JsonNode.Parse(File.ReadAllText(Path.Combine(packed.Repository, SpecTree.ManifestPath)))!["rules"]!.AsObject().Should().NotBeEmpty();
+        JsonNode.Parse(File.ReadAllText(Path.Combine(packed.Repository, SpechtTree.ManifestPath)))!["rules"]!.AsObject().Should().NotBeEmpty();
     }
 
     [Given("a prepared root holding one error-severity and one warning-severity violation")]
@@ -30,7 +30,7 @@ public sealed partial class CheckSteps(IUnitTestRuntimeProvider runtime, PackedT
             "0001",
             "F1",
             new Dictionary<string, string> { ["spec_status"] = "approved" },
-            SpecTree.SectionsWith("12. Sign-off", SignedOff));
+            SpechtTree.SectionsWith("12. Sign-off", SignedOff));
         Tree.WriteFeatureFile(specification, UnresolvedTag);
         _feature = Path.GetRelativePath(Tree.Root, Path.Combine(Path.GetDirectoryName(specification)!, "feature.feature")).Replace('\\', '/');
     }
@@ -41,7 +41,7 @@ public sealed partial class CheckSteps(IUnitTestRuntimeProvider runtime, PackedT
         CopyFromRepository(
             Listed("--cached", "--others", "--exclude-standard").Where(static file =>
                 file.Split('/') is var parts && parts[0] != "epics" && !parts.Any(static part => part is ".spec" or ".issue")));
-        var manifestPath = Path.Combine(Tree.Root, SpecTree.ManifestPath);
+        var manifestPath = Path.Combine(Tree.Root, SpechtTree.ManifestPath);
         var manifest = JsonNode.Parse(File.ReadAllText(manifestPath))!.AsObject();
         manifest["rules"] = new JsonObject { ["SPEC060"] = "warning" };
         File.WriteAllText(manifestPath, manifest.ToJsonString());

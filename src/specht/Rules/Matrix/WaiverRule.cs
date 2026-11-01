@@ -7,7 +7,7 @@ namespace Specht.Rules.Matrix;
 /// <summary>SPEC034 checks a waived matrix row's dated approver against the positional sign-off columns.</summary>
 /// <param name="resolver">The shared, pure matrix resolver.</param>
 /// <implements epic="0001" feature="F12" claim="B-001" />
-public sealed class WaiverRule(MatrixResolver resolver) : ISpecRule
+public sealed class WaiverRule(MatrixResolver resolver) : ISpechtRule
 {
     /// <inheritdoc />
     public string Id => "SPEC034";
@@ -16,11 +16,11 @@ public sealed class WaiverRule(MatrixResolver resolver) : ISpecRule
     public IReadOnlyList<string> ReportedIds => [Id];
 
     /// <inheritdoc />
-    public SpecRuleLevel DefaultLevel => SpecRuleLevel.Off;
+    public SpechtRuleLevel DefaultLevel => SpechtRuleLevel.Off;
 
     /// <inheritdoc />
     /// <implements epic="0001" feature="F12" claim="B-001" />
-    public IEnumerable<SpecViolation> Evaluate(SpecModel model)
+    public IEnumerable<SpechtViolation> Evaluate(SpechtModel model)
     {
         var structure = model.Schemas.Structure;
         var markers = structure.Markers;
@@ -49,8 +49,8 @@ public sealed class WaiverRule(MatrixResolver resolver) : ISpecRule
                     continue;
                 }
 
-                yield return new SpecViolation(
-                    Id, SpecSeverity.Error, feature.RelativePath, row.Line, row.Claim.Trim(),
+                yield return new SpechtViolation(
+                    Id, SpechtSeverity.Error, feature.RelativePath, row.Line, row.Claim.Trim(),
                     "waiver must name a signed-off approver and date as '<approver>, <YYYY-MM-DD>'");
             }
         }

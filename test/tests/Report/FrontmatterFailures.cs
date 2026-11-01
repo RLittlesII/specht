@@ -9,7 +9,7 @@ namespace Specht.Tests.Report;
 /// as a whole), and the <c>constraints</c> each of those violations carries, one per violation in any order: the assertions
 /// that failed at its place in the schema with their values there, or none.
 /// </summary>
-public sealed class FrontmatterFailures : TheoryData<string, SpecModel, string, string, string?, JsonObject[]>
+public sealed class FrontmatterFailures : TheoryData<string, SpechtModel, string, string, string?, JsonObject[]>
 {
     public FrontmatterFailures()
     {

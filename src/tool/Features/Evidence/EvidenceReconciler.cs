@@ -528,16 +528,16 @@ public sealed class EvidenceReconciler
         List<EvidenceFinding> findings)
     {
         var layouts = configuration["layouts"] is JsonArray declared
-            ? declared.Select(static item => new SpecLayout(item!["name"]!.GetValue<string>(), item["glob"]!.GetValue<string>())).ToArray()
-            : [new SpecLayout("co-located", "**/.spec/README.md"), new SpecLayout("legacy", "epics/**/spec.md")];
+            ? declared.Select(static item => new SpechtLayout(item!["name"]!.GetValue<string>(), item["glob"]!.GetValue<string>())).ToArray()
+            : [new SpechtLayout("co-located", "**/.spec/README.md"), new SpechtLayout("legacy", "epics/**/spec.md")];
         var exclusions = configuration["exclusions"] is JsonArray excluded
             ? excluded.Select(static item => item!.GetValue<string>()).ToArray() : System.Array.Empty<string>();
-        var inputs = new SpecDiscoveryInputs(layouts, exclusions, [], [], []);
-        var discovered = new SpecDiscovery(new FileSystem()).FindSpecifications(root, inputs);
+        var inputs = new SpechtDiscoveryInputs(layouts, exclusions, [], [], []);
+        var discovered = new SpechtDiscovery(new FileSystem()).FindSpecifications(root, inputs);
         var found = new HashSet<string>(StringComparer.Ordinal);
         foreach (var location in discovered)
         {
-            var document = SpecDocument.Parse(File.ReadAllText(location.AbsolutePath), location.RelativePath);
+            var document = SpechtDocument.Parse(File.ReadAllText(location.AbsolutePath), location.RelativePath);
             var feature = document.Frontmatter.Text(policy.FeatureKey);
             var epic = policy.HasEpic ? document.Frontmatter.Text(policy.EpicKey) : null;
             if (!policy.Features.Any(item => item.Epic == epic && item.Feature == feature))

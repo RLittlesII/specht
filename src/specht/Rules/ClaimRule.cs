@@ -14,7 +14,7 @@ namespace Specht.Rules;
 /// at which it does become one.
 /// </remarks>
 /// <implements epic="0001" feature="F1" claim="B-001" />
-public sealed class ClaimRule : ISpecRule
+public sealed class ClaimRule : ISpechtRule
 {
     /// <inheritdoc />
     public string Id => "SPEC030";
@@ -24,7 +24,7 @@ public sealed class ClaimRule : ISpecRule
 
     /// <inheritdoc />
     /// <implements epic="0001" feature="F1" claim="B-001" />
-    public IEnumerable<SpecViolation> Evaluate(SpecModel model)
+    public IEnumerable<SpechtViolation> Evaluate(SpechtModel model)
     {
         model.EnsureClaimGrammar();
         var grammar = model.Schemas.Structure.Identifiers["claim"];
@@ -51,9 +51,9 @@ public sealed class ClaimRule : ISpecRule
 
                 if (!claim.IsValid)
                 {
-                    yield return new SpecViolation(
+                    yield return new SpechtViolation(
                         "SPEC030",
-                        SpecSeverity.Error,
+                        SpechtSeverity.Error,
                         feature.RelativePath,
                         line,
                         id,
@@ -67,9 +67,9 @@ public sealed class ClaimRule : ISpecRule
 
                 if (claim.FirstDeclarationLine is { } firstDeclarationLine)
                 {
-                    yield return new SpecViolation(
+                    yield return new SpechtViolation(
                         "SPEC030",
-                        SpecSeverity.Error,
+                        SpechtSeverity.Error,
                         feature.RelativePath,
                         line,
                         id,
@@ -93,10 +93,10 @@ public sealed class ClaimRule : ISpecRule
     }
 
     /// <implements epic="0001" feature="F1" claim="B-001" />
-    private static IEnumerable<SpecViolation> CheckMatrix(
+    private static IEnumerable<SpechtViolation> CheckMatrix(
         FeatureSpec feature,
         IReadOnlyDictionary<string, int> claims,
-        SpecSection matrix)
+        SpechtSection matrix)
     {
         var rows = new Dictionary<string, List<int>>(StringComparer.Ordinal);
 
@@ -122,9 +122,9 @@ public sealed class ClaimRule : ISpecRule
         {
             if (!rows.ContainsKey(id))
             {
-                yield return new SpecViolation(
+                yield return new SpechtViolation(
                     "SPEC031",
-                    SpecSeverity.Error,
+                    SpechtSeverity.Error,
                     feature.RelativePath,
                     line,
                     id,
@@ -136,9 +136,9 @@ public sealed class ClaimRule : ISpecRule
             }
             else if (rows[id].Count > 1)
             {
-                yield return new SpecViolation(
+                yield return new SpechtViolation(
                     "SPEC031",
-                    SpecSeverity.Error,
+                    SpechtSeverity.Error,
                     feature.RelativePath,
                     rows[id][1],
                     id,
@@ -151,9 +151,9 @@ public sealed class ClaimRule : ISpecRule
 
         foreach (var (id, lines) in rows.Where(row => !claims.ContainsKey(row.Key)))
         {
-            yield return new SpecViolation(
+            yield return new SpechtViolation(
                 "SPEC031",
-                SpecSeverity.Error,
+                SpechtSeverity.Error,
                 feature.RelativePath,
                 lines[0],
                 id,

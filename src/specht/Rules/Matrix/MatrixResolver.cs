@@ -15,7 +15,7 @@ public sealed class MatrixResolver
     /// <param name="claims">The model's already-derived claim rows.</param>
     /// <returns>Claim resolutions in declaration order.</returns>
     /// <implements epic="0001" feature="F12" claim="B-001" />
-    public IReadOnlyList<MatrixClaimResolution> ResolveClaims(FeatureSpec feature, SpecStructure structure, SpecClaims claims)
+    public IReadOnlyList<MatrixClaimResolution> ResolveClaims(FeatureSpec feature, SpechtStructure structure, SpechtClaims claims)
     {
         var rows = Resolve(feature.Document, structure, []).ToLookup(static row => row.Claim.Trim(), StringComparer.Ordinal);
         var comparer = structure.ClaimTagIgnoreCase ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal;
@@ -32,7 +32,7 @@ public sealed class MatrixResolver
     /// <returns>The matrix rows, in document order, with root-relative resolution evidence.</returns>
     /// <implements epic="0001" feature="F12" claim="B-001" />
     public IReadOnlyList<MatrixRowResolution> Resolve(
-        SpecDocument document, SpecStructure structure, IReadOnlyList<SpecTestFile> files)
+        SpechtDocument document, SpechtStructure structure, IReadOnlyList<SpechtTestFile> files)
     {
         var section = document.Section(structure.Roles["matrix"]);
         if (section is null)
@@ -69,7 +69,7 @@ public sealed class MatrixResolver
     }
 
     /// <implements epic="0001" feature="F12" claim="B-001" />
-    private static MatrixTestResolution ResolveTest(string name, SpecTestSettings? settings, IReadOnlyList<SpecTestFile> files)
+    private static MatrixTestResolution ResolveTest(string name, SpechtTestSettings? settings, IReadOnlyList<SpechtTestFile> files)
     {
         if (settings is null)
         {

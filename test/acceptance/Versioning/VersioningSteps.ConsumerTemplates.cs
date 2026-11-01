@@ -75,7 +75,7 @@ public sealed partial class VersioningSteps
         GivenTheRootsTemplatesAreVersion(files);
         var compared = ShippedAt(other).ToDictionary(static file => file.Relative, static file => file.Bytes, StringComparer.Ordinal);
         ShippedAt(files)
-            .Where(static file => file.Relative.StartsWith(SpecTree.TemplatesFolder + "/", StringComparison.Ordinal))
+            .Where(static file => file.Relative.StartsWith(SpechtTree.TemplatesFolder + "/", StringComparison.Ordinal))
             .Should().NotBeEmpty().And.OnlyContain(
                 file => !compared.ContainsKey(file.Relative) || !compared[file.Relative].SequenceEqual(file.Bytes),
                 "version {0}'s templates differ from version {1}'s",
@@ -107,8 +107,8 @@ public sealed partial class VersioningSteps
     public void GivenTwoCopiesOfARoot(string pin, string files)
     {
         GivenTheRootAndFilesHaveVersions(pin, files);
-        _copy = new SpecTree();
-        Directory.Delete(Path.Combine(_copy.Root, SpecTree.ConfigurationFolder), recursive: true);
+        _copy = new SpechtTree();
+        Directory.Delete(Path.Combine(_copy.Root, SpechtTree.ConfigurationFolder), recursive: true);
         foreach (var (relative, bytes) in SnapshotFiles())
         {
             var path = Path.Combine(_copy.Root, relative);
@@ -122,9 +122,9 @@ public sealed partial class VersioningSteps
     {
         var pin = ManifestAfter()["schemaVersion"]!.GetValue<string>();
         var fileName = UnshippedNames[name];
-        ShippedAt(pin).Should().NotContain(file => file.Relative == SpecTree.TemplatesFolder + "/" + fileName);
+        ShippedAt(pin).Should().NotContain(file => file.Relative == SpechtTree.TemplatesFolder + "/" + fileName);
         EditManifest(manifest => manifest["consumerTemplates"] = new JsonArray(fileName));
-        JsonNode.Parse(File.ReadAllBytes(Path.Combine(Copy.Root, SpecTree.ManifestPath)))!.AsObject()
+        JsonNode.Parse(File.ReadAllBytes(Path.Combine(Copy.Root, SpechtTree.ManifestPath)))!.AsObject()
             .ContainsKey("consumerTemplates").Should().BeFalse();
     }
 
@@ -151,7 +151,7 @@ public sealed partial class VersioningSteps
             .Where(static entry => entry.Line.StartsWith("rewritten ", StringComparison.Ordinal))
             .ToList();
         rewritten.Should().Contain(
-            static entry => entry.Line.StartsWith("rewritten " + SpecTree.TemplatesFolder + "/", StringComparison.Ordinal),
+            static entry => entry.Line.StartsWith("rewritten " + SpechtTree.TemplatesFolder + "/", StringComparison.Ordinal),
             "upgrade rewrote at least one template: {0}",
             _stdout);
         lines.FindIndex(static line => SkipLine(line) == FeatureTemplatePath)
@@ -173,7 +173,7 @@ public sealed partial class VersioningSteps
     {
         _exitCode.Should().Be(0, _stderr);
         var templates = ShippedAt(version)
-            .Where(static file => file.Relative.StartsWith(SpecTree.TemplatesFolder + "/", StringComparison.Ordinal) && file.Relative != FeatureTemplatePath)
+            .Where(static file => file.Relative.StartsWith(SpechtTree.TemplatesFolder + "/", StringComparison.Ordinal) && file.Relative != FeatureTemplatePath)
             .ToList();
         templates.Should().NotBeEmpty();
         var after = SnapshotFiles();
@@ -195,7 +195,7 @@ public sealed partial class VersioningSteps
     {
         var shipped = ShippedAt(version).Select(static file => file.Relative).ToHashSet(StringComparer.Ordinal);
         SnapshotFiles().Keys
-            .Where(static path => path.StartsWith(SpecTree.TemplatesFolder + "/", StringComparison.Ordinal))
+            .Where(static path => path.StartsWith(SpechtTree.TemplatesFolder + "/", StringComparison.Ordinal))
             .Where(path => !_filesBefore!.ContainsKey(path) && !shipped.Contains(path))
             .Should().BeEmpty();
     }
@@ -205,7 +205,7 @@ public sealed partial class VersioningSteps
     {
         _exitCode.Should().Be(0, _stderr);
         var schemas = ShippedAt(version)
-            .Where(static file => file.Relative.StartsWith(SpecTree.FrontmatterSchemaFolder + "/", StringComparison.Ordinal))
+            .Where(static file => file.Relative.StartsWith(SpechtTree.FrontmatterSchemaFolder + "/", StringComparison.Ordinal))
             .ToList();
         schemas.Should().NotBeEmpty();
         var after = SnapshotFiles();
@@ -228,9 +228,9 @@ public sealed partial class VersioningSteps
     [AfterScenario]
     public void DeleteCopy() => _copy?.Dispose();
 
-    private SpecTree Copy => _copy ?? throw new InvalidOperationException("No second copy of the root was prepared.");
+    private SpechtTree Copy => _copy ?? throw new InvalidOperationException("No second copy of the root was prepared.");
 
-    private const string RunbookTemplatePath = SpecTree.TemplatesFolder + "/runbook.md";
+    private const string RunbookTemplatePath = SpechtTree.TemplatesFolder + "/runbook.md";
 
     private static readonly byte[] ConsumerTemplate = "# A synthetic feature template of the consumer's\n"u8.ToArray();
 
@@ -244,7 +244,7 @@ public sealed partial class VersioningSteps
 
     private string _baselineStdout = string.Empty;
     private int _baselineExitCode = -1;
-    private SpecTree? _copy;
+    private SpechtTree? _copy;
     private string _copyStdout = string.Empty;
     private string _copyStderr = string.Empty;
     private int _copyExitCode = -1;

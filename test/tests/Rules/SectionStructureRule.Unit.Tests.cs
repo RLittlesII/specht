@@ -21,7 +21,7 @@ public sealed class SectionStructureRuleUnitTests
         {
             ["tables"] = new JsonObject { ["matrix"] = new JsonArray("Claim ID", "Scenario", "Proof", "Status") },
         };
-        SpecModel model = new SpecModelFixture().WithManifest(manifest).WithFeatures(
+        SpechtModel model = new SpechtModelFixture().WithManifest(manifest).WithFeatures(
             Feature(
                 "src/first/.spec/README.md",
                 "## 9. Traceability Matrix\n\n"
@@ -48,7 +48,7 @@ public sealed class SectionStructureRuleUnitTests
             ["roles"] = new JsonObject { ["matrix"] = "9. Coverage" },
             ["tables"] = new JsonObject { ["matrix"] = new JsonArray("Claim ID", "Scenario", "Test", "Status") },
         };
-        SpecModel model = new SpecModelFixture().WithManifest(manifest).WithFeatures(
+        SpechtModel model = new SpechtModelFixture().WithManifest(manifest).WithFeatures(
             Feature(
                 "src/first/.spec/README.md",
                 "## 9. Traceability Matrix\n\n"
@@ -67,6 +67,6 @@ public sealed class SectionStructureRuleUnitTests
 
     private static FeatureSpec Feature(string path, string text) =>
         new FeatureSpecFixture()
-            .WithLocation(new SpecLocationFixture().WithRelativePath(path))
-            .WithDocument(SpecDocument.Parse(text, path));
+            .WithLocation(new SpechtLocationFixture().WithRelativePath(path))
+            .WithDocument(SpechtDocument.Parse(text, path));
 }

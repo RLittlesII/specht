@@ -44,11 +44,11 @@ public sealed class UpgradeCommand(IAnsiConsole console, UpgradeWriter writer, T
 
             if (result.Rewritten.Count == 0)
             {
-                console.Profile.Out.Writer.WriteLine($"{SpecManifestStore.ConfigurationFolder}/ is current at schemaVersion {result.Pinned}");
+                console.Profile.Out.Writer.WriteLine($"{SpechtManifestStore.ConfigurationFolder}/ is current at schemaVersion {result.Pinned}");
             }
             else
             {
-                console.Profile.Out.Writer.WriteLine($"{SpecManifestStore.ConfigurationFolder}/ rewritten to schemaVersion {result.Pinned}");
+                console.Profile.Out.Writer.WriteLine($"{SpechtManifestStore.ConfigurationFolder}/ rewritten to schemaVersion {result.Pinned}");
                 foreach (var path in result.Rewritten)
                 {
                     console.Profile.Out.Writer.WriteLine($"rewritten {path}");

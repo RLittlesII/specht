@@ -5,7 +5,7 @@ namespace Specht.Manifest;
 
 /// <summary>Lists and pins schema versions through the existing manifest services.</summary>
 /// <implements epic="0001" feature="F7" claim="B-043" />
-public sealed class SchemaVersionManager(SpecManifestStore store, SpecManifestParser parser, ManifestPinEditor editor, SchemaVersions versions)
+public sealed class SchemaVersionManager(SpechtManifestStore store, SpechtManifestParser parser, ManifestPinEditor editor, SchemaVersions versions)
 {
     /// <summary>Lists shipped versions with the optional manifest's declared or default pin.</summary>
     /// <implements epic="0001" feature="F7" claim="B-043" />
@@ -55,7 +55,7 @@ public sealed class SchemaVersionManager(SpecManifestStore store, SpecManifestPa
             }
             catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
             {
-                throw new SpechtManifestException($"{SpecManifestStore.RelativePath}: the manifest could not be replaced; check write access.");
+                throw new SpechtManifestException($"{SpechtManifestStore.RelativePath}: the manifest could not be replaced; check write access.");
             }
         }
         return target;

@@ -18,7 +18,7 @@ spec: null
 claims: []
 
 created: "2026-10-14"
-updated: "2026-10-14"
+updated: "2026-11-01"
 closed: null
 
 summary: |
@@ -49,7 +49,7 @@ summary: |
     target must be compatible with, and to
     `.performance/comparison/comparison.csproj`; six sources from
     `test/tests` compiled in by link (`BaselineTree`, `GoldenReport`,
-    `EngineAssembly`, `EngineServices`, `RulePage`, `SpecTree`) with the
+    `EngineAssembly`, `EngineServices`, `RulePage`, `SpechtTree`) with the
     `System*` `<Using>` patch they need; `Content` copies, with `Link`, of
     `.specht/**/*.json`, four templates, `docs/schema/*.json`, `docs/*.md`,
     `README.md`, `src/tool/README.md`, `.config/dotnet-tools.json`,

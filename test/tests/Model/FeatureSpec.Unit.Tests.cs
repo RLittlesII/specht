@@ -25,9 +25,9 @@ public sealed class FeatureSpecUnitTests
     {
         // Given
         FeatureSpec feature = new FeatureSpecFixture()
-            .WithLocation(new SpecLocationFixture().WithRelativePath(path))
+            .WithLocation(new SpechtLocationFixture().WithRelativePath(path))
             .WithDocument(
-                new SpecDocumentFixture()
+                new SpechtDocumentFixture()
                     .WithRelativePath(path)
                     .WithFrontmatter(new FrontmatterFixture().WithNode(new JsonObject { ["epic"] = "0001", ["id"] = "F2" })));
 

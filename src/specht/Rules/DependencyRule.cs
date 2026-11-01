@@ -13,7 +13,7 @@ namespace Specht.Rules;
 /// something, since nothing recomputes it automatically.
 /// </remarks>
 /// <implements epic="0001" feature="F1" claim="B-001" />
-public sealed class DependencyRule : ISpecRule
+public sealed class DependencyRule : ISpechtRule
 {
     /// <inheritdoc />
     public string Id => "SPEC050";
@@ -23,7 +23,7 @@ public sealed class DependencyRule : ISpecRule
 
     /// <inheritdoc />
     /// <implements epic="0001" feature="F1" claim="B-001" />
-    public IEnumerable<SpecViolation> Evaluate(SpecModel model)
+    public IEnumerable<SpechtViolation> Evaluate(SpechtModel model)
     {
         var features = model.FeaturesWithIdentity;
         var identities = model.DependencyGraph.Identities;
@@ -45,7 +45,7 @@ public sealed class DependencyRule : ISpecRule
     }
 
     /// <implements epic="0001" feature="F1" claim="B-001" />
-    private static IEnumerable<SpecViolation> CheckEdges(
+    private static IEnumerable<SpechtViolation> CheckEdges(
         FeatureSpec feature,
         IReadOnlySet<string> identities,
         IReadOnlyDictionary<string, IReadOnlySet<string>> dependsOn,
@@ -57,9 +57,9 @@ public sealed class DependencyRule : ISpecRule
             {
                 if (!identities.Contains(edge))
                 {
-                    yield return new SpecViolation(
+                    yield return new SpechtViolation(
                         "SPEC050",
-                        SpecSeverity.Error,
+                        SpechtSeverity.Error,
                         feature.RelativePath,
                         feature.Document.Frontmatter.LineOf(key),
                         edge,
@@ -77,9 +77,9 @@ public sealed class DependencyRule : ISpecRule
 
                 if (string.Equals(edge, feature.Identity, StringComparison.Ordinal))
                 {
-                    yield return new SpecViolation(
+                    yield return new SpechtViolation(
                         "SPEC052",
-                        SpecSeverity.Error,
+                        SpechtSeverity.Error,
                         feature.RelativePath,
                         feature.Document.Frontmatter.LineOf(key),
                         edge,
@@ -95,9 +95,9 @@ public sealed class DependencyRule : ISpecRule
                 {
                     var opposite = key == "depends_on" ? "blocks" : "depends_on";
 
-                    yield return new SpecViolation(
+                    yield return new SpechtViolation(
                         "SPEC051",
-                        SpecSeverity.Error,
+                        SpechtSeverity.Error,
                         feature.RelativePath,
                         feature.Document.Frontmatter.LineOf(key),
                         edge,
@@ -124,7 +124,7 @@ public sealed class DependencyRule : ISpecRule
     }
 
     /// <implements epic="0001" feature="F1" claim="B-001" />
-    private static IEnumerable<SpecViolation> CheckCycles(
+    private static IEnumerable<SpechtViolation> CheckCycles(
         IReadOnlyList<FeatureSpec> features,
         IReadOnlyDictionary<string, IReadOnlySet<string>> dependsOn)
     {
@@ -139,9 +139,9 @@ public sealed class DependencyRule : ISpecRule
                 continue;
             }
 
-            yield return new SpecViolation(
+            yield return new SpechtViolation(
                 "SPEC052",
-                SpecSeverity.Error,
+                SpechtSeverity.Error,
                 feature.RelativePath,
                 feature.Document.Frontmatter.LineOf("depends_on"),
                 feature.Identity,

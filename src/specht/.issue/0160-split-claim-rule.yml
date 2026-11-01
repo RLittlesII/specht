@@ -18,7 +18,7 @@ spec: src/specht/.spec/README.md
 claims: []
 
 created: "2026-10-11"
-updated: "2026-10-31"
+updated: "2026-11-01"
 closed: null
 
 summary: |
@@ -34,7 +34,7 @@ summary: |
   still runs (ADR-0010 § "What the source shows"). This item splits it into
   two rules, each reporting its own id and no other.
 
-  The evaluator is untouched. `ISpecRule` keeps `Id`, `ReportedIds` and
+  The evaluator is untouched. `ISpechtRule` keeps `Id`, `ReportedIds` and
   `Evaluate`; each new rule's `ReportedIds` names its one id;
   `SpechtRunner.Evaluate` selects, filters and counts as it does today.
   Collapsing the interface is item 0164. `AddSpechtEngine()` registers each
@@ -64,7 +64,7 @@ acceptance_criteria:
   - "Split: `ClaimRule` is gone and two rules stand in its place, one each for SPEC030 and SPEC031; each one's `ReportedIds` names its own id alone, and `AddSpechtEngine()` registers each by name in ordinal order of its id."
   - "Order kept: SPEC030 keeps the Features' order and, within one, the claim table's row order (`src/specht/Rules/ClaimRule.cs:41-74`). SPEC031 keeps the Features' order and, for one Feature, the claims with no row or more than one row, in claim order (`:113-136`), before the matrix rows that name no claim, in row order (`:138-147`)."
   - "Guards kept: each rule skips a Feature with no claims section or no matrix section where the old class did (`:34-37`, `:76-79`), a section with no table (`:46-49`, `:99-102`) and a row the grammar does not read (`:51-62`). A row SPEC030 reports as malformed is not counted as a claim by SPEC031 (`:51-73`), whether SPEC030 is on or off."
-  - "Untouched: `ISpecRule`, `SpechtRunner.Evaluate` and `SpechtRunner.Order`, and every violation's file, line, identifier, message and severity."
+  - "Untouched: `ISpechtRule`, `SpechtRunner.Evaluate` and `SpechtRunner.Order`, and every violation's file, line, identifier, message and severity."
   - "The composition tests still hold: every concrete rule the engine declares is registered exactly once, the rules resolve in ordinal order of their ids, and the reported ids are the twenty-one of the pinned vocabulary, each once (`test/tests/Composition/SpechtEngineServiceCollectionExtensions.Unit.Tests.cs`)."
   - "Not a refactor until re-pointed: `ClaimRuleUnitTests` (`0001-F5` § 9 B-001) constructs `ClaimRule`. Its tests are aimed at the rule that reports the id each pins, and `test-writer` re-points the row in the same pull request if the class or a method it names is renamed."
   - "The golden report `test/tests/Engine/Baseline/engine-e7dba24.json` is unchanged, byte for byte, and the test that compares it is green unedited. The unit, integration and acceptance tiers pass, and the benchmark project `.performance/benchmarks` still compiles."
@@ -95,7 +95,7 @@ decisions:
     and 0100 is open.
 
 out_of_scope:
-  - "The collapse of `ISpecRule`, `SpecFinding`, `DefaultSeverity` and the evaluator - item 0164."
+  - "The collapse of `ISpechtRule`, `SpecFinding`, `DefaultSeverity` and the evaluator - item 0164."
   - "A unit-test class for each new rule that pins every id it reports - item 0152."
   - "A folder for each rule group under `src/specht/Rules/`, and any new rule id - item 0169."
   - "The other seven rule classes - items 0156 to 0159 and 0161 to 0163, one each."

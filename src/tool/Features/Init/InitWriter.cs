@@ -30,8 +30,8 @@ namespace Specht.Tool.Features.Init;
 public sealed class InitWriter(
     IReadOnlyDictionary<string, byte[]> shippingCopy,
     IFileSystem fileSystem,
-    SpecManifestParser manifestParser,
-    SpecManifestStore manifestStore,
+    SpechtManifestParser manifestParser,
+    SpechtManifestStore manifestStore,
     UpstreamSchemaFetcher? upstreamSchemaFetcher = null)
 {
     /// <summary>Reads the shipping copy embedded in <paramref name="assembly"/>.</summary>
@@ -84,7 +84,7 @@ public sealed class InitWriter(
 
         if (hasSourceOptions && manifestPresent)
         {
-            throw new SpechtManifestException($"{SpecManifestStore.RelativePath}: upstream options require a new manifest.");
+            throw new SpechtManifestException($"{SpechtManifestStore.RelativePath}: upstream options require a new manifest.");
         }
 
         if (manifestPresent)
@@ -104,11 +104,11 @@ public sealed class InitWriter(
         }
 
         var selected = Selected(schemas, templates, epicTier, pinned).ToList();
-        var manifestIndex = selected.FindIndex(static entry => entry.Relative == SpecManifestStore.RelativePath);
+        var manifestIndex = selected.FindIndex(static entry => entry.Relative == SpechtManifestStore.RelativePath);
 
         if (!manifestPresent && !epics && manifestIndex >= 0)
         {
-            selected[manifestIndex] = (SpecManifestStore.RelativePath, WithoutEpicGrammar(selected[manifestIndex].Bytes));
+            selected[manifestIndex] = (SpechtManifestStore.RelativePath, WithoutEpicGrammar(selected[manifestIndex].Bytes));
         }
 
         if (hasSourceOptions)
@@ -143,21 +143,21 @@ public sealed class InitWriter(
             };
             var text = manifest.ToJsonString(new JsonSerializerOptions { WriteIndented = true });
             source = manifestParser.Parse(text).SpechtSchema;
-            selected[manifestIndex] = (SpecManifestStore.RelativePath, System.Text.Encoding.UTF8.GetBytes(text + "\n"));
+            selected[manifestIndex] = (SpechtManifestStore.RelativePath, System.Text.Encoding.UTF8.GetBytes(text + "\n"));
         }
 
         var preserved = new HashSet<string>(StringComparer.Ordinal);
 
         if (schemas && source is not null)
         {
-            selected.RemoveAll(static entry => entry.Relative.StartsWith(SpecManifestStore.FrontmatterSchemaFolder + "/", StringComparison.Ordinal));
+            selected.RemoveAll(static entry => entry.Relative.StartsWith(SpechtManifestStore.FrontmatterSchemaFolder + "/", StringComparison.Ordinal));
 
             foreach (var file in source.Files)
             {
-                var relative = $"{SpecManifestStore.FrontmatterSchemaFolder}/{file.FileName}";
+                var relative = $"{SpechtManifestStore.FrontmatterSchemaFolder}/{file.FileName}";
                 var path = fileSystem.Path.Combine([root, .. relative.Split('/')]);
                 var withinSchemas = fileSystem.Path.GetRelativePath(
-                    fileSystem.Path.Combine([root, .. SpecManifestStore.FrontmatterSchemaFolder.Split('/')]), path);
+                    fileSystem.Path.Combine([root, .. SpechtManifestStore.FrontmatterSchemaFolder.Split('/')]), path);
 
                 if (fileSystem.Path.IsPathRooted(file.FileName)
                     || fileSystem.Path.IsPathRooted(withinSchemas)
@@ -166,7 +166,7 @@ public sealed class InitWriter(
                     || withinSchemas.StartsWith(".." + fileSystem.Path.AltDirectorySeparatorChar, StringComparison.Ordinal))
                 {
                     throw new SpechtManifestException(
-                        $"{SpecManifestStore.RelativePath}: frontmatterSchemas must name files within the frontmatter schema folder.");
+                        $"{SpechtManifestStore.RelativePath}: frontmatterSchemas must name files within the frontmatter schema folder.");
                 }
 
                 var exists = fileSystem.File.Exists(path);
@@ -188,7 +188,7 @@ public sealed class InitWriter(
         {
             foreach (var file in source.Templates.Where(file => !consumerTemplates.Contains(file.FileName, StringComparer.Ordinal)))
             {
-                var relative = $"{SpecManifestStore.TemplateFolder}/{file.FileName}";
+                var relative = $"{SpechtManifestStore.TemplateFolder}/{file.FileName}";
 
                 if (fileSystem.File.Exists(fileSystem.Path.Combine([root, .. relative.Split('/')])))
                 {
@@ -291,14 +291,14 @@ public sealed class InitWriter(
         return shipped.At(pinned ?? shipped.Newest())
             .Where(file => file.Relative switch
             {
-                SpecManifestStore.RelativePath => true,
-                var relative when relative.StartsWith(SpecManifestStore.ConfigurationFolder + "/schema/", StringComparison.Ordinal) =>
+                SpechtManifestStore.RelativePath => true,
+                var relative when relative.StartsWith(SpechtManifestStore.ConfigurationFolder + "/schema/", StringComparison.Ordinal) =>
                     schemas && (epicTier || relative != EpicSchemaRelative),
-                var relative when relative.StartsWith(SpecManifestStore.TemplateFolder + "/", StringComparison.Ordinal) => templates,
+                var relative when relative.StartsWith(SpechtManifestStore.TemplateFolder + "/", StringComparison.Ordinal) => templates,
                 _ => false,
             })
             .Select(static file => (file.Relative, file.Bytes));
     }
 
-    private const string EpicSchemaRelative = SpecManifestStore.FrontmatterSchemaFolder + "/epic.schema.json";
+    private const string EpicSchemaRelative = SpechtManifestStore.FrontmatterSchemaFolder + "/epic.schema.json";
 }

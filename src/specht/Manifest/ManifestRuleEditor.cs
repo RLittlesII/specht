@@ -63,7 +63,7 @@ public sealed class ManifestRuleEditor(ManifestPinEditor manifest)
                 return Replace(bytes, utf8, text, encoding, preamble, reader.TokenStartIndex, reader.TokenStartIndex, addition);
             }
         }
-        throw new SpechtManifestException($"{SpecManifestStore.RelativePath}: expected a manifest object.");
+        throw new SpechtManifestException($"{SpechtManifestStore.RelativePath}: expected a manifest object.");
     }
 
     /// <implements epic="0001" feature="F11" claim="B-003" />

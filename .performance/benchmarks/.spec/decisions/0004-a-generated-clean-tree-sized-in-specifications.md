@@ -8,7 +8,7 @@ type: decision
 
 **Date:** 2026-10-09
 **Decided by:** spec-author, from the owner's call that fixtures are synthetic
-(`SpecTree` approach, never a real `.spec/` tree, never consumer source); the
+(`SpechtTree` approach, never a real `.spec/` tree, never consumer source); the
 owner may reverse the sizes and the shape
 
 ## The call
@@ -24,7 +24,7 @@ owner may reverse the sizes and the shape
   benchmark measures the path a passing repository takes.
 - **Deterministic:** the tree is a function of its size (B-016, C-8). The
   temporary directory's own name may vary; nothing inside it does.
-- **Schema and manifest** are the shipped copy, as the tests' `SpecTree` copies
+- **Schema and manifest** are the shipped copy, as the tests' `SpechtTree` copies
   them; they are the contract under measurement, not a fixture (C-7).
 
 ## Why

@@ -158,7 +158,7 @@ internal sealed class ColdStartSession : IDisposable
 
         using var provider = new ServiceCollection().AddSpechtEngine().BuildServiceProvider();
         var resources = provider.GetRequiredService<SpechtResources>();
-        var parser = provider.GetRequiredService<SpecManifestParser>();
+        var parser = provider.GetRequiredService<SpechtManifestParser>();
         var structure = parser.Parse(resources.DefaultManifest);
         new SpechtTreeStore(new FileSystem()).Save(
             SpechtTree.Of(1, resources.DefaultManifestBytes, structure, parser.PinnedVersion(structure)), Path.Combine(_root, "tree"));

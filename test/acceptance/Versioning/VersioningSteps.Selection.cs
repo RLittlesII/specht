@@ -33,7 +33,7 @@ public sealed partial class VersioningSteps
     [Given("the local and embedded Feature schemas require different keys")]
     public void GivenLocalFeatureRequiresAKey()
     {
-        Tree.WriteRaw(SpecTree.FeatureSchemaPath, "{ \"required\": [\"local_key\"] }");
+        Tree.WriteRaw(SpechtTree.FeatureSchemaPath, "{ \"required\": [\"local_key\"] }");
         Tree.WriteFeature("0001", "F1");
     }
 
@@ -41,24 +41,24 @@ public sealed partial class VersioningSteps
     public void GivenSpecificationWithoutLocalKey() => Tree.WriteFeature("0001", "F1");
 
     [Given("the root holds the Feature and task schemas and no epic schema")]
-    public void GivenNoEpicSchema() => File.Delete(Path.Combine(Tree.Root, SpecTree.EpicSchemaPath));
+    public void GivenNoEpicSchema() => File.Delete(Path.Combine(Tree.Root, SpechtTree.EpicSchemaPath));
 
     [Given("the root holds a matching local copy of that source")]
     public void GivenMatchingSourceCopy() => Tree.WriteFeature("0001", "F1");
 
     [Given("a local schema differs from its recorded hash")]
-    public void GivenAnEditedSourceCopy() => File.AppendAllText(Path.Combine(Tree.Root, SpecTree.FeatureSchemaPath), "\n");
+    public void GivenAnEditedSourceCopy() => File.AppendAllText(Path.Combine(Tree.Root, SpechtTree.FeatureSchemaPath), "\n");
 
     [Given("a required named local schema file is absent")]
-    public void GivenMissingNamedSchema() => File.Delete(Path.Combine(Tree.Root, SpecTree.ItemSchemaPath));
+    public void GivenMissingNamedSchema() => File.Delete(Path.Combine(Tree.Root, SpechtTree.ItemSchemaPath));
 
     [Given("a required named local schema cannot be compiled as a JSON Schema")]
-    public void GivenInvalidNamedSchema() => Tree.WriteRaw(SpecTree.ItemSchemaPath, "{ \"type\": 42 }");
+    public void GivenInvalidNamedSchema() => Tree.WriteRaw(SpechtTree.ItemSchemaPath, "{ \"type\": 42 }");
 
     [Given("a required named local schema has {string}")]
     public void GivenNamedSchemaFault(string fault)
     {
-        _failedSchema = SpecTree.FeatureSchemaPath;
+        _failedSchema = SpechtTree.FeatureSchemaPath;
         Tree.WriteRaw(_failedSchema, fault switch
         {
             "malformed JSON" => "{",
@@ -126,7 +126,7 @@ public sealed partial class VersioningSteps
 
     [Then("the pinned version remains {string}")]
     public void ThenPinIsUnchanged(string version) =>
-        JsonNode.Parse(File.ReadAllText(Path.Combine(Tree.Root, SpecTree.ManifestPath)))!["schemaVersion"]!
+        JsonNode.Parse(File.ReadAllText(Path.Combine(Tree.Root, SpechtTree.ManifestPath)))!["schemaVersion"]!
             .GetValue<string>().Should().Be(version);
 
     [Then("the manifest is rejected for the source selection key")]
@@ -143,5 +143,5 @@ public sealed partial class VersioningSteps
     public void ThenRelativeSchemaIsNamed() => _stderr.Should().Contain(_failedSchema).And.NotContain(Tree.Root);
 
     private string? _selection;
-    private string _failedSchema = SpecTree.ItemSchemaPath;
+    private string _failedSchema = SpechtTree.ItemSchemaPath;
 }
