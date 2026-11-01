@@ -13,6 +13,11 @@ Supersedes ADR-0010's execution timing and handwritten mediator choice; its
 remaining target design and staged prerequisites are retained for evaluation.
 ADR-0010 gains only a status pointer; its original reasoning remains intact.
 
+The evaluation this record requires is recorded in
+[ADR-0026](0026-the-source-generated-mediator-measured-no-benefit-and-direct-calls-stay.md),
+accepted 2026-10-31: not adopted. The gate is not met for the mediator and
+stands for the rest of ADR-0010's rollout.
+
 ## Context
 
 PR #185 introduced `Specht.Cqrs`, `SpecModelReader` and a host factory while

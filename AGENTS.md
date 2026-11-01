@@ -97,10 +97,13 @@ Two projects, one direction of dependency:
 That is the engine as built. ADR-0010 describes a target architecture;
 [ADR-0014](.spec/adr/0014-architecture-rollout-requires-benchmark-evidence.md)
 gates further engine and host migration on repository benchmark evidence that
-justifies the added cost. The source-generated mediator candidate is
-martinothamar/Mediator, to be evaluated before adoption. A feature does not
-waive the gate or the staged prerequisites. Existing stores, parsers and
-composition remain the implementation basis until that evidence is agreed.
+justifies the added cost. The source-generated mediator candidate,
+martinothamar/Mediator, was measured and not adopted
+([ADR-0026](.spec/adr/0026-the-source-generated-mediator-measured-no-benefit-and-direct-calls-stay.md)):
+hosts keep direct calls, and ADR-0010's mediator clauses are superseded. A
+feature does not waive the gate or the staged prerequisites. Existing stores,
+parsers and composition remain the implementation basis until that evidence is
+agreed.
 
 The design direction (brief § 5) moves every literal the engine hardcodes —
 layouts, section roles, table headers, markers, frontmatter key roles, id

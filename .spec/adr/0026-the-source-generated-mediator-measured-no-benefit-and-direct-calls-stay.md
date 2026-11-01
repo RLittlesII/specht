@@ -1,6 +1,6 @@
 ---
 title: "ADR-0026: The source-generated mediator measured no benefit; direct calls stay"
-description: "Item 0216's proposal. martinothamar/Mediator 3.0.2 was tried in front of the check on an unmerged branch and measured against direct calls: whole-check time and allocation unchanged, a cost per send and per composition, and a slower packed-tool cold start. Proposed: do not adopt it; ADR-0014's gate is not met on performance. The record adopts nothing."
+description: "Item 0216's evidence decision. martinothamar/Mediator 3.0.2 was tried in front of the check on an unmerged branch and measured against direct calls: whole-check time and allocation unchanged, a cost per send and per composition, and a slower packed-tool cold start. The owner ruled (a), do not adopt: ADR-0014's gate is not met for the mediator, hosts keep direct calls through the existing composition, and ADR-0010's mediator clauses are superseded. ADR-0010's other stages stay gated by ADR-0014."
 type: adr
 ---
 
@@ -8,14 +8,22 @@ type: adr
 
 ## Status
 
-proposed - 2026-10-31. Decider: the repository owner. Item `0216`
+accepted - 2026-10-31. Decider: the repository owner, who ruled on the
+proposal the same day in these words: "(a) Don't adopt". Item `0216`
 ([`.issue/0216-evaluate-source-generated-mediator.yml`](../../.issue/0216-evaluate-source-generated-mediator.yml)),
 the comparison
 [ADR-0014](0014-architecture-rollout-requires-benchmark-evidence.md) assigns
-it. The record adopts nothing, amends no claim and edits no accepted record;
-[ADR-0010](0010-layered-engine-boundaries-with-io-at-the-edge-and-a-mediator.md)
-and ADR-0014 are unedited. The owner's ruling on it is the evidence decision
-ADR-0014 waits for.
+it, records the ruling. This is the evidence decision ADR-0014 waits for, for
+the mediator.
+
+Supersedes in part
+[ADR-0010](0010-layered-engine-boundaries-with-io-at-the-edge-and-a-mediator.md):
+its mediator clauses, named under Decision, "What this supersedes". ADR-0010's
+body is unedited and its Status gains one line pointing here, as ADR-0014's
+supersession did; ADR-0014's Status gains one line as well. The ADR template
+says a new record supersedes an accepted one entirely; this partial
+supersession is deliberate, as ADR-0010's and ADR-0014's were. The record
+changes no code, amends no claim and edits no item but `0216`.
 
 ## Context
 
@@ -289,9 +297,8 @@ trial placed the request and handler in `src/tool`; ADR-0010 owner decision
 
 Cost: the measured cost accepted as the price - +12 ns and 32 B per send,
 +5.65 us and +12.1 KB per composition, a slower cold start (Check +21.6 ms and
-Help +10.5 ms on the mean of the pairs, indicative), +99,207 bytes of package
-
-- plus the maintenance listed above.
+Help +10.5 ms on the mean of the pairs, indicative), +99,207 bytes of
+package, and the maintenance listed above.
 
 Effect: the owner's ruling meets ADR-0014's gate on grounds other than
 performance. `0167` is still redesigned from this evidence before
@@ -316,8 +323,13 @@ the measurement a quieter host would sharpen.
 
 ## Decision
 
-Proposed: **(a)**. **Judgement**, resting on the measurements above; the owner
-decides.
+Accepted: **(a)**, do not adopt martinothamar/Mediator. This is the
+repository owner's decision of 2026-10-31, in the owner's words "(a) Don't
+adopt"; it is no longer a judgement of this record. (b) and (c) are not
+chosen.
+
+The proposal recommended (a) as a **judgement**, resting on the measurements
+above, and left the decision to the owner. Its reasoning, unchanged:
 
 Performance supplies no benefit to weigh against the cost. The whole check's
 time and allocation are unchanged within noise. Dispatch adds about 12 ns and
@@ -329,24 +341,99 @@ grows by 99,207 bytes. ADR-0014's gate, benchmark evidence that the benefit is
 worth the complexity and maintenance cost, is therefore not met on
 performance grounds.
 
-(b) remains open to the owner as a structural choice; it is not supported by
-these measurements. (c) is the option if the owner reads the loaded host as
-reason to doubt the cold-start direction.
+The proposal held (b) open as a structural choice these measurements do not
+support, and (c) for an owner who read the loaded host as reason to doubt the
+cold-start direction. The owner chose neither.
+
+ADR-0014's gate is not met for the mediator. The comparison it requires is
+recorded above, and the owner's ruling is the unfavourable result ADR-0014's
+Consequences anticipate.
+
+### The revised migration design
+
+- Hosts reach the engine by direct calls through the existing composition:
+  `AddSpechtEngine()` and the registrations `src/tool/Program.cs` and the
+  command slices make. A command takes what it calls by constructor, as every
+  command does today.
+- No mediator, no dispatcher, no `Specht.Cqrs`, and no request or handler
+  contracts. No handwritten substitute either: ADR-0014 already forbids one,
+  and this record authorizes none.
+- The engine's check entry point that replaces `Check.Query` and
+  `Check.Handler` is not designed here. It is item `0167`'s redesign, which
+  ADR-0014 already requires from this evidence before implementation. Whether
+  the runner delegate `src/tool/Program.cs` registers - stage 8's
+  `Func<string, SpechtReport>` seam - goes, and what a command takes in its
+  place, is decided with that redesign and item `0144`.
+- ADR-0010's other stages are unchanged as target: stages 1 to 6, the parts
+  of stages 7 and 8 the table below leaves standing, and tracks T, R and P.
+  They stay gated by ADR-0014. This record measured dispatch only and
+  supplies no evidence for them; whether they proceed is for the owner.
+
+### What this supersedes
+
+In
+[ADR-0010](0010-layered-engine-boundaries-with-io-at-the-edge-and-a-mediator.md),
+its body unedited:
+
+| ADR-0010                              | Superseded                                                                                                                                                                         | Stands                                                                                                                                                                                                            |
+| ------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Owner decision 2                      | The whole decision: a mediator; requests and handlers in the shape of the owner's cqrsz library; dispatch through a minimal `ICqrs`; replacement by a source-generated port.       | Option 3's rejection of a use-case object is not reopened; this record adopts none.                                                                                                                               |
+| § "The layout"                        | `Specht.Cqrs`, and the bullet that stands it outside the order; `Check.Query` and `Check.Handler` as what `Specht.Check` holds.                                                    | Every other namespace, the downward order, and `Specht.Composition` outside it. What `Specht.Check` holds is item `0167`'s redesign.                                                                              |
+| § "A host sends a request"            | The whole section: the `Check` sketch, cqrsz's conventions, `ICqrs` and its dispatcher, and "The departure from cqrsz".                                                            | Owner decision 4 as the section applies it: the engine returns a plain result, and the four input-failure exceptions cross to the catch ladder in `CheckCommand`.                                                 |
+| § "The patterns, present and absent"  | The Mediator row.                                                                                                                                                                  | Strategy, Builder and Decorator, and what is deliberately absent.                                                                                                                                                 |
+| § "Each interface, and what earns it" | The row for `IQuery<T>`, `ICommand<T>` and the two handler contracts; the `ICqrs` row; the paragraph that takes `ICqrs` as the one exception to `coding-conventions` § Design.     | `ISpecRule` and `IFileSystem`; everything else a sealed class; `ISpecDiscovery`'s timing. The § Design bar holds with no exception.                                                                               |
+| § "What 'no static' covers"           | The bullet keeping "a cqrsz operation class such as `Check`". It exists only because cqrsz nests a message and its handler in one static class; with no mediator nothing needs it. | The `static readonly` constant and `AddSpechtEngine()` bullets, and the judgement on private static helpers and `static` lambdas.                                                                                 |
+| § "The order of work"                 | Stage 7: `Specht.Cqrs`, and `Check.Query` and `Check.Handler` in cqrsz's shape. Stage 8: "`CheckCommand` sends `Check.Query` through `ICqrs`".                                     | Stage 7's report mapper, serializer and store, `SpechtRunner` deleted, and the guard; stage 8's ADR-0007 factory and `ShippingCopy` as an instance; stages 1 to 6; tracks T, R and P. All stay gated by ADR-0014. |
+
+Owner decisions 3 and 4 are not superseded. Each names requests and handlers;
+after this record they apply to the engine's check entry point that item
+`0167`'s redesign gives, so the tool, the benchmarks and any later host call
+the same one.
+
+Further mentions in ADR-0010 rest only on the clauses above and are read as
+superseded with them: option 1's "a mediator in front" as part of the chosen
+option; the Buys bullet's "sends a message and composes nothing"; the Costs
+bullets on "a dispatcher this repository owns and tests" and on handlers that
+depart from cqrsz's return type; open point 2's "dispatched through the same
+`ICqrs`"; `Check.Handler` and `Check.Query` as the measured call in § "The
+whole-check benchmark", which item `0167`'s redesign re-points; and, in
+ADR-0010's own § "What this supersedes", "driver 3, but for `ICqrs`" in the
+ADR-0001 row and "with `ICqrs` the one stated exception" in the ADR-0005 row.
+ADR-0001's driver 3 and ADR-0005 (d) stand without that exception.
 
 ## Consequences
 
-Under every option this record changes no code, no specification and no
-item. Items `0100`, `0144`, `0153`, `0156` to `0164`, `0166` and `0167`
-depend on `0216` and stay as they are until the owner rules; ADR-0014 and
-ADR-0010 keep their text.
-
-- Under (a), the owner's ruling answers ADR-0014 with an unfavourable result,
-  as ADR-0014's Consequences anticipate. A later record would supersede
-  ADR-0010's "A host sends a request" and owner decision 2 for the mediator;
-  `0167` and `0144` are redesigned before either is implemented.
-- Under (b), a migration design follows before any production change, and
-  `0167` is rewritten from it.
-- Under (c), item `0216` stays open for the re-run.
-
-Item `0216`'s last acceptance criterion - the owner's evidence decision and
-the revised migration design - waits on that ruling, so the item is not done.
+- No code changes. The check keeps the delegate `src/tool/Program.cs`
+  registers, and every other command keeps its direct call. Trial branch
+  `0216/trial-mediator` is not merged; the numbers that matter are quoted
+  under Context.
+- ADR-0014's gate is answered for the mediator, unfavourably. It stands for
+  the rest of ADR-0010's rollout.
+- Two items need rescoping by `spec-author` before either is implemented,
+  because their mediator clauses are gone:
+  - `0167`: its title, the summary's `Specht.Cqrs` bullet, criterion 3
+    (`Specht.Cqrs`), criterion 4 (the cqrsz `Check` class), criterion 7's
+    exemption for `Specht.Cqrs`, and criterion 8 (the benchmark calling
+    `Check.Handler` with a `Check.Query`). Its report types, the runner's
+    deletion and the guard are not mediator clauses and stay gated by
+    ADR-0014.
+  - `0144`: the stage-8 criterion that `CheckCommand` takes `ICqrs` and sends
+    `Check.Query`, the open-point-2 criterion on `InitCommand` sending
+    through `ICqrs`, and its `depends_on` reason, "the mediator and
+    `Check.Query` from 0167". The factory, the test wrap and `ShippingCopy`
+    are not, and stay gated.
+- Item `0170`'s criterion 6 weighs "the hand-written dispatcher of item
+  0167", which will not be built. Named, not edited.
+- `0100`, `0153`, `0156` to `0164` and `0166` are not mediator-dependent.
+  Closing `0216` meets their `depends_on` edge on it but not ADR-0014's gate:
+  they remain gated, and `blocked`, pending the owner.
+- This record edits none of those items.
+- Guidance that stated the mediator as the direction, or as still to be
+  evaluated, is revised with this record: `AGENTS.md` § Architecture,
+  `dotnet-tool` and its vertical-slice reference, the `specht-conventions`
+  coding reference, and the roadmap's 0.4.0 milestone. No Feature
+  specification is edited; their historical review rows stand.
+- The harness defect stays recorded; no item is cut for it.
+- Item `0216`'s fourth acceptance criterion holds: the owner's evidence
+  decision is recorded here and in the item, and the migration design is
+  revised above, before any adoption.
