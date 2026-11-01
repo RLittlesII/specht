@@ -43,6 +43,7 @@
     <PackageReference Include="YamlDotNet" />
     <PackageReference Include="xunit.v3" />
     <PackageReference Include="AwesomeAssertions" />
+    <PackageReference Include="Microsoft.Extensions.TimeProvider.Testing" />
     <PackageReference Include="Spectre.Console.Cli.Testing" />
     <PackageReference Include="Microsoft.TestPlatform.ObjectModel" />
   </ItemGroup>
