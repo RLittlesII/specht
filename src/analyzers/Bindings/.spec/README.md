@@ -246,7 +246,8 @@ The existing source authorities are
 They define YAML scalar preservation, top-level section and first-table selection,
 visible inline/code-span text, trimmed first-cell claim identity, duplicate
 retention and fourth-cell claim lifecycle respectively.
-[`ApprovalRule`](../../../specht/Rules/ApprovalRule.cs) and
+[`ApprovalCoverageRule`](../../../specht/Rules/ApprovalCoverageRule.cs),
+[`ApprovalSignOffRule`](../../../specht/Rules/ApprovalSignOffRule.cs) and
 [`RetiredClaimRule`](../../../specht/Rules/Matrix/RetiredClaimRule.cs) define the
 existing marker interpretation that the effective policy retains.
 

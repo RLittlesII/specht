@@ -31,7 +31,7 @@ public sealed class ClaimRuleUnitTests
         SpechtModel model = new SpechtModelFixture().WithManifest(manifest).WithFeatures(feature);
 
         // When
-        var violations = new ClaimRule().Evaluate(model).ToList();
+        var violations = new ClaimIdRule().Evaluate(model).ToList();
 
         // Then
         violations.Select(static violation => (violation.RuleId, violation.Identifier)).Should().Equal(("SPEC030", "B-1"));
@@ -55,7 +55,7 @@ public sealed class ClaimRuleUnitTests
         SpechtModel model = new SpechtModelFixture().WithManifest(manifest).WithFeatures(feature);
 
         // When
-        var violations = new ClaimRule().Evaluate(model).ToList();
+        var violations = new ClaimRowRule().Evaluate(model).ToList();
 
         // Then
         violations.Select(static violation => (violation.RuleId, violation.Identifier)).Should().Equal(("SPEC031", "B-002"));

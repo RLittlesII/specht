@@ -18,7 +18,7 @@ spec: null
 claims: []
 
 created: "2026-10-23"
-updated: "2026-10-23"
+updated: "2026-11-01"
 closed: null
 
 summary: |
@@ -77,7 +77,7 @@ summary: |
      `^F[0-9]+[a-z]?$`), the manifest's `identifiers` grammars (claim
      `^B-[0-9]{3}[a-z]?$`, constraint, open question, task, Feature, epic;
      brief § 5), the engine's own `^\d{4}-(\d{2})$` in
-     `src/specht/Rules/ChildItemRule.cs`, and `SPEC030` on claim ids. Which
+     `src/specht/Rules/ItemSequenceRule.cs`, and `SPEC030` on claim ids. Which
      of these a candidate would change, whether consumers are affected, and
      which records `specht` does not check at all (this repository's items,
      ADR and lesson file numbers). A grammar change is a schema version and
@@ -128,6 +128,10 @@ decisions:
     same day, shaped as item 0220 was - trial branches that never merge,
     evidence cited at commits, and a proposed ADR as the product. Status
     `ready`: a spike has no design to precede it and waits on no item.
+  - |
+    2026-11-01, spec-author: question 4 names the engine's task-id pattern
+    in `src/specht/Rules/ItemSequenceRule.cs`, where item 0161 moved it
+    when it split `ChildItemRule`. No scope, criterion or status changes.
 
 out_of_scope:
   - "Renumbering any existing id - AGENTS.md § Stable IDs; lesson 0005 records the one exception and does not widen it."

@@ -5,24 +5,16 @@ using Specht.Model;
 namespace Specht.Rules;
 
 /// <summary>
-/// SPEC011 and SPEC012 - a specification's frontmatter identity agrees with
-/// where it sits, and no identity is claimed by two files.
+/// SPEC011 - a specification's frontmatter identity agrees with where it sits.
 /// </summary>
-/// <remarks>
-/// SPEC012 is the migration's safety net. Converting a Feature from
-/// <c>epics/</c> to a co-located <c>.spec/</c> folder means removing the old
-/// tree in the same change; a copy left behind is the failure mode that
-/// produces two homes for one specification, which is the thing the layout
-/// exists to end.
-/// </remarks>
 /// <implements epic="0001" feature="F1" claim="B-001" />
-public sealed class IdentityRule : ISpechtRule
+public sealed class PathIdentityRule : ISpechtRule
 {
     /// <inheritdoc />
     public string Id => "SPEC011";
 
     /// <inheritdoc />
-    public IReadOnlyList<string> ReportedIds => ["SPEC011", "SPEC012"];
+    public IReadOnlyList<string> ReportedIds => [Id];
 
     /// <inheritdoc />
     /// <implements epic="0001" feature="F1" claim="B-001" />
@@ -81,35 +73,6 @@ public sealed class IdentityRule : ISpechtRule
                 };
             }
         }
-
-        var duplicates = model.FeaturesWithIdentity
-            .GroupBy(static feature => feature.Identity, StringComparer.Ordinal)
-            .Where(static group => group.Count() > 1);
-
-        foreach (var group in duplicates)
-        {
-            var paths = group.Select(static feature => feature.RelativePath).Order(StringComparer.Ordinal).ToList();
-
-            foreach (var feature in group)
-            {
-                yield return new SpechtViolation(
-                    "SPEC012",
-                    SpechtSeverity.Error,
-                    feature.RelativePath,
-                    feature.Document.Frontmatter.LineOf("id"),
-                    group.Key,
-                    $"'{group.Key}' is specified in {paths.Count} places ({string.Join(", ", paths)}) - "
-                        + "a migration removes the old tree in the same change")
-                {
-                    Expected = new JsonObject
-                    {
-                        ["form"] = "{epic}-{feature}",
-                        ["value"] = group.Key,
-                        ["firstDeclaration"] = group.First().RelativePath,
-                    },
-                };
-            }
-        }
     }
 
     /// <implements epic="0001" feature="F1" claim="B-001" />
@@ -127,5 +90,4 @@ public sealed class IdentityRule : ISpechtRule
         var separator = directory.IndexOf('-');
         return separator < 0 ? directory : directory[..separator];
     }
-
 }

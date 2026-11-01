@@ -3,84 +3,34 @@ using Specht.Model;
 
 namespace Specht.Rules;
 
-/// <summary>
-/// SPEC030 and SPEC031 - claim ids are well-formed and unique within their
-/// Feature, and the traceability matrix carries exactly one row per claim.
-/// </summary>
+/// <summary>SPEC031 - the traceability matrix carries exactly one row per claim.</summary>
 /// <remarks>
 /// A <c>Missing</c> test cell is deliberately not a violation here. It is the
 /// honest value until the test exists, and it blocks the issue reaching done
-/// rather than the specification being agreed - see ApprovalRule for the point
+/// rather than the specification being agreed - see <see cref="ApprovalCoverageRule"/> for the point
 /// at which it does become one.
 /// </remarks>
 /// <implements epic="0001" feature="F1" claim="B-001" />
-public sealed class ClaimRule : ISpechtRule
+public sealed class ClaimRowRule : ISpechtRule
 {
     /// <inheritdoc />
-    public string Id => "SPEC030";
+    public string Id => "SPEC031";
 
     /// <inheritdoc />
-    public IReadOnlyList<string> ReportedIds => ["SPEC030", "SPEC031"];
+    public IReadOnlyList<string> ReportedIds => [Id];
 
     /// <inheritdoc />
     /// <implements epic="0001" feature="F1" claim="B-001" />
     public IEnumerable<SpechtViolation> Evaluate(SpechtModel model)
     {
         model.EnsureClaimGrammar();
-        var grammar = model.Schemas.Structure.Identifiers["claim"];
 
         foreach (var feature in model.Features)
         {
             var claims = model.Claims[feature];
             var matrix = model.MatrixSections[feature];
 
-            if (claims.Section is null)
-            {
-                continue;
-            }
-
-            foreach (var claim in claims.Rows)
-            {
-                var id = claim.Id;
-                var line = claim.Line;
-
-                if (id.Length == 0)
-                {
-                    continue;
-                }
-
-                if (!claim.IsValid)
-                {
-                    yield return new SpechtViolation(
-                        "SPEC030",
-                        SpechtSeverity.Error,
-                        feature.RelativePath,
-                        line,
-                        id,
-                        $"claim id '{id}' does not match {grammar} - claim ids are permanent, so the form is fixed")
-                    {
-                        Expected = new JsonObject { ["grammar"] = grammar },
-                    };
-
-                    continue;
-                }
-
-                if (claim.FirstDeclarationLine is { } firstDeclarationLine)
-                {
-                    yield return new SpechtViolation(
-                        "SPEC030",
-                        SpechtSeverity.Error,
-                        feature.RelativePath,
-                        line,
-                        id,
-                        $"claim '{id}' is declared twice in § 3 (also at line {firstDeclarationLine})")
-                    {
-                        Expected = new JsonObject { ["grammar"] = grammar, ["firstDeclarationLine"] = firstDeclarationLine },
-                    };
-                }
-            }
-
-            if (matrix is null)
+            if (claims.Section is null || matrix is null)
             {
                 continue;
             }

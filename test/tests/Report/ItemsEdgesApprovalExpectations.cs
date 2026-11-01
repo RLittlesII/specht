@@ -10,7 +10,11 @@ public sealed class ItemsEdgesApprovalExpectations : TheoryData<string, SpechtMo
 {
     public ItemsEdgesApprovalExpectations()
     {
-        foreach (var (key, ruleId) in new[] { ("children", "SPEC040"), ("spikes", "SPEC041") })
+        foreach (var (key, ruleId, rule) in new (string, string, ISpechtRule)[]
+        {
+            ("children", "SPEC040", new DeclaredChildrenRule(new DeclaredItemCheck())),
+            ("spikes", "SPEC041", new DeclaredSpikesRule(new DeclaredItemCheck())),
+        })
         {
             FeatureSpec feature = new FeatureSpecFixture().WithDocument(SpechtDocument.Parse(
                 $"---\nepic: \"0001\"\nid: \"F1\"\n{key}: [\"0001-01\"]\n---\n", "src/sample/.spec/README.md"));
@@ -26,7 +30,7 @@ public sealed class ItemsEdgesApprovalExpectations : TheoryData<string, SpechtMo
                 }
 
                 Add($"{key} resolves to {count} files", new SpechtModelFixture().WithFeatures(feature).WithItems(items),
-                    new ChildItemRule(), ruleId, count == 0 ? "was discovered" : "resolves to 2 files", null, expected);
+                    rule, ruleId, count == 0 ? "was discovered" : "resolves to 2 files", null, expected);
             }
 
             if (key == "spikes")
@@ -34,7 +38,7 @@ public sealed class ItemsEdgesApprovalExpectations : TheoryData<string, SpechtMo
                 ChildItem task = new ChildItemFixture().WithFrontmatter(new FrontmatterFixture()
                     .WithNode(new JsonObject { ["id"] = "0001-01", ["type"] = "task" }));
                 Add("a declared spike is a task", new SpechtModelFixture().WithFeatures(feature).WithItems(task),
-                    new ChildItemRule(), ruleId, "not 'spike'", null, new JsonObject { ["fileName"] = "0001-01-*.md", ["type"] = "spike" });
+                    rule, ruleId, "not 'spike'", null, new JsonObject { ["fileName"] = "0001-01-*.md", ["type"] = "spike" });
             }
         }
 
@@ -43,17 +47,17 @@ public sealed class ItemsEdgesApprovalExpectations : TheoryData<string, SpechtMo
         ChildItem duplicate = new ChildItemFixture().WithRelativePath("src/a-second/.spec/0001-01-task.md")
             .WithFrontmatter(new FrontmatterFixture().WithNode(new JsonObject { ["id"] = "0001-01" }));
         SpechtModel repeated = new SpechtModelFixture().WithItems(first, duplicate);
-        Add("first holder follows model order rather than path order", repeated, new ChildItemRule(), "SPEC044", "already used", null,
+        Add("first holder follows model order rather than path order", repeated, new ItemSequenceRule(), "SPEC044", "already used", null,
             new JsonObject { ["fileName"] = "0001-01-*.md", ["firstDeclaration"] = "src/z-first/.spec/0001-01-task.md" });
-        Add("the existing duplicate-induced sequence finding is preserved", repeated, new ChildItemRule(), "SPEC044", "sequence skips 02", null,
+        Add("the existing duplicate-induced sequence finding is preserved", repeated, new ItemSequenceRule(), "SPEC044", "sequence skips 02", null,
             new JsonObject { ["fileName"] = "0001-02-*.md", ["nextNumber"] = 2 });
         ChildItem fourth = new ChildItemFixture().WithFileName("0001-04-task.md")
             .WithFrontmatter(new FrontmatterFixture().WithNode(new JsonObject { ["id"] = "0001-04" }));
         ChildItem second = new ChildItemFixture().WithFileName("0001-02-task.md")
             .WithFrontmatter(new FrontmatterFixture().WithNode(new JsonObject { ["id"] = "0001-02" }));
         Add("an interior gap names the first missing number", new SpechtModelFixture().WithItems(fourth, first, second),
-            new ChildItemRule(), "SPEC044", "sequence skips 03", null, new JsonObject { ["fileName"] = "0001-03-*.md", ["nextNumber"] = 3 });
-        Add("a sequence must begin at one", new SpechtModelFixture().WithItems(fourth), new ChildItemRule(), "SPEC044", "sequence skips 01", null,
+            new ItemSequenceRule(), "SPEC044", "sequence skips 03", null, new JsonObject { ["fileName"] = "0001-03-*.md", ["nextNumber"] = 3 });
+        Add("a sequence must begin at one", new SpechtModelFixture().WithItems(fourth), new ItemSequenceRule(), "SPEC044", "sequence skips 01", null,
             new JsonObject { ["fileName"] = "0001-01-*.md", ["nextNumber"] = 1 });
 
         foreach (var key in new[] { "depends_on", "blocks" })
@@ -64,21 +68,21 @@ public sealed class ItemsEdgesApprovalExpectations : TheoryData<string, SpechtMo
                 "---\nepic: \"0002\"\nid: \"F2\"\n---\n", "src/target/.spec/README.md"));
             Add("unknown " + key + " gets sorted distinct qualified targets",
                 new SpechtModelFixture().WithFeatures(target, source, new FeatureSpecFixture().WithDocument(target.Document)),
-                new DependencyRule(), "SPEC050", "not a discovered Feature", null, new JsonObject { ["features"] = new JsonArray("0001-F1", "0002-F2") });
+                new DependencyTargetRule(), "SPEC050", "not a discovered Feature", null, new JsonObject { ["features"] = new JsonArray("0001-F1", "0002-F2") });
             FeatureSpec linked = new FeatureSpecFixture().WithDocument(SpechtDocument.Parse(
                 $"---\nepic: \"0001\"\nid: \"F1\"\n{key}: [\"0002/F2\"]\n---\n", "src/source/.spec/README.md"));
-            Add("missing reciprocal " + key, new SpechtModelFixture().WithFeatures(linked, target), new DependencyRule(), "SPEC051",
+            Add("missing reciprocal " + key, new SpechtModelFixture().WithFeatures(linked, target), new DependencySymmetryRule(), "SPEC051",
                 "does not declare", null, new JsonObject
                 {
                     ["edge"] = new JsonObject { ["feature"] = "0002-F2", ["key"] = key == "depends_on" ? "blocks" : "depends_on", ["value"] = "0001-F1" },
                 });
             FeatureSpec self = new FeatureSpecFixture().WithDocument(SpechtDocument.Parse(
                 $"---\nepic: \"0001\"\nid: \"F1\"\n{key}: [\"F1\"]\n---\n", "src/source/.spec/README.md"));
-            Add("direct self " + key, new SpechtModelFixture().WithFeatures(self), new DependencyRule(), "SPEC052", "this Feature itself", null,
+            Add("direct self " + key, new SpechtModelFixture().WithFeatures(self), new DependencyCycleRule(), "SPEC052", "this Feature itself", null,
             new JsonObject { ["cycle"] = new JsonArray("0001-F1", "0001-F1") });
             if (key == "depends_on")
             {
-                Add("the existing self-cycle traversal finding remains", new SpechtModelFixture().WithFeatures(self), new DependencyRule(),
+                Add("the existing self-cycle traversal finding remains", new SpechtModelFixture().WithFeatures(self), new DependencyCycleRule(),
                     "SPEC052", "dependency cycle:", null, new JsonObject { ["cycle"] = new JsonArray("0001-F1", "0001-F1") });
             }
         }
@@ -89,7 +93,7 @@ public sealed class ItemsEdgesApprovalExpectations : TheoryData<string, SpechtMo
                 "---\nepic: \"0001\"\nid: \"F1\"\ndepends_on: [\"F2\"]\n---\n", "src/lead/.spec/README.md"));
             FeatureSpec tail = new FeatureSpecFixture().WithDocument(SpechtDocument.Parse(
                 $"---\nepic: \"0001\"\nid: \"F2\"\ndepends_on: [\"{end}\"]\n---\n", "src/tail/.spec/README.md"));
-            Add("ordered cycle ending in " + end, new SpechtModelFixture().WithFeatures(lead, tail), new DependencyRule(), "SPEC052",
+            Add("ordered cycle ending in " + end, new SpechtModelFixture().WithFeatures(lead, tail), new DependencyCycleRule(), "SPEC052",
                 "dependency cycle: 0001-F1 ->", null, new JsonObject { ["cycle"] = new JsonArray("0001-F1", "0001-F2", "0001-" + end) });
         }
 
@@ -112,11 +116,11 @@ public sealed class ItemsEdgesApprovalExpectations : TheoryData<string, SpechtMo
                 + $"| B-001 | Ready | Covered |\n| B-002 | {missing} | {missing} |\n\n## {signOff}\n\n| Section | Status |\n| - | - |\n"
                 + $"| 1-5 | 🟢 |\n| 6-9 | {draft} |\n| 10-12 | text {blocked} text |\n", "src/sample/.spec/README.md"));
             SpechtModel model = new SpechtModelFixture().WithManifest(manifest).WithFeatures(feature);
-            Add("all missing cells with custom names " + custom, model, new ApprovalRule(), "SPEC060", "§ 9", null,
+            Add("all missing cells with custom names " + custom, model, new ApprovalCoverageRule(), "SPEC060", "§ 9", null,
             new JsonObject { ["section"] = matrix, ["row"] = 2, ["columns"] = new JsonArray(2, 3) });
-            Add("draft sign-off row with custom names " + custom, model, new ApprovalRule(), "SPEC061", "§ 12", "6-9",
+            Add("draft sign-off row with custom names " + custom, model, new ApprovalSignOffRule(), "SPEC061", "§ 12", "6-9",
             new JsonObject { ["section"] = signOff, ["row"] = 2 });
-            Add("blocked sign-off row with custom names " + custom, model, new ApprovalRule(), "SPEC061", "§ 12", "10-12",
+            Add("blocked sign-off row with custom names " + custom, model, new ApprovalSignOffRule(), "SPEC061", "§ 12", "10-12",
             new JsonObject { ["section"] = signOff, ["row"] = 3 });
         }
     }

@@ -22,7 +22,7 @@ public sealed class IdentityClaimExpectations : TheoryData<string, SpechtModel, 
                 .WithLocation(new SpechtLocationFixture().WithRelativePath(path)
                     .WithLayout(new SpechtLayout("epics", "epics/**/spec.md", new SpechtPathIdentity(1, 2))))
                 .WithDocument(SpechtDocument.Parse($"---\nepic: \"{epic}\"\nid: \"{id}\"\n---\n", path));
-            Add(key + " differs from its directory", new SpechtModelFixture().WithFeatures(feature), new IdentityRule(),
+            Add(key + " differs from its directory", new SpechtModelFixture().WithFeatures(feature), new PathIdentityRule(),
                 "SPEC011", feature.Identity, new JsonObject { ["form"] = form, ["value"] = value });
         }
 
@@ -33,7 +33,7 @@ public sealed class IdentityClaimExpectations : TheoryData<string, SpechtModel, 
             .WithDocument(SpechtDocument.Parse("---\nepic: \"EP-09\"\nid: \"F1\"\n---\n", hyphenPath));
         Add("a configured identity grammar can contain a hyphen", new SpechtModelFixture()
                 .WithManifest(new JsonObject { ["identifiers"] = new JsonObject { ["epic"] = "^EP-[0-9]{2}$" } })
-                .WithFeatures(hyphenIdentity), new IdentityRule(), "SPEC011", hyphenIdentity.Identity,
+                .WithFeatures(hyphenIdentity), new PathIdentityRule(), "SPEC011", hyphenIdentity.Identity,
             new JsonObject { ["form"] = "^EP-[0-9]{2}$", ["value"] = "EP-01" });
 
         FeatureSpec first = new FeatureSpecFixture()
@@ -43,7 +43,7 @@ public sealed class IdentityClaimExpectations : TheoryData<string, SpechtModel, 
             .WithLocation(new SpechtLocationFixture().WithRelativePath("src/a-second/.spec/README.md"))
             .WithDocument(SpechtDocument.Parse("---\nepic: \"0001\"\nid: \"F1\"\n---\n", "src/a-second/.spec/README.md"));
         Add("the first identity follows model order, not path order", new SpechtModelFixture().WithFeatures(first, second),
-            new IdentityRule(), "SPEC012", "0001-F1", new JsonObject
+            new DuplicateIdentityRule(), "SPEC012", "0001-F1", new JsonObject
             {
                 ["form"] = "{epic}-{feature}",
                 ["value"] = "0001-F1",
@@ -60,7 +60,7 @@ public sealed class IdentityClaimExpectations : TheoryData<string, SpechtModel, 
                 ["parent"] = key == "parent" ? "0009-F9" : "0001-F1",
             }));
             Add("item " + key + " differs from its source", new SpechtModelFixture().WithFeatures(parent).WithItems(item),
-                new ChildItemRule(), "SPEC043", item.Id!, new JsonObject
+                new ItemPlacementRule(), "SPEC043", item.Id!, new JsonObject
                 {
                     ["form"] = key == "id" ? "^[0-9]{4}-[0-9]{2}$" : "{epic}-{feature}",
                     ["value"] = key == "id" ? "0001-01" : "0001-F1",
@@ -72,7 +72,7 @@ public sealed class IdentityClaimExpectations : TheoryData<string, SpechtModel, 
             FeatureSpec feature = new FeatureSpecFixture()
                 .WithDocument(SpechtDocument.Parse("---\nepic: \"0001\"\nid: \"F1\"\n---\n", "src/sample/.spec/README.md"))
                 .WithFeatureFiles(count == 0 ? [] : [new FeatureFileFixture(), new FeatureFileFixture()]);
-            Add($"{count} companions", new SpechtModelFixture().WithFeatures(feature), new FeatureFileRule(), "SPEC020", "0001-F1",
+            Add($"{count} companions", new SpechtModelFixture().WithFeatures(feature), new CompanionFileRule(), "SPEC020", "0001-F1",
                 new JsonObject { ["companionCount"] = 1 });
         }
 
@@ -80,7 +80,7 @@ public sealed class IdentityClaimExpectations : TheoryData<string, SpechtModel, 
             .WithDocument(SpechtDocument.Parse(Claims + "| B-002 | Duplicate. |\n| BAD | Invalid. |\n", "src/sample/.spec/README.md"))
             .WithFeatureFiles(new FeatureFileFixture().WithTags(new FeatureTagParser().Parse("@B-404")));
         Add("unresolved tag gets distinct valid ids in declaration order", new SpechtModelFixture().WithFeatures(companion),
-            new FeatureFileRule(), "SPEC021", "B-404", new JsonObject { ["claims"] = new JsonArray("B-002", "B-001") });
+            new ClaimTagRule(), "SPEC021", "B-404", new JsonObject { ["claims"] = new JsonArray("B-002", "B-001") });
 
         foreach (var (grammar, claim) in new[] { ("^B-[0-9]{3}[a-z]?$", "B-12"), ("^REQ[0-9]{2}$", "B-001") })
         {
@@ -89,12 +89,12 @@ public sealed class IdentityClaimExpectations : TheoryData<string, SpechtModel, 
                 "src/sample/.spec/README.md"));
             SpechtModel model = new SpechtModelFixture().WithManifest(new JsonObject
             { ["identifiers"] = new JsonObject { ["claim"] = grammar } }).WithFeatures(feature);
-            Add("claim rejected by " + grammar, model, new ClaimRule(), "SPEC030", claim, new JsonObject { ["grammar"] = grammar });
+            Add("claim rejected by " + grammar, model, new ClaimIdRule(), "SPEC030", claim, new JsonObject { ["grammar"] = grammar });
         }
 
         FeatureSpec duplicate = new FeatureSpecFixture().WithDocument(SpechtDocument.Parse(
             Claims + "| B-001 | Duplicate. |\n", "src/sample/.spec/README.md"));
-        Add("duplicate claim names the original row", new SpechtModelFixture().WithFeatures(duplicate), new ClaimRule(), "SPEC030", "B-001",
+        Add("duplicate claim names the original row", new SpechtModelFixture().WithFeatures(duplicate), new ClaimIdRule(), "SPEC030", "B-001",
             new JsonObject { ["grammar"] = "^B-[0-9]{3}[a-z]?$", ["firstDeclarationLine"] = 6 });
 
         foreach (var (defect, rows, id, counts) in new[]
@@ -109,7 +109,7 @@ public sealed class IdentityClaimExpectations : TheoryData<string, SpechtModel, 
             FeatureSpec feature = new FeatureSpecFixture().WithDocument(SpechtDocument.Parse(
                 Claims + "\n## 9. Traceability Matrix\n\n| Claim ID | Test |\n| -------- | ---- |\n" + rows,
                 "src/sample/.spec/README.md"));
-            Add(defect + " matrix row", new SpechtModelFixture().WithFeatures(feature), new ClaimRule(), "SPEC031", id,
+            Add(defect + " matrix row", new SpechtModelFixture().WithFeatures(feature), new ClaimRowRule(), "SPEC031", id,
                 new JsonObject { ["requiredRows"] = 1, ["rowsByClaim"] = counts });
         }
     }

@@ -64,7 +64,7 @@ public sealed class SpechtModelLoaderUnitTests
         fileSystem.File.Delete(companion);
 
         // When
-        var violations = new FeatureFileRule().Evaluate(model).ToList();
+        var violations = new ClaimTagRule().Evaluate(model).ToList();
 
         // Then
         var violation = violations.Should().ContainSingle().Subject;

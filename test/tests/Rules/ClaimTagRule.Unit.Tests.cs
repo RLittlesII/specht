@@ -8,13 +8,13 @@ using Specht.Tests.Shared;
 namespace Specht.Tests.Rules;
 
 /// <summary>
-/// The feature-file rule over a model built in memory under a manifest that renames the claims section (<c>0001-F5</c>
+/// The claim-tag rule over a model built in memory under a manifest that renames the claims section (<c>0001-F5</c>
 /// B-001, decision 0006), its companion’s parsed tags supplied in memory (ADR-0010 stage 2): a
 /// scenario tag resolves against the section the claims role names, and the title the engine once hardcoded is a section
 /// like any other.
 /// </summary>
 [Trait("Tier", "Unit")]
-public sealed class FeatureFileRuleUnitTests
+public sealed class ClaimTagRuleUnitTests
 {
     [Fact]
     public void ATagDeclaredOnlyUnderTheTitleNoRoleNames_WhenTheRuleEvaluatesTheModel_ShouldReportSpec021OnItAndNotOnTheTagTheClaimsRolesSectionDeclares()
@@ -43,7 +43,7 @@ public sealed class FeatureFileRuleUnitTests
         SpechtModel model = new SpechtModelFixture().WithManifest(manifest).WithFeatures(feature);
 
         // When
-        var violations = new FeatureFileRule().Evaluate(model).ToList();
+        var violations = new ClaimTagRule().Evaluate(model).ToList();
 
         // Then
         violations.Select(static violation => (violation.RuleId, violation.Identifier)).Should().Equal(("SPEC021", "B-404"));

@@ -54,7 +54,7 @@ public sealed class SpechtModelUnitTests
 
     [Theory]
     [MemberData(nameof(CompanionCountsOtherThanOne))]
-    public void AFeatureBuiltInMemoryWithoutExactlyOneCompanion_WhenTheFeatureFileRuleEvaluatesTheModel_ShouldReportSpec020(
+    public void AFeatureBuiltInMemoryWithoutExactlyOneCompanion_WhenTheCompanionFileRuleEvaluatesTheModel_ShouldReportSpec020(
         string[] featureFiles)
     {
         // Given
@@ -68,7 +68,7 @@ public sealed class SpechtModelUnitTests
         SpechtModel model = new SpechtModelFixture().WithFeatures(feature);
 
         // When
-        var violations = new FeatureFileRule().Evaluate(model).ToList();
+        var violations = new CompanionFileRule().Evaluate(model).ToList();
 
         // Then
         violations.Should().Equal(
@@ -101,7 +101,7 @@ public sealed class SpechtModelUnitTests
         SpechtModel model = new SpechtModelFixture().WithFeatures(feature);
 
         // When
-        var violations = new IdentityRule().Evaluate(model).ToList();
+        var violations = new PathIdentityRule().Evaluate(model).ToList();
 
         // Then
         violations.Select(static violation => violation.RuleId).Should().Equal(expected, because);
@@ -122,7 +122,7 @@ public sealed class SpechtModelUnitTests
             ]);
 
         // When
-        var violations = new IdentityRule().Evaluate(model).ToList();
+        var violations = new DuplicateIdentityRule().Evaluate(model).ToList();
 
         // Then
         violations.Should().AllSatisfy(violation =>

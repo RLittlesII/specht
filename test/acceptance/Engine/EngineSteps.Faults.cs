@@ -41,7 +41,7 @@ public sealed partial class EngineSteps
     public void GivenOneRuleFindsTwoViolationsAndThenFails()
     {
         BaselineTree.Write(Tree);
-        new ClaimRule().Evaluate(EngineServices.Loader().Load(Tree.Root)).Take(2).Should().HaveCount(2);
+        new ClaimIdRule().Evaluate(EngineServices.Loader().Load(Tree.Root)).Take(2).Should().HaveCount(2);
         _fault = new FailingRule(2);
     }
 
@@ -64,7 +64,7 @@ public sealed partial class EngineSteps
     [Then("every other rule's violations are reported as they are when no rule fails")]
     public void ThenEveryOtherRulesViolationsAreReportedAsTheyAreWhenNoRuleFails()
     {
-        var expected = Tree.Run().Violations.Where(static violation => violation.RuleId is not ("SPEC030" or "SPEC031")).ToArray();
+        var expected = Tree.Run().Violations.Where(static violation => violation.RuleId != "SPEC030").ToArray();
         expected.Should().NotBeEmpty();
         Report.Violations.Where(static violation => violation.RuleId != "SPEC030").Should().Equal(expected);
     }
@@ -84,7 +84,7 @@ public sealed partial class EngineSteps
     [Then("neither of the two violations is reported")]
     public void ThenNeitherOfTheTwoViolationsIsReported()
     {
-        var partial = new ClaimRule().Evaluate(EngineServices.Loader().Load(Tree.Root)).Take(2).ToArray();
+        var partial = new ClaimIdRule().Evaluate(EngineServices.Loader().Load(Tree.Root)).Take(2).ToArray();
         partial.Should().HaveCount(2);
         Report.Violations.Should().NotContain(violation => partial.Contains(violation));
     }

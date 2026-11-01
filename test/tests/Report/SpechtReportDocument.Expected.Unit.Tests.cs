@@ -29,10 +29,12 @@ public sealed class SpechtReportDocumentExpectedUnitTests
         JsonObject[] constraints)
     {
         // Given
-        ISpechtRule rule = new FrontmatterSchemaRule();
+        var check = new FrontmatterSchemaCheck();
+        ISpechtRule[] rules =
+            [new FrontmatterPresentRule(check), new FeatureFrontmatterRule(check), new ItemFrontmatterRule(check), new EpicFrontmatterRule(check)];
 
         // When
-        var document = SpechtReportDocument.From(SpechtRunner.Evaluate(model, [rule]));
+        var document = SpechtReportDocument.From(SpechtRunner.Evaluate(model, rules));
 
         // Then
         var violations = document.Violations.Where(violation => violation.RuleId == ruleId && violation.Identifier == key).ToList();
@@ -55,7 +57,7 @@ public sealed class SpechtReportDocumentExpectedUnitTests
         string[] required)
     {
         // Given
-        ISpechtRule rule = new FrontmatterSchemaRule();
+        ISpechtRule rule = new FrontmatterPresentRule(new FrontmatterSchemaCheck());
 
         // When
         var document = SpechtReportDocument.From(SpechtRunner.Evaluate(model, [rule]));
@@ -81,7 +83,7 @@ public sealed class SpechtReportDocumentExpectedUnitTests
             .WithFeatures(feature);
 
         // When
-        var document = SpechtReportDocument.From(SpechtRunner.Evaluate(model, [new SectionStructureRule()]));
+        var document = SpechtReportDocument.From(SpechtRunner.Evaluate(model, [new SectionContractRule()]));
 
         // Then
         document.Violations.Where(static violation => violation.RuleId == "SPEC010").Should().NotBeEmpty(because)
@@ -102,7 +104,7 @@ public sealed class SpechtReportDocumentExpectedUnitTests
         SpechtModel model = new SpechtModelFixture().WithManifest(manifest).WithFeatures(feature);
 
         // When
-        var document = SpechtReportDocument.From(SpechtRunner.Evaluate(model, [new SectionStructureRule()]));
+        var document = SpechtReportDocument.From(SpechtRunner.Evaluate(model, [new TableHeaderRule()]));
 
         // Then
         var expected = document.Violations.Should()
