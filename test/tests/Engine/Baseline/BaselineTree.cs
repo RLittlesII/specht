@@ -7,20 +7,25 @@ namespace Specht.Tests.Engine.Baseline;
 /// <c>SPEC001</c> to <c>SPEC061</c>, broken in each layout it applies to - the legacy layout under epic
 /// <see cref="LegacyEpic"/>, the co-located layout under epic <see cref="CoLocatedEpic"/>. Its content is fixed, so the
 /// same tree is written every time; <c>Baseline/engine-e7dba24.json</c> is the engine's verdict on it at commit
-/// <c>e7dba24</c>.
+/// <c>e7dba24</c>. That verdict is schema <see cref="SchemaVersion"/>'s, so the tree's manifest pins it (<c>0001-F7</c>
+/// decision 0015, call 6 and Affects).
 /// </summary>
 public static class BaselineTree
 {
+    /// <summary>The schema version whose verdict on the tree the golden report is.</summary>
+    public const string SchemaVersion = "0.1.0";
+
     /// <summary>The epic every legacy specification in the tree declares, under <c>epics/</c>.</summary>
     public const string LegacyEpic = "0001";
 
     /// <summary>The epic every co-located specification in the tree declares, under <c>src/</c>.</summary>
     public const string CoLocatedEpic = "0002";
 
-    /// <summary>Writes the baseline tree under <paramref name="tree"/>'s root.</summary>
+    /// <summary>Writes the baseline tree under <paramref name="tree"/>'s root, its manifest pinned to <see cref="SchemaVersion"/>.</summary>
     /// <param name="tree">A tree holding only the schema set.</param>
     public static void Write(SpechtTree tree)
     {
+        tree.Pin(SchemaVersion);
         Break(new Layout(tree, LegacyEpic, Legacy: true));
         Break(new Layout(tree, CoLocatedEpic, Legacy: false));
 
