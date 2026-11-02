@@ -2,7 +2,7 @@ id: "0321"
 type: task
 title: Cut schema 0.3.0, where SPEC060 follows delivery status against a done marker and epics may be absent
 
-status: ready-for-architecture
+status: in-progress
 
 value: 4
 risk: 4
