@@ -1,0 +1,73 @@
+id: "0335"
+type: task
+title: Report a Scenario cell title no tagged scenario carries, SPEC022, in schema 0.3.0
+
+status: ready
+
+risk: 3
+
+parent: "0224"
+children: []
+
+depends_on: ["0321", "0225"] # 0321 cuts schema 0.3.0, the version this rule joins; 0225 is the resolver it extends for titles (C-3)
+spikes: []
+
+spec: src/specht/Rules/Matrix/.spec/README.md
+
+claims:
+  - B-008
+  - B-009
+  - B-010
+
+created: "2026-11-01"
+updated: "2026-11-01"
+closed: null
+
+summary: |
+  Under `matrix.scenarioTitles`, SPEC022 splits a Scenario cell on `;`
+  into titles and reports, at the row, a title equal to no `Scenario:` or
+  `Scenario Outline:` title in the companion, or one naming a scenario
+  that does not carry the row's claim tag; with title matching absent or
+  off the cell is prose and SPEC022 reports nothing.
+
+  It extends 0225's resolver for titles rather than adding a reader
+  (C-3), so the trace command (0001-F13) and SPEC033's scenario
+  resolution (A-1; 0337) read the same answer.
+
+  Waits on 0321, which cuts schema 0.3.0 (decision 0003). This item adds
+  SPEC022 to 0.3.0's vocabulary with its rule page (0001-F3 B-031) and
+  relocks 0.3.0 by 0001-F7 decision 0014's procedure (0001-F7 C-17), in
+  the pull request that builds the rule. Waits on 0225 for the resolver,
+  done. It does not wait on 0339 (`0055-F1`): this repository's manifest
+  sets no `matrix.scenarioTitles`, so SPEC022 reports nothing on this
+  tree at any pin (B-010; decision 0003, Addendum).
+
+  Risk 3: the resolver's answer gains titles for two Features at once
+  (C-3; 0001-F13); the `;` split is spec-author's reading (A-1); the
+  title and tag must both hold (B-009); and the relock is allowed only
+  while no published package embeds 0.3.0 (OQ-4).
+
+acceptance_criteria:
+  - "B-008 — `;`-split titles, each matching a companion title"
+  - "B-009 — a named scenario without the row's claim tag"
+  - "B-010 — title matching absent or off, SPEC022 silent"
+  - "`0001-F7` B-014 — SPEC022 joins schema 0.3.0's vocabulary here, with its rule page (`0001-F3` B-031) and a relock (`0001-F7` C-17, decision 0014); 0.1.0, 0.2.0 and 0.2.1 unchanged (`0001-F7` C-1)"
+  - "No relock once a published package embeds 0.3.0; OQ-4's default holds until the owner answers."
+  - "The resolver is extended for titles, not duplicated (C-3); no marker literal (C-5)."
+  - "§ 9 carries a row naming a test for each id above."
+
+decisions:
+  - |
+    2026-11-01, spec-author: cut on the owner's ruling of 2026-11-01
+    (decision 0003). Independent of SPEC032 and SPEC023: it reads the
+    Scenario cell, which neither reads. It comes before SPEC033 (0337),
+    whose "scenario resolves" (B-013, B-014) includes the title check
+    under `matrix.scenarioTitles` (A-1). The vocabulary entry is cited in
+    the acceptance criteria, as 0334 explains. Value omitted, inheriting
+    0224's.
+
+out_of_scope:
+  - "Matching a Scenario cell by default: § 5 row 5."
+  - "Turning `matrix.scenarioTitles` on in this repository's manifest: decision 0002 call 3 declares `tests` and `owners` only."
+  - "The expected payload of each violation: `0001-F3` (§ 5 row 7)."
+  - "Everything in § 5 of the spec."

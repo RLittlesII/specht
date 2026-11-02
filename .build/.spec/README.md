@@ -20,7 +20,7 @@ depends_on: []
 blocks: ["F2", "F3", "F4", "F5", "F6", "F9", "0109/F1"]
 spikes: []
 created: "2026-10-08"
-updated: "2026-10-24"
+updated: "2026-11-01"
 github_issue: null
 synced_at: null
 ---
@@ -263,6 +263,8 @@ Earlier review rows are preserved verbatim; later approvals and the current reco
 ## Tasks
 
 Cut 2026-10-08 into [`../.issue/`](../.issue/): `0056` (the Feature), with `0057` to `0062`.
+
+Cut 2026-11-01 on the owner's call ("Cut 0339 pin move (Recommended)"): `0339`, B-026 and B-027, which moves this repository's pin to `0.3.0` and drops its `SPEC060` override (`0001-F7` decision 0015 call 8). It waits on `0321` (`0001-F7`), which cuts `0.3.0`, and is delivered in that item's pull request, because `0001-F4` B-004 fails from the cut until the pin moves. `0001-F12`'s rule items `0334` and `0336` wait on it ([Matrix decision 0003](../../src/specht/Rules/Matrix/.spec/decisions/0003-the-scenario-test-and-status-rules-enter-schema-0-3-0.md), Addendum).
 
 ## Scoring
 

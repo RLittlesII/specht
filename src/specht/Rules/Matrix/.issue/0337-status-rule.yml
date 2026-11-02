@@ -1,0 +1,81 @@
+id: "0337"
+type: task
+title: Report a § 9 status the scenarios and tests do not bear out, SPEC033, in schema 0.3.0
+
+status: ready
+
+risk: 4
+
+parent: "0224"
+children: []
+
+depends_on: ["0321", "0225", "0334", "0335", "0336"] # 0.3.0 and the resolver; SPEC032 for the double report (B-006, B-013), titles for "scenario resolves" (A-1), SPEC023 for B-012
+spikes: []
+
+spec: src/specht/Rules/Matrix/.spec/README.md
+
+claims:
+  - B-012
+  - B-013
+  - B-014
+  - B-015
+  - B-016
+  - B-017
+
+created: "2026-11-01"
+updated: "2026-11-01"
+closed: null
+
+summary: |
+  SPEC033 reports, at its § 9 row, a status the tree does not bear out: a
+  covered row whose scenario, named tests or at least one test does not
+  resolve, a partial row with nothing resolved, a missing row whose tests
+  all resolve, and a status that is none of the six markers. With no
+  `tests` key it resolves no test name; it never reports a row SPEC023
+  reports.
+
+  Waits on 0321, which cuts schema 0.3.0 (decision 0003). This item adds
+  SPEC033 to 0.3.0's vocabulary with its rule page (0001-F3 B-031) and
+  relocks 0.3.0 by 0001-F7 decision 0014's procedure (0001-F7 C-17), in
+  the pull request that builds the rule. It waits on 0334, because a
+  covered row whose Test cell holds no inline code is reported by both
+  SPEC032 and SPEC033 (B-006, B-013); on 0335, because a scenario
+  resolves by title as well as tag under `matrix.scenarioTitles` (A-1);
+  and on 0336, because B-012 is SPEC033's silence on a row SPEC023
+  reports.
+
+  Risk 4: six claims over six markers (C-5); it reads every other rule's
+  answer from the one resolver (C-3) and must agree with SPEC032 and
+  SPEC023 on the rows they share; the no-tests case judges a covered row
+  by its scenario and a named test (B-016); and the relock is allowed
+  only while no published package embeds 0.3.0 (OQ-4).
+
+acceptance_criteria:
+  - "B-012 — no SPEC033 on a row SPEC023 reports"
+  - "B-013 — covered row that does not resolve; with SPEC032, B-006's double report"
+  - "B-014 — partial row with nothing resolved"
+  - "B-015 — stale missing row"
+  - "B-016 — no tests key: scenario and a named test only, never stale"
+  - "B-017 — unknown status marker"
+  - "`0001-F7` B-014 — SPEC033 joins schema 0.3.0's vocabulary here, with its rule page (`0001-F3` B-031) and a relock (`0001-F7` C-17, decision 0014); 0.1.0, 0.2.0 and 0.2.1 unchanged (`0001-F7` C-1)"
+  - "No relock once a published package embeds 0.3.0; OQ-4's default holds until the owner answers."
+  - "Decision 0002 call 3 — every row SPEC033 reports on this repository's tree, pinned 0.3.0 by 0339 before 0334, fixed in this pull request; `./build.sh Specht` gives 0 errors"
+  - "One resolver, no second reading (C-3); no marker literal (C-5)."
+  - "§ 9 carries a row naming a test for each id above."
+
+decisions:
+  - |
+    2026-11-01, spec-author: cut on the owner's ruling of 2026-11-01
+    (decision 0003), last of the four rules because it is the one whose
+    claims name the others: B-012 SPEC023, B-013 SPEC032, and A-1's title
+    resolution through B-013 and B-014. It carries B-012, which the
+    proposed split gave SPEC023, because B-012's test can fail only once
+    SPEC033 exists (0336's decisions). The vocabulary entry is cited in
+    the acceptance criteria, as 0334 explains. Value omitted, inheriting
+    0224's. Rejected: SPEC033 first, which would build B-012, B-013's
+    double report and the title case against rules not yet there.
+
+out_of_scope:
+  - "SPEC032's report of the same row: 0334 (B-006)."
+  - "The expected payload of each violation: `0001-F3` (§ 5 row 7)."
+  - "Everything in § 5 of the spec."

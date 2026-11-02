@@ -1,0 +1,127 @@
+id: "0339"
+type: task
+title: Pin this repository to schema 0.3.0 and drop its SPEC060 override
+
+status: ready
+
+risk: 3
+
+parent: "0056"
+children: []
+
+depends_on: ["0321"] # 0321 cuts schema 0.3.0, the version this repository moves its pin to
+spikes: []
+
+spec: .build/.spec/README.md
+
+claims:
+  - B-026
+  - B-027
+
+created: "2026-11-01"
+updated: "2026-11-01"
+closed: null
+
+summary: |
+  This repository's manifest moves its pin from 0.2.1 to 0.3.0 and, in
+  the same change, removes `SPEC060` from its `rules` (`0001-F7` decision
+  0015 call 8; C-6). From then on `Specht` reports a `Missing` row only
+  on a Feature whose delivery status is done, at error (B-026, B-027).
+  The manifest's other keys do not change.
+
+  Waits on 0321, which cuts 0.3.0. It lands before 0334, the first
+  matrix rule item (0224), so that each matrix rule runs on this tree
+  in the pull request that builds it, and that pull request fixes the
+  rows the rule reports here (Matrix decision 0002 call 3; Matrix
+  decision 0003, Addendum). 0334 and 0336 wait on this item. 0337 and
+  0338 follow through 0334. 0335 does not wait: SPEC022 is silent
+  here, because this manifest sets no `matrix.scenarioTitles` (Matrix
+  B-010).
+
+  Delivered in 0321's pull request, as its own commit after 0321's
+  commits. From 0321's cut, the test of `0001-F4` B-004
+  (`ShippingCopyIntegrationTests`, the tool-owned manifest keys) holds
+  the live manifest's `schemaVersion` equal to the newest embedded
+  manifest's. That test therefore fails until the pin moves (`0001-F7`
+  OQ-56's default; § 7 of `0001-F7` names the failure), and 0.2.1's cut
+  moved the pin in its own change (commit `7d975b67`). The commit that
+  moves the pin also removes the override (call 8).
+
+  Risk 3: a done Feature with a `Missing` row stops passing. On
+  2026-11-01 two Features with status done carry the missing marker in
+  § 9, and every other done Feature carries none:
+  `0055-F9` (`.github/mirror/.spec/`), on its rows for B-033, B-064
+  and B-065; and `0201-F5` (`src/analyzers/Reconciliation/.spec/`), on
+  the Test cell of its Withdrawn B-024 row. `SPEC060` reports a row
+  with any missing cell, Withdrawn or not, so the four rows become
+  `SPEC060` errors (`0001-F7` B-118). The hook and CI gate on them
+  (C-7), so the pull request cannot merge with them. 0.3.0 also
+  loosens the epic frontmatter, but only for a manifest that declares no epic grammar
+  (`0001-F7` B-037, B-038). This manifest declares `identifiers.epic`,
+  so the loosening is expected to change no verdict here, and the run
+  confirms it.
+
+  How what the move reveals is handled: the pull request runs
+  `./build.sh Specht` with the pin moved and records each new finding
+  in this item's decisions. A finding is fixed in the pull request only
+  by the role that owns the cell or file. If any finding remains, the
+  item stops before merging and takes the list to the owner. Restoring
+  the override is not an option (C-6). § 7's sentence that this
+  manifest sets `SPEC060` to warning is the implementer's to update in
+  the same change.
+
+acceptance_criteria:
+  - "B-026 — pinned 0.3.0: approved, not done, `Missing` row, no `SPEC060`, exit 0"
+  - "B-027 — pinned 0.3.0: done, `Missing` row, `SPEC060` error, non-zero exit"
+  - "C-6 — no `SPEC060` entry in this manifest's `rules` once the pin is 0.3.0; no filter drops `SPEC060` lines"
+  - "`0001-F4` B-004 — the live manifest's `schemaVersion` equals the newest embedded manifest's"
+  - "`./build.sh Specht` gives 0 errors with the pin moved; every finding the move revealed is recorded in this item's decisions with how it was cleared"
+  - "B-024 — its Given, a pin below 0.3.0, stops holding here; Superseded in § 3 and § 9 and its scenario removed, as decision 0001 does for B-023 and B-025"
+  - "§ 9 remains Missing for B-026 and B-027 under the owner's no-build-tests decision in § 8; manual verification is recorded in the commit and delivery report."
+
+decisions:
+  - |
+    2026-11-01, the repository owner, answering a question card on
+    spec-reviewer's round-7 finding on `0001-F12` (Matrix § 12):
+    "Cut 0339 pin move (Recommended)". As put to the owner: one `0055-F1`
+    item, delivering B-026 and B-027, that moves this repository's pin to
+    0.3.0 and drops its `SPEC060` override, after 0321 and before 0334,
+    delivered by the lane that delivers 0321 and the matrix rules. Each
+    matrix rule's pull request then fixes the rows it reports on this
+    tree, which keeps Matrix decision 0002 call 3 unreversed. Rejected:
+    a Reversal of call 3 that leaves the four rules silent here until a
+    later pin move. The moved pin depends on no tag: the self-check runs
+    the working build of the checker (`0001-F2` decision 0014), and the published
+    `specht.tool` in `.config/dotnet-tools.json` is the consumer
+    installation contract only.
+  - |
+    2026-11-01, spec-author: delivered in 0321's pull request, not one of
+    its own. This is a reading of the facts in the summary, not the
+    owner's words. From 0321's cut, `0001-F4` B-004's test fails until
+    the pin moves. A pull request of its own after 0321's would leave
+    `main` failing between the two merges, or 0321 would move the pin
+    itself, which its out_of_scope routes here. The owner's order still
+    holds: this commit follows 0321's commits and precedes 0334.
+  - |
+    2026-11-01, spec-author: B-024 is Superseded in this change by
+    B-026 and B-027. Decision 0001 does the same for B-023 and B-025,
+    for its stated reason: the Given describes this repository's
+    history, so a synthetic tree cannot make it hold again. § 10's entry
+    of 2026-10-16 keeps B-024's scenario only "until that change lands".
+    This is spec-author's reading and the owner may reverse it. No claim
+    changes before this item is taken.
+  - |
+    2026-11-01, spec-author: parent 0056, the `0055-F1` Feature item,
+    which is done. 0056 is not reopened, and B-026 and B-027 are not
+    added to its `claims`. They were added on 2026-10-16, after 0056
+    closed, and the item that delivers them carries them, as 0321
+    carries `0001-F7` claims that 0041 does not list. Reopening 0056
+    would erase what it delivered and when (0041's decision on 0042).
+    Value omitted, inheriting 0056's, as its other children do.
+
+out_of_scope:
+  - "Cutting schema 0.3.0, its vocabulary, `markers.done` and the live `.specht/` copy — 0321 (`0001-F7`)."
+  - "The matrix rules and the rows each reports on this tree — 0334 to 0337 (`0001-F12`; Matrix decision 0002 call 3)."
+  - "Writing the tests a done Feature's `Missing` rows name — that Feature's test-writer; this item records the rows and stops if they remain."
+  - "`SPEC060` scoped per claim — `0001-F7` § 5 #27."
+  - "Everything in § 5 of the spec."
