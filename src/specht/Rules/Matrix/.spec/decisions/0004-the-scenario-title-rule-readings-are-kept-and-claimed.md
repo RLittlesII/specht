@@ -71,6 +71,13 @@ Spec-author's readings, not stated by the owner:
 - **None is a boundary only.** Each states a verdict `SPEC4007` gives, so each
   is a § 3 claim; B-023's case-only difference is also an `@boundary`
   scenario, since it marks where a title stops matching.
+- **A retired row passes both rules only with no title.** With
+  `matrix.scenarioTitles` on and `SPEC4006` reporting, a row whose Status is
+  the withdrawn or superseded marker passes `SPEC4006` and `SPEC4007` only
+  when its Scenario cell holds no title: a title naming a scenario that
+  carries the retired tag is reported by B-019, and one naming no such
+  scenario by B-025 with B-008 or B-009. This follows from "no row exempt"
+  as ruled; no claim's text changes.
 
 ## Reversal
 
