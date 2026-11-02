@@ -66,6 +66,70 @@ public sealed class MatrixResolverUnitTests
         test.Line.Should().Be(line);
     }
 
+    [Theory]
+    [ClassData(typeof(ScenarioTitleResolutions))]
+    public void AScenarioCell_WhenResolved_ShouldSplitOnSemicolonsAndResolveEachTitleToAScenarioCarryingTheRowTag(
+        string? matrix, bool tagIgnoreCase, string claim, string cell, string[] titles, MatrixScenarioStatus[] statuses, int?[] lines)
+    {
+        // Given
+        const string companion = "src/sample/.spec/sample.feature";
+        var manifest = new JsonObject
+        {
+            ["schemaVersion"] = "0.3.0",
+            ["claim"] = new JsonObject { ["tagIgnoreCase"] = tagIgnoreCase },
+        };
+        if (matrix is not null)
+        {
+            manifest["matrix"] = JsonNode.Parse(matrix);
+        }
+
+        var structure = EngineServices.Parser().Parse(manifest.ToJsonString());
+        var file = new FeatureTagParser().Read(companion, """
+            @B-001
+            Feature: Sample
+
+              @B-002
+              Scenario: First case
+                Given a thing
+
+              @B-003
+              Scenario Outline: Second case
+                Given <thing>
+
+                @B-004
+                Examples:
+                  | thing |
+                  | one   |
+
+              @B-005
+              Example: An example
+                Given a thing
+
+              @B-006
+              Scenario: Twin
+                Given a thing
+
+              @B-007
+              Scenario: Twin
+                Given a thing
+            """, structure);
+        FeatureSpec feature = new FeatureSpecFixture()
+            .WithDocument(SpechtDocument.Parse($$"""
+                ## 9. Traceability Matrix
+                | Claim ID | Scenario | Test | Status |
+                | --- | --- | --- | --- |
+                | {{claim}} | {{cell}} | `AlphaTest` | Partial |
+                """, "src/sample/.spec/README.md"))
+            .WithFeatureFiles(file);
+
+        // When
+        var rows = new MatrixResolver().Resolve(feature, structure, []);
+
+        // Then
+        rows.Should().ContainSingle().Which.Scenarios.Should().Equal(titles.Select((title, index) =>
+            new MatrixScenarioResolution(title, statuses[index], lines[index] is null ? null : companion, lines[index])));
+    }
+
     [Fact]
     public void RenamedMatrixHeaders_WhenResolved_ShouldKeepColumnRolesAndSourceLines()
     {
