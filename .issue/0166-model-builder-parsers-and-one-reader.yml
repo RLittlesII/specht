@@ -2,7 +2,7 @@ id: "0166"
 type: refactor
 title: Build the model from text through a builder, parsers and one reader
 
-status: ready-for-implementation
+status: in-progress
 
 value: 3
 risk: 5
@@ -18,7 +18,7 @@ spec: null
 claims: []
 
 created: "2026-10-11"
-updated: "2026-11-01"
+updated: "2026-11-02"
 closed: null
 
 summary: |
