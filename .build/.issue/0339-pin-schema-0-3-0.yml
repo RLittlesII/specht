@@ -48,11 +48,15 @@ summary: |
   moves the pin also removes the override (call 8).
 
   Risk 3: a done Feature with a `Missing` row stops passing. On
-  2026-11-01 that is `0055-F9` (`.github/mirror/.spec/`, status done):
-  its rows for B-033, B-064 and B-065 carry the missing marker and
-  become `SPEC060` errors. The hook and CI gate on them (C-7), so the
-  pull request cannot merge with them. 0.3.0 also loosens the epic
-  frontmatter, but only for a manifest that declares no epic grammar
+  2026-11-01 two Features with status done carry the missing marker in
+  § 9, and every other done Feature carries none:
+  `0055-F9` (`.github/mirror/.spec/`), on its rows for B-033, B-064
+  and B-065; and `0201-F5` (`src/analyzers/Reconciliation/.spec/`), on
+  the Test cell of its Withdrawn B-024 row. `SPEC060` reports a row
+  with any missing cell, Withdrawn or not, so the four rows become
+  `SPEC060` errors (`0001-F7` B-118). The hook and CI gate on them
+  (C-7), so the pull request cannot merge with them. 0.3.0 also
+  loosens the epic frontmatter, but only for a manifest that declares no epic grammar
   (`0001-F7` B-037, B-038). This manifest declares `identifiers.epic`,
   so the loosening is expected to change no verdict here, and the run
   confirms it.
