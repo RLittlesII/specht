@@ -9,6 +9,7 @@ using Specht.Report;
 using Specht.Resources;
 using Specht.Rules;
 using Specht.Rules.Matrix;
+using Specht.Tree;
 using Specht.Versioning;
 
 namespace Specht.Composition;
@@ -50,6 +51,8 @@ public static class SpechtEngineServiceCollectionExtensions
         services.AddSingleton<SpechtViolationOrder>();
         services.AddSingleton<SpechtEvaluator>();
         services.AddSingleton<SpechtRunner>();
+        services.AddSingleton<SpechtTreeStore>();
+        services.AddSingleton<SpechtTreeGenerator>();
         services.AddSingleton<FrontmatterSchemaCheck>();
         services.AddSingleton<ISpechtRule, FrontmatterPresentRule>();
         services.AddSingleton<ISpechtRule, FeatureFrontmatterRule>();

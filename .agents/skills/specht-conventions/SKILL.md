@@ -50,7 +50,7 @@ src/
   specht/                      specht - the rule engine: discovery, readers, schema loader,
                                rules, runner, report. Baseline at `e7dba24` (brief § 3).
     .spec/                     this Feature's specification, .feature and records (epic 0001)
-    Model/ Discovery/ Manifest/ Evaluation/ Report/ Versioning/ Composition/ Rules/
+    Model/ Discovery/ Manifest/ Evaluation/ Report/ Versioning/ Composition/ Rules/ Tree/
                                one folder per Feature, and named folders for what several read
   tool/                        specht.tool - the CLI host; PackAsTool, command `specht`
     Features/<Command>/        one folder per Spectre command - dotnet-tool owns the inside
@@ -175,6 +175,14 @@ branches took it is in [references/delivery.md](references/delivery.md)
 The rule vocabulary is fixed per schema version (brief § 4). A new `SPEC###` is
 a new schema version, after brief § 8 step 6 — never a quiet addition.
 
+A schema version is published only when a `specht.tool` package that embeds it
+is on a feed consumers install from. Until then it is open: a change to it, a
+new rule id included, is made in that version in place, relocked if it is
+locked (`0001-F7` C-1, C-17). Version folders, a cut, a lock entry, a pin, a
+git tag and a GitHub pre-release do not show that a version was published.
+When it is unclear, ask the owner
+([lesson 0016](../../../.spec/lessons/0016-a-schema-version-is-published-only-when-a-package-carries-it.md)).
+
 Known gap in the model the tool checks: § 4's ID column is an explicit `C-nn` in
 only some consumers' specs; the rest carry a bare ordinal, so those citations
 resolve by counting rows. The template uses an explicit column; a spec written
@@ -238,6 +246,8 @@ a commit of `main` creates `v<version>` (`0055-F5` A-1, B-007).
 - An authoritative rule in a tool-local installation. Edit `.agents/` and
   reinstall; installed copies are gitignored and cannot be reviewed.
 - A renumbered claim, constraint, question, task or rule id.
+- A new schema version for a change that fits a version no published package
+  carries.
 - A GitHub issue, label or milestone as a tracker.
 - A mirrored issue, label or milestone edited by hand, or read back into an item.
 - A hand edit to any derived field.

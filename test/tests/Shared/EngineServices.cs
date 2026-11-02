@@ -9,6 +9,7 @@ using Specht.Tool;
 using Specht.Tool.Features.Evidence;
 using Specht.Tool.Features.Frontmatter;
 using Specht.Tool.Features.Schema;
+using Specht.Tree;
 using Specht.Versioning;
 using Spectre.Console;
 using Spectre.Console.Cli.Testing;
@@ -72,6 +73,13 @@ public static class EngineServices
 
     /// <summary>Resolves the pure manifest parser.</summary>
     public static SpechtManifestParser Parser() => (SpechtManifestParser)Resolve(typeof(SpechtManifestParser));
+
+    /// <summary>Resolves the tree generator with the chosen catalog.</summary>
+    public static SpechtTreeGenerator Generator(SchemaVersions? versions = null) =>
+        (SpechtTreeGenerator)Resolve(typeof(SpechtTreeGenerator), versions: versions);
+
+    /// <summary>Resolves the tree store over the supplied file system.</summary>
+    public static SpechtTreeStore Store(IFileSystem fileSystem) => (SpechtTreeStore)Resolve(typeof(SpechtTreeStore), fileSystem);
 
     /// <summary>Resolves the schema stage over the supplied file system and catalog.</summary>
     public static SpechtSchemasLoader Schemas(IFileSystem fileSystem, SchemaVersions? versions = null) =>

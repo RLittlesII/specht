@@ -45,6 +45,9 @@ src/specht/
   Discovery/                    Feature 0001-F6 - finding specifications, layouts and locations
   Manifest/                     Feature 0001-F5 - the manifest, the structure it declares, its exceptions
   Report/                       Feature 0001-F3 - the report document
+  Tree/                         shared - `SpechtTree`, `SpechtTreeFile`, `SpechtTreeStore`,
+                                `SpechtTreeGenerator` (ADR-0010 stage 6, item 0153); its claims are
+                                0109-F1's. No .spec/ here.
   Versioning/                   shared - the engine half of 0001-F7, whose home is `src/tool`:
                                 the schema versions. No .spec/ here.
   Composition/                  shared - `AddSpechtEngine()`, the engine's one registration extension
@@ -74,7 +77,7 @@ src/specht/                     no .cs at the project root
   Evaluation/                   `SpecEvaluator`, `SpechtReport`, the violation and its order
   Rules/                        `ISpechtRule`, the finding, one rule per rule id in a folder per group
   Model/                        the immutable `SpechtModel`, the parsers, its builder and its reader
-  Tree/                         `SpechtTree`, its files, `SpechtTreeStore` (item 0153)
+  Tree/                         `SpechtTree`, its files, `SpechtTreeStore`, `SpechtTreeGenerator`
   Manifest/                     the structure, the rule settings, the parser, `SpechtManifestStore`
   Discovery/                    finding specifications, layouts and locations
   Versioning/                   the schema versions

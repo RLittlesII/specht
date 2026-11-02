@@ -1,38 +1,37 @@
-using System;
-using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;
 using System.Text;
 using Specht.Manifest;
-using Specht.Versioning;
+using Specht.Resources;
 
-namespace Specht.Benchmarks;
+namespace Specht.Tree;
 
-/// <summary>The clean specification tree a benchmark measures over, held in memory (<c>0109-F1</c> B-015, B-016; decision 0004).</summary>
-public sealed class SpechtTree
+/// <summary>
+/// Generates the clean specification tree a benchmark measures over, in memory (<c>0109-F1</c> B-015, B-016; decisions 0004
+/// and 0005).
+/// </summary>
+/// <param name="resources">The engine's embedded resources, holding the shipped default manifest.</param>
+/// <param name="parser">The manifest parser that names the frontmatter schemas and resolves the pinned version.</param>
+/// <implements epic="0109" feature="F1" claim="B-016" />
+public sealed class SpechtTreeGenerator(SpechtResources resources, SpechtManifestParser parser)
 {
-    private SpechtTree(IReadOnlyList<SpechtTreeFile> files) => Files = files;
-
-    /// <summary>
-    /// Gets the tree's files: the manifest, the three frontmatter schemas, the test file the matrix rows name, then each
-    /// specification and its Gherkin file, in index order.
-    /// </summary>
-    public IReadOnlyList<SpechtTreeFile> Files { get; }
-
-    /// <summary>Builds the tree that holds <paramref name="specifications"/> specifications.</summary>
+    /// <summary>Generates the tree that holds <paramref name="specifications"/> specifications.</summary>
     /// <param name="specifications">How many specifications the tree holds.</param>
-    /// <param name="manifest">The original manifest bytes read at setup.</param>
-    /// <param name="structure">The parsed manifest.</param>
-    /// <param name="version">The selected version.</param>
-    /// <returns>A new tree, holding the same files with the same contents for the same size.</returns>
-    public static SpechtTree Of(int specifications, ReadOnlyMemory<byte> manifest, SpechtStructure structure, SchemaVersion version)
+    /// <returns>
+    /// The shipped default manifest, the pinned version's three frontmatter schemas under the manifest's names, then each
+    /// specification and its Gherkin file in index order; the same files with the same contents for the same size.
+    /// </returns>
+    /// <implements epic="0109" feature="F1" claim="B-015" />
+    /// <implements epic="0109" feature="F1" claim="B-016" />
+    public SpechtTree Generate(int specifications)
     {
+        var structure = parser.Parse(resources.DefaultManifest);
+        var version = parser.PinnedVersion(structure);
         var names = structure.FrontmatterSchemas;
         var schema = SpechtManifestStore.FrontmatterSchemaFolder + "/";
 
         List<SpechtTreeFile> files =
         [
-            new(SpechtManifestStore.RelativePath, manifest.ToArray()),
+            new(SpechtManifestStore.RelativePath, resources.DefaultManifestBytes.ToArray()),
             Text(schema + names["feature"], version.FeatureSchema),
             Text(schema + names["task"], version.ItemSchema),
             Text(schema + names["epic"], version.EpicSchema),
@@ -51,8 +50,10 @@ public sealed class SpechtTree
         return new SpechtTree(files);
     }
 
+    /// <implements epic="0109" feature="F1" claim="B-016" />
     private static SpechtTreeFile Text(string relativePath, string text) => new(relativePath, Utf8.GetBytes(text));
 
+    /// <implements epic="0109" feature="F1" claim="B-016" />
     private static string Specification(int index, string number)
     {
         var claims = Enumerable.Range(1, Claims).Select(Claim).ToList();
@@ -166,6 +167,7 @@ public sealed class SpechtTree
         return string.Join('\n', lines);
     }
 
+    /// <implements epic="0109" feature="F1" claim="B-016" />
     private static string Scenarios(string number)
     {
         string[] lines =
@@ -186,6 +188,7 @@ public sealed class SpechtTree
         return string.Join('\n', lines);
     }
 
+    /// <implements epic="0109" feature="F1" claim="B-016" />
     private static string Tests()
     {
         string[] lines =
@@ -200,6 +203,7 @@ public sealed class SpechtTree
         return string.Join('\n', lines);
     }
 
+    /// <implements epic="0109" feature="F1" claim="B-016" />
     private static string Claim(int claim) => claim.ToString("D3", CultureInfo.InvariantCulture);
 
     private const int Claims = 3;
