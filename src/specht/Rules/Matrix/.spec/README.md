@@ -20,7 +20,7 @@ depends_on: ["F3", "F5", "F7"]
 blocks: ["F13", "F16"]
 spikes: []
 created: "2026-10-14"
-updated: "2026-11-01"
+updated: "2026-11-02"
 github_issue: null
 synced_at: null
 ---
