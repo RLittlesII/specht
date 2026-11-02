@@ -198,7 +198,7 @@ Half of the model's contract is not in the schema files: which section holds the
 
 ## 6. Concern Separation
 
-<!-- last written by: implementer, 2026-11-01 (item `0160`); implementer, 2026-10-16 (own off-level selection) -->
+<!-- last written by: implementer, 2026-11-01 (item `0321`: the done marker); implementer, 2026-11-01 (item `0160`); implementer, 2026-10-16 (own off-level selection) -->
 
 Item `0011` builds the loader; the families of keys (`0014`-`0019`) extend this table.
 
@@ -239,6 +239,8 @@ Item `0011` builds the loader; the families of keys (`0014`-`0019`) extend this 
 The own off level and its manifest override are a Business concern; the existing runner selects, filters and counts them through one predicate (B-061, B-062), as designed in § 7.
 
 Sign-off headers and per-role table defaults are a Business concern: the parser supplies the effective table lists, and the existing section rule compares headers through the role's section title (B-065 to B-067; § 7).
+
+The done marker at schema `0.3.0` is a Business concern: the `0.3.0` shipped manifest names `markers.done`, so the existing per-name fill supplies `done` when it is left out and the existing empty-marker check rejects an empty one, naming it (B-063, B-064; § 7). `ApprovalCoverageRule` reads it (`0001-F7` B-118).
 
 ## 7. Technical Design
 
@@ -672,6 +674,12 @@ This extends ADR-0004's selection boundary and implements decision 0014 without 
 `SpechtManifestParser.Parse` reads the explicit table map, or the pinned default when the map is omitted. For a shipped pin of `0.2.0` or later, it then appends only missing roles from that pin's default map. `TryAdd` preserves a declared role's complete list, including a short list; no element-level merge or new rejection is introduced. Earlier pins retain whole-map replacement. In particular, an explicit empty map disables table checks only before `0.2.0`; from `0.2.0` it selects every pinned table default (B-066, B-067).
 
 The working `0.2.0` manifest and the live copy gain `tables.signOff` with the four headers in B-065. `TableHeaderRule` (`SectionStructureRule` before item `0157`) already checks every declared role's headers through its section title, so SPEC013 needs no code change. The parser fills configuration; the existing rule checks the document. `0227` consumes the positional status and reviewer columns separately. `0.2.0` is relocked through `LockSchemaVersion`; every `0.1.0` resource and its digest stay unchanged. No new rule id, dependency or architecture is introduced.
+
+### The done marker at schema 0.3.0
+
+<!-- last written by: implementer, 2026-11-01 (item `0321`, built) -->
+
+`done` is one more entry in the `0.3.0` shipped manifest's `markers`, value `done`. [`SpechtManifestParser`](../SpechtManifestParser.cs) needs no change: `Filled` starts from the pinned default's `markers` and overlays the manifest's, so a `0.3.0` manifest that leaves `done` out reads `done` and one that names it reads its text (B-063); `Check` faults every marker the pinned default names whose effective text is empty, so an empty `done` is rejected as `the marker 'done' in markers is empty` and exits `3` (B-064, B-040). Below `0.3.0` the defaults name no `done`, so nothing fills it and nothing checks it. The marker is cut into `0.3.0` by `0001-F7` item `0321`, which locks the version; no `0.1.0`, `0.2.0` or `0.2.1` resource or digest changes. [`ApprovalCoverageRule`](../../Rules/ApprovalCoverageRule.cs) reads it from `SpechtStructure.Markers` (`0001-F7` § 7, "Schema 0.3.0"). `.specht/manifest.json` gains the marker with this repository's pin move, item `0339` (`0001-F4` B-004).
 
 ## 8. Testing Strategy
 

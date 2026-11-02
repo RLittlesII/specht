@@ -443,6 +443,20 @@ Item `0042` built the version set and the pin as an integer; item `0120` convert
 | A run that rewrites nothing and skips a named template is current, then lists the skip, and exits `0` (B-006, B-142)                                                              | Business       | `UpgradeCommand.ExecuteAsync`, `0094`'s fold, unchanged                                                                                                                 |
 | A name the pinned version does not ship changes no list and no file (B-063, B-144; decision 0019 call 4)                                                                          | Business       | `UpgradeWriter.Upgrade` matches names against `At(pinned)` alone; the plan never holds a file outside it                                                                |
 
+<!-- last written by: implementer, 2026-11-01 (item `0321`, built) -->
+
+| Concern                                                                                                                                                         | Classification | Where                                                                                                                                                          |
+| --------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Schema `0.3.0` ships, cut from `0.2.1` and locked; no file of `0.1.0`, `0.2.0` or `0.2.1` and no lock entry of theirs changes (decision 0015 call 7; C-1, C-17) | Business       | `src/tool/{schema,manifest,templates}/v0.3.0/` and `docs/rules/v0.3.0/`, through `CutSchemaVersion` and `LockSchemaVersion`                                    |
+| `0.3.0`'s rule vocabulary is `0.2.1`'s, written by hand (§ 5 #25)                                                                                               | Business       | `SchemaVersions.Shipped`, one more pattern on the `0.2.x` arm                                                                                                  |
+| Which axis `SPEC060` selects on: the delivery `status` from `0.3.0`, the approved `spec_status` below it (B-118 to B-120)                                       | Business       | `ApprovalCoverageRule.Evaluate`, comparing `SpechtStructure.SchemaVersion` with `0.3.0`                                                                        |
+| The done value is the manifest's, not a literal (B-118; `0001-F5` B-063)                                                                                        | Business       | `ApprovalCoverageRule.Evaluate` reads `SpechtStructure.Markers["done"]`                                                                                        |
+| A Feature's delivery `status`                                                                                                                                   | Technical      | `FeatureSpec.Status`, read from the frontmatter as `SpecStatus` is                                                                                             |
+| The message under each axis, fixed whatever the manifest gives (B-121)                                                                                          | Business       | `ApprovalCoverageRule.Evaluate`                                                                                                                                |
+| `SPEC061` keeps the approval axis, and no rule id is added (B-122, B-123)                                                                                       | Business       | `ApprovalSignOffRule`, unchanged; `SchemaVersions.Shipped`                                                                                                     |
+| With no epic grammar, a Feature without `epic` and an item whose `parent` is a bare Feature id pass the frontmatter schemas (B-037, B-038)                      | Business       | The `0.3.0` feature schema drops `epic` from `required`; the `0.3.0` task schema's `parent` pattern is `^([0-9]{4}-)?F[0-9]+[a-z]?$` (`0001-F5` decision 0004) |
+| The `0.3.0` feature template's § 9 guidance (B-124)                                                                                                             | Business       | `src/tool/templates/v0.3.0/feature.md`                                                                                                                         |
+
 ## 7. Technical Design
 
 ### Schema command boundary
@@ -1301,6 +1315,63 @@ The engine's existing stores, parser and fetcher are the implementation basis.
 more entry of `UpgradeResult.Rewritten`, so it is listed as a rewritten file.
 The on-disk skip and its listing are `0094`'s. The input failures are `0046`'s
 and `0048`'s. Moving the recorded version is the consumer's (C-10).
+
+### Schema 0.3.0 (item `0321`)
+
+<!-- last written by: implementer, 2026-11-01 (item `0321`, built) -->
+
+**The cut.** `./build.sh CutSchemaVersion --cut-version 0.3.0` copied `0.2.1`'s
+four folders, splicing each frontmatter schema's `$id` and each rule page's
+Schema version row (B-096 to B-099). The hand edits after it are the whole
+difference from `0.2.1`:
+
+| File                                                     | Change                                                                                                                                                 | Claim                  |
+| -------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ | ---------------------- |
+| `src/tool/manifest/v0.3.0/manifest.json`                 | `schemaVersion` set to `0.3.0`, which the cut copies unchanged (OQ-67 (a)); `markers.done` added, `done`                                               | `0001-F5` B-063, B-064 |
+| `src/tool/schema/v0.3.0/frontmatter/feature.schema.json` | `epic` left out of `required`; the property stays, with its pattern                                                                                    | B-037                  |
+| `src/tool/schema/v0.3.0/frontmatter/task.schema.json`    | `parent`'s pattern widened to `^([0-9]{4}-)?F[0-9]+[a-z]?$`; `id`'s is unchanged                                                                       | B-038                  |
+| `src/tool/templates/v0.3.0/feature.md`                   | § 9's guidance comment: "Missing blocks delivery, not agreement." becomes the B-124 sentence, introduced by "A Missing row:" so its "it" names the row | B-124                  |
+| `docs/rules/v0.3.0/SPEC060.md`                           | Title, cause, description, example and fixes describe the done axis and the B-121 message; `markers.done` joins the manifest table                     | `0001-F3` B-031; B-121 |
+
+`./build.sh LockSchemaVersion` then recorded `0.3.0`'s digest. The other
+three entries are byte-for-byte unchanged (C-17). Nothing under `.specht/` is
+written (OQ-56); this repository's pin moves in item `0339`.
+
+**The vocabulary.** `SchemaVersions.Shipped` maps `0.3.0` to the `0.2.x` set,
+21 ids plus `SPEC034` and `SPEC035`, by adding `{ Major: 0, Minor: 3, Patch: 0 }`
+to that arm. An item that adds a rule to the unpublished `0.3.0` (`0001-F12`)
+gives `0.3.0` an arm of its own; nothing closes the set.
+
+**The rule.** [`ApprovalCoverageRule`](../../specht/Rules/ApprovalCoverageRule.cs)
+compares `SpechtStructure.SchemaVersion` with `0.3.0` once per evaluation.
+From `0.3.0` it selects a Feature whose `FeatureSpec.Status` equals
+`Markers["done"]`; below it, one whose `SpecStatus` equals `Markers["approved"]`.
+The row scan, the identifier, the line and `Expected` are unchanged; only the
+selection and the message branch. The message is the literal of B-121 and of
+the older text, not built from the marker, as the approved message never was.
+`Markers["done"]` exists whenever the pin is `0.3.0` or later, because the
+parser fills every marker the pinned default manifest names (`0001-F5` B-048).
+[`FeatureSpec.Status`](../../specht/Model/FeatureSpec.cs) reads `status` as
+`SpecStatus` reads `spec_status`. `ApprovalSignOffRule` is untouched (B-122).
+`ISpechtRule` is unchanged, so item `0164`'s rewrite meets one more branch in
+one rule.
+
+**Why the version, not the marker's presence.** The parser accepts a marker
+name the defaults do not declare, so a `0.2.x` manifest may name `done` too;
+keying on its presence would move that older pin's axis (C-1, B-120). § 8 names
+`SpechtStructure.SchemaVersion` as the switch.
+
+**Epics left out.** The engine already reads the epic frontmatter schema only
+under an epic grammar (`0001-F5` B-008, B-033). The `0.3.0` feature and task
+schemas loosen statically, as `0001-F5` decision 0004 designs; JSON Schema
+cannot see the manifest, so the loosening holds under an epic grammar too.
+There the strictness is `SPEC011`'s and `SPEC043`'s to take back (`0001-F5`
+B-031, B-035). `SPEC043` already reports a bare `parent` there, since a
+Feature's identity is `{epic}-{id}`; `SPEC011`'s missing-`epic` check, B-035,
+is not built.
+
+No ADR: the axis change is decision 0015, the cut and the lock are `0189`'s
+and `0188`'s procedures, and the schema loosening is `0001-F5` decision 0004.
 
 ## 8. Testing Strategy
 

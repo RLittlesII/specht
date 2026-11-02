@@ -1,16 +1,17 @@
 using System.Text.Json.Nodes;
 using Specht.Model;
+using Specht.Versioning;
 
 namespace Specht.Rules;
 
-/// <summary>SPEC060 - an approved specification has no missing coverage.</summary>
+/// <summary>SPEC060 - a done specification, or below schema 0.3.0 an approved one, has no missing coverage.</summary>
 /// <remarks>
-/// The rule is guarded on <c>spec_status: approved</c>, which is how a rule
-/// that cannot bite yet still ships written rather than deferred: every
-/// specification is currently a draft, so it is vacuously green, and the
-/// first specification to be approved gets the check for free.
+/// From schema 0.3.0 the rule selects a specification whose delivery <c>status</c> is the manifest's done marker,
+/// whatever its <c>spec_status</c>; below it, one whose <c>spec_status</c> is the approved marker
+/// (<c>0001-F7</c> decision 0015).
 /// </remarks>
 /// <implements epic="0001" feature="F1" claim="B-001" />
+/// <implements epic="0001" feature="F7" claim="B-118" />
 public sealed class ApprovalCoverageRule : ISpechtRule
 {
     /// <inheritdoc />
@@ -21,13 +22,25 @@ public sealed class ApprovalCoverageRule : ISpechtRule
 
     /// <inheritdoc />
     /// <implements epic="0001" feature="F1" claim="B-001" />
+    /// <implements epic="0001" feature="F7" claim="B-118" />
+    /// <implements epic="0001" feature="F7" claim="B-119" />
+    /// <implements epic="0001" feature="F7" claim="B-120" />
+    /// <implements epic="0001" feature="F7" claim="B-121" />
     public IEnumerable<SpechtViolation> Evaluate(SpechtModel model)
     {
         var markers = model.Schemas.Structure.Markers;
+        var doneAxis = model.Schemas.Structure.SchemaVersion.CompareTo(DoneAxisVersion) >= 0;
+        var message = doneAxis
+            ? "status is 'done' while § 9 still carries a 'Missing' cell"
+            : "spec_status is 'approved' while § 9 still carries a 'Missing' cell";
 
         foreach (var feature in model.Features)
         {
-            if (!string.Equals(feature.SpecStatus, markers["approved"], StringComparison.Ordinal))
+            var selected = doneAxis
+                ? string.Equals(feature.Status, markers["done"], StringComparison.Ordinal)
+                : string.Equals(feature.SpecStatus, markers["approved"], StringComparison.Ordinal);
+
+            if (!selected)
             {
                 continue;
             }
@@ -51,7 +64,7 @@ public sealed class ApprovalCoverageRule : ISpechtRule
                         feature.RelativePath,
                         matrix.RowLines[index],
                         row.Count > 0 ? row[0].Trim() : null,
-                        "spec_status is 'approved' while § 9 still carries a 'Missing' cell")
+                        message)
                     {
                         Expected = new JsonObject
                         {
@@ -66,4 +79,6 @@ public sealed class ApprovalCoverageRule : ISpechtRule
             }
         }
     }
+
+    private static readonly SemanticVersion DoneAxisVersion = new(0, 3, 0);
 }
