@@ -57,7 +57,7 @@ public sealed class ScenarioTitleRuleUnitTests
                     Given a thing
                 """),
         });
-        var model = EngineServices.Loader(fileSystem).Load(fileSystem.Path.GetFullPath("repo"));
+        var model = EngineServices.Reader(fileSystem).Read(fileSystem.Path.GetFullPath("repo"), null);
         var rule = EngineServices.Rules().SingleOrDefault(static rule => rule.Id == "SPEC022");
 
         // When

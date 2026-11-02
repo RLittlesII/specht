@@ -1,5 +1,6 @@
 using System.Security.Cryptography;
 using System.Text.Json.Nodes;
+using Specht.Model;
 using Specht.Tool.Features.Evidence;
 using Specht.Tool.Features.Evidence.Contract;
 
@@ -127,7 +128,8 @@ internal sealed class PartitionedEvidenceRoot : IDisposable
 
     public void Edit(string relativePath, string text) => File.WriteAllText(Path.Combine(_root, relativePath), text);
 
-    public EvidenceResult Reconcile(params string[] evidence) => new EvidenceReconciler().Reconcile(_root, evidence, null);
+    public EvidenceResult Reconcile(params string[] evidence) =>
+        new EvidenceReconciler(new SpechtDocumentParser(new FrontmatterReader())).Reconcile(_root, evidence, null);
 
     public void Dispose() => Directory.Delete(_root, true);
 

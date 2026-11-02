@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Specht.Manifest;
+using Specht.Tree;
 using Specht.Versioning;
 using Spectre.Console;
 using Spectre.Console.Cli;

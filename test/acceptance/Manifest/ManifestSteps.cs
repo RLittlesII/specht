@@ -319,7 +319,7 @@ public sealed partial class ManifestSteps
     public void GivenTheRootHoldsASpecificationThatRuleReports()
     {
         Write("F1", SpechtTree.Sections);
-        new SpechtEvaluator([StandIn], new SpechtViolationOrder()).Evaluate(EngineServices.Loader().Load(Tree.Root))
+        new SpechtEvaluator([StandIn], new SpechtViolationOrder()).Evaluate(EngineServices.Reader().Read(Tree.Root, null))
             .Violations.Should()
             .ContainSingle()
             .Which.Should()
@@ -331,7 +331,7 @@ public sealed partial class ManifestSteps
     public void WhenTheCheckRunsWithThatRule()
     {
         File.WriteAllText(ManifestPath, Manifest.ToJsonString());
-        _report = new SpechtEvaluator([StandIn], new SpechtViolationOrder()).Evaluate(EngineServices.Loader().Load(Tree.Root));
+        _report = new SpechtEvaluator([StandIn], new SpechtViolationOrder()).Evaluate(EngineServices.Reader().Read(Tree.Root, null));
     }
 
     [Then("that rule's violation is reported at error severity")]
@@ -461,7 +461,7 @@ public sealed partial class ManifestSteps
         {
             if (_fromRoot)
             {
-                _model = EngineServices.Loader().Load(Tree.Root, SchemaSourceSelection.Disk);
+                _model = EngineServices.Reader().Read(Tree.Root, SchemaSourceSelection.Disk);
                 _report = EngineServices.Runner().Run(Tree.Root, SchemaSourceSelection.Disk);
                 string[] frontmatter = [.. new[] { "SPEC001", "SPEC002", "SPEC003", "SPEC004" }.Select(id => RuleIds.Under(Manifest, id))];
                 _frontmatterViolations = _report.Violations.Where(violation => frontmatter.Contains(violation.RuleId)).ToList();

@@ -67,8 +67,10 @@ public sealed class TableHeaderRuleUnitTests
         findings.Select(finding => (rule.Id, finding.File)).Should().Equal(("SPEC013", "src/second/.spec/README.md"));
     }
 
+    private static SpechtDocumentParser DocumentParser => new(new FrontmatterReader());
+
     private static FeatureSpec Feature(string path, string text) =>
         new FeatureSpecFixture()
             .WithLocation(new SpechtLocationFixture().WithRelativePath(path))
-            .WithDocument(SpechtDocument.Parse(text, path));
+            .WithDocument(DocumentParser.Parse(text, path));
 }

@@ -9,6 +9,7 @@ using System.Text.Json.Nodes;
 using System.Threading;
 using System.Threading.Tasks;
 using Specht.Manifest;
+using Specht.Tree;
 using Specht.Versioning;
 
 namespace Specht.Tool.Features.Init;

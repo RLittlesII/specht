@@ -3,6 +3,7 @@ using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using AwesomeAssertions;
+using Specht.Model;
 using Specht.Tool.Features.Evidence;
 
 namespace Specht.Build.Tests;
@@ -453,7 +454,7 @@ public sealed partial class TestEvidenceVsTestIntegrationTests(TestEvidenceVsTes
             }
 
             builds["A-release"] = await Step(log, _consumer, "build", "A/A.csproj", "--no-restore", "--configuration", "Release");
-            reconciliations["empty"] = new EvidenceReconciler().Reconcile(_consumer, [], null);
+            reconciliations["empty"] = new EvidenceReconciler(new SpechtDocumentParser(new FrontmatterReader())).Reconcile(_consumer, [], null);
             foreach (var (project, filter) in projects)
             {
                 var path = $"{project}/{project}.csproj";
@@ -464,11 +465,11 @@ public sealed partial class TestEvidenceVsTestIntegrationTests(TestEvidenceVsTes
             }
 
             var supplied = new[] { "A/obj/specht-test-evidence", "B/obj/specht-test-evidence" };
-            reconciliations["run"] = new EvidenceReconciler().Reconcile(_consumer, supplied, null);
+            reconciliations["run"] = new EvidenceReconciler(new SpechtDocumentParser(new FrontmatterReader())).Reconcile(_consumer, supplied, null);
             builds["A-rebuild"] = await Step(log, _consumer, "build", "A/A.csproj", "--no-restore");
             builds["A-release-beside"] = await Step(log, _consumer, "build", "A/A.csproj", "--no-restore", "--configuration", "Release");
             await File.AppendAllTextAsync(Path.Combine(_consumer, "A", "LocalCases.cs"), "\n", TestContext.Current.CancellationToken);
-            reconciliations["stale"] = new EvidenceReconciler().Reconcile(_consumer, supplied, null);
+            reconciliations["stale"] = new EvidenceReconciler(new SpechtDocumentParser(new FrontmatterReader())).Reconcile(_consumer, supplied, null);
             builds["A-stale"] = await Step(log, _consumer, "build", "A/A.csproj", "--no-restore");
             foreach (var (name, result) in reconciliations)
             {

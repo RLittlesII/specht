@@ -3,6 +3,7 @@ using System.IO.Abstractions.TestingHelpers;
 using System.Text.Json.Nodes;
 using AwesomeAssertions;
 using Specht.Manifest;
+using Specht.Model;
 using Specht.Rules;
 using Specht.Tests.Shared;
 using Specht.Tool.Features.Manifest;
@@ -23,8 +24,9 @@ public sealed class ManifestCommandUnitTests
             ["repo/.specht/manifest.json"] = new("{}"),
             ["outside/sentinel.bin"] = new("unchanged"),
         });
-        var schemas = EngineServices.Schemas(files);
-        var reader = new EffectiveManifestReader(schemas, new RuleEntriesReader(schemas, EngineServices.Parser()), EngineServices.Versions());
+        var modelReader = EngineServices.Reader(files);
+        var reader = new EffectiveManifestReader(
+            modelReader, new RuleEntriesReader(modelReader, EngineServices.Parser(), DocumentParser), EngineServices.Versions());
         var console = new TestConsole();
         using var errors = new StringWriter(CultureInfo.InvariantCulture);
         var command = new ManifestCommand(console, reader, errors);
@@ -52,8 +54,9 @@ public sealed class ManifestCommandUnitTests
         {
             files.AddFile("repo/.specht/manifest.json", new MockFileData(manifest));
         }
-        var schemas = EngineServices.Schemas(files);
-        var reader = new EffectiveManifestReader(schemas, new RuleEntriesReader(schemas, EngineServices.Parser()), EngineServices.Versions());
+        var modelReader = EngineServices.Reader(files);
+        var reader = new EffectiveManifestReader(
+            modelReader, new RuleEntriesReader(modelReader, EngineServices.Parser(), DocumentParser), EngineServices.Versions());
         var console = new TestConsole();
         using var errors = new StringWriter(CultureInfo.InvariantCulture);
         var command = new ManifestCommand(console, reader, errors);
@@ -77,4 +80,6 @@ public sealed class ManifestCommandUnitTests
         }
         files.AllFiles.ToDictionary(static path => path, path => files.File.ReadAllText(path)).Should().BeEquivalentTo(before);
     }
+
+    private static SpechtDocumentParser DocumentParser => new(new FrontmatterReader());
 }

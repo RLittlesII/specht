@@ -4,12 +4,12 @@ using Specht.Model;
 namespace Specht.Tests.Model;
 
 /// <summary>
-/// A specification parsed from text held in memory (ADR-0001 stage A, item 0104): the frontmatter, the sections, the
+/// A specification parsed from text held in memory by the instance parser (ADR-0001 stage A, item 0104; item 0166): the frontmatter, the sections, the
 /// table each section opens with, and the one-based line of each, with no file behind it. A grid table is read as no table
 /// (<c>0001-F1</c> B-008).
 /// </summary>
 [Trait("Tier", "Unit")]
-public sealed class SpechtDocumentUnitTests
+public sealed class SpechtDocumentParserUnitTests
 {
     /// <summary>Gets each section of <see cref="Specification"/> with its heading's one-based line.</summary>
     public static TheoryData<string, int> SectionLines { get; } = new()
@@ -35,7 +35,7 @@ public sealed class SpechtDocumentUnitTests
         var text = Specification;
 
         // When
-        var document = SpechtDocument.Parse(text, RelativePath);
+        var document = new SpechtDocumentParser(new FrontmatterReader()).Parse(text, RelativePath);
 
         // Then
         document.RelativePath.Should().Be(RelativePath);
@@ -54,7 +54,7 @@ public sealed class SpechtDocumentUnitTests
         var text = Specification;
 
         // When
-        var document = SpechtDocument.Parse(text, RelativePath);
+        var document = new SpechtDocumentParser(new FrontmatterReader()).Parse(text, RelativePath);
 
         // Then
         document.Section(title).Should().NotBeNull().And.Subject.As<SpechtSection>().Line.Should().Be(line);
@@ -72,7 +72,7 @@ public sealed class SpechtDocumentUnitTests
         var text = Specification;
 
         // When
-        var section = SpechtDocument.Parse(text, RelativePath).Section(title)!;
+        var section = new SpechtDocumentParser(new FrontmatterReader()).Parse(text, RelativePath).Section(title)!;
 
         // Then
         section.Headers.Should().Equal(headers);
@@ -96,7 +96,7 @@ public sealed class SpechtDocumentUnitTests
             """;
 
         // When
-        var section = SpechtDocument.Parse(text, RelativePath).Section("9. Traceability Matrix")!;
+        var section = new SpechtDocumentParser(new FrontmatterReader()).Parse(text, RelativePath).Section("9. Traceability Matrix")!;
 
         // Then
         section.Headers.Should().BeEmpty();

@@ -8,6 +8,7 @@ using Specht.Evaluation;
 using Specht.Manifest;
 using Specht.Model;
 using Specht.Report;
+using Specht.Tree;
 using Spectre.Console;
 using Spectre.Console.Cli;
 

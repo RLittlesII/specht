@@ -33,6 +33,7 @@ public static class SpechtEngineServiceCollectionExtensions
         services.TryAddSingleton(static provider => new SchemaVersions(provider.GetRequiredService<SpechtResources>().Texts));
         services.AddSingleton<SpechtManifestParser>();
         services.AddSingleton<FrontmatterReader>();
+        services.AddSingleton<SpechtDocumentParser>();
         services.AddSingleton<FeatureTagParser>();
         services.AddSingleton<SpechtDiscovery>();
         services.AddSingleton<MatrixResolver>();
@@ -43,11 +44,12 @@ public static class SpechtEngineServiceCollectionExtensions
         services.AddSingleton<RuleLevelSetter>();
         services.AddSingleton<SchemaVersionManager>();
         services.AddSingleton<UpstreamSchemaCopy>();
-        services.AddSingleton<SpechtSchemasLoader>();
+        services.AddSingleton<SpechtSchemaCompiler>();
         services.AddSingleton<RuleExplanationReader>();
         services.AddSingleton<RuleEntriesReader>();
         services.AddSingleton<EffectiveManifestReader>();
-        services.AddSingleton<SpechtModelLoader>();
+        services.AddSingleton<SpechtModelBuilder>();
+        services.AddSingleton<SpechtModelReader>();
         services.AddSingleton<SpechtViolationOrder>();
         services.AddSingleton<SpechtEvaluator>();
         services.AddSingleton<SpechtRunner>();

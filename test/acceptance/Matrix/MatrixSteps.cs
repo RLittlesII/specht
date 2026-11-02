@@ -380,7 +380,7 @@ public sealed class MatrixSteps
         using var services = (TypeResolver)new TypeRegistrar(new ServiceCollection().AddSpechtEngine()).Build();
         var original = ((IEnumerable<ISpechtRule>)services.Resolve(typeof(IEnumerable<ISpechtRule>))!).Where(static rule =>
             rule.Id is not ("SPEC034" or "SPEC035"));
-        var baseline = new SpechtEvaluator(original, new SpechtViolationOrder()).Evaluate(EngineServices.Loader().Load(Tree.Root));
+        var baseline = new SpechtEvaluator(original, new SpechtViolationOrder()).Evaluate(EngineServices.Reader().Read(Tree.Root, null));
         SpechtReportDocument.From(_report!).ToJson().Should().Be(SpechtReportDocument.From(baseline).ToJson());
         _report!.RulesEvaluated.Should().Be(21);
     }

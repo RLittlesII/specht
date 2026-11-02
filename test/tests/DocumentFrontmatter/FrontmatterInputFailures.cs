@@ -1,4 +1,5 @@
 using Specht.Manifest;
+using Specht.Tree;
 
 namespace Specht.Tests.DocumentFrontmatter;
 

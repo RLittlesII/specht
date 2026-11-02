@@ -24,8 +24,8 @@ public sealed class SchemaVersionsEpicOptInUnitTests
         {
             ["repo/" + SpechtTree.ManifestPath] = new("""{ "schemaVersion": "0.3.0" }"""),
         });
-        var schemas = EngineServices.Schemas(files).Load("repo");
-        FeatureSpec feature = new FeatureSpecFixture().WithDocument(SpechtDocument.Parse(
+        var schemas = EngineServices.Reader(files).ReadSchemas("repo", null);
+        FeatureSpec feature = new FeatureSpecFixture().WithDocument(DocumentParser.Parse(
             "---\nid: \"F1\"\ntype: feature\nspec_status: draft\nstatus: ready\npriority: med\nvalue: 4\nrisk: 3\nrank: 50\n"
                 + "scored_by: \"groomed\"\nscored_on: \"2026-10-07\"\ndomain: \"Testing\"\nauthor: \"spec-author\"\nmilestone: null\n"
                 + "children: []\ndepends_on: []\nblocks: []\nspikes: []\ncreated: \"2026-10-07\"\nupdated: \"2026-10-07\"\n"
@@ -49,8 +49,8 @@ public sealed class SchemaVersionsEpicOptInUnitTests
         {
             ["repo/" + SpechtTree.ManifestPath] = new("""{ "schemaVersion": "0.3.0" }"""),
         });
-        var schemas = EngineServices.Schemas(files).Load("repo");
-        ChildItem item = new ChildItemFixture().WithFrontmatter(SpechtDocument.Parse(
+        var schemas = EngineServices.Reader(files).ReadSchemas("repo", null);
+        ChildItem item = new ChildItemFixture().WithFrontmatter(DocumentParser.Parse(
             "---\nid: \"0001-01\"\nparent: \"F2\"\ntype: task\nstatus: ready\npriority: med\ncreated: \"2026-10-07\"\n"
                 + "updated: \"2026-10-07\"\ngithub_issue: null\n---\n\n# Item\n",
             "src/sample/.spec/0001-01-task.md").Frontmatter);
@@ -62,4 +62,6 @@ public sealed class SchemaVersionsEpicOptInUnitTests
         // Then
         violations.Should().BeEmpty();
     }
+
+    private static SpechtDocumentParser DocumentParser => new(new FrontmatterReader());
 }

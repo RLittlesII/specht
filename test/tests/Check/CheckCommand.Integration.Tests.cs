@@ -641,7 +641,7 @@ public sealed class CheckCommandIntegrationTests
 
         // When
         var result = Check(static root => new SpechtEvaluator([new FaultIsolatedRule(new ThrowingRule())], new SpechtViolationOrder())
-            .Evaluate(EngineServices.Loader().Load(root)), "--root", tree.Root);
+            .Evaluate(EngineServices.Reader().Read(root, null)), "--root", tree.Root);
 
         // Then
         result.ExitCode.Should().Be(1);

@@ -78,7 +78,7 @@ internal sealed class SyntheticSchemaModelFixture : AutoFixtureBase<SyntheticSch
             [Path.Combine("repo", ItemSchemaPath)] = new(ItemSchema),
             [Path.Combine("repo", GroupSchemaPath)] = new(GroupSchema),
         });
-        var model = new SpechtModelFixture().WithSchemas(EngineServices.LoadOnDiskSchemas(files, "repo"));
+        var model = new SpechtModelFixture().WithSchemas(EngineServices.ReadDiskSchemas(files, "repo"));
 
         return _kind switch
         {

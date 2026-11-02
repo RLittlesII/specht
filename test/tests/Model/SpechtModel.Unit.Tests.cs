@@ -10,7 +10,7 @@ namespace Specht.Tests.Model;
 
 /// <summary>
 /// A model assembled in memory from its parts and evaluated by a rule (ADR-0001 stage A, item 0104): no tree on disk,
-/// no <see cref="SpechtModelLoader"/>.
+/// no <see cref="SpechtModelReader"/>.
 /// </summary>
 [Trait("Tier", "Unit")]
 public sealed class SpechtModelUnitTests

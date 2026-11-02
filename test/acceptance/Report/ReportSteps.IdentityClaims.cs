@@ -99,7 +99,7 @@ public sealed partial class ReportSteps
     {
         var path = Tree.WriteFeature("0001", "F1", sections: SpechtTree.SectionsWith("3. Acceptance Criteria",
             TwoClaims + "| B-001 | Duplicate. | brd | Active |\n"));
-        _firstClaimLine = SpechtDocument.Parse(File.ReadAllText(path), "epics/0001-epic/F1-feature/spec.md")
+        _firstClaimLine = new SpechtDocumentParser(new FrontmatterReader()).Parse(File.ReadAllText(path), "epics/0001-epic/F1-feature/spec.md")
             .Section("3. Acceptance Criteria")!.RowLines[0];
     }
 

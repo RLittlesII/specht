@@ -4,16 +4,17 @@ using Specht.Model;
 namespace Specht.Rules;
 
 /// <summary>Reads rule entries from the validated pin, its pages and explicit manifest levels (0001-F10 B-001 to B-008).</summary>
-/// <param name="schemas">The existing root and manifest loader.</param>
+/// <param name="reader">The check's root and manifest read.</param>
 /// <param name="parser">The existing exact-pin resolver.</param>
+/// <param name="documents">The parser each rule page is read with.</param>
 /// <implements epic="0001" feature="F10" claim="B-001" />
-public sealed class RuleEntriesReader(SpechtSchemasLoader schemas, SpechtManifestParser parser)
+public sealed class RuleEntriesReader(SpechtModelReader reader, SpechtManifestParser parser, SpechtDocumentParser documents)
 {
     /// <summary>Reads only the root's validated manifest before producing its rule entries.</summary>
     /// <param name="root">The repository root.</param>
     /// <returns>The pinned vocabulary's entries in ordinal id order.</returns>
     /// <implements epic="0001" feature="F10" claim="B-001" />
-    public IReadOnlyList<RuleEntry> Read(string root) => Read(schemas.LoadManifest(root));
+    public IReadOnlyList<RuleEntry> Read(string root) => Read(reader.ReadManifest(root));
 
     /// <summary>Produces rule entries from an already parsed manifest without file-system access.</summary>
     /// <param name="structure">The manifest produced by the check's parser.</param>
@@ -31,7 +32,7 @@ public sealed class RuleEntriesReader(SpechtSchemasLoader schemas, SpechtManifes
         var version = parser.PinnedVersion(structure);
         return version.RuleIds.Order(StringComparer.Ordinal).Select(id =>
         {
-            var page = SpechtDocument.Parse(version.RulePages[id], $"rules/v{version.Number}/{id}.md");
+            var page = documents.Parse(version.RulePages[id], $"rules/v{version.Number}/{id}.md");
             var metadata = page.Section("Metadata")!.Rows;
             var family = metadata.Single(static row => row[0] == "Family")[1];
             var severity = Enum.Parse<SpechtRuleLevel>(metadata.Single(static row => row[0] == "Default severity")[1], ignoreCase: true);

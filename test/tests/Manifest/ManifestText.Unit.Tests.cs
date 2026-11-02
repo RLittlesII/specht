@@ -2,6 +2,7 @@ using System.IO.Abstractions.TestingHelpers;
 using System.Text.Json.Nodes;
 using AwesomeAssertions;
 using Specht.Manifest;
+using Specht.Model;
 using Specht.Rules;
 using Specht.Tests.Shared;
 
@@ -23,8 +24,8 @@ public sealed class ManifestTextUnitTests
                 """),
         });
         var versions = EngineServices.Versions();
-        var schemas = EngineServices.Schemas(files);
-        var reader = new EffectiveManifestReader(schemas, new RuleEntriesReader(schemas, EngineServices.Parser()), versions);
+        var modelReader = EngineServices.Reader(files);
+        var reader = new EffectiveManifestReader(modelReader, new RuleEntriesReader(modelReader, EngineServices.Parser(), DocumentParser), versions);
         var defaults = JsonNode.Parse(versions.Versions[0].Manifest)!.AsObject();
         var before = files.File.ReadAllText("consumer/.specht/manifest.json");
 
@@ -44,4 +45,6 @@ public sealed class ManifestTextUnitTests
         reader.ReadText("consumer").Should().Be(text);
         files.File.ReadAllText("consumer/.specht/manifest.json").Should().Be(before);
     }
+
+    private static SpechtDocumentParser DocumentParser => new(new FrontmatterReader());
 }

@@ -7,11 +7,11 @@ using Specht.Versioning;
 namespace Specht.Manifest;
 
 /// <summary>Projects the check's manifest and pinned effective rule levels without reading schemas or evaluating rules.</summary>
-/// <param name="schemas">The existing manifest loading boundary.</param>
+/// <param name="reader">The check's root and manifest read.</param>
 /// <param name="rules">The shared pinned rule catalogue and level precedence.</param>
 /// <param name="versions">The embedded manifests that define printed key order.</param>
 /// <implements epic="0001" feature="F9" claim="B-005" />
-public sealed class EffectiveManifestReader(SpechtSchemasLoader schemas, RuleEntriesReader rules, SchemaVersions versions)
+public sealed class EffectiveManifestReader(SpechtModelReader reader, RuleEntriesReader rules, SchemaVersions versions)
 {
     /// <summary>Returns the root's effective manifest as an owned JSON object.</summary>
     /// <param name="root">The repository root.</param>
@@ -23,7 +23,7 @@ public sealed class EffectiveManifestReader(SpechtSchemasLoader schemas, RuleEnt
     /// <implements epic="0001" feature="F9" claim="B-007" />
     public JsonObject Read(string root)
     {
-        var manifest = schemas.LoadManifestDocument(root);
+        var manifest = reader.ReadManifestDocument(root);
         var levels = new JsonObject();
         foreach (var entry in rules.Read(manifest.Structure))
         {

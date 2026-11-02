@@ -4,10 +4,10 @@ using System.Text.RegularExpressions;
 namespace Specht.Discovery;
 
 /// <summary>
-/// Finds the repository's specifications, items, epics and companion files where the manifest says they are
-/// (<c>0001-F6</c> B-001, B-002, B-003, B-012).
+/// Lists the repository's specifications, items, epics, companion files and declared test files where the manifest says
+/// they are (<c>0001-F6</c> B-001, B-002, B-003, B-012), each by its root-relative path; it reads no file.
 /// </summary>
-/// <param name="fileSystem">The file system the tree is read through.</param>
+/// <param name="fileSystem">The file system the tree is listed through.</param>
 /// <implements epic="0001" feature="F6" claim="B-001" />
 public sealed class SpechtDiscovery(IFileSystem fileSystem)
 {
@@ -17,7 +17,7 @@ public sealed class SpechtDiscovery(IFileSystem fileSystem)
     /// </summary>
     /// <param name="root">The repository root.</param>
     /// <param name="inputs">The manifest's discovery inputs.</param>
-    /// <returns>Each specification, carrying the layout it was found in.</returns>
+    /// <returns>Each specification, carrying its root-relative path and directory and the layout it was found in.</returns>
     /// <implements epic="0001" feature="F6" claim="B-001" />
     public IReadOnlyList<SpechtLocation> FindSpecifications(string root, SpechtDiscoveryInputs inputs)
     {
@@ -25,7 +25,7 @@ public sealed class SpechtDiscovery(IFileSystem fileSystem)
 
         return inputs.Layouts
             .SelectMany(layout => Matching(files, [layout.Glob], inputs.Exclusions)
-                .Select(file => new SpechtLocation(file.Path, file.Relative, layout, fileSystem.Path.GetDirectoryName(file.Path)!)))
+                .Select(file => new SpechtLocation(file.Relative, layout, DirectoryOf(file.Relative))))
             .ToList();
     }
 
@@ -33,12 +33,14 @@ public sealed class SpechtDiscovery(IFileSystem fileSystem)
     /// Discovers the item files beside each specification: every file whose name matches one of the manifest's task file
     /// shapes, <c>{task}</c> standing for <paramref name="taskGrammar"/> (<c>0001-F6</c> B-003, B-012).
     /// </summary>
+    /// <param name="root">The repository root.</param>
     /// <param name="specifications">The discovered specifications.</param>
     /// <param name="inputs">The manifest's discovery inputs.</param>
     /// <param name="taskGrammar">The manifest's <c>identifiers.task</c> grammar.</param>
-    /// <returns>The path of each item file.</returns>
+    /// <returns>The root-relative path of each item file, in specification order, each one's in ordinal order of file name.</returns>
     /// <implements epic="0001" feature="F6" claim="B-001" />
     public IReadOnlyList<string> FindChildItems(
+        string root,
         IEnumerable<SpechtLocation> specifications,
         SpechtDiscoveryInputs inputs,
         string taskGrammar)
@@ -48,7 +50,7 @@ public sealed class SpechtDiscovery(IFileSystem fileSystem)
             .Select(shape => new Regex(Pattern(shape).Replace(@"\{task}", task, StringComparison.Ordinal)))
             .ToList();
 
-        return specifications.SelectMany(specification => Beside(specification, shapes)).ToList();
+        return specifications.SelectMany(specification => Beside(root, specification, shapes)).ToList();
     }
 
     /// <summary>
@@ -57,35 +59,37 @@ public sealed class SpechtDiscovery(IFileSystem fileSystem)
     /// </summary>
     /// <param name="root">The repository root.</param>
     /// <param name="inputs">The manifest's discovery inputs.</param>
-    /// <returns>The path of each epic file.</returns>
+    /// <returns>The root-relative path of each epic file, in ordinal order.</returns>
     /// <implements epic="0001" feature="F6" claim="B-001" />
     public IReadOnlyList<string> FindEpics(string root, SpechtDiscoveryInputs inputs) =>
-        Matching(Files(root), inputs.EpicFiles, inputs.Exclusions).Select(static file => file.Path).ToList();
+        Matching(Files(root), inputs.EpicFiles, inputs.Exclusions).Select(static file => file.Relative).ToList();
 
     /// <summary>
     /// Discovers the companion files beside <paramref name="specification"/>: every file whose name matches one of the
     /// manifest's companion globs (<c>0001-F6</c> B-003, B-012).
     /// </summary>
+    /// <param name="root">The repository root.</param>
     /// <param name="specification">The specification.</param>
     /// <param name="inputs">The manifest's discovery inputs.</param>
-    /// <returns>The path of each companion file.</returns>
+    /// <returns>The root-relative path of each companion file, in ordinal order of file name.</returns>
     /// <implements epic="0001" feature="F6" claim="B-001" />
-    public IReadOnlyList<string> FindCompanions(SpechtLocation specification, SpechtDiscoveryInputs inputs) =>
-        Beside(specification, inputs.CompanionFiles.Select(static glob => new Regex(Pattern(glob))).ToList()).ToList();
+    public IReadOnlyList<string> FindCompanions(string root, SpechtLocation specification, SpechtDiscoveryInputs inputs) =>
+        Beside(root, specification, inputs.CompanionFiles.Select(static glob => new Regex(Pattern(glob))).ToList()).ToList();
 
-    /// <summary>Reads each declared test file once, in root-relative ordinal order, outside the manifest's exclusions.</summary>
+    /// <summary>
+    /// Lists each declared test file once, in root-relative ordinal order, outside the manifest's exclusions; with no glob
+    /// declared it walks nothing.
+    /// </summary>
     /// <param name="root">The repository root.</param>
     /// <param name="globs">The test file globs.</param>
     /// <param name="exclusions">The selected manifest's directory exclusions.</param>
-    /// <returns>The selected files with root-relative paths and text.</returns>
+    /// <returns>The root-relative path of each selected file.</returns>
     /// <implements epic="0001" feature="F6" claim="B-001" />
-    public IReadOnlyList<SpechtTestFile> ReadTestFiles(
+    public IReadOnlyList<string> FindTestFiles(
         string root, IReadOnlyList<string> globs, IReadOnlyList<string> exclusions) =>
         globs.Count == 0
             ? []
-            : Matching(Files(root), globs, exclusions)
-                .Select(file => new SpechtTestFile(file.Relative, fileSystem.File.ReadAllText(file.Path)))
-                .ToArray();
+            : Matching(Files(root), globs, exclusions).Select(static file => file.Relative).ToArray();
 
     /// <implements epic="0001" feature="F6" claim="B-001" />
     private static IEnumerable<(string Path, string Relative)> Matching(
@@ -121,6 +125,10 @@ public sealed class SpechtDiscovery(IFileSystem fileSystem)
     }
 
     /// <implements epic="0001" feature="F6" claim="B-001" />
+    private static string DirectoryOf(string relative) =>
+        relative.LastIndexOf('/') is var slash and >= 0 ? relative[..slash] : string.Empty;
+
+    /// <implements epic="0001" feature="F6" claim="B-001" />
     private List<(string Path, string Relative)> Files(string root)
     {
         var origin = fileSystem.Path.GetFullPath(root);
@@ -132,8 +140,11 @@ public sealed class SpechtDiscovery(IFileSystem fileSystem)
     }
 
     /// <implements epic="0001" feature="F6" claim="B-001" />
-    private IEnumerable<string> Beside(SpechtLocation specification, List<Regex> names) =>
-        fileSystem.Directory.EnumerateFiles(specification.Directory)
-            .Where(path => names.Any(name => name.IsMatch(fileSystem.Path.GetFileName(path))))
-            .Order(StringComparer.Ordinal);
+    private IEnumerable<string> Beside(string root, SpechtLocation specification, List<Regex> names) =>
+        fileSystem.Directory.EnumerateFiles(
+                fileSystem.Path.Combine(root, specification.Directory.Replace('/', fileSystem.Path.DirectorySeparatorChar)))
+            .Select(path => fileSystem.Path.GetFileName(path))
+            .Where(name => names.Any(expression => expression.IsMatch(name)))
+            .Order(StringComparer.Ordinal)
+            .Select(name => specification.Directory.Length == 0 ? name : specification.Directory + "/" + name);
 }

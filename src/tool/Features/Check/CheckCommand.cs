@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Specht.Evaluation;
 using Specht.Manifest;
 using Specht.Report;
+using Specht.Tree;
 using Spectre.Console;
 using Spectre.Console.Cli;
 
