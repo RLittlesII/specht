@@ -127,7 +127,7 @@ public sealed class SpechtTree : IDisposable
         var path = Path.Combine(Root, ManifestPath);
         var manifest = JsonNode.Parse(File.ReadAllText(path))!.AsObject();
         manifest["schemaVersion"] = version;
-        File.WriteAllText(path, manifest.ToJsonString());
+        Write(path, manifest.ToJsonString());
     }
 
     /// <summary>Deletes the frontmatter schema folder, so the root holds no schema file on disk.</summary>
