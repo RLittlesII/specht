@@ -331,6 +331,60 @@ decisions:
     loses its compilation to `SpechtSchemaCompiler`, as criterion 4 says.
     (B) The builder computes them and the model takes them as values,
     re-cutting item 0155's work.
+  - |
+    2026-11-02, spec-author: the repository owner's rulings on the eight
+    questions of the entry above, chosen one at a time the same day,
+    option (A) on each. Quoted as given; each binds as stated.
+    1. "A: listed paths (Recommended)". `SpechtTreeStore` gains a read
+    taking a root and the root-relative paths discovery listed, and
+    returns a `SpechtTree` of exactly those files in that order; text is
+    decoded as `File.ReadAllText` decodes it (criterion 10). Discovery
+    lists and reads nothing.
+    2. "A: listed, store reads (Recommended)". Discovery lists the
+    declared test files with the same globs, exclusions, de-duplication
+    and ordinal order, and no walk when no glob is declared;
+    `ReadTestFiles` reads no text, and the store's read of ruling 1
+    takes it. `0001-F12` § 7, which puts the read on discovery, is
+    brought true by its owner after item 0335 merges, not in this pull
+    request; until then that section is stale and this entry is its
+    record.
+    3. "A: SpechtManifestStore (Recommended)". `SpechtManifestStore`
+    reads `.specht/schema/frontmatter/` for the disk and upstream
+    sources; the reader asks it for the bytes the selection names,
+    `UpstreamSchemaCopy` verifies an upstream copy and
+    `SpechtSchemaCompiler` compiles. The selection order and the absent
+    and unreadable messages are the reader's, the uncompilable message
+    the compiler's; `0001-F7`'s messages do not change.
+    4. "A: check's read path (Recommended)". Criterion 3's "the only
+    type that holds a store" is read as the check's read path.
+    `SchemaVersionManager`, `RuleLevelSetter` and the tool's
+    `UpgradeWriter` keep `SpechtManifestStore` until their handler
+    stages. The reader takes over `LoadManifest` and
+    `LoadManifestDocument` - root, then manifest, then parse - for
+    `RuleEntriesReader`, `RuleExplanationReader`,
+    `EffectiveManifestReader` and `UpgradeWriter`;
+    `EffectiveManifestReader`'s reference from `Specht.Manifest` up to
+    `Specht.Model` is recorded for stage 7's order test.
+    5. "A: move, upward ref (Recommended)". `SpechtRootNotFoundException`
+    moves to `Specht.Tree`; `SchemaVersionManager` and `RuleLevelSetter`
+    reference it upward until their handler stages, recorded for stage
+    7's test. Criterion 6 holds as written.
+    6. "A: parse from text (Recommended)". `0109-F2` B-003 measures
+    parsing one specification's frontmatter from its text, read before
+    the measurement; C-3 rules out a disk read inside the measured parse,
+    as C-4 does; A-1 names `SpechtModelReader` for the stages that read
+    the disk (B-001 and B-005, under C-10 and C-11), the parsers for
+    B-003 and B-004, and keeps `SpechtDiscovery` and
+    `SpechtEvaluator.Evaluate`. Ids kept; recorded in `0109-F2` decision
+    0002. Criterion 1's `spec-author` half is this.
+    7. "A: fix it here (Recommended)". The tool's `EvidenceReconciler`
+    joins the root to `RelativePath` and takes the document parser as an
+    instance, in this pull request; `0201-F5`'s behaviour is unchanged
+    and its constraints are cited as preserved.
+    8. "A: stay in constructor (Recommended)". `SpechtModel`'s
+    constructor keeps the four derivations item 0155 put there; criterion
+    2's "no data type parses or loads itself" is read as text and files,
+    which `SpechtSchemas` loses to `SpechtSchemaCompiler` (criterion 4).
 
 out_of_scope:
   - "Moving `SpechtTree`, `SpechtTreeFile` and `SpechtTreeStore` into the engine, and their tests - item 0153."
