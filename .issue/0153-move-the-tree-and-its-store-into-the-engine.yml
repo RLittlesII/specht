@@ -168,6 +168,20 @@ decisions:
     moved types replace, feed or leave alone - is not decided. `depends_on`
     gains 0156 to 0163 by the owner's order "then splits", which runs this
     item after the stage-3 splits; it is an ordering, not a code dependency.
+  - |
+    2026-11-01, the repository owner, answering a question card; recorded
+    by spec-author. No criterion is edited.
+    Criterion 3, asked whether the engine's own load is built on the tree
+    in this item or the item only moves the three types and leaves the
+    load to 0166, the owner chose "Move only (Recommended)", option (A):
+    this item moves `SpechtTree`, `SpechtTreeFile` and `SpechtTreeStore`
+    into `Specht.Tree` and leaves the load to 0166, as ADR-0010 splits it.
+    Risk stays 3, and this item needs no new ADR.
+    Criterion 5, asked whether the moved types replace, feed or leave
+    alone `InitWriter` and `test/tests/Shared/SpechtTree.cs`, the owner
+    chose "Leave to design pass (Recommended)": this item's design pass
+    proposes, and the owner rules on that proposal.
+    Status stays `in-progress`; the design pass follows on this branch.
 
 out_of_scope:
   - 'Anything in pull request #114 - the owner''s "later". The tests under `test/tests/Benchmarks/` and the reference stay as #114 has them until this item (`0109-F1` OQ-5).'
