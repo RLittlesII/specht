@@ -1,6 +1,5 @@
 using AwesomeAssertions;
 using Specht.Tests.Shared;
-using Specht.Versioning;
 
 namespace Specht.Tests.Manifest.CodeAnalysis;
 
@@ -8,9 +7,7 @@ namespace Specht.Tests.Manifest.CodeAnalysis;
 public sealed class CodeAnalysisSectionUnitTests
 {
     [Theory]
-    [InlineData("0.1.0")]
-    [InlineData("0.2.0")]
-    [InlineData("0.2.1")]
+    [ClassData(typeof(ShippedSchemaPins))]
     public void AnalysisSection_WhenAddedToAnExistingPin_ShouldPreserveThePinAndCheckerSettings(string pin)
     {
         // Given
@@ -27,7 +24,5 @@ public sealed class CodeAnalysisSectionUnitTests
         after.Sections.Should().Equal(before.Sections);
         after.Identifiers.Should().BeEquivalentTo(before.Identifiers);
         parser.PinnedVersion(after).RuleIds.Should().BeEquivalentTo(parser.PinnedVersion(before).RuleIds);
-        EngineServices.Versions().Versions.Select(static version => version.Number)
-            .Should().Equal(new SemanticVersion(0, 1, 0), new SemanticVersion(0, 2, 0), new SemanticVersion(0, 2, 1));
     }
 }
