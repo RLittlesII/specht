@@ -2,7 +2,7 @@ id: "0321"
 type: task
 title: Cut schema 0.3.0, where SPEC060 follows delivery status against a done marker and epics may be absent
 
-status: in-progress
+status: done
 
 value: 4
 risk: 4
@@ -30,7 +30,7 @@ claims:
 
 created: "2026-10-30"
 updated: "2026-11-02"
-closed: null
+closed: "2026-11-02"
 
 summary: |
   As a maintainer whose reviewer approves a specification before its

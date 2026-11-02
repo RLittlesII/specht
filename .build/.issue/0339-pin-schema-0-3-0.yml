@@ -2,7 +2,7 @@ id: "0339"
 type: task
 title: Pin this repository to schema 0.3.0 and drop its SPEC060 override
 
-status: in-progress
+status: done
 
 risk: 3
 
@@ -20,7 +20,7 @@ claims:
 
 created: "2026-11-01"
 updated: "2026-11-02"
-closed: null
+closed: "2026-11-02"
 
 summary: |
   This repository's manifest moves its pin from 0.2.1 to 0.3.0 and, in

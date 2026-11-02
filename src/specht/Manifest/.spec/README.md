@@ -41,7 +41,7 @@ blocks:
   ]
 spikes: []
 created: "2026-10-07"
-updated: "2026-11-01"
+updated: "2026-11-02"
 github_issue: null
 synced_at: null
 ---
@@ -1019,6 +1019,8 @@ Green, item `0321`: with `manifest/v0.3.0` carrying the `done` default, the thre
 
 ## 10. Lessons / Spec Deltas
 
+- 2026-11-02, after spec-reviewer's findings on items `0321` and `0339`, the 2026-11-01 entry's scenario sentences no longer hold and stay as written. The second `@B-044` scenario, retitled there, is removed: with no lowered `SPEC060` level in this repository it can no longer fail for its stated reason, and the remaining `@B-044` scenario still covers B-044. The `@B-003` Given now names a specification that is approved and done in its own text. No claim or constraint changed.
+
 - 2026-11-01, item `0339` pins this repository to schema `0.3.0`, and the fixtures that copy its manifest pin the version their claim names. Amended, each spec-author's reading of `0001-F7` decision 0015 and B-118 to B-120: B-016 and A-4 name schema `0.1.0`, the version whose verdict the golden report is (call 6), since the baseline tree now pins it; B-003 says `SPEC060` reads the approved value only below `0.3.0`, and the done marker from it (B-063). The second `@B-044` scenario is retitled: this repository no longer lowers `SPEC060` (`0055-F1` C-6). The `@B-003` and `@B-044` Given steps, which now write a specification that is approved and done, keep their bound text. No constraint changed.
 
 - 2026-10-30, § 5 row 8 withdrawn on the owner's ruling (`0001-F7` OQ-30): [decision 0004](decisions/0004-epics-are-opt-in-by-the-manifests-epic-grammar.md)'s loosening shipped in no schema version, and its `epic` and `parent` parts are schema `0.3.0`'s (`0001-F7` B-037, B-038), so epics opt-in as a later version is no longer out of scope. No claim or constraint of this Feature changed.
@@ -1037,7 +1039,7 @@ Green, item `0321`: with `manifest/v0.3.0` carrying the `done` default, the thre
 
 - 2026-10-13, owner: tag key names, whole-tag case handling and original-tag diagnostic text ratified in [decision 0013](decisions/0013-claim-tags-use-literal-forms-and-ordinal-case-at-schema-0-2-0.md). B-007 and B-036 to B-038 first apply under schema `0.2.0`; older pins retain their scanner and reject the two new keys. The `0.2.0` working set begins with this tag contract; the separate frontmatter key/form contract remains unbuilt.
 
-<!-- last written by: spec-author, 2026-11-01 (B-003, B-016 and A-4 amended, item 0339) -->
+<!-- last written by: spec-author, 2026-11-02 (the 2026-11-01 entry's scenarios, items 0321 and 0339); spec-author, 2026-11-01 (B-003, B-016 and A-4 amended, item 0339) -->
 
 - 2026-10-08, B-016 amended following `0001-F1` decision 0004 (the owner): its input is `0001-F1`'s synthetic baseline tree and its expected verdicts are the golden report `0001-F1` B-004 names, not a consumer's tree and report. The claim's id and its verdict field list are unchanged.
 - 2026-10-08, § 7 "Where rule settings apply" revised following [ADR-0004](../../../../.spec/adr/0004-per-rule-settings-are-selection-and-a-map.md): after ADR-0002 it read "every rule still evaluates" and "one step over the collected violations", and both are withdrawn, because a rule that runs and is then discarded has still been evaluated, against a tree whose manifest may hold no roles for it (`0101-F1` decision 0001's version gate; C-5). Item `0014` is now selection plus a severity map inside `Evaluate`. No claim, constraint or scenario changed.
