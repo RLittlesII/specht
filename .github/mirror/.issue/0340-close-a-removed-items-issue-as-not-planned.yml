@@ -1,0 +1,54 @@
+id: "0340"
+type: task
+title: Close a removed item's open issue as not planned
+
+status: ready
+
+value: 3
+risk: 2
+
+parent: "0293"
+children: []
+
+depends_on: []
+spikes: []
+
+spec: .github/mirror/.spec/README.md
+
+claims:
+  - B-064
+
+created: "2026-11-02"
+updated: "2026-11-02"
+closed: null
+
+summary: |
+  As a reader of the public board, I want the issue of an item or epic
+  removed from `main` closed as not planned, so that removed work is not
+  counted as open in its milestone (decision 0012, lesson 0002). Today the
+  mirror's orphan loop only labels such an issue `stale` and leaves it
+  open, so B-064 has no test and its § 9 row is `Missing`. Cut on
+  2026-11-02 by the repository owner from decision 0012, which named one
+  item for B-033, B-064 and B-065; item `0339` gave B-033 and B-065 their
+  tests, so this item carries B-064 alone. Value 3, the parent's: the
+  Feature's last unbuilt claim. Risk 2: one state write in the orphan
+  loop, on public issues, through the `close_issue` the `gh` surface
+  already has.
+
+acceptance_criteria:
+  - "B-064 — an open orphan closed as not planned"
+  - "B-033, B-034, B-035 and B-065 still hold: the orphan never deleted, still labelled `stale`, still warned; an already-closed orphan left as it is"
+  - "§ 6 row 9 and § 7 step 7 describe the close, the delta decision 0012 records as owed"
+  - "§ 9 carries a row naming a test for each id above."
+
+decisions:
+  - |
+    2026-11-02, the repository owner: cut for B-064 alone, as decision
+    0012's addendum records, and queued for a later lane rather than built
+    in item `0339`. Until it lands the mirror keeps labelling a removed
+    item's open issue `stale` and leaves it open, and the Feature stays
+    `in-progress`.
+
+out_of_scope:
+  - "Whether a closed orphan keeps `stale` - OQ-13, proceeding on its default (B-034 stands)."
+  - "Everything in § 5 of the spec."

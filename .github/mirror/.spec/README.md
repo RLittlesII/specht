@@ -5,7 +5,7 @@ type: feature
 id: "F9"
 epic: "0055"
 spec_status: approved
-status: done
+status: in-progress
 priority: med
 value: 0
 risk: 0
@@ -20,7 +20,7 @@ depends_on: ["F1", "F2"]
 blocks: []
 spikes: []
 created: "2026-10-24"
-updated: "2026-10-30"
+updated: "2026-11-02"
 github_issue: null
 synced_at: null
 ---
@@ -352,7 +352,7 @@ Delivered by items `0294` and `0295`. The script is [`../mirror_items.py`](../mi
 
 ## 10. Lessons / Spec Deltas
 
-<!-- last written by: spec-author, 2026-10-30 (OQ-12) -->
+<!-- last written by: spec-author, 2026-11-02 (item 0340) -->
 
 - 2026-10-24, review round 1: B-017 to B-019 reordered so the first commit that set an item `done` names its pull request, then the latest subject naming its id, then that commit's sha, because 22 done ids are named by more than one subject. C-7 amended to the item reader as extended, since `next.py` keys items by the file name's first four digits and reads neither `type` nor the list fields. B-027 is started by an input on the manual start. C-10 keeps only its testable half. Sources re-labelled: the owner's plan, or spec-author inference.
 - 2026-10-24, owner answers: OQ-2, OQ-3, OQ-6 and OQ-7 resolved by decisions 0005, 0006 (retired; now ADR-0022), 0003 and 0004; C-11, C-12 and B-043 to B-049 added; OQ-8 and OQ-9 opened.
@@ -368,6 +368,7 @@ Delivered by items `0294` and `0295`. The script is [`../mirror_items.py`](../mi
 - 2026-10-28, item `0296`, the first live run: push run 40174035328 at `3480fb4d` created 279 issues, then stopped on the node lookup (item `0297`, lesson 0001); push run 40201501220 at `7a845b0e` finished that interrupted run (B-031), creating 1, editing 2, closing 1 and commenting 1; backfill run 40201667043 at `7a845b0e` commented on 182 pull requests and created, edited and closed nothing. Later push runs are incremental; the latest, 40738471741 at `82bc6204`, created 1 and edited 1. Dispatched on `main` at `82bc6204` with the owner's approval, plain run 40743568264 wrote nothing, every count 0, so B-029 is observed live; backfill run 40743772311, the second after 40201667043, also wrote nothing and commented on nothing, so B-026 and B-027 are observed live. A dry run and a dry backfill at `82bc6204` plan the same. A-1 recounted at `82bc6204`: 282 work items and 12 epics, 294 issues labelled `mirrored`, and 295 in all (208 closed, 87 open) with hand-filed #256 (§ 5 row 7). The remaining deltas are made: AGENTS.md § SDLC and `references/delivery.md` say neither a commit nor a pull-request body closes a mirrored issue with `Closes`; `specht-conventions` SKILL.md's `.github/` entry, spec/item split, `MirrorTest` line and Never-add list, `references/delivery.md`'s `github_issue` row and Never-add list, and `references/specs.md` name the mirror and ADR-0022; `.github/ISSUE_TEMPLATE/feature.yml` names `specht`.
 - 2026-10-30, [lesson 0002](lessons/0002-a-removed-item-leaves-its-issue-on-the-board.md): pull request #604 removed six items and their issues #326, #327, #328, #333, #334 and #335 stayed open in milestone 0.3.0, labelled `stale`, for two days. The mirror did what B-033 to B-035 specify, so no claim changes; the process rule is in `references/delivery.md` and OQ-12 asks whether the mirror itself should close such an issue.
 - 2026-10-30, [decision 0012](decisions/0012-a-removed-items-issue-is-closed-as-not-planned.md): the owner ruled on OQ-12 twice in chat, that a removed item's issue should not stay open on the public board. B-033 is amended to "does not delete it" and B-064 closes an open one as not planned; B-065 leaves a closed one as it is; B-034 and B-035 stand. Decision 0001 item 11 is superseded, and OQ-13 opened for the `stale` label. The delta for the delivering item, not made here: § 6 row 9 and § 7 step 7 still describe an orphan as never closed, and § 8 and the `test_B033_…ShouldStayOpen` test assert it; `mirror_items.py` has no close for an orphan. `references/delivery.md` is amended to what B-064 makes untrue.
+- 2026-11-02, the repository owner, [decision 0012](decisions/0012-a-removed-items-issue-is-closed-as-not-planned.md)'s addendum: B-064 is not built, so its § 9 row stays `Missing` and the Feature's `status` goes back from `done` to `in-progress`, with item `0293` reopened. Item `0340` is cut for B-064 alone, since item `0339` gave B-033 and B-065 their tests. Until `0340` lands, the mirror keeps labelling a removed item's open issue `stale` and leaves it open. No claim changes.
 
 ## 11. Open Questions
 
@@ -411,7 +412,7 @@ Earlier review rows are preserved verbatim; later approvals and the current reco
 
 ## Tasks
 
-Cut 2026-10-24 into [`../.issue/`](../.issue/): [`0293`](../.issue/0293-work-item-mirror.yml) (the Feature), with [`0294`](../.issue/0294-mirror-script.yml), the script on the shared item reader and its unit tests (B-001 to B-035, B-041 to B-053); [`0295`](../.issue/0295-mirror-workflow.yml), the generated workflow (B-036 to B-040), after `0294`; and [`0296`](../.issue/0296-mirror-first-run.yml), the first run, backfill and the § 10 documentation deltas, after both, with no claim. No item answers OQ-4, OQ-5 or OQ-10; `0294` and `0295` proceed on their defaults. B-052 and B-053 were added to `0294` on 2026-10-25. [`0297`](../.issue/0297-mirror-node-lookup.yml), a bug cut 2026-10-25 from the first live run, delivers B-054 (lesson 0001). [`0300`](../.issue/0300-mirror-milestones.yml), cut 2026-10-25 from decision 0011, delivers B-055 to B-063 and the amended B-029 and B-041.
+Cut 2026-10-24 into [`../.issue/`](../.issue/): [`0293`](../.issue/0293-work-item-mirror.yml) (the Feature), with [`0294`](../.issue/0294-mirror-script.yml), the script on the shared item reader and its unit tests (B-001 to B-035, B-041 to B-053); [`0295`](../.issue/0295-mirror-workflow.yml), the generated workflow (B-036 to B-040), after `0294`; and [`0296`](../.issue/0296-mirror-first-run.yml), the first run, backfill and the § 10 documentation deltas, after both, with no claim. No item answers OQ-4, OQ-5 or OQ-10; `0294` and `0295` proceed on their defaults. B-052 and B-053 were added to `0294` on 2026-10-25. [`0297`](../.issue/0297-mirror-node-lookup.yml), a bug cut 2026-10-25 from the first live run, delivers B-054 (lesson 0001). [`0300`](../.issue/0300-mirror-milestones.yml), cut 2026-10-25 from decision 0011, delivers B-055 to B-063 and the amended B-029 and B-041. [`0340`](../.issue/0340-close-a-removed-items-issue-as-not-planned.yml), cut 2026-11-02 from decision 0012, delivers B-064; `0293` was reopened for it and now lists B-064 and B-065.
 
 ## Scoring
 
