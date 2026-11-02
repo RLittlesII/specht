@@ -2,6 +2,7 @@ using System.Globalization;
 using System.IO.Abstractions.TestingHelpers;
 using AwesomeAssertions;
 using Specht.Manifest;
+using Specht.Model;
 using Specht.Rules;
 using Specht.Tests.Shared;
 using Specht.Tool.Features.Rules;
@@ -22,7 +23,7 @@ public sealed class RulesCommandUnitTests
         var root = files.Path.GetFullPath("repo");
         files.AddFile(files.Path.Combine(root, ".specht", "manifest.json"), new MockFileData(
             "{\"schemaVersion\":\"0.2.0\",\"rules\":{\"SPEC010\":\"" + level.ToString().ToLowerInvariant() + "\"}}"));
-        var reader = new RuleEntriesReader(EngineServices.Schemas(files), EngineServices.Parser());
+        var reader = new RuleEntriesReader(EngineServices.Reader(files), EngineServices.Parser(), DocumentParser);
         var console = new TestConsole();
         using var errors = new StringWriter(CultureInfo.InvariantCulture);
         var command = new RulesCommand(console, reader, errors);
@@ -56,7 +57,7 @@ public sealed class RulesCommandUnitTests
         var files = new MockFileSystem();
         var root = files.Path.GetFullPath("repo");
         files.AddFile(files.Path.Combine(root, ".specht", "manifest.json"), new MockFileData(manifest));
-        var reader = new RuleEntriesReader(EngineServices.Schemas(files), EngineServices.Parser());
+        var reader = new RuleEntriesReader(EngineServices.Reader(files), EngineServices.Parser(), DocumentParser);
         var console = new TestConsole();
         using var errors = new StringWriter(CultureInfo.InvariantCulture);
         var command = new RulesCommand(console, reader, errors);
@@ -75,7 +76,7 @@ public sealed class RulesCommandUnitTests
     {
         // Given
         var files = new MockFileSystem();
-        var reader = new RuleEntriesReader(EngineServices.Schemas(files), EngineServices.Parser());
+        var reader = new RuleEntriesReader(EngineServices.Reader(files), EngineServices.Parser(), DocumentParser);
         var console = new TestConsole();
         using var errors = new StringWriter(CultureInfo.InvariantCulture);
         var command = new RulesCommand(console, reader, errors);
@@ -96,7 +97,7 @@ public sealed class RulesCommandUnitTests
         var files = new MockFileSystem();
         var root = files.Path.GetFullPath("repo");
         files.AddDirectory(root);
-        var reader = new RuleEntriesReader(EngineServices.Schemas(files), EngineServices.Parser());
+        var reader = new RuleEntriesReader(EngineServices.Reader(files), EngineServices.Parser(), DocumentParser);
         var console = new TestConsole();
         using var errors = new StringWriter(CultureInfo.InvariantCulture);
         var command = new RulesCommand(console, reader, errors);
@@ -109,4 +110,6 @@ public sealed class RulesCommandUnitTests
         console.Output.Should().BeEmpty();
         errors.ToString().Should().StartWith("specht: ").And.Contain(SpechtTree.ManifestPath).And.NotContain(root).And.NotContain("\\");
     }
+
+    private static SpechtDocumentParser DocumentParser => new(new FrontmatterReader());
 }

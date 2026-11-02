@@ -2,6 +2,7 @@ using System.IO.Abstractions.TestingHelpers;
 using AwesomeAssertions;
 using Specht.Manifest;
 using Specht.Tests.Shared;
+using Specht.Tree;
 using Specht.Versioning;
 
 namespace Specht.Tests.Schema;

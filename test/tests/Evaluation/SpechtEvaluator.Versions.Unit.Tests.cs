@@ -23,7 +23,7 @@ public sealed class SpechtEvaluatorVersionsUnitTests
     {
         // Given
         FeatureSpec feature = new FeatureSpecFixture().WithDocument(
-            SpechtDocument.Parse(
+            new SpechtDocumentParser(new FrontmatterReader()).Parse(
                 "## 3. Acceptance Criteria\n\n| ID | Claim |\n| -- | ----- |\n| B-001 | It does the thing. |\n| B-002 | It does another. |\n\n"
                     + "## 9. Traceability Matrix\n\n| Claim ID | Test |\n| -------- | ---- |\n| B-001 | A test |\n",
                 "src/sample/.spec/README.md"));

@@ -36,7 +36,7 @@ public sealed class WaiverAndRetiredRulesUnitTests
             | --- | --- | --- | --- |
             | 1-5 | {{signOff}} | {{approver}} | Decision |
             """;
-        FeatureSpec feature = new FeatureSpecFixture().WithDocument(SpechtDocument.Parse(text, "src/sample/.spec/README.md"));
+        FeatureSpec feature = new FeatureSpecFixture().WithDocument(DocumentParser.Parse(text, "src/sample/.spec/README.md"));
         SpechtModel model = new SpechtModelFixture().WithManifest(manifest).WithFeatures(feature);
         using var services = (TypeResolver)new TypeRegistrar(new ServiceCollection().AddSpechtEngine()).Build();
         var rule = ((IEnumerable<ISpechtRule>)services.Resolve(typeof(IEnumerable<ISpechtRule>))!).SingleOrDefault(static rule => rule.Id == "SPEC034");
@@ -80,7 +80,7 @@ public sealed class WaiverAndRetiredRulesUnitTests
             """;
         var structure = EngineServices.Parser().Parse(manifest.ToJsonString());
         var tags = tag is null ? [] : new FeatureTagParser().Parse($"@{tag}\nScenario: Old behavior\n", structure);
-        FeatureSpec feature = new FeatureSpecFixture().WithDocument(SpechtDocument.Parse(text, "src/sample/.spec/README.md"))
+        FeatureSpec feature = new FeatureSpecFixture().WithDocument(DocumentParser.Parse(text, "src/sample/.spec/README.md"))
             .WithFeatureFiles(new FeatureFileFixture().WithTags(tags));
         SpechtModel model = new SpechtModelFixture().WithManifest(manifest).WithFeatures(feature);
         using var services = (TypeResolver)new TypeRegistrar(new ServiceCollection().AddSpechtEngine()).Build();
@@ -100,4 +100,6 @@ public sealed class WaiverAndRetiredRulesUnitTests
             findings[0].File.Should().Be(feature.RelativePath);
         }
     }
+
+    private static SpechtDocumentParser DocumentParser => new(new FrontmatterReader());
 }

@@ -45,7 +45,7 @@ public sealed partial class EngineSteps
         File.WriteAllText(Path.Combine(_tree.Root, SpechtTree.FeatureSchemaPath), schemas.FeatureSchema);
         File.WriteAllText(Path.Combine(_tree.Root, SpechtTree.ItemSchemaPath), schemas.ItemSchema);
         File.WriteAllText(Path.Combine(_tree.Root, SpechtTree.EpicSchemaPath), schemas.EpicSchema);
-        EngineServices.Loader().Load(_tree.Root).Schemas.Version.Number.ToString().Should().Be(version);
+        EngineServices.Reader().Read(_tree.Root, null).Schemas.Version.Number.ToString().Should().Be(version);
     }
 
     [Given("the baseline tree the tests build, which breaks each of the twenty-one version 0.1.0 rules in each layout the rule applies to")]
@@ -102,12 +102,12 @@ public sealed partial class EngineSteps
         if (_inputFailure is not null)
         {
             _inputRejection = Record.Exception(() => new SpechtEvaluator(FaultRules(), new SpechtViolationOrder())
-                .Evaluate(EngineServices.Loader().Load(Tree.Root)));
+                .Evaluate(EngineServices.Reader().Read(Tree.Root, null)));
             return;
         }
 
         _report = _fault is null ? Tree.Run()
-            : new SpechtEvaluator(FaultRules(), new SpechtViolationOrder()).Evaluate(EngineServices.Loader().Load(Tree.Root));
+            : new SpechtEvaluator(FaultRules(), new SpechtViolationOrder()).Evaluate(EngineServices.Reader().Read(Tree.Root, null));
     }
 
     [Then("a violation is reported under each of the twenty-one rule ids")]
@@ -129,7 +129,7 @@ public sealed partial class EngineSteps
 
     [Then("the specification is read as {string}")]
     public void ThenTheSpecificationIsReadAs(string identity) =>
-        EngineServices.Loader().Load(Tree.Root).Features.Should().ContainSingle().Which.Identity.Should().Be(identity);
+        EngineServices.Reader().Read(Tree.Root, null).Features.Should().ContainSingle().Which.Identity.Should().Be(identity);
 
     [Then("no identity violation is reported")]
     public void ThenNoIdentityViolationIsReported() =>

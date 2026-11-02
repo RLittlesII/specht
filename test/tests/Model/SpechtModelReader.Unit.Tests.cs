@@ -1,6 +1,5 @@
 using System.IO.Abstractions.TestingHelpers;
 using AwesomeAssertions;
-using Specht.Discovery;
 using Specht.Manifest;
 using Specht.Model;
 using Specht.Rules;
@@ -9,13 +8,14 @@ using Specht.Tests.Shared;
 namespace Specht.Tests.Model;
 
 /// <summary>
-/// The model loader over a synthetic tree held in an injected file system (ADR-0001 stage D; ADR-0005 (a), item 0107):
-/// the specification, companion, item and epic the model carries are the ones that file system holds, each under its
-/// root-relative path. Nothing touches the disk. The root is the file system's own full path of <c>repo</c>, because an
-/// in-memory file system lists a relative directory's files by their full paths, which the real one does not.
+/// The model reader over a synthetic tree held in an injected file system (ADR-0001 stage D; ADR-0005 (a), items 0107 and
+/// 0166): the specification, companion, item and epic the model carries are the ones that file system holds, each under
+/// its root-relative path, read through the stores the reader sequences. Nothing touches the disk. The root is the file
+/// system's own full path of <c>repo</c>, because an in-memory file system lists a relative directory's files by their full
+/// paths, which the real one does not.
 /// </summary>
 [Trait("Tier", "Unit")]
-public sealed class SpechtModelLoaderUnitTests
+public sealed class SpechtModelReaderUnitTests
 {
     [Theory]
     [InlineData(false, false)]
@@ -37,11 +37,10 @@ public sealed class SpechtModelLoaderUnitTests
             fileSystem.AddFile(Path.Combine("repo", "src", "area", ".spec", "second.feature"), new MockFileData("Feature: second\n"));
         }
 
-        var loader = new SpechtModelLoader(fileSystem, new FrontmatterReader(fileSystem), new SpechtDiscovery(fileSystem),
-            EngineServices.Schemas(fileSystem), new FeatureTagParser());
+        var reader = EngineServices.Reader(fileSystem);
 
         // When
-        var loading = () => loader.Load(fileSystem.Path.GetFullPath("repo"));
+        var loading = () => reader.Read(fileSystem.Path.GetFullPath("repo"), null);
 
         // Then
         loading.Should().Throw<IOException>();
@@ -58,9 +57,8 @@ public sealed class SpechtModelLoaderUnitTests
             [Path.Combine("repo", "src", "area", ".spec", "README.md")] = new("---\nepic: '0001'\nid: F1\n---\n"),
             [companion] = new("Feature: example\n  @B-999\n"),
         });
-        var loader = new SpechtModelLoader(fileSystem, new FrontmatterReader(fileSystem), new SpechtDiscovery(fileSystem),
-            EngineServices.Schemas(fileSystem), new FeatureTagParser());
-        var model = loader.Load(fileSystem.Path.GetFullPath("repo"));
+        var reader = EngineServices.Reader(fileSystem);
+        var model = reader.Read(fileSystem.Path.GetFullPath("repo"), null);
         fileSystem.File.Delete(companion);
         var rule = new ClaimTagRule();
 
@@ -89,14 +87,10 @@ public sealed class SpechtModelLoaderUnitTests
                 [Path.Combine("repo", "epics", "0001-example", "epic.md")] = new("---\nid: \"0001\"\n---\n\n# Epic\n"),
             });
         var root = fileSystem.Path.GetFullPath("repo");
-        var loader = new SpechtModelLoader(
-            fileSystem,
-            new FrontmatterReader(fileSystem),
-            new SpechtDiscovery(fileSystem),
-            EngineServices.Schemas(fileSystem), new FeatureTagParser());
+        var reader = EngineServices.Reader(fileSystem);
 
         // When
-        var model = loader.Load(root);
+        var model = reader.Read(root, null);
 
         // Then
         var feature = model.Features.Should().ContainSingle().Subject;

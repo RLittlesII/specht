@@ -65,7 +65,7 @@ public sealed class SpechtRunnerDeterminismUnitTests
 
     private static SpechtModel ModelExpectingAnInteger()
     {
-        var schemas = EngineServices.LoadOnDiskSchemas(new MockFileSystem(
+        var schemas = EngineServices.ReadDiskSchemas(new MockFileSystem(
                 new Dictionary<string, MockFileData>
                 {
                     [Path.Combine("repo", SpechtTree.ManifestPath)] = new("{}"),

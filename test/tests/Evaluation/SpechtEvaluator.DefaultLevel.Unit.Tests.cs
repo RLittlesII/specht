@@ -60,7 +60,7 @@ public sealed class SpechtEvaluatorDefaultLevelUnitTests
         var fileSystem = new MockFileSystem(
             new Dictionary<string, MockFileData> { [Path.Combine("repo", SpechtTree.ManifestPath)] = new(manifest) });
 
-        return new SpechtModelFixture().WithSchemas(EngineServices.LoadSchemas(fileSystem, "repo", new SchemaVersions([version])));
+        return new SpechtModelFixture().WithSchemas(EngineServices.ReadSchemas(fileSystem, "repo", new SchemaVersions([version])));
     }
 
     private sealed class OffRule(string id) : ISpechtRule

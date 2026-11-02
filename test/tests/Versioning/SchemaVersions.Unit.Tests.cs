@@ -189,9 +189,10 @@ public sealed class SchemaVersionsUnitTests
         string[] expected)
     {
         // Given
-        var schema = JsonSchema.FromText(
-            EngineServices.Versions().Find(new SemanticVersion(0, 1, 0))!.EpicSchema,
-            new BuildOptions { SchemaRegistry = new SchemaRegistry() });
+        var schemas = new SpechtSchemaCompiler().Compile(
+            EngineServices.Versions().Find(new SemanticVersion(0, 1, 0))!,
+            EngineServices.Parser().Parse("""{ "schemaVersion": "0.1.0" }"""),
+            SpechtSchemaSource.Embedded);
         var epic = new JsonObject
         {
             ["id"] = "0001",
@@ -209,7 +210,7 @@ public sealed class SchemaVersionsUnitTests
 
         // When
         using var instance = JsonDocument.Parse(epic.ToJsonString());
-        var result = schema.Evaluate(instance.RootElement, SpechtSchemas.Options);
+        var result = schemas.Epic.Evaluate(instance.RootElement, schemas.EvaluationOptions);
 
         // Then
         (result.Details ?? [])

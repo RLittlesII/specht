@@ -5,7 +5,7 @@ using Specht.Versioning;
 namespace Specht.Model;
 
 /// <summary>
-/// Loads the schema files that define a specification's shape.
+/// The compiled schemas that define a specification's shape, as <see cref="SpechtSchemaCompiler"/> builds them.
 /// </summary>
 /// <remarks>
 /// The schemas are data, not code, so that whoever is authoring a
@@ -17,21 +17,14 @@ namespace Specht.Model;
 public sealed class SpechtSchemas
 {
     /// <implements epic="0001" feature="F1" claim="B-004" />
-    internal SpechtSchemas(SchemaVersion version, SpechtStructure structure, SpechtSchemaSource source = SpechtSchemaSource.Embedded)
-    {
-        var options = new BuildOptions { SchemaRegistry = new SchemaRegistry() };
-
-        Feature = JsonSchema.FromText(version.FeatureSchema, options);
-        Item = JsonSchema.FromText(version.ItemSchema, options);
-        Epic = JsonSchema.FromText(version.EpicSchema, options);
-        Structure = structure;
-        Version = version;
-        Source = source;
-    }
-
-    /// <implements epic="0001" feature="F1" claim="B-004" />
     internal SpechtSchemas(
-        SchemaVersion version, SpechtStructure structure, SpechtSchemaSource source, JsonSchema feature, JsonSchema item, JsonSchema epic)
+        SchemaVersion version,
+        SpechtStructure structure,
+        SpechtSchemaSource source,
+        JsonSchema feature,
+        JsonSchema item,
+        JsonSchema epic,
+        EvaluationOptions evaluationOptions)
     {
         Feature = feature;
         Item = item;
@@ -39,14 +32,8 @@ public sealed class SpechtSchemas
         Structure = structure;
         Version = version;
         Source = source;
+        EvaluationOptions = evaluationOptions;
     }
-
-    /// <summary>Evaluation options that make <c>format</c> an assertion rather than an annotation.</summary>
-    public static EvaluationOptions Options { get; } = new()
-    {
-        RequireFormatValidation = true,
-        OutputFormat = OutputFormat.List,
-    };
 
     /// <summary>Schema for a Feature specification's frontmatter.</summary>
     public JsonSchema Feature { get; }
@@ -66,7 +53,6 @@ public sealed class SpechtSchemas
     /// <summary>The schema version these schemas were built from, and whose rule ids a check over them evaluates (ADR-0008).</summary>
     public SchemaVersion Version { get; }
 
-    /// <summary>Compiles the selected version after the caller validates the manifest and resolves its pin.</summary>
-    /// <implements epic="0001" feature="F1" claim="B-004" />
-    public static SpechtSchemas Load(SpechtStructure structure, SchemaVersion version) => new(version, structure);
+    /// <summary>The options the frontmatter rules evaluate these schemas with: <c>format</c> is an assertion, not an annotation.</summary>
+    public EvaluationOptions EvaluationOptions { get; }
 }

@@ -288,7 +288,7 @@ public sealed class InitWriterUnitTests
         var write = () => writer.Write(Root, schemas: false, templates: false, CancellationToken.None);
 
         // Then
-        await write.Should().ThrowExactlyAsync<SpechtRootNotFoundException>(because);
+        await write.Should().ThrowExactlyAsync<Specht.Tree.SpechtRootNotFoundException>(because);
         fileSystem.AllPaths.Should().Equal(before, because);
     }
 

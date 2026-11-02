@@ -3,6 +3,7 @@ using System.IO.Abstractions.TestingHelpers;
 using System.Text.Json.Nodes;
 using AwesomeAssertions;
 using Specht.Manifest;
+using Specht.Model;
 using Specht.Rules;
 using Specht.Tests.Shared;
 using Specht.Tool.Features.Manifest;
@@ -24,8 +25,8 @@ public sealed class ManifestDefaultsUnitTests
         embedded["rules"] = new JsonObject { ["SPEC020"] = "off", ["SPEC010"] = "warning" };
         var versions = new SchemaVersions([data.Versions.Versions[0], data.Versions.Versions[^1] with { Manifest = embedded.ToJsonString() }]);
         var files = new MockFileSystem();
-        var schemas = EngineServices.Schemas(files, versions);
-        var reader = new EffectiveManifestReader(schemas, new RuleEntriesReader(schemas, EngineServices.Parser()), versions);
+        var modelReader = EngineServices.Reader(files, versions);
+        var reader = new EffectiveManifestReader(modelReader, new RuleEntriesReader(modelReader, EngineServices.Parser(), DocumentParser), versions);
         var expected = JsonNode.Parse(versions.Versions[^1].Manifest);
         var console = new TestConsole();
         using var errors = new StringWriter(CultureInfo.InvariantCulture);
@@ -42,4 +43,6 @@ public sealed class ManifestDefaultsUnitTests
         JsonNode.Parse(console.Output)!["rules"]!.AsObject().Select(static entry => entry.Key).Should().Equal("SPEC010", "SPEC020");
         JsonNode.DeepEquals(JsonNode.Parse(reader.ReadDefaultText()), expected).Should().BeTrue();
     }
+
+    private static SpechtDocumentParser DocumentParser => new(new FrontmatterReader());
 }

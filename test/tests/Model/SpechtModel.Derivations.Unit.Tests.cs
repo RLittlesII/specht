@@ -35,7 +35,7 @@ public sealed class SpechtModelDerivationsUnitTests
     public void ClaimRowsUnderRenamedRoles_WhenTheModelIsBuilt_ShouldKeepMalformedAndDuplicateRowsAndTheConfiguredMatrix()
     {
         // Given
-        FeatureSpec feature = new FeatureSpecFixture().WithDocument(SpechtDocument.Parse(
+        FeatureSpec feature = new FeatureSpecFixture().WithDocument(DocumentParser.Parse(
             "## 3. Claims\n\n| ID | Claim |\n| -- | ----- |\n| B-001 | First. |\n| B-001 | Duplicate. |\n| B-1 | Invalid. |\n"
             + "\n## 9. Coverage\n\n| ID | Test |\n| -- | ---- |\n| B-001 | Missing |\n", "src/sample/.spec/README.md"));
 
@@ -62,9 +62,9 @@ public sealed class SpechtModelDerivationsUnitTests
     public void DuplicateIdentitiesAndMixedEdges_WhenTheModelIsBuilt_ShouldKeepTheLastIdentitysGraphAndResolveBothEdgeForms()
     {
         // Given
-        FeatureSpec first = new FeatureSpecFixture().WithDocument(SpechtDocument.Parse(
+        FeatureSpec first = new FeatureSpecFixture().WithDocument(DocumentParser.Parse(
             "---\nepic: '0001'\nid: F1\ndepends_on: ['F9']\n---\n", "src/first/.spec/README.md"));
-        FeatureSpec last = new FeatureSpecFixture().WithDocument(SpechtDocument.Parse(
+        FeatureSpec last = new FeatureSpecFixture().WithDocument(DocumentParser.Parse(
             "---\nepic: '0001'\nid: F1\ndepends_on: ['F2', '0002/F3', 'F2']\nblocks: ['F4']\n---\n", "src/last/.spec/README.md"));
         FeatureSpec unidentified = new FeatureSpecFixture();
 
@@ -77,4 +77,6 @@ public sealed class SpechtModelDerivationsUnitTests
         model.DependencyGraph.DependsOn["0001-F1"].Should().Equal("0001-F2", "0002-F3");
         model.DependencyGraph.Blocks["0001-F1"].Should().Equal("0001-F4");
     }
+
+    private static SpechtDocumentParser DocumentParser => new(new FrontmatterReader());
 }

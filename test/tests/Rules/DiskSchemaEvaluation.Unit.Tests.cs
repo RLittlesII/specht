@@ -28,7 +28,7 @@ public sealed class DiskSchemaEvaluationUnitTests
         });
         var relative = SpechtTree.FrontmatterSchemaFolder + "/" + kind + ".schema.json";
         files.AddFile("repo/" + relative, new MockFileData("{ \"$ref\": \"#/missing\" }"));
-        var schemas = EngineServices.Schemas(files).Load("repo", SchemaSourceSelection.Disk);
+        var schemas = EngineServices.Reader(files).ReadSchemas("repo", SchemaSourceSelection.Disk);
         Frontmatter frontmatter = new FrontmatterFixture().WithNode(new JsonObject());
         FeatureSpec feature = new FeatureSpecFixture().WithDocument(new SpechtDocumentFixture().WithFrontmatter(frontmatter));
         ChildItem task = new ChildItemFixture().WithFrontmatter(frontmatter);

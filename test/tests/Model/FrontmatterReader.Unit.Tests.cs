@@ -1,12 +1,11 @@
-using System.IO.Abstractions.TestingHelpers;
 using AwesomeAssertions;
 using Specht.Model;
 
 namespace Specht.Tests.Model;
 
 /// <summary>
-/// The frontmatter of a document read through an injected file system (ADR-0001, item 0104): each key's value and
-/// one-based line, how a scalar is typed, and no frontmatter where none can be read. Nothing touches the disk.
+/// The frontmatter parsed from a document's text (ADR-0001, item 0104; item 0166): each key's value and one-based line,
+/// how a scalar is typed, and no frontmatter where none can be read. The reader holds no file system.
 /// </summary>
 [Trait("Tier", "Unit")]
 public sealed class FrontmatterReaderUnitTests
@@ -44,27 +43,21 @@ public sealed class FrontmatterReaderUnitTests
     public void ADocumentWithFrontmatter_WhenRead_ShouldCarryEachKeysValueAndItsOneBasedLine()
     {
         // Given
-        var reader = new FrontmatterReader(
-            new MockFileSystem(
-                new Dictionary<string, MockFileData>
-                {
-                    [RelativePath] = new(
-                        """
-                        ---
-                        epic: "0009"
-                        id: F1
-                        depends_on:
-                          - F2
-                          - F3
-                        spec_status: draft
-                        ---
+        const string text = """
+            ---
+            epic: "0009"
+            id: F1
+            depends_on:
+              - F2
+              - F3
+            spec_status: draft
+            ---
 
-                        # Sample
-                        """),
-                }));
+            # Sample
+            """;
 
         // When
-        var frontmatter = reader.Read(RelativePath);
+        var frontmatter = new FrontmatterReader().Parse(text);
 
         // Then
         frontmatter.StartLine.Should().Be(1);
@@ -84,12 +77,10 @@ public sealed class FrontmatterReaderUnitTests
         string json)
     {
         // Given
-        var reader = new FrontmatterReader(
-            new MockFileSystem(
-                new Dictionary<string, MockFileData> { [RelativePath] = new($"---\nvalue: {yaml}\n---\n") }));
+        var text = $"---\nvalue: {yaml}\n---\n";
 
         // When
-        var frontmatter = reader.Read(RelativePath);
+        var frontmatter = new FrontmatterReader().Parse(text);
 
         // Then
         frontmatter.Node.Should().NotBeNull().And.ContainKey("value");
@@ -101,17 +92,14 @@ public sealed class FrontmatterReaderUnitTests
     public void ADocumentWithNoReadableFrontmatter_WhenRead_ShouldGiveNoFrontmatterAndNoKeyLines(string because, string text)
     {
         // Given
-        var reader = new FrontmatterReader(
-            new MockFileSystem(new Dictionary<string, MockFileData> { [RelativePath] = new(text) }));
+        var reader = new FrontmatterReader();
 
         // When
-        var frontmatter = reader.Read(RelativePath);
+        var frontmatter = reader.Parse(text);
 
         // Then
         frontmatter.Node.Should().BeNull(because);
         frontmatter.StartLine.Should().Be(1, because);
         frontmatter.KeyLines.Should().BeEmpty(because);
     }
-
-    private const string RelativePath = "src/sample/.spec/README.md";
 }

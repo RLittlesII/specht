@@ -34,8 +34,8 @@ public sealed class ManifestCompatibilityUnitTests
 
         // When
         var load = () => onDisk
-            ? EngineServices.LoadOnDiskSchemas(fileSystem, "repo")
-            : EngineServices.LoadSchemas(fileSystem, "repo", EngineServices.Versions());
+            ? EngineServices.ReadDiskSchemas(fileSystem, "repo")
+            : EngineServices.ReadSchemas(fileSystem, "repo", EngineServices.Versions());
 
         // Then
         load.Should().ThrowExactly<SpechtManifestException>().Which.Message.Should().Be($".specht/manifest.json: {fault}");

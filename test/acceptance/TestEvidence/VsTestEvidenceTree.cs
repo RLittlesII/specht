@@ -8,6 +8,7 @@ using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Client;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Logging;
 using Specht.Analysis.TestEvidence;
+using Specht.Model;
 using Specht.TestEvidence.VsTest;
 using Specht.Tool.Features.Evidence;
 using VsTestResult = Microsoft.VisualStudio.TestPlatform.ObjectModel.TestResult;
@@ -67,12 +68,13 @@ internal sealed class VsTestEvidenceTree : IDisposable
     public JsonNode Artifact(string project) => JsonNode.Parse(File.ReadAllText(Path.Combine(Root, Output(project))))!;
 
     public EvidenceResult Reconcile() =>
-        new EvidenceReconciler().Reconcile(Root, _scopes.Keys.Order(StringComparer.Ordinal).Select(Output).ToArray(), null);
+        new EvidenceReconciler(new SpechtDocumentParser(new FrontmatterReader()))
+            .Reconcile(Root, _scopes.Keys.Order(StringComparer.Ordinal).Select(Output).ToArray(), null);
 
     public EvidenceResult ReconcileWithoutEvidence()
     {
         Prepare();
-        return new EvidenceReconciler().Reconcile(Root, [], null);
+        return new EvidenceReconciler(new SpechtDocumentParser(new FrontmatterReader())).Reconcile(Root, [], null);
     }
 
     public void EditSource() => File.AppendAllText(Path.Combine(Root, "test/shared/SharedCases.cs"), "\n");

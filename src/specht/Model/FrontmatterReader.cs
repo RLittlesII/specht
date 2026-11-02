@@ -1,10 +1,9 @@
-using System.IO.Abstractions;
 using System.Text.Json.Nodes;
 
 namespace Specht.Model;
 
 /// <summary>
-/// Reads the YAML frontmatter of a markdown document into a <see cref="JsonObject"/>.
+/// Parses the YAML frontmatter of a markdown document's text into a <see cref="JsonObject"/>; it reads no file.
 /// </summary>
 /// <remarks>
 /// Reads through YamlDotNet's representation model rather than deserializing,
@@ -17,16 +16,14 @@ namespace Specht.Model;
 /// when it is unambiguously null, boolean or integral. Dates therefore stay
 /// strings, whichever way they were written.
 /// </remarks>
-/// <param name="fileSystem">The file system the documents are read from.</param>
 /// <implements epic="0001" feature="F1" claim="B-004" />
-public sealed class FrontmatterReader(IFileSystem fileSystem)
+public sealed class FrontmatterReader
 {
-    /// <summary>Reads the frontmatter of the document at <paramref name="path"/>.</summary>
+    /// <summary>Parses the frontmatter of the document whose complete text is <paramref name="text"/>.</summary>
+    /// <param name="text">The document's text.</param>
+    /// <returns>The frontmatter, with the line of each key.</returns>
     /// <implements epic="0001" feature="F1" claim="B-004" />
-    public Frontmatter Read(string path) => Parse(fileSystem.File.ReadAllText(path));
-
-    /// <implements epic="0001" feature="F1" claim="B-004" />
-    internal static Frontmatter Parse(string text)
+    public Frontmatter Parse(string text)
     {
         var parsed = new FrontmatterTextReader().Read(text);
         return new Frontmatter(parsed.Node, parsed.StartLine, parsed.KeyLines);

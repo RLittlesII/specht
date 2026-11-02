@@ -3,6 +3,7 @@ using System.Text;
 using AwesomeAssertions;
 using Specht.Manifest;
 using Specht.Tests.Shared;
+using Specht.Tree;
 
 namespace Specht.Tests.Manifest;
 

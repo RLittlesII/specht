@@ -120,7 +120,7 @@ Prevent ambiguous or silently retargeted code bindings by resolving claim and AD
 
 ## 7. Technical Design
 
-<!-- last written by: implementer, 2026-10-18 -->
+<!-- last written by: implementer, 2026-11-02 (item `0166`: the instance parsers); implementer, 2026-10-18 -->
 
 ### Component and input boundary
 
@@ -240,10 +240,12 @@ without obtaining a checked binding. The API has no enclosing-default input.
 The existing source authorities are
 [`FrontmatterReader.Parse`](../../../specht/Model/FrontmatterReader.cs),
 [`Frontmatter.Text`](../../../specht/Model/Frontmatter.cs),
-[`SpechtDocument.Parse`](../../../specht/Model/SpechtDocument.cs),
+[`SpechtDocumentParser.Parse`](../../../specht/Model/SpechtDocumentParser.cs),
 [`SpechtClaims`](../../../specht/Model/SpechtClaims.cs) and
 [`MatrixResolver.ResolveClaims`](../../../specht/Rules/Matrix/MatrixResolver.cs).
-They define YAML scalar preservation, top-level section and first-table selection,
+From item `0166` both parses are instance members over text only (the static
+`SpechtDocument.Parse` until then); the analyzer's linked text readers are
+unchanged. They define YAML scalar preservation, top-level section and first-table selection,
 visible inline/code-span text, trimmed first-cell claim identity, duplicate
 retention and fourth-cell claim lifecycle respectively.
 [`ApprovalCoverageRule`](../../../specht/Rules/ApprovalCoverageRule.cs),

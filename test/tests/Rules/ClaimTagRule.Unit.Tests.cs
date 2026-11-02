@@ -35,7 +35,7 @@ public sealed class ClaimTagRuleUnitTests
             });
         FeatureSpec feature = new FeatureSpecFixture()
             .WithDocument(
-                SpechtDocument.Parse(
+                DocumentParser.Parse(
                     "## 3. Acceptance Criteria\n\n| ID | Claim |\n| -- | ----- |\n| B-404 | Under the title no role names. |\n\n"
                         + "## 3. Claims\n\n| ID | Claim |\n| -- | ----- |\n| B-001 | Under the claims role's section. |\n",
                     "src/sample/.spec/README.md"))
@@ -49,4 +49,6 @@ public sealed class ClaimTagRuleUnitTests
         // Then
         findings.Select(finding => (rule.Id, finding.Identifier)).Should().Equal(("SPEC021", "B-404"));
     }
+
+    private static SpechtDocumentParser DocumentParser => new(new FrontmatterReader());
 }

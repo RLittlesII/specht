@@ -4,13 +4,16 @@ using Specht.Discovery;
 
 namespace Specht.Tests.Discovery;
 
-/// <summary>Declared test-file selection stays within the existing discovery store (C-2, C-3).</summary>
+/// <summary>
+/// Declared test files are listed by discovery, by root-relative path and without their text, which the tree store reads
+/// (C-2, C-3; item 0166).
+/// </summary>
 [Trait("Tier", "Unit")]
 public sealed class SpechtDiscoveryTestFilesUnitTests
 {
     [Theory]
     [ClassData(typeof(DeclaredTestFiles))]
-    public void DeclaredGlobsAndExclusions_WhenTestFilesAreRead_ShouldSelectUniqueFilesInRelativeOrder(
+    public void DeclaredGlobsAndExclusions_WhenTestFilesAreListed_ShouldSelectUniqueFilesInRelativeOrder(
         string[] globs, string[] exclusions, string[] expected)
     {
         // Given
@@ -23,21 +26,20 @@ public sealed class SpechtDiscoveryTestFilesUnitTests
         });
 
         // When
-        var selected = new SpechtDiscovery(files).ReadTestFiles("repo", globs, exclusions);
+        var selected = new SpechtDiscovery(files).FindTestFiles("repo", globs, exclusions);
 
         // Then
-        selected.Select(static file => file.RelativePath).Should().Equal(expected);
-        selected.Select(static file => file.Text).Should().OnlyContain(static text => text.Length > 0);
+        selected.Should().Equal(expected);
     }
 
     [Fact]
-    public void NoDeclaredGlobs_WhenTestFilesAreRead_ShouldNotRequireARootDirectory()
+    public void NoDeclaredGlobs_WhenTestFilesAreListed_ShouldNotRequireARootDirectory()
     {
         // Given
         var discovery = new SpechtDiscovery(new MockFileSystem());
 
         // When
-        var files = discovery.ReadTestFiles("repo", [], []);
+        var files = discovery.FindTestFiles("repo", [], []);
 
         // Then
         files.Should().BeEmpty();

@@ -127,7 +127,7 @@ Pending: owned by `test-writer`, written after agreement.
 | -------- | ------------------------------------------------------ | ------- | --------- |
 | B-001    | Loading the manifest and schemas is measured           | Missing | Missing   |
 | B-002    | Discovery is measured at every tree size               | Missing | Missing   |
-| B-003    | Reading one specification's frontmatter is measured    | Missing | Missing   |
+| B-003    | Parsing one specification's frontmatter is measured    | Missing | Missing   |
 | B-004    | Parsing one specification is measured                  | Missing | Missing   |
 | B-005    | Building the model is measured at every tree size      | Missing | Missing   |
 | B-006    | Every rule is measured at every tree size              | Missing | Missing   |

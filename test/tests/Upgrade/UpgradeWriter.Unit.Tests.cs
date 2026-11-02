@@ -244,7 +244,7 @@ public sealed class UpgradeWriterUnitTests
         // When
         UpgradeWriter writer = new UpgradeWriterFixture().WithFileSystem(fileSystem);
         await writer.Upgrade("repo", CancellationToken.None);
-        var loaded = EngineServices.Schemas(fileSystem).Load("repo");
+        var loaded = EngineServices.Reader(fileSystem).ReadSchemas("repo", null);
 
         // Then
         loaded.Structure.DeclaresEpicGrammar.Should().BeFalse();
@@ -463,7 +463,7 @@ public sealed class UpgradeWriterUnitTests
 
         var before = fileSystem.AllFiles.ToDictionary(
             static path => path, path => (fileSystem.File.ReadAllBytes(path), fileSystem.File.GetLastWriteTimeUtc(path)));
-        var check = () => EngineServices.Schemas(fileSystem).Load("repo");
+        var check = () => EngineServices.Reader(fileSystem).ReadSchemas("repo", null);
 
         // When
         UpgradeWriter writer = new UpgradeWriterFixture().WithFileSystem(fileSystem);
