@@ -16,7 +16,7 @@ spec: .performance/benchmarks/Startup/.spec/README.md
 claims: [B-001, B-002, B-003, B-004, B-005, B-006, B-007, B-008, B-009]
 
 created: "2026-10-13"
-updated: "2026-10-13"
+updated: "2026-11-01"
 closed: null
 
 summary: |
@@ -50,6 +50,7 @@ decisions:
     giving setup its own item with no measured row, or assuming the dotnet
     launcher's memory meets B-006. Neither implementation item is taken.
   - "2026-10-13, spec-author: OQ-3 proceeds with --help as its recorded reading states; no owner resolution is invented."
+  - "2026-11-01, the repository owner: this container leaves milestone 0.4.0 for no milestone; its open child 0206 waits for a better observer. The decision and its rejected options are recorded on 0206."
 
 out_of_scope:
   - "Everything in § 5 of the specification."

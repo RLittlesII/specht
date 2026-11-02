@@ -747,10 +747,10 @@ Feature: Schema versioning
 
   @B-054
   Scenario: A latest-minor policy floats to the newest minor
-    Given the tool ships schema versions 0.1.0, 0.2.0 and 1.0.0
-    And the manifest pins version 0.1.0 with the pin policy latest-minor
+    Given the tool ships schema versions 1.0.0, 1.1.0 and 2.0.0
+    And the manifest pins version 1.0.0 with the pin policy latest-minor
     When the check runs with JSON output
-    Then the document names schema version 0.2.0
+    Then the document names schema version 1.1.0
 
   @B-055 @boundary
   Scenario: A pin is exact unless a policy floats it
@@ -771,6 +771,63 @@ Feature: Schema versioning
       | policy       |
       | latest-major |
       | latest       |
+
+  @B-145 @boundary
+  Scenario Outline: A pin the tool does not ship is invalid under a floating policy
+    Given the tool ships schema version <shipped>
+    And the manifest pins version <pin> with the pin policy <policy>
+    When the check runs
+    Then the standard error names version <pin> and the versions the tool ships
+    And the standard output is empty
+    And the exit code is 3
+
+    Examples:
+      | shipped | pin   | policy       |
+      | 0.1.5   | 0.1.9 | latest-patch |
+      | 1.2.0   | 1.0.9 | latest-minor |
+
+  @B-146
+  Scenario: Upgrade under a floating policy brings the files to the version in use
+    Given the tool ships schema versions 0.2.0 and 0.2.1
+    And the root's frontmatter schemas and templates are version 0.2.0's
+    And the root is pinned to version 0.2.0 with the embedded source and no upstream schema source
+    And its manifest sets the pin policy latest-patch
+    And its manifest names no template as the consumer's
+    When upgrade runs against it
+    Then the frontmatter schemas and the templates are version 0.2.1's
+    And the exit code is 0
+
+  @B-147 @boundary
+  Scenario: An exact policy keeps the pin
+    Given the tool ships schema versions 0.1.0, 0.2.0 and 1.0.0
+    And the manifest pins version 0.1.0 with the pin policy exact
+    When the check runs with JSON output
+    Then the document names schema version 0.1.0
+
+  @B-148
+  Scenario: Listing marks the version in use under a floating policy
+    Given the tool ships schema versions 0.2.0 and 0.2.1
+    And the manifest pins version 0.2.0 with the pin policy latest-patch
+    When the shipped versions are listed
+    Then version 0.2.0 is marked as the pinned one
+    And version 0.2.1 is marked as the one in use
+
+  @B-149 @boundary
+  Scenario: Listing marks no version in use when the check uses the pin
+    Given the tool ships schema versions 0.2.0 and 0.3.0
+    And the manifest pins version 0.2.0 with the pin policy latest-patch
+    When the shipped versions are listed
+    Then version 0.2.0 is marked as the pinned one
+    And no version is marked as the one in use
+
+  @B-150 @boundary
+  Scenario: A latest-minor policy below 1.0.0 is invalid configuration
+    Given the tool ships schema versions 0.1.0 and 0.2.0
+    And the manifest pins version 0.1.0 with the pin policy latest-minor
+    When the check runs
+    Then the standard error names latest-patch
+    And the standard output is empty
+    And the exit code is 3
 
   @B-057
   Scenario: Pinning without a version offers the shipped versions
