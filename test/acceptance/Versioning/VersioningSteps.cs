@@ -68,12 +68,8 @@ namespace Specht.Acceptance.Versioning;
 public sealed partial class VersioningSteps
 {
     [Given("the tool ships schema version {word}")]
-    public void GivenTheToolShipsSchemaVersion(string version)
-    {
-        var shipped = EngineServices.Versions().Find(Version(version));
-        shipped.Should().NotBeNull("the tool ships schema version {0}", version);
-        _embedded = shipped;
-    }
+    public void GivenTheToolShipsSchemaVersion(string version) =>
+        _embedded = EngineServices.Versions().Find(Version(version))!;
 
     [When("the folders holding its schemas, its templates and its rule pages are read")]
     public void WhenTheFoldersHoldingItsSchemasItsTemplatesAndItsRulePagesAreRead()
