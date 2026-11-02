@@ -1,0 +1,56 @@
+id: "0341"
+type: task
+title: Treat a schema version as published only when a package carries it
+
+status: done
+
+value: 3
+risk: 1
+
+parent: null
+children: []
+
+depends_on: []
+spikes: []
+
+spec: null
+
+claims: []
+
+created: "2026-11-02"
+updated: "2026-11-02"
+closed: "2026-11-02"
+
+summary: |
+  A process chore. On 2026-11-02 schema `0.3.0` was taken as shipped
+  because its folders, cut and lock entry existed, and the rule-id
+  renumbering of item `0169` was sent to a new `0.minor` version. No
+  published `specht.tool` package carried `0.3.0`; the owner ruled that the
+  change lands in it, in place. Lesson 0016 keeps the incident; this item
+  records the lesson and puts the rule in the skill that owns it: a schema
+  version is published only when a package embedding it is on a feed
+  consumers install from, and until then a change to it is made in place.
+
+  Scope - process documentation only:
+  - .spec/lessons/0016-a-schema-version-is-published-only-when-a-package-carries-it.md
+    - the lesson.
+  - .agents/skills/specht-conventions/SKILL.md - the rule in § ID schemes
+    and one `Never add` row.
+  - .issue/.sequence.
+
+acceptance_criteria:
+  - "`.spec/lessons/0016-a-schema-version-is-published-only-when-a-package-carries-it.md` states the symptom, the root cause, the delta and the skill changed, and names no claim."
+  - "specht-conventions § ID schemes says a schema version is published only when a `specht.tool` package embedding it is on a feed consumers install from, that a change to an unpublished version is made in it in place, which signals do not show publication, and to ask the owner when it is unclear."
+  - "specht-conventions § Never add lists a new schema version for a change that fits a version no published package carries."
+  - "The skill does not retell the incident, and the lesson and the skill link each other."
+  - "`.issue/.sequence` reads `0341`."
+  - "No specification, `.feature` file, schema, test or tool behaviour changes."
+  - "`./build.sh Specht` passes."
+
+decisions:
+  - "2026-11-02, the repository owner: the newest schema version in a published `specht.tool` package is `0.2.1`, so `0.3.0` is unpublished and the rule-id renumbering lands in it, in place."
+
+out_of_scope:
+  - "Amending item `0169`, its summary and criterion 11 - that item's own work."
+  - "The \"shipped\" versus \"published\" wording in `0001-F7` and `AGENTS.md` - lesson 0016 records it as owed, for the owner to rule on."
+  - "The rule-id map for `0169` - that item's own work."
