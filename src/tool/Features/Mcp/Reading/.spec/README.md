@@ -187,7 +187,10 @@ None.
 
 ## Tasks
 
-None yet. Cut from § 3 after agreement, together with `0132-F3`'s (owner, 2026-10-30; epic `0132` § Features).
+- `0330`: the verdict and the rules every answer keeps (B-001, B-002, B-011, B-013, B-015 to B-017), delivered with `0132-F3`'s `0329`.
+- `0331`: a rule's text, the rule list and the manifest, arguments and failures (B-003 to B-005, B-010, B-012, B-014).
+
+B-006 to B-009 and B-018 are not cut: they wait on `0132-F2`, `0001-F13` and `0001-F18` (the owner, 2026-11-01).
 
 ## Scoring
 

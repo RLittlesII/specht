@@ -182,7 +182,8 @@ None.
 
 ## Tasks
 
-None yet. Cut from § 3 after agreement, together with `0132-F4`'s, so that no item here is done while the host serves nothing (owner, 2026-10-30; epic `0132` § Features).
+- `0329`: the `specht mcp` host and its `docs/cli.md` section (B-001 to B-014, C-7), delivered in one pull request with `0132-F4`'s `0330`, so that no item here is done while the host serves nothing (owner, 2026-10-30; epic `0132` § Features).
+- `0332`: `docs/mcp.md` (B-015, B-016).
 
 ## Scoring
 
