@@ -17,6 +17,7 @@ namespace Specht.Acceptance.Engine;
 /// version 0.1.0 schema set (A-3), selected from the embedded set and explicitly pinned in the fixture's manifest.
 /// The Background reads it back from the root it built. B-001 builds the baseline
 /// tree on it and reads the rule ids the engine reports; B-004 holds the engine to the golden report on the same tree;
+/// B-018 pins the same tree to schema 0.3.0 and holds the engine to the golden report committed for that version;
 /// B-010 reads the one violation a missing traceability row gives.
 /// B-002 writes one specification in each layout without its traceability section, B-003 one co-located specification
 /// under a folder its identity does not name, and B-011 two co-located specifications of one identity. B-005 reads the built library itself: its assembly name,
@@ -52,6 +53,16 @@ public sealed partial class EngineSteps
 
     [Given("the golden report the engine gave on that tree at the commit the copy landed on main")]
     public void GivenTheGoldenReport() => _golden = GoldenReport.Read();
+
+    [Given("the baseline tree the tests build, pinned to schema version {word}")]
+    public void GivenTheBaselineTreePinnedTo(string version)
+    {
+        BaselineTree.Write(Tree);
+        Tree.Pin(version);
+    }
+
+    [Given("the golden report committed for that tree under version {word}")]
+    public void GivenTheGoldenReportCommittedUnderVersion(string version) => _golden = GoldenReport.Read($"Baseline/engine-v{version}.json");
 
     [Given("the root holds a specification whose claim {word} has no traceability row")]
     public void GivenTheRootHoldsASpecificationWhoseClaimHasNoTraceabilityRow(string claim) =>
@@ -138,6 +149,7 @@ public sealed partial class EngineSteps
             _specifications.Should().AllSatisfy(path => violation.Message.Should().Contain(path)));
 
     [Then("it reports the same violations as the golden report, with the same rule, severity, file, line, identifier and message")]
+    [Then("it reports the same violations as that golden report, with the same rule, severity, file, line, identifier and message")]
     public void ThenItReportsTheSameViolationsAsTheGoldenReport() => GoldenReport.Of(Report).Should().BeEquivalentTo(Golden);
 
     [Then("in the same order")]

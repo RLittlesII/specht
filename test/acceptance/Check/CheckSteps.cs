@@ -315,7 +315,7 @@ public sealed partial class CheckSteps
     private string Nested => _nested ?? throw new InvalidOperationException("No nested root was named.");
 
     private SpechtViolation MissingFrontmatter =>
-        Tree.Run().Violations.Should().ContainSingle(static violation => violation.RuleId == "SPEC001").Which;
+        Tree.Run().Violations.Should().ContainSingle(violation => violation.RuleId == RuleIds.Under(Tree, "SPEC001")).Which;
 
     private string[] Violations => Tree.Run().Violations.Select(static violation => violation.ToString()).ToArray();
 
@@ -323,7 +323,7 @@ public sealed partial class CheckSteps
 
     private string[] Expected => [.. Violations, .. Summary];
 
-    [GeneratedRegex(@"^(?<file>[^\s(:][^(:]*)(\((?<line>\d+)\))?: (?<severity>error|warning) (?<rule>SPEC\d{3}): \S.*$")]
+    [GeneratedRegex(@"^(?<file>[^\s(:][^(:]*)(\((?<line>\d+)\))?: (?<severity>error|warning) (?<rule>SPEC\d{3,4}): \S.*$")]
     private static partial Regex Diagnostic();
 
     private static string[] Lines(string output) =>

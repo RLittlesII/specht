@@ -117,7 +117,7 @@ public sealed class CheckCommand(IAnsiConsole console, Func<string, SchemaSource
         public string? SchemaSource { get; init; }
 
         /// <summary>Gets the rule id whose entire page is printed without running a check.</summary>
-        [CommandOption("--explain <SPEC###>")]
+        [CommandOption("--explain <rule id>")]
         [Description("Print the entire rule page for the pinned schema version without running a check.")]
         public string? Explain { get; init; }
 

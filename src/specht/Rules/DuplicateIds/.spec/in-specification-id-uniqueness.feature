@@ -62,7 +62,7 @@ Feature: In-specification id uniqueness
     Given a specification whose claims are B-001, B-002 and B-002
     When the check runs
     Then no duplicate-id finding is reported
-    And SPEC030 reports B-002 once
+    And SPEC4003 reports B-002 once
 
   @B-009 @boundary
   Scenario: The same id in two specifications is not a duplicate

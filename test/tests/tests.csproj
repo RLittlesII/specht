@@ -48,11 +48,12 @@
              CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
-  <!-- The golden report (0001-F1 B-004, C-10): the engine's verdicts on the baseline tree at commit e7dba24, test data
-       committed beside the builder and read from the output. -->
+  <!-- The golden reports (0001-F1 B-004, B-018, C-10): the engine's verdicts on the baseline tree at commit e7dba24
+       under 0.1.0, and under 0.3.0, test data committed beside the builder and read from the output. A wildcard, so a
+       report not yet committed fails the test that reads it, not the build. -->
   <ItemGroup>
-    <Content Include="Engine\Baseline\engine-e7dba24.json"
-             Link="Baseline\engine-e7dba24.json"
+    <Content Include="Engine\Baseline\*.json"
+             Link="Baseline\%(Filename)%(Extension)"
              CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 

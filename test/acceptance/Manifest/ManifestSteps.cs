@@ -23,13 +23,15 @@ namespace Specht.Acceptance.Manifest;
 /// identity is written as the <c>identity</c> of the <c>layouts</c> entry named <c>epics</c> (B-043; <c>0001-F6</c> decision 0009).
 /// A rule setting is written under <c>rules</c>, a rule id mapped to its level (B-010, B-011, B-013, B-045, B-046; decision 0008),
 /// and "sets no level" leaves the <c>rules</c> key out (B-044). An approved specification that a missing-coverage
-/// scenario writes is also done, so <c>SPEC060</c> selects it under the pin the default manifest carries, below
+/// scenario writes is also done, so the missing-coverage rule selects it under the pin the default manifest carries, below
 /// <c>0.3.0</c> by its approval and from <c>0.3.0</c> by its status (<c>0001-F7</c> B-118, B-120).
 /// A rule declared by a type name and a library file is written there too, as an object under a rule id the pinned version
 /// holds, so that its shape alone is at fault, beside a file standing as the library; nothing compiled is put under the root
 /// (B-017). "A rule that reports its violations at warning severity" is a stand-in under a rule id of the pinned version
 /// whose own level is warning, since no shipped rule defaults to it, and "the check runs with that rule" hands it to a
-/// <see cref="SpechtEvaluator"/> over the model loaded from the root (B-046).
+/// <see cref="SpechtEvaluator"/> over the model loaded from the root (B-046). A rule id a step names is read at the pin the
+/// manifest carries (<c>0001-F7</c> B-151, B-152): the default manifest pins 0.3.0, so the four-digit id unless a step pins
+/// an earlier version. Under 0.3.0 a three-digit id written into <c>rules</c> is an id outside the vocabulary (B-013).
 /// </summary>
 [Binding]
 [Scope(Feature = "The manifest carries the roles")]
@@ -116,7 +118,7 @@ public sealed partial class ManifestSteps
     public void ThenTheFirstClaimTagResolves()
     {
         _rejection.Should().BeNull();
-        _report!.Violations.Where(static violation => violation.RuleId == "SPEC021")
+        _report!.Violations.Where(violation => violation.RuleId == RuleIds.Under(Manifest, "SPEC021"))
             .Should().NotContain(violation => violation.Message.Contains($"'{_claimTags[0]}'", StringComparison.Ordinal));
     }
 
@@ -124,7 +126,7 @@ public sealed partial class ManifestSteps
     public void ThenNoUnresolvedClaimTag()
     {
         _rejection.Should().BeNull();
-        _report!.Violations.Should().NotContain(static violation => violation.RuleId == "SPEC021");
+        _report!.Violations.Should().NotContain(violation => violation.RuleId == RuleIds.Under(Manifest, "SPEC021"));
     }
 
     [Then("the unresolved-tag rule reports the second tag and nothing else")]
@@ -134,7 +136,7 @@ public sealed partial class ManifestSteps
     public void ThenTheUnknownClaimTag(string tag, string identifier)
     {
         _rejection.Should().BeNull();
-        var violation = _report!.Violations.Where(static violation => violation.RuleId == "SPEC021").Should().ContainSingle().Subject;
+        var violation = _report!.Violations.Where(violation => violation.RuleId == RuleIds.Under(Manifest, "SPEC021")).Should().ContainSingle().Subject;
         violation.Identifier.Should().Be(identifier);
         violation.Message.Should().Contain($"scenario tag '{tag}'");
         violation.Line.Should().BeGreaterThan(0);
@@ -144,7 +146,7 @@ public sealed partial class ManifestSteps
     public void ThenMalformedClaimId(string id)
     {
         _rejection.Should().BeNull();
-        _report!.Violations.Should().ContainSingle(violation => violation.RuleId == "SPEC030" && violation.Identifier == id);
+        _report!.Violations.Should().ContainSingle(violation => violation.RuleId == RuleIds.Under(Manifest, "SPEC030") && violation.Identifier == id);
     }
 
     [Then("the rejection names the claim tag form")]
@@ -224,15 +226,15 @@ public sealed partial class ManifestSteps
         _report!.Violations
             .Select(static violation => (violation.RuleId, violation.Identifier))
             .Should()
-            .Contain(("SPEC030", "B-1"))
-            .And.Contain(("SPEC031", "B-002"))
-            .And.Contain(("SPEC021", "B-404"))
-            .And.NotContain(("SPEC021", "B-001"));
+            .Contain((RuleIds.Under(Manifest, "SPEC030"), "B-1"))
+            .And.Contain((RuleIds.Under(Manifest, "SPEC031"), "B-002"))
+            .And.Contain((RuleIds.Under(Manifest, "SPEC021"), "B-404"))
+            .And.NotContain((RuleIds.Under(Manifest, "SPEC021"), "B-001"));
     }
 
     [Then("no missing-section violation is reported")]
     public void ThenNoMissingSectionViolationIsReported() =>
-        _report!.Violations.Should().NotContain(static violation => violation.RuleId == "SPEC010");
+        _report!.Violations.Should().NotContain(violation => violation.RuleId == RuleIds.Under(Manifest, "SPEC010"));
 
     [Then("the table-header rule reports the second specification")]
     public void ThenTheTableHeaderRuleReportsTheSecondSpecification() => HeaderViolationFiles().Should().Contain(_specifications[1]);
@@ -248,7 +250,7 @@ public sealed partial class ManifestSteps
     {
         _rejection.Should().BeNull();
         _report!.Violations
-            .Where(static violation => violation.RuleId == "SPEC060")
+            .Where(violation => violation.RuleId == RuleIds.Under(Manifest, "SPEC060"))
             .Select(static violation => (violation.File, violation.Identifier))
             .Should()
             .Equal((_specifications[0], "B-001"));
@@ -279,6 +281,9 @@ public sealed partial class ManifestSteps
     [Given("the manifest lists rule settings for an id outside the pinned version's vocabulary")]
     public void GivenTheManifestListsRuleSettingsForAnIdOutsideThePinnedVersionsVocabulary() => Set(RuleOutsideTheVocabulary, "warning");
 
+    [Given("^the manifest lists rule settings for (SPEC[0-9]+)$")]
+    public void GivenTheManifestListsRuleSettingsFor(string ruleId) => Set(ruleId, "warning");
+
     [Given("the manifest declares a rule by a type name and a library file")]
     public void GivenTheManifestDeclaresARuleByATypeNameAndALibraryFile() =>
         Set(OutOfOrderRule, new JsonObject { ["type"] = "Consumer.Rules.MarkingRule", ["library"] = LibraryFile });
@@ -296,7 +301,7 @@ public sealed partial class ManifestSteps
         (sections[5], sections[6]) = (sections[6], sections[5]);
         Write("F1", sections);
         var report = Tree.Run();
-        report.Violations.Should().ContainSingle().Which.Should().Match<SpechtViolation>(static violation =>
+        report.Violations.Should().ContainSingle().Which.Should().Match<SpechtViolation>(violation =>
             violation.RuleId == OutOfOrderRule && violation.Severity == SpechtSeverity.Error);
         _rulesEvaluatedByDefault = report.RulesEvaluated;
     }
@@ -341,7 +346,7 @@ public sealed partial class ManifestSteps
     public void ThenTheViolationIsReportedAtSeverity(string severity) =>
         Run.Stdout.Split('\n')
             .Should()
-            .ContainSingle(static line => line.Contains(OutOfOrderRule), Run.Stderr)
+            .ContainSingle(line => line.Contains(OutOfOrderRule), Run.Stderr)
             .Which.Should()
             .StartWith(_specifications[0])
             .And.Contain($": {severity} {OutOfOrderRule}: ");
@@ -360,6 +365,9 @@ public sealed partial class ManifestSteps
 
     [Then("the rejection names that rule id")]
     public void ThenTheRejectionNamesThatRuleId() => _rejection!.Message.Should().Contain(RuleId);
+
+    [Then("^the rejection names (SPEC[0-9]+)$")]
+    public void ThenTheRejectionNamesTheRuleId(string ruleId) => _rejection!.Message.Should().Contain(ruleId);
 
     [Then("the mark does not exist")]
     public void ThenTheMarkDoesNotExist() =>
@@ -413,7 +421,7 @@ public sealed partial class ManifestSteps
         var model = _model ?? throw new InvalidOperationException("The check loaded no model.");
         model.Features.Should().NotBeEmpty();
         _frontmatterViolations
-            .Where(static violation => violation.RuleId == "SPEC002" && violation.Identifier == "domain")
+            .Where(violation => violation.RuleId == RuleIds.Under(Manifest, "SPEC002") && violation.Identifier == "domain")
             .Select(static violation => violation.File)
             .Should()
             .BeEquivalentTo(model.Features.Select(static feature => feature.RelativePath), name);
@@ -423,7 +431,7 @@ public sealed partial class ManifestSteps
     public void ThenTheMalformedClaimIdRuleReportsAgainstTheDefaultClaimGrammar(string claim) =>
         _report!.Violations
             .Should()
-            .ContainSingle(violation => violation.RuleId == "SPEC030" && violation.Identifier == claim)
+            .ContainSingle(violation => violation.RuleId == RuleIds.Under(Manifest, "SPEC030") && violation.Identifier == claim)
             .Which.Message.Should()
             .Contain(_defaultClaimGrammar ?? throw new InvalidOperationException("No claim grammar was removed."));
 
@@ -455,8 +463,8 @@ public sealed partial class ManifestSteps
             {
                 _model = EngineServices.Loader().Load(Tree.Root, SchemaSourceSelection.Disk);
                 _report = EngineServices.Runner().Run(Tree.Root, SchemaSourceSelection.Disk);
-                _frontmatterViolations = _report.Violations.Where(static violation =>
-                    violation.RuleId is "SPEC001" or "SPEC002" or "SPEC003" or "SPEC004").ToList();
+                string[] frontmatter = [.. new[] { "SPEC001", "SPEC002", "SPEC003", "SPEC004" }.Select(id => RuleIds.Under(Manifest, id))];
+                _frontmatterViolations = _report.Violations.Where(violation => frontmatter.Contains(violation.RuleId)).ToList();
             }
             else
             {
@@ -541,6 +549,8 @@ public sealed partial class ManifestSteps
 
     private JsonObject Manifest => _manifest ?? throw new InvalidOperationException("No manifest was read.");
 
+    private string OutOfOrderRule => RuleIds.Under(Manifest, "SPEC010");
+
     private string ManifestPath => Path.Combine(Tree.Root, SpechtTree.ManifestPath);
 
     private string FeatureSchema => _featureSchema ?? throw new InvalidOperationException("The manifest names no Feature schema file.");
@@ -587,7 +597,7 @@ public sealed partial class ManifestSteps
     {
         _rejection.Should().BeNull();
 
-        return _report!.Violations.Where(static violation => violation.RuleId == "SPEC013").Select(static violation => violation.File);
+        return _report!.Violations.Where(violation => violation.RuleId == RuleIds.Under(Manifest, "SPEC013")).Select(static violation => violation.File);
     }
 
     private void WriteClaimTags() => Tree.WriteFeatureFile(
@@ -605,8 +615,6 @@ public sealed partial class ManifestSteps
     }
 
     private const string UnknownKey = "glossary";
-
-    private const string OutOfOrderRule = "SPEC010";
 
     private const string RuleOutsideTheVocabulary = "SPEC999";
 

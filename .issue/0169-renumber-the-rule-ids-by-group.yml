@@ -2,7 +2,7 @@ id: "0169"
 type: task
 title: Renumber the rule ids to four digits grouped by the thousands digit
 
-status: ready-for-architecture
+status: done
 
 value: 3
 risk: 5
@@ -15,27 +15,100 @@ spikes: []
 
 spec: null
 
-claims: []
+claims:
+  - 0001-F1 B-001
+  - 0001-F1 B-002
+  - 0001-F1 B-003
+  - 0001-F1 B-011
+  - 0001-F1 B-018
+  - 0001-F3 B-009
+  - 0001-F3 B-010
+  - 0001-F3 B-011
+  - 0001-F3 B-012
+  - 0001-F3 B-013
+  - 0001-F3 B-014
+  - 0001-F3 B-015
+  - 0001-F3 B-016
+  - 0001-F3 B-017
+  - 0001-F3 B-018
+  - 0001-F3 B-019
+  - 0001-F3 B-026
+  - 0001-F3 B-027
+  - 0001-F3 B-028
+  - 0001-F3 B-029
+  - 0001-F3 B-030
+  - 0001-F3 B-032
+  - 0001-F3 B-039
+  - 0001-F3 B-041
+  - 0001-F3 B-042
+  - 0001-F3 B-043
+  - 0001-F5 B-001
+  - 0001-F5 B-002
+  - 0001-F5 B-003
+  - 0001-F5 B-005
+  - 0001-F5 B-006
+  - 0001-F5 B-007
+  - 0001-F5 B-008
+  - 0001-F5 B-013
+  - 0001-F5 B-026
+  - 0001-F5 B-027
+  - 0001-F5 B-029
+  - 0001-F5 B-030
+  - 0001-F5 B-031
+  - 0001-F5 B-032
+  - 0001-F5 B-034
+  - 0001-F5 B-035
+  - 0001-F5 B-036
+  - 0001-F5 B-037
+  - 0001-F5 B-042
+  - 0001-F5 B-053
+  - 0001-F5 B-054
+  - 0001-F5 B-061
+  - 0001-F5 B-063
+  - 0001-F6 B-004
+  - 0001-F7 B-118
+  - 0001-F7 B-119
+  - 0001-F7 B-121
+  - 0001-F7 B-122
+  - 0001-F7 B-123
+  - 0001-F7 B-124
+  - 0001-F7 B-151
+  - 0001-F7 B-152
+  - 0001-F8 B-003
+  - 0001-F8 B-005
+  - 0001-F8 B-007
+  - 0001-F8 B-009
+  - 0001-F12 B-018
+  - 0001-F12 B-019
+  - 0001-F12 B-020
+  - 0055-F1 B-026
+  - 0055-F1 B-027
 
 created: "2026-10-11"
-updated: "2026-10-11"
-closed: null
+updated: "2026-11-02"
+closed: "2026-11-02"
 
 summary: |
   ADR-0010 (accepted 2026-10-11,
   .spec/adr/0010-layered-engine-boundaries-with-io-at-the-edge-and-a-mediator.md),
   track R of "The order of work", from the record's § "Rule ids". It is
   the one track that is not a refactor: every rule id a consumer reads
-  changes and the golden report is replaced once. Where the new ids land
-  depends on the first publish (`0001-F7` C-1, decision 0007). Before it,
-  the vocabulary of the unpublished `0.1.0` is rewritten in place. After
-  it, the published `0.1.0` is never changed in place and the new ids are
-  a new `0.minor` version.
+  changes under a `0.3.0` pin, and a second golden report is added.
+
+  Where the ids land is decided (ADR-0029, the owner's rulings of
+  2026-11-02): the newest schema version in a published `specht.tool`
+  package is `0.2.1`, and no package carries `0.3.0` (lesson 0016). So the
+  four-digit ids are written into `0.3.0` in place and `0.3.0` is relocked
+  (`0001-F7` C-17); `0.1.0`, `0.2.0` and `0.2.1` keep their three-digit
+  ids (`0001-F7` C-1). This is the in-place order of criteria 1 and 2,
+  applied to `0.3.0`, not `0.1.0`. Criterion 11's new `0.minor` does not
+  apply.
 
   Rule ids become `SPEC` and four digits, the thousands digit naming the
-  group; the groups and today's ids in each are the record's table. The
-  record assigns no new id. The map from each of the twenty-one ids to its
-  new one is this item's, and the owner approves it here.
+  group; the groups and today's ids in each are ADR-0010's table. The map
+  from each of `0.3.0`'s 23 ids - ADR-0010's 21 and `SPEC034` and
+  `SPEC035` - to its new one is ADR-0029's, approved by the owner on
+  2026-11-02.
 
   The owner decided a clean break with no new major schema version: "we
   haven't shipped anything" (ADR-0010 § "Rule ids"). As written, the
@@ -48,13 +121,14 @@ summary: |
   `0001-F5` and `0001-F6`, so which order applies is read when this item
   starts, from whether a package has been published.
 
-  Status and type. It is `ready-for-architecture` and not
-  `ready-for-implementation`: the design that precedes its code is not in
-  ADR-0010 - a decision record of the owner's ruling, the constraint
-  amendments, and an id map the owner has not yet seen. It is a `task`
-  with `claims: []` because no claim exists for it to deliver, and none is
-  invented here; criterion 4 says who writes them. Once they exist this
-  item's `claims:` names them, or it is re-cut as one item to a claim.
+  Status and type. It is `done`, set by the pull request that delivers it:
+  criteria 1 to 4 are written - ADR-0029, the deltas, the map and the
+  claims - and the code followed in the same pull request (owner,
+  2026-11-02). Criterion 8 was withdrawn by the owner on 2026-11-02 and
+  moved to item 0342. `claims:` names the claims of
+  built Features renamed to the new ids, and the three added, `0001-F1`
+  B-018 and `0001-F7` B-151 and B-152. Renamed claims of unbuilt Features
+  are not listed; their own items deliver them.
 
   It touches brief § 4, `0001-F1`, `0001-F7`, `0001-F3` (the rule pages),
   `0001-F5` (the manifest's `rules` keys) and every specification and
@@ -83,34 +157,101 @@ summary: |
   4. The claims and scenarios that name a rule id, amended by
      `spec-author` to the new ids, each keeping its `B-` id.
 
-  Then, and only then, the code: the rule pages under `docs/rules/v1/`,
-  the vocabulary (`src/specht/Versioning/SchemaVersions.cs:71-77`), the
-  manifest's `rules` keys in the embedded default and in this repository's
-  own `.spec/schema/`, each rule's `Id`, a new golden report, and a folder
-  for each group under `src/specht/Rules/`.
+  Then, and only then, the code: the rule pages under
+  `docs/rules/v0.3.0/`, `0.3.0`'s vocabulary in
+  `src/specht/Versioning/SchemaVersions.cs`, the `rules` keys of the
+  embedded `0.3.0` manifest and of this repository's own
+  `.specht/manifest.json`, the id each rule reports per pinned version,
+  the `0.3.0` relock and a second golden report. The files of `0.1.0`,
+  `0.2.0` and `0.2.1` are not touched (ADR-0029). A folder for each group
+  under `src/specht/Rules/` moved to item 0342 (owner, 2026-11-02).
 
   ADR-0010's open point 7 is revisited here: the vocabulary is written
   twice, in `SchemaVersions` and as the rules' ids, held equal by the
-  composition test.
+  composition test. After this item a rule reports a different public id
+  per pinned version; ADR-0029 open point 1 states the problem for the
+  implementer, who recorded the answer there on 2026-11-02: a rule's `Id`
+  stays its three-digit key, and `SchemaVersion.RuleId` maps the key to
+  the pinned version's id.
+
+  The four `0001-F12` rules that decision 0003 has enter `0.3.0` take
+  `SPEC4007` to `SPEC4010` (owner, 2026-11-02, resolving `0001-F12`
+  OQ-5); items `0334` to `0337` add them, not this item. Item `0334`
+  added `SPEC032` to `0.3.0` in `9a7174bb`, before this item merged, so
+  this item maps it to `SPEC4009` and names `0001-F3` B-039, its
+  `expected` payload, in `claims:`; items `0335` to `0337` add the other
+  three.
 
   It waits on item 0164: after it a rule states its id once and the
-  evaluator stamps it, so the renumbering changes one member a rule.
+  evaluator stamps it, so the renumbering is one map per version and no
+  rule's `Id` member changes (ADR-0029 open point 1).
 
 acceptance_criteria:
   - "1. Before any id changes: a repository-wide decision record states the owner's ruling of 2026-10-11 - a clean break with no new major version - and which order applied: no package published, so the vocabulary of `0.1.0` is rewritten in place; or a package published, so the new ids are a new `0.minor` version and the published `0.1.0` is not changed in place (`0001-F7` C-1, decision 0007)."
   - "2. Before any id changes, by `spec-author`: brief § 4, `0001-F7` C-11, `0001-F1` C-5, `0001-F1` C-9, `0001-F1` C-10 and the AGENTS.md invariant and id scheme are amended to permit this one renumbering, in the order that applied, and to say what holds after it; each amended constraint keeps its id. `0001-F7` C-11 as amended by decision 0007 already allows a `0.minor` step that fails a tree, so it needs a delta only for an in-place rewrite."
   - "3. Before any id changes: the map from each of the twenty-one ids to its new id is in that decision record and the owner has approved it. Every new id is `SPEC` and four digits, its thousands digit is its group's in ADR-0010 § 'Rule ids', no `SPEC0xxx` id is assigned, and no new id is given to two rules."
   - "4. Before the code, by `spec-author`: every claim, scenario and `@boundary` scenario that names a rule id names the new one, with its claim id unchanged; this item's `claims:` then lists the claims it delivers, or the item is re-cut. `test-writer` brings § 9 to them."
-  - "5. `specht --explain` answers each new id and no old one, and the rule pages under `docs/rules/v1/` are one page for each new id."
-  - "6. The pinned vocabulary, the manifest's `rules` keys - in the embedded default manifest and in this repository's `.spec/schema/` - and each rule's `Id` hold the new ids and no old one. A manifest that names an old id is rejected as any unknown id is."
-  - "7. The golden report is replaced once, by the engine's output on the same synthetic baseline tree: it differs from `test/tests/Engine/Baseline/engine-e7dba24.json` in rule ids and in the order the last sort key gives, and in nothing else - the same violations, files, lines, identifiers, messages, severities and counts. The comparison is recorded in the pull request."
-  - "8. The rules sit in one folder for each group under `src/specht/Rules/`, with namespaces that follow the folders."
+  - "5. Under a `0.3.0` pin `specht --explain` answers each new id and no old one, and the rule pages under `docs/rules/v0.3.0/` are one page for each new id; the pages of `0.1.0`, `0.2.0` and `0.2.1` are unchanged. Amended 2026-11-02 (ADR-0029): was every version, under `docs/rules/v1/`."
+  - "6. `0.3.0`'s vocabulary, its manifest's `rules` keys - in the embedded `0.3.0` manifest and in this repository's `.specht/manifest.json` - and the id each rule reports under `0.3.0` hold the new ids and no old one. A `0.3.0` manifest that names an old id is rejected as any unknown id is (`0001-F5` B-013). Amended 2026-11-02 (ADR-0029): was every version, and `.spec/schema/`."
+  - "7. A second golden report is added, the engine's output on the same synthetic baseline tree pinned to `0.3.0` (`0001-F1` B-018, C-10); `test/tests/Engine/Baseline/engine-e7dba24.json` stays, the `0.1.0` verdict. The pull request records the comparison: the new report differs from it in rule ids by ADR-0029's map, in the order the last sort key gives, and in the verdicts `0.3.0` changes over `0.1.0` on that tree (`0001-F7` decision 0015 among them), and in nothing else. Amended 2026-11-02 (ADR-0029): was the golden report replaced once, differing in ids and order alone."
+  - "8. The rules sit in one folder for each group under `src/specht/Rules/`, with namespaces that follow the folders. Withdrawn 2026-11-02 (owner): the group folders would sit beside the Feature folders already under `src/specht/Rules/`; the layout moves to item 0342."
   - "9. Open point 7 is answered in the decision record: the vocabulary stays written twice and held equal by the composition test, or one of the two is derived from the other."
   - "10. This repository's own tree passes `./build.sh Specht` with the tool built from this item, the unit, integration and acceptance tiers pass, and the benchmark project `.performance/benchmarks` still compiles."
 
-  - "11. If a package has been published before this item's ids change: the published `0.1.0` is byte-identical with its old rule ids in every tool that ships it (`0001-F7` B-013, B-015), the new ids are a new `0.minor` version, and criteria 5 to 7 are read for that version."
+  - "11. The published `0.1.0`, `0.2.0` and `0.2.1` are byte-identical, with their three-digit rule ids, in the tool this item builds (`0001-F7` B-013, B-015, B-152), and their lock entries are unchanged; `0.3.0`'s lock entry is relocked under `0001-F7` C-17. Amended 2026-11-02 (owner; ADR-0029): was a new `0.minor` version if a package had been published first; no package carries `0.3.0`, so that order does not apply."
 
 decisions:
+  - |
+    2026-11-02, spec-author, on rebasing onto `9a7174bb` (item `0334`,
+    done): `0.3.0` now carries `SPEC032`, so this item's map gives it
+    `SPEC4009` and `0001-F3` B-039, its `expected` payload, joins
+    `claims:`. The rest of the entry below on `0001-F12` and `0001-F3`
+    B-036, B-037 and B-040 stands; `0001-F12` B-001 to B-007 stay with
+    item `0334`, which delivered them.
+  - |
+    2026-11-02, the repository owner, on criterion 8, after the implementer
+    stopped on it because one folder per group would sit beside the Feature
+    folders under `src/specht/Rules/` (Matrix, the `0001-F12` home, and
+    eleven more), with about 61 Markdown links into `Rules/*.cs`: "What
+    collision?! Seems like we need to refactor and make this cohesive. This
+    is a task after this, but can still be done for 0.4.0". Criterion 8 is
+    withdrawn in place and the layout is item 0342, milestone 0.4.0,
+    depending on this item. Recorded by spec-author.
+  - |
+    2026-11-02, the repository owner: the CLI help placeholder of the
+    check command's `--explain` option becomes `--explain <rule id>`, since
+    a rule id is three digits under a pin below `0.3.0` and four under
+    `0.3.0`. Recorded by spec-author.
+  - |
+    2026-11-02, the implementer, recorded in ADR-0029 open point 1: a
+    rule's `Id` stays its three-digit key, and `SchemaVersion.RuleId` maps
+    the key to the pinned version's id; a version's vocabulary is the set
+    of its map's values. Recorded here by spec-author.
+  - |
+    2026-11-02, the repository owner's answers, recorded by spec-author in
+    ADR-0029 (rulings 5 and 6): `SPEC022`, `SPEC023`, `SPEC032` and
+    `SPEC033` take `SPEC4007`, `SPEC4008`, `SPEC4009` and `SPEC4010`,
+    continuing group `4xxx` in the old order, resolving `0001-F12` OQ-5;
+    and "a schema `0.2.0` manifest" in `0001-F5` B-007, B-036, B-037,
+    B-053 and B-054 means `0.2.0` or later. Spec-author, on those
+    answers: the five `0001-F5` claims name the four-digit ids and join
+    `claims:`; `0001-F12` A-4, B-002, B-006 to B-017 and B-021 and
+    `0001-F3` B-036, B-037, B-039 and B-040 name `SPEC4007` to
+    `SPEC4010`, and stay out of `claims:` because items `0334` to `0337`
+    build those rules; items `0334` to `0337` retitled; `0001-F12` B-018
+    to B-020 keep the four-digit ids they took earlier.
+  - |
+    2026-11-02, the repository owner's rulings, recorded by spec-author in
+    ADR-0029: the newest schema version in a published `specht.tool`
+    package is `0.2.1` and `0.3.0` is unpublished (lesson 0016), so the
+    four-digit ids are written into `0.3.0` in place - the in-place order
+    of criteria 1 and 2 applied to `0.3.0`, not `0.1.0` - and `0.1.0`,
+    `0.2.0` and `0.2.1` keep their three-digit ids (`0001-F7` C-1);
+    criterion 11's new `0.minor` does not apply. The map in ADR-0029 is
+    approved, `SPEC034` and `SPEC035` placed in group `4xxx` on the agent's
+    proposal. One pull request delivers this item. Spec-author, on those
+    rulings: the summary and criteria 5, 6, 7 and 11 corrected; status
+    `in-progress`; `claims:` filled.
   - |
     2026-10-11, spec-author, on the repository owner's rulings recorded
     in `0001-F7` decision 0007 (the freeze starts at schema `1.0.0`; the
@@ -134,6 +275,7 @@ out_of_scope:
   - "Assigning any new id in this item's text - the map is the owner's to approve (criterion 3)."
   - "A new rule, a retired rule or a changed message - each is its own item, and a new rule is a new schema version, a major from schema `1.0.0` on (`0001-F7` C-11)."
   - "An id in the `SPEC0xxx` group, the faults of the tool - ADR-0010 assigns the group and no id; fault isolation is `0001-F1` B-012 to B-016 and OQ-2."
-  - "A migration for a consumer's manifest; and a second shipped schema version while no package has been published (criterion 11 is the other order)."
+  - "A migration for a consumer's manifest; and a new schema version for the renumbering (ADR-0029)."
   - "The rules of epic `0101`, which take their ids in the new scheme when they are specified."
   - "Any structural stage of ADR-0010 - items 0155 to 0168."
+  - "The folder layout of `src/specht/Rules/` by rule group, and where the Feature homes under it sit - item 0342 (owner, 2026-11-02; criterion 8 withdrawn)."

@@ -13,7 +13,7 @@ namespace Specht.Tests.Engine;
 /// <c>0001-F3</c> B-008): the layouts the report document and the summary name, by the manifest's names, in the manifest's
 /// order and with a layout holding no specification at zero, and an item file whose name follows the manifest's task
 /// grammar. A layout is read from the serialized document and the summary line, which is where a consumer reads it.
-/// <c>SPEC011</c> follows the path identity a layout's entry declares and not the layout's name (<c>0001-F6</c> B-004,
+/// <c>SPEC3001</c> follows the path identity a layout's entry declares and not the layout's name (<c>0001-F6</c> B-004,
 /// decision 0009).
 /// </summary>
 [Trait("Tier", "Integration")]
@@ -57,7 +57,7 @@ public sealed class SpechtRunnerDiscoveryIntegrationTests
     };
 
     /// <summary>
-    /// Gets the entry a manifest gives the layout it renames <c>old-tree</c>, and the specifications <c>SPEC011</c> must
+    /// Gets the entry a manifest gives the layout it renames <c>old-tree</c>, and the specifications <c>SPEC3001</c> must
     /// name under it (B-004).
     /// </summary>
     public static TheoryData<string, string, string[]> RenamedLayouts { get; } = new()
@@ -76,7 +76,7 @@ public sealed class SpechtRunnerDiscoveryIntegrationTests
 
     [Theory]
     [MemberData(nameof(RenamedLayouts))]
-    public void ARenamedLayout_WhenChecked_ShouldReportSpec011ForASpecificationInItOnlyWhenItDeclaresItsPathIdentity(
+    public void ARenamedLayout_WhenChecked_ShouldReportSpec3001ForASpecificationInItOnlyWhenItDeclaresItsPathIdentity(
         string because,
         string layout,
         string[] expected)
@@ -93,7 +93,7 @@ public sealed class SpechtRunnerDiscoveryIntegrationTests
         var report = tree.Run();
 
         // Then
-        report.Violations.Where(static violation => violation.RuleId == "SPEC011")
+        report.Violations.Where(static violation => violation.RuleId == "SPEC3001")
             .Select(static violation => violation.File)
             .Should().Equal(expected, because);
     }

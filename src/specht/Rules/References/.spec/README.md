@@ -53,7 +53,7 @@ A consumer ran ten review rounds on one specification and the check reported 0 e
 
 ## 3. Acceptance Criteria
 
-<!-- last written by: spec-author, 2026-10-28 -->
+<!-- last written by: spec-author, 2026-11-02 (item 0169, ADR-0029: rule ids renamed to schema 0.3.0's) -->
 
 | ID    | Claim                                                                                                                                                                                                                    | Source                                                                                                    | Status |
 | ----- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------- | ------ |
@@ -62,16 +62,16 @@ A consumer ran ten review rounds on one specification and the check reported 0 e
 | B-003 | Given an unqualified open-question id cited in a specification's text that no § 11 row of that specification declares, this Feature reports the dangling-citation rule at the citing line, its identifier the id.        | owner, 2026-10-28; decision 0001 call 1; epic `0228` R5                                                   | Active |
 | B-004 | Given an undeclared id cited in prose, a list item, a table cell or an HTML comment of the specification's body, this Feature reports it.                                                                                | owner, 2026-10-28; spec-author's reading for HTML comments: they hold 234 citations here, none dangling   | Active |
 | B-005 | Given an id inside an inline-code span or a fenced code block, this Feature does not read it as a citation.                                                                                                              | owner, 2026-10-28 (asked); spec-author's reading: an example id is written in code, as in `0101-F2` B-001 | Active |
-| B-006 | Given an id in the specification's frontmatter, this Feature does not read it as a citation.                                                                                                                             | spec-author's reading: frontmatter edges are `SPEC050` to `SPEC052`'s                                     | Active |
+| B-006 | Given an id in the specification's frontmatter, this Feature does not read it as a citation.                                                                                                                             | spec-author's reading: frontmatter edges are `SPEC6001` to `SPEC6003`'s                                   | Active |
 | B-007 | Given the first cell of a § 3, § 4 or § 11 row, this Feature reads it as a declaration and not as a citation.                                                                                                            | A-1                                                                                                       | Active |
-| B-008 | Given the first cell of a § 9 row, this Feature reports nothing for it, leaving a § 9 row that cites a non-claim to `SPEC031`.                                                                                           | brief § 4 `SPEC031`; one finding per fault, as `0101-F6` C-8                                              | Active |
+| B-008 | Given the first cell of a § 9 row, this Feature reports nothing for it, leaving a § 9 row that cites a non-claim to `SPEC4004`.                                                                                          | brief § 4 `SPEC4004`; one finding per fault, as `0101-F6` C-8                                             | Active |
 | B-009 | Given a claim id in a § 11 Blocks cell, this Feature reports nothing for it, leaving it to `0228-F1`'s Blocks rule.                                                                                                      | `0228-F1` B-001; one finding per fault                                                                    | Active |
 | B-010 | Given a constraint or open-question id in a § 11 Blocks cell that no row declares, this Feature reports it as it reports any other citation.                                                                             | `0228-F1` B-004                                                                                           | Active |
 | B-011 | Given an id that follows a Feature key in the same clause, such as `0001-F7` C-11, this Feature does not resolve it against the citing specification and reports nothing for it.                                         | owner, 2026-10-28 (asked); OQ-3 proposed default; A-3                                                     | Active |
 | B-012 | Given a Feature key, its reach ends at the next `;`, sentence-ending `.`, parenthesis, Feature key or table-cell boundary, so in `0001-F5` B-055, B-058; B-002 only B-002 is resolved here.                              | OQ-4 proposed default; spec-author's reading of this tree's citations                                     | Active |
 | B-013 | Given a range such as B-014 to B-019, this Feature resolves the two ids written and reads no id between them as cited.                                                                                                   | OQ-4 proposed default                                                                                     | Active |
 | B-014 | Given a cited id whose row's Status is the withdrawn or the superseded marker, this Feature reports nothing for it.                                                                                                      | owner, 2026-10-28 (asked); spec-author's reading: the row is declared (AGENTS.md § "Stable IDs")          | Active |
-| B-015 | Given the specification's companion `.feature` file, this Feature reads none of it: its claim tags stay `SPEC021`'s, and its steps name example ids by design.                                                           | owner, 2026-10-28 (asked); brief § 4 `SPEC021`; spec-author's reading                                     | Active |
+| B-015 | Given the specification's companion `.feature` file, this Feature reads none of it: its claim tags stay `SPEC4002`'s, and its steps name example ids by design.                                                          | owner, 2026-10-28 (asked); brief § 4 `SPEC4002`; spec-author's reading                                    | Active |
 | B-016 | Given a decision record, an ADR or a lesson beside the specification, this Feature reads none of it.                                                                                                                     | owner, 2026-10-28 (asked); epic `0228` § Constraints: no rule reads record content                        | Active |
 | B-017 | Given a § 4 whose first cells hold no constraint id, such as a bare ordinal, this Feature resolves no constraint citation in that specification and reports nothing for one.                                             | OQ-6 proposed default; the `specht-conventions` specs reference § "The § 4 constraint-id gap"             | Active |
 | B-018 | Given an undeclared id cited on several lines, this Feature reports it once at each line, and once on a line that cites it twice.                                                                                        | spec-author's reading: a finding sits where the fix is made                                               | Active |
@@ -163,9 +163,11 @@ Pending: owned by `test-writer`, written after agreement.
 
 ## 10. Lessons / Spec Deltas
 
-<!-- last written by: spec-author, 2026-10-28 -->
+<!-- last written by: spec-author, 2026-11-02 (item 0169, ADR-0029: rule ids renamed to schema 0.3.0's) -->
 
 None.
+
+- 2026-11-02, item `0169` ([ADR-0029](../../../../../.spec/adr/0029-rule-ids-take-four-digits-in-schema-0-3-0-and-published-versions-keep-theirs.md)): the shipped rules this Feature's claims and scenarios name take schema `0.3.0`'s four-digit ids, each claim keeping its id; under a pin below `0.3.0` each reads as the three-digit id brief § 4 maps it from.
 
 ## 11. Open Questions
 

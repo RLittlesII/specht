@@ -13,11 +13,11 @@ namespace Specht.Evaluation;
 public sealed class SpechtEvaluator(IEnumerable<ISpechtRule> rules, SpechtViolationOrder order)
 {
     /// <summary>
-    /// Selects the rules whose id is in the vocabulary of the version <paramref name="model"/>'s schemas keep and whose
-    /// level - the manifest's for that id, else the rule's own - is not off (<c>0001-F1</c> B-004; <c>0001-F7</c> B-014;
-    /// <c>0001-F5</c> B-010, B-061, B-062), runs each once in the order given, stamps each finding with the rule's id and
-    /// that level as its severity, a rule failure at error whatever the level (<c>0001-F5</c> B-011; <c>0001-F1</c> B-015),
-    /// and orders the violations.
+    /// Selects the rules whose id, in the form the version <paramref name="model"/>'s schemas keep names it by, is in that
+    /// version's vocabulary and whose level - the manifest's for that id, else the rule's own - is not off (<c>0001-F1</c>
+    /// B-004; <c>0001-F7</c> B-014, B-151, B-152; <c>0001-F5</c> B-010, B-061, B-062), runs each once in the order given,
+    /// stamps each finding with that id and that level as its severity, a rule failure at error whatever the level
+    /// (<c>0001-F5</c> B-011; <c>0001-F1</c> B-015), and orders the violations.
     /// </summary>
     /// <param name="model">The resolved tree.</param>
     /// <returns>The report, counting the rules selected.</returns>
@@ -32,19 +32,23 @@ public sealed class SpechtEvaluator(IEnumerable<ISpechtRule> rules, SpechtViolat
     /// <param name="findings">The findings of one selected rule, asked for once per rule selected.</param>
     /// <returns>The report, counting the rules selected.</returns>
     /// <implements epic="0001" feature="F1" claim="B-001" />
+    /// <implements epic="0001" feature="F7" claim="B-151" />
+    /// <implements epic="0001" feature="F7" claim="B-152" />
     internal SpechtReport Evaluate(SpechtModel model, Func<ISpechtRule, IEnumerable<SpechtFinding>> findings)
     {
         var version = model.Schemas.Version;
         var settings = model.Schemas.Structure.Rules;
         var selected = rules
-            .Select(rule => (Rule: rule, Level: settings.TryGetValue(rule.Id, out var level) ? level : rule.DefaultLevel))
-            .Where(selection => version.RuleIds.Contains(selection.Rule.Id) && selection.Level != SpechtRuleLevel.Off)
+            .Select(rule => (Rule: rule, Id: version.RuleId(rule.Id)))
+            .Select(selection => (selection.Rule, selection.Id,
+                Level: settings.TryGetValue(selection.Id, out var level) ? level : selection.Rule.DefaultLevel))
+            .Where(selection => version.RuleIds.Contains(selection.Id) && selection.Level != SpechtRuleLevel.Off)
             .ToList();
         var violations = new List<SpechtViolation>();
 
-        foreach (var (rule, level) in selected)
+        foreach (var (rule, id, level) in selected)
         {
-            violations.AddRange(findings(rule).Select(finding => Stamped(finding, rule.Id, level)));
+            violations.AddRange(findings(rule).Select(finding => Stamped(finding, id, level)));
         }
 
         return new SpechtReport(

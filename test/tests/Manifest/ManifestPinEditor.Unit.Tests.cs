@@ -80,7 +80,7 @@ public sealed class ManifestPinEditorUnitTests
     {
         // Given
         var editor = new ManifestPinEditor(EngineServices.Parser(), EngineServices.Versions());
-        var original = "{\"schemaVersion\":" + value + ",\"rules\":{\"SPEC031\":\"warning\"}}";
+        var original = "{\"schemaVersion\":" + value + ",\"rules\":{\"SPEC4004\":\"warning\"}}";
         var bytes = Encoding.UTF8.GetBytes(original);
 
         // When
@@ -88,7 +88,7 @@ public sealed class ManifestPinEditorUnitTests
         var result = editor.Change(bytes, new SemanticVersion(0, 2, 0));
 
         // Then
-        Encoding.UTF8.GetString(result).Should().Be("{\"schemaVersion\":\"0.2.0\",\"rules\":{\"SPEC031\":\"warning\"}}");
+        Encoding.UTF8.GetString(result).Should().Be("{\"schemaVersion\":\"0.2.0\",\"rules\":{\"SPEC4004\":\"warning\"}}");
         bytes.Should().Equal(Encoding.UTF8.GetBytes(original));
     }
 }

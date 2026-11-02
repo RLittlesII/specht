@@ -30,7 +30,7 @@ public sealed partial class ReportSteps
     public void WhenTheToolIsAskedToExplain(string id)
     {
         _explainedId = id;
-        if (id == "SPEC031" && File.Exists(Path.Combine(Tree.Root, SpechtTree.ManifestPath)))
+        if (RuleIds.Named("0.1.0", id) == "SPEC031" && File.Exists(Path.Combine(Tree.Root, SpechtTree.ManifestPath)))
         {
             // A normal check of this tree fails. Explain must still print only the page.
             Tree.WriteFeature("0001", "F1", featureFile: null);
@@ -74,7 +74,9 @@ public sealed partial class ReportSteps
         {
             var manifest = JsonNode.Parse(File.ReadAllText(Path.Combine(Tree.Root, SpechtTree.ManifestPath)))!.AsObject();
             var pin = manifest["schemaVersion"]?.GetValue<string>() ?? "0.1.0";
-            return EngineServices.Versions().Versions.Single(version => version.Number.ToString() == pin).RulePages[_explainedId];
+            var pages = EngineServices.Versions().Versions.Single(version => version.Number.ToString() == pin).RulePages;
+            pages.Should().ContainKey(_explainedId, "version {0} names the rule by the id the scenario explains", pin);
+            return pages[_explainedId];
         }
     }
 

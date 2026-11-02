@@ -10,10 +10,10 @@ namespace Specht.Acceptance.Manifest;
 public sealed partial class ManifestSteps
 {
     [Given("the manifest sets no level for the waiver rule")]
-    public void GivenNoWaiverOverride() => Named("rules").Remove("SPEC034");
+    public void GivenNoWaiverOverride() => Named("rules").Remove(RuleIds.Under(Manifest, "SPEC034"));
 
     [Given("the manifest sets the waiver rule to warning")]
-    public void GivenWaiverWarning() => Named("rules")["SPEC034"] = "warning";
+    public void GivenWaiverWarning() => Named("rules")[RuleIds.Under(Manifest, "SPEC034")] = "warning";
 
     [Given("the root holds a specification with a waived row that names no approver")]
     public void GivenUnsignedWaiver() => Tree.WriteFeature("0001", "F1", sections: SpechtTree.SectionsWith(
@@ -24,14 +24,14 @@ public sealed partial class ManifestSteps
     public void ThenNoWaiverFinding()
     {
         _rejection.Should().BeNull();
-        _report!.Violations.Should().NotContain(static violation => violation.RuleId == "SPEC034");
+        _report!.Violations.Should().NotContain(violation => violation.RuleId == RuleIds.Under(Manifest, "SPEC034"));
     }
 
     [Then("the waiver rule reports that row at warning severity")]
     public void ThenWaiverWarning()
     {
         _rejection.Should().BeNull();
-        var violation = _report!.Violations.Where(static violation => violation.RuleId == "SPEC034").Should().ContainSingle().Subject;
+        var violation = _report!.Violations.Where(violation => violation.RuleId == RuleIds.Under(Manifest, "SPEC034")).Should().ContainSingle().Subject;
         violation.Identifier.Should().Be("B-001");
         violation.Severity.Should().Be(Specht.Model.SpechtSeverity.Warning);
     }

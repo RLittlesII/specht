@@ -1310,10 +1310,10 @@ Feature: Schema versioning
     Then the sign-off rule reports nothing
 
   @B-123
-  Scenario: The missing-coverage rule keeps its id and its severity
+  Scenario: The missing-coverage rule has one id and its own severity
     Given the tool ships schema version 0.3.0
     When its vocabulary is read
-    Then the missing-coverage rule is SPEC060 at error severity
+    Then the missing-coverage rule is SPEC7001 at error severity
     And no other rule id reports missing coverage
 
   @B-124
@@ -1439,3 +1439,25 @@ Feature: Schema versioning
     And the source serves a feature template matching that hash
     When upgrade runs
     Then the root still has no feature template
+
+  @B-151
+  Scenario: Under 0.3.0 a rule reports its four-digit id
+    Given the manifest pins version 0.3.0
+    And the root holds a specification with a claim that has no traceability row
+    When the check runs
+    Then that violation is reported under SPEC4004
+    And no violation is reported under a three-digit rule id
+
+  @B-152
+  Scenario Outline: Under a published version a rule reports its three-digit id
+    Given the manifest pins version <version>
+    And the root holds a specification with a claim that has no traceability row
+    When the check runs
+    Then that violation is reported under SPEC031
+    And no violation is reported under a four-digit rule id
+
+    Examples:
+      | version |
+      | 0.1.0   |
+      | 0.2.0   |
+      | 0.2.1   |

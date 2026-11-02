@@ -5,8 +5,8 @@ using Specht.Tests.Shared;
 namespace Specht.Tests.Engine;
 
 /// <summary>
-/// The engine's verdicts on the baseline tree against the golden report (<c>0001-F1</c> B-004, C-9, C-10), and the six
-/// fields every violation carries (B-010).
+/// The engine's verdicts on the baseline tree against the golden report (<c>0001-F1</c> B-004, C-9, C-10), the same tree
+/// pinned to schema 0.3.0 against its own golden report (B-018), and the six fields every violation carries (B-010).
 /// </summary>
 [Trait("Tier", "Integration")]
 public sealed class SpechtRunnerBaselineIntegrationTests
@@ -39,6 +39,22 @@ public sealed class SpechtRunnerBaselineIntegrationTests
         using var tree = new SpechtTree();
         BaselineTree.Write(tree);
         var golden = GoldenReport.Read();
+
+        // When
+        var verdicts = GoldenReport.Of(tree.Run());
+
+        // Then
+        verdicts.Should().Equal(golden);
+    }
+
+    [Fact]
+    public void TheBaselineTreePinnedToZeroThreeZero_WhenChecked_ShouldGiveItsGoldenReportsVerdictsFieldForFieldInOrder()
+    {
+        // Given
+        using var tree = new SpechtTree();
+        BaselineTree.Write(tree);
+        tree.Pin(GoldenReport.VersionZeroThreeZero);
+        var golden = GoldenReport.Read(GoldenReport.VersionZeroThreeZeroPath);
 
         // When
         var verdicts = GoldenReport.Of(tree.Run());

@@ -127,7 +127,7 @@ synced_at: null
 <!-- Each § 3 ID appears once, anchored by its scenario tag. All concrete test
      names and locators belong here; verify targets exist. Covered requires
      mechanism coverage; Partial lacks it. A Missing row: it does not block
-     spec_status reaching approved; `SPEC060` reports it once status is done,
+     spec_status reaching approved; `SPEC7001` reports it once status is done,
      unless the manifest lowers the rule. -->
 
 ## 10. Lessons / Spec Deltas

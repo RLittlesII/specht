@@ -19,7 +19,8 @@ namespace Specht.Acceptance.Report;
 /// what a frontmatter, section or table violation's <c>expected</c> carries, read from the launched tool's document and
 /// compared with the tree's own manifest and Feature schema. An approved specification with a missing cell pins schema
 /// <c>0.2.1</c>, the newest version whose <c>SPEC060</c> follows approval (B-018; <c>0001-F7</c> B-120); the done axis
-/// from <c>0.3.0</c> is B-043's. The rest of the file's scenarios stay pending for their items.
+/// from <c>0.3.0</c> is B-043's. A rule id a step names is read at the tree's pin (<c>0001-F7</c> B-151, B-152), so
+/// under the live manifest's <c>0.3.0</c> it is the four-digit id. The rest of the file's scenarios stay pending for their items.
 /// </summary>
 [Binding]
 [Scope(Feature = "The report contract")]
@@ -60,8 +61,11 @@ public sealed partial class ReportSteps
         Tree.WriteFeature("0007", "F1", new Dictionary<string, string> { ["depends_on"] = "[\"F2\"]" });
         Tree.WriteFeature("0007", "F2");
         Tree.WriteFeature("0008", "F1", new Dictionary<string, string> { ["spec_status"] = "approved" });
-        Tree.Run().Violations.Select(static violation => violation.RuleId[..6]).Distinct().Should()
-            .BeEquivalentTo(["SPEC00", "SPEC01", "SPEC02", "SPEC03", "SPEC04", "SPEC05", "SPEC06"]);
+        var fourDigit = RuleIds.Under(Tree, "SPEC001") != "SPEC001";
+        Tree.Run().Violations.Select(violation => violation.RuleId[..(fourDigit ? 5 : 6)]).Distinct().Should()
+            .BeEquivalentTo(fourDigit
+                ? ["SPEC1", "SPEC2", "SPEC3", "SPEC4", "SPEC5", "SPEC6", "SPEC7"]
+                : ["SPEC00", "SPEC01", "SPEC02", "SPEC03", "SPEC04", "SPEC05", "SPEC06"]);
     }
 
     [Given("the root holds a specification whose frontmatter {word} is {string}")]
@@ -161,7 +165,7 @@ public sealed partial class ReportSteps
     {
         var source = Report.Violations.Should().ContainSingle(static violation => violation.Identifier == "B-002").Which;
         var carried = Document.Violations.Should().ContainSingle(static violation => violation.Identifier == "B-002").Which;
-        carried.RuleId.Should().Be("SPEC031");
+        carried.RuleId.Should().Be(RuleIds.Under(Tree, "SPEC031"));
         carried.Severity.Should().Be(SpechtSeverity.Error);
         carried.File.Should().Be("epics/0001-epic/F1-feature/spec.md");
         carried.Line.Should().Be(source.Line);
@@ -201,7 +205,8 @@ public sealed partial class ReportSteps
     public void ThenTheViolationsExpectationNamesTheFeatureSchemaFileByItsPathUnderTheConfigurationFolder()
     {
         var path = SpechtTree.FrontmatterSchemaFolder + "/" + Manifest["frontmatterSchemas"]!["feature"]!.GetValue<string>();
-        Violations(static violation => violation["ruleId"]!.GetValue<string>() is "SPEC001" or "SPEC002").Should().NotBeEmpty(Json)
+        string[] frontmatter = [RuleIds.Under(Tree, "SPEC001"), RuleIds.Under(Tree, "SPEC002")];
+        Violations(violation => frontmatter.Contains(violation["ruleId"]!.GetValue<string>())).Should().NotBeEmpty(Json)
             .And.AllSatisfy(violation => (violation["expected"]?["schema"]?.GetValue<string>()).Should().Be(path, Json));
     }
 
@@ -243,7 +248,7 @@ public sealed partial class ReportSteps
 
     [Then("the violation's expectation carries the section titles the manifest contracts, in order")]
     public void ThenTheViolationsExpectationCarriesTheSectionTitlesTheManifestContractsInOrder() =>
-        Violations(static violation => violation["ruleId"]!.GetValue<string>() == "SPEC010").Should().NotBeEmpty(Json)
+        Violations(violation => violation["ruleId"]!.GetValue<string>() == RuleIds.Under(Tree, "SPEC010")).Should().NotBeEmpty(Json)
             .And.AllSatisfy(violation => JsonNode.DeepEquals(violation["expected"]!["sections"], Manifest["sections"]).Should().BeTrue(Json));
 
     [Then("the violation's expectation names the traceability section")]
@@ -257,7 +262,7 @@ public sealed partial class ReportSteps
     [Then("the keys that schema requires, in the schema's order")]
     public void ThenTheKeysThatSchemaRequiresInTheSchemasOrder() =>
         JsonNode.DeepEquals(
-                Violations(static violation => violation["ruleId"]!.GetValue<string>() == "SPEC001")
+                Violations(violation => violation["ruleId"]!.GetValue<string>() == RuleIds.Under(Tree, "SPEC001"))
                     .Should().ContainSingle(Json).Which["expected"]!["required"],
                 FeatureSchema["required"])
             .Should().BeTrue(Json);
@@ -288,7 +293,7 @@ public sealed partial class ReportSteps
             Path.Combine(Tree.Root, SpechtTree.FrontmatterSchemaFolder, Manifest["frontmatterSchemas"]!["feature"]!.GetValue<string>())))!;
 
     private JsonNode Table =>
-        Violations(static violation => violation["ruleId"]!.GetValue<string>() == "SPEC013").Should().ContainSingle(Json).Which;
+        Violations(violation => violation["ruleId"]!.GetValue<string>() == RuleIds.Under(Tree, "SPEC013")).Should().ContainSingle(Json).Which;
 
     private static IEnumerable<string> Strings(JsonNode? node) =>
         node switch
@@ -318,7 +323,8 @@ public sealed partial class ReportSteps
         JsonNode.Parse(Json)!["violations"]!.AsArray().OfType<JsonNode>().Where(predicate).ToList();
 
     private List<JsonNode> Frontmatter(string? key) =>
-        Violations(violation => violation["ruleId"]!.GetValue<string>() == "SPEC002" && violation["identifier"]?.GetValue<string>() == key);
+        Violations(violation => violation["ruleId"]!.GetValue<string>() == RuleIds.Under(Tree, "SPEC002")
+            && violation["identifier"]?.GetValue<string>() == key);
 
     private const string TwoClaims =
         "## 3. Acceptance Criteria\n\n| ID | Claim | Source | Status |\n| -- | ----- | ------ | ------ |\n"

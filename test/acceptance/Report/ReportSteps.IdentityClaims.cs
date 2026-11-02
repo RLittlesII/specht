@@ -36,7 +36,7 @@ public sealed partial class ReportSteps
             ["value"] = "0001-F1",
             ["firstDeclaration"] = "epics/0001-epic/F1-feature/spec.md",
         };
-        Violations(static violation => violation["ruleId"]!.GetValue<string>() == "SPEC012").Should().HaveCount(2)
+        Violations(violation => violation["ruleId"]!.GetValue<string>() == RuleIds.Under(Tree, "SPEC012")).Should().HaveCount(2)
             .And.AllSatisfy(violation => JsonNode.DeepEquals(violation["expected"], expected).Should().BeTrue(Json));
     }
 
@@ -50,7 +50,7 @@ public sealed partial class ReportSteps
     [Then("the item expectation carries its {word} form and the {word} implied")]
     public void ThenTheItemExpectationCarriesItsFormAndValue(string form, string value)
     {
-        var expected = Violations(static violation => violation["ruleId"]!.GetValue<string>() == "SPEC043")
+        var expected = Violations(violation => violation["ruleId"]!.GetValue<string>() == RuleIds.Under(Tree, "SPEC043"))
             .Should().ContainSingle(Json).Which["expected"]!;
         expected["form"]!.GetValue<string>().Should().Be(
             form == "task" ? Manifest["identifiers"]!["task"]!.GetValue<string>() : "{epic}-{feature}", Json);
@@ -66,7 +66,7 @@ public sealed partial class ReportSteps
 
     [Then("the violation's expectation carries the claim ids the specification declares")]
     public void ThenTheCompanionExpectationCarriesDeclaredClaims() =>
-        JsonNode.DeepEquals(Violations(static violation => violation["ruleId"]!.GetValue<string>() == "SPEC021")
+        JsonNode.DeepEquals(Violations(violation => violation["ruleId"]!.GetValue<string>() == RuleIds.Under(Tree, "SPEC021"))
             .Should().ContainSingle(Json).Which["expected"]!["claims"], new JsonArray("B-001")).Should().BeTrue(Json);
 
     [Given("the root holds a specification with {int} companions")]
@@ -81,7 +81,7 @@ public sealed partial class ReportSteps
 
     [Then("the companion expectation requires exactly one file")]
     public void ThenTheCompanionExpectationRequiresOneFile() =>
-        Violations(static violation => violation["ruleId"]!.GetValue<string>() == "SPEC020")
+        Violations(violation => violation["ruleId"]!.GetValue<string>() == RuleIds.Under(Tree, "SPEC020"))
             .Should().ContainSingle(Json).Which["expected"]!["companionCount"]!.GetValue<int>().Should().Be(1, Json);
 
     [Given("the root holds a specification declaring a claim as {string}")]
@@ -90,7 +90,7 @@ public sealed partial class ReportSteps
 
     [Then("the violation's expectation carries the claim grammar")]
     public void ThenTheClaimExpectationCarriesItsGrammar() =>
-        Violations(static violation => violation["ruleId"]!.GetValue<string>() == "SPEC030")
+        Violations(violation => violation["ruleId"]!.GetValue<string>() == RuleIds.Under(Tree, "SPEC030"))
             .Should().ContainSingle(Json).Which["expected"]!["grammar"]!.GetValue<string>()
             .Should().Be(Manifest["identifiers"]!["claim"]!.GetValue<string>(), Json);
 
@@ -107,7 +107,7 @@ public sealed partial class ReportSteps
     public void ThenTheDuplicateClaimNamesItsFirstLine()
     {
         ThenTheClaimExpectationCarriesItsGrammar();
-        Violations(static violation => violation["ruleId"]!.GetValue<string>() == "SPEC030")
+        Violations(violation => violation["ruleId"]!.GetValue<string>() == RuleIds.Under(Tree, "SPEC030"))
             .Should().ContainSingle(Json).Which["expected"]!["firstDeclarationLine"]!.GetValue<int>().Should().Be(_firstClaimLine, Json);
     }
 
@@ -138,7 +138,7 @@ public sealed partial class ReportSteps
     [Then("the violation's expectation names B-003 as needing exactly one row")]
     public void ThenTheMatrixExpectationRequiresOneRowForB003()
     {
-        var expected = Violations(static violation => violation["ruleId"]!.GetValue<string>() == "SPEC031")
+        var expected = Violations(violation => violation["ruleId"]!.GetValue<string>() == RuleIds.Under(Tree, "SPEC031"))
             .Should().ContainSingle(Json).Which["expected"]!;
         expected["requiredRows"]!.GetValue<int>().Should().Be(1, Json);
         expected["rowsByClaim"]!.AsObject().Should().ContainKey("B-003");
@@ -146,13 +146,13 @@ public sealed partial class ReportSteps
 
     [Then("the number of rows it has")]
     public void ThenTheMatrixExpectationCountsB003() =>
-        Violations(static violation => violation["ruleId"]!.GetValue<string>() == "SPEC031")
+        Violations(violation => violation["ruleId"]!.GetValue<string>() == RuleIds.Under(Tree, "SPEC031"))
             .Should().ContainSingle(Json).Which["expected"]!["rowsByClaim"]!["B-003"]!.GetValue<int>().Should().Be(2, Json);
 
     [Then("every matrix expectation requires one row and counts every declared claim")]
     public void ThenEveryMatrixExpectationCountsAllClaims()
     {
-        var violations = Violations(static violation => violation["ruleId"]!.GetValue<string>() == "SPEC031");
+        var violations = Violations(violation => violation["ruleId"]!.GetValue<string>() == RuleIds.Under(Tree, "SPEC031"));
         violations.Should().NotBeEmpty(Json).And.AllSatisfy(violation =>
         {
             violation["expected"]!["requiredRows"]!.GetValue<int>().Should().Be(1, Json);
@@ -161,7 +161,7 @@ public sealed partial class ReportSteps
     }
 
     private JsonNode IdentityExpectation =>
-        Violations(static violation => violation["ruleId"]!.GetValue<string>() == "SPEC011").Should().ContainSingle(Json).Which["expected"]!;
+        Violations(violation => violation["ruleId"]!.GetValue<string>() == RuleIds.Under(Tree, "SPEC011")).Should().ContainSingle(Json).Which["expected"]!;
 
     private int _firstClaimLine;
 

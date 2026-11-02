@@ -1,6 +1,6 @@
 {
   "schemaVersion": "0.3.0",
-  "$comment": "Not a JSON Schema. The ordered section manifest Specht rule SPEC010 reads, kept as data so the section contract - the twelve numbered sections plus Tasks and Scoring - lives in one place rather than as a string array in C#.",
+  "$comment": "Not a JSON Schema. The ordered section manifest Specht rule SPEC2001 reads, kept as data so the section contract - the twelve numbered sections plus Tasks and Scoring - lives in one place rather than as a string array in C#.",
   "layouts": [
     {
       "name": "epics",

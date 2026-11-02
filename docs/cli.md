@@ -15,7 +15,7 @@ Installed as a local tool, each runs as `dotnet specht`.
 ## `specht`
 
 ```text
-specht [--root <DIR>] [--strict] [--json] [--schema-source <embedded|disk>] [--explain <SPEC###>]
+specht [--root <DIR>] [--strict] [--json] [--schema-source <embedded|disk>] [--explain <rule id>]
 specht --version
 ```
 
@@ -29,7 +29,7 @@ pins. [What it checks](what-it-checks.md) lists the rules, and
 | `--schema-source <embedded\|disk>` | `embedded` or `disk` | Manifest selection, then automatic | Selects frontmatter schemas for this run; overrides a valid manifest selection.                                 |
 | `--strict`                         | none                 | Off                                | Fails on a violation of any severity, not only an error.                                                        |
 | `--json`                           | none                 | Off                                | Writes the report document to stdout in place of the violation lines and summary.                               |
-| `--explain <SPEC###>`              | A rule id            | None                               | Prints the entire rule page for the pinned schema version, including YAML frontmatter, without running a check. |
+| `--explain <rule id>`              | A rule id            | None                               | Prints the entire rule page for the pinned schema version, including YAML frontmatter, without running a check. |
 | `-h, --help`                       | none                 | Off                                | Prints the command's help and checks nothing.                                                                   |
 | `--version`                        | none                 | Off                                | As the only argument, prints the tool's version and checks nothing.                                             |
 
@@ -42,7 +42,7 @@ Missing or invalid selected files exit `3`, with their relative path on stderr
 and no stdout. A recorded `spechtSchema` still requires hash verification under
 `disk`; selecting `embedded` beside that record is an invalid input.
 
-Use `specht --explain SPEC031` to print the complete embedded rule page for the
+Use `specht --explain SPEC4004` to print the complete embedded rule page for the
 manifest's schema pin, including its YAML frontmatter. A known rule exits `0`;
 an id outside that version's vocabulary is named on stderr and exits `4` with
 no stdout. A missing manifest exits `2`; an invalid manifest or unshipped pin
@@ -67,7 +67,7 @@ specht --root . --strict
 ```
 
 ```text
-src/specht/.spec/README.md(214): error SPEC031: claim 'B-007' has no row in § 9 - every § 3 claim appears there exactly once, with 'Missing' as its test until one exists [B-007]
+src/specht/.spec/README.md(214): error SPEC4004: claim 'B-007' has no row in § 9 - every § 3 claim appears there exactly once, with 'Missing' as its test until one exists [B-007]
 specifications: epics 0, features 1
 items: 0
 rules evaluated: 21
@@ -177,7 +177,7 @@ validation. Failures go to stderr with empty stdout and leave files unchanged.
 An invalid manifest is refused even when the requested edit could repair it.
 
 ```sh
-specht rules set SPEC010 warning --root .
+specht rules set SPEC2001 warning --root .
 ```
 
 ## `specht evidence`
@@ -263,7 +263,7 @@ of the root, and may name a file outside the root.
 
 **Stdout.** One MSBuild-shaped line per violation, followed by
 `errors: <count>, warnings: <count>`. A path is printed exactly as typed;
-standard input is named `<stdin>`. Only SPEC001 to SPEC004 can be reported.
+standard input is named `<stdin>`. Only SPEC1001 to SPEC1004 can be reported, SPEC001 to SPEC004 under a pin below `0.3.0`.
 Rule-level overrides are the root's: warnings alone succeed and off rules
 report nothing.
 

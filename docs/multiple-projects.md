@@ -32,14 +32,14 @@ checked against the root's one manifest, so the projects share one schema
 version, one set of sections and one level per rule. Some rules read the whole
 root:
 
-| Rule                 | Scope                                                                            |
-| -------------------- | -------------------------------------------------------------------------------- |
-| `SPEC012`            | The root. Two projects that both declare `0001-F1` collide.                      |
-| `SPEC050`–`SPEC052`  | The root. A `depends_on` or `blocks` edge may name a Feature in another project. |
-| `SPEC041`            | The root. A spike may sit beside any specification.                              |
-| `SPEC044`            | The root. Item ids are unique and contiguous per epic, across every project.     |
-| `SPEC040`            | The specification's own folder.                                                  |
-| `SPEC030`, `SPEC031` | One specification. Two projects may both have a `B-001`.                         |
+| Rule                   | Scope                                                                            |
+| ---------------------- | -------------------------------------------------------------------------------- |
+| `SPEC3002`             | The root. Two projects that both declare `0001-F1` collide.                      |
+| `SPEC6001`–`SPEC6003`  | The root. A `depends_on` or `blocks` edge may name a Feature in another project. |
+| `SPEC5002`             | The root. A spike may sit beside any specification.                              |
+| `SPEC5004`             | The root. Item ids are unique and contiguous per epic, across every project.     |
+| `SPEC5001`             | The specification's own folder.                                                  |
+| `SPEC4003`, `SPEC4004` | One specification. Two projects may both have a `B-001`.                         |
 
 [What it checks](what-it-checks.md) lists every rule.
 
@@ -50,7 +50,7 @@ root:
 - A rule level per path or per Feature. `rules` sets one level for the root.
 - Several roots in one run. Of several `--root` options, only the last is
   checked.
-- An edge to a Feature in another root. `SPEC050` reports it.
+- An edge to a Feature in another root. `SPEC6001` reports it.
 
 Two defaults matter when roots nest. Only the root's own `.spec/` is skipped,
 so a run on the parent reads a nested project's `billing/.spec/README.md` as a
