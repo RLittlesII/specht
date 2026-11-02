@@ -29,7 +29,7 @@ claims:
   - 0001-F5 B-064
 
 created: "2026-10-30"
-updated: "2026-10-30"
+updated: "2026-11-01"
 closed: null
 
 summary: |
@@ -100,7 +100,7 @@ decisions:
     Feature item, 0010, never listed B-063 or B-064 in its `claims`.
 
 out_of_scope:
-  - "This repository's pin move and dropping its `SPEC060` override — `0055-F1` B-026, B-027 (decision 0015 call 8)."
+  - "This repository's pin move and dropping its `SPEC060` override — `0055-F1` B-026, B-027 (decision 0015 call 8), item 0339, delivered in this item's pull request as its own commit, because `0001-F4` B-004 fails from the cut until the pin moves (OQ-56). 0339 stops before merging while a done Feature's `Missing` row it reports remains, so that row also stops this item's pull request and this item's close in 0.4.0; 0339 names the rows."
   - "`SPEC060` scoped per claim — § 5 #27."
   - "Writing the cut version's rule vocabulary — § 5 #25; by hand."
   - "Relocking a version a package has carried — C-17; OQ-60."

@@ -1,0 +1,66 @@
+id: "0338"
+type: test
+title: Prove the scenario, test and status rules do not run below schema 0.3.0
+
+status: ready
+
+risk: 2
+
+parent: "0224"
+children: []
+
+depends_on: ["0321", "0334", "0335", "0336", "0337"] # the guard holds the four rules against 0.1.0, 0.2.0 and 0.2.1, so all four exist first
+spikes: []
+
+spec: src/specht/Rules/Matrix/.spec/README.md
+
+claims:
+  - B-021
+
+created: "2026-11-01"
+updated: "2026-11-01"
+closed: null
+
+summary: |
+  Proves that under a pin of 0.1.0, 0.2.0 or 0.2.1 none of SPEC022,
+  SPEC023, SPEC032 and SPEC033 runs, and that the report is
+  byte-identical to the one the tool gives the tree without them, and
+  that a raised waiver rule still runs under 0.2.0 (decision 0003). It
+  binds B-021's outline rows for 0.2.0 and 0.2.1 and its boundary
+  scenario; the 0.1.0 row is bound today.
+
+  Waits on the four rule items: the guard proves something only once
+  each rule exists and could run. Each rule item adds its id to 0.3.0
+  alone, so this item adds tests and no rule.
+
+  Risk 2: the vocabulary per version is built and fixed for the published
+  versions (0001-F7 C-1, B-015); the risk is a rule item that leaks its id
+  into a 0.2.x vocabulary, which this item would find.
+
+acceptance_criteria:
+  - "B-021 — below 0.3.0 the four rules do not run, report byte-identical"
+  - "§ 9 carries a row naming a test for each id above."
+
+decisions:
+  - |
+    2026-11-01, spec-author: cut on the owner's ruling of 2026-11-01
+    (decision 0003), after the four rule items, as 0224 planned the
+    0.1.0 guard. Type test: the version gate is built, and this item
+    writes the proof once the rules exist. Rejected: each rule item
+    proving B-021 for its own id alone, which leaves the outline's single
+    report, holding all four at once, to no item. Value omitted,
+    inheriting 0224's.
+  - |
+    2026-11-01, spec-author, on spec-reviewer's round-7 note (b): B-021's
+    outline still ends "the one the tool gave that tree before this
+    Feature", while the amended claim says without those four rules.
+    Under 0.2.x the two agree only because SPEC034 and SPEC035 are off
+    by default (B-020). The step is bound today by `MatrixSteps` for the
+    0.1.0 row, so the line is not reworded now: rewording it would unbind
+    that row. When this item binds the 0.2.0 and 0.2.1 rows, spec-author
+    rewords the line to the claim's wording and test-writer rebinds the
+    step, in this pull request.
+
+out_of_scope:
+  - "SPEC034 and SPEC035 under 0.1.0: B-020 and `0001-F7` B-014 (decision 0003, Affects)."
+  - "Everything in § 5 of the spec."

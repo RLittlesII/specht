@@ -8,7 +8,7 @@ value: 5
 risk: 3
 
 parent: "0055"
-children: ["0057", "0058", "0059", "0060", "0061", "0062", "0098"]
+children: ["0057", "0058", "0059", "0060", "0061", "0062", "0098", "0339"]
 
 depends_on: []
 spikes: []
@@ -43,7 +43,7 @@ claims:
   - B-025
 
 created: "2026-10-08"
-updated: "2026-10-13"
+updated: "2026-11-01"
 closed: "2026-10-13"
 
 summary: |
@@ -92,6 +92,12 @@ acceptance_criteria:
   - "§ 9 retains Missing rows under the owner’s no-build-tests decision; B-023 and B-025 are Superseded under decision 0001."
 
 decisions:
+  - |
+    2026-11-01, spec-author: 0339 cut under this item, on the owner's
+    call of 2026-11-01 ("Cut 0339 pin move (Recommended)"), for B-026
+    and B-027, added 2026-10-16 after this item closed. This item stays
+    done, and its `claims` do not gain them: 0339 carries them, as 0321
+    carries `0001-F7` claims 0041 does not list.
   - |
     2026-10-13: closed with the final child 0062; children 0057 through
     0061 are delivered, and 0098 was closed without delivery by the owner.
