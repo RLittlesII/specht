@@ -32,6 +32,7 @@ public sealed class FaultIsolatedRuleUnitTests
 
         // Then
         first.Should().Be(same).And.NotBe(different);
+        first.GetHashCode().Should().Be(same.GetHashCode());
         (first with { }).Should().Be(first);
         first.ToString().Should().NotContain(secret);
     }
