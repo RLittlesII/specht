@@ -2,7 +2,7 @@ id: "0164"
 type: refactor
 title: Collapse the rule interface to one id and make the evaluator an instance
 
-status: ready-for-implementation
+status: in-progress
 
 value: 4
 risk: 4
