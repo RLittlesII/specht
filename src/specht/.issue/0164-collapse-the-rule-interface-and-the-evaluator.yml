@@ -100,6 +100,34 @@ decisions:
     done and stays in `depends_on` as the record of the evaluation.
     Status `blocked` to `ready-for-implementation`, as cut: the design is
     ADR-0010's and the splits 0156 to 0163 are open.
+  - |
+    2026-11-01, spec-author: the criteria reconciled with the source at
+    commit `79051138`; the criteria text is not edited, and this entry
+    amends how each is read.
+    Names: item 0100 gave the types the Specht prefix, so the criteria's
+    `SpecEvaluator`, `SpecViolationOrder` and `SpecFinding` are
+    `SpechtEvaluator`, `SpechtViolationOrder` and `SpechtFinding`, and the
+    interface stays `ISpechtRule`.
+    Default level (criteria 3 and 4): the interface keeps its existing
+    `DefaultLevel` as a `SpechtRuleLevel` in place of ADR-0010's
+    `DefaultSeverity`, because SPEC034 and SPEC035 default to off since
+    items 0223 and 0227 (`0001-F5` B-061, B-062, decision 0014) and a
+    severity cannot express off. This is a judgement the owner may
+    overrule in review. Criterion 4 reads "every rule keeps its default
+    level" - error, except SPEC034 and SPEC035 off - so stamping changes
+    no severity.
+    Rule count (criteria 4 and 8): "twenty-one" is the 0.1.0 vocabulary;
+    the composition test holds the registered ids against the vocabulary
+    as it does today.
+    Fault isolation: `FaultIsolatedRule` exists (ADR-0005 (c); `0001-F1`
+    B-012 to B-017). Its failure finding is stamped error whatever the
+    manifest says. The out-of-scope line on fault isolation is stale.
+    Frontmatter: `SpechtRunner.CheckFrontmatter` keeps its signature, its
+    violations and its count, through the evaluator.
+    Benchmarks (criterion 9): no benchmark calls `SpechtRunner.Evaluate`,
+    so the criterion is met by `.performance/benchmarks` compiling.
+    `0109-F2` A-1, which names the static, is amended in the same pull
+    request.
 
 out_of_scope:
   - "Deleting `SpechtRunner`, the mediator, `Check.Query` and its handler, and the namespace guard - item 0167."

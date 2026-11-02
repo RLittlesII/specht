@@ -20,7 +20,7 @@ depends_on: ["F1"]
 blocks: []
 spikes: []
 created: "2026-10-09"
-updated: "2026-10-14"
+updated: "2026-11-01"
 github_issue: null
 synced_at: null
 ---
@@ -35,7 +35,7 @@ A check's time is one number, and nothing says which stage spends it: a slower c
 
 ## 2. User Needs
 
-<!-- last written by: spec-author, 2026-10-11 (A-1 and A-2, item `0107`) -->
+<!-- last written by: spec-author, 2026-11-01 (A-1, item `0164`) -->
 
 | #   | Persona                           | Need                                                                     | Pain Point Today                                      |
 | --- | --------------------------------- | ------------------------------------------------------------------------ | ----------------------------------------------------- |
@@ -45,11 +45,11 @@ A check's time is one number, and nothing says which stage spends it: a slower c
 
 ### Assumptions
 
-| ID  | Assumption                                                                                                                                                                          |
-| --- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| A-1 | The stages are those ADR-0005 § Decision (a) names. From item `0107` they are `SpechtSchemasLoader`, `SpechtDiscovery`, `SpechtModelLoader` and the static `SpechtRunner.Evaluate`. |
-| A-2 | The model is built before measurement and carries every companion file’s parsed tags. Rules and evaluation read that snapshot without file-system access (ADR-0010 stage 2).        |
-| A-3 | The tree sizes and the generated tree are `0109-F1`'s (`0109-F1` decision 0004).                                                                                                    |
+| ID  | Assumption                                                                                                                                                                                                                 |
+| --- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| A-1 | The stages are those ADR-0005 § Decision (a) names. From item `0164` they are `SpechtSchemasLoader`, `SpechtDiscovery`, `SpechtModelLoader` and `SpechtEvaluator.Evaluate`, on the instance `AddSpechtEngine()` registers. |
+| A-2 | The model is built before measurement and carries every companion file’s parsed tags. Rules and evaluation read that snapshot without file-system access (ADR-0010 stage 2).                                               |
+| A-3 | The tree sizes and the generated tree are `0109-F1`'s (`0109-F1` decision 0004).                                                                                                                                           |
 
 ## 3. Acceptance Criteria
 
@@ -137,12 +137,13 @@ Pending: owned by `test-writer`, written after agreement.
 
 ## 10. Lessons / Spec Deltas
 
-<!-- last written by: spec-author, 2026-10-11 (A-1 and A-2, item `0107`) -->
+<!-- last written by: spec-author, 2026-11-01 (A-1, item `0164`) -->
 
 - 2026-10-09, spec-reviewer finding on commit `4b23e76`: B-006, B-007, C-6 and C-7 said rules and evaluation run over an in-memory model, but the companion-file rule reads `.feature` files during evaluation. They now measure against a generated tree on disk and name the file system. B-008 and C-8 withdrawn (decision 0001). § 5 rows 8 and 9 added.
 - 2026-10-11, A-1 and A-2 amended by spec-author on item `0107`'s delivery: A-1 names the entry points the stages now have, where it said they were reached through the entry points of 2026-10-09 until that item landed, and A-2's line reference moves from 41 to 43. What A-2 asserts holds: the companion-file rule reads each `.feature` file while it evaluates, through the `FeatureFileReader` it is given. No claim or constraint changed.
 
 - 2026-10-14, ADR-0010 stage 2: A-2, C-6 and C-7 now measure rules and evaluation without companion-file I/O. The load reads and parses the companions before measurement. Decision 0001’s earlier disk-reading rationale is superseded for these two stages; disk-reading stages still follow C-10. C-11’s exclusion now explicitly names benchmark-only I/O avoidance; production changes required by ADR-0010’s I/O boundary are allowed. No benchmark implementation or performance result is claimed.
+- 2026-11-01, A-1 amended by spec-author on item `0164` (ADR-0010 stage 4): the evaluation stage is `SpechtEvaluator.Evaluate`, an instance `AddSpechtEngine()` registers, where A-1 named the static `SpechtRunner.Evaluate` that item removes. No benchmark called the static, so none changes. No claim or constraint changed.
 
 ## 11. Open Questions
 
