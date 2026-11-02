@@ -121,7 +121,7 @@ Design for item `0150` (B-001 to B-004; C-1 to C-4), as built. The numbers are �
 
 ## 8. Testing Strategy
 
-<!-- last written by: test-writer, 2026-10-11 (item 0185 as built, `0001-F5` decision 0011: the manifest path and the frontmatter schema folder in the trace, its line numbers re-read) -->
+<!-- last written by: test-writer, 2026-11-01 (item 0164: the per-layout count is `SpechtEvaluator.Evaluate`'s) -->
 
 - **No test proves these claims, and none is owed.** Three owner rulings decide it. On 2026-10-08: the build carries no tests. On 2026-10-11, the proof decision that cut item `0145` (`0109-F1` § 10): a build or benchmark-run claim is `Missing` in § 9, with its mechanism and a hand-run record here. On 2026-10-11, pull request #114 (`0109-F1` § 10, verbatim): "Bechmarks don't get tests. They should benchmark production code!" So no test of `CheckBenchmarks` is written or proposed, `check-scaling.feature` is not linked into `test/acceptance`, and it has no step class. All four rows of § 9 are `Missing`.
 - **Mechanisms, per claim.** Read on 2026-10-11 in [`CheckBenchmarks.cs`](../CheckBenchmarks.cs), as item `0150` built it. Each is a declaration or a guard in that one class; none has a test.
@@ -141,7 +141,7 @@ Design for item `0150` (B-001 to B-004; C-1 to C-4), as built. The numbers are �
   - B-002: mechanism, the guard in `GenerateTree`. No unit test: it is a decision, the only one in the class, and it is reachable only by calling a benchmark's setup over a real root; a benchmark is not tested (owner, pull request #114).
   - B-003: no mechanism in this class; the layout is `SpechtTree.Of`'s.
   - B-004: mechanism, the parameter's name. No unit test: a declaration, visible only in a result.
-  - Reported to `implementer`, not acted on: the report carries a count for each layout (`SpechtRunner.Evaluate`), and the guard reads only the total and the violations. A guard that also read the layout counts would make B-003 something the run shows, not only something read.
+  - Reported to `implementer`, not acted on: the report carries a count for each layout (`SpechtEvaluator.Evaluate`), and the guard reads only the total and the violations. A guard that also read the layout counts would make B-003 something the run shows, not only something read.
 
 ### Performance
 

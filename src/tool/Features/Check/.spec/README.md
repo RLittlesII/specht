@@ -266,7 +266,7 @@ and supplies annotation input without importing application assemblies.
 
 ## 8. Testing Strategy
 
-<!-- last written by: test-writer, 2026-11-01 (item 0164: `SpechtViolationUnitTests` moved to `test/tests/Evaluation/`); test-writer, 2026-10-27 -->
+<!-- last written by: test-writer, 2026-11-01 (item 0164: `SpechtViolationUnitTests` moved to `test/tests/Evaluation/`) -->
 
 - **Unit, B-001 and B-016** (`test/tests/Evaluation/SpechtViolation.Unit.Tests.cs`, `test/tests/Model/` until item 0164, over violations built with the `SpechtViolationFixture` AutoFixture). The mechanism beneath both claims is one decision in `SpechtViolation.ToString` (§ 7): whether the line carries a trailing `[<identifier>]`. `CheckCommand.ExecuteAsync` writes each violation through it and adds nothing to the line. Pinned per claim, each a `[Theory]` over an error on a line and a warning on the file as a whole, which renders no position:
   - B-001: a violation with an identifier renders exactly `<path>(<line>): <severity> SPEC###: <message> [<identifier>]`.

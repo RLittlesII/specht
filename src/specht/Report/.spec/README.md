@@ -272,7 +272,7 @@ retain `2` or `3`. There is no second renderer or page copy.
 
 ## 8. Testing Strategy
 
-<!-- last written by: test-writer, 2026-11-01 (item 0164: the unit tier evaluates through `SpechtEvaluator`; items 0156 and 0157: B-009 to B-011 mechanisms in the split rules); test-writer, 2026-10-17 (item 0040); test-writer, 2026-10-17 (item 0039); 2026-10-16 (item 0038); 2026-10-15 (item 0037: B-009, B-010, B-011, B-026; the `$ref` rows after the owner's amendment of B-009) -->
+<!-- last written by: test-writer, 2026-11-01 (item 0164: the unit tier evaluates through `SpechtEvaluator`) -->
 
 - **The seam** (item `0034`): `specht.Report.SpechtReportDocument.From(SpechtReport)` makes the document, a record carrying `SchemaVersion`, `SchemaSource` (`SpechtSchemaSource`: `Embedded`, `Disk`, `Upstream`), `Layouts` (`SpechtReportLayout(SpechtLayout, SpecificationCount)`), `ItemCount`, `RulesEvaluated`, `ErrorCount`, `WarningCount` and `Violations` (`SpechtReportViolation(RuleId, Severity, File, Line, Identifier, Message, Expected)`, `Expected` a `JsonObject`); `ToJson()` serializes it. The test-writer named the signatures, with bodies that throw; the bodies, the JSON member names and `docs/schema/report.schema.json` are `implementer`'s (§ 7). The claims are made "given the document", so they are proved at the engine; `--json` is `0035`'s (B-001).
 - **Unit** (`test/tests/Report/SpechtReportDocument.Unit.Tests.cs`, reports from `SpechtReportFixture` and `SpechtViolationFixture`):
