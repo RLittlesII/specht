@@ -113,7 +113,7 @@ Every call site starts the tool as a new process - the pre-commit hook on every 
 
 ## 7. Technical Design
 
-<!-- last written by: implementer, 2026-10-13; implementer, 2026-10-14 (the benchmark project builds for two targets and runs `net10.0`, `0001-F2` decision 0011); implementer, 2026-10-14 (the baseline targets the SDK's bundled framework, item 0220); implementer, 2026-10-23 (the main-only Short runs moved to the macOS pool, `0055-F2` decision 0005) -->
+<!-- last written by: implementer, 2026-10-13; implementer, 2026-10-14 (the benchmark project builds for two targets and runs `net10.0`, `0001-F2` decision 0011); implementer, 2026-10-14 (the baseline targets the SDK's bundled framework, item 0220); implementer, 2026-10-23 (the main-only Short runs moved to the macOS pool, `0055-F2` decision 0005); implementer, 2026-11-02 (the session resolves the engine's tree generator and store, item 0153) -->
 
 ### Implemented timing slice
 
@@ -182,14 +182,14 @@ only to child processes. Resolver-cache isolation was observed in the manual
 probe. No feed, global install, user-cache fallback or repository manifest edit
 is part of setup.
 
-The session resolves the registered SpechtResources and SpechtManifestParser
-outside measurement, supplying the shipped manifest bytes, parsed structure and
-pinned version to SpechtTree, then saves it through SpechtTreeStore. This follows
-CheckBenchmarks after the manifest-resource refactor; no consumer tree or
-generator type is copied or moved. Setup smoke
+The session resolves the engine's registered SpechtTreeGenerator and
+SpechtTreeStore outside measurement, generates a one-specification tree and
+saves it under the session root; the generator reads the shipped manifest and
+its pinned version itself (item 0153; `0109-F1` decision 0005). This follows
+CheckBenchmarks; no consumer tree is copied. Setup smoke
 runs the empty tool and help, then checks JSON from the installed tool for
 exactly one specification and no violations. Timed checks use normal text
-output. The production-tree refactor remains separate work.
+output.
 
 ### Process and cleanup behavior
 

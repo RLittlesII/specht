@@ -1,13 +1,11 @@
 using System;
 using System.IO;
-using System.IO.Abstractions;
 using BenchmarkDotNet.Attributes;
 using Microsoft.Extensions.DependencyInjection;
 using Specht.Composition;
 using Specht.Evaluation;
-using Specht.Manifest;
-using Specht.Resources;
 using Specht.Tool;
+using Specht.Tree;
 using Spectre.Console.Cli;
 
 namespace Specht.Benchmarks.Check;
@@ -29,11 +27,9 @@ public class CheckBenchmarks
     {
         _root = Directory.CreateTempSubdirectory("specht-check-").FullName;
         _resolver = new TypeRegistrar(new ServiceCollection().AddSpechtEngine()).Build();
-        var resources = (SpechtResources)_resolver.Resolve(typeof(SpechtResources))!;
-        var parser = (SpechtManifestParser)_resolver.Resolve(typeof(SpechtManifestParser))!;
-        var structure = parser.Parse(resources.DefaultManifest);
-        new SpechtTreeStore(new FileSystem()).Save(
-            SpechtTree.Of(Specifications, resources.DefaultManifestBytes, structure, parser.PinnedVersion(structure)), _root);
+        var generator = (SpechtTreeGenerator)_resolver.Resolve(typeof(SpechtTreeGenerator))!;
+        var store = (SpechtTreeStore)_resolver.Resolve(typeof(SpechtTreeStore))!;
+        store.Save(generator.Generate(Specifications), _root);
         _runner = (SpechtRunner?)_resolver.Resolve(typeof(SpechtRunner))
                   ?? throw new InvalidOperationException("AddSpechtEngine() registers no SpechtRunner.");
 

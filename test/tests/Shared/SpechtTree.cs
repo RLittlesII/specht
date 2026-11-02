@@ -1,7 +1,9 @@
+using System.IO.Abstractions;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json.Nodes;
 using Specht.Evaluation;
+using Specht.Tree;
 
 namespace Specht.Tests.Shared;
 
@@ -31,10 +33,7 @@ public sealed class SpechtTree : IDisposable
 
         foreach (var file in Directory.EnumerateFiles(live, "*.json", SearchOption.AllDirectories))
         {
-            var copy = Path.Combine(Root, ConfigurationFolder, Path.GetRelativePath(live, file));
-
-            Directory.CreateDirectory(Path.GetDirectoryName(copy)!);
-            File.Copy(file, copy);
+            Write(Path.Combine(Root, ConfigurationFolder, Path.GetRelativePath(live, file)), File.ReadAllBytes(file));
         }
 
         var manifestPath = Path.Combine(Root, ManifestPath);
@@ -43,7 +42,7 @@ public sealed class SpechtTree : IDisposable
         manifest.Remove("claim");
         manifest.Remove("tests");
         manifest.Remove("owners");
-        File.WriteAllText(manifestPath, manifest.ToJsonString());
+        Write(manifestPath, manifest.ToJsonString());
     }
 
     /// <summary>The folder under a root that holds the tool's configuration (ADR-0011).</summary>
@@ -114,7 +113,7 @@ public sealed class SpechtTree : IDisposable
 
     /// <summary>Overwrites the Gherkin file beside the Feature at <paramref name="specPath"/>.</summary>
     public void WriteFeatureFile(string specPath, string content) =>
-        File.WriteAllText(Path.Combine(Path.GetDirectoryName(specPath)!, "feature.feature"), content);
+        Write(Path.Combine(Path.GetDirectoryName(specPath)!, "feature.feature"), content);
 
     /// <summary>Runs every rule against the tree.</summary>
     public SpechtReport Run() => EngineServices.Runner().Run(Root);
@@ -153,7 +152,7 @@ public sealed class SpechtTree : IDisposable
                 ["epic"] = HashOf(EpicSchemaPath),
             },
         };
-        File.WriteAllText(path, manifest.ToJsonString());
+        Write(path, manifest.ToJsonString());
     }
 
     /// <inheritdoc />
@@ -175,8 +174,6 @@ public sealed class SpechtTree : IDisposable
     {
         var directory = Path.Combine(Root, "epics", $"{epic}-epic", $"{id}-feature");
 
-        Directory.CreateDirectory(directory);
-
         var body = new StringBuilder();
 
         body.Append(Frontmatter(epic, id, frontmatter));
@@ -185,11 +182,11 @@ public sealed class SpechtTree : IDisposable
 
         var path = Path.Combine(directory, "spec.md");
 
-        File.WriteAllText(path, body.ToString());
+        Write(path, body.ToString());
 
         if (featureFile is not null)
         {
-            File.WriteAllText(
+            Write(
                 Path.Combine(directory, featureFile + ".feature"),
                 "Feature: it\n\n  @B-001\n  Scenario: It does the thing\n    Given a thing\n");
         }
@@ -207,8 +204,6 @@ public sealed class SpechtTree : IDisposable
     {
         var directory = Path.Combine(Root, area.Replace('/', Path.DirectorySeparatorChar), ".spec");
 
-        Directory.CreateDirectory(directory);
-
         var body = new StringBuilder();
 
         body.Append(Frontmatter(epic, id, frontmatter));
@@ -217,8 +212,8 @@ public sealed class SpechtTree : IDisposable
 
         var path = Path.Combine(directory, "README.md");
 
-        File.WriteAllText(path, body.ToString());
-        File.WriteAllText(
+        Write(path, body.ToString());
+        Write(
             Path.Combine(directory, "feature.feature"),
             "Feature: it\n\n  @B-001\n  Scenario: It does the thing\n    Given a thing\n");
 
@@ -260,15 +255,13 @@ public sealed class SpechtTree : IDisposable
             ["github_issue"] = "null",
         };
 
-        File.WriteAllText(Path.Combine(directory, $"{id}-{slug}.md"), Render(values, frontmatter) + "# Item\n");
+        Write(Path.Combine(directory, $"{id}-{slug}.md"), Render(values, frontmatter) + "# Item\n");
     }
 
     /// <summary>Writes an <c>epic.md</c> for <paramref name="epic"/>, with optional frontmatter overrides.</summary>
     public void WriteEpic(string epic, IReadOnlyDictionary<string, string>? frontmatter = null)
     {
         var directory = Path.Combine(Root, "epics", $"{epic}-epic");
-
-        Directory.CreateDirectory(directory);
 
         var values = new Dictionary<string, string>(StringComparer.Ordinal)
         {
@@ -283,7 +276,7 @@ public sealed class SpechtTree : IDisposable
             ["github_issue"] = "null",
         };
 
-        File.WriteAllText(Path.Combine(directory, "epic.md"), Render(values, frontmatter) + "# Epic\n");
+        Write(Path.Combine(directory, "epic.md"), Render(values, frontmatter) + "# Epic\n");
     }
 
     /// <summary>Writes an arbitrary file at <paramref name="relativePath"/> under the root.</summary>
@@ -291,8 +284,7 @@ public sealed class SpechtTree : IDisposable
     {
         var path = Path.Combine(Root, relativePath.Replace('/', Path.DirectorySeparatorChar));
 
-        Directory.CreateDirectory(Path.GetDirectoryName(path)!);
-        File.WriteAllText(path, content);
+        Write(path, content);
 
         return path;
     }
@@ -363,8 +355,15 @@ public sealed class SpechtTree : IDisposable
         return text.Append("---\n\n").ToString();
     }
 
+    private void Write(string path, string content) => Write(path, Encoding.UTF8.GetBytes(content));
+
+    private void Write(string path, byte[] content) =>
+        Store.Save(new Specht.Tree.SpechtTree([new SpechtTreeFile(Path.GetRelativePath(Root, path).Replace(Path.DirectorySeparatorChar, '/'), content)]), Root);
+
     private string HashOf(string schemaPath) =>
         "sha256:" + Convert.ToHexStringLower(SHA256.HashData(File.ReadAllBytes(Path.Combine(Root, schemaPath))));
+
+    private static readonly SpechtTreeStore Store = EngineServices.Store(new FileSystem());
 
     private readonly string _temporary;
 }

@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.IO.Abstractions;
 using System.IO.Compression;
 using System.Linq;
 using System.Text.Json;
@@ -10,8 +9,7 @@ using System.Threading.Tasks;
 using System.Xml.Linq;
 using Microsoft.Extensions.DependencyInjection;
 using Specht.Composition;
-using Specht.Manifest;
-using Specht.Resources;
+using Specht.Tree;
 
 namespace Specht.Benchmarks.Startup;
 
@@ -157,11 +155,7 @@ internal sealed class ColdStartSession : IDisposable
         }
 
         using var provider = new ServiceCollection().AddSpechtEngine().BuildServiceProvider();
-        var resources = provider.GetRequiredService<SpechtResources>();
-        var parser = provider.GetRequiredService<SpechtManifestParser>();
-        var structure = parser.Parse(resources.DefaultManifest);
-        new SpechtTreeStore(new FileSystem()).Save(
-            SpechtTree.Of(1, resources.DefaultManifestBytes, structure, parser.PinnedVersion(structure)), Path.Combine(_root, "tree"));
+        provider.GetRequiredService<SpechtTreeStore>().Save(provider.GetRequiredService<SpechtTreeGenerator>().Generate(1), Path.Combine(_root, "tree"));
         await RunAsync("specht-empty");
         await RunAsync("specht", "--help");
         using var report = JsonDocument.Parse(await RunAsync("specht", "--root", "tree", "--json"));
