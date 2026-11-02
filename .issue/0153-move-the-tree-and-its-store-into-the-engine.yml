@@ -2,7 +2,7 @@ id: "0153"
 type: refactor
 title: Move SpechtTree and its store out of the benchmarks into the engine
 
-status: in-progress
+status: done
 
 value: 3
 risk: 3
@@ -19,7 +19,7 @@ claims: []
 
 created: "2026-10-11"
 updated: "2026-11-02"
-closed: null
+closed: "2026-11-02"
 
 summary: |
   ADR-0027 lifted ADR-0014's benchmark gate on 2026-10-31: this stage
@@ -295,6 +295,51 @@ decisions:
     absence of a flag is claimed: one run per side, under load, and no
     change in either direction is claimed. The net11.0 runtime was not
     measured.
+  - |
+    2026-11-02, spec-author: closed by the pull request that delivers it,
+    branch `0153/move-the-tree-into-the-engine` on `origin/main` at
+    `2e849065`. What delivered each criterion:
+    Criterion 1: `2ed1d2d7` moves `SpechtTree`, `SpechtTreeFile` and
+    `SpechtTreeStore` to `src/specht/Tree/`, namespace `Specht.Tree`, with
+    `SpechtTreeGenerator` in place of the static `SpechtTree.Of` (the
+    2026-11-02 ruling); `AddSpechtEngine()` registers the store and the
+    generator, and `CheckBenchmarks` and `ColdStartSession` resolve them.
+    `.performance/benchmarks/` declares none of the four.
+    Criterion 2: `ef948a88`, before any code moved, amends `0109-F1` C-7
+    and `0109-F2` C-11, records `0109-F1` decision 0005 and the delta in
+    § 10 of both. `2ed1d2d7` brings `0109-F1` § 6 and § 7 to the move,
+    `3cff26a1` and `af01b084` bring `0109-F3` § 8 and § 9 to it, and
+    `2d3f1991` carries the review's findings.
+    Criteria 3 and 4: move only, by the owner's 2026-11-01 ruling; the
+    store keeps `Save` alone, and the engine's load and what it reads are
+    item 0166's. No ADR is written here.
+    Criterion 5: `InitWriter` is untouched (5(a), leave alone).
+    `test/tests/Shared/SpechtTree.cs` writes through `SpechtTreeStore`
+    (5(b), feed) from `2ed1d2d7`, and `ed38e012` routes the `Pin` method
+    pull request #679 added through the same store.
+    Criterion 6: `SpechtTreeGenerator` reads the shipped manifest and the
+    pinned version through `SpechtResources` and `SpechtManifestParser`
+    itself, so no caller repeats the reads, and the frontmatter role names
+    are written once, in it (`2ed1d2d7`).
+    Criterion 7: `2ed1d2d7` moves `SpechtTreeStore.Unit.Tests.cs` and
+    `TreeSizes.cs` to `test/tests/Tree/`, replaces the `SpechtTree` unit
+    and integration tests with `SpechtTreeGenerator` ones there, and
+    `test/tests/Benchmarks/` is gone.
+    Criterion 8: `2ed1d2d7` removes `test/tests/tests.csproj`'s reference
+    to `benchmarks.csproj`.
+    Criterion 9: `ef948a88` keeps `0109-F1` B-015 and B-016 Active and
+    unamended, proven by the tests under `test/tests/Tree/`; `2d3f1991`
+    brings § 8's "Only the tree generator is tested" and the § 9 stamp to
+    the run, 18 of 18 on net10.0 and net11.0.
+    Criterion 10: `CheckBenchmarks` `[GlobalSetup]` generates the tree
+    and saves it through the store before the measured call, and
+    `0109-F3` C-3 holds as written.
+    Review: spec-reviewer approved `origin/main` (`2e849065`)...`af01b084`
+    in `0109-F1`, `0109-F2`, `0109-F3`, `0109-F4` and `0001-F2`
+    (`9d9ad1be`); the four non-blocking findings are addressed in
+    `2d3f1991`.
+    Guard: no flag at 100 or 1,000 specifications; the benchmarker's entry
+    above records it (`3cff26a1`).
 
 out_of_scope:
   - 'Anything in pull request #114 - the owner''s "later". The tests under `test/tests/Benchmarks/` and the reference stay as #114 has them until this item (`0109-F1` OQ-5).'
