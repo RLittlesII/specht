@@ -9,7 +9,8 @@ namespace Specht.Tests.Shared;
 /// Builds a <see cref="SpechtModel"/>: no Feature, item or epic, and the schemas read from a synthetic, empty schema set
 /// under <c>repo</c> in a <see cref="MockFileSystem"/>, until a test overrides what it asserts on. A test of a rule under a
 /// manifest's own names hands that manifest to <see cref="WithManifest"/>.
-/// <see cref="SpechtSchemas"/> has no public constructor, so a schema set is read, not built.
+/// The schema set is read through the model reader, as a check reads one; <see cref="SpechtSchemaCompiler"/> builds one in
+/// memory, with no file system, where a test needs no manifest.
 /// </summary>
 [AutoFixture(typeof(SpechtModel))]
 internal sealed partial class SpechtModelFixture

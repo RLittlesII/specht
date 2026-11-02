@@ -121,7 +121,7 @@ Pending: owned by `test-writer`, written after agreement.
 
 ## 9. Traceability Matrix
 
-<!-- last written by: spec-author, 2026-10-09 -->
+<!-- last written by: test-writer, 2026-11-02 (item `0166`: B-003's row names parsing the frontmatter); spec-author, 2026-10-09 -->
 
 | Claim ID | Scenario                                               | Test    | Status    |
 | -------- | ------------------------------------------------------ | ------- | --------- |

@@ -147,7 +147,7 @@ public sealed class SpechtModelReader(
         {
             var bytes = store.ReadFrontmatterSchema(root, name)
                 ?? throw new SpechtManifestException($"{path}: the selected disk schema is absent.");
-            return Encoding.UTF8.GetString(bytes).TrimStart('﻿');
+            return Encoding.UTF8.GetString(bytes).TrimStart('\uFEFF');
         }
         catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
         {
