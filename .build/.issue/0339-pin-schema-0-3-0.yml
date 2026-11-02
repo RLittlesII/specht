@@ -2,7 +2,7 @@ id: "0339"
 type: task
 title: Pin this repository to schema 0.3.0 and drop its SPEC060 override
 
-status: ready
+status: in-progress
 
 risk: 3
 
