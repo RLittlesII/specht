@@ -50,9 +50,10 @@ specification reaching approved, lowers the rule in its manifest:
 
 That is the sanctioned way to choose otherwise. `warning` still fails a run
 under `--strict`; `off` stops the rule. This repository pins `0.3.0` and
-sets no level. A
-command that sets one rule's level is specified and not built; until it is,
-edit `rules` by hand ([configuration](configuration.md)).
+sets no level.
+`specht rules set <id> <level>` sets one rule's level
+([command line](cli.md#specht-rules-set)), or edit `rules` by hand
+([configuration](configuration.md)).
 
 ## Work items are optional
 

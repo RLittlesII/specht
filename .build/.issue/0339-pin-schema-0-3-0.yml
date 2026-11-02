@@ -176,6 +176,24 @@ decisions:
     out_of_scope entry on those tests excepts; `0201-F5` B-024's Test
     cell records that the Withdrawn claim has no test; B-064 by the
     ruling.
+  - |
+    2026-11-02, implementer: the two findings the decisions of
+    2026-11-01 left "Open, for the owner" are cleared; those decisions
+    stand as the record of what the move revealed. The four `SPEC060`
+    rows: `0201-F5` B-024 by commit "task(0339): record 0201-F5 B-024's
+    withdrawn traceability row"; `0055-F9` B-033 and B-065 by commit
+    "task(0339): test the mirror's orphan claims B-033 and B-065";
+    `0055-F9` B-064 by the owner's ruling of 2026-11-02, applied in
+    commit "spec(0055-F9): reopen the mirror Feature and cut item 0340
+    for B-064", which takes the row off a done Feature and routes it to
+    item 0340. The 30 red tests and the five `CallSites` scenarios: by
+    commit "task(0339): pin fixtures to the schema version their claim
+    names", which pins the baseline tree to 0.1.0, the golden report's
+    version, pins each approved-axis case to a version that keeps that
+    axis, and points the rule-settings call site at the newest shipped
+    default manifest, so no rule went back into this repository's
+    `rules` (C-6). The pin itself moved in commit "task(0339): move this
+    repository's pin to schema 0.3.0".
 
 out_of_scope:
   - "Cutting schema 0.3.0, its vocabulary, `markers.done` and the live `.specht/` copy — 0321 (`0001-F7`)."
