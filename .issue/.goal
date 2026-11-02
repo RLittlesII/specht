@@ -41,6 +41,14 @@
 0321
 
 0.5.0
+# MCP first release: the owner, 2026-11-01. The host 0132-F3, the four
+# 0132-F4 answers whose commands are built, and docs/mcp.md.
+0329
+0330
+0331
+0332
+
+0.6.0
 # Pull-request surface: epic 0142, whose Features are not yet specified; a
 # Feature's items join this list once cut.
 0289
@@ -49,18 +57,19 @@
 # VSTest evidence, proven end to end in one packaged consumer.
 0302
 
-0.6.0
-# Agent surface: epic 0132, Features 0132-F1 to 0132-F4, specified with no
-# items cut yet; a Feature's items join this list once cut.
+0.7.0
+# Agent surface completed: the tree's facts 0132-F2, 0132-F4's facts, trace
+# and schema answers, and 0001-F18; items join this list once cut. 0132-F1,
+# the index, is unscheduled (the owner, 2026-11-01).
 0252
 0256
 
-0.7.0
+0.8.0
 # Review and presentation: epics 0228, 0194 and 0101. Their Features' items
 # join this list once cut.
 # Epic 0228 candidate C, qualified key resolution
 0307
 
-0.8.0
+0.9.0
 # Onboarding and documentation: epics 0196 and 0002, Features 0002-F1 and
 # 0002-F2. A Feature's items join this list once cut.

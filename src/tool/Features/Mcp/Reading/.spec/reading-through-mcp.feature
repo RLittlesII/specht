@@ -59,10 +59,9 @@ Feature: Reading through MCP
     Then the answer is exactly what the command prints given that argument
 
     Examples:
-      | answer           | argument                                         |
-      | the tree's facts | the path of the first specification              |
-      | the manifest     | the request for the tool's shipped defaults      |
-      | the verdict      | the request to read the frontmatter schemas from disk |
+      | answer       | argument                                              |
+      | the manifest | the request for the tool's shipped defaults           |
+      | the verdict  | the request to read the frontmatter schemas from disk |
 
   @B-011
   Scenario: A tree with violations is an answer, not an error
@@ -103,10 +102,10 @@ Feature: Reading through MCP
 
   @B-015
   Scenario: An edit between two calls is in the second answer
-    Given the tree's facts have been asked for once
-    When a claim's text is edited in the first specification
-    And the tree's facts are asked for again
-    Then the second answer is exactly what the facts command prints for the edited repository
+    Given the verdict has been asked for once
+    When the violation the check reports is fixed in its specification
+    And the verdict is asked for again
+    Then the second answer is exactly what the check writes as its JSON report for the edited repository
 
   @B-016
   Scenario: Every answer writes nothing
