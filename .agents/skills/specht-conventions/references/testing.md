@@ -158,7 +158,7 @@ that way. If co-location is ever proposed, that incident is the cost to weigh.
 
 ```
 test/tests/              no .cs at the root
-  Model/ Discovery/ Manifest/ Evaluation/ Report/ Versioning/ Rules/
+  Model/ Discovery/ Manifest/ Evaluation/ Report/ Versioning/ Rules/ Tree/
                          one per engine folder in src/specht
   Engine/                SpechtRunner's own tests
   Composition/           AddSpechtEngine()'s registrations

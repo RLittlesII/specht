@@ -2,7 +2,7 @@ id: "0153"
 type: refactor
 title: Move SpechtTree and its store out of the benchmarks into the engine
 
-status: ready-for-architecture
+status: done
 
 value: 3
 risk: 3
@@ -18,8 +18,8 @@ spec: null
 claims: []
 
 created: "2026-10-11"
-updated: "2026-11-01"
-closed: null
+updated: "2026-11-02"
+closed: "2026-11-02"
 
 summary: |
   ADR-0027 lifted ADR-0014's benchmark gate on 2026-10-31: this stage
@@ -88,7 +88,7 @@ acceptance_criteria:
   - "3. The engine consumer. The owner's ruling puts the types in production; whether the engine's own load is built on them in this item is the owner's to say and is recorded here before the design starts. Facts: `SpechtModel.Load` (`src/specht/Model/SpechtModel.cs:58`) is static, builds its own `FileSystem`, reads each specification with `File.ReadAllText` (`:71`) and holds an absolute `Root` (`:27`). `FeatureFileReader` reads each `.feature` file with `File.ReadAllLines` (`src/specht/Rules/FeatureFileReader.cs:17`) during evaluation. ADR-0005 (a) accepts the stages `SpechtSchemasLoader`, `ISpecDiscovery`, `SpechtModelLoader` and the rule set, with both loaders concrete (ADR-0005 (d)); item 0107, delivered by pull request #116, builds `SpechtModelLoader` over `IFileSystem`. A load built on the tree changes a stage of an accepted ADR, so it is preceded by a new ADR in `.spec/adr/` that follows or supersedes ADR-0005 in part and never edits it."
   - "4. A store that loads. `SpechtTreeStore` has `Save` and no load. Discovery walks directories and, from ADR-0001 stage E, a git listing: if a load is added, the design says whether it reads every file under the root or only what discovery finds."
   - "5. One home for a tree. Two other things hold root-relative files today: `InitWriter` (`src/tool/Features/Init/InitWriter.cs:20`) persists a dictionary of path to bytes through `IFileSystem`, and `test/tests/Shared/SpechtTree.cs`, linked into `test/acceptance`, writes a tree through `File` and `Directory`. The design says which of them the moved types replace, feed or leave alone, with no second implementation for tests (ADR-0005 (d))."
-  - "6. The repeated engine rules go. `SpechtTree.Of` (`.performance/benchmarks/SpechtTree.cs`) repeats the frontmatter role names `feature`, `task` and `epic`, the rule that a manifest with no `schemaVersion` key means `0.1.0`, and the embedded manifest's resource name `specht.default-manifest.json` (`0109-F1` § 7), because `SpecManifest.Read(string)` is private and `SpecManifest.Load` takes a file system and a root. Inside the engine each is read from `SpecManifest` and written once."
+  - "6. The repeated engine rules go. `SpechtTree.Of` (`.performance/benchmarks/SpechtTree.cs`) repeats the frontmatter role names `feature`, `task` and `epic`, and each of its callers reads the embedded manifest through `SpechtResources` and the pinned version through `SpechtManifestParser` before calling it. Inside the engine each is read from the manifest through `SpechtManifestParser` and written once. Amended 2026-11-02 (decision of that date): it also named the `0.1.0` default and the resource name `specht.default-manifest.json`, which `main` at `f08ee33c` no longer repeats there, and `SpecManifest`, a type `main` no longer has."
   - "7. The tests move with the types. `test/tests/Benchmarks/SpechtTree.Unit.Tests.cs`, `SpechtTreeStore.Unit.Tests.cs`, `SpechtTree.Integration.Tests.cs` and `TreeSizes.cs` become tests of production code in the folder of the slice that receives the types, or are deleted where a moved test already proves the same thing; `test/tests/Benchmarks/` is gone. No test names a type of the benchmark assembly."
   - "8. The reference leaves. `test/tests/tests.csproj` references `benchmarks.csproj` only for those tests; the reference is removed, and the 21 packages it brought into the test project (`0109-F1` § 7) leave with it."
   - '9. The proof of `0109-F1` B-015 and B-016. § 9 names the tests of criterion 7 for both. Once those test production types and benchmark code carries no test, spec-author states in the specification delta of criterion 2 which claim each test proves and in which Feature - B-015 and B-016 kept and citing the engine''s tests, or withdrawn with their ids retired and restated where the types live - and test-writer brings § 9 to it. `0109-F1` § 8''s "Only the tree generator is tested" follows.'
@@ -168,6 +168,178 @@ decisions:
     moved types replace, feed or leave alone - is not decided. `depends_on`
     gains 0156 to 0163 by the owner's order "then splits", which runs this
     item after the stage-3 splits; it is an ordering, not a code dependency.
+  - |
+    2026-11-01, the repository owner, answering a question card; recorded
+    by spec-author. No criterion is edited.
+    Criterion 3, asked whether the engine's own load is built on the tree
+    in this item or the item only moves the three types and leaves the
+    load to 0166, the owner chose "Move only (Recommended)", option (A):
+    this item moves `SpechtTree`, `SpechtTreeFile` and `SpechtTreeStore`
+    into `Specht.Tree` and leaves the load to 0166, as ADR-0010 splits it.
+    Risk stays 3, and this item needs no new ADR.
+    Criterion 5, asked whether the moved types replace, feed or leave
+    alone `InitWriter` and `test/tests/Shared/SpechtTree.cs`, the owner
+    chose "Leave to design pass (Recommended)": this item's design pass
+    proposes, and the owner rules on that proposal.
+    Status stays `in-progress`; the design pass follows on this branch.
+  - |
+    2026-11-01, implementer: criterion 5, a proposal awaiting the
+    repository owner's ruling; nothing here is decided. Read on `main` at
+    commit `f08ee33c`.
+    (a) `InitWriter` (`src/tool/Features/Init/InitWriter.cs`) is host
+    code, outside ADR-0010's engine guard, and ADR-0010 open point 2
+    keeps init's handler in the tool's `Init` slice. It writes absent
+    files only, through `FileMode.CreateNew` (`:216`, `0001-F4` C-1),
+    asynchronously, and returns a written-or-skipped listing;
+    `SpechtTreeStore.Save` overwrites through `File.Create`, synchronously,
+    with no listing.
+    - Replace: the store writes init's files. It gains a create-new,
+      skip-existing, listing mode no `0109-F1` claim states, and init's
+      I/O moves into the engine against open point 2.
+    - Feed: `InitWriter` keeps its I/O and carries its selection as
+      `SpechtTreeFile` in place of its tuples and `ShippedFile`
+      (`src/tool/Features/ShippedFile.cs`, shared with `UpgradeWriter`):
+      type churn, no I/O consolidated.
+    - Leave alone: no change.
+    Recommended, judgement: leave alone; init's I/O is reconsidered when
+    `upgrade` pulls init into the engine (open point 2).
+    (b) `test/tests/Shared/SpechtTree.cs`, linked into `test/acceptance`,
+    is a mutable fixture builder over a disposable temporary root: it
+    copies the live `.specht/` files, writes through `File` and
+    `Directory`, and offers eleven helper methods. 86 files name it (57
+    in `test/tests`, 29 in `test/acceptance`); 42 construct it, 134 times;
+    44 use only its path constants.
+    - Replace: the 86 files build production trees and save them through
+      the store. The helpers still need a home, so a test-side builder
+      returns; the highest churn, and it collides with item 0168.
+    - Feed: its API and callers stay; its writes go through
+      `SpechtTreeStore` over the real file system, so writing a file under
+      a root has one implementation. One file changes; its deletes and its
+      read of the build output stay on `File` and `Directory`. It needs a
+      public way to build a `SpechtTree` from files.
+    - Leave alone: two implementations of writing a tree remain, the
+      store's and the test tree's, which the criterion's "no second
+      implementation for tests" reads against.
+    Recommended, judgement: feed.
+  - |
+    2026-11-02, the repository owner, answering question cards on
+    2026-11-01; recorded by spec-author. Criterion 6 is amended because
+    it was stale; no other criterion is edited.
+    Criterion 5(a), `InitWriter`, the owner chose "Leave alone
+    (Recommended)": this item does not touch `InitWriter`. A judgement
+    call, revisited when `upgrade` pulls init into the engine (ADR-0010
+    open point 2).
+    Criterion 5(b), `test/tests/Shared/SpechtTree.cs`, the owner chose
+    "Feed (Recommended)": its API and every caller stay unchanged, and
+    its writes go through `SpechtTreeStore` over the real file system,
+    so writing a tree has one implementation. One file changes.
+    `SpechtTree.Of`, which cannot move as written because ADR-0010
+    § "What 'no static' covers" rules out a public static that computes,
+    the owner chose "Generator instance (Recommended)", option (A):
+    `SpechtTree` gains a public constructor taking its files; a sealed
+    `SpechtTreeGenerator(SpechtResources, SpechtManifestParser)` with
+    `Generate(int specifications)` is registered in `AddSpechtEngine()`,
+    a fourth moved type; and the synthetic specification rendering ships
+    inside `specht.tool`. Not chosen: (B) keep the static as a written
+    exception; (C) leave generation in the benchmark project.
+    Read against the criteria and out_of_scope:
+    - Criterion 1 names three types; the generator is a fourth, and the
+      benchmark project keeps no generation of its own. Not edited: the
+      criterion does not say only three, and this ruling extends it.
+    - Criterion 2 allows `0109-F1` C-7 and `0109-F2` C-11 to be
+      "satisfied by an engine consumer". The 2026-11-01 ruling on
+      criterion 3 (move only) closes that route, and generation in `src/`
+      makes C-7's "generated by the benchmark code" false and reads
+      against C-11's "a benchmark-only seam in `src/`". Both are amended
+      in the specification delta, not satisfied.
+    - Criterion 6 was stale: `SpecManifest` is gone from `main` at
+      `f08ee33c`, and `SpechtTree.Of` no longer repeats the `0.1.0`
+      default or the manifest's resource name, its callers passing
+      `SpechtResources` and `SpechtManifestParser` results in. Amended
+      to the facts as they stand; what it requires is unchanged, and the
+      generator's constructor meets it.
+    - The summary and earlier entries say "the three types"; they are
+      history and stay as written.
+    Status stays `in-progress`.
+  - |
+    2026-11-02, benchmarker: the guard of ADR-0027 for ADR-0010 stage 6.
+    Base `2e849065` (`origin/main`), head `ed38e012` (the branch head).
+    Separate detached source copies on one host, made with `git archive`,
+    run alternately base-100, head-100, base-1000, head-1000 from 10:01 to
+    10:06 with `./build.sh Benchmark --benchmark-filter
+    '*CheckBenchmarks.Check(Specifications: N)'`, BenchmarkDotNet 0.15.8
+    default job. On the base `[GlobalSetup]` builds the tree with the
+    static `SpechtTree.Of`; on the head it resolves `SpechtTreeGenerator`
+    and `SpechtTreeStore` from `AddSpechtEngine()`; both are outside the
+    measured call. Host: Apple M1 Max, 10 cores, macOS Tahoe 26.4
+    (25E246), .NET SDK 11.0.100-rc.2.26504.105, runtime .NET 10.0.12
+    Arm64 RyuJIT; 1-minute load average between 20.10 and 50.67 on 10
+    cores during the runs (5-minute 21.0 to 29.9), a shared host under
+    heavy load.
+    100 specifications: base Mean 80.71 ms, Error 10.73 ms (CI 69.98 to
+    91.43 ms), Allocated 33.42 MB (35,047,677 B); head 48.73 ms, Error
+    0.893 ms (CI 47.84 to 49.63 ms), 33.45 MB (35,073,196 B). Time
+    -39.6%, allocation +0.07% (+25,519 B).
+    1,000 specifications: base Mean 540.4 ms, Error 32.99 ms (CI 507.4 to
+    573.4 ms), Allocated 329.87 MB (345,888,912 B); head 492.9 ms, Error
+    9.74 ms (CI 483.2 to 502.7 ms), 329.87 MB (345,888,960 B). Time
+    -8.8%, allocation +48 B (0.00%).
+    Both base rows are dispersed while the load average rose to 50.67 and
+    41.29: at 100, StdDev 30.95 ms, Median 65.62 ms, 96 measurements
+    against head's 44; at 1,000, StdDev 90.31 ms, Median 492.3 ms, 87
+    against head's 69. Their means are the host's, not the code's, and the
+    time deltas are not a speed-up.
+    Judged by 0109-F5 B-011 and B-012 under ComparisonPolicy.Initial: no
+    flag at either size; neither mean rose and neither head interval lies
+    above its base's, and neither allocation rose more than 10%. Only the
+    absence of a flag is claimed: one run per side, under load, and no
+    change in either direction is claimed. The net11.0 runtime was not
+    measured.
+  - |
+    2026-11-02, spec-author: closed by the pull request that delivers it,
+    branch `0153/move-the-tree-into-the-engine` on `origin/main` at
+    `2e849065`. What delivered each criterion:
+    Criterion 1: `2ed1d2d7` moves `SpechtTree`, `SpechtTreeFile` and
+    `SpechtTreeStore` to `src/specht/Tree/`, namespace `Specht.Tree`, with
+    `SpechtTreeGenerator` in place of the static `SpechtTree.Of` (the
+    2026-11-02 ruling); `AddSpechtEngine()` registers the store and the
+    generator, and `CheckBenchmarks` and `ColdStartSession` resolve them.
+    `.performance/benchmarks/` declares none of the four.
+    Criterion 2: `ef948a88`, before any code moved, amends `0109-F1` C-7
+    and `0109-F2` C-11, records `0109-F1` decision 0005 and the delta in
+    § 10 of both. `2ed1d2d7` brings `0109-F1` § 6 and § 7 to the move,
+    `3cff26a1` and `af01b084` bring `0109-F3` § 8 and § 9 to it, and
+    `2d3f1991` carries the review's findings.
+    Criteria 3 and 4: move only, by the owner's 2026-11-01 ruling; the
+    store keeps `Save` alone, and the engine's load and what it reads are
+    item 0166's. No ADR is written here.
+    Criterion 5: `InitWriter` is untouched (5(a), leave alone).
+    `test/tests/Shared/SpechtTree.cs` writes through `SpechtTreeStore`
+    (5(b), feed) from `2ed1d2d7`, and `ed38e012` routes the `Pin` method
+    pull request #679 added through the same store.
+    Criterion 6: `SpechtTreeGenerator` reads the shipped manifest and the
+    pinned version through `SpechtResources` and `SpechtManifestParser`
+    itself, so no caller repeats the reads, and the frontmatter role names
+    are written once, in it (`2ed1d2d7`).
+    Criterion 7: `2ed1d2d7` moves `SpechtTreeStore.Unit.Tests.cs` and
+    `TreeSizes.cs` to `test/tests/Tree/`, replaces the `SpechtTree` unit
+    and integration tests with `SpechtTreeGenerator` ones there, and
+    `test/tests/Benchmarks/` is gone.
+    Criterion 8: `2ed1d2d7` removes `test/tests/tests.csproj`'s reference
+    to `benchmarks.csproj`.
+    Criterion 9: `ef948a88` keeps `0109-F1` B-015 and B-016 Active and
+    unamended, proven by the tests under `test/tests/Tree/`; `2d3f1991`
+    brings § 8's "Only the tree generator is tested" and the § 9 stamp to
+    the run, 18 of 18 on net10.0 and net11.0.
+    Criterion 10: `CheckBenchmarks` `[GlobalSetup]` generates the tree
+    and saves it through the store before the measured call, and
+    `0109-F3` C-3 holds as written.
+    Review: spec-reviewer approved `origin/main` (`2e849065`)...`af01b084`
+    in `0109-F1`, `0109-F2`, `0109-F3`, `0109-F4` and `0001-F2`
+    (`9d9ad1be`); the four non-blocking findings are addressed in
+    `2d3f1991`.
+    Guard: no flag at 100 or 1,000 specifications; the benchmarker's entry
+    above records it (`3cff26a1`).
 
 out_of_scope:
   - 'Anything in pull request #114 - the owner''s "later". The tests under `test/tests/Benchmarks/` and the reference stay as #114 has them until this item (`0109-F1` OQ-5).'
