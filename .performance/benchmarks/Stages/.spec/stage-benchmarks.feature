@@ -17,9 +17,10 @@ Feature: Engine stage benchmarks
     Then finding the specifications has a result for each tree size
 
   @B-003
-  Scenario: Reading one specification's frontmatter is measured
+  Scenario: Parsing one specification's frontmatter is measured
+    Given one specification's text read before the measurement
     When the stage benchmarks run
-    Then reading one specification's frontmatter has a result of its own
+    Then parsing its frontmatter from that text has a result of its own
 
   @B-004
   Scenario: Parsing one specification is measured
