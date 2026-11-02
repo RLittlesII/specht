@@ -201,7 +201,7 @@ The gate runs only as the consumer's Nuke target, so a pre-commit hook, a CI ste
 
 ## 7. Technical Design
 
-<!-- last written by: implementer, 2026-11-01 (item `0164`: `SpechtViolation` moved to `Specht.Evaluation`); implementer, 2026-11-02 (item `0153`: `test/tests` no longer references `benchmarks`) -->
+<!-- last written by: implementer, 2026-11-02 (item `0153`: `test/tests` no longer references `benchmarks`) -->
 
 Delivered so far by items 0026, 0027, 0028, 0133, 0171, 0172, 0174, 0182, 0183 and 0217. The slice layout is `dotnet-tool` § Vertical Slice.
 

@@ -113,7 +113,7 @@ Every call site starts the tool as a new process - the pre-commit hook on every 
 
 ## 7. Technical Design
 
-<!-- last written by: implementer, 2026-10-13; implementer, 2026-10-14 (the benchmark project builds for two targets and runs `net10.0`, `0001-F2` decision 0011); implementer, 2026-10-14 (the baseline targets the SDK's bundled framework, item 0220); implementer, 2026-10-23 (the main-only Short runs moved to the macOS pool, `0055-F2` decision 0005); implementer, 2026-11-02 (the session resolves the engine's tree generator and store, item 0153) -->
+<!-- last written by: implementer, 2026-11-02 (the session resolves the engine's tree generator and store, item 0153) -->
 
 ### Implemented timing slice
 
