@@ -4,17 +4,14 @@
 # id's dependency path with its milestone, earlier milestones first, and the
 # work-item mirror labels the current milestone's items `goal`. Lines starting
 # with # are comments. docs/roadmap.md says what each milestone makes better.
+# Open finish lines name child items explicitly; Feature containers remain
+# delivery summaries so newly cut children do not silently enlarge a release.
 
 0.4.0
-# A manifest-driven engine, measured before it is restructured
+# Manifest configuration: owner-approved split, 2026-11-02.
+# Completed work stays here as release history.
 0216
-0010
-0004
-0033
-0224
-0152
 0100
-0144
 0153
 0156
 0157
@@ -25,20 +22,17 @@
 0162
 0163
 0164
-0166
-0167
-0168
 0169
-0342
-0170
-0207
-0218
-0141
 0208
-# The pin policy, moved out of 0.3.0 by the owner 2026-10-29
-0124
 # Schema 0.3.0: SPEC060 by delivery status, the done marker, epics optional: owner 2026-10-30
 0321
+# Remaining model prerequisite, manifest keys/grammars and diagnostic wording.
+0166
+0016
+0018
+# Rule unit coverage and the pin policy retained by the owner 2026-11-01.
+0152
+0124
 
 0.5.0
 # MCP first release: the owner, 2026-11-01. The host 0132-F3, the four
@@ -56,6 +50,12 @@
 # Epic 0201 for consumer request #256: native Gherkin claims with xUnit v2
 # VSTest evidence, proven end to end in one packaged consumer.
 0302
+# Repository integration: discovery and report output, moved from 0.4.0.
+0007
+0008
+0009
+0167
+0036
 
 0.7.0
 # Agent surface completed: the tree's facts 0132-F2, 0132-F4's facts, trace
@@ -63,6 +63,11 @@
 # the index, is unscheduled (the owner, 2026-11-01).
 0252
 0256
+# Remaining matrix validation, moved from 0.4.0 beside facts and coverage.
+0335
+0336
+0337
+0338
 
 0.8.0
 # Review and presentation: epics 0228, 0194 and 0101. Their Features' items
