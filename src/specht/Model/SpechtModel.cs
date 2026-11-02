@@ -1,6 +1,7 @@
 using System.Collections.ObjectModel;
 using System.Runtime.ExceptionServices;
 using System.Text.RegularExpressions;
+using Specht.Discovery;
 
 namespace Specht.Model;
 
@@ -15,13 +16,15 @@ public sealed class SpechtModel
         IReadOnlyList<FeatureSpec> features,
         IReadOnlyList<ChildItem> items,
         IReadOnlyList<EpicFile> epics,
-        SpechtSchemas schemas)
+        SpechtSchemas schemas,
+        IReadOnlyList<SpechtTestFile> testFiles)
     {
         Root = root;
         Features = Array.AsReadOnly(features.ToArray());
         Items = Array.AsReadOnly(items.ToArray());
         Epics = Array.AsReadOnly(epics.ToArray());
         Schemas = schemas;
+        TestFiles = Array.AsReadOnly(testFiles.ToArray());
         Regex? grammar = null;
         try
         {
@@ -54,6 +57,9 @@ public sealed class SpechtModel
 
     /// <summary>The schemas and the section contract every rule is evaluated against.</summary>
     public SpechtSchemas Schemas { get; }
+
+    /// <summary>The test files the manifest's <c>tests.files</c> declares, read once and shared by every rule.</summary>
+    public IReadOnlyList<SpechtTestFile> TestFiles { get; }
 
     /// <summary>The claims derived once per Feature.</summary>
     public IReadOnlyDictionary<FeatureSpec, SpechtClaims> Claims { get; }

@@ -50,7 +50,7 @@ public sealed class SpechtRunner(
         var loaded = schemas.Load(root);
         var frontmatter = FrontmatterReader.Parse(text);
 
-        return new SpechtEvaluator(FrontmatterRules, order).Evaluate(new SpechtModel(root, [], [], [], loaded), rule => rule switch
+        return new SpechtEvaluator(FrontmatterRules, order).Evaluate(new SpechtModel(root, [], [], [], loaded, []), rule => rule switch
         {
             FrontmatterPresentRule present => present.Evaluate(path, frontmatter, loaded, kind),
             FeatureFrontmatterRule feature when kind == FrontmatterKind.Feature => feature.Evaluate(path, frontmatter, loaded),

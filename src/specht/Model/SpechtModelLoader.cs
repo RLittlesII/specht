@@ -59,7 +59,11 @@ public sealed class SpechtModelLoader(
             epics.Add(new EpicFile(Relative(root, path), frontmatter.Read(path)));
         }
 
-        return new SpechtModel(root, features, items, epics, loaded);
+        var tests = loaded.Structure.Tests is { } declared
+            ? discovery.ReadTestFiles(root, declared.Files, inputs.Exclusions)
+            : [];
+
+        return new SpechtModel(root, features, items, epics, loaded, tests);
     }
 
     /// <implements epic="0001" feature="F1" claim="B-004" />

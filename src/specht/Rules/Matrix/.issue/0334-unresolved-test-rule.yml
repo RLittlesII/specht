@@ -88,6 +88,17 @@ decisions:
     is wanted (decision 0003, Affects). Value omitted, inheriting 0224's.
     Rejected: SPEC032 after the title rule, since SPEC032 reads no
     Scenario cell and the title rule needs nothing of it.
+  - |
+    2026-11-02, implementer: the declared test files reach SPEC032 through
+    the model. SpechtModelLoader reads them once per check through
+    SpechtDiscovery.ReadTestFiles when the manifest has a tests key, and
+    SpechtModel.TestFiles hands them to every rule, so SPEC033 (0337) and
+    the trace reuse one read (C-3). Rejected: a read per rule, which reads
+    a file twice; a lazy read, which moves an I/O failure from the load
+    into a rule's fault isolation. Not an ADR-0010 structural stage, so
+    ADR-0027's guard does not apply; the benchmark tree carries this
+    repository's manifest, which declares tests, so its generator adds the
+    test file its rows name (0109-F1 B-015). Section 7 records the design.
 
 out_of_scope:
   - "SPEC033's report of a covered row, including its half of B-006's double report: 0337 (B-013)."

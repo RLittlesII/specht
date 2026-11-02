@@ -63,6 +63,7 @@ public static class SpechtEngineServiceCollectionExtensions
         services.AddSingleton<ISpechtRule, ClaimTagRule>();
         services.AddSingleton<ISpechtRule, ClaimIdRule>();
         services.AddSingleton<ISpechtRule, ClaimRowRule>();
+        services.AddSingleton<ISpechtRule, UnresolvedTestRule>();
         services.AddSingleton<ISpechtRule, WaiverRule>();
         services.AddSingleton<ISpechtRule, RetiredClaimRule>();
         services.AddSingleton<DeclaredItemCheck>();
