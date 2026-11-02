@@ -1,6 +1,7 @@
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using AwesomeAssertions;
+using Specht.Evaluation;
 using Specht.Manifest;
 using Specht.Model;
 using Specht.Report;
@@ -69,19 +70,17 @@ public sealed class FaultIsolatedRuleUnitTests
 
         // Then
         var failure = actual.Should().ContainSingle().Which;
-        failure.RuleId.Should().Be("SPEC030");
-        failure.Severity.Should().Be(SpechtSeverity.Error);
         failure.File.Should().Be(SpechtTree.ManifestPath);
         failure.Line.Should().Be(0);
         failure.Identifier.Should().BeNull();
         failure.Message.Should().Contain("SPEC030").And.Contain(nameof(FormatException)).And.NotContain(secret);
         calls.Should().Be(1);
 
-        IEnumerable<SpechtViolation> Findings()
+        IEnumerable<SpechtFinding> Findings()
         {
             for (var index = 0; index < yielded; index++)
             {
-                yield return new SpechtViolationFixture().WithRuleId("SPEC030").WithMessage($"partial {index}");
+                yield return new SpechtFindingFixture().WithMessage($"partial {index}");
             }
 
             throw new FormatException(secret);
@@ -93,7 +92,7 @@ public sealed class FaultIsolatedRuleUnitTests
     {
         // Given
         SpechtModel model = new SpechtModelFixture();
-        SpechtViolation finding = new SpechtViolationFixture().WithRuleId("SPEC030");
+        SpechtFinding finding = new SpechtFindingFixture();
         var inner = new Rule("SPEC030", () => [finding], SpechtRuleLevel.Off);
         var rule = new FaultIsolatedRule(inner);
 
@@ -102,7 +101,6 @@ public sealed class FaultIsolatedRuleUnitTests
 
         // Then
         rule.Id.Should().Be(inner.Id);
-        rule.ReportedIds.Should().Equal(inner.ReportedIds);
         rule.DefaultLevel.Should().Be(SpechtRuleLevel.Off);
         actual.Should().Equal(finding);
     }
@@ -120,12 +118,13 @@ public sealed class FaultIsolatedRuleUnitTests
             calls++;
             throw new InvalidOperationException("sensitive detail");
         }));
+        SpechtFinding healthy = new SpechtFindingFixture();
         SpechtViolation before = new SpechtViolationFixture().WithRuleId("SPEC020");
         SpechtViolation after = new SpechtViolationFixture().WithRuleId("SPEC040");
 
         // When
-        var report = SpechtRunner.Evaluate(model,
-            [new Rule("SPEC020", () => [before]), fault, new Rule("SPEC040", () => [after])]);
+        var report = new SpechtEvaluator(
+            [new Rule("SPEC020", () => [healthy]), fault, new Rule("SPEC040", () => [healthy])], new SpechtViolationOrder()).Evaluate(model);
 
         // Then
         report.Violations.Should().Contain(before).And.Contain(after);
@@ -145,7 +144,7 @@ public sealed class FaultIsolatedRuleUnitTests
     {
         // Given
         SpechtModel model = new SpechtModelFixture().WithManifest(JsonNode.Parse(
-            """{ "rules": { "SPEC030": "off", "SPEC031": "off" } }""")!.AsObject());
+            """{ "rules": { "SPEC030": "off" } }""")!.AsObject());
         var calls = 0;
         var fault = new FaultIsolatedRule(new Rule("SPEC030", () =>
         {
@@ -154,7 +153,7 @@ public sealed class FaultIsolatedRuleUnitTests
         }));
 
         // When
-        var report = SpechtRunner.Evaluate(model, [fault]);
+        var report = new SpechtEvaluator([fault], new SpechtViolationOrder()).Evaluate(model);
 
         // Then
         calls.Should().Be(0);
@@ -162,11 +161,10 @@ public sealed class FaultIsolatedRuleUnitTests
         report.RulesEvaluated.Should().Be(0);
     }
 
-    private sealed class Rule(string id, Func<IEnumerable<SpechtViolation>> evaluate, SpechtRuleLevel level = SpechtRuleLevel.Error) : ISpechtRule
+    private sealed class Rule(string id, Func<IEnumerable<SpechtFinding>> evaluate, SpechtRuleLevel level = SpechtRuleLevel.Error) : ISpechtRule
     {
         public string Id => id;
-        public IReadOnlyList<string> ReportedIds => id == "SPEC030" ? [id, "SPEC031"] : [id];
         public SpechtRuleLevel DefaultLevel => level;
-        public IEnumerable<SpechtViolation> Evaluate(SpechtModel model) => evaluate();
+        public IEnumerable<SpechtFinding> Evaluate(SpechtModel model) => evaluate();
     }
 }

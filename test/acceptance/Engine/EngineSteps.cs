@@ -4,6 +4,7 @@ using System.Reflection.PortableExecutable;
 using System.Text.Json.Nodes;
 using AwesomeAssertions;
 using Reqnroll;
+using Specht.Evaluation;
 using Specht.Model;
 using Specht.Tests.Engine.Baseline;
 using Specht.Tests.Shared;
@@ -89,12 +90,13 @@ public sealed partial class EngineSteps
     {
         if (_inputFailure is not null)
         {
-            _inputRejection = Record.Exception(() => SpechtRunner.Evaluate(EngineServices.Loader().Load(Tree.Root), FaultRules()));
+            _inputRejection = Record.Exception(() => new SpechtEvaluator(FaultRules(), new SpechtViolationOrder())
+                .Evaluate(EngineServices.Loader().Load(Tree.Root)));
             return;
         }
 
         _report = _fault is null ? Tree.Run()
-            : SpechtRunner.Evaluate(EngineServices.Loader().Load(Tree.Root), FaultRules());
+            : new SpechtEvaluator(FaultRules(), new SpechtViolationOrder()).Evaluate(EngineServices.Loader().Load(Tree.Root));
     }
 
     [Then("a violation is reported under each of the twenty-one rule ids")]

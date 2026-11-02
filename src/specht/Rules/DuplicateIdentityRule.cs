@@ -20,11 +20,8 @@ public sealed class DuplicateIdentityRule : ISpechtRule
     public string Id => "SPEC012";
 
     /// <inheritdoc />
-    public IReadOnlyList<string> ReportedIds => [Id];
-
-    /// <inheritdoc />
     /// <implements epic="0001" feature="F1" claim="B-001" />
-    public IEnumerable<SpechtViolation> Evaluate(SpechtModel model)
+    public IEnumerable<SpechtFinding> Evaluate(SpechtModel model)
     {
         var duplicates = model.FeaturesWithIdentity
             .GroupBy(static feature => feature.Identity, StringComparer.Ordinal)
@@ -36,9 +33,7 @@ public sealed class DuplicateIdentityRule : ISpechtRule
 
             foreach (var feature in group)
             {
-                yield return new SpechtViolation(
-                    "SPEC012",
-                    SpechtSeverity.Error,
+                yield return new SpechtFinding(
                     feature.RelativePath,
                     feature.Document.Frontmatter.LineOf("id"),
                     group.Key,

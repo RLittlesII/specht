@@ -1,8 +1,9 @@
 using AwesomeAssertions;
+using Specht.Evaluation;
 using Specht.Model;
 using Specht.Tests.Shared;
 
-namespace Specht.Tests.Model;
+namespace Specht.Tests.Evaluation;
 
 /// <summary>
 /// The line a violation renders as (<c>0001-F2</c> B-001, B-016), through <see cref="SpechtViolation.ToString"/> over

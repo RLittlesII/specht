@@ -11,11 +11,8 @@ public sealed class ClaimIdRule : ISpechtRule
     public string Id => "SPEC030";
 
     /// <inheritdoc />
-    public IReadOnlyList<string> ReportedIds => [Id];
-
-    /// <inheritdoc />
     /// <implements epic="0001" feature="F1" claim="B-001" />
-    public IEnumerable<SpechtViolation> Evaluate(SpechtModel model)
+    public IEnumerable<SpechtFinding> Evaluate(SpechtModel model)
     {
         model.EnsureClaimGrammar();
         var grammar = model.Schemas.Structure.Identifiers["claim"];
@@ -41,9 +38,7 @@ public sealed class ClaimIdRule : ISpechtRule
 
                 if (!claim.IsValid)
                 {
-                    yield return new SpechtViolation(
-                        "SPEC030",
-                        SpechtSeverity.Error,
+                    yield return new SpechtFinding(
                         feature.RelativePath,
                         line,
                         id,
@@ -57,9 +52,7 @@ public sealed class ClaimIdRule : ISpechtRule
 
                 if (claim.FirstDeclarationLine is { } firstDeclarationLine)
                 {
-                    yield return new SpechtViolation(
-                        "SPEC030",
-                        SpechtSeverity.Error,
+                    yield return new SpechtFinding(
                         feature.RelativePath,
                         line,
                         id,

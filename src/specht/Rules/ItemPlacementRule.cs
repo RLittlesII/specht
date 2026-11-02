@@ -11,11 +11,8 @@ public sealed class ItemPlacementRule : ISpechtRule
     public string Id => "SPEC043";
 
     /// <inheritdoc />
-    public IReadOnlyList<string> ReportedIds => [Id];
-
-    /// <inheritdoc />
     /// <implements epic="0001" feature="F1" claim="B-001" />
-    public IEnumerable<SpechtViolation> Evaluate(SpechtModel model)
+    public IEnumerable<SpechtFinding> Evaluate(SpechtModel model)
     {
         foreach (var item in model.Items)
         {
@@ -26,9 +23,7 @@ public sealed class ItemPlacementRule : ISpechtRule
 
             if (!string.Equals(item.Id, item.FileNameId, StringComparison.Ordinal))
             {
-                yield return new SpechtViolation(
-                    Id,
-                    SpechtSeverity.Error,
+                yield return new SpechtFinding(
                     item.RelativePath,
                     item.Frontmatter.LineOf("id"),
                     item.Id,
@@ -44,9 +39,7 @@ public sealed class ItemPlacementRule : ISpechtRule
             if (parent is not null && item.Parent is not null
                                    && !string.Equals(item.Parent, parent.Identity, StringComparison.Ordinal))
             {
-                yield return new SpechtViolation(
-                    Id,
-                    SpechtSeverity.Error,
+                yield return new SpechtFinding(
                     item.RelativePath,
                     item.Frontmatter.LineOf("parent"),
                     item.Id,

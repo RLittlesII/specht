@@ -266,9 +266,9 @@ and supplies annotation input without importing application assemblies.
 
 ## 8. Testing Strategy
 
-<!-- last written by: test-writer, 2026-10-27 -->
+<!-- last written by: test-writer, 2026-11-01 (item 0164: `SpechtViolationUnitTests` moved to `test/tests/Evaluation/`); test-writer, 2026-10-27 -->
 
-- **Unit, B-001 and B-016** (`test/tests/Model/SpechtViolation.Unit.Tests.cs`, over violations built with the `SpechtViolationFixture` AutoFixture). The mechanism beneath both claims is one decision in `SpechtViolation.ToString` (§ 7): whether the line carries a trailing `[<identifier>]`. `CheckCommand.ExecuteAsync` writes each violation through it and adds nothing to the line. Pinned per claim, each a `[Theory]` over an error on a line and a warning on the file as a whole, which renders no position:
+- **Unit, B-001 and B-016** (`test/tests/Evaluation/SpechtViolation.Unit.Tests.cs`, `test/tests/Model/` until item 0164, over violations built with the `SpechtViolationFixture` AutoFixture). The mechanism beneath both claims is one decision in `SpechtViolation.ToString` (§ 7): whether the line carries a trailing `[<identifier>]`. `CheckCommand.ExecuteAsync` writes each violation through it and adds nothing to the line. Pinned per claim, each a `[Theory]` over an error on a line and a warning on the file as a whole, which renders no position:
   - B-001: a violation with an identifier renders exactly `<path>(<line>): <severity> SPEC###: <message> [<identifier>]`.
   - B-016: a violation with no identifier renders exactly `<path>(<line>): <severity> SPEC###: <message>`.
   - Every other line assertion in the integration tests and the scenarios builds its expected line from `SpechtViolation.ToString`, so it holds the command to the engine's line and not the line to its form. The form is held by these two theories, by the integration theory over endings below, and by the bracket steps of the `@B-001` and `@B-016` scenarios. Before `ToString` appended the identifier, the B-001 theory, the identifier row of the endings theory and the `@B-001` scenario were red, each on a line ending at the message; B-016's tests were green, as the claim states a line that did not change.

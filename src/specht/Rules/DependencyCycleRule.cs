@@ -11,11 +11,8 @@ public sealed class DependencyCycleRule : ISpechtRule
     public string Id => "SPEC052";
 
     /// <inheritdoc />
-    public IReadOnlyList<string> ReportedIds => ["SPEC052"];
-
-    /// <inheritdoc />
     /// <implements epic="0001" feature="F1" claim="B-001" />
-    public IEnumerable<SpechtViolation> Evaluate(SpechtModel model)
+    public IEnumerable<SpechtFinding> Evaluate(SpechtModel model)
     {
         var features = model.FeaturesWithIdentity;
         var graph = model.DependencyGraph;
@@ -31,9 +28,7 @@ public sealed class DependencyCycleRule : ISpechtRule
                         continue;
                     }
 
-                    yield return new SpechtViolation(
-                        "SPEC052",
-                        SpechtSeverity.Error,
+                    yield return new SpechtFinding(
                         feature.RelativePath,
                         feature.Document.Frontmatter.LineOf(key),
                         edge,
@@ -45,14 +40,14 @@ public sealed class DependencyCycleRule : ISpechtRule
             }
         }
 
-        foreach (var violation in CheckCycles(features, graph.DependsOn))
+        foreach (var finding in CheckCycles(features, graph.DependsOn))
         {
-            yield return violation;
+            yield return finding;
         }
     }
 
     /// <implements epic="0001" feature="F1" claim="B-001" />
-    private static IEnumerable<SpechtViolation> CheckCycles(
+    private static IEnumerable<SpechtFinding> CheckCycles(
         IReadOnlyList<FeatureSpec> features,
         IReadOnlyDictionary<string, IReadOnlySet<string>> dependsOn)
     {
@@ -67,9 +62,7 @@ public sealed class DependencyCycleRule : ISpechtRule
                 continue;
             }
 
-            yield return new SpechtViolation(
-                "SPEC052",
-                SpechtSeverity.Error,
+            yield return new SpechtFinding(
                 feature.RelativePath,
                 feature.Document.Frontmatter.LineOf("depends_on"),
                 feature.Identity,

@@ -13,11 +13,8 @@ public sealed class TableHeaderRule : ISpechtRule
     public string Id => "SPEC013";
 
     /// <inheritdoc />
-    public IReadOnlyList<string> ReportedIds => [Id];
-
-    /// <inheritdoc />
     /// <implements epic="0001" feature="F1" claim="B-001" />
-    public IEnumerable<SpechtViolation> Evaluate(SpechtModel model)
+    public IEnumerable<SpechtFinding> Evaluate(SpechtModel model)
     {
         foreach (var feature in model.Features)
         {
@@ -38,9 +35,7 @@ public sealed class TableHeaderRule : ISpechtRule
 
                 if (section.Headers.Count == 0)
                 {
-                    yield return new SpechtViolation(
-                        Id,
-                        SpechtSeverity.Error,
+                    yield return new SpechtFinding(
                         feature.RelativePath,
                         section.Line,
                         title,
@@ -52,9 +47,7 @@ public sealed class TableHeaderRule : ISpechtRule
 
                 if (!section.Headers.SequenceEqual(headers, StringComparer.Ordinal))
                 {
-                    yield return new SpechtViolation(
-                        Id,
-                        SpechtSeverity.Error,
+                    yield return new SpechtFinding(
                         feature.RelativePath,
                         section.Line,
                         title,

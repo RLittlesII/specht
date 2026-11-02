@@ -37,12 +37,13 @@ public sealed class ApprovalRuleUnitTests
                     + "## 9. Coverage\n\n| Claim ID | Test |\n| -------- | ---- |\n| B-002 | Missing |\n",
                 "src/sample/.spec/README.md"));
         SpechtModel model = new SpechtModelFixture().WithManifest(manifest).WithFeatures(feature);
+        var rule = new ApprovalCoverageRule();
 
         // When
-        var violations = new ApprovalCoverageRule().Evaluate(model).ToList();
+        var findings = rule.Evaluate(model).ToList();
 
         // Then
-        violations.Select(static violation => (violation.RuleId, violation.Identifier)).Should().Equal(("SPEC060", "B-002"));
+        findings.Select(finding => (rule.Id, finding.Identifier)).Should().Equal(("SPEC060", "B-002"));
     }
 
     [Fact]
@@ -56,12 +57,13 @@ public sealed class ApprovalRuleUnitTests
                     + "## 9. Traceability Matrix\n\n| Claim ID | Test |\n| -------- | ---- |\n| B-001 | Missing |\n| B-002 | TBD |\n",
                 "src/sample/.spec/README.md"));
         SpechtModel model = new SpechtModelFixture().WithManifest(manifest).WithFeatures(feature);
+        var rule = new ApprovalCoverageRule();
 
         // When
-        var violations = new ApprovalCoverageRule().Evaluate(model).ToList();
+        var findings = rule.Evaluate(model).ToList();
 
         // Then
-        violations.Select(static violation => (violation.RuleId, violation.Identifier)).Should().Equal(("SPEC060", "B-002"));
+        findings.Select(finding => (rule.Id, finding.Identifier)).Should().Equal(("SPEC060", "B-002"));
     }
 
     [Fact]
@@ -77,12 +79,13 @@ public sealed class ApprovalRuleUnitTests
             .WithLocation(new SpechtLocationFixture().WithRelativePath("src/second/.spec/README.md"))
             .WithDocument(SpechtDocument.Parse("---\nspec_status: agreed\n---\n\n" + matrix, "src/second/.spec/README.md"));
         SpechtModel model = new SpechtModelFixture().WithManifest(manifest).WithFeatures(defaultStatus, manifestStatus);
+        var rule = new ApprovalCoverageRule();
 
         // When
-        var violations = new ApprovalCoverageRule().Evaluate(model).ToList();
+        var findings = rule.Evaluate(model).ToList();
 
         // Then
-        violations.Select(static violation => (violation.RuleId, violation.File)).Should().Equal(("SPEC060", "src/second/.spec/README.md"));
+        findings.Select(finding => (rule.Id, finding.File)).Should().Equal(("SPEC060", "src/second/.spec/README.md"));
     }
 
     [Fact]
@@ -101,12 +104,13 @@ public sealed class ApprovalRuleUnitTests
                     + "## 12. Approval\n\n| Section | Status |\n| ------- | ------ |\n| 6-8 | \U0001F534 |\n",
                 "src/sample/.spec/README.md"));
         SpechtModel model = new SpechtModelFixture().WithManifest(manifest).WithFeatures(feature);
+        var rule = new ApprovalSignOffRule();
 
         // When
-        var violations = new ApprovalSignOffRule().Evaluate(model).ToList();
+        var findings = rule.Evaluate(model).ToList();
 
         // Then
-        violations.Select(static violation => (violation.RuleId, violation.Identifier)).Should().Equal(("SPEC061", "6-8"));
+        findings.Select(finding => (rule.Id, finding.Identifier)).Should().Equal(("SPEC061", "6-8"));
     }
 
     [Theory]
@@ -123,11 +127,12 @@ public sealed class ApprovalRuleUnitTests
                     + $"## 12. Sign-off\n\n| Section | Status |\n| ------- | ------ |\n| 1-5 | {defaultText} |\n| 6-8 | HELD for review |\n",
                 "src/sample/.spec/README.md"));
         SpechtModel model = new SpechtModelFixture().WithManifest(manifest).WithFeatures(feature);
+        var rule = new ApprovalSignOffRule();
 
         // When
-        var violations = new ApprovalSignOffRule().Evaluate(model).ToList();
+        var findings = rule.Evaluate(model).ToList();
 
         // Then
-        violations.Select(static violation => (violation.RuleId, violation.Identifier)).Should().Equal(("SPEC061", "6-8"));
+        findings.Select(finding => (rule.Id, finding.Identifier)).Should().Equal(("SPEC061", "6-8"));
     }
 }

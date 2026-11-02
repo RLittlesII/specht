@@ -11,11 +11,8 @@ public sealed class DependencyTargetRule : ISpechtRule
     public string Id => "SPEC050";
 
     /// <inheritdoc />
-    public IReadOnlyList<string> ReportedIds => ["SPEC050"];
-
-    /// <inheritdoc />
     /// <implements epic="0001" feature="F1" claim="B-001" />
-    public IEnumerable<SpechtViolation> Evaluate(SpechtModel model)
+    public IEnumerable<SpechtFinding> Evaluate(SpechtModel model)
     {
         var graph = model.DependencyGraph;
 
@@ -30,9 +27,7 @@ public sealed class DependencyTargetRule : ISpechtRule
                         continue;
                     }
 
-                    yield return new SpechtViolation(
-                        "SPEC050",
-                        SpechtSeverity.Error,
+                    yield return new SpechtFinding(
                         feature.RelativePath,
                         feature.Document.Frontmatter.LineOf(key),
                         edge,
