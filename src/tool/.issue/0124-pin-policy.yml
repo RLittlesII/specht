@@ -2,7 +2,7 @@ id: "0124"
 type: task
 title: Float the pin with a pin policy
 
-status: ready-for-architecture
+status: in-progress
 
 value: 2
 risk: 3
@@ -27,7 +27,7 @@ claims:
   - B-150
 
 created: "2026-10-09"
-updated: "2026-11-01"
+updated: "2026-11-02"
 closed: null
 
 summary: |
