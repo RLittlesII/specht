@@ -42,9 +42,9 @@ that the next check rejects; edit those settings after pinning.
 | `rules`             | Each rule id's level: `error` or `warning` re-grades its violations, `off` drops them. A rule left out keeps its own severity; an id outside the pinned vocabulary, or any other level, exits `3`.                                                                                                                                                                                                                                                                                 |
 | `identifiers.claim` | The claim id grammar `SPEC030` enforces in § 3, and the § 3 ids a tag may resolve to under `SPEC021`.                                                                                                                                                                                                                                                                                                                                                                              |
 
-Under schema `0.2.0`, `markers` also names `covered`, `partial`, `waived`, `withdrawn` and `superseded`, default `Covered`, `Partial`, `Waived`, `Withdrawn` and `Superseded`. Four more keys are accepted and no rule reads them yet; none is filled from a default, and older pins reject them:
+Under schema `0.2.0`, `markers` also names `covered`, `partial`, `waived`, `withdrawn` and `superseded`, default `Covered`, `Partial`, `Waived`, `Withdrawn` and `Superseded`. Four more keys are accepted; none is filled from a default, and older pins reject them:
 
-- `tests`: `{ "files": [<glob>], "declarations": [<form>] }`, `declarations` optional; each form holds `{test}` exactly once.
+- `tests`: `{ "files": [<glob>], "declarations": [<form>] }`, `declarations` optional; each form holds `{test}` exactly once. From schema `0.3.0`, `SPEC032` resolves each § 9 test name against these files; no rule reads the other three keys yet.
 - `matrix`: `{ "scenarioTitles": <bool> }`, `false` when left out.
 - `owners`: a `sections` title mapped to a non-empty list of roles.
 - `requiredSpecifications`: a list of directory globs, empty when left out.

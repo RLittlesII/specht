@@ -18,16 +18,17 @@ specification. No rule reads `adr/`, `lessons/` or `decisions/`. A `.spec/`
 under `.git`, `.artifacts`, `.claude`, `.skillfile`, `graphify-out`, `bin`,
 `obj` or `node_modules` is skipped.
 
-| Rules                                      | Checks                                                                                                                                                                                              |
-| ------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `SPEC001`–`SPEC003`                        | Frontmatter. Every specification and item file opens with YAML frontmatter that satisfies its schema.                                                                                               |
-| `SPEC010`, `SPEC013`                       | Sections. Each contracted section is present once and in order, and a table the manifest names has the headers it names.                                                                            |
-| `SPEC012`                                  | Identity. No `<epic>-<id>` is claimed by two specifications.                                                                                                                                        |
-| `SPEC020`, `SPEC021`                       | Companion. Exactly one `.feature` sits beside the specification, and every claim tag in it resolves to a § 3 claim.                                                                                 |
-| `SPEC030`, `SPEC031`                       | Claims. Each § 3 claim id matches the claim grammar and is unique in its specification, and § 9 has exactly one row per claim and none for anything else.                                           |
-| `SPEC040`, `SPEC041`, `SPEC043`, `SPEC044` | Items. Each id under `children` or `spikes` resolves to one item file, an item's `id` and `parent` agree with its file name and its specification, and item ids are unique and contiguous per epic. |
-| `SPEC050`–`SPEC052`                        | Dependencies. Every `depends_on` and `blocks` edge names a discovered specification, is declared from both ends, and forms no cycle.                                                                |
-| `SPEC060`, `SPEC061`                       | Approval. A done specification has no `Missing` cell in § 9, and an approved one no draft or blocked row in § 12. Before schema `0.3.0`, `SPEC060` reads an approved specification, not a done one. |
+| Rules                                      | Checks                                                                                                                                                                                                   |
+| ------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `SPEC001`–`SPEC003`                        | Frontmatter. Every specification and item file opens with YAML frontmatter that satisfies its schema.                                                                                                    |
+| `SPEC010`, `SPEC013`                       | Sections. Each contracted section is present once and in order, and a table the manifest names has the headers it names.                                                                                 |
+| `SPEC012`                                  | Identity. No `<epic>-<id>` is claimed by two specifications.                                                                                                                                             |
+| `SPEC020`, `SPEC021`                       | Companion. Exactly one `.feature` sits beside the specification, and every claim tag in it resolves to a § 3 claim.                                                                                      |
+| `SPEC030`, `SPEC031`                       | Claims. Each § 3 claim id matches the claim grammar and is unique in its specification, and § 9 has exactly one row per claim and none for anything else.                                                |
+| `SPEC032`                                  | Tests. From schema `0.3.0`, with `tests` declared, every test name a § 9 Test cell gives in inline code is held by a declared test file, and a Test cell that is not `Missing` names one in inline code. |
+| `SPEC040`, `SPEC041`, `SPEC043`, `SPEC044` | Items. Each id under `children` or `spikes` resolves to one item file, an item's `id` and `parent` agree with its file name and its specification, and item ids are unique and contiguous per epic.      |
+| `SPEC050`–`SPEC052`                        | Dependencies. Every `depends_on` and `blocks` edge names a discovered specification, is declared from both ends, and forms no cycle.                                                                     |
+| `SPEC060`, `SPEC061`                       | Approval. A done specification has no `Missing` cell in § 9, and an approved one no draft or blocked row in § 12. Before schema `0.3.0`, `SPEC060` reads an approved specification, not a done one.      |
 
 § 3, § 9 and § 12 are the sections the manifest's `roles` name: by default
 `3. Acceptance Criteria`, `9. Traceability Matrix` and `12. Sign-off`. A

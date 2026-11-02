@@ -169,7 +169,8 @@
   },
   "tests": {
     "files": [
-      "test/**/*.cs"
+      "test/**/*.cs",
+      ".github/mirror/tests/test_*.py"
     ]
   },
   "owners": {

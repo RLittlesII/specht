@@ -4,6 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Specht.Composition;
 using Specht.Manifest;
 using Specht.Model;
+using Specht.Rules;
 using Specht.Tool;
 using Specht.Tool.Features.Evidence;
 using Specht.Tool.Features.Frontmatter;
@@ -61,8 +62,11 @@ public static class EngineServices
     /// <summary>Resolves a runner with the chosen catalog.</summary>
     public static SpechtRunner Runner(SchemaVersions? versions = null) => (SpechtRunner)Resolve(typeof(SpechtRunner), versions: versions);
 
-    /// <summary>Resolves the model loader.</summary>
-    public static SpechtModelLoader Loader() => (SpechtModelLoader)Resolve(typeof(SpechtModelLoader));
+    /// <summary>Resolves the model loader over the supplied file system, or the real one.</summary>
+    public static SpechtModelLoader Loader(IFileSystem? fileSystem = null) => (SpechtModelLoader)Resolve(typeof(SpechtModelLoader), fileSystem);
+
+    /// <summary>Resolves the composed rule set.</summary>
+    public static IEnumerable<ISpechtRule> Rules() => (IEnumerable<ISpechtRule>)Resolve(typeof(IEnumerable<ISpechtRule>));
 
     /// <summary>Resolves the shipped instance catalog.</summary>
     public static SchemaVersions Versions() => (SchemaVersions)Resolve(typeof(SchemaVersions));

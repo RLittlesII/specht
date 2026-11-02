@@ -35,6 +35,7 @@ public sealed class SpechtTreeGenerator(SpechtResources resources, SpechtManifes
             Text(schema + names["feature"], version.FeatureSchema),
             Text(schema + names["task"], version.ItemSchema),
             Text(schema + names["epic"], version.EpicSchema),
+            Text(TestFile, Tests()),
         ];
 
         for (var index = 1; index <= specifications; index++)
@@ -188,11 +189,27 @@ public sealed class SpechtTreeGenerator(SpechtResources resources, SpechtManifes
     }
 
     /// <implements epic="0109" feature="F1" claim="B-016" />
+    private static string Tests()
+    {
+        string[] lines =
+        [
+            "public class GeneratedTests",
+            "{",
+            .. Enumerable.Range(1, Claims).Select(Claim).Select(static claim => $"    public void Input{claim}() {{ }}"),
+            "}",
+            string.Empty,
+        ];
+
+        return string.Join('\n', lines);
+    }
+
+    /// <implements epic="0109" feature="F1" claim="B-016" />
     private static string Claim(int claim) => claim.ToString("D3", CultureInfo.InvariantCulture);
 
     private const int Claims = 3;
     private const string Epic = "0001";
     private const string Date = "2026-01-01";
+    private const string TestFile = "test/GeneratedTests.cs";
 
     private static readonly UTF8Encoding Utf8 = new(encoderShouldEmitUTF8Identifier: false);
 }

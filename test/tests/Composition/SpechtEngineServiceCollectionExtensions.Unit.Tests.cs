@@ -76,7 +76,7 @@ public sealed class SpechtEngineServiceCollectionExtensionsUnitTests
         // Then
         ids.Should().OnlyHaveUniqueItems().And.BeEquivalentTo(
             "SPEC001", "SPEC002", "SPEC003", "SPEC004", "SPEC010", "SPEC011", "SPEC012", "SPEC013", "SPEC020", "SPEC021", "SPEC030",
-            "SPEC031", "SPEC034", "SPEC035", "SPEC040", "SPEC041", "SPEC043", "SPEC044", "SPEC050", "SPEC051", "SPEC052", "SPEC060", "SPEC061");
+            "SPEC031", "SPEC032", "SPEC034", "SPEC035", "SPEC040", "SPEC041", "SPEC043", "SPEC044", "SPEC050", "SPEC051", "SPEC052", "SPEC060", "SPEC061");
     }
 
     [Fact]

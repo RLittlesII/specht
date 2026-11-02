@@ -63,3 +63,43 @@ spec-author's reading:
 ## Reversal
 
 None.
+
+## Addendum - 2026-11-02
+
+Recorded by spec-author while item `0334` built `SPEC032`. Call 3 stands; its
+`tests.files` value is amended. With `SPEC032` built and `tests.files` as
+`["test/**/*.cs"]`, `./build.sh Specht` reported 59 rows, 71 errors, in
+`.github/mirror/.spec/README.md` (`0055-F9`), whose tests are Python under
+`.github/mirror/tests/test_*.py`, which that glob does not select.
+
+The owner was offered two options and answered, verbatim:
+
+- "Add the .py glob (Recommended)"
+
+As put to the owner, the option meant: (a) add
+`.github/mirror/tests/test_*.py` to `tests.files`. In effect, this
+repository's manifest declares
+`"tests": { "files": ["test/**/*.cs", ".github/mirror/tests/test_*.py"] }`,
+so `0055-F9`'s § 9 rows resolve their Python tests and no `0055-F9` row
+changes. `owners` is unchanged.
+
+### Rejected
+
+- **(b) Keep `test/**/*.cs` alone and rewrite the 59 Test cells.** Spec-author's
+  reading of the cost: the cells name tests that exist, so a rewrite would
+  serve the glob rather than the matrix, and `0055-F9`'s tests would stay
+  outside every declared file.
+
+### Affects
+
+- `.specht/manifest.json` (`tests.files`); OQ-3's resolution, amended in place.
+- `0055-F9` § 9, through the files its rows now resolve against.
+
+Spec-author's readings, not stated by the owner:
+
+- The live manifest is embedded as the engine's default manifest, so the
+  whole-check benchmark's tree carries the second glob too; that tree holds
+  no `.github/mirror/tests/`, so the glob selects nothing there.
+- `0001-F4` B-004's comparison does not reach `tests`: the newest embedded
+  manifest carries no `tests` key, and keys only the live manifest carries
+  are outside it.

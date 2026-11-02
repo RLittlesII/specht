@@ -56,7 +56,7 @@ public sealed class SpechtTreeGeneratorUnitTests
 
     [Theory]
     [ClassData(typeof(TreeSizes))]
-    public void ATreeOfAStatedSize_WhenGenerated_ShouldHoldTheFourSchemaFilesAndTwoFilesForEachSpecificationAtDistinctPaths(int specifications)
+    public void ATreeOfAStatedSize_WhenGenerated_ShouldHoldFiveFixedFilesAndTwoFilesForEachSpecificationAtDistinctPaths(int specifications)
     {
         // Given
         var generator = EngineServices.Generator();
@@ -65,7 +65,7 @@ public sealed class SpechtTreeGeneratorUnitTests
         var tree = generator.Generate(specifications);
 
         // Then
-        tree.Files.Should().HaveCount(4 + (2 * specifications));
+        tree.Files.Should().HaveCount(5 + (2 * specifications));
         tree.Files.Select(static file => file.RelativePath).Should().OnlyHaveUniqueItems();
     }
 
