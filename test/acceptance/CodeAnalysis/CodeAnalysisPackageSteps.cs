@@ -69,19 +69,19 @@ public sealed class CodeAnalysisPackageSteps(PackedTool tool) : IDisposable
         VersionOf(_analysisPackage!, "Specht.CodeAnalysis.").Should().Be(VersionOf(_toolPackage!, "specht.tool."));
     }
 
-    [Then("both are attached to the GitHub Release")]
-    public void ThenBothPackagesAreAttached()
+    [Then("both are published to nuget.org")]
+    public void ThenBothPackagesArePublishedToNuGetOrg()
     {
         var stream = new YamlStream();
         using var workflow = File.OpenText(Path.Combine(tool.Repository, ".github", "workflows", "release.yml"));
         stream.Load(workflow);
         var root = (YamlMappingNode)stream.Documents[0].RootNode;
         var jobs = (YamlMappingNode)root["jobs"];
-        var release = (YamlMappingNode)jobs["release"];
-        var steps = (YamlSequenceNode)release["steps"];
-        var create = steps.Cast<YamlMappingNode>().Single(static step => step["name"].ToString() == "Create GitHub Release");
-        var command = create["run"].ToString().TrimEnd();
-        command.Should().Be("./build.cmd --target CreateGitHubRelease");
+        var publish = (YamlMappingNode)jobs["publish"];
+        var steps = ((YamlSequenceNode)publish["steps"]).Cast<YamlMappingNode>().ToArray();
+        steps.Should().Contain(static step => step.Children.ContainsKey("uses") && step["uses"].ToString() == "NuGet/login@v1");
+        steps.Should().ContainSingle(static step => step["name"].ToString() == "Push release packages")
+            .Which["run"].ToString().TrimEnd().Should().Be("./build.cmd --target PushReleasePackages");
     }
 
     [Given("different installed package versions with compatible schema and evidence contracts")]

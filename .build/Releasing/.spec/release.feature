@@ -63,17 +63,17 @@ Feature: Release
     When a version tag is published
     Then its release notes list that pull request under "📋 Other changes"
 
-  @B-007
-  Scenario: A release carries both packages
-    When a version tag is published
-    Then its release has both published packages attached
+  @B-004 @boundary
+  Scenario: A release carries no package
+    Given the packages for a version tag were published
+    Then the release for that tag has no package attached
 
   @B-008 @boundary
   Scenario: A dry run stops before the push
     When a release dry run is started without a tag
     Then every gate and the pack run
     And the packed package is uploaded to the run
-    And the publishing job is skipped
+    And the publishing job and the release job are skipped
     And no package is published
     And no release is created
 

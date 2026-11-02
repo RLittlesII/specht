@@ -9,23 +9,30 @@ namespace Specht.Build.Tests;
 public sealed class CodeAnalysisReleaseIntegrationTests
 {
     [Fact]
-    public void ReleaseWorkflow_ShouldInvokeNukeTargetsAfterDownloadingPackages()
+    public void ReleaseWorkflow_ShouldInvokeNukeTargetsAfterCheckout()
     {
+        // Given
         var root = FindRepositoryRoot();
         var stream = new YamlStream();
         using var input = File.OpenText(Path.Combine(root, ".github", "workflows", "release.yml"));
         stream.Load(input);
-        var workflow = (YamlMappingNode)stream.Documents[0].RootNode;
-        var jobs = (YamlMappingNode)workflow["jobs"];
-        var release = (YamlMappingNode)jobs["release"];
-        var steps = ((YamlSequenceNode)release["steps"]).Cast<YamlMappingNode>().ToArray();
+        var jobs = (YamlMappingNode)((YamlMappingNode)stream.Documents[0].RootNode)["jobs"];
 
-        steps.Should().Contain(static step => step["name"].ToString() == "Checkout");
-        steps.Should().Contain(static step => step["name"].ToString().Contains("Download the package", StringComparison.Ordinal));
-        steps.Single(static step => step["name"].ToString() == "Push release packages")["run"].ToString().TrimEnd()
-            .Should().Be("./build.cmd --target PushReleasePackages");
-        steps.Single(static step => step["name"].ToString() == "Create GitHub Release")["run"].ToString().TrimEnd()
-            .Should().Be("./build.cmd --target CreateGitHubRelease");
+        // When
+        var targets = new[] { ("publish", "Push release packages", "PushReleasePackages"), ("release", "Create GitHub Release", "CreateGitHubRelease") };
+
+        // Then
+        jobs.Children.Keys.Select(static key => key.ToString()).Should().Contain("publish");
+        foreach (var (job, name, target) in targets)
+        {
+            var steps = ((YamlSequenceNode)((YamlMappingNode)jobs[job])["steps"]).Cast<YamlMappingNode>().ToArray();
+            steps.Should().Contain(static step => step["name"].ToString() == "Checkout", job);
+            steps.Should().ContainSingle(step => step["name"].ToString() == name, job)
+                .Which["run"].ToString().TrimEnd().Should().Be($"./build.cmd --target {target}");
+        }
+
+        ((YamlSequenceNode)((YamlMappingNode)jobs["publish"])["steps"]).Cast<YamlMappingNode>()
+            .Should().Contain(static step => step["name"].ToString().Contains("Download the package", StringComparison.Ordinal));
     }
 
     [Fact]
@@ -43,11 +50,13 @@ public sealed class CodeAnalysisReleaseIntegrationTests
         ((YamlMappingNode)checkout["with"])["fetch-depth"].ToString().Should().Be("0");
     }
 
-    [Fact]
-    public async Task PushReleasePackages_WhenRunWithoutTagPush_ShouldFailBeforePublication()
+    [Theory]
+    [InlineData("PushReleasePackages")]
+    [InlineData("CreateGitHubRelease")]
+    public async Task PublicationTarget_WhenRunWithoutTagPush_ShouldFailBeforePublication(string target)
     {
         using var fixture = new ReleaseFixture();
-        var result = await fixture.RunTarget("PushReleasePackages", "workflow_dispatch");
+        var result = await fixture.RunTarget(target, "workflow_dispatch");
         result.ExitCode.Should().NotBe(0);
         result.Output.Should().Contain("Publishing requires a pushed version tag");
     }
@@ -55,20 +64,25 @@ public sealed class CodeAnalysisReleaseIntegrationTests
     [Fact]
     public void ReleaseWorkflow_ShouldPushWithTheKeyTheNuGetLoginIssues()
     {
+        // Given
         var root = FindRepositoryRoot();
         var stream = new YamlStream();
         using var input = File.OpenText(Path.Combine(root, ".github", "workflows", "release.yml"));
         stream.Load(input);
-        var workflow = (YamlMappingNode)stream.Documents[0].RootNode;
-        var release = (YamlMappingNode)((YamlMappingNode)workflow["jobs"])["release"];
-        var steps = ((YamlSequenceNode)release["steps"]).Cast<YamlMappingNode>().ToList();
-        var login = steps.Single(static step => step.Children.ContainsKey("uses") && step["uses"].ToString() == "NuGet/login@v1");
-        var push = steps.Single(static step => step["name"].ToString() == "Push release packages");
+        var jobs = (YamlMappingNode)((YamlMappingNode)stream.Documents[0].RootNode)["jobs"];
 
-        ((YamlMappingNode)release["permissions"])["id-token"].ToString().Should().Be("write");
-        steps.IndexOf(login).Should().BeLessThan(steps.IndexOf(push));
-        ((YamlMappingNode)push["env"])["NUGET_API_KEY"].ToString()
-            .Should().Be($"${{{{ steps.{login["id"]}.outputs.NUGET_API_KEY }}}}");
+        // When
+        jobs.Children.Keys.Select(static key => key.ToString()).Should().Contain("publish");
+        var steps = ((YamlSequenceNode)((YamlMappingNode)jobs["publish"])["steps"]).Cast<YamlMappingNode>().ToArray();
+
+        // Then
+        steps.Select(static step => step.Children.ContainsKey("uses") ? step["uses"].ToString().Split('@')[0] : step["name"].ToString())
+            .Should().Equal("actions/checkout", "actions/download-artifact", "actions/setup-dotnet", "NuGet/login", "Push release packages");
+        ((YamlMappingNode)steps[1]["with"])["name"].ToString().Should().Be("nupkg");
+        steps[3]["name"].ToString().Should().Be("Log in to NuGet");
+        steps[3]["uses"].ToString().Should().Be("NuGet/login@v1");
+        ((YamlMappingNode)steps[4]["env"])["NUGET_API_KEY"].ToString()
+            .Should().Be($"${{{{ steps.{steps[3]["id"]}.outputs.NUGET_API_KEY }}}}");
     }
 
     [Fact]
@@ -112,26 +126,29 @@ public sealed class CodeAnalysisReleaseIntegrationTests
     [Theory]
     [InlineData("1.2.3", false)]
     [InlineData("0.3.12-preview", true)]
-    public async Task CreateGitHubRelease_ShouldAttachBothPackedProjects(string version, bool prerelease)
+    public async Task CreateGitHubRelease_ShouldCreateTheReleaseWithoutAttachingPackages(string version, bool prerelease)
     {
         if (OperatingSystem.IsWindows())
         {
             Assert.Skip("The release job runs on Ubuntu.");
         }
 
+        // Given
         using var fixture = new ReleaseFixture(version);
-        fixture.WritePackages();
+
+        // When
         var result = await fixture.RunTarget("CreateGitHubRelease", "push");
+
+        // Then
         result.ExitCode.Should().Be(0, result.Output);
-        var invocation = File.ReadAllText(fixture.GhLog);
-        invocation.Should().Contain($"specht.tool.{version}.nupkg")
-            .And.Contain($"Specht.CodeAnalysis.{version}.nupkg")
-            .And.Contain("--generate-notes --verify-tag");
+        var invocation = File.ReadAllLines(fixture.GhLog)
+            .Should().ContainSingle(line => line.StartsWith($"release create v{version} ", StringComparison.Ordinal)).Which;
+        invocation.Should().NotContain(".nupkg").And.Contain("--generate-notes --verify-tag");
         invocation.Contains("--prerelease", StringComparison.Ordinal).Should().Be(prerelease);
     }
 
     [Fact]
-    public async Task CreateGitHubRelease_WhenTheReleaseIsAlreadyPublishedAtThisCommitWithBothPackages_ShouldKeepItAndSucceed()
+    public async Task CreateGitHubRelease_WhenTheReleaseIsAlreadyPublishedAtThisCommit_ShouldKeepItAndSucceed()
     {
         if (OperatingSystem.IsWindows())
         {
@@ -140,7 +157,6 @@ public sealed class CodeAnalysisReleaseIntegrationTests
 
         // Given
         using var fixture = new ReleaseFixture();
-        fixture.WritePackages();
 
         // When
         var result = await fixture.RunTarget("CreateGitHubRelease", "push", Published, ReleaseFixture.Commit);
@@ -148,14 +164,15 @@ public sealed class CodeAnalysisReleaseIntegrationTests
         // Then
         result.ExitCode.Should().Be(0, result.Output);
         var invocations = File.ReadAllLines(fixture.GhLog);
-        invocations.Should().Contain("release view v1.2.3 --repo RLittlesII/specht --json tagName,isDraft,assets")
+        invocations.Should()
+            .Contain(static invocation => invocation.StartsWith("release view v1.2.3 --repo RLittlesII/specht --json ", StringComparison.Ordinal))
             .And.Contain("api repos/RLittlesII/specht/commits/tags/v1.2.3 --jq .sha")
             .And.NotContain(static invocation => invocation.StartsWith("release create", StringComparison.Ordinal));
     }
 
     [Theory]
     [ClassData(typeof(ReleasesNotPublishedAtThisCommit))]
-    public async Task CreateGitHubRelease_WhenNoReleaseIsPublishedAtThisCommitWithBothPackages_ShouldCreateIt(string existing, string tagged)
+    public async Task CreateGitHubRelease_WhenNoReleaseIsPublishedAtThisCommit_ShouldCreateIt(string existing, string tagged)
     {
         if (OperatingSystem.IsWindows())
         {
@@ -164,7 +181,6 @@ public sealed class CodeAnalysisReleaseIntegrationTests
 
         // Given
         using var fixture = new ReleaseFixture();
-        fixture.WritePackages();
 
         // When
         var result = await fixture.RunTarget("CreateGitHubRelease", "push", existing, tagged);
@@ -185,13 +201,13 @@ public sealed class CodeAnalysisReleaseIntegrationTests
 
         // Given
         using var fixture = new ReleaseFixture();
-        fixture.WritePackages();
 
         // When
         var result = await fixture.RunTarget("CreateGitHubRelease", "push", Draft, ReleaseFixture.Commit, createFails: true);
 
         // Then
         result.ExitCode.Should().NotBe(0);
+        File.Exists(fixture.GhLog).Should().BeTrue(result.Output);
         File.ReadAllLines(fixture.GhLog).Should().Contain(static invocation => invocation.StartsWith("release create v1.2.3", StringComparison.Ordinal));
     }
 
@@ -202,9 +218,7 @@ public sealed class CodeAnalysisReleaseIntegrationTests
             Add("", ReleaseFixture.Commit);
             Add(Published, "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb");
             Add(Draft, ReleaseFixture.Commit);
-            Add("""{"tagName":"v1.2.3","isDraft":false,"assets":[{"name":"specht.tool.1.2.3.nupkg"}]}""", ReleaseFixture.Commit);
-            Add("""{"tagName":"v1.2.4","isDraft":false,"assets":[{"name":"specht.tool.1.2.3.nupkg"},{"name":"Specht.CodeAnalysis.1.2.3.nupkg"}]}""",
-                ReleaseFixture.Commit);
+            Add("""{"tagName":"v1.2.4","isDraft":false}""", ReleaseFixture.Commit);
             Add("not json", ReleaseFixture.Commit);
         }
     }
@@ -328,9 +342,7 @@ public sealed class CodeAnalysisReleaseIntegrationTests
         private readonly string _version;
     }
 
-    private const string Published =
-        """{"tagName":"v1.2.3","isDraft":false,"assets":[{"name":"specht.tool.1.2.3.nupkg"},{"name":"Specht.CodeAnalysis.1.2.3.nupkg"}]}""";
+    private const string Published = """{"tagName":"v1.2.3","isDraft":false}""";
 
-    private const string Draft =
-        """{"tagName":"v1.2.3","isDraft":true,"assets":[{"name":"specht.tool.1.2.3.nupkg"},{"name":"Specht.CodeAnalysis.1.2.3.nupkg"}]}""";
+    private const string Draft = """{"tagName":"v1.2.3","isDraft":true}""";
 }

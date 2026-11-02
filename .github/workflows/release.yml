@@ -129,14 +129,14 @@ jobs:
         id: release
         run: |
           ./build.cmd --target Release --skip VerifyTag Pack PublishComparator
-  release:
+  publish:
     needs:
       - build
     if: ${{ github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v') }}
     permissions:
-      actions: read
+      actions: none
       checks: none
-      contents: write
+      contents: read
       deployments: none
       id-token: write
       issues: none
@@ -147,7 +147,7 @@ jobs:
       repository-projects: none
       security-events: none
       statuses: none
-    runs-on: [self-hosted, macOS, ARM64]
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -175,6 +175,37 @@ jobs:
           NUGET_API_KEY: '${{ steps.nuget.outputs.NUGET_API_KEY }}'
         run: |
           ./build.cmd --target PushReleasePackages
+  release:
+    needs:
+      - publish
+    if: ${{ github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v') }}
+    permissions:
+      actions: read
+      checks: none
+      contents: write
+      deployments: none
+      id-token: none
+      issues: none
+      discussions: none
+      packages: none
+      pages: none
+      pull-requests: none
+      repository-projects: none
+      security-events: none
+      statuses: none
+    runs-on: [self-hosted, macOS, ARM64]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          clean: 'true'
+          fetch-depth: '0'
+          persist-credentials: 'false'
+      - name: 🔨 Use .NET 10 and 11 SDKs
+        uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: 'global.json'
+          dotnet-version: '10.0.401'
       - name: Create GitHub Release
         env:
           GH_TOKEN: '${{ secrets.GITHUB_TOKEN }}'

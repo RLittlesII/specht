@@ -145,3 +145,32 @@ environment while `attach` waits.
 `0109-F5` A-4 and OQ-4's default (corrected), A-5 (added), C-10 (unchanged),
 and the § 7 sentence on what keeps the release job's token from a measured
 revision on the same host.
+
+### Entry - 2026-11-01: the nuget.org OIDC credential
+
+**Asked**, after `0055-F6` item 0327 gave the `release` job
+`id-token: write` and item 0214 put `attach`'s wait in the same job: "Does
+A-5's accepted exposure also cover the nuget.org OIDC credential?"
+
+**The owner's first answer**, verbatim:
+
+> Yes, accept it
+
+**Asked** "Which answer stands for the NuGet credential?", **the owner's
+answer**, verbatim:
+
+> Separate publish job
+
+The second answer supersedes the first. The exposure this addendum accepts is
+the workflow token's only. `0055-F6`
+[decision 0008](../../../../.build/Releasing/.spec/decisions/0008-the-push-runs-in-its-own-publish-job.md)
+moves the login and the push into a `publish` job, the only one granted
+`id-token: write`, which needs `build` and finishes before the `release` job
+uploads the receipt that starts collection; the `release` job keeps contents
+write, actions read and the comparison steps, with `id-token: none`.
+
+**Rejected:** accepting the exposure for the OIDC credential, the first
+answer.
+
+**Affects:** A-5, amended to the workflow token; C-10, clarified with a dated
+note, its meaning unchanged.
