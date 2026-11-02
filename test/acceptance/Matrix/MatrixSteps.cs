@@ -12,7 +12,7 @@ using Specht.Tool;
 
 namespace Specht.Acceptance.Matrix;
 
-/// <summary>Exercises the shipped waiver and retirement rules over an invented repository (0001-F12 B-018 to B-020).</summary>
+/// <summary>Exercises the shipped matrix rules over an invented repository (0001-F12 B-001 to B-007, B-018 to B-020).</summary>
 [Binding]
 [Scope(Feature = "Matrix resolution")]
 public sealed class MatrixSteps
@@ -90,6 +90,119 @@ public sealed class MatrixSteps
     [Given("the manifest pins schema version 0.1.0 instead")]
     public void GivenOriginalPin() => GivenPin("0.1.0");
 
+    [Given("the manifest pins schema version 0.3.0 instead")]
+    public void GivenMatrixPin() => GivenPin("0.3.0");
+
+    [Given("the manifest names the matrix headers {string}, {string}, {string} and {string}")]
+    public void GivenMatrixHeaders(string claim, string scenario, string test, string status)
+    {
+        Manifest["tables"]!["matrix"] = new JsonArray(claim, scenario, test, status);
+        _renamed = $"{claim} | {scenario} | {test} | {status}";
+    }
+
+    [Given("the specification's matrix uses those headers")]
+    public void GivenMatrixUsesHeaders() => _matrix = _renamed;
+
+    [Given("the manifest declares the test files")]
+    public void GivenDefaultTestFiles() => GivenTestFiles("test/**/*.cs");
+
+    [Given("the manifest declares the test files {string}")]
+    public void GivenTestFiles(string glob)
+    {
+        Manifest["tests"] = new JsonObject { ["files"] = new JsonArray(glob) };
+        _extension = Path.GetExtension(glob);
+    }
+
+    [Given("the manifest declares the test files {string} and no declaration forms")]
+    public void GivenTestFilesWithoutForms(string glob) => GivenTestFiles(glob);
+
+    [Given("the manifest declares the test files {string} and the declaration form {string}")]
+    public void GivenTestFilesWithForm(string glob, string form)
+    {
+        GivenTestFiles(glob);
+        Manifest["tests"]!["declarations"] = new JsonArray(form);
+    }
+
+    [Given("the manifest declares no tests")]
+    public void GivenNoTests() => Manifest.Remove("tests");
+
+    [Given("the manifest excludes {string}")]
+    public void GivenExclusion(string exclusion)
+    {
+        var exclusions = Manifest["exclusions"] as JsonArray ?? (JsonArray)(Manifest["exclusions"] = new JsonArray());
+        if (!exclusions.Any(existing => existing!.GetValue<string>() == exclusion))
+        {
+            exclusions.Add(exclusion);
+        }
+    }
+
+    [Given("a row whose third cell names a test no declared file holds")]
+    public void GivenUnresolvedThirdCell() => _test = "`ScenarioNobodyWrote`";
+
+    [Given("a row whose fourth cell is {string} and whose third cell names no approver")]
+    public void GivenUnapprovedFourthCell(string status) => GivenMatrixRow(status, string.Empty);
+
+    [Given("a matrix row for claim {word} whose Test cell is {string}")]
+    public void GivenClaimTestCell(string claim, string cell)
+    {
+        _claimId = claim;
+        _test = cell;
+    }
+
+    [Given("no file under test holds that name")]
+    public void GivenNameNowhere() => WriteTest("Other", "class Other {}\n");
+
+    [Given("a matrix row whose Test cell names a test held only under {string}")]
+    public void GivenExcludedTest(string folder)
+    {
+        Tree.WriteRaw(folder + "Hidden" + _extension, "void HiddenTest() {}\n");
+        _test = "`HiddenTest`";
+    }
+
+    [Given("a matrix row whose Test cell is the missing marker")]
+    public void GivenMissingTestCell() => _test = Manifest["markers"]!["missing"]!.GetValue<string>();
+
+    [Given("a matrix row whose Status is {string} and whose Test cell is {string}")]
+    public void GivenStatusAndTestCell(string status, string cell) => GivenMatrixRow(status, cell);
+
+    [Given("a matrix row whose Test cell is {string}")]
+    public void GivenTestCell(string cell) => _test = cell;
+
+    [Given("a matrix row whose Test cell is {string} with no inline code")]
+    public void GivenPlainTestCell(string cell) => _test = cell;
+
+    [Given("a test file holding {string}")]
+    public void GivenTestText(string text) => WriteTest("Holding", text + "\n");
+
+    [Given("a test file holding {string} and {string}")]
+    public void GivenTestNames(string first, string second) => WriteTest("Names", $"void {first}() {{}}\nvoid {second}() {{}}\n");
+
+    [Given("a test file holding the word {string}")]
+    public void GivenTestWord(string word) => WriteTest("Word", $"void {word}() {{}}\n");
+
+    [Given("^a test file holding the word \"(\\w+)\" and not the word \"\\w+\"$")]
+    public void GivenLongerWord(string word) => GivenTestWord(word);
+
+    [Given("a test file that holds {string} only in a comment")]
+    public void GivenCommentedName(string name) => WriteTest("Commented", $"// {name}\n");
+
+    [Given("a test file holding the class {string} and the method {string}")]
+    public void GivenClassAndMethod(string type, string method) => WriteTest("Steps", $"class {type}\n{{\n    void {method}() {{}}\n}}\n");
+
+    [Given("one test file holding the class {string} and another holding the method {string}")]
+    public void GivenSplitClassAndMethod(string type, string method)
+    {
+        WriteTest("Type", $"class {type}\n{{\n}}\n");
+        WriteTest("Method", $"void {method}() {{}}\n");
+    }
+
+    [Given("a test file holding the method {string} and the words {string} and {string}")]
+    public void GivenMethodAndWords(string method, string first, string second) =>
+        WriteTest("Qualified", $"void {method}() {{}}\n// {first} {second}\n");
+
+    [Given("a test file holding the method {string} and the words {string} alone")]
+    public void GivenMethodAndWord(string method, string word) => WriteTest("Qualified", $"void {method}() {{}}\n// {word}\n");
+
     [Given("the specification's matrix has a covered row no scenario carries and a status that is no known marker")]
     public void GivenUnresolvedOriginalRow()
     {
@@ -121,20 +234,52 @@ public sealed class MatrixSteps
         var sections = SpechtTree.Sections.Select(section => section.Split('\n')[0] switch
         {
             "## 3. Acceptance Criteria" => "## 3. Acceptance Criteria\n\n| ID | Claim | Source | Status |\n| --- | --- | --- | --- |\n"
-                + $"| B-004 | Behavior | Decision | {_claim} |\n",
-            "## 9. Traceability Matrix" => "## 9. Traceability Matrix\n\n| Claim ID | Scenario | Test | Status |\n| --- | --- | --- | --- |\n"
-                + $"| B-004 | A scenario | {_test} | {_status} |\n",
+                + $"| {_claimId} | Behavior | Decision | {_claim} |\n",
+            "## 9. Traceability Matrix" => $"## 9. Traceability Matrix\n\n| {_matrix} |\n| --- | --- | --- | --- |\n"
+                + $"| {_claimId} | A scenario | {_test} | {_status} |\n",
             "## 12. Sign-off" => $"## 12. Sign-off\n\n| {_headers} |\n| --- | --- | --- | --- |\n| 1-5 | {_signOff} | {_reviewer} | Decision |\n",
             _ => section,
         }).ToArray();
         var path = Tree.WriteFeature("0001", "F1", sections: sections);
         Tree.WriteFeatureFile(path, $"Feature: Sample\n{_tags}Scenario: A scenario\n  Given a thing\n");
         Tree.WriteRaw(SpechtTree.ManifestPath, Manifest.ToJsonString());
+        _row = Array.FindIndex(File.ReadAllLines(path), line => line.StartsWith($"| {_claimId} | A scenario |", StringComparison.Ordinal)) + 1;
         _report = EngineServices.Runner().Run(Tree.Root);
     }
 
     [Then("^the waiver rule reports (nothing|one finding) for that row$")]
     public void ThenWaiverCount(string findings) => Findings("SPEC034").Should().HaveCount(findings == "nothing" ? 0 : 1);
+
+    [Then("the waiver rule reports that row")]
+    public void ThenWaiverRow() => Findings("SPEC034").Should().ContainSingle().Which.Line.Should().Be(_row);
+
+    [Then("the unresolved-test rule reports that row")]
+    public void ThenUnresolvedRow() => UnresolvedRow();
+
+    [Then("the unresolved-test rule reports that row, with {word} as its identifier")]
+    public void ThenUnresolvedIdentifier(string claim) => UnresolvedRow().Identifier.Should().Be(claim);
+
+    [Then("the unresolved-test rule reports one finding, {word} for that row")]
+    public void ThenUnresolvedName(string name) => UnresolvedRow().Message.Should().Contain(name);
+
+    [Then("the unresolved-test rule reports that row, expecting a test name in inline code")]
+    public void ThenNoInlineCode() => UnresolvedRow().Message.Should().Contain("inline code");
+
+    [Then("^the unresolved-test rule reports (nothing|one finding) for that row$")]
+    public void ThenUnresolvedCount(string findings)
+    {
+        if (findings == "nothing")
+        {
+            Findings("SPEC032").Should().BeEmpty();
+        }
+        else
+        {
+            UnresolvedRow();
+        }
+    }
+
+    [Then("the unresolved-test rule reports nothing")]
+    public void ThenNoUnresolved() => Findings("SPEC032").Should().BeEmpty();
 
     [Then("the waiver rule reports nothing")]
     public void ThenNoWaiver() => Findings("SPEC034").Should().BeEmpty();
@@ -168,6 +313,15 @@ public sealed class MatrixSteps
     private JsonObject Manifest => _manifest ?? throw new InvalidOperationException("No manifest was read.");
     private JsonObject Rules => Manifest["rules"] as JsonObject ?? (JsonObject)(Manifest["rules"] = new JsonObject());
 
+    private SpechtViolation UnresolvedRow()
+    {
+        var finding = Findings("SPEC032").Should().ContainSingle().Subject;
+        finding.Line.Should().Be(_row);
+        return finding;
+    }
+
+    private void WriteTest(string name, string text) => Tree.WriteRaw($"test/{name}{_extension}", text);
+
     private IEnumerable<SpechtViolation> Findings(string id) => (_report ?? throw new InvalidOperationException("No check ran.")).Violations
         .Where(violation => violation.RuleId == id);
 
@@ -175,6 +329,11 @@ public sealed class MatrixSteps
     private JsonObject? _manifest;
     private SpechtReport? _report;
     private string _claim = "Active";
+    private string _claimId = "B-004";
+    private string _matrix = "Claim ID | Scenario | Test | Status";
+    private string _renamed = string.Empty;
+    private string _extension = ".cs";
+    private int _row;
     private string _status = "Missing";
     private string _test = "Missing";
     private string _tags = string.Empty;
