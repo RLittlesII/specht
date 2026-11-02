@@ -73,7 +73,6 @@ the scenarios and tests it cites.
 | `0001-F3`  | The report written to the `--report` path                                                            |
 | `0001-F12` | Matrix resolution: § 9 rows held against the scenarios and the declared tests                        |
 | `0001-F1`  | The engine's rules split one per id, the evaluator an instance, the runner gone - under ADR-0027     |
-| `0109-F4`  | Tool cold start, with peak memory per row                                                            |
 | `0109-F5`  | Release baseline comparison: advisory regressions between two published revisions                    |
 | `0001-F7`  | The pin policy `0124`: a pin that floats to the newest shipped patch or minor, moved here from 0.3.0 |
 
@@ -217,6 +216,7 @@ this list is this page's alone.
 | `0193`          | JSON as a first-class specification format                                                                                                        |
 | `0132-F1`       | A persistent specification index of keyed facts and relationships, rebuildable from the tree                                                      |
 | `0324`          | A `specht` service: document sequences allocated without git coordination, and a database mode where each managed document keeps one lifetime key |
+| `0109-F4`       | The tool process's peak memory for each cold-start row, once an observer meets its constraint                                                     |
 
 The online allocation in `0324` follows spike `0256` and ADR-0028's
 recommendation that online allocation waits.

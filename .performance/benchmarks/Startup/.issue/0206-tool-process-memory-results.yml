@@ -15,7 +15,7 @@ spec: .performance/benchmarks/Startup/.spec/README.md
 claims: [B-006]
 
 created: "2026-10-13"
-updated: "2026-10-13"
+updated: "2026-11-01"
 closed: null
 
 summary: |
@@ -49,6 +49,17 @@ decisions:
     permissions, fail-closed handling and both-exporter transport before
     implementation. No diagnostic-pass or startup-suspension exception
     to B-006 is granted.
+
+  - |
+    2026-11-01, the repository owner, choosing the recommended default:
+    this item and its container 0203 leave milestone 0.4.0 for no
+    milestone, because 0.4.0's done condition does not need tool-process
+    memory. B-006 stays Active and Missing, and this item stays blocked
+    on ADR-0001's negative feasibility result until an observer meets
+    0109-F4 C-7. Not taken: withdrawing B-006, which drops the owner's
+    2026-10-09 call to measure the tool's own memory; keeping it in
+    0.4.0, which holds that milestone open on a mechanism with no
+    evidence.
 
 out_of_scope:
   - "Timing/session setup delivery — 0204; mechanism feasibility — 0205."

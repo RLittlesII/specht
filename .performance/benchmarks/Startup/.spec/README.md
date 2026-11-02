@@ -20,7 +20,7 @@ depends_on: ["F1"]
 blocks: []
 spikes: []
 created: "2026-10-09"
-updated: "2026-10-23"
+updated: "2026-11-01"
 github_issue: null
 synced_at: null
 ---
@@ -392,7 +392,9 @@ for a regression comparison and no number gates the build.
 
 ## 10. Lessons / Spec Deltas
 
-<!-- last written by: spec-author, 2026-10-13, 2026-10-14 (lesson 0001, item 0220), 2026-10-23 (`0055-F2` decision 0005) -->
+<!-- last written by: spec-author, 2026-10-13, 2026-10-14 (lesson 0001, item 0220), 2026-10-23 (`0055-F2` decision 0005), 2026-11-01 (B-006 deferred) -->
+
+- 2026-11-01, the owner deferred B-006's delivery, item `0206`, until an observer meets C-7, and kept the claim. B-006 stays Active and `Missing`; `0206` stays held on ADR-0001's negative feasibility result. No claim, constraint or scenario changes. The timing rows, B-001 to B-005 and B-007 to B-009, are delivered; the Feature is unfinished until B-006 is.
 
 - 2026-10-23, the owner moved CI's Linux leg to the owner's self-hosted macOS ARM64 pool, replacing it ([`0055-F2` decision 0005](../../../../.build/ContinuousIntegration/.spec/decisions/0005-the-unix-leg-runs-on-the-owners-macos-pool.md)). The main-only Short runs this Feature uses now run on macOS and Windows. No claim, constraint or scenario changes. ADR-0001's Linux observer and its full-lifetime boundary question no longer have a CI host to run on; the ADR is accepted and not edited, and § 7, which names Linux, is the `implementer`'s.
 
