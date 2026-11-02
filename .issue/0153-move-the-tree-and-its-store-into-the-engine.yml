@@ -182,6 +182,45 @@ decisions:
     chose "Leave to design pass (Recommended)": this item's design pass
     proposes, and the owner rules on that proposal.
     Status stays `in-progress`; the design pass follows on this branch.
+  - |
+    2026-11-01, implementer: criterion 5, a proposal awaiting the
+    repository owner's ruling; nothing here is decided. Read on `main` at
+    commit `f08ee33c`.
+    (a) `InitWriter` (`src/tool/Features/Init/InitWriter.cs`) is host
+    code, outside ADR-0010's engine guard, and ADR-0010 open point 2
+    keeps init's handler in the tool's `Init` slice. It writes absent
+    files only, through `FileMode.CreateNew` (`:216`, `0001-F4` C-1),
+    asynchronously, and returns a written-or-skipped listing;
+    `SpechtTreeStore.Save` overwrites through `File.Create`, synchronously,
+    with no listing.
+    - Replace: the store writes init's files. It gains a create-new,
+      skip-existing, listing mode no `0109-F1` claim states, and init's
+      I/O moves into the engine against open point 2.
+    - Feed: `InitWriter` keeps its I/O and carries its selection as
+      `SpechtTreeFile` in place of its tuples and `ShippedFile`
+      (`src/tool/Features/ShippedFile.cs`, shared with `UpgradeWriter`):
+      type churn, no I/O consolidated.
+    - Leave alone: no change.
+    Recommended, judgement: leave alone; init's I/O is reconsidered when
+    `upgrade` pulls init into the engine (open point 2).
+    (b) `test/tests/Shared/SpechtTree.cs`, linked into `test/acceptance`,
+    is a mutable fixture builder over a disposable temporary root: it
+    copies the live `.specht/` files, writes through `File` and
+    `Directory`, and offers eleven helper methods. 86 files name it (57
+    in `test/tests`, 29 in `test/acceptance`); 42 construct it, 134 times;
+    44 use only its path constants.
+    - Replace: the 86 files build production trees and save them through
+      the store. The helpers still need a home, so a test-side builder
+      returns; the highest churn, and it collides with item 0168.
+    - Feed: its API and callers stay; its writes go through
+      `SpechtTreeStore` over the real file system, so writing a file under
+      a root has one implementation. One file changes; its deletes and its
+      read of the build output stay on `File` and `Directory`. It needs a
+      public way to build a `SpechtTree` from files.
+    - Leave alone: two implementations of writing a tree remain, the
+      store's and the test tree's, which the criterion's "no second
+      implementation for tests" reads against.
+    Recommended, judgement: feed.
 
 out_of_scope:
   - 'Anything in pull request #114 - the owner''s "later". The tests under `test/tests/Benchmarks/` and the reference stay as #114 has them until this item (`0109-F1` OQ-5).'
