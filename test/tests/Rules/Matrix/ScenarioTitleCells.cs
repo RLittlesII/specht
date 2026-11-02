@@ -1,23 +1,28 @@
 namespace Specht.Tests.Rules.Matrix;
 
-/// <summary>Scenario cells with title matching on, off and left out, against one companion's titles and tags (B-008 to B-010).</summary>
-public sealed class ScenarioTitleCells : TheoryData<string?, string, string[]>
+/// <summary>Scenario cells with title matching on, off and absent, against one companion's titles and tags, under any Status (B-008 to B-010, B-025).</summary>
+public sealed class ScenarioTitleCells : TheoryData<string?, string, string, string[]>
 {
     public ScenarioTitleCells()
     {
         const string on = """{"scenarioTitles":true}""";
         const string off = """{"scenarioTitles":false}""";
-        Add(on, "First case", []);
-        Add(on, "Second case", []);
-        Add(on, "First case; Second case", []);
-        Add(on, "First case; A title none has", ["A title none has"]);
-        Add(on, "A title no scenario has", ["A title no scenario has"]);
-        Add(on, "First", ["First"]);
-        Add(on, "A title none has; Another title none has", ["A title none has", "Another title none has"]);
-        Add(on, "Setting a level succeeds", ["Setting a level succeeds"]);
-        Add(on, "First case; Setting a level succeeds", ["Setting a level succeeds"]);
-        Add(null, "A title no scenario has", []);
-        Add(off, "A title no scenario has", []);
-        Add(off, "Setting a level succeeds", []);
+        const string partial = "Partial";
+        Add(on, "First case", partial, []);
+        Add(on, "Second case", partial, []);
+        Add(on, "First case; Second case", partial, []);
+        Add(on, "First case; A title none has", partial, ["A title none has"]);
+        Add(on, "A title no scenario has", partial, ["A title no scenario has"]);
+        Add(on, "First", partial, ["First"]);
+        Add(on, "A title none has; Another title none has", partial, ["A title none has", "Another title none has"]);
+        Add(on, "Setting a level succeeds", partial, ["Setting a level succeeds"]);
+        Add(on, "First case; Setting a level succeeds", partial, ["Setting a level succeeds"]);
+        Add(null, "A title no scenario has", partial, []);
+        Add(off, "A title no scenario has", partial, []);
+        Add(off, "Setting a level succeeds", partial, []);
+        Add(on, "A title no scenario has", "Missing", ["A title no scenario has"]);
+        Add(on, "A title no scenario has", "Waived", ["A title no scenario has"]);
+        Add(on, "A title no scenario has", "Withdrawn", ["A title no scenario has"]);
+        Add(on, "A title no scenario has", "Superseded", ["A title no scenario has"]);
     }
 }

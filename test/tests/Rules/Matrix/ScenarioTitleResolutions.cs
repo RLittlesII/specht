@@ -2,7 +2,7 @@ using Specht.Rules.Matrix;
 
 namespace Specht.Tests.Rules.Matrix;
 
-/// <summary>Scenario cells resolved against one companion, with the expected title, status and keyword line of each (B-008, B-009).</summary>
+/// <summary>Scenario cells resolved against one companion, with the expected title, status and keyword line of each (B-008, B-009, B-022 to B-024).</summary>
 public sealed class ScenarioTitleResolutions : TheoryData<string?, bool, string, string, string[], MatrixScenarioStatus[], int?[]>
 {
     public ScenarioTitleResolutions()
@@ -20,6 +20,7 @@ public sealed class ScenarioTitleResolutions : TheoryData<string?, bool, string,
         Add(on, false, "B-002", "Second case", ["Second case"], [untagged], [9]);
         Add(on, false, "B-002", " First case ;; Second case ; ", ["First case", "Second case"], [resolved, untagged], [5, 9]);
         Add(on, false, "B-002", "first case", ["first case"], [none], [null]);
+        Add(on, true, "B-002", "first case", ["first case"], [none], [null]);
         Add(on, false, "B-002", "First", ["First"], [none], [null]);
         Add(on, false, "B-005", "An example", ["An example"], [none], [null]);
         Add(on, false, "B-007", "Twin", ["Twin"], [resolved], [26]);

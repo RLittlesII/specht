@@ -6,14 +6,14 @@ using Specht.Tests.Shared;
 
 namespace Specht.Tests.Rules.Matrix;
 
-/// <summary>SPEC022 over an in-memory tree whose matrix headers are renamed (0001-F12 B-008 to B-010).</summary>
+/// <summary>SPEC022 over an in-memory tree whose matrix headers are renamed (0001-F12 B-008 to B-010, B-025).</summary>
 [Trait("Tier", "Unit")]
 public sealed class ScenarioTitleRuleUnitTests
 {
     [Theory]
     [ClassData(typeof(ScenarioTitleCells))]
     public void AScenarioCell_WhenEvaluated_ShouldReportEachTitleNoScenarioCarryingTheRowTagHasOnlyUnderTitleMatching(
-        string? matrix, string cell, string[] expected)
+        string? matrix, string cell, string status, string[] expected)
     {
         // Given
         var manifest = JsonNode.Parse("""
@@ -35,7 +35,7 @@ public sealed class ScenarioTitleRuleUnitTests
                 ## 9. Traceability Matrix
                 | Claim | Case | Tests | State |
                 | --- | --- | --- | --- |
-                | B-001 | {{cell}} | `AlphaTest` | Partial |
+                | B-001 | {{cell}} | `AlphaTest` | {{status}} |
                 """),
             [Path.Combine("repo", "src", "sample", ".spec", "sample.feature")] = new("""
                 Feature: Sample

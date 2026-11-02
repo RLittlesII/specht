@@ -12,7 +12,7 @@ using Specht.Tool;
 
 namespace Specht.Acceptance.Matrix;
 
-/// <summary>Exercises the shipped matrix rules over an invented repository (0001-F12 B-001 to B-010, B-018 to B-020).</summary>
+/// <summary>Exercises the shipped matrix rules over an invented repository (0001-F12 B-001 to B-010, B-018 to B-020, B-022 to B-025).</summary>
 [Binding]
 [Scope(Feature = "Matrix resolution")]
 public sealed class MatrixSteps
@@ -232,6 +232,35 @@ public sealed class MatrixSteps
     [Given("a scenario titled {string} tagged @{word}")]
     public void GivenTitledScenario(string title, string claim) => _scenarios += $"@{claim}\nScenario: {title}\n  Given a thing\n";
 
+    [Given("a scenario titled {string} tagged with the row's claim")]
+    public void GivenClaimTaggedScenario(string title) => GivenTitledScenario(title, _claimId);
+
+    [Given("^a scenario titled \"([^\"]*)\" whose only @(\\S+) tag is on the (.+)$")]
+    public void GivenInheritedTag(string title, string claim, string where)
+    {
+        _scenarios += where switch
+        {
+            "companion's Feature" => $"Scenario: {title}\n  Given a thing\n",
+            "Rule the scenario sits under" => $"@{claim}\nRule: A rule\nScenario: {title}\n  Given a thing\n",
+            "Examples of the outline the scenario is" => $"Scenario Outline: {title}\n  Given <thing>\n@{claim}\nExamples:\n  | thing |\n  | one |\n",
+            _ => throw new ArgumentOutOfRangeException(nameof(where), where, "No such place for a claim tag."),
+        };
+        _featureTags = where == "companion's Feature" ? $"@{claim}\n" : _featureTags;
+    }
+
+    [Given("a matrix row whose Status is {string} and whose Scenario cell is {string}")]
+    public void GivenStatusAndScenarioCell(string status, string cell)
+    {
+        _status = status;
+        _scenario = cell;
+    }
+
+    [Given("the manifest reads claim tags ignoring letter case")]
+    public void GivenTagIgnoreCase() => Claim["tagIgnoreCase"] = true;
+
+    [Given("the manifest does not mention the claim tag's case")]
+    public void GivenTagCaseUnmentioned() => Claim.Remove("tagIgnoreCase");
+
     [Given("the specification's matrix has a covered row no scenario carries and a status that is no known marker")]
     public void GivenUnresolvedOriginalRow()
     {
@@ -270,7 +299,7 @@ public sealed class MatrixSteps
             _ => section,
         }).ToArray();
         var path = Tree.WriteFeature("0001", "F1", sections: sections);
-        Tree.WriteFeatureFile(path, $"Feature: Sample\n{_tags}Scenario: A scenario\n  Given a thing\n{_scenarios}");
+        Tree.WriteFeatureFile(path, $"{_featureTags}Feature: Sample\n{_tags}Scenario: A scenario\n  Given a thing\n{_scenarios}");
         Tree.WriteRaw(SpechtTree.ManifestPath, Manifest.ToJsonString());
         _row = Array.FindIndex(File.ReadAllLines(path), line => line.StartsWith($"| {_claimId} | {_scenario} |", StringComparison.Ordinal)) + 1;
         _report = EngineServices.Runner().Run(Tree.Root);
@@ -362,6 +391,7 @@ public sealed class MatrixSteps
     private SpechtTree Tree => _tree ?? throw new InvalidOperationException("No tree was prepared.");
     private JsonObject Manifest => _manifest ?? throw new InvalidOperationException("No manifest was read.");
     private JsonObject Rules => Manifest["rules"] as JsonObject ?? (JsonObject)(Manifest["rules"] = new JsonObject());
+    private JsonObject Claim => Manifest["claim"] as JsonObject ?? (JsonObject)(Manifest["claim"] = new JsonObject());
 
     private SpechtViolation UnresolvedRow()
     {
@@ -389,6 +419,7 @@ public sealed class MatrixSteps
     private string _tags = string.Empty;
     private string _scenario = "A scenario";
     private string _scenarios = string.Empty;
+    private string _featureTags = string.Empty;
     private string _reviewer = "spec-reviewer";
     private string _signOff = "approved";
     private string _headers = "Section | Status | Reviewer | Note";
