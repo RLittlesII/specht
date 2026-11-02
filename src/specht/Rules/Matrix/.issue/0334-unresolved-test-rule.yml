@@ -2,7 +2,7 @@ id: "0334"
 type: task
 title: Report a test name no declared test file holds, SPEC032, in schema 0.3.0
 
-status: ready
+status: in-progress
 
 risk: 3
 
@@ -24,7 +24,7 @@ claims:
   - B-007
 
 created: "2026-11-01"
-updated: "2026-11-01"
+updated: "2026-11-02"
 closed: null
 
 summary: |
