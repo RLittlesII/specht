@@ -293,7 +293,7 @@ A repository's `.spec/schema/` is a copy of the consumer's from one day, and not
 
 ## 6. Concern Separation
 
-<!-- last written by: implementer, 2026-11-01 (item `0164`: the evaluator); implementer, 2026-10-14 -->
+<!-- last written by: implementer, 2026-11-01 (item `0164`: the evaluator) -->
 
 Item `0042` built the version set and the pin as an integer; item `0120` converts both to `major.minor.patch` (decision 0005). The schema source (`0043`, built 2026-10-14), the frozen-version proof (`0044`), `upgrade` (`0045`-`0048`), the pin and list commands (`0121` to `0123`, `0125`, built 2026-10-14) and the pin policy (`0124`) extend this table. Item `0176` adds the last five rows, on the upstream schema source the manifest records (decision 0008), built 2026-10-11.
 
@@ -598,7 +598,7 @@ The live-copy default remains the omission source through this refactor.
 Manifest decision 0012 supplies versioned omission defaults afterwards; neither
 a shipped manifest nor a version-lock digest changes here.
 
-<!-- last written by: implementer, 2026-11-01 (item `0164`: the evaluator); implementer, 2026-10-28 (item `0290`) -->
+<!-- last written by: implementer, 2026-11-01 (item `0164`: the evaluator) -->
 
 **A version number is three integers (item `0120`, decision 0005).** [`SemanticVersion`](../../specht/Versioning/SemanticVersion.cs) is a value of major, minor and patch. It compares by major, then minor, then patch, each as a number, so `0.10.0` follows `0.9.0`; two versions are equal when all three are; it writes itself as `major.minor.patch` in the invariant culture. `TryParse` accepts text that is exactly three parts separated by dots, each part a non-negative decimal integer, and nothing else. The engine declares the type itself. A versioning package would be a dependency outside the five `0001-F1` C-7 names, for one comparison and one parse; `System.Version` reads `0.1` and `0.1.0.0` as versions, which B-039 rejects.
 
@@ -637,7 +637,7 @@ removed direct-file `SpechtSchemas.Load` overload has no remaining caller.
 
 **The vocabulary decides the run (B-014).** Item `0042` built the filter in [`SpechtRunner.Run(string, SchemaVersions)`](../../specht/SpechtRunner.cs), which selects the pinned version a second time from the loaded structure. From item `0105` ([ADR-0008](../../../.spec/adr/0008-evaluate-takes-the-rule-set-and-the-model-carries-the-vocabulary.md); built 2026-10-09) the filter's home is `SpechtRunner.Evaluate(SpechtModel, IEnumerable<ISpechtRule>)`, and `Run` holds none. `Evaluate` reads the vocabulary from `model.Schemas.Version.RuleIds`, evaluates each rule it is given that reports at least one id in it, drops any violation whose rule id is outside it, and counts as evaluated only the vocabulary's ids among the evaluated rules' `ReportedIds`. The rule is the same and so is every verdict; it now holds for any caller of `Evaluate`, not only for `Run`. `Run(string, SchemaVersions)` loads the model and passes the discovered rules; `Run(string)` is `Run(string, SchemaVersions.Embedded)`, so the host's `Func<string, SpechtReport>` registration in `Program.cs` is unchanged. From item `0164` (ADR-0010 stage 4) the filter's home is the instance [`SpechtEvaluator.Evaluate(SpechtModel)`](../../specht/Evaluation/SpechtEvaluator.cs), which takes the rule set by constructor: it runs and counts only the rules whose one `Id` is in `model.Schemas.Version.RuleIds` and whose level is not off, and stamps each finding with that id, so no violation filter is left; `Run(string, SchemaSourceSelection?)` is `evaluator.Evaluate(loader.Load(root, selection))`. The signatures are in `0001-F1` § 7.
 
-**The report names the version.** [`SpechtReport`](../../specht/SpechtReport.cs) carries `SchemaVersion`, a `SemanticVersion`, as its first positional member, and [`SpechtReportDocument.From`](../../specht/Report/SpechtReportDocument.cs) writes its `major.minor.patch` text with the source carried by the report (`0001-F3` B-005, § 7 there). Item `0092` adds `SchemaSource`: `embedded` without a recorded source and `upstream` with one. Explicit source selection remains item `0043`'s.
+**The report names the version.** [`SpechtReport`](../../specht/Evaluation/SpechtReport.cs) carries `SchemaVersion`, a `SemanticVersion`, as its first positional member, and [`SpechtReportDocument.From`](../../specht/Report/SpechtReportDocument.cs) writes its `major.minor.patch` text with the source carried by the report (`0001-F3` B-005, § 7 there). Item `0092` adds `SchemaSource`: `embedded` without a recorded source and `upstream` with one. Explicit source selection remains item `0043`'s.
 
 **Version `0.1.0`'s epic schema (B-022, B-023).** Already in the shipping copy (decision 0003, item `0051`): optional `title` and `description` with `minLength: 1`. `0042` only makes the check read it from the embedded set, so an empty value is a `SPEC004` through the existing frontmatter rule.
 

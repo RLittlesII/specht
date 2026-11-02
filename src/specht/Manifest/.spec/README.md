@@ -198,7 +198,7 @@ Half of the model's contract is not in the schema files: which section holds the
 
 ## 6. Concern Separation
 
-<!-- last written by: implementer, 2026-11-01 (item `0164`: the evaluator); implementer, 2026-11-01 (item `0160`); implementer, 2026-10-16 (own off-level selection) -->
+<!-- last written by: implementer, 2026-11-01 (item `0164`: the evaluator) -->
 
 Item `0011` builds the loader; the families of keys (`0014`-`0019`) extend this table.
 
@@ -360,7 +360,7 @@ The live `specht.default-manifest.json` resource remains tree-generator input.
 D1 supplies the instance/resource prerequisite; `0016` still owns schema
 `0.2.0`'s keys/forms. No accepted ADR is amended.
 
-<!-- last written by: implementer, 2026-11-01 (item `0164`: the evaluator); implementer, 2026-11-01 (item `0160`); implementer, 2026-10-14 (item `0219`) -->
+<!-- last written by: implementer, 2026-11-01 (item `0164`: the evaluator) -->
 
 The literals each claim moves are in the baseline engine at repository commit `e7dba24` (`0001-F1` A-2); the claims here own the agreement.
 
@@ -657,7 +657,7 @@ The five status markers are entries in the `0.2.0` shipped manifest's `markers`,
 
 ### A rule whose own level is off
 
-<!-- last written by: implementer, 2026-11-01 (item `0164`); implementer, 2026-10-16 -->
+<!-- last written by: implementer, 2026-11-01 (item `0164`) -->
 
 The additive `DefaultLevel` member of [`ISpechtRule`](../../Rules/ISpechtRule.cs) supplies the selection default when the manifest names no override. Existing rule families remain enabled by default and keep the severity of each violation they emit. The existing `SpechtRuleLevel` represents off; `SpechtSeverity` still represents only reported warnings and errors.
 

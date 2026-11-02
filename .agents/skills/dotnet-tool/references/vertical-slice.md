@@ -34,13 +34,14 @@ for what more than one Feature reads:
 
 ```
 src/specht/
-  SpechtRunner.cs               the runner, its report and the root-not-found exception -
-  SpechtReport.cs               the only .cs at the project root, namespace `Specht`
-  SpechtRootNotFoundException.cs
+  SpechtRunner.cs               the runner and the root-not-found exception -
+  SpechtRootNotFoundException.cs the only .cs at the project root, namespace `Specht`
   .spec/                        the engine Feature's specification (0001-F1)
   Model/                        shared - what every rule reads: the spec model and its loader, the Markdig
                                 document, the frontmatter reader, the schema loader, the root-relative path
-                                mapping, the violation and its severity
+                                mapping, the severity
+  Evaluation/                   shared - `SpechtEvaluator`, `SpechtViolationOrder`, `SpechtReport`,
+                                `SpechtViolation`, `SpechtReportLayout` (ADR-0010 stage 4). No .spec/ here.
   Discovery/                    Feature 0001-F6 - finding specifications, layouts and locations
   Manifest/                     Feature 0001-F5 - the manifest, the structure it declares, its exceptions
   Report/                       Feature 0001-F3 - the report document
@@ -48,7 +49,7 @@ src/specht/
                                 the schema versions. No .spec/ here.
   Composition/                  shared - `AddSpechtEngine()`, the engine's one registration extension
                                 (ADR-0001 stage D). No .spec/ here.
-  Rules/                        shared - `ISpechtRule`, the rules, the feature-file reader
+  Rules/                        shared - `ISpechtRule`, `SpechtFinding`, the rules, the feature-file reader
     <Name>/.spec/               a rule Feature's specification
 ```
 
@@ -105,10 +106,10 @@ Tests are **not** co-located here: they live in `test/tests` and
   them.** A `Features/`-root type with one consumer belongs in that consumer.
 - **An engine file goes in a folder, never at the project root.** A file one
   Feature owns goes in that Feature's folder. A type more than one Feature
-  reads goes in a named folder — `Model/`, `Versioning/`, `Rules/`,
-  `Composition/`. The root of
-  `src/specht` holds the runner, its report and the root-not-found exception,
-  and nothing joins them; ADR-0010 moves all three into folders.
+  reads goes in a named folder — `Model/`, `Evaluation/`, `Versioning/`,
+  `Rules/`, `Composition/`. The root of
+  `src/specht` holds the runner and the root-not-found exception, and nothing
+  joins them; ADR-0010 moves both into folders.
 - **Namespaces follow folders.** `Model/` is `Specht.Model`; the root is
   `Specht`. A file that moves folder changes namespace with it.
 - **A folder depends downward only.** A new `using` of an engine namespace
