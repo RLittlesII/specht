@@ -118,6 +118,47 @@ decisions:
     carries `0001-F7` claims that 0041 does not list. Reopening 0056
     would erase what it delivered and when (0041's decision on 0042).
     Value omitted, inheriting 0056's, as its other children do.
+  - |
+    2026-11-01, implementer: the pin moved with the working build's own
+    commands, `specht schema pin 0.3.0` then `specht upgrade`, which
+    rewrote the three frontmatter schemas and the feature template to
+    0.3.0's bytes. `upgrade` added no manifest key: `markers` was
+    present, and B-016 adds only missing top-level keys, so
+    `markers.done` was added by hand to match the newest embedded
+    manifest (`0001-F4` B-004). `SPEC060` left `rules`, which is now
+    `{}`; no build, hook or CI filter drops `SPEC060` lines (C-6).
+  - |
+    2026-11-01, implementer: `./build.sh Specht` with the pin moved
+    reports 4 errors, 0 warnings, 21 rules, 54 Features, every one
+    `SPEC060` and none other, so 0.3.0's epic loosening changed no
+    verdict here: `.github/mirror/.spec/README.md(318)` [B-033],
+    `(349)` [B-064], `(350)` [B-065], and
+    `src/analyzers/Reconciliation/.spec/README.md(477)` [B-024]. Not
+    cleared: each is a § 9 cell of a done Feature, test-writer's to fill
+    or spec-author's to change. Open, for the owner.
+  - |
+    2026-11-01, implementer: the move turns 30 tests red that are green
+    at 0.2.1, outside the four rows the summary names. The fixtures copy
+    this repository's live `.specht/` (`test/tests/Shared/SpechtTree.cs`
+    keeps its `schemaVersion` and schemas), so they follow the pin. Per
+    target framework: the golden-baseline tests in
+    `SpechtRunnerBaselineIntegrationTests` (verdicts, and the `SPEC060`
+    rows for `epics/` and `src/`), `SpechtRunnerDeterminismIntegrationTests`,
+    `SpechtManifestBaselineIntegrationTests` (no manifest written) and
+    `SpechtRunnerRulesIntegrationTests.AnApprovedSpecificationWithAMissingTest_WhenChecked_ShouldReportSpec060`;
+    and the scenarios "A consumer does not inherit this repository's
+    missing-test warning", "Markers are read from the manifest", "An
+    approval violation says what must change first" and "Nothing about
+    the machine reaches the verdict", on the approved axis or the
+    golden report. Five more scenarios ("This repository checks itself
+    with the tool", "The self-check installs the working checkout",
+    "Three call sites get one verdict", "A broken working checker fails
+    its own gate", "Working edits replace an earlier package at the same
+    version") fail at
+    `test/acceptance/Check/CheckSteps.CallSites.cs:23`, which requires
+    this repository's `rules` to be non-empty. Not cleared: test-writer's
+    to fix; no rule was put back in `rules` to satisfy it (C-6). Open,
+    for the owner.
 
 out_of_scope:
   - "Cutting schema 0.3.0, its vocabulary, `markers.done` and the live `.specht/` copy — 0321 (`0001-F7`)."

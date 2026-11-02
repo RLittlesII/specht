@@ -52,3 +52,13 @@ while they are live. Cost of rejecting: two claims change status later.
 ## Reversal
 
 None.
+
+## Addendum, 2026-11-01: B-024
+
+B-024, amended on 2026-10-16 to pins below `0.3.0` (`0001-F7` decision 0015),
+describes an interim state too. Item `0339` moves this repository's pin to
+`0.3.0`, so its Given no longer holds here, for the reason above: it describes
+this repository's history, not a tree. B-024 is marked `Superseded` by B-026
+and B-027, and its `@B-024` scenario is removed in that change. It had no
+running test. Spec-author's reading, recorded in item `0339`'s decisions. The
+call above is unedited.

@@ -207,6 +207,7 @@ public sealed partial class ManifestSteps
         Write("F1", SpechtTree.SectionsWith(DefaultTitles["matrix"], Matrix(title, "Scenario", "It does the thing")));
 
     [Given("the root holds an approved specification with a {string} cell in its traceability table")]
+    [Given("the root holds a specification that is approved and done with a {string} cell in its traceability table")]
     public void GivenTheRootHoldsAnApprovedSpecificationWithACellInItsTraceabilityTable(string cell) =>
         _specifications.Add(
             Relative(
@@ -307,6 +308,7 @@ public sealed partial class ManifestSteps
     public void GivenTheManifestSetsNoLevelForTheApprovedWithMissingCoverageRule() => Manifest.Remove("rules");
 
     [Given("the root holds an approved specification with a missing test")]
+    [Given("the root holds a specification that is approved and done with a missing test")]
     public void GivenTheRootHoldsAnApprovedSpecificationWithAMissingTest() =>
         _specifications.Add(Relative(Tree.WriteFeature(
             "0001",

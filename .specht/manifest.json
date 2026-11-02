@@ -1,5 +1,5 @@
 {
-  "schemaVersion": "0.2.1",
+  "schemaVersion": "0.3.0",
   "$comment": "Not a JSON Schema. The ordered section manifest Specht rule SPEC010 reads, kept as data so the section contract - the twelve numbered sections plus Tasks and Scoring - lives in one place rather than as a string array in C#.",
   "layouts": [
     {
@@ -88,15 +88,14 @@
     "draft": "🟡",
     "blocked": "🔴",
     "approved": "approved",
+    "done": "done",
     "covered": "Covered",
     "partial": "Partial",
     "waived": "Waived",
     "withdrawn": "Withdrawn",
     "superseded": "Superseded"
   },
-  "rules": {
-    "SPEC060": "warning"
-  },
+  "rules": {},
   "claim": {
     "tag": "@{claim}",
     "tagIgnoreCase": false

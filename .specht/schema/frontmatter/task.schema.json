@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://github.com/rlittlesii/specht/schema/v0.2.1/frontmatter/task.schema.json",
+  "$id": "https://github.com/rlittlesii/specht/schema/v0.3.0/frontmatter/task.schema.json",
   "title": "Task, test or spike frontmatter",
   "description": "A child item of a Feature. Numbered per EPIC, not per Feature.",
   "type": "object",
@@ -22,7 +22,7 @@
     },
     "parent": {
       "type": "string",
-      "pattern": "^[0-9]{4}-F[0-9]+[a-z]?$"
+      "pattern": "^([0-9]{4}-)?F[0-9]+[a-z]?$"
     },
     "epic": {
       "type": "string",
