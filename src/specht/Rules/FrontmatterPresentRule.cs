@@ -5,7 +5,7 @@ namespace Specht.Rules;
 
 /// <summary>
 /// SPEC001 - every specification, item and epic file opens with YAML frontmatter. It evaluates no schema; the schema
-/// names only what the violation expects.
+/// names only what the finding expects.
 /// </summary>
 /// <param name="check">The frontmatter schema evaluation, for the kind's schema file and required keys.</param>
 /// <implements epic="0001" feature="F5" claim="B-008" />
@@ -15,33 +15,30 @@ public sealed class FrontmatterPresentRule(FrontmatterSchemaCheck check) : ISpec
     public string Id => "SPEC001";
 
     /// <inheritdoc />
-    public IReadOnlyList<string> ReportedIds => ["SPEC001"];
-
-    /// <inheritdoc />
     /// <implements epic="0001" feature="F5" claim="B-008" />
-    public IEnumerable<SpechtViolation> Evaluate(SpechtModel model)
+    public IEnumerable<SpechtFinding> Evaluate(SpechtModel model)
     {
         foreach (var feature in model.Features)
         {
-            foreach (var violation in Evaluate(feature.RelativePath, feature.Document.Frontmatter, model.Schemas, FrontmatterKind.Feature))
+            foreach (var finding in Evaluate(feature.RelativePath, feature.Document.Frontmatter, model.Schemas, FrontmatterKind.Feature))
             {
-                yield return violation;
+                yield return finding;
             }
         }
 
         foreach (var item in model.Items)
         {
-            foreach (var violation in Evaluate(item.RelativePath, item.Frontmatter, model.Schemas, FrontmatterKind.Task))
+            foreach (var finding in Evaluate(item.RelativePath, item.Frontmatter, model.Schemas, FrontmatterKind.Task))
             {
-                yield return violation;
+                yield return finding;
             }
         }
 
         foreach (var epic in model.Epics)
         {
-            foreach (var violation in Evaluate(epic.RelativePath, epic.Frontmatter, model.Schemas, FrontmatterKind.Epic))
+            foreach (var finding in Evaluate(epic.RelativePath, epic.Frontmatter, model.Schemas, FrontmatterKind.Epic))
             {
-                yield return violation;
+                yield return finding;
             }
         }
     }
@@ -51,17 +48,15 @@ public sealed class FrontmatterPresentRule(FrontmatterSchemaCheck check) : ISpec
     /// <param name="frontmatter">The document's frontmatter.</param>
     /// <param name="schemas">The selected schemas.</param>
     /// <param name="kind">The document's kind.</param>
-    /// <returns>The one violation when the document has no frontmatter, otherwise none.</returns>
+    /// <returns>The one finding when the document has no frontmatter, otherwise none.</returns>
     /// <implements epic="0001" feature="F5" claim="B-008" />
-    public IEnumerable<SpechtViolation> Evaluate(string path, Frontmatter frontmatter, SpechtSchemas schemas, FrontmatterKind kind)
+    public IEnumerable<SpechtFinding> Evaluate(string path, Frontmatter frontmatter, SpechtSchemas schemas, FrontmatterKind kind)
     {
         var schemaFile = check.SchemaFile(schemas, kind);
 
         if (frontmatter.Node is null)
         {
-            yield return new SpechtViolation(
-                "SPEC001",
-                SpechtSeverity.Error,
+            yield return new SpechtFinding(
                 path,
                 1,
                 null,

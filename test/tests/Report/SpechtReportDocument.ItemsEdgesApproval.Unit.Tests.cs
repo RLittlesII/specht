@@ -1,5 +1,6 @@
 using System.Text.Json.Nodes;
 using AwesomeAssertions;
+using Specht.Evaluation;
 using Specht.Model;
 using Specht.Report;
 using Specht.Rules;
@@ -16,7 +17,7 @@ public sealed class SpechtReportDocumentItemsEdgesApprovalUnitTests
         string because, SpechtModel model, ISpechtRule rule, string ruleId, string messagePart, string? identifier, JsonObject expected)
     {
         // Given
-        var report = SpechtRunner.Evaluate(model, [rule]);
+        var report = new SpechtEvaluator([rule], new SpechtViolationOrder()).Evaluate(model);
 
         // When
         var document = SpechtReportDocument.From(report);
@@ -28,6 +29,6 @@ public sealed class SpechtReportDocumentItemsEdgesApprovalUnitTests
         violations.Should().NotBeEmpty(because).And.AllSatisfy(violation =>
             JsonNode.DeepEquals(violation.Expected, expected).Should().BeTrue(
                 "{0}: expected {1}, but got {2}", because, expected.ToJsonString(), violation.Expected.ToJsonString()));
-        document.ToJson().Should().Be(SpechtReportDocument.From(SpechtRunner.Evaluate(model, [rule])).ToJson(), because);
+        document.ToJson().Should().Be(SpechtReportDocument.From(new SpechtEvaluator([rule], new SpechtViolationOrder()).Evaluate(model)).ToJson(), because);
     }
 }

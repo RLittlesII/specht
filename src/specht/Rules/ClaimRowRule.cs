@@ -17,11 +17,8 @@ public sealed class ClaimRowRule : ISpechtRule
     public string Id => "SPEC031";
 
     /// <inheritdoc />
-    public IReadOnlyList<string> ReportedIds => [Id];
-
-    /// <inheritdoc />
     /// <implements epic="0001" feature="F1" claim="B-001" />
-    public IEnumerable<SpechtViolation> Evaluate(SpechtModel model)
+    public IEnumerable<SpechtFinding> Evaluate(SpechtModel model)
     {
         model.EnsureClaimGrammar();
 
@@ -35,15 +32,15 @@ public sealed class ClaimRowRule : ISpechtRule
                 continue;
             }
 
-            foreach (var violation in CheckMatrix(feature, claims.Ids, matrix))
+            foreach (var finding in CheckMatrix(feature, claims.Ids, matrix))
             {
-                yield return violation;
+                yield return finding;
             }
         }
     }
 
     /// <implements epic="0001" feature="F1" claim="B-001" />
-    private static IEnumerable<SpechtViolation> CheckMatrix(
+    private static IEnumerable<SpechtFinding> CheckMatrix(
         FeatureSpec feature,
         IReadOnlyDictionary<string, int> claims,
         SpechtSection matrix)
@@ -72,9 +69,7 @@ public sealed class ClaimRowRule : ISpechtRule
         {
             if (!rows.ContainsKey(id))
             {
-                yield return new SpechtViolation(
-                    "SPEC031",
-                    SpechtSeverity.Error,
+                yield return new SpechtFinding(
                     feature.RelativePath,
                     line,
                     id,
@@ -86,9 +81,7 @@ public sealed class ClaimRowRule : ISpechtRule
             }
             else if (rows[id].Count > 1)
             {
-                yield return new SpechtViolation(
-                    "SPEC031",
-                    SpechtSeverity.Error,
+                yield return new SpechtFinding(
                     feature.RelativePath,
                     rows[id][1],
                     id,
@@ -101,9 +94,7 @@ public sealed class ClaimRowRule : ISpechtRule
 
         foreach (var (id, lines) in rows.Where(row => !claims.ContainsKey(row.Key)))
         {
-            yield return new SpechtViolation(
-                "SPEC031",
-                SpechtSeverity.Error,
+            yield return new SpechtFinding(
                 feature.RelativePath,
                 lines[0],
                 id,

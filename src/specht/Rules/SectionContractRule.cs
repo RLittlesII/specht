@@ -14,11 +14,8 @@ public sealed class SectionContractRule : ISpechtRule
     public string Id => "SPEC010";
 
     /// <inheritdoc />
-    public IReadOnlyList<string> ReportedIds => [Id];
-
-    /// <inheritdoc />
     /// <implements epic="0001" feature="F1" claim="B-001" />
-    public IEnumerable<SpechtViolation> Evaluate(SpechtModel model)
+    public IEnumerable<SpechtFinding> Evaluate(SpechtModel model)
     {
         var expected = model.Schemas.Structure.Sections;
 
@@ -32,9 +29,7 @@ public sealed class SectionContractRule : ISpechtRule
 
                 if (count == 0)
                 {
-                    yield return new SpechtViolation(
-                        Id,
-                        SpechtSeverity.Error,
+                    yield return new SpechtFinding(
                         feature.RelativePath,
                         0,
                         title,
@@ -43,9 +38,7 @@ public sealed class SectionContractRule : ISpechtRule
                 }
                 else if (count > 1)
                 {
-                    yield return new SpechtViolation(
-                        Id,
-                        SpechtSeverity.Error,
+                    yield return new SpechtFinding(
                         feature.RelativePath,
                         0,
                         title,
@@ -63,9 +56,7 @@ public sealed class SectionContractRule : ISpechtRule
                 {
                     var section = feature.Document.Section(ordered[index]);
 
-                    yield return new SpechtViolation(
-                        Id,
-                        SpechtSeverity.Error,
+                    yield return new SpechtFinding(
                         feature.RelativePath,
                         section?.Line ?? 0,
                         ordered[index],

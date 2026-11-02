@@ -1,4 +1,5 @@
 using System.IO.Abstractions;
+using Specht.Evaluation;
 using Specht.Manifest;
 using Specht.Model;
 using Specht.Report;
@@ -7,71 +8,49 @@ using Specht.Rules;
 namespace Specht;
 
 /// <summary>
-/// Runs the rules it was given against the resolved specification tree.
+/// Loads the resolved specification tree and evaluates it with the engine's evaluator.
 /// </summary>
 /// <param name="loader">The model loader.</param>
-/// <param name="rules">The rule set, in the order it is evaluated.</param>
+/// <param name="evaluator">The evaluator over the registered rule set.</param>
+/// <param name="rules">The registered rule set, from which the frontmatter rules are taken for one document.</param>
+/// <param name="order">The violation order a document's evaluation sorts with.</param>
 /// <param name="fileSystem">The file system a report is written through.</param>
 /// <param name="schemas">The shared root and schema selection stage.</param>
 /// <param name="check">The frontmatter schema evaluation, for the manifest's kind names.</param>
 /// <implements epic="0001" feature="F1" claim="B-001" />
 public sealed class SpechtRunner(
     SpechtModelLoader loader,
+    SpechtEvaluator evaluator,
     IEnumerable<ISpechtRule> rules,
+    SpechtViolationOrder order,
     IFileSystem fileSystem,
     SpechtSchemasLoader schemas,
     FrontmatterSchemaCheck check)
 {
-    /// <summary>
-    /// Evaluates <paramref name="rules"/>, in the order given, over <paramref name="model"/> under the vocabulary of the
-    /// version its schemas keep (<c>0001-F1</c> B-004; <c>0001-F7</c> B-014; ADR-0008), less the rule ids its manifest sets
-    /// <c>off</c> or whose own level is off and not raised, each violation at the severity its manifest sets for its rule id
-    /// (<c>0001-F5</c> B-010, B-011, B-061, B-062; ADR-0004).
-    /// </summary>
-    /// <param name="model">The resolved tree.</param>
-    /// <param name="rules">The rule set.</param>
-    /// <returns>The report.</returns>
-    /// <implements epic="0001" feature="F1" claim="B-001" />
-    public static SpechtReport Evaluate(SpechtModel model, IEnumerable<ISpechtRule> rules) =>
-        Evaluate(model, rules, rule => rule.Evaluate(model));
-
-    /// <summary>
-    /// Orders <paramref name="violations"/> as the report carries them (<c>0001-F1</c> B-004, C-9): severity
-    /// descending, then file, line and rule id, file and rule id compared ordinally, and violations equal on all
-    /// four keys kept in the order they were given.
-    /// </summary>
-    /// <param name="violations">The violations to order.</param>
-    /// <returns>The violations, ordered.</returns>
-    /// <implements epic="0001" feature="F1" claim="B-001" />
-    public static IReadOnlyList<SpechtViolation> Order(IEnumerable<SpechtViolation> violations) =>
-        violations
-            .OrderByDescending(static violation => violation.Severity)
-            .ThenBy(static violation => violation.File, StringComparer.Ordinal)
-            .ThenBy(static violation => violation.Line)
-            .ThenBy(static violation => violation.RuleId, StringComparer.Ordinal)
-            .ToList();
-
     /// <summary>Loads and evaluates the tree using the catalog supplied at composition.</summary>
     /// <implements epic="0001" feature="F1" claim="B-001" />
     public SpechtReport Run(string root) => Run(root, null);
 
     /// <summary>Loads and evaluates the tree with the frontmatter source selected for this invocation.</summary>
     /// <implements epic="0001" feature="F1" claim="B-001" />
-    public SpechtReport Run(string root, SchemaSourceSelection? selection) => Evaluate(loader.Load(root, selection), rules);
+    public SpechtReport Run(string root, SchemaSourceSelection? selection) => evaluator.Evaluate(loader.Load(root, selection));
 
     /// <summary>Parses a frontmatter kind before the caller reads its document or root.</summary>
     /// <implements epic="0001" feature="F1" claim="B-001" />
     public FrontmatterKind ParseFrontmatterKind(string kind) => check.ParseKind(kind);
 
-    /// <summary>Checks only the supplied document's frontmatter against the root's selected schemas.</summary>
+    /// <summary>
+    /// Checks only the supplied document's frontmatter against the root's selected schemas: an evaluator over the four
+    /// frontmatter rules selects, stamps, counts and orders them as the tree's does, each rule's findings taken from the
+    /// document.
+    /// </summary>
     /// <implements epic="0001" feature="F1" claim="B-001" />
     public SpechtReport CheckFrontmatter(string root, FrontmatterKind kind, string path, string text)
     {
         var loaded = schemas.Load(root);
-        var model = new SpechtModel(root, [], [], [], loaded);
         var frontmatter = FrontmatterReader.Parse(text);
 
-        return Evaluate(model, FrontmatterRules, rule => rule switch
+        return new SpechtEvaluator(FrontmatterRules, order).Evaluate(new SpechtModel(root, [], [], [], loaded), rule => rule switch
         {
             FrontmatterPresentRule present => present.Evaluate(path, frontmatter, loaded, kind),
             FeatureFrontmatterRule feature when kind == FrontmatterKind.Feature => feature.Evaluate(path, frontmatter, loaded),
@@ -97,47 +76,4 @@ public sealed class SpechtRunner(
             .Select(static rule => rule is FaultIsolatedRule isolated ? isolated.Inner : rule)
             .Where(static rule => rule is FrontmatterPresentRule or FeatureFrontmatterRule or ItemFrontmatterRule or EpicFrontmatterRule),
     ];
-
-    /// <implements epic="0001" feature="F1" claim="B-001" />
-    private static SpechtReport Evaluate(
-        SpechtModel model, IEnumerable<ISpechtRule> rules, Func<ISpechtRule, IEnumerable<SpechtViolation>> evaluate)
-    {
-        var version = model.Schemas.Version;
-        var settings = model.Schemas.Structure.Rules;
-        var evaluated = rules.Where(rule => rule.ReportedIds.Any(id => Enabled(id, rule, version.RuleIds, settings))).ToList();
-        var violations = new List<SpechtViolation>();
-
-        foreach (var rule in evaluated)
-        {
-            violations.AddRange(
-                evaluate(rule)
-                    .Where(violation => violation.RuleFailure is not null || Enabled(violation.RuleId, rule, version.RuleIds, settings))
-                    .Select(violation => Graded(violation, settings)));
-        }
-
-        return new SpechtReport(
-            version.Number,
-            model.Features.Count,
-            [
-                .. model.Schemas.Structure.Discovery.Layouts.Select(layout =>
-                    new SpechtReportLayout(layout.Name, model.Features.Count(feature => feature.Location.Layout == layout))),
-            ],
-            model.Items.Count,
-            evaluated.Sum(rule => rule.ReportedIds.Count(id => Enabled(id, rule, version.RuleIds, settings))),
-            Order(violations))
-        { SchemaSource = model.Schemas.Source };
-    }
-
-    /// <implements epic="0001" feature="F1" claim="B-001" />
-    private static bool Enabled(string id, ISpechtRule rule, IReadOnlySet<string> vocabulary, SpechtRuleSettings settings) =>
-        vocabulary.Contains(id) && (settings.TryGetValue(id, out var level) ? level : rule.DefaultLevel) != SpechtRuleLevel.Off;
-
-    /// <implements epic="0001" feature="F1" claim="B-001" />
-    private static SpechtViolation Graded(SpechtViolation violation, SpechtRuleSettings settings) =>
-        violation.RuleFailure is null && settings.TryGetValue(violation.RuleId, out var level) ? level switch
-        {
-            SpechtRuleLevel.Warning => violation with { Severity = SpechtSeverity.Warning },
-            SpechtRuleLevel.Error => violation with { Severity = SpechtSeverity.Error },
-            _ => violation,
-        } : violation;
 }

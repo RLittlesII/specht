@@ -12,14 +12,11 @@ public sealed class RetiredClaimRule(MatrixResolver resolver) : ISpechtRule
     public string Id => "SPEC035";
 
     /// <inheritdoc />
-    public IReadOnlyList<string> ReportedIds => [Id];
-
-    /// <inheritdoc />
     public SpechtRuleLevel DefaultLevel => SpechtRuleLevel.Off;
 
     /// <inheritdoc />
     /// <implements epic="0001" feature="F12" claim="B-001" />
-    public IEnumerable<SpechtViolation> Evaluate(SpechtModel model)
+    public IEnumerable<SpechtFinding> Evaluate(SpechtModel model)
     {
         var structure = model.Schemas.Structure;
         var markers = structure.Markers;
@@ -35,8 +32,8 @@ public sealed class RetiredClaimRule(MatrixResolver resolver) : ISpechtRule
 
                 if (claim.Tags.Count > 0 || claim.Rows.Any(row => !string.Equals(row.Status.Trim(), claim.Status, StringComparison.Ordinal)))
                 {
-                    yield return new SpechtViolation(
-                        Id, SpechtSeverity.Error, feature.RelativePath, claim.Claim.Line, claim.Claim.Id,
+                    yield return new SpechtFinding(
+                        feature.RelativePath, claim.Claim.Line, claim.Claim.Id,
                         $"retired claim must have no companion tag and its § 9 status must be '{claim.Status}'");
                 }
             }

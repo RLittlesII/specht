@@ -1,12 +1,14 @@
 namespace Specht.Tests.Engine;
 
-/// <summary>A family still selected through its secondary id reports a primary-id fault even when that id is off.</summary>
+/// <summary>
+/// The manifest levels that select a failing rule: its failure is stamped error under either (0001-F1 B-015). A rule set off
+/// is not selected, so it never fails.
+/// </summary>
 public sealed class FaultLevelData : TheoryData<string>
 {
     public FaultLevelData()
     {
         Add("error");
         Add("warning");
-        Add("off");
     }
 }

@@ -1,5 +1,6 @@
 using System.Text.Json.Nodes;
 using AwesomeAssertions;
+using Specht.Evaluation;
 using Specht.Model;
 using Specht.Report;
 using Specht.Rules;
@@ -16,7 +17,7 @@ public sealed class SpechtReportDocumentIdentityClaimsUnitTests
         string because, SpechtModel model, ISpechtRule rule, string ruleId, string identifier, JsonObject expected)
     {
         // Given
-        var report = SpechtRunner.Evaluate(model, [rule]);
+        var report = new SpechtEvaluator([rule], new SpechtViolationOrder()).Evaluate(model);
 
         // When
         var document = SpechtReportDocument.From(report);
@@ -35,6 +36,6 @@ public sealed class SpechtReportDocumentIdentityClaimsUnitTests
             }
         }
 
-        document.ToJson().Should().Be(SpechtReportDocument.From(SpechtRunner.Evaluate(model, [rule])).ToJson(), because);
+        document.ToJson().Should().Be(SpechtReportDocument.From(new SpechtEvaluator([rule], new SpechtViolationOrder()).Evaluate(model)).ToJson(), because);
     }
 }

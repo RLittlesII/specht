@@ -13,14 +13,11 @@ public sealed class WaiverRule(MatrixResolver resolver) : ISpechtRule
     public string Id => "SPEC034";
 
     /// <inheritdoc />
-    public IReadOnlyList<string> ReportedIds => [Id];
-
-    /// <inheritdoc />
     public SpechtRuleLevel DefaultLevel => SpechtRuleLevel.Off;
 
     /// <inheritdoc />
     /// <implements epic="0001" feature="F12" claim="B-001" />
-    public IEnumerable<SpechtViolation> Evaluate(SpechtModel model)
+    public IEnumerable<SpechtFinding> Evaluate(SpechtModel model)
     {
         var structure = model.Schemas.Structure;
         var markers = structure.Markers;
@@ -49,8 +46,8 @@ public sealed class WaiverRule(MatrixResolver resolver) : ISpechtRule
                     continue;
                 }
 
-                yield return new SpechtViolation(
-                    Id, SpechtSeverity.Error, feature.RelativePath, row.Line, row.Claim.Trim(),
+                yield return new SpechtFinding(
+                    feature.RelativePath, row.Line, row.Claim.Trim(),
                     "waiver must name a signed-off approver and date as '<approver>, <YYYY-MM-DD>'");
             }
         }

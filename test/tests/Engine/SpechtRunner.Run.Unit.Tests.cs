@@ -1,17 +1,21 @@
+using System.IO.Abstractions;
 using System.IO.Abstractions.TestingHelpers;
 using AwesomeAssertions;
-using Specht.Discovery;
+using Microsoft.Extensions.DependencyInjection;
+using Specht.Composition;
 using Specht.Manifest;
 using Specht.Model;
 using Specht.Rules;
 using Specht.Tests.Shared;
+using Specht.Tool;
 
 namespace Specht.Tests.Engine;
 
 /// <summary>
 /// The order of a run (<c>0001-F5</c> B-018; ADR-0005 (d)): the manifest is loaded and judged before any rule is
-/// evaluated, so a rejected manifest ends the run with the rejection and no rule has run. The runner is constructed by
-/// hand over a file system held in memory and a rule that records whether it was evaluated. Nothing touches the disk.
+/// evaluated, so a rejected manifest ends the run with the rejection and no rule has run. The runner is resolved from the
+/// engine's registrations over a file system held in memory, beside a rule that records whether it was evaluated, so the
+/// evaluator the runner calls is the one the engine composes. Nothing touches the disk.
 /// </summary>
 [Trait("Tier", "Unit")]
 public sealed class SpechtRunnerRunUnitTests
@@ -26,16 +30,9 @@ public sealed class SpechtRunnerRunUnitTests
                 [Path.Combine("repo", SpechtTree.ManifestPath)] = new("""{ "notAKeyTheEngineKnows": true }"""),
             });
         var rule = new RecordingRule();
-        var runner = new SpechtRunner(
-            new SpechtModelLoader(
-                fileSystem,
-                new FrontmatterReader(fileSystem),
-                new SpechtDiscovery(fileSystem),
-                EngineServices.Schemas(fileSystem), new FeatureTagParser()),
-            [rule],
-            fileSystem,
-            EngineServices.Schemas(fileSystem),
-            new FrontmatterSchemaCheck());
+        using var resolver = (TypeResolver)new TypeRegistrar(
+            new ServiceCollection().AddSingleton<IFileSystem>(fileSystem).AddSpechtEngine().AddSingleton<ISpechtRule>(rule)).Build();
+        var runner = (SpechtRunner)resolver.Resolve(typeof(SpechtRunner))!;
 
         // When
         var running = () => runner.Run(fileSystem.Path.GetFullPath("repo"));
@@ -51,9 +48,7 @@ public sealed class SpechtRunnerRunUnitTests
 
         public string Id => "SPEC010";
 
-        public IReadOnlyList<string> ReportedIds => ["SPEC010"];
-
-        public IEnumerable<SpechtViolation> Evaluate(SpechtModel model)
+        public IEnumerable<SpechtFinding> Evaluate(SpechtModel model)
         {
             Evaluated = true;
             return [];

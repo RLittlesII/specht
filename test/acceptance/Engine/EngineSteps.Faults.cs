@@ -4,6 +4,7 @@ using AwesomeAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using Reqnroll;
 using Specht.Composition;
+using Specht.Evaluation;
 using Specht.Manifest;
 using Specht.Model;
 using Specht.Report;
@@ -84,9 +85,12 @@ public sealed partial class EngineSteps
     [Then("neither of the two violations is reported")]
     public void ThenNeitherOfTheTwoViolationsIsReported()
     {
-        var partial = new ClaimIdRule().Evaluate(EngineServices.Loader().Load(Tree.Root)).Take(2).ToArray();
+        var partial = new ClaimIdRule().Evaluate(EngineServices.Loader().Load(Tree.Root)).Take(2)
+            .Select(static finding => (finding.File, finding.Line, finding.Identifier, finding.Message)).ToArray();
         partial.Should().HaveCount(2);
-        Report.Violations.Should().NotContain(violation => partial.Contains(violation));
+        Report.Violations.Where(static violation => violation.RuleId == "SPEC030")
+            .Select(static violation => (violation.File, violation.Line, violation.Identifier, violation.Message))
+            .Should().NotIntersectWith(partial);
     }
 
     [Then("only the rule's failure is reported under its id")]
@@ -103,9 +107,10 @@ public sealed partial class EngineSteps
     public void ThenTheFaultKeepsTheIdentityOfTheOriginalFailure()
     {
         var model = EngineServices.Loader().Load(Tree.Root);
-        var same = SpechtRunner.Evaluate(model, FaultRules()).Violations.Single(static violation => violation.RuleId == "SPEC030");
-        var different = SpechtRunner.Evaluate(model,
-            [new FaultIsolatedRule(new FailingRule(message: _faultText!))]).Violations.Single();
+        var same = new SpechtEvaluator(FaultRules(), new SpechtViolationOrder()).Evaluate(model).Violations
+            .Single(static violation => violation.RuleId == "SPEC030");
+        var different = new SpechtEvaluator([new FaultIsolatedRule(new FailingRule(message: _faultText!))], new SpechtViolationOrder())
+            .Evaluate(model).Violations.Single();
         Failure.Should().Be(same).And.NotBe(different);
         (Failure with { }).Should().Be(Failure);
     }

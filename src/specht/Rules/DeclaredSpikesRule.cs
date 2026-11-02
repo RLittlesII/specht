@@ -11,17 +11,14 @@ public sealed class DeclaredSpikesRule(DeclaredItemCheck check) : ISpechtRule
     public string Id => "SPEC041";
 
     /// <inheritdoc />
-    public IReadOnlyList<string> ReportedIds => [Id];
-
-    /// <inheritdoc />
     /// <implements epic="0001" feature="F1" claim="B-001" />
-    public IEnumerable<SpechtViolation> Evaluate(SpechtModel model)
+    public IEnumerable<SpechtFinding> Evaluate(SpechtModel model)
     {
         foreach (var feature in model.Features)
         {
-            foreach (var violation in check.Evaluate(feature, model.Items, "spikes", Id, "spike"))
+            foreach (var finding in check.Evaluate(feature, model.Items, "spikes", "spike"))
             {
-                yield return violation;
+                yield return finding;
             }
         }
     }
