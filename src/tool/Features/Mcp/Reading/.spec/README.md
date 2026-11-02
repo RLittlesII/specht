@@ -4,7 +4,7 @@ description: "Through the 0132-F3 host, an agent asks for the check's verdict on
 type: feature
 id: "F4"
 epic: "0132"
-spec_status: draft
+spec_status: approved
 status: ready
 priority: med
 value: 0
@@ -21,7 +21,7 @@ depends_on:
 blocks: []
 spikes: []
 created: "2026-10-31"
-updated: "2026-10-31"
+updated: "2026-11-01"
 github_issue: null
 synced_at: null
 ---
@@ -173,15 +173,24 @@ None.
 
 ## 12. Sign-off
 
-<!-- last written by: spec-author, 2026-10-31 -->
+<!-- last written by: spec-reviewer, 2026-11-01 (round 2; round 1 moved to Review history) -->
 
-| Section | Status | Reviewer      | Note                     |
-| ------- | ------ | ------------- | ------------------------ |
-| 1-5     | 🟡     | spec-reviewer | Agreement review pending |
+| Section   | Status | Reviewer      | Note                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| --------- | ------ | ------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1-5, 9-11 | 🟢     | spec-reviewer | Round 2 (2026-11-01) - approved, reviewing the uncommitted working tree on `a189f53d`. Both round-1 findings are closed: the B-010 Outline no longer asks for the tree's facts, and the B-015 scenario asks for the verdict before and after the Background's violation is fixed, so no claim epic `0132` § Status ships in milestone 0.5.0 (B-001 to B-005, B-010 to B-017) waits on `0132-F2`, `0001-F13` or `0001-F18`. § 9 has one row per claim and every tag resolves; the `@boundary` scenarios match § 5 rows 1 to 3; B-012's exit codes agree with `0001-F3` B-020, B-029, B-030, `0001-F10` B-013, B-014 and `0001-F2`; B-013's pins `0.1.0` and `0.2.1` both ship; A-2 records the `0001-F18` edge B-008 and B-009 wait on; OQ-1 to OQ-7 stay open on recorded defaults, which do not block agreement. §§ 6-8 are pending after agreement and are reviewed when written; § 9 `Missing` rows block items, not this agreement. |
+
+### Review history
+
+| Section   | Status | Reviewer      | Note                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| --------- | ------ | ------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1-5, 9-11 | 🟡     | spec-reviewer | Round 1 (2026-11-01) - draft, reviewing the uncommitted working tree on `a189f53d`. Two findings, both routed to `spec-author`, both binding a claim epic `0132` § Status ships in milestone 0.5.0 to the tree's facts (B-006, `0132-F2`), which it defers: the B-010 Outline's first Examples row asks for the tree's facts with a specification's path, and the B-015 scenario edits a claim and asks for the tree's facts twice. Rewrite each against an answer B-001 to B-005 names (the verdict before and after an edit for B-015), or keep the facts form in a scenario that B-006's milestone delivers. Otherwise sound: § 9 has one row per claim and every tag resolves; the `@boundary` scenarios match § 5 rows 1 to 3; B-012's exit codes agree with `0001-F3` B-020, B-029, B-030, `0001-F10` B-013, B-014 and `0001-F2`; B-013's pins `0.1.0` and `0.2.1` both ship; A-2 records the `0001-F18` edge B-008 and B-009 wait on; OQ-1 to OQ-7 stay open on recorded defaults, which do not block agreement. |
 
 ## Tasks
 
-None yet. Cut from § 3 after agreement, together with `0132-F3`'s (owner, 2026-10-30; epic `0132` § Features).
+- `0330`: the verdict and the rules every answer keeps (B-001, B-002, B-011, B-013, B-015 to B-017), delivered with `0132-F3`'s `0329`.
+- `0331`: a rule's text, the rule list and the manifest, arguments and failures (B-003 to B-005, B-010, B-012, B-014).
+
+B-006 to B-009 and B-018 are not cut: they wait on `0132-F2`, `0001-F13` and `0001-F18` (the owner, 2026-11-01).
 
 ## Scoring
 

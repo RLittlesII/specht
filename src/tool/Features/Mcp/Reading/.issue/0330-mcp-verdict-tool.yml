@@ -1,0 +1,56 @@
+id: "0330"
+type: task
+title: The verdict through MCP, and the rules every answer keeps
+
+status: ready
+
+value: 4
+risk: 3
+
+parent: "0132"
+children: []
+
+depends_on: ["0329"]
+spikes: []
+
+spec: src/tool/Features/Mcp/Reading/.spec/README.md
+
+claims:
+  - B-001
+  - B-002
+  - B-011
+  - B-013
+  - B-015
+  - B-016
+  - B-017
+
+created: "2026-11-01"
+updated: "2026-11-01"
+closed: null
+
+summary: |
+  As a coding agent I want the check's verdict for the whole tree through MCP, byte for byte what `specht --json` prints, so that I stop scraping the command's output.
+
+  The first tool, and the answer rules every later tool inherits: the pin, a fresh read at each call, no write, and only answers the command line gives. Tool names are working names (§ 11 OQ-7); the answers are tools only (§ 11 OQ-4).
+
+  Waits on 0329, the host. 0329 and 0330 deliver in one pull request, so no host item is done while the host serves nothing (epic `0132` § Features, candidate B).
+
+acceptance_criteria:
+  - "B-001 — the verdict is `specht --json`'s stdout"
+  - "B-002 — no argument names a specification or a path"
+  - "B-011 — violations are not an error"
+  - "B-013 — each answer under each of two pins"
+  - "B-015 — an edit between two calls is in the second answer"
+  - "B-016 — a call writes nothing"
+  - "B-017 — only tools B-001 to B-009 name"
+  - "§ 9 carries a row naming a test for each id above."
+
+decisions:
+  - |
+    2026-11-01, spec-author's cut for the owner's first-release ruling. B-012 and B-014 go to 0331 instead: their scenarios name the rule list and a rule's text, which 0331 registers, so their tests cannot pass here. Rejected: amending the agreed scenarios to the verdict alone.
+
+out_of_scope:
+  - "Rule text, the rule list, the manifest, arguments and failures — B-003 to B-005, B-010, B-012, B-014; 0331."
+  - "The tree's facts, claim coverage, the shipped schema versions and the schema and template printer — B-006 to B-009; later items, after `0132-F2`, `0001-F13` and `0001-F18`."
+  - "The answers-alone authoring proof — B-018; a later item."
+  - "Prompts and resources — § 5 row 9."

@@ -85,7 +85,26 @@ Refactors `0168`, `0207` and `0218` simplify the test composition; spike
 every moved literal, and the benchmark finding is recorded whichever way it
 went.
 
-## 0.5.0 - Pull-request surface
+## 0.5.0 - MCP first release
+
+**Better for:** an agent that asks the tool instead of parsing its output.
+
+`specht mcp` is a local host the client starts from one configuration entry,
+inside `specht.tool` and on its version. It serves the answers whose commands
+are built: the verdict, a rule's text, the rule list and the manifest, each the
+command's own output on the same tree (the owner, 2026-11-01).
+
+| Feature   | Delivers                                                                                 |
+| --------- | ---------------------------------------------------------------------------------------- |
+| `0132-F3` | The MCP host: a local process, the tool's own version, no port, and `docs/mcp.md`        |
+| `0132-F4` | Part: the verdict, a rule's text, the rule list and the manifest, and nothing is written |
+
+**Done means:** an MCP client configured with one entry starts the host and
+reads the verdict, a rule's text, the rule list and the manifest, each equal to
+its command's output on the same tree; `docs/mcp.md` documents the entry and
+those tools; and no file changes.
+
+## 0.6.0 - Pull-request surface
 
 **Better for:** a pull request author, who sees violations on the diff from one
 workflow step.
@@ -109,32 +128,31 @@ specification markdown) land here. The Gherkin claims' documentation lands in
 **Done means:** a consumer repository gets its violations on a pull request with
 one workflow step and no code of its own.
 
-## 0.6.0 - Agent surface
+## 0.7.0 - Agent surface completed
 
-**Better for:** an agent that asks the tool instead of parsing its output.
+**Better for:** an agent that reads the whole tree through MCP, not only the
+verdict and the rules.
 
-`specht` answers through the Model Context Protocol: a local host the client
-starts, answers equal to the command line's on the same tree, and an index that
-spares reparsing unchanged Markdown. The four Features are specified; their
-items are still to cut.
+The tree's facts reach the command line and MCP, with claim coverage and the
+frontmatter schemas and templates of the pinned version, so an agent with no
+`specht` skill authors a Feature specification the check passes.
 
-| Feature   | Delivers                                                                                        |
-| --------- | ----------------------------------------------------------------------------------------------- |
-| `0132-F2` | The tree's facts as structured data on the command line, working name `specht facts`            |
-| `0132-F3` | The MCP host: a local process the client starts, the tool's own version, no port                |
-| `0132-F4` | Reading through MCP: each answer is the command line's on the same tree, and nothing is written |
-| `0132-F1` | A persistent specification index of keyed facts and relationships, rebuildable from the tree    |
+| Feature    | Delivers                                                                                           |
+| ---------- | -------------------------------------------------------------------------------------------------- |
+| `0132-F2`  | The tree's facts as structured data on the command line, working name `specht facts`               |
+| `0132-F4`  | The rest of reading through MCP: the tree's facts, claim coverage, the schema and template answers |
+| `0001-F13` | Claim coverage, `specht trace`                                                                     |
+| `0001-F18` | The frontmatter schemas and templates printed, and `specht schema list --json`                     |
 
 Spike `0252` (MCP access to linked records, and local or online storage) lands
 here; its proposal is ADR-0028. Spike `0256` (collision-free record ids) lands
 here too.
 
-**Done means:** an MCP client configured with one entry starts the host and
-reads the rules, the tree's facts and the check's verdict, each equal to the
-command line's `--json` answer on the same tree, and no file in the tree
-changes.
+**Done means:** an agent in a fresh repository, with only the manifest `init`
+writes, authors a Feature specification from the MCP answers alone and the
+check reports no violation.
 
-## 0.7.0 - Review and presentation
+## 0.8.0 - Review and presentation
 
 **Better for:** a reviewer, who judges a change from the tool's answers, and a
 person reading the console output.
@@ -156,7 +174,7 @@ stay as they are. Linting adds style, ordering and uniqueness rules, and
 | `0101`                 | Specification linting and `specht format`                                                           |
 
 Spike `0307` (qualified key resolution, epic `0228` candidate C) lands here.
-Epic `0228` reads the tree's facts from `0132-F2`, in 0.6.0. Epic `0101` is
+Epic `0228` reads the tree's facts from `0132-F2`, in 0.7.0. Epic `0101` is
 `blocked`: every Feature waits on the schema version mechanism, `0001-F7`, its
 rule Features on per-rule severity, `0001-F5`, and two of them on discovery,
 `0001-F6`.
@@ -167,7 +185,7 @@ the check prints a coloured table while its redirected output is unchanged; and
 `specht format` leaves a tree with no ordering finding, every other byte as it
 was.
 
-## 0.8.0 - Onboarding and documentation
+## 0.9.0 - Onboarding and documentation
 
 **Better for:** a newcomer starting specification-driven development from
 nothing.
@@ -191,13 +209,14 @@ and the site serves the command-line and API references at a stable URL.
 
 ## Unscheduled
 
-No milestone holds these epics yet. The goal file holds only milestones, so
+No milestone holds these epics and Features yet. The goal file holds only milestones, so
 this list is this page's alone.
 
-| Epic   | Delivers                                                                                                                                          |
-| ------ | ------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `0193` | JSON as a first-class specification format                                                                                                        |
-| `0324` | A `specht` service: document sequences allocated without git coordination, and a database mode where each managed document keeps one lifetime key |
+| Epic or Feature | Delivers                                                                                                                                          |
+| --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `0193`          | JSON as a first-class specification format                                                                                                        |
+| `0132-F1`       | A persistent specification index of keyed facts and relationships, rebuildable from the tree                                                      |
+| `0324`          | A `specht` service: document sequences allocated without git coordination, and a database mode where each managed document keeps one lifetime key |
 
 The online allocation in `0324` follows spike `0256` and ADR-0028's
 recommendation that online allocation waits.

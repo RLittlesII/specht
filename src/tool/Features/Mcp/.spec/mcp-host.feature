@@ -74,9 +74,9 @@ Feature: The MCP host
     Then the server completes the initialize handshake
 
     Examples:
-      | state                         |
-      | is missing                    |
-      | is one the check rejects      |
+      | state                                  |
+      | is removed                             |
+      | is replaced by one the check rejects   |
 
   @B-012
   Scenario: Closing the server's input ends it cleanly
@@ -100,3 +100,15 @@ Feature: The MCP host
       | asked                                  | answered                        |
       | a revision the server supports         | that revision                   |
       | a revision the server does not support | the newest revision it supports |
+
+  @B-015
+  Scenario: The MCP page gives the configuration entry
+    Given the tool's MCP documentation page
+    Then it gives a client configuration entry that runs the server command through the local tool manifest, naming the repository root
+
+  @B-016
+  Scenario: The MCP page documents exactly the tools the server offers
+    Given the tools the server offers
+    When the tool's MCP documentation page is compared with them
+    Then each tool has exactly one entry on the page
+    And every tool with an entry is one the server offers
