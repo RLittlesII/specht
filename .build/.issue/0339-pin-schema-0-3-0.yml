@@ -19,7 +19,7 @@ claims:
   - B-027
 
 created: "2026-11-01"
-updated: "2026-11-01"
+updated: "2026-11-02"
 closed: null
 
 summary: |
@@ -55,11 +55,17 @@ summary: |
   the Test cell of its Withdrawn B-024 row. `SPEC060` reports a row
   with any missing cell, Withdrawn or not, so the four rows become
   `SPEC060` errors (`0001-F7` B-118). The hook and CI gate on them
-  (C-7), so the pull request cannot merge with them. 0.3.0 also
-  loosens the epic frontmatter, but only for a manifest that declares no epic grammar
-  (`0001-F7` B-037, B-038). This manifest declares `identifiers.epic`,
-  so the loosening is expected to change no verdict here, and the run
-  confirms it.
+  (C-7), so the pull request cannot merge with them. 0.3.0 also drops
+  `epic` from the feature schema's `required` under every manifest,
+  since JSON Schema cannot see the manifest (`0001-F7` § 7, "Epics left
+  out"); B-037 and B-038 state the loosening for a manifest that
+  declares no epic grammar. This manifest declares `identifiers.epic`,
+  and there the missing-`epic` check is `SPEC011`'s (`0001-F5` B-035),
+  which is not built, so from the move a Feature with no `epic` is not
+  reported here, where `SPEC002` reported it at 0.2.1. Every Feature
+  here carries `epic`, so the move is expected to change no verdict on
+  this tree, and the run confirms it. Whether B-035 lands before a
+  package carries 0.3.0 is `0001-F7` OQ-72.
 
   How what the move reveals is handled: the pull request runs
   `./build.sh Specht` with the pin moved and records each new finding
@@ -159,10 +165,22 @@ decisions:
     this repository's `rules` to be non-empty. Not cleared: test-writer's
     to fix; no rule was put back in `rules` to satisfy it (C-6). Open,
     for the owner.
+  - |
+    2026-11-02, the repository owner ruled on `0055-F9`, recorded here
+    by spec-author; the ruling's own records are mirror decision 0012's
+    Addendum and item 0293. B-064 is not built, so item 0340 is cut for
+    it alone, and `0055-F9`'s `status` goes back from done to
+    in-progress with 0293 reopened, so its B-064 row is no longer on a
+    done Feature. How each of the four rows was cleared in this item's
+    pull request: `0055-F9` B-033 and B-065 got their tests, which the
+    out_of_scope entry on those tests excepts; `0201-F5` B-024's Test
+    cell records that the Withdrawn claim has no test; B-064 by the
+    ruling.
 
 out_of_scope:
   - "Cutting schema 0.3.0, its vocabulary, `markers.done` and the live `.specht/` copy — 0321 (`0001-F7`)."
   - "The matrix rules and the rows each reports on this tree — 0334 to 0337 (`0001-F12`; Matrix decision 0002 call 3)."
-  - "Writing the tests a done Feature's `Missing` rows name — that Feature's test-writer; this item records the rows and stops if they remain."
+  - "Writing the tests a done Feature's `Missing` rows name — that Feature's test-writer; this item records the rows and stops if they remain. Excepted: `0055-F9` B-033 and B-065, whose tests this item's commits wrote (decision of 2026-11-02)."
+  - "Building `0055-F9` B-064 — item 0340 (mirror decision 0012, Addendum)."
   - "`SPEC060` scoped per claim — `0001-F7` § 5 #27."
   - "Everything in § 5 of the spec."

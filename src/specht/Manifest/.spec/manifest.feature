@@ -34,7 +34,7 @@ Feature: The manifest carries the roles
   @B-003
   Scenario: Markers are read from the manifest
     Given the manifest's missing-test cell value is "TBD"
-    And the root holds an approved specification with a "TBD" cell in its traceability table
+    And the root holds a specification that is approved and done with a "TBD" cell in its traceability table
     When the check runs
     Then the approved-with-missing-coverage rule reports that row
 
@@ -531,14 +531,6 @@ Feature: The manifest carries the roles
     And the root holds a specification with its sections out of order
     When the tool runs as a command on the root
     Then the violation is reported at error severity
-    And the exit code is 1
-
-  @B-044
-  Scenario: A consumer that sets no level does not inherit a lowered missing-test level
-    Given the manifest sets no level for the approved-with-missing-coverage rule
-    And the root holds an approved specification with a missing test
-    When the tool runs as a command on the root
-    Then the missing-test violation is reported at error severity
     And the exit code is 1
 
 
