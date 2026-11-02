@@ -73,7 +73,7 @@ public sealed class SchemaVersions
         {
             { Major: 0, Minor: 1, Patch: 0 } => original,
             { Major: 0, Minor: 2, Patch: 0 or 1 } => [.. original, "SPEC034", "SPEC035"],
-            { Major: 0, Minor: 3, Patch: 0 } => [.. original, "SPEC032", "SPEC034", "SPEC035"],
+            { Major: 0, Minor: 3, Patch: 0 } => [.. original, "SPEC022", "SPEC032", "SPEC034", "SPEC035"],
             _ => throw new InvalidOperationException($"schema/v{number}/ is embedded with no rule vocabulary."),
         };
     }
