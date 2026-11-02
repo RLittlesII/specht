@@ -2,7 +2,7 @@ id: "0153"
 type: refactor
 title: Move SpechtTree and its store out of the benchmarks into the engine
 
-status: ready-for-architecture
+status: in-progress
 
 value: 3
 risk: 3
