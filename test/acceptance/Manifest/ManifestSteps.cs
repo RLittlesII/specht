@@ -206,7 +206,6 @@ public sealed partial class ManifestSteps
     public void GivenTheRootHoldsASpecificationWhoseTableLacksOneOfTheMatrixRolesColumns(string title) =>
         Write("F1", SpechtTree.SectionsWith(DefaultTitles["matrix"], Matrix(title, "Scenario", "It does the thing")));
 
-    [Given("the root holds an approved specification with a {string} cell in its traceability table")]
     [Given("the root holds a specification that is approved and done with a {string} cell in its traceability table")]
     public void GivenTheRootHoldsAnApprovedSpecificationWithACellInItsTraceabilityTable(string cell) =>
         _specifications.Add(
@@ -303,23 +302,6 @@ public sealed partial class ManifestSteps
 
     [Given("the manifest sets no level for the out-of-order-section rule")]
     public void GivenTheManifestSetsNoLevelForTheOutOfOrderSectionRule() => Manifest.Remove("rules");
-
-    [Given("the manifest sets no level for the approved-with-missing-coverage rule")]
-    public void GivenTheManifestSetsNoLevelForTheApprovedWithMissingCoverageRule() => Manifest.Remove("rules");
-
-    [Given("the root holds an approved specification with a missing test")]
-    [Given("the root holds a specification that is approved and done with a missing test")]
-    public void GivenTheRootHoldsAnApprovedSpecificationWithAMissingTest() =>
-        _specifications.Add(Relative(Tree.WriteFeature(
-            "0001",
-            "F1",
-            new Dictionary<string, string> { ["spec_status"] = "approved", ["status"] = "done" })));
-
-    [Then("the missing-test violation is reported at error severity")]
-    public void ThenTheMissingTestViolationIsReportedAtErrorSeverity() =>
-        Run.Stdout.Split('\n').Should()
-            .ContainSingle(static line => line.Contains(": error SPEC060: "), Run.Stderr)
-            .Which.Should().StartWith(_specifications[0]);
 
     [Given("a rule that reports its violations at warning severity")]
     public void GivenARuleThatReportsItsViolationsAtWarningSeverity() => _standIn = new WarningRule(OutOfOrderRule);
