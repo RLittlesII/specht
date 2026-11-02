@@ -38,17 +38,18 @@ public sealed class ClaimTagRuleFormsUnitTests
             .WithFeatureFiles(new FeatureFileFixture().WithTags(new FeatureTagParser().Parse(
                 fileSystem.File.ReadAllText(companion), EngineServices.Parser().Parse(manifest.ToJsonString()))));
         SpechtModel model = new SpechtModelFixture().WithManifest(manifest).WithFeatures(feature);
+        var rule = new ClaimTagRule();
 
         // When
-        var violations = new ClaimTagRule().Evaluate(model).ToList();
+        var findings = rule.Evaluate(model).ToList();
 
         // Then
-        var violation = violations.Should().ContainSingle().Subject;
-        violation.RuleId.Should().Be("SPEC021");
-        violation.Identifier.Should().Be(identifier);
-        violation.Line.Should().Be(3);
-        violation.File.Should().Be("src/sample/.spec/sample.feature");
-        violation.Message.Should().Be($"scenario tag '{unresolved}' does not resolve to a claim in § 3 of src/sample/.spec/README.md");
+        var finding = findings.Should().ContainSingle().Subject;
+        rule.Id.Should().Be("SPEC021");
+        finding.Identifier.Should().Be(identifier);
+        finding.Line.Should().Be(3);
+        finding.File.Should().Be("src/sample/.spec/sample.feature");
+        finding.Message.Should().Be($"scenario tag '{unresolved}' does not resolve to a claim in § 3 of src/sample/.spec/README.md");
     }
 
     [Theory]
@@ -72,10 +73,10 @@ public sealed class ClaimTagRuleFormsUnitTests
         }).WithFeatures(feature);
 
         // When
-        var violations = new ClaimTagRule().Evaluate(model).ToList();
+        var findings = new ClaimTagRule().Evaluate(model).ToList();
 
         // Then
-        violations.Should().ContainSingle().Which.Identifier.Should().Be("B-002");
+        findings.Should().ContainSingle().Which.Identifier.Should().Be("B-002");
     }
 
     [Theory]
@@ -99,9 +100,9 @@ public sealed class ClaimTagRuleFormsUnitTests
         SpechtModel model = new SpechtModelFixture().WithManifest(manifest).WithFeatures(feature);
 
         // When
-        var violations = new ClaimTagRule().Evaluate(model);
+        var findings = new ClaimTagRule().Evaluate(model);
 
         // Then
-        violations.Should().BeEmpty();
+        findings.Should().BeEmpty();
     }
 }

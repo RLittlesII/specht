@@ -7,6 +7,7 @@ using System.Text.Json.Nodes;
 using AwesomeAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using Specht.Composition;
+using Specht.Evaluation;
 using Specht.Manifest;
 using Specht.Model;
 using Specht.Report;
@@ -239,8 +240,6 @@ public sealed class SpechtRunnerFrontmatterUnitTests
     {
         public string Id => "SPEC010";
 
-        public IReadOnlyList<string> ReportedIds => ["SPEC010"];
-
-        public IEnumerable<SpechtViolation> Evaluate(SpechtModel model) => throw new InvalidOperationException("A tree-only rule was evaluated.");
+        public IEnumerable<SpechtFinding> Evaluate(SpechtModel model) => throw new InvalidOperationException("A tree-only rule was evaluated.");
     }
 }

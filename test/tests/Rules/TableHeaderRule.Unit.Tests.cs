@@ -30,12 +30,13 @@ public sealed class TableHeaderRuleUnitTests
                 "src/second/.spec/README.md",
                 "## 9. Traceability Matrix\n\n"
                     + "| Claim ID | Scenario | Test | Status |\n| - | - | - | - |\n| B-001 | It | A test | Covered |\n"));
+        var rule = new TableHeaderRule();
 
         // When
-        var violations = new TableHeaderRule().Evaluate(model).Where(static violation => violation.RuleId == "SPEC013").ToList();
+        var findings = rule.Evaluate(model).ToList();
 
         // Then
-        violations.Select(static violation => violation.File).Should().Equal("src/second/.spec/README.md");
+        findings.Select(finding => (rule.Id, finding.File)).Should().Equal(("SPEC013", "src/second/.spec/README.md"));
     }
 
     [Fact]
@@ -57,12 +58,13 @@ public sealed class TableHeaderRuleUnitTests
                 "src/second/.spec/README.md",
                 "## 9. Coverage\n\n"
                     + "| Claim ID | Scenario | Status |\n| - | - | - |\n| B-001 | It | Covered |\n"));
+        var rule = new TableHeaderRule();
 
         // When
-        var violations = new TableHeaderRule().Evaluate(model).Where(static violation => violation.RuleId == "SPEC013").ToList();
+        var findings = rule.Evaluate(model).ToList();
 
         // Then
-        violations.Select(static violation => violation.File).Should().Equal("src/second/.spec/README.md");
+        findings.Select(finding => (rule.Id, finding.File)).Should().Equal(("SPEC013", "src/second/.spec/README.md"));
     }
 
     private static FeatureSpec Feature(string path, string text) =>

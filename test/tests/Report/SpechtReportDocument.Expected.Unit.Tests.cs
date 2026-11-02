@@ -1,6 +1,7 @@
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using AwesomeAssertions;
+using Specht.Evaluation;
 using Specht.Model;
 using Specht.Report;
 using Specht.Rules;
@@ -11,7 +12,7 @@ namespace Specht.Tests.Report;
 /// <summary>
 /// What a violation's <c>expected</c> carries for the frontmatter, section and table rules (<c>0001-F3</c> B-009, B-010,
 /// B-011, B-026; decision 0004), over a model built in memory under a synthetic manifest and synthetic on-disk schemas,
-/// evaluated by <see cref="SpechtRunner.Evaluate"/> and made a document by <see cref="SpechtReportDocument.From"/>. The
+/// evaluated by <see cref="SpechtEvaluator.Evaluate"/> and made a document by <see cref="SpechtReportDocument.From"/>. The
 /// manifest names its own schema files, sections, roles and headers, so a value the document carries is the manifest's and
 /// not the default's. The schema sources are the integration tier's.
 /// </summary>
@@ -34,7 +35,7 @@ public sealed class SpechtReportDocumentExpectedUnitTests
             [new FrontmatterPresentRule(check), new FeatureFrontmatterRule(check), new ItemFrontmatterRule(check), new EpicFrontmatterRule(check)];
 
         // When
-        var document = SpechtReportDocument.From(SpechtRunner.Evaluate(model, rules));
+        var document = SpechtReportDocument.From(new SpechtEvaluator(rules, new SpechtViolationOrder()).Evaluate(model));
 
         // Then
         var violations = document.Violations.Where(violation => violation.RuleId == ruleId && violation.Identifier == key).ToList();
@@ -60,7 +61,7 @@ public sealed class SpechtReportDocumentExpectedUnitTests
         ISpechtRule rule = new FrontmatterPresentRule(new FrontmatterSchemaCheck());
 
         // When
-        var document = SpechtReportDocument.From(SpechtRunner.Evaluate(model, [rule]));
+        var document = SpechtReportDocument.From(new SpechtEvaluator([rule], new SpechtViolationOrder()).Evaluate(model));
 
         // Then
         var expected = document.Violations.Should().ContainSingle(static violation => violation.RuleId == "SPEC001", because).Which.Expected;
@@ -83,7 +84,7 @@ public sealed class SpechtReportDocumentExpectedUnitTests
             .WithFeatures(feature);
 
         // When
-        var document = SpechtReportDocument.From(SpechtRunner.Evaluate(model, [new SectionContractRule()]));
+        var document = SpechtReportDocument.From(new SpechtEvaluator([new SectionContractRule()], new SpechtViolationOrder()).Evaluate(model));
 
         // Then
         document.Violations.Where(static violation => violation.RuleId == "SPEC010").Should().NotBeEmpty(because)
@@ -104,7 +105,7 @@ public sealed class SpechtReportDocumentExpectedUnitTests
         SpechtModel model = new SpechtModelFixture().WithManifest(manifest).WithFeatures(feature);
 
         // When
-        var document = SpechtReportDocument.From(SpechtRunner.Evaluate(model, [new TableHeaderRule()]));
+        var document = SpechtReportDocument.From(new SpechtEvaluator([new TableHeaderRule()], new SpechtViolationOrder()).Evaluate(model));
 
         // Then
         var expected = document.Violations.Should()

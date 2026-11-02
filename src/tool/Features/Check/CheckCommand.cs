@@ -3,6 +3,7 @@ using System.ComponentModel;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using Specht.Evaluation;
 using Specht.Manifest;
 using Specht.Report;
 using Spectre.Console;

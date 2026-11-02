@@ -1,4 +1,5 @@
 using AwesomeAssertions;
+using Specht.Evaluation;
 using Specht.Model;
 using Specht.Report;
 using Specht.Tests.Shared;

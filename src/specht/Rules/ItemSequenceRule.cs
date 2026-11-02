@@ -17,20 +17,17 @@ public sealed class ItemSequenceRule : ISpechtRule
     public string Id => "SPEC044";
 
     /// <inheritdoc />
-    public IReadOnlyList<string> ReportedIds => [Id];
-
-    /// <inheritdoc />
     /// <implements epic="0001" feature="F1" claim="B-001" />
-    public IEnumerable<SpechtViolation> Evaluate(SpechtModel model)
+    public IEnumerable<SpechtFinding> Evaluate(SpechtModel model)
     {
-        foreach (var violation in CheckReuse(model))
+        foreach (var finding in CheckReuse(model))
         {
-            yield return violation;
+            yield return finding;
         }
 
-        foreach (var violation in CheckSequences(model))
+        foreach (var finding in CheckSequences(model))
         {
-            yield return violation;
+            yield return finding;
         }
     }
 
@@ -43,7 +40,7 @@ public sealed class ItemSequenceRule : ISpechtRule
     }
 
     /// <implements epic="0001" feature="F1" claim="B-001" />
-    private IEnumerable<SpechtViolation> CheckReuse(SpechtModel model)
+    private IEnumerable<SpechtFinding> CheckReuse(SpechtModel model)
     {
         var seen = new Dictionary<string, string>(StringComparer.Ordinal);
 
@@ -56,9 +53,7 @@ public sealed class ItemSequenceRule : ISpechtRule
 
             if (!seen.TryAdd(item.Id, item.RelativePath))
             {
-                yield return new SpechtViolation(
-                    Id,
-                    SpechtSeverity.Error,
+                yield return new SpechtFinding(
                     item.RelativePath,
                     item.Frontmatter.LineOf("id"),
                     item.Id,
@@ -71,7 +66,7 @@ public sealed class ItemSequenceRule : ISpechtRule
     }
 
     /// <implements epic="0001" feature="F1" claim="B-001" />
-    private IEnumerable<SpechtViolation> CheckSequences(SpechtModel model)
+    private IEnumerable<SpechtFinding> CheckSequences(SpechtModel model)
     {
         var byEpic = model.Items
             .Where(static item => item.Id is not null)
@@ -91,9 +86,7 @@ public sealed class ItemSequenceRule : ISpechtRule
 
                 if (numbers[index].Number != expected)
                 {
-                    yield return new SpechtViolation(
-                        Id,
-                        SpechtSeverity.Error,
+                    yield return new SpechtFinding(
                         numbers[index].Item.RelativePath,
                         numbers[index].Item.Frontmatter.LineOf("id"),
                         numbers[index].Item.Id,

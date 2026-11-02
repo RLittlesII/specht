@@ -18,15 +18,12 @@ public sealed class ApprovalCoverageRule : ISpechtRule
     public string Id => "SPEC060";
 
     /// <inheritdoc />
-    public IReadOnlyList<string> ReportedIds => [Id];
-
-    /// <inheritdoc />
     /// <implements epic="0001" feature="F1" claim="B-001" />
     /// <implements epic="0001" feature="F7" claim="B-118" />
     /// <implements epic="0001" feature="F7" claim="B-119" />
     /// <implements epic="0001" feature="F7" claim="B-120" />
     /// <implements epic="0001" feature="F7" claim="B-121" />
-    public IEnumerable<SpechtViolation> Evaluate(SpechtModel model)
+    public IEnumerable<SpechtFinding> Evaluate(SpechtModel model)
     {
         var markers = model.Schemas.Structure.Markers;
         var doneAxis = model.Schemas.Structure.SchemaVersion.CompareTo(DoneAxisVersion) >= 0;
@@ -58,9 +55,7 @@ public sealed class ApprovalCoverageRule : ISpechtRule
 
                 if (row.Any(cell => string.Equals(cell.Trim(), markers["missing"], StringComparison.Ordinal)))
                 {
-                    yield return new SpechtViolation(
-                        Id,
-                        SpechtSeverity.Error,
+                    yield return new SpechtFinding(
                         feature.RelativePath,
                         matrix.RowLines[index],
                         row.Count > 0 ? row[0].Trim() : null,

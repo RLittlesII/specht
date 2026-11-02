@@ -1,6 +1,7 @@
 using System.Text.Json.Nodes;
 using AwesomeAssertions;
 using Reqnroll;
+using Specht.Evaluation;
 using Specht.Manifest;
 using Specht.Model;
 using Specht.Rules;
@@ -26,9 +27,9 @@ namespace Specht.Acceptance.Manifest;
 /// <c>0.3.0</c> by its approval and from <c>0.3.0</c> by its status (<c>0001-F7</c> B-118, B-120).
 /// A rule declared by a type name and a library file is written there too, as an object under a rule id the pinned version
 /// holds, so that its shape alone is at fault, beside a file standing as the library; nothing compiled is put under the root
-/// (B-017). "A rule that reports its violations at warning severity" is a stand-in under a rule id of the pinned version,
-/// since no shipped rule gives a warning, and "the check runs with that rule" hands it to the engine's
-/// <see cref="SpechtRunner.Evaluate"/> over the model loaded from the root (B-046).
+/// (B-017). "A rule that reports its violations at warning severity" is a stand-in under a rule id of the pinned version
+/// whose own level is warning, since no shipped rule defaults to it, and "the check runs with that rule" hands it to a
+/// <see cref="SpechtEvaluator"/> over the model loaded from the root (B-046).
 /// </summary>
 [Binding]
 [Scope(Feature = "The manifest carries the roles")]
@@ -313,7 +314,7 @@ public sealed partial class ManifestSteps
     public void GivenTheRootHoldsASpecificationThatRuleReports()
     {
         Write("F1", SpechtTree.Sections);
-        SpechtRunner.Evaluate(EngineServices.Loader().Load(Tree.Root), [StandIn])
+        new SpechtEvaluator([StandIn], new SpechtViolationOrder()).Evaluate(EngineServices.Loader().Load(Tree.Root))
             .Violations.Should()
             .ContainSingle()
             .Which.Should()
@@ -325,7 +326,7 @@ public sealed partial class ManifestSteps
     public void WhenTheCheckRunsWithThatRule()
     {
         File.WriteAllText(ManifestPath, Manifest.ToJsonString());
-        _report = SpechtRunner.Evaluate(EngineServices.Loader().Load(Tree.Root), [StandIn]);
+        _report = new SpechtEvaluator([StandIn], new SpechtViolationOrder()).Evaluate(EngineServices.Loader().Load(Tree.Root));
     }
 
     [Then("that rule's violation is reported at error severity")]
@@ -597,11 +598,10 @@ public sealed partial class ManifestSteps
     {
         public string Id => id;
 
-        public IReadOnlyList<string> ReportedIds => [id];
+        public SpechtRuleLevel DefaultLevel => SpechtRuleLevel.Warning;
 
-        public IEnumerable<SpechtViolation> Evaluate(SpechtModel model) =>
-            model.Features.Select(feature =>
-                new SpechtViolation(id, SpechtSeverity.Warning, feature.RelativePath, 1, null, "A stand-in rule reports this specification."));
+        public IEnumerable<SpechtFinding> Evaluate(SpechtModel model) =>
+            model.Features.Select(static feature => new SpechtFinding(feature.RelativePath, 1, null, "A stand-in rule reports this specification."));
     }
 
     private const string UnknownKey = "glossary";

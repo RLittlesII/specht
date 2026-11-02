@@ -2,6 +2,7 @@ using System;
 using Microsoft.Extensions.DependencyInjection;
 using Specht;
 using Specht.Composition;
+using Specht.Evaluation;
 using Specht.Manifest;
 using Specht.Tool;
 using Specht.Tool.Features.Check;

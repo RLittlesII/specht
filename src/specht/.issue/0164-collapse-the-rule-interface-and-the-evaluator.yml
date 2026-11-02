@@ -2,7 +2,7 @@ id: "0164"
 type: refactor
 title: Collapse the rule interface to one id and make the evaluator an instance
 
-status: ready-for-implementation
+status: done
 
 value: 4
 risk: 4
@@ -19,7 +19,7 @@ claims: []
 
 created: "2026-10-11"
 updated: "2026-11-01"
-closed: null
+closed: "2026-11-01"
 
 summary: |
   ADR-0027 lifted ADR-0014's benchmark gate on 2026-10-31: this stage
@@ -100,6 +100,61 @@ decisions:
     done and stays in `depends_on` as the record of the evaluation.
     Status `blocked` to `ready-for-implementation`, as cut: the design is
     ADR-0010's and the splits 0156 to 0163 are open.
+  - |
+    2026-11-01, spec-author: the criteria reconciled with the source at
+    commit `79051138`; the criteria text is not edited, and this entry
+    amends how each is read.
+    Names: item 0100 gave the types the Specht prefix, so the criteria's
+    `SpecEvaluator`, `SpecViolationOrder` and `SpecFinding` are
+    `SpechtEvaluator`, `SpechtViolationOrder` and `SpechtFinding`, and the
+    interface stays `ISpechtRule`.
+    Default level (criteria 3 and 4): the interface keeps its existing
+    `DefaultLevel` as a `SpechtRuleLevel` in place of ADR-0010's
+    `DefaultSeverity`, because SPEC034 and SPEC035 default to off since
+    items 0223 and 0227 (`0001-F5` B-061, B-062, decision 0014) and a
+    severity cannot express off. This is a judgement the owner may
+    overrule in review. Criterion 4 reads "every rule keeps its default
+    level" - error, except SPEC034 and SPEC035 off - so stamping changes
+    no severity.
+    Rule count (criteria 4 and 8): "twenty-one" is the 0.1.0 vocabulary;
+    the composition test holds the registered ids against the vocabulary
+    as it does today.
+    Fault isolation: `FaultIsolatedRule` exists (ADR-0005 (c); `0001-F1`
+    B-012 to B-017). Its failure finding is stamped error whatever the
+    manifest says. The out-of-scope line on fault isolation is stale.
+    Frontmatter: `SpechtRunner.CheckFrontmatter` keeps its signature, its
+    violations and its count, through the evaluator.
+    Benchmarks (criterion 9): no benchmark calls `SpechtRunner.Evaluate`,
+    so the criterion is met by `.performance/benchmarks` compiling.
+    `0109-F2` A-1, which names the static, is amended in the same pull
+    request.
+  - |
+    2026-11-01, benchmarker: the guard of ADR-0027 for ADR-0010 stage 4.
+    Base `79051138` (main, the branch's merge base), head `a20166ff` (the
+    commit that changes executed code; the branch's other commits touch
+    item files and specifications only). Separate detached checkouts on one
+    host, run alternately base-100, head-100, base-1000, head-1000 from
+    22:37 to 22:41 with `./build.sh Benchmark --benchmark-filter
+    '*CheckBenchmarks.Check(Specifications: N)'`, BenchmarkDotNet 0.15.8
+    default job. Host: Apple M1 Max, 10 cores, macOS Tahoe 26.4 (25E246),
+    .NET SDK 11.0.100-rc.2.26504.105, runtime .NET 10.0.12 Arm64 RyuJIT;
+    1-minute load average 36.35 falling to 10.88 on 10 cores during the
+    runs (5-minute 65.7 to 36.5), a shared host under heavy load.
+    100 specifications: base Mean 51.31 ms, Error 0.991 ms (CI 50.32 to
+    52.30 ms), Allocated 33.43 MB; head 50.00 ms, Error 0.844 ms (CI 49.15
+    to 50.84 ms), 33.44 MB. Time -2.6%, allocation +0.04%.
+    1,000 specifications: base Mean 551.5 ms, Error 26.81 ms (CI 524.7 to
+    578.3 ms), Allocated 329.92 MB; head 497.6 ms, Error 4.11 ms (CI 493.5
+    to 501.7 ms), 329.83 MB. Time -9.8%, allocation -0.03%. The base row
+    is dispersed (StdDev 77.78 ms, Median 501.3 ms, 97 measurements against
+    head's 13) while the load average was near 20; its mean is the host's,
+    not the code's.
+    Judged by 0109-F5 B-011 and B-012 under ComparisonPolicy.Initial: no
+    flag at either size; neither mean rose and neither head interval lies
+    above its base's, and neither allocation rose more than 10%. Only the
+    absence of a flag is claimed: one run per side, under load, and no
+    change in either direction is claimed. The net11.0 runtime was not
+    measured.
 
 out_of_scope:
   - "Deleting `SpechtRunner`, the mediator, `Check.Query` and its handler, and the namespace guard - item 0167."

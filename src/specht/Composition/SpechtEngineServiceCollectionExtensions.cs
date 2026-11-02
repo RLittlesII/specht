@@ -2,6 +2,7 @@ using System.IO.Abstractions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Specht.Discovery;
+using Specht.Evaluation;
 using Specht.Manifest;
 using Specht.Model;
 using Specht.Report;
@@ -46,6 +47,8 @@ public static class SpechtEngineServiceCollectionExtensions
         services.AddSingleton<RuleEntriesReader>();
         services.AddSingleton<EffectiveManifestReader>();
         services.AddSingleton<SpechtModelLoader>();
+        services.AddSingleton<SpechtViolationOrder>();
+        services.AddSingleton<SpechtEvaluator>();
         services.AddSingleton<SpechtRunner>();
         services.AddSingleton<FrontmatterSchemaCheck>();
         services.AddSingleton<ISpechtRule, FrontmatterPresentRule>();

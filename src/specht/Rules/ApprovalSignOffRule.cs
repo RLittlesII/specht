@@ -17,11 +17,8 @@ public sealed class ApprovalSignOffRule : ISpechtRule
     public string Id => "SPEC061";
 
     /// <inheritdoc />
-    public IReadOnlyList<string> ReportedIds => [Id];
-
-    /// <inheritdoc />
     /// <implements epic="0001" feature="F1" claim="B-001" />
-    public IEnumerable<SpechtViolation> Evaluate(SpechtModel model)
+    public IEnumerable<SpechtFinding> Evaluate(SpechtModel model)
     {
         var roles = model.Schemas.Structure.Roles;
         var markers = model.Schemas.Structure.Markers;
@@ -46,9 +43,7 @@ public sealed class ApprovalSignOffRule : ISpechtRule
 
                 if (row.Any(cell => cell.Contains(markers["draft"], StringComparison.Ordinal) || cell.Contains(markers["blocked"], StringComparison.Ordinal)))
                 {
-                    yield return new SpechtViolation(
-                        Id,
-                        SpechtSeverity.Error,
+                    yield return new SpechtFinding(
                         feature.RelativePath,
                         signOff.RowLines[index],
                         row.Count > 0 ? row[0].Trim() : null,

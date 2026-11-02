@@ -11,21 +11,19 @@ namespace Specht.Rules;
 public sealed class DeclaredItemCheck
 {
     /// <summary>
-    /// Reports, under <paramref name="ruleId"/>, each id <paramref name="key"/> declares that no candidate or more than
+    /// Finds each id <paramref name="key"/> declares that no candidate or more than
     /// one candidate carries, or whose one candidate is not of <paramref name="requiredType"/>, in declaration order.
     /// </summary>
     /// <param name="feature">The Feature that declares the ids.</param>
     /// <param name="candidates">The items a declared id may resolve to.</param>
     /// <param name="key">The frontmatter key that declares them.</param>
-    /// <param name="ruleId">The rule id the violations carry.</param>
     /// <param name="requiredType">The type the one match must carry, or <c>null</c> for any.</param>
-    /// <returns>The violations.</returns>
+    /// <returns>The findings.</returns>
     /// <implements epic="0001" feature="F1" claim="B-001" />
-    public IEnumerable<SpechtViolation> Evaluate(
+    public IEnumerable<SpechtFinding> Evaluate(
         FeatureSpec feature,
         IReadOnlyCollection<ChildItem> candidates,
         string key,
-        string ruleId,
         string? requiredType)
     {
         foreach (var declared in feature.Strings(key))
@@ -36,9 +34,7 @@ public sealed class DeclaredItemCheck
 
             if (matches.Count == 0)
             {
-                yield return new SpechtViolation(
-                    ruleId,
-                    SpechtSeverity.Error,
+                yield return new SpechtFinding(
                     feature.RelativePath,
                     feature.Document.Frontmatter.LineOf(key),
                     declared,
@@ -52,9 +48,7 @@ public sealed class DeclaredItemCheck
 
             if (matches.Count > 1)
             {
-                yield return new SpechtViolation(
-                    ruleId,
-                    SpechtSeverity.Error,
+                yield return new SpechtFinding(
                     feature.RelativePath,
                     feature.Document.Frontmatter.LineOf(key),
                     declared,
@@ -68,9 +62,7 @@ public sealed class DeclaredItemCheck
 
             if (requiredType is not null && !string.Equals(matches[0].Type, requiredType, StringComparison.Ordinal))
             {
-                yield return new SpechtViolation(
-                    ruleId,
-                    SpechtSeverity.Error,
+                yield return new SpechtFinding(
                     matches[0].RelativePath,
                     matches[0].Frontmatter.LineOf("type"),
                     declared,

@@ -2,6 +2,7 @@ using System.Globalization;
 using System.Text.Json.Nodes;
 using System.Text.RegularExpressions;
 using AwesomeAssertions;
+using Specht.Evaluation;
 using Specht.Model;
 using Specht.Report;
 using Specht.Tests.Shared;

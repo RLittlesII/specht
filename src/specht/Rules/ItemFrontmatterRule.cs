@@ -13,17 +13,14 @@ public sealed class ItemFrontmatterRule(FrontmatterSchemaCheck check) : ISpechtR
     public string Id => "SPEC003";
 
     /// <inheritdoc />
-    public IReadOnlyList<string> ReportedIds => ["SPEC003"];
-
-    /// <inheritdoc />
     /// <implements epic="0001" feature="F5" claim="B-008" />
-    public IEnumerable<SpechtViolation> Evaluate(SpechtModel model)
+    public IEnumerable<SpechtFinding> Evaluate(SpechtModel model)
     {
         foreach (var item in model.Items)
         {
-            foreach (var violation in Evaluate(item.RelativePath, item.Frontmatter, model.Schemas))
+            foreach (var finding in Evaluate(item.RelativePath, item.Frontmatter, model.Schemas))
             {
-                yield return violation;
+                yield return finding;
             }
         }
     }
@@ -34,6 +31,6 @@ public sealed class ItemFrontmatterRule(FrontmatterSchemaCheck check) : ISpechtR
     /// <param name="schemas">The selected schemas.</param>
     /// <returns>Each failure of the item schema; none for a document with no frontmatter.</returns>
     /// <implements epic="0001" feature="F5" claim="B-008" />
-    public IEnumerable<SpechtViolation> Evaluate(string path, Frontmatter frontmatter, SpechtSchemas schemas) =>
-        check.Evaluate(Id, path, frontmatter, schemas, FrontmatterKind.Task);
+    public IEnumerable<SpechtFinding> Evaluate(string path, Frontmatter frontmatter, SpechtSchemas schemas) =>
+        check.Evaluate(path, frontmatter, schemas, FrontmatterKind.Task);
 }

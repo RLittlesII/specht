@@ -1,5 +1,6 @@
 using System.Text.Json.Nodes;
 using AwesomeAssertions;
+using Specht.Manifest;
 using Specht.Model;
 using Specht.Rules;
 using Specht.Tests.Shared;
@@ -26,14 +27,15 @@ public sealed class ApprovalRuleDoneAxisUnitTests
         FeatureSpec feature = new FeatureSpecFixture().WithDocument(
             SpechtDocument.Parse($"---\nspec_status: {specStatus}\nstatus: {status}\n---\n\n" + Sections, SamplePath));
         SpechtModel model = new SpechtModelFixture().WithManifest(manifest).WithFeatures(feature);
+        ISpechtRule rule = new ApprovalCoverageRule();
 
         // When
-        var violations = new ApprovalCoverageRule().Evaluate(model).ToList();
+        var findings = rule.Evaluate(model).ToList();
 
         // Then
-        violations.Select(static violation => (violation.RuleId, violation.Severity, violation.Identifier))
+        findings.Select(finding => (rule.Id, rule.DefaultLevel, finding.Identifier))
             .Should()
-            .Equal(("SPEC060", SpechtSeverity.Error, "B-001"));
+            .Equal(("SPEC060", SpechtRuleLevel.Error, "B-001"));
     }
 
     [Theory]
@@ -48,12 +50,13 @@ public sealed class ApprovalRuleDoneAxisUnitTests
         FeatureSpec feature = new FeatureSpecFixture().WithDocument(
             SpechtDocument.Parse($"---\nspec_status: {specStatus}\nstatus: {status}\n---\n\n" + Sections, SamplePath));
         SpechtModel model = new SpechtModelFixture().WithManifest(manifest).WithFeatures(feature);
+        var rule = new ApprovalCoverageRule();
 
         // When
-        var violations = new ApprovalCoverageRule().Evaluate(model).ToList();
+        var findings = rule.Evaluate(model).ToList();
 
         // Then
-        violations.Should().BeEmpty();
+        findings.Should().BeEmpty();
     }
 
     [Theory]
@@ -67,12 +70,13 @@ public sealed class ApprovalRuleDoneAxisUnitTests
         FeatureSpec feature = new FeatureSpecFixture().WithDocument(
             SpechtDocument.Parse($"---\nspec_status: approved\nstatus: {status}\n---\n\n" + Sections, SamplePath));
         SpechtModel model = new SpechtModelFixture().WithManifest(manifest).WithFeatures(feature);
+        var rule = new ApprovalCoverageRule();
 
         // When
-        var violations = new ApprovalCoverageRule().Evaluate(model).ToList();
+        var findings = rule.Evaluate(model).ToList();
 
         // Then
-        violations.Select(static violation => (violation.RuleId, violation.Identifier)).Should().Equal(("SPEC060", "B-001"));
+        findings.Select(finding => (rule.Id, finding.Identifier)).Should().Equal(("SPEC060", "B-001"));
     }
 
     [Fact]
@@ -83,12 +87,13 @@ public sealed class ApprovalRuleDoneAxisUnitTests
         FeatureSpec feature = new FeatureSpecFixture().WithDocument(
             SpechtDocument.Parse("---\nspec_status: approved\nstatus: done\n---\n\n" + Sections, SamplePath));
         SpechtModel model = new SpechtModelFixture().WithManifest(manifest).WithFeatures(feature);
+        var rule = new ApprovalCoverageRule();
 
         // When
-        var violations = new ApprovalCoverageRule().Evaluate(model).ToList();
+        var findings = rule.Evaluate(model).ToList();
 
         // Then
-        violations.Select(static violation => violation.Message)
+        findings.Select(static finding => finding.Message)
             .Should()
             .Equal("status is 'done' while § 9 still carries a 'Missing' cell");
     }
@@ -105,12 +110,13 @@ public sealed class ApprovalRuleDoneAxisUnitTests
         FeatureSpec feature = new FeatureSpecFixture().WithDocument(
             SpechtDocument.Parse($"---\nspec_status: {specStatus}\nstatus: {status}\n---\n\n" + Sections, SamplePath));
         SpechtModel model = new SpechtModelFixture().WithManifest(manifest).WithFeatures(feature);
+        var rule = new ApprovalSignOffRule();
 
         // When
-        var violations = new ApprovalSignOffRule().Evaluate(model).ToList();
+        var findings = rule.Evaluate(model).ToList();
 
         // Then
-        violations.Select(static violation => (violation.RuleId, violation.Identifier))
+        findings.Select(finding => (rule.Id, finding.Identifier))
             .Should()
             .Equal(reported ? [("SPEC061", "1-5")] : []);
     }

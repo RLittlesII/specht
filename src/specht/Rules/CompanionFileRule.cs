@@ -13,20 +13,15 @@ public sealed class CompanionFileRule : ISpechtRule
     public string Id => "SPEC020";
 
     /// <inheritdoc />
-    public IReadOnlyList<string> ReportedIds => ["SPEC020"];
-
-    /// <inheritdoc />
     /// <implements epic="0001" feature="F1" claim="B-001" />
-    public IEnumerable<SpechtViolation> Evaluate(SpechtModel model)
+    public IEnumerable<SpechtFinding> Evaluate(SpechtModel model)
     {
         model.EnsureClaimGrammar();
         foreach (var feature in model.Features)
         {
             if (feature.FeatureFiles.Count != 1)
             {
-                yield return new SpechtViolation(
-                    "SPEC020",
-                    SpechtSeverity.Error,
+                yield return new SpechtFinding(
                     feature.RelativePath,
                     0,
                     feature.Identity,

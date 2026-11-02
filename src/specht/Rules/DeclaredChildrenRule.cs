@@ -11,11 +11,8 @@ public sealed class DeclaredChildrenRule(DeclaredItemCheck check) : ISpechtRule
     public string Id => "SPEC040";
 
     /// <inheritdoc />
-    public IReadOnlyList<string> ReportedIds => [Id];
-
-    /// <inheritdoc />
     /// <implements epic="0001" feature="F1" claim="B-001" />
-    public IEnumerable<SpechtViolation> Evaluate(SpechtModel model)
+    public IEnumerable<SpechtFinding> Evaluate(SpechtModel model)
     {
         var byDirectory = model.Items
             .GroupBy(static item => item.ParentDirectory, StringComparer.Ordinal)
@@ -25,9 +22,9 @@ public sealed class DeclaredChildrenRule(DeclaredItemCheck check) : ISpechtRule
         {
             var siblings = byDirectory.TryGetValue(feature.Location.Directory, out var items) ? items : [];
 
-            foreach (var violation in check.Evaluate(feature, siblings, "children", Id, null))
+            foreach (var finding in check.Evaluate(feature, siblings, "children", null))
             {
-                yield return violation;
+                yield return finding;
             }
         }
     }

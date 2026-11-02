@@ -43,18 +43,17 @@ public sealed class FrontmatterSchemaCheck
     public JsonArray Required(SpechtSchemas schemas, FrontmatterKind kind) => Required(Select(schemas, kind).Schema);
 
     /// <summary>
-    /// Evaluates one document's frontmatter against its kind's schema and reports each failure under
-    /// <paramref name="ruleId"/>; a document with no frontmatter is SPEC001's and reports nothing here.
+    /// Evaluates one document's frontmatter against its kind's schema and finds each failure; a document with no
+    /// frontmatter is SPEC001's and finds nothing here.
     /// </summary>
-    /// <param name="ruleId">The rule id the failures are reported under.</param>
     /// <param name="path">The document's repository-relative path.</param>
     /// <param name="frontmatter">The document's frontmatter.</param>
     /// <param name="schemas">The selected schemas.</param>
     /// <param name="kind">The kind whose schema is evaluated.</param>
     /// <returns>The failures, in the order the walk yields them.</returns>
     /// <implements epic="0001" feature="F5" claim="B-008" />
-    public IEnumerable<SpechtViolation> Evaluate(
-        string ruleId, string path, Frontmatter frontmatter, SpechtSchemas schemas, FrontmatterKind kind)
+    public IEnumerable<SpechtFinding> Evaluate(
+        string path, Frontmatter frontmatter, SpechtSchemas schemas, FrontmatterKind kind)
     {
         var schema = Select(schemas, kind).Schema;
         var schemaFile = SchemaFile(schemas, kind);
@@ -76,9 +75,7 @@ public sealed class FrontmatterSchemaCheck
         {
             var key = KeyOf(detail);
 
-            yield return new SpechtViolation(
-                ruleId,
-                SpechtSeverity.Error,
+            yield return new SpechtFinding(
                 path,
                 frontmatter.LineOf(key),
                 key,

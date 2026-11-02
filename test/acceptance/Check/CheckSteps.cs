@@ -6,6 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Reqnroll;
 using Specht.Acceptance.Engine;
 using Specht.Composition;
+using Specht.Evaluation;
 using Specht.Manifest;
 using Specht.Model;
 using Specht.Report;

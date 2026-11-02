@@ -1,6 +1,7 @@
 using System.Text.Json.Nodes;
+using Specht.Model;
 
-namespace Specht.Model;
+namespace Specht.Evaluation;
 
 /// <summary>
 /// One rule violation, rendered as an MSBuild-shaped diagnostic so GitHub

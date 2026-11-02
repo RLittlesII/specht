@@ -4,6 +4,7 @@ using System.IO.Abstractions;
 using BenchmarkDotNet.Attributes;
 using Microsoft.Extensions.DependencyInjection;
 using Specht.Composition;
+using Specht.Evaluation;
 using Specht.Manifest;
 using Specht.Resources;
 using Specht.Tool;

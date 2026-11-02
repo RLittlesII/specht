@@ -3,6 +3,7 @@ using AwesomeAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using Reqnroll;
 using Specht.Composition;
+using Specht.Evaluation;
 using Specht.Model;
 using Specht.Report;
 using Specht.Rules;
@@ -155,7 +156,7 @@ public sealed class MatrixSteps
         using var services = (TypeResolver)new TypeRegistrar(new ServiceCollection().AddSpechtEngine()).Build();
         var original = ((IEnumerable<ISpechtRule>)services.Resolve(typeof(IEnumerable<ISpechtRule>))!).Where(static rule =>
             rule.Id != "SPEC034" && rule.Id != "SPEC035");
-        var baseline = SpechtRunner.Evaluate(EngineServices.Loader().Load(Tree.Root), original);
+        var baseline = new SpechtEvaluator(original, new SpechtViolationOrder()).Evaluate(EngineServices.Loader().Load(Tree.Root));
         SpechtReportDocument.From(_report!).ToJson().Should().Be(SpechtReportDocument.From(baseline).ToJson());
         _report!.RulesEvaluated.Should().Be(21);
     }

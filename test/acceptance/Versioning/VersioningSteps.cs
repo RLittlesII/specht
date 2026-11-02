@@ -8,6 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using AwesomeAssertions;
 using Reqnroll;
+using Specht.Evaluation;
 using Specht.Manifest;
 using Specht.Report;
 using Specht.Tests.Shared;

@@ -16,11 +16,8 @@ public sealed class DependencySymmetryRule : ISpechtRule
     public string Id => "SPEC051";
 
     /// <inheritdoc />
-    public IReadOnlyList<string> ReportedIds => ["SPEC051"];
-
-    /// <inheritdoc />
     /// <implements epic="0001" feature="F1" claim="B-001" />
-    public IEnumerable<SpechtViolation> Evaluate(SpechtModel model)
+    public IEnumerable<SpechtFinding> Evaluate(SpechtModel model)
     {
         var graph = model.DependencyGraph;
 
@@ -42,9 +39,7 @@ public sealed class DependencySymmetryRule : ISpechtRule
 
                     var opposite = key == "depends_on" ? "blocks" : "depends_on";
 
-                    yield return new SpechtViolation(
-                        "SPEC051",
-                        SpechtSeverity.Error,
+                    yield return new SpechtFinding(
                         feature.RelativePath,
                         feature.Document.Frontmatter.LineOf(key),
                         edge,
