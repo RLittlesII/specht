@@ -2,7 +2,7 @@ id: "0166"
 type: refactor
 title: Build the model from text through a builder, parsers and one reader
 
-status: in-progress
+status: done
 
 value: 3
 risk: 5
@@ -19,7 +19,7 @@ claims: []
 
 created: "2026-10-11"
 updated: "2026-11-02"
-closed: null
+closed: "2026-11-02"
 
 summary: |
   ADR-0027 lifted ADR-0014's benchmark gate on 2026-10-31: this stage
@@ -385,6 +385,81 @@ decisions:
     constructor keeps the four derivations item 0155 put there; criterion
     2's "no data type parses or loads itself" is read as text and files,
     which `SpechtSchemas` loses to `SpechtSchemaCompiler` (criterion 4).
+  - |
+    2026-11-02, benchmarker: the guard of ADR-0027 for ADR-0010 stage 6.
+    Base `370cc2fc` (`origin/main` at the rebase), head `8da695f6`.
+    Separate detached source copies on one host, made with `git archive`,
+    run with `./build.sh Benchmark --benchmark-filter
+    '*CheckBenchmarks.Check(Specifications: N)'`, BenchmarkDotNet 0.15.8
+    default job. Host: Apple M1 Max, 10 cores, macOS Tahoe 26.4
+    (25E246), .NET SDK 11.0.100-rc.2.26504.105, the net10.0 runtime
+    measured.
+    First run, 16:47 to 16:53, alternately base-100, head-100, base-1000,
+    head-1000, host heavily loaded:
+    100 specifications: base Mean 102.7 ms, Error 8.31 ms (CI 94.4 to
+    111.0 ms), Allocated 36.27 MB, 1-minute load 46.76 to 27.73; head
+    161.9 ms, Error 23.53 ms (CI 138.4 to 185.4 ms), 35.90 MB, load 27.73
+    to 30.41.
+    1,000 specifications: base Mean 585.4 ms, Error 11.63 ms (CI 573.8 to
+    597.0 ms), Allocated 357.85 MB, load 30.41 to 25.70; head 547.8 ms,
+    Error 3.66 ms (CI 544.1 to 551.5 ms), 354.40 MB, load 25.70 to 17.81.
+    The 100 row met the flag condition (mean +57.6%, the head interval
+    above the base's) under a 1-minute load of 28 to 47 and a head StdDev
+    of 66.36 ms. It was re-run on a quieter host on the coordinating
+    session's instruction, before any ruling.
+    Repeat, 16:53 to 16:59, quieter host, interleaved head first at 100,
+    then base and head at 1,000:
+    head-100 a: Mean 55.59 ms, Error 1.031 ms (CI 54.56 to 56.62 ms),
+    35.92 MB, load 14.23 to 9.85.
+    base-100 a: 57.94 ms, Error 0.993 ms (CI 56.95 to 58.93 ms),
+    36.27 MB, load 9.85 to 7.20.
+    head-100 b: 58.04 ms, Error 1.858 ms (CI 56.18 to 59.90 ms),
+    35.92 MB, load 7.20 to 11.43.
+    base-100 b: 57.44 ms, Error 0.712 ms (CI 56.73 to 58.15 ms),
+    36.27 MB, load 11.43 to 8.48.
+    base-1000 a: 620.8 ms, Error 27.97 ms (CI 592.8 to 648.8 ms),
+    358.09 MB, load 7.86 to 9.89.
+    head-1000 a: 550.7 ms, Error 3.47 ms (CI 547.2 to 554.2 ms),
+    354.40 MB, load 9.89 to 6.76.
+    Judged by 0109-F5 B-011 and B-012 under ComparisonPolicy.Initial: no
+    flag on the repeat at either size. At 100 the head's mean is -4.1%
+    (pair a) and +1.0% (pair b); at 1,000 -11.3%. Allocation falls at
+    both sizes (-1.0%). Only the absence of a flag is claimed; the
+    net11.0 runtime was not measured.
+  - |
+    2026-11-02, spec-author: closed by the pull request that delivers it,
+    branch `0166/load-the-model-from-the-tree` on `origin/main` at
+    `370cc2fc`.
+    Built (`8da695f6`): `SpechtModelReader` takes a root and sequences
+    `SpechtManifestStore`, `SpechtDiscovery` and `SpechtTreeStore`;
+    `SpechtModelBuilder` turns the text into one `SpechtModel` through the
+    instance parsers `FrontmatterReader` and `SpechtDocumentParser`;
+    `SpechtSchemaCompiler` builds `SpechtSchemas` as data.
+    `SpechtTreeStore.Load` reads exactly the root-relative paths it is
+    given, in that order, and `SpechtTreeFile.Text()` decodes them as
+    `File.ReadAllText` does. Discovery lists and reads nothing:
+    `FindTestFiles` replaces `ReadTestFiles` as a listing, and the reader
+    collects the listing into a `SpechtListing`.
+    `SpechtRootNotFoundException` is in `Specht.Tree`. The tool's
+    `EvidenceReconciler` joins the root to `RelativePath` and takes
+    `SpechtDocumentParser` by constructor (ruling 7).
+    Criterion 2: the static `SpechtDocument.Parse` is gone, and the
+    instance parse is `SpechtDocumentParser.Parse`, because `SpechtDocument`
+    stays data: no data type parses itself. `0109-F2` A-1 and decision
+    0002 name the parser (`1ef73fc1`).
+    Criterion 9: met by item 0153, and this change does not touch it.
+    Constraints preserved beyond the criteria's list: `0201-F5 C-2`
+    (ruling 7) and `0001-F12 C-2` (test files listed by `FindTestFiles`
+    and read through `SpechtTreeStore.Load`), cited in `679d2341`.
+    Owed after item 0335 merges, by `0001-F12`'s owners: in
+    `src/specht/Rules/Matrix/.spec/README.md`, § 6 (line 121) and § 7
+    (lines 132 and 156) name `SpechtModelLoader` and `ReadTestFiles`, and
+    § 8 (lines 187 and 201) names `EngineServices.Loader` and
+    `ReadTestFiles` (ruling 2).
+    Review: spec-reviewer findings 1 to 5 are addressed; `679d2341` cites
+    the two constraints above and fixes the four low findings.
+    Guard: no flag on the repeat at either size; the benchmarker's entry
+    above records it.
 
 out_of_scope:
   - "Moving `SpechtTree`, `SpechtTreeFile` and `SpechtTreeStore` into the engine, and their tests - item 0153."
