@@ -2,7 +2,7 @@ id: "0124"
 type: task
 title: Float the pin with a pin policy
 
-status: blocked
+status: ready-for-architecture
 
 value: 2
 risk: 3
@@ -19,9 +19,15 @@ claims:
   - B-053
   - B-054
   - B-056
+  - B-145
+  - B-146
+  - B-147
+  - B-148
+  - B-149
+  - B-150
 
 created: "2026-10-09"
-updated: "2026-10-29"
+updated: "2026-11-01"
 closed: null
 
 summary: |
@@ -30,15 +36,22 @@ summary: |
   version, and rejects any other value with exit 3. Value 2 for that
   reason, where the Feature's is 4. Risk 3: it is the one setting under
   which a tool release changes which version a tree is checked with.
-  Blocked on the owner: OQ-11, the manifest key's name and whether exact
-  has a value of its own; OQ-16, what `upgrade` brings the files to
-  under a floating pin and whether an unshipped pin inside the range
-  resolves. The exact default is B-055, in 0120.
+  The owner answered OQ-11, OQ-16, OQ-29 and OQ-50 on 2026-11-01
+  (decision 0020): the key, `upgrade` under a float, an unshipped pin,
+  `latest-minor` below 1.0.0, and the list's marks. The exact default
+  is B-055, in 0120.
 
 acceptance_criteria:
   - "B-053 — `latest-patch`: highest shipped version with the pin's major and minor"
   - "B-054 — `latest-minor`: highest shipped version with the pin's major"
   - "B-056 — a policy value not defined: stderr, stdout empty, exit 3"
+  - "B-145 — an unshipped pin under a floating policy: exit 3"
+  - "B-146 — `upgrade` under a floating policy: the version in use's files"
+  - "B-147 — `exact`: the pinned version"
+  - "B-148 — the list marks the version in use"
+  - "B-149 — no in-use mark when the check uses the pin"
+  - "B-150 — `latest-minor` on a 0.y.z pin: exit 3, naming `latest-patch`"
+  - "C-18 holds for every `upgrade` claim the item touches."
   - "§ 9 carries a row naming a test for each id above."
 
 decisions:
@@ -57,6 +70,15 @@ decisions:
     clean until they are re-homed or withdrawn; the spec's Tasks section
     raises it and does not decide it. OQ-11, OQ-16, OQ-29 and OQ-50 stay
     open, and the item stays blocked.
+  - |
+    2026-11-01, the repository owner, choosing "Keep, answer OQs now":
+    the item stays in milestone 0.4.0, and OQ-11, OQ-16, OQ-29 and OQ-50
+    are resolved (decision 0020). B-053, B-054, B-056 and B-084 amended;
+    B-145 to B-150 and C-18 added, B-145 to B-150 carried here. Status
+    ready-for-architecture: no open question holds the item. Rejected:
+    the readings each question recorded, listed in decision 0020 with
+    their costs. OQ-70 and OQ-71, raised by spec-author, proceed on
+    their defaults and are the owner's to reverse.
 
 out_of_scope:
   - "Any range but `latest-patch` and `latest-minor` — § 5 #8."
