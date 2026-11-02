@@ -9,7 +9,7 @@ namespace Specht.Model;
 /// <param name="frontmatter">The frontmatter reader.</param>
 /// <param name="discovery">The discovery stage.</param>
 /// <param name="schemas">The manifest stage.</param>
-/// <param name="tags">The pure companion-tag parser.</param>
+/// <param name="tags">The pure companion parser, for claim tags and scenarios.</param>
 /// <implements epic="0001" feature="F1" claim="B-004" />
 public sealed class SpechtModelLoader(
     IFileSystem fileSystem,
@@ -37,7 +37,7 @@ public sealed class SpechtModelLoader(
                 location,
                 SpechtDocument.Parse(fileSystem.File.ReadAllText(location.AbsolutePath), location.RelativePath),
                 discovery.FindCompanions(location, inputs)
-                    .Select(path => new FeatureFile(Relative(root, path), tags.Parse(fileSystem.File.ReadAllText(path), loaded.Structure)))
+                    .Select(path => tags.Read(Relative(root, path), fileSystem.File.ReadAllText(path), loaded.Structure))
                     .ToList()));
         }
 

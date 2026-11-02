@@ -5,7 +5,7 @@ using Specht.Model;
 
 namespace Specht.Rules.Matrix;
 
-/// <summary>Resolves matrix test names once from the parsed document and declared file texts, without I/O or diagnostics.</summary>
+/// <summary>Resolves matrix test names and Scenario cell titles once from parsed text and declared files, without I/O or diagnostics.</summary>
 /// <implements epic="0001" feature="F12" claim="B-001" />
 public sealed class MatrixResolver
 {
@@ -17,7 +17,7 @@ public sealed class MatrixResolver
     /// <implements epic="0001" feature="F12" claim="B-001" />
     public IReadOnlyList<MatrixClaimResolution> ResolveClaims(FeatureSpec feature, SpechtStructure structure, SpechtClaims claims)
     {
-        var rows = Resolve(feature.Document, structure, []).ToLookup(static row => row.Claim.Trim(), StringComparer.Ordinal);
+        var rows = Resolve(feature, structure, []).ToLookup(static row => row.Claim.Trim(), StringComparer.Ordinal);
         var comparer = structure.ClaimTagIgnoreCase ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal;
         var tags = feature.FeatureFiles.SelectMany(static file => file.Tags).ToLookup(static tag => tag.Id, comparer);
         return claims.Rows.Select((claim, index) => new MatrixClaimResolution(
@@ -25,14 +25,28 @@ public sealed class MatrixResolver
             rows[claim.Id].ToArray(), tags[claim.Id].ToArray())).ToArray();
     }
 
-    /// <summary>Reads the configured matrix columns by position and resolves their inline-code test names.</summary>
+    /// <summary>Reads the matrix columns by position and resolves their test names and their Scenario cell titles.</summary>
+    /// <param name="feature">The specification and its parsed companion snapshot.</param>
+    /// <param name="structure">The selected manifest's roles, tag-case, title and test settings.</param>
+    /// <param name="files">The declared file texts read once by the discovery store and shared by all consumers.</param>
+    /// <returns>The matrix rows, in document order, with root-relative resolution evidence.</returns>
+    /// <implements epic="0001" feature="F12" claim="B-008" />
+    public IReadOnlyList<MatrixRowResolution> Resolve(FeatureSpec feature, SpechtStructure structure, IReadOnlyList<SpechtTestFile> files) =>
+        Resolve(feature.Document, structure, files, feature.FeatureFiles);
+
+    /// <summary>Reads the matrix columns by position and resolves their test names, with no companion to hold a title.</summary>
     /// <param name="document">The specification already parsed by the model.</param>
     /// <param name="structure">The selected manifest's roles and test settings.</param>
     /// <param name="files">The declared file texts read once by the discovery store and shared by all consumers.</param>
     /// <returns>The matrix rows, in document order, with root-relative resolution evidence.</returns>
     /// <implements epic="0001" feature="F12" claim="B-001" />
     public IReadOnlyList<MatrixRowResolution> Resolve(
-        SpechtDocument document, SpechtStructure structure, IReadOnlyList<SpechtTestFile> files)
+        SpechtDocument document, SpechtStructure structure, IReadOnlyList<SpechtTestFile> files) =>
+        Resolve(document, structure, files, []);
+
+    /// <implements epic="0001" feature="F12" claim="B-001" />
+    private static MatrixRowResolution[] Resolve(
+        SpechtDocument document, SpechtStructure structure, IReadOnlyList<SpechtTestFile> files, IReadOnlyList<FeatureFile> companions)
     {
         var section = document.Section(structure.Roles["matrix"]);
         if (section is null)
@@ -40,6 +54,12 @@ public sealed class MatrixResolver
             return [];
         }
 
+        var comparer = structure.ClaimTagIgnoreCase ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal;
+        var named = companions
+            .SelectMany(static file => file.Scenarios, static (file, scenario) => (
+                Evidence: new MatrixScenarioResolution(scenario.Title, MatrixScenarioStatus.Resolved, file.RelativePath, scenario.Line),
+                scenario.Tags))
+            .ToLookup(static entry => entry.Evidence.Title, StringComparer.Ordinal);
         var ordered = files.OrderBy(static file => file.RelativePath, StringComparer.Ordinal).ToArray();
         var cache = new Dictionary<string, MatrixTestResolution>(StringComparer.Ordinal);
         var rows = new List<MatrixRowResolution>();
@@ -60,12 +80,37 @@ public sealed class MatrixResolver
                 tests.Add(resolution);
             }
 
+            var claim = cells.ElementAtOrDefault(0) ?? string.Empty;
+            var scenario = cells.ElementAtOrDefault(1) ?? string.Empty;
+            var titles = scenario.Split(';', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries)
+                .Select(title => ResolveTitle(title, claim.Trim(), structure.MatrixScenarioTitles, named, comparer))
+                .ToArray();
             rows.Add(new MatrixRowResolution(
-                section.RowLines[row], cells.ElementAtOrDefault(0) ?? string.Empty, cells.ElementAtOrDefault(1) ?? string.Empty,
-                cells.ElementAtOrDefault(2) ?? string.Empty, cells.ElementAtOrDefault(3) ?? string.Empty, tests.ToArray()));
+                section.RowLines[row], claim, scenario,
+                cells.ElementAtOrDefault(2) ?? string.Empty, cells.ElementAtOrDefault(3) ?? string.Empty, tests.ToArray(), titles));
         }
 
         return rows.ToArray();
+    }
+
+    /// <implements epic="0001" feature="F12" claim="B-009" />
+    private static MatrixScenarioResolution ResolveTitle(
+        string title, string claim, bool matching,
+        ILookup<string, (MatrixScenarioResolution Evidence, IReadOnlyList<FeatureTag> Tags)> named, StringComparer comparer)
+    {
+        if (!matching)
+        {
+            return new MatrixScenarioResolution(title, MatrixScenarioStatus.Unconfigured);
+        }
+
+        var scenarios = named[title].ToArray();
+        if (scenarios.Length == 0)
+        {
+            return new MatrixScenarioResolution(title, MatrixScenarioStatus.NoSuchTitle);
+        }
+
+        var tagged = scenarios.Where(scenario => scenario.Tags.Any(tag => comparer.Equals(tag.Id, claim))).Select(static scenario => scenario.Evidence);
+        return tagged.FirstOrDefault() ?? scenarios[0].Evidence with { Status = MatrixScenarioStatus.Untagged };
     }
 
     /// <implements epic="0001" feature="F12" claim="B-001" />
