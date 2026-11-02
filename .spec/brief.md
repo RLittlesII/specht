@@ -111,25 +111,41 @@ below remain the agreement; a consumer repository is not their authority.
 
 ## 4. The rule vocabulary (fixed; versioned with the schema)
 
-| Id                                                                     | Checks                                                                                                                                                                      |
-| ---------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| SPEC001                                                                | No YAML frontmatter                                                                                                                                                         |
-| SPEC002/003/004                                                        | Feature / item / epic frontmatter fails its JSON Schema                                                                                                                     |
-| SPEC010                                                                | Contracted sections missing, duplicated, or out of order                                                                                                                    |
-| SPEC011                                                                | Frontmatter `epic`/`id` disagree with the containing directory (legacy layout only)                                                                                         |
-| SPEC012                                                                | One identity specified in two places                                                                                                                                        |
-| SPEC013                                                                | A contracted table has no table, or the wrong headers                                                                                                                       |
-| SPEC020                                                                | Not exactly one companion `.feature` beside the spec                                                                                                                        |
-| SPEC021                                                                | A scenario tag resolves to no § 3 claim                                                                                                                                     |
-| SPEC030                                                                | Claim id breaks the grammar, or is declared twice                                                                                                                           |
-| SPEC031                                                                | § 9 row count per claim is not exactly one; § 9 cites a non-claim                                                                                                           |
-| SPEC040/041                                                            | Declared children / spikes do not resolve to one file (spikes resolve repository-wide, children beside the spec)                                                            |
-| SPEC043                                                                | Item id disagrees with its file name or its parent                                                                                                                          |
-| SPEC044                                                                | Item id reused, or the per-epic sequence skips a number                                                                                                                     |
-| SPEC050/051/052                                                        | Dependency names no Feature; edge declared from one end only; self-dependency or cycle                                                                                      |
-| SPEC060/061                                                            | Approved spec still has a `Missing` cell - from schema `0.3.0`, a spec whose `status` is `done` (`0001-F7` decision 0015) / an approved spec has an unapproved sign-off row |
-| Severity: all `Error` today. A manifest severity override and per-rule |
-| disable are part of the design (§ 5).                                  |
+| Id, schema `0.1.0` to `0.2.1` | Id from schema `0.3.0` | Checks                                                                                                                                                                      |
+| ----------------------------- | ---------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| SPEC001                       | SPEC1001               | No YAML frontmatter                                                                                                                                                         |
+| SPEC002/003/004               | SPEC1002/1003/1004     | Feature / item / epic frontmatter fails its JSON Schema                                                                                                                     |
+| SPEC010                       | SPEC2001               | Contracted sections missing, duplicated, or out of order                                                                                                                    |
+| SPEC013                       | SPEC2002               | A contracted table has no table, or the wrong headers                                                                                                                       |
+| SPEC011                       | SPEC3001               | Frontmatter `epic`/`id` disagree with the containing directory (legacy layout only)                                                                                         |
+| SPEC012                       | SPEC3002               | One identity specified in two places                                                                                                                                        |
+| SPEC020                       | SPEC4001               | Not exactly one companion `.feature` beside the spec                                                                                                                        |
+| SPEC021                       | SPEC4002               | A scenario tag resolves to no § 3 claim                                                                                                                                     |
+| SPEC030                       | SPEC4003               | Claim id breaks the grammar, or is declared twice                                                                                                                           |
+| SPEC031                       | SPEC4004               | § 9 row count per claim is not exactly one; § 9 cites a non-claim                                                                                                           |
+| SPEC034                       | SPEC4005               | A waived § 9 row names no signed-off approver and date - from schema `0.2.0`, off unless raised (`0001-F12`)                                                                |
+| SPEC035                       | SPEC4006               | A withdrawn or superseded claim is still carried - from schema `0.2.0`, off unless raised (`0001-F12`)                                                                      |
+| none                          | SPEC4009               | A § 9 Test cell names a test no declared test file holds, or names no test in inline code - from schema `0.3.0` (`0001-F12`)                                                |
+| SPEC040/041                   | SPEC5001/5002          | Declared children / spikes do not resolve to one file (spikes resolve repository-wide, children beside the spec)                                                            |
+| SPEC043                       | SPEC5003               | Item id disagrees with its file name or its parent                                                                                                                          |
+| SPEC044                       | SPEC5004               | Item id reused, or the per-epic sequence skips a number                                                                                                                     |
+| SPEC050/051/052               | SPEC6001/6002/6003     | Dependency names no Feature; edge declared from one end only; self-dependency or cycle                                                                                      |
+| SPEC060/061                   | SPEC7001/7002          | Approved spec still has a `Missing` cell - from schema `0.3.0`, a spec whose `status` is `done` (`0001-F7` decision 0015) / an approved spec has an unapproved sign-off row |
+
+Severity: all `Error` today. A manifest severity override and per-rule
+disable are part of the design (§ 5).
+
+Amended 2026-11-02 ([ADR-0029](adr/0029-rule-ids-take-four-digits-in-schema-0-3-0-and-published-versions-keep-theirs.md)):
+from schema `0.3.0` a rule id is `SPEC` and four digits, the thousands digit
+naming its group (ADR-0010 § "Rule ids"), by the owner's map; schema `0.1.0`,
+`0.2.0` and `0.2.1` keep the three-digit ids. Rows are in the new order. A
+specification that names a four-digit id reads, under a pin below `0.3.0`,
+as the three-digit id beside it; one that names a three-digit id and no pin
+names the same rule under any pin. Was: the three-digit ids alone, with
+`SPEC034` and `SPEC035` not listed. Amended 2026-11-02 (item `0334`,
+`9a7174bb`; ADR-0029): the `SPEC4009` row added; it is in `0.3.0` alone, so
+it has no three-digit id; `SPEC032` is its internal key, which no version
+reports.
 
 ## 5. Drafted design, to build on
 

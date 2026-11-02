@@ -82,8 +82,8 @@ Feature: Native Gherkin claims
     Given ".spec/features/arithmetic/add.feature" tags a scenario "@B-001" at line 7
     And ".spec/features/arithmetic/subtract.feature" tags a scenario "@B-001" at line 5
     When the check runs
-    Then the output has the line ".spec/features/arithmetic/add.feature(7): error SPEC030: duplicate claim id [B-001]"
-    And the output has the line ".spec/features/arithmetic/subtract.feature(5): error SPEC030: duplicate claim id [B-001]"
+    Then the output has the line ".spec/features/arithmetic/add.feature(7): error SPEC4003: duplicate claim id [B-001]"
+    And the output has the line ".spec/features/arithmetic/subtract.feature(5): error SPEC4003: duplicate claim id [B-001]"
 
   @B-009
   Scenario: A claim tag on an Examples block is reported
@@ -167,14 +167,14 @@ Feature: Native Gherkin claims
     Given the manifest declares no epic grammar
     And the layouts discover "src/arithmetic/.spec/README.md" with id "arithmetic"
     When the check runs
-    Then the output has a line "src/arithmetic/.spec/README.md(" naming "SPEC012"
-    And the output has a line naming "SPEC012" for the claim file set
+    Then the output has a line "src/arithmetic/.spec/README.md(" naming "SPEC3002"
+    And the output has a line naming "SPEC3002" for the claim file set
 
   @B-017
   Scenario: One identity declared by two sets
     Given the manifest declares a second claim file set with glob ".spec/features/sums/*.feature" and feature "arithmetic"
     When the check runs
-    Then the output has two lines naming "SPEC012" with the identifier "arithmetic"
+    Then the output has two lines naming "SPEC3002" with the identifier "arithmetic"
 
   @B-018
   Scenario: A file two sets match is reported
@@ -204,23 +204,23 @@ Feature: Native Gherkin claims
     Given the claim file set names the record ".spec/features/arithmetic/README.md"
     And the record holds every manifest section except "3. Acceptance Criteria"
     When the check runs
-    Then no "SPEC010" is reported for the record
-    And no "SPEC013" is reported for the record's claims section
+    Then no "SPEC2001" is reported for the record
+    And no "SPEC2002" is reported for the record's claims section
 
   @B-020
   Scenario: A record missing another section is still reported
     Given the claim file set names the record ".spec/features/arithmetic/README.md"
     And the record lacks the section "9. Traceability Matrix"
     When the check runs
-    Then the output has a line for the record naming "SPEC010"
+    Then the output has a line for the record naming "SPEC2001"
 
   @B-021
   Scenario: The companion rules leave a native Feature alone
     Given the claim file set names the record ".spec/features/arithmetic/README.md"
     And three claim files sit beside the record
     When the check runs
-    Then no "SPEC020" is reported for Feature "arithmetic"
-    And no "SPEC021" is reported for Feature "arithmetic"
+    Then no "SPEC4001" is reported for Feature "arithmetic"
+    And no "SPEC4002" is reported for Feature "arithmetic"
 
   @B-022
   Scenario: A claim file is not a stray companion
@@ -233,7 +233,7 @@ Feature: Native Gherkin claims
     Given the claim file set names the record ".spec/features/arithmetic/README.md"
     And the record's "9. Traceability Matrix" has one row per claim in the claim files
     When the check runs
-    Then no "SPEC031" is reported for the record
+    Then no "SPEC4004" is reported for the record
     And each row's scenario resolves against the set's claim files
 
   @B-023
@@ -241,13 +241,13 @@ Feature: Native Gherkin claims
     Given the claim file set names the record ".spec/features/arithmetic/README.md"
     And the claim files declare "B-001" and "B-002" and the record's matrix lists only "B-001"
     When the check runs
-    Then the output has a line for the record naming "SPEC031" with the identifier "B-002"
+    Then the output has a line for the record naming "SPEC4004" with the identifier "B-002"
 
   @B-024
   Scenario: Without a matrix the trace says none
     Given the claim file set names no record
     When the check runs
-    Then no "SPEC031" and no rule of Feature "0001-F12" is reported for Feature "arithmetic"
+    Then no "SPEC4004" and no rule of Feature "0001-F12" is reported for Feature "arithmetic"
     When "specht trace" runs
     Then each claim of Feature "arithmetic" has the status "none"
 

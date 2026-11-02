@@ -2,13 +2,17 @@ using System.IO.Abstractions;
 using System.IO.Abstractions.TestingHelpers;
 using System.Text.Json.Nodes;
 using AwesomeAssertions;
+using Specht.Evaluation;
 using Specht.Model;
 using Specht.Rules;
 using Specht.Tests.Shared;
 
 namespace Specht.Tests.Rules.Matrix;
 
-/// <summary>SPEC032 over an in-memory tree with consumer-owned headers, markers and exclusions (0001-F12 B-001 to B-007).</summary>
+/// <summary>
+/// SPEC032 over an in-memory tree with consumer-owned headers, markers and exclusions (0001-F12 B-001 to B-007), evaluated
+/// under the 0.3.0 pin, which reports it under <c>SPEC4009</c> (<c>0001-F7</c> B-151; ADR-0029).
+/// </summary>
 [Trait("Tier", "Unit")]
 public sealed class UnresolvedTestRuleUnitTests
 {
@@ -50,12 +54,13 @@ public sealed class UnresolvedTestRuleUnitTests
 
         // When
         rule.Should().NotBeNull("schema 0.3.0 ships the unresolved-test rule");
-        var findings = rule!.Evaluate(model).ToArray();
+        var findings = new SpechtEvaluator([rule!], new SpechtViolationOrder()).Evaluate(model).Violations.ToArray();
 
         // Then
         findings.Should().HaveCount(expected is null ? 0 : 1);
         if (expected is not null)
         {
+            findings[0].RuleId.Should().Be("SPEC4009");
             findings[0].File.Should().Be("src/sample/.spec/README.md");
             findings[0].Line.Should().Be(8);
             findings[0].Identifier.Should().Be("B-002");

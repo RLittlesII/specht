@@ -115,8 +115,8 @@ consumer's spec that does not:
 - Never insert a § 4 row above an existing one. Append.
 - Normalize the column when that Feature is next touched, one Feature at a
   time.
-- `SPEC070` (constraint-citation resolution) is a warning until the
-  normalization is done.
+- `SPEC070` (constraint-citation resolution), a working name no shipped
+  version holds, is a warning until the normalization is done.
 
 ## `specht`
 
@@ -125,19 +125,21 @@ specht                                 # check the current directory; MSBuild-sh
 specht --root <dir> --strict           # any violation fails
 specht --json                          # the report document on stdout instead of the line stream
 specht --report .artifacts/spec-check/spec-check.json
-specht --explain SPEC031               # a rule's full text; exit 4 for a rule id the pinned version lacks
+specht --explain SPEC4004              # a rule's full text; exit 4 for a rule id the pinned version lacks
 specht init                            # write the manifest into <root>/.specht/, never overwriting
 specht init --schemas --templates      # add the frontmatter schemas and templates
 specht init --all                      # the same two parts as --schemas --templates
 ./build.sh SpecCheck                   # the same command, on this repository's own tree
 ```
 
-Rules are `SPEC###`, grouped: `SPEC00x` frontmatter schema, `SPEC01x` structure
-and layout, `SPEC02x` the `.feature` companion, `SPEC03x` claims and traceability,
-`SPEC04x` children and tasks, `SPEC05x` the dependency graph, `SPEC06x` approval
-consistency. The full vocabulary is brief § 4; it is fixed per schema version
+From schema `0.3.0` rules are `SPEC` and four digits, grouped by the thousands
+digit: `SPEC1xxx` frontmatter, `SPEC2xxx` structure, `SPEC3xxx` identity,
+`SPEC4xxx` claims and feature files, `SPEC5xxx` work items, `SPEC6xxx`
+dependencies, `SPEC7xxx` approval, and `SPEC0xxx` reserved for faults of the
+tool. Schema `0.1.0` to `0.2.1` keep the three-digit ids ([ADR-0029](../../../../.spec/adr/0029-rule-ids-take-four-digits-in-schema-0-3-0-and-published-versions-keep-theirs.md)). The full
+vocabulary and the map are brief § 4; it is fixed per published schema version
 and is not restated here. Diagnostics are MSBuild-shaped —
-`<path>(<line>): error SPEC031: …` — so GitHub annotates them on the diff.
+`<path>(<line>): error SPEC4004: …` — so GitHub annotates them on the diff.
 
 It is **deterministic and offline**: it never calls GitHub, and every path it
 prints is repository-relative. Label-mirror drift is a separate concern and not

@@ -44,7 +44,7 @@ public sealed partial class InitSteps
     {
         File.Exists(Live(Manifest)).Should().BeTrue($"this repository's live manifest is .specht/{Manifest}");
         _liveManifest = JsonNode.Parse(File.ReadAllText(Live(Manifest)))!.AsObject();
-        _liveManifest["rules"] = new JsonObject { ["SPEC031"] = "warning" };
+        _liveManifest["rules"] = new JsonObject { [RuleIds.Under(_liveManifest, "SPEC031")] = "warning" };
     }
 
     [Given("a root directory with no configuration folder")]

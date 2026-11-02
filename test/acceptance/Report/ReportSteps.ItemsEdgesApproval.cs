@@ -73,39 +73,39 @@ public sealed partial class ReportSteps
 
     [Then("the violation's expectation names 0001-03 as the next number in the sequence")]
     public void ThenTheGapNamesItsNextNumber() =>
-        AssertRepairExpectation("SPEC044", new JsonObject { ["fileName"] = "0001-03-*.md", ["nextNumber"] = 3 });
+        AssertRepairExpectation(RuleIds.Under(Tree, "SPEC044"), new JsonObject { ["fileName"] = "0001-03-*.md", ["nextNumber"] = 3 });
 
     [Then("the {word} expectation names the declared item's file shape")]
     public void ThenTheDeclaredItemNamesItsFileShape(string ruleId)
     {
         var expected = new JsonObject { ["fileName"] = "0001-01-*.md" };
-        if (ruleId == "SPEC041")
+        if (RuleIds.Named("0.1.0", ruleId) == "SPEC041")
         {
             expected["type"] = "spike";
         }
 
-        AssertRepairExpectation(ruleId, expected);
+        AssertRepairExpectation(RuleIds.Named(Tree, ruleId), expected);
     }
 
     [Then("the violation's expectation carries the edge F2 must declare")]
     public void ThenTheMissingEdgeNamesItsDeclaration() =>
-        AssertRepairExpectation("SPEC051", new JsonObject
+        AssertRepairExpectation(RuleIds.Under(Tree, "SPEC051"), new JsonObject
         {
             ["edge"] = new JsonObject { ["feature"] = "0001-F2", ["key"] = "blocks", ["value"] = "0001-F1" },
         });
 
     [Then("the violation's expectation carries F1 and F2 as the Features a dependency could name")]
     public void ThenTheUnknownDependencyNamesItsTargets() =>
-        AssertRepairExpectation("SPEC050", new JsonObject { ["features"] = new JsonArray("0001-F1", "0001-F2") });
+        AssertRepairExpectation(RuleIds.Under(Tree, "SPEC050"), new JsonObject { ["features"] = new JsonArray("0001-F1", "0001-F2") });
 
     [Then("the F1 cycle expectation lists F1, F2 and F2 in order")]
     public void ThenTheCyclePreservesItsLeadIn() =>
-        AssertRepairExpectation("SPEC052", new JsonObject { ["cycle"] = new JsonArray("0001-F1", "0001-F2", "0001-F2") },
+        AssertRepairExpectation(RuleIds.Under(Tree, "SPEC052"), new JsonObject { ["cycle"] = new JsonArray("0001-F1", "0001-F2", "0001-F2") },
             "dependency cycle: 0001-F1 ->");
 
     [Then("the violation's expectation names the file of the item that declared 0001-02 first")]
     public void ThenTheReusedIdNamesItsFirstHolder() =>
-        AssertRepairExpectation("SPEC044", new JsonObject
+        AssertRepairExpectation(RuleIds.Under(Tree, "SPEC044"), new JsonObject
         {
             ["fileName"] = "0001-02-*.md",
             ["firstDeclaration"] = "epics/0001-epic/F1-feature/0001-02-first.md",
@@ -113,11 +113,13 @@ public sealed partial class ReportSteps
 
     [Then("the violation's expectation names the cell that must change before the approved status is honest")]
     public void ThenTheMissingCellNamesItsPosition() =>
-        AssertRepairExpectation("SPEC060", new JsonObject { ["section"] = "9. Traceability Matrix", ["row"] = 1, ["columns"] = new JsonArray(3) });
+        AssertRepairExpectation(
+            RuleIds.Under(Tree, "SPEC060"),
+            new JsonObject { ["section"] = "9. Traceability Matrix", ["row"] = 1, ["columns"] = new JsonArray(3) });
 
     [Then("the approval expectation names the sign-off row that must change")]
     public void ThenTheSignOffNamesItsRow() =>
-        AssertRepairExpectation("SPEC061", new JsonObject { ["section"] = "12. Sign-off", ["row"] = 2 });
+        AssertRepairExpectation(RuleIds.Under(Tree, "SPEC061"), new JsonObject { ["section"] = "12. Sign-off", ["row"] = 2 });
 
     private void AssertRepairExpectation(string ruleId, JsonObject expected, string? messagePart = null)
     {

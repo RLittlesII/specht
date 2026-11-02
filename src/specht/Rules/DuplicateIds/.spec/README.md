@@ -56,18 +56,18 @@ A constraint or open-question id is a citation target: `0001-F5 C-12` must name 
 
 ## 3. Acceptance Criteria
 
-<!-- last written by: spec-author, 2026-10-09 (after review round 1: B-003 and B-012 to B-014 amended, B-015 added, decision 0003) -->
+<!-- last written by: spec-author, 2026-11-02 (item 0169, ADR-0029: rule ids renamed to schema 0.3.0's) -->
 
 | ID    | Claim                                                                                                                                                            | Source                         | Status |
 | ----- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------ | ------ |
 | B-001 | Given a § 4 in which two rows' first cells are the same constraint id, this Feature reports that constraint id as declared twice.                                | decision 0002; C-11            | Active |
 | B-002 | Given a § 11 in which two rows' first cells are the same open-question id, this Feature reports that open-question id as declared twice.                         | decision 0002; C-11            | Active |
-| B-003 | Given an id declared on two or more rows of one table, this Feature reports one finding for each row after the first, on that row's line.                        | `SPEC030`; Must-5              | Active |
-| B-004 | Given a finding of this Feature, its message names the id and the line of the first row that declares it.                                                        | `SPEC030`; Must-5              | Active |
+| B-003 | Given an id declared on two or more rows of one table, this Feature reports one finding for each row after the first, on that row's line.                        | `SPEC4003`; Must-5             | Active |
+| B-004 | Given a finding of this Feature, its message names the id and the line of the first row that declares it.                                                        | `SPEC4003`; Must-5             | Active |
 | B-005 | Given a row marked withdrawn and a second row carrying the same id, this Feature reports the second row as it does any other duplicate.                          | AGENTS.md § "Stable IDs"; C-3  | Active |
 | B-006 | Given an id declared once in a first cell and cited again in another cell or in prose, this Feature reports nothing.                                             | C-2                            | Active |
 | B-007 | Given two § 4 rows whose first cells are the same text and not a constraint id, such as a bare `3`, this Feature reports nothing, leaving the rows to `0101-F3`. | A-5; C-2                       | Active |
-| B-008 | Given a claim id declared twice in § 3, this Feature reports nothing, leaving the one finding to `SPEC030`.                                                      | decision 0002; C-8             | Active |
+| B-008 | Given a claim id declared twice in § 3, this Feature reports nothing, leaving the one finding to `SPEC4003`.                                                     | decision 0002; C-8             | Active |
 | B-009 | Given two specifications that each declare `C-1` once, this Feature reports nothing.                                                                             | C-1                            | Active |
 | B-010 | Given a § 4 or a § 11 that holds no table, this Feature reports nothing for that section.                                                                        | C-2                            | Active |
 | B-011 | Given a § 4 and a § 11 in which every id is declared once, this Feature reports nothing.                                                                         | decision 0002                  | Active |
@@ -156,10 +156,12 @@ Pending: owned by `test-writer`, written after agreement.
 
 ## 10. Lessons / Spec Deltas
 
-<!-- last written by: spec-author, 2026-10-09 (after review round 2) -->
+<!-- last written by: spec-author, 2026-11-02 (item 0169, ADR-0029: rule ids renamed to schema 0.3.0's) -->
 
 - 2026-10-09, after review round 1, with the specification still `draft`: claims, constraints and scenarios name the existing schema version as `0.1.0` and the later one by what it adds, its number being OQ-4 (`0001-F7` decision 0005, OQ-18); B-003 covers two rows as well as three. The owner answered OQ-3: ids are compared by text (decision 0003; C-11; B-015). OQ-4 to OQ-6 raised. No id changed.
 - 2026-10-09, after review round 2 (approved), with the specification still `draft`: C-6 and the description name the version by the rules it adds, as § 1 and A-4 do, the shared major being OQ-4's unasked default; § 5 row 5 and decision 0002 cite `0055-F2` B-017 and C-7, merged since; OQ-5 is raised in `0101-F1` § 11 as `0101-F1` OQ-3; OQ-2's Blocks gains B-009 and OQ-4's names C-6, A-4 and the Background; decision 0003 sets the owner's answer apart from the question's `SPEC030` comparison. No claim's text and no id changed.
+
+- 2026-11-02, item `0169` ([ADR-0029](../../../../../.spec/adr/0029-rule-ids-take-four-digits-in-schema-0-3-0-and-published-versions-keep-theirs.md)): the shipped rules this Feature's claims and scenarios name take schema `0.3.0`'s four-digit ids, each claim keeping its id; under a pin below `0.3.0` each reads as the three-digit id brief § 4 maps it from.
 
 ## 11. Open Questions
 

@@ -20,7 +20,9 @@ namespace Specht.Acceptance.Versioning;
 /// tree's own <c>spec_status</c> where the step names none. "The check runs" launches the built tool with <c>--json</c>.
 /// B-123 reads the pinned vocabulary through the engine's <see cref="RuleEntriesReader"/> and runs the engine in process
 /// over a done Feature with a missing row, so it asserts which ids report that row and not which ids the version holds:
-/// the owner adds rules to the unpublished 0.3.0. B-124 reads the tool's embedded feature template.
+/// the owner adds rules to the unpublished 0.3.0. B-124 reads the tool's embedded feature template. The two rules' ids are
+/// read at the tree's pin (B-151, B-152): <c>SPEC060</c> and <c>SPEC061</c> below 0.3.0, <c>SPEC7001</c> and
+/// <c>SPEC7002</c> from it.
 /// </summary>
 public sealed partial class VersioningSteps
 {
@@ -54,8 +56,8 @@ public sealed partial class VersioningSteps
     [Then("the missing test is reported by the missing-coverage rule")]
     public void ThenTheMissingTestIsReportedByTheMissingCoverageRule() =>
         Violations
-            .Where(static violation => violation["ruleId"]!.GetValue<string>() == MissingCoverageRule
-                                       && violation["file"]!.GetValue<string>() == SamplePath)
+            .Where(violation => violation["ruleId"]!.GetValue<string>() == MissingCoverageRule
+                                && violation["file"]!.GetValue<string>() == SamplePath)
             .Select(static violation => violation["identifier"]?.GetValue<string>())
             .Should()
             .Equal("B-001");
@@ -69,17 +71,17 @@ public sealed partial class VersioningSteps
     [Then("the missing-coverage message is {string}")]
     public void ThenTheMissingCoverageMessageIs(string message) =>
         Violations
-            .Where(static violation => violation["ruleId"]!.GetValue<string>() == MissingCoverageRule)
+            .Where(violation => violation["ruleId"]!.GetValue<string>() == MissingCoverageRule)
             .Select(static violation => violation["message"]!.GetValue<string>())
             .Should()
             .Equal(message);
 
-    [Then("the missing-coverage rule is SPEC060 at error severity")]
-    public void ThenTheMissingCoverageRuleIsSpec060AtErrorSeverity()
+    [Then(@"^the missing-coverage rule is (SPEC[0-9]+) at error severity$")]
+    public void ThenTheMissingCoverageRuleIsAtErrorSeverity(string ruleId)
     {
-        _entries.Should().ContainSingle(static entry => entry.Id == MissingCoverageRule)
+        _entries.Should().ContainSingle(entry => entry.Id == ruleId)
             .Which.DefaultSeverity.Should().Be(SpechtRuleLevel.Error);
-        Report.Violations.Where(static violation => violation.RuleId == MissingCoverageRule)
+        Report.Violations.Where(violation => violation.RuleId == ruleId)
             .Select(static violation => (violation.Identifier, violation.Severity))
             .Should()
             .Equal(("B-001", SpechtSeverity.Error));
@@ -104,7 +106,11 @@ public sealed partial class VersioningSteps
     [Then("that the missing-coverage rule reports it once the delivery status is done, unless the manifest lowers the rule")]
     public void ThenTheMissingCoverageRuleReportsItOnceTheDeliveryStatusIsDone() =>
         TraceabilityGuidance.Should().Contain(
-            "it does not block spec_status reaching approved; `SPEC060` reports it once status is done, unless the manifest lowers the rule");
+            "it does not block spec_status reaching approved; `SPEC7001` reports it once status is done, unless the manifest lowers the rule");
+
+    private string MissingCoverageRule => RuleIds.Under(Tree, "SPEC060");
+
+    private string SignOffRule => RuleIds.Under(Tree, "SPEC061");
 
     private string TraceabilityGuidance
     {
@@ -137,10 +143,6 @@ public sealed partial class VersioningSteps
 
         Tree.WriteCoLocatedFeature("src/sample", "0001", "F1", frontmatter);
     }
-
-    private const string MissingCoverageRule = "SPEC060";
-
-    private const string SignOffRule = "SPEC061";
 
     private const string SamplePath = "src/sample/.spec/README.md";
 

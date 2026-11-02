@@ -124,3 +124,11 @@ Feature: The engine, extracted unchanged
     When the engine runs
     Then the fault keeps the identity of the original failure
     And the retained failure adds no field or private detail to the report
+
+  @B-018
+  Scenario: The verdicts on the baseline tree pinned to 0.3.0 match its golden report
+    Given the baseline tree the tests build, pinned to schema version 0.3.0
+    And the golden report committed for that tree under version 0.3.0
+    When the engine runs on that tree
+    Then it reports the same violations as that golden report, with the same rule, severity, file, line, identifier and message
+    And in the same order

@@ -65,7 +65,7 @@
   <!-- The check's scenarios build their trees with the engine tests' fixture, over the live schema set it copies from the
        output (specht-conventions § Testing: fixtures are built, not copied). -->
   <ItemGroup>
-    <!-- The baseline tree and its golden report (0001-F1 B-004, C-10), the same files the engine tests read. -->
+    <!-- The baseline tree and its golden reports (0001-F1 B-004, B-018, C-10), the same files the engine tests read. -->
     <!-- The engine's built library and the references that would let the machine reach a verdict (B-005, B-006). -->
     <!-- The reader the rule page tests and steps share (0001-F3 B-032, B-033). -->
     <!-- The engine as AddSpechtEngine() registers it (item 0107), which the fixture's run and the steps resolve the runner and the model loader from. -->
@@ -87,8 +87,8 @@
     <Compile Include="..\tests\Shared\SpechtTree.cs">
       <Link>Check\SpechtTree.cs</Link>
     </Compile>
-    <Content Include="..\tests\Engine\Baseline\engine-e7dba24.json">
-      <Link>Baseline\engine-e7dba24.json</Link>
+    <Content Include="..\tests\Engine\Baseline\*.json">
+      <Link>Baseline\%(Filename)%(Extension)</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <!-- The imported fixture relies on these implicit usings (0001-F1 C-2). -->

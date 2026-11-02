@@ -58,16 +58,16 @@ public sealed class SchemaPinCommandIntegrationTests
     }
 
     [Theory]
-    [InlineData("0.1.0", "0.2.0")]
-    [InlineData("0.2.0", "0.1.0")]
-    [InlineData("7.0.0", "0.2.0")]
-    [InlineData("wrong", "0.2.0")]
-    public void ExistingPin_WhenPinning_ShouldChangeOnlyItsValue(string before, string target)
+    [InlineData("0.1.0", "0.2.0", "SPEC031")]
+    [InlineData("0.2.0", "0.1.0", "SPEC031")]
+    [InlineData("7.0.0", "0.2.0", "SPEC4004")]
+    [InlineData("wrong", "0.2.0", "SPEC4004")]
+    public void ExistingPin_WhenPinning_ShouldChangeOnlyItsValue(string before, string target, string rule)
     {
         // Given
         using var tree = new SpechtTree();
         var text = "{\r\n  \"$comment\": \"schemaVersion in a value is untouched 😀\",\r\n  \"schemaVersion\" : \"" + before
-            + "\",\r\n  \"rules\": {\"SPEC031\": \"warning\"}\r\n}\r\n";
+            + "\",\r\n  \"rules\": {\"" + rule + "\": \"warning\"}\r\n}\r\n";
         var path = Path.Combine(tree.Root, SpechtTree.ManifestPath);
         File.WriteAllBytes(path, [0xEF, 0xBB, 0xBF, .. Encoding.UTF8.GetBytes(text)]);
         var snapshot = Directory.GetFiles(tree.Root, "*", SearchOption.AllDirectories).ToDictionary(

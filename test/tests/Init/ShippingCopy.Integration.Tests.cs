@@ -53,7 +53,7 @@ public sealed partial class ShippingCopyIntegrationTests
         var path = Path.Combine([AppContext.BaseDirectory, .. SpechtTree.ManifestPath.Split('/')]);
         File.Exists(path).Should().BeTrue($"this repository's live manifest is {SpechtTree.ManifestPath}");
         var live = JsonNode.Parse(File.ReadAllText(path))!.AsObject();
-        live["rules"] = new JsonObject { ["SPEC031"] = "warning" };
+        live["rules"] = new JsonObject { ["SPEC4004"] = "warning" };
 
         // When
         var embedded = JsonNode.Parse(Read(name))!.AsObject();

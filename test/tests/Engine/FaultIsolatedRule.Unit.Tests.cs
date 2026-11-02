@@ -6,6 +6,7 @@ using Specht.Manifest;
 using Specht.Model;
 using Specht.Report;
 using Specht.Rules;
+using Specht.Tests.Evaluation;
 using Specht.Tests.Shared;
 
 namespace Specht.Tests.Engine;
@@ -86,6 +87,21 @@ public sealed class FaultIsolatedRuleUnitTests
 
             throw new FormatException(secret);
         }
+    }
+
+    [Theory]
+    [ClassData(typeof(ClaimRowIdsByVersion))]
+    public void ARuleThatThrowsUnderAPinnedVersion_WhenEvaluated_ShouldNameTheRuleByThatVersionsIdInItsError(string pin, string expected)
+    {
+        // Given
+        SpechtModel model = new SpechtModelFixture().WithManifest(new JsonObject { ["schemaVersion"] = pin });
+        var rule = new FaultIsolatedRule(new Rule("SPEC031", static () => throw new FormatException()));
+
+        // When
+        var actual = rule.Evaluate(model).ToArray();
+
+        // Then
+        actual.Should().ContainSingle().Which.Message.Should().Be($"Rule {expected} failed with {nameof(FormatException)}.");
     }
 
     [Fact]

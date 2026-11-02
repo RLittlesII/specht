@@ -1,15 +1,19 @@
 using System.Text.Json.Nodes;
 using AwesomeAssertions;
+using Specht.Tests.Engine.Baseline;
 using Specht.Tests.Shared;
+using Specht.Tests.Versioning;
 using Specht.Versioning;
 
 namespace Specht.Tests.Engine;
 
 /// <summary>
 /// The runner over a tree on disk and a version set built in memory from the embedded version 0.1.0 (<c>0001-F7</c>
-/// B-001, B-002, B-014, B-055; C-4): the manifest is the tree's, its pin selects exactly the version it names, and that
+/// B-001, B-002, B-014, B-055, B-151, B-152; C-4): the manifest is the tree's, its pin selects exactly the version it names, and that
 /// version's frontmatter schemas and rule vocabulary are the ones the check uses, whatever the tree's own
-/// <c>.specht/schema/frontmatter/</c> holds.
+/// <c>.specht/schema/frontmatter/</c> holds. On the shipped versions, the baseline tree pinned to 0.2.0 or 0.2.1 is
+/// reported under three-digit ids and pinned to 0.3.0 under four-digit ids, each in that version's vocabulary (B-151,
+/// B-152).
 /// </summary>
 [Trait("Tier", "Integration")]
 public sealed class SpechtRunnerVersionsIntegrationTests
@@ -103,6 +107,24 @@ public sealed class SpechtRunnerVersionsIntegrationTests
         // Then
         report.Violations.Select(static violation => violation.RuleId).Should().Equal(expected, because);
         report.RulesEvaluated.Should().Be(pinned.RuleIds.Count, because);
+    }
+
+    [Theory]
+    [ClassData(typeof(ShippedVocabularies))]
+    public void TheBaselineTreePinnedToAShippedVersion_WhenChecked_ShouldReportEveryViolationUnderAnIdOfThatVersionsVocabulary(
+        string version,
+        string[] vocabulary)
+    {
+        // Given
+        using var tree = new SpechtTree();
+        BaselineTree.Write(tree);
+        tree.Pin(version);
+
+        // When
+        var report = tree.Run();
+
+        // Then
+        report.Violations.Select(static violation => violation.RuleId).Should().NotBeEmpty().And.AllSatisfy(id => id.Should().BeOneOf(vocabulary));
     }
 
     private static void Pin(SpechtTree tree, string? version)

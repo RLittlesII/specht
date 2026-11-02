@@ -11,7 +11,7 @@ namespace Specht.Tests.Engine;
 public sealed class SpechtRunnerViolationsIntegrationTests
 {
     [Fact]
-    public void ASpecificationWithNoFrontmatter_WhenChecked_ShouldReportSpec001()
+    public void ASpecificationWithNoFrontmatter_WhenChecked_ShouldReportSpec1001()
     {
         // Given
         using var tree = new SpechtTree();
@@ -22,11 +22,11 @@ public sealed class SpechtRunnerViolationsIntegrationTests
         var report = tree.Run();
 
         // Then
-        report.Violations.Should().Contain(static violation => violation.RuleId == "SPEC001");
+        report.Violations.Should().Contain(static violation => violation.RuleId == "SPEC1001");
     }
 
     [Fact]
-    public void FrontmatterThatIsNotValidYaml_WhenChecked_ShouldReportSpec001()
+    public void FrontmatterThatIsNotValidYaml_WhenChecked_ShouldReportSpec1001()
     {
         // Given
         using var tree = new SpechtTree();
@@ -37,11 +37,11 @@ public sealed class SpechtRunnerViolationsIntegrationTests
         var report = tree.Run();
 
         // Then
-        report.Violations.Should().Contain(static violation => violation.RuleId == "SPEC001");
+        report.Violations.Should().Contain(static violation => violation.RuleId == "SPEC1001");
     }
 
     [Fact]
-    public void FrontmatterWithNoClosingDelimiter_WhenChecked_ShouldReportSpec001()
+    public void FrontmatterWithNoClosingDelimiter_WhenChecked_ShouldReportSpec1001()
     {
         // Given
         using var tree = new SpechtTree();
@@ -52,11 +52,11 @@ public sealed class SpechtRunnerViolationsIntegrationTests
         var report = tree.Run();
 
         // Then
-        report.Violations.Should().Contain(static violation => violation.RuleId == "SPEC001");
+        report.Violations.Should().Contain(static violation => violation.RuleId == "SPEC1001");
     }
 
     [Fact]
-    public void AnItemWhoseStatusIsOutsideItsEnum_WhenChecked_ShouldReportSpec003()
+    public void AnItemWhoseStatusIsOutsideItsEnum_WhenChecked_ShouldReportSpec1003()
     {
         // Given
         using var tree = new SpechtTree();
@@ -67,11 +67,11 @@ public sealed class SpechtRunnerViolationsIntegrationTests
         var report = tree.Run();
 
         // Then
-        report.Violations.Should().Contain(static violation => violation.RuleId == "SPEC003" && violation.Identifier == "status");
+        report.Violations.Should().Contain(static violation => violation.RuleId == "SPEC1003" && violation.Identifier == "status");
     }
 
     [Fact]
-    public void AnEpicWhosePriorityIsOutsideItsEnum_WhenChecked_ShouldReportSpec004()
+    public void AnEpicWhosePriorityIsOutsideItsEnum_WhenChecked_ShouldReportSpec1004()
     {
         // Given
         using var tree = new SpechtTree();
@@ -82,7 +82,7 @@ public sealed class SpechtRunnerViolationsIntegrationTests
         var report = tree.Run();
 
         // Then
-        report.Violations.Should().Contain(static violation => violation.RuleId == "SPEC004" && violation.Identifier == "priority");
+        report.Violations.Should().Contain(static violation => violation.RuleId == "SPEC1004" && violation.Identifier == "priority");
     }
 
     [Fact]
@@ -101,7 +101,7 @@ public sealed class SpechtRunnerViolationsIntegrationTests
     }
 
     [Fact]
-    public void ASectionDeclaredTwice_WhenChecked_ShouldReportSpec010()
+    public void ASectionDeclaredTwice_WhenChecked_ShouldReportSpec2001()
     {
         // Given
         using var tree = new SpechtTree();
@@ -113,11 +113,11 @@ public sealed class SpechtRunnerViolationsIntegrationTests
 
         // Then
         report.Violations.Should().Contain(static violation =>
-            violation.RuleId == "SPEC010" && violation.Identifier == "7. Technical Design" && violation.Message.Contains("2 times"));
+            violation.RuleId == "SPEC2001" && violation.Identifier == "7. Technical Design" && violation.Message.Contains("2 times"));
     }
 
     [Fact]
-    public void SectionsOutOfOrder_WhenChecked_ShouldReportSpec010()
+    public void SectionsOutOfOrder_WhenChecked_ShouldReportSpec2001()
     {
         // Given
         using var tree = new SpechtTree();
@@ -130,11 +130,11 @@ public sealed class SpechtRunnerViolationsIntegrationTests
 
         // Then
         report.Violations.Should().Contain(static violation =>
-            violation.RuleId == "SPEC010" && violation.Message.Contains("out of order"));
+            violation.RuleId == "SPEC2001" && violation.Message.Contains("out of order"));
     }
 
     [Fact]
-    public void ATraceabilityMatrixWithNoTable_WhenChecked_ShouldReportSpec013()
+    public void ATraceabilityMatrixWithNoTable_WhenChecked_ShouldReportSpec2002()
     {
         // Given
         using var tree = new SpechtTree();
@@ -145,11 +145,11 @@ public sealed class SpechtRunnerViolationsIntegrationTests
 
         // Then
         report.Violations.Should().Contain(static violation =>
-            violation.RuleId == "SPEC013" && violation.Message.Contains("carries no table"));
+            violation.RuleId == "SPEC2002" && violation.Message.Contains("carries no table"));
     }
 
     [Fact]
-    public void FrontmatterEpicThatDisagreesWithItsDirectory_WhenChecked_ShouldReportSpec011()
+    public void FrontmatterEpicThatDisagreesWithItsDirectory_WhenChecked_ShouldReportSpec3001()
     {
         // Given
         using var tree = new SpechtTree();
@@ -160,11 +160,11 @@ public sealed class SpechtRunnerViolationsIntegrationTests
 
         // Then
         report.Violations.Should().Contain(static violation =>
-            violation.RuleId == "SPEC011" && violation.Message.Contains("epic '0002'"));
+            violation.RuleId == "SPEC3001" && violation.Message.Contains("epic '0002'"));
     }
 
     [Fact]
-    public void TwoCompanionGherkinFiles_WhenChecked_ShouldReportSpec020()
+    public void TwoCompanionGherkinFiles_WhenChecked_ShouldReportSpec4001()
     {
         // Given
         using var tree = new SpechtTree();
@@ -176,11 +176,11 @@ public sealed class SpechtRunnerViolationsIntegrationTests
 
         // Then
         report.Violations.Should().Contain(static violation =>
-            violation.RuleId == "SPEC020" && violation.Message.Contains("found 2"));
+            violation.RuleId == "SPEC4001" && violation.Message.Contains("found 2"));
     }
 
     [Fact]
-    public void AClaimIdThatBreaksTheGrammar_WhenChecked_ShouldReportSpec030()
+    public void AClaimIdThatBreaksTheGrammar_WhenChecked_ShouldReportSpec4003()
     {
         // Given
         using var tree = new SpechtTree();
@@ -195,11 +195,11 @@ public sealed class SpechtRunnerViolationsIntegrationTests
         var report = tree.Run();
 
         // Then
-        report.Violations.Should().Contain(static violation => violation.RuleId == "SPEC030" && violation.Identifier == "B-1");
+        report.Violations.Should().Contain(static violation => violation.RuleId == "SPEC4003" && violation.Identifier == "B-1");
     }
 
     [Fact]
-    public void AClaimDeclaredTwice_WhenChecked_ShouldReportSpec030()
+    public void AClaimDeclaredTwice_WhenChecked_ShouldReportSpec4003()
     {
         // Given
         using var tree = new SpechtTree();
@@ -216,11 +216,11 @@ public sealed class SpechtRunnerViolationsIntegrationTests
 
         // Then
         report.Violations.Should().Contain(static violation =>
-            violation.RuleId == "SPEC030" && violation.Identifier == "B-001" && violation.Message.Contains("twice"));
+            violation.RuleId == "SPEC4003" && violation.Identifier == "B-001" && violation.Message.Contains("twice"));
     }
 
     [Fact]
-    public void ATraceabilityRowForAClaimThatDoesNotExist_WhenChecked_ShouldReportSpec031()
+    public void ATraceabilityRowForAClaimThatDoesNotExist_WhenChecked_ShouldReportSpec4004()
     {
         // Given
         using var tree = new SpechtTree();
@@ -236,11 +236,11 @@ public sealed class SpechtRunnerViolationsIntegrationTests
         var report = tree.Run();
 
         // Then
-        report.Violations.Should().Contain(static violation => violation.RuleId == "SPEC031" && violation.Identifier == "B-999");
+        report.Violations.Should().Contain(static violation => violation.RuleId == "SPEC4004" && violation.Identifier == "B-999");
     }
 
     [Fact]
-    public void ADeclaredChildThatResolvesToTwoFiles_WhenChecked_ShouldReportSpec040()
+    public void ADeclaredChildThatResolvesToTwoFiles_WhenChecked_ShouldReportSpec5001()
     {
         // Given
         using var tree = new SpechtTree();
@@ -253,11 +253,11 @@ public sealed class SpechtRunnerViolationsIntegrationTests
 
         // Then
         report.Violations.Should().Contain(static violation =>
-            violation.RuleId == "SPEC040" && violation.Message.Contains("resolves to 2 files"));
+            violation.RuleId == "SPEC5001" && violation.Message.Contains("resolves to 2 files"));
     }
 
     [Fact]
-    public void ADeclaredSpikeWhoseFileIsATask_WhenChecked_ShouldReportSpec041()
+    public void ADeclaredSpikeWhoseFileIsATask_WhenChecked_ShouldReportSpec5002()
     {
         // Given
         using var tree = new SpechtTree();
@@ -268,11 +268,11 @@ public sealed class SpechtRunnerViolationsIntegrationTests
         var report = tree.Run();
 
         // Then
-        report.Violations.Should().Contain(static violation => violation.RuleId == "SPEC041" && violation.Identifier == "0001-01");
+        report.Violations.Should().Contain(static violation => violation.RuleId == "SPEC5002" && violation.Identifier == "0001-01");
     }
 
     [Fact]
-    public void ADeclaredSpikeWithNoFile_WhenChecked_ShouldReportSpec041()
+    public void ADeclaredSpikeWithNoFile_WhenChecked_ShouldReportSpec5002()
     {
         // Given
         using var tree = new SpechtTree();
@@ -282,7 +282,7 @@ public sealed class SpechtRunnerViolationsIntegrationTests
         var report = tree.Run();
 
         // Then
-        report.Violations.Should().Contain(static violation => violation.RuleId == "SPEC041" && violation.Identifier == "0001-16");
+        report.Violations.Should().Contain(static violation => violation.RuleId == "SPEC5002" && violation.Identifier == "0001-16");
     }
 
     [Fact]
@@ -302,7 +302,7 @@ public sealed class SpechtRunnerViolationsIntegrationTests
     }
 
     [Fact]
-    public void AnItemWhoseParentDisagreesWithItsFeature_WhenChecked_ShouldReportSpec043()
+    public void AnItemWhoseParentDisagreesWithItsFeature_WhenChecked_ShouldReportSpec5003()
     {
         // Given
         using var tree = new SpechtTree();
@@ -314,11 +314,11 @@ public sealed class SpechtRunnerViolationsIntegrationTests
 
         // Then
         report.Violations.Should().Contain(static violation =>
-            violation.RuleId == "SPEC043" && violation.Message.Contains("parent '0001-F9'"));
+            violation.RuleId == "SPEC5003" && violation.Message.Contains("parent '0001-F9'"));
     }
 
     [Fact]
-    public void AnItemIdUsedByTwoFeatures_WhenChecked_ShouldReportSpec044()
+    public void AnItemIdUsedByTwoFeatures_WhenChecked_ShouldReportSpec5004()
     {
         // Given
         using var tree = new SpechtTree();
@@ -332,11 +332,11 @@ public sealed class SpechtRunnerViolationsIntegrationTests
 
         // Then
         report.Violations.Should().Contain(static violation =>
-            violation.RuleId == "SPEC044" && violation.Message.Contains("already used"));
+            violation.RuleId == "SPEC5004" && violation.Message.Contains("already used"));
     }
 
     [Fact]
-    public void AFeatureThatDependsOnItself_WhenChecked_ShouldReportSpec052()
+    public void AFeatureThatDependsOnItself_WhenChecked_ShouldReportSpec6003()
     {
         // Given
         using var tree = new SpechtTree();
@@ -347,13 +347,13 @@ public sealed class SpechtRunnerViolationsIntegrationTests
 
         // Then
         report.Violations.Should().Contain(static violation =>
-            violation.RuleId == "SPEC052" && violation.Message.Contains("itself"));
+            violation.RuleId == "SPEC6003" && violation.Message.Contains("itself"));
     }
 
     [Fact]
-    public void ADependencyCycle_WhenChecked_ShouldReportSpec052()
+    public void ADependencyCycle_WhenChecked_ShouldReportSpec6003()
     {
-        // Given - F1 -> F2 -> F3 -> F1, every edge declared from both ends so SPEC051 stays quiet.
+        // Given - F1 -> F2 -> F3 -> F1, every edge declared from both ends so SPEC6002 stays quiet.
         using var tree = new SpechtTree();
         tree.WriteFeature("0001", "F1", new Dictionary<string, string> { ["depends_on"] = "[\"F2\"]", ["blocks"] = "[\"F3\"]" });
         tree.WriteFeature("0001", "F2", new Dictionary<string, string> { ["depends_on"] = "[\"F3\"]", ["blocks"] = "[\"F1\"]" });
@@ -363,13 +363,13 @@ public sealed class SpechtRunnerViolationsIntegrationTests
         var report = tree.Run();
 
         // Then
-        report.Violations.Should().NotContain(static violation => violation.RuleId == "SPEC051");
+        report.Violations.Should().NotContain(static violation => violation.RuleId == "SPEC6002");
         report.Violations.Should().Contain(static violation =>
-            violation.RuleId == "SPEC052" && violation.Message.Contains("cycle"));
+            violation.RuleId == "SPEC6003" && violation.Message.Contains("cycle"));
     }
 
     [Fact]
-    public void ABlocksEdgeDeclaredFromOnlyOneEnd_WhenChecked_ShouldReportSpec051()
+    public void ABlocksEdgeDeclaredFromOnlyOneEnd_WhenChecked_ShouldReportSpec6002()
     {
         // Given
         using var tree = new SpechtTree();
@@ -381,13 +381,13 @@ public sealed class SpechtRunnerViolationsIntegrationTests
 
         // Then
         report.Violations.Should().Contain(static violation =>
-            violation.RuleId == "SPEC051" && violation.Message.Contains("does not declare depends_on"));
+            violation.RuleId == "SPEC6002" && violation.Message.Contains("does not declare depends_on"));
     }
 
     [Fact]
-    public void AnApprovedSpecificationWithADraftSignOff_WhenChecked_ShouldReportSpec061()
+    public void AnApprovedSpecificationWithADraftSignOff_WhenChecked_ShouldReportSpec7002()
     {
-        // Given - § 9 is fully covered, so SPEC060 stays quiet and only the sign-off disagrees.
+        // Given - § 9 is fully covered, so SPEC7001 stays quiet and only the sign-off disagrees.
         using var tree = new SpechtTree();
         tree.WriteFeature(
             "0001",
@@ -402,8 +402,8 @@ public sealed class SpechtRunnerViolationsIntegrationTests
         var report = tree.Run();
 
         // Then
-        report.Violations.Should().NotContain(static violation => violation.RuleId == "SPEC060");
-        report.Violations.Should().Contain(static violation => violation.RuleId == "SPEC061");
+        report.Violations.Should().NotContain(static violation => violation.RuleId == "SPEC7001");
+        report.Violations.Should().Contain(static violation => violation.RuleId == "SPEC7002");
     }
 
     [Fact]

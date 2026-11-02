@@ -57,7 +57,7 @@ The repository has a solution and central package versions but no build project,
 
 ## 3. Acceptance Criteria
 
-<!-- last written by: spec-author, 2026-11-01 (B-024 superseded, item 0339) -->
+<!-- last written by: spec-author, 2026-11-02 (item 0169, ADR-0029: rule ids renamed to schema 0.3.0's) -->
 
 | ID    | Claim                                                                                                                                                                                                                                                                                   | Source                                                                                                      | Status     |
 | ----- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------- | ---------- |
@@ -86,8 +86,8 @@ The repository has a solution and central package versions but no build project,
 | B-023 | Given `0001-F2`'s check command does not yet exist, the `Specht` target reports that the check is not yet available and exits successfully.                                                                                                                                             | Superseded 2026-10-08 by B-025: item 0061 points `Specht` at `0001-F2`'s check command (decision 0001).     | Superseded |
 | B-024 | Given `0001-F5`'s rule settings exist, this repository pinned to a schema version below `0.3.0`, and an approved specification in this repository whose traceability matrix has a `Missing` row, the `Specht` target reports `SPEC060` at warning severity and exits successfully.      | Superseded 2026-11-01 by B-026 and B-027: item 0339 pins this repository to schema `0.3.0` (decision 0001). | Superseded |
 | B-025 | Given `0001-F2`'s check command exists and `0001-F5`'s rule settings do not yet, the `Specht` target prints the check's violations and exits successfully whatever they are.                                                                                                            | Superseded 2026-10-13 by B-013 and B-024 (decision 0001).                                                   | Superseded |
-| B-026 | Given this repository pinned to schema `0.3.0` or later and an approved specification whose traceability matrix has a `Missing` row and whose delivery status is not done, the `Specht` target reports no `SPEC060` and exits successfully.                                             | owner, 2026-10-16; `0001-F7` decision 0015 call 8; `0001-F7` B-119; AGENTS.md § `specht`; C-6               | Active     |
-| B-027 | Given this repository pinned to schema `0.3.0` or later and a specification whose delivery status is done and whose traceability matrix has a `Missing` row, the `Specht` target reports `SPEC060` at error severity and exits non-zero.                                                | owner, 2026-10-16; `0001-F7` decision 0015 call 8; `0001-F7` B-118; C-6                                     | Active     |
+| B-026 | Given this repository pinned to schema `0.3.0` or later and an approved specification whose traceability matrix has a `Missing` row and whose delivery status is not done, the `Specht` target reports no `SPEC7001` and exits successfully.                                            | owner, 2026-10-16; `0001-F7` decision 0015 call 8; `0001-F7` B-119; AGENTS.md § `specht`; C-6               | Amended    |
+| B-027 | Given this repository pinned to schema `0.3.0` or later and a specification whose delivery status is done and whose traceability matrix has a `Missing` row, the `Specht` target reports `SPEC7001` at error severity and exits non-zero.                                               | owner, 2026-10-16; `0001-F7` decision 0015 call 8; `0001-F7` B-118; C-6                                     | Amended    |
 | B-028 | Given the default build or CI, the `CodeAnalysis` target packs the current `Specht.CodeAnalysis` source, then compiles the analyzer, engine and CLI against that local package before tests; a package-fed diagnostic fails the build.                                                  | owner, 2026-10-20; `0201-F6` B-001, B-016, B-019, B-023; decision 0006                                      | Active     |
 
 ## 4. Constraints
@@ -216,7 +216,7 @@ Delivered so far by items 0057, the scaffold, 0059, the `Format` target, 0060, t
 
 ## 10. Lessons / Spec Deltas
 
-<!-- last written by: spec-author, 2026-11-01 (B-024 superseded, item 0339) -->
+<!-- last written by: spec-author, 2026-11-02 (item 0169, ADR-0029: rule ids renamed to schema 0.3.0's) -->
 
 - 2026-11-01, B-024 is superseded by B-026 and B-027 under decision 0001, whose addendum extends it to B-024: item 0339 pins this repository to schema `0.3.0`, so its Given, a pin below `0.3.0`, no longer holds here. Its `@B-024` scenario is removed, as the 2026-10-16 entry below provided. Its § 9 row is test-writer's to mark. No other claim, constraint or scenario changed.
 - 2026-10-20, B-028 adds the standard package-fed analysis gate after the owner's build/CI decision. The two-stage bootstrap in `0201-F6` decision 0006 keeps local package production separate from its consumption. B-009 is corrected to include the analyzer package already released alongside the tool under `0201-F6` B-020.
@@ -224,6 +224,8 @@ Delivered so far by items 0057, the scaffold, 0059, the `Format` target, 0060, t
 - 2026-10-14, A-2 amended in place: the command `Specht` runs gains `--framework net10.0`, since every project now builds for `net10.0` and `net11.0` ([`0001-F2` decision 0011](../../src/tool/Features/Check/.spec/decisions/0011-the-tool-targets-net10-and-net11.md) and its amendment). The build project itself keeps one target, `net10.0`, which NUKE requires (`0001-F2` § 7). No claim, constraint or scenario changed.
 - 2026-10-13, B-025 is superseded by B-013 and B-024 under decision 0001; its scenario is removed. The gate uses the staged tree, including specification and companion deletions. Build and hook verification remains manual under § 8's owner decision.
 - 2026-10-09, `blocks` gains `0109/F1`, which adds a `Benchmark` target to this build and packs the tool through `Pack` for `0109-F4` (`0109-F1` B-013). No claim changed.
+
+- 2026-11-02, item `0169`, on the owner's rulings ([ADR-0029](../../.spec/adr/0029-rule-ids-take-four-digits-in-schema-0-3-0-and-published-versions-keep-theirs.md)): B-026 and B-027, which pin schema `0.3.0` or later, name the missing-coverage rule `SPEC7001`, its four-digit id; each claim keeps its id.
 
 ## 11. Open Questions
 

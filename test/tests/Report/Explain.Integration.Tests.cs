@@ -11,6 +11,7 @@ public sealed class ExplainIntegrationTests
     [Theory]
     [InlineData("0.1.0", "SPEC031")]
     [InlineData("0.2.0", "SPEC034")]
+    [InlineData("0.3.0", "SPEC4004")]
     public void AValidPin_WhenExplained_ShouldPrintTheExactPageWithoutCheckingAnInvalidTree(string pin, string id)
     {
         // Given
@@ -30,13 +31,14 @@ public sealed class ExplainIntegrationTests
     }
 
     [Theory]
-    [InlineData("SPEC999")]
-    [InlineData("SPEC034")]
-    public void AnIdOutsideThePin_WhenExplained_ShouldNameItOnStderrAndExitFour(string id)
+    [InlineData("0.1.0", "SPEC999")]
+    [InlineData("0.1.0", "SPEC034")]
+    [InlineData("0.3.0", "SPEC031")]
+    public void AnIdOutsideThePin_WhenExplained_ShouldNameItOnStderrAndExitFour(string pin, string id)
     {
         // Given
         using var tree = new SpechtTree();
-        File.WriteAllText(Path.Combine(tree.Root, SpechtTree.ManifestPath), """{"schemaVersion":"0.1.0"}""");
+        File.WriteAllText(Path.Combine(tree.Root, SpechtTree.ManifestPath), $$"""{"schemaVersion":"{{pin}}"}""");
 
         // When
         var result = AcceptanceTool.Launch(tree.Root, "--root", ".", "--explain", id);
@@ -65,7 +67,7 @@ public sealed class ExplainIntegrationTests
         }
 
         // When
-        var result = AcceptanceTool.Launch(tree.Root, "--root", ".", "--explain", "SPEC031");
+        var result = AcceptanceTool.Launch(tree.Root, "--root", ".", "--explain", "SPEC4004");
 
         // Then
         result.ExitCode.Should().Be(exit, result.Stderr);

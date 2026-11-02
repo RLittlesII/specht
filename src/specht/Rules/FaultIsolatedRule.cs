@@ -19,6 +19,7 @@ public sealed class FaultIsolatedRule(ISpechtRule inner) : ISpechtRule
     /// <inheritdoc />
     /// <implements epic="0001" feature="F1" claim="B-012" />
     /// <implements epic="0001" feature="F1" claim="B-017" />
+    /// <implements epic="0001" feature="F7" claim="B-151" />
     public IEnumerable<SpechtFinding> Evaluate(SpechtModel model)
     {
         try
@@ -30,7 +31,11 @@ public sealed class FaultIsolatedRule(ISpechtRule inner) : ISpechtRule
         {
             return
             [
-                new SpechtFinding(SpechtManifestStore.RelativePath, 0, null, $"Rule {Id} failed with {exception.GetType().Name}.")
+                new SpechtFinding(
+                    SpechtManifestStore.RelativePath,
+                    0,
+                    null,
+                    $"Rule {model.Schemas.Version.RuleId(Id)} failed with {exception.GetType().Name}.")
                 {
                     RuleFailure = exception,
                 },

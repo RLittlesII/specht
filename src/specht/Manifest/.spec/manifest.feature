@@ -146,6 +146,14 @@ Feature: The manifest carries the roles
     Then the manifest is rejected
     And the rejection names that rule id
 
+  @B-013 @boundary
+  Scenario: Under 0.3.0 a three-digit rule id is an unknown id
+    Given the manifest pins schema version "0.3.0"
+    And the manifest lists rule settings for SPEC031
+    When the check runs
+    Then the manifest is rejected
+    And the rejection names SPEC031
+
   @B-014
   Scenario: A grammar that does not compile is invalid
     Given the manifest pins schema version "0.2.0"

@@ -43,7 +43,7 @@ public sealed partial class CheckSteps(IUnitTestRuntimeProvider runtime, PackedT
                 file.Split('/') is var parts && parts[0] != "epics" && !parts.Any(static part => part is ".spec" or ".issue")));
         var manifestPath = Path.Combine(Tree.Root, SpechtTree.ManifestPath);
         var manifest = JsonNode.Parse(File.ReadAllText(manifestPath))!.AsObject();
-        manifest["rules"] = new JsonObject { ["SPEC060"] = "warning" };
+        manifest["rules"] = new JsonObject { [RuleIds.Under(manifest, "SPEC060")] = "warning" };
         File.WriteAllText(manifestPath, manifest.ToJsonString());
 
         Succeed(Tree.Root, "git", "init", "--quiet");

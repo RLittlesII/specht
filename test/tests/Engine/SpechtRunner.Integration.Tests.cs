@@ -33,10 +33,10 @@ public sealed class SpechtRunnerIntegrationTests
     }
 
     [Fact]
-    public void OneSpecificationInBothLayoutsAtOnce_WhenChecked_ShouldReportSpec012()
+    public void OneSpecificationInBothLayoutsAtOnce_WhenChecked_ShouldReportSpec3002()
     {
         // Given - a migration that copied the specification without removing
-        // the original, which is the failure mode SPEC012 exists to catch.
+        // the original, which is the failure mode SPEC3002 exists to catch.
         using var tree = new SpechtTree();
         tree.WriteFeature("0001", "F1");
         tree.WriteCoLocatedFeature("src/Backplane/Features/Ingestion", "0001", "F1");
@@ -45,8 +45,8 @@ public sealed class SpechtRunnerIntegrationTests
         var report = tree.Run();
 
         // Then
-        report.Violations.Should().Contain(static violation => violation.RuleId == "SPEC012");
-        report.Violations.Where(static violation => violation.RuleId == "SPEC012").Should().HaveCount(2);
+        report.Violations.Should().Contain(static violation => violation.RuleId == "SPEC3002");
+        report.Violations.Where(static violation => violation.RuleId == "SPEC3002").Should().HaveCount(2);
     }
 
     [Fact]
@@ -82,7 +82,7 @@ public sealed class SpechtRunnerIntegrationTests
         // Then
         json.Should().NotContain(tree.Root);
         json.Should().Contain("epics/0001-epic/F1-feature/spec.md");
-        json.Should().Contain("SPEC002");
+        json.Should().Contain("SPEC1002");
     }
 
     [Fact]
@@ -130,9 +130,9 @@ public sealed class SpechtRunnerIntegrationTests
         var violations = tree.Run().Violations;
 
         // Then
-        violations.Should().ContainSingle(static violation => violation.RuleId == "SPEC013")
+        violations.Should().ContainSingle(static violation => violation.RuleId == "SPEC2002")
             .Which.Should().Match<SpechtViolation>(violation => violation.File == path && violation.Identifier == "9. Traceability Matrix");
-        violations.Should().ContainSingle(static violation => violation.RuleId == "SPEC031")
+        violations.Should().ContainSingle(static violation => violation.RuleId == "SPEC4004")
             .Which.Identifier.Should().Be("B-001");
         violations.Should().NotContain(static violation => violation.Identifier == "B-999");
     }

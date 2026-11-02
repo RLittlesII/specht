@@ -78,7 +78,7 @@
       "properties": {
         "ruleId": {
           "type": "string",
-          "pattern": "^SPEC[0-9]{3}$"
+          "pattern": "^SPEC[0-9]{3,4}$"
         },
         "severity": {
           "enum": ["error", "warning"]

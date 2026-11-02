@@ -26,9 +26,9 @@ Feature: The frontmatter command
 
     Examples:
       | kind    | rule    |
-      | feature | SPEC002 |
-      | task    | SPEC003 |
-      | epic    | SPEC004 |
+      | feature | SPEC1002 |
+      | task    | SPEC1003 |
+      | epic    | SPEC1004 |
 
   @B-004
   Scenario: A failure on a key is reported at that key's line
@@ -40,7 +40,7 @@ Feature: The frontmatter command
   Scenario: A document with no frontmatter is reported
     Given a document with no frontmatter
     When its frontmatter is checked as a task
-    Then the violation carries rule id SPEC001 at line 1
+    Then the violation carries rule id SPEC1001 at line 1
 
   @B-006
   Scenario: The schema is the one the check selects for the root

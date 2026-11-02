@@ -253,8 +253,8 @@ Feature: The report contract
 
     Examples:
       | kind     | rule    |
-      | children | SPEC040 |
-      | spikes   | SPEC041 |
+      | children | SPEC5001 |
+      | spikes   | SPEC5002 |
 
   @B-017
   Scenario: A cycle expectation preserves its ordered path including a lead-in
@@ -270,7 +270,7 @@ Feature: The report contract
 
   @B-019
   Scenario: Explain prints a rule's full text
-    When the tool is asked to explain SPEC031
+    When the tool is asked to explain SPEC4004
     Then the standard output carries what the rule checks
     And what the rule expects
     And the schema version the rule belongs to
@@ -296,7 +296,7 @@ Feature: The report contract
   @B-029
   Scenario: Explain without a manifest fails as the check does
     Given the manifest is deleted from the root
-    When the tool is asked to explain SPEC031
+    When the tool is asked to explain SPEC4004
     Then no rule text is printed
     And the standard output is empty
     And the exit code is 2
@@ -304,7 +304,7 @@ Feature: The report contract
   @B-030
   Scenario: Explain beside a manifest that does not parse fails as the check does
     Given the root's manifest is replaced by a file that is not well-formed JSON
-    When the tool is asked to explain SPEC031
+    When the tool is asked to explain SPEC4004
     Then no rule text is printed
     And the standard output is empty
     And the exit code is 3
@@ -312,7 +312,7 @@ Feature: The report contract
   @B-030
   Scenario: Explain beside a rejected manifest fails as the check does
     Given the root's manifest is replaced by one carrying a key the tool does not know
-    When the tool is asked to explain SPEC031
+    When the tool is asked to explain SPEC4004
     Then no rule text is printed
     And the standard output is empty
     And the exit code is 3
@@ -320,7 +320,7 @@ Feature: The report contract
   @B-030
   Scenario: Explain beside a contradictory schema source fails as the check does
     Given the root's manifest records an upstream schema source and explicitly selects the embedded source
-    When the tool is asked to explain SPEC031
+    When the tool is asked to explain SPEC4004
     Then no rule text is printed
     And the standard output is empty
     And the exit code is 3
@@ -328,7 +328,7 @@ Feature: The report contract
   @B-030 @boundary
   Scenario: Explain beside a pin the tool does not ship fails as the check does
     Given the root's manifest is replaced by one pinning version 7.0.0
-    When the tool is asked to explain SPEC031
+    When the tool is asked to explain SPEC4004
     Then no rule text is printed
     And the standard output is empty
     And the exit code is 3

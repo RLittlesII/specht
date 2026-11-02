@@ -37,14 +37,16 @@ public sealed class SchemaVersions
             var number = SemanticVersion.TryParse(folder, out var version)
                 ? version
                 : throw new InvalidOperationException($"schema/v{folder}/ is embedded with an invalid schema version.");
+            var names = Shipped(number);
             return new SchemaVersion(
                 number,
                 resources[$"{Prefix}{folder}/frontmatter/feature.schema.json"],
                 resources[$"{Prefix}{folder}/frontmatter/task.schema.json"],
                 resources[$"{Prefix}{folder}/frontmatter/epic.schema.json"],
-                Shipped(number),
+                names.Values.ToHashSet(StringComparer.Ordinal),
                 resources[$"manifest/v{folder}/manifest.json"])
             {
+                RuleNames = names,
                 RulePages = resources.Keys
                     .Where(name => name.StartsWith($"{PagePrefix}{folder}/", StringComparison.Ordinal))
                     .ToDictionary(static name => Path.GetFileNameWithoutExtension(name), name => resources[name], StringComparer.Ordinal),
@@ -57,9 +59,11 @@ public sealed class SchemaVersions
     }
 
     /// <implements epic="0001" feature="F7" claim="B-001" />
-    private static HashSet<string> Shipped(SemanticVersion number)
+    /// <implements epic="0001" feature="F7" claim="B-151" />
+    /// <implements epic="0001" feature="F7" claim="B-152" />
+    private static Dictionary<string, string> Shipped(SemanticVersion number)
     {
-        HashSet<string> original =
+        string[] original =
         [
             "SPEC001", "SPEC002", "SPEC003", "SPEC004",
             "SPEC010", "SPEC011", "SPEC012", "SPEC013",
@@ -71,9 +75,36 @@ public sealed class SchemaVersions
         ];
         return number switch
         {
-            { Major: 0, Minor: 1, Patch: 0 } => original,
-            { Major: 0, Minor: 2, Patch: 0 or 1 } => [.. original, "SPEC034", "SPEC035"],
-            { Major: 0, Minor: 3, Patch: 0 } => [.. original, "SPEC032", "SPEC034", "SPEC035"],
+            { Major: 0, Minor: 1, Patch: 0 } => original.ToDictionary(static id => id, StringComparer.Ordinal),
+            { Major: 0, Minor: 2, Patch: 0 or 1 } =>
+                original.Append("SPEC034").Append("SPEC035").ToDictionary(static id => id, StringComparer.Ordinal),
+            { Major: 0, Minor: 3, Patch: 0 } => new(StringComparer.Ordinal)
+            {
+                ["SPEC001"] = "SPEC1001",
+                ["SPEC002"] = "SPEC1002",
+                ["SPEC003"] = "SPEC1003",
+                ["SPEC004"] = "SPEC1004",
+                ["SPEC010"] = "SPEC2001",
+                ["SPEC013"] = "SPEC2002",
+                ["SPEC011"] = "SPEC3001",
+                ["SPEC012"] = "SPEC3002",
+                ["SPEC020"] = "SPEC4001",
+                ["SPEC021"] = "SPEC4002",
+                ["SPEC030"] = "SPEC4003",
+                ["SPEC031"] = "SPEC4004",
+                ["SPEC032"] = "SPEC4009",
+                ["SPEC034"] = "SPEC4005",
+                ["SPEC035"] = "SPEC4006",
+                ["SPEC040"] = "SPEC5001",
+                ["SPEC041"] = "SPEC5002",
+                ["SPEC043"] = "SPEC5003",
+                ["SPEC044"] = "SPEC5004",
+                ["SPEC050"] = "SPEC6001",
+                ["SPEC051"] = "SPEC6002",
+                ["SPEC052"] = "SPEC6003",
+                ["SPEC060"] = "SPEC7001",
+                ["SPEC061"] = "SPEC7002",
+            },
             _ => throw new InvalidOperationException($"schema/v{number}/ is embedded with no rule vocabulary."),
         };
     }

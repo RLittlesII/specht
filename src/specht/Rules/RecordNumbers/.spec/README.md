@@ -57,14 +57,14 @@ A decision, an ADR or a lesson is cited by its number: `0001-F5` decision 0003, 
 
 ## 3. Acceptance Criteria
 
-<!-- last written by: spec-author, 2026-10-09 (review round 1: B-010 and B-020 amended, B-022 names B-026, B-026 to B-028 added, OQ-8 cited by B-019, B-020 and B-022), 2026-10-11 (the Source cells of B-008, B-020 and B-026 cite the templates under `.specht/`, ADR-0011) -->
+<!-- last written by: spec-author, 2026-11-02 (item 0169, ADR-0029: rule ids renamed to schema 0.3.0's) -->
 
 | ID    | Claim                                                                                                                                                                                                                                             | Source                                                                                 | Status |
 | ----- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------- | ------ |
 | B-001 | Given two record files in one record folder whose names open with the same number, this Feature reports that number as claimed twice.                                                                                                             | decision 0002; item `0128`, case (a); C-1                                              | Active |
-| B-002 | Given a number that two or more record files in one record folder open with, this Feature reports one claimed-twice finding on each claimant's file.                                                                                              | `SPEC012`; `0101-F8` B-002; decision 0002                                              | Active |
-| B-003 | Given a claimed-twice finding, its message names the number and every claimant's path.                                                                                                                                                            | `SPEC012`; item `0128`; `0101-F8` B-003                                                | Active |
-| B-004 | Given a finding of this Feature that names several paths, it names them in the ordinal order of their root-relative paths.                                                                                                                        | `0001-F6` B-008; `SPEC012`                                                             | Active |
+| B-002 | Given a number that two or more record files in one record folder open with, this Feature reports one claimed-twice finding on each claimant's file.                                                                                              | `SPEC3002`; `0101-F8` B-002; decision 0002                                             | Active |
+| B-003 | Given a claimed-twice finding, its message names the number and every claimant's path.                                                                                                                                                            | `SPEC3002`; item `0128`; `0101-F8` B-003                                               | Active |
+| B-004 | Given a finding of this Feature that names several paths, it names them in the ordinal order of their root-relative paths.                                                                                                                        | `0001-F6` B-008; `SPEC3002`                                                            | Active |
 | B-005 | Given a finding of this Feature, every path it names is relative to the root, with `/` separators.                                                                                                                                                | brief § 9; `0001-F3` B-021; C-14                                                       | Active |
 | B-006 | Given a record folder in which each number opens one record file, this Feature reports nothing for that folder.                                                                                                                                   | decision 0002; C-10                                                                    | Active |
 | B-007 | Given two record files whose names open with the same number and which sit in two different record folders, this Feature reports nothing.                                                                                                         | `specht-conventions` § Specs, "A Feature's folder"; C-1; decision 0003                 | Active |
@@ -194,9 +194,11 @@ Pending: owned by `test-writer`, written after agreement.
 
 ## 10. Lessons / Spec Deltas
 
-<!-- last written by: spec-author, 2026-10-09, 2026-10-11 (ADR-0011) -->
+<!-- last written by: spec-author, 2026-11-02 (item 0169, ADR-0029: rule ids renamed to schema 0.3.0's) -->
 
 - 2026-10-11, the templates the tool ships moved to `.specht/templates/` by the owner ([ADR-0011](../../../../../.spec/adr/0011-tool-configuration-lives-in-specht-and-specifications-in-spec.md)). A-5, the Source cells of B-008, B-020 and B-026, and open OQ-7 cite them there. No claim's text changed. B-019's `.spec/adr` and `.spec/lessons` are record folders and do not move; the default `/.spec` exclusion stays (ADR-0011, open point 3; decision 0004).
+
+- 2026-11-02, item `0169` ([ADR-0029](../../../../../.spec/adr/0029-rule-ids-take-four-digits-in-schema-0-3-0-and-published-versions-keep-theirs.md)): the shipped rules this Feature's claims and scenarios name take schema `0.3.0`'s four-digit ids, each claim keeping its id; under a pin below `0.3.0` each reads as the three-digit id brief § 4 maps it from.
 
 ## 11. Open Questions
 
