@@ -2,7 +2,7 @@ id: "0321"
 type: task
 title: Cut schema 0.3.0, where SPEC060 follows delivery status against a done marker and epics may be absent
 
-status: ready-for-architecture
+status: done
 
 value: 4
 risk: 4
@@ -29,8 +29,8 @@ claims:
   - 0001-F5 B-064
 
 created: "2026-10-30"
-updated: "2026-11-01"
-closed: null
+updated: "2026-11-02"
+closed: "2026-11-02"
 
 summary: |
   As a maintainer whose reviewer approves a specification before its
@@ -43,9 +43,11 @@ summary: |
 
   The change is a new schema version, `0.3.0` (decision 0015 call 7),
   made through 0189's cut target (B-094 to B-100; decision 0009), locked
-  through 0188's, and relocked only as decision 0014 allows. `0.1.0` and
-  `0.2.0` keep the approved axis (B-120; C-1). Risk 4: once a package
-  carries `0.3.0` it is never changed in place (C-1, C-17).
+  through 0188's, and relocked only as decision 0014 allows. `0.1.0`,
+  `0.2.0` and `0.2.1` keep the approved axis (B-120; C-1). Risk 4: once
+  a package carries `0.3.0` it is never changed in place (C-1, C-17).
+  Under OQ-72's default no package carries it until `0001-F5` B-035 is
+  built.
 
   Proceeds on the defaults of OQ-60 (the change is `0.3.0`, not a
   `0.2.0` relock) and OQ-56 (this repository's live copy moves by hand
@@ -67,7 +69,7 @@ acceptance_criteria:
   - "B-038 — `0.3.0`, no epic grammar: an item with a bare parent passes"
   - "B-118 — `0.3.0`, status done: each `Missing` row reported, any `spec_status`"
   - "B-119 — `0.3.0`, status not done: nothing reported, any `spec_status`"
-  - "B-120 — `0.1.0` or `0.2.0`: the approved axis, unchanged"
+  - "B-120 — `0.1.0`, `0.2.0` or `0.2.1`: the approved axis, unchanged"
   - "B-121 — `0.3.0`: the fixed message naming the done status"
   - "B-122 — `0.3.0`: `SPEC061` still follows approval"
   - "B-123 — `0.3.0`: `SPEC060` keeps its id and error severity; no new id"

@@ -44,7 +44,7 @@ namespace Specht.Acceptance.Versioning;
 /// Item 0323 binds B-074 over that in-process upgrade, reading the source's requests: each schema at the recorded location
 /// followed by its file name, and, under a source hashing no template, no request for the manifest or a shipped template's
 /// name. It binds B-116 over the built tool's upgrade under a 0.2.0 pin, the four settings compared before and after.
-/// B-037 and B-038 stay unbound, held on OQ-30.
+/// Item 0321 binds B-037 and B-038 at schema 0.3.0 and B-118 to B-124 in the epic opt-in and delivery-axis steps.
 /// Item 0290 binds B-125 to B-127: each adds a synthetic <c>templates</c> member to that recorded source and launches the
 /// built tool; B-125 reads the templates the engine's parser takes from the root's manifest, and B-126 and B-127 read the
 /// rejection from stderr as the template's file name, in quotes.

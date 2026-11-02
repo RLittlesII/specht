@@ -109,3 +109,12 @@ made the calls marked as spec-author's reading below.
 ## Reversal
 
 None.
+
+## Amendment, 2026-11-01: schema 0.2.1 keeps the approved axis
+
+Call 6 names `0.1.0` and `0.2.0`. Schema `0.2.1`, cut on 2026-10-27, after
+this decision, and embedded in the package released from tag `v0.3.1`, keeps
+the approved axis too: its `SPEC060` keys on the approved marker, as theirs does,
+and C-1 freezes it there. B-120 is amended to name it. Spec-author's reading of
+the release record, at the test-writer's finding on item `0321`. The call above
+is unedited.

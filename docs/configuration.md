@@ -49,6 +49,8 @@ Under schema `0.2.0`, `markers` also names `covered`, `partial`, `waived`, `with
 - `owners`: a `sections` title mapped to a non-empty list of roles.
 - `requiredSpecifications`: a list of directory globs, empty when left out.
 
+Under schema `0.3.0`, `markers` also names `done`, default `done`: the delivery `status` at which `SPEC060` reports a `Missing` cell. An empty one exits `3`.
+
 Under schema `0.2.0`, `claim.tag` is literal text around exactly one `{claim}` placeholder, default `@{claim}`. `claim.tagIgnoreCase` is Boolean, default `false`; when true it covers the entire tag and resolution uses ordinal comparison. Missing values come from the pinned version's shipped manifest. Older pins reject `claim`; flat tag keys are rejected at every pin. Each missing member of `claim` uses the pinned default, including a partially declared object.
 
 A key left out takes its value from the default manifest, except `rules`, which

@@ -27,27 +27,33 @@ under `.git`, `.artifacts`, `.claude`, `.skillfile`, `graphify-out`, `bin`,
 | `SPEC030`, `SPEC031`                       | Claims. Each § 3 claim id matches the claim grammar and is unique in its specification, and § 9 has exactly one row per claim and none for anything else.                                           |
 | `SPEC040`, `SPEC041`, `SPEC043`, `SPEC044` | Items. Each id under `children` or `spikes` resolves to one item file, an item's `id` and `parent` agree with its file name and its specification, and item ids are unique and contiguous per epic. |
 | `SPEC050`–`SPEC052`                        | Dependencies. Every `depends_on` and `blocks` edge names a discovered specification, is declared from both ends, and forms no cycle.                                                                |
-| `SPEC060`, `SPEC061`                       | Approval. A specification with `spec_status: approved` has no `Missing` cell in § 9 and no draft or blocked row in § 12.                                                                            |
+| `SPEC060`, `SPEC061`                       | Approval. A done specification has no `Missing` cell in § 9, and an approved one no draft or blocked row in § 12. Before schema `0.3.0`, `SPEC060` reads an approved specification, not a done one. |
 
 § 3, § 9 and § 12 are the sections the manifest's `roles` name: by default
 `3. Acceptance Criteria`, `9. Traceability Matrix` and `12. Sign-off`. A
-`Missing` cell in § 9 is not a violation until the specification is approved.
+`Missing` cell in § 9 is not a violation until the specification's delivery
+`status` is `done`, the manifest's `markers.done`; before schema `0.3.0`, until
+its `spec_status` is approved.
 
-## Missing coverage on an approved specification
+## Missing coverage on a done specification
 
-`SPEC060` is an error by default: an approved agreement says its coverage is
-known. A repository whose policy is that a `Missing` row blocks a work item
-reaching done, and not a specification reaching approved, lowers the rule in
-its manifest:
+`SPEC060` is an error by default: a done Feature says its coverage is known.
+From schema `0.3.0` a `Missing` row does not block `spec_status` reaching
+approved; it is reported once `status` is done. Under `0.1.0` to `0.2.1` it is
+reported once the specification is approved, so a repository on those versions
+whose policy is that a `Missing` row blocks a work item reaching done, and not a
+specification reaching approved, lowers the rule in its manifest:
 
 ```json
 "rules": { "SPEC060": "warning" }
 ```
 
 That is the sanctioned way to choose otherwise. `warning` still fails a run
-under `--strict`; `off` stops the rule. This repository sets `warning`. A
-command that sets one rule's level is specified and not built; until it is,
-edit `rules` by hand ([configuration](configuration.md)).
+under `--strict`; `off` stops the rule. This repository pins `0.3.0` and
+sets no level.
+`specht rules set <id> <level>` sets one rule's level
+([command line](cli.md#specht-rules-set)), or edit `rules` by hand
+([configuration](configuration.md)).
 
 ## Work items are optional
 

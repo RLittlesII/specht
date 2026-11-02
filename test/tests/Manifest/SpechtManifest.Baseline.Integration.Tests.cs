@@ -6,7 +6,8 @@ namespace Specht.Tests.Manifest;
 
 /// <summary>
 /// The engine's verdicts on the baseline tree under the default manifest against the golden report (<c>0001-F5</c> B-016,
-/// A-2; <c>0001-F1</c> B-004, C-9, C-10): once with every key declared, once with every value reached by omission.
+/// A-2; <c>0001-F1</c> B-004, C-9, C-10): once with every key declared and the golden report's version pinned, once with
+/// every value, the pin included, reached by omission.
 /// </summary>
 [Trait("Tier", "Integration")]
 public sealed class SpechtManifestBaselineIntegrationTests
@@ -14,7 +15,7 @@ public sealed class SpechtManifestBaselineIntegrationTests
     /// <summary>Gets each way the default manifest reaches the engine, and the manifest written over the tree's copy, if any.</summary>
     public static TheoryData<string, string?> DefaultManifests { get; } = new()
     {
-        { "the default manifest without the repository's rule settings", null },
+        { "the default manifest without the repository's rule settings, pinned to the golden report's version", null },
         { "the default manifest's values reached by omission", "{\"$comment\": \"Every value is left out, so each is the default manifest's.\"}" },
     };
 
@@ -26,13 +27,13 @@ public sealed class SpechtManifestBaselineIntegrationTests
     {
         // Given
         using var tree = new SpechtTree();
+        BaselineTree.Write(tree);
 
         if (manifest is not null)
         {
             tree.WriteRaw(SpechtTree.ManifestPath, manifest);
         }
 
-        BaselineTree.Write(tree);
         var golden = GoldenReport.Read();
 
         // When

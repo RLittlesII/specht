@@ -37,6 +37,9 @@ public sealed class FeatureSpec
     /// <summary>The <c>spec_status</c> frontmatter value, or <c>null</c>.</summary>
     public string? SpecStatus => Document.Frontmatter.Text("spec_status");
 
+    /// <summary>The delivery <c>status</c> frontmatter value, or <c>null</c>.</summary>
+    public string? Status => Document.Frontmatter.Text("status");
+
     /// <summary>The qualified identity, e.g. <c>0001-F1</c>.</summary>
     public string Identity => $"{Epic}-{Id}";
 

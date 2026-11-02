@@ -1012,7 +1012,7 @@ class Untouched(unittest.TestCase):
 class RemovedFiles(unittest.TestCase):
     ORPHAN = {"number": 9, "title": "0099: Removed item", "body": "<!-- specht-item: 0099 -->", "labels": ["mirrored", "status:ready"]}
 
-    def test_B033_MarkedIssueWhoseFileIsGone_WhenMirrored_ShouldStayOpen(self):
+    def test_B033_MarkedIssueWhoseFileIsGone_WhenMirrored_ShouldNotBeDeleted(self):
         # Given
         root = write_tree(self, {ITEM_0045_PATH: ITEM_0045})
         gh = FakeGh(issues=[self.ORPHAN], labels=["mirrored", "status:ready"])
@@ -1023,8 +1023,20 @@ class RemovedFiles(unittest.TestCase):
         # Then
         issue_for(self, gh, "0045")
         self.assertIn(9, gh.store)
-        self.assertEqual(gh.store[9]["state"], "open")
-        self.assertEqual([op for op, args in gh.writes if args.get("number") == 9 and op == "close_issue"], [])
+        self.assertEqual([op for op, args in gh.writes if "delete" in op], [])
+
+    def test_B065_ClosedMarkedIssueWhoseFileIsGone_WhenMirrored_ShouldKeepItsStateAndReason(self):
+        # Given
+        root = write_tree(self, {ITEM_0045_PATH: ITEM_0045})
+        closed = dict(self.ORPHAN, state="closed", state_reason="completed")
+        gh = FakeGh(issues=[closed], labels=["mirrored", "status:ready"])
+
+        # When
+        mirror(self, root, gh)
+
+        # Then
+        self.assertEqual((gh.store[9]["state"], gh.store[9]["state_reason"]), ("closed", "completed"))
+        self.assertEqual([op for op, args in gh.writes if args.get("number") == 9 and op in ("close_issue", "reopen_issue")], [])
 
     def test_B034_MarkedIssueWhoseFileIsGone_WhenMirrored_ShouldBeLabelledStale(self):
         # Given

@@ -17,7 +17,9 @@ namespace Specht.Acceptance.Report;
 /// B-021 see the tool's real stdout. The two B-006 scenarios stay unbound: the launched tool has no clock seam to set, and
 /// a child process's machine name cannot be set; B-006 is proved at the engine. 0037 binds B-009, B-010, B-011 and B-026,
 /// what a frontmatter, section or table violation's <c>expected</c> carries, read from the launched tool's document and
-/// compared with the tree's own manifest and Feature schema. The rest of the file's scenarios stay pending for their items.
+/// compared with the tree's own manifest and Feature schema. An approved specification with a missing cell pins schema
+/// <c>0.2.1</c>, the newest version whose <c>SPEC060</c> follows approval (B-018; <c>0001-F7</c> B-120); the done axis
+/// from <c>0.3.0</c> is B-043's. The rest of the file's scenarios stay pending for their items.
 /// </summary>
 [Binding]
 [Scope(Feature = "The report contract")]

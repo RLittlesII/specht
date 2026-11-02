@@ -119,6 +119,18 @@ public sealed class SpechtTree : IDisposable
     /// <summary>Runs every rule against the tree.</summary>
     public SpechtReport Run() => EngineServices.Runner().Run(Root);
 
+    /// <summary>
+    /// Pins the tree's manifest to <paramref name="version"/>, so a test whose claim names a schema version runs on it
+    /// whatever version this repository's live manifest pins.
+    /// </summary>
+    public void Pin(string version)
+    {
+        var path = Path.Combine(Root, ManifestPath);
+        var manifest = JsonNode.Parse(File.ReadAllText(path))!.AsObject();
+        manifest["schemaVersion"] = version;
+        File.WriteAllText(path, manifest.ToJsonString());
+    }
+
     /// <summary>Deletes the frontmatter schema folder, so the root holds no schema file on disk.</summary>
     public void DeleteFrontmatterSchemas() => Directory.Delete(Path.Combine(Root, FrontmatterSchemaFolder), recursive: true);
 

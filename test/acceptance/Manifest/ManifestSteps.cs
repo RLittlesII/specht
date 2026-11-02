@@ -22,7 +22,9 @@ namespace Specht.Acceptance.Manifest;
 /// An exclusion entry is written as the whole <c>exclusions</c> list (B-021; <c>0001-F6</c> decision 0003). A path
 /// identity is written as the <c>identity</c> of the <c>layouts</c> entry named <c>epics</c> (B-043; <c>0001-F6</c> decision 0009).
 /// A rule setting is written under <c>rules</c>, a rule id mapped to its level (B-010, B-011, B-013, B-045, B-046; decision 0008),
-/// and "sets no level" leaves the <c>rules</c> key out (B-044).
+/// and "sets no level" leaves the <c>rules</c> key out (B-044). An approved specification that a missing-coverage
+/// scenario writes is also done, so <c>SPEC060</c> selects it under the pin the default manifest carries, below
+/// <c>0.3.0</c> by its approval and from <c>0.3.0</c> by its status (<c>0001-F7</c> B-118, B-120).
 /// A rule declared by a type name and a library file is written there too, as an object under a rule id the pinned version
 /// holds, so that its shape alone is at fault, beside a file standing as the library; nothing compiled is put under the root
 /// (B-017). "A rule that reports its violations at warning severity" is a stand-in under a rule id of the pinned version
@@ -205,14 +207,14 @@ public sealed partial class ManifestSteps
     public void GivenTheRootHoldsASpecificationWhoseTableLacksOneOfTheMatrixRolesColumns(string title) =>
         Write("F1", SpechtTree.SectionsWith(DefaultTitles["matrix"], Matrix(title, "Scenario", "It does the thing")));
 
-    [Given("the root holds an approved specification with a {string} cell in its traceability table")]
+    [Given("the root holds a specification that is approved and done with a {string} cell in its traceability table")]
     public void GivenTheRootHoldsAnApprovedSpecificationWithACellInItsTraceabilityTable(string cell) =>
         _specifications.Add(
             Relative(
                 Tree.WriteFeature(
                     "0001",
                     "F1",
-                    new Dictionary<string, string> { ["spec_status"] = "approved" },
+                    new Dictionary<string, string> { ["spec_status"] = "approved", ["status"] = "done" },
                     SpechtTree.SectionsWith(DefaultTitles["matrix"], Matrix(DefaultTitles["matrix"], "Scenario | Test", $"It does the thing | {cell}")))));
 
     [Then("the claims are read from that section")]
@@ -256,7 +258,8 @@ public sealed partial class ManifestSteps
     public void ThenTheRejectionNamesTheRole(string role) => _rejection!.Message.Should().Contain(role);
 
     [Then("the rejection names the {word} marker")]
-    public void ThenTheRejectionNamesTheMarker(string marker) => _rejection!.Message.Should().Contain(marker);
+    public void ThenTheRejectionNamesTheMarker(string marker) =>
+        (_rejection ?? throw new InvalidOperationException("The manifest was accepted.")).Message.Should().Contain($"'{marker}'");
 
     [Given("the manifest's companion file list is empty")]
     public void GivenTheManifestsCompanionFileListIsEmpty() => Manifest["companionFiles"] = new JsonArray();
@@ -300,22 +303,6 @@ public sealed partial class ManifestSteps
 
     [Given("the manifest sets no level for the out-of-order-section rule")]
     public void GivenTheManifestSetsNoLevelForTheOutOfOrderSectionRule() => Manifest.Remove("rules");
-
-    [Given("the manifest sets no level for the approved-with-missing-coverage rule")]
-    public void GivenTheManifestSetsNoLevelForTheApprovedWithMissingCoverageRule() => Manifest.Remove("rules");
-
-    [Given("the root holds an approved specification with a missing test")]
-    public void GivenTheRootHoldsAnApprovedSpecificationWithAMissingTest() =>
-        _specifications.Add(Relative(Tree.WriteFeature(
-            "0001",
-            "F1",
-            new Dictionary<string, string> { ["spec_status"] = "approved" })));
-
-    [Then("the missing-test violation is reported at error severity")]
-    public void ThenTheMissingTestViolationIsReportedAtErrorSeverity() =>
-        Run.Stdout.Split('\n').Should()
-            .ContainSingle(static line => line.Contains(": error SPEC060: "), Run.Stderr)
-            .Which.Should().StartWith(_specifications[0]);
 
     [Given("a rule that reports its violations at warning severity")]
     public void GivenARuleThatReportsItsViolationsAtWarningSeverity() => _standIn = new WarningRule(OutOfOrderRule);

@@ -49,3 +49,13 @@ has for a closed issue that will not be done.
 - `references/delivery.md` § "Removing an item leaves its issue on the board".
 - The mirror script and its tests, which still leave the issue open: a work
   item to be cut from B-033, B-064 and B-065.
+
+## Addendum, 2026-11-02: item 0340
+
+Recorded by spec-author on the repository owner's ruling of 2026-11-02. B-064
+is not built: `mirror_items.py` only labels an orphan `stale`. Item `0339` gave
+B-033 and B-065 their tests, so the item this decision names is cut as `0340`
+for B-064 alone and queued for a later lane. Until it lands, the mirror keeps
+labelling a removed item's open issue `stale` and leaves it open. `0055-F9`'s
+`status` goes back from `done` to `in-progress` and its container item `0293`
+is reopened; B-064's § 9 row stays `Missing`. The call above is unedited.

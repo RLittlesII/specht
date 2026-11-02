@@ -1,12 +1,15 @@
 using AwesomeAssertions;
 using Specht.Evaluation;
+using Specht.Report;
+using Specht.Tests.Engine.Baseline;
 using Specht.Tests.Shared;
 
 namespace Specht.Tests.Engine;
 
 /// <summary>
 /// Exercises each day-one rule family against a synthetic tree on disk - a positive
-/// case that must stay green, and a negative case that must actually fire.
+/// case that must stay green, and a negative case that must actually fire. A case on the approved axis pins the
+/// baseline's schema version, which keeps that axis (<c>0001-F7</c> B-120).
 /// </summary>
 [Trait("Tier", "Integration")]
 public sealed class SpechtRunnerRulesIntegrationTests
@@ -346,6 +349,7 @@ public sealed class SpechtRunnerRulesIntegrationTests
     {
         // Given
         using var tree = new SpechtTree();
+        tree.Pin(BaselineTree.SchemaVersion);
         tree.WriteFeature("0001", "F1", new Dictionary<string, string> { ["spec_status"] = "approved" });
 
         // When

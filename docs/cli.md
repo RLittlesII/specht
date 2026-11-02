@@ -395,7 +395,9 @@ Listing reads no schema or specification files and fetches nothing.
 
 ```text
 0.1.0
-0.2.0 (pinned)
+0.2.0
+0.2.1 (pinned)
+0.3.0
 ```
 
 ## `specht schema pin`

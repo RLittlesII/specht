@@ -1293,6 +1293,7 @@ Feature: Schema versioning
       | version |
       | 0.1.0   |
       | 0.2.0   |
+      | 0.2.1   |
 
   @B-121
   Scenario: The missing-coverage message names the done status

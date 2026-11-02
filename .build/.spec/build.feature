@@ -148,15 +148,6 @@ Feature: The build
     Then it names that file
     And it does not name the other
 
-  @B-024
-  Scenario: A missing test is a warning here
-    Given the checker's rule settings exist
-    And the repository pins a schema version before 0.3.0
-    And an approved specification whose traceability matrix has a missing test
-    When the self-check runs
-    Then the missing test is reported as a warning
-    And the self-check succeeds
-
   @B-015 @boundary
   Scenario: The hook changes nothing it checks
     Given a staged source file whose formatting differs from the repository's rules
