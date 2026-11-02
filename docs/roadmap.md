@@ -7,12 +7,18 @@ type: reference
 # Roadmap
 
 Work ships in milestones named by the package minor version. A milestone is a
-set of Features that together change what a consumer can do; it closes when
-every one of them is done and the version is bumped. The ids are the
-specifications' stable ids, and the finish line of each milestone is the first
-section of `.issue/.goal`, which the queue ranks by. Each milestone is mirrored
-to a read-only GitHub milestone of the same title. This page says why; the
-goal file says what; the Feature specifications say how.
+set of Feature deliveries that together change what a consumer can do; it
+closes when its selected work is done and the version is bumped. Tables cite
+the specifications' stable ids and identify partial deliveries. `.issue/.goal`
+holds each milestone's finish line, which the queue ranks by; its first section
+is the current milestone. Each milestone is mirrored to a read-only GitHub
+milestone of the same title. This page says why; the goal file says what; the
+Feature specifications say how.
+
+Open finish lines select child items explicitly. Feature containers `0010`,
+`0004`, `0033` and `0224` remain delivery summaries outside release gates, so
+newly cut children do not silently enlarge a release. A completed release
+slice does not close its whole Feature; that requires checking every claim.
 
 ## Today: 0.2.x
 
@@ -53,36 +59,41 @@ cut and lands here.
 pinned to the newest schema upgrades to the next one without touching a
 document.
 
-## 0.4.0 - A manifest-driven engine, measured before it is restructured
+## 0.4.0 - Manifest configuration
 
-**Better for:** a consumer who declares its own layout, section roles and id
-grammars in the manifest and gets rule messages that name them, and a
-maintainer who restructures the engine only on evidence.
+**Better for:** a consumer who declares frontmatter keys, identity and edge
+forms, and id grammars in the manifest, gets messages that name those values,
+and chooses an exact or floating schema pin.
 
-The benchmark spike `0216` ran first: the engine takes no mediator
-(ADR-0026). The structural refactors proceed (ADR-0027): `0100`, then the
-splits to one rule per id, then the later stages, each pull request showing no
-regression on the whole-check benchmark. Discovery lists files through git,
-the report writes to a path, and the traceability matrix is resolved against
-the scenarios and tests it cites.
+The remaining path is `0166` (the model builder, parsers and reader), then
+`0016` (keys, forms and grammars), then `0018` (diagnostic wording). Rule unit
+coverage `0152` and pin policy `0124` have no outstanding item prerequisites.
+The pin policy stays here under the owner's 2026-11-01 decision. `0016` still
+needs its blocked status and agreement/design holds reconciled before code;
+`0124` and `0018` still need their architecture passes.
 
-| Feature    | Delivers                                                                                             |
-| ---------- | ---------------------------------------------------------------------------------------------------- |
-| `0001-F5`  | Frontmatter keys, edge forms and id grammars from the manifest, named in messages                    |
-| `0001-F6`  | Discovery through `git ls-files`, with the pruned walk as fallback, proven equal                     |
-| `0001-F3`  | The report written to the `--report` path                                                            |
-| `0001-F12` | Matrix resolution: § 9 rows held against the scenarios and the declared tests                        |
-| `0001-F1`  | The engine's rules split one per id, the evaluator an instance, the runner gone - under ADR-0027     |
-| `0109-F5`  | Release baseline comparison: advisory regressions between two published revisions                    |
-| `0001-F7`  | The pin policy `0124`: a pin that floats to the newest shipped patch or minor, moved here from 0.3.0 |
+| Feature   | Delivers                                                                                         |
+| --------- | ------------------------------------------------------------------------------------------------ |
+| `0001-F5` | Part: frontmatter keys, edge forms and id grammars from the manifest, named in messages          |
+| `0001-F1` | Part: the model builder and reader prerequisite, and unit coverage for the rules already split   |
+| `0001-F7` | Part: a pin policy selecting the exact version, newest permitted patch or newest permitted minor |
 
-Refactors `0168`, `0207` and `0218` simplify the test composition; spike
-`0141` (rule settings from `.editorconfig`) waits on `0014`, and spikes `0169`
-(four-digit rule ids) and `0170` (native AOT) on the stages they follow.
+The mediator evaluation ended without adoption (ADR-0026). The type rename,
+rule splits, instance evaluator, tree move, release baseline comparison,
+schema `0.3.0` cut and rule-id migration are already delivered and remain in
+this milestone's history. Each structural stage still carries ADR-0027's
+whole-check benchmark guard; `0166` is the only remaining structural stage
+required by this release slice. Runner removal belongs to 0.6.0.
 
-**Done means:** the default manifest reproduces the golden baseline report on
-every moved literal, and the benchmark finding is recorded whichever way it
-went.
+`0001-F5` still has uncut claims B-024 to B-035 and B-042 and Partial rows
+whose original items are done. Groom the epics-optional and remaining
+identity/path work before closing the whole Feature; these five selected
+items do not absorb those claims.
+
+**Done means:** `0166`, `0016`, `0018`, `0152` and `0124` satisfy their cited
+claims, the default manifest reproduces the golden baseline on every moved
+literal, older pins retain their interpretation, and the required tests and
+structural benchmark guard pass.
 
 ## 0.5.0 - MCP first release
 
@@ -103,10 +114,11 @@ reads the verdict, a rule's text, the rule list and the manifest, each equal to
 its command's output on the same tree; `docs/mcp.md` documents the entry and
 those tools; and no file changes.
 
-## 0.6.0 - Pull-request surface
+## 0.6.0 - Repository integration and pull-request surface
 
-**Better for:** a pull request author, who sees violations on the diff from one
-workflow step.
+**Better for:** a consumer whose discovery respects repository exclusions,
+whose check can save a report, and whose pull request shows violations from
+one workflow step.
 
 A GitHub Action runs `specht` in any repository, writes its violations onto the
 pull request's diff and into the step summary, and passes on the tool's exit
@@ -115,17 +127,42 @@ Features still to cut; a Feature joins the goal file when it is. Code analysis
 reaches a consumer whose claims live only in Gherkin, for consumer request
 #256.
 
-| Epic or Feature | Delivers                                                                                       |
-| --------------- | ---------------------------------------------------------------------------------------------- |
-| `0142`          | A GitHub Action that runs `specht`, annotates the pull request and writes the step summary     |
-| `0201-F6`       | One packaged consumer proving native Gherkin claims with xUnit v2 VSTest evidence, item `0302` |
+Discovery `0007` and `0008` follow the model reader `0166` delivered in 0.4.0;
+their parity proof `0009` follows both. Report output `0036` follows the
+direct engine entry point and runner removal `0167`, which also follows
+`0166`. Host-factory and test-support cleanup do not gate report output.
+
+| Epic or Feature | Delivers                                                                                          |
+| --------------- | ------------------------------------------------------------------------------------------------- |
+| `0142`          | A GitHub Action that runs `specht`, annotates the pull request and writes the step summary        |
+| `0201-F6`       | One packaged consumer proving native Gherkin claims with xUnit v2 VSTest evidence, item `0302`    |
+| `0001-F6`       | Part: discovery through `git ls-files` and the pruned walk, with the same files in the same order |
+| `0001-F3`       | Part: the report written to the `--report` path                                                   |
+| `0001-F1`       | Part: one direct check entry point and runner removal, under ADR-0027                             |
 
 Item `0128` (an id claimed twice) and spike `0289` (large comment chunks in
 specification markdown) land here. The Gherkin claims' documentation lands in
 0.3.0.
 
+`0167` retains its owner-review hold on the direct-call redesign. Before
+implementing `0036`, correct its obsolete mediator design under ADR-0026 and
+resolve `0001-F3` OQ-8, report behavior on input failure. Discovery still needs
+its design pass, including git failure behavior; B-013 to B-015 (orphan
+companions and required directories) have no items, and B-004 is Partial.
+Cut and schedule that work here before claiming the whole discovery Feature
+is finished. Allocate report expectation claims B-034 to B-043 with the rules
+that produce them: discovery here, matrix validation in 0.7.0, and reconcile
+already-built cases and the remaining Partial rows.
+
+These additions share a repository-integration outcome with the Action; they
+are not new Action prerequisites. Epic `0142` proposes reading `--json`.
+The Action still needs decomposition, so existing item counts are not the
+complete release size. Item `0128` remains blocked by status.
+
 **Done means:** a consumer repository gets its violations on a pull request with
-one workflow step and no code of its own.
+one workflow step and no code of its own, both discovery modes pass their
+parity proof, and `--report` writes the same document as `--json` while
+preserving stdout and the verdict.
 
 ## 0.7.0 - Agent surface completed
 
@@ -142,14 +179,24 @@ frontmatter schemas and templates of the pinned version, so an agent with no
 | `0132-F4`  | The rest of reading through MCP: the tree's facts, claim coverage, the schema and template answers |
 | `0001-F13` | Claim coverage, `specht trace`                                                                     |
 | `0001-F18` | The frontmatter schemas and templates printed, and `specht schema list --json`                     |
+| `0001-F12` | Remaining matrix validation: scenario titles, missing scenarios, row status and older-pin guards   |
 
 Spike `0252` (MCP access to linked records, and local or online storage) lands
 here; its proposal is ADR-0028. Spike `0256` (collision-free record ids) lands
 here too.
 
+The remaining matrix path is `0335` and `0336`, then `0337`, then `0338`;
+the schema cut, repository pin and unresolved-test rule prerequisites are
+done. This placement groups matrix validation with facts and coverage. The
+trace command shares the already-built resolver `0225`; it need not wait
+for every validation rule. Package milestone `0.7.0` does not change the
+matrix rules' schema `0.3.0` guards. Facts, trace and the remaining MCP answers
+still need their delivery items cut.
+
 **Done means:** an agent in a fresh repository, with only the manifest `init`
 writes, authors a Feature specification from the MCP answers alone and the
-check reports no violation.
+check reports no violation; the selected matrix rules reject unsupported
+scenario/status rows and preserve the verdict under older pins.
 
 ## 0.8.0 - Review and presentation
 
@@ -221,9 +268,41 @@ this list is this page's alone.
 The online allocation in `0324` follows spike `0256` and ADR-0028's
 recommendation that online allocation waits.
 
+### Maintenance backlog
+
+These items remain tracked without gating a release. Their statuses and
+dependencies are unchanged.
+
+| Item   | Work                                                        |
+| ------ | ----------------------------------------------------------- |
+| `0168` | One shared test-support project                             |
+| `0144` | One factory for the host and command tests                  |
+| `0207` | Simpler shared engine-test composition                      |
+| `0218` | Real project references for test and tooling dependencies   |
+| `0342` | Rule classes and their Feature homes cohesive by rule group |
+
+`0168` can start now. `0144` follows `0168` and 0.6.0's `0167`, and retains
+its owner-review hold. `0207` and `0218` require coordination with the shared
+test-support and host-factory work; overlapping write sets are sequenced.
+`0342` follows the completed `0169` and needs the owner's layout ruling.
+
+### Investigations
+
+| Item   | Work                                                               |
+| ------ | ------------------------------------------------------------------ |
+| `0141` | Weigh rule settings from `.editorconfig`; its prerequisite is done |
+| `0170` | Weigh native AOT and startup after `0167`                          |
+
+Neither investigation gates the selected release promises. Before the AOT
+trial, correct its obsolete dispatcher references; an adoption ruling still
+needs the startup measurement its agreement requires. Rule-id migration
+`0169`, originally proposed for this backlog, completed before this split
+landed and remains in 0.4.0's history. The owner placed its new rule-folder
+follow-up `0342` in the maintenance backlog on 2026-11-02.
+
 ## What this page is not
 
-It stores no id the goal file does not, and it decides nothing a Feature's
-specification decides. A milestone's finish line is the goal file; a Feature's
-agreement is its `.spec/README.md`. Moving work between milestones is an edit
-to the goal file and a line here, in the same pull request.
+It records scheduled outcomes and unscheduled work, and decides nothing a
+Feature's specification decides. A milestone's finish line is the goal file;
+a Feature's agreement is its `.spec/README.md`. Moving work between milestones
+is an edit to the goal file and a line here, in the same pull request.
