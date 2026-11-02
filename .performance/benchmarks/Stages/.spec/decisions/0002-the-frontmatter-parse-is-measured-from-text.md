@@ -18,9 +18,9 @@ on item `0166`'s sixth question (2026-11-02)
   as C-4 does for the Markdown parse.
 - A-1 names `SpechtModelReader` for the stages that read the disk, the
   manifest and schema load (B-001) and the model build (B-005), under C-10
-  and C-11; the parser instances `FrontmatterReader` and `SpechtDocument` for
-  B-003 and B-004; and keeps `SpechtDiscovery` and
-  `SpechtEvaluator.Evaluate`.
+  and C-11; the parser instances `FrontmatterReader` and
+  `SpechtDocumentParser` for B-003 and B-004; and keeps `SpechtDiscovery`
+  and `SpechtEvaluator.Evaluate`.
 
 ## Why
 
