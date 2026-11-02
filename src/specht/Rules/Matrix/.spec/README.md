@@ -112,20 +112,22 @@ A § 9 row says which scenario and which tests pin a claim and how far, and toda
 
 ## 6. Concern Separation
 
-<!-- last written by: implementer, 2026-11-02 (0334) -->
+<!-- last written by: implementer, 2026-11-02 (0335) -->
 
-| Concern                                                                       | Classification | Owner                                                                                        |
-| ----------------------------------------------------------------------------- | -------------- | -------------------------------------------------------------------------------------------- |
-| Column roles, inline-code test names and declared-form matching               | Business       | `MatrixResolver`                                                                             |
-| Root-relative test-file selection and reads through `IFileSystem`             | Technical      | Existing `SpechtDiscovery` store                                                             |
-| Reading the declared test files once per check and handing them to every rule | Technical      | Existing `SpechtModelLoader`; `SpechtModel.TestFiles`                                        |
-| Retaining code-span contents alongside unchanged visible table cells          | Both           | Existing Markdig document parse                                                              |
-| Rule diagnostics, row exemptions and scenario resolution                      | Business       | `WaiverRule`, `RetiredClaimRule` and `UnresolvedTestRule`; other rule slices remain deferred |
-| Which rule ids a schema version runs, and each id's default level             | Both           | `SchemaVersions.Shipped`; each version's shipped manifest                                    |
+| Concern                                                                       | Classification | Owner                                                                                                             |
+| ----------------------------------------------------------------------------- | -------------- | ----------------------------------------------------------------------------------------------------------------- |
+| Column roles, inline-code test names and declared-form matching               | Business       | `MatrixResolver`                                                                                                  |
+| Scenario cell titles split on `;`, and each title's scenario and claim tag    | Business       | `MatrixResolver`                                                                                                  |
+| A companion's scenario titles and the claim tags Gherkin gives each           | Both           | Existing companion parse, `FeatureTagParser.Read`                                                                 |
+| Root-relative test-file selection and reads through `IFileSystem`             | Technical      | Existing `SpechtDiscovery` store                                                                                  |
+| Reading the declared test files once per check and handing them to every rule | Technical      | Existing `SpechtModelLoader`; `SpechtModel.TestFiles`                                                             |
+| Retaining code-span contents alongside unchanged visible table cells          | Both           | Existing Markdig document parse                                                                                   |
+| Rule diagnostics, row exemptions and scenario resolution                      | Business       | `WaiverRule`, `RetiredClaimRule`, `UnresolvedTestRule` and `ScenarioTitleRule`; other rule slices remain deferred |
+| Which rule ids a schema version runs, and each id's default level             | Both           | `SchemaVersions.Shipped`; each version's shipped manifest                                                         |
 
 ## 7. Technical Design
 
-<!-- last written by: implementer, 2026-10-17 (0227) -->
+<!-- last written by: implementer, 2026-11-02 (0335) -->
 
 [`SpechtDocument`](../../../Model/SpechtDocument.cs) keeps the existing flattened cells and additionally retains inline-code contents per row/cell in [`SpechtSection`](../../../Model/SpechtSection.cs). Both come from the same Markdig pipe-table parse. Existing rule inputs and baseline verdicts remain unchanged; prose, escaped backticks and code outside the matrix do not become test names.
 
@@ -135,7 +137,7 @@ The existing [`SpechtDiscovery`](../../../Discovery/SpechtDiscovery.cs) store ad
 
 For each test name, the final dotted segment is inserted into each literal declaration form, or matched alone as a whole word when no forms are declared. An open end of a form keeps a whole-word boundary; literal prefixes and suffixes are honored exactly. Every preceding segment must occur as a whole word in the same file. Declaration prefixes/suffixes are escaped literal text; no compiler, assembly or test process is used. The matching name's one-based line and root-relative file are retained; LF, CRLF and CR line endings are counted consistently. When several files match, the first ordinal path supplies the evidence; within that file, the earliest matching name supplies its line. Repeated names reuse the same resolution within a document, keeping their cell order. No `tests` key yields unconfigured names; configured settings with no matching file yield unresolved names.
 
-The resolver is registered in the existing engine composition. Item 0227 now consumes its rows and extends it for already-parsed claim tags; title resolution and other row exemptions remain with their later rule slices. The resolver item introduced no shipped resource or rule id; the two rules below enter working 0.2.0 together without an architecture migration.
+The resolver is registered in the existing engine composition. Item 0227 now consumes its rows and extends it for already-parsed claim tags, and item 0335 for Scenario cell titles (below); other row exemptions remain with their later rule slices. The resolver item introduced no shipped resource or rule id; the two rules below enter working 0.2.0 together without an architecture migration.
 
 ### Waivers and retired claims (0227)
 
@@ -147,7 +149,7 @@ The resolver is registered in the existing engine composition. Item 0227 now con
 
 `MatrixResolver.ResolveClaims` extends the same pure resolver: each declared claim retains its source line, fourth-column status, matching already-parsed companion tags and matching resolved matrix rows. Tag matching respects the manifest's claim-tag case setting. `RetiredClaimRule` reports one violation per withdrawn/superseded claim when any matching tag remains or an existing matrix row has a different status. Diagnostics use the specification's root-relative path, the matrix row line for a waiver and the declaration line for a retired claim. The expected payloads remain the separate Report work items' scope.
 
-Both ids, rule pages and default off entries enter working 0.2.0 together, followed by its approved relock. Every 0.1.0 resource remains unchanged. The live manifest declares tests and section owners as decision 0002 requires; it does not enable the default-off rules. Other Matrix rules, title matching and Trace remain deferred.
+Both ids, rule pages and default off entries enter working 0.2.0 together, followed by its approved relock. Every 0.1.0 resource remains unchanged. The live manifest declares tests and section owners as decision 0002 requires; it does not enable the default-off rules. Other Matrix rules and Trace remain deferred; title matching is item 0335's (below).
 
 ### Unresolved test names (0334)
 
@@ -160,6 +162,28 @@ The declared test files reach a rule through the model. [`SpechtModelLoader`](..
 `SchemaVersions.Shipped` gives `0.3.0` the ids of `0.2.1` and `SPEC032`; `0.1.0`, `0.2.0` and `0.2.1` are unchanged (`0001-F7` C-1). The `0.3.0` shipped manifest sets `"SPEC032": "error"` beside the other ids, its page is `docs/rules/v0.3.0/SPEC032.md`, and `0.3.0` is relocked by decision 0014's procedure: its lock entry removed by hand, then `LockSchemaVersion`.
 
 This is a rule, not one of ADR-0010's structural stages, so ADR-0027's no-regression guard does not apply. The whole-check benchmark's tree carries this repository's manifest, which declares `tests`, so from this item the measured check also reads the generated tree's test files and runs `SPEC032`: a change in what is measured, not a structural cost. To keep that tree clean (`0109-F1` B-015), it gains `test/GeneratedTests.cs`, which declares the `GeneratedTests.Input{claim}` names its rows give.
+
+### Scenario titles (0335)
+
+<!-- last written by: implementer, 2026-11-02 -->
+
+A companion's scenarios come from the existing companion parse (C-3). [`FeatureTagParser.Read`](../../../Model/FeatureTagParser.cs) reads tags and scenarios in the one pass that already read tags, and [`SpechtModelLoader`](../../../Model/SpechtModelLoader.cs) builds each [`FeatureFile`](../../../Model/FeatureFile.cs) from it; `Parse` still returns the tags alone. `FeatureFile.Scenarios` holds a [`FeatureScenario`](../../../Model/FeatureScenario.cs) for each `Scenario:` and `Scenario Outline:` line, its title the text after the keyword, trimmed, with the claim tags Gherkin gives it: those on the tag lines above it, those above `Feature:`, those above its enclosing `Rule:`, and, for an outline, those above its `Examples:` or `Scenarios:`. Comment and blank lines between a tag line and its keyword do not detach the tags. `Example:` and `Scenario Template:` are not recorded, since B-008 names the two keywords; `Background:`, `Example:`, `Scenario Template:` and `Rule:` end the outline whose `Examples:` tags are being collected.
+
+[`MatrixResolver.Resolve(FeatureSpec, …)`](../MatrixResolver.cs) gives each [`MatrixRowResolution`](../MatrixRowResolution.cs) its `Scenarios`: the Scenario cell split on `;`, trimmed, empty fragments omitted, each a [`MatrixScenarioResolution`](../MatrixScenarioResolution.cs) with a [`MatrixScenarioStatus`](../MatrixScenarioStatus.cs). With `matrix.scenarioTitles` off every title is `Unconfigured`, as an unconfigured test name is. Otherwise a title equal to no companion scenario's is `NoSuchTitle`; one whose scenarios include one carrying the row's claim tag is `Resolved`, with that scenario's root-relative file and keyword line; one whose scenarios all lack it is `Untagged`, with the first such scenario's file and line. Companions are taken in the model's order and scenarios in file order. The tag compares under `claim.tagIgnoreCase`, as `ResolveClaims` does. This is the test-writer's proposed shape, adopted as proposed; `0001-F13` and `SPEC033` (item 0337) read the same answer. The document-only `Resolve` that `SPEC032`, `SPEC034` and the resolver's existing tests call resolves titles against no companion, so under title matching it reports every title `NoSuchTitle`; a consumer of titles takes the `FeatureSpec` overload, which `ResolveClaims` now uses.
+
+[`ScenarioTitleRule`](../ScenarioTitleRule.cs) is `SPEC022`, default level error (decision 0001 call 2). It returns at once unless `matrix.scenarioTitles` is true (B-010). Otherwise each distinct `NoSuchTitle` or `Untagged` title of a row, in cell order, is one finding at the row's line with the claim cell as identifier, as `SPEC032` and `SPEC034` identify a row: "§ 9 names scenario '{title}', which no Scenario or Scenario Outline in the companion has" (B-008) or "… which does not carry the tag of {claim}" (B-009). It reads no marker (C-5). The `expected` payload is `0001-F3`'s.
+
+Three behaviours no claim states, each read from precedent in this engine:
+
+| Behaviour                                                            | Reading                                                        | Precedent                                                                                                                                                                                                                                                                                                                                                                                  |
+| -------------------------------------------------------------------- | -------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Does a tag on the `Feature:` line count as carried by its scenarios? | Yes, as do a `Rule:`'s tags and an outline's `Examples:` tags. | Gherkin's tag inheritance. In this Feature `SPEC035` reads B-019's "a companion scenario carries its tag" as a claim tag anywhere in the companion, the `Feature:` line included, through `ResolveClaims` over `FeatureFile.Tags`; reading it otherwise would have `SPEC022` call a scenario untagged that `SPEC035` counts as carrying the tag.                                           |
+| Does title comparison ignore case?                                   | No: ordinal, after trimming.                                   | B-008 says "equal". `SPEC032` matches test names case-sensitively and every marker compares ordinally; the engine ignores case only where a manifest key says so, `claim.tagIgnoreCase`, which the tag check here honours and no key extends to titles.                                                                                                                                    |
+| Are missing, waived, withdrawn or superseded rows exempt?            | No: every row is read.                                         | In this Feature an exemption is written into the claim that has it: B-002 and B-006 exempt waived, withdrawn and superseded rows from `SPEC032`, B-011 missing and waived rows from `SPEC023`. B-008 and B-009 state none, so one would be behaviour no claim states. The template's Scenario cell is the scenario's title, never a marker; an exemption is spec-author's to add by claim. |
+
+`SchemaVersions.Shipped` gives `0.3.0` `SPEC022` beside `SPEC032`, `SPEC034` and `SPEC035`; `0.1.0`, `0.2.0` and `0.2.1` are unchanged (B-021; `0001-F7` C-1). The `0.3.0` shipped manifest sets `"SPEC022": "error"`, its page is `docs/rules/v0.3.0/SPEC022.md` in the Feature file family (`0001-F3` A-5), and `0.3.0` is relocked by decision 0014's procedure. This repository pins `0.3.0` and sets no `matrix.scenarioTitles`, so `SPEC022` reports nothing here (decision 0003, Addendum).
+
+This is a rule, not one of ADR-0010's structural stages, so ADR-0027's guard does not apply. The companion parse gains a keyword test per non-tag line, and the resolver one title lookup per check of a row; the whole-check benchmark's manifest sets no title matching, so the rule returns before resolving.
 
 ## 8. Testing Strategy
 
