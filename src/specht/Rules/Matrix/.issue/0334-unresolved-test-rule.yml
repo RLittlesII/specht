@@ -1,0 +1,91 @@
+id: "0334"
+type: task
+title: Report a test name no declared test file holds, SPEC032, in schema 0.3.0
+
+status: ready
+
+risk: 3
+
+parent: "0224"
+children: []
+
+depends_on: ["0321", "0225"] # 0321 cuts schema 0.3.0, the version this rule joins; 0225 is the resolver it reads (C-3)
+spikes: []
+
+spec: src/specht/Rules/Matrix/.spec/README.md
+
+claims:
+  - B-001
+  - B-002
+  - B-003
+  - B-004
+  - B-005
+  - B-006
+  - B-007
+
+created: "2026-11-01"
+updated: "2026-11-01"
+closed: null
+
+summary: |
+  SPEC032 reports, at its § 9 row, a test name in a Test cell that no
+  declared test file holds, and a Test cell that names no test in inline
+  code; with no `tests` key it reports nothing. It reads each row through
+  0225's resolver (C-3) and adds no second reading of a cell or a test
+  file.
+
+  It binds the scenarios of B-001 and B-003 to B-005, which observe the
+  resolver through this rule (0225's decision of 2026-10-15), and the
+  @B-001 scenario under 0.2.0, which observes it through the waiver rule,
+  so those four § 9 rows can leave Partial.
+
+  Waits on 0321, which cuts schema 0.3.0 (decision 0003). This item adds
+  SPEC032 to 0.3.0's vocabulary with its rule page (0001-F3 B-031) and
+  relocks 0.3.0 by 0001-F7 decision 0014's procedure (0001-F7 C-17), in
+  the pull request that builds the rule, so 0001-F7 B-014 holds at every
+  commit. Waits on 0225 for the resolver, done.
+
+  Risk 3: the first of the four rules to join 0.3.0 after its cut, so
+  0.3.0's vocabulary grows while 0.1.0, 0.2.0 and 0.2.1 stay as published
+  (0001-F7 C-1); the waived, withdrawn and superseded rows are exempt
+  (B-002, B-006); and a relock is allowed only while no published package
+  embeds 0.3.0 (OQ-4).
+
+acceptance_criteria:
+  - "B-001 — columns by position; its scenarios bind here, through SPEC032 and the waiver rule"
+  - "B-002 — unresolved test name, at the row, the claim id as identifier"
+  - "B-003 — inline-code names; its scenarios bind here"
+  - "B-004 — dotted names; its scenarios bind here"
+  - "B-005 — whole word or a declared form; its scenarios bind here"
+  - "B-006 — Test cell with no inline code; SPEC033's half of the double report is 0337's (B-013)"
+  - "B-007 — no tests key, SPEC032 silent"
+  - "`0001-F7` B-014 — SPEC032 joins schema 0.3.0's vocabulary here, with its rule page (`0001-F3` B-031) and a relock (`0001-F7` C-17, decision 0014); 0.1.0, 0.2.0 and 0.2.1 unchanged (`0001-F7` C-1)"
+  - "No relock once a published package embeds 0.3.0; OQ-4's default holds until the owner answers."
+  - "One resolver, no second reading (C-3); text only (C-1); reads through IFileSystem, root-relative paths (C-2); no marker literal (C-5)."
+  - "§ 9 carries a row naming a test for each id above."
+
+decisions:
+  - |
+    2026-11-01, spec-author: cut on the owner's ruling of 2026-11-01
+    (decision 0003). SPEC032 is the first of the four rules because the
+    scenarios of B-001 and B-003 to B-005 bind through it, as 0225's
+    decision routed them, and SPEC033's double report with it (B-006,
+    B-013) needs it in place. B-001 and B-003 to B-005 are 0225's claims,
+    done; they are claimed again here because their scenarios bind here,
+    and 0225's tests stay. B-006 is claimed here for SPEC032's report; its
+    clause naming SPEC033 is proven by 0337's B-013 test.
+  - |
+    2026-11-01, spec-author: the vocabulary entry is cited in the
+    acceptance criteria, not in `claims`, which holds this
+    specification's ids, as 0227 cited 0001-F7 B-115. With B-115
+    withdrawn it cites 0001-F7 B-014 and decision 0003; no 0001-F7 claim
+    is wanted (decision 0003, Affects). Value omitted, inheriting 0224's.
+    Rejected: SPEC032 after the title rule, since SPEC032 reads no
+    Scenario cell and the title rule needs nothing of it.
+
+out_of_scope:
+  - "SPEC033's report of a covered row, including its half of B-006's double report: 0337 (B-013)."
+  - "Resolving a Scenario cell's title: 0335 (B-008, B-009)."
+  - "Rows SPEC032 reports on this repository's own tree once it pins 0.3.0: `0055-F1` B-026, B-027 (decision 0003, Affects)."
+  - "The expected payload of each violation: `0001-F3` (§ 5 row 7)."
+  - "Everything in § 5 of the spec."

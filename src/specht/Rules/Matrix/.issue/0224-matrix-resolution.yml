@@ -8,7 +8,7 @@ value: 3
 risk: 4
 
 parent: "0001"
-children: ["0225", "0227"]
+children: ["0225", "0227", "0334", "0335", "0336", "0337", "0338"]
 
 depends_on: []
 spikes: []
@@ -39,7 +39,7 @@ claims:
   - B-021
 
 created: "2026-10-15"
-updated: "2026-10-15"
+updated: "2026-11-01"
 closed: null
 
 summary: |
@@ -48,14 +48,15 @@ summary: |
   test files, so that a row the tree does not bear out is reported at its
   line.
 
-  Risk 4: six rules join schema 0.2.0, which is relocked when they land
-  (A-4; 0001-F7 decision 0014); one resolver serves these rules and the
+  Risk 4: four rules join schema 0.3.0, relocked as each lands while no
+  published package embeds it, and two are in the published 0.2.0 and
+  0.2.1 (A-4; decision 0003; 0001-F7 C-17); one resolver serves these rules and the
   trace command (C-3; 0001-F13 C-1), so its shape is fixed for two
   Features; two rules may report one row, and B-006, B-012 and B-013 say
   exactly when; this repository's own manifest declares `tests` and
   `owners` in the pull request that delivers the rules, which fixes every
-  row they then report (decision 0002 call 3); and a 0.1.0 pin must give
-  a byte-identical report (B-021).
+  row they then report (decision 0002 call 3); and a pin below 0.3.0 must
+  give the report the tree gets without the four rules (B-021).
 
   The first child is 0225, the resolver; the second is 0227, SPEC034
   and SPEC035 (B-018 to B-020, after 0223 for the off level). The other
@@ -68,28 +69,38 @@ summary: |
   items. The trace command's items (0001-F13) follow too, and depend on
   0225.
 
+  Re-cut 2026-11-01 (decision 0003): 0.2.0 shipped before the four
+  remaining rules were built, so they join schema 0.3.0, which 0321
+  (0001-F7) cuts first. 0334 is SPEC032 (B-002, B-006, B-007, binding
+  the scenarios of B-001 and B-003 to B-005); 0335 SPEC022 (B-008 to
+  B-010); 0336 SPEC023 (B-011); 0337 SPEC033 (B-012 to B-017), after
+  the other three; and 0338 the guard below 0.3.0 (B-021), after all
+  four. Each rule item waits on 0321 and adds its own id to 0.3.0's
+  vocabulary with its rule page and a relock, so 0001-F7 B-014 holds at
+  every commit.
+
 acceptance_criteria:
-  - "B-001 — § 9 columns by position (0225)"
-  - "B-002 — unresolved test name, SPEC032 (not cut)"
-  - "B-003 — test names are inline-code spans (0225)"
-  - "B-004 — dotted names, last segment declared (0225)"
-  - "B-005 — whole word, or only a declared form (0225)"
-  - "B-006 — Test cell with no inline code, SPEC032 (not cut)"
-  - "B-007 — no tests key, SPEC032 silent (not cut)"
-  - "B-008 — Scenario cell title matches none, SPEC022 (not cut)"
-  - "B-009 — titled scenario lacks the row's tag, SPEC022 (not cut)"
-  - "B-010 — title matching off, SPEC022 silent (not cut)"
-  - "B-011 — live claim no scenario carries, SPEC023 (not cut)"
-  - "B-012 — no SPEC033 beside SPEC023 (not cut)"
-  - "B-013 — covered row that does not resolve, SPEC033 (not cut)"
-  - "B-014 — partial row with nothing resolved, SPEC033 (not cut)"
-  - "B-015 — stale missing row, SPEC033 (not cut)"
-  - "B-016 — SPEC033 with no tests key (not cut)"
-  - "B-017 — unknown status marker, SPEC033 (not cut)"
+  - "B-001 — § 9 columns by position (0225; scenarios 0334)"
+  - "B-002 — unresolved test name, SPEC032 (0334)"
+  - "B-003 — test names are inline-code spans (0225; scenarios 0334)"
+  - "B-004 — dotted names, last segment declared (0225; scenarios 0334)"
+  - "B-005 — whole word, or only a declared form (0225; scenarios 0334)"
+  - "B-006 — Test cell with no inline code, SPEC032 (0334)"
+  - "B-007 — no tests key, SPEC032 silent (0334)"
+  - "B-008 — Scenario cell title matches none, SPEC022 (0335)"
+  - "B-009 — titled scenario lacks the row's tag, SPEC022 (0335)"
+  - "B-010 — title matching off, SPEC022 silent (0335)"
+  - "B-011 — live claim no scenario carries, SPEC023 (0336)"
+  - "B-012 — no SPEC033 beside SPEC023 (0337)"
+  - "B-013 — covered row that does not resolve, SPEC033 (0337)"
+  - "B-014 — partial row with nothing resolved, SPEC033 (0337)"
+  - "B-015 — stale missing row, SPEC033 (0337)"
+  - "B-016 — SPEC033 with no tests key (0337)"
+  - "B-017 — unknown status marker, SPEC033 (0337)"
   - "B-018 — waiver without a signed-off approver and date, SPEC034 (0227)"
   - "B-019 — retired claim still carried, SPEC035 (0227)"
   - "B-020 — SPEC034 and SPEC035 off unless raised (0227, after 0223)"
-  - "B-021 — 0.1.0 pin, byte-identical report (not cut)"
+  - "B-021 — below 0.3.0 the four rules do not run (0338)"
   - "§ 9 carries a row naming a test for each id above."
 
 decisions:
@@ -117,6 +128,22 @@ decisions:
     items are not forced and stay uncut. Each rule item cites 0001-F7
     B-115 for the ids it adds, and the one that adds the last binds
     @B-115.
+  - |
+    2026-11-01, spec-author, re-cut on the owner's ruling of 2026-11-01
+    (decision 0003): "0.3.0 via 0321 first (Recommended)". 0.2.0 shipped
+    in tag v0.1.131 and from v0.2.4 on carries SPEC034 and SPEC035, and
+    0001-F7 withdrew B-115 on 2026-10-30 (its OQ-58), so the entry above
+    no longer holds: SPEC022, SPEC023, SPEC032 and SPEC033 join 0.3.0, and
+    each rule item cites 0001-F7 B-014 and decision 0003 in its
+    acceptance criteria instead of B-115. 0334 to 0338 cut, ids checked
+    against main and the open pull requests, none open. Order: SPEC032
+    first, as the scenarios of B-001 and B-003 to B-005 bind through it;
+    SPEC022 and SPEC023 next, each independent of SPEC032; SPEC033 after
+    all three, because B-006 and B-013, A-1's titles and B-012 name them;
+    the B-021 guard last. B-012 moves from the proposed SPEC023 item to
+    SPEC033's, where its test can fail. Who works 0321, as the owner
+    answered on the same card: "F12 session (Recommended)" - a delivery
+    call recorded here, for 0321's own item to record when it is taken.
 
 out_of_scope:
   - "Everything in § 5 of the spec."

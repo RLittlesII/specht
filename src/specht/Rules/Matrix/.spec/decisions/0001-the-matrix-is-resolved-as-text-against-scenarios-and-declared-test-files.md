@@ -60,4 +60,16 @@ the owner:
 
 ## Reversal
 
-None.
+2026-11-01, call 4 in part and the third Rejected bullet, on the repository
+owner's ruling (decision 0003); recorded by spec-author. `0.2.0` had shipped
+before the rules were built: tag `v0.1.131` embeds it, and from tag `v0.2.4`
+on it adds `SPEC034` and `SPEC035`, so `0001-F7` C-1 freezes it. `SPEC034`
+and `SPEC035` stay in `0.2.0` and `0.2.1`. `SPEC022`, `SPEC023`, `SPEC032` and
+`SPEC033` enter schema `0.3.0`, the version this decision rejected, which
+`0001-F7` decision 0015 call 7 cuts; each relocks `0.3.0` while no published
+package embeds it. `0.1.0` keeps its 21 ids. Calls 1 to 3 and 5 stand,
+except that call 1's "`0.2.0` or later" now holds for the column reading
+and the two rules `0.2.0` carries; the rules that report a row's scenario,
+test names or status run from `0.3.0`.
+
+Considered and not chosen: the options decision 0003 records as rejected.
