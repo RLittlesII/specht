@@ -261,6 +261,40 @@ decisions:
     - The summary and earlier entries say "the three types"; they are
       history and stay as written.
     Status stays `in-progress`.
+  - |
+    2026-11-02, benchmarker: the guard of ADR-0027 for ADR-0010 stage 6.
+    Base `2e849065` (`origin/main`), head `ed38e012` (the branch head).
+    Separate detached source copies on one host, made with `git archive`,
+    run alternately base-100, head-100, base-1000, head-1000 from 10:01 to
+    10:06 with `./build.sh Benchmark --benchmark-filter
+    '*CheckBenchmarks.Check(Specifications: N)'`, BenchmarkDotNet 0.15.8
+    default job. On the base `[GlobalSetup]` builds the tree with the
+    static `SpechtTree.Of`; on the head it resolves `SpechtTreeGenerator`
+    and `SpechtTreeStore` from `AddSpechtEngine()`; both are outside the
+    measured call. Host: Apple M1 Max, 10 cores, macOS Tahoe 26.4
+    (25E246), .NET SDK 11.0.100-rc.2.26504.105, runtime .NET 10.0.12
+    Arm64 RyuJIT; 1-minute load average between 20.10 and 50.67 on 10
+    cores during the runs (5-minute 21.0 to 29.9), a shared host under
+    heavy load.
+    100 specifications: base Mean 80.71 ms, Error 10.73 ms (CI 69.98 to
+    91.43 ms), Allocated 33.42 MB (35,047,677 B); head 48.73 ms, Error
+    0.893 ms (CI 47.84 to 49.63 ms), 33.45 MB (35,073,196 B). Time
+    -39.6%, allocation +0.07% (+25,519 B).
+    1,000 specifications: base Mean 540.4 ms, Error 32.99 ms (CI 507.4 to
+    573.4 ms), Allocated 329.87 MB (345,888,912 B); head 492.9 ms, Error
+    9.74 ms (CI 483.2 to 502.7 ms), 329.87 MB (345,888,960 B). Time
+    -8.8%, allocation +48 B (0.00%).
+    Both base rows are dispersed while the load average rose to 50.67 and
+    41.29: at 100, StdDev 30.95 ms, Median 65.62 ms, 96 measurements
+    against head's 44; at 1,000, StdDev 90.31 ms, Median 492.3 ms, 87
+    against head's 69. Their means are the host's, not the code's, and the
+    time deltas are not a speed-up.
+    Judged by 0109-F5 B-011 and B-012 under ComparisonPolicy.Initial: no
+    flag at either size; neither mean rose and neither head interval lies
+    above its base's, and neither allocation rose more than 10%. Only the
+    absence of a flag is claimed: one run per side, under load, and no
+    change in either direction is claimed. The net11.0 runtime was not
+    measured.
 
 out_of_scope:
   - 'Anything in pull request #114 - the owner''s "later". The tests under `test/tests/Benchmarks/` and the reference stay as #114 has them until this item (`0109-F1` OQ-5).'
