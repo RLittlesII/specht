@@ -57,7 +57,7 @@ public sealed class SpechtTreeUnitTests
 
     [Theory]
     [ClassData(typeof(TreeSizes))]
-    public void ATreeOfAStatedSize_WhenBuilt_ShouldHoldTheFourSchemaFilesAndTwoFilesForEachSpecificationAtDistinctPaths(int specifications)
+    public void ATreeOfAStatedSize_WhenBuilt_ShouldHoldFiveFixedFilesAndTwoFilesForEachSpecificationAtDistinctPaths(int specifications)
     {
         // Given
         var resources = new Specht.Resources.SpechtResources();
@@ -67,7 +67,7 @@ public sealed class SpechtTreeUnitTests
         var tree = SpechtTree.Of(specifications, resources.DefaultManifestBytes, structure, parser.PinnedVersion(structure));
 
         // Then
-        tree.Files.Should().HaveCount(4 + (2 * specifications));
+        tree.Files.Should().HaveCount(5 + (2 * specifications));
         tree.Files.Select(static file => file.RelativePath).Should().OnlyHaveUniqueItems();
     }
     [Fact]

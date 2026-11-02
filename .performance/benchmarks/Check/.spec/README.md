@@ -180,14 +180,14 @@ Design for item `0150` (B-001 to B-004; C-1 to C-4), as built. The numbers are �
 
 ## 9. Traceability Matrix
 
-<!-- last written by: test-writer, 2026-10-11 (item 0150: no test, by the owner's rulings; each row names its mechanism and the hand run) -->
+<!-- last written by: test-writer, 2026-10-11 (item 0150: no test, by the owner's rulings; each row names its mechanism and the hand run), 2026-11-02 (item 0334: every Test cell is the missing marker, since `SPEC032` reads inline code in it as a test name; each mechanism and the hand run are in § 8; no status changed) -->
 
-| Claim ID | Scenario                                     | Test                                                                                                                                    | Status  |
-| -------- | -------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- | ------- |
-| B-001    | A whole check is measured at every tree size | No test. `CheckBenchmarks.Specifications`' `[Params(1, 10, 100, 1000)]` and the `[Benchmark]` method `Check`; hand run, § 8 Performance | Missing |
-| B-002    | The measured check covers the whole tree     | No test. The guard in `CheckBenchmarks.GenerateTree`; hand run, § 8 Performance                                                         | Missing |
-| B-003    | The measured tree is laid out co-located     | No test. `SpechtTree.Of`'s layout (`0109-F1` § 7), by reading; the hand run does not show it                                            | Missing |
-| B-004    | Each result names its tree size              | No test. The parameter column `Specifications`; hand run, § 8 Performance                                                               | Missing |
+| Claim ID | Scenario                                     | Test    | Status  |
+| -------- | -------------------------------------------- | ------- | ------- |
+| B-001    | A whole check is measured at every tree size | Missing | Missing |
+| B-002    | The measured check covers the whole tree     | Missing | Missing |
+| B-003    | The measured tree is laid out co-located     | Missing | Missing |
+| B-004    | Each result names its tree size              | Missing | Missing |
 
 ## 10. Lessons / Spec Deltas
 

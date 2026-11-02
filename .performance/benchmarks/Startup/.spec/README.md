@@ -376,19 +376,19 @@ for a regression comparison and no number gates the build.
 
 ## 9. Traceability Matrix
 
-<!-- last written by: test-writer, 2026-10-13 -->
+<!-- last written by: test-writer, 2026-10-13, 2026-11-02 (item 0334: B-001 to B-005 and B-007 to B-009 hold the missing marker in place of prose, as `SPEC032` requires; no status changed) -->
 
-| Claim ID | Scenario                                                    | Test                                                                                            | Status  |
-| -------- | ----------------------------------------------------------- | ----------------------------------------------------------------------------------------------- | ------- |
-| B-001    | The packed tool is installed the way a consumer installs it | No test. ColdStartSession.InstallAsync selects metadata and installs locally; § 8 manual probe. | Missing |
-| B-002    | A check by the packed tool is measured start to exit        | No test. ColdStartBenchmarks.Check and RunAsync; § 8 Dry/default runs.                          | Missing |
-| B-003    | Every measured invocation is a fresh process                | No test. DotNetAsync starts a process per call; § 8 distinct-PID probe.                         | Missing |
-| B-004    | A tool that fails is not timed                              | No test. DotNetAsync exit guard; § 8 broken-tree and exit-7 probes.                             | Missing |
-| B-005    | A run leaves no tool installed behind it                    | No test. CreateAsync failure cleanup and Dispose; § 8 cache/cleanup probes.                     | Missing |
-| B-006    | Every measured invocation reports the tool's own memory     | Missing                                                                                         | Missing |
-| B-007    | A tool that does nothing is measured as the baseline        | No test. InstallAsync generated no-op and EmptyTool baseline; § 8 runs/probe.                   | Missing |
-| B-008    | The tool's help is measured start to exit                   | No test. ColdStartBenchmarks.Help; § 8 Dry/default runs.                                        | Missing |
-| B-009    | Each measurement is reported against the baseline           | No test. EmptyTool baseline and library Markdown ratio; § 8 default finding.                    | Missing |
+| Claim ID | Scenario                                                    | Test    | Status  |
+| -------- | ----------------------------------------------------------- | ------- | ------- |
+| B-001    | The packed tool is installed the way a consumer installs it | Missing | Missing |
+| B-002    | A check by the packed tool is measured start to exit        | Missing | Missing |
+| B-003    | Every measured invocation is a fresh process                | Missing | Missing |
+| B-004    | A tool that fails is not timed                              | Missing | Missing |
+| B-005    | A run leaves no tool installed behind it                    | Missing | Missing |
+| B-006    | Every measured invocation reports the tool's own memory     | Missing | Missing |
+| B-007    | A tool that does nothing is measured as the baseline        | Missing | Missing |
+| B-008    | The tool's help is measured start to exit                   | Missing | Missing |
+| B-009    | Each measurement is reported against the baseline           | Missing | Missing |
 
 ## 10. Lessons / Spec Deltas
 
