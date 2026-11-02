@@ -94,6 +94,10 @@ the first nuget.org release. Then the pin moves to that version, and the source
 and the credential go (`0055-F7` B-010, B-011). Until then `0055-F6` B-010 and
 `0055-F7` C-5 hold as amended.
 
-## Reversal
+## Reversal - 2026-11-01
 
-None.
+[Decision 0008](0008-the-push-runs-in-its-own-publish-job.md) moves
+`id-token: write`, the login and the push from the `release` job into a
+`publish` job of their own; call 3's "The `release` job holds
+`id-token: write`" is superseded. The feed, the label, the trusted-publishing
+credential and the prerelease Release stand.

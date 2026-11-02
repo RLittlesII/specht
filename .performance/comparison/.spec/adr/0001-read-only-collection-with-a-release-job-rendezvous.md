@@ -97,3 +97,28 @@ comparisons incomplete. The implementation cannot hide that by transplanting
 workloads, substituting an older release, or weakening a measuring Feature's
 boundary. Live platform availability remains a delivery observation, separate
 from offline comparator proof. The testability plan is [§ 8](../README.md#8-testing-strategy).
+
+## Amendment 2026-11-01
+
+Recorded by `spec-author` from
+[`0055-F6` decision 0008](../../../../.build/Releasing/.spec/decisions/0008-the-push-runs-in-its-own-publish-job.md),
+item `0333`. The body above is unedited.
+
+- Dependencies: `release` now needs `0055-F6`'s `publish` job, which needs
+  `build`; `comparison` still needs `build` alone. The push reads the package
+  `build` hands to `publish` (`0055-F6` C-4). "Both `release` and the
+  read-only `comparison` job depend on `build`" in the decision, and "hands the
+  package from `build` to `release`" in the context, no longer hold for
+  `release`.
+- Write authority: split between two jobs. `publish` holds `id-token: write`,
+  the nuget.org login and the push, and no contents write; it runs on
+  GitHub-hosted `ubuntu-latest` (C-12's note). `release` holds contents write
+  and actions read, and keeps "Create GitHub Release" and this Feature's
+  comparison steps. "Restrict write authority to the existing release job" in
+  the context, and "C-10 and `0055-F6` C-7 stand without amendment" in the
+  consequences, no longer hold: `0055-F6` C-7 is amended, and C-10 carries a
+  dated note that `publish` is not the third job it rules out.
+- What still holds: the rendezvous is acyclic, since no job needs `release` or
+  `comparison`; collection is read-only; and only the receipt `release`
+  uploads after the Release is created starts measurement, which is after
+  `publish` has finished.

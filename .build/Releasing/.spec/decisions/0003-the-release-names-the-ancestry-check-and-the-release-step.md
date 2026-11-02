@@ -193,3 +193,11 @@ moves the feed to nuget.org and the push credential to NuGet Trusted
 Publishing. The `release` job gains `id-token: write` in place of
 `packages: write`; contents write for the GitHub Release stays as ruled here.
 The names, the ancestry check and the Release step stand.
+
+## Reversal - 2026-11-01 (decision 0008)
+
+[Decision 0008](0008-the-push-runs-in-its-own-publish-job.md) supersedes the
+rejection of "a third job holding `contents: write` alone": the push moves into
+a `publish` job holding `id-token: write`, and the `release` job keeps
+contents write without it. The names, the ancestry check and the Release step
+stand.

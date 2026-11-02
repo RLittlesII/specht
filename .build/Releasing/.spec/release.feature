@@ -73,7 +73,7 @@ Feature: Release
     When a release dry run is started without a tag
     Then every gate and the pack run
     And the packed package is uploaded to the run
-    And the publishing job is skipped
+    And the publishing job and the release job are skipped
     And no package is published
     And no release is created
 

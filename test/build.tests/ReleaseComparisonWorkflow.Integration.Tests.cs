@@ -18,7 +18,6 @@ public sealed class ReleaseComparisonWorkflowIntegrationTests
         // Then
         Scalars(comparison["needs"]).Should().Equal("build");
         comparison["if"].ToString().Should().Be("${{ github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v') }}");
-        Scalars(((YamlMappingNode)jobs["release"])["needs"]).Should().Equal("build");
     }
 
     [Fact]
@@ -98,7 +97,7 @@ public sealed class ReleaseComparisonWorkflowIntegrationTests
     }
 
     [Fact]
-    public void ReleaseJob_WhenGenerated_ShouldKeepTheOnlyWriteGrantAndGainActionsRead()
+    public void WriteGrants_WhenGenerated_ShouldGiveContentsWriteToReleaseAndIdTokenWriteToPublishAlone()
     {
         // Given
         var workflow = Workflow();
@@ -106,16 +105,21 @@ public sealed class ReleaseComparisonWorkflowIntegrationTests
 
         // When
         var release = Granted((YamlMappingNode)((YamlMappingNode)jobs["release"])["permissions"]);
+        var publish = Granted((YamlMappingNode)Job("publish")["permissions"]);
 
         // Then
         release.Should().BeEquivalentTo(new Dictionary<string, string>
         {
             ["actions"] = "read",
             ["contents"] = "write",
+        });
+        publish.Should().BeEquivalentTo(new Dictionary<string, string>
+        {
+            ["contents"] = "read",
             ["id-token"] = "write",
         });
         Granted((YamlMappingNode)workflow["permissions"]).Values.Should().NotContain("write");
-        jobs.Children.Where(static job => job.Key.ToString() != "release")
+        jobs.Children.Where(static job => job.Key.ToString() is not "release" and not "publish")
             .Select(static job => (YamlMappingNode)job.Value)
             .Where(static job => job.Children.ContainsKey("permissions"))
             .SelectMany(static job => Granted((YamlMappingNode)job["permissions"]).Values)
@@ -126,14 +130,24 @@ public sealed class ReleaseComparisonWorkflowIntegrationTests
     public void ReleaseJob_WhenGenerated_ShouldKeepPublicationFailingAndRunTheComparisonStepsAfterItAsAdvisory()
     {
         // Given
+        var pushing = Steps("publish");
         var steps = Steps("release");
 
         // When
         var publication = Array.FindIndex(steps, static step => Value(step, "name") == "Create GitHub Release");
-        var push = Array.FindIndex(steps, static step => Value(step, "name") == "Push release packages");
 
         // Then
-        push.Should().BeGreaterThan(-1).And.BeLessThan(publication);
+        Scalars(Job("release")["needs"]).Should().Equal("publish");
+        pushing.Should().ContainSingle(static step => Value(step, "name") == "Push release packages");
+        foreach (var step in pushing)
+        {
+            step.Children.ContainsKey("continue-on-error").Should().BeFalse(Value(step, "name"));
+            step.Children.ContainsKey("if").Should().BeFalse(Value(step, "name"));
+        }
+
+        steps.Should().NotContain(static step => Value(step, "name") == "Push release packages");
+        steps.Should().NotContain(static step => Uses(step).StartsWith("NuGet/login@", StringComparison.Ordinal));
+        publication.Should().BeGreaterThan(-1);
         foreach (var step in steps.Take(publication + 1))
         {
             step.Children.ContainsKey("continue-on-error").Should().BeFalse(Value(step, "name"));
@@ -156,7 +170,60 @@ public sealed class ReleaseComparisonWorkflowIntegrationTests
         // Then
         text.Should().NotContain("needs.release.outputs");
         release.Children.ContainsKey("outputs").Should().BeFalse();
-        Jobs().Children.Keys.Select(static key => key.ToString()).Should().BeEquivalentTo("build", "release", "comparison");
+        Jobs().Children.Keys.Select(static key => key.ToString()).Should().BeEquivalentTo("build", "publish", "release", "comparison");
+    }
+
+    [Fact]
+    public void PublishAndReleaseJobs_WhenGenerated_ShouldRunOnlyForATagPushAfterAnUnconditionedBuild()
+    {
+        // Given
+        var build = Job("build");
+        var steps = Steps("build");
+
+        // When
+        var publish = Job("publish");
+        var release = Job("release");
+
+        // Then
+        build.Children.ContainsKey("if").Should().BeFalse();
+        steps.Should().ContainSingle(static step => Uses(step).StartsWith("actions/upload-artifact@", StringComparison.Ordinal)
+            && ((YamlMappingNode)step["with"])["name"].ToString() == "nupkg");
+        foreach (var step in steps)
+        {
+            step.Children.ContainsKey("if").Should().BeFalse(Value(step, "name"));
+        }
+
+        Scalars(publish["needs"]).Should().Equal("build");
+        publish["if"].ToString().Should().Be("${{ github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v') }}");
+        release["if"].ToString().Should().Be("${{ github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v') }}");
+    }
+
+    [Fact]
+    public void PublishJob_WhenGenerated_ShouldRunHostedAndPushOnlyTheDownloadedPackageWhileBuildAndReleaseStayOnThePool()
+    {
+        // Given
+        var publish = Job("publish");
+        var steps = Steps("publish");
+
+        // When
+        var checkout = steps.Single(static step => Uses(step).StartsWith("actions/checkout@", StringComparison.Ordinal));
+        var download = Array.FindIndex(steps, static step => Uses(step).StartsWith("actions/download-artifact@", StringComparison.Ordinal)
+            && ((YamlMappingNode)step["with"])["name"].ToString() == "nupkg");
+        var push = Array.FindIndex(steps, static step => Value(step, "name") == "Push release packages");
+
+        // Then
+        Scalars(publish["runs-on"]).Should().Equal("ubuntu-latest");
+        ((YamlMappingNode)checkout["with"])["persist-credentials"].ToString().Should().Be("false");
+        foreach (var job in new[] { "build", "release" })
+        {
+            Scalars(Job(job)["runs-on"]).Should().Equal(["self-hosted", "macOS", "ARM64"], job);
+        }
+
+        download.Should().BeGreaterThan(-1).And.BeLessThan(push);
+        ((YamlMappingNode)steps[download]["with"]).Children.ContainsKey("run-id").Should().BeFalse();
+        steps.Select(static step => Value(step, "run"))
+            .Should().NotContain(static run => run.Contains("--target Pack", StringComparison.Ordinal)
+                || run.Contains("dotnet pack", StringComparison.Ordinal));
     }
 
     [Fact]
@@ -191,8 +258,15 @@ public sealed class ReleaseComparisonWorkflowIntegrationTests
 
     private static YamlMappingNode Jobs() => (YamlMappingNode)Workflow()["jobs"];
 
+    private static YamlMappingNode Job(string name)
+    {
+        var jobs = Jobs();
+        jobs.Children.Keys.Select(static key => key.ToString()).Should().Contain(name);
+        return (YamlMappingNode)jobs[name];
+    }
+
     private static YamlMappingNode[] Steps(string job) =>
-        ((YamlSequenceNode)((YamlMappingNode)Jobs()[job])["steps"]).Cast<YamlMappingNode>().ToArray();
+        ((YamlSequenceNode)Job(job)["steps"]).Cast<YamlMappingNode>().ToArray();
 
     private static Dictionary<string, string> Granted(YamlMappingNode permissions) => permissions.Children
         .Where(static permission => permission.Value.ToString() != "none")
@@ -203,7 +277,9 @@ public sealed class ReleaseComparisonWorkflowIntegrationTests
     private static string Value(YamlMappingNode step, string key) =>
         step.Children.TryGetValue(new YamlScalarNode(key), out var value) ? value.ToString() : string.Empty;
 
-    private static string[] Scalars(YamlNode node) => ((YamlSequenceNode)node).Select(static item => item.ToString()).ToArray();
+    private static string[] Scalars(YamlNode node) => node is YamlScalarNode scalar
+        ? [scalar.Value ?? string.Empty]
+        : ((YamlSequenceNode)node).Select(static item => item.ToString()).ToArray();
 
     private static string FindRepositoryRoot()
     {

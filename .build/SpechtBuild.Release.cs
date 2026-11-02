@@ -11,6 +11,7 @@ using Nuke.Common.CI.GitHubActions;
 using Nuke.Common.IO;
 using Nuke.Common.Tooling;
 using Nuke.Common.Tools.DotNet;
+using Nuke.Common.Utilities;
 using Rocket.Surgery.Nuke.GithubActions;
 using Serilog;
 using Specht.Build;
@@ -75,7 +76,7 @@ internal sealed partial class SpechtBuild
         {
             var packages = ReleasePackages();
             var key = Environment.GetEnvironmentVariable("NUGET_API_KEY");
-            Assert.True(!string.IsNullOrWhiteSpace(key), "The release job has no package key.");
+            Assert.True(!string.IsNullOrWhiteSpace(key), "The publish job has no package key.");
 
             foreach (var package in packages)
             {
@@ -223,30 +224,19 @@ internal sealed partial class SpechtBuild
             Packages = GitHubActionsPermission.Read,
         };
 
-        configuration.Jobs.Add(new RocketSurgeonsGithubActionsJob("release")
+        configuration.Jobs.Add(new RocketSurgeonsGithubActionsJob("publish")
         {
             Needs = ["build"],
-            If = "${{ github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v') }}",
+            If = ReleaseCondition,
             Permissions = Rocket.Surgery.Nuke.GithubActions.GitHubActionsPermissions.None with
             {
-                Actions = GitHubActionsPermission.Read,
-                Contents = GitHubActionsPermission.Write,
+                Contents = GitHubActionsPermission.Read,
                 IdToken = GitHubActionsPermission.Write,
             },
-            Matrix = [RunnerPool],
+            Matrix = [GitHubActionsImage.UbuntuLatest.GetValue()],
             Steps =
             [
-                new CheckoutStep("Checkout") { FetchDepth = 0, Clean = true, PersistCredentials = false },
-                new DownloadArtifactStep("Download the package")
-                {
-                    Name = PackageArtifact,
-                    Path = PackagePath,
-                },
-                new SetupDotNetStep("Use .NET 10 and 11 SDKs")
-                {
-                    DotNetVersion = "10.0.401",
-                    With = { ["global-json-file"] = "global.json" },
-                },
+                ..PackageSteps(),
                 new UsingStep("Log in to NuGet")
                 {
                     Id = "nuget",
@@ -264,6 +254,22 @@ internal sealed partial class SpechtBuild
                     },
                     Run = $"./build.cmd --target {nameof(PushReleasePackages)}",
                 },
+            ],
+        });
+
+        configuration.Jobs.Add(new RocketSurgeonsGithubActionsJob("release")
+        {
+            Needs = ["publish"],
+            If = ReleaseCondition,
+            Permissions = Rocket.Surgery.Nuke.GithubActions.GitHubActionsPermissions.None with
+            {
+                Actions = GitHubActionsPermission.Read,
+                Contents = GitHubActionsPermission.Write,
+            },
+            Matrix = [RunnerPool],
+            Steps =
+            [
+                ..PackageSteps(),
                 new RunStep("Create GitHub Release")
                 {
                     Environment = new Dictionary<string, string>
@@ -312,7 +318,7 @@ internal sealed partial class SpechtBuild
         configuration.Jobs.Add(new RocketSurgeonsGithubActionsJob("comparison")
         {
             Needs = ["build"],
-            If = "${{ github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v') }}",
+            If = ReleaseCondition,
             Permissions = Rocket.Surgery.Nuke.GithubActions.GitHubActionsPermissions.None with
             {
                 Actions = GitHubActionsPermission.Read,
@@ -358,6 +364,21 @@ internal sealed partial class SpechtBuild
         return configuration;
     }
 
+    private static BaseGitHubActionsStep[] PackageSteps() =>
+    [
+        new CheckoutStep("Checkout") { FetchDepth = 0, Clean = true, PersistCredentials = false },
+        new DownloadArtifactStep("Download the package")
+        {
+            Name = PackageArtifact,
+            Path = PackagePath,
+        },
+        new SetupDotNetStep("Use .NET 10 and 11 SDKs")
+        {
+            DotNetVersion = "10.0.401",
+            With = { ["global-json-file"] = "global.json" },
+        },
+    ];
+
     private static DownloadArtifactStep DownloadComparator() => new("Download the comparator")
     {
         Name = ComparatorArtifact,
@@ -372,6 +393,8 @@ internal sealed partial class SpechtBuild
         ContinueOnError = true,
         Run = "printf '## Release baseline comparison\\n\\nIncomplete: the comparator did not run. Re-run all jobs to retry.\\n' >> \"$GITHUB_STEP_SUMMARY\"",
     };
+
+    private const string ReleaseCondition = "${{ github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v') }}";
 
     private const string PackageArtifact = "nupkg";
 
