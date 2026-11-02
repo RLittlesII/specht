@@ -25,7 +25,7 @@ public sealed class MatrixResolverUnitTests
         var structure = EngineServices.Parser().Parse("""{"schemaVersion":"0.2.0","tests":{"files":[]}}""");
 
         // When
-        var rows = new MatrixResolver().Resolve(document, structure, []);
+        var rows = new MatrixResolver().Resolve(new FeatureSpecFixture().WithDocument(document), structure, []);
 
         // Then
         rows.Should().ContainSingle().Which.Tests.Select(static test => test.Name).Should().Equal(expected);
@@ -57,7 +57,7 @@ public sealed class MatrixResolverUnitTests
         SpechtTestFile file = new SpechtTestFileFixture().WithText(text);
 
         // When
-        var test = new MatrixResolver().Resolve(document, structure, [file]).Single().Tests.Single();
+        var test = new MatrixResolver().Resolve(new FeatureSpecFixture().WithDocument(document), structure, [file]).Single().Tests.Single();
 
         // Then
         test.Name.Should().Be(name);
@@ -148,7 +148,7 @@ public sealed class MatrixResolverUnitTests
             """);
 
         // When
-        var rows = new MatrixResolver().Resolve(document, structure, []);
+        var rows = new MatrixResolver().Resolve(new FeatureSpecFixture().WithDocument(document), structure, []);
 
         // Then
         rows.Select(static row => row.Claim).Should().Equal("B-001", "B-002");
@@ -173,7 +173,7 @@ public sealed class MatrixResolverUnitTests
         SpechtTestFile method = new SpechtTestFileFixture().WithRelativePath("test/Alpha.cs").WithText("void Alpha()");
 
         // When
-        var result = new MatrixResolver().Resolve(document, structure, [qualifier, method]).Single().Tests.Single();
+        var result = new MatrixResolver().Resolve(new FeatureSpecFixture().WithDocument(document), structure, [qualifier, method]).Single().Tests.Single();
 
         // Then
         result.Status.Should().Be(MatrixTestStatus.Unresolved);
@@ -196,7 +196,7 @@ public sealed class MatrixResolverUnitTests
         SpechtTestFile first = new SpechtTestFileFixture().WithRelativePath("test/a.cs").WithText("// preface\nAlpha\nAlpha");
 
         // When
-        var result = new MatrixResolver().Resolve(document, structure, [later, first]).Single().Tests.Single();
+        var result = new MatrixResolver().Resolve(new FeatureSpecFixture().WithDocument(document), structure, [later, first]).Single().Tests.Single();
 
         // Then
         result.File.Should().Be("test/a.cs");
@@ -217,7 +217,7 @@ public sealed class MatrixResolverUnitTests
         SpechtTestFile file = new SpechtTestFileFixture().WithText("Alpha");
 
         // When
-        var result = new MatrixResolver().Resolve(document, structure, [file]).Single().Tests.Single();
+        var result = new MatrixResolver().Resolve(new FeatureSpecFixture().WithDocument(document), structure, [file]).Single().Tests.Single();
 
         // Then
         result.Status.Should().Be(MatrixTestStatus.Unconfigured);
@@ -233,7 +233,7 @@ public sealed class MatrixResolverUnitTests
         var structure = EngineServices.Parser().Parse("""{"schemaVersion":"0.2.0"}""");
 
         // When
-        var rows = new MatrixResolver().Resolve(document, structure, []);
+        var rows = new MatrixResolver().Resolve(new FeatureSpecFixture().WithDocument(document), structure, []);
 
         // Then
         rows.Should().BeEmpty();

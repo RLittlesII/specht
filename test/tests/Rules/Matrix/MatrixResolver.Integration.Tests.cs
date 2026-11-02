@@ -35,7 +35,7 @@ public sealed class MatrixResolverIntegrationTests
         var files = new SpechtDiscovery(fileSystem).ReadTestFiles(tree.Root, structure.Tests!.Files, structure.Discovery.Exclusions);
 
         // When
-        var rows = new MatrixResolver().Resolve(document, structure, files);
+        var rows = new MatrixResolver().Resolve(new FeatureSpecFixture().WithDocument(document), structure, files);
 
         // Then
         files.Should().ContainSingle();
@@ -64,7 +64,7 @@ public sealed class MatrixResolverIntegrationTests
         var files = new SpechtDiscovery(new FileSystem()).ReadTestFiles(tree.Root, structure.Tests!.Files, structure.Discovery.Exclusions);
 
         // When
-        var test = new MatrixResolver().Resolve(document, structure, files).Single().Tests.Single();
+        var test = new MatrixResolver().Resolve(new FeatureSpecFixture().WithDocument(document), structure, files).Single().Tests.Single();
 
         // Then
         test.Status.Should().Be(MatrixTestStatus.Unresolved);

@@ -24,7 +24,7 @@ public sealed class UnresolvedTestRule(MatrixResolver resolver) : ISpechtRule
         string[] exempt = [markers["waived"], markers["withdrawn"], markers["superseded"]];
         foreach (var feature in model.Features)
         {
-            foreach (var row in resolver.Resolve(feature.Document, structure, model.TestFiles))
+            foreach (var row in resolver.Resolve(feature, structure, model.TestFiles))
             {
                 if (exempt.Contains(row.Status.Trim(), StringComparer.Ordinal)
                     || string.Equals(row.Test.Trim(), markers["missing"], StringComparison.Ordinal))

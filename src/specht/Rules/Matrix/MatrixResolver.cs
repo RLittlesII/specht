@@ -31,31 +31,16 @@ public sealed class MatrixResolver
     /// <param name="files">The declared file texts read once by the discovery store and shared by all consumers.</param>
     /// <returns>The matrix rows, in document order, with root-relative resolution evidence.</returns>
     /// <implements epic="0001" feature="F12" claim="B-008" />
-    public IReadOnlyList<MatrixRowResolution> Resolve(FeatureSpec feature, SpechtStructure structure, IReadOnlyList<SpechtTestFile> files) =>
-        Resolve(feature.Document, structure, files, feature.FeatureFiles);
-
-    /// <summary>Reads the matrix columns by position and resolves their test names, with no companion to hold a title.</summary>
-    /// <param name="document">The specification already parsed by the model.</param>
-    /// <param name="structure">The selected manifest's roles and test settings.</param>
-    /// <param name="files">The declared file texts read once by the discovery store and shared by all consumers.</param>
-    /// <returns>The matrix rows, in document order, with root-relative resolution evidence.</returns>
-    /// <implements epic="0001" feature="F12" claim="B-001" />
-    public IReadOnlyList<MatrixRowResolution> Resolve(
-        SpechtDocument document, SpechtStructure structure, IReadOnlyList<SpechtTestFile> files) =>
-        Resolve(document, structure, files, []);
-
-    /// <implements epic="0001" feature="F12" claim="B-001" />
-    private static MatrixRowResolution[] Resolve(
-        SpechtDocument document, SpechtStructure structure, IReadOnlyList<SpechtTestFile> files, IReadOnlyList<FeatureFile> companions)
+    public IReadOnlyList<MatrixRowResolution> Resolve(FeatureSpec feature, SpechtStructure structure, IReadOnlyList<SpechtTestFile> files)
     {
-        var section = document.Section(structure.Roles["matrix"]);
+        var section = feature.Document.Section(structure.Roles["matrix"]);
         if (section is null)
         {
             return [];
         }
 
         var comparer = structure.ClaimTagIgnoreCase ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal;
-        var named = companions
+        var named = feature.FeatureFiles
             .SelectMany(static file => file.Scenarios, static (file, scenario) => (
                 Evidence: new MatrixScenarioResolution(scenario.Title, MatrixScenarioStatus.Resolved, file.RelativePath, scenario.Line),
                 scenario.Tags))
