@@ -112,6 +112,225 @@ decisions:
     done and stays in `depends_on` as the record of the evaluation.
     Status `blocked` to `ready-for-implementation`, as cut: the design is
     ADR-0010's and 0153 is open.
+  - |
+    2026-11-02, spec-author: the criteria reconciled with the source at
+    commit `9a7174bb`; the criteria text is not edited, and this entry
+    amends how each is read. Eight questions for the repository owner
+    close it; nothing they ask is decided here.
+    Names: item 0100 gave the types the Specht prefix, so ADR-0010's and
+    the criteria's `SpecModelBuilder`, `SpecModelReader` and
+    `SpecSchemaCompiler` are `SpechtModelBuilder`, `SpechtModelReader` and
+    `SpechtSchemaCompiler`. The summary's lines are `eb7c161`'s: at
+    `9a7174bb` `SpechtDocument.Parse` is still
+    `src/specht/Model/SpechtDocument.cs:37`; `FrontmatterReader.Read` is
+    `src/specht/Model/FrontmatterReader.cs:26` and its internal static
+    `Parse` `:29`; `SpechtSchemas.Load` has one overload,
+    `Load(SpechtStructure, SchemaVersion)` (`SpechtSchemas.cs:71`), and
+    `SpechtSchemas.Options` is `:45`. `SpechtRunner.Run` has two
+    overloads since the disk schema source, `Run(root)` and
+    `Run(root, selection)`; both keep their signatures.
+    Delivered before this item. 0107 built `SpechtModelLoader` over
+    `IFileSystem` and `AddSpechtEngine()`. 0165 split the manifest into
+    `SpechtManifestStore`, which reads the manifest and the bytes under
+    `.specht/schema/frontmatter/`, and the pure `SpechtManifestParser`,
+    made `SchemaVersions` an instance and added `SpechtResources`; it left
+    `SpechtSchemasLoader` to sequence the root check, the manifest and
+    the schemas "until ADR-0010 D2 supplies the model reader". 0155 put
+    the four derivations, the typed rule settings and every companion's
+    tags on the model, the tags read at load through an instance
+    `FeatureTagParser` with no I/O, and deleted `SpecPath`; the private
+    static `Relative(root, path)` (`SpechtModelLoader.cs:70`) is what it
+    left of the mapping. 0153 moved `SpechtTree`, `SpechtTreeFile` and
+    `SpechtTreeStore` into `src/specht/Tree/` with a registered
+    `SpechtTreeGenerator`; the store has `Save` and no load.
+    The read today: `SpechtModelLoader.Load(root, selection)` calls
+    `SpechtSchemasLoader.Load` (root, then manifest, then parse, then
+    schemas), then discovery's `FindSpecifications`, `FindCompanions`,
+    `FindChildItems` and `FindEpics`; it reads each specification and
+    companion through its own `IFileSystem`, each item and epic through
+    `FrontmatterReader.Read`, and the declared test files through
+    `SpechtDiscovery.ReadTestFiles` (`SpechtDiscovery.cs:82`), which
+    lists and reads them itself, as `0001-F12` § 7 placed it.
+    `SpechtSchemas`' constructors compile schema text, and `Load`
+    compiles the embedded version. The disk source (`--schema-source
+    disk`, or `"schemaSource": "disk"` from schema `0.2.0`) reads the
+    manifest's `frontmatterSchemas` files through the store and turns an
+    absent, unreadable or uncompilable file into a
+    `SpechtManifestException` naming it; a recorded `spechtSchema`
+    upstream source reads its files through the store, verifies their
+    hashes through the pure `UpstreamSchemaCopy`, and fails when
+    `embedded` is selected against it. `SpechtSchemaSource` is the enum
+    the model reports: embedded, disk or upstream. The check never
+    fetches; `UpstreamSchemaFetcher` is `init`'s and `upgrade`'s.
+    Absolute paths today: `SpechtModel.Root` (`SpechtModel.cs:47`), which
+    no rule reads; `SpechtLocation.AbsolutePath` and `Directory`, from
+    the paths discovery enumerates under the root it is given
+    (`SpechtDiscovery.cs:28`), carried by every `FeatureSpec`; and
+    `ChildItem.ParentDirectory` (`SpechtModelLoader.cs:52`). SPEC040
+    (`DeclaredChildrenRule.cs:18`, `:23`) and SPEC043
+    (`ItemPlacementRule.cs:37`) compare a Feature's `Location.Directory`
+    with an item's `ParentDirectory` and print neither, so root-relative
+    directories derived alike keep both verdicts. Discovery's `Beside`
+    enumerates `Location.Directory` (`SpechtDiscovery.cs:136`), so it
+    needs the root once a location is relative. Outside the model, the
+    tool's `EvidenceReconciler` (`0201-F5`) reads `location.AbsolutePath`
+    with `File.ReadAllText` and calls the static `SpechtDocument.Parse`
+    (`src/tool/Features/Evidence/EvidenceReconciler.cs:540`), and
+    `RuleEntriesReader` calls that static for rule pages
+    (`src/specht/Rules/RuleEntriesReader.cs:34`).
+    Criterion 1: `0109-F2` B-003 and C-3 measure "the frontmatter read",
+    and A-1 names `SpechtSchemasLoader` and `SpechtModelLoader` as item
+    0164 left it; no `0109-F2` benchmark is built, so the delta is text
+    (question 6). `0109-F1` § 7 and § 8 no longer place the tree types in
+    the benchmark project: item 0153 brought both true. Left there is
+    § 7's "with `Save` and no load until item `0166`", which
+    `implementer` brings true if the store gains a load; `0109-F1` § 5
+    row 9 gives reading a tree back, and the check built on it, to this
+    item. `0109-F3` § 7's trace of one measured call names both loaders;
+    ADR-0010 schedules `0109-F3` § 7 at stage 7 (item 0167), and this
+    item leaves it there. The text of `0001-F1`, `0001-F3`, `0001-F5`,
+    `0001-F6`, `0001-F7`, `0001-F8`, `0001-F9`, `0001-F10`, `0001-F12`
+    and `0201-F1` names a loader, `FrontmatterReader`, a removed static
+    or `ReadTestFiles`; ADR-0010 § "Consequences" owes each a delta. A
+    design section's owning role brings it true in this pull request,
+    history stays as written, and `0001-F12`, open on item 0335's
+    branch, follows that merge (one writer per specification).
+    Criterion 2: neither parser meets it today: both `Parse` members are
+    static, `FrontmatterReader` holds `IFileSystem`, and `SpechtSchemas`
+    compiles itself in its constructor. `SpechtModel`'s constructor
+    computes the derivations 0155 put there (question 8). The text
+    readers beneath the parsers, `FrontmatterTextReader`,
+    `FrontmatterText`, `MarkdownTextReader` and `MarkdownTextSection`, are
+    compiled into `src/analyzers` as links (`analyzers.csproj:21-24`),
+    so they stay pure and keep their shape.
+    Criterion 3: within the four namespaces, `SpechtManifestStore`,
+    `SpechtDiscovery`, `SpechtTreeStore`, `SpechtModelLoader` and
+    `FrontmatterReader` reference `IFileSystem`; the last two go. "The
+    only type that holds a store" is not the source outside the check's
+    read: `SchemaVersionManager`, `RuleLevelSetter` and the tool's
+    `UpgradeWriter` hold `SpechtManifestStore`, and `RuleEntriesReader`,
+    `RuleExplanationReader`, `EffectiveManifestReader` and `UpgradeWriter`
+    call `SpechtSchemasLoader.LoadManifest` or `LoadManifestDocument`
+    (question 4). `SpechtRunner.CheckFrontmatter` reads the schemas
+    alone, with no discovery, calls `FrontmatterReader.Parse` and builds
+    `new SpechtModel(root, ...)`. `SpechtRunner` holds `IFileSystem` for
+    `WriteReport`, which is item 0167's.
+    Criterion 4: `FrontmatterSchemaCheck.cs:107` and
+    `test/tests/Versioning/SchemaVersions.Unit.Tests.cs:181` read the
+    static `SpechtSchemas.Options`. The disk and upstream messages and
+    the selection order are `0001-F7`'s and do not change (question 3).
+    Criterion 5: `0001-F1` C-4 holds through `RelativePath`, which every
+    finding already names; the absolute paths are those listed above.
+    Criterion 6: `SpechtRootNotFoundException` is in the root namespace
+    (`src/specht/SpechtRootNotFoundException.cs`). Besides
+    `SpechtSchemasLoader`, `SchemaVersionManager` and `RuleLevelSetter`
+    in `Specht.Manifest` and the tool's `InitWriter` throw it, and nine
+    tool commands and `FaultIsolatedRule` catch it (question 5).
+    Criterion 7: Features come in the manifest's layout order, each
+    layout's in ordinal order of relative path; items in specification
+    order, each directory's in ordinal order of full path, which within
+    one directory is file-name order; epics and test files in ordinal
+    order of relative path. A relative reimplementation keeps each.
+    Criterion 8: every named class exists. Read with them, because each
+    constructs a loader, calls a removed member or tests a changed store:
+    `SpechtModelLoaderPathsUnitTests` (`0001-F1`, `0001-F3` § 9),
+    `SpechtRunnerRunUnitTests` and `SpechtRunnerDeterminismUnitTests`
+    (`0001-F1`), `SpechtRunnerFrontmatterUnitTests` (`0001-F8`),
+    `SpechtDiscoveryTestFilesUnitTests` and `SpechtTreeStoreUnitTests`
+    (`0109-F1`); `SpechtDocumentUnitTests` is also named in `0201-F5`
+    § 9. Twenty-seven test files name a loader, `FrontmatterReader`,
+    `SpechtSchemas.Load`, `SpechtSchemas.Options`,
+    `SpechtDocument.Parse` or `ReadTestFiles`.
+    Criterion 9: met by item 0153. `CheckBenchmarks` and
+    `ColdStartSession` resolve `SpechtTreeGenerator` and
+    `SpechtTreeStore` from the engine and save before any measurement,
+    and `0109-F3` C-3 holds (its § 12 row of 2026-11-02). It still holds
+    while `Save` and `SpechtRunner.Run(root)` keep their shape; nothing
+    is re-pointed unless this change touches them.
+    Criterion 10: `File.ReadAllText` detects a byte-order mark and
+    otherwise decodes UTF-8; `SpechtTreeFile` holds bytes, so text taken
+    through the store is decoded the same way or the golden report moves.
+    Questions for the repository owner. Each default is a judgement.
+    1. What the tree store loads (summary; ADR-0010 § "I/O is confined";
+    0153 criterion 4). (A) Recommended: `SpechtTreeStore` gains a read
+    that takes a root and the root-relative paths discovery listed and
+    returns a `SpechtTree` of exactly those files, in that order;
+    discovery lists and reads nothing. (B) A load of every file under the
+    root, discovery listing over the tree in memory: it reads files no
+    rule needs, build output and `.git` among them, so an unreadable file
+    outside the specification tree fails the check, and memory grows with
+    the repository. (C) No load: discovery or the reader reads text
+    through its own `IFileSystem`, against ADR-0010's table.
+    2. Where the declared test files are read, given that only three
+    stores reference `IFileSystem`. (A) Recommended: discovery lists
+    them - the same globs, exclusions, de-duplication and ordinal order,
+    and no walk when no glob is declared - and the store's read of
+    question 1 takes their text; `0001-F12` § 7, which put the read on
+    discovery, is brought true by its owner after item 0335 merges.
+    (B) `ReadTestFiles` stays: criterion 3 holds as written, discovery
+    being one of the three stores, but discovery reads text where
+    ADR-0010 gives it the listing alone.
+    3. Which store reads `.specht/schema/frontmatter/` for the disk and
+    upstream sources. (A) Recommended: `SpechtManifestStore`, as item
+    0165 built it and as `upgrade` replaces those files through it; the
+    reader asks it for the bytes the selection names, `UpstreamSchemaCopy`
+    verifies an upstream copy, and `SpechtSchemaCompiler` compiles the
+    texts; the reader keeps the selection order and the absent and
+    unreadable messages, the compiler the uncompilable one.
+    (B) `SpechtTreeStore`, as files of the tree: one reader of tree
+    files, but `.specht/` is then read by two stores and written by one.
+    4. Criterion 3's "the only type that holds a store" against the
+    source outside the check's read. (A) Recommended: it is read as the
+    check's read path. `SchemaVersionManager`, `RuleLevelSetter` and the
+    tool's `UpgradeWriter` keep `SpechtManifestStore` until their handler
+    stages, and the reader takes over `LoadManifest` and
+    `LoadManifestDocument` - root, then manifest, then parse - for
+    `RuleEntriesReader`, `RuleExplanationReader`,
+    `EffectiveManifestReader` and `UpgradeWriter`. `EffectiveManifestReader`,
+    in `Specht.Manifest`, then references `Specht.Model` against
+    ADR-0010's order, as it references `SpechtSchemasLoader` today; the
+    order's test is stage 7's. (B) The manifest-only read goes to a new
+    type in `Specht.Manifest` over the store and the parser: no upward
+    reference, but a second type holding a store. (C) Every type holding
+    the manifest store moves behind the reader here, widening the item
+    into `0001-F7`, `0001-F9`, `0001-F10` and `0001-F11`.
+    5. `SpechtRootNotFoundException` in `Specht.Tree` (criterion 6) while
+    `SchemaVersionManager` and `RuleLevelSetter`, in `Specht.Manifest`,
+    throw it. (A) Recommended: it moves as ADR-0010 says, and those two
+    reference `Specht.Tree` upward until their handler stages, recorded
+    for stage 7's test. (B) It moves, and the root check leaves those two
+    for their callers in the tool, widening the item into `0001-F7` and
+    `0001-F11`. (C) It stays in the root namespace and criterion 6 is
+    amended, against ADR-0010 § "The layout": nothing is left there.
+    6. `0109-F2` after the split (criterion 1). (A) Recommended: B-003
+    measures parsing one specification's frontmatter from its text read
+    before the measurement, and C-3 rules out a disk read inside the
+    measured parse, as C-4 does; A-1 names `SpechtModelReader` for the
+    stages that read the disk (B-001 and B-005, under C-10 and C-11),
+    the parsers for B-003 and B-004, and keeps `SpechtDiscovery` and
+    `SpechtEvaluator.Evaluate`. Ids kept. (B) B-003 and C-3 are
+    withdrawn, the frontmatter parse being inside B-004's document parse;
+    but an item's or an epic's frontmatter is parsed apart from any
+    document. (C) B-003 keeps a disk read: the store's read of one file
+    and the parse in one measured call, two types as one stage.
+    7. `0201-F5`'s `EvidenceReconciler`, which the summary does not name,
+    reads `SpechtLocation.AbsolutePath` and calls the static
+    `SpechtDocument.Parse`; criteria 2 and 5 remove both. (A)
+    Recommended: the change those criteria force is made here - it joins
+    the root to `RelativePath` and takes the document parser as an
+    instance - with `0201-F5`'s behaviour unchanged and its constraints
+    cited. (B) Two location types: discovery keeps the absolute one for
+    itself and the reconciler, and the model carries a relative one.
+    (C) A separate item lands first.
+    8. Criterion 2's "no data type parses or loads itself" against
+    `SpechtModel`'s constructor, which compiles the claim grammar and
+    computes the four derivations item 0155 put there. (A) Recommended:
+    the derivations stay in the constructor; they read values already
+    parsed, not text or files, and ADR-0010 § "The model is an immutable
+    snapshot" says only that each is computed once at build. `SpechtSchemas`
+    loses its compilation to `SpechtSchemaCompiler`, as criterion 4 says.
+    (B) The builder computes them and the model takes them as values,
+    re-cutting item 0155's work.
 
 out_of_scope:
   - "Moving `SpechtTree`, `SpechtTreeFile` and `SpechtTreeStore` into the engine, and their tests - item 0153."
