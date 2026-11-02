@@ -1,6 +1,7 @@
 using System.IO.Abstractions.TestingHelpers;
 using AwesomeAssertions;
 using Specht.Manifest;
+using Specht.Model;
 using Specht.Rules;
 using Specht.Tests.Shared;
 using Specht.Versioning;
@@ -23,7 +24,7 @@ public sealed class RuleEntriesReaderUnitTests
         later = later with { RulePages = new Dictionary<string, string>(StringComparer.Ordinal) { ["SPEC010"] = Page } };
         var versions = new SchemaVersions([original, later]);
         var parser = new SpechtManifestParser(versions);
-        var reader = new RuleEntriesReader(EngineServices.Schemas(new MockFileSystem(), versions), parser);
+        var reader = new RuleEntriesReader(EngineServices.Reader(new MockFileSystem(), versions), parser, DocumentParser);
         var structure = parser.Parse($$"""{"schemaVersion":"{{pin}}"}""");
 
         // When
@@ -55,7 +56,7 @@ public sealed class RuleEntriesReaderUnitTests
         };
         var versions = new SchemaVersions([version]);
         var parser = new SpechtManifestParser(versions);
-        var reader = new RuleEntriesReader(EngineServices.Schemas(new MockFileSystem(), versions), parser);
+        var reader = new RuleEntriesReader(EngineServices.Reader(new MockFileSystem(), versions), parser, DocumentParser);
         var structure = parser.Parse("{}");
 
         // When
@@ -74,7 +75,7 @@ public sealed class RuleEntriesReaderUnitTests
         version = version with { RulePages = new Dictionary<string, string>(StringComparer.Ordinal) { ["SPEC010"] = Page } };
         var versions = new SchemaVersions([version]);
         var parser = new SpechtManifestParser(versions);
-        var reader = new RuleEntriesReader(EngineServices.Schemas(new MockFileSystem(), versions), parser);
+        var reader = new RuleEntriesReader(EngineServices.Reader(new MockFileSystem(), versions), parser, DocumentParser);
         var structure = parser.Parse("{\"rules\":{\"SPEC010\":\"" + level.ToString().ToLowerInvariant() + "\"}}");
 
         // When
@@ -106,7 +107,7 @@ public sealed class RuleEntriesReaderUnitTests
         };
         var versions = new SchemaVersions([version]);
         var parser = new SpechtManifestParser(versions);
-        var reader = new RuleEntriesReader(EngineServices.Schemas(new MockFileSystem(), versions), parser);
+        var reader = new RuleEntriesReader(EngineServices.Reader(new MockFileSystem(), versions), parser, DocumentParser);
         var structure = parser.Parse("{}");
 
         // When
@@ -127,7 +128,7 @@ public sealed class RuleEntriesReaderUnitTests
         version = version with { RulePages = version.RuleIds.ToDictionary(static id => id, static _ => Page, StringComparer.Ordinal) };
         var versions = new SchemaVersions([version]);
         var parser = new SpechtManifestParser(versions);
-        var reader = new RuleEntriesReader(EngineServices.Schemas(new MockFileSystem(), versions), parser);
+        var reader = new RuleEntriesReader(EngineServices.Reader(new MockFileSystem(), versions), parser, DocumentParser);
         var structure = parser.Parse("{}");
 
         // When
@@ -136,6 +137,8 @@ public sealed class RuleEntriesReaderUnitTests
         // Then
         entries.Select(static entry => entry.Id).Should().Equal("SPEC001", "SPEC010", "SPEC020");
     }
+
+    private static SpechtDocumentParser DocumentParser => new(new FrontmatterReader());
 
     private const string Page = "## Metadata\n\n| Property | Value |\n| -------- | ----- |\n| Family | Fixture family |\n| Default severity | Warning |\n";
 }

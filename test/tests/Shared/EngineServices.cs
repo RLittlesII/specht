@@ -62,8 +62,9 @@ public static class EngineServices
     /// <summary>Resolves a runner with the chosen catalog.</summary>
     public static SpechtRunner Runner(SchemaVersions? versions = null) => (SpechtRunner)Resolve(typeof(SpechtRunner), versions: versions);
 
-    /// <summary>Resolves the model loader over the supplied file system, or the real one.</summary>
-    public static SpechtModelLoader Loader(IFileSystem? fileSystem = null) => (SpechtModelLoader)Resolve(typeof(SpechtModelLoader), fileSystem);
+    /// <summary>Resolves the model reader over the supplied file system and catalog, or the real ones.</summary>
+    public static SpechtModelReader Reader(IFileSystem? fileSystem = null, SchemaVersions? versions = null) =>
+        (SpechtModelReader)Resolve(typeof(SpechtModelReader), fileSystem, versions);
 
     /// <summary>Resolves the composed rule set.</summary>
     public static IEnumerable<ISpechtRule> Rules() => (IEnumerable<ISpechtRule>)Resolve(typeof(IEnumerable<ISpechtRule>));
@@ -81,22 +82,20 @@ public static class EngineServices
     /// <summary>Resolves the tree store over the supplied file system.</summary>
     public static SpechtTreeStore Store(IFileSystem fileSystem) => (SpechtTreeStore)Resolve(typeof(SpechtTreeStore), fileSystem);
 
-    /// <summary>Resolves the schema stage over the supplied file system and catalog.</summary>
-    public static SpechtSchemasLoader Schemas(IFileSystem fileSystem, SchemaVersions? versions = null) =>
-        (SpechtSchemasLoader)Resolve(typeof(SpechtSchemasLoader), fileSystem, versions);
-
     /// <summary>Reads and parses a manifest without check-only pin resolution.</summary>
-    public static SpechtStructure Manifest(IFileSystem fileSystem, string root) => Schemas(fileSystem).LoadManifest(root);
+    public static SpechtStructure Manifest(IFileSystem fileSystem, string root) => Reader(fileSystem).ReadManifest(root);
 
     /// <summary>Reads the manifest document over the existing validation and file-system seams.</summary>
     public static JsonObject EffectiveManifest(string root, IFileSystem? fileSystem = null, SchemaVersions? versions = null) =>
         ((EffectiveManifestReader)Resolve(typeof(EffectiveManifestReader), fileSystem, versions)).Read(root);
 
-    /// <summary>Loads the embedded or verified upstream schemas.</summary>
-    public static SpechtSchemas LoadSchemas(IFileSystem fileSystem, string root, SchemaVersions versions) => Schemas(fileSystem, versions).Load(root);
+    /// <summary>Reads the embedded or verified upstream schemas.</summary>
+    public static SpechtSchemas ReadSchemas(IFileSystem fileSystem, string root, SchemaVersions versions) =>
+        Reader(fileSystem, versions).ReadSchemas(root, null);
 
-    /// <summary>Loads the explicitly requested local schemas.</summary>
-    public static SpechtSchemas LoadOnDiskSchemas(IFileSystem fileSystem, string root) => Schemas(fileSystem).LoadOnDisk(root);
+    /// <summary>Reads the explicitly requested local schemas.</summary>
+    public static SpechtSchemas ReadDiskSchemas(IFileSystem fileSystem, string root) =>
+        Reader(fileSystem).ReadSchemas(root, SchemaSourceSelection.Disk);
 
     private static object Resolve(Type service, IFileSystem? fileSystem = null, SchemaVersions? versions = null)
     {

@@ -3,6 +3,7 @@ using System.IO.Abstractions.TestingHelpers;
 using System.Text.Json;
 using AwesomeAssertions;
 using Specht.Manifest;
+using Specht.Model;
 using Specht.Rules;
 using Specht.Tests.Shared;
 using Specht.Tool.Features.Rules;
@@ -24,7 +25,7 @@ public sealed class RulesCommandJsonUnitTests
         files.AddFile(files.Path.Combine(root, ".specht", "manifest.json"), new MockFileData("{}"));
         SchemaVersion version = new SchemaVersionFixture();
         var versions = new SchemaVersions([version]);
-        var reader = new RuleEntriesReader(EngineServices.Schemas(files, versions), new SpechtManifestParser(versions));
+        var reader = new RuleEntriesReader(EngineServices.Reader(files, versions), new SpechtManifestParser(versions), DocumentParser);
         var console = new TestConsole();
         using var errors = new StringWriter(CultureInfo.InvariantCulture);
         var command = new RulesCommand(console, reader, errors);
@@ -59,7 +60,7 @@ public sealed class RulesCommandJsonUnitTests
             },
         };
         var versions = new SchemaVersions([version]);
-        var reader = new RuleEntriesReader(EngineServices.Schemas(files, versions), new SpechtManifestParser(versions));
+        var reader = new RuleEntriesReader(EngineServices.Reader(files, versions), new SpechtManifestParser(versions), DocumentParser);
         var console = new TestConsole();
         using var errors = new StringWriter(CultureInfo.InvariantCulture);
         var command = new RulesCommand(console, reader, errors);
@@ -90,4 +91,6 @@ public sealed class RulesCommandJsonUnitTests
         entries[1].GetProperty("effectiveLevel").GetString().Should().Be("off");
         entries.Should().OnlyContain(static entry => entry.EnumerateObject().Count() == 4);
     }
+
+    private static SpechtDocumentParser DocumentParser => new(new FrontmatterReader());
 }

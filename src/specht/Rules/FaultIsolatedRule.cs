@@ -1,5 +1,6 @@
 using Specht.Manifest;
 using Specht.Model;
+using Specht.Tree;
 
 namespace Specht.Rules;
 

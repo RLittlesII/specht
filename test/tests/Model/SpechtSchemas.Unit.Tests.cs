@@ -11,7 +11,7 @@ using Specht.Versioning;
 namespace Specht.Tests.Model;
 
 /// <summary>
-/// The schema loads over an in-memory file system. The on-disk load reads each frontmatter schema by the file name the
+/// The model reader's schema reads over an in-memory file system (item 0166). The on-disk read reads each frontmatter schema by the file name the
 /// manifest gives its kind (0001-F5 B-008, decision 0003). Both loads keep the version they validate with (ADR-0008, item
 /// 0105; 0001-F1 § 7): the version-set load the version the manifest's pin selects, and the on-disk load the embedded
 /// version the manifest pins with the schema texts it read, rejecting a pin the tool does not ship before any frontmatter
@@ -52,7 +52,7 @@ public sealed class SpechtSchemasUnitTests
         var fileSystem = new MockFileSystem(files);
 
         // When
-        var schemas = EngineServices.LoadOnDiskSchemas(fileSystem, Root);
+        var schemas = EngineServices.ReadDiskSchemas(fileSystem, Root);
 
         // Then
         schemaOf(schemas).Evaluate(JsonSerializer.SerializeToElement("read from elsewhere")).IsValid.Should().BeFalse();
@@ -73,7 +73,7 @@ public sealed class SpechtSchemasUnitTests
             });
 
         // When
-        var schemas = EngineServices.LoadSchemas(fileSystem, Root, new SchemaVersions([one, two]));
+        var schemas = EngineServices.ReadSchemas(fileSystem, Root, new SchemaVersions([one, two]));
 
         // Then
         schemas.Version.Should().Be(two);
@@ -94,7 +94,7 @@ public sealed class SpechtSchemasUnitTests
             });
 
         // When
-        var schemas = EngineServices.LoadOnDiskSchemas(fileSystem, Root);
+        var schemas = EngineServices.ReadDiskSchemas(fileSystem, Root);
 
         // Then
         schemas.Version.Number.Should().Be(new SemanticVersion(0, 1, 0));
@@ -118,7 +118,7 @@ public sealed class SpechtSchemasUnitTests
             });
 
         // When
-        var schemas = EngineServices.LoadOnDiskSchemas(fileSystem, Root);
+        var schemas = EngineServices.ReadDiskSchemas(fileSystem, Root);
 
         // Then
         (schemas.Version.FeatureSchema, schemas.Version.ItemSchema, schemas.Version.EpicSchema).Should().Be((feature, item, epic));
@@ -137,7 +137,7 @@ public sealed class SpechtSchemasUnitTests
             });
 
         // When
-        var load = () => EngineServices.LoadOnDiskSchemas(fileSystem, Root);
+        var load = () => EngineServices.ReadDiskSchemas(fileSystem, Root);
 
         // Then
         load.Should().ThrowExactly<SpechtManifestException>().Which.Message.Should().MatchRegex($@"(?<![\w.]){Regex.Escape(unshipped)}(?!\.?\w)");
@@ -156,7 +156,7 @@ public sealed class SpechtSchemasUnitTests
             });
 
         // When
-        var load = () => EngineServices.LoadSchemas(fileSystem, Root, new SchemaVersions([version]));
+        var load = () => EngineServices.ReadSchemas(fileSystem, Root, new SchemaVersions([version]));
 
         // Then
         load.Should().ThrowExactly<SpechtManifestException>().Which.Message.Should().Contain("FAKE404");
@@ -175,7 +175,7 @@ public sealed class SpechtSchemasUnitTests
             });
 
         // When
-        var load = () => EngineServices.LoadSchemas(fileSystem, Root, new SchemaVersions([version]));
+        var load = () => EngineServices.ReadSchemas(fileSystem, Root, new SchemaVersions([version]));
 
         // Then
         load.Should().NotThrow();
@@ -193,7 +193,7 @@ public sealed class SpechtSchemasUnitTests
             });
 
         // When
-        var load = () => EngineServices.LoadOnDiskSchemas(fileSystem, Root);
+        var load = () => EngineServices.ReadDiskSchemas(fileSystem, Root);
 
         // Then
         load.Should().ThrowExactly<SpechtManifestException>().Which.Message.Should().Contain("SPEC999");
@@ -211,7 +211,7 @@ public sealed class SpechtSchemasUnitTests
             });
 
         // When
-        var load = () => EngineServices.LoadSchemas(fileSystem, Root, EngineServices.Versions());
+        var load = () => EngineServices.ReadSchemas(fileSystem, Root, EngineServices.Versions());
 
         // Then
         load.Should().ThrowExactly<SpechtManifestException>().Which.Message.Should().Contain("SPEC031");

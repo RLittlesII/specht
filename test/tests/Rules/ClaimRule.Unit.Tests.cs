@@ -24,7 +24,7 @@ public sealed class ClaimRuleUnitTests
             ["roles"] = new JsonObject { ["claims"] = "3. Claims" },
         };
         FeatureSpec feature = new FeatureSpecFixture().WithDocument(
-            SpechtDocument.Parse(
+            DocumentParser.Parse(
                 "## 3. Acceptance Criteria\n\n| ID | Claim |\n| -- | ----- |\n| OLD-1 | Under the title no role names. |\n\n"
                     + "## 3. Claims\n\n| ID | Claim |\n| -- | ----- |\n| B-1 | Under the claims role's section. |\n",
                 "src/sample/.spec/README.md"));
@@ -48,7 +48,7 @@ public sealed class ClaimRuleUnitTests
             ["roles"] = new JsonObject { ["matrix"] = "9. Coverage" },
         };
         FeatureSpec feature = new FeatureSpecFixture().WithDocument(
-            SpechtDocument.Parse(
+            DocumentParser.Parse(
                 "## 3. Acceptance Criteria\n\n| ID | Claim |\n| -- | ----- |\n| B-001 | It does the thing. |\n| B-002 | It does another. |\n\n"
                     + "## 9. Traceability Matrix\n\n| Claim ID | Test |\n| -------- | ---- |\n| B-001 | A test |\n| B-002 | A test |\n\n"
                     + "## 9. Coverage\n\n| Claim ID | Test |\n| -------- | ---- |\n| B-001 | A test |\n",
@@ -62,4 +62,6 @@ public sealed class ClaimRuleUnitTests
         // Then
         findings.Select(finding => (rule.Id, finding.Identifier)).Should().Equal(("SPEC031", "B-002"));
     }
+
+    private static SpechtDocumentParser DocumentParser => new(new FrontmatterReader());
 }

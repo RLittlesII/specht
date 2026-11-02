@@ -23,7 +23,7 @@ public sealed class ChildItem
     /// <summary>Its frontmatter.</summary>
     public Frontmatter Frontmatter { get; }
 
-    /// <summary>The directory holding it.</summary>
+    /// <summary>The root-relative directory holding it, empty at the root.</summary>
     public string ParentDirectory { get; }
 
     /// <summary>The <c>id</c> frontmatter value, or <c>null</c>.</summary>

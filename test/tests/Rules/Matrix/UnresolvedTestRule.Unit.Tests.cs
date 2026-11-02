@@ -49,7 +49,7 @@ public sealed class UnresolvedTestRuleUnitTests
             [Path.Combine("repo", "test", "obj", "Hidden.cs")] = new("void HiddenTest() {}\n"),
             [Path.Combine("repo", "test", "Forms.fs")] = new("let DeclaredTest \n// CommentedTest\n"),
         });
-        var model = EngineServices.Loader(fileSystem).Load(fileSystem.Path.GetFullPath("repo"));
+        var model = EngineServices.Reader(fileSystem).Read(fileSystem.Path.GetFullPath("repo"), null);
         var rule = EngineServices.Rules().SingleOrDefault(static rule => rule.Id == "SPEC032");
 
         // When

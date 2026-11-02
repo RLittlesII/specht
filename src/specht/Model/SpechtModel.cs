@@ -5,21 +5,19 @@ using Specht.Discovery;
 
 namespace Specht.Model;
 
-/// <summary>The whole specification tree, resolved once and evaluated by every rule.</summary>
+/// <summary>The whole specification tree, resolved once and evaluated by every rule; every path in it is relative to a root it does not hold.</summary>
 /// <implements epic="0001" feature="F1" claim="B-004" />
 public sealed class SpechtModel
 {
-    /// <summary>A model over what a caller already holds, such as documents built in memory.</summary>
+    /// <summary>A model over what a caller already holds, as <see cref="SpechtModelBuilder"/> or a test builds it.</summary>
     /// <implements epic="0001" feature="F1" claim="B-004" />
     public SpechtModel(
-        string root,
         IReadOnlyList<FeatureSpec> features,
         IReadOnlyList<ChildItem> items,
         IReadOnlyList<EpicFile> epics,
         SpechtSchemas schemas,
         IReadOnlyList<SpechtTestFile> testFiles)
     {
-        Root = root;
         Features = Array.AsReadOnly(features.ToArray());
         Items = Array.AsReadOnly(items.ToArray());
         Epics = Array.AsReadOnly(epics.ToArray());
@@ -42,9 +40,6 @@ public sealed class SpechtModel
         FeaturesWithIdentity = Array.AsReadOnly(Features.Where(static feature => feature.Epic is not null && feature.Id is not null).ToArray());
         DependencyGraph = new SpechtDependencyGraph(FeaturesWithIdentity);
     }
-
-    /// <summary>Absolute path to the repository root.</summary>
-    public string Root { get; }
 
     /// <summary>Every discovered Feature specification, in every layout.</summary>
     public IReadOnlyList<FeatureSpec> Features { get; }

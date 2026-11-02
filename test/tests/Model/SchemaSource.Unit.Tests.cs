@@ -26,7 +26,7 @@ public sealed class SchemaSourceUnitTests
         });
 
         // When
-        var schemas = EngineServices.Schemas(files).LoadOnDisk("repo");
+        var schemas = EngineServices.Reader(files).ReadSchemas("repo", SchemaSourceSelection.Disk);
 
         // Then
         schemas.Source.Should().Be(SpechtSchemaSource.Disk);
@@ -67,7 +67,7 @@ public sealed class SchemaSourceUnitTests
         var root = files.Path.GetFullPath("repo");
 
         // When
-        var load = () => EngineServices.Schemas(files).LoadOnDisk(root);
+        var load = () => EngineServices.Reader(files).ReadSchemas(root, SchemaSourceSelection.Disk);
 
         // Then
         load.Should().Throw<SpechtManifestException>().Which.Message
@@ -88,10 +88,10 @@ public sealed class SchemaSourceUnitTests
         {
             files.AddFile("repo/" + SpechtTree.FeatureSchemaPath, new MockFileData("{}"));
         }
-        var loader = EngineServices.Schemas(files);
+        var reader = EngineServices.Reader(files);
 
         // When
-        var load = () => loader.Load("repo", SchemaSourceSelection.Disk);
+        var load = () => reader.ReadSchemas("repo", SchemaSourceSelection.Disk);
 
         // Then
         load.Should().Throw<SpechtManifestException>().Which.Message
@@ -160,10 +160,10 @@ public sealed class SchemaSourceUnitTests
             ["repo/" + SpechtTree.ItemSchemaPath] = new("{}"),
         });
         var version = EngineServices.Versions().Find(new SemanticVersion(0, 2, 0))! with { FeatureSchema = "{}" };
-        var loader = EngineServices.Schemas(files, new SchemaVersions([version]));
+        var reader = EngineServices.Reader(files, new SchemaVersions([version]));
 
         // When
-        var schemas = loader.Load("repo", selected);
+        var schemas = reader.ReadSchemas("repo", selected);
 
         // Then
         schemas.Source.Should().Be(expected);
@@ -182,12 +182,12 @@ public sealed class SchemaSourceUnitTests
             ["repo/" + SpechtTree.FeatureSchemaPath] = new("{}"),
             ["repo/" + SpechtTree.ItemSchemaPath] = new("{}"),
         });
-        var loader = EngineServices.Schemas(files);
+        var reader = EngineServices.Reader(files);
 
         // When
-        var disk = loader.Load("repo", SchemaSourceSelection.Disk);
-        var embedded = loader.Load("repo", SchemaSourceSelection.Embedded);
-        var automatic = loader.Load("repo");
+        var disk = reader.ReadSchemas("repo", SchemaSourceSelection.Disk);
+        var embedded = reader.ReadSchemas("repo", SchemaSourceSelection.Embedded);
+        var automatic = reader.ReadSchemas("repo", null);
 
         // Then
         disk.Source.Should().Be(SpechtSchemaSource.Disk);
@@ -218,10 +218,10 @@ public sealed class SchemaSourceUnitTests
             ["repo/" + SpechtTree.FeatureSchemaPath] = new(changed ? "{}\n" : "{}"),
             ["repo/" + SpechtTree.ItemSchemaPath] = new("{}"),
         });
-        var loader = EngineServices.Schemas(files);
+        var reader = EngineServices.Reader(files);
 
         // When
-        var load = () => loader.Load("repo", selected);
+        var load = () => reader.ReadSchemas("repo", selected);
 
         // Then
         if (valid)

@@ -4,10 +4,10 @@ using Specht.Model;
 namespace Specht.Report;
 
 /// <summary>Reads the pinned rule page after manifest validation, without loading a tree (0001-F3 B-019 to B-020, B-029 to B-030).</summary>
-/// <param name="schemas">The existing manifest reader.</param>
+/// <param name="reader">The check's root and manifest read.</param>
 /// <param name="parser">The parser that validates the exact schema pin and its vocabulary.</param>
 /// <implements epic="0001" feature="F3" claim="B-019" />
-public sealed class RuleExplanationReader(SpechtSchemasLoader schemas, SpechtManifestParser parser)
+public sealed class RuleExplanationReader(SpechtModelReader reader, SpechtManifestParser parser)
 {
     /// <summary>Returns the entire embedded page, including frontmatter, or null for an id outside the pinned vocabulary.</summary>
     /// <param name="root">The repository root.</param>
@@ -16,7 +16,7 @@ public sealed class RuleExplanationReader(SpechtSchemasLoader schemas, SpechtMan
     /// <implements epic="0001" feature="F3" claim="B-019" />
     public string? Read(string root, string id)
     {
-        var version = parser.PinnedVersion(schemas.LoadManifest(root));
+        var version = parser.PinnedVersion(reader.ReadManifest(root));
         return version.RuleIds.Contains(id) ? version.RulePages[id] : null;
     }
 }

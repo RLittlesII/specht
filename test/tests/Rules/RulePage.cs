@@ -67,7 +67,7 @@ internal sealed class RulePage
             .Select(static heading => ($"{new string('#', heading.Level)} {Flatten(heading)}", heading.Line))
             .ToList();
 
-        return new RulePage(version, id, text, SpechtDocument.Parse(text, $"v{version}/{id}.md"), headings);
+        return new RulePage(version, id, text, new SpechtDocumentParser(new FrontmatterReader()).Parse(text, $"v{version}/{id}.md"), headings);
     }
 
     /// <summary>The value the metadata table gives for <paramref name="property"/>, or <c>null</c>.</summary>

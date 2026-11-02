@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Specht.Manifest;
 using Specht.Model;
+using Specht.Tree;
 using Specht.Versioning;
 
 namespace Specht.Tool.Features.Upgrade;
@@ -23,7 +24,7 @@ namespace Specht.Tool.Features.Upgrade;
 /// listed as skipped whether the root holds it or not (B-060, B-061, B-135), while every other template is still brought to
 /// its source (B-005, B-062); a name the pinned version does not ship changes nothing (B-063, B-144).
 /// </summary>
-/// <param name="loader">Reads and validates the manifest as the check does.</param>
+/// <param name="reader">Reads and validates the manifest as the check does.</param>
 /// <param name="parser">Selects the pinned version.</param>
 /// <param name="shipped">The embedded files.</param>
 /// <param name="store">Reads and replaces the configuration files.</param>
@@ -37,7 +38,7 @@ namespace Specht.Tool.Features.Upgrade;
 /// <implements epic="0001" feature="F7" claim="B-060" />
 /// <implements epic="0001" feature="F7" claim="B-061" />
 public sealed class UpgradeWriter(
-    SpechtSchemasLoader loader,
+    SpechtModelReader reader,
     SpechtManifestParser parser,
     ShippedFiles shipped,
     SpechtManifestStore store,
@@ -93,7 +94,7 @@ public sealed class UpgradeWriter(
     /// <implements epic="0001" feature="F7" claim="B-144" />
     public async Task<UpgradeResult> Upgrade(string root, CancellationToken cancellationToken)
     {
-        var structure = loader.LoadManifest(root);
+        var structure = reader.ReadManifest(root);
         var pinned = parser.PinnedVersion(structure).Number;
         var frontmatterFromRoot = structure.SchemaSource == SchemaSourceSelection.Disk || structure.SpechtSchema is not null;
         var schemasSkipped = structure.SchemaSource == SchemaSourceSelection.Disk && structure.SpechtSchema is null;

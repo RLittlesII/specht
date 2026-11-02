@@ -2,6 +2,7 @@ using System.IO.Abstractions.TestingHelpers;
 using System.Text.Json.Nodes;
 using AwesomeAssertions;
 using Specht.Manifest;
+using Specht.Model;
 using Specht.Resources;
 using Specht.Rules;
 using Specht.Tests.Rules;
@@ -202,9 +203,9 @@ public sealed class EffectiveManifestReaderUnitTests
     {
         // Given
         var files = new MockFileSystem(new Dictionary<string, MockFileData> { ["consumer/.specht/manifest.json"] = new(text) });
-        var schemas = EngineServices.Schemas(files);
+        var modelReader = EngineServices.Reader(files);
         var parser = EngineServices.Parser();
-        var rules = new RuleEntriesReader(schemas, parser);
+        var rules = new RuleEntriesReader(modelReader, parser, DocumentParser);
         var original = parser.Parse(text);
 
         // When
@@ -267,8 +268,9 @@ public sealed class EffectiveManifestReaderUnitTests
             ["newer/.specht/manifest.json"] = new("{\"schemaVersion\":\"0.2.0\"}"),
         });
 
-        var schemas = EngineServices.Schemas(files, data.Versions);
-        var reader = new EffectiveManifestReader(schemas, new RuleEntriesReader(schemas, new SpechtManifestParser(data.Versions)), data.Versions);
+        var modelReader = EngineServices.Reader(files, data.Versions);
+        var reader = new EffectiveManifestReader(
+            modelReader, new RuleEntriesReader(modelReader, new SpechtManifestParser(data.Versions), DocumentParser), data.Versions);
 
         // When
         var older = reader.Read("older");
@@ -283,4 +285,6 @@ public sealed class EffectiveManifestReaderUnitTests
             .Should().Be("3. Older claims");
         files.File.ReadAllText("older/.specht/manifest.json").Should().Be("{}");
     }
+
+    private static SpechtDocumentParser DocumentParser => new(new FrontmatterReader());
 }

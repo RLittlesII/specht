@@ -14,7 +14,7 @@ using Specht.Versioning;
 namespace Specht.Tests.Model;
 
 /// <summary>
-/// The manifest stage as an instance over an injected file system (ADR-0005 (a); ADR-0001 stage D, item 0107): the
+/// The model reader's schema read over an injected file system (ADR-0005 (a); ADR-0001 stage D, items 0107 and 0166): the
 /// structure is the one the manifest in that file system declares, and the version kept is the one its pin selects from
 /// the set handed in. Under a manifest that records an upstream schema source (<c>0001-F7</c>, item 0092) the schema of
 /// each fetched kind is built from the file under the root's frontmatter schema folder (B-024), the schemas say they came
@@ -26,7 +26,7 @@ namespace Specht.Tests.Model;
 /// fetched.
 /// </summary>
 [Trait("Tier", "Unit")]
-public sealed class SpechtSchemasLoaderUnitTests
+public sealed class SpechtModelReaderSchemasUnitTests
 {
     /// <summary>Gets each kind a manifest declaring the epic grammar fetches, and the schema the load builds for it.</summary>
     public static TheoryData<string, Func<SpechtSchemas, JsonSchema>> FetchedKinds { get; } = new()
@@ -64,10 +64,10 @@ public sealed class SpechtSchemasLoaderUnitTests
                 [Path.Combine(Root, SpechtTree.ItemSchemaPath)] = new("{}"),
                 [Path.Combine(Root, SpechtTree.EpicSchemaPath)] = new("{}"),
             });
-        var loader = EngineServices.Schemas(fileSystem);
+        var reader = EngineServices.Reader(fileSystem);
 
         // When
-        var schemas = loader.Load(Root);
+        var schemas = reader.ReadSchemas(Root, null);
 
         // Then
         schemas.Structure.Discovery.Exclusions.Should().Equal("vendor");
@@ -86,10 +86,10 @@ public sealed class SpechtSchemasLoaderUnitTests
             {
                 [Path.Combine(Root, SpechtTree.ManifestPath)] = new("""{ "schemaVersion": "0.2.0" }"""),
             });
-        var loader = EngineServices.Schemas(fileSystem, new SchemaVersions([one, two]));
+        var reader = EngineServices.Reader(fileSystem, new SchemaVersions([one, two]));
 
         // When
-        var schemas = loader.Load(Root);
+        var schemas = reader.ReadSchemas(Root, null);
 
         // Then
         schemas.Version.Should().Be(two);
@@ -111,10 +111,10 @@ public sealed class SpechtSchemasLoaderUnitTests
                 [Path.Combine(Root, SpechtTree.ItemSchemaPath)] = new(Local),
                 [Path.Combine(Root, SpechtTree.EpicSchemaPath)] = new(Local),
             });
-        var loader = EngineServices.Schemas(fileSystem, new SchemaVersions([pinned]));
+        var reader = EngineServices.Reader(fileSystem, new SchemaVersions([pinned]));
 
         // When
-        var schemas = loader.Load(Root);
+        var schemas = reader.ReadSchemas(Root, null);
 
         // Then
         schemaOf(schemas).Evaluate(JsonSerializer.SerializeToElement("read from the pinned version")).IsValid.Should().BeFalse(kind);
@@ -132,10 +132,10 @@ public sealed class SpechtSchemasLoaderUnitTests
                 [Path.Combine(Root, SpechtTree.FeatureSchemaPath)] = new(Local),
                 [Path.Combine(Root, SpechtTree.ItemSchemaPath)] = new(Local),
             });
-        var loader = EngineServices.Schemas(fileSystem, new SchemaVersions([pinned]));
+        var reader = EngineServices.Reader(fileSystem, new SchemaVersions([pinned]));
 
         // When
-        var schemas = loader.Load(Root);
+        var schemas = reader.ReadSchemas(Root, null);
 
         // Then
         schemas.Source.Should().Be(SpechtSchemaSource.Upstream);
@@ -157,10 +157,10 @@ public sealed class SpechtSchemasLoaderUnitTests
                 [Path.Combine(Root, SpechtTree.FeatureSchemaPath)] = new(Local),
                 [Path.Combine(Root, SpechtTree.ItemSchemaPath)] = new(Local),
             });
-        var loader = EngineServices.Schemas(fileSystem, new SchemaVersions([one, two]));
+        var reader = EngineServices.Reader(fileSystem, new SchemaVersions([one, two]));
 
         // When
-        var schemas = loader.Load(Root);
+        var schemas = reader.ReadSchemas(Root, null);
 
         // Then
         schemas.Version.Number.Should().Be(new SemanticVersion(0, 2, 0));
@@ -187,10 +187,10 @@ public sealed class SpechtSchemasLoaderUnitTests
         }
 
         var fileSystem = new MockFileSystem(files);
-        var loader = EngineServices.Schemas(fileSystem, new SchemaVersions([pinned]));
+        var reader = EngineServices.Reader(fileSystem, new SchemaVersions([pinned]));
 
         // When
-        var schemas = loader.Load(Root);
+        var schemas = reader.ReadSchemas(Root, null);
 
         // Then
         schemas.Epic.Evaluate(JsonSerializer.SerializeToElement("read from the pinned version")).IsValid.Should().BeTrue(because);
@@ -216,10 +216,10 @@ public sealed class SpechtSchemasLoaderUnitTests
 
         var fileSystem = new MockFileSystem(files);
         var root = fileSystem.Path.GetFullPath(Root);
-        var loader = EngineServices.Schemas(fileSystem, new SchemaVersions([pinned]));
+        var reader = EngineServices.Reader(fileSystem, new SchemaVersions([pinned]));
 
         // When
-        var loading = () => loader.Load(root);
+        var loading = () => reader.ReadSchemas(root, null);
 
         // Then
         loading.Should().Throw<SpechtManifestException>(because)
@@ -233,10 +233,10 @@ public sealed class SpechtSchemasLoaderUnitTests
         // Given
         var fileSystem = new MockFileSystem(
             new Dictionary<string, MockFileData> { [Path.Combine(Root, SpechtTree.ManifestPath)] = new("{}") });
-        var loader = EngineServices.Schemas(fileSystem);
+        var reader = EngineServices.Reader(fileSystem);
 
         // When
-        var schemas = loader.Load(Root);
+        var schemas = reader.ReadSchemas(Root, null);
 
         // Then
         schemas.Source.Should().Be(SpechtSchemaSource.Embedded);
@@ -255,10 +255,10 @@ public sealed class SpechtSchemasLoaderUnitTests
                 [Path.Combine(Root, SpechtTree.ItemSchemaPath)] = new(Local),
                 [Path.Combine(Root, SpechtTree.EpicSchemaPath)] = new(Local),
             });
-        var loader = EngineServices.Schemas(fileSystem, new SchemaVersions([pinned]));
+        var reader = EngineServices.Reader(fileSystem, new SchemaVersions([pinned]));
 
         // When
-        var schemas = loader.Load(Root);
+        var schemas = reader.ReadSchemas(Root, null);
 
         // Then
         schemas.Feature.Evaluate(JsonSerializer.SerializeToElement("read from the pinned version")).IsValid.Should().BeTrue();

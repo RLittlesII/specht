@@ -1,4 +1,3 @@
-using System.IO.Abstractions;
 using System.Text.Json.Nodes;
 using System.Text.RegularExpressions;
 using AwesomeAssertions;
@@ -38,13 +37,12 @@ public sealed class EngineTextCompatibilityIntegrationTests
             | B-007 | A claim | agreement | Active |
             """.Replace("\n", newline, StringComparison.Ordinal);
         using var directory = new BindingTextDirectory();
-        var fileSystem = new FileSystem();
         var path = Path.Combine(directory.FullName, "README.md");
         File.WriteAllText(path, text);
 
         // When
-        var frontmatter = new FrontmatterReader(fileSystem).Read(path);
-        var document = SpechtDocument.Parse(File.ReadAllText(path), "src/sample/.spec/README.md");
+        var frontmatter = new FrontmatterReader().Parse(File.ReadAllText(path));
+        var document = DocumentParser.Parse(File.ReadAllText(path), "src/sample/.spec/README.md");
         var projected = new BindingFeatureReader().Read(text, "src/sample/.spec/README.md", new BindingPolicyFixture());
 
         // Then
@@ -115,7 +113,7 @@ public sealed class EngineTextCompatibilityIntegrationTests
         };
 
         // When
-        var document = SpechtDocument.Parse(File.ReadAllText(path), "src/sample/.spec/README.md");
+        var document = DocumentParser.Parse(File.ReadAllText(path), "src/sample/.spec/README.md");
         var engineClaims = new SpechtClaims(document, structure, new Regex("^B-[0-9]{3}$"));
         var projected = new BindingFeatureReader().Read(text, "src/sample/.spec/README.md", policy);
 
@@ -157,7 +155,7 @@ public sealed class EngineTextCompatibilityIntegrationTests
         using var directory = new BindingTextDirectory();
         var path = Path.Combine(directory.FullName, "README.md");
         File.WriteAllText(path, text);
-        var engineDocument = SpechtDocument.Parse(File.ReadAllText(path), "src/sample/.spec/README.md");
+        var engineDocument = DocumentParser.Parse(File.ReadAllText(path), "src/sample/.spec/README.md");
 
         // When
         var projected = new BindingFeatureReader().Read(text, "src/sample/.spec/README.md", policy);
@@ -179,4 +177,6 @@ public sealed class EngineTextCompatibilityIntegrationTests
         retired.Target!.State.Should().Be("Removed");
         retired.Target.Line.Should().Be(10);
     }
+
+    private static SpechtDocumentParser DocumentParser => new(new FrontmatterReader());
 }

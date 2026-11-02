@@ -1,6 +1,7 @@
 using System.IO.Abstractions;
 using AwesomeAssertions;
 using Specht.Discovery;
+using Specht.Manifest;
 using Specht.Model;
 using Specht.Rules.Matrix;
 using Specht.Tests.Shared;
@@ -31,8 +32,8 @@ public sealed class MatrixResolverIntegrationTests
              "tests":{"files":["test/**/*.fs","test/sample.fs"],"declarations":["let {test} "]}}
             """);
         var fileSystem = new FileSystem();
-        var document = SpechtDocument.Parse(fileSystem.File.ReadAllText(path), "src/sample/.spec/README.md");
-        var files = new SpechtDiscovery(fileSystem).ReadTestFiles(tree.Root, structure.Tests!.Files, structure.Discovery.Exclusions);
+        var document = DocumentParser.Parse(fileSystem.File.ReadAllText(path), "src/sample/.spec/README.md");
+        var files = TestFiles(fileSystem, tree.Root, structure);
 
         // When
         var rows = new MatrixResolver().Resolve(document, structure, files);
@@ -54,14 +55,14 @@ public sealed class MatrixResolverIntegrationTests
         using var tree = new SpechtTree();
         tree.WriteRaw("test/steps.cs", "class Steps");
         tree.WriteRaw("test/alpha.cs", "void Alpha()");
-        var document = SpechtDocument.Parse("""
+        var document = DocumentParser.Parse("""
             ## 9. Traceability Matrix
             | Claim ID | Scenario | Test | Status |
             | --- | --- | --- | --- |
             | B-004 | Matching | `Steps.Alpha` | Covered |
             """, "src/sample/.spec/README.md");
         var structure = EngineServices.Parser().Parse("""{"schemaVersion":"0.2.0","tests":{"files":["test/**/*.cs"]}}""");
-        var files = new SpechtDiscovery(new FileSystem()).ReadTestFiles(tree.Root, structure.Tests!.Files, structure.Discovery.Exclusions);
+        var files = TestFiles(new FileSystem(), tree.Root, structure);
 
         // When
         var test = new MatrixResolver().Resolve(document, structure, files).Single().Tests.Single();
@@ -70,5 +71,15 @@ public sealed class MatrixResolverIntegrationTests
         test.Status.Should().Be(MatrixTestStatus.Unresolved);
         test.File.Should().BeNull();
         test.Line.Should().BeNull();
+    }
+
+    private static SpechtDocumentParser DocumentParser => new(new FrontmatterReader());
+
+    private static IReadOnlyList<SpechtTestFile> TestFiles(FileSystem fileSystem, string root, SpechtStructure structure)
+    {
+        var paths = new SpechtDiscovery(fileSystem).FindTestFiles(root, structure.Tests!.Files, structure.Discovery.Exclusions);
+        return new Specht.Tree.SpechtTreeStore(fileSystem).Load(root, paths).Files
+            .Select(static file => new SpechtTestFile(file.RelativePath, file.Text()))
+            .ToArray();
     }
 }

@@ -44,7 +44,8 @@ public sealed partial class VersioningSteps
     {
         WriteSchemaVersion(JsonValue.Create(_embedded!.Number.ToString()));
         WriteSample(null, "done");
-        _entries = new RuleEntriesReader(EngineServices.Schemas(new FileSystem()), EngineServices.Parser()).Read(Tree.Root);
+        _entries = new RuleEntriesReader(EngineServices.Reader(new FileSystem()), EngineServices.Parser(), new SpechtDocumentParser(new FrontmatterReader()))
+            .Read(Tree.Root);
         _report = EngineServices.Runner().Run(Tree.Root);
     }
 

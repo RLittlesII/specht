@@ -42,7 +42,7 @@ public sealed partial class EngineSteps
     public void GivenOneRuleFindsTwoViolationsAndThenFails()
     {
         BaselineTree.Write(Tree);
-        new ClaimIdRule().Evaluate(EngineServices.Loader().Load(Tree.Root)).Take(2).Should().HaveCount(2);
+        new ClaimIdRule().Evaluate(EngineServices.Reader().Read(Tree.Root, null)).Take(2).Should().HaveCount(2);
         _fault = new FailingRule(2);
     }
 
@@ -85,7 +85,7 @@ public sealed partial class EngineSteps
     [Then("neither of the two violations is reported")]
     public void ThenNeitherOfTheTwoViolationsIsReported()
     {
-        var partial = new ClaimIdRule().Evaluate(EngineServices.Loader().Load(Tree.Root)).Take(2)
+        var partial = new ClaimIdRule().Evaluate(EngineServices.Reader().Read(Tree.Root, null)).Take(2)
             .Select(static finding => (finding.File, finding.Line, finding.Identifier, finding.Message)).ToArray();
         partial.Should().HaveCount(2);
         Report.Violations.Where(static violation => violation.RuleId == "SPEC030")
@@ -106,7 +106,7 @@ public sealed partial class EngineSteps
     [Then("the fault keeps the identity of the original failure")]
     public void ThenTheFaultKeepsTheIdentityOfTheOriginalFailure()
     {
-        var model = EngineServices.Loader().Load(Tree.Root);
+        var model = EngineServices.Reader().Read(Tree.Root, null);
         var same = new SpechtEvaluator(FaultRules(), new SpechtViolationOrder()).Evaluate(model).Violations
             .Single(static violation => violation.RuleId == "SPEC030");
         var different = new SpechtEvaluator([new FaultIsolatedRule(new FailingRule(message: _faultText!))], new SpechtViolationOrder())

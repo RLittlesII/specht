@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Specht.Manifest;
 using Specht.Rules;
+using Specht.Tree;
 using Spectre.Console;
 using Spectre.Console.Cli;
 

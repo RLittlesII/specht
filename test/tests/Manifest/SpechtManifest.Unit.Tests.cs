@@ -242,7 +242,7 @@ public sealed class SpechtManifestUnitTests
         var load = () => EngineServices.Manifest(fileSystem, root);
 
         // Then
-        load.Should().ThrowExactly<SpechtRootNotFoundException>(because);
+        load.Should().ThrowExactly<Specht.Tree.SpechtRootNotFoundException>(because);
     }
 
     [Fact]

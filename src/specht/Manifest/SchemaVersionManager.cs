@@ -1,4 +1,5 @@
 using System.Text.Json;
+using Specht.Tree;
 using Specht.Versioning;
 
 namespace Specht.Manifest;

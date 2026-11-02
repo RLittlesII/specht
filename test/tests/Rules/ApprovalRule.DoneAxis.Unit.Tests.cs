@@ -27,7 +27,7 @@ public sealed class ApprovalRuleDoneAxisUnitTests
         // Given
         var manifest = new JsonObject { ["schemaVersion"] = "0.3.0", ["markers"] = JsonNode.Parse(markers) };
         FeatureSpec feature = new FeatureSpecFixture().WithDocument(
-            SpechtDocument.Parse($"---\nspec_status: {specStatus}\nstatus: {status}\n---\n\n" + Sections, SamplePath));
+            DocumentParser.Parse($"---\nspec_status: {specStatus}\nstatus: {status}\n---\n\n" + Sections, SamplePath));
         SpechtModel model = new SpechtModelFixture().WithManifest(manifest).WithFeatures(feature);
         ISpechtRule rule = new ApprovalCoverageRule();
 
@@ -50,7 +50,7 @@ public sealed class ApprovalRuleDoneAxisUnitTests
         // Given
         var manifest = new JsonObject { ["schemaVersion"] = "0.3.0", ["markers"] = JsonNode.Parse(markers) };
         FeatureSpec feature = new FeatureSpecFixture().WithDocument(
-            SpechtDocument.Parse($"---\nspec_status: {specStatus}\nstatus: {status}\n---\n\n" + Sections, SamplePath));
+            DocumentParser.Parse($"---\nspec_status: {specStatus}\nstatus: {status}\n---\n\n" + Sections, SamplePath));
         SpechtModel model = new SpechtModelFixture().WithManifest(manifest).WithFeatures(feature);
         var rule = new ApprovalCoverageRule();
 
@@ -70,7 +70,7 @@ public sealed class ApprovalRuleDoneAxisUnitTests
         // Given
         var manifest = new JsonObject { ["schemaVersion"] = pin };
         FeatureSpec feature = new FeatureSpecFixture().WithDocument(
-            SpechtDocument.Parse($"---\nspec_status: approved\nstatus: {status}\n---\n\n" + Sections, SamplePath));
+            DocumentParser.Parse($"---\nspec_status: approved\nstatus: {status}\n---\n\n" + Sections, SamplePath));
         SpechtModel model = new SpechtModelFixture().WithManifest(manifest).WithFeatures(feature);
         var rule = new ApprovalCoverageRule();
 
@@ -87,7 +87,7 @@ public sealed class ApprovalRuleDoneAxisUnitTests
         // Given
         var manifest = new JsonObject { ["schemaVersion"] = "0.3.0" };
         FeatureSpec feature = new FeatureSpecFixture().WithDocument(
-            SpechtDocument.Parse("---\nspec_status: approved\nstatus: done\n---\n\n" + Sections, SamplePath));
+            DocumentParser.Parse("---\nspec_status: approved\nstatus: done\n---\n\n" + Sections, SamplePath));
         SpechtModel model = new SpechtModelFixture().WithManifest(manifest).WithFeatures(feature);
         var rule = new ApprovalCoverageRule();
 
@@ -110,7 +110,7 @@ public sealed class ApprovalRuleDoneAxisUnitTests
         // Given
         var manifest = new JsonObject { ["schemaVersion"] = "0.3.0" };
         FeatureSpec feature = new FeatureSpecFixture().WithDocument(
-            SpechtDocument.Parse($"---\nspec_status: {specStatus}\nstatus: {status}\n---\n\n" + Sections, SamplePath));
+            DocumentParser.Parse($"---\nspec_status: {specStatus}\nstatus: {status}\n---\n\n" + Sections, SamplePath));
         SpechtModel model = new SpechtModelFixture().WithManifest(manifest).WithFeatures(feature);
         var rule = new ApprovalSignOffRule();
 
@@ -122,6 +122,8 @@ public sealed class ApprovalRuleDoneAxisUnitTests
             .Should()
             .Equal(reported ? [("SPEC7002", "1-5")] : []);
     }
+
+    private static SpechtDocumentParser DocumentParser => new(new FrontmatterReader());
 
     private const string SamplePath = "src/sample/.spec/README.md";
 

@@ -8,23 +8,23 @@ using Specht.Rules;
 namespace Specht;
 
 /// <summary>
-/// Loads the resolved specification tree and evaluates it with the engine's evaluator.
+/// Reads the resolved specification tree through the model reader and evaluates it with the engine's evaluator.
 /// </summary>
-/// <param name="loader">The model loader.</param>
+/// <param name="reader">The model reader.</param>
 /// <param name="evaluator">The evaluator over the registered rule set.</param>
 /// <param name="rules">The registered rule set, from which the frontmatter rules are taken for one document.</param>
 /// <param name="order">The violation order a document's evaluation sorts with.</param>
 /// <param name="fileSystem">The file system a report is written through.</param>
-/// <param name="schemas">The shared root and schema selection stage.</param>
+/// <param name="frontmatter">The frontmatter parser.</param>
 /// <param name="check">The frontmatter schema evaluation, for the manifest's kind names.</param>
 /// <implements epic="0001" feature="F1" claim="B-001" />
 public sealed class SpechtRunner(
-    SpechtModelLoader loader,
+    SpechtModelReader reader,
     SpechtEvaluator evaluator,
     IEnumerable<ISpechtRule> rules,
     SpechtViolationOrder order,
     IFileSystem fileSystem,
-    SpechtSchemasLoader schemas,
+    FrontmatterReader frontmatter,
     FrontmatterSchemaCheck check)
 {
     /// <summary>Loads and evaluates the tree using the catalog supplied at composition.</summary>
@@ -33,7 +33,7 @@ public sealed class SpechtRunner(
 
     /// <summary>Loads and evaluates the tree with the frontmatter source selected for this invocation.</summary>
     /// <implements epic="0001" feature="F1" claim="B-001" />
-    public SpechtReport Run(string root, SchemaSourceSelection? selection) => evaluator.Evaluate(loader.Load(root, selection));
+    public SpechtReport Run(string root, SchemaSourceSelection? selection) => evaluator.Evaluate(reader.Read(root, selection));
 
     /// <summary>Parses a frontmatter kind before the caller reads its document or root.</summary>
     /// <implements epic="0001" feature="F1" claim="B-001" />
@@ -47,15 +47,15 @@ public sealed class SpechtRunner(
     /// <implements epic="0001" feature="F1" claim="B-001" />
     public SpechtReport CheckFrontmatter(string root, FrontmatterKind kind, string path, string text)
     {
-        var loaded = schemas.Load(root);
-        var frontmatter = FrontmatterReader.Parse(text);
+        var loaded = reader.ReadSchemas(root, null);
+        var parsed = frontmatter.Parse(text);
 
-        return new SpechtEvaluator(FrontmatterRules, order).Evaluate(new SpechtModel(root, [], [], [], loaded, []), rule => rule switch
+        return new SpechtEvaluator(FrontmatterRules, order).Evaluate(new SpechtModel([], [], [], loaded, []), rule => rule switch
         {
-            FrontmatterPresentRule present => present.Evaluate(path, frontmatter, loaded, kind),
-            FeatureFrontmatterRule feature when kind == FrontmatterKind.Feature => feature.Evaluate(path, frontmatter, loaded),
-            ItemFrontmatterRule item when kind == FrontmatterKind.Task => item.Evaluate(path, frontmatter, loaded),
-            EpicFrontmatterRule epic when kind == FrontmatterKind.Epic => epic.Evaluate(path, frontmatter, loaded),
+            FrontmatterPresentRule present => present.Evaluate(path, parsed, loaded, kind),
+            FeatureFrontmatterRule feature when kind == FrontmatterKind.Feature => feature.Evaluate(path, parsed, loaded),
+            ItemFrontmatterRule item when kind == FrontmatterKind.Task => item.Evaluate(path, parsed, loaded),
+            EpicFrontmatterRule epic when kind == FrontmatterKind.Epic => epic.Evaluate(path, parsed, loaded),
             _ => [],
         });
     }

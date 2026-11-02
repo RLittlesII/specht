@@ -64,7 +64,8 @@ public sealed class FrontmatterSchemaCheck
         }
 
         var instance = JsonSerializer.SerializeToElement(frontmatter.Node);
-        var result = EvaluateInvariant(schema, instance, schemas.Source == SpechtSchemaSource.Embedded ? null : schemaFile);
+        var result = EvaluateInvariant(
+            schema, instance, schemas.EvaluationOptions, schemas.Source == SpechtSchemaSource.Embedded ? null : schemaFile);
 
         if (result.IsValid)
         {
@@ -96,7 +97,8 @@ public sealed class FrontmatterSchemaCheck
     };
 
     /// <implements epic="0001" feature="F5" claim="B-008" />
-    private static EvaluationResults EvaluateInvariant(JsonSchema schema, JsonElement instance, string? schemaPath)
+    private static EvaluationResults EvaluateInvariant(
+        JsonSchema schema, JsonElement instance, EvaluationOptions options, string? schemaPath)
     {
         var culture = CultureInfo.CurrentCulture;
 
@@ -104,7 +106,7 @@ public sealed class FrontmatterSchemaCheck
         {
             CultureInfo.CurrentCulture = CultureInfo.InvariantCulture;
 
-            return schema.Evaluate(instance, SpechtSchemas.Options);
+            return schema.Evaluate(instance, options);
         }
         catch (RefResolutionException) when (schemaPath is not null)
         {
