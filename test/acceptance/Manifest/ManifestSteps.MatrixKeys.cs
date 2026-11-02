@@ -11,6 +11,8 @@ namespace Specht.Acceptance.Manifest;
 /// The tests, matrix, owners and required-specification keys and the five status markers at schema 0.2.0 (0001-F5 B-055 to
 /// B-060). Each setting is written into the default manifest in memory; "the manifest is loaded" parses it with the engine's
 /// parser, and "the run exits with the invalid-manifest code" launches the built tool on the root the check ran on.
+/// The done marker at schema 0.3.0 (B-063, B-064; item 0321) is removed from, or written empty into, the same
+/// <c>markers</c>; an empty one is rejected by the engine's runner, and its rejection names the marker in quotes.
 /// </summary>
 public sealed partial class ManifestSteps
 {
@@ -39,6 +41,12 @@ public sealed partial class ManifestSteps
             Named("markers").Remove(marker);
         }
     }
+
+    [Given("the manifest names no done marker")]
+    public void GivenTheManifestNamesNoDoneMarker() => Named("markers").Remove("done");
+
+    [Given("the manifest's done marker is empty")]
+    public void GivenTheManifestsDoneMarkerIsEmpty() => Named("markers")["done"] = string.Empty;
 
     [Given("the manifest's {word} marker is {string}")]
     public void GivenTheManifestsMarkerIs(string marker, string text) => Named("markers")[marker] = text;
@@ -84,7 +92,8 @@ public sealed partial class ManifestSteps
         StatusMarkers.Select(marker => Structure.Markers[marker]).Should().Equal(covered, partial, waived, withdrawn, superseded);
 
     [Then("the {word} marker is {string}")]
-    public void ThenTheMarkerIs(string marker, string text) => Structure.Markers[marker].Should().Be(text);
+    public void ThenTheMarkerIs(string marker, string text) =>
+        Structure.Markers.Should().ContainKey(marker).WhoseValue.Should().Be(text);
 
     [Then("no section has an owner")]
     public void ThenNoSectionHasAnOwner() => Structure.Owners.Should().BeEmpty();

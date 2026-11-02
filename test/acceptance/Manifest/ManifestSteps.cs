@@ -255,7 +255,8 @@ public sealed partial class ManifestSteps
     public void ThenTheRejectionNamesTheRole(string role) => _rejection!.Message.Should().Contain(role);
 
     [Then("the rejection names the {word} marker")]
-    public void ThenTheRejectionNamesTheMarker(string marker) => _rejection!.Message.Should().Contain(marker);
+    public void ThenTheRejectionNamesTheMarker(string marker) =>
+        (_rejection ?? throw new InvalidOperationException("The manifest was accepted.")).Message.Should().Contain($"'{marker}'");
 
     [Given("the manifest's companion file list is empty")]
     public void GivenTheManifestsCompanionFileListIsEmpty() => Manifest["companionFiles"] = new JsonArray();
