@@ -1,0 +1,48 @@
+id: "0343"
+type: chore
+title: Split the manifest milestone by delivery dependencies
+
+status: done
+
+value: 3
+risk: 1
+
+parent: null
+children: []
+depends_on: []
+spikes: []
+
+spec: null
+claims: []
+
+created: "2026-11-02"
+updated: "2026-11-02"
+closed: "2026-11-02"
+
+summary: |
+  Apply the repository owner's approved milestone split to .issue/.goal
+  and docs/roadmap.md, with the delivery reference synchronized. Keep
+  manifest configuration and its required model
+  stage in 0.4.0; move discovery and report delivery to 0.6.0 and remaining
+  matrix validation to 0.7.0. Keep maintenance and investigations outside
+  release finish lines, and use explicit child items instead of Feature
+  containers to keep release scope bounded.
+
+acceptance_criteria:
+  - "0.4.0 selects 0166, 0016, 0018, 0152 and 0124 as its existing open work, preserving completed entries as history."
+  - "0.6.0 gains 0007, 0008, 0009, 0167 and 0036; 0.7.0 gains 0335 through 0338."
+  - "0010, 0004, 0033 and 0224 remain delivery summaries outside release finish lines; maintenance and investigations are documented in the roadmap."
+  - "The queue resolves selected prerequisites to the same or an earlier milestone; existing item statuses and dependency relationships are preserved."
+  - "The roadmap states release slices, remaining agreement work and that later releases still need decomposition."
+  - "The delivery reference describes selected delivery items and container expansion; installed shared skills are refreshed."
+  - "No .feature change needed: scheduling documentation; tool behavior is unchanged. Constraints preserved: 0001-F1 C-5, 0001-F1 C-9."
+
+decisions:
+  - "2026-11-02, repository owner: apply the dependency-based milestone split proposed from main at 9a7174bb."
+  - "2026-11-02, delivery: refreshed main to 370cc2fc; no open pull request reserves an item id. 0169 has completed and stays in 0.4.0 as history. The newly cut 0342 is evaluated separately from the approved allocation."
+  - "2026-11-02, repository owner: move the newly cut rule-folder follow-up 0342 to the maintenance backlog, consistent with the smaller release. Its status and dependencies stay unchanged."
+  - "2026-11-02, verification: queue and mirror allocations agree; every selected prerequisite lands in the same or an earlier milestone, completed entries are retained, and existing items are byte-identical. All 72 mirror tests and the full build pass, including Specht, Format, Compile, CodeAnalysis, UnitTest, IntegrationTest and AcceptanceTest across the configured matrix. The synchronized delivery reference passes the pinned formatter and shared skill installation succeeds."
+
+out_of_scope:
+  - "Product code, scenarios, claim agreements, schema versions, package versions and dependency or status changes to existing work items."
+  - "Implementing maintenance, investigations or the design corrections identified by the proposal."

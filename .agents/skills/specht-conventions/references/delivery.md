@@ -234,8 +234,9 @@ finish line; `#` starts a comment. The first milestone is the current one, the
 product goal. Every open item on a listed id's dependency path takes that
 milestone's version as its priority, the earliest milestone winning when a
 dependency crosses two; a flat list with no version line is one milestone and
-prints `high`. The file names container items, so a Feature's open children
-follow it in. Closing a milestone deletes its section; the next one is current.
+prints `high`. The file names selected delivery items; listing a Feature
+container pulls its open children into that milestone. Closing a milestone
+deletes its section; the next one is current.
 What each milestone makes better is [`docs/roadmap.md`](../../../../docs/roadmap.md),
 which cites the Features by id and holds no ids of its own. Moving the finish
 line is an edit to the goal file; the mirror's `goal` label follows the current
