@@ -2,12 +2,9 @@ using System.IO.Abstractions;
 using System.IO.Abstractions.TestingHelpers;
 using System.Text.Json.Nodes;
 using AwesomeAssertions;
-using Microsoft.Extensions.DependencyInjection;
-using Specht.Composition;
 using Specht.Model;
 using Specht.Rules;
 using Specht.Tests.Shared;
-using Specht.Tool;
 
 namespace Specht.Tests.Rules.Matrix;
 
@@ -48,11 +45,8 @@ public sealed class UnresolvedTestRuleUnitTests
             [Path.Combine("repo", "test", "obj", "Hidden.cs")] = new("void HiddenTest() {}\n"),
             [Path.Combine("repo", "test", "Forms.fs")] = new("let DeclaredTest \n// CommentedTest\n"),
         });
-        var services = new ServiceCollection();
-        services.AddSingleton(fileSystem);
-        using var resolver = (TypeResolver)new TypeRegistrar(services.AddSpechtEngine()).Build();
-        var model = ((SpechtModelLoader)resolver.Resolve(typeof(SpechtModelLoader))!).Load(fileSystem.Path.GetFullPath("repo"));
-        var rule = ((IEnumerable<ISpechtRule>)resolver.Resolve(typeof(IEnumerable<ISpechtRule>))!).SingleOrDefault(static rule => rule.Id == "SPEC032");
+        var model = EngineServices.Loader(fileSystem).Load(fileSystem.Path.GetFullPath("repo"));
+        var rule = EngineServices.Rules().SingleOrDefault(static rule => rule.Id == "SPEC032");
 
         // When
         rule.Should().NotBeNull("schema 0.3.0 ships the unresolved-test rule");
