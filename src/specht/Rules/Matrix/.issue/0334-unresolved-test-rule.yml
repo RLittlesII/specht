@@ -2,7 +2,7 @@ id: "0334"
 type: task
 title: Report a test name no declared test file holds, SPEC032, in schema 0.3.0
 
-status: in-progress
+status: done
 
 risk: 3
 
@@ -25,7 +25,7 @@ claims:
 
 created: "2026-11-01"
 updated: "2026-11-02"
-closed: null
+closed: "2026-11-02"
 
 summary: |
   SPEC032 reports, at its § 9 row, a test name in a Test cell that no
