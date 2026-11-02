@@ -83,6 +83,23 @@ public sealed class ReleaseComparisonWorkflowIntegrationTests
     }
 
     [Fact]
+    public void ReleaseJob_WhenGenerated_ShouldNotDownloadThePackage()
+    {
+        // Given
+        var steps = Steps("release");
+
+        // When
+        var publication = Array.FindIndex(steps, static step => Value(step, "name") == "Create GitHub Release");
+
+        // Then
+        steps.Should().NotContain(static step => Uses(step).StartsWith("actions/download-artifact@", StringComparison.Ordinal)
+            && ((YamlMappingNode)step["with"])["name"].ToString() == "nupkg");
+        publication.Should().BeGreaterThan(-1);
+        steps.Take(publication).Select(static step => Uses(step).Split('@')[0])
+            .Should().Contain("actions/checkout").And.Contain("actions/setup-dotnet");
+    }
+
+    [Fact]
     public void ComparisonJob_WhenGenerated_ShouldContinueOnErrorAtEveryStepAndAlwaysSummarise()
     {
         // Given

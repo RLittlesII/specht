@@ -200,6 +200,11 @@ Release created by a job other than the one that pushed.
 - Item `0333` delivers it. § 6 and § 7 (`implementer`), § 8 and § 9
   (`test-writer`) follow in that item.
 
-## Reversal
+## Reversal - 2026-11-01 (decision 0009)
 
-None.
+[Decision 0009](0009-the-github-release-carries-no-package.md) removes the
+`release` job's package download: the Release attaches no package. Of the cost
+recorded under Rejected, the download is no longer written a second time; the
+checkout and SDK steps are. "The transport is unchanged" holds for `publish`
+alone, which still downloads this run's `nupkg` artifact (call 6). The calls
+stand.

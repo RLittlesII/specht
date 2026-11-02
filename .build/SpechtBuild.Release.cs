@@ -91,30 +91,28 @@ internal sealed partial class SpechtBuild
     private Target CreateGitHubRelease => definition => definition
         .Executes(() =>
         {
-            var packages = ReleasePackages();
+            var tag = ReleaseTag();
             Assert.True(!string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("GH_TOKEN")),
                 "The release job has no GitHub token.");
             var repository = Environment.GetEnvironmentVariable("GITHUB_REPOSITORY");
             Assert.True(!string.IsNullOrWhiteSpace(repository), "The release job has no repository.");
-            var tag = Environment.GetEnvironmentVariable("GITHUB_REF_NAME");
-            var prerelease = tag!.Contains('-', StringComparison.Ordinal) ? "--prerelease " : string.Empty;
+            var prerelease = tag.Contains('-', StringComparison.Ordinal) ? "--prerelease " : string.Empty;
             var gh = ToolPathResolver.GetPathExecutable("gh");
 
-            if (IsPublishedAtThisCommit(gh, repository!, tag!, packages))
+            if (IsPublishedAtThisCommit(gh, repository!, tag))
             {
-                Log.Information("The GitHub Release {Tag} is already published at this commit with both packages, so it is kept as it is.", tag);
+                Log.Information("The GitHub Release {Tag} is already published at this commit, so it is kept as it is.", tag);
                 return;
             }
 
             ProcessTasks.StartProcess(
                     gh,
-                    $"release create \"{tag}\" {string.Join(' ', packages.Select(static package => $"\"{package}\""))} " +
-                    $"--generate-notes --verify-tag {prerelease}--repo \"{repository}\"",
+                    $"release create \"{tag}\" --generate-notes --verify-tag {prerelease}--repo \"{repository}\"",
                     RootDirectory)
                 .AssertZeroExitCode();
         });
 
-    private string[] ReleasePackages()
+    private static string ReleaseTag()
     {
         var tag = Environment.GetEnvironmentVariable("GITHUB_REF_NAME");
         Assert.True(Environment.GetEnvironmentVariable("GITHUB_ACTIONS") == "true" &&
@@ -122,8 +120,12 @@ internal sealed partial class SpechtBuild
                     Environment.GetEnvironmentVariable("GITHUB_REF_TYPE") == "tag" &&
                     tag is { Length: > 1 } && tag.StartsWith('v'),
             "Publishing requires a pushed version tag in GitHub Actions.");
+        return tag!;
+    }
 
-        var version = tag![1..];
+    private string[] ReleasePackages()
+    {
+        var version = ReleaseTag()[1..];
         var packages = new[]
         {
             PackageFile("src/tool/tool.csproj"),
@@ -143,11 +145,11 @@ internal sealed partial class SpechtBuild
         }
     }
 
-    private bool IsPublishedAtThisCommit(string gh, string repository, string tag, string[] packages)
+    private bool IsPublishedAtThisCommit(string gh, string repository, string tag)
     {
         var commit = Environment.GetEnvironmentVariable("GITHUB_SHA");
         if (string.IsNullOrWhiteSpace(commit)
-            || Query(gh, $"release view \"{tag}\" --repo \"{repository}\" --json tagName,isDraft,assets") is not { } release
+            || Query(gh, $"release view \"{tag}\" --repo \"{repository}\" --json tagName,isDraft") is not { } release
             || Query(gh, $"api \"repos/{repository}/commits/tags/{tag}\" --jq .sha") is not { } tagged)
         {
             return false;
@@ -157,9 +159,7 @@ internal sealed partial class SpechtBuild
         {
             using var document = JsonDocument.Parse(release);
             var root = document.RootElement;
-            var assets = root.GetProperty("assets").EnumerateArray().Select(static asset => asset.GetProperty("name").GetString()).ToArray();
-            return tagged.Trim() == commit && root.GetProperty("tagName").GetString() == tag && !root.GetProperty("isDraft").GetBoolean()
-                && packages.All(package => assets.Contains(Path.GetFileName(package), StringComparer.Ordinal));
+            return tagged.Trim() == commit && root.GetProperty("tagName").GetString() == tag && !root.GetProperty("isDraft").GetBoolean();
         }
         catch (Exception exception) when (exception is JsonException or InvalidOperationException or KeyNotFoundException)
         {
@@ -236,7 +236,13 @@ internal sealed partial class SpechtBuild
             Matrix = [GitHubActionsImage.UbuntuLatest.GetValue()],
             Steps =
             [
-                ..PackageSteps(),
+                Checkout(),
+                new DownloadArtifactStep("Download the package")
+                {
+                    Name = PackageArtifact,
+                    Path = PackagePath,
+                },
+                UseDotNet(),
                 new UsingStep("Log in to NuGet")
                 {
                     Id = "nuget",
@@ -269,7 +275,8 @@ internal sealed partial class SpechtBuild
             Matrix = [RunnerPool],
             Steps =
             [
-                ..PackageSteps(),
+                Checkout(),
+                UseDotNet(),
                 new RunStep("Create GitHub Release")
                 {
                     Environment = new Dictionary<string, string>
@@ -364,20 +371,13 @@ internal sealed partial class SpechtBuild
         return configuration;
     }
 
-    private static BaseGitHubActionsStep[] PackageSteps() =>
-    [
-        new CheckoutStep("Checkout") { FetchDepth = 0, Clean = true, PersistCredentials = false },
-        new DownloadArtifactStep("Download the package")
-        {
-            Name = PackageArtifact,
-            Path = PackagePath,
-        },
-        new SetupDotNetStep("Use .NET 10 and 11 SDKs")
-        {
-            DotNetVersion = "10.0.401",
-            With = { ["global-json-file"] = "global.json" },
-        },
-    ];
+    private static CheckoutStep Checkout() => new("Checkout") { FetchDepth = 0, Clean = true, PersistCredentials = false };
+
+    private static SetupDotNetStep UseDotNet() => new("Use .NET 10 and 11 SDKs")
+    {
+        DotNetVersion = "10.0.401",
+        With = { ["global-json-file"] = "global.json" },
+    };
 
     private static DownloadArtifactStep DownloadComparator() => new("Download the comparator")
     {

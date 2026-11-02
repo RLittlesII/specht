@@ -171,7 +171,7 @@ Feature: Consumer analysis adoption
     Given a repository release
     When analysis and tool packages are produced
     Then both use the repository release version
-    And both are attached to the GitHub Release
+    And both are published to nuget.org
 
   @B-021
   Scenario: Contract-based compatibility

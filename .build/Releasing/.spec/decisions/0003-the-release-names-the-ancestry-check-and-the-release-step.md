@@ -201,3 +201,10 @@ rejection of "a third job holding `contents: write` alone": the push moves into
 a `publish` job holding `id-token: write`, and the `release` job keeps
 contents write without it. The names, the ancestry check and the Release step
 stand.
+
+## Reversal - 2026-11-01 (decision 0009)
+
+[Decision 0009](0009-the-github-release-carries-no-package.md) removes the
+attachment from call 4: `gh release create` runs with generated notes and tag
+verification and attaches no package, and B-007 is withdrawn. The names, the
+ancestry check and the Release step stand.
