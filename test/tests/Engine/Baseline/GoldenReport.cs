@@ -1,4 +1,5 @@
 using System.Text.Json;
+using Specht.Evaluation;
 
 namespace Specht.Tests.Engine.Baseline;
 

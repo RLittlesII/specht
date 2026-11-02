@@ -1,6 +1,7 @@
 using System.Text.Json.Nodes;
 using AwesomeAssertions;
 using Specht.Discovery;
+using Specht.Manifest;
 using Specht.Model;
 using Specht.Rules;
 using Specht.Tests.Shared;
@@ -66,15 +67,15 @@ public sealed class SpechtModelUnitTests
                     new FrontmatterFixture().WithNode(new JsonObject { ["epic"] = "0009", ["id"] = "F1" })))
             .WithFeatureFiles(featureFiles.Select(static path => (FeatureFile)new FeatureFileFixture().WithRelativePath(path)).ToArray());
         SpechtModel model = new SpechtModelFixture().WithFeatures(feature);
+        ISpechtRule rule = new CompanionFileRule();
 
         // When
-        var violations = new CompanionFileRule().Evaluate(model).ToList();
+        var findings = rule.Evaluate(model).ToList();
 
         // Then
-        violations.Should().Equal(
-            new SpechtViolation(
-                "SPEC020",
-                SpechtSeverity.Error,
+        (rule.Id, rule.DefaultLevel).Should().Be(("SPEC020", SpechtRuleLevel.Error));
+        findings.Should().Equal(
+            new SpechtFinding(
                 relativePath,
                 0,
                 "0009-F1",
@@ -99,12 +100,13 @@ public sealed class SpechtModelUnitTests
                 new SpechtDocumentFixture().WithFrontmatter(
                     new FrontmatterFixture().WithNode(new JsonObject { ["epic"] = "0001", ["id"] = "F2" })));
         SpechtModel model = new SpechtModelFixture().WithFeatures(feature);
+        var rule = new PathIdentityRule();
 
         // When
-        var violations = new PathIdentityRule().Evaluate(model).ToList();
+        var findings = rule.Evaluate(model).ToList();
 
         // Then
-        violations.Select(static violation => violation.RuleId).Should().Equal(expected, because);
+        findings.Select(_ => rule.Id).Should().Equal(expected, because);
     }
 
     [Fact]
@@ -120,17 +122,18 @@ public sealed class SpechtModelUnitTests
                         new SpechtDocumentFixture().WithFrontmatter(
                             new FrontmatterFixture().WithNode(new JsonObject { ["epic"] = "0001", ["id"] = "F2" })))),
             ]);
+        var rule = new DuplicateIdentityRule();
 
         // When
-        var violations = new DuplicateIdentityRule().Evaluate(model).ToList();
+        var findings = rule.Evaluate(model).ToList();
 
         // Then
-        violations.Should().AllSatisfy(violation =>
+        rule.Id.Should().Be("SPEC012");
+        findings.Should().AllSatisfy(finding =>
         {
-            violation.RuleId.Should().Be("SPEC012");
-            violation.Identifier.Should().Be("0001-F2");
-            violation.Message.Should().Contain(paths[0]).And.Contain(paths[1]);
+            finding.Identifier.Should().Be("0001-F2");
+            finding.Message.Should().Contain(paths[0]).And.Contain(paths[1]);
         });
-        violations.Select(static violation => violation.File).Should().BeEquivalentTo(paths);
+        findings.Select(static finding => finding.File).Should().BeEquivalentTo(paths);
     }
 }

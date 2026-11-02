@@ -3,6 +3,7 @@ using System.IO.Abstractions.TestingHelpers;
 using AwesomeAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using Specht.Composition;
+using Specht.Evaluation;
 using Specht.Manifest;
 using Specht.Model;
 using Specht.Resources;
@@ -16,7 +17,9 @@ namespace Specht.Tests.Composition;
 /// <summary>
 /// The engine's one registration (ADR-0001 stage D, item 0107; <c>0001-F1</c> B-001, B-004, C-5, C-9): the registrations
 /// are the rule list, so every rule the engine assembly declares is resolved once, in the order the runner evaluated
-/// them in when they were a hand-written list, covering the shipped vocabularies; resolving the runner
+/// them in when they were a hand-written list, each under its own id and together under every id of the shipped
+/// vocabularies once (item 0164); the evaluator and the violation order resolve from the registrations, one instance
+/// each; resolving the runner
 /// constructs every loader, reader and rule beneath it, so a registration one of them needs and the engine leaves out
 /// fails the resolve; and a file system registered first is the one the engine reads through, the frontmatter schema store
 /// it registers included (<c>0001-F7</c> B-024, item 0092). Each provider is built by
@@ -60,18 +63,18 @@ public sealed class SpechtEngineServiceCollectionExtensionsUnitTests
     }
 
     [Fact]
-    public void EveryRuleInTheEngine_WhenItsReportedIdsAreRead_ShouldNameExactlyTheShippedRuleIds()
+    public void EveryRuleInTheEngine_WhenItsIdIsRead_ShouldNameEachShippedRuleIdExactlyOnce()
     {
         // Given
         using var resolver = (TypeResolver)new TypeRegistrar(new ServiceCollection().AddSpechtEngine()).Build();
 
         // When
         var ids = ((IEnumerable<ISpechtRule>)resolver.Resolve(typeof(IEnumerable<ISpechtRule>))!)
-            .SelectMany(static rule => rule.ReportedIds)
+            .Select(static rule => rule.Id)
             .ToList();
 
         // Then
-        ids.Should().BeEquivalentTo(
+        ids.Should().OnlyHaveUniqueItems().And.BeEquivalentTo(
             "SPEC001", "SPEC002", "SPEC003", "SPEC004", "SPEC010", "SPEC011", "SPEC012", "SPEC013", "SPEC020", "SPEC021", "SPEC030",
             "SPEC031", "SPEC034", "SPEC035", "SPEC040", "SPEC041", "SPEC043", "SPEC044", "SPEC050", "SPEC051", "SPEC052", "SPEC060", "SPEC061");
     }
@@ -87,6 +90,21 @@ public sealed class SpechtEngineServiceCollectionExtensionsUnitTests
 
         // Then
         resolving.Should().NotThrow().Which.Should().BeOfType<SpechtRunner>();
+    }
+
+    [Fact]
+    public void TheEngineAlone_WhenItsEvaluatorAndViolationOrderAreResolvedTwice_ShouldGiveTheSameInstanceOfEach()
+    {
+        // Given
+        using var resolver = (TypeResolver)new TypeRegistrar(new ServiceCollection().AddSpechtEngine()).Build();
+
+        // When
+        var evaluators = (resolver.Resolve(typeof(SpechtEvaluator)), resolver.Resolve(typeof(SpechtEvaluator)));
+        var orders = (resolver.Resolve(typeof(SpechtViolationOrder)), resolver.Resolve(typeof(SpechtViolationOrder)));
+
+        // Then
+        evaluators.Item1.Should().BeOfType<SpechtEvaluator>().And.BeSameAs(evaluators.Item2);
+        orders.Item1.Should().BeOfType<SpechtViolationOrder>().And.BeSameAs(orders.Item2);
     }
 
     [Fact]

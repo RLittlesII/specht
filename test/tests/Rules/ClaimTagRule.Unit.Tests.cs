@@ -41,11 +41,12 @@ public sealed class ClaimTagRuleUnitTests
                     "src/sample/.spec/README.md"))
             .WithFeatureFiles(new FeatureFileFixture().WithTags(new FeatureTagParser().Parse(fileSystem.File.ReadAllText(companion))));
         SpechtModel model = new SpechtModelFixture().WithManifest(manifest).WithFeatures(feature);
+        var rule = new ClaimTagRule();
 
         // When
-        var violations = new ClaimTagRule().Evaluate(model).ToList();
+        var findings = rule.Evaluate(model).ToList();
 
         // Then
-        violations.Select(static violation => (violation.RuleId, violation.Identifier)).Should().Equal(("SPEC021", "B-404"));
+        findings.Select(finding => (rule.Id, finding.Identifier)).Should().Equal(("SPEC021", "B-404"));
     }
 }

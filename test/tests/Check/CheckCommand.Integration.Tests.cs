@@ -4,6 +4,7 @@ using System.Text.Json.Nodes;
 using AwesomeAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using Specht.Composition;
+using Specht.Evaluation;
 using Specht.Manifest;
 using Specht.Model;
 using Specht.Report;
@@ -639,8 +640,8 @@ public sealed class CheckCommandIntegrationTests
         tree.WriteRaw(SpechtTree.ManifestPath, """{ "rules": { "SPEC030": "warning" } }""");
 
         // When
-        var result = Check(static root => SpechtRunner.Evaluate(EngineServices.Loader().Load(root),
-            [new FaultIsolatedRule(new ThrowingRule())]), "--root", tree.Root);
+        var result = Check(static root => new SpechtEvaluator([new FaultIsolatedRule(new ThrowingRule())], new SpechtViolationOrder())
+            .Evaluate(EngineServices.Loader().Load(root)), "--root", tree.Root);
 
         // Then
         result.ExitCode.Should().Be(1);
@@ -687,8 +688,7 @@ public sealed class CheckCommandIntegrationTests
     private sealed class ThrowingRule : ISpechtRule
     {
         public string Id => "SPEC030";
-        public IReadOnlyList<string> ReportedIds => [Id];
-        public IEnumerable<SpechtViolation> Evaluate(SpechtModel model) => throw new FormatException("sensitive detail");
+        public IEnumerable<SpechtFinding> Evaluate(SpechtModel model) => throw new FormatException("sensitive detail");
     }
 
     private const string TwoClaims =

@@ -62,16 +62,17 @@ public sealed class SpechtModelLoaderUnitTests
             EngineServices.Schemas(fileSystem), new FeatureTagParser());
         var model = loader.Load(fileSystem.Path.GetFullPath("repo"));
         fileSystem.File.Delete(companion);
+        var rule = new ClaimTagRule();
 
         // When
-        var violations = new ClaimTagRule().Evaluate(model).ToList();
+        var findings = rule.Evaluate(model).ToList();
 
         // Then
-        var violation = violations.Should().ContainSingle().Subject;
-        violation.RuleId.Should().Be("SPEC021");
-        violation.File.Should().Be("src/area/.spec/area.feature");
-        violation.Line.Should().Be(2);
-        violation.Identifier.Should().Be("B-999");
+        var finding = findings.Should().ContainSingle().Subject;
+        rule.Id.Should().Be("SPEC021");
+        finding.File.Should().Be("src/area/.spec/area.feature");
+        finding.Line.Should().Be(2);
+        finding.Identifier.Should().Be("B-999");
     }
 
     [Fact]

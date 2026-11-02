@@ -21,13 +21,13 @@ public sealed class SpechtRunnerDeterminismUnitTests
         // Given
         var model = ModelExpectingAnInteger();
         var caller = CultureInfo.CurrentCulture;
-        List<SpechtViolation> violations;
+        List<SpechtFinding> findings;
 
         // When
         try
         {
             CultureInfo.CurrentCulture = CultureInfo.GetCultureInfo("tr-TR");
-            violations = [.. new FeatureFrontmatterRule(new FrontmatterSchemaCheck()).Evaluate(model)];
+            findings = [.. new FeatureFrontmatterRule(new FrontmatterSchemaCheck()).Evaluate(model)];
         }
         finally
         {
@@ -35,7 +35,7 @@ public sealed class SpechtRunnerDeterminismUnitTests
         }
 
         // Then
-        violations.Should().ContainSingle(static violation => violation.Identifier == "github_issue")
+        findings.Should().ContainSingle(static finding => finding.Identifier == "github_issue")
             .Which.Message.Should().EndWith("should be \"integer\"");
     }
 

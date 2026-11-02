@@ -43,16 +43,16 @@ public sealed class WaiverAndRetiredRulesUnitTests
 
         // When
         rule.Should().NotBeNull("schema 0.2.0 ships the waiver rule");
-        var violations = rule!.Evaluate(model).ToArray();
+        var findings = rule!.Evaluate(model).ToArray();
 
         // Then
-        violations.Should().HaveCount(finding ? 1 : 0);
+        findings.Should().HaveCount(finding ? 1 : 0);
         rule.DefaultLevel.Should().Be(SpechtRuleLevel.Off);
         if (finding)
         {
-            violations[0].Identifier.Should().Be("B-018");
-            violations[0].Line.Should().Be(4);
-            violations[0].File.Should().Be(feature.RelativePath);
+            findings[0].Identifier.Should().Be("B-018");
+            findings[0].Line.Should().Be(4);
+            findings[0].File.Should().Be(feature.RelativePath);
         }
     }
 
@@ -88,16 +88,16 @@ public sealed class WaiverAndRetiredRulesUnitTests
 
         // When
         rule.Should().NotBeNull("schema 0.2.0 ships the retired-claim rule");
-        var violations = rule!.Evaluate(model).ToArray();
+        var findings = rule!.Evaluate(model).ToArray();
 
         // Then
-        violations.Should().HaveCount(finding ? 1 : 0);
+        findings.Should().HaveCount(finding ? 1 : 0);
         rule.DefaultLevel.Should().Be(SpechtRuleLevel.Off);
         if (finding)
         {
-            violations[0].Identifier.Should().Be("B-004");
-            violations[0].Line.Should().Be(4);
-            violations[0].File.Should().Be(feature.RelativePath);
+            findings[0].Identifier.Should().Be("B-004");
+            findings[0].Line.Should().Be(4);
+            findings[0].File.Should().Be(feature.RelativePath);
         }
     }
 }

@@ -29,12 +29,13 @@ public sealed class ClaimRuleUnitTests
                     + "## 3. Claims\n\n| ID | Claim |\n| -- | ----- |\n| B-1 | Under the claims role's section. |\n",
                 "src/sample/.spec/README.md"));
         SpechtModel model = new SpechtModelFixture().WithManifest(manifest).WithFeatures(feature);
+        var rule = new ClaimIdRule();
 
         // When
-        var violations = new ClaimIdRule().Evaluate(model).ToList();
+        var findings = rule.Evaluate(model).ToList();
 
         // Then
-        violations.Select(static violation => (violation.RuleId, violation.Identifier)).Should().Equal(("SPEC030", "B-1"));
+        findings.Select(finding => (rule.Id, finding.Identifier)).Should().Equal(("SPEC030", "B-1"));
     }
 
     [Fact]
@@ -53,11 +54,12 @@ public sealed class ClaimRuleUnitTests
                     + "## 9. Coverage\n\n| Claim ID | Test |\n| -------- | ---- |\n| B-001 | A test |\n",
                 "src/sample/.spec/README.md"));
         SpechtModel model = new SpechtModelFixture().WithManifest(manifest).WithFeatures(feature);
+        var rule = new ClaimRowRule();
 
         // When
-        var violations = new ClaimRowRule().Evaluate(model).ToList();
+        var findings = rule.Evaluate(model).ToList();
 
         // Then
-        violations.Select(static violation => (violation.RuleId, violation.Identifier)).Should().Equal(("SPEC031", "B-002"));
+        findings.Select(finding => (rule.Id, finding.Identifier)).Should().Equal(("SPEC031", "B-002"));
     }
 }

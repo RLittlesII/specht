@@ -1,6 +1,8 @@
 using System.Text.Json.Nodes;
 using AwesomeAssertions;
+using Specht.Evaluation;
 using Specht.Model;
+using Specht.Rules;
 using Specht.Tests.Shared;
 
 namespace Specht.Tests.Model;
@@ -20,9 +22,9 @@ public sealed class SpechtModelDerivationsUnitTests
         });
 
         // When
-        var report = SpechtRunner.Evaluate(
-            model,
-            [new Specht.Rules.CompanionFileRule(), new Specht.Rules.ClaimTagRule(), new Specht.Rules.ClaimIdRule(), new Specht.Rules.ClaimRowRule()]);
+        var report = new SpechtEvaluator(
+            [new CompanionFileRule(), new ClaimTagRule(), new ClaimIdRule(), new ClaimRowRule()],
+            new SpechtViolationOrder()).Evaluate(model);
 
         // Then
         report.RulesEvaluated.Should().Be(0);

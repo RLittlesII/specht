@@ -20,17 +20,14 @@ public sealed class FeatureFrontmatterRule(FrontmatterSchemaCheck check) : ISpec
     public string Id => "SPEC002";
 
     /// <inheritdoc />
-    public IReadOnlyList<string> ReportedIds => ["SPEC002"];
-
-    /// <inheritdoc />
     /// <implements epic="0001" feature="F5" claim="B-008" />
-    public IEnumerable<SpechtViolation> Evaluate(SpechtModel model)
+    public IEnumerable<SpechtFinding> Evaluate(SpechtModel model)
     {
         foreach (var feature in model.Features)
         {
-            foreach (var violation in Evaluate(feature.RelativePath, feature.Document.Frontmatter, model.Schemas))
+            foreach (var finding in Evaluate(feature.RelativePath, feature.Document.Frontmatter, model.Schemas))
             {
-                yield return violation;
+                yield return finding;
             }
         }
     }
@@ -41,6 +38,6 @@ public sealed class FeatureFrontmatterRule(FrontmatterSchemaCheck check) : ISpec
     /// <param name="schemas">The selected schemas.</param>
     /// <returns>Each failure of the Feature schema; none for a document with no frontmatter.</returns>
     /// <implements epic="0001" feature="F5" claim="B-008" />
-    public IEnumerable<SpechtViolation> Evaluate(string path, Frontmatter frontmatter, SpechtSchemas schemas) =>
-        check.Evaluate(Id, path, frontmatter, schemas, FrontmatterKind.Feature);
+    public IEnumerable<SpechtFinding> Evaluate(string path, Frontmatter frontmatter, SpechtSchemas schemas) =>
+        check.Evaluate(path, frontmatter, schemas, FrontmatterKind.Feature);
 }

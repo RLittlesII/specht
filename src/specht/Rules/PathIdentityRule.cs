@@ -14,11 +14,8 @@ public sealed class PathIdentityRule : ISpechtRule
     public string Id => "SPEC011";
 
     /// <inheritdoc />
-    public IReadOnlyList<string> ReportedIds => [Id];
-
-    /// <inheritdoc />
     /// <implements epic="0001" feature="F1" claim="B-001" />
-    public IEnumerable<SpechtViolation> Evaluate(SpechtModel model)
+    public IEnumerable<SpechtFinding> Evaluate(SpechtModel model)
     {
         foreach (var feature in model.Features)
         {
@@ -37,9 +34,7 @@ public sealed class PathIdentityRule : ISpechtRule
                 && segments[epicSegment] is var epicDirectory
                 && !epicDirectory.StartsWith(feature.Epic + "-", StringComparison.Ordinal))
             {
-                yield return new SpechtViolation(
-                    "SPEC011",
-                    SpechtSeverity.Error,
+                yield return new SpechtFinding(
                     feature.RelativePath,
                     feature.Document.Frontmatter.LineOf("epic"),
                     feature.Identity,
@@ -57,9 +52,7 @@ public sealed class PathIdentityRule : ISpechtRule
                 && segments[featureSegment] is var featureDirectory
                 && !featureDirectory.StartsWith(feature.Id + "-", StringComparison.Ordinal))
             {
-                yield return new SpechtViolation(
-                    "SPEC011",
-                    SpechtSeverity.Error,
+                yield return new SpechtFinding(
                     feature.RelativePath,
                     feature.Document.Frontmatter.LineOf("id"),
                     feature.Identity,

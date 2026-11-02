@@ -13,17 +13,14 @@ public sealed class EpicFrontmatterRule(FrontmatterSchemaCheck check) : ISpechtR
     public string Id => "SPEC004";
 
     /// <inheritdoc />
-    public IReadOnlyList<string> ReportedIds => ["SPEC004"];
-
-    /// <inheritdoc />
     /// <implements epic="0001" feature="F5" claim="B-008" />
-    public IEnumerable<SpechtViolation> Evaluate(SpechtModel model)
+    public IEnumerable<SpechtFinding> Evaluate(SpechtModel model)
     {
         foreach (var epic in model.Epics)
         {
-            foreach (var violation in Evaluate(epic.RelativePath, epic.Frontmatter, model.Schemas))
+            foreach (var finding in Evaluate(epic.RelativePath, epic.Frontmatter, model.Schemas))
             {
-                yield return violation;
+                yield return finding;
             }
         }
     }
@@ -34,6 +31,6 @@ public sealed class EpicFrontmatterRule(FrontmatterSchemaCheck check) : ISpechtR
     /// <param name="schemas">The selected schemas.</param>
     /// <returns>Each failure of the epic schema; none for a document with no frontmatter.</returns>
     /// <implements epic="0001" feature="F5" claim="B-008" />
-    public IEnumerable<SpechtViolation> Evaluate(string path, Frontmatter frontmatter, SpechtSchemas schemas) =>
-        check.Evaluate(Id, path, frontmatter, schemas, FrontmatterKind.Epic);
+    public IEnumerable<SpechtFinding> Evaluate(string path, Frontmatter frontmatter, SpechtSchemas schemas) =>
+        check.Evaluate(path, frontmatter, schemas, FrontmatterKind.Epic);
 }

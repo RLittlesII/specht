@@ -14,11 +14,8 @@ public sealed class ClaimTagRule : ISpechtRule
     public string Id => "SPEC021";
 
     /// <inheritdoc />
-    public IReadOnlyList<string> ReportedIds => ["SPEC021"];
-
-    /// <inheritdoc />
     /// <implements epic="0001" feature="F1" claim="B-001" />
-    public IEnumerable<SpechtViolation> Evaluate(SpechtModel model)
+    public IEnumerable<SpechtFinding> Evaluate(SpechtModel model)
     {
         model.EnsureClaimGrammar();
         foreach (var feature in model.Features)
@@ -35,9 +32,7 @@ public sealed class ClaimTagRule : ISpechtRule
             {
                 if (!claims.Contains(tag.Id))
                 {
-                    yield return new SpechtViolation(
-                        "SPEC021",
-                        SpechtSeverity.Error,
+                    yield return new SpechtFinding(
                         companion.RelativePath,
                         tag.Line,
                         tag.Id,
