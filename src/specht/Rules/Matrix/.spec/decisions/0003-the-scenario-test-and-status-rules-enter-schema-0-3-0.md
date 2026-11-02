@@ -78,6 +78,9 @@ spec-author's reading:
   left unnamed, named here for these four ids only. No `0001-F7` claim
   changes. `0001-F3` B-031.
 - Items `0224` and `0334` to `0338`.
+- From the Addendum: `0055-F1` B-026 and B-027, now carried by item `0339`;
+  `0334` and `0336`, which wait on it; `0321`'s out-of-scope row; OQ-4's
+  Blocks cell; § 5 row 10.
 
 Spec-author's readings, not stated by the owner:
 
@@ -99,12 +102,43 @@ Spec-author's readings, not stated by the owner:
   decision 0014's Reversal gave for not retargeting B-115 to `0.3.0`. Each
   rule's scenarios pinned to `0.3.0` show its id runs there, and B-021 shows
   it does not below.
-- **Decision 0002 call 3 under a `0.2.1` pin.** This repository pins
-  `0.2.1`, so the four rules report nothing on its own tree until it pins
-  `0.3.0`, which is `0055-F1` B-026 and B-027's change; the rows they then
-  report are fixed there. The `tests` and `owners` keys call 3 declares are
-  in place.
+- **Decision 0002 call 3 stands.** Each of the four rules runs on this
+  repository's tree in the pull request that builds it, and that pull
+  request fixes the rows it reports here, because item `0339` pins this tree
+  to `0.3.0` first (Addendum). The `tests` and `owners` keys call 3 declares
+  are in place.
 
 ## Reversal
 
 None.
+
+## Addendum - 2026-11-01
+
+Recorded by spec-author after spec-reviewer round 7 (§ 12). The call above
+stands. At commit `6154f805`, the reading "Decision 0002 call 3 under a
+`0.2.1` pin" left the four rules silent on this tree until its pin moved
+under `0055-F1` B-026 and B-027, which no item claimed and `0321` put out of
+scope. That is the option decision 0002 call 3 rejected. The reading above
+replaces it.
+
+The owner answered a question card on the finding with the label below,
+verbatim:
+
+- "Cut 0339 pin move (Recommended)"
+
+As put to the owner, the option meant: one `0055-F1` item, `0339`,
+delivering B-026 and B-027, which moves this repository's pin to `0.3.0` and
+drops its `SPEC060` override (`0001-F7` decision 0015 call 8), after `0321`
+and before `0334`, delivered by the lane that delivers this Feature's rules.
+Decision 0002 call 3 is not reversed.
+
+Spec-author's readings, not stated by the owner:
+
+- `0334` and `0336` wait on `0339`. `0337` and `0338` follow through
+  `0334`. `0335` does not wait on it: this repository's manifest sets no
+  `matrix.scenarioTitles`, so `SPEC022` reports nothing here at any pin
+  (B-010).
+- `0339` is delivered in `0321`'s pull request, as a commit after `0321`'s
+  commits. From the cut, `0001-F4` B-004's test holds the live manifest's
+  `schemaVersion` to the newest embedded manifest's, and so fails until the
+  pin moves (`0001-F7` OQ-56).

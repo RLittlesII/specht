@@ -59,6 +59,7 @@ acceptance_criteria:
   - "B-017 — unknown status marker"
   - "`0001-F7` B-014 — SPEC033 joins schema 0.3.0's vocabulary here, with its rule page (`0001-F3` B-031) and a relock (`0001-F7` C-17, decision 0014); 0.1.0, 0.2.0 and 0.2.1 unchanged (`0001-F7` C-1)"
   - "No relock once a published package embeds 0.3.0; OQ-4's default holds until the owner answers."
+  - "Decision 0002 call 3 — every row SPEC033 reports on this repository's tree, pinned 0.3.0 by 0339 before 0334, fixed in this pull request; `./build.sh Specht` gives 0 errors"
   - "One resolver, no second reading (C-3); no marker literal (C-5)."
   - "§ 9 carries a row naming a test for each id above."
 
@@ -76,6 +77,5 @@ decisions:
 
 out_of_scope:
   - "SPEC032's report of the same row: 0334 (B-006)."
-  - "Rows SPEC033 reports on this repository's own tree once it pins 0.3.0: `0055-F1` B-026, B-027 (decision 0003, Affects)."
   - "The expected payload of each violation: `0001-F3` (§ 5 row 7)."
   - "Everything in § 5 of the spec."

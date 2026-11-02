@@ -38,7 +38,9 @@ summary: |
   SPEC022 to 0.3.0's vocabulary with its rule page (0001-F3 B-031) and
   relocks 0.3.0 by 0001-F7 decision 0014's procedure (0001-F7 C-17), in
   the pull request that builds the rule. Waits on 0225 for the resolver,
-  done.
+  done. It does not wait on 0339 (`0055-F1`): this repository's manifest
+  sets no `matrix.scenarioTitles`, so SPEC022 reports nothing on this
+  tree at any pin (B-010; decision 0003, Addendum).
 
   Risk 3: the resolver's answer gains titles for two Features at once
   (C-3; 0001-F13); the `;` split is spec-author's reading (A-1); the
@@ -66,6 +68,6 @@ decisions:
 
 out_of_scope:
   - "Matching a Scenario cell by default: § 5 row 5."
-  - "Rows SPEC022 reports on this repository's own tree once it pins 0.3.0: `0055-F1` B-026, B-027 (decision 0003, Affects)."
+  - "Turning `matrix.scenarioTitles` on in this repository's manifest: decision 0002 call 3 declares `tests` and `owners` only."
   - "The expected payload of each violation: `0001-F3` (§ 5 row 7)."
   - "Everything in § 5 of the spec."

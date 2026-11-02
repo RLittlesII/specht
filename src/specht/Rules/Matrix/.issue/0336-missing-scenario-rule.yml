@@ -9,7 +9,7 @@ risk: 2
 parent: "0224"
 children: []
 
-depends_on: ["0321", "0225", "0227"] # 0321 cuts schema 0.3.0; 0225 is the resolver, and 0227 extended it for claim tags (C-3)
+depends_on: ["0321", "0225", "0227", "0339"] # 0321 cuts schema 0.3.0; 0225 is the resolver, and 0227 extended it for claim tags (C-3); 0339 pins this repository to 0.3.0, so the rule runs here when it lands
 spikes: []
 
 spec: src/specht/Rules/Matrix/.spec/README.md
@@ -30,7 +30,10 @@ summary: |
   Waits on 0321, which cuts schema 0.3.0 (decision 0003). This item adds
   SPEC023 to 0.3.0's vocabulary with its rule page (0001-F3 B-031) and
   relocks 0.3.0 by 0001-F7 decision 0014's procedure (0001-F7 C-17), in
-  the pull request that builds the rule. 0225 and 0227 are done.
+  the pull request that builds the rule. 0225 and 0227 are done. Waits
+  on 0339 (`0055-F1`), which pins this repository to 0.3.0, so SPEC023
+  runs on this tree in this pull request, which fixes every row it
+  reports here (decision 0002 call 3; decision 0003, Addendum).
 
   Risk 2: the claim-tag answer it reads exists; what is new is the live
   claim (A-3) and the missing and waived exemptions, with the waived row
@@ -42,6 +45,7 @@ acceptance_criteria:
   - "`0001-F7` B-014 — SPEC023 joins schema 0.3.0's vocabulary here, with its rule page (`0001-F3` B-031) and a relock (`0001-F7` C-17, decision 0014); 0.1.0, 0.2.0 and 0.2.1 unchanged (`0001-F7` C-1)"
   - "No relock once a published package embeds 0.3.0; OQ-4's default holds until the owner answers."
   - "One resolver, no second reading of a tag (C-3); no marker literal (C-5)."
+  - "Decision 0002 call 3 — every row SPEC023 reports on this repository's tree, pinned 0.3.0 by 0339, fixed in this pull request; `./build.sh Specht` gives 0 errors"
   - "§ 9 carries a row naming a test for each id above."
 
 decisions:
@@ -58,6 +62,5 @@ decisions:
 out_of_scope:
   - "SPEC033's silence beside SPEC023: 0337 (B-012)."
   - "A waived row: SPEC034, 0227 (B-018)."
-  - "Rows SPEC023 reports on this repository's own tree once it pins 0.3.0: `0055-F1` B-026, B-027 (decision 0003, Affects)."
   - "The expected payload of each violation: `0001-F3` (§ 5 row 7)."
   - "Everything in § 5 of the spec."

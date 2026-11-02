@@ -9,7 +9,7 @@ risk: 3
 parent: "0224"
 children: []
 
-depends_on: ["0321", "0225"] # 0321 cuts schema 0.3.0, the version this rule joins; 0225 is the resolver it reads (C-3)
+depends_on: ["0321", "0225", "0339"] # 0321 cuts schema 0.3.0, the version this rule joins; 0225 is the resolver it reads (C-3); 0339 pins this repository to 0.3.0, so the rule runs here when it lands
 spikes: []
 
 spec: src/specht/Rules/Matrix/.spec/README.md
@@ -37,13 +37,18 @@ summary: |
   It binds the scenarios of B-001 and B-003 to B-005, which observe the
   resolver through this rule (0225's decision of 2026-10-15), and the
   @B-001 scenario under 0.2.0, which observes it through the waiver rule,
-  so those four § 9 rows can leave Partial.
+  so those four § 9 rows can leave Partial. Binding the @B-001 scenario
+  under 0.2.0 needs nothing of 0321 or 0339; whoever takes this item may
+  bind it first, and it gets no item of its own.
 
   Waits on 0321, which cuts schema 0.3.0 (decision 0003). This item adds
   SPEC032 to 0.3.0's vocabulary with its rule page (0001-F3 B-031) and
   relocks 0.3.0 by 0001-F7 decision 0014's procedure (0001-F7 C-17), in
   the pull request that builds the rule, so 0001-F7 B-014 holds at every
-  commit. Waits on 0225 for the resolver, done.
+  commit. Waits on 0225 for the resolver, done. Waits on 0339
+  (`0055-F1`), which pins this repository to 0.3.0, so SPEC032 runs on
+  this tree in this pull request, which fixes every row it reports here
+  (decision 0002 call 3; decision 0003, Addendum).
 
   Risk 3: the first of the four rules to join 0.3.0 after its cut, so
   0.3.0's vocabulary grows while 0.1.0, 0.2.0 and 0.2.1 stay as published
@@ -62,6 +67,7 @@ acceptance_criteria:
   - "`0001-F7` B-014 — SPEC032 joins schema 0.3.0's vocabulary here, with its rule page (`0001-F3` B-031) and a relock (`0001-F7` C-17, decision 0014); 0.1.0, 0.2.0 and 0.2.1 unchanged (`0001-F7` C-1)"
   - "No relock once a published package embeds 0.3.0; OQ-4's default holds until the owner answers."
   - "One resolver, no second reading (C-3); text only (C-1); reads through IFileSystem, root-relative paths (C-2); no marker literal (C-5)."
+  - "Decision 0002 call 3 — every row SPEC032 reports on this repository's tree, pinned 0.3.0 by 0339, fixed in this pull request, `0001-F3` B-033's Test cell among them; `./build.sh Specht` gives 0 errors"
   - "§ 9 carries a row naming a test for each id above."
 
 decisions:
@@ -86,6 +92,5 @@ decisions:
 out_of_scope:
   - "SPEC033's report of a covered row, including its half of B-006's double report: 0337 (B-013)."
   - "Resolving a Scenario cell's title: 0335 (B-008, B-009)."
-  - "Rows SPEC032 reports on this repository's own tree once it pins 0.3.0: `0055-F1` B-026, B-027 (decision 0003, Affects)."
   - "The expected payload of each violation: `0001-F3` (§ 5 row 7)."
   - "Everything in § 5 of the spec."

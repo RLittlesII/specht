@@ -50,6 +50,16 @@ decisions:
     proving B-021 for its own id alone, which leaves the outline's single
     report, holding all four at once, to no item. Value omitted,
     inheriting 0224's.
+  - |
+    2026-11-01, spec-author, on spec-reviewer's round-7 note (b): B-021's
+    outline still ends "the one the tool gave that tree before this
+    Feature", while the amended claim says without those four rules.
+    Under 0.2.x the two agree only because SPEC034 and SPEC035 are off
+    by default (B-020). The step is bound today by `MatrixSteps` for the
+    0.1.0 row, so the line is not reworded now: rewording it would unbind
+    that row. When this item binds the 0.2.0 and 0.2.1 rows, spec-author
+    rewords the line to the claim's wording and test-writer rebinds the
+    step, in this pull request.
 
 out_of_scope:
   - "SPEC034 and SPEC035 under 0.1.0: B-020 and `0001-F7` B-014 (decision 0003, Affects)."
