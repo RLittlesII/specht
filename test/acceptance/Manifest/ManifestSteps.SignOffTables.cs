@@ -31,7 +31,7 @@ public sealed partial class ManifestSteps
     public void ThenSignOffHeadersAreChecked(string headers)
     {
         _rejection.Should().BeNull();
-        var violation = _report!.Violations.Where(static violation => violation.RuleId == "SPEC013").Should().ContainSingle().Subject;
+        var violation = _report!.Violations.Where(violation => violation.RuleId == RuleIds.Under(Manifest, "SPEC013")).Should().ContainSingle().Subject;
         violation.Identifier.Should().Be("12. Sign-off");
         violation.Message.Should().Contain(headers);
     }

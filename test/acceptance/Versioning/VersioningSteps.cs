@@ -307,7 +307,7 @@ public sealed partial class VersioningSteps
     [Then("the frontmatter is validated against the local copy")]
     public void ThenTheFrontmatterIsValidatedAgainstTheLocalCopy() =>
         Violations
-            .Where(static violation => violation["file"]!.GetValue<string>() == FeaturePath
+            .Where(violation => violation["file"]!.GetValue<string>() == FeaturePath
                                        && FrontmatterRules.Contains(violation["ruleId"]!.GetValue<string>()))
             .Should()
             .NotBeEmpty("the local copy requires the key '{0}', which the embedded schema does not and the Feature lacks", UpstreamKey);
@@ -349,7 +349,7 @@ public sealed partial class VersioningSteps
 
     [Then("no frontmatter violation is reported")]
     public void ThenNoFrontmatterViolationIsReported() =>
-        Report.Violations.Should().NotContain(static violation => FrontmatterRules.Contains(violation.RuleId));
+        Report.Violations.Should().NotContain(violation => FrontmatterRules.Contains(violation.RuleId));
 
     [Then("no violation is reported")]
     public void ThenNoViolationIsReported() => Report.Violations.Should().BeEmpty();
@@ -388,7 +388,7 @@ public sealed partial class VersioningSteps
 
     [Then("no frontmatter violation is reported for the epic")]
     public void ThenNoFrontmatterViolationIsReportedForTheEpic() =>
-        Violations.Should().NotContain(static violation =>
+        Violations.Should().NotContain(violation =>
             violation["file"]!.GetValue<string>() == EpicPath && FrontmatterRules.Contains(violation["ruleId"]!.GetValue<string>()));
 
     [Then("the epic is reported for a frontmatter violation of its {word}")]
@@ -409,6 +409,9 @@ public sealed partial class VersioningSteps
         _shipped ?? throw new InvalidOperationException("No version set was built.");
 
     private SpechtReport Report => _report ?? throw new InvalidOperationException("The check has not run in process.");
+
+    private HashSet<string> FrontmatterRules =>
+        new(new[] { "SPEC001", "SPEC002", "SPEC003", "SPEC004" }.Select(id => RuleIds.Under(Tree, id)), StringComparer.Ordinal);
 
     private JsonObject Document
     {
@@ -483,8 +486,6 @@ public sealed partial class VersioningSteps
     private const string TwoClaims =
         "## 3. Acceptance Criteria\n\n| ID | Claim | Source | Status |\n| -- | ----- | ------ | ------ |\n"
             + "| B-001 | It does the thing. | brd | Active |\n| B-002 | It does another thing. | brd | Active |\n";
-
-    private static readonly HashSet<string> FrontmatterRules = new(StringComparer.Ordinal) { "SPEC001", "SPEC002", "SPEC003", "SPEC004" };
 
     private static readonly Dictionary<string, string> SourceNames = new(StringComparer.Ordinal)
     {

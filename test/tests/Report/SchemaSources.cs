@@ -27,7 +27,7 @@ public sealed class SchemaSources : TheoryData<string, Action<SpechtTree>, strin
             Add(
                 $"no frontmatter, under {source}",
                 static tree => tree.WriteRaw("epics/0001-epic/F1-feature/spec.md", "# Specification: F1\n\n" + string.Join('\n', SpechtTree.Sections)),
-                "SPEC001",
+                "SPEC1001",
                 null,
                 new JsonObject { ["schema"] = SpechtTree.FeatureSchemaPath, ["required"] = shipped["required"]!.DeepClone() },
                 arrange,
@@ -35,7 +35,7 @@ public sealed class SchemaSources : TheoryData<string, Action<SpechtTree>, strin
             Add(
                 $"a priority outside the enum, under {source}",
                 static tree => tree.WriteFeature("0001", "F1", new Dictionary<string, string> { ["priority"] = "urgent" }),
-                "SPEC002",
+                "SPEC1002",
                 "priority",
                 new JsonObject
                 {

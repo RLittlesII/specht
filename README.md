@@ -33,7 +33,7 @@
 Every violation comes back with a file, a line and a rule id.
 
 ```text
-src/specht/.spec/README.md(214): error SPEC031: § 9 has no row for claim B-007 [B-007]
+src/specht/.spec/README.md(214): error SPEC4004: § 9 has no row for claim B-007 [B-007]
 ```
 
 A line ends with the identifier it is about in square brackets, and at the
@@ -96,7 +96,7 @@ and its build; a global install is a second path for a shell.
 ## Usage
 
 ```sh
-specht [--root <dir>] [--strict] [--json] [--schema-source <embedded|disk>] [--explain <SPEC###>]
+specht [--root <dir>] [--strict] [--json] [--schema-source <embedded|disk>] [--explain <rule id>]
 specht schema list [--root <dir>]
 specht schema pin [version] [--root <dir>]
 specht rules [--root <dir>] [--json]

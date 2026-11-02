@@ -39,12 +39,12 @@ project file, an assembly or a test runner.
 
 | Input        | Read by                                                                                    |
 | ------------ | ------------------------------------------------------------------------------------------ |
-| Frontmatter  | `SPEC001`–`SPEC003`, against the pinned schema or your own under `.specht/schema/`         |
-| Sections     | `SPEC010`, `SPEC013`: the twelve sections in order, the table headers the manifest names   |
-| Claims       | `SPEC012`, `SPEC030`, `SPEC031`: ids unique, § 9 one row per claim                         |
-| `.feature`   | `SPEC020`, `SPEC021`: one companion beside the specification, every claim tag resolves     |
-| Dependencies | `SPEC050`–`SPEC052`: edges declared from both ends, no cycle                               |
-| Approval     | `SPEC060`, `SPEC061`: an approved specification has no `Missing` cell and no open sign-off |
+| Frontmatter  | `SPEC1001`–`SPEC1003`, against the pinned schema or your own under `.specht/schema/`       |
+| Sections     | `SPEC2001`, `SPEC2002`: the twelve sections in order, the table headers the manifest names |
+| Claims       | `SPEC3002`, `SPEC4003`, `SPEC4004`: ids unique, § 9 one row per claim                      |
+| `.feature`   | `SPEC4001`, `SPEC4002`: one companion beside the specification, every claim tag resolves   |
+| Dependencies | `SPEC6001`–`SPEC6003`: edges declared from both ends, no cycle                             |
+| Approval     | `SPEC7001`, `SPEC7002`: a done specification has no `Missing` cell and no open sign-off    |
 
 The companion is any Gherkin file. A runner such as `flutter_gherkin` or
 `bdd_widget_test` reads the same `.feature` the check reads; the check needs

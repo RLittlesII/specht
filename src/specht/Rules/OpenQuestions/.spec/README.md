@@ -54,16 +54,16 @@ A consumer ran ten review rounds on one specification and the check reported 0 e
 
 ## 3. Acceptance Criteria
 
-<!-- last written by: spec-author, 2026-10-28 -->
+<!-- last written by: spec-author, 2026-11-02 (item 0169, ADR-0029: rule ids renamed to schema 0.3.0's) -->
 
 | ID    | Claim                                                                                                                                                                                                                                | Source                                                                                                     | Status |
 | ----- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------- | ------ |
-| B-001 | Given a § 11 row whose Blocks cell cites an unqualified claim id that no § 3 row of the same specification declares, this Feature reports the Blocks rule at that row, its identifier the claim id.                                  | owner, 2026-10-28; decision 0001 call 2; epic `0228` candidate D; as `SPEC021` resolves a tag              | Active |
+| B-001 | Given a § 11 row whose Blocks cell cites an unqualified claim id that no § 3 row of the same specification declares, this Feature reports the Blocks rule at that row, its identifier the claim id.                                  | owner, 2026-10-28; decision 0001 call 2; epic `0228` candidate D; as `SPEC4002` resolves a tag             | Active |
 | B-002 | Given a Blocks cell citing several claim ids, this Feature reports the Blocks rule once for each id no § 3 row declares and not for the others.                                                                                      | owner, 2026-10-28 (asked); spec-author's reading                                                           | Active |
 | B-003 | Given a Blocks cell citing a claim id qualified with another Feature's key, such as `0001-F7` B-115, the Blocks rule does not resolve it against this specification.                                                                 | owner, 2026-10-28 (asked); A-3; `0228-F2` B-011                                                            | Active |
 | B-004 | Given a Blocks cell citing a constraint, an assumption or an open-question id, or no id, such as `None` or `§ 5 row 9`, the Blocks rule reports nothing for that text.                                                               | owner, 2026-10-28 (asked); spec-author's reading: this tree's Blocks cells cite 103 such ids on 2026-10-28 | Active |
 | B-005 | Given a Blocks cell citing a claim whose § 3 Status is the withdrawn or the superseded marker, the Blocks rule reports nothing for it.                                                                                               | spec-author's reading: the row is declared (AGENTS.md § "Stable IDs")                                      | Active |
-| B-006 | Given a specification whose `spec_status` is the approved marker and a § 11 row whose Resolution is open, this Feature reports the approval rule at that row, its identifier the open-question id.                                   | owner, 2026-10-28; decision 0001 call 2; epic `0228` R6; beside `SPEC061`; OQ-3                            | Active |
+| B-006 | Given a specification whose `spec_status` is the approved marker and a § 11 row whose Resolution is open, this Feature reports the approval rule at that row, its identifier the open-question id.                                   | owner, 2026-10-28; decision 0001 call 2; epic `0228` R6; beside `SPEC7002`; OQ-3                           | Active |
 | B-007 | Given an approved specification and an open § 11 row whose Blocks cell cites no claim, this Feature reports the approval rule at that row.                                                                                           | owner, 2026-10-28: every row whose Resolution is open                                                      | Active |
 | B-008 | Given a specification whose `spec_status` is not the approved marker, the approval rule reports nothing.                                                                                                                             | owner, 2026-10-28                                                                                          | Active |
 | B-009 | Given a Resolution cell that is empty, or whose first word is the open marker in exact case, such as `Open` or `Open. Proposed default: …`, this Feature reads the row as open, and reads any other Resolution as answered.          | OQ-3 proposed default; epic `0228` R6                                                                      | Active |
@@ -91,24 +91,24 @@ A consumer ran ten review rounds on one specification and the check reported 0 e
 
 ## 5. Out of Scope
 
-<!-- last written by: spec-author, 2026-10-28 -->
+<!-- last written by: spec-author, 2026-11-02 (item 0169, ADR-0029: row 13 names SPEC7001 under 0.3.0); 2026-10-28 -->
 
-| #   | Item                                                                                        | Exclusion Reason                                                                                           |
-| --- | ------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
-| 1   | Constraint and open-question ids in a Blocks cell, and every citation outside a Blocks cell | `0228-F2` (B-004).                                                                                         |
-| 2   | A qualified claim id in a Blocks cell resolved against the Feature it names                 | Epic `0228` candidate C, item `0307` (B-003; `0228-F2` OQ-3).                                              |
-| 3   | A § 12 review note checked against repository history                                       | Declined by the owner, 2026-10-28: it breaks "same tree, same report" (brief § 9; decision 0001 call 3).   |
-| 4   | Whether a Then step is implied by another claim's refusal                                   | Declined by the owner, 2026-10-28: semantic, the reviewer's work (decision 0001 call 3).                   |
-| 5   | Constraint tracing                                                                          | Spike `0316` (decision 0001 call 4).                                                                       |
-| 6   | Then-step wording lint                                                                      | Spike `0315` (decision 0001 call 4).                                                                       |
-| 7   | Term variants across a specification                                                        | Spike `0317` (decision 0001 call 4).                                                                       |
-| 8   | A baseline or suppression of accepted warnings                                              | Spike `0318`; per-rule levels and `--strict` are the only way today (epic `0228` § Constraints).           |
-| 9   | An undated Resolution read as open                                                          | Epic `0228` R6 names it; not adopted by default (OQ-3).                                                    |
-| 10  | The manifest keys for the open-questions section, its columns and the open marker           | `0001-F5` (OQ-4).                                                                                          |
-| 11  | The rule ids and the schema version that carries them                                       | OQ-1, OQ-2; `0001-F7`.                                                                                     |
-| 12  | What each rule's `expected` carries                                                         | `0001-F3`.                                                                                                 |
-| 13  | A `Missing` § 9 cell or an unapproved § 12 row in an approved specification                 | `SPEC060`, `SPEC061`; from schema `0.3.0` `SPEC060` follows the delivery status (`0001-F7` decision 0015). |
-| 14  | Per-rule levels and disabling a rule                                                        | `0001-F5` B-010, B-011.                                                                                    |
+| #   | Item                                                                                        | Exclusion Reason                                                                                                                                                                                         |
+| --- | ------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | Constraint and open-question ids in a Blocks cell, and every citation outside a Blocks cell | `0228-F2` (B-004).                                                                                                                                                                                       |
+| 2   | A qualified claim id in a Blocks cell resolved against the Feature it names                 | Epic `0228` candidate C, item `0307` (B-003; `0228-F2` OQ-3).                                                                                                                                            |
+| 3   | A § 12 review note checked against repository history                                       | Declined by the owner, 2026-10-28: it breaks "same tree, same report" (brief § 9; decision 0001 call 3).                                                                                                 |
+| 4   | Whether a Then step is implied by another claim's refusal                                   | Declined by the owner, 2026-10-28: semantic, the reviewer's work (decision 0001 call 3).                                                                                                                 |
+| 5   | Constraint tracing                                                                          | Spike `0316` (decision 0001 call 4).                                                                                                                                                                     |
+| 6   | Then-step wording lint                                                                      | Spike `0315` (decision 0001 call 4).                                                                                                                                                                     |
+| 7   | Term variants across a specification                                                        | Spike `0317` (decision 0001 call 4).                                                                                                                                                                     |
+| 8   | A baseline or suppression of accepted warnings                                              | Spike `0318`; per-rule levels and `--strict` are the only way today (epic `0228` § Constraints).                                                                                                         |
+| 9   | An undated Resolution read as open                                                          | Epic `0228` R6 names it; not adopted by default (OQ-3).                                                                                                                                                  |
+| 10  | The manifest keys for the open-questions section, its columns and the open marker           | `0001-F5` (OQ-4).                                                                                                                                                                                        |
+| 11  | The rule ids and the schema version that carries them                                       | OQ-1, OQ-2; `0001-F7`.                                                                                                                                                                                   |
+| 12  | What each rule's `expected` carries                                                         | `0001-F3`.                                                                                                                                                                                               |
+| 13  | A `Missing` § 9 cell or an unapproved § 12 row in an approved specification                 | `SPEC060`, `SPEC061`; from schema `0.3.0` the missing-coverage rule, `SPEC7001` there, follows the delivery status (`0001-F7` decision 0015). Amended 2026-11-02 (ADR-0029): was `SPEC060` from `0.3.0`. |
+| 14  | Per-rule levels and disabling a rule                                                        | `0001-F5` B-010, B-011.                                                                                                                                                                                  |
 
 ## 6. Concern Separation
 
@@ -154,9 +154,11 @@ Pending: owned by `test-writer`, written after agreement.
 
 ## 10. Lessons / Spec Deltas
 
-<!-- last written by: spec-author, 2026-10-28 -->
+<!-- last written by: spec-author, 2026-11-02 (item 0169, ADR-0029: rule ids renamed to schema 0.3.0's) -->
 
 None.
+
+- 2026-11-02, item `0169` ([ADR-0029](../../../../../.spec/adr/0029-rule-ids-take-four-digits-in-schema-0-3-0-and-published-versions-keep-theirs.md)): the shipped rules this Feature's claims and scenarios name take schema `0.3.0`'s four-digit ids, each claim keeping its id; under a pin below `0.3.0` each reads as the three-digit id brief § 4 maps it from.
 
 ## 11. Open Questions
 

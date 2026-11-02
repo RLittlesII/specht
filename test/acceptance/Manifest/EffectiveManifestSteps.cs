@@ -40,7 +40,7 @@ public sealed partial class EffectiveManifestSteps
     }
 
     [Given("the manifest sets no level for the out-of-order-section rule")]
-    public void GivenOmittedLevel() => Manifest["rules"]?.AsObject().ContainsKey("SPEC010").Should().NotBe(true);
+    public void GivenOmittedLevel() => Manifest["rules"]?.AsObject().ContainsKey(RuleIds.Under(Manifest, "SPEC010")).Should().NotBe(true);
 
     [Given("a repository root holding a manifest that pins no schema version")]
     public void GivenNoPin()
@@ -86,7 +86,8 @@ public sealed partial class EffectiveManifestSteps
     }
 
     [Then("the out-of-order-section rule carries the level of its own severity")]
-    public void ThenRuleSeverity() => _document!["rules"]!["SPEC010"]!.GetValue<string>().Should().Be("error");
+    public void ThenRuleSeverity() =>
+        _document!["rules"]![RuleIds.Under(_document!, "SPEC010")]!.GetValue<string>().Should().Be("error");
 
     [Then("the schema version printed is {word}")]
     public void ThenVersion(string pin) => _document!["schemaVersion"]!.GetValue<string>().Should().Be(pin);

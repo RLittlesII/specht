@@ -16,7 +16,7 @@ namespace Specht.Acceptance.Discovery;
 /// which <c>0001-F2</c> B-002 and <c>0001-F3</c> B-001 hold the tool's own output to. A specification a step writes has no
 /// companion beside it unless the step says so, so one that is discovered is reported under its own path and one that is
 /// not is reported nowhere. A layout's path identity is written into its <c>layouts</c> entry as <c>identity</c>, and a
-/// specification is reported for the mismatch when <c>SPEC011</c> names its file once (B-004; decision 0009). The scenarios
+/// specification is reported for the mismatch when the path-identity rule names its file once (B-004; decision 0009). The scenarios
 /// of B-005 to B-008, B-010 and B-011 stay pending for their items.
 /// </summary>
 [Binding]
@@ -250,13 +250,13 @@ public sealed class DiscoverySteps
 
     [Then("the epic's frontmatter is checked")]
     public void ThenTheEpicsFrontmatterIsChecked() =>
-        Report.Violations.Should().Contain(violation => violation.RuleId == "SPEC004" && violation.File == _epic);
+        Report.Violations.Should().Contain(violation => violation.RuleId == RuleIds.Under(Tree, "SPEC004") && violation.File == _epic);
 
     [Then("the companion's tags are resolved against the specification")]
     public void ThenTheCompanionsTagsAreResolvedAgainstTheSpecification()
     {
-        Report.Violations.Should().NotContain(static violation => violation.RuleId == "SPEC020");
-        Report.Violations.Where(static violation => violation.RuleId == "SPEC021")
+        Report.Violations.Should().NotContain(violation => violation.RuleId == RuleIds.Under(Tree, "SPEC020"));
+        Report.Violations.Where(violation => violation.RuleId == RuleIds.Under(Tree, "SPEC021"))
             .Should().ContainSingle()
             .Which.Should().Match<SpechtViolation>(static violation => violation.File == Companion && violation.Identifier == "B-404");
     }
@@ -266,7 +266,7 @@ public sealed class DiscoverySteps
 
     [Then("both epics' frontmatter is checked")]
     public void ThenBothEpicsFrontmatterIsChecked() =>
-        Report.Violations.Where(static violation => violation.RuleId == "SPEC004")
+        Report.Violations.Where(violation => violation.RuleId == RuleIds.Under(Tree, "SPEC004"))
             .Select(static violation => violation.File)
             .Distinct()
             .Should().BeEquivalentTo(FirstEpic, SecondEpic);
@@ -274,8 +274,8 @@ public sealed class DiscoverySteps
     [Then("that companion's tags are resolved against the second specification")]
     public void ThenThatCompanionsTagsAreResolvedAgainstTheSecondSpecification()
     {
-        Report.Violations.Should().NotContain(static violation => violation.RuleId == "SPEC020" && violation.File == SecondSpecification);
-        Report.Violations.Where(static violation => violation.RuleId == "SPEC021")
+        Report.Violations.Should().NotContain(violation => violation.RuleId == RuleIds.Under(Tree, "SPEC020") && violation.File == SecondSpecification);
+        Report.Violations.Where(violation => violation.RuleId == RuleIds.Under(Tree, "SPEC021"))
             .Should().ContainSingle()
             .Which.Should().Match<SpechtViolation>(static violation => violation.File == SecondCompanion && violation.Identifier == "B-404");
     }
@@ -340,7 +340,7 @@ public sealed class DiscoverySteps
 
     private IEnumerable<SpechtViolation> Mismatches(string? specification) =>
         Report.Violations.Where(violation =>
-            violation.RuleId == "SPEC011"
+            violation.RuleId == RuleIds.Under(Tree, "SPEC011")
             && violation.File == (specification ?? throw new InvalidOperationException("No step wrote that specification.")));
 
     private string Write(

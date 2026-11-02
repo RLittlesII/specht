@@ -108,7 +108,7 @@ Feature: Work-item id allocation
     Given two child items beside a specification that carry the task id 0007-02
     When the check runs
     Then no claimed-twice finding is reported
-    And SPEC044 reports 0007-02 once
+    And SPEC5004 reports 0007-02 once
 
   @B-011
   Scenario: A recorded pair reports nothing

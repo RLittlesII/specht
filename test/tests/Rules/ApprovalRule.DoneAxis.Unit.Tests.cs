@@ -1,6 +1,6 @@
 using System.Text.Json.Nodes;
 using AwesomeAssertions;
-using Specht.Manifest;
+using Specht.Evaluation;
 using Specht.Model;
 using Specht.Rules;
 using Specht.Tests.Shared;
@@ -9,15 +9,17 @@ namespace Specht.Tests.Rules;
 
 /// <summary>
 /// The approval rules over a model built in memory under a pinned manifest (<c>0001-F7</c> B-118 to B-123; decision 0015):
-/// from schema 0.3.0 <c>SPEC060</c> follows the delivery <c>status</c> against the manifest's done marker, whatever the
-/// <c>spec_status</c>; below it, the approved <c>spec_status</c>; <c>SPEC061</c> follows approval under both.
+/// from schema 0.3.0 <c>SPEC7001</c> follows the delivery <c>status</c> against the manifest's done marker, whatever the
+/// <c>spec_status</c>; below it, <c>SPEC060</c> follows the approved <c>spec_status</c>; <c>SPEC7002</c> follows approval
+/// under 0.3.0. Where a test asserts the id, it reads the id the evaluator reports under the pin (<c>0001-F7</c> B-151,
+/// B-152), not the rule's own declaration.
 /// </summary>
 [Trait("Tier", "Unit")]
 public sealed class ApprovalRuleDoneAxisUnitTests
 {
     [Theory]
     [ClassData(typeof(DoneSpecifications))]
-    public void ADoneSpecificationWithAMissingRow_WhenTheCoverageRuleEvaluatesItAtZeroThreeZero_ShouldReportSpec060AtErrorOnTheRowWhateverItsSpecStatus(
+    public void ADoneSpecificationWithAMissingRow_WhenTheCoverageRuleEvaluatesItAtZeroThreeZero_ShouldReportSpec7001AtErrorOnTheRowWhateverItsSpecStatus(
         string markers,
         string specStatus,
         string status)
@@ -30,12 +32,12 @@ public sealed class ApprovalRuleDoneAxisUnitTests
         ISpechtRule rule = new ApprovalCoverageRule();
 
         // When
-        var findings = rule.Evaluate(model).ToList();
+        var report = new SpechtEvaluator([rule], new SpechtViolationOrder()).Evaluate(model);
 
         // Then
-        findings.Select(finding => (rule.Id, rule.DefaultLevel, finding.Identifier))
+        report.Violations.Select(static violation => (violation.RuleId, violation.Severity, violation.Identifier))
             .Should()
-            .Equal(("SPEC060", SpechtRuleLevel.Error, "B-001"));
+            .Equal(("SPEC7001", SpechtSeverity.Error, "B-001"));
     }
 
     [Theory]
@@ -73,10 +75,10 @@ public sealed class ApprovalRuleDoneAxisUnitTests
         var rule = new ApprovalCoverageRule();
 
         // When
-        var findings = rule.Evaluate(model).ToList();
+        var report = new SpechtEvaluator([rule], new SpechtViolationOrder()).Evaluate(model);
 
         // Then
-        findings.Select(finding => (rule.Id, finding.Identifier)).Should().Equal(("SPEC060", "B-001"));
+        report.Violations.Select(static violation => (violation.RuleId, violation.Identifier)).Should().Equal(("SPEC060", "B-001"));
     }
 
     [Fact]
@@ -113,12 +115,12 @@ public sealed class ApprovalRuleDoneAxisUnitTests
         var rule = new ApprovalSignOffRule();
 
         // When
-        var findings = rule.Evaluate(model).ToList();
+        var report = new SpechtEvaluator([rule], new SpechtViolationOrder()).Evaluate(model);
 
         // Then
-        findings.Select(finding => (rule.Id, finding.Identifier))
+        report.Violations.Select(static violation => (violation.RuleId, violation.Identifier))
             .Should()
-            .Equal(reported ? [("SPEC061", "1-5")] : []);
+            .Equal(reported ? [("SPEC7002", "1-5")] : []);
     }
 
     private const string SamplePath = "src/sample/.spec/README.md";

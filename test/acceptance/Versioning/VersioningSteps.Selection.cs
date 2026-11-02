@@ -88,7 +88,7 @@ public sealed partial class VersioningSteps
     }
 
     [Then("the specification is reported for the missing key")]
-    public void ThenLocalKeyIsRequired() => Violations.Should().Contain(static violation =>
+    public void ThenLocalKeyIsRequired() => Violations.Should().Contain(violation =>
         violation["file"]!.GetValue<string>() == FeaturePath
         && FrontmatterRules.Contains(violation["ruleId"]!.GetValue<string>())
         && violation["message"]!.GetValue<string>().Contains("local_key", StringComparison.Ordinal));

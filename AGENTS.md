@@ -176,7 +176,7 @@ specht schema pin [version] [--root <dir>]
 specht frontmatter --kind <kind> (<path> | --stdin) [--root <dir>]
 specht evidence [--root <dir>] [<path>...] [--run <id>] [--json] [--report <path>]
 specht upgrade [--root <dir>]
-specht --explain SPEC031
+specht --explain SPEC4004
 specht --version
 specht manifest [--root <dir>] [--defaults] [--json]
 specht rules [--root <dir>] [--json]
@@ -184,8 +184,10 @@ specht rules set <id> <level> [--root <dir>]
 ```
 
 Stdout: one MSBuild-shaped line per violation
-(`path(line): error SPEC031: … [identifier]`, the brackets absent when the
-violation has no identifier), then the summary lines. `--json` replaces the stream with the report document;
+(`path(line): error SPEC4004: … [identifier]`, the brackets absent when the
+violation has no identifier), then the summary lines. Rule ids here are
+schema `0.3.0`'s; under a pin below it the same rule reports its three-digit
+id, `SPEC031` for `SPEC4004` (brief § 4, [ADR-0029](.spec/adr/0029-rule-ids-take-four-digits-in-schema-0-3-0-and-published-versions-keep-theirs.md)). `--json` replaces the stream with the report document;
 `--report` writes the same JSON to a path. Exit `0` clean, `1` violations (any
 violation under `--strict`), `2` missing root or manifest, `3` invalid manifest,
 `4` a thing named on the command line not found (such as an `--explain` rule id
@@ -214,7 +216,7 @@ fetch of a recorded upstream source's differing schemas is built (item `0093`), 
 specified and not built (`0001-F3`). What the tool accepts today is
 [`docs/cli.md`](docs/cli.md), which a test holds to its help (`0002-F1`).
 
-`specht --explain <SPEC###>` prints the entire rule page, including YAML frontmatter,
+`specht --explain <rule id>` prints the entire rule page, including YAML frontmatter,
 for the manifest's exact pin without running a check. It is built (item `0040`).
 
 `specht rules` lists the pinned rules as tab-separated text and is built (item
@@ -244,9 +246,12 @@ for the manifest's exact pin without running a check. It is built (item `0040`).
   schema source the manifest records or the same init run will record
   (`0001-F7` decision 0004; `0001-F4` decision 0003, ratified 2026-10-12). The same tree
   gives the same report. `generatedAtUtc` is not in the report for this reason.
-- **The rule vocabulary is fixed per schema version.** A new `SPEC###` is a new
+- **The rule vocabulary is fixed per published schema version.** A new rule
+  id enters a version no published package carries, in place, or else a new
   schema version - a major from schema `1.0.0` on, at least a `0.minor` before
-  it (`0001-F7` C-11) - after brief § 8 step 6.
+  it (`0001-F7` C-11) - after brief § 8 step 6. From schema `0.3.0` a rule id
+  is `SPEC` and four digits, the thousands digit its group; `0.1.0`, `0.2.0`
+  and `0.2.1` keep their three-digit ids ([ADR-0029](.spec/adr/0029-rule-ids-take-four-digits-in-schema-0-3-0-and-published-versions-keep-theirs.md); `0001-F1` C-5).
 
 ## Specification-Driven Development
 
@@ -331,9 +336,12 @@ Identifiers are the citation mechanism that makes the chain navigable:
   id is not used in this repository.
 - ADRs: `ADR-0002`, numbered repo-wide in `.spec/adr/` or per Feature in that
   Feature's `adr/`, chosen by blast radius.
-- Rules: `SPEC031`, fixed per schema version.
+- Rules: `SPEC4004` from schema `0.3.0`, `SPEC031` below it, fixed per
+  published schema version (brief § 4).
 
-IDs are **never reused and never renumbered** — not to tidy a sequence.
+IDs are **never reused and never renumbered** — not to tidy a sequence. The
+one exception is the rule ids, renumbered once, in the unpublished schema
+`0.3.0`, on the owner's ruling ([ADR-0029](.spec/adr/0029-rule-ids-take-four-digits-in-schema-0-3-0-and-published-versions-keep-theirs.md)); the published versions keep theirs.
 Renumbering breaks every citation in every past commit, review, issue, and
 decision record. A dropped constraint leaves its number retired.
 
@@ -359,7 +367,7 @@ published package pin remains the consumer installation contract. It validates f
 twelve sections and their order, claim-id uniqueness, every `@B-00n` tag
 resolving to a claim, § 9 carrying exactly one row per § 3 claim,
 `children`/`depends_on` resolving to real files, and dependency symmetry. Rules
-are `SPEC###` (brief § 4) and diagnostics are MSBuild-shaped, so GitHub
+are `SPEC` and four digits from schema `0.3.0` (brief § 4) and diagnostics are MSBuild-shaped, so GitHub
 annotates them on the diff. It is deterministic and offline — it never calls
 GitHub.
 

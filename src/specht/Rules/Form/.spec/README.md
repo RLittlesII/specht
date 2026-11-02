@@ -53,7 +53,7 @@ Version 1 reads a specification through Markdig, which forgives what a reader an
 
 ## 3. Acceptance Criteria
 
-<!-- last written by: spec-author, 2026-10-08 -->
+<!-- last written by: spec-author, 2026-11-02 (item 0169, ADR-0029: rule ids renamed to schema 0.3.0's) -->
 
 | ID    | Claim                                                                                                                                                                                                                                                                                | Source                       | Status |
 | ----- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------- | ------ |
@@ -66,8 +66,8 @@ Version 1 reads a specification through Markdig, which forgives what a reader an
 | B-007 | Given a manifest pinning schema version 2 that sets no severity for this Feature's rules, their violations are warnings.                                                                                                                                                             | `0101-F1` decision 0001      | Active |
 | B-008 | Given a manifest pinning schema version 2 that disables this Feature's rules, this Feature reports nothing.                                                                                                                                                                          | `0101-F1` decision 0001      | Active |
 | B-009 | Given a manifest pinning schema version 1, this Feature reports nothing.                                                                                                                                                                                                             | `0101-F1` decision 0001; C-4 | Active |
-| B-010 | Given a contracted heading whose text is misspelt, this Feature reports nothing for it, leaving the one finding to `SPEC010`.                                                                                                                                                        | A-2; C-2                     | Active |
-| B-011 | Given a § 3 row whose first cell holds two claim ids, this Feature reports nothing for it, leaving the one finding to `SPEC030`.                                                                                                                                                     | A-3; C-2                     | Active |
+| B-010 | Given a contracted heading whose text is misspelt, this Feature reports nothing for it, leaving the one finding to `SPEC2001`.                                                                                                                                                       | A-2; C-2                     | Active |
+| B-011 | Given a § 3 row whose first cell holds two claim ids, this Feature reports nothing for it, leaving the one finding to `SPEC4003`.                                                                                                                                                    | A-3; C-2                     | Active |
 | B-012 | Given a pipe table whose columns are not padded to one width, this Feature reports nothing.                                                                                                                                                                                          | § 5 row 2                    | Active |
 
 ## 4. Constraints
@@ -134,9 +134,11 @@ Pending: owned by `test-writer`, written after agreement.
 
 ## 10. Lessons / Spec Deltas
 
-<!-- last written by: spec-author, 2026-10-08 -->
+<!-- last written by: spec-author, 2026-11-02 (item 0169, ADR-0029: rule ids renamed to schema 0.3.0's) -->
 
 None.
+
+- 2026-11-02, item `0169` ([ADR-0029](../../../../../.spec/adr/0029-rule-ids-take-four-digits-in-schema-0-3-0-and-published-versions-keep-theirs.md)): the shipped rules this Feature's claims and scenarios name take schema `0.3.0`'s four-digit ids, each claim keeping its id; under a pin below `0.3.0` each reads as the three-digit id brief § 4 maps it from.
 
 ## 11. Open Questions
 

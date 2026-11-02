@@ -3,7 +3,7 @@ A dotnet tool that checks a repository's specification documents against a versi
 Every violation comes back with a file, a line and a rule id.
 
 ```text
-src/specht/.spec/README.md(214): error SPEC031: § 9 has no row for claim B-007 [B-007]
+src/specht/.spec/README.md(214): error SPEC4004: § 9 has no row for claim B-007 [B-007]
 ```
 
 ## Install
@@ -13,7 +13,7 @@ See [Quick start](https://github.com/RLittlesII/specht#quick-start) in the repos
 ## Commands
 
 ```sh
-specht [--root <dir>] [--strict] [--json] [--schema-source <embedded|disk>] [--explain <SPEC###>]
+specht [--root <dir>] [--strict] [--json] [--schema-source <embedded|disk>] [--explain <rule id>]
 specht schema list [--root <dir>]
 specht schema pin [version] [--root <dir>]
 specht rules [--root <dir>] [--json]

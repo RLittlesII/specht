@@ -6,7 +6,11 @@ using Specht.Tests.Shared;
 
 namespace Specht.Acceptance.Frontmatter;
 
-/// <summary>Runs every standalone frontmatter scenario through the built tool's file/stdin boundary.</summary>
+/// <summary>
+/// Runs every standalone frontmatter scenario through the built tool's file/stdin boundary. A rule id a scenario names is
+/// read at the root's pin (<c>0001-F7</c> B-151, B-152): under the Background's 0.1.0 the four-digit <c>SPEC1002</c> reads
+/// as <c>SPEC002</c>.
+/// </summary>
 [Binding]
 [Scope(Feature = "The frontmatter command")]
 public sealed class FrontmatterSteps
@@ -81,7 +85,7 @@ public sealed class FrontmatterSteps
             });
         _path = Path.GetRelativePath(Tree.Root, path).Replace('\\', '/');
         _document = File.ReadAllText(path);
-        _expected = [.. Tree.Run().Violations.Where(v => v.File == _path && v.RuleId == "SPEC002").Select(static v => v.ToString())];
+        _expected = [.. Tree.Run().Violations.Where(v => v.File == _path && v.RuleId == RuleIds.Under(Tree, "SPEC002")).Select(static v => v.ToString())];
     }
 
     [Given(@"^a task document at drafts/issue\.md whose frontmatter lacks a required key$")]
@@ -178,14 +182,16 @@ public sealed class FrontmatterSteps
     public void ThenAMissingKeyIsReported() => Diagnostics().Should().ContainSingle().Which.Should().Contain("priority");
 
     [Then("the violation carries rule id {word}")]
-    public void ThenTheRuleIsReported(string rule) => Diagnostics().Should().ContainSingle().Which.Should().Contain($": error {rule}:");
+    public void ThenTheRuleIsReported(string rule) =>
+        Diagnostics().Should().ContainSingle().Which.Should().Contain($": error {RuleIds.Named(Tree, rule)}:");
 
     [Then("the violation is reported at line {int}")]
     public void ThenTheLineIsReported(int line) => Diagnostics().Should().ContainSingle(static l => l.EndsWith("[created]", StringComparison.Ordinal))
         .Which.Should().Contain($"({line}):");
 
-    [Then("the violation carries rule id SPEC001 at line 1")]
-    public void ThenNoFrontmatterIsReported() => Diagnostics().Should().ContainSingle().Which.Should().Contain("(1): error SPEC001:");
+    [Then(@"^the violation carries rule id (SPEC[0-9]+) at line 1$")]
+    public void ThenNoFrontmatterIsReported(string rule) =>
+        Diagnostics().Should().ContainSingle().Which.Should().Contain($"(1): error {RuleIds.Named(Tree, rule)}:");
 
     [Then("a violation is reported")]
     public void ThenAViolationIsReported() => Diagnostics().Should().NotBeEmpty();
@@ -198,7 +204,7 @@ public sealed class FrontmatterSteps
 
     [Then("the standard output carries one line naming the document, the line, the severity, the rule id and the message in the build's diagnostic form")]
     public void ThenADiagnosticLineIsPrinted() => Regex.IsMatch(Diagnostics().Should().ContainSingle().Which,
-        @"^<stdin>\(\d+\): error SPEC003: .+priority.+$").Should().BeTrue();
+        $@"^<stdin>\(\d+\): error {RuleIds.Under(Tree, "SPEC003")}: .+priority.+$").Should().BeTrue();
 
     [Then(@"^the violation line names drafts/issue\.md$")]
     public void ThenTheTypedPathIsPrinted() => Diagnostics().Should().ContainSingle().Which.Should().StartWith("drafts/issue.md(");

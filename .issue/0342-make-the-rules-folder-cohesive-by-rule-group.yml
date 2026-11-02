@@ -1,0 +1,96 @@
+id: "0342"
+type: refactor
+title: Make src/specht/Rules/ cohesive by rule group
+
+status: ready-for-architecture
+
+value: 2
+risk: 3
+
+parent: null
+children: []
+
+depends_on: ["0169"] # 0169 gives every rule in 0.3.0 its four-digit id, so each rule class has the group this layout files it under
+spikes: []
+
+spec: null
+
+claims: []
+
+created: "2026-11-02"
+updated: "2026-11-02"
+closed: null
+
+summary: |
+  Cut 2026-11-02 from item 0169 criterion 8, which the repository owner
+  withdrew from that item: "What collision?! Seems like we need to refactor
+  and make this cohesive. This is a task after this, but can still be done
+  for 0.4.0".
+
+  The four-digit groups of ADR-0029
+  (.spec/adr/0029-rule-ids-take-four-digits-in-schema-0-3-0-and-published-versions-keep-theirs.md)
+  organise the rule classes under `src/specht/Rules/`: 1xxx Frontmatter,
+  2xxx Structure, 3xxx Identity, 4xxx Claims and feature files, 5xxx Work
+  items, 6xxx Dependencies, 7xxx Approval. The Feature specification homes
+  already under `src/specht/Rules/` become part of that layout instead of
+  sitting beside it.
+
+  The conflict the implementer of 0169 stopped on, as it stood on
+  2026-11-02:
+
+  - Twelve Feature folders sit directly under `src/specht/Rules/`, beside
+    the 28 files of namespace `Specht.Rules`: Matrix (`0001-F12`),
+    NativeClaims (`0001-F16`), WorkItemIds (`0101-F8`), DuplicateIds
+    (`0101-F6`), FrontmatterOrder (`0101-F4`), Form (`0101-F3`),
+    RecordNumbers (`0101-F7`), RetiredIds (`0101-F2`), Stamps (`0101-F9`),
+    Ordering (`0101-F1`), OpenQuestions (`0228-F1`) and References
+    (`0228-F2`).
+  - Matrix is the only one holding code. It is the `0001-F12` home, with
+    its `.spec/` and `.issue/`, and namespace `Specht.Rules.Matrix` holds
+    WaiverRule (`SPEC4005`), RetiredClaimRule (`SPEC4006`), MatrixResolver
+    and its four resolution types. Items `0334` to `0337` add `SPEC4007` to
+    `SPEC4010` there. `test/tests/Rules/Matrix/` mirrors it.
+  - The other eleven hold only a `.spec/`. Their rules carry working names,
+    and a working name takes a four-digit id in its group only when it
+    enters a version (ADR-0029 § "How a specification names a rule").
+  - About 61 Markdown links in eight specifications point into
+    `src/specht/Rules/*.cs`.
+
+  A group folder per thousands digit would sit beside these Feature
+  folders, and two rules of group 4xxx would be in a Feature folder rather
+  than the group's. Two layouts were raised and neither is chosen here:
+
+  - (A) Flat group folders, one per thousands digit, with each Feature
+    folder moved into the group folder of its rules.
+  - (B) Feature folders nested under their group folder, the rule classes
+    of no Feature beside them in the group folder.
+
+  The owner chooses between them (criterion 1). It is a refactor: no
+  verdict, report, rule id, message or rule page changes, so it carries no
+  specification delta and cites the constraints it preserves (criterion 6).
+  It spans Features 0001-F1, 0001-F12, 0001-F16 and the homes of epics
+  0101 and 0228, so it sits at the repository root with `spec: null`.
+
+acceptance_criteria:
+  - "1. Before any file moves: the owner rules between layout (A), flat group folders with the Feature folders moved in, and layout (B), Feature folders nested under their group, including where a Feature home whose rules have no four-digit id yet sits; the ruling is recorded under `decisions:`."
+  - "2. Every rule class under `src/specht/Rules/` sits in the folder the ruling gives its group, and its namespace follows the folder."
+  - "3. Each Feature home moves whole - `.spec/`, `.issue/` and its code - to the place the ruling gives it, and `test/tests/Rules/` follows the same layout."
+  - "4. Every Markdown link and citation into a moved file resolves, in every specification, item and record that names one; decision records and § 12 rows keep the text they were written with, with only the link target changed."
+  - "5. This repository's own tree passes `./build.sh Specht` with the tool built from this item, the unit, integration and acceptance tiers pass, and the benchmark project `.performance/benchmarks` still compiles."
+  - "6. The commit message carries the exemption: No .feature change needed: refactor - the rule classes and the Feature homes under src/specht/Rules/ move to one folder per rule group; every verdict, report and rule page is unchanged. Constraints preserved: 0001-F1 C-3, 0001-F1 C-4, 0001-F1 C-5, 0001-F1 C-9, 0001-F1 C-10, 0001-F12 C-3."
+
+decisions:
+  - |
+    2026-11-02, spec-author: cut on the repository owner's ruling of the
+    same day withdrawing item 0169 criterion 8, the owner's words in the
+    summary. Type `refactor`, status `ready-for-architecture`, milestone
+    0.4.0 directly after 0169 in `.issue/.goal`. The layout is not chosen
+    here; layouts (A) and (B) are recorded for the owner's ruling in
+    criterion 1.
+
+out_of_scope:
+  - "Choosing the layout in this item's text - the owner's ruling, criterion 1."
+  - "A rule id, a rule page, a message or a verdict - item 0169, and each rule's own item."
+  - "The rules `SPEC4007` to `SPEC4010` - items 0334 to 0337."
+  - "Assigning a group or a four-digit id to a working-name rule of epics 0101 and 0228 - each takes one when it enters a version (ADR-0029)."
+  - "A namespace guard test - item 0167 (ADR-0010)."

@@ -29,10 +29,10 @@ public sealed class MatrixSteps
     public void GivenFeature() => _tags = string.Empty;
 
     [Given("the manifest sets the waiver rule to error")]
-    public void GivenWaiverEnabled() => Rules["SPEC034"] = "error";
+    public void GivenWaiverEnabled() => Rules[RuleIds.Under(Manifest, "SPEC034")] = "error";
 
     [Given("the manifest sets the retired-claim rule to error")]
-    public void GivenRetiredEnabled() => Rules["SPEC035"] = "error";
+    public void GivenRetiredEnabled() => Rules[RuleIds.Under(Manifest, "SPEC035")] = "error";
 
     [Given("the manifest sets no level for either rule")]
     public void GivenRulesOmitted() => Manifest.Remove("rules");
@@ -40,8 +40,8 @@ public sealed class MatrixSteps
     [Given("the manifest sets the waiver rule and the retired-claim rule to off")]
     public void GivenRulesOff()
     {
-        Rules["SPEC034"] = "off";
-        Rules["SPEC035"] = "off";
+        Rules[RuleIds.Under(Manifest, "SPEC034")] = "off";
+        Rules[RuleIds.Under(Manifest, "SPEC035")] = "off";
     }
 
     [Given("the specification's sign-off has a row by {string} marked {word}")]
@@ -277,10 +277,10 @@ public sealed class MatrixSteps
     }
 
     [Then("^the waiver rule reports (nothing|one finding) for that row$")]
-    public void ThenWaiverCount(string findings) => Findings("SPEC034").Should().HaveCount(findings == "nothing" ? 0 : 1);
+    public void ThenWaiverCount(string findings) => Findings(RuleIds.Under(Manifest, "SPEC034")).Should().HaveCount(findings == "nothing" ? 0 : 1);
 
     [Then("the waiver rule reports that row")]
-    public void ThenWaiverRow() => Findings("SPEC034").Should().ContainSingle().Which.Line.Should().Be(_row);
+    public void ThenWaiverRow() => Findings(RuleIds.Under(Manifest, "SPEC034")).Should().ContainSingle().Which.Line.Should().Be(_row);
 
     [Then("the unresolved-test rule reports that row")]
     public void ThenUnresolvedRow() => UnresolvedRow();
@@ -299,7 +299,7 @@ public sealed class MatrixSteps
     {
         if (findings == "nothing")
         {
-            Findings("SPEC032").Should().BeEmpty();
+            Findings(RuleIds.Under(Manifest, "SPEC032")).Should().BeEmpty();
         }
         else
         {
@@ -308,17 +308,17 @@ public sealed class MatrixSteps
     }
 
     [Then("the unresolved-test rule reports nothing")]
-    public void ThenNoUnresolved() => Findings("SPEC032").Should().BeEmpty();
+    public void ThenNoUnresolved() => Findings(RuleIds.Under(Manifest, "SPEC032")).Should().BeEmpty();
 
     [Then("the scenario-title rule reports that row")]
-    public void ThenTitleRow() => Findings("SPEC022").Should().ContainSingle().Which.Line.Should().Be(_row);
+    public void ThenTitleRow() => Findings(RuleIds.Under(Manifest, "SPEC022")).Should().ContainSingle().Which.Line.Should().Be(_row);
 
     [Then("^the scenario-title rule reports (nothing|one finding) for that row$")]
     public void ThenTitleCount(string findings)
     {
         if (findings == "nothing")
         {
-            Findings("SPEC022").Should().BeEmpty();
+            Findings(RuleIds.Under(Manifest, "SPEC022")).Should().BeEmpty();
         }
         else
         {
@@ -327,28 +327,30 @@ public sealed class MatrixSteps
     }
 
     [Then("the scenario-title rule reports nothing")]
-    public void ThenNoTitle() => Findings("SPEC022").Should().BeEmpty();
+    public void ThenNoTitle() => Findings(RuleIds.Under(Manifest, "SPEC022")).Should().BeEmpty();
 
     [Then("the waiver rule reports nothing")]
-    public void ThenNoWaiver() => Findings("SPEC034").Should().BeEmpty();
+    public void ThenNoWaiver() => Findings(RuleIds.Under(Manifest, "SPEC034")).Should().BeEmpty();
 
     [Then("the retired-claim rule reports claim B-004")]
-    public void ThenRetiredClaim() => Findings("SPEC035").Should().ContainSingle().Which.Identifier.Should().Be("B-004");
+    public void ThenRetiredClaim() => Findings(RuleIds.Under(Manifest, "SPEC035")).Should().ContainSingle().Which.Identifier.Should().Be("B-004");
 
     [Then("^the retired-claim rule reports (nothing|one finding)$")]
-    public void ThenRetiredCount(string findings) => Findings("SPEC035").Should().HaveCount(findings == "nothing" ? 0 : 1);
+    public void ThenRetiredCount(string findings) => Findings(RuleIds.Under(Manifest, "SPEC035")).Should().HaveCount(findings == "nothing" ? 0 : 1);
 
     [Then("no scenario-title, missing-scenario, unresolved-test, status, waiver or retired-claim finding is reported")]
-    public void ThenNoMatrixFindings() => _report!.Violations.Should().NotContain(static violation =>
-        violation.RuleId == "SPEC022" || violation.RuleId == "SPEC023" || violation.RuleId == "SPEC032"
-            || violation.RuleId == "SPEC033" || violation.RuleId == "SPEC034" || violation.RuleId == "SPEC035");
+    public void ThenNoMatrixFindings()
+    {
+        string[] matrix = [.. new[] { "SPEC022", "SPEC023", "SPEC032", "SPEC033", "SPEC034", "SPEC035" }.Select(id => RuleIds.Under(Manifest, id))];
+        _report!.Violations.Should().NotContain(violation => matrix.Contains(violation.RuleId));
+    }
 
     [Then("the report is byte-for-byte the one the tool gave that tree before this Feature")]
     public void ThenOriginalReport()
     {
         using var services = (TypeResolver)new TypeRegistrar(new ServiceCollection().AddSpechtEngine()).Build();
         var original = ((IEnumerable<ISpechtRule>)services.Resolve(typeof(IEnumerable<ISpechtRule>))!).Where(static rule =>
-            rule.Id != "SPEC034" && rule.Id != "SPEC035");
+            rule.Id is not ("SPEC034" or "SPEC035"));
         var baseline = new SpechtEvaluator(original, new SpechtViolationOrder()).Evaluate(EngineServices.Loader().Load(Tree.Root));
         SpechtReportDocument.From(_report!).ToJson().Should().Be(SpechtReportDocument.From(baseline).ToJson());
         _report!.RulesEvaluated.Should().Be(21);
@@ -363,7 +365,7 @@ public sealed class MatrixSteps
 
     private SpechtViolation UnresolvedRow()
     {
-        var finding = Findings("SPEC032").Should().ContainSingle().Subject;
+        var finding = Findings(RuleIds.Under(Manifest, "SPEC032")).Should().ContainSingle().Subject;
         finding.Line.Should().Be(_row);
         return finding;
     }

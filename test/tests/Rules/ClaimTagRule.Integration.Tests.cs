@@ -13,7 +13,7 @@ namespace Specht.Tests.Rules;
 public sealed class ClaimTagRuleIntegrationTests
 {
     [Fact]
-    public void ATagDeclaredOnlyUnderTheTitleNoRoleNames_WhenChecked_ShouldReportSpec021OnItAndNotOnTheTagTheClaimsRolesSectionDeclares()
+    public void ATagDeclaredOnlyUnderTheTitleNoRoleNames_WhenChecked_ShouldReportSpec4002OnItAndNotOnTheTagTheClaimsRolesSectionDeclares()
     {
         // Given
         using var tree = new SpechtTree();
@@ -40,7 +40,7 @@ public sealed class ClaimTagRuleIntegrationTests
 
         // Then
         report.Violations
-            .Where(static violation => violation.RuleId == "SPEC021")
+            .Where(static violation => violation.RuleId == "SPEC4002")
             .Select(static violation => violation.Identifier)
             .Should()
             .Equal("B-404");

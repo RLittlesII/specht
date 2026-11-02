@@ -99,7 +99,7 @@ Skillfile / Skillfile.lock      tracked local dependencies and both project-loca
 .claude/ / .codex/              generated installations - gitignored
 docs/                          reference pages the front page links: what it checks, configuration,
                                exit codes, building
-  rules/v0.1.0/                    rule pages, one SPEC###.md per rule id of the version - embedded in
+  rules/v0.1.0/                    rule pages, one <rule id>.md per rule id of the version - embedded in
                                the engine as rules/v0.1.0/<file>
 AGENTS.md                      the entry point for agents
 README.md                      the public front page - what, why, install, usage, layout
@@ -159,21 +159,27 @@ The `.feature` file belongs to `spec-author`; its step definitions belong to
 | Open question | `OQ-3`            | its Feature                                | `0001-F1 OQ-3`        |
 | Work item     | `0004`            | repository, shared with epics              | `0004`                |
 | ADR           | `ADR-0002`        | repo or Feature, by blast radius           | `ADR-0002`            |
-| `specht` rule | `SPEC031`         | the rule engine, versioned with the schema | `SPEC031`             |
+| `specht` rule | `SPEC4004`        | the rule engine, versioned with the schema | `SPEC4004`            |
 
 Always carry the prefix in prose — several sequences have a twelfth member.
 
 **Ids are never reused and never renumbered.** Renumbering breaks every citation
 in every past commit, review, issue and sibling specification. A dropped claim
-leaves its number retired.
+leaves its number retired. The rule ids are the one exception: renumbered once,
+in the unpublished schema `0.3.0`, on the owner's ruling ([ADR-0029](../../../.spec/adr/0029-rule-ids-take-four-digits-in-schema-0-3-0-and-published-versions-keep-theirs.md)).
 
 That holds from the moment an id is on `main`. Until then a number is a claim
 other branches cannot see; how one is checked, reserved, and renumbered when two
 branches took it is in [references/delivery.md](references/delivery.md)
 § "Reserve an id before a branch claims it".
 
-The rule vocabulary is fixed per schema version (brief § 4). A new `SPEC###` is
-a new schema version, after brief § 8 step 6 — never a quiet addition.
+The rule vocabulary is fixed per published schema version (brief § 4). From
+schema `0.3.0` a rule id is `SPEC` and four digits, the thousands digit naming
+its group, and `0.1.0` to `0.2.1` keep their three-digit ids ([ADR-0029](../../../.spec/adr/0029-rule-ids-take-four-digits-in-schema-0-3-0-and-published-versions-keep-theirs.md)). A text that
+names a four-digit id reads, under a lower pin, as the three-digit id brief § 4
+maps it from. A new rule id is four digits in its group, on the owner's
+approval, and enters an open version, as below, or a new schema version, after
+brief § 8 step 6 — never a quiet addition.
 
 A schema version is published only when a `specht.tool` package that embeds it
 is on a feed consumers install from. Until then it is open: a change to it, a

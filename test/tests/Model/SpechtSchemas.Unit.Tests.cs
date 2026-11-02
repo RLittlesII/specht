@@ -15,7 +15,8 @@ namespace Specht.Tests.Model;
 /// manifest gives its kind (0001-F5 B-008, decision 0003). Both loads keep the version they validate with (ADR-0008, item
 /// 0105; 0001-F1 § 7): the version-set load the version the manifest's pin selects, and the on-disk load the embedded
 /// version the manifest pins with the schema texts it read, rejecting a pin the tool does not ship before any frontmatter
-/// schema is read. A rule setting is held to the vocabulary of the version the pin selects (0001-F5 B-013, item 0014).
+/// schema is read. A rule setting is held to the vocabulary of the version the pin selects (0001-F5 B-013, item 0014), so under 0.3.0 a
+/// three-digit id is an unknown id.
 /// </summary>
 [Trait("Tier", "Unit")]
 public sealed class SpechtSchemasUnitTests
@@ -196,6 +197,24 @@ public sealed class SpechtSchemasUnitTests
 
         // Then
         load.Should().ThrowExactly<SpechtManifestException>().Which.Message.Should().Contain("SPEC999");
+    }
+
+    [Fact]
+    public void AManifestPinningZeroThreeZeroSettingAThreeDigitRuleId_WhenLoadedThroughTheEmbeddedSet_ShouldRejectItNamingTheId()
+    {
+        // Given
+        var fileSystem = new MockFileSystem(
+            new Dictionary<string, MockFileData>
+            {
+                [Path.Combine(Root, SpechtTree.ManifestPath)] =
+                    new("""{ "schemaVersion": "0.3.0", "rules": { "SPEC031": "warning" } }"""),
+            });
+
+        // When
+        var load = () => EngineServices.LoadSchemas(fileSystem, Root, EngineServices.Versions());
+
+        // Then
+        load.Should().ThrowExactly<SpechtManifestException>().Which.Message.Should().Contain("SPEC031");
     }
 
     private const string Root = "repo";

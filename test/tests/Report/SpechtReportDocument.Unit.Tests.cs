@@ -211,7 +211,7 @@ public sealed partial class SpechtReportDocumentUnitTests
         summary.Should().NotBeEmpty().And.AllSatisfy(static line => Diagnostic().IsMatch(line).Should().BeFalse(line));
     }
 
-    [GeneratedRegex(@"^(?<file>[^\s(:][^(:]*)(\((?<line>\d+)\))?: (?<severity>error|warning) (?<rule>SPEC\d{3}): \S.*$")]
+    [GeneratedRegex(@"^(?<file>[^\s(:][^(:]*)(\((?<line>\d+)\))?: (?<severity>error|warning) (?<rule>SPEC\d{3,4}): \S.*$")]
     private static partial Regex Diagnostic();
 
     private static IEnumerable<string> Strings(JsonNode? node) =>
