@@ -153,11 +153,12 @@ None.
 
 ## 12. Sign-off
 
-<!-- last written by: spec-author, 2026-10-09 -->
+<!-- last written by: spec-reviewer, 2026-11-01 (item `0164`) -->
 
-| Section | Status | Reviewer      | Note                   |
-| ------- | ------ | ------------- | ---------------------- |
-| 1-5     | 🟡     | spec-reviewer | Awaiting first review. |
+| Section                   | Status | Reviewer      | Note                                                                                                                                                                                                                                                                                                                                                                                       |
+| ------------------------- | ------ | ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 1-5                       | 🟡     | spec-reviewer | Awaiting first review.                                                                                                                                                                                                                                                                                                                                                                     |
+| 2 (A-1), 10 (item `0164`) | 🟢     | spec-reviewer | Item `0164` (2026-11-01) - approved, reviewing `origin/main` (`79051138`)...`a20166ff`. A-1, amended by `spec-author`, names the evaluator instance in place of the static `SpechtRunner.Evaluate`, as ADR-0010 stage 4 builds it; § 10 keeps the static only as history. This row reviews that amendment alone: the first review of 1-5 is still awaited and `spec_status` stays `draft`. |
 
 ## Tasks
 
