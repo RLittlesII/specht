@@ -66,4 +66,23 @@ public sealed record SpechtStructure(
 
     /// <summary>The template file names the manifest names as the consumer's; empty when it names none, and no rule reads it (<c>0001-F7</c> B-065).</summary>
     public IReadOnlyList<string> ConsumerTemplates { get; init; } = [];
+
+    /// <summary>
+    /// The frontmatter keys a rule reads in a Feature: the manifest's <c>keys.feature</c> from schema 0.3.0, and below it
+    /// the names every older pin reads (B-004, B-049).
+    /// </summary>
+    public SpechtFeatureKeys FeatureKeys { get; init; } = new();
+
+    /// <summary>
+    /// The frontmatter keys a rule reads in an item: the manifest's <c>keys.task</c> from schema 0.3.0, and below it the
+    /// names every older pin reads (B-004, B-049).
+    /// </summary>
+    public SpechtTaskKeys TaskKeys { get; init; } = new();
+
+    /// <summary>
+    /// The identity and edge forms, with the task grammar's named groups, that identities, edges and item sequences are
+    /// read through; set from schema 0.3.0 for a manifest that declares the epic grammar, and null otherwise, which keeps
+    /// the reading of the engine at <c>d73b7a51</c> (B-005, B-006, B-049, decision 0018).
+    /// </summary>
+    public SpechtForms? Forms { get; init; }
 }

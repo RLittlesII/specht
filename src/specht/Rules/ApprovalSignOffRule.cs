@@ -18,6 +18,7 @@ public sealed class ApprovalSignOffRule : ISpechtRule
 
     /// <inheritdoc />
     /// <implements epic="0001" feature="F1" claim="B-001" />
+    /// <implements epic="0001" feature="F5" claim="B-004" />
     public IEnumerable<SpechtFinding> Evaluate(SpechtModel model)
     {
         var roles = model.Schemas.Structure.Roles;
@@ -47,7 +48,7 @@ public sealed class ApprovalSignOffRule : ISpechtRule
                         feature.RelativePath,
                         signOff.RowLines[index],
                         row.Count > 0 ? row[0].Trim() : null,
-                        "spec_status is 'approved' while § 12 carries a row that is not approved")
+                        $"{feature.Keys.SpecStatus} is 'approved' while § 12 carries a row that is not approved")
                     {
                         Expected = new JsonObject { ["section"] = signOff.Title, ["row"] = index + 1 },
                     };

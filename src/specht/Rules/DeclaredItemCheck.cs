@@ -20,6 +20,7 @@ public sealed class DeclaredItemCheck
     /// <param name="requiredType">The type the one match must carry, or <c>null</c> for any.</param>
     /// <returns>The findings.</returns>
     /// <implements epic="0001" feature="F1" claim="B-001" />
+    /// <implements epic="0001" feature="F5" claim="B-004" />
     public IEnumerable<SpechtFinding> Evaluate(
         FeatureSpec feature,
         IReadOnlyCollection<ChildItem> candidates,
@@ -64,7 +65,7 @@ public sealed class DeclaredItemCheck
             {
                 yield return new SpechtFinding(
                     matches[0].RelativePath,
-                    matches[0].Frontmatter.LineOf("type"),
+                    matches[0].Frontmatter.LineOf(matches[0].Keys.Type),
                     declared,
                     $"'{declared}' is declared in frontmatter {key} but its type is '{matches[0].Type}', not '{requiredType}'")
                 {

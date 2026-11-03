@@ -17,7 +17,7 @@ namespace Specht.Tests.Shared;
 /// <c>.specht/</c> at the paths it has there. They are the contract under
 /// enforcement, so a forked copy would test the wrong thing. The manifest's repository-owned rule settings are
 /// removed: a synthetic consumer keeps each rule's own severity unless its test sets a level (0001-F5 B-044).
-/// Tag, test-file and owner settings are omitted too: a test declares what it needs, and fixtures
+/// Tag, test-file, owner, key-role and form settings are omitted too: a test declares what it needs, and fixtures
 /// selecting an older pin do not accidentally declare newer keys (0001-F5 B-019, B-049).
 /// </remarks>
 public sealed class SpechtTree : IDisposable
@@ -42,6 +42,8 @@ public sealed class SpechtTree : IDisposable
         manifest.Remove("claim");
         manifest.Remove("tests");
         manifest.Remove("owners");
+        manifest.Remove("keys");
+        manifest.Remove("forms");
         Write(manifestPath, manifest.ToJsonString());
     }
 

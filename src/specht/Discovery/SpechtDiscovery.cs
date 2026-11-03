@@ -45,12 +45,9 @@ public sealed class SpechtDiscovery(IFileSystem fileSystem)
         SpechtDiscoveryInputs inputs,
         string taskGrammar)
     {
-        var task = $"(?:{taskGrammar.TrimStart('^').TrimEnd('$')})";
-        var shapes = inputs.TaskFiles
-            .Select(shape => new Regex(Pattern(shape).Replace(@"\{task}", task, StringComparison.Ordinal)))
-            .ToList();
+        var shapes = new SpechtTaskShapes(inputs.TaskFiles, taskGrammar);
 
-        return specifications.SelectMany(specification => Beside(root, specification, shapes)).ToList();
+        return specifications.SelectMany(specification => Beside(root, specification, shapes.IsMatch)).ToList();
     }
 
     /// <summary>
@@ -74,7 +71,7 @@ public sealed class SpechtDiscovery(IFileSystem fileSystem)
     /// <returns>The root-relative path of each companion file, in ordinal order of file name.</returns>
     /// <implements epic="0001" feature="F6" claim="B-001" />
     public IReadOnlyList<string> FindCompanions(string root, SpechtLocation specification, SpechtDiscoveryInputs inputs) =>
-        Beside(root, specification, inputs.CompanionFiles.Select(static glob => new Regex(Pattern(glob))).ToList()).ToList();
+        Beside(root, specification, CompanionShapes(inputs.CompanionFiles)).ToList();
 
     /// <summary>
     /// Lists each declared test file once, in root-relative ordinal order, outside the manifest's exclusions; with no glob
@@ -91,6 +88,18 @@ public sealed class SpechtDiscovery(IFileSystem fileSystem)
             ? []
             : Matching(Files(root), globs, exclusions).Select(static file => file.Relative).ToArray();
 
+    /// <summary>The anchored expression a glob is read as, <c>**</c> spanning directories and <c>*</c> matching within one.</summary>
+    /// <param name="glob">The glob.</param>
+    /// <returns>The expression's text.</returns>
+    /// <implements epic="0001" feature="F6" claim="B-001" />
+    internal static string Pattern(string glob)
+    {
+        var segments = glob.Split('/').Select(static segment =>
+            segment == "**" ? "(?:[^/]+/)*" : Regex.Escape(segment).Replace(@"\*", "[^/]*", StringComparison.Ordinal) + "/");
+
+        return @"\A" + string.Concat(segments).TrimEnd('/') + @"\z";
+    }
+
     /// <implements epic="0001" feature="F6" claim="B-001" />
     private static IEnumerable<(string Path, string Relative)> Matching(
         List<(string Path, string Relative)> files,
@@ -102,15 +111,6 @@ public sealed class SpechtDiscovery(IFileSystem fileSystem)
         return files
             .Where(file => expressions.Any(expression => expression.IsMatch(file.Relative)) && !IsExcluded(file.Relative, exclusions))
             .OrderBy(static file => file.Relative, StringComparer.Ordinal);
-    }
-
-    /// <implements epic="0001" feature="F6" claim="B-001" />
-    private static string Pattern(string glob)
-    {
-        var segments = glob.Split('/').Select(static segment =>
-            segment == "**" ? "(?:[^/]+/)*" : Regex.Escape(segment).Replace(@"\*", "[^/]*", StringComparison.Ordinal) + "/");
-
-        return @"\A" + string.Concat(segments).TrimEnd('/') + @"\z";
     }
 
     /// <implements epic="0001" feature="F6" claim="B-001" />
@@ -129,6 +129,14 @@ public sealed class SpechtDiscovery(IFileSystem fileSystem)
         relative.LastIndexOf('/') is var slash and >= 0 ? relative[..slash] : string.Empty;
 
     /// <implements epic="0001" feature="F6" claim="B-001" />
+    private static Func<string, bool> CompanionShapes(IReadOnlyList<string> globs)
+    {
+        var shapes = globs.Select(static glob => new Regex(Pattern(glob))).ToList();
+
+        return name => shapes.Any(shape => shape.IsMatch(name));
+    }
+
+    /// <implements epic="0001" feature="F6" claim="B-001" />
     private List<(string Path, string Relative)> Files(string root)
     {
         var origin = fileSystem.Path.GetFullPath(root);
@@ -140,11 +148,11 @@ public sealed class SpechtDiscovery(IFileSystem fileSystem)
     }
 
     /// <implements epic="0001" feature="F6" claim="B-001" />
-    private IEnumerable<string> Beside(string root, SpechtLocation specification, List<Regex> names) =>
+    private IEnumerable<string> Beside(string root, SpechtLocation specification, Func<string, bool> matches) =>
         fileSystem.Directory.EnumerateFiles(
                 fileSystem.Path.Combine(root, specification.Directory.Replace('/', fileSystem.Path.DirectorySeparatorChar)))
             .Select(path => fileSystem.Path.GetFileName(path))
-            .Where(name => names.Any(expression => expression.IsMatch(name)))
+            .Where(matches)
             .Order(StringComparer.Ordinal)
             .Select(name => specification.Directory.Length == 0 ? name : specification.Directory + "/" + name);
 }

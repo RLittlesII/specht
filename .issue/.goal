@@ -30,6 +30,9 @@
 0166
 0016
 0018
+# Epics opt-in, OQ-18: after 0016, so the first package carrying schema
+# 0.3.0 holds both (owner, 2026-11-02; 0001-F5 decision 0018).
+0345
 # Rule unit coverage and the pin policy retained by the owner 2026-11-01.
 0152
 0124

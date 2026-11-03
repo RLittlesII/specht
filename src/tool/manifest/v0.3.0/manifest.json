@@ -69,9 +69,31 @@
     "claim": "^B-[0-9]{3}[a-z]?$",
     "constraint": "^C-[0-9]+$",
     "openQuestion": "^OQ-[0-9]+$",
-    "task": "^[0-9]{4}-[0-9]{2}$",
+    "task": "^(?<epic>[0-9]{4})-(?<sequence>[0-9]{2})$",
     "feature": "^F[0-9]+[a-z]?$",
     "epic": "^[0-9]{4}$"
+  },
+  "keys": {
+    "feature": {
+      "id": "id",
+      "epic": "epic",
+      "specStatus": "spec_status",
+      "status": "status",
+      "children": "children",
+      "spikes": "spikes",
+      "dependsOn": "depends_on",
+      "blocks": "blocks"
+    },
+    "task": {
+      "id": "id",
+      "parent": "parent",
+      "type": "type"
+    }
+  },
+  "forms": {
+    "identity": "{epic}-{id}",
+    "localEdge": "{id}",
+    "qualifiedEdge": "{epic}/{id}"
   },
   "frontmatterSchemas": {
     "feature": "feature.schema.json",

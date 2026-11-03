@@ -23,13 +23,15 @@ public sealed class ApprovalCoverageRule : ISpechtRule
     /// <implements epic="0001" feature="F7" claim="B-119" />
     /// <implements epic="0001" feature="F7" claim="B-120" />
     /// <implements epic="0001" feature="F7" claim="B-121" />
+    /// <implements epic="0001" feature="F5" claim="B-004" />
     public IEnumerable<SpechtFinding> Evaluate(SpechtModel model)
     {
         var markers = model.Schemas.Structure.Markers;
         var doneAxis = model.Schemas.Structure.SchemaVersion.CompareTo(DoneAxisVersion) >= 0;
+        var keys = model.Schemas.Structure.FeatureKeys;
         var message = doneAxis
-            ? "status is 'done' while § 9 still carries a 'Missing' cell"
-            : "spec_status is 'approved' while § 9 still carries a 'Missing' cell";
+            ? $"{keys.Status} is 'done' while § 9 still carries a 'Missing' cell"
+            : $"{keys.SpecStatus} is 'approved' while § 9 still carries a 'Missing' cell";
 
         foreach (var feature in model.Features)
         {

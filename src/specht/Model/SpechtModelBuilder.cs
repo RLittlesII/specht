@@ -18,8 +18,11 @@ public sealed class SpechtModelBuilder(SpechtDocumentParser documents, Frontmatt
     /// <param name="texts">The text of every listed file, by root-relative path.</param>
     /// <returns>The model.</returns>
     /// <implements epic="0001" feature="F1" claim="B-004" />
+    /// <implements epic="0001" feature="F5" claim="B-004" />
+    /// <implements epic="0001" feature="F5" claim="B-006" />
     public SpechtModel Build(SpechtSchemas schemas, SpechtListing listing, IReadOnlyDictionary<string, string> texts)
     {
+        var structure = schemas.Structure;
         var features = new List<FeatureSpec>();
 
         for (var index = 0; index < listing.Specifications.Count; index++)
@@ -29,16 +32,26 @@ public sealed class SpechtModelBuilder(SpechtDocumentParser documents, Frontmatt
                 location,
                 documents.Parse(texts[location.RelativePath], location.RelativePath),
                 listing.Companions[index]
-                    .Select(path => tags.Read(path, texts[path], schemas.Structure))
-                    .ToList()));
+                    .Select(path => tags.Read(path, texts[path], structure))
+                    .ToList(),
+                structure.FeatureKeys,
+                structure.Forms));
         }
 
         var items = new List<ChildItem>();
+        var shapes = structure.Forms is null ? null : new SpechtTaskShapes(structure.Discovery.TaskFiles, structure.Identifiers["task"]);
 
         foreach (var path in listing.Items)
         {
             var slash = path.LastIndexOf('/');
-            items.Add(new ChildItem(path, path[(slash + 1)..], frontmatter.Parse(texts[path]), slash < 0 ? string.Empty : path[..slash]));
+            var fileName = path[(slash + 1)..];
+            items.Add(new ChildItem(
+                path,
+                fileName,
+                frontmatter.Parse(texts[path]),
+                slash < 0 ? string.Empty : path[..slash],
+                structure.TaskKeys,
+                shapes?.Task(fileName)));
         }
 
         var epics = listing.Epics.Select(path => new EpicFile(path, frontmatter.Parse(texts[path]))).ToList();

@@ -4,8 +4,10 @@ using System.IO;
 using System.IO.Abstractions;
 using System.Linq;
 using System.Reflection;
+using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.Json.Nodes;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Specht.Manifest;
@@ -28,7 +30,7 @@ namespace Specht.Tool.Features.Init;
 /// <param name="upstreamSchemaFetcher">The fetcher needed when an upstream source selects schemas.</param>
 /// <param name="manifestParser">The in-memory validator shared with manifest loading.</param>
 /// <implements epic="0001" feature="F4" claim="B-019" />
-public sealed class InitWriter(
+public sealed partial class InitWriter(
     IReadOnlyDictionary<string, byte[]> shippingCopy,
     IFileSystem fileSystem,
     SpechtManifestParser manifestParser,
@@ -235,12 +237,18 @@ public sealed class InitWriter(
         return buffer.ToArray();
     }
 
+    /// <summary>
+    /// Removes the epic grammar from <paramref name="manifest"/>'s bytes and, where its task grammar names an
+    /// <c>epic</c> group, writes <see cref="EpiclessTaskGrammar"/> of it in its place; every other byte is kept.
+    /// </summary>
+    /// <param name="manifest">The shipped manifest's bytes.</param>
+    /// <returns>The manifest without the epic grammar.</returns>
     /// <implements epic="0001" feature="F4" claim="B-003" />
     /// <implements epic="0001" feature="F4" claim="B-021" />
     private static byte[] WithoutEpicGrammar(byte[] manifest)
     {
         var reader = new Utf8JsonReader(manifest);
-        var members = new List<(string Name, int Start, int End)>();
+        var members = new List<(string Name, int Start, int ValueStart, int End, string? Value)>();
 
         if (!reader.Read() || reader.TokenType != JsonTokenType.StartObject)
         {
@@ -259,8 +267,10 @@ public sealed class InitWriter(
                     var name = reader.GetString()!;
                     var start = (int)reader.TokenStartIndex;
                     reader.Read();
+                    var valueStart = (int)reader.TokenStartIndex;
+                    var value = reader.TokenType == JsonTokenType.String ? reader.GetString() : null;
                     reader.Skip();
-                    members.Add((name, start, (int)reader.BytesConsumed));
+                    members.Add((name, start, valueStart, (int)reader.BytesConsumed, value));
                 }
 
                 break;
@@ -279,9 +289,42 @@ public sealed class InitWriter(
         var (from, to) = epic > 0
             ? (members[epic - 1].End, members[epic].End)
             : members.Count > 1 ? (members[0].Start, members[1].Start) : (members[0].Start, members[0].End);
+        var task = members.FindIndex(static member => member.Name == "task"
+            && member.Value is { } grammar && EpicGroup().IsMatch(grammar));
+        var splices = new List<(int From, int To, byte[] Bytes)> { (from, to, []) };
+        if (task >= 0)
+        {
+            var (valueStart, end) = (members[task].ValueStart, members[task].End);
+            splices.Add((valueStart, end, JsonSerializer.SerializeToUtf8Bytes(EpiclessTaskGrammar(members[task].Value!), GrammarJson)));
+        }
 
-        return [.. manifest.AsSpan(0, from), .. manifest.AsSpan(to)];
+        var written = manifest;
+        foreach (var (start, end, bytes) in splices.OrderByDescending(static splice => splice.From))
+        {
+            written = [.. written.AsSpan(0, start), .. bytes, .. written.AsSpan(end)];
+        }
+
+        return written;
     }
+
+    /// <summary>
+    /// The task grammar a manifest written without the epic grammar declares in place of one holding an <see cref="EpicGroup"/>:
+    /// the shipped grammar with that group's parentheses dropped and its pattern kept (<c>0001-F5</c> OQ-5), so
+    /// <c>^(?&lt;epic&gt;[0-9]{4})-(?&lt;sequence&gt;[0-9]{2})$</c> becomes <c>^[0-9]{4}-(?&lt;sequence&gt;[0-9]{2})$</c>.
+    /// </summary>
+    /// <param name="shipped">The shipped task grammar, holding an <see cref="EpicGroup"/>.</param>
+    /// <returns>The grammar with each <see cref="EpicGroup"/> match replaced by its <c>pattern</c>.</returns>
+    /// <implements epic="0001" feature="F4" claim="B-022" />
+    private static string EpiclessTaskGrammar(string shipped) => EpicGroup().Replace(shipped, "${pattern}");
+
+    /// <summary>
+    /// Matches the one shape of <c>epic</c> group a shipped task grammar has: <c>(?&lt;epic&gt;</c>, a <c>pattern</c> holding
+    /// no parenthesis, and <c>)</c>.
+    /// </summary>
+    /// <returns>The shared generated expression.</returns>
+    /// <implements epic="0001" feature="F4" claim="B-022" />
+    [GeneratedRegex(@"\(\?<epic>(?<pattern>[^()]*)\)")]
+    private static partial Regex EpicGroup();
 
     /// <implements epic="0001" feature="F4" claim="B-019" />
     /// <implements epic="0001" feature="F4" claim="B-023" />
@@ -302,4 +345,6 @@ public sealed class InitWriter(
     }
 
     private const string EpicSchemaRelative = SpechtManifestStore.FrontmatterSchemaFolder + "/epic.schema.json";
+
+    private static readonly JsonSerializerOptions GrammarJson = new() { Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping };
 }

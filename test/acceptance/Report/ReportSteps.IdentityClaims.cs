@@ -3,6 +3,7 @@ using AwesomeAssertions;
 using Reqnroll;
 using Specht.Model;
 using Specht.Tests.Shared;
+using Specht.Versioning;
 
 namespace Specht.Acceptance.Report;
 
@@ -32,7 +33,7 @@ public sealed partial class ReportSteps
     {
         var expected = new JsonObject
         {
-            ["form"] = "{epic}-{feature}",
+            ["form"] = IdentityForm,
             ["value"] = "0001-F1",
             ["firstDeclaration"] = "epics/0001-epic/F1-feature/spec.md",
         };
@@ -53,9 +54,34 @@ public sealed partial class ReportSteps
         var expected = Violations(violation => violation["ruleId"]!.GetValue<string>() == RuleIds.Under(Tree, "SPEC043"))
             .Should().ContainSingle(Json).Which["expected"]!;
         expected["form"]!.GetValue<string>().Should().Be(
-            form == "task" ? Manifest["identifiers"]!["task"]!.GetValue<string>() : "{epic}-{feature}", Json);
+            form == "task" ? Manifest["identifiers"]!["task"]!.GetValue<string>() : IdentityForm, Json);
         expected["value"]!.GetValue<string>().Should().Be(value, Json);
     }
+
+    [Given("the manifest pins schema version {string}")]
+    public void GivenTheManifestPinsSchemaVersion(string version) => Tree.Pin(version);
+
+    [Given("the manifest declares the epic grammar")]
+    public void GivenTheManifestDeclaresTheEpicGrammar() =>
+        EditManifest(static manifest => (manifest["identifiers"] ??= new JsonObject())["epic"] = "^[0-9]{4}$");
+
+    [Given("the manifest declares an identity form with a colon between the epic and the Feature id")]
+    public void GivenTheManifestDeclaresAColonIdentityForm() =>
+        EditManifest(static manifest => (manifest["forms"] ??= new JsonObject())["identity"] = "{epic}:{id}");
+
+    [Then(@"^the (reused identity|item) expectation carries the identity form the manifest declares$")]
+    public void ThenTheIdentityExpectationCarriesTheDeclaredForm(string expectation)
+    {
+        var ruleId = RuleIds.Under(Tree, expectation == "item" ? "SPEC043" : "SPEC012");
+        var declared = Manifest["forms"]!["identity"]!.GetValue<string>();
+        Violations(violation => violation["ruleId"]!.GetValue<string>() == ruleId).Should().NotBeEmpty(Json)
+            .And.AllSatisfy(violation => violation["expected"]!["form"]!.GetValue<string>().Should().Be(declared, Json));
+    }
+
+    [Then("each reused identity expectation carries the form {string}")]
+    public void ThenEachReusedIdentityExpectationCarriesTheForm(string form) =>
+        Violations(violation => violation["ruleId"]!.GetValue<string>() == RuleIds.Under(Tree, "SPEC012")).Should().HaveCount(2, Json)
+            .And.AllSatisfy(violation => violation["expected"]!["form"]!.GetValue<string>().Should().Be(form, Json));
 
     [Given("the root holds a specification whose companion carries a tag for a claim it does not declare")]
     public void GivenTheCompanionNamesAnUndeclaredClaim()
@@ -160,8 +186,21 @@ public sealed partial class ReportSteps
         });
     }
 
+    private string IdentityForm =>
+        SemanticVersion.TryParse(Manifest["schemaVersion"]?.GetValue<string>(), out var pin) && pin.CompareTo(new SemanticVersion(0, 3, 0)) >= 0
+            && Manifest["identifiers"]?["epic"] is not null
+            ? Manifest["forms"]?["identity"]?.GetValue<string>() ?? "{epic}-{id}"
+            : "{epic}-{feature}";
+
     private JsonNode IdentityExpectation =>
         Violations(violation => violation["ruleId"]!.GetValue<string>() == RuleIds.Under(Tree, "SPEC011")).Should().ContainSingle(Json).Which["expected"]!;
+
+    private void EditManifest(Action<JsonObject> edit)
+    {
+        var manifest = Manifest;
+        edit(manifest);
+        File.WriteAllText(Path.Combine(Tree.Root, SpechtTree.ManifestPath), manifest.ToJsonString());
+    }
 
     private int _firstClaimLine;
 

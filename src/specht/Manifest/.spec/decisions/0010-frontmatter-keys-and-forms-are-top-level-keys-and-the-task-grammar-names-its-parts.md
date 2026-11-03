@@ -205,3 +205,19 @@ Schema `0.1.1` stops shipping before it is published
 ([`0001-F7` decision 0013](../../../../tool/.spec/decisions/0013-schema-0-1-1-stops-shipping.md)).
 The version boundary above holds for `0.1.0` alone: it is the only older pin
 that retains the existing parsing and validation. Nothing else here changes.
+
+## Schema 0.3.0 and the status key, 2026-11-02
+
+The owner ruled on item `0016`'s three questions. Each ruling has its own
+record, and nothing above is rewritten.
+
+- The "Version boundary, OQ-16" row names `0.2.0`. The contract now first
+  holds at `0.3.0`, in place and relocked, and `0.1.0`, `0.2.0` and `0.2.1`
+  keep today's interpretation
+  ([decision 0016](0016-the-keys-and-forms-contract-first-holds-at-schema-0-3-0.md)).
+  The rows for OQ-19 and OQ-20 move with it.
+- `keys.feature` also names `status`, default `status`, which `SPEC7001`
+  reads under `0.3.0`
+  ([decision 0017](0017-a-features-delivery-status-is-a-key-role.md)).
+- OQ-18 is resolved: the epics opt-in is item `0345`, after item `0016`
+  ([decision 0018](0018-the-epics-opt-in-follows-item-0016-as-its-own-item.md)).
