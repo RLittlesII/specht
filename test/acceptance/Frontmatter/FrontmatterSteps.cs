@@ -1,15 +1,22 @@
+using System.Globalization;
+using System.IO.Abstractions;
 using System.Security.Cryptography;
+using System.Text.Json.Nodes;
 using System.Text.RegularExpressions;
 using AwesomeAssertions;
 using Reqnroll;
 using Specht.Tests.Shared;
+using Specht.Versioning;
+using Spectre.Console.Testing;
 
 namespace Specht.Acceptance.Frontmatter;
 
 /// <summary>
 /// Runs every standalone frontmatter scenario through the built tool's file/stdin boundary. A rule id a scenario names is
 /// read at the root's pin (<c>0001-F7</c> B-151, B-152): under the Background's 0.1.0 the four-digit <c>SPEC1002</c> reads
-/// as <c>SPEC002</c>.
+/// as <c>SPEC002</c>. The floating-policy <c>@B-006</c> scenario (item 0124; <c>0001-F7</c> decision 0021) needs a version the
+/// tool does not ship: "the tool ships schema versions ..." builds each version it does not ship from the embedded
+/// <c>0.3.0</c>, and a check under that set runs the command in process over the real file system, the document on its input.
 /// </summary>
 [Binding]
 [Scope(Feature = "The frontmatter command")]
@@ -52,6 +59,35 @@ public sealed class FrontmatterSteps
     [Given("the root's manifest selects that on-disk schema under version 0.2.0")]
     public void GivenTheSelectedDiskSchema() =>
         Tree.WriteRaw(SpechtTree.ManifestPath, """{"schemaVersion":"0.2.0","schemaSource":"disk","identifiers":{"epic":"^[0-9]{4}$"}}""");
+
+    [Given(@"^the tool ships schema versions (\S+) and (\S+)$")]
+    public void GivenTheToolShipsSchemaVersions(string earlier, string last)
+    {
+        var embedded = EngineServices.Versions();
+        var floor = embedded.Find(new SemanticVersion(0, 3, 0))!;
+        _versions = new Dictionary<SemanticVersion, SchemaVersion>();
+        foreach (var number in new[] { earlier, last }.Select(Version))
+        {
+            number.CompareTo(floor.Number).Should().BeGreaterThanOrEqualTo(0, "a version built here is a copy of 0.3.0");
+            _versions[number] = embedded.Find(number) ?? floor with { Number = number };
+        }
+    }
+
+    [Given("the manifest pins version {word} with the pin policy {word}")]
+    public void GivenThePinPolicy(string version, string policy) =>
+        Tree.WriteRaw(SpechtTree.ManifestPath, new JsonObject { ["schemaVersion"] = version, ["pinPolicy"] = policy }.ToJsonString());
+
+    [Given(@"^a task document version (\S+)'s task schema accepts and version (\S+)'s rejects$")]
+    public void GivenADocumentOnlyThePinAccepts(string accepting, string rejecting)
+    {
+        _document = TaskDocument;
+        var versions = _versions ?? throw new InvalidOperationException("No version set was built.");
+        versions.Should().ContainKey(Version(accepting));
+        var stricter = versions[Version(rejecting)];
+        var schema = JsonNode.Parse(stricter.ItemSchema)!.AsObject();
+        schema["required"] = new JsonArray([.. schema["required"]?.AsArray().Select(static key => key!.DeepClone()) ?? [], UnsetKey]);
+        versions[Version(rejecting)] = stricter with { ItemSchema = schema.ToJsonString() };
+    }
 
     [Given("a task document whose valid frontmatter depends on a file that does not exist")]
     public void GivenAnUnresolvedDependency() =>
@@ -121,7 +157,20 @@ public sealed class FrontmatterSteps
 
     [When("its frontmatter is checked as a {word}")]
     [When("the task document's frontmatter is checked as a {word}")]
-    public void WhenChecked(string kind) => Launch("--kind", kind, "--stdin");
+    public void WhenChecked(string kind)
+    {
+        if (_versions is null)
+        {
+            Launch("--kind", kind, "--stdin");
+            return;
+        }
+
+        using var input = new StringReader(_document);
+        using var errors = new StringWriter(CultureInfo.InvariantCulture);
+        var app = EngineServices.FrontmatterApp(new FileSystem(), new TestConsole(), input, errors, new SchemaVersions(_versions.Values));
+        var result = app.Run("frontmatter", "--kind", kind, "--stdin", "--root", Tree.Root);
+        _result = (result.Output, errors.ToString(), result.ExitCode);
+    }
 
     [When("its frontmatter is checked as a task by its path")]
     [When(@"^its frontmatter is checked as a task by the path drafts/issue\.md$")]
@@ -270,6 +319,9 @@ public sealed class FrontmatterSteps
 
     private SpechtTree Tree => _tree ?? throw new InvalidOperationException("No root was prepared.");
 
+    private static SemanticVersion Version(string text) =>
+        SemanticVersion.TryParse(text, out var version) ? version : throw new InvalidOperationException($"'{text}' is not a version.");
+
     private string Document(string kind) => kind switch
     {
         "task" => TaskDocument,
@@ -301,6 +353,8 @@ public sealed class FrontmatterSteps
     private const string TaskDocument = "---\nid: '0001-01'\nparent: '0001-F1'\ntype: task\ncreated: '2026-10-01'\n"
         + "status: ready\npriority: med\nupdated: '2026-10-01'\ngithub_issue: null\n---\n";
 
+    private const string UnsetKey = "in_use_only";
+
     private SpechtTree? _tree;
     private string _document = TaskDocument;
     private string _path = "drafts/issue.md";
@@ -309,4 +363,5 @@ public sealed class FrontmatterSteps
     private Dictionary<string, string>? _snapshot;
     private (string Stdout, string Stderr, int ExitCode) _result;
     private (string Stdout, string Stderr, int ExitCode) _first;
+    private Dictionary<SemanticVersion, SchemaVersion>? _versions;
 }
