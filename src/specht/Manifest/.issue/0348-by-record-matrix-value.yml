@@ -1,4 +1,4 @@
-id: "0347"
+id: "0348"
 type: task
 title: Accept a by-record value in the traceability matrix
 
@@ -42,7 +42,7 @@ decisions:
     (Recommended)". Cut by spec-author outside milestone 0.4.0;
     Manifest decision 0021 call 5.
   - |
-    2026-11-03, the repository owner, on items 0347 and 0348: "Leave
+    2026-11-03, the repository owner, on items 0348 and 0349: "Leave
     unscheduled (Recommended)". Removed from milestone 0.5.0; it sits
     under no milestone. Manifest decision 0021 call 10. Recorded by
     spec-author.

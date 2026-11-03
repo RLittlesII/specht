@@ -1,6 +1,6 @@
 ---
 title: "Decision 0021: unread names are kept, and blank values and annotations are ruled from schema 0.3.0"
-description: "The owner's eight rulings of November 3 2026 on item 0346: an unread name inside roles or markers is kept and never read; a white-space marker and an empty or dot schema file name are rejected; a dollar-prefixed path identity member is ignored; a by-record matrix value and a case-insensitive rule level are later, unscheduled items 0347 and 0348, the latter from the first schema version after 0.3.0; the other schema pins are spec-author's reading"
+description: "The owner's eight rulings of November 3 2026 on item 0347: an unread name inside roles or markers is kept and never read; a white-space marker and an empty or dot schema file name are rejected; a dollar-prefixed path identity member is ignored; a by-record matrix value and a case-insensitive rule level are later, unscheduled items 0348 and 0349, the latter from the first schema version after 0.3.0; the other schema pins are spec-author's reading"
 type: decision
 ---
 
@@ -28,12 +28,12 @@ type: decision
    names the kind and the value (B-075). B-047 rejects the other names that
    are not plain file names.
 5. **OQ-12, "A later item (Recommended)".** A by-record value in § 9, which
-   the not-covered rule accepts, is its own item, `0347`, outside milestone
+   the not-covered rule accepts, is its own item, `0348`, outside milestone
    `0.4.0`. It has no claim yet. Call 10 leaves it under no milestone.
 6. **OQ-15, "case-insensitive. this isn't a breaking change for 0.4.0 so we
    can add an item to do this later."** (a) A rule level that differs from
    `error`, `warning` or `off` only in letter case, such as `Warning`, will be
-   read as that level. Item `0348` builds it, outside milestone `0.4.0`;
+   read as that level. Item `0349` builds it, outside milestone `0.4.0`;
    call 10 leaves it under no milestone. Until then B-045 rejects it. (b) The proposed default stands: when a value
    is not text, the rejection names it as the manifest's JSON writes it. The
    owner chose the option that carries (b), and the note spoke only to (a).
@@ -43,14 +43,14 @@ type: decision
    `$`-prefixed member is rejected under B-043, and an empty or `.` schema
    file name is not rejected when the manifest loads. A-6 lists the three.
    B-072 holds at every pin.
-8. **Item `0348`'s pin is not decided.** It is raised as OQ-28. Call 9
+8. **Item `0349`'s pin is not decided.** It is raised as OQ-28. Call 9
    resolves it.
 9. **OQ-28, "A next 0.minor (Recommended)".** The case-insensitive rule level
    holds from the first schema version after `0.3.0`. `0.3.0` and every
-   older pin keep rejecting `Warning` (B-045). Item `0348` builds it later
+   older pin keep rejecting `Warning` (B-045). Item `0349` builds it later
    and writes its claim.
-10. **Items `0347` and `0348`, "Leave unscheduled (Recommended)".** Neither
-    sits under a milestone in `.issue/.goal`. Only item `0346` of this
+10. **Items `0348` and `0349`, "Leave unscheduled (Recommended)".** Neither
+    sits under a milestone in `.issue/.goal`. Only item `0347` of this
     decision's items is in `0.4.0`.
 
 ## Why
@@ -70,8 +70,8 @@ type: decision
   identity member or an empty or `.` schema file name. The three calls change
   how a manifest is read, not a shipped file, so `0.3.0`'s lock entry is
   unchanged.
-- Call 8: `0.3.0` is published with milestone `0.4.0`, before item `0348`
-  lands. Under `0001-F7` C-1 and C-4, a published pin keeps rejecting
+- Call 8: `0.3.0` will be published with milestone `0.4.0`, before item
+  `0349` lands. Under `0001-F7` C-1 and C-4, a published pin keeps rejecting
   `Warning`. Accepting it changes that manifest's verdict, which `0001-F7`
   C-11 keeps out of a patch. The owner had not said which version first
   reads the level ignoring case; call 9 says so.
@@ -88,7 +88,7 @@ type: decision
   as put to spec-author names no other option.
 - **OQ-15:** rejecting a level that differs only in letter case.
 - **OQ-28:** reading the level ignoring case at `0.3.0` or an older pin.
-- **Call 10:** scheduling `0347` and `0348` under milestone `0.5.0`, as
+- **Call 10:** scheduling `0348` and `0349` under milestone `0.5.0`, as
   they first were.
 - **Call 7, spec-author's:** the three calls at every pin, which `0001-F7`
   C-1 and C-4 rule out; a new schema version beside `0.3.0`, which spends a
@@ -101,10 +101,10 @@ type: decision
   notes an identity of `$` members alone.
 - `0001-F5` OQ-10, OQ-11, OQ-12, OQ-14, OQ-15 and OQ-22 resolved; OQ-28
   raised and resolved.
-- Items `0346`, `0347` and `0348`; Feature item `0010`; `.issue/.goal`.
+- Items `0347`, `0348` and `0349`; Feature item `0010`; `.issue/.goal`.
 
 ## Reversal
 
 Call 7 holds only while no published package carries schema `0.3.0`. If
-one does before item `0346` merges, B-073 to B-075 need a new schema version,
+one does before item `0347` merges, B-073 to B-075 need a new schema version,
 and a new decision reverses call 7.
