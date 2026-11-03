@@ -95,5 +95,30 @@ public sealed class EpicsInitWriterUnitTests
         new Regex(task!).GetGroupNames().Should().NotContain("epic");
     }
 
+    [Fact]
+    public async Task ABareRootWithoutEpicsAtZeroThreeZero_WhenTheManifestIsWritten_ShouldWriteATaskGrammarItsPinAcceptsMatchingTheShippedIds()
+    {
+        // Given
+        var fileSystem = new MockFileSystem();
+        fileSystem.AddDirectory(Root);
+        var shipped = InitWriter.ShippingCopy(typeof(InitWriter).Assembly)["manifest/v0.3.0/manifest.json"];
+        var shippedTask = new Regex(JsonNode.Parse(shipped)!["identifiers"]!["task"]!.GetValue<string>());
+        string[] ids = ["0001-01", "0001-99", "0001-001", "001-01", "0001-1", "A001-01"];
+
+        InitWriter writer = new InitWriterFixture()
+            .WithFileSystem(fileSystem)
+            .WithShippingCopy(new Dictionary<string, byte[]> { ["manifest/v0.3.0/manifest.json"] = shipped });
+
+        // When
+        await writer.Write(Root, schemas: false, templates: false, CancellationToken.None, epics: false);
+
+        // Then
+        var text = fileSystem.File.ReadAllText(Path.Combine(Root, SpechtTree.ManifestPath));
+        var parse = () => EngineServices.Parser().Parse(text);
+        var task = new Regex(parse.Should().NotThrow().Subject.Identifiers["task"]);
+        task.GetGroupNames().Should().Contain("sequence");
+        ids.Where(id => task.IsMatch(id)).Should().Equal(ids.Where(id => shippedTask.IsMatch(id)));
+    }
+
     private const string Root = "repo";
 }

@@ -145,7 +145,7 @@ public sealed class SpechtRunnerDiscoveryIntegrationTests
         // Given
         using var tree = new SpechtTree();
         tree.WriteItem(tree.WriteFeature("0001", "F1"), "0001-001", "F1");
-        Declare(tree, "identifiers", new JsonObject { ["task"] = "^[0-9]{4}-[0-9]{3}$" });
+        Declare(tree, "identifiers", new JsonObject { ["task"] = "^(?<epic>[0-9]{4})-(?<sequence>[0-9]{3})$" });
 
         // When
         var report = tree.Run();
