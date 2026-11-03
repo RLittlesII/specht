@@ -22,7 +22,11 @@ public sealed class ReleaseReporting(HttpClient client, IFileSystem fileSystem, 
 {
     public async Task<ReportingOutcome?> RequestAsync(RunContext context, string directory, CancellationToken cancellationToken)
     {
-        if (!ReleaseTrigger.IsReleasePublication(context)) return null;
+        if (!ReleaseTrigger.IsReleasePublication(context))
+        {
+            return null;
+        }
+
         enter?.Invoke(ReportingStage.PairPersistence);
         ReleasePair pair;
         try
@@ -31,7 +35,10 @@ public sealed class ReleaseReporting(HttpClient client, IFileSystem fileSystem, 
             var tag = context.Ref[TagReference.Length..];
             var current = catalog.Releases.IsDefault ? null : catalog.Releases.SingleOrDefault(release => release.Tag == tag);
             if (current is null || current.Commit != context.Sha)
+            {
                 return ReportingOutcome.Failed(ReportingStage.PairPersistence, "The release catalog holds no release of this tag at this commit.");
+            }
+
             pair = await new ReleasePairAssetStore(client).GetOrCreateAsync(current,
                 _ => Task.FromResult(ReleaseSelection.Select(current, catalog, context.RunId)), cancellationToken);
         }
@@ -59,7 +66,11 @@ public sealed class ReleaseReporting(HttpClient client, IFileSystem fileSystem, 
 
     public async Task<ReportingOutcome?> AttachAsync(RunContext context, string directory, CancellationToken cancellationToken)
     {
-        if (!ReleaseTrigger.IsReleasePublication(context)) return null;
+        if (!ReleaseTrigger.IsReleasePublication(context))
+        {
+            return null;
+        }
+
         enter?.Invoke(ReportingStage.Receipt);
         ReleasePair pair;
         ComparisonReceipt receipt;
@@ -73,7 +84,11 @@ public sealed class ReleaseReporting(HttpClient client, IFileSystem fileSystem, 
             return ReportingOutcome.Failed(ReportingStage.Receipt, null);
         }
 
-        if (ReleaseTrigger.Validate(receipt, context, pair) is { } rejection) return ReportingOutcome.Failed(ReportingStage.Receipt, rejection);
+        if (ReleaseTrigger.Validate(receipt, context, pair) is { } rejection)
+        {
+            return ReportingOutcome.Failed(ReportingStage.Receipt, rejection);
+        }
+
         var returned = $"{Workspace}/{context.RunId}-{context.Attempt}/result";
         bool found;
         enter?.Invoke(ReportingStage.ResultWait);
@@ -87,7 +102,11 @@ public sealed class ReleaseReporting(HttpClient client, IFileSystem fileSystem, 
             return ReportingOutcome.Failed(ReportingStage.ResultTransport, null);
         }
 
-        if (!found) return ReportingOutcome.Failed(ReportingStage.ResultWait, null);
+        if (!found)
+        {
+            return ReportingOutcome.Failed(ReportingStage.ResultWait, null);
+        }
+
         enter?.Invoke(ReportingStage.ResultTransport);
         ReportingOutcome outcome;
         byte[] bundle;
@@ -95,10 +114,22 @@ public sealed class ReleaseReporting(HttpClient client, IFileSystem fileSystem, 
         try
         {
             outcome = ComparisonJson.ReadOutcome(await fileSystem.File.ReadAllTextAsync(Full($"{returned}/{OutcomeFile}"), cancellationToken));
-            if (outcome.Report is not null) return ReportingOutcome.Failed(ReportingStage.ResultTransport, null);
-            if (outcome.State == ReportingState.Incomplete) return outcome;
+            if (outcome.Report is not null)
+            {
+                return ReportingOutcome.Failed(ReportingStage.ResultTransport, null);
+            }
+
+            if (outcome.State == ReportingState.Incomplete)
+            {
+                return outcome;
+            }
+
             bundle = await fileSystem.File.ReadAllBytesAsync(Full($"{returned}/{name}"), cancellationToken);
-            if (ThisRequests(bundle, pair, context, outcome) is not { } reported) return ReportingOutcome.Failed(ReportingStage.ResultTransport, null);
+            if (ThisRequests(bundle, pair, context, outcome) is not { } reported)
+            {
+                return ReportingOutcome.Failed(ReportingStage.ResultTransport, null);
+            }
+
             outcome = reported;
         }
         catch (Exception exception) when (IsUnusable(exception, cancellationToken))

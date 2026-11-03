@@ -107,6 +107,7 @@ public sealed class ComparisonReportUnitTests
                 width = null;
                 continue;
             }
+
             var pipes = Regex.Count(line, @"(?<!\\)\|");
             (width ??= pipes).Should().Be(pipes, $"every row of a table keeps its columns: {line}");
         }
@@ -159,9 +160,19 @@ public sealed class ComparisonReportUnitTests
                     pending.Push(property.Value);
                 }
             }
-            else if (element.ValueKind == JsonValueKind.Array) foreach (var item in element.EnumerateArray()) pending.Push(item);
-            else if (element.ValueKind == JsonValueKind.String) strings.Add(element.GetString()!);
+            else if (element.ValueKind == JsonValueKind.Array)
+            {
+                foreach (var item in element.EnumerateArray())
+                {
+                    pending.Push(item);
+                }
+            }
+            else if (element.ValueKind == JsonValueKind.String)
+            {
+                strings.Add(element.GetString()!);
+            }
         }
+
         strings.Should().Contain(identities);
         ComparisonJson.ReadPair(report.RootElement.GetProperty("pair").GetRawText(), pair.Current).Should().BeEquivalentTo(pair);
         var comparison = report.RootElement.GetProperty("comparison");
@@ -208,7 +219,9 @@ public sealed class ComparisonReportUnitTests
 
     private const string SmallKey = """{"operation":"check","parameters":[{"kind":"number","name":"Specifications","value":"1"}]}""";
     private const string LargeKey = """{"operation":"check","parameters":[{"kind":"number","name":"Specifications","value":"10"}]}""";
+
     private const string TimingReason =
         "Mean time rose more than 10% and the current confidence interval lies strictly above the previous interval.";
+
     private const string AddedReason = "Workload is only in the current release; it has no regression judgment.";
 }

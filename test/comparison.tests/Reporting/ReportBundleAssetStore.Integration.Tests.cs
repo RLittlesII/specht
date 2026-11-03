@@ -142,10 +142,23 @@ public sealed class ReportBundleAssetStoreIntegrationTests
         var zip = fileSystem.File.ReadAllBytes(Path.Combine("repo", bundle.Path));
         ReleaseRecord current = new ReleaseRecordFixture().WithId(20);
         var storage = new ReleaseAssetStorage();
-        if (failure == "rejected upload") storage.UploadStatus = HttpStatusCode.InternalServerError;
-        else if (failure == "incomplete upload") storage.UploadedState = "starter";
-        else if (failure == "truncated upload") storage.Retain = static content => content[..^1];
-        else storage.DownloadStatus = HttpStatusCode.BadGateway;
+        if (failure == "rejected upload")
+        {
+            storage.UploadStatus = HttpStatusCode.InternalServerError;
+        }
+        else if (failure == "incomplete upload")
+        {
+            storage.UploadedState = "starter";
+        }
+        else if (failure == "truncated upload")
+        {
+            storage.Retain = static content => content[..^1];
+        }
+        else
+        {
+            storage.DownloadStatus = HttpStatusCode.BadGateway;
+        }
+
         using var handler = new ScriptedHttpHandler(storage.Respond);
         using var client = new HttpClient(handler);
 
@@ -261,7 +274,11 @@ public sealed class ReportBundleAssetStoreIntegrationTests
         ReleaseRecord current = new ReleaseRecordFixture().WithId(20);
         var storage = new ReleaseAssetStorage();
         storage.Assets.Add(new ReleaseAsset(500, "comparison-20-run-1-1.zip", defect == "duplicate name" ? "uploaded" : "starter", zip));
-        if (defect == "duplicate name") storage.Assets.Add(new ReleaseAsset(501, "comparison-20-run-1-1.zip", "uploaded", zip));
+        if (defect == "duplicate name")
+        {
+            storage.Assets.Add(new ReleaseAsset(501, "comparison-20-run-1-1.zip", "uploaded", zip));
+        }
+
         using var handler = new ScriptedHttpHandler(storage.Respond);
         using var client = new HttpClient(handler);
 

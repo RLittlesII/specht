@@ -73,8 +73,8 @@ internal sealed class MarkdownTextReader
     /// <implements epic="0001" feature="F1" claim="B-004" />
     private static IReadOnlyList<IReadOnlyList<IReadOnlyList<string>>> BodyCodeSpans(Table table) =>
         table.OfType<TableRow>().Where(static row => !row.IsHeader)
-            .Select(static row => (IReadOnlyList<IReadOnlyList<string>>)row.OfType<TableCell>()
-                .Select(static cell => (IReadOnlyList<string>)cell.Descendants().OfType<CodeInline>()
+            .Select(static row => (IReadOnlyList<IReadOnlyList<string>>) row.OfType<TableCell>()
+                .Select(static cell => (IReadOnlyList<string>) cell.Descendants().OfType<CodeInline>()
                     .Select(static code => code.Content).ToArray())
                 .ToArray())
             .ToArray();

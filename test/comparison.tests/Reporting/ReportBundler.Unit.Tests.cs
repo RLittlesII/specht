@@ -32,6 +32,7 @@ public sealed class ReportBundlerUnitTests
             using var writer = archive.CreateEntry("evidence-manifest.json").Open();
             writer.Write(Encoding.UTF8.GetBytes(ComparisonJson.Write(bundle.Manifest)));
         }
+
         rewritten.Position = 0;
 
         // When
@@ -83,14 +84,22 @@ public sealed class ReportBundlerUnitTests
             byte[] Read(string name)
             {
                 using var source = new MemoryStream();
-                using (var stream = archive.GetEntry(name)!.Open()) stream.CopyTo(source);
+                using (var stream = archive.GetEntry(name)!.Open())
+                {
+                    stream.CopyTo(source);
+                }
+
                 return source.ToArray();
             }
 
             void Rewrite(string name, string from, string to)
             {
                 var text = Encoding.UTF8.GetString(Read(name));
-                if (!text.Contains(from, StringComparison.Ordinal)) throw new InvalidOperationException($"{name} does not hold {from}.");
+                if (!text.Contains(from, StringComparison.Ordinal))
+                {
+                    throw new InvalidOperationException($"{name} does not hold {from}.");
+                }
+
                 var content = Encoding.UTF8.GetBytes(text.Replace(from, to, StringComparison.Ordinal));
                 archive.GetEntry(name)!.Delete();
                 Write(name, content, 0);
@@ -106,10 +115,15 @@ public sealed class ReportBundlerUnitTests
                 case "mutated report":
                     using (var source = new MemoryStream())
                     {
-                        using (var stream = archive.GetEntry("report.md")!.Open()) stream.CopyTo(source);
+                        using (var stream = archive.GetEntry("report.md")!.Open())
+                        {
+                            stream.CopyTo(source);
+                        }
+
                         archive.GetEntry("report.md")!.Delete();
                         Write("report.md", [.. source.ToArray(), .. "edited"u8], 0);
                     }
+
                     break;
                 case "deleted raw export":
                     archive.GetEntry("raw/previous/Synthetic-report-full.json")!.Delete();
@@ -120,9 +134,14 @@ public sealed class ReportBundlerUnitTests
                 case "duplicate entry name":
                     using (var source = new MemoryStream())
                     {
-                        using (var stream = archive.GetEntry("session.json")!.Open()) stream.CopyTo(source);
+                        using (var stream = archive.GetEntry("session.json")!.Open())
+                        {
+                            stream.CopyTo(source);
+                        }
+
                         Write("session.json", source.ToArray(), 0);
                     }
+
                     break;
                 case "traversal entry":
                     Add("../escape.json");
@@ -136,7 +155,7 @@ public sealed class ReportBundlerUnitTests
                 case "symbolic link entry":
                     var linked = Read("raw/previous/Synthetic-report-full.json");
                     archive.GetEntry("raw/previous/Synthetic-report-full.json")!.Delete();
-                    Write("raw/previous/Synthetic-report-full.json", linked, unchecked((int)0xA1FF0000));
+                    Write("raw/previous/Synthetic-report-full.json", linked, unchecked((int) 0xA1FF0000));
                     break;
                 case "case-only duplicate entry":
                     var copied = manifest.Files.Single(static f => f.Path == "raw/previous/Synthetic-report-full.json");
@@ -230,9 +249,11 @@ public sealed class ReportBundlerUnitTests
                 default:
                     throw new ArgumentOutOfRangeException(nameof(defect), defect, "Unbound bundle defect.");
             }
+
             archive.GetEntry("evidence-manifest.json")!.Delete();
             Write("evidence-manifest.json", Encoding.UTF8.GetBytes(ComparisonJson.Write(manifest)), 0);
         }
+
         broken.Position = 0;
 
         // When
@@ -257,13 +278,30 @@ public sealed class ReportBundlerUnitTests
         var flagged = document.Cases[0];
         var workload = flagged.Evidence.Current!.Case;
         if (location == "session invocation")
+        {
             document = document with { Session = document.Session with { Previous = document.Session.Previous with { Invocation = ["--artifacts", Rooted] } } };
+        }
         else if (location == "workload parameter")
+        {
             workload = workload with { Parameters = workload.Parameters.SetItem("Output", new ParameterValue("string", Rooted)) };
-        else if (location == "workload boundary") workload = workload with { Boundary = Rooted };
-        else if (location == "case reason") flagged = flagged with { Reason = Rooted };
-        else if (location == "gap reason") document = document with { Gaps = [document.Gaps[0] with { Reason = Rooted }] };
-        else mapping = mapping with { SourceFile = Rooted };
+        }
+        else if (location == "workload boundary")
+        {
+            workload = workload with { Boundary = Rooted };
+        }
+        else if (location == "case reason")
+        {
+            flagged = flagged with { Reason = Rooted };
+        }
+        else if (location == "gap reason")
+        {
+            document = document with { Gaps = [document.Gaps[0] with { Reason = Rooted }] };
+        }
+        else
+        {
+            mapping = mapping with { SourceFile = Rooted };
+        }
+
         flagged = flagged with { Evidence = flagged.Evidence with { Current = flagged.Evidence.Current with { Case = workload } } };
         document = document with { Cases = [flagged, document.Cases[1]] };
         RawExport previous = new RawExportFixture().WithSide("previous").WithSourcePath(ComparisonDocumentFixture.PreviousExport);
@@ -402,12 +440,28 @@ public sealed class ReportBundlerUnitTests
             Add("report session for another attempt", "");
             Add("report pair for another selecting run", "");
             foreach (var placement in new[] { "session invocation", "workload parameter", "reason", "raw export" })
-                foreach (var embedded in EmbeddedPaths) Add($"embedded path in {placement}", embedded);
-            foreach (var locator in UnresolvedLocators) Add("unresolved locator", locator);
+            {
+                foreach (var embedded in EmbeddedPaths)
+                {
+                    Add($"embedded path in {placement}", embedded);
+                }
+            }
+
+            foreach (var locator in UnresolvedLocators)
+            {
+                Add("unresolved locator", locator);
+            }
+
             Add("locator without a source file", "");
-            foreach (var locator in UnresolvedLocators) Add("locator outside comparison", locator);
+            foreach (var locator in UnresolvedLocators)
+            {
+                Add("locator outside comparison", locator);
+            }
+
             foreach (var added in new[] { Rooted, "Root=/home/runner/x", "Overall judgment: No regression flagged" })
+            {
                 Add("markdown not rendered from its report", added);
+            }
         }
     }
 
@@ -429,7 +483,12 @@ public sealed class ReportBundlerUnitTests
         public EmbeddedPathRows()
         {
             foreach (var placement in new[] { "session invocation", "workload parameter", "case reason", "raw export" })
-                foreach (var embedded in EmbeddedPaths) Add(placement, embedded);
+            {
+                foreach (var embedded in EmbeddedPaths)
+                {
+                    Add(placement, embedded);
+                }
+            }
         }
     }
 
@@ -455,7 +514,10 @@ public sealed class ReportBundlerUnitTests
     {
         public UnresolvedLocatorRows()
         {
-            foreach (var locator in UnresolvedLocators) Add(locator);
+            foreach (var locator in UnresolvedLocators)
+            {
+                Add(locator);
+            }
         }
     }
 
@@ -464,8 +526,12 @@ public sealed class ReportBundlerUnitTests
         var flagged = document.Cases[0];
         var evidence = flagged.Evidence.Current!;
         if (placement == "session invocation")
+        {
             return document with { Session = document.Session with { Previous = document.Session.Previous with { Invocation = ["--filter", value] } } };
+        }
+
         if (placement == "workload parameter")
+        {
             flagged = flagged with
             {
                 Evidence = flagged.Evidence with
@@ -476,11 +542,21 @@ public sealed class ReportBundlerUnitTests
                     },
                 },
             };
-        else if (placement == "case reason") flagged = flagged with { Reason = value };
-        else if (placement == "metric unit") flagged = flagged with { Metrics = [flagged.Metrics[0] with { Unit = value }, flagged.Metrics[1]] };
+        }
+        else if (placement == "case reason")
+        {
+            flagged = flagged with { Reason = value };
+        }
+        else if (placement == "metric unit")
+        {
+            flagged = flagged with { Metrics = [flagged.Metrics[0] with { Unit = value }, flagged.Metrics[1]] };
+        }
         else
+        {
             fileSystem.File.WriteAllText(Path.Combine("repo", ComparisonDocumentFixture.CurrentExport),
                 ExportData.CurrentJson.Replace("\"Title\": \"Synthetic workload\"", $"\"Title\": {JsonSerializer.Serialize(value)}", StringComparison.Ordinal));
+        }
+
         return document with { Cases = [flagged, document.Cases[1]] };
     }
 

@@ -49,16 +49,29 @@ pin. Use `./build.sh Specht` to validate the working checkout.
 
 ## C# cleanup
 
-Roslynator analyzers and compiler-diagnostic code fixes are private development
+Roslynator analyzers, formatting analyzers and compiler-diagnostic code fixes are private development
 packages, pinned in [`Directory.Packages.props`](../Directory.Packages.props)
 and referenced through [`Directory.Build.props`](../Directory.Build.props).
-Their severities live in [`.editorconfig`](../.editorconfig). The Roslynator
+The native SDK settings and analyzer severities live in [`.editorconfig`](../.editorconfig).
+The SDK owns whitespace, braces, qualification, type keywords, naming,
+initializers and null-handling preferences. Roslynator adds blank-line spacing
+and the repository's single-line documentation summaries, alongside its existing
+cleanup rules. The Roslynator
 selection starts from [Airframe's ruleset](https://github.com/RocketSurgeonsGuild/Airframe/blob/2095ebe044c1a7af2d384f024868922c2f09ba8b/analyzers.ruleset),
-with unrelated analyzer families excluded. RCS1259 replaces obsolete RCS1066;
+with unrelated analyzer families excluded. Native rules replace the overlapping
+RCS1001 brace and RCS1037 whitespace checks. RCS1259 replaces obsolete RCS1066;
 upstream-disabled RCS1062 and nonexistent RCS1507 are omitted. Existing
 accessibility and static-lambda conventions remain authoritative, and cleanup
 makes no await-context changes. RCS1139 is disabled because traceability-only
 `<implements>` comments are intentional and need no empty summary scaffolding.
+
+The supplied native preferences retain this repository's LF endings,
+file-scoped namespaces, modifier order, `var` preferences and single-line
+expression-body policy. Constants and static readonly storage keep PascalCase;
+test methods retain underscore-separated names. Collection-expression suggestions
+require exact type matches. Namespace-folder matching, compiler-warning
+downgrades and unrelated Serilog/XAML settings are excluded. Existing primary
+constructors, explicit entry points and static lambdas remain valid.
 
 ```sh
 dotnet restore specht.slnx
@@ -67,6 +80,13 @@ dotnet format specht.slnx --no-restore --include src/tool  # limit the files
 ./build.sh Format                                        # verify without writing
 ```
 
+For a bulk cleanup that changes shared or multi-targeted files, format one project
+and its highest target framework at a time (for example,
+`dotnet format src/tool/tool.csproj --framework net11.0 --no-restore`). The pinned
+SDK can produce conflicting edits when it fixes the same file through multiple
+project contexts. Use the solution-wide verify-only gate after applying fixes.
+
+The supplied suggestion/silent preferences remain advisory.
 `dotnet format` applies enabled warning/error analyzer diagnostics that provide
 batch fixes. Airframe's informational RCS1163 (unused parameters, no code fix)
 and RCS1168 (parameter names) remain suggestions, outside the default format

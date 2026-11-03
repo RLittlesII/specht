@@ -10,9 +10,7 @@ using System.Security.Cryptography;
 
 namespace Specht.Comparison;
 
-/// <summary>
-/// Reads the workload identity a revision's own benchmarks declare from its built assembly's metadata, without loading or executing it.
-/// </summary>
+/// <summary>Reads the workload identity a revision's own benchmarks declare from its built assembly's metadata, without loading or executing it.</summary>
 public static class DeclaredIdentity
 {
     public static ImmutableArray<IdentityMapping> Read(Stream assembly, string productCommit, string checkoutRoot,
@@ -24,26 +22,46 @@ public static class DeclaredIdentity
         try
         {
             using var image = new PEReader(assembly, PEStreamOptions.LeaveOpen);
-            if (!image.HasMetadata) return [];
+            if (!image.HasMetadata)
+            {
+                return [];
+            }
+
             var reader = image.GetMetadataReader();
             var names = new AttributeTypeNames();
             foreach (var type in reader.TypeDefinitions.Select(reader.GetTypeDefinition))
             {
-                if (!type.GetDeclaringType().IsNil || type.GetGenericParameters().Count > 0) continue;
+                if (!type.GetDeclaringType().IsNil || type.GetGenericParameters().Count > 0)
+                {
+                    continue;
+                }
+
                 var declaring = $"{reader.GetString(type.Namespace)}.{reader.GetString(type.Name)}";
                 foreach (var method in type.GetMethods().Select(reader.GetMethodDefinition))
                 {
-                    if (Declaration(reader, names, method) is not { } declared || HasUnreadArguments(reader, type, method)) continue;
+                    if (Declaration(reader, names, method) is not { } declared || HasUnreadArguments(reader, type, method))
+                    {
+                        continue;
+                    }
+
                     var relative = Normalise(declared.SourceFile) is var compiled && compiled.StartsWith(root, StringComparison.Ordinal)
                         ? compiled[root.Length..] : null;
-                    if (!EvidencePaths.IsRelative(relative)) continue;
+                    if (!EvidencePaths.IsRelative(relative))
+                    {
+                        continue;
+                    }
+
                     if (!digests.TryGetValue(relative!, out var digest))
                     {
                         digest = readSource(relative!) is { } bytes ? Convert.ToHexStringLower(SHA256.HashData(bytes)) : null;
                         digests[relative!] = digest;
                     }
 
-                    if (digest is null || Parameters(reader, names, type) is not { } parameters) continue;
+                    if (digest is null || Parameters(reader, names, type) is not { } parameters)
+                    {
+                        continue;
+                    }
+
                     var qualified = $"{declaring}.{reader.GetString(method.Name)}";
                     foreach (var combination in Combinations(parameters))
                     {
@@ -73,11 +91,18 @@ public static class DeclaredIdentity
     {
         foreach (var attribute in method.GetCustomAttributes().Select(reader.GetCustomAttribute))
         {
-            if (AttributeName(reader, attribute) != WorkloadIdentityAttribute) continue;
+            if (AttributeName(reader, attribute) != WorkloadIdentityAttribute)
+            {
+                continue;
+            }
+
             var arguments = Decode(attribute, names)?.FixedArguments;
             if (arguments is not { Length: 6 } || arguments.Value.Any(static argument => argument.Value is not string { Length: > 0 }))
+            {
                 return null;
-            var text = arguments.Value.Select(static argument => (string)argument.Value!).ToArray();
+            }
+
+            var text = arguments.Value.Select(static argument => (string) argument.Value!).ToArray();
             return (text[0], text[1], text[2], text[3], text[4], text[5]);
         }
 
@@ -104,7 +129,11 @@ public static class DeclaredIdentity
         {
             foreach (var attribute in attributes.Select(reader.GetCustomAttribute))
             {
-                if (AttributeName(reader, attribute) != ParamsAttribute) continue;
+                if (AttributeName(reader, attribute) != ParamsAttribute)
+                {
+                    continue;
+                }
+
                 if (Decode(attribute, names)?.FixedArguments is not [{ Value: ImmutableArray<CustomAttributeTypedArgument<string>> values }]
                     || values.IsEmpty || values.Any(static value => !IsWholeNumber(value.Type) || value.Value is null))
                 {
@@ -140,15 +169,15 @@ public static class DeclaredIdentity
     {
         var parent = attribute.Constructor.Kind switch
         {
-            HandleKind.MethodDefinition => (EntityHandle)reader.GetMethodDefinition((MethodDefinitionHandle)attribute.Constructor).GetDeclaringType(),
-            HandleKind.MemberReference => reader.GetMemberReference((MemberReferenceHandle)attribute.Constructor).Parent,
+            HandleKind.MethodDefinition => (EntityHandle) reader.GetMethodDefinition((MethodDefinitionHandle) attribute.Constructor).GetDeclaringType(),
+            HandleKind.MemberReference => reader.GetMemberReference((MemberReferenceHandle) attribute.Constructor).Parent,
             _ => default,
         };
         return parent.Kind switch
         {
-            HandleKind.TypeDefinition => reader.GetTypeDefinition((TypeDefinitionHandle)parent) is var type
+            HandleKind.TypeDefinition => reader.GetTypeDefinition((TypeDefinitionHandle) parent) is var type
                 ? $"{reader.GetString(type.Namespace)}.{reader.GetString(type.Name)}" : null,
-            HandleKind.TypeReference => reader.GetTypeReference((TypeReferenceHandle)parent) is var reference
+            HandleKind.TypeReference => reader.GetTypeReference((TypeReferenceHandle) parent) is var reference
                 ? $"{reader.GetString(reference.Namespace)}.{reader.GetString(reference.Name)}" : null,
             _ => null,
         };

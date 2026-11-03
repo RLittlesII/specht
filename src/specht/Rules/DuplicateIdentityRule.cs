@@ -3,9 +3,7 @@ using Specht.Model;
 
 namespace Specht.Rules;
 
-/// <summary>
-/// SPEC012 - no identity is claimed by two files.
-/// </summary>
+/// <summary>SPEC012 - no identity is claimed by two files.</summary>
 /// <remarks>
 /// SPEC012 is the migration's safety net. Converting a Feature from
 /// <c>epics/</c> to a co-located <c>.spec/</c> folder means removing the old

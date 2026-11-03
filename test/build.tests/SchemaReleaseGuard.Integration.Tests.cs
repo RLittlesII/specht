@@ -13,12 +13,12 @@ public sealed class SchemaReleaseGuardIntegrationTests
         var tag = await repository.Initialize();
 
         // When
-        var result = await repository.RunTarget("Release", tag);
+        var (ExitCode, Output) = await repository.RunTarget("Release", tag);
 
         // Then
-        result.ExitCode.Should().NotBe(0);
-        result.Output.Should().Contain($"Shipped schema versions are not locked in {SchemaVersionLock.RelativePath}: 0.1.0, 0.2.0.");
-        result.Output.Should().NotContain("║ Pack");
+        ExitCode.Should().NotBe(0);
+        Output.Should().Contain($"Shipped schema versions are not locked in {SchemaVersionLock.RelativePath}: 0.1.0, 0.2.0.");
+        Output.Should().NotContain("║ Pack");
         Directory.Exists(Path.Combine(repository.Root, ".artifacts/nupkg")).Should().BeFalse();
         File.Exists(repository.LockPath).Should().BeFalse();
     }
@@ -35,12 +35,12 @@ public sealed class SchemaReleaseGuardIntegrationTests
         var tag = await repository.Initialize();
 
         // When
-        var result = await repository.RunTarget("Release", tag);
+        var (ExitCode, Output) = await repository.RunTarget("Release", tag);
 
         // Then
-        result.ExitCode.Should().NotBe(0);
-        result.Output.Should().Contain($"Shipped schema versions are not locked in {SchemaVersionLock.RelativePath}: {unlocked}.");
-        result.Output.Should().NotContain("║ Pack");
+        ExitCode.Should().NotBe(0);
+        Output.Should().Contain($"Shipped schema versions are not locked in {SchemaVersionLock.RelativePath}: {unlocked}.");
+        Output.Should().NotContain("║ Pack");
         Directory.Exists(Path.Combine(repository.Root, ".artifacts/nupkg")).Should().BeFalse();
         (await File.ReadAllTextAsync(repository.LockPath, TestContext.Current.CancellationToken)).Should().Be(entries);
     }
@@ -55,10 +55,10 @@ public sealed class SchemaReleaseGuardIntegrationTests
         var tag = await repository.Initialize();
 
         // When
-        var result = await repository.RunTarget("VerifyTag", tag);
+        var (ExitCode, Output) = await repository.RunTarget("VerifyTag", tag);
 
         // Then
-        result.ExitCode.Should().Be(0, result.Output);
+        ExitCode.Should().Be(0, Output);
         (await File.ReadAllTextAsync(repository.LockPath, TestContext.Current.CancellationToken)).Should().Be(entries);
     }
 }

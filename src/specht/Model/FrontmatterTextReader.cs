@@ -51,11 +51,11 @@ internal sealed class FrontmatterTextReader
         {
             if (entry.Key is YamlScalarNode { Value: { } key })
             {
-                keyLines[key] = (int)entry.Key.Start.Line + 1;
+                keyLines[key] = (int) entry.Key.Start.Line + 1;
             }
         }
 
-        return new FrontmatterText((JsonObject)Convert(mapping)!, 1, keyLines);
+        return new FrontmatterText((JsonObject) Convert(mapping)!, 1, keyLines);
     }
 
     private static FrontmatterText None => new(null, 1, new Dictionary<string, int>(StringComparer.Ordinal));

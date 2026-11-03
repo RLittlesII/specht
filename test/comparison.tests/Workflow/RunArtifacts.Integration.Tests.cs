@@ -182,14 +182,21 @@ public sealed class RunArtifactsIntegrationTests : IDisposable
     {
         _client.Dispose();
         _handler.Dispose();
-        if (Directory.Exists(_root)) Directory.Delete(_root, true);
+        if (Directory.Exists(_root))
+        {
+            Directory.Delete(_root, true);
+        }
     }
 
     private RunArtifacts Waiter() => new(_client, new FileSystem(), _time, _root);
 
     private HttpResponseMessage? Fault(HttpRequestMessage request)
     {
-        if (!request.RequestUri!.AbsolutePath.EndsWith(_faulting, StringComparison.Ordinal) || Interlocked.Decrement(ref _faults) < 0) return null;
+        if (!request.RequestUri!.AbsolutePath.EndsWith(_faulting, StringComparison.Ordinal) || Interlocked.Decrement(ref _faults) < 0)
+        {
+            return null;
+        }
+
         _faulted.TrySetResult();
         return _status is { } status ? new HttpResponseMessage(status) : throw new HttpRequestException("The connection was reset.");
     }

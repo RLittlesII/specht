@@ -72,7 +72,7 @@ public static class ComparisonReport
 
     internal static IEnumerable<(string Key, string Side, Observation Observation)> Citations(ComparisonDocument document) =>
         document.Cases.SelectMany(static c => c.Evidence.Metrics.Concat(c.Metrics.Select(static m => m.Evidence))
-            .Select(static p => (Previous: p.Previous, Current: p.Current))
+            .Select(static p => (p.Previous, p.Current))
             .Append((Previous: c.Evidence.Previous?.Observations ?? [], Current: c.Evidence.Current?.Observations ?? []))
             .SelectMany(static sides => sides.Previous.Select(static o => (Side: "previous", Observation: o))
                 .Concat(sides.Current.Select(static o => (Side: "current", Observation: o))))
@@ -94,6 +94,7 @@ public static class ComparisonReport
                 _ => c.ToString(),
             });
         }
+
         return escaped.ToString();
     }
 
@@ -138,9 +139,17 @@ public static class ComparisonReport
     private static void Table(StringBuilder text, string[] headers, IEnumerable<string[]> rows)
     {
         text.Append("| ").AppendJoin(" | ", headers).Append(" |\n|");
-        foreach (var _ in headers) text.Append(" --- |");
+        foreach (var _ in headers)
+        {
+            text.Append(" --- |");
+        }
+
         text.Append('\n');
-        foreach (var row in rows) text.Append("| ").AppendJoin(" | ", row.Select(Escape)).Append(" |\n");
+        foreach (var row in rows)
+        {
+            text.Append("| ").AppendJoin(" | ", row.Select(Escape)).Append(" |\n");
+        }
+
         text.Append('\n');
     }
 

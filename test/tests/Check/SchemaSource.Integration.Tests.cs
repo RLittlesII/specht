@@ -33,6 +33,7 @@ public sealed class SchemaSourceIntegrationTests
         {
             manifest["schemaSource"] = manifestSource;
         }
+
         File.WriteAllText(path, manifest.ToJsonString());
         File.Delete(Path.Combine(tree.Root, SpechtTree.EpicSchemaPath));
         string[] args = argument is null ? ["--json"] : ["--json", "--schema-source", argument];
@@ -85,6 +86,7 @@ public sealed class SchemaSourceIntegrationTests
         {
             tree.WriteEpic("0001");
         }
+
         var relative = SpechtTree.FrontmatterSchemaFolder + "/" + kind + ".schema.json";
         if (text is null)
         {
@@ -121,13 +123,14 @@ public sealed class SchemaSourceIntegrationTests
             ["location"] = "https://schemas.example/specht/",
             ["version"] = "v1",
             ["hashes"] = new JsonObject(new[] { "feature", "task", "epic" }.Select(kind =>
-                KeyValuePair.Create(kind, (JsonNode?)("sha256:" + Convert.ToHexStringLower(SHA256.HashData(
+                KeyValuePair.Create(kind, (JsonNode?) ("sha256:" + Convert.ToHexStringLower(SHA256.HashData(
                     File.ReadAllBytes(Path.Combine(tree.Root, SpechtTree.FrontmatterSchemaFolder, kind + ".schema.json")))))))),
         };
         if (manifestSource is not null)
         {
             manifest["schemaSource"] = manifestSource;
         }
+
         File.WriteAllText(path, manifest.ToJsonString());
         if (changed)
         {

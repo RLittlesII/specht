@@ -75,7 +75,7 @@ public sealed class SchemaVersionCut(IFileSystem fileSystem, string root)
         {
             var refusal = $"{source} does not give its schema version in exactly one row.";
             var rows = Enumerable.Range(0, bytes.Length)
-                .Where(index => (index == 0 || bytes[index - 1] == (byte)'\n') && bytes.AsSpan(index).StartsWith(SchemaVersionRow))
+                .Where(index => (index == 0 || bytes[index - 1] == (byte) '\n') && bytes.AsSpan(index).StartsWith(SchemaVersionRow))
                 .ToArray();
             if (rows.Length != 1)
             {
@@ -83,7 +83,7 @@ public sealed class SchemaVersionCut(IFileSystem fileSystem, string root)
             }
 
             var start = rows[0];
-            var length = bytes.AsSpan(start).IndexOf((byte)'\n');
+            var length = bytes.AsSpan(start).IndexOf((byte) '\n');
             var end = length < 0 ? bytes.Length : start + length;
             return
             [

@@ -28,12 +28,13 @@ public sealed class SchemaListCommand(IAnsiConsole console, SchemaVersionManager
     {
         try
         {
-            var result = schemas.List(Path.GetFullPath(settings.Root));
-            foreach (var version in result.Versions)
+            var (Versions, Pinned, InUse) = schemas.List(Path.GetFullPath(settings.Root));
+            foreach (var version in Versions)
             {
-                var mark = version == result.Pinned ? " (pinned)" : version == result.InUse ? " (in use)" : string.Empty;
+                var mark = version == Pinned ? " (pinned)" : version == InUse ? " (in use)" : string.Empty;
                 console.Profile.Out.Writer.WriteLine($"{version}{mark}");
             }
+
             return ExitCodes.Success;
         }
         catch (SpechtRootNotFoundException)

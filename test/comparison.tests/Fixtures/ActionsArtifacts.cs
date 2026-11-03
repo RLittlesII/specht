@@ -13,7 +13,10 @@ internal sealed class ActionsArtifacts
     {
         get
         {
-            lock (_gate) return [.. _requests];
+            lock (_gate)
+            {
+                return [.. _requests];
+            }
         }
     }
 
@@ -39,18 +42,32 @@ internal sealed class ActionsArtifacts
 
     public void Add(long id, string name, bool expired, byte[] zip)
     {
-        lock (_gate) _artifacts.Add((id, name, expired, zip));
+        lock (_gate)
+        {
+            _artifacts.Add((id, name, expired, zip));
+        }
     }
 
     public HttpResponseMessage? Respond(HttpRequestMessage request)
     {
         var uri = request.RequestUri!;
-        if (request.Method != HttpMethod.Get || uri.Host != "api.github.com") return null;
+        if (request.Method != HttpMethod.Get || uri.Host != "api.github.com")
+        {
+            return null;
+        }
+
         List<(long Id, string Name, bool Expired, byte[] Zip)> listed;
-        lock (_gate) listed = [.. _artifacts];
+        lock (_gate)
+        {
+            listed = [.. _artifacts];
+        }
+
         if (uri.AbsolutePath == "/repos/example/tool/actions/runs/1234/artifacts")
         {
-            lock (_gate) _requests.Add(uri.PathAndQuery);
+            lock (_gate)
+            {
+                _requests.Add(uri.PathAndQuery);
+            }
 
             var query = HttpUtility.ParseQueryString(uri.Query);
             var page = int.Parse(query["page"] ?? "1", CultureInfo.InvariantCulture);
@@ -81,8 +98,16 @@ internal sealed class ActionsArtifacts
         }
 
         var stored = listed.Where(artifact => uri.AbsolutePath == $"/repos/example/tool/actions/artifacts/{artifact.Id}/zip").ToArray();
-        if (stored.Length != 1) return null;
-        lock (_gate) _requests.Add(uri.PathAndQuery);
+        if (stored.Length != 1)
+        {
+            return null;
+        }
+
+        lock (_gate)
+        {
+            _requests.Add(uri.PathAndQuery);
+        }
+
         return new HttpResponseMessage(HttpStatusCode.OK) { Content = new ByteArrayContent(stored[0].Zip) };
     }
 

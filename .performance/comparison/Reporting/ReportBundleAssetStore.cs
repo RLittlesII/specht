@@ -34,13 +34,20 @@ public sealed class ReportBundleAssetStore(HttpClient client)
                 request.Content.Headers.ContentType = new MediaTypeHeaderValue("application/zip");
                 using var response = await client.SendAsync(request, cancellationToken);
                 if (!response.IsSuccessStatusCode && response.StatusCode is not (HttpStatusCode.Conflict or HttpStatusCode.UnprocessableEntity))
+                {
                     throw new InvalidDataException("Report bundle upload was rejected.");
+                }
+
                 retained = await FindAsync(current, name, cancellationToken)
                     ?? throw new InvalidDataException("Report bundle was not confirmed in durable release storage.");
             }
+
             var content = await DownloadAsync(current, retained.Value, cancellationToken);
             if (Convert.ToHexStringLower(SHA256.HashData(content)) != digest)
+            {
                 throw new InvalidDataException("Retained report bundle differs from this attempt's bundle and is not replaced.");
+            }
+
             _ = ReportBundler.Validate(new MemoryStream(content));
             return new PublishedBundle(retained.Value, name, digest);
         }
@@ -58,7 +65,9 @@ public sealed class ReportBundleAssetStore(HttpClient client)
         var session = ComparisonJson.ReadSession(Text(archive, "session.json"));
         _ = ComparisonJson.ReadPair(Text(archive, "pair.json"), current);
         if (name != ReportBundler.Name(current.Id, session))
+        {
             throw new InvalidDataException("Asset name does not identify this release, run and attempt.");
+        }
     }
 
     private static string Text(ZipArchive archive, string path)
@@ -76,17 +85,36 @@ public sealed class ReportBundleAssetStore(HttpClient client)
                 $"https://api.github.com/repos/{current.Repository}/releases/{current.Id}/assets?per_page=100&page={page}", cancellationToken);
             response.EnsureSuccessStatusCode();
             using var document = JsonDocument.Parse(await response.Content.ReadAsStringAsync(cancellationToken));
-            if (document.RootElement.ValueKind != JsonValueKind.Array) throw new JsonException();
+            if (document.RootElement.ValueKind != JsonValueKind.Array)
+            {
+                throw new JsonException();
+            }
+
             foreach (var asset in document.RootElement.EnumerateArray())
             {
-                if (asset.GetProperty("name").GetString() != name) continue;
+                if (asset.GetProperty("name").GetString() != name)
+                {
+                    continue;
+                }
+
                 if (found is not null || asset.GetProperty("state").GetString() != "uploaded")
+                {
                     throw new InvalidDataException("Report bundle asset is duplicated or its upload is incomplete.");
+                }
+
                 found = asset.GetProperty("id").GetInt64();
-                if (found <= 0) throw new JsonException();
+                if (found <= 0)
+                {
+                    throw new JsonException();
+                }
             }
-            if (document.RootElement.GetArrayLength() < 100) return found;
+
+            if (document.RootElement.GetArrayLength() < 100)
+            {
+                return found;
+            }
         }
+
         throw new InvalidDataException("Report bundle asset catalog pagination is incomplete.");
     }
 

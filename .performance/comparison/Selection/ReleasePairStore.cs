@@ -14,7 +14,11 @@ public sealed class ReleasePairStore(IFileSystem fileSystem, string directory)
         Func<CancellationToken, Task<ReleasePair>> create, CancellationToken cancellationToken = default)
     {
         var path = fileSystem.Path.Combine(directory, "comparison-pair-v1.json");
-        if (fileSystem.File.Exists(path)) return await ReadAsync(path, current, cancellationToken);
+        if (fileSystem.File.Exists(path))
+        {
+            return await ReadAsync(path, current, cancellationToken);
+        }
+
         var pair = await create(cancellationToken);
         ComparisonJson.ValidatePair(pair, current);
         fileSystem.Directory.CreateDirectory(directory);
@@ -27,24 +31,32 @@ public sealed class ReleasePairStore(IFileSystem fileSystem, string directory)
                 await stream.WriteAsync(bytes, cancellationToken);
                 await stream.FlushAsync(cancellationToken);
             }
+
             cancellationToken.ThrowIfCancellationRequested();
             try
             {
                 fileSystem.File.Move(temporary, path, false);
             }
             catch (IOException) when (fileSystem.File.Exists(path)) { }
+
             return await ReadAsync(path, current, cancellationToken);
         }
         finally
         {
-            if (fileSystem.File.Exists(temporary)) fileSystem.File.Delete(temporary);
+            if (fileSystem.File.Exists(temporary))
+            {
+                fileSystem.File.Delete(temporary);
+            }
         }
     }
 
     private async Task<ReleasePair> ReadAsync(string path, ReleaseRecord current, CancellationToken cancellationToken)
     {
         if ((fileSystem.File.GetAttributes(path) & FileAttributes.ReparsePoint) != 0)
+        {
             throw new InvalidDataException("Saved pair cannot be a symbolic link.");
+        }
+
         try
         {
             return ComparisonJson.ReadPair(await fileSystem.File.ReadAllTextAsync(path, cancellationToken), current);

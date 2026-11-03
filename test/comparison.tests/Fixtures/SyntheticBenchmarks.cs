@@ -59,7 +59,10 @@ internal static class SyntheticBenchmarks
         using var assembly = new MemoryStream();
         var emitted = compilation.Emit(assembly);
         if (!emitted.Success)
+        {
             throw new InvalidOperationException(string.Join(Environment.NewLine, emitted.Diagnostics.Select(static diagnostic => diagnostic.ToString())));
+        }
+
         return assembly.ToArray();
     }
 

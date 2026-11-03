@@ -16,7 +16,7 @@ public sealed class CodeAnalysisReleaseIntegrationTests
         var stream = new YamlStream();
         using var input = File.OpenText(Path.Combine(root, ".github", "workflows", "release.yml"));
         stream.Load(input);
-        var jobs = (YamlMappingNode)((YamlMappingNode)stream.Documents[0].RootNode)["jobs"];
+        var jobs = (YamlMappingNode) ((YamlMappingNode) stream.Documents[0].RootNode)["jobs"];
 
         // When
         var targets = new[] { ("publish", "Push release packages", "PushReleasePackages"), ("release", "Create GitHub Release", "CreateGitHubRelease") };
@@ -25,13 +25,13 @@ public sealed class CodeAnalysisReleaseIntegrationTests
         jobs.Children.Keys.Select(static key => key.ToString()).Should().Contain("publish");
         foreach (var (job, name, target) in targets)
         {
-            var steps = ((YamlSequenceNode)((YamlMappingNode)jobs[job])["steps"]).Cast<YamlMappingNode>().ToArray();
+            var steps = ((YamlSequenceNode) ((YamlMappingNode) jobs[job])["steps"]).Cast<YamlMappingNode>().ToArray();
             steps.Should().Contain(static step => step["name"].ToString() == "Checkout", job);
             steps.Should().ContainSingle(step => step["name"].ToString() == name, job)
                 .Which["run"].ToString().TrimEnd().Should().Be($"./build.cmd --target {target}");
         }
 
-        ((YamlSequenceNode)((YamlMappingNode)jobs["publish"])["steps"]).Cast<YamlMappingNode>()
+        ((YamlSequenceNode) ((YamlMappingNode) jobs["publish"])["steps"]).Cast<YamlMappingNode>()
             .Should().Contain(static step => step["name"].ToString().Contains("Download the package", StringComparison.Ordinal));
     }
 
@@ -42,12 +42,12 @@ public sealed class CodeAnalysisReleaseIntegrationTests
         var stream = new YamlStream();
         using var input = File.OpenText(Path.Combine(root, ".github", "workflows", "release.yml"));
         stream.Load(input);
-        var workflow = (YamlMappingNode)stream.Documents[0].RootNode;
-        var release = (YamlMappingNode)((YamlMappingNode)workflow["jobs"])["release"];
-        var checkout = ((YamlSequenceNode)release["steps"]).Cast<YamlMappingNode>()
+        var workflow = (YamlMappingNode) stream.Documents[0].RootNode;
+        var release = (YamlMappingNode) ((YamlMappingNode) workflow["jobs"])["release"];
+        var checkout = ((YamlSequenceNode) release["steps"]).Cast<YamlMappingNode>()
             .Single(static step => step["name"].ToString() == "Checkout");
 
-        ((YamlMappingNode)checkout["with"])["fetch-depth"].ToString().Should().Be("0");
+        ((YamlMappingNode) checkout["with"])["fetch-depth"].ToString().Should().Be("0");
     }
 
     [Theory]
@@ -56,9 +56,9 @@ public sealed class CodeAnalysisReleaseIntegrationTests
     public async Task PublicationTarget_WhenRunWithoutTagPush_ShouldFailBeforePublication(string target)
     {
         using var fixture = new ReleaseFixture();
-        var result = await fixture.RunTarget(target, "workflow_dispatch");
-        result.ExitCode.Should().NotBe(0);
-        result.Output.Should().Contain("Publishing requires a pushed version tag");
+        var (ExitCode, Output) = await fixture.RunTarget(target, "workflow_dispatch");
+        ExitCode.Should().NotBe(0);
+        Output.Should().Contain("Publishing requires a pushed version tag");
     }
 
     [Fact]
@@ -69,19 +69,19 @@ public sealed class CodeAnalysisReleaseIntegrationTests
         var stream = new YamlStream();
         using var input = File.OpenText(Path.Combine(root, ".github", "workflows", "release.yml"));
         stream.Load(input);
-        var jobs = (YamlMappingNode)((YamlMappingNode)stream.Documents[0].RootNode)["jobs"];
+        var jobs = (YamlMappingNode) ((YamlMappingNode) stream.Documents[0].RootNode)["jobs"];
 
         // When
         jobs.Children.Keys.Select(static key => key.ToString()).Should().Contain("publish");
-        var steps = ((YamlSequenceNode)((YamlMappingNode)jobs["publish"])["steps"]).Cast<YamlMappingNode>().ToArray();
+        var steps = ((YamlSequenceNode) ((YamlMappingNode) jobs["publish"])["steps"]).Cast<YamlMappingNode>().ToArray();
 
         // Then
         steps.Select(static step => step.Children.ContainsKey("uses") ? step["uses"].ToString().Split('@')[0] : step["name"].ToString())
             .Should().Equal("actions/checkout", "actions/download-artifact", "actions/setup-dotnet", "NuGet/login", "Push release packages");
-        ((YamlMappingNode)steps[1]["with"])["name"].ToString().Should().Be("nupkg");
+        ((YamlMappingNode) steps[1]["with"])["name"].ToString().Should().Be("nupkg");
         steps[3]["name"].ToString().Should().Be("Log in to NuGet");
         steps[3]["uses"].ToString().Should().Be("NuGet/login@v1");
-        ((YamlMappingNode)steps[4]["env"])["NUGET_API_KEY"].ToString()
+        ((YamlMappingNode) steps[4]["env"])["NUGET_API_KEY"].ToString()
             .Should().Be($"${{{{ steps.{steps[3]["id"]}.outputs.NUGET_API_KEY }}}}");
     }
 
@@ -92,11 +92,11 @@ public sealed class CodeAnalysisReleaseIntegrationTests
         var stream = new YamlStream();
         using var input = File.OpenText(path);
         stream.Load(input);
-        var workflow = (YamlMappingNode)stream.Documents[0].RootNode;
-        var build = (YamlMappingNode)((YamlMappingNode)workflow["jobs"])["build"];
+        var workflow = (YamlMappingNode) stream.Documents[0].RootNode;
+        var build = (YamlMappingNode) ((YamlMappingNode) workflow["jobs"])["build"];
 
-        ((YamlMappingNode)workflow["permissions"])["packages"].ToString().Should().Be("read");
-        ((YamlMappingNode)build["env"])["NuGetPackageSourceCredentials_specht"].ToString()
+        ((YamlMappingNode) workflow["permissions"])["packages"].ToString().Should().Be("read");
+        ((YamlMappingNode) build["env"])["NuGetPackageSourceCredentials_specht"].ToString()
             .Should().Contain("Password=${{ secrets.GITHUB_TOKEN }}");
         Regex.Matches(File.ReadAllText(path), @"secrets\.(\w+)").Select(static match => match.Groups[1].Value).Distinct()
             .Should().Equal("GITHUB_TOKEN");
@@ -112,8 +112,8 @@ public sealed class CodeAnalysisReleaseIntegrationTests
 
         using var fixture = new ReleaseFixture();
         fixture.WritePackages();
-        var result = await fixture.RunTarget("PushReleasePackages", "push");
-        result.ExitCode.Should().Be(0, result.Output);
+        var (ExitCode, Output) = await fixture.RunTarget("PushReleasePackages", "push");
+        ExitCode.Should().Be(0, Output);
         var pushes = File.ReadAllLines(fixture.DotNetLog);
         pushes.Should().HaveCount(2).And.AllSatisfy(static push => push.Should()
             .StartWith("nuget push ")
@@ -137,10 +137,10 @@ public sealed class CodeAnalysisReleaseIntegrationTests
         using var fixture = new ReleaseFixture(version);
 
         // When
-        var result = await fixture.RunTarget("CreateGitHubRelease", "push");
+        var (ExitCode, Output) = await fixture.RunTarget("CreateGitHubRelease", "push");
 
         // Then
-        result.ExitCode.Should().Be(0, result.Output);
+        ExitCode.Should().Be(0, Output);
         var invocation = File.ReadAllLines(fixture.GhLog)
             .Should().ContainSingle(line => line.StartsWith($"release create v{version} ", StringComparison.Ordinal)).Which;
         invocation.Should().NotContain(".nupkg").And.Contain("--generate-notes --verify-tag");
@@ -159,10 +159,10 @@ public sealed class CodeAnalysisReleaseIntegrationTests
         using var fixture = new ReleaseFixture();
 
         // When
-        var result = await fixture.RunTarget("CreateGitHubRelease", "push", Published, ReleaseFixture.Commit);
+        var (ExitCode, Output) = await fixture.RunTarget("CreateGitHubRelease", "push", Published, ReleaseFixture.Commit);
 
         // Then
-        result.ExitCode.Should().Be(0, result.Output);
+        ExitCode.Should().Be(0, Output);
         var invocations = File.ReadAllLines(fixture.GhLog);
         invocations.Should()
             .Contain(static invocation => invocation.StartsWith("release view v1.2.3 --repo RLittlesII/specht --json ", StringComparison.Ordinal))
@@ -183,10 +183,10 @@ public sealed class CodeAnalysisReleaseIntegrationTests
         using var fixture = new ReleaseFixture();
 
         // When
-        var result = await fixture.RunTarget("CreateGitHubRelease", "push", existing, tagged);
+        var (ExitCode, Output) = await fixture.RunTarget("CreateGitHubRelease", "push", existing, tagged);
 
         // Then
-        result.ExitCode.Should().Be(0, result.Output);
+        ExitCode.Should().Be(0, Output);
         File.ReadAllLines(fixture.GhLog).Should().ContainSingle(static invocation => invocation.StartsWith("release create v1.2.3", StringComparison.Ordinal))
             .Which.Should().Contain("--generate-notes --verify-tag");
     }
@@ -203,11 +203,11 @@ public sealed class CodeAnalysisReleaseIntegrationTests
         using var fixture = new ReleaseFixture();
 
         // When
-        var result = await fixture.RunTarget("CreateGitHubRelease", "push", Draft, ReleaseFixture.Commit, createFails: true);
+        var (ExitCode, Output) = await fixture.RunTarget("CreateGitHubRelease", "push", Draft, ReleaseFixture.Commit, createFails: true);
 
         // Then
-        result.ExitCode.Should().NotBe(0);
-        File.Exists(fixture.GhLog).Should().BeTrue(result.Output);
+        ExitCode.Should().NotBe(0);
+        File.Exists(fixture.GhLog).Should().BeTrue(Output);
         File.ReadAllLines(fixture.GhLog).Should().Contain(static invocation => invocation.StartsWith("release create v1.2.3", StringComparison.Ordinal));
     }
 

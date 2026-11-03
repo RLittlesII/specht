@@ -60,7 +60,7 @@ public sealed class FeatureTagParser
             }
             else
             {
-                foreach (var token in line.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries))
+                foreach (var token in line.Split((char[]?) null, StringSplitOptions.RemoveEmptyEntries))
                 {
                     var length = token.Length - parts[0].Length - parts[1].Length;
                     if (length < 0 || !token.StartsWith(parts[0], comparison) || !token.EndsWith(parts[1], comparison))

@@ -67,7 +67,7 @@ public sealed partial class ManifestSteps
     public void GivenTheManifestNamesNoRequiredSpecificationDirectories() => Manifest.Remove("requiredSpecifications");
 
     [When("the manifest is loaded")]
-    public void WhenTheManifestIsLoaded() => _structure = EngineServices.Parser().Parse(Manifest.ToJsonString());
+    public void WhenTheManifestIsLoaded() => Structure = EngineServices.Parser().Parse(Manifest.ToJsonString());
 
     [Then("the manifest rejection names {string}")]
     public void ThenTheManifestRejectionNames(string text) =>
@@ -101,9 +101,7 @@ public sealed partial class ManifestSteps
     [Then("the required specification directories are an empty list")]
     public void ThenTheRequiredSpecificationDirectoriesAreAnEmptyList() => Structure.RequiredSpecifications.Should().BeEmpty();
 
-    private SpechtStructure Structure => _structure ?? throw new InvalidOperationException("No manifest was loaded.");
+    private SpechtStructure Structure { get => field ?? throw new InvalidOperationException("No manifest was loaded."); set; }
 
     private static readonly string[] StatusMarkers = ["covered", "partial", "waived", "withdrawn", "superseded"];
-
-    private SpechtStructure? _structure;
 }

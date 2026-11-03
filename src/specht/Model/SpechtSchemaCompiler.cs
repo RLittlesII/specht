@@ -43,14 +43,14 @@ public sealed class SpechtSchemaCompiler
     public SpechtSchemas CompileDisk(SchemaVersion version, SpechtStructure structure, Func<string, string> read)
     {
         var options = new BuildOptions { SchemaRegistry = new SchemaRegistry() };
-        var feature = CompileDisk(structure.FrontmatterSchemas["feature"], read, options);
+        var (Text, Schema) = CompileDisk(structure.FrontmatterSchemas["feature"], read, options);
         var item = CompileDisk(structure.FrontmatterSchemas["task"], read, options);
         (string Text, JsonSchema Schema)? epic = structure.DeclaresEpicGrammar
             ? CompileDisk(structure.FrontmatterSchemas["epic"], read, options)
             : null;
         var compiled = version with
         {
-            FeatureSchema = feature.Text,
+            FeatureSchema = Text,
             ItemSchema = item.Text,
             EpicSchema = epic?.Text ?? version.EpicSchema,
         };
@@ -59,7 +59,7 @@ public sealed class SpechtSchemaCompiler
             compiled,
             structure,
             SpechtSchemaSource.Disk,
-            feature.Schema,
+            Schema,
             item.Schema,
             epic?.Schema ?? Compile(version, structure, SpechtSchemaSource.Embedded).Epic,
             _evaluationOptions);

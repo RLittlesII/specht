@@ -62,7 +62,7 @@ public sealed class ScenarioEvidenceBridge
             ["status"] = result.Status.ToString().ToLowerInvariant(),
             ["isEligible"] = result.IsEligible,
             ["target"] = Target(result.Target),
-            ["matches"] = new JsonArray(result.Matches.Select(static target => (JsonNode?)Target(target)).ToArray()),
+            ["matches"] = new JsonArray(result.Matches.Select(static target => (JsonNode?) Target(target)).ToArray()),
         };
     }
 
@@ -76,7 +76,7 @@ public sealed class ScenarioEvidenceBridge
             ["scenarioId"] = scenario.ScenarioId,
             ["line"] = scenario.Line,
             ["scope"] = new JsonObject { ["epic"] = scope.Epic, ["feature"] = scope.Feature },
-            ["claims"] = new JsonArray(scenario.ClaimTags.Select(tag => (JsonNode?)Claim(scope, tag)).ToArray()),
+            ["claims"] = new JsonArray(scenario.ClaimTags.Select(tag => (JsonNode?) Claim(scope, tag)).ToArray()),
             ["cases"] = new JsonArray(Links(scenario).ToArray()),
         };
         using var document = JsonDocument.Parse(record.ToJsonString());

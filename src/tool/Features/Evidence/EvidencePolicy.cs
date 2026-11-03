@@ -52,9 +52,8 @@ internal sealed class EvidencePolicy
         foreach (var exemption in policy["exemptions"] as JsonArray ?? new JsonArray())
         {
             var reason = exemption?["reason"]?.GetValue<string>();
-            var links = exemption?["links"] as JsonArray;
             var target = exemption?["target"];
-            if (string.IsNullOrWhiteSpace(reason) || links is null || links.Count == 0
+            if (string.IsNullOrWhiteSpace(reason) || exemption?["links"] is not JsonArray links || links.Count == 0
                 || links.Any(static link => link?.GetValue<string>() is not ("test" or "implementation" or "scenario"))
                 || target is null)
             {

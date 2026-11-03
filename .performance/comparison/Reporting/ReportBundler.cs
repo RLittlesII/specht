@@ -19,7 +19,10 @@ public sealed class ReportBundler(IFileSystem fileSystem, string repositoryRoot)
     {
         var entries = Entries(zip);
         if (!entries.TryGetValue(ManifestPath, out var manifestBytes))
+        {
             throw new InvalidDataException("Report bundle has no evidence manifest.");
+        }
+
         var manifest = ComparisonJson.ReadManifest(Encoding.UTF8.GetString(manifestBytes));
         var listed = manifest.Files.ToDictionary(static file => file.Path, StringComparer.Ordinal);
         if (entries.Keys.Any(name => name != ManifestPath && !listed.ContainsKey(name))
@@ -35,12 +38,18 @@ public sealed class ReportBundler(IFileSystem fileSystem, string repositoryRoot)
 
         var session = ComparisonJson.ReadSession(Encoding.UTF8.GetString(entries["session.json"]));
         if (Sha256(entries["pair.json"]) != session.PairDigest)
+        {
             throw new InvalidDataException("Report bundle session does not identify its release pair.");
+        }
+
         var documents = new Dictionary<string, JsonDocument>(StringComparer.Ordinal);
         try
         {
             foreach (var (path, content) in entries.Where(static entry => entry.Key != "report.md"))
+            {
                 documents.Add(path, JsonDocument.Parse(content));
+            }
+
             var root = documents["report.json"].RootElement;
             ComparisonJson.CheckDuplicateProperties(root);
             var comparison = root.GetProperty("comparison");
@@ -56,7 +65,10 @@ public sealed class ReportBundler(IFileSystem fileSystem, string repositoryRoot)
             }
 
             if (documents.Any(static document => HoldsAbsolutePath(document.Value.RootElement, document.Key == "report.json")))
+            {
                 throw new InvalidDataException("Report bundle holds an absolute path.");
+            }
+
             if (Encoding.UTF8.GetString(entries["report.md"]) != ComparisonReport.Markdown(ComparisonJson.ReadPair(root.GetProperty("pair").GetRawText()),
                     ComparisonJson.ReadDocument(comparison.GetRawText())))
             {
@@ -70,8 +82,12 @@ public sealed class ReportBundler(IFileSystem fileSystem, string repositoryRoot)
         }
         finally
         {
-            foreach (var document in documents.Values) document.Dispose();
+            foreach (var document in documents.Values)
+            {
+                document.Dispose();
+            }
         }
+
         return manifest;
     }
 
@@ -79,15 +95,24 @@ public sealed class ReportBundler(IFileSystem fileSystem, string repositoryRoot)
         ImmutableArray<RawExport> exports, string workspace)
     {
         if (!EvidencePaths.IsRelative(workspace) || mappings.IsDefault || exports.IsDefault)
+        {
             throw new InvalidDataException("Report bundle inputs are missing or the workspace is not repository-relative.");
+        }
+
         ComparisonJson.ValidatePair(pair, pair.Current);
         var session = ComparisonJson.ReadSession(ComparisonJson.Write(document.Session));
         if (session.PairDigest != ComparisonJson.Digest(pair))
+        {
             throw new InvalidDataException("Session manifest does not identify this release pair.");
+        }
+
         var name = Name(pair.Current.Id, session);
         var citations = ComparisonReport.Citations(document).ToArray();
         if (citations.Any(cited => !exports.Any(export => export.Side == cited.Side && export.SourcePath == cited.Observation.SourceFile)))
+        {
             throw new InvalidDataException("An observation cites a raw export that was not supplied.");
+        }
+
         List<(EvidenceFile File, byte[] Content)> files =
         [
             .. exports.Select(export => Raw(export, citations)),
@@ -100,7 +125,10 @@ public sealed class ReportBundler(IFileSystem fileSystem, string repositoryRoot)
                 .ThenBy(static mapping => mapping.ProductCommit, StringComparer.Ordinal).ToImmutableArray())),
         ];
         if (files.GroupBy(static file => file.File.Path, StringComparer.OrdinalIgnoreCase).Any(static group => group.Count() > 1))
+        {
             throw new InvalidDataException("Two raw exports would share one bundle path.");
+        }
+
         var manifest = new EvidenceManifest(1, [.. files.Select(static file => file.File).OrderBy(static file => file.Path, StringComparer.Ordinal)]);
         var zip = Archive(files.Select(static file => (file.File.Path, file.Content))
             .Append((ManifestPath, Encoding.UTF8.GetBytes(ComparisonJson.Write(manifest)))));
@@ -113,7 +141,10 @@ public sealed class ReportBundler(IFileSystem fileSystem, string repositoryRoot)
     {
         var name = string.Create(CultureInfo.InvariantCulture, $"comparison-{releaseId}-{session.RunId}-{session.Attempt}.zip");
         if (!EvidencePaths.IsRelative(name) || name.Contains('/'))
+        {
             throw new InvalidDataException("Run identity cannot name a report bundle.");
+        }
+
         return name;
     }
 
@@ -124,7 +155,11 @@ public sealed class ReportBundler(IFileSystem fileSystem, string repositoryRoot)
     {
         for (var start = 0; start < value.Length; start++)
         {
-            if (start > 0 && !IsBoundary(value[start - 1])) continue;
+            if (start > 0 && !IsBoundary(value[start - 1]))
+            {
+                continue;
+            }
+
             var rest = value.AsSpan(start);
             if (rest.StartsWith(@"\\") || rest.StartsWith("~/") || rest.StartsWith(@"~\")
                 || rest.Length >= 3 && char.IsAsciiLetter(rest[0]) && rest[1] == ':' && rest[2] is '\\' or '/'
@@ -133,11 +168,23 @@ public sealed class ReportBundler(IFileSystem fileSystem, string repositoryRoot)
                 return true;
             }
 
-            if (rest.Length < 3 || rest[0] != '/') continue;
+            if (rest.Length < 3 || rest[0] != '/')
+            {
+                continue;
+            }
+
             var end = 1;
-            while (end < rest.Length && rest[end] != '/' && rest[end] != '\\' && !IsBoundary(rest[end])) end++;
-            if (end > 1 && end < rest.Length && rest[end] == '/') return true;
+            while (end < rest.Length && rest[end] != '/' && rest[end] != '\\' && !IsBoundary(rest[end]))
+            {
+                end++;
+            }
+
+            if (end > 1 && end < rest.Length && rest[end] == '/')
+            {
+                return true;
+            }
         }
+
         return false;
     }
 
@@ -157,7 +204,11 @@ public sealed class ReportBundler(IFileSystem fileSystem, string repositoryRoot)
                 }
 
                 using var content = new MemoryStream();
-                using (var stream = entry.Open()) stream.CopyTo(content);
+                using (var stream = entry.Open())
+                {
+                    stream.CopyTo(content);
+                }
+
                 entries.Add(entry.FullName, content.ToArray());
             }
         }
@@ -165,6 +216,7 @@ public sealed class ReportBundler(IFileSystem fileSystem, string repositoryRoot)
         {
             throw new InvalidDataException("Report bundle is not a readable archive.");
         }
+
         return entries;
     }
 
@@ -189,28 +241,57 @@ public sealed class ReportBundler(IFileSystem fileSystem, string repositoryRoot)
             }
 
             foreach (var property in element.EnumerateObject())
-                foreach (var cited in Locators(property.Value)) yield return cited;
+            {
+                foreach (var cited in Locators(property.Value))
+                {
+                    yield return cited;
+                }
+            }
         }
         else if (element.ValueKind == JsonValueKind.Array)
+        {
             foreach (var item in element.EnumerateArray())
-                foreach (var cited in Locators(item)) yield return cited;
+            {
+                foreach (var cited in Locators(item))
+                {
+                    yield return cited;
+                }
+            }
+        }
     }
 
     private static bool ResolvesParent(JsonElement export, JsonElement locator)
     {
-        if (locator.ValueKind != JsonValueKind.String || locator.GetString() is not { } pointer || !pointer.StartsWith('/')) return false;
+        if (locator.ValueKind != JsonValueKind.String || locator.GetString() is not { } pointer || !pointer.StartsWith('/'))
+        {
+            return false;
+        }
+
         var tokens = pointer[1..].Split('/');
-        if (tokens.Length < 2) return false;
+        if (tokens.Length < 2)
+        {
+            return false;
+        }
+
         var element = export;
         foreach (var token in tokens[..^1]
             .Select(static token => token.Replace("~1", "/", StringComparison.Ordinal).Replace("~0", "~", StringComparison.Ordinal)))
         {
-            if (element.ValueKind == JsonValueKind.Object && element.TryGetProperty(token, out var child)) element = child;
+            if (element.ValueKind == JsonValueKind.Object && element.TryGetProperty(token, out var child))
+            {
+                element = child;
+            }
             else if (element.ValueKind == JsonValueKind.Array && (token == "0" || token.Length > 0 && token[0] != '0')
                 && int.TryParse(token, NumberStyles.None, CultureInfo.InvariantCulture, out var index) && index < element.GetArrayLength())
+            {
                 element = element[index];
-            else return false;
+            }
+            else
+            {
+                return false;
+            }
         }
+
         return true;
     }
 
@@ -245,7 +326,11 @@ public sealed class ReportBundler(IFileSystem fileSystem, string repositoryRoot)
 
             var removed = false;
             using var buffer = new MemoryStream();
-            using (var writer = new Utf8JsonWriter(buffer)) Sanitise(root, writer, ref removed);
+            using (var writer = new Utf8JsonWriter(buffer))
+            {
+                Sanitise(root, writer, ref removed);
+            }
+
             return removed ? buffer.ToArray() : original;
         }
         catch (JsonException)
@@ -264,12 +349,17 @@ public sealed class ReportBundler(IFileSystem fileSystem, string repositoryRoot)
                 writer.WritePropertyName(property.Name);
                 Sanitise(property.Value, writer, ref removed);
             }
+
             writer.WriteEndObject();
         }
         else if (element.ValueKind == JsonValueKind.Array)
         {
             writer.WriteStartArray();
-            foreach (var item in element.EnumerateArray()) Sanitise(item, writer, ref removed);
+            foreach (var item in element.EnumerateArray())
+            {
+                Sanitise(item, writer, ref removed);
+            }
+
             writer.WriteEndArray();
         }
         else if (element.ValueKind == JsonValueKind.String && IsRooted(element.GetString()!))
@@ -277,7 +367,10 @@ public sealed class ReportBundler(IFileSystem fileSystem, string repositoryRoot)
             writer.WriteStringValue("[path removed]");
             removed = true;
         }
-        else writer.WriteRawValue(element.GetRawText(), true);
+        else
+        {
+            writer.WriteRawValue(element.GetRawText(), true);
+        }
     }
 
     private static bool IsBoundary(char character) =>
@@ -297,6 +390,7 @@ public sealed class ReportBundler(IFileSystem fileSystem, string repositoryRoot)
                 stream.Write(content);
             }
         }
+
         return buffer.ToArray();
     }
 
@@ -318,14 +412,18 @@ public sealed class ReportBundler(IFileSystem fileSystem, string repositoryRoot)
             {
                 path = fileSystem.Path.Combine(path, segment);
                 if ((fileSystem.File.GetAttributes(path) & FileAttributes.ReparsePoint) != 0)
+                {
                     throw new InvalidDataException("Raw export or a directory above it is a symbolic link.");
+                }
             }
+
             original = fileSystem.File.ReadAllBytes(path);
         }
         catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
         {
             throw new InvalidDataException("Raw export is unreadable.");
         }
+
         var retained = Sanitised(original);
         var cases = citations.Where(cited => cited.Side == export.Side && cited.Observation.SourceFile == export.SourcePath)
             .Select(static cited => cited.Key).Distinct(StringComparer.Ordinal).Order(StringComparer.Ordinal);
@@ -338,12 +436,20 @@ public sealed class ReportBundler(IFileSystem fileSystem, string repositoryRoot)
     {
         var directory = fileSystem.Path.Combine(repositoryRoot, workspace);
         var target = fileSystem.Path.Combine(directory, name);
-        if (fileSystem.File.Exists(target)) throw new IOException("Report bundle already exists and is never overwritten.");
+        if (fileSystem.File.Exists(target))
+        {
+            throw new IOException("Report bundle already exists and is never overwritten.");
+        }
+
         fileSystem.Directory.CreateDirectory(directory);
         var temporary = fileSystem.Path.Combine(directory, fileSystem.Path.GetRandomFileName());
         try
         {
-            using (var stream = fileSystem.FileStream.New(temporary, FileMode.CreateNew, FileAccess.Write, FileShare.None)) stream.Write(zip);
+            using (var stream = fileSystem.FileStream.New(temporary, FileMode.CreateNew, FileAccess.Write, FileShare.None))
+            {
+                stream.Write(zip);
+            }
+
             fileSystem.File.Move(temporary, target, false);
         }
         catch (IOException)
@@ -352,13 +458,16 @@ public sealed class ReportBundler(IFileSystem fileSystem, string repositoryRoot)
         }
         finally
         {
-            if (fileSystem.File.Exists(temporary)) fileSystem.File.Delete(temporary);
+            if (fileSystem.File.Exists(temporary))
+            {
+                fileSystem.File.Delete(temporary);
+            }
         }
     }
 
     private const string ManifestPath = "evidence-manifest.json";
     private const string RawExportRole = "raw-export";
-    private const int RegularFile = unchecked((int)0x81A40000);
+    private const int RegularFile = unchecked((int) 0x81A40000);
 
     private static readonly DateTimeOffset EntryTime = new(2000, 1, 1, 0, 0, 0, TimeSpan.Zero);
 

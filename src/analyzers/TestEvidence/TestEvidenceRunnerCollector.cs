@@ -39,11 +39,11 @@ public sealed class TestEvidenceRunnerCollector
                 sessionId, methods, normalizedCases)
             : new TestEvidenceDiscovery(TestEvidenceDiscoveryState.Unavailable, null, methods, System.Array.Empty<TestEvidenceCase>());
 
-        var normalizedResults = NormalizeResults(runId, results, normalizedCases);
+        var (IsValid, Results) = NormalizeResults(runId, results, normalizedCases);
         var isValid = !string.IsNullOrEmpty(adapterId)
             && !string.IsNullOrEmpty(adapterVersion)
-            && normalizedResults.IsValid;
-        return new TestEvidenceRunnerCollectionResult(isValid, adapterId, adapterVersion, discovery, normalizedResults.Results);
+            && IsValid;
+        return new TestEvidenceRunnerCollectionResult(isValid, adapterId, adapterVersion, discovery, Results);
     }
 
     private static string? ResolveMethod(TestEvidenceRunnerCaseRecord runnerCase, IReadOnlyList<TestEvidenceMethod> methods)

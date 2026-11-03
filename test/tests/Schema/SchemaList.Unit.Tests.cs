@@ -26,6 +26,7 @@ public sealed class SchemaListUnitTests
         {
             files.AddFile("repo/.specht/manifest.json", new MockFileData(manifest));
         }
+
         var versions = EngineServices.Versions();
         var handler = new SchemaVersionManager(new SpechtManifestStore(files), new SpechtManifestParser(versions),
             new ManifestPinEditor(new SpechtManifestParser(versions), versions), versions);
@@ -50,16 +51,17 @@ public sealed class SchemaListUnitTests
         {
             files.AddFile("repo/.specht/manifest.json", new MockFileData(manifest));
         }
+
         var versions = EngineServices.Versions();
         var handler = new SchemaVersionManager(new SpechtManifestStore(files), new SpechtManifestParser(versions),
             new ManifestPinEditor(new SpechtManifestParser(versions), versions), versions);
 
         // When
-        var result = handler.List("repo");
+        var (Versions, Pinned, InUse) = handler.List("repo");
 
         // Then
-        result.Pinned?.ToString().Should().Be(pin);
-        result.Versions.Should().Equal(versions.Versions.Select(static version => version.Number));
+        Pinned?.ToString().Should().Be(pin);
+        Versions.Should().Equal(versions.Versions.Select(static version => version.Number));
     }
 
     [Theory]
@@ -75,11 +77,11 @@ public sealed class SchemaListUnitTests
             new ManifestPinEditor(new SpechtManifestParser(versions), versions), versions);
 
         // When
-        var result = handler.List("repo");
+        var (Versions, Pinned, InUse) = handler.List("repo");
 
         // Then
-        result.Pinned.Should().Be(new SemanticVersion(0, 3, 0));
-        result.InUse.Should().Be(Version(inUse));
+        Pinned.Should().Be(new SemanticVersion(0, 3, 0));
+        InUse.Should().Be(Version(inUse));
     }
 
     private static SemanticVersion Version(string text) =>

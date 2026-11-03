@@ -214,7 +214,7 @@ public sealed class TestEvidenceVsTestLogger : ITestLoggerWithParameters
             StringComparer.Ordinal);
         var records = cases.Values.Select(testCase => new TestEvidenceRunnerCaseRecord(CaseId(testCase), Resolve(testCase, methods), null,
             testCase.DisplayName)).ToList();
-        var categories = cases.ToDictionary(static entry => entry.Key, static entry => (IReadOnlyList<string>)Categories(entry.Value),
+        var categories = cases.ToDictionary(static entry => entry.Key, static entry => (IReadOnlyList<string>) Categories(entry.Value),
             StringComparer.Ordinal);
         var selected = new HashSet<string>(StringComparer.Ordinal);
         var outcomes = new List<TestEvidenceRunnerResultRecord>();

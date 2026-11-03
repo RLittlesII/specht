@@ -17,7 +17,11 @@ public sealed class ReleaseCatalogReader(HttpClient client)
 {
     public async Task<ReleaseCatalog> ReadAsync(string repository, CancellationToken cancellationToken = default)
     {
-        if (!ComparisonJson.IsRepository(repository)) throw new InvalidDataException("Repository identity is invalid.");
+        if (!ComparisonJson.IsRepository(repository))
+        {
+            throw new InvalidDataException("Repository identity is invalid.");
+        }
+
         var releases = ImmutableArray.CreateBuilder<ReleaseRecord>();
         var next = new Uri($"https://api.github.com/repos/{repository}/releases?per_page=100&page=1");
         var visited = new HashSet<Uri>();
@@ -34,27 +38,40 @@ public sealed class ReleaseCatalogReader(HttpClient client)
                 using var response = await client.GetAsync(next, cancellationToken);
                 response.EnsureSuccessStatusCode();
                 using var document = JsonDocument.Parse(await response.Content.ReadAsStringAsync(cancellationToken));
-                if (document.RootElement.ValueKind != JsonValueKind.Array) throw new JsonException();
+                if (document.RootElement.ValueKind != JsonValueKind.Array)
+                {
+                    throw new JsonException();
+                }
+
                 foreach (var item in document.RootElement.EnumerateArray())
                 {
                     var tag = item.GetProperty("tag_name").GetString() ?? throw new JsonException();
                     var published = item.GetProperty("published_at");
                     var draft = item.GetProperty("draft").GetBoolean();
                     var (commit, failure) = draft || published.ValueKind == JsonValueKind.Null
-                        ? ((string?)null, "Release is unpublished.") : await ResolveAsync(repository, tag, cancellationToken);
+                        ? ((string?) null, "Release is unpublished.") : await ResolveAsync(repository, tag, cancellationToken);
                     releases.Add(new ReleaseRecord(repository, item.GetProperty("id").GetInt64(), tag,
                         published.ValueKind == JsonValueKind.Null ? null : published.GetDateTimeOffset(), draft,
                         item.GetProperty("prerelease").GetBoolean(), commit, failure));
                 }
+
                 next = null;
                 if (response.Headers.TryGetValues("Link", out var values))
                 {
                     var links = string.Join(',', values);
                     var matches = Regex.Matches(links, "<([^>]+)>;\\s*rel=\"next\"");
-                    if (matches.Count > 1) throw new JsonException();
-                    if (matches.Count == 1) next = new Uri(matches[0].Groups[1].Value, UriKind.Absolute);
+                    if (matches.Count > 1)
+                    {
+                        throw new JsonException();
+                    }
+
+                    if (matches.Count == 1)
+                    {
+                        next = new Uri(matches[0].Groups[1].Value, UriKind.Absolute);
+                    }
                 }
             }
+
             return new ReleaseCatalog(releases.ToImmutable(), true, null);
         }
         catch (Exception exception) when (exception is HttpRequestException or JsonException or InvalidOperationException
@@ -77,16 +94,29 @@ public sealed class ReleaseCatalogReader(HttpClient client)
                 using var document = JsonDocument.Parse(await response.Content.ReadAsStringAsync(cancellationToken));
                 var value = document.RootElement.GetProperty("object");
                 var sha = value.GetProperty("sha").GetString();
-                if (!ComparisonJson.IsCommit(sha) || !seen.Add(sha!)) break;
+                if (!ComparisonJson.IsCommit(sha) || !seen.Add(sha!))
+                {
+                    break;
+                }
+
                 var kind = value.GetProperty("type").GetString();
-                if (kind == "commit") return (sha, null);
-                if (kind != "tag") break;
+                if (kind == "commit")
+                {
+                    return (sha, null);
+                }
+
+                if (kind != "tag")
+                {
+                    break;
+                }
+
                 path = $"https://api.github.com/repos/{repository}/git/tags/{sha}";
             }
         }
         catch (Exception exception) when (exception is HttpRequestException or JsonException or InvalidOperationException
             or KeyNotFoundException or TaskCanceledException && !cancellationToken.IsCancellationRequested)
         { }
+
         return (null, "Selected release tag cannot be resolved to an exact commit.");
     }
 }

@@ -65,7 +65,7 @@ public sealed class SpechtModelUnitTests
             .WithDocument(
                 new SpechtDocumentFixture().WithFrontmatter(
                     new FrontmatterFixture().WithNode(new JsonObject { ["epic"] = "0009", ["id"] = "F1" })))
-            .WithFeatureFiles(featureFiles.Select(static path => (FeatureFile)new FeatureFileFixture().WithRelativePath(path)).ToArray());
+            .WithFeatureFiles(featureFiles.Select(static path => (FeatureFile) new FeatureFileFixture().WithRelativePath(path)).ToArray());
         SpechtModel model = new SpechtModelFixture().WithFeatures(feature);
         ISpechtRule rule = new CompanionFileRule();
 

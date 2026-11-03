@@ -23,18 +23,19 @@ public sealed class ManifestDefaultsIntegrationTests
         {
             tree.WriteRaw(SpechtTree.ManifestPath, manifest);
         }
+
         AcceptanceTool.Launch(tree.Root, "--root", root).ExitCode.Should().Be(expectedCheckExit);
         var expected = JsonNode.Parse(EngineServices.Versions().Versions[^1].Manifest);
         var before = Directory.GetFiles(tree.Root, "*", SearchOption.AllDirectories)
             .ToDictionary(path => Path.GetRelativePath(tree.Root, path), static path => File.ReadAllBytes(path));
 
         // When
-        var result = AcceptanceTool.Launch(tree.Root, "manifest", "--defaults", "--root", root);
+        var (Stdout, Stderr, ExitCode) = AcceptanceTool.Launch(tree.Root, "manifest", "--defaults", "--root", root);
 
         // Then
-        result.ExitCode.Should().Be(0, result.Stderr);
-        result.Stderr.Should().BeEmpty();
-        JsonNode.DeepEquals(JsonNode.Parse(result.Stdout), expected).Should().BeTrue();
+        ExitCode.Should().Be(0, Stderr);
+        Stderr.Should().BeEmpty();
+        JsonNode.DeepEquals(JsonNode.Parse(Stdout), expected).Should().BeTrue();
         var after = Directory.GetFiles(tree.Root, "*", SearchOption.AllDirectories)
             .ToDictionary(path => Path.GetRelativePath(tree.Root, path), static path => File.ReadAllBytes(path));
         after.Should().BeEquivalentTo(before);

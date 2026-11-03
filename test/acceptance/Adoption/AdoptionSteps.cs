@@ -263,6 +263,7 @@ public sealed class AdoptionSteps
         | --- | --- |
         | B-001 | Active |
         """;
+
     private readonly JsonNode _configuration = JsonNode.Parse("""
         {
           "revision":"0.1.0","consumerPatterns":{"feature":"^F[0-9]+$","claim":"^B-[0-9]{3}$"},
@@ -277,12 +278,14 @@ public sealed class AdoptionSteps
           }
         }
         """)!;
+
     private readonly List<AdoptionFile> _records = new()
     {
         new AdoptionFile("src/read/.spec/README.md", FeatureText, "feature"),
         new AdoptionFile("contracts/feature.json", "{\"type\":\"object\",\"required\":[\"id\",\"spec_status\"]}", "schema:feature"),
         new AdoptionFile("decisions/0027.md", "# ADR-0027: A consumer decision\n\n## Status\n\nAccepted.\n", "adr"),
     };
+
     private string _source = "class Consumer { }";
     private AnalysisDeclaration? _declaration;
     private ClaimReference? _reference;

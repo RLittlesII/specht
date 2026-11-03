@@ -30,11 +30,16 @@ internal sealed class ReleaseAssetStorage
         {
             using var content = new MemoryStream();
             request.Content!.ReadAsStream().CopyTo(content);
-            if ((int)UploadStatus is < 200 or > 299)
+            if ((int) UploadStatus is < 200 or > 299)
             {
-                if (Racer is not null) Assets.Add(new ReleaseAsset(1000 + Assets.Count, query["name"]!, "uploaded", Racer.Invoke(content.ToArray())));
+                if (Racer is not null)
+                {
+                    Assets.Add(new ReleaseAsset(1000 + Assets.Count, query["name"]!, "uploaded", Racer.Invoke(content.ToArray())));
+                }
+
                 return new HttpResponseMessage(UploadStatus);
             }
+
             var asset = new ReleaseAsset(1000 + Assets.Count, query["name"]!, UploadedState, Retain.Invoke(content.ToArray()));
             Assets.Add(asset);
             return new HttpResponseMessage(UploadStatus)
@@ -42,6 +47,7 @@ internal sealed class ReleaseAssetStorage
                 Content = new StringContent(JsonSerializer.Serialize(new { id = asset.Id, name = asset.Name, state = asset.State })),
             };
         }
+
         if (request.Method == HttpMethod.Get && uri.Host == "api.github.com" && uri.AbsolutePath == "/repos/example/tool/releases/20/assets")
         {
             var size = int.Parse(query["per_page"] ?? "30", CultureInfo.InvariantCulture);
@@ -49,6 +55,7 @@ internal sealed class ReleaseAssetStorage
             var listed = Assets.Skip((page - 1) * size).Take(size).Select(static asset => new { id = asset.Id, name = asset.Name, state = asset.State });
             return new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(JsonSerializer.Serialize(listed)) };
         }
+
         var stored = Assets.FirstOrDefault(asset => uri.AbsolutePath == $"/repos/example/tool/releases/assets/{asset.Id}");
         if (request.Method == HttpMethod.Get && uri.Host == "api.github.com" && stored is not null
             && request.Headers.Accept.Any(static accept => accept.MediaType == "application/octet-stream"))

@@ -4,9 +4,7 @@ using Specht.Rules;
 
 namespace Specht.Evaluation;
 
-/// <summary>
-/// Evaluates a resolved tree with the rules it was given (ADR-0010 § "The evaluator is pure"): select, run, stamp, sort.
-/// </summary>
+/// <summary>Evaluates a resolved tree with the rules it was given (ADR-0010 § "The evaluator is pure"): select, run, stamp, sort.</summary>
 /// <param name="rules">The rule set, in the order it is run.</param>
 /// <param name="order">The order the report carries its violations in.</param>
 /// <implements epic="0001" feature="F1" claim="B-001" />

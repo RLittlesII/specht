@@ -7,9 +7,7 @@ using Specht.Rules;
 
 namespace Specht;
 
-/// <summary>
-/// Reads the resolved specification tree through the model reader and evaluates it with the engine's evaluator.
-/// </summary>
+/// <summary>Reads the resolved specification tree through the model reader and evaluates it with the engine's evaluator.</summary>
 /// <param name="reader">The model reader.</param>
 /// <param name="evaluator">The evaluator over the registered rule set.</param>
 /// <param name="rules">The registered rule set, from which the frontmatter rules are taken for one document.</param>

@@ -42,7 +42,7 @@ public sealed partial class ManifestSteps
 
     [Given("the manifest is the default one this repository checks itself with")]
     public void GivenTheManifestIsTheDefaultOneThisRepositoryChecksItselfWith() =>
-        _manifest = JsonNode.Parse(File.ReadAllText(ManifestPath))!.AsObject();
+        Manifest = JsonNode.Parse(File.ReadAllText(ManifestPath))!.AsObject();
 
     [Given("the manifest carries a key the engine does not know")]
     public void GivenTheManifestCarriesAKeyTheEngineDoesNotKnow() => Manifest[UnknownKey] = "synthetic";
@@ -310,7 +310,7 @@ public sealed partial class ManifestSteps
     public void GivenTheManifestSetsNoLevelForTheOutOfOrderSectionRule() => Manifest.Remove("rules");
 
     [Given("a rule that reports its violations at warning severity")]
-    public void GivenARuleThatReportsItsViolationsAtWarningSeverity() => _standIn = new WarningRule(OutOfOrderRule);
+    public void GivenARuleThatReportsItsViolationsAtWarningSeverity() => StandIn = new WarningRule(OutOfOrderRule);
 
     [Given("the manifest sets that rule to error severity")]
     public void GivenTheManifestSetsThatRuleToErrorSeverity() => Set(StandIn.Id, "error");
@@ -402,7 +402,7 @@ public sealed partial class ManifestSteps
     public void GivenTheManifestNamesTheFeatureSchemaFile(string name)
     {
         Manifest["frontmatterSchemas"] = new JsonObject { ["feature"] = name };
-        _featureSchema = name;
+        FeatureSchema = name;
     }
 
     [Given("the schema folder holds that file and not the default name")]
@@ -547,17 +547,17 @@ public sealed partial class ManifestSteps
 
     private (string Stdout, string Stderr, int ExitCode) Run => _run ?? throw new InvalidOperationException("The tool was not run.");
 
-    private JsonObject Manifest => _manifest ?? throw new InvalidOperationException("No manifest was read.");
+    private JsonObject Manifest { get => field ?? throw new InvalidOperationException("No manifest was read."); set; }
 
     private string OutOfOrderRule => RuleIds.Under(Manifest, "SPEC010");
 
     private string ManifestPath => Path.Combine(Tree.Root, SpechtTree.ManifestPath);
 
-    private string FeatureSchema => _featureSchema ?? throw new InvalidOperationException("The manifest names no Feature schema file.");
+    private string FeatureSchema { get => field ?? throw new InvalidOperationException("The manifest names no Feature schema file."); set; }
 
-    private string RuleId => _ruleId ?? throw new InvalidOperationException("The manifest sets no rule.");
+    private string RuleId { get => field ?? throw new InvalidOperationException("The manifest sets no rule."); set; }
 
-    private WarningRule StandIn => _standIn ?? throw new InvalidOperationException("No rule was stood in.");
+    private WarningRule StandIn { get => field ?? throw new InvalidOperationException("No rule was stood in."); set; }
 
     private static string Matrix(string title, string middleHeaders, string middleCells) =>
         $"## {title}\n\n| Claim ID | {middleHeaders} | Status |\n| --- | {string.Join(" | ", middleHeaders.Split('|').Select(static _ => "---"))} | --- |\n"
@@ -580,7 +580,7 @@ public sealed partial class ManifestSteps
     private void Set(string ruleId, JsonNode setting)
     {
         Named("rules")[ruleId] = setting;
-        _ruleId = ruleId;
+        RuleId = ruleId;
     }
 
     private string Write(string id, IReadOnlyList<string> sections)
@@ -639,18 +639,14 @@ public sealed partial class ManifestSteps
     private string? _tagSpecification;
     private List<string> _claimTags = [];
     private SpechtTree? _tree;
-    private JsonObject? _manifest;
     private SpechtReport? _report;
     private (string Stdout, string Stderr, int ExitCode)? _run;
     private SpechtManifestException? _rejection;
     private string? _defaultClaimGrammar;
     private bool _fromRoot;
-    private string? _featureSchema;
     private SpechtModel? _model;
     private IReadOnlyList<SpechtViolation> _frontmatterViolations = [];
     private IReadOnlyList<GoldenReport.Verdict>? _golden;
-    private string? _ruleId;
     private int? _rulesEvaluatedByDefault;
     private string? _mark;
-    private WarningRule? _standIn;
 }

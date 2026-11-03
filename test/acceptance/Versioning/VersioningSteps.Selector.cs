@@ -23,6 +23,7 @@ public sealed partial class VersioningSteps
             WhenPinIsConfirmed("0.2.0");
             return;
         }
+
         _filesBefore ??= SnapshotFiles();
         (_stdout, _stderr, _exitCode) = AcceptanceTool.Launch(Tree.Root, "schema", "pin");
     }
@@ -39,8 +40,10 @@ public sealed partial class VersioningSteps
             {
                 break;
             }
+
             console.Input.PushKey(ConsoleKey.DownArrow);
         }
+
         console.Input.PushKey(ConsoleKey.Enter);
         var result = EngineServices.CommandApp(new FileSystem(), console).Run("schema", "pin", "--root", Tree.Root);
         (_stdout, _stderr, _exitCode) = (result.Output, string.Empty, result.ExitCode);

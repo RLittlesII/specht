@@ -30,13 +30,13 @@ public sealed class ManifestPinEditor(SpechtManifestParser parser, SchemaVersion
             var current = new SemanticVersion(0, 1, 0);
             if (manifest.ContainsKey("schemaVersion"))
             {
-                var value = manifest["schemaVersion"] as JsonValue;
-                if (value is null || !value.TryGetValue<string>(out var text)
+                if (manifest["schemaVersion"] is not JsonValue value || !value.TryGetValue<string>(out var text)
                     || !SemanticVersion.TryParse(text, out current) || versions.Find(current) is null)
                 {
                     current = versions.Versions[^1].Number;
                 }
             }
+
             manifest["schemaVersion"] = current.ToString();
             _ = parser.PinnedVersion(parser.Parse(manifest.ToJsonString()));
         }
@@ -69,6 +69,7 @@ public sealed class ManifestPinEditor(SpechtManifestParser parser, SchemaVersion
                     return [.. bytes.AsSpan(0, start), .. encoding.GetBytes(JsonSerializer.Serialize(target.ToString())), .. bytes.AsSpan(end)];
                 }
             }
+
             if (reader.TokenType == JsonTokenType.EndObject && reader.CurrentDepth == 0)
             {
                 var end = OriginalOffset(reader.TokenStartIndex, utf8, text, encoding, offset);
@@ -76,12 +77,13 @@ public sealed class ManifestPinEditor(SpechtManifestParser parser, SchemaVersion
                 return [.. bytes.AsSpan(0, end), .. addition, .. bytes.AsSpan(end)];
             }
         }
+
         throw new SpechtManifestException($"{SpechtManifestStore.RelativePath}: expected a manifest object.");
     }
 
     /// <implements epic="0001" feature="F7" claim="B-043" />
     internal int OriginalOffset(long utf8Offset, byte[] utf8, string text, Encoding encoding, int preamble) =>
-        preamble + encoding.GetByteCount(text.AsSpan(0, Encoding.UTF8.GetCharCount(utf8.AsSpan(0, checked((int)utf8Offset)))));
+        preamble + encoding.GetByteCount(text.AsSpan(0, Encoding.UTF8.GetCharCount(utf8.AsSpan(0, checked((int) utf8Offset)))));
 
     /// <implements epic="0001" feature="F7" claim="B-043" />
     internal (Encoding Encoding, int Offset) Format(byte[] bytes)
@@ -91,18 +93,22 @@ public sealed class ManifestPinEditor(SpechtManifestParser parser, SchemaVersion
         {
             return (Encoding.UTF32, 4);
         }
+
         if (value.StartsWith(new byte[] { 0x00, 0x00, 0xFE, 0xFF }))
         {
             return (new UTF32Encoding(bigEndian: true, byteOrderMark: true), 4);
         }
+
         if (value.StartsWith(new byte[] { 0xFF, 0xFE }))
         {
             return (Encoding.Unicode, 2);
         }
+
         if (value.StartsWith(new byte[] { 0xFE, 0xFF }))
         {
             return (Encoding.BigEndianUnicode, 2);
         }
+
         return (Encoding.UTF8, value.StartsWith(new byte[] { 0xEF, 0xBB, 0xBF }) ? 3 : 0);
     }
 }

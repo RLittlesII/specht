@@ -15,7 +15,11 @@ public sealed class ProcessRunnerIntegrationTests : IDisposable
     public async Task RequestedEnvironment_WhenRunning_ShouldGiveTheChildNothingElse()
     {
         // Given
-        if (OperatingSystem.IsWindows()) Assert.Skip(UnixOnly);
+        if (OperatingSystem.IsWindows())
+        {
+            Assert.Skip(UnixOnly);
+        }
+
         Environment.SetEnvironmentVariable(ParentOnly, "parent-value");
 
         // When
@@ -31,7 +35,11 @@ public sealed class ProcessRunnerIntegrationTests : IDisposable
     public async Task RelativeDirectory_WhenRunning_ShouldRunThereAndReturnItsOutputLinesAndExitCode()
     {
         // Given
-        if (OperatingSystem.IsWindows()) Assert.Skip(UnixOnly);
+        if (OperatingSystem.IsWindows())
+        {
+            Assert.Skip(UnixOnly);
+        }
+
         var request = Request("printf 'first\\nsecond\\n'; : > marker; exit 3");
 
         // When
@@ -47,7 +55,11 @@ public sealed class ProcessRunnerIntegrationTests : IDisposable
     public async Task CancelledChild_WhenItStartedItsOwnChild_ShouldKillBothAndRethrowTheCancellation()
     {
         // Given
-        if (OperatingSystem.IsWindows()) Assert.Skip(UnixOnly);
+        if (OperatingSystem.IsWindows())
+        {
+            Assert.Skip(UnixOnly);
+        }
+
         var (watcher, ready) = WatchForReady();
         using var watching = watcher;
         using var caller = CancellationTokenSource.CreateLinkedTokenSource(TestContext.Current.CancellationToken);
@@ -72,7 +84,11 @@ public sealed class ProcessRunnerIntegrationTests : IDisposable
     public async Task OrphanHoldingTheOutput_WhenTheChildIsKilled_ShouldStopWaitingWithinThirtySeconds()
     {
         // Given
-        if (OperatingSystem.IsWindows()) Assert.Skip(UnixOnly);
+        if (OperatingSystem.IsWindows())
+        {
+            Assert.Skip(UnixOnly);
+        }
+
         var (watcher, ready) = WatchForReady();
         using var watching = watcher;
         var time = new ObservedTime();

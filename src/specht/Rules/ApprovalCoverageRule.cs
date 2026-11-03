@@ -71,7 +71,7 @@ public sealed class ApprovalCoverageRule : ISpechtRule
                             ["row"] = index + 1,
                             ["columns"] = new JsonArray(row.Select(static (cell, column) => (Cell: cell, Column: column + 1))
                                 .Where(cell => string.Equals(cell.Cell.Trim(), markers["missing"], StringComparison.Ordinal))
-                                .Select(static cell => (JsonNode?)JsonValue.Create(cell.Column)).ToArray()),
+                                .Select(static cell => (JsonNode?) JsonValue.Create(cell.Column)).ToArray()),
                         },
                     };
                 }

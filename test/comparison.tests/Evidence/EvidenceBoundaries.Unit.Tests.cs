@@ -169,7 +169,11 @@ public sealed class EvidenceBoundariesUnitTests
             };
         }
 
-        if (gap == "unknown mapping") current = inventory with { Cases = [inventory.Cases[0] with { IdentityKnown = false }] };
+        if (gap == "unknown mapping")
+        {
+            current = inventory with { Cases = [inventory.Cases[0] with { IdentityKnown = false }] };
+        }
+
         if (gap == "missing runtime")
         {
             session = session with

@@ -46,6 +46,7 @@ public sealed class TestEvidenceArtifactReader
             {
                 throw Invalid("Declared fingerprints do not match their input identities.");
             }
+
             var scenarios = ReadScenarios(root, discovery.Cases);
             var catalog = root.TryGetProperty("catalog", out var catalogElement) ? ReadCatalog(catalogElement) : null;
 
@@ -236,7 +237,7 @@ public sealed class TestEvidenceArtifactReader
             {
                 JsonValueKind.True => true,
                 JsonValueKind.False => false,
-                JsonValueKind.Null => (bool?)null,
+                JsonValueKind.Null => (bool?) null,
                 _ => throw Invalid("Binding eligibility must be boolean or null."),
             };
             if (shapeValid != (status is not null)
@@ -398,7 +399,7 @@ public sealed class TestEvidenceArtifactReader
         {
             JsonValueKind.True => true,
             JsonValueKind.False => false,
-            JsonValueKind.Null => (bool?)null,
+            JsonValueKind.Null => (bool?) null,
             _ => throw Invalid("Scenario claim eligibility must be boolean or null."),
         };
         if ((status == "resolved") != (target is not null)

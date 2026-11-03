@@ -78,5 +78,5 @@ public sealed class DeclaredChildrenRuleUnitTests
                 new SpechtDocumentFixture()
                     .WithRelativePath(path)
                     .WithFrontmatter(new FrontmatterFixture().WithNode(
-                        new JsonObject { ["children"] = new JsonArray([.. children.Select(static child => (JsonNode?)child)]) })));
+                        new JsonObject { ["children"] = new JsonArray([.. children.Select(static child => (JsonNode?) child)]) })));
 }

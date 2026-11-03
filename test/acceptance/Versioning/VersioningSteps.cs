@@ -480,7 +480,7 @@ public sealed partial class VersioningSteps
             {
                 ["location"] = "https://schemas.example/specht/",
                 ["version"] = "2026.10",
-                ["hashes"] = new JsonObject(SchemaPaths.Select(schema => KeyValuePair.Create(schema.Key, (JsonNode?)HashOf(schema.Value)))),
+                ["hashes"] = new JsonObject(SchemaPaths.Select(schema => KeyValuePair.Create(schema.Key, (JsonNode?) HashOf(schema.Value)))),
             };
             fault(source);
             manifest["spechtSchema"] = source;

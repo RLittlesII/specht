@@ -1,8 +1,6 @@
 namespace Specht.Model;
 
-/// <summary>
-/// A parsed specification document: its frontmatter and its top-level sections, as <see cref="SpechtDocumentParser"/> gives them.
-/// </summary>
+/// <summary>A parsed specification document: its frontmatter and its top-level sections, as <see cref="SpechtDocumentParser"/> gives them.</summary>
 /// <implements epic="0001" feature="F1" claim="B-004" />
 public sealed class SpechtDocument
 {

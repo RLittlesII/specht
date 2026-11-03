@@ -166,6 +166,7 @@ public sealed class DocumentationCodeFixUnitTests
         {
             remaining.Should().ContainSingle().Which.Id.Should().Be("SPCT0007");
         }
+
         var provider = new DocumentationCodeFixProvider();
         var context = new FixAllContext(project.Documents.Single(), provider, FixAllScope.Solution, action.EquivalenceKey,
             provider.FixableDiagnosticIds, new RepairDiagnostics(), TestContext.Current.CancellationToken);

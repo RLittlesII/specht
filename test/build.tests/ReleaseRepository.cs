@@ -30,9 +30,9 @@ internal sealed class ReleaseRepository : IDisposable
         (await Run("git", ["-c", "user.name=Synthetic", "-c", "user.email=synthetic@example.invalid",
             "-c", "core.hooksPath=/dev/null", "-c", "commit.gpgsign=false", "commit", "-m", "Synthetic fixture"])).ExitCode.Should().Be(0);
         (await Run("git", ["update-ref", "refs/remotes/origin/main", "HEAD"])).ExitCode.Should().Be(0);
-        var version = await Run("dotnet", ["nbgv", "get-version", "--variable", "NuGetPackageVersion"]);
-        version.ExitCode.Should().Be(0, version.Output);
-        return $"v{version.Output.Trim()}";
+        var (ExitCode, Output) = await Run("dotnet", ["nbgv", "get-version", "--variable", "NuGetPackageVersion"]);
+        ExitCode.Should().Be(0, Output);
+        return $"v{Output.Trim()}";
     }
 
     public Task<(int ExitCode, string Output)> RunTarget(string target, string tag) =>

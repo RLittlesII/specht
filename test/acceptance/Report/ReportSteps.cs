@@ -124,9 +124,9 @@ public sealed partial class ReportSteps
 
         _root = root;
         _report = EngineServices.Runner().Run(root);
-        _document = SpechtReportDocument.From(_report);
+        Document = SpechtReportDocument.From(_report);
         (_stdout, _stderr, _) = AcceptanceTool.Launch(root, "--root", ".", "--json");
-        _json = _stdout.EndsWith(Environment.NewLine, StringComparison.Ordinal) ? _stdout[..^Environment.NewLine.Length] : _stdout;
+        Json = _stdout.EndsWith(Environment.NewLine, StringComparison.Ordinal) ? _stdout[..^Environment.NewLine.Length] : _stdout;
     }
 
     [Then("the standard output parses as a single JSON document")]
@@ -282,9 +282,9 @@ public sealed partial class ReportSteps
 
     private SpechtReport Report => _report ?? throw new InvalidOperationException("The check has not run.");
 
-    private SpechtReportDocument Document => _document ?? throw new InvalidOperationException("No document was made.");
+    private SpechtReportDocument Document { get => field ?? throw new InvalidOperationException("No document was made."); set; }
 
-    private string Json => _json ?? throw new InvalidOperationException("No document was serialized.");
+    private string Json { get => field ?? throw new InvalidOperationException("No document was serialized."); set; }
 
     private JsonObject Manifest => JsonNode.Parse(File.ReadAllText(Path.Combine(Tree.Root, SpechtTree.ManifestPath)))!.AsObject();
 
@@ -334,8 +334,6 @@ public sealed partial class ReportSteps
     private string? _nested;
     private string? _root;
     private SpechtReport? _report;
-    private SpechtReportDocument? _document;
-    private string? _json;
     private string? _key;
     private string _stdout = string.Empty;
     private string _stderr = string.Empty;

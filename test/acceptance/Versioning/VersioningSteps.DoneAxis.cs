@@ -51,7 +51,7 @@ public sealed partial class VersioningSteps
 
     [When("its feature template is read")]
     public void WhenItsFeatureTemplateIsRead() =>
-        _template = Encoding.UTF8.GetString(
+        TraceabilityGuidance = Encoding.UTF8.GetString(
             InitWriter.ShippingCopy(typeof(InitWriter).Assembly)[$"templates/v{_embedded!.Number}/feature.md"]);
 
     [Then("the missing test is reported by the missing-coverage rule")]
@@ -117,12 +117,14 @@ public sealed partial class VersioningSteps
     {
         get
         {
-            var template = _template ?? throw new InvalidOperationException("No feature template was read.");
+            var template = field ?? throw new InvalidOperationException("No feature template was read.");
             var start = template.IndexOf("## 9. ", StringComparison.Ordinal);
             start.Should().BeGreaterThanOrEqualTo(0, "the feature template has a § 9");
             var end = template.IndexOf("## 10. ", start, StringComparison.Ordinal);
             return Regex.Replace(end < 0 ? template[start..] : template[start..end], @"\s+", " ");
         }
+
+        set;
     }
 
     private void ThenTheRuleReportsNothing(string ruleId)
@@ -150,6 +152,4 @@ public sealed partial class VersioningSteps
     private const string MissingRow = "| B-001 | It does the thing | Missing | Missing |";
 
     private IReadOnlyList<RuleEntry> _entries = [];
-
-    private string? _template;
 }

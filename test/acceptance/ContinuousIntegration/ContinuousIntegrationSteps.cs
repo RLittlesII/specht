@@ -67,7 +67,7 @@ public sealed class ContinuousIntegrationSteps
     // A matrix leg's check is named by its job and its image, both literals in the committed file.
     [Then("each operating system's check has the same name in both")]
     public void ThenEachOperatingSystemsCheckHasTheSameNameInBoth() =>
-        ((YamlMappingNode)Workflow["jobs"]).Children.Keys.Select(static key => key.ToString())
+        ((YamlMappingNode) Workflow["jobs"]).Children.Keys.Select(static key => key.ToString())
             .Concat(Jobs().SelectMany(Images))
             .Should().AllSatisfy(static name => name.Should().NotContain("${{"));
 
@@ -95,7 +95,7 @@ public sealed class ContinuousIntegrationSteps
     {
         var stream = new YamlStream();
         stream.Load(new StringReader(File.ReadAllText(Path.Combine(FindRepository(AppContext.BaseDirectory), ".github", "workflows", "ci.yml"))));
-        return (YamlMappingNode)stream.Documents[0].RootNode;
+        return (YamlMappingNode) stream.Documents[0].RootNode;
     }
 
     private static string FindRepository(string directory) =>
@@ -105,14 +105,14 @@ public sealed class ContinuousIntegrationSteps
                              ?? throw new InvalidOperationException("No repository root above the test assembly."));
 
     private static IEnumerable<string> Branches(string trigger) =>
-        ((YamlSequenceNode)((YamlMappingNode)((YamlMappingNode)Workflow["on"])[trigger])["branches"]).Select(static branch => branch.ToString());
+        ((YamlSequenceNode) ((YamlMappingNode) ((YamlMappingNode) Workflow["on"])[trigger])["branches"]).Select(static branch => branch.ToString());
 
     private static IEnumerable<KeyValuePair<string, string>> Permissions() =>
-        ((YamlMappingNode)Workflow["permissions"]).Children.Select(static pair => KeyValuePair.Create(pair.Key.ToString(), pair.Value.ToString()));
+        ((YamlMappingNode) Workflow["permissions"]).Children.Select(static pair => KeyValuePair.Create(pair.Key.ToString(), pair.Value.ToString()));
 
-    private static IEnumerable<YamlMappingNode> Jobs() => ((YamlMappingNode)Workflow["jobs"]).Children.Values.Cast<YamlMappingNode>();
+    private static IEnumerable<YamlMappingNode> Jobs() => ((YamlMappingNode) Workflow["jobs"]).Children.Values.Cast<YamlMappingNode>();
 
-    private static IEnumerable<YamlMappingNode> Steps(YamlMappingNode job) => ((YamlSequenceNode)job["steps"]).Cast<YamlMappingNode>();
+    private static IEnumerable<YamlMappingNode> Steps(YamlMappingNode job) => ((YamlSequenceNode) job["steps"]).Cast<YamlMappingNode>();
 
     private static string Scalar(YamlMappingNode node, string key) => node[key].ToString();
 
@@ -120,16 +120,16 @@ public sealed class ContinuousIntegrationSteps
     {
         var checkout = Steps(job).Single(static step =>
             step.Children.TryGetValue("uses", out var uses) && uses.ToString().StartsWith("actions/checkout@", StringComparison.Ordinal));
-        return ((YamlMappingNode)checkout["with"]).Children.ToDictionary(static pair => pair.Key.ToString(), static pair => pair.Value.ToString());
+        return ((YamlMappingNode) checkout["with"]).Children.ToDictionary(static pair => pair.Key.ToString(), static pair => pair.Value.ToString());
     }
 
     private static IEnumerable<string> Runs(YamlMappingNode job) =>
         Steps(job).Where(static step => step.Children.ContainsKey("id")).Select(static step => step["run"].ToString().Trim());
 
     private static IEnumerable<string> Images(YamlMappingNode job) =>
-        ((YamlSequenceNode)((YamlMappingNode)((YamlMappingNode)job["strategy"])["matrix"])["os"]).Select(static image => image.ToString());
+        ((YamlSequenceNode) ((YamlMappingNode) ((YamlMappingNode) job["strategy"])["matrix"])["os"]).Select(static image => image.ToString());
 
-    private static string FailFast(YamlMappingNode job) => ((YamlMappingNode)job["strategy"])["fail-fast"].ToString();
+    private static string FailFast(YamlMappingNode job) => ((YamlMappingNode) job["strategy"])["fail-fast"].ToString();
 
     private const string HeadCommit = "${{ github.event.pull_request.head.sha }}";
 }

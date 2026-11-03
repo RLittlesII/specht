@@ -25,7 +25,11 @@ public sealed class ReleaseReportingIntegrationTests : IDisposable
         _catalog["/repos/example/tool/git/ref/tags/v1"] = """{"object":{"type":"commit","sha":"eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"}}""";
         _handler = new ScriptedHttpHandler(request =>
         {
-            if (_artifacts.Respond(request) is { } artifact) return artifact;
+            if (_artifacts.Respond(request) is { } artifact)
+            {
+                return artifact;
+            }
+
             if (request.Method == HttpMethod.Get && request.RequestUri!.Host == "api.github.com"
                 && _catalog.TryGetValue(request.RequestUri.PathAndQuery, out var json))
             {
@@ -46,12 +50,12 @@ public sealed class ReleaseReportingIntegrationTests : IDisposable
         // Then
         outcome.Should().BeNull();
         var saved = _storage.Assets.Should().ContainSingle(static asset => asset.Name == "comparison-pair-v1.json").Subject;
-        var pair = ComparisonJson.ReadPair(Encoding.UTF8.GetString(saved.Content), ((ReleasePair)ReportFixtures.Pair()).Current);
+        var pair = ComparisonJson.ReadPair(Encoding.UTF8.GetString(saved.Content), ((ReleasePair) ReportFixtures.Pair()).Current);
         pair.Previous!.Id.Should().Be(10);
         pair.Previous.Commit.Should().Be(new string('e', 40));
         (await File.ReadAllBytesAsync(Path.Combine(_root, "request", "pair.json"), TestContext.Current.CancellationToken)).Should().Equal(saved.Content);
         (await File.ReadAllTextAsync(Path.Combine(_root, "request", "receipt.json"), TestContext.Current.CancellationToken))
-            .Should().Be(ComparisonJson.Write((ComparisonReceipt)new ComparisonReceiptFixture().WithPairDigest(ComparisonJson.Digest(pair))));
+            .Should().Be(ComparisonJson.Write((ComparisonReceipt) new ComparisonReceiptFixture().WithPairDigest(ComparisonJson.Digest(pair))));
     }
 
     [Fact]
@@ -71,7 +75,7 @@ public sealed class ReleaseReportingIntegrationTests : IDisposable
         (await File.ReadAllTextAsync(Path.Combine(_root, "request", "pair.json"), TestContext.Current.CancellationToken))
             .Should().Be(ComparisonJson.Write(saved));
         (await File.ReadAllTextAsync(Path.Combine(_root, "request", "receipt.json"), TestContext.Current.CancellationToken))
-            .Should().Be(ComparisonJson.Write((ComparisonReceipt)new ComparisonReceiptFixture().WithPairDigest(ComparisonJson.Digest(saved))));
+            .Should().Be(ComparisonJson.Write((ComparisonReceipt) new ComparisonReceiptFixture().WithPairDigest(ComparisonJson.Digest(saved))));
     }
 
     [Fact]
@@ -109,7 +113,7 @@ public sealed class ReleaseReportingIntegrationTests : IDisposable
         outcome.Stage.Should().Be(ReportingStage.Attachment);
         outcome.Judgment.Should().Be(ComparisonJudgment.ReviewRequired);
         outcome.Flags.Should().Equal(ReportingOutcome.Completed(document, null).Flags);
-        outcome.Report.Should().Be(new ReportReference(((ReleasePair)ReportFixtures.Pair()).Current,
+        outcome.Report.Should().Be(new ReportReference(((ReleasePair) ReportFixtures.Pair()).Current,
             new PublishedBundle(retained.Id, "comparison-20-1234-2.zip", Convert.ToHexStringLower(SHA256.HashData(bundle)))));
     }
 
@@ -245,7 +249,10 @@ public sealed class ReleaseReportingIntegrationTests : IDisposable
     {
         _client.Dispose();
         _handler.Dispose();
-        if (Directory.Exists(_root)) Directory.Delete(_root, true);
+        if (Directory.Exists(_root))
+        {
+            Directory.Delete(_root, true);
+        }
     }
 
     public sealed class ForeignBundles : TheoryData<int, ReleasePair>
@@ -278,8 +285,8 @@ public sealed class ReleaseReportingIntegrationTests : IDisposable
     private void Requested()
     {
         Directory.CreateDirectory(Path.Combine(_root, "request"));
-        File.WriteAllText(Path.Combine(_root, "request", "pair.json"), ComparisonJson.Write((ReleasePair)ReportFixtures.Pair()));
-        File.WriteAllText(Path.Combine(_root, "request", "receipt.json"), ComparisonJson.Write((ComparisonReceipt)new ComparisonReceiptFixture()));
+        File.WriteAllText(Path.Combine(_root, "request", "pair.json"), ComparisonJson.Write((ReleasePair) ReportFixtures.Pair()));
+        File.WriteAllText(Path.Combine(_root, "request", "receipt.json"), ComparisonJson.Write((ComparisonReceipt) new ComparisonReceiptFixture()));
     }
 
     private void Result(string artifact, string name, byte[] bundle, ComparisonDocument document) => _artifacts.Add(9, artifact, false,

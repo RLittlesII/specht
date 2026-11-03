@@ -104,8 +104,8 @@ public sealed partial class RuleSettingSteps
         _result.ExitCode.Should().Be(0, _result.Stderr);
         var parser = EngineServices.Parser();
         parser.PinnedVersion(parser.Parse(File.ReadAllText(ManifestPath))).RuleIds.Should().Contain("SPEC010");
-        var check = AcceptanceTool.Launch(Tree.Root);
-        check.ExitCode.Should().BeOneOf(0, 1);
+        var (Stdout, Stderr, ExitCode) = AcceptanceTool.Launch(Tree.Root);
+        ExitCode.Should().BeOneOf(0, 1);
     }
 
     [AfterScenario]

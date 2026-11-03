@@ -30,7 +30,7 @@ internal static class Program
         using var interrupt = PosixSignalRegistration.Create(PosixSignal.SIGINT, signal => Stop(signal, cancellation));
         using var terminate = PosixSignalRegistration.Create(PosixSignal.SIGTERM, signal => Stop(signal, cancellation));
         var environment = Environment.GetEnvironmentVariables().Cast<DictionaryEntry>()
-            .ToDictionary(static entry => (string)entry.Key, static entry => (string?)entry.Value ?? "", StringComparer.Ordinal);
+            .ToDictionary(static entry => (string) entry.Key, static entry => (string?) entry.Value ?? "", StringComparer.Ordinal);
         var fileSystem = new FileSystem();
         var root = fileSystem.Directory.GetCurrentDirectory();
         var summary = environment.GetValueOrDefault("GITHUB_STEP_SUMMARY") ?? fileSystem.Path.Combine(root, ".artifacts", "benchmarks", "summary.md");
@@ -61,7 +61,11 @@ internal static class Program
         var client = new HttpClient { Timeout = TimeSpan.FromMinutes(5) };
         client.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("specht-comparison", "1"));
         client.DefaultRequestHeaders.Add("X-GitHub-Api-Version", "2022-11-28");
-        if (!string.IsNullOrEmpty(token)) client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+        if (!string.IsNullOrEmpty(token))
+        {
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+        }
+
         return client;
     }
 

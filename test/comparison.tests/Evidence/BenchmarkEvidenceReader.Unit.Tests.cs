@@ -11,13 +11,13 @@ public sealed class BenchmarkEvidenceReaderUnitTests
     public void RecognisedExport_WhenReading_ShouldDecodeUnitsConfidenceAndMappedIdentity()
     {
         // Given
-        var side = ((SessionManifest)new SessionManifestFixture()).Current;
+        var side = ((SessionManifest) new SessionManifestFixture()).Current;
         var mapping = new IdentityMapping(
             "Synthetic.Check(1)",
             side.ProductCommit,
             "Check.cs",
             new string('d', 64),
-            ((MeasurementInventory)new MeasurementInventoryFixture()).Cases[0].Case);
+            ((MeasurementInventory) new MeasurementInventoryFixture()).Cases[0].Case);
 
         // When
         var inventory = BenchmarkEvidenceReader.Read(ExportData.FullJson, "current/full.json", side, [mapping]);
@@ -41,7 +41,7 @@ public sealed class BenchmarkEvidenceReaderUnitTests
     public void UnsupportedExporter_WhenReading_ShouldReturnUnavailableInsteadOfAnEmptyKnownInventory(string version)
     {
         // Given
-        var side = ((SessionManifest)new SessionManifestFixture()).Current with { ExporterVersion = version };
+        var side = ((SessionManifest) new SessionManifestFixture()).Current with { ExporterVersion = version };
 
         // When
         var inventory = BenchmarkEvidenceReader.Read(ExportData.FullJson, "current/full.json", side, []);
@@ -64,13 +64,24 @@ public sealed class BenchmarkEvidenceReaderUnitTests
         var benchmark = json["Benchmarks"]![0]!;
         switch (invalid)
         {
-            case "mean": benchmark["Statistics"]!["Mean"] = "NaN"; break;
-            case "interval": benchmark["Statistics"]!["ConfidenceInterval"]!["Lower"] = 101; break;
-            case "confidence": benchmark["Statistics"]!["ConfidenceInterval"]!["Level"] = 80; break;
-            case "negative allocation": benchmark["Memory"]!["BytesAllocatedPerOperation"] = -1; break;
-            case "missing allocation": benchmark["Memory"] = null; break;
+            case "mean":
+                benchmark["Statistics"]!["Mean"] = "NaN";
+                break;
+            case "interval":
+                benchmark["Statistics"]!["ConfidenceInterval"]!["Lower"] = 101;
+                break;
+            case "confidence":
+                benchmark["Statistics"]!["ConfidenceInterval"]!["Level"] = 80;
+                break;
+            case "negative allocation":
+                benchmark["Memory"]!["BytesAllocatedPerOperation"] = -1;
+                break;
+            case "missing allocation":
+                benchmark["Memory"] = null;
+                break;
         }
-        var side = ((SessionManifest)new SessionManifestFixture()).Current;
+
+        var side = ((SessionManifest) new SessionManifestFixture()).Current;
 
         // When
         var inventory = BenchmarkEvidenceReader.Read(json.ToJsonString(), "current/full.json", side, []);
@@ -85,7 +96,7 @@ public sealed class BenchmarkEvidenceReaderUnitTests
     public void SameNameWithoutAuditedMapping_WhenReading_ShouldKeepUnknownIdentity()
     {
         // Given
-        var side = ((SessionManifest)new SessionManifestFixture()).Current;
+        var side = ((SessionManifest) new SessionManifestFixture()).Current;
 
         // When
         var inventory = BenchmarkEvidenceReader.Read(ExportData.FullJson, "current/full.json", side, []);
@@ -102,7 +113,7 @@ public sealed class BenchmarkEvidenceReaderUnitTests
         json["Benchmarks"]!.AsArray().Add(json["Benchmarks"]![0]!.DeepClone());
 
         // When
-        var inventory = BenchmarkEvidenceReader.Read(json.ToJsonString(), "current/full.json", ((SessionManifest)new SessionManifestFixture()).Current, []);
+        var inventory = BenchmarkEvidenceReader.Read(json.ToJsonString(), "current/full.json", ((SessionManifest) new SessionManifestFixture()).Current, []);
 
         // Then
         inventory.Cases.SelectMany(static x => x.Observations).Where(static x => x.Metric == MetricKind.Time)

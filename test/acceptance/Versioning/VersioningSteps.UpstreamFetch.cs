@@ -222,7 +222,7 @@ public sealed partial class VersioningSteps
         JsonNode.DeepEquals(ManifestAfter()["spechtSchema"], _recordedSource).Should().BeTrue();
     }
 
-    private UpstreamSource Upstream => _upstream ??= new UpstreamSource();
+    private UpstreamSource Upstream => field ??= new UpstreamSource();
 
     private void Diverge(params string[] kinds)
     {
@@ -269,7 +269,7 @@ public sealed partial class VersioningSteps
             {
                 "unreachable" => throw new HttpRequestException("Synthetic network unavailable."),
                 "mismatch" => new HttpResponseMessage(HttpStatusCode.OK) { Content = new ByteArrayContent("{}"u8.ToArray()) },
-                not null => new HttpResponseMessage((HttpStatusCode)int.Parse(refusal, CultureInfo.InvariantCulture)),
+                not null => new HttpResponseMessage((HttpStatusCode) int.Parse(refusal, CultureInfo.InvariantCulture)),
                 _ when Served.TryGetValue(name, out var served) => new HttpResponseMessage(HttpStatusCode.OK) { Content = new ByteArrayContent(served) },
                 _ => new HttpResponseMessage(HttpStatusCode.NotFound),
             });
@@ -288,7 +288,6 @@ public sealed partial class VersioningSteps
         ["feature template"] = SpechtTree.TemplatesFolder + "/feature.md",
     };
 
-    private UpstreamSource? _upstream;
     private bool _upgradedInProcess;
     private bool _machineToken;
     private byte[]? _absentFeatureSchema;

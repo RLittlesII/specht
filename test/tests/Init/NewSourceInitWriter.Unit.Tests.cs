@@ -232,6 +232,7 @@ public sealed class NewSourceInitWriterUnitTests
     private static readonly byte[] Content = [0xEF, 0xBB, 0xBF, 0x7B, 0x0D, 0x0A, 0x7D];
     private static readonly string Hash = "sha256:" + Convert.ToHexStringLower(SHA256.HashData(Content));
     private static readonly string[] Hashes = ["feature=" + Hash, "task=" + Hash];
+
     private static readonly Dictionary<string, byte[]> Copy = new()
     {
         ["manifest/v0.1.0/manifest.json"] = "{\"schemaVersion\":\"0.1.0\",\"identifiers\":{\"feature\":\"^F[0-9]+$\",\"epic\":\"^[0-9]{4}$\"}}"u8.ToArray(),

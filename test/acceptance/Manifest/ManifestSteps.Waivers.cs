@@ -41,7 +41,7 @@ public sealed partial class ManifestSteps
         _waiverDefaults = EngineServices.Versions().Versions.Single(version => version.Number.ToString() == pin).Manifest;
 
     [When("its rule settings are read")]
-    public void WhenDefaultRuleSettingsAreRead() => _structure = EngineServices.Parser().Parse(_waiverDefaults!);
+    public void WhenDefaultRuleSettingsAreRead() => Structure = EngineServices.Parser().Parse(_waiverDefaults!);
 
     [Then("the waiver rule and the retired-claim rule are set to off")]
     public void ThenDefaultWaiverLevels()

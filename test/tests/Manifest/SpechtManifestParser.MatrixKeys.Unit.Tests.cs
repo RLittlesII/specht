@@ -199,7 +199,7 @@ public sealed class SpechtManifestParserMatrixKeysUnitTests
         var manifest = new JsonObject
         {
             ["schemaVersion"] = "0.2.0",
-            ["owners"] = new JsonObject { [title] = new JsonArray(roles.Select(static role => (JsonNode)JsonValue.Create(role)).ToArray()) },
+            ["owners"] = new JsonObject { [title] = new JsonArray(roles.Select(static role => (JsonNode) JsonValue.Create(role)).ToArray()) },
         };
 
         // When

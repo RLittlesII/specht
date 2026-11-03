@@ -42,6 +42,7 @@ public sealed partial class EffectiveManifestSteps
             default:
                 throw new InvalidOperationException(reason);
         }
+
         Write(manifest);
     }
 

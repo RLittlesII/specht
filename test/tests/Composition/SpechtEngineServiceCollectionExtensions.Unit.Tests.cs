@@ -38,10 +38,10 @@ public sealed class SpechtEngineServiceCollectionExtensionsUnitTests
                 && type != typeof(FaultIsolatedRule))
             .Select(static type => type.FullName)
             .ToList();
-        using var resolver = (TypeResolver)new TypeRegistrar(new ServiceCollection().AddSpechtEngine()).Build();
+        using var resolver = (TypeResolver) new TypeRegistrar(new ServiceCollection().AddSpechtEngine()).Build();
 
         // When
-        var resolved = ((IEnumerable<ISpechtRule>)resolver.Resolve(typeof(IEnumerable<ISpechtRule>))!)
+        var resolved = ((IEnumerable<ISpechtRule>) resolver.Resolve(typeof(IEnumerable<ISpechtRule>))!)
             .Select(static rule => rule.Should().BeOfType<FaultIsolatedRule>().Which.Inner.GetType().FullName)
             .ToList();
 
@@ -53,10 +53,10 @@ public sealed class SpechtEngineServiceCollectionExtensionsUnitTests
     public void TheEnginesRules_WhenResolved_ShouldComeInOrdinalOrderOfTheirIds()
     {
         // Given
-        using var resolver = (TypeResolver)new TypeRegistrar(new ServiceCollection().AddSpechtEngine()).Build();
+        using var resolver = (TypeResolver) new TypeRegistrar(new ServiceCollection().AddSpechtEngine()).Build();
 
         // When
-        var ids = ((IEnumerable<ISpechtRule>)resolver.Resolve(typeof(IEnumerable<ISpechtRule>))!).Select(static rule => rule.Id).ToList();
+        var ids = ((IEnumerable<ISpechtRule>) resolver.Resolve(typeof(IEnumerable<ISpechtRule>))!).Select(static rule => rule.Id).ToList();
 
         // Then
         ids.Should().BeInAscendingOrder(StringComparer.Ordinal);
@@ -66,10 +66,10 @@ public sealed class SpechtEngineServiceCollectionExtensionsUnitTests
     public void EveryRuleInTheEngine_WhenItsIdIsRead_ShouldNameEachShippedRuleIdExactlyOnce()
     {
         // Given
-        using var resolver = (TypeResolver)new TypeRegistrar(new ServiceCollection().AddSpechtEngine()).Build();
+        using var resolver = (TypeResolver) new TypeRegistrar(new ServiceCollection().AddSpechtEngine()).Build();
 
         // When
-        var ids = ((IEnumerable<ISpechtRule>)resolver.Resolve(typeof(IEnumerable<ISpechtRule>))!)
+        var ids = ((IEnumerable<ISpechtRule>) resolver.Resolve(typeof(IEnumerable<ISpechtRule>))!)
             .Select(static rule => rule.Id)
             .ToList();
 
@@ -84,7 +84,7 @@ public sealed class SpechtEngineServiceCollectionExtensionsUnitTests
     public void TheEngineAlone_WhenItsRunnerIsResolved_ShouldConstructEveryLoaderReaderAndRule()
     {
         // Given
-        using var resolver = (TypeResolver)new TypeRegistrar(new ServiceCollection().AddSpechtEngine()).Build();
+        using var resolver = (TypeResolver) new TypeRegistrar(new ServiceCollection().AddSpechtEngine()).Build();
 
         // When
         var resolving = () => resolver.Resolve(typeof(SpechtRunner));
@@ -97,7 +97,7 @@ public sealed class SpechtEngineServiceCollectionExtensionsUnitTests
     public void TheEngineAlone_WhenItsEvaluatorAndViolationOrderAreResolvedTwice_ShouldGiveTheSameInstanceOfEach()
     {
         // Given
-        using var resolver = (TypeResolver)new TypeRegistrar(new ServiceCollection().AddSpechtEngine()).Build();
+        using var resolver = (TypeResolver) new TypeRegistrar(new ServiceCollection().AddSpechtEngine()).Build();
 
         // When
         var evaluators = (resolver.Resolve(typeof(SpechtEvaluator)), resolver.Resolve(typeof(SpechtEvaluator)));
@@ -113,7 +113,7 @@ public sealed class SpechtEngineServiceCollectionExtensionsUnitTests
     {
         // Given
         var registered = new MockFileSystem();
-        using var resolver = (TypeResolver)new TypeRegistrar(
+        using var resolver = (TypeResolver) new TypeRegistrar(
             new ServiceCollection().AddSingleton<IFileSystem>(registered).AddSpechtEngine()).Build();
 
         // When
@@ -127,10 +127,10 @@ public sealed class SpechtEngineServiceCollectionExtensionsUnitTests
     public void AFileSystemRegisteredBeforeTheEngine_WhenTheEnginesSpecManifestStoreReads_ShouldReadThroughThatFileSystem()
     {
         // Given
-        byte[] bytes = [(byte)'{', (byte)'}'];
+        byte[] bytes = [(byte) '{', (byte) '}'];
         var registered = new MockFileSystem(
             new Dictionary<string, MockFileData> { [Path.Combine("repo", SpechtTree.ItemSchemaPath)] = new(bytes) });
-        using var resolver = (TypeResolver)new TypeRegistrar(
+        using var resolver = (TypeResolver) new TypeRegistrar(
             new ServiceCollection().AddSingleton<IFileSystem>(registered).AddSpechtEngine()).Build();
 
         // When
@@ -139,6 +139,7 @@ public sealed class SpechtEngineServiceCollectionExtensionsUnitTests
         // Then
         store.Should().BeOfType<SpechtManifestStore>().Which.ReadFrontmatterSchema("repo", "task.schema.json").Should().Equal(bytes);
     }
+
     [Fact]
     public void ACatalogRegisteredBeforeTheEngine_WhenTwoRootsAreChecked_ShouldUseThatCatalogForBothRoots()
     {
@@ -151,10 +152,10 @@ public sealed class SpechtEngineServiceCollectionExtensionsUnitTests
             [Path.Combine("one", SpechtTree.ManifestPath)] = new("{}"),
             [Path.Combine("two", SpechtTree.ManifestPath)] = new("""{"schemaVersion":"0.2.0"}"""),
         });
-        using var resolver = (TypeResolver)new TypeRegistrar(new ServiceCollection()
+        using var resolver = (TypeResolver) new TypeRegistrar(new ServiceCollection()
             .AddSingleton<IFileSystem>(fileSystem).AddSingleton(catalog).AddSpechtEngine()).Build();
-        var runner = (SpechtRunner)resolver.Resolve(typeof(SpechtRunner))!;
-        var parser = (SpechtManifestParser)resolver.Resolve(typeof(SpechtManifestParser))!;
+        var runner = (SpechtRunner) resolver.Resolve(typeof(SpechtRunner))!;
+        var parser = (SpechtManifestParser) resolver.Resolve(typeof(SpechtManifestParser))!;
         var resources = resolver.Resolve(typeof(SpechtResources));
 
         // When

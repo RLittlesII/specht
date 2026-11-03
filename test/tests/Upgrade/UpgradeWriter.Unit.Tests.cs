@@ -573,7 +573,7 @@ public sealed class UpgradeWriterUnitTests
                 {
                     "mismatch" => new HttpResponseMessage(HttpStatusCode.OK) { Content = new ByteArrayContent("{}"u8.ToArray()) },
                     "unreachable" => throw new HttpRequestException("Synthetic source is unreachable."),
-                    _ => new HttpResponseMessage((HttpStatusCode)int.Parse(failure, System.Globalization.CultureInfo.InvariantCulture)),
+                    _ => new HttpResponseMessage((HttpStatusCode) int.Parse(failure, System.Globalization.CultureInfo.InvariantCulture)),
                 };
         }));
 

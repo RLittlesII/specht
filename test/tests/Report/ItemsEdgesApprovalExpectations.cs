@@ -20,7 +20,7 @@ public sealed class ItemsEdgesApprovalExpectations : TheoryData<string, SpechtMo
                 $"---\nepic: \"0001\"\nid: \"F1\"\n{key}: [\"0001-01\"]\n---\n", "src/sample/.spec/README.md"));
             foreach (var count in new[] { 0, 2 })
             {
-                var items = Enumerable.Range(0, count).Select(static index => (ChildItem)new ChildItemFixture()
+                var items = Enumerable.Range(0, count).Select(static index => (ChildItem) new ChildItemFixture()
                     .WithFileName($"0001-01-{index}.md")
                     .WithRelativePath($"src/sample/.spec/0001-01-{index}.md")).ToList();
                 var expected = new JsonObject { ["fileName"] = "0001-01-*.md" };

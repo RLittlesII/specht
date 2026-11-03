@@ -46,10 +46,15 @@ public sealed class ReportBundlerIntegrationTests
                 foreach (var entry in archive.Entries)
                 {
                     using var content = new MemoryStream();
-                    using (var stream = entry.Open()) stream.CopyTo(content);
+                    using (var stream = entry.Open())
+                    {
+                        stream.CopyTo(content);
+                    }
+
                     entries.Add(entry.FullName, content.ToArray());
                 }
             }
+
             entries.Keys.Should().Equal("evidence-manifest.json", "identity-mappings.json", "pair.json", "raw/current/Synthetic-report-full.json",
                 "raw/previous/Synthetic-report-full.json", "report.json", "report.md", "session.json");
             bundle.Manifest.FormatVersion.Should().Be(1);
@@ -84,7 +89,10 @@ public sealed class ReportBundlerIntegrationTests
         }
         finally
         {
-            if (Directory.Exists(root)) Directory.Delete(root, true);
+            if (Directory.Exists(root))
+            {
+                Directory.Delete(root, true);
+            }
         }
     }
 
@@ -122,7 +130,10 @@ public sealed class ReportBundlerIntegrationTests
         }
         finally
         {
-            if (Directory.Exists(root)) Directory.Delete(root, true);
+            if (Directory.Exists(root))
+            {
+                Directory.Delete(root, true);
+            }
         }
     }
 
@@ -152,7 +163,10 @@ public sealed class ReportBundlerIntegrationTests
         }
         finally
         {
-            if (Directory.Exists(root)) Directory.Delete(root, true);
+            if (Directory.Exists(root))
+            {
+                Directory.Delete(root, true);
+            }
         }
     }
 
@@ -187,7 +201,11 @@ public sealed class ReportBundlerIntegrationTests
             // Then
             using var archive = new ZipArchive(new MemoryStream(File.ReadAllBytes(Path.Combine(root, bundle.Path))));
             using var content = new MemoryStream();
-            using (var stream = archive.GetEntry("raw/current/Synthetic-report-full.json")!.Open()) stream.CopyTo(content);
+            using (var stream = archive.GetEntry("raw/current/Synthetic-report-full.json")!.Open())
+            {
+                stream.CopyTo(content);
+            }
+
             var retained = content.ToArray();
             var scalars = new List<(string Pointer, JsonValueKind Kind, string Text)>[2];
             foreach (var (index, bytes) in new[] { (0, original), (1, retained) })
@@ -199,15 +217,27 @@ public sealed class ReportBundlerIntegrationTests
                 {
                     var (pointer, element) = next;
                     if (element.ValueKind == JsonValueKind.Object)
-                        foreach (var property in element.EnumerateObject()) pending.Push(($"{pointer}/{property.Name}", property.Value));
+                    {
+                        foreach (var property in element.EnumerateObject())
+                        {
+                            pending.Push(($"{pointer}/{property.Name}", property.Value));
+                        }
+                    }
                     else if (element.ValueKind == JsonValueKind.Array)
+                    {
                         foreach (var (item, position) in element.EnumerateArray().Select(static (item, position) => (item, position)))
+                        {
                             pending.Push(($"{pointer}/{position}", item));
+                        }
+                    }
                     else
+                    {
                         scalars[index].Add((pointer, element.ValueKind,
                             element.ValueKind == JsonValueKind.String ? element.GetString()! : element.GetRawText()));
+                    }
                 }
             }
+
             scalars[1].Should().BeEquivalentTo(scalars[0].Select(static scalar => scalar.Pointer is "/HostEnvironmentInfo/WorkingDirectory"
                 or "/Benchmarks/0/Executable" ? scalar with { Text = "[path removed]" } : scalar));
             scalars[1].Where(static scalar => scalar.Kind == JsonValueKind.Number).Select(static scalar => scalar.Text)
@@ -221,7 +251,10 @@ public sealed class ReportBundlerIntegrationTests
         }
         finally
         {
-            if (Directory.Exists(root)) Directory.Delete(root, true);
+            if (Directory.Exists(root))
+            {
+                Directory.Delete(root, true);
+            }
         }
     }
 
@@ -246,14 +279,21 @@ public sealed class ReportBundlerIntegrationTests
             // Then
             using var archive = new ZipArchive(new MemoryStream(File.ReadAllBytes(Path.Combine(root, bundle.Path))));
             using var content = new MemoryStream();
-            using (var stream = archive.GetEntry("raw/current/Synthetic-report-full.json")!.Open()) stream.CopyTo(content);
+            using (var stream = archive.GetEntry("raw/current/Synthetic-report-full.json")!.Open())
+            {
+                stream.CopyTo(content);
+            }
+
             content.ToArray().Should().Equal(original);
             var file = bundle.Manifest.Files.Single(static file => file.Path == "raw/current/Synthetic-report-full.json");
             (file.Transformation, file.SourceSha256).Should().Be(("none", Convert.ToHexStringLower(SHA256.HashData(original))));
         }
         finally
         {
-            if (Directory.Exists(root)) Directory.Delete(root, true);
+            if (Directory.Exists(root))
+            {
+                Directory.Delete(root, true);
+            }
         }
     }
 
@@ -284,7 +324,10 @@ public sealed class ReportBundlerIntegrationTests
         }
         finally
         {
-            if (Directory.Exists(root)) Directory.Delete(root, true);
+            if (Directory.Exists(root))
+            {
+                Directory.Delete(root, true);
+            }
         }
     }
 
@@ -312,17 +355,31 @@ public sealed class ReportBundlerIntegrationTests
             RawExport previous = new RawExportFixture().WithSide("previous").WithSourcePath(ComparisonDocumentFixture.PreviousExport);
             RawExport current = new RawExportFixture();
             RawExport[] exports = [previous, current];
-            if (defect == "unsupplied cited file") exports = [previous];
+            if (defect == "unsupplied cited file")
+            {
+                exports = [previous];
+            }
             else if (defect == "escaping source")
             {
                 document = new ComparisonDocumentFixture(ComparisonDocumentFixture.PreviousExport, escaping);
                 exports = [previous, current with { SourcePath = escaping }];
             }
-            else if (defect == "session for another pair") pair = pair with { CatalogDigest = new string('9', 64) };
+            else if (defect == "session for another pair")
+            {
+                pair = pair with { CatalogDigest = new string('9', 64) };
+            }
             else if (defect == "observation citing the other side's export")
+            {
                 document = new ComparisonDocumentFixture(ComparisonDocumentFixture.PreviousExport, ComparisonDocumentFixture.PreviousExport);
-            else if (defect == "two exports sharing a bundle path") exports = [previous, current, current with { SourcePath = SameName }];
-            else if (defect == "two exports differing only by case") exports = [previous, current, current with { SourcePath = CaseOnlyName }];
+            }
+            else if (defect == "two exports sharing a bundle path")
+            {
+                exports = [previous, current, current with { SourcePath = SameName }];
+            }
+            else if (defect == "two exports differing only by case")
+            {
+                exports = [previous, current, current with { SourcePath = CaseOnlyName }];
+            }
             else if (defect == "symbolic link export")
             {
                 File.Delete(Path.Combine(root, ComparisonDocumentFixture.CurrentExport));
@@ -346,7 +403,10 @@ public sealed class ReportBundlerIntegrationTests
         }
         finally
         {
-            if (Directory.Exists(parent)) Directory.Delete(parent, true);
+            if (Directory.Exists(parent))
+            {
+                Directory.Delete(parent, true);
+            }
         }
     }
 

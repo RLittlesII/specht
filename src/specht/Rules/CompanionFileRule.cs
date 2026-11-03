@@ -3,9 +3,7 @@ using Specht.Model;
 
 namespace Specht.Rules;
 
-/// <summary>
-/// SPEC020 - a specification has exactly one companion Gherkin file beside it.
-/// </summary>
+/// <summary>SPEC020 - a specification has exactly one companion Gherkin file beside it.</summary>
 /// <implements epic="0001" feature="F1" claim="B-001" />
 public sealed class CompanionFileRule : ISpechtRule
 {

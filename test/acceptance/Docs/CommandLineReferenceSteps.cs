@@ -24,7 +24,7 @@ public sealed partial class CommandLineReferenceSteps
     public void GivenWhatTheToolsHelpLists() => Surface.Should().ContainKey(DefaultCommand);
 
     [Given("the command-line reference")]
-    public void GivenTheCommandLineReference() => _page = Reference;
+    public void GivenTheCommandLineReference() => Page = Reference;
 
     [Given("a copy of the command-line reference with a synthetic unsupported command section")]
     public void GivenAnUnsupportedCommandSection()
@@ -34,10 +34,10 @@ public sealed partial class CommandLineReferenceSteps
     }
 
     [Given("the repository's front page")]
-    public void GivenTheRepositorysFrontPage() => _page = "README.md";
+    public void GivenTheRepositorysFrontPage() => Page = "README.md";
 
     [Given("the readme the package carries")]
-    public void GivenTheReadmeThePackageCarries() => _page = "src/tool/README.md";
+    public void GivenTheReadmeThePackageCarries() => Page = "src/tool/README.md";
 
     [When("the command-line reference is compared with them")]
     [When("the command-line reference is compared with the tool's help")]
@@ -102,9 +102,9 @@ public sealed partial class CommandLineReferenceSteps
     public void ThenItLinksToTheCommandLineReference() =>
         ReferenceLink().IsMatch(Read(Page)).Should().BeTrue($"{Page} links to {Reference} (B-011)");
 
-    private Dictionary<string, string[][]> Surface => _surface ??= ReadSurface();
+    private Dictionary<string, string[][]> Surface => field ??= ReadSurface();
 
-    private string Page => _page ?? throw new InvalidOperationException("No page was named.");
+    private string Page { get => field ?? throw new InvalidOperationException("No page was named."); set; }
 
     private static Dictionary<string, string[][]> ReadSurface()
     {
@@ -248,6 +248,7 @@ public sealed partial class CommandLineReferenceSteps
                 {
                     command = $"{DefaultCommand} {first}";
                 }
+
                 if (!Surface.TryGetValue(command, out var options))
                 {
                     yield return command;
@@ -272,8 +273,5 @@ public sealed partial class CommandLineReferenceSteps
     private const string Reference = "docs/cli.md";
     private const string DefaultCommand = "specht";
     private const string UnsupportedCommand = "specht synthetic-unavailable-command";
-
-    private Dictionary<string, string[][]>? _surface;
-    private string? _page;
     private string? _referenceContent;
 }

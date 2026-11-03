@@ -17,7 +17,7 @@ public sealed class ManifestJsonIntegrationTests
         using var tree = new SpechtTree();
         tree.WriteRaw(SpechtTree.ManifestPath, "{}");
         string[] textArguments = defaults ? ["manifest", "--defaults"] : ["manifest"];
-        var text = AcceptanceTool.Launch(tree.Root, textArguments);
+        var (Stdout, Stderr, ExitCode) = AcceptanceTool.Launch(tree.Root, textArguments);
 
         // When
         var help = AcceptanceTool.Launch(tree.Root, "manifest", "--help");
@@ -25,9 +25,9 @@ public sealed class ManifestJsonIntegrationTests
 
         // Then
         help.Stdout.Should().Contain("--json");
-        text.ExitCode.Should().Be(0, text.Stderr);
+        ExitCode.Should().Be(0, Stderr);
         json.ExitCode.Should().Be(0, json.Stderr);
         json.Stderr.Should().BeEmpty();
-        JsonNode.DeepEquals(JsonNode.Parse(json.Stdout), JsonNode.Parse(text.Stdout)).Should().BeTrue();
+        JsonNode.DeepEquals(JsonNode.Parse(json.Stdout), JsonNode.Parse(Stdout)).Should().BeTrue();
     }
 }

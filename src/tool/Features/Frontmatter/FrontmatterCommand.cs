@@ -73,6 +73,7 @@ public sealed class FrontmatterCommand(IAnsiConsole console, SpechtRunner runner
         {
             console.Profile.Out.Writer.WriteLine(violation);
         }
+
         console.Profile.Out.Writer.WriteLine(SpechtReportDocument.From(report).SummaryLines()[^1]);
         return report.ErrorCount > 0 ? ExitCodes.Violations : ExitCodes.Success;
     }

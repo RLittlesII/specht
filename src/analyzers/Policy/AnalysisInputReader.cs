@@ -126,8 +126,9 @@ public sealed class AnalysisInputReader
                 var frontmatter = new FrontmatterTextReader().Read(input.Text!);
                 if (schemas.ContainsKey("adr"))
                 {
-                    Validate(schemas, "adr", (JsonNode?)frontmatter.Node ?? JsonValue.Create(input.Text));
+                    Validate(schemas, "adr", (JsonNode?) frontmatter.Node ?? JsonValue.Create(input.Text));
                 }
+
                 adrs.Add(records.Adr(input, policy, settings, features));
             }
 
