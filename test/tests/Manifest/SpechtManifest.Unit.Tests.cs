@@ -2,6 +2,7 @@ using System.IO.Abstractions.TestingHelpers;
 using System.Text.Json.Nodes;
 using System.Text.RegularExpressions;
 using AwesomeAssertions;
+using Specht.Discovery;
 using Specht.Manifest;
 using Specht.Resources;
 using Specht.Tests.Shared;
@@ -11,7 +12,7 @@ namespace Specht.Tests.Manifest;
 
 /// <summary>
 /// The manifest loader over an in-memory file system (0001-F5 B-001, B-002, B-003, B-008, B-012, B-015, B-017, B-019, B-020,
-/// B-021, B-039, B-040, B-041, B-043, B-044, B-045; 0001-F2 B-005, B-006, B-007; 0001-F7 B-002, B-039, B-068 to B-076,
+/// B-021, B-039, B-040, B-041, B-043, B-044, B-045, B-049, B-072, B-073, B-074; 0001-F2 B-005, B-006, B-007; 0001-F7 B-002, B-039, B-068 to B-076,
 /// B-125 to B-127, B-131): what it rejects and as which failure, what it ignores, the schema version it reads, the upstream
 /// schema source and the templates it records, what it fills from the default manifest, and that it fills no rule setting.
 /// </summary>
@@ -606,6 +607,58 @@ public sealed class SpechtManifestUnitTests
     }
 
     [Theory]
+    [ClassData(typeof(WhiteSpaceMarkers))]
+    public void AZeroThreeZeroManifestWhoseMarkerTextIsWhiteSpaceAlone_WhenLoaded_ShouldRejectItNamingTheMarker(string marker, string text)
+    {
+        // Given
+        var manifest = new JsonObject { ["schemaVersion"] = "0.3.0", ["markers"] = new JsonObject { [marker] = text } };
+        var fileSystem = Holding(manifest);
+
+        // When
+        var load = () => Parse(fileSystem, Root);
+
+        // Then
+        load.Should().ThrowExactly<SpechtManifestException>().Which.Message.Should().Contain($"'{marker}'");
+    }
+
+    [Theory]
+    [ClassData(typeof(PinsBelowZeroThreeZero))]
+    public void AManifestPinnedBelowZeroThreeZeroWhoseMarkerTextIsWhiteSpaceAlone_WhenLoaded_ShouldReadThatText(string pin)
+    {
+        // Given
+        var manifest = new JsonObject { ["schemaVersion"] = pin, ["markers"] = new JsonObject { ["draft"] = " " } };
+        var fileSystem = Holding(manifest);
+
+        // When
+        var structure = Parse(fileSystem, Root);
+
+        // Then
+        structure.Markers.Should().ContainKey("draft").WhoseValue.Should().Be(" ");
+    }
+
+    [Theory]
+    [ClassData(typeof(UnreadRoleAndMarkerNames))]
+    public void AManifestWhoseRolesOrMarkersHoldANameItsPinDoesNotRead_WhenLoaded_ShouldReadEveryOtherNameAsWithThatNameLeftOut(
+        string pin,
+        string key,
+        string name,
+        string text)
+    {
+        // Given
+        var leftOut = Parse(Holding(new JsonObject { ["schemaVersion"] = pin }), Root);
+        var manifest = new JsonObject { ["schemaVersion"] = pin, [key] = new JsonObject { [name] = text } };
+        var fileSystem = Holding(manifest);
+
+        // When
+        var load = () => Parse(fileSystem, Root);
+
+        // Then
+        var structure = load.Should().NotThrow().Subject;
+        structure.Roles.Where(entry => entry.Key != name).Should().BeEquivalentTo(leftOut.Roles);
+        structure.Markers.Where(entry => entry.Key != name).Should().BeEquivalentTo(leftOut.Markers);
+    }
+
+    [Theory]
     [InlineData("taskFiles")]
     [InlineData("epicFiles")]
     [InlineData("companionFiles")]
@@ -642,6 +695,56 @@ public sealed class SpechtManifestUnitTests
         // Then
         load.Should().ThrowExactly<SpechtManifestException>(because)
             .Which.Message.Should().Contain("old-tree", because).And.Contain(member, because);
+    }
+
+    [Theory]
+    [ClassData(typeof(AnnotatedPathIdentities))]
+    public void AZeroThreeZeroManifestWhoseLayoutDeclaresAPathIdentityHoldingADollarPrefixedMember_WhenLoaded_ShouldReadItAsWithoutThatMember(
+        string identity,
+        int? epic,
+        int? feature)
+    {
+        // Given
+        var manifest = new JsonObject
+        {
+            ["schemaVersion"] = "0.3.0",
+            ["layouts"] = new JsonArray(
+                new JsonObject { ["name"] = "old-tree", ["glob"] = "epics/**/spec.md", ["identity"] = JsonNode.Parse(identity) }),
+        };
+        var fileSystem = Holding(manifest);
+
+        // When
+        var load = () => Parse(fileSystem, Root);
+
+        // Then
+        load.Should().NotThrow().Subject.Discovery.Layouts
+            .Should().ContainSingle().Which.Identity.Should().Be(new SpechtPathIdentity(epic, feature));
+    }
+
+    [Theory]
+    [ClassData(typeof(PinsBelowZeroThreeZero))]
+    public void AManifestPinnedBelowZeroThreeZeroWithADollarPrefixedPathIdentityMember_WhenLoaded_ShouldRejectItNamingTheLayoutAndTheMember(
+        string pin)
+    {
+        // Given
+        var manifest = new JsonObject
+        {
+            ["schemaVersion"] = pin,
+            ["layouts"] = new JsonArray(
+                new JsonObject
+                {
+                    ["name"] = "old-tree",
+                    ["glob"] = "epics/**/spec.md",
+                    ["identity"] = new JsonObject { ["epic"] = 1, ["feature"] = 2, ["$comment"] = "x" },
+                }),
+        };
+        var fileSystem = Holding(manifest);
+
+        // When
+        var load = () => Parse(fileSystem, Root);
+
+        // Then
+        load.Should().ThrowExactly<SpechtManifestException>().Which.Message.Should().Contain("'old-tree'").And.Contain("'$comment'");
     }
 
     [Theory]
@@ -752,6 +855,22 @@ public sealed class SpechtManifestUnitTests
 
         // Then
         load.Should().ThrowExactly<SpechtManifestException>().Which.Message.Should().Contain("'SPEC010'").And.Contain($"'{value}'");
+    }
+
+    [Theory]
+    [ClassData(typeof(RuleLevelsThatAreNotText))]
+    public void AManifestSettingARuleIdToAValueThatIsNotText_WhenLoaded_ShouldRejectItNamingTheValueAsTheManifestsJsonWritesIt(string written)
+    {
+        // Given
+        var manifest = DefaultManifest();
+        manifest["rules"] = new JsonObject { ["SPEC010"] = JsonNode.Parse(written) };
+        var fileSystem = Holding(manifest);
+
+        // When
+        var load = () => Parse(fileSystem, Root);
+
+        // Then
+        load.Should().ThrowExactly<SpechtManifestException>().Which.Message.Should().Contain("'SPEC010'").And.Contain($"'{written}'");
     }
 
     [Fact]
