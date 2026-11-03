@@ -873,7 +873,7 @@ Before implementation, 9 of the 12 new unit cases, 3 of the 6 bound acceptance s
 
 ### Keys, forms and grammars at schema `0.3.0` (item `0016`)
 
-<!-- last written by: test-writer, 2026-11-02 (item 0016: OQ-5 and OQ-25 resolved; B-005, B-006, B-053 and B-054 under the epic grammar); test-writer, 2026-11-02 (item 0016: the edge branches left partial, each with its reason); test-writer, 2026-11-02 (item 0016: B-053's padding is the missing number's; init derives its task grammar); test-writer, 2026-11-02 (item 0016: the built contract proved; B-004 to B-006, B-014, B-019, B-049 to B-054 and B-068 `Covered`); test-writer, 2026-11-02 (item 0016: the contract at schema 0.3.0 stated in failing tests; decisions 0016 to 0018) -->
+<!-- last written by: test-writer, 2026-11-02 (item 0016, review round 3: the init and `expected.form` tests green at `c4ca5b61`); test-writer, 2026-11-02 (item 0016: OQ-5 and OQ-25 resolved; B-005, B-006, B-053 and B-054 under the epic grammar); test-writer, 2026-11-02 (item 0016: the edge branches left partial, each with its reason); test-writer, 2026-11-02 (item 0016: B-053's padding is the missing number's; init derives its task grammar); test-writer, 2026-11-02 (item 0016: the built contract proved; B-004 to B-006, B-014, B-019, B-049 to B-054 and B-068 `Covered`); test-writer, 2026-11-02 (item 0016: the contract at schema 0.3.0 stated in failing tests; decisions 0016 to 0018) -->
 
 Item `0016` states the contract at schema `0.3.0` (decision 0016). Every
 fixture that exercises `keys`, `forms` or the named task groups declares the
@@ -917,20 +917,25 @@ wiring from the task grammar to the item shape at any pin, so the grammar
 names its groups rather than the pin being lowered (`0001-F6` § 8).
 
 **`specht init` without `--epics`.** `0001-F4` B-022 under `0.3.0` is proved
-in `0001-F4` § 8: the written manifest's task grammar names no `epic` group,
-names the `sequence` group B-050 requires, parses at its pin and matches the
-ids the shipped grammar matches. The writer derives it from the shipped
-grammar. OQ-5 is resolved (2026-11-02): B-022 now states the text,
+in `0001-F4` § 8. OQ-5 is resolved (2026-11-02): B-022 states the text,
 `^[0-9]{4}-(?<sequence>[0-9]{2})$`, the shipped grammar with its `epic` group
-dropped, and `0001-F4` § 8 asserts it; that test is red until the writer drops
-the group rather than un-naming it.
+dropped, which names the `sequence` group B-050 requires. The writer derives
+it from the shipped grammar, so C# holds no second item-id grammar (C-2).
+`0001-F4` § 8's unit test asserts that the written manifest parses at its pin
+and that its task grammar is exactly that text, and the `@B-022` scenario
+asserts the text too. Neither compares the ids the shipped grammar matches:
+`fc66a82b` dropped that comparison, the exact text deciding every id it
+compared. Both were red at `31d7a2b2`, while the writer un-named the group,
+and green at `c4ca5b61` with no test changed; they stay green at `172a5824`,
+where the derivation became one generated expression.
 
 **`expected.form` is `0001-F3`'s.** OQ-25 is resolved (2026-11-02):
 `0001-F3` B-012 now states that `SPEC3002` and `SPEC5003`'s parent mismatch
 carry the effective `forms.identity` under a manifest pinned to `0.3.0` or
 later declaring the epic grammar, and `{epic}-{feature}` otherwise. `0001-F3`
-§ 8 holds its tests, red until the rules write it. B-005 claims resolution
-only, and no test here asserts the member.
+§ 8 holds its tests: red at `31d7a2b2`, green at `c4ca5b61`, where both rules
+write it, with no test changed, and B-012 is `Covered` in `0001-F3` § 9.
+B-005 claims resolution only, and no test here asserts the member.
 
 **Claim scope (decision 0018).** B-005, B-006, B-053 and B-054 hold for a
 manifest declaring the epic grammar, and their scenarios now say so with
