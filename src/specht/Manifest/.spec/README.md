@@ -873,7 +873,7 @@ Before implementation, 9 of the 12 new unit cases, 3 of the 6 bound acceptance s
 
 ### Keys, forms and grammars at schema `0.3.0` (item `0016`)
 
-<!-- last written by: test-writer, 2026-11-02 (item 0016: the built contract proved; B-004 to B-006, B-014, B-019, B-049 to B-054 and B-068 `Covered`); test-writer, 2026-11-02 (item 0016: the contract at schema 0.3.0 stated in failing tests; decisions 0016 to 0018) -->
+<!-- last written by: test-writer, 2026-11-02 (item 0016: B-053's padding is the missing number's; init derives its task grammar); test-writer, 2026-11-02 (item 0016: the built contract proved; B-004 to B-006, B-014, B-019, B-049 to B-054 and B-068 `Covered`); test-writer, 2026-11-02 (item 0016: the contract at schema 0.3.0 stated in failing tests; decisions 0016 to 0018) -->
 
 Item `0016` states the contract at schema `0.3.0` (decision 0016). Every
 fixture that exercises `keys`, `forms` or the named task groups declares the
@@ -898,7 +898,7 @@ each row as it stood before the build (`972a56b1`).
 | B-050 | The parser requires a named `sequence` group from `0.3.0`                                              | `ATaskGrammarWithoutASequenceGroupAtZeroThreeZero_WhenParsed_ShouldBeRejectedNamingTheGrammarAndTheMissingGroup`                                                                                                                                                     | Both B-050 scenarios, with exit `3` and stderr                                        | Red: accepted                                                                                                        |
 | B-051 | The parser requires a named `epic` group where the epic grammar is declared                            | `AnEpicTaskGrammarWithoutAnEpicGroupAtZeroThreeZero_WhenParsed_ShouldBeRejectedNamingTheGrammarAndTheMissingGroup`                                                                                                                                                   | The B-051 scenario                                                                    | Red: accepted                                                                                                        |
 | B-052 | The parser counts each expected placeholder in a form                                                  | `AFormWithoutEachExpectedPlaceholderExactlyOnce_WhenParsed_ShouldBeRejectedNamingTheFormAndItsValue`, missing and repeated, with and without the epic grammar                                                                                                        | The B-052 outline                                                                     | Red: rejected as an unknown key, without the form or its value                                                       |
-| B-053 | The gap message pads to the captured sequence width                                                    | `ASequenceGapAtZeroThreeZero_WhenTheTreeIsReadAndEvaluated_ShouldNameTheMissingNumberAtTheCapturedWidth`, two and three digits                                                                                                                                       | The B-053 scenario                                                                    | Two-digit row green; three-digit row red: the gap is not read                                                        |
+| B-053 | The gap message pads the missing number to the captured sequence width                                 | `ASequenceGapAtZeroThreeZero_WhenTheTreeIsReadAndEvaluated_ShouldNameTheMissingNumberAtTheCapturedWidth`, two and three digits                                                                                                                                       | The B-053 scenario                                                                    | Two-digit row green; three-digit row red: the gap is not read                                                        |
 | B-054 | An edge fitting neither form keeps its text as the identifier                                          | `AnEdgeFittingNeitherFormAtZeroThreeZero_WhenTheTreeIsReadAndEvaluated_ShouldBeReportedUnresolvedByItsOriginalText`                                                                                                                                                  | The B-054 scenario                                                                    | Red: reported as `0001-F2x`                                                                                          |
 | B-068 | The `0.3.0` default manifest's task grammar names `epic` and `sequence`                                | `AZeroThreeZeroManifestDeclaringNoTaskGrammar_WhenParsed_ShouldReadTheDefaultTaskGrammarNamingItsEpicAndSequenceGroups`                                                                                                                                              | The B-068 scenario                                                                    | Red: the group-less default                                                                                          |
 
@@ -919,8 +919,9 @@ names its groups rather than the pin being lowered (`0001-F6` § 8).
 **`specht init` without `--epics`.** `0001-F4` B-022 under `0.3.0` is proved
 in `0001-F4` § 8: the written manifest's task grammar names no `epic` group,
 names the `sequence` group B-050 requires, parses at its pin and matches the
-ids the shipped grammar matches. Its exact text is provisional (OQ-5) and no
-test asserts it.
+ids the shipped grammar matches. The writer derives it from the shipped
+grammar by un-naming the `epic` group; the derivation is provisional (OQ-5)
+and no test asserts its exact text.
 
 **Not covered: `expected.form`.** `SPEC3002` and `SPEC5003`'s parent mismatch
 keep `{epic}-{feature}` in `expected.form` whatever the declared identity
