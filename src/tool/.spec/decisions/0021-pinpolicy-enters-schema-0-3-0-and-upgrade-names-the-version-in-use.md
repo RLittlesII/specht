@@ -74,6 +74,10 @@ while the check reports the version in use's.
 - OQ-70 resolved; OQ-73 raised and resolved; § 5 row 33 added.
 - Call 3 amended 2026-11-02: `specht frontmatter` keeps the pin; OQ-73's
   resolution and § 5 row 33 name it.
+- `0001-F8` B-006 amended 2026-11-02 for call 3 as amended: the frontmatter
+  command checks against the version the manifest pins, whatever its
+  `pinPolicy`, from the source the check selects
+  ([`0001-F8` § 10](../Features/Frontmatter/.spec/README.md#10-lessons--spec-deltas)).
 - Item `0124`.
 
 ## Reversal
