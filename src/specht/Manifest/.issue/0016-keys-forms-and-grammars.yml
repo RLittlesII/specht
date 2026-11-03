@@ -82,6 +82,223 @@ decisions:
     claim is written on them. The schema version that first carries them is
     OQ-16. The summary's rule ids are corrected from § 7: they read SPEC043,
     SPEC044 and SPEC050-SPEC052. Recorded by spec-author.
+  - |
+    2026-11-02, spec-author: the criteria reconciled with the source at
+    commit `d73b7a51`; the criteria text is not edited, and this entry
+    amends how each is read. Three questions for the repository owner
+    close it; nothing they ask is decided here.
+    Names and ids. Under schema `0.3.0` (item 0169, ADR-0029) the
+    summary's rules are `SPEC011`/`SPEC3001`, `SPEC012`/`SPEC3002`,
+    `SPEC020`/`SPEC4001`, `SPEC040`/`SPEC5001`, `SPEC041`/`SPEC5002`,
+    `SPEC043`/`SPEC5003`, `SPEC044`/`SPEC5004`,
+    `SPEC050`-`SPEC052`/`SPEC6001`-`SPEC6003`, `SPEC060`/`SPEC7001` and
+    `SPEC061`/`SPEC7002`, and under B-014 `SPEC021`/`SPEC4002`,
+    `SPEC030`/`SPEC4003` and `SPEC031`/`SPEC4004`; the out-of-scope
+    `SPEC021` is `SPEC4002`. A rule class keeps its three-digit key as
+    `Id` and `SchemaVersion.RuleId` names it per pin
+    (`src/specht/Versioning/SchemaVersion.cs:34`), so no design text
+    needs a new id. B-005, B-006, B-053 and B-054 already name the
+    four-digit ids; decision 0010's and § 7's `SPEC043`, `SPEC044` and
+    `SPEC050` are the same rules. Every type § 7's table links exists.
+    Stale in § 6 and § 7: the "Edge lists, normalization" row's current
+    home is `SpechtDependencyGraph`
+    (`src/specht/Model/SpechtDependencyGraph.cs:37-46`), built once in
+    `SpechtModel`'s constructor (`SpechtModel.cs:40-41`) since item
+    0155; the "model build" is `SpechtModelBuilder.Build`
+    (`SpechtModelBuilder.cs:21-48`) and that constructor (item 0166);
+    the table omits `ItemPlacementRule`, `ItemSequenceRule`,
+    `CompanionFileRule`, `ApprovalCoverageRule` and
+    `ApprovalSignOffRule`, which read the keys or the identity below;
+    `SpechtSchemasLoader` and `SpecManifest` are gone; the compatibility
+    table's two rows (`0.1.0`, `0.2.0`) and "requires the new `0.minor`"
+    predate `0.2.0` and `0.2.1` being published (question 1; `0001-F7`
+    C-11 as amended by ADR-0029). § 6 and § 7 are `implementer`'s to
+    bring true in the pull request that builds this item.
+    Where each key is read today. No manifest key names one: `keys` and
+    `forms` are unknown keys under every pin
+    (`src/specht/Manifest/SpechtManifestParser.cs:440-451`, `KnownKeys`
+    `:533-551`). Feature: `epic`, `id`, `spec_status` and `status` are
+    `src/specht/Model/FeatureSpec.cs:32`, `:35`, `:38`, `:41`, and the
+    identity `{epic}-{id}` is `:44`; `children` and `spikes` are passed
+    as literals by `DeclaredChildrenRule.cs:25` and
+    `DeclaredSpikesRule.cs:19` to `DeclaredItemCheck.cs:29`, `:39`,
+    `:53`; `depends_on` and `blocks` by `SpechtDependencyGraph.cs:19-20`,
+    `DependencyTargetRule.cs:21`, `DependencySymmetryRule.cs:28-29`,
+    `:40` and `DependencyCycleRule.cs:22`, `:67`; key lines by
+    `PathIdentityRule.cs:39`, `:57` and `DuplicateIdentityRule.cs:38`.
+    Task: `id`, `parent` and `type` are `ChildItem.cs:30`, `:33`, `:36`,
+    with key lines at `ItemPlacementRule.cs:28`, `:44`,
+    `ItemSequenceRule.cs:58`, `:91` and `DeclaredItemCheck.cs:67`, `:83`.
+    No rule reads `EpicFile.Id` (`EpicFile.cs:10`), so § 7's "no
+    `keys.epic` group" still holds.
+    B-004: not true. Left: `keys.feature` and `keys.task` parsed under
+    the new version and filled per kind and role from its manifest
+    (B-048's `Filled`, `SpechtManifestParser.cs:382-412`, fills one
+    level and needs a per-kind step), and every read above taken from
+    them in the model build. The on-disk schemas the B-004 scenarios
+    rename are reachable through the command since item 0043
+    (`--schema-source disk`, or `"schemaSource": "disk"`,
+    `SpechtManifestParser.cs:99-116`). Since item 0321,
+    `SPEC060`/`SPEC7001` reads `status` under `0.3.0`
+    (`ApprovalCoverageRule.cs:29`, `:37`), a key that B-004's list and
+    decision 0010 do not name (question 2).
+    B-005: not true. The identity is the literal of `FeatureSpec.cs:44`;
+    an edge holding `/` has it replaced by `-`, and any other gets the
+    declaring epic prefixed (`SpechtDependencyGraph.cs:42`); neither
+    reads the epic or Feature grammar, so `0002:F1` resolves to
+    `0001-0002:F1` and `SPEC6001` reports it. `ItemPlacementRule.cs:48`
+    writes the form `{epic}-{feature}` into `expected` as a literal.
+    Left: the three forms parsed and filled, the identity rendered and
+    the edges parsed through them in the model build, which `SPEC4001`
+    (`CompanionFileRule.cs:27`), `SPEC3002`
+    (`DuplicateIdentityRule.cs:27`), `SPEC5003`
+    (`ItemPlacementRule.cs:40`) and `SPEC6001`-`SPEC6003` then read.
+    B-006: not true. The splice trims the anchors and wraps the grammar
+    in a non-capturing group (`SpechtDiscovery.cs:48-50`), and the
+    listing carries paths only (`SpechtModelBuilder.cs:38-42`);
+    `ChildItem.FileNameId` is the first seven characters
+    (`ChildItem.cs:39`); `SPEC5004` groups by `Id[..4]` and reads the
+    sequence through a second task expression, `^\d{4}-(\d{2})$`
+    (`ItemSequenceRule.cs:37`, `:73`). Under a three-digit grammar
+    `0001-001` is read as `0001-00`, so `SPEC5003` reports it, and its
+    number is 0, so `SPEC5004` skips it. Left: the named groups matched
+    once per item and the `{task}` capture taken as the file-name
+    identity, both carried in the model, and the three literals removed
+    under the new version.
+    B-014: partly true. Under `0.2.0` and later the claim grammar is
+    compiled at parse and rejected, naming it
+    (`SpechtManifestParser.cs:63-72`, joined at `:517`; item 0134): the
+    B-014 scenario as written (`manifest.feature:157-163`), which no
+    step binds and no unit test asserts. Under `0.1.0` an invalid claim
+    grammar is deferred to the claim rules (`SpechtModel.cs:26-34`,
+    `:73`) and becomes a rule failure (`FaultIsolatedRule.cs:30-41`). No
+    other grammar is checked at parse under any pin: a task grammar that
+    does not compile throws in discovery (`SpechtDiscovery.cs:50`) and
+    escapes the check command's catches
+    (`src/tool/Features/Check/CheckCommand.cs:55-70`); a Feature or epic
+    grammar faults `SPEC3001` (`PathIdentityRule.cs:75`); no rule reads
+    `constraint` or `openQuestion`. Left: every effective grammar
+    compiled at parse under the new version (§ 7). `SPEC4002` to
+    `SPEC4004` change nothing more, since the claim grammar is already
+    rejected before them.
+    B-049: true for every key accepted today: `claim`, `schemaSource`
+    and the matrix keys are gated at `0.2.0`
+    (`SpechtManifestParser.cs:437-445`, `:553-559`), and `0.1.0` rejects
+    them (§ 9's B-049 row). Nothing of this item's is built, so nothing
+    of it yet needs preserving; what stays selectable for an older pin
+    is the code B-005, B-006, B-053 and B-054 replace. Its outline's
+    Examples name `0.1.0` alone (question 1).
+    B-050, B-051, B-052: not built. `DeclaresEpicGrammar` reads the
+    original manifest (`SpechtManifestParser.cs:503`), as B-051 needs;
+    B-038's and B-056's placeholder count (`:58`, `:87`) and `Check`'s
+    aggregated faults (`:326-370`) are the pattern the group and form
+    checks join, exiting `3` on stderr (B-022 and B-023 already list
+    them). Every shipped manifest, `0.3.0`'s included, and this
+    repository's own declare the group-less `^[0-9]{4}-[0-9]{2}$`. Under
+    decision 0010 the new version's default gains the groups, and A-1
+    moves this repository's live copy in the same change, or B-050
+    rejects it. `upgrade` adds only missing keys (`0001-F7` decisions
+    0001 and 0005), so a consumer re-pinned from an older version keeps
+    its declared grammar and is rejected until it adds the groups:
+    decision 0010's call 2, ratified by the owner.
+    B-053: not true. The message pads to two digits
+    (`ItemSequenceRule.cs:93`). Under `0.2.0` and `0.2.1` the change
+    cannot be observed, because the legacy read sees two-digit sequences
+    only (`:37`). `expected.fileName` (`:95`) also pads to two digits; no
+    claim covers it and `expected` is not a verdict field (`0001-F1`
+    C-9). Not decided here.
+    B-054: not true. Resolution keeps only the expanded text, in a set
+    (`SpechtDependencyGraph.cs:37-46`), so `F2x` is reported as
+    `0001-F2x` (`DependencyTargetRule.cs:33`). Left: the original text
+    of an edge matching neither form kept with its key line, and kept
+    out of the identities `SPEC6002` and `SPEC6003` compare
+    (`DependencySymmetryRule.cs:34`, `DependencyCycleRule.cs:26`).
+    C-2: broken today in four places, each removed by B-005 or B-006:
+    the second task expression and the four-character epic
+    (`ItemSequenceRule.cs:37`, `:73`), the seven-character file-name
+    prefix (`ChildItem.cs:39`), and edges split on `/` without the
+    grammars (`SpechtDependencyGraph.cs:42`). The claim grammar is one
+    manifest value, read by `SpechtModel.cs:29`, `FeatureTagParser.cs:23`
+    and `ClaimIdRule.cs:18`.
+    C-8: holds. No code derives a schema from the manifest or reads a
+    key or grammar from a schema file; `SPEC1002` and `SPEC1003`
+    evaluate the selected schema as it is (`FrontmatterSchemaCheck.cs`).
+    The `0.3.0` schemas fix `id`, `parent`, `children`, `spikes`,
+    `depends_on` and `blocks` by pattern and require `status`, so each
+    renaming scenario needs its on-disk schema, as written.
+    Owed here, not in the criteria: B-019's omitted form (A-6; § 8, row
+    B-048, "omitted form coverage remains `0016`"). Every scenario of
+    this item, that one included, pins `0.2.0`.
+    The version. Decision 0010 and OQ-16 put the contract at `0.2.0` on
+    2026-10-13, when `0.2.0` was unpublished. On 2026-11-02 the owner
+    confirmed that `0.2.1`, and the versions below it, are in a
+    published package and `0.3.0` is in none (ADR-0029 ruling 2; lesson
+    0016). The tag `v0.3.1` (`c1584735`) embeds `v0.1.0`, `v0.2.0` and
+    `v0.2.1` and no `v0.3.0`, which agrees and proves nothing (lesson
+    0016). A published version is never changed in place (`0001-F7`
+    C-1), an older pin never takes a newer interpretation (`0001-F7`
+    C-4), and the verdict includes the identifier and the message
+    (`0001-F1` C-9). B-050 to B-052 reject the group-less grammar every
+    `0.2.x` manifest declares, B-054 changes an identifier, and `keys`
+    and `forms` turn a rejection into a pass, so none fits `0.2.0`,
+    `0.2.1` or a patch of either (C-11: a patch changes no verdict).
+    `0.3.0` can take them in place with a relock (`0001-F7` C-17,
+    decision 0014), as it took item 0169's ids; a new `0.4.0` would
+    spend a version no consumer can pin (lesson 0016). That holds only
+    while no package carries `0.3.0`, and pushing a `v*` tag runs the
+    release. Open pull request #690 (item 0335) also relocks `0.3.0`
+    and edits `src/tool/manifest/v0.3.0/manifest.json`; whichever merges
+    second relocks after the other. ADR-0029 ruling 6 reads "a schema
+    `0.2.0` manifest" in B-053 and B-054 as `0.2.0` or later, which for
+    B-054 reaches the published `0.2.0` and `0.2.1` (question 1).
+    Questions for the repository owner. Each default is a judgement.
+    1. Which schema version first carries this item's contract: `keys`,
+    `forms`, the named task groups, every grammar checked at parse, the
+    original text of a malformed edge and the captured gap width
+    (OQ-16, decision 0010, ADR-0029 ruling 6). (A) Recommended: `0.3.0`,
+    in place and relocked; `0.1.0`, `0.2.0` and `0.2.1` keep today's
+    interpretation. A-6, B-049 to B-054, the scenarios' pins and § 7
+    then read `0.3.0` or later, ruling 6 is narrowed for B-053 and B-054
+    to `0.3.0` or later in a new record (ADR-0029 is immutable), and no
+    `v*` tag is pushed before this item merges. (B) `0.3.0` for the
+    keys, forms and rejections, but B-053 and B-054 from `0.2.0` as
+    ruling 6 reads: a tree with a malformed edge changes its `0.2.0` and
+    `0.2.1` verdict, which C-1, C-4 and decision 0010's own reason for
+    the boundary rule out; B-053 changes nothing there. (C) A new schema
+    `0.4.0` beside `0.3.0`: right only if a package carries `0.3.0`
+    before this item merges. The milestone `0.4.0` in `.issue/.goal` is
+    a package version, not a schema version.
+    2. Whether a Feature's `status` is a key role. Since item 0321
+    `SPEC7001` reads `status` under `0.3.0` (`ApprovalCoverageRule.cs:37`,
+    `FeatureSpec.cs:41`); B-004 says "every frontmatter key a rule
+    reads" but lists the nine keys decision 0010 ratified before that.
+    (A) Recommended: `keys.feature.status`, default `status`, read by
+    `SPEC7001` under the new version; B-004's list and decision 0010's
+    table gain it through a new decision. (B) `status` stays a literal
+    and B-004 is narrowed to the keys it lists: one literal is left
+    against brief § 5, and a consumer renaming `status` forks the
+    engine. (C) A later version: a `0.minor` spent on one key.
+    3. The epics opt-in, OQ-18: whether B-024 to B-035 and B-042 get an
+    item, and when. None carries them. Since items 0321 and 0319 a
+    `0.3.0` tree may hold no epic and `init` writes no epic grammar
+    without `--epics`, yet `SpechtModel.cs:40` drops a Feature with no
+    `epic` from every identity and edge rule, and `FeatureSpec.cs:44`
+    and `SpechtDependencyGraph.cs:42`, the code B-005 replaces, assume
+    an epic. `0001-F7` OQ-72, open with default (a), holds the first
+    package carrying `0.3.0` until B-035 is built. Decision 0010's
+    default task grammar names an `epic` group no claim reads without
+    the epic grammar (B-032 covers a grammar with none; OQ-5 is open),
+    and B-052 requires `{epic}` in the identity and qualified-edge forms
+    whatever the epic grammar. (A) Recommended: cut one item for them
+    now, depending on 0016 and in milestone `0.4.0`, so the first
+    package carrying `0.3.0` holds both (OQ-72 (a)); this item builds
+    the forms for the declared-epic shape, keeps today's epic-less
+    behaviour, and checks the forms as declared whatever the epic
+    grammar. (B) Build that item first: this item then adapts the
+    identity, the edges and the sequence a second time, the cost
+    OQ-17's ruling rejected for ADR-0010's stages. (C) Fold them into
+    this item: one change above risk 4, against A-2's one move at a
+    time.
 
 out_of_scope:
   - "Deriving or patching a frontmatter schema from the manifest — C-8."
