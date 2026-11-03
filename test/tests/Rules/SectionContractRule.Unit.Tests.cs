@@ -56,7 +56,7 @@ public sealed class SectionContractRuleUnitTests
     private static FeatureSpec Feature(string path, params SpechtSection[] sections) =>
         new FeatureSpecFixture()
             .WithLocation(new SpechtLocationFixture().WithRelativePath(path))
-            .WithDocument(new SpechtDocument(path, new FrontmatterFixture(), sections));
+            .WithDocument(new SpechtDocumentFixture().WithRelativePath(path).WithSections(sections));
 
     private const string Claims = "3. Acceptance Criteria";
 

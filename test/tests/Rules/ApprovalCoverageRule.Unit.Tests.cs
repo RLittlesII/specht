@@ -66,7 +66,11 @@ public sealed class ApprovalCoverageRuleUnitTests
     private static FeatureSpec Feature(string path, SpechtSection section) =>
         new FeatureSpecFixture()
             .WithLocation(new SpechtLocationFixture().WithRelativePath(path))
-            .WithDocument(new SpechtDocument(path, new FrontmatterFixture().WithNode(new JsonObject { ["spec_status"] = "approved" }), [section]));
+            .WithDocument(
+                new SpechtDocumentFixture()
+                    .WithRelativePath(path)
+                    .WithFrontmatter(new FrontmatterFixture().WithNode(new JsonObject { ["spec_status"] = "approved" }))
+                    .WithSections(section));
 
     private const string Matrix = "9. Traceability Matrix";
 

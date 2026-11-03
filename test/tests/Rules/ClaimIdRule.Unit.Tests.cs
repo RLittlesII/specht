@@ -58,5 +58,5 @@ public sealed class ClaimIdRuleUnitTests
     private static FeatureSpec Feature(string path, SpechtSection claims) =>
         new FeatureSpecFixture()
             .WithLocation(new SpechtLocationFixture().WithRelativePath(path))
-            .WithDocument(new SpechtDocument(path, new FrontmatterFixture(), [claims]));
+            .WithDocument(new SpechtDocumentFixture().WithRelativePath(path).WithSections(claims));
 }

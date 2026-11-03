@@ -15,13 +15,14 @@ namespace Specht.Tests.Rules;
 public sealed class DependencyCycleRuleUnitTests
 {
     [Fact]
-    public void ACycleBeforeASelfDependency_WhenTheDependencyCycleRuleEvaluatesTheModel_ShouldReportSpec052SelfDependenciesFirstThenCyclesInWalkOrder()
+    public void TwoSelfDependenciesOutOfOrdinalOrder_WhenTheDependencyCycleRuleEvaluatesTheModel_ShouldReportSpec052SelfDependenciesFirstThenCyclesInWalkOrder()
     {
         // Given
         SpechtModel model = new SpechtModelFixture().WithFeatures(
-            Feature("src/a/.spec/README.md", "0001", "F1", "F2"),
-            Feature("src/b/.spec/README.md", "0001", "F2", "F1"),
-            Feature("src/c/.spec/README.md", "0001", "F3", "F3"));
+            Feature("src/m/.spec/README.md", "0001", "F4", "F4"),
+            Feature("src/z/.spec/README.md", "0001", "F2", "F3"),
+            Feature("src/a/.spec/README.md", "0001", "F3", "F2"),
+            Feature("src/k/.spec/README.md", "0001", "F1", "F1"));
         var rule = new DependencyCycleRule();
 
         // When
@@ -29,10 +30,12 @@ public sealed class DependencyCycleRuleUnitTests
 
         // Then
         findings.Select(finding => (rule.Id, finding.File, finding.Message)).Should().Equal(
-            ("SPEC052", "src/c/.spec/README.md", "frontmatter depends_on names this Feature itself"),
-            ("SPEC052", "src/a/.spec/README.md", "dependency cycle: 0001-F1 -> 0001-F2 -> 0001-F1"),
-            ("SPEC052", "src/b/.spec/README.md", "dependency cycle: 0001-F2 -> 0001-F1 -> 0001-F2"),
-            ("SPEC052", "src/c/.spec/README.md", "dependency cycle: 0001-F3 -> 0001-F3"));
+            ("SPEC052", "src/m/.spec/README.md", "frontmatter depends_on names this Feature itself"),
+            ("SPEC052", "src/k/.spec/README.md", "frontmatter depends_on names this Feature itself"),
+            ("SPEC052", "src/m/.spec/README.md", "dependency cycle: 0001-F4 -> 0001-F4"),
+            ("SPEC052", "src/z/.spec/README.md", "dependency cycle: 0001-F2 -> 0001-F3 -> 0001-F2"),
+            ("SPEC052", "src/a/.spec/README.md", "dependency cycle: 0001-F3 -> 0001-F2 -> 0001-F3"),
+            ("SPEC052", "src/k/.spec/README.md", "dependency cycle: 0001-F1 -> 0001-F1"));
     }
 
     [Fact]

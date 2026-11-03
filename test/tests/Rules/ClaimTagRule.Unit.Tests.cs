@@ -109,7 +109,9 @@ public sealed class ClaimTagRuleUnitTests
         new FeatureSpecFixture()
             .WithLocation(new SpechtLocationFixture().WithRelativePath(path))
             .WithDocument(
-                new SpechtDocument(path, new FrontmatterFixture(), [new SpechtSection(Claims, 5, ["ID", "Claim"], [["B-001", "It holds."]], [7])]))
+                new SpechtDocumentFixture()
+                    .WithRelativePath(path)
+                    .WithSections(new SpechtSection(Claims, 5, ["ID", "Claim"], [["B-001", "It holds."]], [7])))
             .WithFeatureFiles(companions);
 
     private const string Claims = "3. Acceptance Criteria";

@@ -126,7 +126,7 @@ public sealed class TableHeaderRuleUnitTests
     private static FeatureSpec Feature(string path, params SpechtSection[] sections) =>
         new FeatureSpecFixture()
             .WithLocation(new SpechtLocationFixture().WithRelativePath(path))
-            .WithDocument(new SpechtDocument(path, new FrontmatterFixture(), sections));
+            .WithDocument(new SpechtDocumentFixture().WithRelativePath(path).WithSections(sections));
 
     private const string Matrix = "9. Traceability Matrix";
 
