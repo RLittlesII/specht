@@ -32,14 +32,14 @@ checked against the root's one manifest, so the projects share one schema
 version, one set of sections and one level per rule. Some rules read the whole
 root:
 
-| Rule                   | Scope                                                                            |
-| ---------------------- | -------------------------------------------------------------------------------- |
-| `SPEC3002`             | The root. Two projects that both declare `0001-F1` collide.                      |
-| `SPEC6001`–`SPEC6003`  | The root. A `depends_on` or `blocks` edge may name a Feature in another project. |
-| `SPEC5002`             | The root. A spike may sit beside any specification.                              |
-| `SPEC5004`             | The root. Item ids are unique and contiguous per epic, across every project.     |
-| `SPEC5001`             | The specification's own folder.                                                  |
-| `SPEC4003`, `SPEC4004` | One specification. Two projects may both have a `B-001`.                         |
+| Rule                   | Scope                                                                                                      |
+| ---------------------- | ---------------------------------------------------------------------------------------------------------- |
+| `SPEC3002`             | The root. Two projects that both declare `0001-F1` collide; without epics, two that both declare `F1` do.  |
+| `SPEC6001`–`SPEC6003`  | The root. A `depends_on` or `blocks` edge may name a Feature in another project.                           |
+| `SPEC5002`             | The root. A spike may sit beside any specification.                                                        |
+| `SPEC5004`             | The root. Item ids are unique across every project, and contiguous per epic, or per Feature without epics. |
+| `SPEC5001`             | The specification's own folder.                                                                            |
+| `SPEC4003`, `SPEC4004` | One specification. Two projects may both have a `B-001`.                                                   |
 
 [What it checks](what-it-checks.md) lists every rule.
 

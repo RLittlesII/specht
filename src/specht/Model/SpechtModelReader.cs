@@ -29,7 +29,10 @@ public sealed class SpechtModelReader(
     SpechtTreeStore tree,
     SpechtModelBuilder builder)
 {
-    /// <summary>Reads the model of the tree under <paramref name="root"/> with the frontmatter source selected for this invocation.</summary>
+    /// <summary>
+    /// Reads the model of the tree under <paramref name="root"/> with the frontmatter source selected for this invocation;
+    /// a tree read without an epic tier lists and reads no epic file (B-034).
+    /// </summary>
     /// <param name="root">The repository root.</param>
     /// <param name="selection">This invocation's schema source, ahead of the manifest's, or null for the manifest's.</param>
     /// <returns>The model, every path in it relative to <paramref name="root"/>.</returns>
@@ -38,6 +41,7 @@ public sealed class SpechtModelReader(
     /// <exception cref="SpechtManifestUnreadableException">The manifest cannot be parsed.</exception>
     /// <exception cref="SpechtManifestException">The manifest or a selected schema is rejected.</exception>
     /// <implements epic="0001" feature="F1" claim="B-004" />
+    /// <implements epic="0001" feature="F5" claim="B-034" />
     public SpechtModel Read(string root, SchemaSourceSelection? selection)
     {
         var schemas = ReadSchemas(root, selection);
@@ -46,7 +50,7 @@ public sealed class SpechtModelReader(
         var specifications = discovery.FindSpecifications(root, inputs);
         var companions = specifications.Select(location => discovery.FindCompanions(root, location, inputs)).ToArray();
         var items = discovery.FindChildItems(root, specifications, inputs, structure.Identifiers["task"]);
-        var epics = discovery.FindEpics(root, inputs);
+        IReadOnlyList<string> epics = structure.EpicLess ? [] : discovery.FindEpics(root, inputs);
         var tests = structure.Tests is { } declared ? discovery.FindTestFiles(root, declared.Files, inputs.Exclusions) : [];
         var listing = new SpechtListing(specifications, companions, items, epics, tests);
         var paths = specifications.Select(static location => location.RelativePath)

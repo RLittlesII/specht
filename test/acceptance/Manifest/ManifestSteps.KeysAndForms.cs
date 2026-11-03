@@ -13,7 +13,9 @@ namespace Specht.Acceptance.Manifest;
 /// <c>keys</c>, grouped by kind, and a form under <c>forms</c>; where a step says the root's schema carries the same
 /// change, the on-disk frontmatter schema in the tree is edited to match, its property renamed in <c>properties</c> and
 /// <c>required</c>, or its pattern widened. A renamed frontmatter key is written by renaming the line the tree's writer
-/// gives the default key. A rule id a step names is read at the pin the manifest carries.
+/// gives the default key. A rule id a step names is read at the pin the manifest carries. An edge written with no colon
+/// is in the local form, and the Feature it names blocks <c>F2</c> in that form too; items beside a specification name
+/// <c>F1</c> as their parent under a manifest declaring no epic grammar (<c>0001-F5</c> B-005, B-006, B-030; item 0345).
 /// </summary>
 public sealed partial class ManifestSteps
 {
@@ -76,8 +78,9 @@ public sealed partial class ManifestSteps
     public void GivenTheRootHoldsASpecificationWhoseDependencyEdgeIsWritten(string edge)
     {
         var parts = edge.Split(':');
+        var (epic, id, blocks) = parts.Length == 2 ? (parts[0], parts[1], "0001:F2") : ("0001", edge.TrimStart('#'), "#F2");
         _specifications.Add(Relative(Tree.WriteFeature("0001", "F2", new Dictionary<string, string> { ["depends_on"] = $"[\"{edge}\"]" })));
-        _specifications.Add(Relative(Tree.WriteFeature(parts[0], parts[1], new Dictionary<string, string> { ["blocks"] = "[\"0001:F2\"]" })));
+        _specifications.Add(Relative(Tree.WriteFeature(epic, id, new Dictionary<string, string> { ["blocks"] = $"[\"{blocks}\"]" })));
     }
 
     [Then("the edge resolves to Feature {word} of epic {word}")]
@@ -116,8 +119,9 @@ public sealed partial class ManifestSteps
     {
         var path = Tree.WriteFeature("0001", "F1", new Dictionary<string, string> { ["children"] = $"[\"{first}\", \"{second}\"]" });
         _specifications.Add(Relative(path));
-        Tree.WriteItem(path, first, "0001-F1");
-        Tree.WriteItem(path, second, "0001-F1");
+        var parent = Named("identifiers")["epic"] is null ? "F1" : "0001-F1";
+        Tree.WriteItem(path, first, parent);
+        Tree.WriteItem(path, second, parent);
         _items = [first, second];
     }
 

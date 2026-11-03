@@ -9,11 +9,35 @@ namespace Specht.Tests.Rules;
 /// <summary>
 /// SPEC044 over a model built in memory (<c>0001-F1</c> B-004; item 0161): every reused item id before any gap, and per
 /// epic only the first gap among the ids that carry a sequence number, whatever the levels of SPEC040, SPEC041 and
-/// SPEC043.
+/// SPEC043. Under a schema 0.3.0 manifest declaring no epic grammar, an item whose folder holds no Feature takes no
+/// place in any sequence (<c>0001-F5</c> B-070; decision 0020 call 5); discovery lists an item only beside a
+/// specification, so only a model built in memory holds one.
 /// </summary>
 [Trait("Tier", "Unit")]
 public sealed class ItemSequenceRuleUnitTests
 {
+    [Fact]
+    public void AnItemWhoseFolderHoldsNoFeatureWithoutTheEpicGrammar_WhenTheItemSequenceRuleEvaluatesTheModel_ShouldLeaveItOutOfTheSequence()
+    {
+        // Given
+        SpechtModel model = new SpechtModelFixture()
+            .WithManifest(new JsonObject { ["schemaVersion"] = "0.3.0" })
+            .WithFeatures(new FeatureSpecFixture().WithDocument(
+                new SpechtDocumentFixture().WithFrontmatter(new FrontmatterFixture().WithNode(new JsonObject { ["id"] = "F1" }))))
+            .WithItems(new ChildItemFixture()
+                .WithRelativePath("src/loose/.spec/0001-02-task.md")
+                .WithFileName("0001-02-task.md")
+                .WithParentDirectory("src/loose/.spec")
+                .WithFrontmatter(new FrontmatterFixture().WithNode(new JsonObject { ["id"] = "0001-02" })));
+        var rule = new ItemSequenceRule();
+
+        // When
+        var findings = rule.Evaluate(model).ToList();
+
+        // Then
+        findings.Should().BeEmpty();
+    }
+
     [Fact]
     public void ItemsWithAGapBeforeAReusedId_WhenTheItemSequenceRuleEvaluatesTheModel_ShouldReportSpec044OnTheReuseBeforeTheGap()
     {

@@ -1,6 +1,5 @@
 using System.Text.Json.Nodes;
 using Specht.Discovery;
-using Specht.Manifest;
 using Specht.Model;
 using Specht.Rules;
 using Specht.Tests.Shared;
@@ -10,7 +9,8 @@ namespace Specht.Tests.Report;
 /// <summary>
 /// Synthetic violations of every identity, companion, claim and matrix branch (0001-F3 B-012 to B-015). A reused identity
 /// and an item parent mismatch carry the effective identity form under a manifest pinned to 0.3.0 declaring the epic
-/// grammar, and <c>{epic}-{feature}</c> below 0.3.0 and without the epic grammar (B-012; <c>0001-F5</c> OQ-25).
+/// grammar, <c>{id}</c> under one declaring none, and <c>{epic}-{feature}</c> below 0.3.0 (B-012; <c>0001-F5</c> OQ-25,
+/// OQ-26). Each Feature at 0.3.0 is read through the forms the parser gives its manifest, as the model builder reads it.
 /// </summary>
 public sealed class IdentityClaimExpectations : TheoryData<string, SpechtModel, ISpechtRule, string, string, JsonObject>
 {
@@ -75,7 +75,7 @@ public sealed class IdentityClaimExpectations : TheoryData<string, SpechtModel, 
         foreach (var (situation, pin, epicGrammar, declared, form) in new (string, string, bool, string?, string)[]
                  {
                      ("below schema 0.3.0", "0.2.1", true, null, "{epic}-{feature}"),
-                     ("at schema 0.3.0 without the epic grammar", "0.3.0", false, null, "{epic}-{feature}"),
+                     ("at schema 0.3.0 without the epic grammar", "0.3.0", false, null, "{id}"),
                      ("at schema 0.3.0 with the epic grammar", "0.3.0", true, null, "{epic}-{id}"),
                      ("at schema 0.3.0 with the epic grammar and a declared identity form", "0.3.0", true, "{epic}:{id}", "{epic}:{id}"),
                  })
@@ -91,8 +91,8 @@ public sealed class IdentityClaimExpectations : TheoryData<string, SpechtModel, 
                 manifest["forms"] = new JsonObject { ["identity"] = declared };
             }
 
-            SpechtForms? forms = pin == "0.3.0" && epicGrammar ? new SpechtForms(declared ?? "{epic}-{id}", "{id}", "{epic}/{id}") : null;
-            var identity = declared is null ? "0001-F1" : "0001:F1";
+            var forms = pin == "0.3.0" ? EngineServices.Parser().Parse(manifest.ToJsonString()).Forms : null;
+            var identity = !epicGrammar && pin == "0.3.0" ? "F1" : declared is null ? "0001-F1" : "0001:F1";
             var fourDigit = pin == "0.3.0";
 
             FeatureSpec reusedFirst = new FeatureSpecFixture().WithForms(forms)

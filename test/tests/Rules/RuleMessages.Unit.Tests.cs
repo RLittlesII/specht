@@ -45,6 +45,7 @@ public sealed class RuleMessagesUnitTests
     public void AFrontmatterKeyTheManifestRenames_WhenARuleNamingItEvaluatesTheModel_ShouldNameItByTheManifestsName(
         string ruleId,
         string keys,
+        string feature,
         string path,
         string text,
         string named,
@@ -57,7 +58,7 @@ public sealed class RuleMessagesUnitTests
             ["identifiers"] = new JsonObject { ["epic"] = "^[0-9]{4}$" },
             ["keys"] = JsonNode.Parse(keys),
         };
-        var model = Read(manifest.ToJsonString(), ("src/area/.spec/README.md", "---\nepic: '0001'\nid: F1\n---\n"), (path, text));
+        var model = Read(manifest.ToJsonString(), ("src/area/.spec/README.md", feature), (path, text));
         var rule = EngineServices.Rules().Single(rule => rule.Id == ruleId);
 
         // When

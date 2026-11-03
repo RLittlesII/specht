@@ -39,7 +39,7 @@ blocks:
   ]
 spikes: []
 created: "2026-10-07"
-updated: "2026-11-02"
+updated: "2026-11-03"
 github_issue: null
 synced_at: null
 ---
@@ -1365,7 +1365,7 @@ and `0048`'s. Moving the recorded version is the consumer's (C-10).
 
 ### Schema 0.3.0 (item `0321`)
 
-<!-- last written by: implementer, 2026-11-02 (item `0169`: four-digit page names) -->
+<!-- last written by: implementer, 2026-11-03 (item `0345`: B-035 built, "Epics left out"); implementer, 2026-11-02 (item `0169`: four-digit page names) -->
 
 **The cut.** `./build.sh CutSchemaVersion --cut-version 0.3.0` copied `0.2.1`'s
 four folders, splicing each frontmatter schema's `$id` and each rule page's
@@ -1413,9 +1413,10 @@ under an epic grammar (`0001-F5` B-008, B-033). The `0.3.0` feature and task
 schemas loosen statically, as `0001-F5` decision 0004 designs; JSON Schema
 cannot see the manifest, so the loosening holds under an epic grammar too.
 There the strictness is `SPEC011`'s and `SPEC043`'s to take back (`0001-F5`
-B-031, B-035). `SPEC043` already reports a bare `parent` there, since a
-Feature's identity is `{epic}-{id}`; `SPEC011`'s missing-`epic` check, B-035,
-is not built.
+B-031, B-035). `SPEC043` reports a bare `parent` there, since a Feature's
+identity is `{epic}-{id}`, and `SPEC011` reports a Feature with no `epic`,
+B-035, built by item `0345` from `0.3.0` only, so no package carries `0.3.0`
+without it (OQ-72, reading (a)).
 
 No ADR: the axis change is decision 0015, the cut and the lock are `0189`'s
 and `0188`'s procedures, and the schema loosening is `0001-F5` decision 0004.
@@ -2330,7 +2331,7 @@ byte orders of UTF-16 and UTF-32. Existing claim IDs and input semantics remain.
 
 ## 11. Open Questions
 
-<!-- last written by: spec-author, 2026-11-02 (OQ-73's resolution points to `0001-F8` B-006 for `specht frontmatter`); spec-author, 2026-11-02 (decision 0021 call 3 amended: OQ-73's resolution names `specht frontmatter`); spec-author, 2026-11-02 (decision 0021: OQ-70 resolved; OQ-73 raised and resolved); spec-author, 2026-11-02 (OQ-72: whether `0001-F5` B-035 is built before a package carries `0.3.0`); spec-author, 2026-11-01 (decision 0020: OQ-11, OQ-16, OQ-29 and OQ-50 resolved; OQ-70 and OQ-71 raised) -->
+<!-- last written by: spec-author, 2026-11-03 (OQ-72 resolved, `0001-F5` decision 0020 call 9); spec-author, 2026-11-02 (OQ-73's resolution points to `0001-F8` B-006 for `specht frontmatter`); spec-author, 2026-11-02 (decision 0021 call 3 amended: OQ-73's resolution names `specht frontmatter`); spec-author, 2026-11-02 (decision 0021: OQ-70 resolved; OQ-73 raised and resolved); spec-author, 2026-11-02 (OQ-72: whether `0001-F5` B-035 is built before a package carries `0.3.0`); spec-author, 2026-11-01 (decision 0020: OQ-11, OQ-16, OQ-29 and OQ-50 resolved; OQ-70 and OQ-71 raised) -->
 
 | ID | Question | Blocks | Resolution |
 | --- | --- | --- | --- | --- |
@@ -2405,7 +2406,7 @@ byte orders of UTF-16 and UTF-32. Existing claim IDs and input semantics remain.
 | OQ-69 | Which of ADR-0025's options does the tool take for per-version rule pages? Every schema version carries a whole copy of the rule pages (B-096, B-099; § 5 row 26; decision 0007), 23 files and about 45.7 KB a cut, `0.2.0` to `0.2.1` for no change of text. Readings: (a) keep whole snapshots, as built; (b) one source per rule with each version's pages generated at build, which reverses § 5 row 26 and `0001-F3` decision 0003's host-browsable page and edits B-096, B-098, B-099 and the cut's tests; (c) rule metadata held as data; (d) the site builds versioned pages from history, which alone leaves the embedded set unsourced and so reduces to (e); (e) only the working version's pages tracked, locked versions rebuilt from history, which needs a full clone and fails B-100 as worded. Raised 2026-10-31 by spec-author, from item `0220` and ADR-0025. | B-086; B-088; B-089; B-096; B-098; B-099; B-100; § 5 row 26; item `0220` | Open. Owner not asked. Proposed default: (a); every claim stands as it is. |
 | OQ-70 | Which schema version first defines `pinPolicy`? A key a version does not know is invalid (`0001-F5` B-012), B-102 rejects `schemaSource` below `0.2.0` on that ground, and C-1 forbids adding a key to a published version. Readings: (a) the first version cut with item `0124`, and a manifest pinned below it that declares `pinPolicy` is rejected as naming a key that version does not know; (b) every shipped version reads it, which changes a published version's verdict in place, against C-1. Raised 2026-11-01 by spec-author. | B-053; B-054; B-056; B-145 to B-150; item `0124` | Resolved 2026-11-02 by the repository owner (decision 0021), reading (a): schema `0.3.0`, which no published package carries, is the first version that defines `pinPolicy`, added in place; a manifest pinned below it that declares the key is rejected (B-153). The gate is the engine's, as B-102's is, and no shipped default manifest gains the key, so no shipped file and no lock entry changes. |
 | OQ-71 | Under a `pinPolicy` that has the check use a version above the pin, which version's manifest keys apply: the pin's or the version in use's? It decides the keys the check accepts (`0001-F5` B-012) and the missing keys `upgrade` adds (B-016). OQ-16 (a) answered it for the frontmatter schemas and templates only (C-18). Readings: (a) the pin's, so the manifest is judged as the consumer pinned it; (b) the version in use's, as C-18 reads the files. Raised 2026-11-01 by spec-author. | B-016; B-146; C-18 | Open. Owner not asked. Proposed default: (a). |
-| OQ-72 | Must `0001-F5` B-035 be built before any package carries schema `0.3.0`? The `0.3.0` feature schema drops `epic` from `required` under every manifest, since JSON Schema cannot see the manifest (§ 7, "Epics left out"); under an epic grammar only `SPEC011`'s missing-`epic` check, B-035, then reports a Feature with no `epic`, and it is not built. `SPEC002` reported that Feature under `0.2.1`, so a `0.3.0` pin with an epic grammar, this repository's since item `0339`, passes a tree `0.2.1` fails. Building B-035 once a package carries `0.3.0` changes a published version's verdict (C-1). Readings: (a) no package carries `0.3.0` until B-035 is built, which C-17 allows while `0.3.0` is unpublished; (b) `0.3.0` ships without it and B-035 is amended to hold from a later `0.minor` (C-11). Raised 2026-11-02 by spec-reviewer (§ 12, items `0321` and `0339`). | B-037; `0001-F5` B-035; item `0321`; the first package carrying `0.3.0` | Open. Owner not asked. Proposed default: (a), because it amends no claim and `0.3.0` may still change. |
+| OQ-72 | Must `0001-F5` B-035 be built before any package carries schema `0.3.0`? The `0.3.0` feature schema drops `epic` from `required` under every manifest, since JSON Schema cannot see the manifest (§ 7, "Epics left out"); under an epic grammar only `SPEC011`'s missing-`epic` check, B-035, then reports a Feature with no `epic`, and it is not built. `SPEC002` reported that Feature under `0.2.1`, so a `0.3.0` pin with an epic grammar, this repository's since item `0339`, passes a tree `0.2.1` fails. Building B-035 once a package carries `0.3.0` changes a published version's verdict (C-1). Readings: (a) no package carries `0.3.0` until B-035 is built, which C-17 allows while `0.3.0` is unpublished; (b) `0.3.0` ships without it and B-035 is amended to hold from a later `0.minor` (C-11). Raised 2026-11-02 by spec-reviewer (§ 12, items `0321` and `0339`). | B-037; `0001-F5` B-035; item `0321`; the first package carrying `0.3.0` | Resolved 2026-11-03 by the owner, answering `0001-F5` item `0345`'s question F with "A proposed (Recommended)": (a). No package carries schema `0.3.0` until `0001-F5` B-035 is built; B-035 holds from `0.3.0` only and states the finding's line, identifier and message (`0001-F5` decision 0020 call 9). Rejected: (b). |
 | OQ-73 | Under a `pinPolicy` that has the check use a version above the pin, which version do `specht rules`, `specht --explain`, `specht rules set`, `specht manifest`, `specht init` beside an existing manifest and `specht schema pin`'s validation use: the pin, as built, or the version in use, as the check and `upgrade` (C-18)? No claim states either. Raised 2026-11-02 with the owner's question cards on item `0124`. | item `0124` | Resolved 2026-11-02 by the repository owner (decision 0021): each keeps the version the manifest pins, as built. No claim added; § 5 row 33 rules out the version in use for them. Amended 2026-11-02 by the repository owner, "Stay on the pin" (decision 0021, call 3): `specht frontmatter` keeps the pinned version too; `0001-F8` B-006 as amended states it, and § 5 row 33 names it. |
 
 ## 12. Sign-off

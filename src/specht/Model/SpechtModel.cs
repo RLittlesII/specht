@@ -11,6 +11,8 @@ public sealed class SpechtModel
 {
     /// <summary>A model over what a caller already holds, as <see cref="SpechtModelBuilder"/> or a test builds it.</summary>
     /// <implements epic="0001" feature="F1" claim="B-004" />
+    /// <implements epic="0001" feature="F5" claim="B-027" />
+    /// <implements epic="0001" feature="F5" claim="B-069" />
     public SpechtModel(
         IReadOnlyList<FeatureSpec> features,
         IReadOnlyList<ChildItem> items,
@@ -37,7 +39,9 @@ public sealed class SpechtModel
             static feature => feature, feature => new SpechtClaims(feature.Document, schemas.Structure, grammar)));
         MatrixSections = new ReadOnlyDictionary<FeatureSpec, SpechtSection?>(Features.ToDictionary(
             static feature => feature, feature => feature.Document.Section(schemas.Structure.Roles["matrix"])));
-        FeaturesWithIdentity = Array.AsReadOnly(Features.Where(static feature => feature.Epic is not null && feature.Id is not null).ToArray());
+        FeaturesWithIdentity = Array.AsReadOnly(Features
+            .Where(feature => feature.Id is not null && (feature.Epic is not null || schemas.Structure.Forms is not null))
+            .ToArray());
         DependencyGraph = new SpechtDependencyGraph(FeaturesWithIdentity, schemas.Structure);
     }
 
@@ -62,7 +66,10 @@ public sealed class SpechtModel
     /// <summary>The configured matrix section of each Feature.</summary>
     public IReadOnlyDictionary<FeatureSpec, SpechtSection?> MatrixSections { get; }
 
-    /// <summary>Features with both identity fields, in discovery order.</summary>
+    /// <summary>
+    /// Features with an identity, in discovery order: each with an <c>id</c> from schema 0.3.0, and below it each with
+    /// both an <c>epic</c> and an <c>id</c> (C-11; B-027, B-049, B-069).
+    /// </summary>
     public IReadOnlyList<FeatureSpec> FeaturesWithIdentity { get; }
 
     /// <summary>The resolved dependency graph.</summary>

@@ -81,10 +81,18 @@ public sealed record SpechtStructure(
 
     /// <summary>
     /// The identity and edge forms, with the task grammar's named groups, that identities, edges and item sequences are
-    /// read through; set from schema 0.3.0 for a manifest that declares the epic grammar, and null otherwise, which keeps
-    /// the reading of the engine at <c>d73b7a51</c> (B-005, B-006, B-049, decision 0018).
+    /// read through; set from schema 0.3.0, its identity form <c>{id}</c> for a manifest that declares no epic grammar,
+    /// and null below it, which keeps the reading of the engine at <c>d73b7a51</c> (B-005, B-006, B-025, B-049, decisions
+    /// 0018 and 0020).
     /// </summary>
     public SpechtForms? Forms { get; init; }
+
+    /// <summary>
+    /// Whether the tree is read without an epic tier: from schema 0.3.0, for a manifest that declares no epic grammar,
+    /// so edges resolve by <c>id</c>, items number per Feature and no epic file is read (C-10; B-025 to B-034, B-042;
+    /// decision 0020).
+    /// </summary>
+    public bool EpicLess => Forms is not null && !DeclaresEpicGrammar;
 
     /// <summary>
     /// How a message cites the section a role names: <c>§ N</c> by the leading number of the role's title, or
