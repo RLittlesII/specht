@@ -10,7 +10,7 @@ namespace Specht.Tests.Rules;
 /// within one, the claim table's row order; a row whose first cell is empty is skipped.
 /// </summary>
 [Trait("Tier", "Unit")]
-public sealed class ClaimIdRuleGuardsUnitTests
+public sealed class ClaimIdRuleUnitTests
 {
     [Fact]
     public void ClaimTablesWithMalformedAndRepeatedIds_WhenTheClaimIdRuleEvaluatesTheModel_ShouldReportSpec030InFeatureOrderThenRowOrder()

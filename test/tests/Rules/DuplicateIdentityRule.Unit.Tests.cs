@@ -11,7 +11,7 @@ namespace Specht.Tests.Rules;
 /// each first appears and, within one, the Features' order; only the Features with both <c>epic</c> and <c>id</c> are grouped.
 /// </summary>
 [Trait("Tier", "Unit")]
-public sealed class DuplicateIdentityRuleGuardsUnitTests
+public sealed class DuplicateIdentityRuleUnitTests
 {
     [Fact]
     public void TwoIdentitiesEachClaimedTwiceAndInterleaved_WhenTheDuplicateIdentityRuleEvaluatesTheModel_ShouldReportSpec012ByFirstAppearanceThenFeatureOrder()

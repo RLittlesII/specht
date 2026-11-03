@@ -7,7 +7,7 @@ namespace Specht.Tests.Rules;
 
 /// <summary>SPEC020's order over a model built in memory (<c>0001-F1</c> B-004; item 0159): the Features' order.</summary>
 [Trait("Tier", "Unit")]
-public sealed class CompanionFileRuleGuardsUnitTests
+public sealed class CompanionFileRuleUnitTests
 {
     [Fact]
     public void FeaturesWithNoneOrTwoCompanions_WhenTheCompanionFileRuleEvaluatesTheModel_ShouldReportSpec020InFeatureOrder()

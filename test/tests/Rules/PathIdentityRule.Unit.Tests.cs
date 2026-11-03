@@ -13,7 +13,7 @@ namespace Specht.Tests.Rules;
 /// outside its path is skipped.
 /// </summary>
 [Trait("Tier", "Unit")]
-public sealed class PathIdentityRuleGuardsUnitTests
+public sealed class PathIdentityRuleUnitTests
 {
     [Fact]
     public void FeaturesUnderFoldersTheirIdentitiesDoNotName_WhenThePathIdentityRuleEvaluatesTheModel_ShouldReportSpec011InFeatureOrderEpicBeforeId()

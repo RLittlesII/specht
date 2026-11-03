@@ -13,7 +13,7 @@ namespace Specht.Tests.Rules;
 /// SPEC030's level.
 /// </summary>
 [Trait("Tier", "Unit")]
-public sealed class ClaimRowRuleGuardsUnitTests
+public sealed class ClaimRowRuleUnitTests
 {
     [Fact]
     public void MatricesMissingRepeatingAndNamingUnknownClaims_WhenTheClaimRowRuleEvaluatesTheModel_ShouldReportSpec031ClaimsThenUnknownRowsPerFeature()

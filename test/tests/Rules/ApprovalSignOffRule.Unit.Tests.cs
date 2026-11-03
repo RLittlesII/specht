@@ -11,7 +11,7 @@ namespace Specht.Tests.Rules;
 /// within one, the sign-off's row order; an approved Feature with no sign-off section is skipped, whatever SPEC060's level.
 /// </summary>
 [Trait("Tier", "Unit")]
-public sealed class ApprovalSignOffRuleGuardsUnitTests
+public sealed class ApprovalSignOffRuleUnitTests
 {
     [Fact]
     public void ApprovedFeaturesWithDraftAndBlockedSignOffRows_WhenTheApprovalSignOffRuleEvaluatesTheModel_ShouldReportSpec061InFeatureOrderThenRowOrder()

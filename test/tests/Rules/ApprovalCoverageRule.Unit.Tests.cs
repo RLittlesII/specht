@@ -12,7 +12,7 @@ namespace Specht.Tests.Rules;
 /// SPEC061's level.
 /// </summary>
 [Trait("Tier", "Unit")]
-public sealed class ApprovalCoverageRuleGuardsUnitTests
+public sealed class ApprovalCoverageRuleUnitTests
 {
     [Fact]
     public void ApprovedFeaturesWithMissingCells_WhenTheApprovalCoverageRuleEvaluatesTheModel_ShouldReportSpec060InFeatureOrderThenRowOrder()
