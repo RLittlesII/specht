@@ -1,0 +1,45 @@
+id: "0347"
+type: task
+title: Accept a by-record value in the traceability matrix
+
+status: ready-for-architecture
+
+risk: 3
+
+parent: "0010"
+children: []
+
+depends_on: []
+spikes: []
+
+spec: src/specht/Manifest/.spec/README.md
+
+claims: []
+
+created: "2026-11-03"
+updated: "2026-11-03"
+closed: null
+
+summary: |
+  A claim proven by a record and not by a test keeps a § 9 row that reads
+  `Missing`, so the not-covered rule reports it in an approved specification
+  (OQ-12). This item gives § 9 a by-record value that the not-covered rule
+  accepts. The owner ruled it a later item, in a milestone after 0.4.0
+  ("A later item (Recommended)"; Manifest decision 0021 call 5).
+  No claim is written yet. The value's marker name, its default and the
+  schema version it first enters are settled when its claims are written.
+  Risk 3: it adds a value to the manifest's markers and changes what the
+  not-covered rule reports.
+
+acceptance_criteria:
+  - "§ 3 gains the claims for the by-record value, and this item lists them."
+  - "§ 9 carries a row naming a test for each id above."
+
+decisions:
+  - |
+    2026-11-03, the repository owner, on OQ-12: "A later item
+    (Recommended)". Cut by spec-author for a milestone after 0.4.0;
+    Manifest decision 0021 call 5.
+
+out_of_scope:
+  - "Everything in § 5 of the spec."

@@ -36,6 +36,9 @@
 # Rule unit coverage and the pin policy retained by the owner 2026-11-01.
 0152
 0124
+# Manifest gaps, OQ-10, OQ-11, OQ-14 and OQ-22: owner 2026-11-03
+# (0001-F5 decision 0021).
+0346
 
 0.5.0
 # MCP first release: the owner, 2026-11-01. The host 0132-F3, the four
@@ -44,6 +47,10 @@
 0330
 0331
 0332
+# Later manifest items, OQ-12 and OQ-15: owner 2026-11-03, after 0.4.0
+# (0001-F5 decision 0021).
+0347
+0348
 
 0.6.0
 # Pull-request surface: epic 0142, whose Features are not yet specified; a

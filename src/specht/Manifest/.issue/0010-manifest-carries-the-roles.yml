@@ -27,6 +27,9 @@ children:
     "0223",
     "0235",
     "0345",
+    "0346",
+    "0347",
+    "0348",
   ]
 
 depends_on: []
@@ -100,9 +103,13 @@ claims:
   - B-066
   - B-067
   - B-068
+  - B-072
+  - B-073
+  - B-074
+  - B-075
 
 created: "2026-10-08"
-updated: "2026-11-02"
+updated: "2026-11-03"
 closed: null
 
 summary: |
@@ -161,9 +168,20 @@ acceptance_criteria:
   - "B-062 — an off-level rule not raised is not run or counted (0223)"
   - "B-024 to B-035, B-042 — epics opt-in by the epic grammar (0345)"
   - "B-068 — schema 0.3.0's default task grammar names its groups (0016)"
+  - "B-072 — an unread name in `roles` or `markers` kept, unread (0346)"
+  - "B-073 — from 0.3.0, a white-space marker rejected (0346)"
+  - "B-074 — from 0.3.0, a `$`-prefixed path identity member ignored (0346)"
+  - "B-075 — from 0.3.0, an empty or `.` schema file name rejected (0346)"
   - "§ 9 carries a row naming a test for each id above."
 
 decisions:
+  - |
+    2026-11-03, the repository owner, six rulings each chosen on its own
+    (Manifest decision 0021): OQ-10, OQ-11, OQ-14 and OQ-22 are item 0346,
+    in milestone 0.4.0, with B-022 and B-023 reaching every rejection they
+    list; OQ-12 is item 0347 and OQ-15 is item 0348, both after 0.4.0.
+    `children` gains 0346 to 0348, and `claims` gains B-072 to B-075.
+    Recorded by spec-author.
   - |
     2026-11-02, the repository owner, on item 0016's three questions
     (item 0016's decisions; Manifest decisions 0016 to 0018): 0016's
