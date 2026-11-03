@@ -2,7 +2,7 @@ id: "0345"
 type: task
 title: Make epics opt-in by the manifest's epic grammar
 
-status: in-progress
+status: done
 
 risk: 4
 
@@ -38,7 +38,7 @@ claims:
 
 created: "2026-11-02"
 updated: "2026-11-03"
-closed: null
+closed: "2026-11-03"
 
 summary: |
   Makes epics opt-in: whether a tree has an epic tier is read from the
