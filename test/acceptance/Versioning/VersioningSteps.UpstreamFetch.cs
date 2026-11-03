@@ -12,8 +12,10 @@ using Reqnroll;
 using Specht.Composition;
 using Specht.Tests.Shared;
 using Specht.Tool;
+using Specht.Tool.Features;
 using Specht.Tool.Features.Init;
 using Specht.Tool.Features.Upgrade;
+using Specht.Versioning;
 using Spectre.Console;
 using Spectre.Console.Cli.Testing;
 using Spectre.Console.Testing;
@@ -119,6 +121,12 @@ public sealed partial class VersioningSteps
         services.AddSingleton<IAnsiConsole>(console);
         services.AddSingleton(client);
         services.AddSingleton<TextWriter>(errors);
+        if (_shippingCopy is not null)
+        {
+            services.AddSingleton(new SchemaVersions(Shipped.Values));
+            services.AddSingleton(new ShippedFiles(_shippingCopy));
+        }
+
         var app = new CommandAppTester(new TypeRegistrar(services.AddSpechtEngine().AddUpgrade()), console: console);
         app.Configure(static configuration => configuration.AddUpgrade());
         var token = Environment.GetEnvironmentVariable(TokenVariable);

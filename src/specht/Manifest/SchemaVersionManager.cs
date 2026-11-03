@@ -8,9 +8,11 @@ namespace Specht.Manifest;
 /// <implements epic="0001" feature="F7" claim="B-043" />
 public sealed class SchemaVersionManager(SpechtManifestStore store, SpechtManifestParser parser, ManifestPinEditor editor, SchemaVersions versions)
 {
-    /// <summary>Lists shipped versions with the optional manifest's declared or default pin.</summary>
+    /// <summary>Lists shipped versions with the optional manifest's declared or default pin and the version the check uses.</summary>
     /// <implements epic="0001" feature="F7" claim="B-043" />
-    public (IReadOnlyList<SemanticVersion> Versions, SemanticVersion? Pinned) List(string root)
+    /// <implements epic="0001" feature="F7" claim="B-148" />
+    /// <implements epic="0001" feature="F7" claim="B-149" />
+    public (IReadOnlyList<SemanticVersion> Versions, SemanticVersion? Pinned, SemanticVersion? InUse) List(string root)
     {
         var bytes = ReadManifest(root, required: false);
         SemanticVersion? pin = null;
@@ -25,7 +27,7 @@ public sealed class SchemaVersionManager(SpechtManifestStore store, SpechtManife
                 throw new SpechtManifestUnreadableException(exception);
             }
         }
-        return (Shipped(), pin);
+        return (Shipped(), pin, null);
     }
 
     /// <summary>Validates the pin input before returning choices for the host's selector.</summary>

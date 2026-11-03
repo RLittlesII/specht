@@ -24,6 +24,15 @@ public sealed class SchemaVersions
     /// <implements epic="0001" feature="F7" claim="B-001" />
     public SchemaVersion? Find(SemanticVersion number) => Versions.FirstOrDefault(version => version.Number == number);
 
+    /// <summary>Selects the held version the check uses under <paramref name="policy"/> for a held pin (B-053, B-054, B-147).</summary>
+    /// <param name="pin">The pinned version, which the set holds.</param>
+    /// <param name="policy">The manifest's pin policy.</param>
+    /// <returns>The version in use.</returns>
+    /// <implements epic="0001" feature="F7" claim="B-053" />
+    /// <implements epic="0001" feature="F7" claim="B-054" />
+    /// <implements epic="0001" feature="F7" claim="B-147" />
+    public SchemaVersion InUse(SemanticVersion pin, PinPolicy policy) => throw new NotImplementedException();
+
     /// <implements epic="0001" feature="F7" claim="B-001" />
     private static IEnumerable<SchemaVersion> ReadVersions(IReadOnlyDictionary<string, string> resources)
     {
